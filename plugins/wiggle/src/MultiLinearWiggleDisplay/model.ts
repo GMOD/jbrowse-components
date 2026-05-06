@@ -25,6 +25,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable } from 'mobx'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
+import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import {
   getRowHeight,
@@ -396,28 +397,9 @@ export default function stateModelFactory(
       },
 
       startGpuBackendLifecycle(backend: WiggleBackend) {
-        self.installGpuDisplay<WiggleBackend>(backend, {
-          upload: b => {
-            const props = self.gpuProps()
-            const active: number[] = []
-            for (const [displayedRegionIndex, data] of self.rpcDataMap) {
-              b.uploadRegion(
-                displayedRegionIndex,
-                buildMultiSourceRenderData(data, props),
-              )
-              active.push(displayedRegionIndex)
-            }
-            b.pruneRegions(active)
-          },
-          render: b => {
-            const state = self.renderState
-            if (!state) {
-              return false
-            }
-            b.renderBlocks(self.renderBlocks, state)
-            return true
-          },
-        })
+        installPerRegionWiggleLifecycle(self, self.rpcDataMap, backend, data =>
+          buildMultiSourceRenderData(data, self.gpuProps()),
+        )
       },
 
       reload() {

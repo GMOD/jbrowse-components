@@ -46,6 +46,21 @@ The `/tmp` partition is small (16 GB, often >50% full). Set `TMPDIR=~/tmpdir`
 before any `gfa-to-tabix` run that writes intermediate files (vg snarls writes
 to TMPDIR). Clean stale `/tmp/hprc-*`, `/tmp/volvox*`, etc. before long runs.
 
+## rpcProps vs gpuProps — what stays in the worker
+
+The upload autorun (`installGpuDisplay`) fires for **every** `rpcDataMap`
+change and re-runs `buildSourceRenderData` / `buildMultiSourceRenderData` for
+**all** cached regions. Moving an expensive per-feature computation from the
+worker into that path multiplies the cost by the number of cached regions and
+fires it on every region arrival, not just on settings changes.
+
+**Rule:** Only move worker computation into `gpuProps` (main-thread re-encode)
+when the setting changes frequently (e.g., color, scale type) **and** the
+per-feature work is cheap or can be expressed as a shader uniform. For settings
+that rarely change but feed expensive per-feature loops (e.g., `bicolorPivot`),
+keep them in `rpcProps` and accept the occasional refetch. See
+`agent-docs/architecture-decision-records/adr-016-bicolorpivot-stays-in-worker.md`.
+
 ## MST model files
 
 **Do not split large model files (e.g. `LinearGenomeView/model.ts`) across

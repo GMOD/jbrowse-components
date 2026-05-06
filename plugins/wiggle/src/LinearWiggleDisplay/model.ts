@@ -21,6 +21,7 @@ import { observable } from 'mobx'
 
 import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
+import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
 import {
@@ -507,28 +508,9 @@ export default function stateModelFactory(
         return renderSvg(self as LinearWiggleDisplayModel, opts)
       },
       startGpuBackendLifecycle(backend: WiggleBackend) {
-        self.installGpuDisplay<WiggleBackend>(backend, {
-          upload: b => {
-            const props = self.gpuProps()
-            const active: number[] = []
-            for (const [displayedRegionIndex, data] of self.rpcDataMap) {
-              b.uploadRegion(
-                displayedRegionIndex,
-                buildSourceRenderData(data, props),
-              )
-              active.push(displayedRegionIndex)
-            }
-            b.pruneRegions(active)
-          },
-          render: b => {
-            const state = self.renderState
-            if (!state) {
-              return false
-            }
-            b.renderBlocks(self.renderBlocks, state)
-            return true
-          },
-        })
+        installPerRegionWiggleLifecycle(self, self.rpcDataMap, backend, data =>
+          buildSourceRenderData(data, self.gpuProps()),
+        )
       },
     }))
 }

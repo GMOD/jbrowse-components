@@ -71,19 +71,126 @@ put these on a new branch though
 Moves around slightly during zoom, audit pixel usage
 
 
-## Difference between 'fullyDrawn' vs 'canvasDrawn'
-
-
-
-## Chevrons in plugins/canvas look bad webgpu/webgl (looks sorta pixelated, not clean, ideally a bit more subtle) and canvas (slightly bolder in canvas, ideally more subtle)
-
-
-## After 'gene name' is in refnameautocomplete, can't select chr names anymore
-
 
 ## nice
 
  3. niceStep into wiggle-core — it's currently in alignments-core and used only by
   coverage/insert-size code. Unlike YSCALEBAR_LABEL_OFFSET, it's narrow enough that it's not worth
   moving.
+
+
+---
+
+
+## Architecture improvements (from 2026-05-05 review)
+
+Items below come from a critical review of ARCHITECTURE.md against the wiggle
+plugin implementation. All are described in more detail in ARCHITECTURE.md.
+
+### Upload autorun O(N²) — canvas pending
+
+**Plain English:** When a whole-genome wiggle track loads, each chromosome's
+data arrives from the worker one at a time. The old code would re-upload every
+already-loaded chromosome to the GPU each time a new one arrived — so loading
+24 chromosomes did 1+2+…+24 = 300 GPU uploads instead of 24. The fix gives
+each chromosome its own dedicated MobX watcher; when chromosome 5 arrives,
+only chromosome 5 is uploaded. Canvas tracks have the same problem but require
+a more invasive fix (see below).
+
+**Wiggle/multi-wiggle: fixed.** Per-key autoruns in `startGpuBackendLifecycle`
+— one autorun per `rpcDataMap` entry, each tracking only its own key via
+`rpcDataMap.get(key)` (per-key `hasMap_` atom in MobX, not `keysAtom_`). New
+region arrival is O(1) GPU upload; `gpuProps()` change is O(N). See
+`ARCHITECTURE.md` "Per-region streamed: per-key autoruns" for the pattern and
+the MobX atom-level explanation.
+
+**Canvas: still O(N²).** `laidOutDataMap` is a MobX computed that calls
+`computeLaidOutData(rpcDataMap, ...)` across all regions (cross-region Y-row
+packing by refName). Any `rpcDataMap` change invalidates the entire computed;
+per-key autoruns all re-fire. Fix requires making `computeLaidOutData`
+incremental — return stable references for unchanged entries so per-key
+autoruns can detect no-op re-fires. Medium scope; most visible on
+whole-genome canvas tracks with N=24 chromosomes.
+
+**Alignments/synteny: same O(N²) structure, small N.** `laidOutPileupMap` and
+the synteny `sync()` path are whole-map computed/iteration patterns with
+identical O(N²) mechanics. Per-key autoruns can't help because the whole-map
+computed is still the dependency. In practice N is 4–8 (alignments never shown
+at whole-genome scale; synteny is pairwise), so N²=16–64 and the overhead is
+not perceptible. Same fix (incremental computed) would apply if N grew.
+
+---
+
+### Formalize `getFeatureArrays` as an adapter capability
+
+**Problem:** `executeRenderWiggleData` duck-types the fast path via
+`'getFeatureArrays' in adapter`. Any adapter that omits it silently falls back
+to the slow Observable/array-collect path without any warning.
+
+**Fix:** Register `hasFeatureArrays` as a named adapter capability (alongside
+the existing `hasResolution` check). The adapter's `adapterCapabilities` array
+would declare it; `executeRenderWiggleData` checks the capability registry
+instead of duck-typing. This makes the fast path discoverable and prevents
+silent perf regressions when new adapters are added.
+
+**Scope:** `BigWigAdapter` declares the capability; `executeRenderWiggleData`
+uses `getAdapterCapabilities` to gate the fast path; a unit test verifies the
+fallback.
+
+
+### Batch RPC calls per viewport (wiggle)
+
+**Problem:** Each visible region triggers its own RPC call. On chromosome
+navigation (many regions invalidated simultaneously) this fans out into N
+parallel worker dispatches.
+
+**Fix:** Add an optional `RenderWiggleDataBatch` RPC method that accepts an
+array of regions and returns a map of `displayedRegionIndex → WiggleDataResult`.
+`fetchNeeded` would use the batch path when more than one region needs fetching.
+The upload autorun stays unchanged — per-region streaming still works because
+the batch result is split before populating `rpcDataMap`.
+
+**Scope:** New RPC method + execute function; `fetchNeeded` override in wiggle
+model; backward-compatible (single-region path remains for non-batch adapters).
+
+
+### Derive wiggle `isCacheValid` from BigWig zoom levels
+
+**Problem:** Wiggle uses strict `view.bpPerPx === loadedBpPerPx` equality for
+cache invalidation (ADR-008). Any zoom step refetches all visible regions
+simultaneously, even when the BigWig zoom level didn't change — i.e. the
+returned data would be identical.
+
+**Fix:** `BigWigAdapter` exposes a `zoomLevelForBpPerPx(bpPerPx)` method that
+returns the discrete zoom level index BigWig would use. `isCacheValid` in
+`LinearWiggleDisplay` compares zoom levels rather than raw bpPerPx. Zoom moves
+within the same BigWig tier no longer refetch.
+
+**Risk:** Need to audit zoom-level selection logic in `@gmod/bbi` to ensure the
+mapping is stable and deterministic. If zoom level is ambiguous at boundary
+bpPerPx values, strict equality is still safer.
+
+
+### Unify single / multi wiggle models and RPC
+
+**Problem:** `LinearWiggleDisplay` and `MultiLinearWiggleDisplay` duplicate
+fetch logic, RPC descriptors, and model structure. Single-wiggle is a degenerate
+case of multi-wiggle (one source, one row). Two parallel code paths must be kept
+in sync.
+
+**Fix:** Migrate `LinearWiggleDisplay.fetchNeeded` to call
+`RenderMultiWiggleData` with a single-element sources list. The single model
+would compose a thin adapter layer that unwraps the one-element result into
+the existing `rpcDataMap` shape. Long-term, both displays could share one model
+class. `RenderWiggleData` can be deprecated.
+
+**Risk:** `BigWigAdapter.getFeatureArrays` fast path doesn't exist on
+multi-wiggle adapters. The unified path must preserve the fast path for BigWig.
+Migration should be done incrementally: make the single display call the multi
+RPC first, then consolidate models.
+
+
+### `untracked` inline documentation
+
+Done — comments added to `MultiRegionDisplayMixin.ts` at each call site.
 

@@ -261,6 +261,87 @@ the data shape, not the one your neighbour copied:
 All three patterns expose the same lifecycle (`installGpuDisplay({ upload,
 render })`); the difference is how the upload callback shovels bytes.
 
+#### Per-region streamed: per-key autoruns (wiggle only)
+
+**Plain English:** The naive implementation re-uploads every chromosome to the
+GPU each time any chromosome finishes loading — 300 uploads instead of 24 for
+a whole-genome wiggle track. The fix gives each chromosome its own tiny MobX
+watcher. When chromosome 5 arrives, only chromosome 5's watcher fires and
+uploads. When the user changes a color setting, all 24 watchers fire and all
+24 re-upload — which is the right behavior.
+
+Naive per-region upload iterates the full `rpcDataMap` inside the upload
+callback. Because `for (const [k, v] of rpcDataMap)` makes MobX track the
+entire map, every `rpcDataMap.set(key, data)` call re-fires the autorun and
+re-uploads all N regions — O(N²) total GPU uploads when N regions arrive
+sequentially.
+
+**Fix (wiggle, multi-wiggle):** replace the single full-map loop with a
+key-manager that spawns one per-key autorun per `rpcDataMap` entry:
+
+```ts
+upload: b => {
+  // keys() tracks structural changes (add/remove) but NOT value changes.
+  const active: number[] = []
+  for (const key of self.rpcDataMap.keys()) {
+    active.push(key)
+    if (!perKeyDisposers.has(key)) {
+      perKeyDisposers.set(key, autorun(() => {
+        const data = self.rpcDataMap.get(key)   // per-key value atom
+        const props = self.gpuProps()
+        const bCurrent = self.currentGpuBackend as WiggleBackend | undefined
+        if (data !== undefined && bCurrent !== undefined) {
+          bCurrent.uploadRegion(key, buildSourceRenderData(data, props))
+          self.renderNow()
+        }
+      }))
+    }
+  }
+  const activeSet = new Set(active)
+  for (const [key, dispose] of perKeyDisposers) {
+    if (!activeSet.has(key)) { dispose(); perKeyDisposers.delete(key) }
+  }
+  b.pruneRegions(active)
+}
+```
+
+Key MobX fact (verified in mobx@6.15.0 source): `ObservableMap.get(existingKey)`
+tracks `hasMap_.get(key)` (per-key existence atom), not `keysAtom_`. Adding a
+new key fires `keysAtom_` (waking the key-manager only) and that new key's
+`hasMap_` entry. Existing per-key autoruns are **not** re-fired. Net result:
+O(1) GPU upload per new region, O(N) when `gpuProps()` or backend changes.
+
+Use `addDisposer(self, () => { for (const d of perKeyDisposers.values()) d() })`
+to clean up per-key autoruns when the MST node is destroyed.
+
+**Plain English on why the wiggle fix doesn't apply here:** Wiggle uploads
+each chromosome independently — chromosome 5's data has nothing to do with
+chromosome 1's. Canvas and alignments lay out features into Y-rows across all
+loaded regions together (so a gene spanning two adjacent regions ends up on
+the same row in both). That means any new arrival could in principle change
+the layout of everything already loaded, so the code recomputes and re-uploads
+everything. In practice this cross-region coupling rarely matters (different
+chromosomes never share Y-rows), but the architecture doesn't exploit that yet.
+
+**Canvas and alignments have the same O(N²) structure** — both route through a
+whole-map MobX computed (`laidOutDataMap` / `laidOutPileupMap`) that invalidates
+whenever any `rpcDataMap` entry changes, causing the upload autorun to re-fire
+and re-upload all N entries. Per-key autoruns cannot help here: reading
+`laidOutDataMap.get(key)` or `laidOutPileupMap.get(key)` in a per-key autorun
+still tracks the whole-map computed as a dependency, so all per-key autoruns
+re-fire on every new arrival.
+
+The practical difference is N:
+
+- **Canvas** is commonly shown as a whole-genome gene track with N=24
+  chromosomes → N²=576 uploads vs. 24. Perceptible. Fix: make
+  `computeLaidOutData` incremental — return stable references for entries whose
+  input data didn't change, so per-key autoruns can detect no-ops.
+- **Alignments/synteny** are never shown at whole-genome scale (data density
+  forces gene-level zoom, or synteny is pairwise). N is typically 4–8 buffered
+  regions → N²=16–64. Not perceptible in practice. Same fix would apply if N
+  ever grew.
+
 ---
 
 ## SVG export pipeline (single source of truth)

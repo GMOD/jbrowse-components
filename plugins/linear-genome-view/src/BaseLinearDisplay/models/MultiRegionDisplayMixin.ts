@@ -184,8 +184,8 @@ export default function MultiRegionDisplayMixin() {
                 return
               }
 
-              // isLoading is not a dependency — it's a guard only.
-              // fetchGeneration (bumped at fetch end) is the re-trigger signal.
+              // perf guard: isLoading flip would re-fire this autorun mid-fetch;
+              // fetchGeneration (bumped after fetch) is the real re-trigger.
               if (untracked(() => self.isLoading)) {
                 return
               }
@@ -223,6 +223,8 @@ export default function MultiRegionDisplayMixin() {
                 displayedRegionIndex: number
               }[] = []
               for (const block of visibleRegions) {
+                // perf guard: loadedRegions population would re-fire this autorun;
+                // fetchGeneration bump after setLoadedRegion is the real signal.
                 const loaded = untracked(() =>
                   self.loadedRegions.get(block.displayedRegionIndex),
                 )
