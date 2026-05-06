@@ -138,16 +138,12 @@ async function compilePipelines(
         throw new ShaderCompileError(desc.id, details)
       }
       const fragEntry = desc.wgslFragmentEntry ?? 'fs_main'
-      const format: GPUTextureFormat = desc.picking
-        ? 'rgba8unorm'
-        : preferredFormat
-      const blend = desc.picking
-        ? undefined
-        : desc.blend
-          ? desc.blendState
-            ? gpuBlendState(desc.blendState)
-            : STANDARD_BLEND_STATE
-          : undefined
+      const format: GPUTextureFormat = preferredFormat
+      const blend = desc.blend
+        ? desc.blendState
+          ? gpuBlendState(desc.blendState)
+          : STANDARD_BLEND_STATE
+        : undefined
       const topo: GPUPrimitiveTopology = desc.topology ?? 'triangle-list'
       const pLayout = desc.textures?.length
         ? getOrCreateTexturedLayout(device, state).pipelineLayout
@@ -180,9 +176,7 @@ async function compilePipelines(
         },
         primitive: { topology: topo },
         multisample:
-          desc.picking || MSAA_SAMPLE_COUNT === 1
-            ? undefined
-            : { count: MSAA_SAMPLE_COUNT },
+          MSAA_SAMPLE_COUNT === 1 ? undefined : { count: MSAA_SAMPLE_COUNT },
       })
       pipelines.set(desc.id, pipeline)
     }),
@@ -236,14 +230,8 @@ export class WebGPUHal implements GpuHal {
   private scissorRect: Rect | null = null
   private viewportRect: Rect | null = null
 
-  // Picking state
-  private pickingTexture: GPUTexture | null = null
-  private pickingStagingBuffer: GPUBuffer | null = null
-  private cachedPickResult = -1
-
   // Guards dispose() against double invocation (pagehide + React cleanup can
-  // both fire) and tells async picking reads to bail out instead of allocating
-  // a fresh staging buffer on a torn-down HAL.
+  // both fire).
   private disposed = false
 
   private constructor(
@@ -519,7 +507,7 @@ export class WebGPUHal implements GpuHal {
       this.uniformStagingU8.set(new Uint8Array(data), offset)
       this.uniformSlot++
     } else {
-      // Outside a frame (e.g. picking): write directly to slot 0
+      // Outside a frame: write directly to slot 0
       this.device.queue.writeBuffer(this.uniformRingBuffer, 0, data)
       this.uniformSlot = 1
     }
@@ -648,140 +636,6 @@ export class WebGPUHal implements GpuHal {
     this.currentTextureView = null
   }
 
-  drawPickingPass(
-    passId: string,
-    regionKey: number,
-    instanceCount?: number,
-    bufferPassId?: string,
-  ) {
-    const pipeline = this.pipelines.get(passId)
-    if (!pipeline) {
-      return
-    }
-    const regionBuf = this.regions
-      .get(regionKey)
-      ?.buffers.get(bufferPassId ?? passId)
-    if (!regionBuf || regionBuf.count === 0 || !regionBuf.bindGroup) {
-      return
-    }
-    const desc = this.descriptors.get(passId)
-    if (!desc) {
-      return
-    }
-
-    this.ensurePickingTexture()
-    if (!this.pickingTexture) {
-      return
-    }
-
-    // Picking runs outside the frame cycle with its own encoder.
-    // writeUniforms called before this wrote directly to slot 0.
-    const encoder = this.device.createCommandEncoder()
-    const pass = encoder.beginRenderPass({
-      colorAttachments: [
-        {
-          view: this.pickingTexture.createView(),
-          loadOp: 'clear',
-          storeOp: 'store',
-          clearValue: { r: 0, g: 0, b: 0, a: 0 },
-        },
-      ],
-    })
-    pass.setPipeline(pipeline)
-    pass.setBindGroup(0, regionBuf.bindGroup, [0])
-    pass.setVertexBuffer(0, regionBuf.dataBuffer)
-    const instanceDrawCount = instanceCount ?? regionBuf.count
-    console.warn(
-      '[hover] drawPickingPass: instances=',
-      instanceDrawCount,
-      'texture=',
-      this.pickingTexture.width,
-      'x',
-      this.pickingTexture.height,
-    )
-    pass.draw(desc.verticesPerInstance, instanceDrawCount)
-    pass.end()
-    this.device.queue.submit([encoder.finish()])
-  }
-
-  readPickingPixel(_x: number, _y: number) {
-    return this.cachedPickResult
-  }
-
-  async readPickingPixelAsync(x: number, y: number) {
-    if (this.disposed || !this.pickingTexture || !this.pickingStagingBuffer) {
-      return -1
-    }
-    const dpr = getDpr()
-    const px = Math.floor(x * dpr)
-    const py = Math.floor(y * dpr)
-    if (
-      px < 0 ||
-      px >= this.canvas.width ||
-      py < 0 ||
-      py >= this.canvas.height
-    ) {
-      return -1
-    }
-
-    const encoder = this.device.createCommandEncoder()
-    encoder.copyTextureToBuffer(
-      {
-        texture: this.pickingTexture,
-        origin: [px, py, 0],
-      },
-      {
-        buffer: this.pickingStagingBuffer,
-        bytesPerRow: 256,
-      },
-      [1, 1, 1],
-    )
-    const t0 = performance.now()
-    this.device.queue.submit([encoder.finish()])
-    const t1 = performance.now()
-
-    try {
-      await this.pickingStagingBuffer.mapAsync(GPUMapMode.READ)
-    } catch {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!this.disposed) {
-        this.resetStagingBuffer()
-      }
-      return -1
-    }
-    const t2 = performance.now()
-    console.warn(
-      '[hover] mapAsync timing: submit=',
-      (t1 - t0).toFixed(1),
-      'ms, mapAsync wait=',
-      (t2 - t1).toFixed(1),
-      'ms',
-    )
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.disposed) {
-      try {
-        this.pickingStagingBuffer.unmap()
-      } catch {}
-      return -1
-    }
-    let result: number
-    try {
-      const data = new Uint8Array(this.pickingStagingBuffer.getMappedRange())
-      const r = data[0]!
-      const g = data[1]!
-      const b = data[2]!
-      // RGB(0,0,0) = no feature. Otherwise decode the 1-based 24-bit index and
-      // convert to 0-based.
-      result = r === 0 && g === 0 && b === 0 ? -1 : r + g * 256 + b * 65536 - 1
-    } finally {
-      try {
-        this.pickingStagingBuffer.unmap()
-      } catch {}
-    }
-    this.cachedPickResult = result
-    return result
-  }
-
   setScissor(x: number, y: number, w: number, h: number) {
     this.scissorRect = { x, y, w, h }
   }
@@ -810,41 +664,6 @@ export class WebGPUHal implements GpuHal {
     }
     this.passTextures.clear()
     this.msaaTexture?.destroy()
-    this.pickingTexture?.destroy()
-    this.pickingStagingBuffer?.destroy()
-  }
-
-  private ensurePickingTexture() {
-    const w = this.canvas.width
-    const h = this.canvas.height
-    if (w === 0 || h === 0) {
-      return
-    }
-    if (this.pickingTexture) {
-      if (this.pickingTexture.width === w && this.pickingTexture.height === h) {
-        return
-      }
-      this.pickingTexture.destroy()
-    }
-    this.pickingTexture = this.device.createTexture({
-      size: [w, h],
-      format: 'rgba8unorm',
-      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
-    })
-    this.pickingStagingBuffer ??= this.device.createBuffer({
-      size: 256,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-    })
-  }
-
-  private resetStagingBuffer() {
-    try {
-      this.pickingStagingBuffer?.destroy()
-    } catch {}
-    this.pickingStagingBuffer = this.device.createBuffer({
-      size: 256,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-    })
   }
 
   private getOrCreateRegion(regionKey: number) {

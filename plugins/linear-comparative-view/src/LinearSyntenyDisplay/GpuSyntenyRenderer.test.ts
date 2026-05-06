@@ -7,30 +7,11 @@ import type {
 } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
-// Extends MockHal so readPickingPixelAsync returns a manually-resolved promise,
-// letting tests control exactly when the GPU readback "completes".
-class ControlledMockHal extends MockHal {
-  private resolvers: ((val: number) => void)[] = []
-
-  override readPickingPixelAsync(_x: number, _y: number): Promise<number> {
-    return new Promise(resolve => this.resolvers.push(resolve))
-  }
-
-  resolveNextPick(value: number) {
-    this.resolvers.shift()?.(value)
-  }
-
-  pendingReadbacks() {
-    return this.resolvers.length
-  }
-}
-
 function makeMockCanvas(width = 800, height = 100): HTMLCanvasElement {
   return { width, height } as unknown as HTMLCanvasElement
 }
 
-function makeInstanceData(): SyntenyInstanceData {
-  const count = 1
+function makeInstanceData(count = 1): SyntenyInstanceData {
   const z = () => new Float32Array(count)
   const lo = (v: number) => new Float32Array(count).fill(v)
   return {
@@ -79,72 +60,85 @@ function makeState(
   return { maxOffScreenPx: 300, perTrack: new Map(perTrack) }
 }
 
-async function flushPromises() {
-  for (let i = 0; i < 5; i++) {
-    await Promise.resolve()
+// pickFeatureAtPoint uses ctx.isPointInPath; the OffscreenCanvas path is
+// patched to return true so the Flatbush bbox candidate (always one candidate
+// for our 1-instance fixtures) is accepted as a hit.
+function stubOffscreenIsPointInPath(returnValue: boolean) {
+  const original = (globalThis as unknown as { OffscreenCanvas?: unknown })
+    .OffscreenCanvas
+  ;(globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
+    class {
+      getContext() {
+        return {
+          beginPath() {},
+          closePath() {},
+          moveTo() {},
+          lineTo() {},
+          isPointInPath: () => returnValue,
+        }
+      }
+    }
+  return () => {
+    ;(globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
+      original
   }
 }
 
-describe('GpuSyntenyRenderer async pick — generation counter', () => {
-  test('in-flight pick result is delivered when not cancelled', async () => {
-    const hal = new ControlledMockHal(SYNTENY_PASSES)
-    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
-    renderer.uploadGeometry(0, makeInstanceData())
-    renderer.render(makeState([[0, makeParams()]]))
+describe('GpuSyntenyRenderer CPU pick', () => {
+  let restore: (() => void) | undefined
 
-    const onResult = jest.fn()
-    renderer.pick(50, 50, onResult)
-    expect(hal.pendingReadbacks()).toBe(1)
-
-    hal.resolveNextPick(0) // featureIndex 0
-    await flushPromises()
-
-    expect(onResult).toHaveBeenCalledWith({ key: 0, featureIndex: 0 })
+  afterEach(() => {
+    restore?.()
+    restore = undefined
   })
 
-  test('off-canvas pick calls onResult synchronously with undefined (no readback started)', () => {
-    const hal = new ControlledMockHal(SYNTENY_PASSES)
+  test('pick returns hit when the point falls inside a feature', () => {
+    restore = stubOffscreenIsPointInPath(true)
+    const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
     renderer.uploadGeometry(0, makeInstanceData())
     renderer.render(makeState([[0, makeParams()]]))
 
-    const onResult = jest.fn()
-    renderer.pick(-99999, -99999, onResult)
-
-    expect(hal.pendingReadbacks()).toBe(0)
-    expect(onResult).toHaveBeenCalledWith(undefined)
+    expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 0 })
   })
 
-  // Regression test for: mouse leaving canvas while a GPU readback is in
-  // flight causes hover state to re-set after handleMouseLeave clears it.
-  // Fix: each pick() call captures the current hoverGeneration; the async
-  // result is silently dropped if the generation has advanced by the time it
-  // resolves (i.e. a newer pick — the cancel-pick from handleMouseLeave —
-  // was queued in the meantime).
-  test('in-flight hover pick is discarded when a newer pick is queued before it resolves', async () => {
-    const hal = new ControlledMockHal(SYNTENY_PASSES)
+  test('pick returns undefined when the path does not match', () => {
+    restore = stubOffscreenIsPointInPath(false)
+    const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
     renderer.uploadGeometry(0, makeInstanceData())
     renderer.render(makeState([[0, makeParams()]]))
 
-    const onHover = jest.fn()
-    const onLeave = jest.fn()
+    expect(renderer.pick(50, 50)).toBeUndefined()
+  })
 
-    // Simulates dispatchHoverPick on mouse-move over a feature
-    renderer.pick(50, 50, onHover)
-    expect(hal.pendingReadbacks()).toBe(1)
+  test('off-canvas Y returns undefined without consulting the path', () => {
+    restore = stubOffscreenIsPointInPath(true)
+    const hal = new MockHal(SYNTENY_PASSES)
+    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    renderer.uploadGeometry(0, makeInstanceData())
+    renderer.render(makeState([[0, makeParams()]]))
 
-    // Simulates the cancel-pick dispatched by handleMouseLeave before the
-    // readback above has resolved.
-    renderer.pick(-99999, -99999, onLeave)
+    expect(renderer.pick(50, 9999)).toBeUndefined()
+  })
 
-    // Resolve the now-stale hover readback
-    hal.resolveNextPick(0)
-    await flushPromises()
+  test('pick before render returns undefined', () => {
+    restore = stubOffscreenIsPointInPath(true)
+    const hal = new MockHal(SYNTENY_PASSES)
+    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    renderer.uploadGeometry(0, makeInstanceData())
 
-    // The hover callback must NOT fire — its generation was superseded
-    expect(onHover).not.toHaveBeenCalled()
-    // The leave callback fires with undefined (no track at the off-canvas coord)
-    expect(onLeave).toHaveBeenCalledWith(undefined)
+    expect(renderer.pick(50, 50)).toBeUndefined()
+  })
+
+  test('pick after dispose returns undefined', () => {
+    restore = stubOffscreenIsPointInPath(true)
+    const hal = new MockHal(SYNTENY_PASSES)
+    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    renderer.uploadGeometry(0, makeInstanceData())
+    renderer.render(makeState([[0, makeParams()]]))
+    renderer.dispose()
+
+    expect(renderer.pick(50, 50)).toBeUndefined()
   })
 })

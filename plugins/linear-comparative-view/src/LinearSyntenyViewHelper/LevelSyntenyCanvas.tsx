@@ -77,13 +77,6 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
 }: {
   model: LinearSyntenyViewHelperModel
 }) {
-  console.warn('[LevelSyntenyCanvas] React render')
-  useEffect(() => {
-    console.warn('[LevelSyntenyCanvas] React MOUNTED')
-    return () => {
-      console.warn('[LevelSyntenyCanvas] React UNMOUNTING')
-    }
-  }, [])
   const { classes } = useStyles()
   const parentView = getContainingView(model) as unknown as ParentViewDuck
   const width = parentView.width
@@ -180,25 +173,15 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     if (!backend) {
       return
     }
-    const pickStart = performance.now()
-    console.warn('[hover] pick requested at', JSON.stringify(coords))
-    backend.pick(coords.x, coords.y, hit => {
-      const elapsed = performance.now() - pickStart
-      console.warn(
-        '[hover] pick callback fired, elapsed:',
-        elapsed.toFixed(1),
-        'ms, hit:',
-        hit ? JSON.stringify({ key: hit.key, featureIndex: hit.featureIndex }) : 'none',
-      )
-      const hitDisplay = hit ? model.displaysByKey.get(hit.key) : undefined
-      for (const display of model.linearSyntenyDisplays) {
-        if (isAlive(display)) {
-          display.setHoveredFeatureIdx(
-            display === hitDisplay ? hit!.featureIndex : -1,
-          )
-        }
+    const hit = backend.pick(coords.x, coords.y)
+    const hitDisplay = hit ? model.displaysByKey.get(hit.key) : undefined
+    for (const display of model.linearSyntenyDisplays) {
+      if (isAlive(display)) {
+        display.setHoveredFeatureIdx(
+          display === hitDisplay ? hit!.featureIndex : -1,
+        )
       }
-    })
+    }
   }
 
   function handleMouseMove(event: React.MouseEvent<HTMLCanvasElement>) {
@@ -218,15 +201,13 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   }
 
   function handleMouseLeave() {
-    console.warn('[LevelSyntenyCanvas] handleMouseLeave')
     for (const display of model.linearSyntenyDisplays) {
-      display.setHoveredFeatureIdx(-1)
+      if (isAlive(display)) {
+        display.setHoveredFeatureIdx(-1)
+      }
     }
     dragStartX.current = undefined
     lastDragX.current = undefined
-    // Advance the GPU pick generation so any in-flight async readback result
-    // is discarded rather than re-setting hover state after the mouse left.
-    dispatchHoverPick({ x: -99999, y: -99999 })
   }
 
   function handleMouseDown(event: React.MouseEvent) {

@@ -1,179 +1,35 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { syriColors } from './drawSyntenyUtils.ts'
+import { BEZIER_SEGMENTS, syriColors } from './drawSyntenyUtils.ts'
+import {
+  buildFeaturePath,
+  computeTransform,
+  isEdgeCulled,
+  pickFeatureAtPoint,
+  projectCorners,
+  widenCorners,
+} from './syntenyPickEngine.ts'
 
 import type {
   SyntenyBackend,
-  SyntenyPickResult,
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
+import type {
+  CanvasLike,
+  ComputedTransform,
+  PickIndex,
+} from './syntenyPickEngine.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
+export type { CanvasLike } from './syntenyPickEngine.ts'
+
 const PACKED_SYN = cssColorToABGR(syriColors.SYN)
-
-const CURVE_SEGMENTS = 16
-
-function hermiteY(t: number, height: number) {
-  return height * (1.5 * t * (1 - t) + t * t * t)
-}
-
-function smoothstep(t: number) {
-  return t * t * (3 - 2 * t)
-}
-
-function buildFeaturePath(
-  ctx: CanvasLike,
-  sx1: number,
-  sx2: number,
-  sx3: number,
-  sx4: number,
-  height: number,
-  isCurve: boolean,
-) {
-  ctx.beginPath()
-  if (isCurve) {
-    ctx.moveTo(sx1, 0)
-    for (let s = 1; s <= CURVE_SEGMENTS; s++) {
-      const t = s / CURVE_SEGMENTS
-      const st = smoothstep(t)
-      ctx.lineTo(sx1 + (sx4 - sx1) * st, hermiteY(t, height))
-    }
-    for (let s = CURVE_SEGMENTS; s >= 0; s--) {
-      const t = s / CURVE_SEGMENTS
-      const st = smoothstep(t)
-      ctx.lineTo(sx2 + (sx3 - sx2) * st, hermiteY(t, height))
-    }
-  } else {
-    ctx.moveTo(sx1, 0)
-    ctx.lineTo(sx4, height)
-    ctx.lineTo(sx3, height)
-    ctx.lineTo(sx2, 0)
-  }
-  ctx.closePath()
-}
-
-interface ComputedTransform {
-  bpPerPxInv0: number
-  bpPerPxInv1: number
-  viewBp0: number
-  viewBp1: number
-}
-
-function computeTransform(params: SyntenyTrackRenderParams): ComputedTransform {
-  return {
-    bpPerPxInv0: 1 / params.bpPerPx0,
-    bpPerPxInv1: 1 / params.bpPerPx1,
-    // SYNC: matches viewBp{0,1} computation in GpuSyntenyRenderer.writeUniforms
-    // and the Uniforms struct in syntenyTypes.slang. Padded-bp at canvas left:
-    // (cumBp − viewBp)/bpPerPx + pad → screen-X. See ADR-018.
-    viewBp0: params.offsetPx0 * params.bpPerPx0,
-    viewBp1: params.offsetPx1 * params.bpPerPx1,
-  }
-}
-
-interface ProjectedCorners {
-  sx1: number
-  sx2: number
-  sx3: number
-  sx4: number
-}
-
-// SYNC: matches hpCornerScreenX in syntenyTypes.slang. Canvas2D operates in
-// Float64 so we don't need the hp-math hi/lo separation, but must reproduce
-// the same arithmetic to keep visuals identical.
-function projectCorners(
-  data: SyntenyInstanceData,
-  i: number,
-  t: ComputedTransform,
-): ProjectedCorners {
-  const padTop = data.padTops[i]!
-  const padBottom = data.padBottoms[i]!
-  const bp1 = data.bp1Hi[i]! + data.bp1Lo[i]!
-  const bp2 = data.bp2Hi[i]! + data.bp2Lo[i]!
-  const bp3 = data.bp3Hi[i]! + data.bp3Lo[i]!
-  const bp4 = data.bp4Hi[i]! + data.bp4Lo[i]!
-  return {
-    sx1: (bp1 - t.viewBp0) * t.bpPerPxInv0 + padTop,
-    sx2: (bp2 - t.viewBp0) * t.bpPerPxInv0 + padTop,
-    sx3: (bp3 - t.viewBp1) * t.bpPerPxInv1 + padBottom,
-    sx4: (bp4 - t.viewBp1) * t.bpPerPxInv1 + padBottom,
-  }
-}
-
-// SYNC: matches the minW computation in syntenyFill.slang's vs_main. Both
-// backends widen sub-pixel trapezoids the same way so on-screen visual
-// density (and SVG export) stay consistent. If you change the formula here,
-// change it there too — there's no shared source.
-function widenCorners(c: ProjectedCorners, height: number): ProjectedCorners {
-  const xTopMid = (c.sx1 + c.sx2) * 0.5
-  const xBotMid = (c.sx3 + c.sx4) * 0.5
-  const slope = Math.abs(xBotMid - xTopMid) / Math.max(height, 1)
-  const minW = Math.min(1 + Math.max(0, slope - 1) * 0.25, 3)
-  let { sx1, sx2, sx3, sx4 } = c
-  if (Math.abs(sx2 - sx1) < minW) {
-    const half = (sx1 < sx2 ? minW : -minW) * 0.5
-    sx1 = xTopMid - half
-    sx2 = xTopMid + half
-  }
-  if (Math.abs(sx4 - sx3) < minW) {
-    const half = (sx3 < sx4 ? minW : -minW) * 0.5
-    sx3 = xBotMid - half
-    sx4 = xBotMid + half
-  }
-  return { sx1, sx2, sx3, sx4 }
-}
-
-// Per-edge cull (not combined AABB): drop the instance when EITHER the top
-// edge OR the bottom edge is fully off-screen. Matches isCulled() in
-// syntenyTypes.slang so Canvas2D and GPU honor the maxOffScreenPx slider
-// the same way; an AABB-only check would keep drawing trapezoids spanning
-// huge horizontal travel into off-screen space.
-function isEdgeCulled(
-  c: ProjectedCorners,
-  leftLimit: number,
-  rightLimit: number,
-) {
-  const topMin = Math.min(c.sx1, c.sx2)
-  const topMax = Math.max(c.sx1, c.sx2)
-  const botMin = Math.min(c.sx3, c.sx4)
-  const botMax = Math.max(c.sx3, c.sx4)
-  return (
-    topMax < leftLimit ||
-    topMin > rightLimit ||
-    botMax < leftLimit ||
-    botMin > rightLimit
-  )
-}
-
-// Subset of the 2D canvas surface the draw loop needs. Both
-// CanvasRenderingContext2D and SvgCanvas (packages/core/src/util/SvgCanvas.ts)
-// satisfy this, so renderSvg.tsx reuses this exact draw path.
-export interface CanvasLike {
-  fillStyle: string | CanvasGradient | CanvasPattern
-  strokeStyle: string | CanvasGradient | CanvasPattern
-  lineWidth: number
-  setTransform(
-    a: number,
-    b: number,
-    c: number,
-    d: number,
-    e: number,
-    f: number,
-  ): void
-  beginPath(): void
-  closePath(): void
-  moveTo(x: number, y: number): void
-  lineTo(x: number, y: number): void
-  fill(): void
-  stroke(): void
-}
 
 function drawInstances(
   ctx: CanvasLike,
   data: SyntenyInstanceData,
-  transform: ReturnType<typeof computeTransform>,
+  transform: ComputedTransform,
   alpha: number,
   height: number,
   minAlignmentLength: number,
@@ -289,23 +145,6 @@ export function drawSyntenyTrack(
   }
 }
 
-interface PickIndex {
-  flatbush: Flatbush
-  transform: ComputedTransform
-  height: number
-  leftLimit: number
-  rightLimit: number
-}
-
-function transformsEqual(a: ComputedTransform, b: ComputedTransform) {
-  return (
-    a.bpPerPxInv0 === b.bpPerPxInv0 &&
-    a.bpPerPxInv1 === b.bpPerPxInv1 &&
-    a.viewBp0 === b.viewBp0 &&
-    a.viewBp1 === b.viewBp1
-  )
-}
-
 export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
@@ -319,18 +158,11 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
-    console.warn(
-      '[Canvas2DSyntenyRenderer] constructor called, canvas size:',
-      canvas.width,
-      'x',
-      canvas.height,
-    )
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('Canvas 2D context not available')
     }
     this.ctx = ctx
-    console.warn('[Canvas2DSyntenyRenderer] Canvas 2D context obtained')
   }
 
   resize(width: number, height: number) {
@@ -364,7 +196,6 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     const logicalW = this.canvas.width / dpr
     const logicalH = this.canvas.height / dpr
 
-    const t0 = performance.now()
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, logicalW, logicalH)
@@ -379,113 +210,23 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     }
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    const elapsed = performance.now() - t0
-    console.warn(
-      '[hover] Canvas2DSyntenyRenderer.render elapsed:',
-      elapsed.toFixed(1),
-      'ms, instanceCounts:',
-      JSON.stringify([...this.regions.values()].map(d => d.instanceCount)),
-    )
     return true
   }
 
-  pick(
-    x: number,
-    y: number,
-    onResult?: (result: SyntenyPickResult | undefined) => void,
-  ): SyntenyPickResult | undefined {
+  pick(x: number, y: number) {
     const state = this.lastState
     if (!state) {
-      onResult?.(undefined)
       return undefined
     }
-
-    const ctx = this.ctx
-    const leftLimit = -state.maxOffScreenPx
-    const rightLimit = this.canvas.width / this.dpr + state.maxOffScreenPx
-
-    // Iterate tracks in reverse draw order so top-most wins.
-    let topHit: SyntenyPickResult | undefined
-    const entries = Array.from(state.perTrack)
-    for (let ei = entries.length - 1; ei >= 0; ei--) {
-      const [key, params] = entries[ei]!
-      const data = this.regions.get(key)
-      if (!data || data.instanceCount === 0) {
-        continue
-      }
-      const { yTop, height, minAlignmentLength } = params
-      if (y < yTop || y > yTop + height) {
-        continue
-      }
-      const localY = y - yTop
-      const transform = computeTransform(params)
-
-      let idx = this.pickIndices.get(key)
-      if (
-        !idx ||
-        !transformsEqual(idx.transform, transform) ||
-        idx.height !== height ||
-        idx.leftLimit !== leftLimit ||
-        idx.rightLimit !== rightLimit
-      ) {
-        const flatbush = new Flatbush(data.instanceCount)
-        for (let i = 0; i < data.instanceCount; i++) {
-          const c = projectCorners(data, i, transform)
-          if (isEdgeCulled(c, leftLimit, rightLimit)) {
-            // Inverted box never matches any search
-            flatbush.add(0, 0, -1, -1)
-            continue
-          }
-          const w = widenCorners(c, height)
-          flatbush.add(
-            Math.min(w.sx1, w.sx2, w.sx3, w.sx4),
-            0,
-            Math.max(w.sx1, w.sx2, w.sx3, w.sx4),
-            height,
-          )
-        }
-        flatbush.finish()
-        idx = { flatbush, transform, height, leftLimit, rightLimit }
-        this.pickIndices.set(key, idx)
-      }
-
-      // Sort descending so the highest instance index (last drawn = topmost) wins.
-      const candidates = idx.flatbush
-        .search(x, localY, x, localY)
-        .toSorted((a, b) => b - a)
-      for (let ci = 0, l = candidates.length; ci < l; ci++) {
-        const i = candidates[ci]!
-        if (data.queryTotalLengths[i]! < minAlignmentLength) {
-          continue
-        }
-        if (((data.colors[i]! >>> 24) & 0xff) / 255 < 0.01) {
-          continue
-        }
-
-        const c = projectCorners(data, i, transform)
-        const w = widenCorners(c, height)
-        buildFeaturePath(
-          ctx,
-          w.sx1,
-          w.sx2,
-          w.sx3,
-          w.sx4,
-          height,
-          params.drawCurves,
-        )
-
-        if (ctx.isPointInPath(x, localY)) {
-          topHit = { key, featureIndex: i }
-          break
-        }
-      }
-      if (topHit) {
-        break
-      }
-    }
-
-    onResult?.(topHit)
-    return topHit
+    return pickFeatureAtPoint({
+      ctx: this.ctx,
+      state,
+      regions: this.regions,
+      pickIndices: this.pickIndices,
+      canvasLogicalWidth: this.canvas.width / this.dpr,
+      x,
+      y,
+    })
   }
 
   dispose() {

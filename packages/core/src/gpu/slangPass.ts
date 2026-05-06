@@ -36,7 +36,6 @@ export interface SlangPassOpts {
   topology?: PassDescriptor['topology']
   blend?: boolean
   blendState?: BlendState
-  picking?: boolean
   textures?: TextureBinding[]
   wgslFragmentEntry?: string
   glslFragmentOverride?: string
@@ -67,7 +66,6 @@ export function slangPass(opts: SlangPassOpts): PassDescriptor {
     blendState: opts.blendState,
     glAttributes: opts.bufferAttributes ?? opts.mod.GL_ATTRIBUTES,
     topology: opts.topology,
-    picking: opts.picking,
     textures: opts.textures ?? opts.mod.TEXTURES,
     wgslFragmentEntry: opts.wgslFragmentEntry,
     glslFragmentOverride: opts.glslFragmentOverride,

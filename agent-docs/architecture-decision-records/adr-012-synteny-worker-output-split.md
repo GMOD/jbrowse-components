@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted
+Accepted. Partially superseded: picking is now CPU-side
+(`syntenyPickEngine.ts`, Flatbush + `isPointInPath`). The `+1`
+picking-ID offset and picking framebuffer no longer exist; the rest of
+this ADR (worker emits geometry only, main thread recomputes colors)
+still holds.
 
 ## Context
 

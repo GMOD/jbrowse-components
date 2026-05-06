@@ -93,11 +93,6 @@ export class WebGL2Hal implements GpuHal {
   private passes: Map<string, PassState>
   private regions = new Map<number, RegionState>()
   private ubo: WebGLBuffer
-  private pickingFbo: WebGLFramebuffer | null = null
-  private pickingTex: WebGLTexture | null = null
-  private pickingW = 0
-  private pickingH = 0
-  private pickPixel = new Uint8Array(4)
   private debug = false
   private instanceId = 0
   private firstDrawSeen = new Set<string>()
@@ -438,79 +433,6 @@ export class WebGL2Hal implements GpuHal {
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
   }
 
-  drawPickingPass(
-    passId: string,
-    regionKey: number,
-    instanceCount?: number,
-    bufferPassId?: string,
-  ) {
-    const gl = this.gl
-    const pass = this.passes.get(passId)
-    if (!pass) {
-      return
-    }
-    const regionBuf = this.regions
-      .get(regionKey)
-      ?.buffers.get(bufferPassId ?? passId)
-    if (!regionBuf || regionBuf.count === 0) {
-      return
-    }
-
-    this.ensurePickingFbo()
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
-    gl.viewport(0, 0, this.pickingW, this.pickingH)
-    gl.clearColor(0, 0, 0, 0)
-    gl.clear(gl.COLOR_BUFFER_BIT)
-    gl.disable(gl.BLEND)
-
-    gl.useProgram(pass.program)
-    gl.bindVertexArray(pass.vao)
-    this.bindAttributes(pass, regionBuf.vbo)
-    this.bindTextures(pass)
-    gl.drawArraysInstanced(
-      gl.TRIANGLES,
-      0,
-      pass.descriptor.verticesPerInstance,
-      instanceCount ?? regionBuf.count,
-    )
-    gl.bindVertexArray(null)
-
-    gl.enable(gl.BLEND)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-  }
-
-  readPickingPixel(x: number, y: number) {
-    const gl = this.gl
-    if (!this.pickingFbo) {
-      return -1
-    }
-    const dpr = getDpr()
-    const px = Math.floor(x * dpr)
-    const py = Math.floor(y * dpr)
-    if (px < 0 || px >= this.pickingW || py < 0 || py >= this.pickingH) {
-      return -1
-    }
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
-    gl.readPixels(
-      px,
-      this.pickingH - py - 1,
-      1,
-      1,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      this.pickPixel,
-    )
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    const r = this.pickPixel[0]!
-    const g = this.pickPixel[1]!
-    const b = this.pickPixel[2]!
-    return r === 0 && g === 0 && b === 0 ? -1 : r + g * 256 + b * 65536 - 1
-  }
-
-  async readPickingPixelAsync(x: number, y: number) {
-    return this.readPickingPixel(x, y)
-  }
-
   dispose() {
     console.error(
       `[WebGL2Hal #${this.instanceId}] dispose() CALLED, already disposed=${this.disposed}`,
@@ -556,10 +478,6 @@ export class WebGL2Hal implements GpuHal {
     }
     this.passes.clear()
     gl.deleteBuffer(this.ubo)
-    if (this.pickingFbo) {
-      gl.deleteFramebuffer(this.pickingFbo)
-      gl.deleteTexture(this.pickingTex)
-    }
 
     // Firefox appears to treat WEBGL_lose_context.loseContext() as a
     // driver-wide reset: calling it on one disposed HAL synchronously
@@ -567,49 +485,6 @@ export class WebGL2Hal implements GpuHal {
     // Chrome only needs this as a test-suite optimisation; for production we
     // let the browser reclaim the context when the canvas is GC'd. If we
     // need explicit release again, gate it on navigator.userAgent.
-  }
-
-  private ensurePickingFbo() {
-    const gl = this.gl
-    const w = this.canvas.width
-    const h = this.canvas.height
-    if (this.pickingW === w && this.pickingH === h && this.pickingFbo) {
-      return
-    }
-    if (this.pickingFbo) {
-      gl.deleteFramebuffer(this.pickingFbo)
-      gl.deleteTexture(this.pickingTex)
-    }
-    if (w === 0 || h === 0) {
-      return
-    }
-    this.pickingTex = gl.createTexture()!
-    gl.bindTexture(gl.TEXTURE_2D, this.pickingTex)
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA8,
-      w,
-      h,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      null,
-    )
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-    this.pickingFbo = gl.createFramebuffer()!
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
-    gl.framebufferTexture2D(
-      gl.FRAMEBUFFER,
-      gl.COLOR_ATTACHMENT0,
-      gl.TEXTURE_2D,
-      this.pickingTex,
-      0,
-    )
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    this.pickingW = w
-    this.pickingH = h
   }
 
   private getOrCreateRegion(regionKey: number) {

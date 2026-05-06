@@ -37,10 +37,6 @@ export interface SyntenyBackend {
   uploadGeometry(key: number, data: SyntenyInstanceData): void
   deleteGeometry(key: number): void
   render(state: SyntenyRenderState): boolean
-  pick(
-    x: number,
-    y: number,
-    onResult?: (result: SyntenyPickResult | undefined) => void,
-  ): SyntenyPickResult | undefined
+  pick(x: number, y: number): SyntenyPickResult | undefined
   dispose(): void
 }

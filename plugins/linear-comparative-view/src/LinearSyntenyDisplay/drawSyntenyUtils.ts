@@ -7,6 +7,9 @@ import {
 
 import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
 
+// SYNC: must match BEZIER_SEGMENTS in syntenyTypes.slang
+export const BEZIER_SEGMENTS = 16
+
 // SYNC: keep in sync with util.ts in dotplot-view
 export function hashString(str: string) {
   let hash = 0

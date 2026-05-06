@@ -156,14 +156,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.statusMessage = msg
       },
       setHoveredFeatureIdx(idx: number) {
-        console.warn(
-          '[hover] setHoveredFeatureIdx called, idx:',
-          idx,
-          'prev:',
-          self.hoveredFeatureIdx,
-          'changed:',
-          idx !== self.hoveredFeatureIdx,
-        )
         self.hoveredFeatureIdx = idx
       },
       setClickedFeatureIdx(idx: number) {

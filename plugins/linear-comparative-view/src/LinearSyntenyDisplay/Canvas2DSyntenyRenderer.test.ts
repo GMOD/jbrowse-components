@@ -288,20 +288,6 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(renderer.pick(50, 50)).toBeUndefined()
   })
 
-  test('pick invokes callback with hit', () => {
-    const { canvas, ctx } = createMockCanvas()
-    canvas.width = 800
-    canvas.height = 100
-    ctx.isPointInPath = jest.fn(() => true)
-    const renderer = new Canvas2DSyntenyRenderer(canvas)
-    renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
-    renderer.render(makeState([[0, makeParams()]]))
-    const cb = jest.fn()
-    renderer.pick(50, 50, cb)
-    expect(cb).toHaveBeenCalledWith({ key: 0, featureIndex: 0 })
-  })
-
   test('pick returns last feature when multiple overlap (top-most wins)', () => {
     const { canvas, ctx } = createMockCanvas()
     canvas.width = 800

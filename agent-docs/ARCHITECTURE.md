@@ -481,8 +481,7 @@ and GLSL ES 3.00 (WebGL2) by `scripts/build-shaders.ts`. See ADR-005.
 Codegen emits `<name>.generated.ts`.
 
 **Wire-up:** `slangPass()` turns a generated module into a `PassDescriptor`,
-with overrides for `topology`, `blendState`, `textures`, `picking`, and buffer
-sharing.
+with overrides for `topology`, `blendState`, `textures`, and buffer sharing.
 
 Authoring conventions and gotchas: ADR-005.
 

@@ -106,29 +106,6 @@ export class MockHal implements GpuHal {
     this.record('endFrame')
   }
 
-  drawPickingPass(
-    passId: string,
-    regionKey: number,
-    instanceCount?: number,
-    bufferPassId?: string,
-  ) {
-    this.record(
-      'drawPickingPass',
-      passId,
-      regionKey,
-      instanceCount,
-      bufferPassId,
-    )
-  }
-
-  readPickingPixel(_x: number, _y: number) {
-    return -1
-  }
-
-  async readPickingPixelAsync(_x: number, _y: number) {
-    return -1
-  }
-
   setScissor(x: number, y: number, w: number, h: number) {
     this.record('setScissor', x, y, w, h)
   }

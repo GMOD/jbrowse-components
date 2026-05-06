@@ -247,23 +247,10 @@ export function linearSyntenyViewHelperModelFactory(
             render: b => {
               const state = self.syntenyRenderState
               if (!state) {
-                console.warn(
-                  '[LevelSyntenyCanvas render] syntenyRenderState is undefined, linearSyntenyDisplays:',
-                  self.linearSyntenyDisplays.length,
-                )
                 return false
               }
-              const renderStart = performance.now()
               b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
-              const result = b.render(state)
-              const elapsed = performance.now() - renderStart
-              console.warn(
-                '[hover] render autorun fired, b.render elapsed:',
-                elapsed.toFixed(1),
-                'ms, perTrack:',
-                state.perTrack.size,
-              )
-              return result
+              return b.render(state)
             },
           })
         },
