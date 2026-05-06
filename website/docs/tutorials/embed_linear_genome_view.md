@@ -356,6 +356,30 @@ Notes about the above config:
   bamFile+'.bai'. The full configuration schema allows handling cases where the
   bai is in a different place. Our auto-generated config docs have more info.
 
+## Using the component in a React app
+
+If you are using `@jbrowse/react-linear-genome-view2` as an NPM package in a
+React app (rather than the UMD script tag approach above), import
+`useCreateViewState` instead of calling `createViewState` directly in your
+component body. `createViewState` is expensive and should not run on every
+render:
+
+```js
+import {
+  useCreateViewState,
+  JBrowseLinearGenomeView,
+} from '@jbrowse/react-linear-genome-view2'
+
+function GenomeBrowser() {
+  const state = useCreateViewState({ assembly, tracks, location: '...' })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+```
+
+The hook creates the view state once on mount and keeps it stable across
+re-renders, so panning, zooming, and parent state changes do not reset the
+browser.
+
 ## Further reading
 
 This tutorial above is just a simple example to get you started. There is much

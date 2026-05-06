@@ -246,3 +246,26 @@ This guide uses ESM modules (exporting a plain class), which all modern browsers
 support. For legacy browser compatibility you can also use UMD modules — see
 [this example](https://github.com/GMOD/jbrowse-components/blob/76ce3660c9192f071d23e2478c756fff42ec533a/test_data/volvox/umd_plugin.js#L1-L127),
 which defines a specific global variable rather than exporting a class.
+
+## Note: Plugins in embedded React components
+
+This no-build guide targets jbrowse-web, which loads plugins via `plugins.json`.
+If you are using an embedded component (`@jbrowse/react-app2` or
+`@jbrowse/react-linear-genome-view2`) the approach is different: define your
+plugin as a class and pass it in the `plugins` array to `createViewState`:
+
+```js
+import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
+
+class MyPlugin {
+  name = 'MyPlugin'
+  install(pluginManager) { /* ... */ }
+  configure() {}
+}
+
+const state = createViewState({ config, plugins: [MyPlugin] })
+```
+
+See the
+[Using Plugins](https://jbrowse.org/storybook/app/main/?path=/docs/using-plugins--docs)
+story in the `@jbrowse/react-app2` storybook for a live example.

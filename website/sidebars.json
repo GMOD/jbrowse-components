@@ -23,7 +23,8 @@
       "items": [
         "tutorials/analyze_trio",
         "tutorials/sv_visualization_cgiab",
-        "tutorials/synteny_visualization"
+        "tutorials/synteny_visualization",
+        "tutorials/methylation"
       ]
     },
     {

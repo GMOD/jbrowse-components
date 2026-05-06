@@ -1,9 +1,14 @@
+// in your code:
+// import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 import { getVolvoxConfig } from './util.ts'
-import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
+import {
+  JBrowseLinearGenomeView,
+  useCreateViewState,
+} from '../../src/index.ts'
 
 export const WithOutsideStyling = () => {
   const { assembly, tracks } = getVolvoxConfig()
-  const state = createViewState({
+  const state = useCreateViewState({
     assembly,
     tracks,
     location: 'ctgA:1105..1221',

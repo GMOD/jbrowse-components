@@ -12,6 +12,14 @@ https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/
 See also our FAQ entry on embedded components
 http://jbrowse.org/jb2/docs/faq/#embedded-views-versus-full-jbrowse-app
 
+## Choosing the right package
+
+| Goal | Package |
+| --- | --- |
+| Full JBrowse UI (multiple views, synteny, file import dialogs) | [`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2) — [Storybook](https://jbrowse.org/storybook/app/main/) |
+| Single linear genome view, API-controlled data | [`@jbrowse/react-linear-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2) — [Storybook](https://jbrowse.org/storybook/lgv/main/) |
+| Static deployment with no build step (script tag) | [jbrowse-web UMD bundle](/docs/tutorials/embed_linear_genome_view) |
+
 ## @jbrowse/react-app2
 
 This component embodies the entire jbrowse-web application as a NPM installable

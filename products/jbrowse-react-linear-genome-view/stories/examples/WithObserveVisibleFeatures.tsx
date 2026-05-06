@@ -5,14 +5,17 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
 
 import { getVolvoxConfig } from './util.ts'
-import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
+import {
+  JBrowseLinearGenomeView,
+  useCreateViewState,
+} from '../../src/index.ts'
 
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // in your code
-// import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+// import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 // specifically coded to fetch from the first track (view.tracks[0])
 const VisibleFeatures = observer(function VisibleFeatures({
@@ -73,12 +76,21 @@ const VisibleFeatures = observer(function VisibleFeatures({
 
 export const WithObserveVisibleFeatures = () => {
   const { assembly, tracks } = getVolvoxConfig()
-  const state = createViewState({
+  const state = useCreateViewState({
     assembly,
     tracks,
-    location: 'ctgA:1105..1221',
+    defaultSession: {
+      name: 'My session',
+      view: {
+        type: 'LinearGenomeView',
+        init: {
+          loc: 'ctgA:1105..1221',
+          assembly: 'volvox',
+          tracks: ['volvox_cram'],
+        },
+      },
+    },
   })
-  state.session.view.showTrack('volvox_cram')
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />

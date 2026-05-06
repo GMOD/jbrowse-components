@@ -4,6 +4,8 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import { addRelativeUris } from './util.ts'
 import config from '../../public/test_data/volvox/config.json' with { type: 'json' }
+import { useState } from 'react'
+
 import { JBrowseApp, createViewState } from '../../src/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -57,10 +59,12 @@ class HighlightRegionPlugin extends Plugin {
 }
 
 export const EmbeddedPlugin = () => {
-  const state = createViewState({
-    config,
-    plugins: [HighlightRegionPlugin],
-  })
+  const [state] = useState(() =>
+    createViewState({
+      config,
+      plugins: [HighlightRegionPlugin],
+    }),
+  )
 
   return (
     <div>

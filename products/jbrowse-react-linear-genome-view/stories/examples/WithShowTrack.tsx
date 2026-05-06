@@ -1,19 +1,18 @@
 // in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
+// import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import { useState } from 'react'
+
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 export const WithShowTrack = () => {
-  const { assembly, tracks } = getVolvoxConfig()
-  const state = createViewState({
-    assembly,
-    tracks,
-    location: 'ctgA:1105..1221',
+  const [state] = useState(() => {
+    const { assembly, tracks } = getVolvoxConfig()
+    const s = createViewState({ assembly, tracks, location: 'ctgA:1105..1221' })
+    // full reference: https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-showtrack
+    s.session.view.showTrack('volvox-long-reads-sv-bam')
+    return s
   })
-  // this is the 'showTrack' method on the linear genome view
-  // full reference https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-showtrack
-  state.session.view.showTrack('volvox-long-reads-sv-bam')
-
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />

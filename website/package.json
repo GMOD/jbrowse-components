@@ -13,6 +13,8 @@
     "serve": "docusaurus serve",
     "gen-user-guide": "node --experimental-strip-types scripts/lint-user-guide.ts",
     "lint-docs": "node --experimental-strip-types scripts/lint-user-guide.ts --check",
+    "screenshots": "node --experimental-strip-types scripts/generate-screenshots.ts",
+    "screenshots:headed": "node --experimental-strip-types scripts/generate-screenshots.ts --headed",
     "typecheck": "tsc",
     "predeploy": "pnpm build",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/",
@@ -40,6 +42,7 @@
     "rimraf": "^6.1.3",
     "typescript": "^6.0.3"
   },
+  "type": "module",
   "browserslist": {
     "production": [
       ">0.5%",

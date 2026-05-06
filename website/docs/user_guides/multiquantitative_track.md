@@ -48,3 +48,55 @@ There are several ways to create multi-quantitative tracks from scratch.
 
 <Figure caption="Using the add track widget, you can use the select dropdown to access alternative 'add track workflows' including the multi-wiggle add track workflow. In the multiwiggle add track workflow, you can paste a list of bigWig file URLs, or open up multiple bigwig files from your computer." src="/img/multiwig/addtrack.png" />
 <Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget lets you create a multi-wiggle track from your selection." src="/img/multiwig/trackselector.png" />
+
+## Loading bedMethyl as a multi-quantitative track
+
+[modkit](https://github.com/nanoporetech/modkit) pileup produces a
+[bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) file — a
+tab-separated BED format where each row reports the methylation fraction at a
+single CpG position for one modification type (e.g. 5mC or 5hmC). Because the
+format is a BED file it can be loaded with `BedTabixAdapter`, and because each
+modification type produces its own score column the file maps naturally to a
+`MultiQuantitativeTrack`.
+
+### Generating the file
+
+```bash
+modkit pileup sample.bam output.bed --ref reference.fa --preset traditional
+bgzip output.bed
+tabix -p bed output.bed.gz
+```
+
+The `--preset traditional` flag produces 5mC calls (5hmC is combined into the
+5mC fraction). Omit it for separate 5mC and 5hmC rows.
+
+### Config example
+
+```json
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "sample_modkit",
+  "name": "CpG methylation (modkit)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "bedGzLocation": {
+      "uri": "https://yourhost/sample_modkit.bed.gz"
+    },
+    "index": {
+      "location": {
+        "uri": "https://yourhost/sample_modkit.bed.gz.tbi"
+      }
+    }
+  }
+}
+```
+
+JBrowse reads the `score` column (column 11 in bedMethyl, the methylation
+fraction 0–1) and the `name` column (column 4, the modification code such as
+`m` for 5mC or `h` for 5hmC) as the subtrack source label.
+
+The COLO829 tumor modkit bedMethyl file is included in the
+[demo config](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json)
+as the track **"COLO829_tumor.ht_modkit.bed (as MultiQuantitativeTrack)"** under
+the Methylation category (assembly hg38, chr21).

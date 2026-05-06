@@ -8,8 +8,6 @@ import {
   HorizontallyFlippedViaButton,
   HorizontallyFlippedViaDisplayedRegions,
   WithMultipleDisplayedRegionsFlipped,
-  WithObserveVisibleRegions,
-  WithObserveVisibleFeatures,
   WithDisableZoomAndSideScroll,
   WithOutsideStyling,
 } from './JBrowseLinearGenomeView.stories'
@@ -87,21 +85,10 @@ the programmatic equivalent of the built-in "Collapse introns" right-click actio
 
 <Story of={WithMultipleDisplayedRegionsFlipped} />
 
-## Observing the visible region
+## Observing MobX state
 
-Use MobX's `observer` on a component that reads `view.coarseDynamicBlocks` to
-reactively track what region is currently visible. `coarseDynamicBlocks` is
-debounced, so it doesn't update on every pixel of scroll.
-
-<Story of={WithObserveVisibleRegions} />
-
-## Observing visible features
-
-You can call RPC methods directly against the session's `rpcManager` to fetch
-features for the currently visible region. The example below reads from the
-first track and displays a table that updates as you scroll.
-
-<Story of={WithObserveVisibleFeatures} />
+See [Observing MobX State](?path=/docs/observing-mobx-state--docs) for full
+coverage of `observer`, `coarseDynamicBlocks`, and RPC feature fetching.
 
 ## Disabling zoom and scroll via plugin
 

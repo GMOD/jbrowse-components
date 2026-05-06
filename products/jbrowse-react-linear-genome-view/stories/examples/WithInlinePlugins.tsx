@@ -3,13 +3,16 @@
 import Plugin from '@jbrowse/core/Plugin'
 
 import { getVolvoxConfig } from './util.ts'
-import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
+import {
+  JBrowseLinearGenomeView,
+  useCreateViewState,
+} from '../../src/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 // in your code
-// import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+// import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 // I call this small class a 'locally defined' plugin
 class HighlightRegionPlugin extends Plugin {
@@ -60,7 +63,7 @@ class HighlightRegionPlugin extends Plugin {
 
 export const WithInlinePlugins = () => {
   const { assembly, tracks } = getVolvoxConfig()
-  const state = createViewState({
+  const state = useCreateViewState({
     assembly,
     plugins: [HighlightRegionPlugin],
     tracks,

@@ -77,3 +77,12 @@ Click a feature in the circular view, or the triangle dropdown on any table row,
 to open the breakpoint split view for that variant.
 
 <Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)." src="/img/breakpoint_split_view.png" />
+
+:::info Loading alignment tracks
+
+The breakpoint split view opens with no tracks loaded. After it opens, use the
+track selector (the tracks button in the view header) to add your alignment
+track(s) — the read arcs and splines connecting supporting reads will then
+appear automatically.
+
+:::

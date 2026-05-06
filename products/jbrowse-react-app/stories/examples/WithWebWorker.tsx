@@ -1,5 +1,7 @@
 // replace with this in your code:
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
+import { useState } from 'react'
+
 import volvoxConfig from '../../public/test_data/volvox/config.json' with { type: 'json' }
 import { JBrowseApp, createViewState } from '../../src/index.ts'
 // replace with this in your code:
@@ -7,7 +9,7 @@ import { JBrowseApp, createViewState } from '../../src/index.ts'
 import makeWorkerInstance from '../../src/makeWorkerInstance.ts'
 
 export const WithWebWorker = () => {
-  const state = createViewState({
+  const [state] = useState(() => createViewState({
     config: {
       ...volvoxConfig,
       configuration: {
@@ -30,7 +32,7 @@ export const WithWebWorker = () => {
       },
     },
     makeWorkerInstance,
-  })
+  }))
 
   return (
     <div>
