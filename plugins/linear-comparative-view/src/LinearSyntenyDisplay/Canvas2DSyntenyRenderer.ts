@@ -65,6 +65,9 @@ function computeTransform(params: SyntenyTrackRenderParams): ComputedTransform {
   return {
     bpPerPxInv0: 1 / params.bpPerPx0,
     bpPerPxInv1: 1 / params.bpPerPx1,
+    // SYNC: matches viewBp{0,1} computation in GpuSyntenyRenderer.writeUniforms
+    // and the Uniforms struct in syntenyTypes.slang. Padded-bp at canvas left:
+    // (cumBp − viewBp)/bpPerPx + pad → screen-X. See ADR-018.
     viewBp0: params.offsetPx0 * params.bpPerPx0,
     viewBp1: params.offsetPx1 * params.bpPerPx1,
   }
@@ -361,14 +364,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     const logicalW = this.canvas.width / dpr
     const logicalH = this.canvas.height / dpr
 
-    console.warn(
-      '[Canvas2DSyntenyRenderer] render called, logicalW:',
-      logicalW,
-      'logicalH:',
-      logicalH,
-      'tracks:',
-      state.perTrack.size,
-    )
+    const t0 = performance.now()
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, logicalW, logicalH)
@@ -383,6 +379,13 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     }
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    const elapsed = performance.now() - t0
+    console.warn(
+      '[hover] Canvas2DSyntenyRenderer.render elapsed:',
+      elapsed.toFixed(1),
+      'ms, instanceCounts:',
+      JSON.stringify([...this.regions.values()].map(d => d.instanceCount)),
+    )
     return true
   }
 

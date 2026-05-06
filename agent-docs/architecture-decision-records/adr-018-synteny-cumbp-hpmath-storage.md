@@ -95,6 +95,14 @@ The two ADR-010 concerns about per-region addressing don't apply here:
    per track (covering all instance buffers). The per-region projection is
    baked into each instance at fetch time.
 
+This is a **memory trade**, not an elimination. A per-region uniform table
+of 100 regions costs ~400 B; per-instance `pad` at 1M instances costs ~8 MB.
+We've replicated per-region addressing across instances rather than removing
+it. For typical synteny (≤ a few million instances) this is well under the
+GPU buffer budget. For pathologically dense self-comparisons (chr1×chr1 PAF
+chained at high resolution) it could reach 30+ MB, still within budget but
+worth knowing if buffer pressure ever becomes a constraint.
+
 ## What did not change
 
 - **CIGAR walker** (`visitCigarRenderedSegments`) still operates in pixel
@@ -112,10 +120,13 @@ The two ADR-010 concerns about per-region addressing don't apply here:
   and reused for the top edge (corners 1, 2) and bottom edge (corners 3,
   4). Synteny matches don't span regions; CIGAR sub-segments inherit the
   parent feature's padding.
-- **Dotplot stays on pre-projected pixel offsets** per ADR-010. The same
-  hi/lo cumBp approach would apply, but dotplot's geometry buffer shape is
-  different (line endpoints, not parallelogram corners); migration would
-  be a separate ADR.
+- **Dotplot stays on pre-projected pixel offsets** for now per ADR-010, but
+  the precision problem and the fix shape are identical: store cumBp hi/lo
+  per endpoint (2 endpoints × hi/lo Float32 instead of synteny's 4 corners),
+  one viewBp uniform per axis, per-endpoint pad in pixels. The blocker is
+  the same as synteny's pixel-space CIGAR walker dependency — once the
+  TODO.md bp-space CIGAR rewrite lands, dotplot migration is mechanical
+  and probably doesn't need its own ADR.
 
 ## Consequences
 
@@ -162,5 +173,9 @@ the actual fix.
   rewrite at the same time (TODO.md entry; eliminates the
   `pxArrayToBpHiLo` roundtrip).
 - Dotplot precision becomes a user-visible problem → migrate dotplot to
-  the same hi/lo cumBp shape; geometry buffer layout differs but the
-  shader-side hp-math helper is reusable.
+  the same hi/lo cumBp shape; mechanical once the bp-space CIGAR walker
+  is in place. No new ADR needed unless the design diverges from
+  synteny's.
+- Per-instance `pad` memory pressure becomes measurable (e.g. 30+ MB
+  buffers in dense self-PAF views causing GPU memory pressure) → revisit
+  per-region uniform table, now justified by the cost gradient.

@@ -219,3 +219,39 @@ standalone refactor.
 `bpToPx` returns from 4 fields to 2 (`offsetPx`, `paddingPx`). The `index` and
 `cumBp` fields are dead in callers. Tests use `.toEqual` so both functions must
 be updated together.
+
+
+### Dotplot: migrate to hi/lo cumBp storage (after the CIGAR rewrite above)
+
+**Context:** ADR-018 moved synteny corner storage from pre-projected Float32
+pixel offsets to cumulative-bp hi/lo Float32 pairs + per-instance pad. Dotplot
+still uses pre-projected pixel offsets per ADR-010, so it inherits the same
+T2T-scale precision drift the synteny refactor eliminated.
+
+**Fix:** Apply the same shape to dotplot — 2 endpoints per line × (bpHi, bpLo)
+Float32 + per-endpoint pad, plus per-axis viewBp/bpPerPxInv uniforms. Shape is
+mechanical (2 points instead of synteny's 4 corners); no new ADR needed unless
+the design diverges.
+
+**Blocker:** Dotplot has the same pixel-space CIGAR walker dependency as
+synteny. Do this in the same pass as the bp-space CIGAR rewrite above so
+dotplot doesn't accumulate its own `pxArrayToBpHiLo`-style roundtrip in the
+meantime.
+
+**Risk:** `drawDotplotWebGL` and the dotplot SVG export both consume the
+visitor. The migration must update both backends in lockstep with the
+visitor change.
+
+
+### Synteny: per-instance pad memory pressure (revisit if 30+ MB buffers)
+
+**Context:** ADR-018's per-instance `pad{Top,Bottom}` Float32 attributes
+replicate per-region addressing across instances rather than using a per-region
+uniform table — trades ~400 B (table) for up to ~8 MB (1M instances × 8 B).
+Fine for typical synteny.
+
+**Trigger to revisit:** dense self-PAF views (chr1×chr1 chained at high
+resolution) reaching 30+ MB instance buffers and showing GPU memory pressure
+in `chrome://gpu` or `about:gpu`. At that point the per-region uniform table
+becomes the cheaper option, and the codegen array support that ADR-010
+rejected gets a real cost-benefit case.

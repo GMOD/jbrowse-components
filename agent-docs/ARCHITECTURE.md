@@ -552,9 +552,11 @@ absolute bp. So:
   via `splitPositionWithFrac` against 4096-bp buckets — same hi/lo math as
   the LGV path, just split up-front instead of in the shader.
 - The view origin uniform `viewBp = offsetPx * bpPerPx` is also hi/lo split
-  (`viewBp{0,1}{Hi,Lo}`). This padded-bp encoding lets the shader formula
-  `(cumBp − viewBp)/bpPerPx + pad` reconstruct LGV-aligned screen-X using
-  just the per-instance `pad` Float32 — no companion `viewPad` uniform.
+  (`viewBp{0,1}{Hi,Lo}`). This is **padded-bp at canvas left** — not pure
+  cumulative genomic bp; it includes the padding-as-bp contribution, which
+  is what lets the per-instance `pad` cancel out the padding-at-canvas-left
+  term in the shader formula `(cumBp − viewBp)/bpPerPx + pad`. No companion
+  `viewPad` uniform is needed.
 - Inter-region padding pixels stay as a per-instance Float32 attribute
   (`padTop`, `padBottom`), accumulated up to the corner's region.
 

@@ -690,7 +690,16 @@ export class WebGPUHal implements GpuHal {
     pass.setPipeline(pipeline)
     pass.setBindGroup(0, regionBuf.bindGroup, [0])
     pass.setVertexBuffer(0, regionBuf.dataBuffer)
-    pass.draw(desc.verticesPerInstance, instanceCount ?? regionBuf.count)
+    const instanceDrawCount = instanceCount ?? regionBuf.count
+    console.warn(
+      '[hover] drawPickingPass: instances=',
+      instanceDrawCount,
+      'texture=',
+      this.pickingTexture.width,
+      'x',
+      this.pickingTexture.height,
+    )
+    pass.draw(desc.verticesPerInstance, instanceDrawCount)
     pass.end()
     this.device.queue.submit([encoder.finish()])
   }
@@ -727,7 +736,9 @@ export class WebGPUHal implements GpuHal {
       },
       [1, 1, 1],
     )
+    const t0 = performance.now()
     this.device.queue.submit([encoder.finish()])
+    const t1 = performance.now()
 
     try {
       await this.pickingStagingBuffer.mapAsync(GPUMapMode.READ)
@@ -738,6 +749,14 @@ export class WebGPUHal implements GpuHal {
       }
       return -1
     }
+    const t2 = performance.now()
+    console.warn(
+      '[hover] mapAsync timing: submit=',
+      (t1 - t0).toFixed(1),
+      'ms, mapAsync wait=',
+      (t2 - t1).toFixed(1),
+      'ms',
+    )
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.disposed) {
       try {

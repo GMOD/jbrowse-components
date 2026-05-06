@@ -180,7 +180,16 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     if (!backend) {
       return
     }
+    const pickStart = performance.now()
+    console.warn('[hover] pick requested at', JSON.stringify(coords))
     backend.pick(coords.x, coords.y, hit => {
+      const elapsed = performance.now() - pickStart
+      console.warn(
+        '[hover] pick callback fired, elapsed:',
+        elapsed.toFixed(1),
+        'ms, hit:',
+        hit ? JSON.stringify({ key: hit.key, featureIndex: hit.featureIndex }) : 'none',
+      )
       const hitDisplay = hit ? model.displaysByKey.get(hit.key) : undefined
       for (const display of model.linearSyntenyDisplays) {
         if (isAlive(display)) {

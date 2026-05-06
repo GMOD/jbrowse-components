@@ -253,12 +253,17 @@ export function linearSyntenyViewHelperModelFactory(
                 )
                 return false
               }
+              const renderStart = performance.now()
+              b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
+              const result = b.render(state)
+              const elapsed = performance.now() - renderStart
               console.warn(
-                '[LevelSyntenyCanvas render] rendering, perTrack:',
+                '[hover] render autorun fired, b.render elapsed:',
+                elapsed.toFixed(1),
+                'ms, perTrack:',
                 state.perTrack.size,
               )
-              b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
-              return b.render(state)
+              return result
             },
           })
         },

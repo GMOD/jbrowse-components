@@ -195,6 +195,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     }
     this.writeUniforms(track, 0, 0, 1)
     this.hal.drawPickingPass(PASS_PICKING, track.key, undefined, PASS_FILL)
+    const readbackStart = performance.now()
     this.inFlight = this.hal
       .readPickingPixelAsync(x, y)
       .then(
@@ -202,6 +203,12 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
         () => undefined,
       )
       .then(result => {
+        console.warn(
+          '[hover] GPU readPickingPixelAsync elapsed:',
+          (performance.now() - readbackStart).toFixed(1),
+          'ms, result:',
+          result ? JSON.stringify({ key: result.key, featureIndex: result.featureIndex }) : 'none',
+        )
         this.inFlight = undefined
         if (this.disposed) {
           return
@@ -245,6 +252,10 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     u[U.resolution] = this.canvas.width / dpr
     u[U.resolution + 1] = this.canvas.height / dpr
     u[U.height] = p.height
+    // SYNC: matches viewBp{0,1} in Canvas2DSyntenyRenderer.computeTransform
+    // and the Uniforms struct in syntenyTypes.slang. Padded-bp at canvas left
+    // (offsetPx * bpPerPx); hi/lo split for hp-math precision in the shader.
+    // See ADR-018.
     const [vb0Hi, vb0Lo] = splitPositionWithFrac(p.offsetPx0 * p.bpPerPx0)
     const [vb1Hi, vb1Lo] = splitPositionWithFrac(p.offsetPx1 * p.bpPerPx1)
     u[U.viewBp0Hi] = vb0Hi
