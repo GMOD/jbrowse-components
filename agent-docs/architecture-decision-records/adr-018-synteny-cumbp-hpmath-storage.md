@@ -109,10 +109,12 @@ worth knowing if buffer pressure ever becomes a constraint.
   space. The `< 1 px` indel-merge threshold is fundamentally a pixel
   decision; converting it to `bpDelta * bpPerPxInv < 1` gives identical
   semantics but the visitor is shared with SVG export and the conversion
-  isn't worth the cross-cutting touch. The worker-side CIGAR loop still
-  emits pixel positions; `pxArrayToBpHiLo` converts them to cumBp at the
-  end via `(px − pad) × bpPerPx` (exact in Float64). See TODO.md for the
-  bp-space rewrite that would eliminate the roundtrip.
+  isn't worth the cross-cutting touch on its own. The visitor emits pixel
+  positions; `addInstance` does the `(px − pad) × bpPerPx` conversion
+  inline and writes the hi/lo Float32 pairs directly — no separate
+  staging arrays, no post-emit sweep. See TODO.md for the bp-space
+  visitor rewrite that would also eliminate the per-op `× bpPerPxInv`
+  inside the inner loop.
 - **Fetch-time off-screen culling** still runs in pixel space at viewport-
   width margin; segments outside that window are not emitted.
 - **Per-feature `padTop` / `padBottom`** is the same pixel-padding value
@@ -170,8 +172,8 @@ the actual fix.
 ## Revisit if
 
 - The CIGAR visitor gets touched for unrelated reasons → take the bp-space
-  rewrite at the same time (TODO.md entry; eliminates the
-  `pxArrayToBpHiLo` roundtrip).
+  rewrite at the same time (TODO.md entry; eliminates the per-op
+  `× bpPerPxInv` and is the substrate for op-range culling).
 - Dotplot precision becomes a user-visible problem → migrate dotplot to
   the same hi/lo cumBp shape; mechanical once the bp-space CIGAR walker
   is in place. No new ADR needed unless the design diverges from

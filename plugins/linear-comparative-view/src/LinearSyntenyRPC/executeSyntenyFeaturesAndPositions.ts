@@ -78,10 +78,8 @@ export function bpToPx({
   const found = displayedRegions[i]
   if (found) {
     return {
-      index: i,
       offsetPx: bpSoFar / bpPerPx + paddingPx,
       paddingPx,
-      cumBp: bpSoFar,
     }
   }
   return undefined
@@ -159,10 +157,8 @@ export function bpToPxFromIndex(
       const bpOffset = r.reversed ? r.end - coord : coord - r.start
       const cumBp = entry.bpBefore + bpOffset
       return {
-        index: entry.index,
         offsetPx: cumBp / idx.bpPerPx + entry.paddingPxBefore,
         paddingPx: entry.paddingPxBefore,
-        cumBp,
       }
     }
   }

@@ -16,29 +16,6 @@ import {
   KIND_MARKER,
 } from './syntenyColors.ts'
 
-// Convert per-instance padded-pixel positions to (cumBp_hi, cumBp_lo) Float32
-// pairs. cumBp = (px - padding) * bpPerPx is exact in Float64; we then split
-// for hp-math precision in the shader. Inlines splitPositionWithFrac to avoid
-// allocating a tuple per element on the hot per-instance path.
-function pxArrayToBpHiLo(
-  pxValues: Float64Array,
-  padValues: Float32Array,
-  count: number,
-  bpPerPx: number,
-) {
-  const hi = new Float32Array(count)
-  const lo = new Float32Array(count)
-  for (let i = 0; i < count; i++) {
-    const cumBp = (pxValues[i]! - padValues[i]!) * bpPerPx
-    const intValue = Math.floor(cumBp)
-    const frac = cumBp - intValue
-    const loInt = intValue - Math.floor(intValue / 4096) * 4096
-    hi[i] = intValue - loInt
-    lo[i] = loInt + frac
-  }
-  return { hi, lo }
-}
-
 function growF32(old: Float32Array, count: number, newCapacity: number) {
   const arr = new Float32Array(newCapacity)
   arr.set(old.subarray(0, count))
@@ -53,12 +30,6 @@ function growU32(old: Uint32Array, count: number, newCapacity: number) {
 
 function growU8(old: Uint8Array, count: number, newCapacity: number) {
   const arr = new Uint8Array(newCapacity)
-  arr.set(old.subarray(0, count))
-  return arr
-}
-
-function growF64(old: Float64Array, count: number, newCapacity: number) {
-  const arr = new Float64Array(newCapacity)
   arr.set(old.subarray(0, count))
   return arr
 }
@@ -216,10 +187,20 @@ export function buildSyntenyGeometry({
   // the amortized doubling cost of `ensureCapacity`.
   let capacity = drawLocationMarkers ? estimate * 2 : estimate
 
-  let x1s = new Float64Array(capacity)
-  let x2s = new Float64Array(capacity)
-  let x3s = new Float64Array(capacity)
-  let x4s = new Float64Array(capacity)
+  // Write cumBp hi/lo Float32 pairs directly at emit time. The shader
+  // reconstructs screen pixel via `(cumBpHi + cumBpLo) / bpPerPx + pad` using
+  // hp-math, so the worker never needs to materialize Float64 padded-pixel
+  // staging arrays — converting and splitting happens inline in `addInstance`.
+  // Lower peak memory + one fewer round of large-buffer allocation vs. the
+  // prior pxArrayToBpHiLo sweep.
+  let bp1HiArr = new Float32Array(capacity)
+  let bp1LoArr = new Float32Array(capacity)
+  let bp2HiArr = new Float32Array(capacity)
+  let bp2LoArr = new Float32Array(capacity)
+  let bp3HiArr = new Float32Array(capacity)
+  let bp3LoArr = new Float32Array(capacity)
+  let bp4HiArr = new Float32Array(capacity)
+  let bp4LoArr = new Float32Array(capacity)
   let kindsArr = new Uint8Array(capacity)
   let featIdxArr = new Uint32Array(capacity)
   let queryTotalLengthArr = new Float32Array(capacity)
@@ -233,10 +214,14 @@ export function buildSyntenyGeometry({
       return
     }
     const newCapacity = Math.max(capacity * 2, idx + needed)
-    x1s = growF64(x1s, idx, newCapacity)
-    x2s = growF64(x2s, idx, newCapacity)
-    x3s = growF64(x3s, idx, newCapacity)
-    x4s = growF64(x4s, idx, newCapacity)
+    bp1HiArr = growF32(bp1HiArr, idx, newCapacity)
+    bp1LoArr = growF32(bp1LoArr, idx, newCapacity)
+    bp2HiArr = growF32(bp2HiArr, idx, newCapacity)
+    bp2LoArr = growF32(bp2LoArr, idx, newCapacity)
+    bp3HiArr = growF32(bp3HiArr, idx, newCapacity)
+    bp3LoArr = growF32(bp3LoArr, idx, newCapacity)
+    bp4HiArr = growF32(bp4HiArr, idx, newCapacity)
+    bp4LoArr = growF32(bp4LoArr, idx, newCapacity)
     kindsArr = growU8(kindsArr, idx, newCapacity)
     featIdxArr = growU32(featIdxArr, idx, newCapacity)
     queryTotalLengthArr = growF32(queryTotalLengthArr, idx, newCapacity)
@@ -257,10 +242,32 @@ export function buildSyntenyGeometry({
     padBottom: number,
   ) {
     ensureCapacity(1)
-    x1s[idx] = topLeft
-    x2s[idx] = topRight
-    x3s[idx] = bottomRight
-    x4s[idx] = bottomLeft
+    // Inline (px - pad) * bpPerPx → splitPositionWithFrac. Avoids tuple
+    // allocation per call on the per-instance hot path.
+    const cumBp1 = (topLeft - padTop) * bpPerPx0
+    const intValue1 = Math.floor(cumBp1)
+    const loInt1 = intValue1 - Math.floor(intValue1 / 4096) * 4096
+    bp1HiArr[idx] = intValue1 - loInt1
+    bp1LoArr[idx] = loInt1 + (cumBp1 - intValue1)
+
+    const cumBp2 = (topRight - padTop) * bpPerPx0
+    const intValue2 = Math.floor(cumBp2)
+    const loInt2 = intValue2 - Math.floor(intValue2 / 4096) * 4096
+    bp2HiArr[idx] = intValue2 - loInt2
+    bp2LoArr[idx] = loInt2 + (cumBp2 - intValue2)
+
+    const cumBp3 = (bottomRight - padBottom) * bpPerPx1
+    const intValue3 = Math.floor(cumBp3)
+    const loInt3 = intValue3 - Math.floor(intValue3 / 4096) * 4096
+    bp3HiArr[idx] = intValue3 - loInt3
+    bp3LoArr[idx] = loInt3 + (cumBp3 - intValue3)
+
+    const cumBp4 = (bottomLeft - padBottom) * bpPerPx1
+    const intValue4 = Math.floor(cumBp4)
+    const loInt4 = intValue4 - Math.floor(intValue4 / 4096) * 4096
+    bp4HiArr[idx] = intValue4 - loInt4
+    bp4LoArr[idx] = loInt4 + (cumBp4 - intValue4)
+
     kindsArr[idx] = kind
     featIdxArr[idx] = featureIdx
     queryTotalLengthArr[idx] = qtl
@@ -453,47 +460,20 @@ export function buildSyntenyGeometry({
 
   const instanceCount = idx
 
-  const padTops = padTopsArr.subarray(0, instanceCount)
-  const padBottoms = padBottomsArr.subarray(0, instanceCount)
-  const { hi: bp1Hi, lo: bp1Lo } = pxArrayToBpHiLo(
-    x1s,
-    padTops,
-    instanceCount,
-    bpPerPx0,
-  )
-  const { hi: bp2Hi, lo: bp2Lo } = pxArrayToBpHiLo(
-    x2s,
-    padTops,
-    instanceCount,
-    bpPerPx0,
-  )
-  const { hi: bp3Hi, lo: bp3Lo } = pxArrayToBpHiLo(
-    x3s,
-    padBottoms,
-    instanceCount,
-    bpPerPx1,
-  )
-  const { hi: bp4Hi, lo: bp4Lo } = pxArrayToBpHiLo(
-    x4s,
-    padBottoms,
-    instanceCount,
-    bpPerPx1,
-  )
-
   return {
-    bp1Hi,
-    bp1Lo,
-    bp2Hi,
-    bp2Lo,
-    bp3Hi,
-    bp3Lo,
-    bp4Hi,
-    bp4Lo,
+    bp1Hi: bp1HiArr.subarray(0, instanceCount),
+    bp1Lo: bp1LoArr.subarray(0, instanceCount),
+    bp2Hi: bp2HiArr.subarray(0, instanceCount),
+    bp2Lo: bp2LoArr.subarray(0, instanceCount),
+    bp3Hi: bp3HiArr.subarray(0, instanceCount),
+    bp3Lo: bp3LoArr.subarray(0, instanceCount),
+    bp4Hi: bp4HiArr.subarray(0, instanceCount),
+    bp4Lo: bp4LoArr.subarray(0, instanceCount),
     kinds: kindsArr.subarray(0, instanceCount),
     instanceFeatureIdx: featIdxArr.subarray(0, instanceCount),
     queryTotalLengths: queryTotalLengthArr.subarray(0, instanceCount),
-    padTops,
-    padBottoms,
+    padTops: padTopsArr.subarray(0, instanceCount),
+    padBottoms: padBottomsArr.subarray(0, instanceCount),
     instanceCount,
     nonCigarInstanceCount,
   }

@@ -198,27 +198,35 @@ Done — comments added to `MultiRegionDisplayMixin.ts` at each call site.
 
 ### Synteny: rewrite CIGAR visitor in bp-space
 
-**Problem:** `executeSyntenyFeaturesAndPositions` already has `cumBp` from
-`bpToPxFromIndex` for each corner, but throws it away — the worker stores
-`offsetPx` in pixel space, processes CIGAR sub-segments through
-`visitCigarRenderedSegments` (pixel walker), then `pxArrayToBpHiLo` recomputes
-`cumBp = (px - pad) * bpPerPx` at the end. Net: 4 typed-array allocations and a
-full sweep per fetch that exist solely to undo the bp→px conversion.
+**Status:** Partial — the post-emit `pxArrayToBpHiLo` sweep and its 4 F64
+staging arrays are gone (`addInstance` writes hi/lo Float32 inline at emit
+time). Dead `index`/`cumBp` fields on `bpToPx{,FromIndex}` removed. What
+remains is the visitor itself.
+
+**Problem:** `visitCigarRenderedSegments` still walks in pixel space —
+`cx1 += len * bpPerPxInv0 * rev1` per op. The `< 1 px` indel-merge threshold
+is a pixel comparison. Both work, but the per-op multiply by `bpPerPxInv` is
+unnecessary if the accumulator is bp-space, and the threshold reads more
+directly as `len < bpPerPx`.
 
 **Fix:** Make `visitCigarRenderedSegments` accept `(startBp1, startBp2,
-bpPerPxInv0, bpPerPxInv1, ...)` and step in bp directly. The `< 1 px` indel-merge
-threshold becomes `bpDelta * bpPerPxInv < 1` — same semantics, no roundtrip.
-Worker stores cumBp from the start; `pxArrayToBpHiLo` reduces to a hi/lo split.
+bpPerPx0, bpPerPx1, ...)` and step in bp directly. Indel-merge threshold
+becomes `len < bpPerPx`. Caller passes `cumBp` (already returned from
+`bpToPxFromIndex`'s internal computation — re-expose if needed) and pad as
+separate inputs.
 
-**Risk:** `visitCigarRenderedSegments` lives in `packages/alignments-core` and
-is shared with SVG export. Touching it ripples through dotplot/synteny SVG.
-Worth doing alongside the next reasonable touch of that visitor — not as a
-standalone refactor.
+**Wins:** One fewer multiply per CIGAR op in the inner loop (small but real
+on million-op alignments) and cleaner inner-loop semantics. Sets up
+op-range culling (binary-search a cumulative-bp prefix to walk only the
+visible op range — the actual win for the "long alignment, zoomed in"
+case).
 
-**Also unrelated to bp-space but small:** trim `bpToPxFromIndex` /
-`bpToPx` returns from 4 fields to 2 (`offsetPx`, `paddingPx`). The `index` and
-`cumBp` fields are dead in callers. Tests use `.toEqual` so both functions must
-be updated together.
+**Risk:** `visitCigarRenderedSegments` lives in `packages/alignments-core`.
+Despite the shared-API concern, the only non-test caller is
+`buildSyntenyGeometry.ts` (Canvas2D and SVG paths consume the worker's
+already-built geometry, not the visitor directly). So the blast radius is
+contained to the visitor + tests + one call site. Worth doing alongside
+the dotplot bp-space migration below, since both touch the same visitor.
 
 
 ### Dotplot: migrate to hi/lo cumBp storage (after the CIGAR rewrite above)
@@ -235,8 +243,8 @@ the design diverges.
 
 **Blocker:** Dotplot has the same pixel-space CIGAR walker dependency as
 synteny. Do this in the same pass as the bp-space CIGAR rewrite above so
-dotplot doesn't accumulate its own `pxArrayToBpHiLo`-style roundtrip in the
-meantime.
+dotplot inherits the inline-emit pattern synteny already uses, instead of
+copying the visitor's pixel-space output into another F64 staging array.
 
 **Risk:** `drawDotplotWebGL` and the dotplot SVG export both consume the
 visitor. The migration must update both backends in lockstep with the
@@ -255,3 +263,9 @@ resolution) reaching 30+ MB instance buffers and showing GPU memory pressure
 in `chrome://gpu` or `about:gpu`. At that point the per-region uniform table
 becomes the cheaper option, and the codegen array support that ADR-010
 rejected gets a real cost-benefit case.
+
+
+## Rendering looks different from origin/main
+
+
+improve the antialiasing, color darkness
