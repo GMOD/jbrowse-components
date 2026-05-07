@@ -4,7 +4,6 @@ title: Writing a plugin using jbrowse-plugin-template
 toplevel: true
 ---
 
-import Figure from '../figure'
 
 Plugins add new pluggable elements (views, tracks, adapters, etc.) and can
 modify application behavior by watching state. See the

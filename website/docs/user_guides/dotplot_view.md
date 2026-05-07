@@ -5,7 +5,6 @@ description: Whole-genome synteny dotplot
 guide_category: Views
 ---
 
-import Figure from '../figure'
 
 The dotplot view is a 2D comparative view that displays alignments between
 genome assemblies, or between a single read and the genome. Syntenic regions

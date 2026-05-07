@@ -5,7 +5,6 @@ description: Structural variant spreadsheet and circular view
 guide_category: Views
 ---
 
-import Figure from '../figure'
 
 The SV inspector is a combined variant table and whole-genome circular view for
 triaging structural variant calls.

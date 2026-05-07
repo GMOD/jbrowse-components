@@ -4,7 +4,6 @@ title: Embedding JBrowse
 description: Embed the linear genome view component in a custom web page
 ---
 
-import Figure from '../figure'
 
 ## Welcome!
 

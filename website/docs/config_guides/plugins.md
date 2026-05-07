@@ -3,7 +3,6 @@ id: plugins
 title: Configuring plugins
 ---
 
-import Figure from '../figure'
 
 In jbrowse-web and jbrowse-desktop, plugins are added via `config.json`.
 Embedded components use a different approach — see the

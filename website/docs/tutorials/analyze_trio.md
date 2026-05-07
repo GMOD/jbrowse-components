@@ -6,7 +6,6 @@ date: 2025-03-25
 guide_category: Tutorials
 ---
 
-import Figure from '../figure'
 
 ## Introduction
 

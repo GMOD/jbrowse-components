@@ -3,7 +3,6 @@ id: customizing_feature_details
 title: Customizing feature details with callbacks and plugins
 ---
 
-import Figure from '../figure'
 
 Every track has a configuration slot called `formatDetails`.
 

@@ -4,7 +4,6 @@ title: Introduction - developer guide
 toplevel: true
 ---
 
-import Figure from './figure'
 
 This guide covers how JBrowse 2 code is packaged and structured, and how to
 create new plugins and pluggable elements.

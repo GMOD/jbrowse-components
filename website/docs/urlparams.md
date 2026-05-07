@@ -4,7 +4,6 @@ title: URL query parameter API
 toplevel: true
 ---
 
-import Figure from './figure'
 
 JBrowse Web features the ability to automatically provide URL parameters to
 setup a session

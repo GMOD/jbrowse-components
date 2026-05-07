@@ -4,7 +4,6 @@ title: Writing a no-build plugin
 toplevel: true
 ---
 
-import Figure from '../figure'
 
 This guide covers creating a no-build plugin for JBrowse 2.
 

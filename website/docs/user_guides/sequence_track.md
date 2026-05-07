@@ -5,7 +5,6 @@ description: Reference sequence display
 guide_category: Track types
 ---
 
-import Figure from '../figure'
 
 The sequence track shows the reference sequence and a six-frame translation
 (three frames per strand). If the view is horizontally flipped, the sequence is

@@ -3,7 +3,6 @@ id: config_model
 title: Configuration model basics
 ---
 
-import Figure from '../figure'
 
 The configuration model structures the data and features available in a JBrowse
 session. Each pluggable element you create needs its own configuration schema.

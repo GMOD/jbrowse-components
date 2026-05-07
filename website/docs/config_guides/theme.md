@@ -3,7 +3,6 @@ id: theme
 title: Coloring/theming
 ---
 
-import Figure from '../figure'
 
 ### Color
 

@@ -3,7 +3,6 @@ id: pluggable_elements
 title: Pluggable elements
 ---
 
-import Figure from '../figure'
 
 A plugin is an independently distributed package of code that plugs into a
 JBrowse application. It's implemented as a class that extends

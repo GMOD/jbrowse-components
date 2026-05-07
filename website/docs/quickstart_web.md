@@ -4,7 +4,6 @@ title: JBrowse web setup using the CLI
 toplevel: true
 ---
 
-import Figure from './figure'
 
 import config from '../docusaurus.config.json'
 

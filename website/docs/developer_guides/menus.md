@@ -3,7 +3,6 @@ title: Creating custom top-level menu items
 id: menus
 ---
 
-import Figure from '../figure'
 
 ### Adding a top-level menu
 

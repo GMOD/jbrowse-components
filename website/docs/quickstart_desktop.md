@@ -4,7 +4,6 @@ title: JBrowse desktop quick start
 toplevel: true
 ---
 
-import Figure from './figure'
 
 import {winDL,macDL,linDL} from './links'
 

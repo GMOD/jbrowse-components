@@ -5,7 +5,6 @@ description: Contact matrix display
 guide_category: Track types
 ---
 
-import Figure from '../figure'
 
 Hi-C captures genome-wide chromatin interaction frequencies by sequencing pairs
 of genomic regions that are physically co-located in the nucleus. JBrowse

@@ -5,7 +5,6 @@ description: Per-read and aggregate methylation from ONT and modkit
 guide_category: Tutorials
 ---
 
-import Figure from '../figure'
 
 JBrowse 2 supports two complementary views of DNA methylation: **per-read
 modification coloring** directly on BAM/CRAM alignments, and **aggregate

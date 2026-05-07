@@ -3,7 +3,6 @@ id: quickstart_adminserver
 title: Admin server GUI (experimental)
 ---
 
-import Figure from './figure'
 
 :::caution
 

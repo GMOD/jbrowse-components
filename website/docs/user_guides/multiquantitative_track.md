@@ -5,7 +5,6 @@ description: Multiple signal tracks displayed together
 guide_category: Track types
 ---
 
-import Figure from '../figure'
 
 JBrowse can show "Multi-quantitative tracks" which is a single track composed of
 multiple quantitative signals, which have their Y-scalebar synchronized.

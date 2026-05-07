@@ -3,7 +3,6 @@ id: creating_renderer
 title: Creating custom renderers
 ---
 
-import Figure from '../figure'
 
 ### What is a renderer
 

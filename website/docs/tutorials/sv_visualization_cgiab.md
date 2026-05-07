@@ -6,7 +6,6 @@ description:
 guide_category: Tutorials
 ---
 
-import Figure from '../figure'
 
 This tutorial walks through loading data from the
 [Cancer Genome in a Bottle (C-GIAB)](https://www.nist.gov/programs-projects/cancer-genome-bottle)

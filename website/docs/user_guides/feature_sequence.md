@@ -5,7 +5,6 @@ description: Sequence extraction for selected features
 guide_category: Track types
 ---
 
-import Figure from '../figure'
 
 ### Gene features
 

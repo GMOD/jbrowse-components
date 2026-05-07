@@ -3,7 +3,6 @@ id: synteny_visualization
 title: Synteny visualization and genome alignment
 ---
 
-import Figure from '../figure'
 
 This tutorial covers the dotplot view (chromosome-scale alignment overview) and
 linear synteny view (base-level inspection) using whole-genome alignment data.

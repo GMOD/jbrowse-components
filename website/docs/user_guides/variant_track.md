@@ -5,7 +5,6 @@ description: VCF variant display
 guide_category: Track types
 ---
 
-import Figure from '../figure'
 
 Visualizing variant tracks from the VCF format alongside the original alignment
 evidence track is a common workflow for validating your results, shown below:

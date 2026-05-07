@@ -7,7 +7,6 @@ description:
 guide_category: Tutorials
 ---
 
-import Figure from '../figure'
 
 This tutorial explores structural variants (SVs) from the 1000 Genomes Project
 using JBrowse's multi-sample visualization tools. We cover three connected
