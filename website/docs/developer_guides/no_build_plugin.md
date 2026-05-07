@@ -6,8 +6,7 @@ toplevel: true
 
 import Figure from '../figure'
 
-The following guide will provide a short tutorial on how to create a single page
-no-build plugin for JBrowse 2.
+This guide covers creating a no-build plugin for JBrowse 2.
 
 ## Pre-requisites
 
@@ -18,9 +17,9 @@ no-build plugin for JBrowse 2.
 
 ## What is the difference between a no-build plugin and a "regular" plugin?
 
-A "regular" JBrowse plugin often uses our plugin template
-https://github.com/GMOD/jbrowse-plugin-template which uses `rollup` to compile
-extra dependencies that your plugin might use.
+A "regular" JBrowse plugin uses the
+[plugin template](https://github.com/GMOD/jbrowse-plugin-template), which uses
+`rollup` to bundle extra dependencies.
 
 In contrast, "no-build" plugins have no build step and can be hand edited. This
 can be useful for adding
@@ -30,9 +29,8 @@ can be useful for adding
 
 ### Example use case: Adding a jexl callback function which you can use in your config
 
-A common method for a no-build plugin might be making a custom function that you
-can use to simplify `jexl` callbacks in your config. We will create a file
-`myplugin.js`, which will export a single class.
+A common pattern is registering a custom jexl function to simplify config
+callbacks. Create `myplugin.js`:
 
 `myplugin.js`
 
@@ -55,9 +53,7 @@ export default class MyPlugin {
 }
 ```
 
-Put this file `myplugin.js` in the same folder as your config file, and then,
-you can refer to this plugin and the custom function you added in your
-`config.json`.
+Put `myplugin.js` alongside your config file and reference it in `config.json`:
 
 ```json
 {
@@ -108,25 +104,15 @@ export default class MyPlugin {
 
 ### Importing with jbrequire
 
-Because our plugin is not going to be built with any dependencies, the process
-for referencing external libraries is a little different.
-
-If a package you need to use is found within the JBrowse core project, a special
-function `jbrequire` can provide your plugin access to these packages. Click
-[here](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ReExports/list.ts)
-for a full list of packages accessible through `jbrequire`. Using `jbrequire`
-might look like this:
+Since no-build plugins have no build step, use `jbrequire` to access packages
+exported by JBrowse core. See the
+[full list](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ReExports/list.ts).
 
 ```typescript
 const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 ```
 
-This would provide the functionality of @jbrowse/mobx-state-tree through that
-value.
-
 ## Complete example
-
-Example
 
 `esmplugin.js`
 
@@ -136,7 +122,6 @@ export default class MyPlugin {
   version = '1.0'
 
   install(pluginManager) {
-    // here, we use jbrequire to reference packages exported through JBrowse
     const { ConfigurationSchema } = pluginManager.jbrequire(
       '@jbrowse/core/configuration',
     )
@@ -150,7 +135,6 @@ export default class MyPlugin {
 
     const React = pluginManager.jbrequire('react')
 
-    // this is our react component
     const CiteWidget = props => {
       // React.createElement can be used to add html to our widget component.
       // We write out raw React.createElement code because JSX requires a build
@@ -169,9 +153,7 @@ export default class MyPlugin {
       return React.createElement('div', null, [header, content])
     }
 
-    // we're adding a widget that we can open upon clicking on our menu item
     pluginManager.addWidgetType(() => {
-      // adding a widget to the plugin
       return new WidgetType({
         name: 'CiteWidget',
         heading: 'Cite this JBrowse session',
@@ -180,7 +162,6 @@ export default class MyPlugin {
           id: ElementId,
           type: types.literal('CiteWidget'),
         }),
-        // we're going to provide this component ourselves
         ReactComponent: CiteWidget,
       })
     })
@@ -226,12 +207,9 @@ your JBrowse session should look like the following:
 
 <Figure caption="Screenshot of a running JBrowse instance with the simple no build plugin added. Note our top level menu item has been added, and upon clicking it our widget opens." src="/img/no_build_final.png"/>
 
-## Conclusion and next steps
+## Next steps
 
-Congratulations! You built and ran a single file no-build plugin in JBrowse.
-
-Have some questions? [Contact us](/contact) through our various communication
-channels.
+Have questions? [Contact us](/contact).
 
 ## Note: JSX syntax
 
