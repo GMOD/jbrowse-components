@@ -1,0 +1,127 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import page from '../styles/page.module.css'
+import styles from '../styles/search.module.css'
+import { baseUrl } from '../lib/base-url'
+
+const q = Astro.url.searchParams.get('q') ?? ''
+---
+
+<BaseLayout title="Search — JBrowse">
+  <div class={page.content}>
+    <h1 class={styles.heading}>Search</h1>
+    <div class={styles.inputWrap}>
+      <input
+        id="search-input"
+        type="search"
+        value={q}
+        placeholder="Search docs..."
+        autocomplete="off"
+        autofocus
+        class={styles.input}
+      />
+      <span class={styles.count} id="search-count"></span>
+    </div>
+    <ul id="search-results" class={styles.results}></ul>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ baseUrl }}>
+  const input = document.getElementById('search-input')
+  const countEl = document.getElementById('search-count')
+  const resultsList = document.getElementById('search-results')
+
+  let pagefind
+  let debounce
+
+  async function getPagefind() {
+    if (!pagefind) {
+      pagefind = await import(`${baseUrl}/pagefind/pagefind.js`)
+    }
+    return pagefind
+  }
+
+  function syncUrl(q) {
+    const url = new URL(location.href)
+    if (q) {
+      url.searchParams.set('q', q)
+    } else {
+      url.searchParams.delete('q')
+    }
+    history.replaceState({}, '', url)
+  }
+
+  async function runSearch(query) {
+    syncUrl(query)
+    if (!query.trim()) {
+      resultsList.innerHTML = ''
+      countEl.textContent = ''
+      return
+    }
+    const pf = await getPagefind()
+    const { results: found } = await pf.search(query)
+    countEl.textContent = `${found.length} result${found.length === 1 ? '' : 's'}`
+    const items = await Promise.all(found.slice(0, 20).map(r => r.data()))
+    resultsList.innerHTML = items
+      .map(item => {
+        const path = new URL(item.url, location.href).pathname
+        return `<li class="search-result">
+          <a href="${item.url}">
+            <div class="search-title">${item.meta?.title ?? path}</div>
+            <div class="search-path">${path}</div>
+            <div class="search-excerpt">${item.excerpt}</div>
+          </a>
+        </li>`
+      })
+      .join('')
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(debounce)
+    debounce = setTimeout(() => runSearch(input.value), 200)
+  })
+
+  if (input.value) {
+    runSearch(input.value)
+  }
+</script>
+
+<style is:global>
+  .search-result a {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .search-result a:hover .search-title {
+    text-decoration: underline;
+  }
+  .search-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-text);
+    margin-bottom: 2px;
+  }
+  .search-path {
+    font-size: 0.78rem;
+    color: var(--color-accent);
+    margin-bottom: 6px;
+  }
+  .search-excerpt {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .search-excerpt mark {
+    background: #fff3cd;
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 600;
+  }
+</style>

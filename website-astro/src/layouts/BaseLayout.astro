@@ -1,7 +1,6 @@
 ---
 import { baseUrl } from '../lib/base-url'
 import styles from './BaseLayout.module.css'
-import Search from '../components/Search.astro'
 
 interface Props {
   title?: string
@@ -50,10 +49,10 @@ function isActive(href: string) {
         --color-surface: #f5f5f5;
         --color-footer-bg: #303846;
         --color-footer-text: #ebedf0;
-        --color-sidebar-text: #606770;
-        --color-sidebar-hover-bg: rgba(0, 0, 0, 0.05);
-        --color-sidebar-active-bg: rgba(0, 0, 0, 0.05);
-        --color-sidebar-active-text: hsl(160, 51%, 35%);
+        --color-sidebar-text: #2d3748;
+        --color-sidebar-hover-bg: rgba(0, 0, 0, 0.06);
+        --color-sidebar-active-bg: hsl(160, 40%, 93%);
+        --color-sidebar-active-text: hsl(160, 55%, 26%);
         --color-text: #1c1e21;
         --color-text-muted: #606770;
       }
@@ -71,7 +70,7 @@ function isActive(href: string) {
       </a>
 
       <div class={styles.navLinks} id="nav-links">
-        <a href="http://genomes.jbrowse.org/" class={styles.newFeature}>Genomes</a>
+        <a href="http://genomes.jbrowse.org/">Genomes</a>
         <a href={`${baseUrl}/docs/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/docs/`) }]}>Docs</a>
         <a href={`${baseUrl}/blog/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/blog/`) }]}>Blog</a>
         <a href={`${baseUrl}/download/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/download/`) }]}>Download</a>
@@ -80,10 +79,11 @@ function isActive(href: string) {
         <a href={`${baseUrl}/gallery/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/gallery/`) }]}>Gallery</a>
         <a href={`${baseUrl}/demos/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/demos/`) }]}>Demos</a>
         <a href={`${baseUrl}/contact/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/contact/`) }]}>Contact</a>
-      </div>
-
-      <div class={styles.navSearch}>
-        <Search />
+        <a href={`${baseUrl}/search/`} class:list={[styles.navSearchLink, { [styles.navActive]: isActive(`${baseUrl}/search/`) }]}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>Search
+        </a>
       </div>
 
       <div class={styles.navRight}>

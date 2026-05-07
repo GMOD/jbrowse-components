@@ -50,16 +50,6 @@
 .navActive {
   color: var(--color-teal-bright) !important;
 }
-.newFeature::after {
-  content: 'NEW!';
-  font-size: 0.6em;
-  font-weight: 700;
-  color: red;
-  margin-left: 5px;
-  padding: 2px 5px;
-  vertical-align: super;
-  display: inline-block;
-}
 .navRight {
   margin-left: auto;
   display: flex;
