@@ -6,13 +6,8 @@ toplevel: true
 
 import Figure from './figure'
 
-This guide will introduce the JBrowse 2 ecosystem from the developer's point of
-view. We'll examine the core concepts of how code is packaged and structured,
-and then go over how to create new plugins and pluggable elements.
-
-## Introduction and overview
-
-Let's get a high-level view of the JBrowse 2 ecosystem.
+This guide covers how JBrowse 2 code is packaged and structured, and how to
+create new plugins and pluggable elements.
 
 ## Products and plugins
 
@@ -34,15 +29,11 @@ but most of them do.
 
 ## Example plugins
 
-You can follow this guide for developing plugins, but you might also want to
-refer to working versions of plugins on the web now.
+Plugin templates:
+- [jbrowse-plugin-template](https://github.com/GMOD/jbrowse-plugin-template)
+- [jbrowse-plugin-esbuild-template](https://github.com/GMOD/jbrowse-plugin-esbuild-template) (lightweight esbuild-based alternative)
 
-This repo contains a template for creating new plugins:
-https://github.com/GMOD/jbrowse-plugin-template. There is also a lightweight
-alternative based on esbuild:
-https://github.com/GMOD/jbrowse-plugin-esbuild-template.
-
-Here are some examples of working plugins:
+Working plugin examples:
 
 - [jbrowse-plugin-ucsc-api](https://github.com/cmdcolin/jbrowse-plugin-ucsc-api)
   probably the simplest plugin example, it demonstrates accessing data from UCSC
@@ -63,5 +54,5 @@ Here are some examples of working plugins:
   libraries. This desktop specific functionality should use the CJS bundle type
   (electron doesn't support ESM yet)
 
-You can use these to see how plugins are generally structured, and can use the
-pluggable elements in them as templates for your own pluggable elements.
+These show how plugins are structured and can serve as templates for your own
+pluggable elements.
