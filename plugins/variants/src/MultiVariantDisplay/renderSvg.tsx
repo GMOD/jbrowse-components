@@ -3,10 +3,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { when } from 'mobx'
 
-import {
-  Canvas2DVariantRenderer,
-  drawVariantBlocks,
-} from './components/Canvas2DVariantRenderer.ts'
+import { drawVariantsToCtx } from './components/Canvas2DVariantRenderer.ts'
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 
@@ -45,34 +42,24 @@ export async function renderSvg(
     referenceDrawingMode,
     canDisplayLabels,
   } = model
-  const visibleRegions = view.visibleRegions
   const totalWidth = view.totalWidthPx
-
-  // Headless renderer: drive the same drawVariantBlocks pipeline as on-screen.
-  // VariantCellData is a structural superset of VariantUploadData (extra
-  // fields are flatbush + genotype maps for hit-testing), so pass through.
-  const renderer = new Canvas2DVariantRenderer(null)
-  for (const region of visibleRegions) {
-    const regionCellData =
-      cellData.perRegionCellData[region.displayedRegionIndex]
-    if (regionCellData && regionCellData.numCells > 0) {
-      renderer.uploadRegion(region.displayedRegionIndex, regionCellData)
-    }
-  }
-
-  const renderBlocks = buildRenderBlocks(visibleRegions)
-
+  const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const cellsNode = paintLayer(totalWidth, availableHeight, opts, ctx => {
     if (referenceDrawingMode === 'skip') {
       ctx.fillStyle = REFERENCE_COLOR
       ctx.fillRect(0, 0, totalWidth, availableHeight)
     }
-    drawVariantBlocks(ctx, renderer.getRegions(), renderBlocks, {
-      canvasWidth: totalWidth,
-      canvasHeight: availableHeight,
-      rowHeight,
-      scrollTop,
-    })
+    drawVariantsToCtx(
+      ctx,
+      { perRegionCellData: cellData.perRegionCellData },
+      renderBlocks,
+      {
+        canvasWidth: totalWidth,
+        canvasHeight: availableHeight,
+        rowHeight,
+        scrollTop,
+      },
+    )
   })
 
   const sources = model.sources ?? []

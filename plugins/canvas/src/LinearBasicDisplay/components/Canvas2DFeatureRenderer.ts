@@ -190,22 +190,30 @@ export function drawFeatureBlocks(
   }
 }
 
+// One-shot pure entry point used by SVG export per ARCHITECTURE.md "SVG
+// export pipeline". On-screen uses the streamed per-region path via
+// Canvas2DFeatureRenderer because laidOutDataMap entries arrive incrementally.
+export function drawFeaturesToCtx(
+  ctx: Ctx2D,
+  sources: { laidOutDataMap: ReadonlyMap<number, RegionRenderData> },
+  blocks: FeatureRenderBlock[],
+  state: { scrollY: number; canvasWidth: number; canvasHeight: number },
+) {
+  drawFeatureBlocks(ctx, sources.laidOutDataMap, blocks, state)
+}
+
 export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
-  private ctx: CanvasRenderingContext2D | null
-  private canvas: HTMLCanvasElement | null
+  private canvas: HTMLCanvasElement
+  private ctx: CanvasRenderingContext2D
   private regions = new Map<number, RegionRenderData>()
 
-  constructor(canvas: HTMLCanvasElement | null) {
-    this.canvas = canvas
-    if (canvas) {
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        throw new Error('Canvas 2D context not available')
-      }
-      this.ctx = ctx
-    } else {
-      this.ctx = null
+  constructor(canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      throw new Error('Canvas 2D context not available')
     }
+    this.canvas = canvas
+    this.ctx = ctx
   }
 
   uploadRegion(displayedRegionIndex: number, data: RegionRenderData) {
@@ -216,11 +224,6 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
     blocks: FeatureRenderBlock[],
     state: { scrollY: number; canvasWidth: number; canvasHeight: number },
   ) {
-    if (!this.canvas || !this.ctx) {
-      throw new Error(
-        'Canvas2DFeatureRenderer.renderBlocks called without a canvas — call drawFeatureBlocks(ctx, regions, …) directly for headless rendering',
-      )
-    }
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     drawFeatureBlocks(this.ctx, this.regions, blocks, state)
   }
@@ -231,11 +234,5 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
 
   dispose() {
     this.regions.clear()
-  }
-
-  // Expose for headless callers (SVG export) that drive drawFeatureBlocks
-  // with an SvgCanvas after running upload methods.
-  getRegions(): ReadonlyMap<number, RegionRenderData> {
-    return this.regions
   }
 }

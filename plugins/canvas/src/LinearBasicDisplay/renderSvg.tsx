@@ -5,10 +5,7 @@ import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
-import {
-  Canvas2DFeatureRenderer,
-  drawFeatureBlocks,
-} from './components/Canvas2DFeatureRenderer.ts'
+import { drawFeaturesToCtx } from './components/Canvas2DFeatureRenderer.ts'
 import { LABEL_FONT_SIZE } from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -203,18 +200,9 @@ export async function renderSvg(
   const totalWidth = view.totalWidthPx
   const height = model.height
 
-  // Headless renderer drives the same drawFeatureBlocks pipeline as on-screen.
-  const renderer = new Canvas2DFeatureRenderer(null)
-  for (const vr of visibleRegions) {
-    const data = model.laidOutDataMap.get(vr.displayedRegionIndex)
-    if (data) {
-      renderer.uploadRegion(vr.displayedRegionIndex, data)
-    }
-  }
-
   const renderBlocks = buildRenderBlocks(visibleRegions)
   const featuresNode = paintLayer(totalWidth, height, opts, ctx => {
-    drawFeatureBlocks(ctx, renderer.getRegions(), renderBlocks, {
+    drawFeaturesToCtx(ctx, { laidOutDataMap: model.laidOutDataMap }, renderBlocks, {
       scrollY: 0,
       canvasWidth: totalWidth,
       canvasHeight: height,

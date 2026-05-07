@@ -87,22 +87,38 @@ export function drawVariantBlocks(
   }
 }
 
+// One-shot pure entry point used by SVG export per ARCHITECTURE.md "SVG
+// export pipeline". On-screen uses the streamed per-region path via
+// Canvas2DVariantRenderer because perRegionCellData entries arrive incrementally.
+// VariantCellData is a structural superset of VariantUploadData (extra fields
+// are flatbush + genotype maps for hit-testing), so pass-through is type-safe.
+export function drawVariantsToCtx(
+  ctx: Ctx2D,
+  sources: { perRegionCellData: Record<number, VariantUploadData> },
+  blocks: VariantRenderBlock[],
+  state: VariantRenderState,
+) {
+  const regions = new Map<number, VariantUploadData>()
+  for (const [idxStr, data] of Object.entries(sources.perRegionCellData)) {
+    if (data.numCells > 0) {
+      regions.set(Number(idxStr), data)
+    }
+  }
+  drawVariantBlocks(ctx, regions, blocks, state)
+}
+
 export class Canvas2DVariantRenderer implements VariantBackend {
-  private ctx: CanvasRenderingContext2D | null
-  private canvas: HTMLCanvasElement | null
+  private canvas: HTMLCanvasElement
+  private ctx: CanvasRenderingContext2D
   private regions = new Map<number, VariantUploadData>()
 
-  constructor(canvas: HTMLCanvasElement | null) {
-    this.canvas = canvas
-    if (canvas) {
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        throw new Error('Canvas 2D context not available')
-      }
-      this.ctx = ctx
-    } else {
-      this.ctx = null
+  constructor(canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      throw new Error('Canvas 2D context not available')
     }
+    this.canvas = canvas
+    this.ctx = ctx
   }
 
   uploadRegion(displayedRegionIndex: number, data: VariantUploadData) {
@@ -118,22 +134,11 @@ export class Canvas2DVariantRenderer implements VariantBackend {
   }
 
   renderBlocks(blocks: VariantRenderBlock[], state: VariantRenderState) {
-    if (!this.canvas || !this.ctx) {
-      throw new Error(
-        'Canvas2DVariantRenderer.renderBlocks called without a canvas — call drawVariantBlocks(ctx, regions, …) directly for headless rendering',
-      )
-    }
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     drawVariantBlocks(this.ctx, this.regions, blocks, state)
   }
 
   dispose() {
     this.regions.clear()
-  }
-
-  // Expose for headless callers (SVG export) that drive drawVariantBlocks
-  // with an SvgCanvas after running upload methods.
-  getRegions(): ReadonlyMap<number, VariantUploadData> {
-    return this.regions
   }
 }
