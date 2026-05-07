@@ -45,7 +45,7 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
         {
           years.map(year => (
             <li>
-              <details open={year === currentYear || year === years[0] || undefined}>
+              <details open={year === currentYear || year === years[0]}>
                 <summary>{year}</summary>
                 <ul>
                   {byYear.get(year)!.map(post => (
@@ -75,19 +75,19 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
 <style>
   .blog-layout {
     display: flex;
-    min-height: calc(100vh - 60px);
+    min-height: calc(100vh - var(--nav-height));
   }
 
   .blog-sidebar {
-    width: 280px;
+    width: var(--sidebar-width);
     flex-shrink: 0;
     background: var(--color-surface);
     border-right: 1px solid var(--color-border);
     overflow-y: auto;
     padding: 1rem 0;
     position: sticky;
-    top: 60px;
-    height: calc(100vh - 60px);
+    top: var(--nav-height);
+    height: calc(100vh - var(--nav-height));
   }
 
   .blog-sidebar ul {
@@ -109,7 +109,7 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
     transition: background 0.15s;
   }
   .blog-sidebar a:hover {
-    background: #e8e8e8;
+    background: var(--color-hover-bg);
     color: var(--color-navy);
   }
   .blog-sidebar a.active {

@@ -7,6 +7,11 @@ interface Props {
   description?: string
 }
 const { title = 'JBrowse', description } = Astro.props
+const pathname = Astro.url.pathname
+
+function isActive(href: string) {
+  return pathname === href || (href !== `${baseUrl}/` && pathname.startsWith(href))
+}
 ---
 
 <!doctype html>
@@ -24,6 +29,8 @@ const { title = 'JBrowse', description } = Astro.props
     <link rel="stylesheet" href={`${baseUrl}/pagefind/pagefind-ui.css`} />
     <style is:global>
       :root {
+        --nav-height: 60px;
+        --sidebar-width: 280px;
         --color-accent: hsl(160, 51%, 35%);
         --color-accent-dark: hsl(160, 55%, 26%);
         --color-primary: #1565c0;
@@ -31,6 +38,7 @@ const { title = 'JBrowse', description } = Astro.props
         --color-navy: #0d223f;
         --color-teal-bright: #46cbae;
         --color-border: #e0e0e0;
+        --color-hover-bg: #e8e8e8;
         --color-surface: #f5f5f5;
         --color-sidebar-active-bg: #e0f5f0;
         --color-sidebar-active-text: #0d6e5a;
@@ -52,14 +60,14 @@ const { title = 'JBrowse', description } = Astro.props
 
       <div class={styles.navLinks} id="nav-links">
         <a href="http://genomes.jbrowse.org/" class={styles.newFeature}>Genomes</a>
-        <a href={`${baseUrl}/docs/`}>Docs</a>
-        <a href={`${baseUrl}/blog/`}>Blog</a>
-        <a href={`${baseUrl}/download/`}>Download</a>
-        <a href={`${baseUrl}/plugin_store/`}>Plugins</a>
-        <a href={`${baseUrl}/features/`}>Features</a>
-        <a href={`${baseUrl}/gallery/`}>Gallery</a>
-        <a href={`${baseUrl}/demos/`}>Demos</a>
-        <a href={`${baseUrl}/contact/`}>Contact</a>
+        <a href={`${baseUrl}/docs/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/docs/`) }]}>Docs</a>
+        <a href={`${baseUrl}/blog/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/blog/`) }]}>Blog</a>
+        <a href={`${baseUrl}/download/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/download/`) }]}>Download</a>
+        <a href={`${baseUrl}/plugin_store/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/plugin_store/`) }]}>Plugins</a>
+        <a href={`${baseUrl}/features/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/features/`) }]}>Features</a>
+        <a href={`${baseUrl}/gallery/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/gallery/`) }]}>Gallery</a>
+        <a href={`${baseUrl}/demos/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/demos/`) }]}>Demos</a>
+        <a href={`${baseUrl}/contact/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/contact/`) }]}>Contact</a>
       </div>
 
       <div id="search" class={styles.navSearch}>

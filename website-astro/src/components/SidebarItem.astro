@@ -22,7 +22,7 @@ const { item, currentSlug, depth } = Astro.props
   </li>
 ) : (
   <li>
-    <details open={depth === 0 || undefined}>
+    <details open={depth === 0}>
       <summary>{item.label}</summary>
       <ul>
         {item.items.map(child => (

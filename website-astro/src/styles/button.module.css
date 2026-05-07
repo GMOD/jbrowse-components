@@ -35,11 +35,11 @@
   font-size: 0.8125rem;
 }
 .btnPrimary {
-  background-color: var(--color-accent);
+  background-color: var(--color-primary);
   color: white;
 }
 .btnPrimary:hover {
-  background-color: var(--color-accent-dark);
+  background-color: var(--color-primary-dark);
   color: white;
 }
 .btnSecondary {
