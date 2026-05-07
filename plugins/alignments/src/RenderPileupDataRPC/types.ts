@@ -170,6 +170,14 @@ export interface PileupDataResult {
   modificationReadIndices: Uint32Array // maps each modification to its parent read index
   modificationTypeIndices?: Uint8Array // maps each modification to index in detectedModifications
 
+  // Per-base quality overlay data — only populated when colorBy.type === 'perBaseQuality'.
+  // One entry per ref-aligned base inside the region; main thread paints
+  // overlay rects on top of the GPU-rendered read body.
+  perBaseQualPositions: Uint32Array // absolute genomic uint32
+  perBaseQualYs: Uint16Array // pileup row, filled by main-thread layout
+  perBaseQualScores: Uint8Array // raw 0-255 quality score
+  perBaseQualReadIndices: Uint32Array // maps to parent read index
+
   // Modification coverage data - stacked colored bars in coverage area.
   // yOffset/height are fractions of THIS position's coverage bar.
   modCovPositions: Uint32Array

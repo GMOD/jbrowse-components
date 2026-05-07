@@ -534,6 +534,11 @@ export default function stateModelFactory(
               return ColorScheme.tag
             case 'baseQuality':
               return ColorScheme.baseQuality
+            case 'perBaseQuality':
+              // Per-base quality paints colored rects on top of a neutral
+              // read body via the main-thread overlay (drawPerBaseQuality);
+              // shader uses normal coloring for the background pass.
+              return ColorScheme.normal
             default:
               return ColorScheme.normal
           }
@@ -542,6 +547,10 @@ export default function stateModelFactory(
         get showModifications(): boolean {
           const t = self.colorBy.type
           return t === 'modifications' || t === 'methylation'
+        },
+
+        get showPerBaseQuality(): boolean {
+          return self.colorBy.type === 'perBaseQuality'
         },
 
         get totalPileupHeight() {
@@ -781,6 +790,7 @@ export default function stateModelFactory(
             showSoftClipping: self.showSoftClipping,
             showInterbaseIndicators: self.showInterbaseIndicators,
             showModifications: self.showModifications,
+            showPerBaseQuality: self.showPerBaseQuality,
             showOutline: self.showOutlineSetting,
             showArcs: self.showArcs,
             arcsHeight: self.arcsHeight,

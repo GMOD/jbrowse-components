@@ -100,6 +100,15 @@ export function getReadDisplayLegendItems(
       { color: 'hsl(30, 50%, 50%)', label: 'BQ 30' },
     ]
   }
+  if (colorType === 'perBaseQuality') {
+    return [
+      { color: 'hsl(0, 55%, 50%)', label: 'BQ 0' },
+      { color: 'hsl(15, 55%, 50%)', label: 'BQ 10' },
+      { color: 'hsl(30, 55%, 50%)', label: 'BQ 20' },
+      { color: 'hsl(45, 55%, 50%)', label: 'BQ 30' },
+      { color: 'hsl(60, 55%, 50%)', label: 'BQ 40' },
+    ]
+  }
   if (colorType === 'strand') {
     return [
       { color: fillColor.color_fwd_strand, label: 'Forward strand' },

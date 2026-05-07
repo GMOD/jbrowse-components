@@ -35,6 +35,7 @@ export interface RenderState {
   showSoftClipping: boolean
   showInterbaseIndicators: boolean
   showModifications: boolean
+  showPerBaseQuality: boolean
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
   canvasWidth: number
   canvasHeight: number

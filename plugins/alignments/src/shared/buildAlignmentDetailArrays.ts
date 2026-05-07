@@ -4,6 +4,7 @@ import { buildInterbaseArrays } from './buildInterbaseArrays.ts'
 import { buildGapArrays } from '../features/gap/buildArrays.ts'
 import { buildMismatchArrays } from '../features/mismatch/buildArrays.ts'
 import { buildModificationArrays } from '../features/modification/buildArrays.ts'
+import { buildPerBaseQualityArrays } from '../features/perBaseQuality/buildArrays.ts'
 import { buildSegmentArrays } from '../features/read/buildSegments.ts'
 import { buildSoftclipBaseArrays } from '../features/softclip/buildArrays.ts'
 
@@ -16,6 +17,7 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
+import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
 
 /**
  * Build the gap / mismatch / interbase / modification / segment /
@@ -35,6 +37,7 @@ export async function buildAlignmentDetailArrays({
   softclips,
   hardclips,
   modifications,
+  perBaseQualities,
   detectedModifications,
   regionStart,
   regionEnd,
@@ -49,6 +52,7 @@ export async function buildAlignmentDetailArrays({
   softclips: SoftclipData[]
   hardclips: HardclipData[]
   modifications: ModificationEntry[]
+  perBaseQualities: PerBaseQualityEntry[]
   detectedModifications: Set<string>
   regionStart: number
   regionEnd: number
@@ -82,6 +86,10 @@ export async function buildAlignmentDetailArrays({
         regionStart,
         getReadIndex,
         detectedModifications,
+      ),
+      perBaseQualityArrays: buildPerBaseQualityArrays(
+        perBaseQualities,
+        getReadIndex,
       ),
       segmentArrays: buildSegmentArrays(
         features,

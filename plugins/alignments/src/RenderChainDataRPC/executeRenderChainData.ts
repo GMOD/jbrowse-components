@@ -85,6 +85,7 @@ export async function executeRenderChainData({
     softclips,
     hardclips,
     modifications,
+    perBaseQualities,
     tagColors,
     uniqueTagValues,
     nextPositions,
@@ -149,6 +150,7 @@ export async function executeRenderChainData({
     softclipBaseArrays,
     interbaseArrays,
     modificationArrays,
+    perBaseQualityArrays,
     segmentArrays,
   } = await buildAlignmentDetailArrays({
     features,
@@ -158,6 +160,7 @@ export async function executeRenderChainData({
     softclips,
     hardclips,
     modifications,
+    perBaseQualities,
     detectedModifications,
     regionStart,
     regionEnd,
@@ -200,6 +203,7 @@ export async function executeRenderChainData({
     ...interbaseArrays,
     interbaseFrequencies: pipeline.interbaseFrequencies,
     ...modificationArrays,
+    ...perBaseQualityArrays,
 
     readTagColors: tagColors,
 
