@@ -220,14 +220,14 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     display: block;
     margin: 1rem auto;
     border-radius: 4px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border);
   }
   .docs-content :global(figure) {
-    border: 1px solid #ccc;
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     padding: 1rem;
     margin: 1.5rem 0;
-    background: #fafafa;
+    background: var(--color-surface);
   }
   .docs-content :global(figcaption) {
     text-align: center;
@@ -246,12 +246,12 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   }
   .docs-content :global(th),
   .docs-content :global(td) {
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border);
     padding: 0.5rem 0.75rem;
     text-align: left;
   }
   .docs-content :global(th) { background: var(--color-surface); font-weight: 600; }
-  .docs-content :global(tr:nth-child(even)) { background: #fafafa; }
+  .docs-content :global(tr:nth-child(even)) { background: var(--color-surface); }
   .docs-content :global(blockquote) {
     border-left: 4px solid var(--color-accent);
     margin: 1.5rem 0;
