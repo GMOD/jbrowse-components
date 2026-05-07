@@ -20,9 +20,6 @@ function drawClipBars(
   fullBlockWidth: number,
   state: RenderState,
 ) {
-  if (positions.length === 0) {
-    return
-  }
   const fH = state.featureHeight
 
   ctx.fillStyle = color

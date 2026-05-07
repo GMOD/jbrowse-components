@@ -26,9 +26,6 @@ export function drawPerBaseQuality(
   state: RenderState,
 ) {
   const n = region.perBaseQualPositions.length
-  if (n === 0) {
-    return
-  }
   const fH = state.featureHeight
   const bpPerPx = bpLength / fullBlockWidth
   const w = Math.max(1, 1 / bpPerPx) + 0.5

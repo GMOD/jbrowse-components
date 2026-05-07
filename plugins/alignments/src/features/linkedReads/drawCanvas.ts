@@ -20,9 +20,6 @@ export function drawLinkedReadLines(
   fullBlockWidth: number,
   state: RenderState,
 ) {
-  if (region.numLinkedReadLines === 0) {
-    return
-  }
   const fH = state.featureHeight
   ctx.lineWidth = 1.5
   for (let i = 0; i < region.numLinkedReadLines; i++) {

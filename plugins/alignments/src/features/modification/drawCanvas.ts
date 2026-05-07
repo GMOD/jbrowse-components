@@ -21,9 +21,6 @@ export function drawModifications(
   state: RenderState,
 ) {
   const n = region.modificationPositions.length
-  if (n === 0) {
-    return
-  }
   const fH = state.featureHeight
   const bpPerPx = bpLength / fullBlockWidth
 

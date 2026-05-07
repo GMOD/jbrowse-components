@@ -20,9 +20,6 @@ export function drawConnectingLines(
 ) {
   // positions stores [start, end] pairs, so line count = length / 2
   const numLines = region.connectingLinePositions.length / 2
-  if (numLines === 0) {
-    return
-  }
   const fH = state.featureHeight
 
   ctx.strokeStyle = 'rgba(0,0,0,0.3)'

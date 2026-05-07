@@ -13,16 +13,15 @@ export function drawModCoverageCanvas(
   state: RenderState,
 ) {
   const domainMax = state.coverageMaxDepth
-  if (!domainMax) {
-    return
+  if (domainMax) {
+    drawModCovSegments(
+      ctx,
+      region.modCovPackedBuffer,
+      makeScoreNormalizer(0, domainMax, state.coverageIsLog),
+      region.coverageMaxDepth,
+      state.coverageHeight,
+      bpToX,
+      viewWidth,
+    )
   }
-  drawModCovSegments(
-    ctx,
-    region.modCovPackedBuffer,
-    makeScoreNormalizer(0, domainMax, state.coverageIsLog),
-    region.coverageMaxDepth,
-    state.coverageHeight,
-    bpToX,
-    viewWidth,
-  )
 }
