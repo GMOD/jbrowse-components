@@ -50,9 +50,9 @@
     "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
-    "@mui/icons-material": "^7.3.10",
-    "@mui/material": "^7.3.10",
-    "mobx": "^6.15.0",
+    "@mui/icons-material": "^7.3.11",
+    "@mui/material": "^7.3.11",
+    "mobx": "^6.15.3",
     "mobx-react": "^9.2.1"
   },
   "peerDependencies": {
