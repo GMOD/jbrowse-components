@@ -366,14 +366,16 @@ export function drawWiggleToCtx<Data>(
 // Streaming on-screen backend. `uploadRegion` is per-region (per-key
 // autorun); `renderBlocks` preps the canvas and delegates to drawWiggleBlocks.
 export class Canvas2DWiggleRenderer implements WiggleBackend {
+  private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
   private regions = new Map<number, Canvas2DRegionData>()
 
-  constructor(private canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('Canvas 2D context not available')
     }
+    this.canvas = canvas
     this.ctx = ctx
   }
 
