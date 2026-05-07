@@ -26,6 +26,7 @@ import { drawMismatches } from '../../features/mismatch/drawCanvas.ts'
 import { drawModCoverageCanvas } from '../../features/modCoverage/drawCanvas.ts'
 import { drawModifications } from '../../features/modification/drawCanvas.ts'
 import { drawNoncovCanvas } from '../../features/noncov/drawCanvas.ts'
+import { drawPerBaseQuality } from '../../features/perBaseQuality/drawCanvas.ts'
 import {
   buildReadFields,
   emptyReadFields,
@@ -42,8 +43,6 @@ import type {
   AlignmentsBackend,
   AlignmentsSources,
   CigarUploadData,
-  CoverageUploadData,
-  ModCoverageUploadData,
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
@@ -55,6 +54,7 @@ import type { GapUploadData } from '../../features/gap/types.ts'
 import type { LinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
 import type { MismatchUploadData } from '../../features/mismatch/types.ts'
 import type { ModificationUploadData } from '../../features/modification/types.ts'
+import type { PerBaseQualityUploadData } from '../../features/perBaseQuality/types.ts'
 import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -67,7 +67,8 @@ export interface Canvas2DRegionData
     GapUploadData,
     LinkedReadLinesUploadData,
     MismatchUploadData,
-    ModificationUploadData {
+    ModificationUploadData,
+    PerBaseQualityUploadData {
   // interbase arrays sliced from merged worker buffer
   insertionPositions: Uint32Array
   insertionYs: Uint16Array
@@ -121,18 +122,6 @@ function buildCigarFields(data: CigarUploadData) {
   }
 }
 
-function buildCoverageAreaFields(
-  data: CoverageUploadData & ModCoverageUploadData,
-) {
-  return {
-    ...buildCoverageFields(data),
-    snpPackedBuffer: data.snpPackedBuffer,
-    modCovPackedBuffer: data.modCovPackedBuffer,
-    noncovPackedBuffer: data.noncovPackedBuffer,
-    noncovMaxCount: data.noncovMaxCount,
-    indicatorPackedBuffer: data.indicatorPackedBuffer,
-  }
-}
 
 function emptyPileupFields(): Canvas2DRegionData {
   return {
@@ -162,6 +151,9 @@ function emptyPileupFields(): Canvas2DRegionData {
     modificationPositions: new Uint32Array(0),
     modificationYs: new Uint16Array(0),
     modificationColors: new Uint32Array(0),
+    perBaseQualPositions: new Uint32Array(0),
+    perBaseQualYs: new Uint16Array(0),
+    perBaseQualScores: new Uint8Array(0),
     ...emptyCoverageFields(),
     snpPackedBuffer: new ArrayBuffer(0),
     modCovPackedBuffer: new ArrayBuffer(0),
@@ -188,7 +180,15 @@ function buildPileupRegion(
     modificationPositions: data.modificationPositions,
     modificationYs: data.modificationYs,
     modificationColors: data.modificationColors,
-    ...buildCoverageAreaFields(data),
+    perBaseQualPositions: data.perBaseQualPositions,
+    perBaseQualYs: data.perBaseQualYs,
+    perBaseQualScores: data.perBaseQualScores,
+    ...buildCoverageFields(data),
+    snpPackedBuffer: data.snpPackedBuffer,
+    modCovPackedBuffer: data.modCovPackedBuffer,
+    noncovPackedBuffer: data.noncovPackedBuffer,
+    noncovMaxCount: data.noncovMaxCount,
+    indicatorPackedBuffer: data.indicatorPackedBuffer,
     connectingLinePositions: data.connectingLinePositions,
     connectingLineYs: data.connectingLineYs,
     linkedReadLinePositions: data.linkedReadLinePositions,
@@ -196,13 +196,6 @@ function buildPileupRegion(
     linkedReadLineColorTypes: data.linkedReadLineColorTypes,
     numLinkedReadLines: data.numLinkedReadLines,
     ...(arcs ?? emptyArcsUploadData()),
-  }
-}
-
-function buildArcsOnlyRegion(arcs: ArcsUploadData): Canvas2DRegionData {
-  return {
-    ...emptyPileupFields(),
-    ...arcs,
   }
 }
 
@@ -222,7 +215,7 @@ export function buildAlignmentsRegionMap(
   }
   for (const [idx, arcs] of arcsRpcDataMap) {
     if (!regions.has(idx)) {
-      regions.set(idx, buildArcsOnlyRegion(arcs))
+      regions.set(idx, { ...emptyPileupFields(), ...arcs })
     }
   }
   return regions
@@ -380,6 +373,10 @@ export function drawAlignmentBlocks(
 
     if (state.showModifications) {
       drawModifications(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    if (state.showPerBaseQuality) {
+      drawPerBaseQuality(ctx, region, block, bpLength, fullBlockWidth, state)
     }
 
     drawHighlightOverlays(ctx, region, block, state)

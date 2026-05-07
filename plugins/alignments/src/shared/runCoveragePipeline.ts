@@ -1,3 +1,4 @@
+import { computeSNPCoverage } from '@jbrowse/alignments-core'
 import { updateStatus } from '@jbrowse/core/util'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
@@ -8,7 +9,6 @@ import { computeCoverage } from '../features/coverage/compute.ts'
 import { computeModificationCoverage } from '../features/modCoverage/compute.ts'
 import { computeNoncovCoverage } from '../features/noncov/compute.ts'
 import { computeSashimiJunctions } from '../features/sashimi/compute.ts'
-import { computeSNPCoverage } from '../features/snpCoverage/compute.ts'
 
 import type {
   FeatureData,
