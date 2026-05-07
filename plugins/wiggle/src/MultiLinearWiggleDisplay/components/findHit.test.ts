@@ -1,10 +1,16 @@
 import { findOverlayHit, findRowHit } from './findHit.ts'
 
-import type { WiggleFeatureArrays, WiggleSourceData  } from '../../util.ts'
+import type { WiggleFeatureArrays, WiggleSourceData } from '../../util.ts'
 
 function makeSource(
   name: string,
-  features: { start: number; end: number; score: number; min?: number; max?: number }[],
+  features: {
+    start: number
+    end: number
+    score: number
+    min?: number
+    max?: number
+  }[],
 ): WiggleSourceData {
   const n = features.length
   const positions = new Uint32Array(n * 2)
@@ -109,7 +115,13 @@ describe('findOverlayHit', () => {
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 1, max: 9 }]),
       ],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', 'whiskers')
+    const result = findOverlayHit(
+      data,
+      [{ name: 's1' }],
+      50,
+      'chr1',
+      'whiskers',
+    )
     expect(result?.allSources?.[0]).toEqual({
       source: 's1',
       score: 5,
@@ -135,7 +147,13 @@ describe('findOverlayHit', () => {
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 5, max: 5 }]),
       ],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', 'whiskers')
+    const result = findOverlayHit(
+      data,
+      [{ name: 's1' }],
+      50,
+      'chr1',
+      'whiskers',
+    )
     expect(result?.allSources?.[0]).toEqual({ source: 's1', score: 5 })
   })
 })

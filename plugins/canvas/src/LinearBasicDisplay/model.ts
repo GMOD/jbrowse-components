@@ -79,7 +79,7 @@ export default function stateModelFactory(
             displayConfig: {
               ...base.displayConfig,
               geneGlyphMode: self.effectiveGeneGlyphMode,
-            } as DisplayConfig,
+            },
             showOnlyGenes: self.showOnlyGenes,
           }
         },

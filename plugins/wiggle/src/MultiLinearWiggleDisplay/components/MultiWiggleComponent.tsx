@@ -138,7 +138,13 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         } else {
           const { region, data, bp } = hit
           const result = model.isOverlay
-            ? findOverlayHit(data, sources, bp, region.refName, summaryScoreMode)
+            ? findOverlayHit(
+                data,
+                sources,
+                bp,
+                region.refName,
+                summaryScoreMode,
+              )
             : findRowHit(
                 data,
                 sources,

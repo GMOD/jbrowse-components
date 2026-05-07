@@ -291,7 +291,12 @@ function cachedParent<T extends IAnyStateTreeNode>(
  * tree. Results are cached for performance.
  */
 export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
-  return cachedParent(sessionCache, node, () => findParentThatIs(node, isSessionModel), 'no session model found!')
+  return cachedParent(
+    sessionCache,
+    node,
+    () => findParentThatIs(node, isSessionModel),
+    'no session model found!',
+  )
 }
 
 /**
@@ -299,23 +304,42 @@ export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
  * node. Results are cached for performance.
  */
 export function getContainingView(node: IAnyStateTreeNode): AbstractViewModel {
-  return cachedParent(containingViewCache, node, () => findParentThatIs(node, isViewModel), 'no containing view found')
+  return cachedParent(
+    containingViewCache,
+    node,
+    () => findParentThatIs(node, isViewModel),
+    'no containing view found',
+  )
 }
 
 /**
  * get the state model of the track in the state tree that contains the given
  * node. Results are cached for performance.
  */
-export function getContainingTrack(node: IAnyStateTreeNode): AbstractTrackModel {
-  return cachedParent(containingTrackCache, node, () => findParentThatIs(node, isTrackModel), 'no containing track found')
+export function getContainingTrack(
+  node: IAnyStateTreeNode,
+): AbstractTrackModel {
+  return cachedParent(
+    containingTrackCache,
+    node,
+    () => findParentThatIs(node, isTrackModel),
+    'no containing track found',
+  )
 }
 
 /**
  * get the state model of the display in the state tree that contains the given
  * node. Results are cached for performance.
  */
-export function getContainingDisplay(node: IAnyStateTreeNode): AbstractDisplayModel {
-  return cachedParent(containingDisplayCache, node, () => findParentThatIs(node, isDisplayModel), 'no containing display found')
+export function getContainingDisplay(
+  node: IAnyStateTreeNode,
+): AbstractDisplayModel {
+  return cachedParent(
+    containingDisplayCache,
+    node,
+    () => findParentThatIs(node, isDisplayModel),
+    'no containing display found',
+  )
 }
 
 /**

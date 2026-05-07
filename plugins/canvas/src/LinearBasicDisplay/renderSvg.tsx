@@ -202,11 +202,16 @@ export async function renderSvg(
 
   const renderBlocks = buildRenderBlocks(visibleRegions)
   const featuresNode = paintLayer(totalWidth, height, opts, ctx => {
-    drawFeaturesToCtx(ctx, { laidOutDataMap: model.laidOutDataMap }, renderBlocks, {
-      scrollY: 0,
-      canvasWidth: totalWidth,
-      canvasHeight: height,
-    })
+    drawFeaturesToCtx(
+      ctx,
+      { laidOutDataMap: model.laidOutDataMap },
+      renderBlocks,
+      {
+        scrollY: 0,
+        canvasWidth: totalWidth,
+        canvasHeight: height,
+      },
+    )
   })
   // Labels + peptides always vector — text should remain crisp even when
   // rasterizeLayers is on.

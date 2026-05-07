@@ -105,7 +105,15 @@ describe('drawCoverageBins', () => {
 
   it('does nothing with zero bins', () => {
     const { ctx, calls } = makeCtx()
-    drawCoverageBins(ctx, new ArrayBuffer(0), identity, 50, 'blue', () => 0, 200)
+    drawCoverageBins(
+      ctx,
+      new ArrayBuffer(0),
+      identity,
+      50,
+      'blue',
+      () => 0,
+      200,
+    )
     expect(calls.length).toBe(0)
   })
 })
@@ -148,7 +156,16 @@ describe('drawSnpSegments', () => {
   it('draws segments with correct colors', () => {
     const buf = makeSnpBuf(100, 0.5, 0.3, 1, 1)
     const { ctx, calls } = makeCtx()
-    drawSnpSegments(ctx, buf, d => d, 1, coverageHeight, colors, bp => bp - 100, 200)
+    drawSnpSegments(
+      ctx,
+      buf,
+      d => d,
+      1,
+      coverageHeight,
+      colors,
+      bp => bp - 100,
+      200,
+    )
     const styleCalls = calls.filter(c => c.method === 'fillStyle')
     expect(styleCalls.some(c => c.args[0] === 'red')).toBe(true)
   })
@@ -158,7 +175,16 @@ describe('drawSnpSegments', () => {
     // yOffset=0, segHeight=0.3 (30% of this position's bar) → 30% of effectiveH.
     const buf = makeSnpBuf(100, 0, 0.3, 1, 1)
     const { ctx, calls } = makeCtx()
-    drawSnpSegments(ctx, buf, (d: number) => d / 100, 100, coverageHeight, colors, bp => bp - 100, 200)
+    drawSnpSegments(
+      ctx,
+      buf,
+      (d: number) => d / 100,
+      100,
+      coverageHeight,
+      colors,
+      bp => bp - 100,
+      200,
+    )
     const rects = calls.filter(c => c.method === 'fillRect')
     expect(rects).toHaveLength(1)
     const [, y, , h] = rects[0]!.args as number[]
@@ -176,9 +202,19 @@ describe('drawSnpSegments', () => {
 
     // yOffset=0, segHeight=0.1 (10 SNPs / 100 totalDepth at position).
     const buf = makeSnpBuf(100, 0, 0.1, 1, totalDepth / domainMax)
-    const logNormalize = (d: number) => Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
+    const logNormalize = (d: number) =>
+      Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
     const { ctx, calls } = makeCtx()
-    drawSnpSegments(ctx, buf, logNormalize, domainMax, coverageHeight, colors, bp => bp - 100, 200)
+    drawSnpSegments(
+      ctx,
+      buf,
+      logNormalize,
+      domainMax,
+      coverageHeight,
+      colors,
+      bp => bp - 100,
+      200,
+    )
     const rects = calls.filter(c => c.method === 'fillRect')
     expect(rects).toHaveLength(1)
     const [, , , h] = rects[0]!.args as number[]
@@ -191,14 +227,37 @@ describe('drawSnpSegments', () => {
     const buf = makeSnpBuf(100, 0, 0.1, 1, totalDepth / domainMax)
 
     const { ctx: linCtx, calls: linCalls } = makeCtx()
-    drawSnpSegments(linCtx, buf, (d: number) => d / domainMax, domainMax, coverageHeight, colors, bp => bp - 100, 200)
+    drawSnpSegments(
+      linCtx,
+      buf,
+      (d: number) => d / domainMax,
+      domainMax,
+      coverageHeight,
+      colors,
+      bp => bp - 100,
+      200,
+    )
 
-    const logNorm = (d: number) => Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
+    const logNorm = (d: number) =>
+      Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
     const { ctx: logCtx, calls: logCalls } = makeCtx()
-    drawSnpSegments(logCtx, buf, logNorm, domainMax, coverageHeight, colors, bp => bp - 100, 200)
+    drawSnpSegments(
+      logCtx,
+      buf,
+      logNorm,
+      domainMax,
+      coverageHeight,
+      colors,
+      bp => bp - 100,
+      200,
+    )
 
-    const linH = (linCalls.find(c => c.method === 'fillRect')!.args as number[])[3]!
-    const logH = (logCalls.find(c => c.method === 'fillRect')!.args as number[])[3]!
+    const linH = (
+      linCalls.find(c => c.method === 'fillRect')!.args as number[]
+    )[3]!
+    const logH = (
+      logCalls.find(c => c.method === 'fillRect')!.args as number[]
+    )[3]!
     expect(logH).toBeGreaterThan(linH)
   })
 })
@@ -236,7 +295,15 @@ describe('drawModCovSegments', () => {
   it('draws with 1bp width at high zoom', () => {
     const buf = makeModCovBuf(100, 0.5, 0.3, 255, 0, 0, 255, 1)
     const { ctx, calls } = makeCtx()
-    drawModCovSegments(ctx, buf, d => d, 1, 50, bp => (bp - 100) * 10, 200)
+    drawModCovSegments(
+      ctx,
+      buf,
+      d => d,
+      1,
+      50,
+      bp => (bp - 100) * 10,
+      200,
+    )
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(1)
     const [, , w] = fillCalls[0]!.args as [number, number, number, number]
@@ -246,7 +313,15 @@ describe('drawModCovSegments', () => {
   it('clamps width to 1px at low zoom', () => {
     const buf = makeModCovBuf(100, 0.5, 0.3, 255, 0, 0, 255, 1)
     const { ctx, calls } = makeCtx()
-    drawModCovSegments(ctx, buf, d => d, 1, 50, bp => (bp - 100) * 0.1, 200)
+    drawModCovSegments(
+      ctx,
+      buf,
+      d => d,
+      1,
+      50,
+      bp => (bp - 100) * 0.1,
+      200,
+    )
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(1)
     const [, , w] = fillCalls[0]!.args as [number, number, number, number]
@@ -256,7 +331,15 @@ describe('drawModCovSegments', () => {
   it('unpacks color correctly', () => {
     const buf = makeModCovBuf(100, 0.5, 0.3, 200, 100, 50, 255, 1)
     const { ctx, calls } = makeCtx()
-    drawModCovSegments(ctx, buf, d => d, 1, 50, bp => (bp - 100) * 5, 200)
+    drawModCovSegments(
+      ctx,
+      buf,
+      d => d,
+      1,
+      50,
+      bp => (bp - 100) * 5,
+      200,
+    )
     const styleCall = calls.find(c => c.method === 'fillStyle')
     expect(styleCall?.args[0]).toBe('rgba(200,100,50,1)')
   })
@@ -264,7 +347,15 @@ describe('drawModCovSegments', () => {
   it('linear scale: positions mod segment as fraction of per-position bar', () => {
     const buf = makeModCovBuf(100, 0, 0.3, 200, 100, 50, 255, 1)
     const { ctx, calls } = makeCtx()
-    drawModCovSegments(ctx, buf, (d: number) => d / 100, 100, coverageHeight, bp => bp - 100, 200)
+    drawModCovSegments(
+      ctx,
+      buf,
+      (d: number) => d / 100,
+      100,
+      coverageHeight,
+      bp => bp - 100,
+      200,
+    )
     const rects = calls.filter(c => c.method === 'fillRect')
     expect(rects).toHaveLength(1)
     const [, y, , h] = rects[0]!.args as number[]
@@ -278,11 +369,28 @@ describe('drawModCovSegments', () => {
     const logBarFrac = Math.log2(totalDepth) / Math.log2(domainMax)
     const expectedBarH = logBarFrac * effectiveH
 
-    const buf = makeModCovBuf(100, 0, 0.1, 200, 100, 50, 255, totalDepth / domainMax)
+    const buf = makeModCovBuf(
+      100,
+      0,
+      0.1,
+      200,
+      100,
+      50,
+      255,
+      totalDepth / domainMax,
+    )
     const logNormalize = (d: number) =>
       Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
     const { ctx, calls } = makeCtx()
-    drawModCovSegments(ctx, buf, logNormalize, domainMax, coverageHeight, bp => bp - 100, 200)
+    drawModCovSegments(
+      ctx,
+      buf,
+      logNormalize,
+      domainMax,
+      coverageHeight,
+      bp => bp - 100,
+      200,
+    )
     const rects = calls.filter(c => c.method === 'fillRect')
     expect(rects).toHaveLength(1)
     const [, , , h] = rects[0]!.args as number[]
@@ -292,18 +400,47 @@ describe('drawModCovSegments', () => {
   it('log scale bar is taller than linear for same depth', () => {
     const domainMax = 1000
     const totalDepth = 100
-    const buf = makeModCovBuf(100, 0, 0.1, 200, 100, 50, 255, totalDepth / domainMax)
+    const buf = makeModCovBuf(
+      100,
+      0,
+      0.1,
+      200,
+      100,
+      50,
+      255,
+      totalDepth / domainMax,
+    )
 
     const { ctx: linCtx, calls: linCalls } = makeCtx()
-    drawModCovSegments(linCtx, buf, (d: number) => d / domainMax, domainMax, coverageHeight, bp => bp - 100, 200)
+    drawModCovSegments(
+      linCtx,
+      buf,
+      (d: number) => d / domainMax,
+      domainMax,
+      coverageHeight,
+      bp => bp - 100,
+      200,
+    )
 
     const logNorm = (d: number) =>
       Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
     const { ctx: logCtx, calls: logCalls } = makeCtx()
-    drawModCovSegments(logCtx, buf, logNorm, domainMax, coverageHeight, bp => bp - 100, 200)
+    drawModCovSegments(
+      logCtx,
+      buf,
+      logNorm,
+      domainMax,
+      coverageHeight,
+      bp => bp - 100,
+      200,
+    )
 
-    const linH = (linCalls.find(c => c.method === 'fillRect')!.args as number[])[3]!
-    const logH = (logCalls.find(c => c.method === 'fillRect')!.args as number[])[3]!
+    const linH = (
+      linCalls.find(c => c.method === 'fillRect')!.args as number[]
+    )[3]!
+    const logH = (
+      logCalls.find(c => c.method === 'fillRect')!.args as number[]
+    )[3]!
     expect(logH).toBeGreaterThan(linH)
   })
 })

@@ -1,14 +1,17 @@
-import { parseError } from '../ErrorBanner.tsx'
+import { parseError } from '../parseError.ts'
 
 describe('parseError', () => {
   it('returns empty strings for non-MST errors', () => {
-    const { snapshotError, message } = parseError('TypeError: cannot read property')
+    const { snapshotError, message } = parseError(
+      'TypeError: cannot read property',
+    )
     expect(snapshotError).toBe('')
     expect(message).toBe('')
   })
 
   it('handles case 2 (snapshot error without path)', () => {
-    const str = 'snapshot `{"type":"Track"}` is not assignable to type `ModelType`'
+    const str =
+      'snapshot `{"type":"Track"}` is not assignable to type `ModelType`'
     const { snapshotError, message } = parseError(str)
     expect(snapshotError).toBe('{"type":"Track"}')
     expect(message).toBe('Failed to load element...Failed element had snapshot')

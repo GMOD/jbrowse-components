@@ -7,11 +7,7 @@ import {
 
 import { processFeaturesFromArrays } from '../util.ts'
 
-import type {
-  RawFeatureArrays,
-  SourceInfo,
-  WiggleDataResult,
-} from '../util.ts'
+import type { RawFeatureArrays, SourceInfo, WiggleDataResult } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'

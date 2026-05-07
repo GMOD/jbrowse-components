@@ -25,7 +25,13 @@ function makeFeature(opts: {
   } as unknown as Feature
 }
 
-function run(opts: { start: number; cigar: string; qual: Uint8Array; regionStart?: number; regionEnd?: number }) {
+function run(opts: {
+  start: number
+  cigar: string
+  qual: Uint8Array
+  regionStart?: number
+  regionEnd?: number
+}) {
   const out: PerBaseQualityEntry[] = []
   extractPerBaseQuality(
     makeFeature(opts),
@@ -40,7 +46,11 @@ function run(opts: { start: number; cigar: string; qual: Uint8Array; regionStart
 describe('extractPerBaseQuality', () => {
   test('plain match emits one entry per aligned base', () => {
     expect(
-      run({ start: 100, cigar: '5M', qual: new Uint8Array([10, 20, 30, 40, 50]) }),
+      run({
+        start: 100,
+        cigar: '5M',
+        qual: new Uint8Array([10, 20, 30, 40, 50]),
+      }),
     ).toEqual([
       [100, 10],
       [101, 20],
@@ -69,7 +79,11 @@ describe('extractPerBaseQuality', () => {
 
   test('soft clip advances soffset only', () => {
     expect(
-      run({ start: 100, cigar: '2S3M', qual: new Uint8Array([99, 99, 30, 40, 50]) }),
+      run({
+        start: 100,
+        cigar: '2S3M',
+        qual: new Uint8Array([99, 99, 30, 40, 50]),
+      }),
     ).toEqual([
       [100, 30],
       [101, 40],
@@ -94,7 +108,11 @@ describe('extractPerBaseQuality', () => {
 
   test('deletion advances roffset only', () => {
     expect(
-      run({ start: 100, cigar: '2M2D2M', qual: new Uint8Array([10, 20, 30, 40]) }),
+      run({
+        start: 100,
+        cigar: '2M2D2M',
+        qual: new Uint8Array([10, 20, 30, 40]),
+      }),
     ).toEqual([
       [100, 10],
       [101, 20],
@@ -105,7 +123,11 @@ describe('extractPerBaseQuality', () => {
 
   test('skip (N) advances roffset only', () => {
     expect(
-      run({ start: 100, cigar: '2M100N2M', qual: new Uint8Array([10, 20, 30, 40]) }),
+      run({
+        start: 100,
+        cigar: '2M100N2M',
+        qual: new Uint8Array([10, 20, 30, 40]),
+      }),
     ).toEqual([
       [100, 10],
       [101, 20],
@@ -116,7 +138,10 @@ describe('extractPerBaseQuality', () => {
 
   test('missing NUMERIC_QUAL: emits nothing', () => {
     const out: PerBaseQualityEntry[] = []
-    const feature = { id: () => 'f', get: () => undefined } as unknown as Feature
+    const feature = {
+      id: () => 'f',
+      get: () => undefined,
+    } as unknown as Feature
     extractPerBaseQuality(feature, 'f', 0, 1000, out)
     expect(out).toEqual([])
   })

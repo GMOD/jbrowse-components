@@ -34,10 +34,7 @@ import {
 import { drawReads } from '../../features/read/drawCanvas.ts'
 import { drawSnpSegmentsCanvas } from '../../features/snpCoverage/drawCanvas.ts'
 import { drawSoftclipBases } from '../../features/softclip/drawBases.ts'
-import {
-  drawHardclips,
-  drawSoftclips,
-} from '../../shared/drawClipBars.ts'
+import { drawHardclips, drawSoftclips } from '../../shared/drawClipBars.ts'
 
 import type {
   AlignmentsBackend,
@@ -115,7 +112,6 @@ function buildCigarFields(data: CigarUploadData) {
     softclipBaseBases: data.softclipBaseBases,
   }
 }
-
 
 function emptyPileupFields(): Canvas2DRegionData {
   return {
@@ -333,7 +329,15 @@ export function drawAlignmentBlocks(
 
     const domainMax = state.coverageMaxDepth
     if (state.showCoverage && domainMax) {
-      drawCoverage(ctx, region, block, bpLength, fullBlockWidth, state, domainMax)
+      drawCoverage(
+        ctx,
+        region,
+        block,
+        bpLength,
+        fullBlockWidth,
+        state,
+        domainMax,
+      )
     }
 
     // Clip pileup area
@@ -412,8 +416,7 @@ function drawCoverage(
   state: RenderState,
   domainMax: number,
 ) {
-  const bpToX = (bp: number) =>
-    bpToScreenX(bp, block, bpLength, fullBlockWidth)
+  const bpToX = (bp: number) => bpToScreenX(bp, block, bpLength, fullBlockWidth)
   const viewWidth = fullBlockWidth + block.screenStartPx
   drawCoverageBars(ctx, region, bpToX, viewWidth, state, domainMax)
   drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state, domainMax)

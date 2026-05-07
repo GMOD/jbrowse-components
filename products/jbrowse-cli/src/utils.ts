@@ -39,7 +39,6 @@ export async function writeJsonFile(location: string, contents: unknown) {
   return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))
 }
 
-
 export async function readInlineOrFileJson<T>(inlineOrFileName: string) {
   let result: T
   // see if it's inline JSON

@@ -1,7 +1,7 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type { SourceInfo, WiggleDataResult  } from '../util.ts'
+import type { SourceInfo, WiggleDataResult } from '../util.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 

@@ -20,13 +20,13 @@
 
 ### Overridable hooks — subclasses must/can override
 
-| Hook                         | Default     | Override to                                                                                              |
-| ---------------------------- | ----------- | -------------------------------------------------------------------------------------------------------- |
-| `fetchNeeded(needed)`        | no-op       | call `this.fetchRegions(needed, async ctx => { ... })`                                                   |
+| Hook                         | Default     | Override to                                                                                                                                                                                                                                                                                  |
+| ---------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fetchNeeded(needed)`        | no-op       | call `this.fetchRegions(needed, async ctx => { ... })`                                                                                                                                                                                                                                       |
 | `rpcProps()`                 | not defined | declare a method returning the literal RPC payload; every field it reads becomes a cache key via `SettingsInvalidate`. The mixin doesn't declare a base default so subclass return types stay narrow through MST `.views()` chains; subclasses extend via the standard super-capture pattern |
-| `isCacheValid(idx)`          | `true`      | return `false` to force re-fetch at current zoom (wiggle uses this for zoom-level changes)               |
-| `getByteEstimateConfig()`    | `null`      | return config to enable byte-estimate gating before fetch                                                |
-| `clearDisplaySpecificData()` | no-op       | clear subclass-owned data maps (rpcDataMap, cellData, etc.)                                              |
+| `isCacheValid(idx)`          | `true`      | return `false` to force re-fetch at current zoom (wiggle uses this for zoom-level changes)                                                                                                                                                                                                   |
+| `getByteEstimateConfig()`    | `null`      | return config to enable byte-estimate gating before fetch                                                                                                                                                                                                                                    |
+| `clearDisplaySpecificData()` | no-op       | clear subclass-owned data maps (rpcDataMap, cellData, etc.)                                                                                                                                                                                                                                  |
 
 ### `loadedRegions`
 

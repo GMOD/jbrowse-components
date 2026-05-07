@@ -49,7 +49,6 @@ export default function MultiRegionDisplayMixin() {
         const view = getContainingView(self) as LinearGenomeViewModel
         return buildRenderBlocks(view.visibleRegions)
       },
-
     }))
     .actions(self => ({
       // Action wrapper so callers after async boundaries stay in MST strict mode.

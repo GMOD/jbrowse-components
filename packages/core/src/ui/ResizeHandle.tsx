@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { cx, makeStyles } from '../util/tss-react/index.ts'
 import { useEvent } from './useEvent.ts'
+import { cx, makeStyles } from '../util/tss-react/index.ts'
 
 const useStyles = makeStyles()(theme => ({
   horizontalHandle: {

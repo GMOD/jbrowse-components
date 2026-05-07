@@ -3,8 +3,8 @@ import type React from 'react'
 import { toRgb } from '../../shaders/colors.ts'
 import { fillColor } from '../../shared/color.ts'
 
-import type { CigarCoords } from '../../shared/hitTestTypes.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
+import type { CigarCoords } from '../../shared/hitTestTypes.ts'
 import type { Theme } from '@mui/material'
 
 export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {

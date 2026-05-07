@@ -130,7 +130,12 @@ test('fails if load flag is passed with a URL', async () => {
 
 test('adds an assembly from a FASTA', async () => {
   await runInTmpDir(async ctx => {
-    await runCommand(['add-assembly', dataDir('simple.fasta'), '--load', 'copy'])
+    await runCommand([
+      'add-assembly',
+      dataDir('simple.fasta'),
+      '--load',
+      'copy',
+    ])
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
@@ -139,7 +144,10 @@ test('adds an assembly from a FASTA (.fa extension)', async () => {
   await runInTmpDir(async ctx => {
     await mkdir(ctxDir(ctx, 'files'))
     fs.copyFileSync(dataDir('simple.fasta'), ctxDir(ctx, 'files/simple.fa'))
-    fs.copyFileSync(dataDir('simple.fasta.fai'), ctxDir(ctx, 'files/simple.fa.fai'))
+    fs.copyFileSync(
+      dataDir('simple.fasta.fai'),
+      ctxDir(ctx, 'files/simple.fa.fai'),
+    )
     await runCommand([
       'add-assembly',
       path.join('files', 'simple.fa'),

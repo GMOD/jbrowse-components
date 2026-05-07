@@ -199,8 +199,7 @@ function drawLine(
     }
     ctx.lineTo(x2, scoreY)
 
-    const nextStartBp =
-      i < n - 1 ? positions[(i + 1) * 2]! : -1
+    const nextStartBp = i < n - 1 ? positions[(i + 1) * 2]! : -1
     const gapAfter = nextStartBp !== endBp
     if (gapAfter) {
       ctx.lineTo(x2, zeroY)

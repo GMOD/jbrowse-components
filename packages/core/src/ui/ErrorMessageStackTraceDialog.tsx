@@ -110,7 +110,7 @@ export default function ErrorMessageStackTraceDialog({
           setMappedStackTrace(result)
         }
       })
-      .catch(e => {
+      .catch((e: unknown) => {
         console.error(e)
         if (!cancelled) {
           setMappedStackTrace(stackTrace)

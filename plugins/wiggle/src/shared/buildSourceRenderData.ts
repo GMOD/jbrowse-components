@@ -1,6 +1,10 @@
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
-import { isOverlayMode, isScatterMode, makeWhiskersSourceData } from './wiggleComponentUtils.ts'
+import {
+  isOverlayMode,
+  isScatterMode,
+  makeWhiskersSourceData,
+} from './wiggleComponentUtils.ts'
 import { getEffectiveScores } from '../util.ts'
 
 import type { WiggleDataResult } from '../util.ts'

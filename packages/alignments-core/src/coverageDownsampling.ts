@@ -391,8 +391,11 @@ export function computeSNPCoverage(
   regionStart: number,
   coverage: { depths: Float32Array; maxDepth: number; startPos: number },
 ): SNPCoverageResult {
-  const { depths: coverageDepths, maxDepth, startPos: coverageStartPos } =
-    coverage
+  const {
+    depths: coverageDepths,
+    maxDepth,
+    startPos: coverageStartPos,
+  } = coverage
   if (mismatches.length === 0 || maxDepth === 0) {
     return {
       positions: new Uint32Array(0),
@@ -444,9 +447,7 @@ export function computeSNPCoverage(
     // SNPs without reads, so this is a data-inconsistency guard.
     const idx = entry.position - coverageStartPos
     const totalDepth =
-      idx >= 0 && idx < coverageDepths.length
-        ? (coverageDepths[idx] ?? 0)
-        : 0
+      idx >= 0 && idx < coverageDepths.length ? (coverageDepths[idx] ?? 0) : 0
     if (totalDepth === 0) {
       continue
     }
@@ -454,22 +455,46 @@ export function computeSNPCoverage(
     let yOffset = 0
     if (entry.a > 0) {
       const h = entry.a / totalDepth
-      segments.push({ position: entry.position, yOffset, height: h, colorType: 1, relDepth })
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: h,
+        colorType: 1,
+        relDepth,
+      })
       yOffset += h
     }
     if (entry.c > 0) {
       const h = entry.c / totalDepth
-      segments.push({ position: entry.position, yOffset, height: h, colorType: 2, relDepth })
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: h,
+        colorType: 2,
+        relDepth,
+      })
       yOffset += h
     }
     if (entry.g > 0) {
       const h = entry.g / totalDepth
-      segments.push({ position: entry.position, yOffset, height: h, colorType: 3, relDepth })
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: h,
+        colorType: 3,
+        relDepth,
+      })
       yOffset += h
     }
     if (entry.t > 0) {
       const h = entry.t / totalDepth
-      segments.push({ position: entry.position, yOffset, height: h, colorType: 4, relDepth })
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: h,
+        colorType: 4,
+        relDepth,
+      })
     }
   }
 

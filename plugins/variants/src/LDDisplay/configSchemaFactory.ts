@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import ldRendererConfigSchema from '../LDRenderer/configSchema.ts'
 import sharedLDConfigFactory from './SharedLDConfigSchema.ts'
+import ldRendererConfigSchema from '../LDRenderer/configSchema.ts'
 
 export function makeLDDisplayConfigSchema(typeName: string) {
   return ConfigurationSchema(

@@ -1,10 +1,12 @@
-import { performHitTest, SNP_HIT_MAX_BP_PER_PX } from './hitTestPipeline.ts'
+import { SNP_HIT_MAX_BP_PER_PX, performHitTest } from './hitTestPipeline.ts'
 
 import type { HitTestOptions } from './hitTestPipeline.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
-function makeRpcData(overrides: Partial<PileupDataResult> = {}): PileupDataResult {
+function makeRpcData(
+  overrides: Partial<PileupDataResult> = {},
+): PileupDataResult {
   return {
     mismatchPositions: new Uint32Array(),
     interbasePositions: new Uint32Array(),
@@ -35,7 +37,9 @@ function makeRpcData(overrides: Partial<PileupDataResult> = {}): PileupDataResul
 // Row height = featureHeight(10) + spacing(2) = 12px.
 // canvasY=60 → adjustedY=10, row=0, yWithinRow=10 (= featureHeightSetting, still in feature)
 // canvasY=61 → adjustedY=11, row=0, yWithinRow=11 (> featureHeightSetting, in spacing)
-function makeResolved(rpcOverrides: Partial<PileupDataResult> = {}): ResolvedBlock {
+function makeResolved(
+  rpcOverrides: Partial<PileupDataResult> = {},
+): ResolvedBlock {
   return {
     rpcData: makeRpcData(rpcOverrides),
     bpRange: [0, 20000] as [number, number],

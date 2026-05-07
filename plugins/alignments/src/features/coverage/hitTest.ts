@@ -1,5 +1,5 @@
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { CoverageHitResult } from './types.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 // Find the first significant position in [binStart, binEnd). "Significant"
 // = at least `threshold` fraction of reads at that position, relative to
@@ -13,8 +13,7 @@ function findSignificantInBin(
   threshold: number,
 ) {
   const hitsByPos = new Map<number, number>()
-  for (let i = 0; i < positions.length; i++) {
-    const pos = positions[i]!
+  for (const pos of positions) {
     if (pos >= binStart && pos < binEnd) {
       hitsByPos.set(pos, (hitsByPos.get(pos) ?? 0) + 1)
     }

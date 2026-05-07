@@ -40,7 +40,7 @@ import {
 import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
 
 import type { WiggleBackend } from '../shared/wiggleBackendTypes.ts'
-import type { Source, SourceInfo, WiggleDataResult  } from '../util.ts'
+import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'

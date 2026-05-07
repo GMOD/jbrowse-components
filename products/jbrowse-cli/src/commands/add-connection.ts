@@ -77,7 +77,8 @@ export async function run(args?: string[]) {
     force: {
       type: 'boolean',
       short: 'f',
-      description: 'Overwrite existing connection if one with the same id exists',
+      description:
+        'Overwrite existing connection if one with the same id exists',
     },
   } as const
   const { values: flags, positionals } = parseArgs({

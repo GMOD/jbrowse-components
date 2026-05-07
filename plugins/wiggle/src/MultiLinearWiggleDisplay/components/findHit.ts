@@ -4,10 +4,7 @@ import {
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type { MultiWiggleDisplayModel } from './MultiWiggleComponent.tsx'
-import type {
-  WiggleDataResult,
-  WiggleSourceData,
-} from '../../util.ts'
+import type { WiggleDataResult, WiggleSourceData } from '../../util.ts'
 
 type FeatureUnderMouse = NonNullable<
   MultiWiggleDisplayModel['featureUnderMouse']

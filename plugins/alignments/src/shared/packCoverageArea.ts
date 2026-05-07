@@ -9,14 +9,14 @@
 
 import { packCoverageBinsForGpu } from '@jbrowse/alignments-core'
 
-import { computeCoverage } from '../features/coverage/compute.ts'
 import { packIndicatorsForGpu } from '../features/indicator/packGpu.ts'
-import { computeModificationCoverage } from '../features/modCoverage/compute.ts'
 import { packModCovSegmentsForGpu } from '../features/modCoverage/packGpu.ts'
-import { computeNoncovCoverage } from '../features/noncov/compute.ts'
 import { packNoncovSegmentsForGpu } from '../features/noncov/packGpu.ts'
 import { packSnpSegmentsForGpu } from '../features/snpCoverage/packGpu.ts'
 
+import type { computeCoverage } from '../features/coverage/compute.ts'
+import type { computeModificationCoverage } from '../features/modCoverage/compute.ts'
+import type { computeNoncovCoverage } from '../features/noncov/compute.ts'
 import type { SNPCoverageResult } from '@jbrowse/alignments-core'
 
 // All packed buffers store absolute genomic uint32 positions. Shaders read via

@@ -97,7 +97,7 @@ const EditableTypography = forwardRef<HTMLDivElement, Props>(
             }
           }}
           onBlur={() => {
-            setValue(editedValue !== undefined ? editedValue : value)
+            setValue(editedValue ?? value)
             setEditedValue(undefined)
           }}
         />

@@ -135,7 +135,10 @@ export async function getAssembly({
         trackId: `${name}-ReferenceSequenceTrack`,
         adapter: {
           type: 'IndexedFastaAdapter',
-          fastaLocation: { uri: mapLoc(argsSequence), locationType: 'UriLocation' },
+          fastaLocation: {
+            uri: mapLoc(argsSequence),
+            locationType: 'UriLocation',
+          },
           faiLocation: { uri: mapLoc(faiLoc), locationType: 'UriLocation' },
         },
       }
@@ -160,7 +163,10 @@ export async function getAssembly({
         trackId: `${name}-ReferenceSequenceTrack`,
         adapter: {
           type: 'BgzipFastaAdapter',
-          fastaLocation: { uri: mapLoc(argsSequence), locationType: 'UriLocation' },
+          fastaLocation: {
+            uri: mapLoc(argsSequence),
+            locationType: 'UriLocation',
+          },
           faiLocation: { uri: mapLoc(faiLoc), locationType: 'UriLocation' },
           gziLocation: { uri: mapLoc(gziLoc), locationType: 'UriLocation' },
         },
@@ -181,7 +187,10 @@ export async function getAssembly({
         trackId: `${name}-ReferenceSequenceTrack`,
         adapter: {
           type: 'TwoBitAdapter',
-          twoBitLocation: { uri: mapLoc(argsSequence), locationType: 'UriLocation' },
+          twoBitLocation: {
+            uri: mapLoc(argsSequence),
+            locationType: 'UriLocation',
+          },
         },
       }
       if (load) {
