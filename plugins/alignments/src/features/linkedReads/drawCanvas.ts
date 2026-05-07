@@ -5,7 +5,7 @@ import {
 } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import { linkedReadColorPalette } from '../../shaders/palettes.ts'
 
-import type { LinkedReadLinesRegionFields } from './buildRegion.ts'
+import type { LinkedReadLinesUploadData } from './types.ts'
 import type {
   DrawBlock,
   RenderState,
@@ -14,7 +14,7 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export function drawLinkedReadLines(
   ctx: Ctx2D,
-  region: LinkedReadLinesRegionFields,
+  region: LinkedReadLinesUploadData,
   block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,

@@ -172,29 +172,26 @@ export function computeModificationCoverage(
         strandBaseCounts,
       })
 
-      // height = mod-fraction × avg-probability, both as fractions of this
-      // position's reads. Multiplied by per-position bar height at draw time.
+      if (detectable === 0) {
+        continue
+      }
+
       const height =
         (modifiable * entry.probabilityTotal) / (detectable * depthAtPosition)
 
-      const avgProbability =
-        entry.probabilityCount > 0
-          ? entry.probabilityTotal / entry.probabilityCount
-          : 0
+      const avgProbability = entry.probabilityTotal / entry.probabilityCount
 
-      if (!Number.isNaN(height)) {
-        segments.push({
-          position,
-          yOffset,
-          height,
-          relDepth: depthAtPosition / regionMaxDepth,
-          r: entry.r,
-          g: entry.g,
-          b: entry.b,
-          alpha: Math.round(avgProbability * 255),
-        })
-        yOffset += height
-      }
+      segments.push({
+        position,
+        yOffset,
+        height,
+        relDepth: depthAtPosition / regionMaxDepth,
+        r: entry.r,
+        g: entry.g,
+        b: entry.b,
+        alpha: Math.round(avgProbability * 255),
+      })
+      yOffset += height
     }
   }
 

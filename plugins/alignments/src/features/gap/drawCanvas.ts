@@ -4,7 +4,7 @@ import {
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 
-import type { GapRegionFields } from './buildRegion.ts'
+import type { GapUploadData } from './types.ts'
 import type {
   DrawBlock,
   RenderState,
@@ -16,7 +16,7 @@ const GAP_SKIP = 1
 
 export function drawGaps(
   ctx: Ctx2D,
-  region: GapRegionFields,
+  region: GapUploadData,
   block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
@@ -25,7 +25,9 @@ export function drawGaps(
   const fH = state.featureHeight
   const delColorBase = state.colors.colorDeletion
 
-  for (let i = 0; i < region.numGaps; i++) {
+  // gapPositions stores [start, end] pairs
+  const numGaps = region.gapPositions.length / 2
+  for (let i = 0; i < numGaps; i++) {
     const startBp = region.gapPositions[i * 2]!
     const endBp = region.gapPositions[i * 2 + 1]!
     const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)

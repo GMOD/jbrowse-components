@@ -5,7 +5,7 @@ import {
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 
-import type { ModificationRegionFields } from './buildRegion.ts'
+import type { ModificationUploadData } from './types.ts'
 import type {
   DrawBlock,
   RenderState,
@@ -14,19 +14,20 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export function drawModifications(
   ctx: Ctx2D,
-  region: ModificationRegionFields,
+  region: ModificationUploadData,
   block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
   state: RenderState,
 ) {
-  if (region.numModifications === 0) {
+  const n = region.modificationPositions.length
+  if (n === 0) {
     return
   }
   const fH = state.featureHeight
   const bpPerPx = bpLength / fullBlockWidth
 
-  for (let i = 0; i < region.numModifications; i++) {
+  for (let i = 0; i < n; i++) {
     const bp = region.modificationPositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const w = Math.max(1, 1 / bpPerPx)

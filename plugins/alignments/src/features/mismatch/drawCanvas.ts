@@ -4,7 +4,7 @@ import {
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 
-import type { MismatchRegionFields } from './buildRegion.ts'
+import type { MismatchUploadData } from './types.ts'
 import type {
   DrawBlock,
   RenderState,
@@ -32,7 +32,7 @@ function buildMismatchColorTupleMap(
 
 export function drawMismatches(
   ctx: Ctx2D,
-  region: MismatchRegionFields,
+  region: MismatchUploadData,
   block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
@@ -43,7 +43,7 @@ export function drawMismatches(
   const pxPerBp = 1 / bpPerPx
   const baseColors = buildMismatchColorTupleMap(state)
 
-  for (let i = 0; i < region.numMismatches; i++) {
+  for (let i = 0; i < region.mismatchPositions.length; i++) {
     const bp = region.mismatchPositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const w = Math.max(1, 1 / bpPerPx)
