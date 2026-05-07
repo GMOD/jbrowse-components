@@ -239,8 +239,13 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 5000,
   },
 
-  // COLO829 methylation specs removed pending LinearAlignmentsDisplay refactoring
-  // (displaySnapshot sub-display overrides are broken and being redesigned)
+  // TODO: restore COLO829 methylation specs after LinearAlignmentsDisplay refactoring
+  // The two removed specs (methylation/per_read_mod_bam and methylation/colo829_cram_and_bedmethyl)
+  // used displaySnapshot: { PileupDisplay: { colorBy: { type: 'methylation' } } } on COLO829_tumor.ht
+  // and COLO829_tumor.ht_modkit.bed_multi tracks from DEMO_CONFIG at chr20:10,000,000-10,002,000.
+  // That displaySnapshot format causes an MST error because PileupDisplay sub-display snapshots
+  // require a full snapshot (type + configuration). Once PileupDisplay/SNPCoverageDisplay are
+  // replaced with flat settings on LinearAlignmentsDisplay, restore these with the new API.
 
   // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
 
@@ -275,7 +280,7 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'horizontally_flip',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-6pkcSXlbFL&password=ER28C',
-    readyText: 'chr',
+    readyText: 'RefSeq',
     readyTimeout: 60000,
     settleMs: 12000,
   },
@@ -284,7 +289,7 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'cnv',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-AcZSrC_yOb&password=e7b64',
-    readyText: 'chr',
+    readyText: 'COLO829',
     readyTimeout: 60000,
     settleMs: 12000,
   },
@@ -293,7 +298,7 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'skbr3_translocation',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-Swq8pJTX0z&password=yM41l',
-    readyText: 'chr',
+    readyText: 'SKBR3',
     readyTimeout: 60000,
     settleMs: 12000,
   },
@@ -302,7 +307,7 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'smalldel',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-psOr2x2efp&password=bErZE',
-    readyText: 'chr20',
+    readyText: 'HG002',
     readyTimeout: 60000,
     settleMs: 12000,
   },
@@ -311,7 +316,7 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'insertion',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
-    readyText: 'chr1',
+    readyText: 'HG002',
     settleMs: 12000,
   },
 
@@ -319,7 +324,7 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'multisv',
     url: 'https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw',
-    readyText: 'chr19',
+    readyText: '1KGP',
     readyTimeout: 60000,
     settleMs: 15000,
   },
@@ -328,7 +333,7 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'breakpoint_split_view',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-pjaAq1hNxB&password=Z9teR',
-    readyText: 'chr',
+    readyText: 'SKBR3',
     settleMs: 12000,
   },
 
@@ -357,6 +362,9 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-20000',
+          // TODO: restore displaySnapshot: { PileupDisplay: { colorBy: { type: 'orientation' } } }
+          // after LinearAlignmentsDisplay refactoring replaces PileupDisplay sub-display snapshots
+          // with flat settings. Was removed because the partial sub-display snapshot caused an MST error.
           tracks: ['volvox-simple-inv-paired.cram'],
         },
       ],
@@ -401,7 +409,7 @@ export const specs: ScreenshotSpec[] = [
     url: cgiabUrl({
       views: [{ type: 'LinearGenomeView', assembly: 'GRCh38_GIABv3' }],
     }),
-    readyText: 'Show all regions in assembly',
+    readyText: 'chr1',
     readyTimeout: 60000,
     settleMs: 3000,
   },
