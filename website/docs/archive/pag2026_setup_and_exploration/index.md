@@ -3,9 +3,7 @@ title: PAG 33 (2026) JBrowse setup and exploration
 id: pag2026_setup_and_exploration
 ---
 
-# PAG 33 (2026) JBrowse setup and exploration
-
-# Introduction
+## Introduction
 
 This tutorial was written for the JBrowse workshop at PAG 33. As this workshop
 was aimed at attendees with a wide range of experience with JBrowse, it contains
@@ -23,7 +21,7 @@ If you are following this tutorial after PAG 33, please note that the UI of
 current versions of JBrowse may differ slightly from those shown in the
 screenshots here.
 
-# JBrowse UI overview
+## JBrowse UI overview
 
 Let's get started with JBrowse by opening up a JBrowse page configured with a
 genome of interest. For this tutorial, we'll use the mm10 mouse genome. Please
@@ -72,7 +70,7 @@ as well as views of different types, is a core JBrowse feature. You can see
 examples of some of these views on the JBrowse [gallery page](/jb2/gallery/).
 For now, though, go ahead and close one of the two open views.
 
-# Adding tracks
+## Adding tracks
 
 The JBrowse 2 Genome Hubs come with a lot of useful tracks already configured,
 but with JBrowse you aren't limited to the existing tracks. Let's say we have
@@ -132,7 +130,7 @@ display a share link that can be sent to others to share your current session,
 or can be used as a type of bookmark to the session as it was when the link was
 created.
 
-# Exploring variants
+## Exploring variants
 
 For the next part of this tutorial, we're going to explore a missense mutation
 in the Msh3 gene. Make sure the original "NCBI RefSeq - RefSeq All" track and
@@ -179,7 +177,7 @@ track menu contains a lot of options for organizing and coloring the data to
 help you see what you’re looking for. We won’t focus on those today, but let us
 know if this would be of interest for a future tutorial.
 
-# Exploring short read DNA-seq alignments
+## Exploring short read DNA-seq alignments
 
 As we saw above, the only strain with the missense variant was RF/J, so let’s
 inspect the reads for the variant call in that strain. To do this, we’ll add
@@ -344,7 +342,7 @@ select “Display types -> Linked reads display,” then “Show legend,” then
 In this display, the lined reads are drawn on the same row and are connected by
 a line, allowing you to see how many of these types of reads there are.
 
-# Exploring long read RNA-seq alignments
+## Exploring long read RNA-seq alignments
 
 Up until now we’ve been looking at Illumina short-read DNA sequencing data. To
 illustrate a few more features of the alignments tracks, let’s look at some

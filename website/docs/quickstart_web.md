@@ -31,13 +31,13 @@ The JBrowse CLI can perform many tasks to help you manage JBrowse 2, such as:
 
 To globally install the JBrowse CLI, run
 
-```sh-session
+```bash
 npm install -g @jbrowse/cli
 ```
 
 Test the installation with:
 
-```sh-session
+```bash
 jbrowse --version
 ```
 
@@ -48,7 +48,7 @@ the [npx](https://nodejs.dev/learn/the-npx-nodejs-package-runner) command, which
 is included with Node.js, to run JBrowse CLI without installing it. Simply
 replace `jbrowse` with `npx @jbrowse/cli` in any command, e.g.
 
-```sh-session
+```bash
 npx @jbrowse/cli --version
 ```
 
@@ -56,7 +56,7 @@ npx @jbrowse/cli --version
 
 Alternatively, download a single-file bundle:
 
-```sh-session
+```bash
 wget https://unpkg.com/@jbrowse/cli/bundle/index.js -O jbrowse
 chmod +x jbrowse
 ./jbrowse --help
@@ -66,7 +66,7 @@ chmod +x jbrowse
 
 In the directory where you would like to download JBrowse 2, run
 
-```sh-session
+```bash
 jbrowse create jbrowse2
 ```
 
@@ -102,7 +102,7 @@ Typically you place the folder in a web server's static directory (e.g.
 
 To quickly verify the download locally, run a development server:
 
-```sh-session
+```bash
 cd jbrowse2/
 npx serve .
 # or
