@@ -42,20 +42,23 @@
 .navLinks a:hover {
   color: var(--color-teal-bright);
 }
+.navSearchLink {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+}
 .navActive {
   color: var(--color-teal-bright) !important;
 }
 .newFeature::after {
   content: 'NEW!';
   font-size: 0.6em;
-  font-weight: bold;
-  color: #e53935;
-  margin-left: 4px;
+  font-weight: 700;
+  color: red;
+  margin-left: 5px;
+  padding: 2px 5px;
   vertical-align: super;
-}
-.navSearch {
-  flex-shrink: 0;
-  width: 190px;
+  display: inline-block;
 }
 .navRight {
   margin-left: auto;
@@ -183,7 +186,6 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     font-size: 1rem;
   }
-  .navSearch,
   .navRight {
     display: none;
   }
