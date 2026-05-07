@@ -1,5 +1,5 @@
 import type { MarkdownHeading } from 'astro'
-import type { Element, Root, RootContent } from 'hast'
+import type { Root, RootContent } from 'hast'
 import { unified } from 'unified'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
@@ -12,11 +12,14 @@ import rehypeAdmonitions from './rehype-admonitions.ts'
 import rehypeTrailingSlash from './rehype-trailing-slash.ts'
 import rehypeHeadingLinks from './rehype-heading-links.ts'
 import { getText } from './hast-utils.ts'
+import { baseUrl } from './base-url.ts'
+
+const headingRe = /^h[1-6]$/
 
 function extractHeadings(tree: Root): MarkdownHeading[] {
   const headings: MarkdownHeading[] = []
   visit(tree, 'element', node => {
-    if (!/^h[1-6]$/.test(node.tagName)) {
+    if (!headingRe.test(node.tagName)) {
       return
     }
     const slug = node.properties?.id as string | undefined
@@ -33,7 +36,7 @@ function extractHeadings(tree: Root): MarkdownHeading[] {
 
 const processor = unified()
   .use(remarkParse)
-  .use(remarkFigure)
+  .use(remarkFigure, { base: baseUrl })
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeRaw)
   .use(rehypeAdmonitions)
