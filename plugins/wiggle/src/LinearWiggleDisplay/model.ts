@@ -1,13 +1,8 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  getContainingTrack,
-  getContainingView,
-  getEnv,
-  getSession,
-} from '@jbrowse/core/util'
+import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -18,7 +13,11 @@ import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observable } from 'mobx'
 
-import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
+import { buildMultiSourceRenderData } from '../MultiLinearWiggleDisplay/components/buildMultiSourceRenderData.ts'
+import {
+  SINGLE_WIGGLE_SOURCE_NAME,
+  type WiggleDataResult,
+} from '../RenderWiggleDataRPC/types.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
@@ -36,7 +35,6 @@ import {
   isDefaultBicolor,
 } from '../util.ts'
 
-import type { WiggleDataResult } from '../RenderWiggleDataRPC/types.ts'
 import type { WiggleBackend } from '../shared/wiggleBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -128,21 +126,22 @@ export default function stateModelFactory(
         // Use coarseDynamicBlocks (500ms debounced) instead of visibleRegions
         // so autoscale doesn't recompute on every animation frame during zoom.
         const visibleEntries = view.coarseDynamicBlocks.flatMap(block => {
-          const data = self.rpcDataMap.get(block.displayedRegionIndex!)
-          if (!data) {
+          const regionData = self.rpcDataMap.get(block.displayedRegionIndex!)
+          const source = regionData?.sources[0]
+          if (!source) {
             return []
           }
           return [
             {
               visStart: Math.floor(block.start),
               visEnd: Math.ceil(block.end),
-              data,
+              data: source,
             },
           ]
         })
-        const allEntries = [...self.rpcDataMap.values()].map(data => ({
-          data,
-        }))
+        const allEntries = [...self.rpcDataMap.values()].flatMap(regionData =>
+          regionData.sources[0] ? [{ data: regionData.sources[0] }] : [],
+        )
         return computeAutoscaleDomain(
           self.autoscaleType,
           self.summaryScoreMode,
@@ -210,9 +209,25 @@ export default function stateModelFactory(
         }
       },
 
+      // single-source gpuProps mapped onto the multi-source build path:
+      // - useBicolor (default color): no source override, multi build emits
+      //   pos+neg arrays with their respective colors
+      // - !useBicolor (custom solid color): worker put all features in pos
+      //   arrays (effectiveBicolorPivot=-Infinity); whiskers and non-density
+      //   modes want the user's solid color, density wants posColor (which
+      //   is the multi build default already, so leave undefined)
       gpuProps() {
+        const useBicolor = isDefaultBicolor(self.color)
+        const wantsSolidColor =
+          !useBicolor &&
+          (self.summaryScoreMode === 'whiskers' || !self.isDensityMode)
         return {
-          color: self.color,
+          sources: [
+            {
+              name: SINGLE_WIGGLE_SOURCE_NAME,
+              color: wantsSolidColor ? self.color : undefined,
+            },
+          ],
           posColor: self.posColor,
           negColor: self.negColor,
           summaryScoreMode: self.summaryScoreMode,
@@ -367,7 +382,7 @@ export default function stateModelFactory(
       },
       startGpuBackendLifecycle(backend: WiggleBackend) {
         installPerRegionWiggleLifecycle(self, self.rpcDataMap, backend, data =>
-          buildSourceRenderData(data, self.gpuProps()),
+          buildMultiSourceRenderData(data, self.gpuProps()),
         )
       },
     }))

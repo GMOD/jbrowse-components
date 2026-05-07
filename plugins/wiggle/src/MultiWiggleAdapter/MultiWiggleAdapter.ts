@@ -5,9 +5,12 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { SimpleFeature, max, min } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { merge } from 'rxjs'
-import { map } from 'rxjs/operators'
+import { firstValueFrom, merge } from 'rxjs'
+import { map, toArray } from 'rxjs/operators'
 
+import { featuresToRaw } from '../util.ts'
+
+import type { RawFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions } from '../wiggleAdapterOptions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -55,6 +58,17 @@ interface AdapterEntry {
   dataAdapter: BaseFeatureDataAdapter
   source: string
   [key: string]: unknown
+}
+
+function hasFeatureArrays(
+  adapter: BaseFeatureDataAdapter,
+): adapter is BaseFeatureDataAdapter & {
+  getFeatureArrays(
+    region: Region,
+    opts: WiggleOptions,
+  ): Promise<RawFeatureArrays>
+} {
+  return 'getFeatureArrays' in adapter
 }
 
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
@@ -164,6 +178,32 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         }),
       ).subscribe(observer)
     }, opts.stopToken)
+  }
+
+  public async getMultiSourceFeatureArrays(
+    region: Region,
+    opts: WiggleOptions = {},
+  ): Promise<{ source: string; raw: RawFeatureArrays }[]> {
+    let adapters = await this.getAdapters()
+    if (opts.sources?.length) {
+      const sourceNames = new Set(opts.sources.map(s => s.name))
+      adapters = adapters.filter(adp => sourceNames.has(adp.source))
+    }
+    return Promise.all(
+      adapters.map(async adp => {
+        const { source, dataAdapter } = adp
+        if (hasFeatureArrays(dataAdapter)) {
+          return {
+            source,
+            raw: await dataAdapter.getFeatureArrays(region, opts),
+          }
+        }
+        const features = await firstValueFrom(
+          dataAdapter.getFeatures(region, opts).pipe(toArray()),
+        )
+        return { source, raw: featuresToRaw(features) }
+      }),
+    )
   }
 
   public async getRegionQuantitativeStats(

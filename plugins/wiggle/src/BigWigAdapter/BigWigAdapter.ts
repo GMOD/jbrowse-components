@@ -9,9 +9,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { rectifyStats } from '@jbrowse/core/util/stats'
 
-import { processFeaturesFromArrays } from '../util.ts'
-
-import type { WiggleFeatureArrays } from '../util.ts'
+import type { RawFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions as WiggleOptions } from '../wiggleAdapterOptions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -173,20 +171,22 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     return new ArrayFeatureView(arrays, source, refName)
   }
 
+  // bicolorPivot is a display concern (pos/neg color split) and stays out of
+  // the adapter API. Callers run processFeaturesFromArrays themselves with the
+  // pivot — split happens inline with the data scan, no second pass.
   public async getFeatureArrays(
     region: Region,
-    opts: WiggleOptions & { bicolorPivot?: number } = {},
-  ): Promise<WiggleFeatureArrays> {
+    opts: WiggleOptions = {},
+  ): Promise<RawFeatureArrays> {
     const view = await this.getArrayFeatureView(region, opts)
-    return processFeaturesFromArrays(
-      view.starts,
-      view.ends,
-      view.scores,
-      view.minScores,
-      view.maxScores,
-      view.length,
-      opts.bicolorPivot ?? 0,
-    )
+    return {
+      starts: view.starts,
+      ends: view.ends,
+      scores: view.scores,
+      minScores: view.minScores,
+      maxScores: view.maxScores,
+      count: view.length,
+    }
   }
 
   public async getRegionQuantitativeStats(

@@ -408,3 +408,173 @@ describe('MultiWiggleAdapter.getSources', () => {
     })
   })
 })
+
+describe('MultiWiggleAdapter.getMultiSourceFeatureArrays', () => {
+  const region = { refName: 'chr1', start: 0, end: 100, assemblyName: 'hg38' }
+
+  function makeRaw(score: number) {
+    return {
+      starts: new Int32Array([10]),
+      ends: new Int32Array([20]),
+      scores: new Float32Array([score]),
+      minScores: undefined,
+      maxScores: undefined,
+      count: 1,
+    }
+  }
+
+  it('takes the fast path on inner adapters that expose getFeatureArrays', async () => {
+    const fastA = jest.fn().mockResolvedValue(makeRaw(1))
+    const fastB = jest.fn().mockResolvedValue(makeRaw(2))
+    const mockGetSubAdapter = jest.fn().mockImplementation(
+      async (conf: { source?: string }) =>
+        ({
+          dataAdapter: {
+            id: conf.source ?? 'mock',
+            getFeatureArrays: conf.source === 'a' ? fastA : fastB,
+          },
+        }) as any,
+    )
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          {
+            type: 'BigWigAdapter',
+            source: 'a',
+            bigWigLocation: { uri: 'a.bw' },
+          },
+          {
+            type: 'BigWigAdapter',
+            source: 'b',
+            bigWigLocation: { uri: 'b.bw' },
+          },
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const result = await adapter.getMultiSourceFeatureArrays(region, {
+      bpPerPx: 1,
+      resolution: 1,
+    })
+    expect(fastA).toHaveBeenCalledTimes(1)
+    expect(fastB).toHaveBeenCalledTimes(1)
+    expect(result.map(r => r.source)).toEqual(['a', 'b'])
+    expect(result[0]!.raw.scores[0]).toBe(1)
+    expect(result[1]!.raw.scores[0]).toBe(2)
+  })
+
+  it('falls back to getFeatures+featuresToRaw when getFeatureArrays is absent', async () => {
+    const slowGetFeatures = jest.fn().mockReturnValue({
+      pipe: () => ({
+        subscribe: (subscriber: any) => {
+          subscriber.next?.([
+            { get: (k: string) => ({ start: 5, end: 15, score: 7 })[k] },
+          ])
+          subscriber.complete?.()
+        },
+      }),
+    })
+    const mockGetSubAdapter = jest.fn().mockImplementation(
+      async () =>
+        ({
+          dataAdapter: {
+            id: 'slow',
+            getFeatures: slowGetFeatures,
+          },
+        }) as any,
+    )
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          {
+            type: 'OtherAdapter',
+            source: 'slow',
+            bigWigLocation: { uri: 's.bw' },
+          },
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const result = await adapter.getMultiSourceFeatureArrays(region, {
+      bpPerPx: 1,
+      resolution: 1,
+    })
+    expect(slowGetFeatures).toHaveBeenCalledTimes(1)
+    expect(result[0]!.source).toBe('slow')
+    expect(result[0]!.raw.scores[0]).toBe(7)
+  })
+
+  it('filters inner adapters by opts.sources', async () => {
+    const fastA = jest.fn().mockResolvedValue(makeRaw(1))
+    const fastB = jest.fn().mockResolvedValue(makeRaw(2))
+    const mockGetSubAdapter = jest.fn().mockImplementation(
+      async (conf: { source?: string }) =>
+        ({
+          dataAdapter: {
+            id: conf.source,
+            getFeatureArrays: conf.source === 'a' ? fastA : fastB,
+          },
+        }) as any,
+    )
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          {
+            type: 'BigWigAdapter',
+            source: 'a',
+            bigWigLocation: { uri: 'a.bw' },
+          },
+          {
+            type: 'BigWigAdapter',
+            source: 'b',
+            bigWigLocation: { uri: 'b.bw' },
+          },
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const result = await adapter.getMultiSourceFeatureArrays(region, {
+      bpPerPx: 1,
+      resolution: 1,
+      sources: [{ name: 'b' }],
+    })
+    expect(fastA).not.toHaveBeenCalled()
+    expect(fastB).toHaveBeenCalledTimes(1)
+    expect(result.map(r => r.source)).toEqual(['b'])
+  })
+
+  it('returns raw arrays unchanged — bicolor split happens at the executor', async () => {
+    const fast = jest.fn().mockResolvedValue({
+      starts: new Int32Array([0, 10]),
+      ends: new Int32Array([5, 15]),
+      scores: new Float32Array([3, -2]),
+      minScores: undefined,
+      maxScores: undefined,
+      count: 2,
+    })
+    const mockGetSubAdapter = jest.fn().mockImplementation(
+      async () =>
+        ({
+          dataAdapter: { id: 'a', getFeatureArrays: fast },
+        }) as any,
+    )
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          {
+            type: 'BigWigAdapter',
+            source: 'a',
+            bigWigLocation: { uri: 'a.bw' },
+          },
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const result = await adapter.getMultiSourceFeatureArrays(region, {
+      bpPerPx: 1,
+      resolution: 1,
+    })
+    expect(result[0]!.raw.count).toBe(2)
+    expect(Array.from(result[0]!.raw.scores)).toEqual([3, -2])
+  })
+})

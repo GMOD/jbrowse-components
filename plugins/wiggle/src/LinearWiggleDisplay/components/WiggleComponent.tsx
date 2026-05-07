@@ -15,7 +15,7 @@ import {
 } from '../../shared/WiggleStatusOverlays.tsx'
 import { hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
 
-import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
+import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -53,8 +53,13 @@ const WiggleComponent = observer(function WiggleComponent({
 
         const { rpcDataMap, summaryScoreMode } = model
         const hit = hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
-        const result = hit
-          ? findHit(hit.data, hit.bp, hit.region.refName, summaryScoreMode)
+        const result = hit?.data.sources[0]
+          ? findHit(
+              hit.data.sources[0],
+              hit.bp,
+              hit.region.refName,
+              summaryScoreMode,
+            )
           : undefined
         model.setFeatureUnderMouse(result)
       }
@@ -172,4 +177,4 @@ const WiggleComponent = observer(function WiggleComponent({
 
 export default WiggleComponent
 
-export type { WiggleDisplayModel } from './buildSourceRenderData.ts'
+export type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'

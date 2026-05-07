@@ -7,14 +7,30 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { processFeatures } from '../util.ts'
+import { processFeatures, processFeaturesFromArrays } from '../util.ts'
 
 import type { MultiWiggleDataResult } from './types.ts'
-import type { SourceInfo } from '../util.ts'
+import type { RawFeatureArrays, SourceInfo } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+
+function hasMultiSourceFeatureArrays(
+  adapter: BaseFeatureDataAdapter,
+): adapter is BaseFeatureDataAdapter & {
+  getMultiSourceFeatureArrays(
+    region: Region,
+    opts: {
+      bpPerPx: number
+      resolution: number
+      sources?: SourceInfo[]
+      stopToken?: StopToken
+    },
+  ): Promise<{ source: string; raw: RawFeatureArrays }[]>
+} {
+  return 'getMultiSourceFeatureArrays' in adapter
+}
 
 interface ExecuteParams {
   pluginManager: PluginManager
@@ -56,6 +72,38 @@ export async function executeRenderMultiWiggleData({
   const sourcesList: SourceInfo[] = sourcesArg?.length
     ? sourcesArg
     : await dataAdapter.getSources([region])
+
+  if (hasMultiSourceFeatureArrays(dataAdapter)) {
+    const perSource = await updateStatus(
+      'Loading wiggle data',
+      statusCallback,
+      () =>
+        dataAdapter.getMultiSourceFeatureArrays(region, {
+          bpPerPx,
+          resolution,
+          sources: sourcesArg,
+          stopToken,
+        }),
+    )
+    checkStopToken2(stopTokenCheck)
+    const arrayMap = new Map(
+      perSource.map(p => [
+        p.source,
+        processFeaturesFromArrays(p.raw, bicolorPivot),
+      ]),
+    )
+    const orderedSources: SourceInfo[] =
+      sourcesList.length > 0
+        ? sourcesList
+        : perSource.map(({ source }) => ({ name: source }))
+    return {
+      sources: orderedSources.map(({ name, color }) => ({
+        name,
+        color,
+        ...(arrayMap.get(name) ?? processFeatures([], bicolorPivot)),
+      })),
+    }
+  }
 
   const fetchOpts = { bpPerPx, resolution }
   const featuresArray = await updateStatus(

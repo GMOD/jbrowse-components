@@ -121,22 +121,6 @@ not perceptible. Same fix (incremental computed) would apply if N grew.
 
 ---
 
-### Batch RPC calls per viewport (wiggle)
-
-**Problem:** Each visible region triggers its own RPC call. On chromosome
-navigation (many regions invalidated simultaneously) this fans out into N
-parallel worker dispatches.
-
-**Fix:** Add an optional `RenderWiggleDataBatch` RPC method that accepts an
-array of regions and returns a map of `displayedRegionIndex → WiggleDataResult`.
-`fetchNeeded` would use the batch path when more than one region needs fetching.
-The upload autorun stays unchanged — per-region streaming still works because
-the batch result is split before populating `rpcDataMap`.
-
-**Scope:** New RPC method + execute function; `fetchNeeded` override in wiggle
-model; backward-compatible (single-region path remains for non-batch adapters).
-
-
 ### Derive wiggle `isCacheValid` from BigWig zoom levels
 
 **Problem:** Wiggle uses strict `view.bpPerPx === loadedBpPerPx` equality for

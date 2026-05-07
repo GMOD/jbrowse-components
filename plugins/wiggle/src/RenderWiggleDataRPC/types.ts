@@ -1,1 +1,3 @@
-export type { WiggleFeatureArrays as WiggleDataResult } from '../util.ts'
+export type { MultiWiggleDataResult as WiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
+
+export const SINGLE_WIGGLE_SOURCE_NAME = 'default'

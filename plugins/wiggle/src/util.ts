@@ -55,6 +55,18 @@ export interface SourceInfo {
   color?: string
 }
 
+// Raw per-feature typed arrays returned by adapters' fast path. Display-side
+// concerns (bicolor pos/neg split) happen in processFeaturesFromArrays at the
+// executor, not here — keeps adapters out of UI policy decisions.
+export interface RawFeatureArrays {
+  starts: Int32Array
+  ends: Int32Array
+  scores: Float32Array
+  minScores: Float32Array | undefined
+  maxScores: Float32Array | undefined
+  count: number
+}
+
 export interface WiggleFeatureArrays {
   featurePositions: Uint32Array
   featureScores: Float32Array
@@ -70,14 +82,10 @@ export interface WiggleFeatureArrays {
 }
 
 export function processFeaturesFromArrays(
-  starts: Int32Array,
-  ends: Int32Array,
-  scores: Float32Array,
-  minScores: Float32Array | undefined,
-  maxScores: Float32Array | undefined,
-  count: number,
+  raw: RawFeatureArrays,
   bicolorPivot: number,
 ): WiggleFeatureArrays {
+  const { starts, ends, scores, minScores, maxScores, count } = raw
   const featurePositions = new Uint32Array(count * 2)
   const featureScores = new Float32Array(count)
   const featureMinScores = new Float32Array(count)
@@ -127,10 +135,9 @@ export function processFeaturesFromArrays(
   }
 }
 
-export function processFeatures(
+export function featuresToRaw(
   features: { get: (key: string) => unknown }[],
-  bicolorPivot: number,
-): WiggleFeatureArrays {
+): RawFeatureArrays {
   const n = features.length
   const starts = new Int32Array(n)
   const ends = new Int32Array(n)
@@ -152,15 +159,14 @@ export function processFeatures(
       : score
   }
 
-  return processFeaturesFromArrays(
-    starts,
-    ends,
-    scores,
-    minScores,
-    maxScores,
-    n,
-    bicolorPivot,
-  )
+  return { starts, ends, scores, minScores, maxScores, count: n }
+}
+
+export function processFeatures(
+  features: { get: (key: string) => unknown }[],
+  bicolorPivot: number,
+): WiggleFeatureArrays {
+  return processFeaturesFromArrays(featuresToRaw(features), bicolorPivot)
 }
 
 export function getEffectiveScores(

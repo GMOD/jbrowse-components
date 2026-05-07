@@ -20,12 +20,14 @@ describe('processFeaturesFromArrays', () => {
     const bicolorPivot = 0
 
     const fromArrays = processFeaturesFromArrays(
-      starts,
-      ends,
-      scores,
-      undefined,
-      undefined,
-      3,
+      {
+        starts,
+        ends,
+        scores,
+        minScores: undefined,
+        maxScores: undefined,
+        count: 3,
+      },
       bicolorPivot,
     )
 
@@ -65,19 +67,15 @@ describe('processFeaturesFromArrays', () => {
   })
 
   test('handles summary features with min/max scores', () => {
-    const starts = new Int32Array([0, 100])
-    const ends = new Int32Array([100, 200])
-    const scores = new Float32Array([5, 10])
-    const minScores = new Float32Array([2, 7])
-    const maxScores = new Float32Array([8, 15])
-
     const result = processFeaturesFromArrays(
-      starts,
-      ends,
-      scores,
-      minScores,
-      maxScores,
-      2,
+      {
+        starts: new Int32Array([0, 100]),
+        ends: new Int32Array([100, 200]),
+        scores: new Float32Array([5, 10]),
+        minScores: new Float32Array([2, 7]),
+        maxScores: new Float32Array([8, 15]),
+        count: 2,
+      },
       0,
     )
 
@@ -86,17 +84,15 @@ describe('processFeaturesFromArrays', () => {
   })
 
   test('splits positive and negative features by bicolorPivot', () => {
-    const starts = new Int32Array([0, 100, 200])
-    const ends = new Int32Array([100, 200, 300])
-    const scores = new Float32Array([5, -3, 0])
-
     const result = processFeaturesFromArrays(
-      starts,
-      ends,
-      scores,
-      undefined,
-      undefined,
-      3,
+      {
+        starts: new Int32Array([0, 100, 200]),
+        ends: new Int32Array([100, 200, 300]),
+        scores: new Float32Array([5, -3, 0]),
+        minScores: undefined,
+        maxScores: undefined,
+        count: 3,
+      },
       0,
     )
 
@@ -107,17 +103,15 @@ describe('processFeaturesFromArrays', () => {
   })
 
   test('stores absolute positions', () => {
-    const starts = new Int32Array([50])
-    const ends = new Int32Array([100])
-    const scores = new Float32Array([5])
-
     const result = processFeaturesFromArrays(
-      starts,
-      ends,
-      scores,
-      undefined,
-      undefined,
-      1,
+      {
+        starts: new Int32Array([50]),
+        ends: new Int32Array([100]),
+        scores: new Float32Array([5]),
+        minScores: undefined,
+        maxScores: undefined,
+        count: 1,
+      },
       0,
     )
 
