@@ -56,3 +56,7 @@ Working plugin examples:
 
 These show how plugins are structured and can serve as templates for your own
 pluggable elements.
+
+The [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list) is the
+community plugin registry — browse it to find published plugins or submit your
+own via pull request.
