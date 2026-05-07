@@ -74,13 +74,10 @@ export interface Canvas2DRegionData
   insertionYs: Uint16Array
   insertionLengths: Uint16Array
   insertionFrequencies: Uint8Array
-  numInsertions: number
   softclipPositions: Uint32Array
   softclipYs: Uint16Array
-  numSoftclips: number
   hardclipPositions: Uint32Array
   hardclipYs: Uint16Array
-  numHardclips: number
   softclipBasePositions: Uint32Array
   softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array
@@ -109,13 +106,10 @@ function buildCigarFields(data: CigarUploadData) {
     insertionYs: data.interbaseYs.subarray(0, insEnd),
     insertionLengths: data.interbaseLengths.subarray(0, insEnd),
     insertionFrequencies: data.interbaseFrequencies.subarray(0, insEnd),
-    numInsertions: data.numInsertions,
     softclipPositions: data.interbasePositions.subarray(insEnd, scEnd),
     softclipYs: data.interbaseYs.subarray(insEnd, scEnd),
-    numSoftclips: data.numSoftclips,
     hardclipPositions: data.interbasePositions.subarray(scEnd, hcEnd),
     hardclipYs: data.interbaseYs.subarray(scEnd, hcEnd),
-    numHardclips: data.numHardclips,
     softclipBasePositions: data.softclipBasePositions,
     softclipBaseYs: data.softclipBaseYs,
     softclipBaseBases: data.softclipBaseBases,
@@ -138,13 +132,10 @@ function emptyPileupFields(): Canvas2DRegionData {
     insertionYs: new Uint16Array(0),
     insertionLengths: new Uint16Array(0),
     insertionFrequencies: new Uint8Array(0),
-    numInsertions: 0,
     softclipPositions: new Uint32Array(0),
     softclipYs: new Uint16Array(0),
-    numSoftclips: 0,
     hardclipPositions: new Uint32Array(0),
     hardclipYs: new Uint16Array(0),
-    numHardclips: 0,
     softclipBasePositions: new Uint32Array(0),
     softclipBaseYs: new Uint16Array(0),
     softclipBaseBases: new Uint8Array(0),

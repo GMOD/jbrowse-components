@@ -4,7 +4,6 @@ import {
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 
-import type { InsertionRegionFields } from './buildRegion.ts'
 import type {
   DrawBlock,
   RenderState,
@@ -16,7 +15,12 @@ const INSERTION_SERIF_MIN_PX_PER_BP = 3
 
 export function drawInsertions(
   ctx: Ctx2D,
-  region: InsertionRegionFields,
+  region: {
+    insertionPositions: Uint32Array
+    insertionYs: Uint16Array
+    insertionLengths: Uint16Array
+    insertionFrequencies: Uint8Array
+  },
   block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
@@ -26,7 +30,7 @@ export function drawInsertions(
   const insColorBase = state.colors.colorInsertion
   const pxPerBp = fullBlockWidth / bpLength
 
-  for (let i = 0; i < region.numInsertions; i++) {
+  for (let i = 0; i < region.insertionPositions.length; i++) {
     const bp = region.insertionPositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.insertionYs[i]!

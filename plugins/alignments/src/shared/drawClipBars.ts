@@ -14,20 +14,19 @@ function drawClipBars(
   ctx: Ctx2D,
   positions: Uint32Array,
   ys: Uint16Array,
-  count: number,
   color: string,
   block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
   state: RenderState,
 ) {
-  if (count === 0) {
+  if (positions.length === 0) {
     return
   }
   const fH = state.featureHeight
 
   ctx.fillStyle = color
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < positions.length; i++) {
     const bp = positions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = ys[i]!
@@ -38,7 +37,7 @@ function drawClipBars(
 
 export function drawSoftclips(
   ctx: Ctx2D,
-  region: { softclipPositions: Uint32Array; softclipYs: Uint16Array; numSoftclips: number },
+  region: { softclipPositions: Uint32Array; softclipYs: Uint16Array },
   block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
@@ -48,7 +47,6 @@ export function drawSoftclips(
     ctx,
     region.softclipPositions,
     region.softclipYs,
-    region.numSoftclips,
     rgb255(state.colors.colorSoftclip),
     block,
     bpLength,
@@ -59,7 +57,7 @@ export function drawSoftclips(
 
 export function drawHardclips(
   ctx: Ctx2D,
-  region: { hardclipPositions: Uint32Array; hardclipYs: Uint16Array; numHardclips: number },
+  region: { hardclipPositions: Uint32Array; hardclipYs: Uint16Array },
   block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
@@ -69,7 +67,6 @@ export function drawHardclips(
     ctx,
     region.hardclipPositions,
     region.hardclipYs,
-    region.numHardclips,
     rgb255(state.colors.colorHardclip),
     block,
     bpLength,
