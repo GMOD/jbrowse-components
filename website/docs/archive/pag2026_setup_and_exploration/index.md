@@ -54,7 +54,7 @@ filled in checkbox next to the track that is already open.
 Go ahead and explore the page by trying out the different navigation buttons,
 opening new tracks, and hovering over or clicking on the visualizations inside
 the tracks. For more information on the many controls and options available in
-JBrowse, please see the [user guide](../../user_guides/basic_usage.md).
+JBrowse, please see the [user guide](/docs/user_guides/basic_usage).
 
 To illustrate an important feature of JBrowse 2, let's open a new view. From the
 "Add" menu at the top of the page, choose "Linear genome view." A new view will
