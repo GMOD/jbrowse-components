@@ -2,16 +2,12 @@
 import { getCollection } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { renderMarkdown } from '../../lib/markdown.ts'
+import { entrySlug } from '../../lib/docs-sidebar.ts'
 
 export async function getStaticPaths() {
   const docs = await getCollection('docs')
   return docs.map(entry => {
-    let slug: string | undefined = entry.id
-    if (slug === 'index') {
-      slug = undefined
-    } else if (slug.endsWith('/index')) {
-      slug = slug.slice(0, -6)
-    }
+    const slug = entrySlug(entry.id) || undefined
     return { params: { slug }, props: { entry } }
   })
 }
