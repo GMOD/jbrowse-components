@@ -32,7 +32,7 @@ app. Third-party plugins can also add new view types.
 - **Tabular view** - Open BED, VCF, CSV, TSV, or bespoke formats like
   STAR-fusion output in a sortable, filterable table
 
-## Key features
+## What's new in JBrowse 2
 
 JBrowse 2 was rebuilt from the ground up, with a primary focus on synteny and
 structural variant visualization that JBrowse 1 could not support, while also
@@ -43,17 +43,16 @@ expanding on many other capabilities. The table below highlights what is new.
 | Multiple simultaneous view types | ✗ | ✓ |
 | Circular / dotplot / synteny views | ✗ | ✓ |
 | Structural variant visualization (breakpoint split view, circular arcs) | ✗ | ✓ |
-| CRAM support | ✗ | ✓ |
 | Hi-C contact matrix | ✗ | ✓ |
-| Web worker parallel rendering | ✗ | ✓ |
+| Web worker and WASM speed optimizations | ✗ | ✓ |
 | Sort, color, and filter alignments by BAM/CRAM tag | ✗ | ✓ |
-| Session sharing for non-administrator users | ✗ | ✓ |
-| Non-admin users can load their own tracks | ✗ | ✓ |
-| Install / remove plugins without running scripts | ✗ | ✓ |
+| [Large database of pre-loaded species](https://genomes.jbrowse.org) | ✗ | ✓ |
+| In-app plugin store | ✗ | ✓ |
 | UCSC track hub support [^1] | ✗ | ✓ |
 | SVG export of the current view | ✗ | ✓ |
 | Embeddable as React / NPM components [^2] [^3] | ✗ | ✓ |
-| Interactive configuration editing in the app | ✗ | ✓ |
+
+See the [demos](/demos/) and [gallery](/gallery/) for more examples of what JBrowse 2 can do.
 
 ## Supported data formats
 
