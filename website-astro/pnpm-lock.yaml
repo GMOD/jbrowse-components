@@ -26,9 +26,6 @@ importers:
       '@mui/material':
         specifier: ^9.0.0
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@pagefind/default-ui':
-        specifier: ^1.5.2
-        version: 1.5.2
       astro:
         specifier: ^5.7.0
         version: 5.18.1(@types/node@24.12.2)(rollup@4.60.3)(typescript@5.9.3)
@@ -969,9 +966,6 @@ packages:
     resolution: {integrity: sha512-IojxFWMEJe0RQ7PQ3KXQsPIImNsbpPYpoZ+QUDrL8fAl/O27IX+LVLs74/UzEZy5uA2LD8Nz1AiwKr72vrkZQw==}
     cpu: [x64]
     os: [darwin]
-
-  '@pagefind/default-ui@1.5.2':
-    resolution: {integrity: sha512-pm1LMnQg8N2B3n2TnjKlhaFihpz6zTiA4HiGQ6/slKO/+8K9CAU5kcjdSSPgpuk1PMuuN4hxLipUIifnrkl3Sg==}
 
   '@pagefind/freebsd-x64@1.5.2':
     resolution: {integrity: sha512-7EVzo9+0w+2cbe671BtMj10UlNo83I+HrLVLfRxO731svHRJKUfJ/mo05gU14pe9PCfpKNQT8FS3Xc/oDN6pOA==}
@@ -3347,8 +3341,6 @@ snapshots:
 
   '@pagefind/darwin-x64@1.5.2':
     optional: true
-
-  '@pagefind/default-ui@1.5.2': {}
 
   '@pagefind/freebsd-x64@1.5.2':
     optional: true

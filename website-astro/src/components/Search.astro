@@ -1,11 +1,221 @@
 ---
 ---
 
-<div id="search"></div>
-<style is:global>
-  @import '@pagefind/default-ui/css/ui.css';
+<div class="search-wrap">
+  <input
+    id="search-input"
+    type="search"
+    placeholder="Search..."
+    autocomplete="off"
+    class="search-input"
+  />
+  <div id="search-popover" popover="auto" class="search-popover">
+    <p id="search-status" class="search-status"></p>
+    <ul id="search-results" class="search-results"></ul>
+  </div>
+</div>
+
+<style>
+  .search-wrap {
+    position: relative;
+    width: 100%;
+  }
+  .search-input {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-size: 0.85rem;
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+    box-sizing: border-box;
+    outline: none;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .search-input:focus {
+    background: white;
+    color: #111;
+    border-color: #aaa;
+  }
+  .search-input:focus::placeholder {
+    color: #aaa;
+  }
+
+  .search-popover {
+    position: fixed;
+    inset: unset;
+    margin: 0;
+    width: 380px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    padding: 0;
+    overflow: hidden;
+  }
+  .search-popover:popover-open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .search-status {
+    font-size: 0.75rem;
+    color: #888;
+    margin: 0;
+    padding: 8px 14px 6px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .search-results {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+    overflow-y: auto;
+    max-height: calc(70vh - 40px);
+  }
+  .search-results li {
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .search-results li:last-child {
+    border-bottom: none;
+  }
+  .search-results li a {
+    display: block;
+    padding: 9px 14px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.1s;
+  }
+  .search-results li a:hover {
+    background: #f5f7fa;
+  }
+  .result-title {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #1a1a2e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .result-url {
+    font-size: 0.7rem;
+    color: hsl(160, 51%, 35%);
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .result-excerpt {
+    font-size: 0.78rem;
+    color: #666;
+    line-height: 1.4;
+    margin-top: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .result-excerpt :global(mark) {
+    background: #fff3cd;
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 600;
+  }
+  .no-results {
+    padding: 16px 14px;
+    color: #888;
+    font-size: 0.875rem;
+    text-align: center;
+  }
 </style>
+
 <script>
-  import { PagefindUI } from '@pagefind/default-ui'
-  new PagefindUI({ element: '#search', showSubResults: true })
+  const input = document.getElementById('search-input') as HTMLInputElement
+  const popover = document.getElementById('search-popover') as HTMLElement
+  const status = document.getElementById('search-status') as HTMLElement
+  const results = document.getElementById('search-results') as HTMLUListElement
+
+  type PagefindResult = { data: () => Promise<PagefindData> }
+  type PagefindData = { url: string; meta: { title?: string }; excerpt: string }
+  type Pagefind = { search: (q: string) => Promise<{ results: PagefindResult[] }> }
+
+  let pagefind: Pagefind | undefined
+  let debounce: ReturnType<typeof setTimeout>
+
+  async function getPagefind() {
+    if (!pagefind) {
+      pagefind = await import(/* @vite-ignore */ `${import.meta.env.BASE_URL}pagefind/pagefind.js`)
+    }
+    return pagefind!
+  }
+
+  function positionPopover() {
+    const rect = input.getBoundingClientRect()
+    popover.style.top = `${rect.bottom + 6}px`
+    popover.style.right = `${window.innerWidth - rect.right}px`
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(debounce)
+    debounce = setTimeout(runSearch, 200)
+  })
+
+  input.addEventListener('focus', () => {
+    if (results.children.length) {
+      positionPopover()
+      popover.showPopover()
+    }
+  })
+
+  async function runSearch() {
+    const query = input.value.trim()
+    if (!query) {
+      popover.hidePopover()
+      results.innerHTML = ''
+      status.textContent = ''
+      return
+    }
+    const pf = await getPagefind()
+    const { results: found } = await pf.search(query)
+    if (!found.length) {
+      results.innerHTML = '<li class="no-results">No results found</li>'
+      status.textContent = ''
+      positionPopover()
+      popover.showPopover()
+      return
+    }
+    const items = await Promise.all(found.slice(0, 8).map(r => r.data()))
+    status.textContent = `${found.length} result${found.length === 1 ? '' : 's'}`
+    results.innerHTML = items
+      .map(item => {
+        const path = new URL(item.url, location.href).pathname
+        return `<li><a href="${item.url}">
+          <div class="result-title">${item.meta?.title ?? path}</div>
+          <div class="result-url">${path}</div>
+          <div class="result-excerpt">${item.excerpt}</div>
+        </a></li>`
+      })
+      .join('')
+    positionPopover()
+    popover.showPopover()
+  }
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      popover.hidePopover()
+      input.blur()
+    }
+  })
+
+  popover.addEventListener('toggle', e => {
+    if ((e as ToggleEvent).newState === 'closed') {
+      input.value = ''
+      results.innerHTML = ''
+      status.textContent = ''
+    }
+  })
 </script>

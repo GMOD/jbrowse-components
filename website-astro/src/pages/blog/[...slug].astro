@@ -1,8 +1,9 @@
 ---
-import { getCollection, render } from 'astro:content'
+import { getCollection } from 'astro:content'
 import { baseUrl } from '../../lib/base-url'
 import { blogPath } from '../../lib/blog-path'
 import BlogLayout from '../../layouts/BlogLayout.astro'
+import { renderMarkdown } from '../../lib/markdown.ts'
 import blog from '../../styles/blog.module.css'
 
 export async function getStaticPaths() {
@@ -24,7 +25,7 @@ export async function getStaticPaths() {
 
 const { post, prev, next } = Astro.props
 const { slug } = Astro.params
-const { Content } = await render(post)
+const { html } = await renderMarkdown(post.body ?? '')
 ---
 
 <BlogLayout title={post.data.title} currentSlug={slug}>
@@ -65,8 +66,8 @@ const { Content } = await render(post)
         }
       </div>
     </header>
-    <div class="content">
-      <Content />
+    <div class="content" data-pagefind-body>
+      <Fragment set:html={html} />
     </div>
     <footer>
       <div class="post-nav">
