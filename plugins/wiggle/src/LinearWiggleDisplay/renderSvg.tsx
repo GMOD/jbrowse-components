@@ -1,18 +1,13 @@
 import type React from 'react'
 
-import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
 import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
-import {
-  Canvas2DWiggleRenderer,
-  drawWiggleBlocks,
-} from '../shared/Canvas2DWiggleRenderer.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
+import { paintHeadlessWiggle } from '../shared/paintHeadlessWiggle.ts'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
 import type {
@@ -63,29 +58,14 @@ export async function renderSvg(
     )
   }
 
-  // Headless renderer: drive the same drawWiggleBlocks pipeline used
-  // on-screen. Upload region sources via buildSourceRenderData (same path the
-  // GPU autorun takes), then paint into a real canvas (rasterize) or an
-  // SvgCanvas (vector). Single source of truth — no separate SVG draw path.
   const props = model.gpuProps()
-  const renderer = new Canvas2DWiggleRenderer(null)
-  for (const [displayedRegionIndex, data] of rpcDataMap) {
-    renderer.uploadRegion(
-      displayedRegionIndex,
-      buildSourceRenderData(data, props),
-    )
-  }
-
-  const totalWidth = view.totalWidthPx
-  const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  const state = {
-    ...renderState,
-    canvasWidth: totalWidth,
-    canvasHeight: height,
-  }
-
-  const wiggleNode = paintLayer(totalWidth, height, opts, ctx => {
-    drawWiggleBlocks(ctx, renderer.getRegions(), renderBlocks, state)
+  const wiggleNode = paintHeadlessWiggle({
+    view,
+    height,
+    rpcDataMap,
+    encode: data => buildSourceRenderData(data, props),
+    renderState,
+    opts,
   })
 
   if (opts?.rasterizeLayers) {

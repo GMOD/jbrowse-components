@@ -1,6 +1,6 @@
 # Active Work Items
 
-**Updated:** 2026-04-25 | PRD.md holds invariants; this file is the categorized backlog.
+**Updated:** 2026-05-07 | PRD.md holds invariants; this file is the categorized backlog.
 
 
 ---
@@ -190,12 +190,6 @@ Migration should be done incrementally: make the single display call the multi
 RPC first, then consolidate models.
 
 
-### `untracked` inline documentation
-
-Done — comments added to `MultiRegionDisplayMixin.ts` at each call site.
-
-
-
 ### Synteny: rewrite CIGAR visitor in bp-space
 
 **Status:** Partial — the post-emit `pxArrayToBpHiLo` sweep and its 4 F64
@@ -264,24 +258,6 @@ in `chrome://gpu` or `about:gpu`. At that point the per-region uniform table
 becomes the cheaper option, and the codegen array support that ADR-010
 rejected gets a real cost-benefit case.
 
-##  Alignments track
-
-No mouseovers when zoomed out too far, but i still want coverage (perhaps can be downsampled) and significant snps,insertions. large deletions (>1px wide). audit both coverage and pileup rects
-
-
-## Lines plot plugins/wiggle
-
-Audit how it is created. We had weird assumptions due to 'block based' code, now it is not
-
-
-## Alignments track log scale
-
-The snp should use a 'linear scale' still. weird, but makes sense to me
-
-## Group by
-
-Audit whether there would be a way to make it more efficient. Launching n subtracks is slow for user, and probably unwanted
-
 ## Color by -> Base quality
 
 Is it not per-base? Should remove if not
@@ -291,3 +267,9 @@ May want legend also
 ## Could try to make Color-by menu responsive to whether paired end reasd are present, add submenu for paired end options
 
 ## Similar for whether modifications are visible
+
+## Wiggle nits
+
+- *migrateWiggleSnapshot.ts.* Single function does both legacy extraction and
+  Gen1/Gen2 precedence resolution. Splitting would help testability.
+

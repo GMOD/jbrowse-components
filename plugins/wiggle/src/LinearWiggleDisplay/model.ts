@@ -11,7 +11,6 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -23,10 +22,7 @@ import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
-import {
-  featureUnderMouseChanged,
-  makeRenderState,
-} from '../shared/wiggleComponentUtils.ts'
+import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
 import {
   makeAutoscaleTypeSubMenu,
   makeResolutionAndSummarySubMenus,
@@ -70,7 +66,6 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      ConfigOverrideMixin(),
       WiggleCommonMixin(),
       types.model({
         type: types.literal('LinearWiggleDisplay'),
@@ -84,10 +79,6 @@ export default function stateModelFactory(
     )
     .volatile(() => ({
       rpcDataMap: observable.map<number, WiggleDataResult>(),
-      // bpPerPx of the most recent fetch. isCacheValid compares strictly
-      // so any zoom change refetches every visible region together. See
-      // adr-008-wiggle-strict-bpperpx-equality.md.
-      loadedBpPerPx: undefined as number | undefined,
       featureUnderMouse: undefined as
         | {
             refName: string
@@ -109,33 +100,21 @@ export default function stateModelFactory(
         return self.getConfWithOverride<string>('color')
       },
 
-      get posColor() {
-        return self.getConfWithOverride<string>('posColor')
+      get adapterConfig() {
+        return getConf(getContainingTrack(self), 'adapter')
       },
 
-      get negColor() {
-        return self.getConfWithOverride<string>('negColor')
+      get isDensityMode() {
+        return self.renderingType === 'density'
       },
-
-      get bicolorPivot() {
-        return self.getConfWithOverride<number>('bicolorPivot')
-      },
-
+    }))
+    .views(self => ({
       get effectiveBicolorPivot() {
-        return isDefaultBicolor(this.color) ? this.bicolorPivot : -Infinity
-      },
-
-      get scaleType() {
-        return self.getConfWithOverride<string>('scaleType')
-      },
-
-      get autoscaleType() {
-        return self.getConfWithOverride<string>('autoscale')
+        return isDefaultBicolor(self.color) ? self.bicolorPivot : -Infinity
       },
 
       get hasResolution() {
-        const track = getContainingTrack(self)
-        const adapterConfig = getConf(track, 'adapter') as { type: string }
+        const adapterConfig = self.adapterConfig as { type: string }
         const { pluginManager } = getEnv(self)
         return (
           pluginManager
@@ -144,47 +123,10 @@ export default function stateModelFactory(
         )
       },
 
-      adapterProps() {
-        const track = getContainingTrack(self)
-        return {
-          adapterConfig: getConf(track, 'adapter'),
-        }
-      },
-
-      get summaryScoreMode() {
-        return self.getConfWithOverride<string>('summaryScoreMode')
-      },
-
-      get renderingType() {
-        return self.getConfWithOverride<string>('defaultRendering')
-      },
-
-      get isDensityMode() {
-        return this.renderingType === 'density'
-      },
-
-      get minScore() {
-        return self.getConfWithOverride<number>('minScore')
-      },
-
-      get maxScore() {
-        return self.getConfWithOverride<number>('maxScore')
-      },
-
-      get minScoreConfig() {
-        const val = this.minScore
-        return val === Number.MIN_VALUE ? undefined : val
-      },
-
-      get maxScoreConfig() {
-        const val = this.maxScore
-        return val === Number.MAX_VALUE ? undefined : val
-      },
-
       // Autoscale range = max/min over whatever is currently on screen.
       // Cached view, recomputes when any input moves. Replaces the
       // previous VisibleScoreRange autorun + volatile.
-      get visibleScoreRange(): [number, number] | undefined {
+      get visibleScoreRange() {
         const view = getContainingView(self) as LGV
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return undefined
@@ -209,34 +151,36 @@ export default function stateModelFactory(
           data,
         }))
         return computeAutoscaleDomain(
-          this.autoscaleType,
-          this.summaryScoreMode,
+          self.autoscaleType,
+          self.summaryScoreMode,
           numStdDev,
           visibleEntries,
           allEntries,
         )
       },
-
-      get domain(): [number, number] | undefined {
-        const range = this.visibleScoreRange
+    }))
+    .views(self => ({
+      get domain() {
+        const range = self.visibleScoreRange
         if (!range) {
           return undefined
         }
         return getNiceDomain({
           domain: range,
-          bounds: [this.minScoreConfig, this.maxScoreConfig],
-          scaleType: this.scaleType,
+          bounds: [self.minScoreConfig, self.maxScoreConfig],
+          scaleType: self.scaleType,
         })
       },
-
+    }))
+    .views(self => ({
       get ticks() {
         const { height } = self
-        const domain = this.domain
+        const domain = self.domain
         if (!domain) {
           return undefined
         }
         const scale = getScale({
-          scaleType: this.scaleType,
+          scaleType: self.scaleType,
           domain,
           range: [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET],
           inverted: false,
@@ -252,15 +196,15 @@ export default function stateModelFactory(
       },
 
       get renderState() {
-        const domain = this.domain
+        const domain = self.domain
         if (!domain) {
           return undefined
         }
         const view = getContainingView(self) as LGV
         return makeRenderState(
           domain,
-          this.scaleType,
-          this.renderingType,
+          self.scaleType,
+          self.renderingType,
           view.trackWidthPx,
           self.height,
         )
@@ -268,12 +212,12 @@ export default function stateModelFactory(
 
       // Settings sent to the worker via RPC. Adding a field here propagates
       // both into the RPC payload (via fetchFeaturesForRegion) and into the
-      // SettingsInvalidate autorun (which reads this getter), so refetch
+      // SettingsInvalidate autorun (which reads this method), so refetch
       // happens automatically when any field changes — no separate cache
       // key to maintain.
-      get rpcProps() {
+      rpcProps() {
         return {
-          bicolorPivot: this.effectiveBicolorPivot,
+          bicolorPivot: self.effectiveBicolorPivot,
           resolution: self.resolution,
         }
       },
@@ -287,12 +231,12 @@ export default function stateModelFactory(
       // buildSourceRenderData's `WiggleGpuProps` parameter type.
       gpuProps() {
         return {
-          color: this.color,
-          posColor: this.posColor,
-          negColor: this.negColor,
-          summaryScoreMode: this.summaryScoreMode,
-          isDensityMode: this.isDensityMode,
-          renderingType: this.renderingType,
+          color: self.color,
+          posColor: self.posColor,
+          negColor: self.negColor,
+          summaryScoreMode: self.summaryScoreMode,
+          isDensityMode: self.isDensityMode,
+          renderingType: self.renderingType,
         }
       },
     }))
@@ -301,13 +245,9 @@ export default function stateModelFactory(
         self.rpcDataMap.set(displayedRegionIndex, data)
       },
 
-      setLoadedBpPerPx(bpPerPx: number | undefined) {
-        self.loadedBpPerPx = bpPerPx
-      },
-
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
-        self.loadedBpPerPx = undefined
+        self.setLoadedBpPerPx(undefined)
       },
 
       reload() {
@@ -328,51 +268,16 @@ export default function stateModelFactory(
         self.setOverride('negColor', color)
       },
 
-      setScaleType(scaleType: string) {
-        self.setOverride('scaleType', scaleType)
-      },
-
-      setMinScore(val?: number) {
-        self.setOverride('minScore', val)
-      },
-
-      setMaxScore(val?: number) {
-        self.setOverride('maxScore', val)
-      },
-
-      setRenderingType(type: string) {
-        self.setOverride('defaultRendering', type)
-      },
-
-      setSummaryScoreMode(val: string) {
-        self.setOverride('summaryScoreMode', val)
-      },
-
       setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
-        if (featureUnderMouseChanged(feat, self.featureUnderMouse)) {
-          self.featureUnderMouse = feat
-        }
-      },
-
-      setAutoscale(val?: string) {
-        self.setOverride('autoscale', val)
+        self.featureUnderMouse = feat
       },
     }))
     .actions(self => ({
-      // Strict equality; see adr-008.
-      isCacheValid(_displayedRegionIndex: number) {
-        if (self.loadedBpPerPx === undefined) {
-          return true
-        }
-        const view = getContainingView(self) as LGV
-        return view.bpPerPx === self.loadedBpPerPx
-      },
-
       async fetchNeeded(
         needed: { region: Region; displayedRegionIndex: number }[],
       ) {
         const view = getContainingView(self) as LGV
-        const { adapterConfig } = self.adapterProps()
+        const { adapterConfig } = self
         if (!adapterConfig) {
           return
         }
@@ -389,7 +294,7 @@ export default function stateModelFactory(
                   sessionId,
                   adapterConfig,
                   region: r.region,
-                  ...self.rpcProps,
+                  ...self.rpcProps(),
                   stopToken: ctx.stopToken,
                   bpPerPx,
                   statusCallback: (msg: string) => {

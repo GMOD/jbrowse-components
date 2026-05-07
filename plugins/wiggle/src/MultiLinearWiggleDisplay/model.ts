@@ -14,7 +14,6 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -28,7 +27,6 @@ import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import {
-  featureUnderMouseChanged,
   getRowHeight,
   isOverlayMode,
   makeRenderState,
@@ -87,7 +85,6 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      ConfigOverrideMixin(),
       WiggleCommonMixin(),
       TreeSidebarMixin<Source>(),
       types.model({
@@ -103,8 +100,6 @@ export default function stateModelFactory(
     .volatile(() => ({
       rpcDataMap: observable.map<number, MultiWiggleDataResult>(),
       sourcesVolatile: [] as SourceInfo[],
-      // See LinearWiggleDisplay.loadedBpPerPx and adr-008.
-      loadedBpPerPx: undefined as number | undefined,
       featureUnderMouse: undefined as
         | {
             refName: string
@@ -130,11 +125,24 @@ export default function stateModelFactory(
         return MultiWiggleComponent
       },
 
+      get adapterConfig() {
+        return getConf(getContainingTrack(self), 'adapter')
+      },
+
+      get isDensityMode() {
+        return self.renderingType === 'multirowdensity'
+      },
+
+      get isOverlay() {
+        return isOverlayMode(self.renderingType)
+      },
+    }))
+    .views(self => ({
       get sourcesWithoutLayout() {
         return self.sourcesVolatile.map((s, i) => ({
           source: s.name,
           ...s,
-          color: resolveOverlayColor(i, this.isOverlay, s.color),
+          color: resolveOverlayColor(i, self.isOverlay, s.color),
         }))
       },
 
@@ -158,20 +166,15 @@ export default function stateModelFactory(
           ...s,
           color: resolveOverlayColor(
             i,
-            this.isOverlay,
+            self.isOverlay,
             sourceMap.get(s.name)?.color,
             layoutColors.get(s.name),
           ),
         }))
       },
 
-      get adapterConfig() {
-        const track = getContainingTrack(self)
-        return getConf(track, 'adapter')
-      },
-
       get hasResolution() {
-        const adapterConfig = this.adapterConfig as { type: string }
+        const adapterConfig = self.adapterConfig as { type: string }
         const { pluginManager } = getEnv(self)
         return (
           pluginManager
@@ -180,61 +183,7 @@ export default function stateModelFactory(
         )
       },
 
-      get posColor() {
-        return self.getConfWithOverride<string>('posColor')
-      },
-
-      get negColor() {
-        return self.getConfWithOverride<string>('negColor')
-      },
-
-      get bicolorPivot() {
-        return self.getConfWithOverride<number>('bicolorPivot')
-      },
-
-      get scaleType() {
-        return self.getConfWithOverride<string>('scaleType')
-      },
-
-      get autoscaleType() {
-        return self.getConfWithOverride<string>('autoscale')
-      },
-
-      get summaryScoreMode() {
-        return self.getConfWithOverride<string>('summaryScoreMode')
-      },
-
-      get renderingType() {
-        return self.getConfWithOverride<string>('defaultRendering')
-      },
-
-      get isDensityMode() {
-        return this.renderingType === 'multirowdensity'
-      },
-
-      get isOverlay() {
-        return isOverlayMode(this.renderingType)
-      },
-
-      get minScore() {
-        return self.getConfWithOverride<number>('minScore')
-      },
-
-      get maxScore() {
-        return self.getConfWithOverride<number>('maxScore')
-      },
-
-      get minScoreConfig() {
-        const val = this.minScore
-        return val === Number.MIN_VALUE ? undefined : val
-      },
-
-      get maxScoreConfig() {
-        const val = this.maxScore
-        return val === Number.MAX_VALUE ? undefined : val
-      },
-
-      get visibleScoreRange(): [number, number] | undefined {
+      get visibleScoreRange() {
         const view = getContainingView(self) as LGV
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return undefined
@@ -259,48 +208,51 @@ export default function stateModelFactory(
           regionData.sources.map(source => ({ data: source })),
         )
         return computeAutoscaleDomain(
-          this.autoscaleType,
-          this.summaryScoreMode,
+          self.autoscaleType,
+          self.summaryScoreMode,
           numStdDev,
           visibleEntries,
           allEntries,
         )
       },
-
-      get domain(): [number, number] | undefined {
-        const range = this.visibleScoreRange
+    }))
+    .views(self => ({
+      get domain() {
+        const range = self.visibleScoreRange
         if (!range) {
           return undefined
         }
         return getNiceDomain({
           domain: range,
-          bounds: [this.minScoreConfig, this.maxScoreConfig],
-          scaleType: this.scaleType,
+          bounds: [self.minScoreConfig, self.maxScoreConfig],
+          scaleType: self.scaleType,
         })
       },
 
       get numSources() {
-        return this.sources.length
+        return self.sources.length
       },
-
+    }))
+    .views(self => ({
       get rowHeight() {
-        return this.isOverlay
+        return self.isOverlay
           ? self.height
-          : getRowHeight(self.height, this.numSources)
+          : getRowHeight(self.height, self.numSources)
       },
-
+    }))
+    .views(self => ({
       get rowHeightTooSmallForScalebar() {
-        return this.rowHeight < 70
+        return self.rowHeight < 70
       },
 
       get ticks() {
-        const domain = this.domain
-        const rowHeight = this.rowHeight
+        const domain = self.domain
+        const rowHeight = self.rowHeight
         if (!domain) {
           return undefined
         }
         const scale = getScale({
-          scaleType: this.scaleType,
+          scaleType: self.scaleType,
           domain,
           range: [rowHeight, 0],
           inverted: false,
@@ -318,24 +270,26 @@ export default function stateModelFactory(
       },
 
       get renderState() {
-        const domain = this.domain
-        if (!domain || this.sources.length === 0) {
+        const domain = self.domain
+        if (!domain || self.sources.length === 0) {
           return undefined
         }
         const view = getContainingView(self) as LGV
         return makeRenderState(
           domain,
-          this.scaleType,
-          this.renderingType,
+          self.scaleType,
+          self.renderingType,
           view.trackWidthPx,
           self.height,
         )
       },
 
-      // Settings sent to the worker via RPC.
-      get rpcProps() {
+      // Settings sent to the worker via RPC. Multi has no global `color`
+      // setting (only posColor/negColor), so bicolorPivot is always
+      // meaningful — no `effectiveBicolorPivot` indirection like Linear.
+      rpcProps() {
         return {
-          bicolorPivot: this.bicolorPivot,
+          bicolorPivot: self.bicolorPivot,
           resolution: self.resolution,
         }
       },
@@ -350,12 +304,12 @@ export default function stateModelFactory(
       // buildMultiSourceRenderData's `MultiWiggleGpuProps` parameter type.
       gpuProps() {
         return {
-          sources: this.sources,
-          posColor: this.posColor,
-          negColor: this.negColor,
-          summaryScoreMode: this.summaryScoreMode,
-          renderingType: this.renderingType,
-          isDensityMode: this.isDensityMode,
+          sources: self.sources,
+          posColor: self.posColor,
+          negColor: self.negColor,
+          summaryScoreMode: self.summaryScoreMode,
+          renderingType: self.renderingType,
+          isDensityMode: self.isDensityMode,
         }
       },
     }))
@@ -388,13 +342,9 @@ export default function stateModelFactory(
         }
       },
 
-      setLoadedBpPerPx(bpPerPx: number | undefined) {
-        self.loadedBpPerPx = bpPerPx
-      },
-
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
-        self.loadedBpPerPx = undefined
+        self.setLoadedBpPerPx(undefined)
       },
 
       startGpuBackendLifecycle(backend: WiggleBackend) {
@@ -422,15 +372,7 @@ export default function stateModelFactory(
       },
 
       setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
-        if (
-          featureUnderMouseChanged(
-            feat,
-            self.featureUnderMouse,
-            (a, b) => a.source === b.source,
-          )
-        ) {
-          self.featureUnderMouse = feat
-        }
+        self.featureUnderMouse = feat
       },
 
       selectFeature(feat: NonNullable<typeof self.featureUnderMouse>) {
@@ -458,44 +400,11 @@ export default function stateModelFactory(
           }),
         )
       },
-
-      setAutoscale(val?: string) {
-        self.setOverride('autoscale', val)
-      },
-
-      setScaleType(scaleType: string) {
-        self.setOverride('scaleType', scaleType)
-      },
-
-      setMinScore(val?: number) {
-        self.setOverride('minScore', val)
-      },
-
-      setMaxScore(val?: number) {
-        self.setOverride('maxScore', val)
-      },
-
-      setRenderingType(type: string) {
-        self.setOverride('defaultRendering', type)
-      },
-
-      setSummaryScoreMode(val: string) {
-        self.setOverride('summaryScoreMode', val)
-      },
     }))
     .actions(self => {
       const superAfterAttach = self.afterAttach
 
       return {
-        // Strict equality; see adr-008.
-        isCacheValid(_displayedRegionIndex: number) {
-          if (self.loadedBpPerPx === undefined) {
-            return true
-          }
-          const view = getContainingView(self) as LGV
-          return view.bpPerPx === self.loadedBpPerPx
-        },
-
         async fetchNeeded(
           needed: { region: Region; displayedRegionIndex: number }[],
         ) {
@@ -518,7 +427,7 @@ export default function stateModelFactory(
                     adapterConfig,
                     region: r.region,
                     sources,
-                    ...self.rpcProps,
+                    ...self.rpcProps(),
                     stopToken: ctx.stopToken,
                     bpPerPx,
                     statusCallback: (msg: string) => {

@@ -1,21 +1,16 @@
 import type React from 'react'
 
-import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
 import { buildMultiSourceRenderData } from './components/buildMultiSourceRenderData.ts'
-import {
-  Canvas2DWiggleRenderer,
-  drawWiggleBlocks,
-} from '../shared/Canvas2DWiggleRenderer.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
+import { paintHeadlessWiggle } from '../shared/paintHeadlessWiggle.ts'
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
@@ -59,8 +54,6 @@ export async function renderSvg(
     return null
   }
 
-  const totalWidth = view.totalWidthPx
-
   let legendEl: React.ReactNode = null
   if (model.isDensityMode) {
     legendEl = (
@@ -71,7 +64,7 @@ export async function renderSvg(
       />
     )
   } else if (ticks) {
-    if (rowHeight < 70) {
+    if (model.rowHeightTooSmallForScalebar) {
       legendEl = (
         <ScoreLegend
           domain={domain}
@@ -124,27 +117,14 @@ export async function renderSvg(
   const treeEl =
     showTree && hierarchy ? <SvgTreePath hierarchy={hierarchy} /> : null
 
-  // Headless renderer: same drawWiggleBlocks pipeline as on-screen.
-  // buildMultiSourceRenderData converts RPC data + gpuProps → SourceRenderData[]
-  // (one per row); the renderer paints each source at rowIndex × rowHeight.
   const props = model.gpuProps()
-  const renderer = new Canvas2DWiggleRenderer(null)
-  for (const [displayedRegionIndex, data] of rpcDataMap) {
-    renderer.uploadRegion(
-      displayedRegionIndex,
-      buildMultiSourceRenderData(data, props),
-    )
-  }
-
-  const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  const state = {
-    ...renderState,
-    canvasWidth: totalWidth,
-    canvasHeight: height,
-  }
-
-  const wiggleNode = paintLayer(totalWidth, height, opts, ctx => {
-    drawWiggleBlocks(ctx, renderer.getRegions(), renderBlocks, state)
+  const wiggleNode = paintHeadlessWiggle({
+    view,
+    height,
+    rpcDataMap,
+    encode: data => buildMultiSourceRenderData(data, props),
+    renderState,
+    opts,
   })
 
   if (opts?.rasterizeLayers) {
