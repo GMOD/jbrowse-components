@@ -5,6 +5,7 @@ interface Props {
   title?: string
 }
 const { title = 'JBrowse' } = Astro.props
+const baseUrl = base.replace(/\/$/, '')
 ---
 
 <!doctype html>
@@ -13,7 +14,7 @@ const { title = 'JBrowse' } = Astro.props
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
-    <link rel="icon" href={`${base}img/favicon.ico`} />
+    <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
@@ -93,19 +94,19 @@ const { title = 'JBrowse' } = Astro.props
   </head>
   <body>
     <nav class="site-nav">
-      <a class="brand" href={`${base}/`}>
-        <img src={`${base}/img/logo.svg`} alt="JBrowse" />
+      <a class="brand" href={`${baseUrl}/`}>
+        <img src={`${baseUrl}/img/logo.svg`} alt="JBrowse" />
         JBrowse
       </a>
       <a href="http://genomes.jbrowse.org/" class="new-feature">Genomes</a>
-      <a href={`${base}/docs/`}>Docs</a>
-      <a href={`${base}/blog/`}>Blog</a>
-      <a href={`${base}/download/`}>Download</a>
-      <a href={`${base}/plugin_store/`}>Plugins</a>
-      <a href={`${base}/features/`}>Features</a>
-      <a href={`${base}/gallery/`}>Gallery</a>
-      <a href={`${base}/demos/`}>Demos</a>
-      <a href={`${base}/contact/`}>Contact</a>
+      <a href={`${baseUrl}/docs/`}>Docs</a>
+      <a href={`${baseUrl}/blog/`}>Blog</a>
+      <a href={`${baseUrl}/download/`}>Download</a>
+      <a href={`${baseUrl}/plugin_store/`}>Plugins</a>
+      <a href={`${baseUrl}/features/`}>Features</a>
+      <a href={`${baseUrl}/gallery/`}>Gallery</a>
+      <a href={`${baseUrl}/demos/`}>Demos</a>
+      <a href={`${baseUrl}/contact/`}>Contact</a>
       <div class="right">
         <a href="https://jbrowse.org/jbrowse1.html" style="white-space:nowrap">
           Looking for JBrowse 1?
