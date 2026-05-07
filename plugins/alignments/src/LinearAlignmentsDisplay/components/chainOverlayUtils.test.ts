@@ -20,6 +20,7 @@ function makeState(overrides: Partial<RenderState> = {}): RenderState {
     coverageYOffset: 0,
     coverageMaxDepth: undefined,
     coverageIsLog: false,
+    showPerBaseQuality: false,
     showMismatches: true,
     showSoftClipping: false,
     showInterbaseIndicators: false,

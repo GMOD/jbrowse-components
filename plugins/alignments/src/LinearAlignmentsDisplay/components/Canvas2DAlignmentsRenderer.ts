@@ -331,8 +331,9 @@ export function drawAlignmentBlocks(
       ctx.restore()
     }
 
-    if (state.showCoverage) {
-      drawCoverage(ctx, region, block, bpLength, fullBlockWidth, state)
+    const domainMax = state.coverageMaxDepth
+    if (state.showCoverage && domainMax) {
+      drawCoverage(ctx, region, block, bpLength, fullBlockWidth, state, domainMax)
     }
 
     // Clip pileup area
@@ -409,17 +410,14 @@ function drawCoverage(
   bpLength: number,
   fullBlockWidth: number,
   state: RenderState,
+  domainMax: number,
 ) {
-  const bpToX = (bp: number) => bpToScreenX(bp, block, bpLength, fullBlockWidth)
+  const bpToX = (bp: number) =>
+    bpToScreenX(bp, block, bpLength, fullBlockWidth)
   const viewWidth = fullBlockWidth + block.screenStartPx
-
-  const domainMax = state.coverageMaxDepth
-  if (!domainMax) {
-    return
-  }
-  drawCoverageBars(ctx, region, bpToX, viewWidth, state)
-  drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state)
-  drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state)
+  drawCoverageBars(ctx, region, bpToX, viewWidth, state, domainMax)
+  drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
+  drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
   drawNoncovCanvas(ctx, region, bpToX, viewWidth, state)
   drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
 }

@@ -13,18 +13,16 @@ export function drawSnpSegmentsCanvas(
   bpToX: (bp: number) => number,
   viewWidth: number,
   state: RenderState,
+  domainMax: number,
 ) {
-  const domainMax = state.coverageMaxDepth
-  if (domainMax) {
-    drawSnpSegments(
-      ctx,
-      region.snpPackedBuffer,
-      makeScoreNormalizer(0, domainMax, state.coverageIsLog),
-      region.coverageMaxDepth,
-      state.coverageHeight,
-      buildCigarOpDrawColors(state),
-      bpToX,
-      viewWidth,
-    )
-  }
+  drawSnpSegments(
+    ctx,
+    region.snpPackedBuffer,
+    makeScoreNormalizer(0, domainMax, state.coverageIsLog),
+    region.coverageMaxDepth,
+    state.coverageHeight,
+    buildCigarOpDrawColors(state),
+    bpToX,
+    viewWidth,
+  )
 }

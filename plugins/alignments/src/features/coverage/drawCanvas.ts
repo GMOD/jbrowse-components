@@ -17,18 +17,16 @@ export function drawCoverageBars(
   bpToX: (bp: number) => number,
   viewWidth: number,
   state: RenderState,
+  domainMax: number,
 ) {
-  const domainMax = state.coverageMaxDepth
-  if (domainMax) {
-    drawCoverageBins(
-      ctx,
-      region.coverageBuffer,
-      makeScoreNormalizer(0, domainMax, state.coverageIsLog),
-      state.coverageHeight,
-      rgb255(state.colors.colorCoverage),
-      bpToX,
-      viewWidth,
-      ALIGNMENTS_FUDGE_FACTOR,
-    )
-  }
+  drawCoverageBins(
+    ctx,
+    region.coverageBuffer,
+    makeScoreNormalizer(0, domainMax, state.coverageIsLog),
+    state.coverageHeight,
+    rgb255(state.colors.colorCoverage),
+    bpToX,
+    viewWidth,
+    ALIGNMENTS_FUDGE_FACTOR,
+  )
 }
