@@ -121,23 +121,6 @@ not perceptible. Same fix (incremental computed) would apply if N grew.
 
 ---
 
-### Formalize `getFeatureArrays` as an adapter capability
-
-**Problem:** `executeRenderWiggleData` duck-types the fast path via
-`'getFeatureArrays' in adapter`. Any adapter that omits it silently falls back
-to the slow Observable/array-collect path without any warning.
-
-**Fix:** Register `hasFeatureArrays` as a named adapter capability (alongside
-the existing `hasResolution` check). The adapter's `adapterCapabilities` array
-would declare it; `executeRenderWiggleData` checks the capability registry
-instead of duck-typing. This makes the fast path discoverable and prevents
-silent perf regressions when new adapters are added.
-
-**Scope:** `BigWigAdapter` declares the capability; `executeRenderWiggleData`
-uses `getAdapterCapabilities` to gate the fast path; a unit test verifies the
-fallback.
-
-
 ### Batch RPC calls per viewport (wiggle)
 
 **Problem:** Each visible region triggers its own RPC call. On chromosome
@@ -257,16 +240,6 @@ resolution) reaching 30+ MB instance buffers and showing GPU memory pressure
 in `chrome://gpu` or `about:gpu`. At that point the per-region uniform table
 becomes the cheaper option, and the codegen array support that ADR-010
 rejected gets a real cost-benefit case.
-
-## Color by -> Base quality
-
-Is it not per-base? Should remove if not
-
-May want legend also
-
-## Could try to make Color-by menu responsive to whether paired end reasd are present, add submenu for paired end options
-
-## Similar for whether modifications are visible
 
 ## Wiggle nits
 
