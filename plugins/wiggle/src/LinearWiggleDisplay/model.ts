@@ -123,9 +123,6 @@ export default function stateModelFactory(
         )
       },
 
-      // Autoscale range = max/min over whatever is currently on screen.
-      // Cached view, recomputes when any input moves. Replaces the
-      // previous VisibleScoreRange autorun + volatile.
       get visibleScoreRange() {
         const view = getContainingView(self) as LGV
         if (!view.initialized || self.rpcDataMap.size === 0) {
@@ -210,11 +207,6 @@ export default function stateModelFactory(
         )
       },
 
-      // Settings sent to the worker via RPC. Adding a field here propagates
-      // both into the RPC payload (via fetchFeaturesForRegion) and into the
-      // SettingsInvalidate autorun (which reads this method), so refetch
-      // happens automatically when any field changes — no separate cache
-      // key to maintain.
       rpcProps() {
         return {
           bicolorPivot: self.effectiveBicolorPivot,
@@ -222,13 +214,6 @@ export default function stateModelFactory(
         }
       },
 
-      // Settings consumed during main-thread GPU buffer encoding
-      // (buildSourceRenderData), not sent to the worker. Counterpart to
-      // rpcProps for things that affect the GPU side instead of the RPC
-      // side. Defined as a method (not a getter) so subclasses can
-      // override it via the standard `super` capture pattern in composed
-      // views. The return shape is enforced structurally by
-      // buildSourceRenderData's `WiggleGpuProps` parameter type.
       gpuProps() {
         return {
           color: self.color,
@@ -251,8 +236,6 @@ export default function stateModelFactory(
       },
 
       reload() {
-        // clearAllRpcData clears error and bumps fetchGeneration to retrigger
-        // the fetch autorun.
         self.clearAllRpcData()
       },
 

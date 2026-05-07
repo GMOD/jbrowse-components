@@ -284,9 +284,8 @@ export default function stateModelFactory(
         )
       },
 
-      // Settings sent to the worker via RPC. Multi has no global `color`
-      // setting (only posColor/negColor), so bicolorPivot is always
-      // meaningful — no `effectiveBicolorPivot` indirection like Linear.
+      // bicolorPivot is unconditional here: Multi has no global `color`
+      // setting, only posColor/negColor.
       rpcProps() {
         return {
           bicolorPivot: self.bicolorPivot,
@@ -294,14 +293,6 @@ export default function stateModelFactory(
         }
       },
 
-      // Settings consumed during main-thread GPU buffer encoding
-      // (buildMultiSourceRenderData), not sent to the worker. Includes
-      // `sources` because re-ordering / re-coloring sources changes the
-      // per-instance buffer (rowIndex, color) without changing what the
-      // worker returns. Defined as a method (not a getter) so subclasses
-      // can override it via the standard `super` capture pattern. The
-      // return shape is enforced structurally by
-      // buildMultiSourceRenderData's `MultiWiggleGpuProps` parameter type.
       gpuProps() {
         return {
           sources: self.sources,
@@ -354,8 +345,6 @@ export default function stateModelFactory(
       },
 
       reload() {
-        // clearAllRpcData clears error and bumps fetchGeneration to retrigger
-        // the fetch autorun.
         self.clearAllRpcData()
       },
 

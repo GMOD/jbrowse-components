@@ -250,16 +250,8 @@ function drawScatter(
   }
 }
 
-/**
- * Pure draw entry point. Takes any 2D-canvas-like context (real
- * CanvasRenderingContext2D or SvgCanvas) plus a regions map and paints the
- * wiggle display: line / density / scatter / xyplot per render type, one
- * source per row.
- *
- * No `this`, no DOM, no DPR scaling — just data → ctx. The on-screen
- * `Canvas2DWiggleRenderer` wraps this with `prepareCanvas` + lifecycle upload
- * state; SVG export calls it directly with an `SvgCanvas`.
- */
+// Pure draw entry point per ARCHITECTURE.md "SVG export pipeline". Paints
+// line / density / scatter / xyplot per render type, one source per row.
 export function drawWiggleBlocks(
   ctx: Ctx2D,
   regions: ReadonlyMap<number, Canvas2DRegionData>,
@@ -335,9 +327,7 @@ export function drawWiggleBlocks(
   }
 }
 
-// Pure builder: turns a single region's encoded sources into a
-// Canvas2DRegionData entry, or undefined if it has zero features (signals
-// "delete from the regions map" to incremental upload callers).
+// Returns undefined for zero-feature regions to signal "delete from map".
 function buildWiggleRegion(
   sources: SourceRenderData[],
 ): Canvas2DRegionData | undefined {
@@ -351,13 +341,9 @@ function buildWiggleRegion(
   return { sources, numRows: computeNumRows(sources) }
 }
 
-/**
- * One-shot pure entry point: build the regions map from each rpcDataMap entry
- * and paint into any 2D-context-shaped surface (real canvas for raster,
- * SvgCanvas for vector). Used by SVG export as a single call. The on-screen
- * lifecycle still uses the streamed per-region path via Canvas2DWiggleRenderer
- * because rpcDataMap entries arrive incrementally.
- */
+// One-shot pure entry point used by SVG export per ARCHITECTURE.md "SVG
+// export pipeline". On-screen uses the streamed per-region path via
+// Canvas2DWiggleRenderer because rpcDataMap entries arrive incrementally.
 export function drawWiggleToCtx<Data>(
   ctx: Ctx2D,
   sources: {
@@ -377,11 +363,8 @@ export function drawWiggleToCtx<Data>(
   drawWiggleBlocks(ctx, regions, blocks, state)
 }
 
-/**
- * Streaming-upload lifecycle holder around a `regions` Map. `uploadRegion`
- * calls the pure `buildWiggleRegion`; `renderBlocks` runs `prepareCanvas`
- * (DPR + size) and delegates to the pure `drawWiggleBlocks`.
- */
+// Streaming on-screen backend. `uploadRegion` is per-region (per-key
+// autorun); `renderBlocks` preps the canvas and delegates to drawWiggleBlocks.
 export class Canvas2DWiggleRenderer implements WiggleBackend {
   private ctx: CanvasRenderingContext2D
   private regions = new Map<number, Canvas2DRegionData>()

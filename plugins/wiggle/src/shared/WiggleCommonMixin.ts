@@ -7,15 +7,10 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import { ConfigOverrideMixin } from '@jbrowse/plugin-linear-genome-view'
 
-/**
- * Shared MST mixin for both LinearWiggleDisplay and MultiLinearWiggleDisplay.
- * Owns the resolution / displayCrossHatches model fields, the loadedBpPerPx
- * volatile, the cross-display config getters/setters, and the strict-zoom
- * isCacheValid override (see adr-008-wiggle-strict-bpperpx-equality.md).
- *
- * Composes ConfigOverrideMixin internally — wiggle displays don't need to
- * add it again in their own compose() chain.
- */
+// Shared mixin for LinearWiggleDisplay and MultiLinearWiggleDisplay. Owns
+// score/scale/color config getters & setters, loadedBpPerPx, and the
+// strict-zoom isCacheValid override (see adr-008). Composes
+// ConfigOverrideMixin internally.
 export function WiggleCommonMixin() {
   return types
     .compose(
@@ -27,8 +22,6 @@ export function WiggleCommonMixin() {
       }),
     )
     .volatile(() => ({
-      // bpPerPx of the most recent fetch. isCacheValid compares strictly
-      // so any zoom change refetches every visible region together.
       loadedBpPerPx: undefined as number | undefined,
     }))
     .views(self => ({
