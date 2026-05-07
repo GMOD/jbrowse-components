@@ -75,7 +75,7 @@ function FilePickerButton({
             setLocation(await openFileSystemAccessPicker())
           } catch (e) {
             // User cancelled the picker
-            if ((e as Error).name !== 'AbortError') {
+            if (!(e instanceof DOMException) || e.name !== 'AbortError') {
               throw e
             }
           }
@@ -131,7 +131,7 @@ function ReloadPrompt({
         try {
           setLocation(await openFileSystemAccessPicker())
         } catch (e) {
-          if ((e as Error).name !== 'AbortError') {
+          if (!(e instanceof DOMException) || e.name !== 'AbortError') {
             throw e
           }
         }

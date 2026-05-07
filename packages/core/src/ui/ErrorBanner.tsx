@@ -31,7 +31,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function parseError(str: string) {
+export function parseError(str: string) {
   let snapshotError = ''
   let message = ''
   const findStr = 'is not assignable'
@@ -45,14 +45,12 @@ function parseError(str: string) {
     const match = /.*at path "(.*)" snapshot `(.*)` is not assignable/m.exec(
       trim,
     )
+    // case 2. element has no path
+    const match2 = /.*snapshot `(.*)` is not assignable/.exec(trim)
     if (match) {
       snapshotError = match[2]!
       message = `Failed to load element at ${match[1]}...Failed element had snapshot`
-    }
-
-    // case 2. element has no path
-    const match2 = /.*snapshot `(.*)` is not assignable/.exec(trim)
-    if (match2) {
+    } else if (match2) {
       snapshotError = match2[1]!
       message = 'Failed to load element...Failed element had snapshot'
     }

@@ -45,11 +45,10 @@ export default class CompositeMap<T, U> {
     }
   }
 
-  find<V>(f: (arg0: U) => V) {
+  find(f: (arg0: U) => boolean): U | undefined {
     for (const submap of this.submaps.values()) {
       for (const value of submap.values()) {
-        const found = f(value)
-        if (found) {
+        if (f(value)) {
           return value
         }
       }
