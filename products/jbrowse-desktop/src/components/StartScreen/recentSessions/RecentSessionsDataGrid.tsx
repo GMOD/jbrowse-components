@@ -13,6 +13,10 @@ import { useInnerDims } from '../availableGenomes/util.ts'
 
 import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  GridRenderCellParams,
+  GridRowSelectionModel,
+} from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
   cell: {
@@ -45,26 +49,20 @@ function RecentSessionsList({
   const { height: innerHeight } = useInnerDims()
   const [now] = useState(() => Date.now())
 
-  // Memoize expensive calculations
   const rows = useMemo(() => {
     const oneDayLength = 24 * 60 * 60 * 1000
-
     return sessions.map(session => {
-      const { updated = 0 } = session
-      const date = new Date(updated)
-      const showDateTooltip = now - date.getTime() < oneDayLength
-
-      return {
-        id: session.path,
-        name: session.name,
-        rename: session.name,
-        showDateTooltip,
-        lastModified: showDateTooltip
+      const { updated } = session
+      const date = updated !== undefined ? new Date(updated) : null
+      const showDateTooltip =
+        date !== null && now - date.getTime() < oneDayLength
+      let lastModified = 'Unknown'
+      if (date !== null) {
+        lastModified = showDateTooltip
           ? formatDistanceToNow(date, { addSuffix: true })
-          : date.toLocaleString('en-US'),
-        updated: session.updated,
-        path: session.path,
+          : date.toLocaleString('en-US')
       }
+      return { ...session, showDateTooltip, lastModified }
     })
   }, [sessions, now])
 
@@ -82,31 +80,29 @@ function RecentSessionsList({
               ) + 40,
         ]),
       ),
-    } as Record<string, number>
+    }
   }, [rows])
 
   const favs = useMemo(() => new Set(favorites), [favorites])
 
-  // Memoize callback functions
   const handleRowSelectionChange = useCallback(
-    (args: any) => {
-      setSelectedSessions(sessions.filter(s => args.ids.has(s.path)))
+    (model: GridRowSelectionModel) => {
+      setSelectedSessions(sessions.filter(s => model.ids.has(s.path)))
     },
     [sessions, setSelectedSessions],
   )
 
-  // Memoize columns to prevent recreation on every render
   const columns = useMemo(
     () => [
       {
         field: 'name',
         headerName: 'Session name',
         width: widths.name,
-        renderCell: ({ value, row }: any) => (
+        renderCell: ({ value, row }: GridRenderCellParams) => (
           <SessionNameCell
-            value={value as string}
+            value={String(value)}
             row={row}
-            isFavorite={favs.has(row.id)}
+            isFavorite={favs.has(row.path)}
             setPluginManager={setPluginManager}
             setError={setError}
             toggleFavorite={toggleFavorite}
@@ -119,9 +115,9 @@ function RecentSessionsList({
         field: 'path',
         headerName: 'Session path',
         width: widths.path,
-        renderCell: ({ value }: any) => (
+        renderCell: ({ value }: GridRenderCellParams) => (
           <Tooltip title={String(value)}>
-            <div className={classes.cell}>{value as string}</div>
+            <div className={classes.cell}>{String(value)}</div>
           </Tooltip>
         ),
       },
@@ -129,7 +125,7 @@ function RecentSessionsList({
         field: 'lastModified',
         headerName: 'Last modified',
         width: widths.lastModified,
-        renderCell: ({ value, row }: any) =>
+        renderCell: ({ value, row }: GridRenderCellParams) =>
           !value ? null : <DateSinceLastUsed row={row} />,
       },
     ],
@@ -151,6 +147,7 @@ function RecentSessionsList({
         <DataGrid
           checkboxSelection
           disableRowSelectionOnClick
+          getRowId={row => row.path}
           onRowSelectionModelChange={handleRowSelectionChange}
           rows={rows}
           rowHeight={25}

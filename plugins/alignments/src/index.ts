@@ -2,12 +2,11 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import AlignmentsFeatureWidgetF from './AlignmentsFeatureDetail/index.ts'
 import AlignmentsTrackF from './AlignmentsTrack/index.ts'
-import CramAdapterF from './BamAdapter/index.ts'
-import BamAdapterF from './CramAdapter/index.ts'
+import BamAdapterF from './BamAdapter/index.ts'
+import CramAdapterF from './CramAdapter/index.ts'
 import GuessAlignmentsTypesF from './GuessAlignmentsTypes/index.ts'
 import HtsgetBamAdapterF from './HtsgetBamAdapter/index.ts'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay/index.ts'
-import ArcsDataRPCMethodsF from './RenderArcsDataRPC/index.ts'
 import ChainDataRPCMethodsF from './RenderChainDataRPC/index.ts'
 import PileupDataRPCMethodsF from './RenderPileupDataRPC/index.ts'
 
@@ -17,20 +16,19 @@ export default class AlignmentsPlugin extends Plugin {
   name = 'AlignmentsPlugin'
 
   install(pluginManager: PluginManager) {
-    ;[
+    for (const f of [
       CramAdapterF,
       BamAdapterF,
       AlignmentsTrackF,
       HtsgetBamAdapterF,
       PileupDataRPCMethodsF,
-      ArcsDataRPCMethodsF,
       ChainDataRPCMethodsF,
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
       GuessAlignmentsTypesF,
-    ].map(f => {
+    ]) {
       f(pluginManager)
-    })
+    }
   }
 }
 
@@ -47,7 +45,7 @@ export {
   getSetMaxHeightMenuItem,
   getShowMenuItem,
   getSortByMenuItem,
-} from './shared/menuItems.ts'
+} from './shared/menus/index.ts'
 export {
   featurizeSA,
   getClip,
@@ -58,11 +56,11 @@ export {
   parseCigar2,
   parseCigar,
 } from './MismatchParser/index.ts'
-export { computeCoverage } from './shared/computeCoverage.ts'
-export type { CoverageFeature } from './shared/computeCoverage.ts'
+export { computeCoverage } from './features/coverage/compute.ts'
+export type { CoverageFeature } from './features/coverage/compute.ts'
 export { computeSNPCoverage } from '@jbrowse/alignments-core'
 export type { MismatchEntry } from '@jbrowse/alignments-core'
 export { default as CoverageYScaleBar } from './LinearAlignmentsDisplay/components/CoverageYScaleBar.tsx'
-export type { CoverageTicks } from './LinearAlignmentsDisplay/components/CoverageYScaleBar.tsx'
+export type { CoverageTicks } from '@jbrowse/alignments-core'
 export { CoverageTooltipContents } from './LinearAlignmentsDisplay/components/AlignmentsTooltip.tsx'
 export type { CoverageTooltipBin } from '@jbrowse/alignments-core'

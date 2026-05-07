@@ -1,133 +1,115 @@
-import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
+import Flatbush from '@jbrowse/core/util/flatbush'
+import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
-import type { SortedBy } from '../shared/types'
-import type {
-  FeatureData,
-  GapData,
-  HardclipData,
-  InsertionData,
-  MismatchData,
-  SoftclipData,
-} from '../shared/webglRpcTypes.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../shared/types.ts'
 
-function buildClipExpansions(softclips: SoftclipData[]) {
-  const expansions = new Map<string, { start: number; end: number }>()
-  for (const sc of softclips) {
-    const existing = expansions.get(sc.featureId)
-    const clipEnd = sc.clipStart + sc.length
-    if (!existing) {
-      expansions.set(sc.featureId, { start: sc.clipStart, end: clipEnd })
-    } else {
-      existing.start = Math.min(existing.start, sc.clipStart)
-      existing.end = Math.max(existing.end, clipEnd)
-    }
-  }
-  return expansions
-}
-
-export function computeLayout(
-  features: FeatureData[],
-  softclips?: SoftclipData[],
-): Map<string, number> {
-  const expansions = softclips ? buildClipExpansions(softclips) : undefined
-  const sorted = [...features].sort((a, b) => a.start - b.start)
-  const levels: number[] = []
-  const layoutMap = new Map<string, number>()
-
-  for (const feature of sorted) {
-    const exp = expansions?.get(feature.id)
-    const effectiveStart = exp
-      ? Math.min(feature.start, exp.start)
-      : feature.start
-    const effectiveEnd = exp ? Math.max(feature.end, exp.end) : feature.end
-    let y = 0
-    for (const [i, level] of levels.entries()) {
-      if (level <= effectiveStart) {
-        y = i
-        break
-      }
-      y = i + 1
-    }
-    layoutMap.set(feature.id, y)
-    levels[y] = effectiveEnd + 2
-  }
-
-  return layoutMap
-}
+import type { PileupDataResult } from './types'
+import type { SortedBy } from '../shared/types.ts'
 
 // ASCII code for '*' used to represent deletions in base pair sort
 const DELETION_CHAR = 42
 
-interface InterbaseData {
-  insertions: InsertionData[]
-  softclips: SoftclipData[]
-  hardclips: HardclipData[]
-}
-
-function sortByInterbaseType(
-  overlapping: FeatureData[],
-  interbaseData: InterbaseData,
-  sortType: string,
-  pos: number,
-) {
-  const items =
-    sortType === 'insertion'
-      ? interbaseData.insertions
-      : sortType === 'softclip'
-        ? interbaseData.softclips
-        : interbaseData.hardclips
-  const lengthAtPos = new Map<string, number>()
-  for (const item of items) {
-    if (item.position === pos) {
-      const existing = lengthAtPos.get(item.featureId) ?? 0
-      if (item.length > existing) {
-        lengthAtPos.set(item.featureId, item.length)
+/**
+ * Build softclip expansions per read index from the interbase typed arrays.
+ * Returns a Map<readIndex, {start, end}> representing the expanded genomic
+ * extent of each read's soft-clipped bases, or undefined if none.
+ */
+function buildSoftclipExpansions(data: PileupDataResult) {
+  const expansions = new Map<number, { start: number; end: number }>()
+  for (let i = 0; i < data.interbasePositions.length; i++) {
+    if (data.interbaseTypes[i] !== INTERBASE_SOFTCLIP) {
+      continue
+    }
+    const readIdx = data.interbaseReadIndices[i]!
+    const pos = data.interbasePositions[i]!
+    const len = data.interbaseLengths[i]!
+    const readStart = data.readPositions[readIdx * 2]!
+    const clipStart = pos === readStart ? pos - len : pos
+    const clipEnd = clipStart + len
+    const existing = expansions.get(readIdx)
+    if (!existing) {
+      expansions.set(readIdx, { start: clipStart, end: clipEnd })
+    } else {
+      if (clipStart < existing.start) {
+        existing.start = clipStart
+      }
+      if (clipEnd > existing.end) {
+        existing.end = clipEnd
       }
     }
   }
-  overlapping.sort((a, b) => {
-    const aLen = lengthAtPos.get(a.id) ?? 0
-    const bLen = lengthAtPos.get(b.id) ?? 0
-    if (aLen !== 0 && bLen === 0) {
-      return -1
-    }
-    if (aLen === 0 && bLen !== 0) {
-      return 1
-    }
-    return bLen - aLen
-  })
+  return expansions.size > 0 ? expansions : undefined
 }
 
-function sortOverlapping(
-  overlapping: FeatureData[],
-  mismatches: MismatchData[],
-  gaps: GapData[],
-  interbaseData: InterbaseData | undefined,
-  tagValues: Map<string, string> | undefined,
-  sortedBy: SortedBy,
+/**
+ * Get a read's effective [start,end) including any softclip expansion.
+ */
+function readExtent(
+  data: PileupDataResult,
+  i: number,
+  expansions: Map<number, { start: number; end: number }> | undefined,
 ) {
-  const { type, pos } = sortedBy
+  const start = data.readPositions[i * 2]!
+  const end = data.readPositions[i * 2 + 1]!
+  const exp = expansions?.get(i)
+  return {
+    start: exp ? Math.min(start, exp.start) : start,
+    end: exp ? Math.max(end, exp.end) : end,
+  }
+}
+
+function sortOverlappingByIndex(
+  overlapping: number[],
+  data: PileupDataResult,
+  sortedBy: SortedBy,
+  sortTagValues: string[] | undefined,
+) {
+  const { type, pos: sortPos } = sortedBy
+  const {
+    readPositions,
+    readStrands,
+    mismatchReadIndices,
+    mismatchPositions,
+    mismatchBases,
+    gapReadIndices,
+    gapPositions,
+    gapTypes,
+    interbaseReadIndices,
+    interbasePositions,
+    interbaseLengths,
+    interbaseTypes,
+  } = data
+  const numMismatches = mismatchPositions.length
+  const numGaps = gapPositions.length / 2
+  const numInterbases = interbasePositions.length
 
   if (type === 'basePair') {
-    // Build map: featureId → base code at sort position
-    // Mismatches get their actual base, deletions get '*'
-    const baseAtPos = new Map<string, number>()
-    for (const mm of mismatches) {
-      if (mm.position === pos) {
-        baseAtPos.set(mm.featureId, mm.base)
+    const baseAtPos = new Map<number, number>()
+    for (let i = 0; i < numMismatches; i++) {
+      if (mismatchPositions[i] === sortPos) {
+        baseAtPos.set(mismatchReadIndices[i]!, mismatchBases[i]!)
       }
     }
-    for (const gap of gaps) {
-      if (gap.type === 'deletion' && gap.start <= pos && gap.end > pos) {
-        if (!baseAtPos.has(gap.featureId)) {
-          baseAtPos.set(gap.featureId, DELETION_CHAR)
+    for (let i = 0; i < numGaps; i++) {
+      if (gapTypes[i] !== 0) {
+        continue
+      }
+      const gapStart = gapPositions[i * 2]!
+      const gapEnd = gapPositions[i * 2 + 1]!
+      if (gapStart <= sortPos && gapEnd > sortPos) {
+        const readIdx = gapReadIndices[i]!
+        if (!baseAtPos.has(readIdx)) {
+          baseAtPos.set(readIdx, DELETION_CHAR)
         }
       }
     }
-
     overlapping.sort((a, b) => {
-      const aBase = baseAtPos.get(a.id) ?? 0
-      const bBase = baseAtPos.get(b.id) ?? 0
+      const aBase = baseAtPos.get(a) ?? 0
+      const bBase = baseAtPos.get(b) ?? 0
       if (aBase !== 0 && bBase === 0) {
         return -1
       }
@@ -137,88 +119,265 @@ function sortOverlapping(
       return aBase - bBase
     })
   } else if (
-    (type === 'insertion' || type === 'softclip' || type === 'hardclip') &&
-    interbaseData
+    type === 'insertion' ||
+    type === 'softclip' ||
+    type === 'hardclip'
   ) {
-    sortByInterbaseType(overlapping, interbaseData, type, pos)
+    const targetType =
+      type === 'insertion'
+        ? INTERBASE_INSERTION
+        : type === 'softclip'
+          ? INTERBASE_SOFTCLIP
+          : INTERBASE_HARDCLIP
+    const lengthAtPos = new Map<number, number>()
+    for (let i = 0; i < numInterbases; i++) {
+      if (interbaseTypes[i] !== targetType) {
+        continue
+      }
+      if (interbasePositions[i] === sortPos) {
+        const readIdx = interbaseReadIndices[i]!
+        const len = interbaseLengths[i]!
+        const existing = lengthAtPos.get(readIdx) ?? 0
+        if (len > existing) {
+          lengthAtPos.set(readIdx, len)
+        }
+      }
+    }
+    overlapping.sort((a, b) => {
+      const aLen = lengthAtPos.get(a) ?? 0
+      const bLen = lengthAtPos.get(b) ?? 0
+      if (aLen !== 0 && bLen === 0) {
+        return -1
+      }
+      if (aLen === 0 && bLen !== 0) {
+        return 1
+      }
+      return bLen - aLen
+    })
   } else if (type === 'position') {
-    overlapping.sort((a, b) => a.start - b.start)
+    overlapping.sort((a, b) => readPositions[a * 2]! - readPositions[b * 2]!)
   } else if (type === 'strand') {
-    overlapping.sort((a, b) => b.strand - a.strand)
-  } else if (type === 'tag' && tagValues) {
+    overlapping.sort((a, b) => readStrands[b]! - readStrands[a]!)
+  } else if (type === 'tag' && sortTagValues) {
     const first = overlapping[0]
-    const isString =
-      first && Number.isNaN(Number(tagValues.get(first.id) ?? ''))
+    const firstVal = first !== undefined ? sortTagValues[first] : undefined
+    const isString = firstVal !== undefined && Number.isNaN(Number(firstVal))
     if (isString) {
-      overlapping.sort((a, b) => {
-        const aVal = tagValues.get(a.id) ?? ''
-        const bVal = tagValues.get(b.id) ?? ''
-        return bVal.localeCompare(aVal)
-      })
+      overlapping.sort((a, b) =>
+        (sortTagValues[b] ?? '').localeCompare(sortTagValues[a] ?? ''),
+      )
     } else {
-      overlapping.sort((a, b) => {
-        const aVal = Number(tagValues.get(a.id) ?? 0)
-        const bVal = Number(tagValues.get(b.id) ?? 0)
-        return bVal - aVal
-      })
+      overlapping.sort(
+        (a, b) => Number(sortTagValues[b] ?? 0) - Number(sortTagValues[a] ?? 0),
+      )
     }
   }
 }
 
-export function computeSortedLayout(
-  features: FeatureData[],
-  mismatches: MismatchData[],
-  gaps: GapData[],
-  interbaseData: InterbaseData | undefined,
-  tagValues: Map<string, string> | undefined,
-  sortedBy: SortedBy,
-  softclips?: SoftclipData[],
+/**
+ * Compute pileup row layout for a single region. Returns
+ * readYs[i] = pileup row for read i, and maxY = total row count.
+ */
+export function computeLayout(
+  data: PileupDataResult,
+  showSoftClipping?: boolean,
 ) {
-  const expansions = softclips ? buildClipExpansions(softclips) : undefined
-  const { pos } = sortedBy
-  const overlapping: FeatureData[] = []
-  const nonOverlapping: FeatureData[] = []
-  for (const f of features) {
-    if (f.start <= pos && f.end > pos) {
-      overlapping.push(f)
+  const numReads = data.readIds.length
+  const expansions = showSoftClipping
+    ? buildSoftclipExpansions(data)
+    : undefined
+
+  const readYs = new Uint16Array(numReads)
+  const rows: number[][] = []
+  for (let i = 0; i < numReads; i++) {
+    const { start, end } = readExtent(data, i, expansions)
+    readYs[i] = placeRect(rows, start, end)
+  }
+  return { readYs, maxY: rows.length }
+}
+
+/**
+ * Compute pileup row layout with a custom sort at `sortedBy.pos`. Reads
+ * overlapping the sort position are placed first in sort-criterion
+ * order (each gets its own row since they all collide pairwise at
+ * sortPos), then non-overlapping reads fill gaps around them.
+ */
+export function computeSortedLayout(
+  data: PileupDataResult,
+  sortedBy: SortedBy,
+  showSoftClipping?: boolean,
+) {
+  const { readPositions } = data
+  const numReads = data.readIds.length
+  const { pos: sortPos } = sortedBy
+  const expansions = showSoftClipping
+    ? buildSoftclipExpansions(data)
+    : undefined
+
+  const overlapping: number[] = []
+  const nonOverlapping: number[] = []
+  for (let i = 0; i < numReads; i++) {
+    const start = readPositions[i * 2]!
+    const end = readPositions[i * 2 + 1]!
+    if (start <= sortPos && end > sortPos) {
+      overlapping.push(i)
     } else {
-      nonOverlapping.push(f)
+      nonOverlapping.push(i)
     }
   }
 
-  sortOverlapping(
-    overlapping,
-    mismatches,
-    gaps,
-    interbaseData,
-    tagValues,
-    sortedBy,
-  )
+  sortOverlappingByIndex(overlapping, data, sortedBy, data.sortTagValues)
 
-  const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
-  const layoutMap = new Map<string, number>()
+  const readYs = new Uint16Array(numReads)
+  const rows: number[][] = []
+  for (const i of overlapping) {
+    const { start, end } = readExtent(data, i, expansions)
+    readYs[i] = placeRect(rows, start, end)
+  }
+  for (const i of nonOverlapping) {
+    const { start, end } = readExtent(data, i, expansions)
+    readYs[i] = placeRect(rows, start, end)
+  }
+  return { readYs, maxY: rows.length }
+}
 
-  let nextRow = 0
-  for (const f of overlapping) {
-    const exp = expansions?.get(f.id)
-    const s = exp ? Math.min(f.start, exp.start) : f.start
-    const e = exp ? Math.max(f.end, exp.end) : f.end
-    const top = layout.addRect(f.id, s, e + 2, 1, undefined, undefined, nextRow)
-    if (top !== null) {
-      layoutMap.set(f.id, top)
-      nextRow = top + 1
+/**
+ * Compute layout across multiple regions, deduplicating reads that span
+ * region boundaries by featureId. Returns rowMap<featureId, row> for
+ * distributing rows back to each region's readYs array.
+ */
+export function computeMultiRegionLayout(
+  entries: [number, PileupDataResult][],
+) {
+  const seen = new Set<string>()
+  const reads: { id: string; start: number; end: number }[] = []
+  for (const [, data] of entries) {
+    for (let i = 0; i < data.readIds.length; i++) {
+      const id = data.readIds[i]!
+      if (!seen.has(id)) {
+        seen.add(id)
+        reads.push({
+          id,
+          start: data.readPositions[i * 2]!,
+          end: data.readPositions[i * 2 + 1]!,
+        })
+      }
     }
   }
 
-  for (const f of nonOverlapping) {
-    const exp = expansions?.get(f.id)
-    const s = exp ? Math.min(f.start, exp.start) : f.start
-    const e = exp ? Math.max(f.end, exp.end) : f.end
-    const top = layout.addRect(f.id, s, e + 2, 1)
-    if (top !== null) {
-      layoutMap.set(f.id, top)
+  const rowMap = new Map<string, number>()
+  const rows: number[][] = []
+  for (const { id, start, end } of reads) {
+    rowMap.set(id, placeRect(rows, start, end))
+  }
+  return { rowMap, maxY: rows.length }
+}
+
+/**
+ * Shallow clone of a PileupDataResult with freshly-computed Y arrays
+ * propagated from a per-read readYs. All other typed arrays are shared.
+ *
+ * Exported so chain-mode layout can reuse the same Y propagation.
+ */
+export function cloneWithLayout(
+  data: PileupDataResult,
+  readYs: Uint16Array,
+  maxY: number,
+): PileupDataResult {
+  const numGaps = data.gapPositions.length / 2
+  const numMismatches = data.mismatchPositions.length
+  const numInterbases = data.interbasePositions.length
+  const numModifications = data.modificationPositions.length
+  const numSoftclipBases = data.softclipBasePositions.length
+  const gapYs = new Uint16Array(numGaps)
+  const mismatchYs = new Uint16Array(numMismatches)
+  const interbaseYs = new Uint16Array(numInterbases)
+  const modificationYs = new Uint16Array(numModifications)
+  const softclipBaseYs = new Uint16Array(numSoftclipBases)
+  for (let i = 0; i < numGaps; i++) {
+    gapYs[i] = readYs[data.gapReadIndices[i]!]!
+  }
+  for (let i = 0; i < numMismatches; i++) {
+    mismatchYs[i] = readYs[data.mismatchReadIndices[i]!]!
+  }
+  for (let i = 0; i < numInterbases; i++) {
+    interbaseYs[i] = readYs[data.interbaseReadIndices[i]!]!
+  }
+  for (let i = 0; i < numModifications; i++) {
+    modificationYs[i] = readYs[data.modificationReadIndices[i]!]!
+  }
+  for (let i = 0; i < numSoftclipBases; i++) {
+    softclipBaseYs[i] = readYs[data.softclipBaseReadIndices[i]!]!
+  }
+  let modFlatbush: Flatbush | undefined
+  if (numModifications > 0) {
+    modFlatbush = new Flatbush(numModifications)
+    for (let i = 0; i < numModifications; i++) {
+      const pos = data.modificationPositions[i]!
+      const row = modificationYs[i]!
+      modFlatbush.add(pos, row, pos, row)
     }
+    modFlatbush.finish()
   }
 
-  return layoutMap
+  return {
+    ...data,
+    readYs,
+    gapYs,
+    mismatchYs,
+    interbaseYs,
+    modificationYs,
+    softclipBaseYs,
+    maxY,
+    modFlatbush,
+  }
+}
+
+/**
+ * Build a laid-out pileup map from raw fetched data. The raw map's entries
+ * keep zero-filled Y arrays (from the worker); this returns a parallel map
+ * whose entries have Y arrays and maxY derived from pileup layout.
+ *
+ * Intended to be called from a MobX-cached getter so layout recomputes only
+ * when `rpcDataMap`, `sortedBy`, or `showSoftClipping` change.
+ */
+export function buildLaidOutPileupMap({
+  dataMap,
+  sortedBy,
+  showSoftClipping,
+}: {
+  dataMap: ReadonlyMap<number, PileupDataResult>
+  sortedBy: SortedBy | undefined
+  showSoftClipping: boolean | undefined
+}): Map<number, PileupDataResult> {
+  const out = new Map<number, PileupDataResult>()
+  const withReads: [number, PileupDataResult][] = []
+  for (const [k, v] of dataMap) {
+    if (v.readIds.length === 0) {
+      out.set(k, v)
+    } else {
+      withReads.push([k, v])
+    }
+  }
+  if (withReads.length === 0) {
+    return out
+  }
+  if (withReads.length === 1) {
+    const [idx, data] = withReads[0]!
+    const { readYs, maxY } = sortedBy
+      ? computeSortedLayout(data, sortedBy, showSoftClipping)
+      : computeLayout(data, showSoftClipping)
+    out.set(idx, cloneWithLayout(data, readYs, maxY))
+  } else {
+    const { rowMap, maxY } = computeMultiRegionLayout(withReads)
+    for (const [idx, data] of withReads) {
+      const numReads = data.readIds.length
+      const readYs = new Uint16Array(numReads)
+      for (let i = 0; i < numReads; i++) {
+        readYs[i] = rowMap.get(data.readIds[i]!)!
+      }
+      out.set(idx, cloneWithLayout(data, readYs, maxY))
+    }
+  }
+  return out
 }

@@ -1,5 +1,6 @@
 // we use mainthread rpc so we mock the makeWorkerInstance to an empty file
 import PluginManager from '@jbrowse/core/PluginManager'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from '../corePlugins.ts'
@@ -107,6 +108,58 @@ test('adds track and connection configs to an assembly', () => {
   })
   expect(getSnapshot(newConnectionConf)).toMatchSnapshot()
   expect(root.jbrowse.connections.length).toBe(1)
+})
+
+describe('tracksById hydration', () => {
+  function makeRoot() {
+    const root = getRootModel().create({
+      ...mainThreadConfig,
+      jbrowse: {
+        ...mainThreadConfig.jbrowse,
+        tracks: [
+          { type: 'FeatureTrack', trackId: 'frozenTrack1', name: 'first' },
+          { type: 'FeatureTrack', trackId: 'frozenTrack2', name: 'second' },
+        ],
+      },
+      session: { name: 'testSession' },
+    })
+    return root
+  }
+
+  test('returns the same MST instance across reads', () => {
+    const session = makeRoot().session!
+    const first = session.tracksById.frozenTrack1
+    const second = session.tracksById.frozenTrack1
+    expect(first).toBe(second)
+    expect(readConfObject(first, 'name')).toBe('first')
+  })
+
+  test('yields a new instance after updateTrackConf replaces the frozen entry', () => {
+    const root = makeRoot()
+    const session = root.session!
+    const before = session.tracksById.frozenTrack1
+    root.jbrowse.updateTrackConf({
+      type: 'FeatureTrack',
+      trackId: 'frozenTrack1',
+      name: 'renamed',
+    })
+    const after = session.tracksById.frozenTrack1
+    expect(after).not.toBe(before)
+    expect(readConfObject(after, 'name')).toBe('renamed')
+  })
+
+  test('unchanged entries keep identity when a sibling is edited', () => {
+    const root = makeRoot()
+    const session = root.session!
+    const track2Before = session.tracksById.frozenTrack2
+    root.jbrowse.updateTrackConf({
+      type: 'FeatureTrack',
+      trackId: 'frozenTrack1',
+      name: 'renamed',
+    })
+    const track2After = session.tracksById.frozenTrack2
+    expect(track2After).toBe(track2Before)
+  })
 })
 
 test('throws if session is invalid', () => {

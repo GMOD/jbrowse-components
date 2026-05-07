@@ -12,13 +12,17 @@ export interface BlockClip {
   bpLength: number
 }
 
+export function getDpr() {
+  return typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+}
+
 export function prepareCanvas(
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
   canvasWidth: number,
   canvasHeight: number,
 ) {
-  const dpr = window.devicePixelRatio || 1
+  const dpr = getDpr()
   const bufW = Math.round(canvasWidth * dpr)
   const bufH = Math.round(canvasHeight * dpr)
 
@@ -65,15 +69,15 @@ export function lookupColorRampCSS(ramp: Uint8Array, t: number) {
   return `rgba(${r},${g},${b},${a.toFixed(3)})`
 }
 
-export function bpToScreenX(
+export function bpToScreenPx(
   absBp: number,
-  block: Canvas2DRenderBlock,
-  bpLength: number,
-  fullBlockWidth: number,
+  regionStart: number,
+  regionEnd: number,
+  screenStartPx: number,
+  screenEndPx: number,
+  reversed?: boolean,
 ) {
-  const frac = (absBp - block.bpRangeX[0]) / bpLength
-  if (block.reversed) {
-    return block.screenEndPx - frac * fullBlockWidth
-  }
-  return block.screenStartPx + frac * fullBlockWidth
+  const frac = (absBp - regionStart) / (regionEnd - regionStart)
+  const w = screenEndPx - screenStartPx
+  return reversed ? screenEndPx - frac * w : screenStartPx + frac * w
 }

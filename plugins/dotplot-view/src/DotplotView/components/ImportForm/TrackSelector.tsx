@@ -57,7 +57,7 @@ const TrackSelector = observer(function TrackSelector({
           onChange={event => {
             const val = event.target.value
             setChoice(val)
-            if (val === 'none') {
+            if (val === 'none' || val === 'custom') {
               model.setImportFormSyntenyTrack(0, { type: 'none' })
             }
           }}
@@ -86,6 +86,7 @@ const TrackSelector = observer(function TrackSelector({
       </FormControl>
       {choice === 'custom' ? (
         <ImportSyntenyOpenCustomTrack
+          key={`${assembly1}-${assembly2}`}
           model={model}
           assembly2={assembly2}
           assembly1={assembly1}

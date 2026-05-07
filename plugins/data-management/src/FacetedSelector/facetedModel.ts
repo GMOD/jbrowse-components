@@ -57,6 +57,8 @@ export function facetedStateTreeF() {
       /**
        * #volatile
        */
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       visible: {} as Record<string, boolean>,
       /**
        * #volatile
@@ -139,14 +141,6 @@ export function facetedStateTreeF() {
     .views(self => ({
       /**
        * #getter
-       */
-      get allTrackConfigurations() {
-        return self.trackConfigurations
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * Builds row objects from track configs. Cached and only recomputes when
        * track configurations change, not on every filterText keystroke.
        */
@@ -155,7 +149,7 @@ export function facetedStateTreeF() {
         if (!session) {
           return []
         }
-        return self.allTrackConfigurations.map(
+        return self.trackConfigurations.map(
           track =>
             ({
               id: track.trackId as string,
@@ -163,10 +157,12 @@ export function facetedStateTreeF() {
               name: getTrackName(track, session),
               category: readConfObject(track, 'category')?.join(', '),
               adapter: (track.adapter as { type?: string } | undefined)?.type,
+
               description: readConfObject(track, 'description') as
                 | string
                 | undefined,
-              metadata: (readConfObject(track, 'metadata') || {}) as Record<
+
+              metadata: (readConfObject(track, 'metadata') ?? {}) as Record<
                 string,
                 unknown
               >,

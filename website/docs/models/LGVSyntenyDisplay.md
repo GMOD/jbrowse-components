@@ -42,7 +42,7 @@ type: types.literal('LGVSyntenyDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(schema)
 ```
@@ -53,14 +53,14 @@ configuration: ConfigurationReference(schema)
 
 ```js
 // type signature
-contextMenuItems: () => any[]
+contextMenuItems: () => MenuItem[]
 ```
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => any[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 ### LGVSyntenyDisplay - Actions

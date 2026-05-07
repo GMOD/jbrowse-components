@@ -1,19 +1,19 @@
 {
   "assemblies": [
     {
-      "name": "ref#1",
+      "name": "ref#0",
       "displayName": "ref",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "ref1_refseq",
+        "trackId": "ref0_refseq",
         "adapter": {
           "type": "FromConfigRegionsAdapter",
           "features": [
             {
-              "uniqueId": "ref-chr1",
-              "refName": "chr1",
+              "uniqueId": "ref-ctgA",
+              "refName": "ctgA",
               "start": 0,
-              "end": 555
+              "end": 50001
             }
           ]
         }
@@ -26,81 +26,86 @@
   "tracks": [
     {
       "type": "MultiSyntenyTrack",
-      "trackId": "volvox_pangenome_gfa",
-      "name": "Volvox pangenome (4 genomes, GFA with cs)",
+      "trackId": "volvox_pangenome_50_gfa",
+      "name": "Volvox pangenome (50 genomes, GFA)",
       "category": ["Synteny"],
       "adapter": {
         "type": "GfaTabixAdapter",
         "posLocation": {
-          "uri": "volvox/volvox_indel_pangenome.pos.bed.gz",
+          "uri": "volvox/volvox_pangenome_50.pos.bed.gz",
           "locationType": "UriLocation"
         },
         "posIndex": {
           "location": {
-            "uri": "volvox/volvox_indel_pangenome.pos.bed.gz.tbi",
+            "uri": "volvox/volvox_pangenome_50.pos.bed.gz.tbi",
             "locationType": "UriLocation"
           }
         },
-        "segmentsLocation": {
-          "uri": "volvox/volvox_indel_pangenome.segments.bin",
+        "syntenyLocation": {
+          "uri": "volvox/volvox_pangenome_50.synteny.bed.gz",
           "locationType": "UriLocation"
         },
-        "segmentsIdxLocation": {
-          "uri": "volvox/volvox_indel_pangenome.segments.idx",
-          "locationType": "UriLocation"
-        },
-        "alnLocation": {
-          "uri": "volvox/volvox_indel_pangenome.aln.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "alnIndex": {
+        "syntenyIndex": {
           "location": {
-            "uri": "volvox/volvox_indel_pangenome.aln.bed.gz.tbi",
+            "uri": "volvox/volvox_pangenome_50.synteny.bed.gz.tbi",
             "locationType": "UriLocation"
           }
-        }
-      },
-      "assemblyNames": ["ref#1", "sample1#1", "sample2#1", "sample3#1"],
-      "displays": [
-        {
-          "type": "MultiLGVSyntenyDisplay",
-          "displayId": "volvox_pangenome_gfa-MultiLGVSyntenyDisplay"
-        }
-      ]
-    },
-    {
-      "type": "MultiSyntenyTrack",
-      "trackId": "volvox_pangenome_gfa_no_aln",
-      "name": "Volvox pangenome (4 genomes, GFA without aln)",
-      "category": ["Synteny"],
-      "adapter": {
-        "type": "GfaTabixAdapter",
-        "posLocation": {
-          "uri": "volvox/volvox_indel_pangenome.pos.bed.gz",
+        },
+        "syntenyCoarseLocation": {
+          "uri": "volvox/volvox_pangenome_50.synteny.coarse.bed.gz",
           "locationType": "UriLocation"
         },
-        "posIndex": {
+        "syntenyCoarseIndex": {
           "location": {
-            "uri": "volvox/volvox_indel_pangenome.pos.bed.gz.tbi",
+            "uri": "volvox/volvox_pangenome_50.synteny.coarse.bed.gz.tbi",
             "locationType": "UriLocation"
           }
         },
-        "segmentsLocation": {
-          "uri": "volvox/volvox_indel_pangenome.segments.bin",
+        "bubblesLocation": {
+          "uri": "volvox/volvox_pangenome_50.bubbles.bed.gz",
           "locationType": "UriLocation"
         },
-        "segmentsIdxLocation": {
-          "uri": "volvox/volvox_indel_pangenome.segments.idx",
+        "bubblesIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome_50.bubbles.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "edgesLocation": {
+          "uri": "volvox/volvox_pangenome_50.edges.spatial.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "edgesIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome_50.edges.spatial.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "seqlensLocation": {
+          "uri": "volvox/volvox_pangenome_50.seglens.bin",
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["ref#1", "sample1#1", "sample2#1", "sample3#1"],
+      "assemblyNames": ["ref#0"],
       "displays": [
         {
           "type": "MultiLGVSyntenyDisplay",
-          "displayId": "volvox_pangenome_gfa_no_aln-MultiLGVSyntenyDisplay"
+          "displayId": "volvox_pangenome_50_gfa-MultiLGVSyntenyDisplay"
         }
       ]
     }
-  ]
+  ],
+  "defaultSession": {
+    "name": "Volvox pangenome",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "loc": "ctgA:1-10000",
+          "assembly": "ref#0",
+          "tracks": ["volvox_pangenome_50_gfa"]
+        }
+      }
+    ]
+  }
 }

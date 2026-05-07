@@ -92,5 +92,5 @@ test('renders all the different types of built-in slots', () => {
 })
 
 // Removed: PileupTrack schema test — Alignments plugin no longer registers
-// renderers (moved to GPU pipeline), so linearBasicDisplayConfigSchemaFactory
+// renderers (moved to GPU pipeline), so baseLinearDisplayConfigSchema
 // with only Alignments produces an empty renderer union.

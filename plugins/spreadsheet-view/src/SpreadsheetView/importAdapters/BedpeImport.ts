@@ -1,5 +1,4 @@
-import { isNumber } from '@mui/x-data-grid/internals'
-
+import { isNumber } from './isNumber.ts'
 import { bufferToLines, parseStrand } from './util.ts'
 
 export function parseBedPEBuffer(buffer: Uint8Array) {
@@ -18,7 +17,7 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
     'refName',
     'start',
     'end',
-    'mateRef',
+    'mateRefName',
     'mateStart',
     'mateEnd',
     'name',
@@ -28,7 +27,7 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
   ]
   const numExtraColumns = Math.max(
     0,
-    (rest[0]?.split('\t').length || 0) - coreColumns.length,
+    (rest[0]?.split('\t').length ?? 0) - coreColumns.length,
   )
 
   const extraNames = lastHeaderLine?.includes('\t')
@@ -40,14 +39,22 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
     : Array.from({ length: numExtraColumns }, (_v, i) => `field_${i}`)
 
   const colNames = [...coreColumns, ...extraNames]
+
+  const parseExtraCols = (cols: string[]) =>
+    Object.fromEntries(
+      extraNames.map((n, colIdx) => {
+        const r = cols[colIdx + coreColumns.length]
+        return [n, isNumber(r) ? +r : r]
+      }),
+    )
+
   return {
     columns: colNames.map(c => ({ name: c })),
     rowSet: {
       rows: rest.map((line, idx) => {
         const cols = line.split('\t')
-
+        const extra = parseExtraCols(cols)
         return {
-          // what is displayed
           cellData: {
             refName: cols[0],
             start: cols[1],
@@ -56,17 +63,11 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
             mateStart: cols[4],
             mateEnd: cols[5],
             name: cols[6],
-            score: +cols[7]! || cols[7],
+            score: isNumber(cols[7]) ? +cols[7] : cols[7],
             strand: cols[8],
             mateStrand: cols[9],
-            ...Object.fromEntries(
-              extraNames.map((n, idx) => {
-                const r = cols[idx + coreColumns.length]
-                return [n, isNumber(r) ? +r : r]
-              }),
-            ),
+            ...extra,
           },
-          // an actual simplefeatureserialized
           feature: {
             uniqueId: `bedpe-${idx}`,
             refName: cols[0],
@@ -81,12 +82,7 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
             },
             name: cols[6],
             score: cols[7],
-            ...Object.fromEntries(
-              extraNames.map((n, idx) => {
-                const r = cols[idx + coreColumns.length]
-                return [n, isNumber(r) ? +r : r]
-              }),
-            ),
+            ...extra,
           },
         }
       }),

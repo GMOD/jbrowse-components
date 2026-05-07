@@ -3,6 +3,7 @@ import { updateStatus } from '@jbrowse/core/util'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
+import { GENOTYPE_SPLITTER as SPLITTER } from '../shared/constants.ts'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
   detectRawMode,
@@ -16,8 +17,6 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { LastStopTokenCheck, Region } from '@jbrowse/core/util'
 
-const SPLITTER = /[/|]/
-
 export async function getGenotypeMatrix({
   pluginManager,
   args,
@@ -30,7 +29,7 @@ export async function getGenotypeMatrix({
     headers?: Record<string, string>
     regions: Region[]
     sources: Source[]
-    bpPerPx: number
+    bpPerPx?: number
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
     statusCallback?: (arg: string) => void

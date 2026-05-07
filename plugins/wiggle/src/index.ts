@@ -54,13 +54,7 @@ export * from './util.ts'
 
 export {
   ReactComponent as LinearWiggleDisplayReactComponent,
-  Tooltip,
   modelFactory as linearWiggleDisplayModelFactory,
 } from './LinearWiggleDisplay/index.ts'
-export type { TooltipContentsComponent } from './Tooltip.tsx'
 
-export type {
-  MultiRenderArgsDeserialized,
-  RenderArgsDeserialized,
-  RenderArgsDeserializedWithFeatures,
-} from './types.ts'
+export { default as SetMinMaxDialog } from './shared/SetMinMaxDialog.tsx'

@@ -1,13 +1,16 @@
 import { isValidElement } from 'react'
 
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
 
+import { pct } from './tooltipUtils.ts'
+import { getModificationName } from '../../shared/modificationData.ts'
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
+import type { ModificationTooltipPayload } from './tooltipUtils.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 
 const useStyles = makeStyles()(theme => ({
@@ -35,10 +38,6 @@ const useStyles = makeStyles()(theme => ({
     },
   },
 }))
-
-function pct(n: number, total = 1) {
-  return `${((n / (total || 1)) * 100).toFixed(1)}%`
-}
 
 function formatLocation(refName?: string, position?: number) {
   if (position === undefined) {
@@ -177,11 +176,11 @@ export function CoverageTooltipContents({
           {hasStrands && <td />}
         </tr>
         {hasModifications
-          ? modEntries.map(([, data]) => {
+          ? modEntries.map(([modKey, data]) => {
               const avgProb =
                 data.count > 0 ? data.probabilityTotal / data.count : 0
               return (
-                <tr key={data.name}>
+                <tr key={modKey}>
                   <td>
                     <div
                       style={{
@@ -291,6 +290,7 @@ type TooltipDataType =
   | CoverageTooltipData
   | IndicatorTooltipData
   | SashimiTooltipData
+  | ModificationTooltipPayload
   | string
 
 /**
@@ -416,6 +416,45 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
           />
         )}
       </>
+    )
+  }
+
+  if (
+    tooltipData &&
+    typeof tooltipData === 'object' &&
+    tooltipData.type === 'modification'
+  ) {
+    const { modType, probability, color, refName, position, snpBase } =
+      tooltipData
+    const location = formatLocation(refName, position)
+    return (
+      <BaseTooltip clientPoint={{ x, y }}>
+        <div className={classes.tooltipContent}>
+          <table>
+            <caption>Modification - {location}</caption>
+            <tbody>
+              <tr>
+                <td>
+                  <div style={{ width: 10, height: 10, background: color }} />
+                </td>
+                <td>{modType ? getModificationName(modType) : 'Unknown'}</td>
+              </tr>
+              <tr>
+                <td>Probability</td>
+                <td className={classes.td}>
+                  {(probability * 100).toFixed(1)}%
+                </td>
+              </tr>
+              {snpBase && (
+                <tr>
+                  <td>SNP base</td>
+                  <td className={classes.td}>{snpBase}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </BaseTooltip>
     )
   }
 

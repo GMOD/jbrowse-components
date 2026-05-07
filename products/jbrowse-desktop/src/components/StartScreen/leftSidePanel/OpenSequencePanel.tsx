@@ -60,8 +60,6 @@ export default function OpenSequencePanel({
         <OpenSequenceDialog
           onClose={async (conf: unknown) => {
             if (conf) {
-              // note this can throw before dialog closes, but this is handled
-              // by the dialog itself
               const path = await ipcRenderer.invoke(
                 'createInitialAutosaveFile',
                 {

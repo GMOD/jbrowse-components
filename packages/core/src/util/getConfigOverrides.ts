@@ -42,23 +42,18 @@ function readSlotValue(slot: ConfigSlot) {
  */
 export function getEffectiveTrackConfig(
   trackConfig: IAnyStateTreeNode,
-  display: {
-    configuration: Record<string, unknown>
-    [key: string]: unknown
-  },
+  display: IAnyStateTreeNode,
 ): Record<string, unknown> {
   const conf: Record<string, unknown> = getSnapshot(trackConfig)
 
-  const trackDisplays = (trackConfig as Record<string, unknown>).displays as
+  const trackDisplays = trackConfig.displays as
     | Record<string, unknown>[]
     | undefined
   if (!Array.isArray(trackDisplays)) {
     return conf
   }
 
-  const displaySnap: Record<string, unknown> = getSnapshot(
-    display as unknown as IAnyStateTreeNode,
-  )
+  const displaySnap: Record<string, unknown> = getSnapshot(display)
   const displayConfId = displaySnap.configuration as string | undefined
   const displayType = display.configuration.type as string | undefined
 

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/text-indexing-core",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 core text indexing routines for parsing GFF3 and VCF files",
   "keywords": [
@@ -31,7 +31,7 @@
     "esm"
   ],
   "scripts": {
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "build": "pnpm build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/text-indexing-core",
     "clean": "rimraf esm *.tsbuildinfo",

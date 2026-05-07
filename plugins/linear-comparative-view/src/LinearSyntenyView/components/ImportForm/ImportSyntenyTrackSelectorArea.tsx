@@ -47,7 +47,6 @@ export default function ImportSyntenyTrackSelectorArea({
         <RadioGroup
           row
           value={choice}
-          aria-labelledby="group-label"
           onChange={event => {
             const val = event.target.value
             setChoice(val)
@@ -79,6 +78,7 @@ export default function ImportSyntenyTrackSelectorArea({
       </FormControl>
       {choice === 'custom' ? (
         <ImportCustomTrack
+          key={`${assembly1}-${assembly2}`}
           model={model}
           selectedRow={selectedRow}
           assembly2={assembly2}

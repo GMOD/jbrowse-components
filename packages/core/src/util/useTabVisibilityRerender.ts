@@ -16,14 +16,25 @@ export function useTabVisibilityRerender(renderFn: () => void) {
   const stableRender = useEffectEvent(renderFn)
 
   useEffect(() => {
+    let rafId: number | null = null
     const handle = () => {
       if (!document.hidden) {
-        stableRender()
+        // Schedule the render inside requestAnimationFrame so that
+        // getCurrentTexture() is called within a proper frame. Calling it
+        // directly from a visibilitychange handler can return a detached
+        // texture in WebGPU, causing the GPU timeline to hang.
+        rafId = requestAnimationFrame(() => {
+          rafId = null
+          stableRender()
+        })
       }
     }
     document.addEventListener('visibilitychange', handle)
     return () => {
       document.removeEventListener('visibilitychange', handle)
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+      }
     }
   }, [])
 }

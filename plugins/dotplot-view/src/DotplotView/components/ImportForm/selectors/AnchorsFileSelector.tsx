@@ -13,9 +13,9 @@ const AnchorsFileSelector = observer(function AnchorsFileSelector({
   fileLocation,
   setFileLocation,
   bed1Location,
-  setBed1Location,
+  setBed1Location = () => {},
   bed2Location,
-  setBed2Location,
+  setBed2Location = () => {},
   radioOption,
 }: SelectorProps) {
   return (
@@ -32,31 +32,21 @@ const AnchorsFileSelector = observer(function AnchorsFileSelector({
           inline
           name={radioOption}
           location={fileLocation}
-          setLocation={loc => {
-            setFileLocation(loc)
-          }}
+          setLocation={setFileLocation}
         />
         <FileSelector
           inline
           name="genome 1 .bed (left column of anchors file)"
           description=""
           location={bed1Location}
-          setLocation={loc => {
-            if (setBed1Location) {
-              setBed1Location(loc)
-            }
-          }}
+          setLocation={setBed1Location}
         />
         <FileSelector
           inline
           name="genome 2 .bed (right column of anchors file)"
           description=""
           location={bed2Location}
-          setLocation={loc => {
-            if (setBed2Location) {
-              setBed2Location(loc)
-            }
-          }}
+          setLocation={setBed2Location}
         />
       </div>
       <SwapAssemblies

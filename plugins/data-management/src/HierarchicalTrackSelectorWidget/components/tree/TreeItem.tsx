@@ -1,5 +1,3 @@
-import { memo, useMemo } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -31,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const NestingMarkers = memo(function NestingMarkers({
+function NestingMarkers({
   nestingLevel,
   height,
   className,
@@ -40,40 +38,34 @@ const NestingMarkers = memo(function NestingMarkers({
   height: number
   className: string
 }) {
-  const markers = useMemo(
-    () =>
-      Array.from({ length: nestingLevel }, (_, idx) => (
+  return (
+    <>
+      {Array.from({ length: nestingLevel }, (_, idx) => (
         <div
           key={idx}
           style={{ left: idx * levelWidth + 4, height }}
           className={className}
         />
-      )),
-    [nestingLevel, height, className],
+      ))}
+    </>
   )
-  return <>{markers}</>
-})
+}
 
 const TreeItem = observer(function TreeItem({
   item,
   model,
   top,
-  checked,
 }: {
   item: TreeNode
   model: HierarchicalTrackSelectorModel
   top: number
-  checked?: boolean
 }) {
   const { classes } = useStyles()
   const isCategory = item.type === 'category'
   const isFolder = isCategory && model.folderCategories.has(item.id)
   const useAccordionStyle = isCategory && !isFolder
   const { nestingLevel } = item
-  const height = getItemHeight(
-    item,
-    model.folderCategories as unknown as Set<string>,
-  )
+  const height = getItemHeight(item, model.folderCategories)
   const marginLeft = nestingLevel * levelWidth + (isCategory ? 0 : levelWidth)
 
   return (
@@ -104,7 +96,7 @@ const TreeItem = observer(function TreeItem({
           {isCategory ? (
             <TrackCategory model={model} item={item} />
           ) : (
-            <TrackLabel model={model} item={item} checked={checked!} />
+            <TrackLabel model={model} item={item} />
           )}
         </div>
       </div>

@@ -17,9 +17,8 @@ import stateModelFactory from './model.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-function makeEmptyPileupData(regionStart: number): PileupDataResult {
+function makeEmptyPileupData(_regionStart: number): PileupDataResult {
   return {
-    regionStart,
     readPositions: new Uint32Array(0),
     readYs: new Uint16Array(0),
     readFlags: new Uint16Array(0),
@@ -38,64 +37,70 @@ function makeEmptyPileupData(regionStart: number): PileupDataResult {
     gapYs: new Uint16Array(0),
     gapLengths: new Uint16Array(0),
     gapTypes: new Uint8Array(0),
+    gapReadIndices: new Uint32Array(0),
     gapFrequencies: new Uint8Array(0),
     mismatchPositions: new Uint32Array(0),
     mismatchYs: new Uint16Array(0),
     mismatchBases: new Uint8Array(0),
     mismatchStrands: new Int8Array(0),
+    mismatchReadIndices: new Uint32Array(0),
     mismatchFrequencies: new Uint8Array(0),
     softclipBasePositions: new Uint32Array(0),
     softclipBaseYs: new Uint16Array(0),
     softclipBaseBases: new Uint8Array(0),
-    numSoftclipBases: 0,
+    softclipBaseReadIndices: new Uint32Array(0),
     interbasePositions: new Uint32Array(0),
     interbaseYs: new Uint16Array(0),
     interbaseLengths: new Uint16Array(0),
     interbaseTypes: new Uint8Array(0),
+    interbaseReadIndices: new Uint32Array(0),
     interbaseSequences: [],
     interbaseFrequencies: new Uint8Array(0),
     coverageDepths: new Float32Array(0),
     coverageMaxDepth: 0,
-    coverageStartOffset: 0,
+    coverageStartPos: 0,
+    coveragePackedBuffer: new ArrayBuffer(0),
     snpPositions: new Uint32Array(0),
     snpYOffsets: new Float32Array(0),
     snpHeights: new Float32Array(0),
     snpColorTypes: new Uint8Array(0),
+    snpPackedBuffer: new ArrayBuffer(0),
     noncovPositions: new Uint32Array(0),
     noncovYOffsets: new Float32Array(0),
     noncovHeights: new Float32Array(0),
     noncovColorTypes: new Uint8Array(0),
     noncovMaxCount: 0,
+    noncovPackedBuffer: new ArrayBuffer(0),
     indicatorPositions: new Uint32Array(0),
     indicatorColorTypes: new Uint8Array(0),
-    readTagColors: new Uint8Array(0),
-    numTagColors: 0,
+    indicatorPackedBuffer: new ArrayBuffer(0),
+    readTagColors: new Uint32Array(0),
     modificationPositions: new Uint32Array(0),
     modificationYs: new Uint16Array(0),
-    modificationColors: new Uint8Array(0),
-    numModifications: 0,
+    modificationColors: new Uint32Array(0),
+    modificationReadIndices: new Uint32Array(0),
     modCovPositions: new Uint32Array(0),
     modCovYOffsets: new Float32Array(0),
     modCovHeights: new Float32Array(0),
-    modCovColors: new Uint8Array(0),
-    numModCovSegments: 0,
-    sashimiX1: new Float32Array(0),
-    sashimiX2: new Float32Array(0),
+    modCovColors: new Uint32Array(0),
+    modCovPackedBuffer: new ArrayBuffer(0),
+    sashimiX1: new Uint32Array(0),
+    sashimiX2: new Uint32Array(0),
     sashimiScores: new Float32Array(0),
     sashimiColorTypes: new Uint8Array(0),
     sashimiCounts: new Uint32Array(0),
-    numSashimiArcs: 0,
     maxY: 0,
-    numReads: 0,
-    numGaps: 0,
-    numMismatches: 0,
-    numInterbases: 0,
-    numCoverageBins: 0,
-    numSnpSegments: 0,
-    numNoncovSegments: 0,
-    numIndicators: 0,
+    numInsertions: 0,
+    numSoftclips: 0,
+    numHardclips: 0,
     detectedModifications: [],
     simplexModifications: [],
+    connectingLinePositions: new Uint32Array(0),
+    connectingLineYs: new Uint16Array(0),
+    linkedReadLinePositions: new Uint32Array(0),
+    linkedReadLineYs: new Uint16Array(0),
+    linkedReadLineColorTypes: new Uint8Array(0),
+    numLinkedReadLines: 0,
   }
 }
 
@@ -201,6 +206,9 @@ function createTestEnvironment() {
           test_track: trackConfig,
         }
       },
+      get tracksById() {
+        return this.getTracksById()
+      },
     }))
     .actions(self => ({
       setView(view: Instance<typeof LinearGenomeModel>) {
@@ -265,7 +273,9 @@ describe('FetchVisibleRegions autorun', () => {
         expect.any(String),
         'RenderPileupData',
         expect.objectContaining({
-          region: expect.objectContaining({ refName: 'ctgA' }),
+          regions: expect.arrayContaining([
+            expect.objectContaining({ refName: 'ctgA' }),
+          ]),
         }),
       )
     })
@@ -683,6 +693,168 @@ describe('FetchVisibleRegions autorun', () => {
 
     // A new fetch should have been triggered for the new viewport
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callCount)
+  })
+
+  it('does NOT refetch when showArcs toggles (arc-only setting)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setShowArcs(true)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+  })
+
+  it('does NOT refetch when arc draw settings change', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    display.setShowArcs(true)
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setDrawInter(false)
+    display.setDrawLongRange(false)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+  })
+
+  it('refetches when colorBy changes (rpcProps field)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setColorScheme({ type: 'strand' })
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+  })
+
+  it('refetches when showLinkedReads toggles (switches RPC type)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setShowLinkedReads(true)
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+  })
+
+  it('does NOT refetch when a non-tag sort is applied', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    // Non-tag sort types relayout in place from existing data.
+    display.setOverride('sortedBy', {
+      type: 'Start Location',
+      pos: 5000,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+    })
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+  })
+
+  it('refetches when a tag sort is applied (tag sort needs worker data)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setOverride('sortedBy', {
+      type: 'tag',
+      pos: 5000,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+      tag: 'HP',
+    })
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+  })
+
+  it('does NOT refetch when tag-sort position changes (same tag)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    display.setOverride('sortedBy', {
+      type: 'tag',
+      pos: 5000,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+      tag: 'HP',
+    })
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    // Moving the sort position within the same tag sort re-runs main-
+    // thread layout via laidOutPileupMap; the worker data (per-read tag
+    // values) is unchanged.
+    display.setOverride('sortedBy', {
+      type: 'tag',
+      pos: 6000,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+      tag: 'HP',
+    })
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
   it('adapter fetchSizeLimit is respected over display default', async () => {

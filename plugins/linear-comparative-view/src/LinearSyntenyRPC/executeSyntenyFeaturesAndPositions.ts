@@ -1,25 +1,35 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
-import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { executeSyntenyInstanceData } from './executeSyntenyInstanceData.ts'
+import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
+import { chainCollinearAlignments } from './chainCollinearAlignments.ts'
 
-import type { SyntenyInstanceData } from './executeSyntenyInstanceData.ts'
+import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region, ViewSnap } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+export interface SyntenyViewSnap {
+  bpPerPx: number
+  interRegionPaddingWidth: number
+  minimumBlockWidth: number
+  width: number
+  offsetPx: number
+  displayedRegions: Region[]
+}
+
 export interface SyntenyRpcResult extends SyntenyFeatureData {
-  instanceData: SyntenyInstanceData
+  instanceData: SyntenyGeometry
 }
 
 // Returns genomic-only pixel offset (no inter-region padding baked in) plus
@@ -30,12 +40,12 @@ export function bpToPx({
   self,
   refName,
   coord,
-  regionNumber,
+  displayedRegionIndex,
 }: {
-  self: ViewSnap
+  self: SyntenyViewSnap
   refName: string
   coord: number
-  regionNumber?: number
+  displayedRegionIndex?: number
 }) {
   let bpSoFar = 0
   const {
@@ -54,7 +64,7 @@ export function bpToPx({
       refName === r.refName &&
       coord >= r.start &&
       coord <= r.end &&
-      (regionNumber !== undefined ? regionNumber === i : true)
+      (displayedRegionIndex !== undefined ? displayedRegionIndex === i : true)
     ) {
       bpSoFar += r.reversed ? r.end - coord : coord - r.start
       break
@@ -68,7 +78,6 @@ export function bpToPx({
   const found = displayedRegions[i]
   if (found) {
     return {
-      index: i,
       offsetPx: bpSoFar / bpPerPx + paddingPx,
       paddingPx,
     }
@@ -78,7 +87,7 @@ export function bpToPx({
 
 interface RegionIndexEntry {
   index: number
-  region: { refName: string; start: number; end: number; reversed?: boolean }
+  region: Region
   bpBefore: number
   paddingPxBefore: number
 }
@@ -88,7 +97,9 @@ export interface BpToPxIndex {
   bpPerPx: number
 }
 
-export function buildBpToPxIndex(self: ViewSnap): BpToPxIndex {
+// SYNC: parallel impl in executeDotplotFeaturesAndPositions.ts in dotplot-view;
+// that version returns a scalar offsetPx (no region index needed)
+export function buildBpToPxIndex(self: SyntenyViewSnap): BpToPxIndex {
   const {
     interRegionPaddingWidth,
     bpPerPx,
@@ -128,7 +139,7 @@ export function bpToPxFromIndex(
   idx: BpToPxIndex,
   refName: string,
   coord: number,
-  regionNumber?: number,
+  displayedRegionIndex?: number,
 ) {
   const list = idx.entries.get(refName)
   if (!list) {
@@ -139,13 +150,14 @@ export function bpToPxFromIndex(
     if (
       coord >= r.start &&
       coord <= r.end &&
-      (regionNumber !== undefined ? regionNumber === entry.index : true)
+      (displayedRegionIndex !== undefined
+        ? displayedRegionIndex === entry.index
+        : true)
     ) {
       const bpOffset = r.reversed ? r.end - coord : coord - r.start
+      const cumBp = entry.bpBefore + bpOffset
       return {
-        index: entry.index,
-        offsetPx:
-          (entry.bpBefore + bpOffset) / idx.bpPerPx + entry.paddingPxBefore,
+        offsetPx: cumBp / idx.bpPerPx + entry.paddingPxBefore,
         paddingPx: entry.paddingPxBefore,
       }
     }
@@ -157,38 +169,44 @@ export async function executeSyntenyFeaturesAndPositions({
   pluginManager,
   sessionId,
   adapterConfig,
-  regions,
   viewSnaps,
   level,
   stopToken,
-  colorBy = 'default',
-  drawCurves = true,
   drawCIGAR = true,
   drawCIGARMatchesOnly = false,
   drawLocationMarkers = false,
+  chainMerge = false,
+  statusCallback,
 }: {
   pluginManager: PluginManager
   sessionId: string
   adapterConfig: Record<string, unknown>
-  regions: Region[]
-  viewSnaps: ViewSnap[]
+  viewSnaps: SyntenyViewSnap[]
   level: number
   stopToken?: StopToken
-  colorBy?: string
-  drawCurves?: boolean
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
+  chainMerge?: boolean
+  statusCallback?: (msg: string) => void
 }) {
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
   const bpPerPx = viewSnaps[level]!.bpPerPx
-  const allFeatures = await firstValueFrom(
-    dataAdapter
-      .getFeaturesInMultipleRegions(regions, { stopToken, bpPerPx })
-      .pipe(toArray()),
+  const allFeatures = await updateStatus(
+    'Fetching synteny features',
+    statusCallback,
+    () =>
+      firstValueFrom(
+        dataAdapter
+          .getFeaturesInMultipleRegions(viewSnaps[level]!.displayedRegions, {
+            stopToken,
+            bpPerPx,
+          })
+          .pipe(toArray()),
+      ),
   )
   const seen = new Set<string>()
   const features = allFeatures.filter(f => {
@@ -202,18 +220,33 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const v1 = viewSnaps[level]!
   const v2 = viewSnaps[level + 1]!
+
+  const processedFeatures = chainMerge
+    ? await updateStatus('Chaining collinear alignments', statusCallback, () =>
+        chainCollinearAlignments(
+          features,
+          Math.min(10_000_000, Math.max(v1.bpPerPx, v2.bpPerPx) * 50),
+        ),
+      )
+    : features
+
   const v1Index = buildBpToPxIndex(v1)
   const v2Index = buildBpToPxIndex(v2)
 
-  const count = features.length
+  const count = processedFeatures.length
   const p11Array = new Float64Array(count)
   const p12Array = new Float64Array(count)
   const p21Array = new Float64Array(count)
   const p22Array = new Float64Array(count)
   const strandsArray = new Int8Array(count)
-  const startsArray = new Float64Array(count)
-  const endsArray = new Float64Array(count)
-  const identitiesArray = new Float64Array(count)
+  // bp coordinates fit in uint32 (max 4.3 Gbp covers human/mouse/most genomes).
+  // Pixel offsets (p11..p22, padTop, padBottom) stay Float64 because they
+  // accumulate across regions × 1/bpPerPx and routinely exceed 2^32.
+  const startsArray = new Uint32Array(count)
+  const endsArray = new Uint32Array(count)
+  const mateStartsArray = new Uint32Array(count)
+  const mateEndsArray = new Uint32Array(count)
+  const identitiesArray = new Float32Array(count)
   const padTopArray = new Float64Array(count)
   const padBottomArray = new Float64Array(count)
 
@@ -221,15 +254,13 @@ export async function executeSyntenyFeaturesAndPositions({
   const names: string[] = []
   const refNames: string[] = []
   const assemblyNames: string[] = []
-  const cigars: string[] = []
+  const mateRefNames: string[] = []
+  const mateAssemblyNames: string[] = []
+  const parsedCigars: number[][] = []
+  // Always collect syriType; main-thread colorBy='syri' reads this directly
+  // so the RPC doesn't refetch on a color-scheme change. Undefined entries
+  // fall back to main-thread computeSyriTypes when the scheme is active.
   const precomputedSyriTypes: (string | undefined)[] = []
-  const mates: {
-    start: number
-    end: number
-    refName: string
-    name: string
-    assemblyName: string
-  }[] = []
 
   // Viewport culling: skip features entirely outside the visible area in
   // both views. A synteny parallelogram is visible when at least one of its
@@ -238,28 +269,36 @@ export async function executeSyntenyFeaturesAndPositions({
   const v1Offset = v1.offsetPx
   const v2Offset = v2.offsetPx
   const bufferPx = viewWidth * 0.5
+  const offScreenLeftBound = -bufferPx
+  const offScreenRightBound = viewWidth + bufferPx
 
+  const v1RefNames = v1Index.entries
+  const v2RefNames = v2Index.entries
   const stopTokenChecker = createStopTokenChecker(stopToken)
   let validCount = 0
-  for (const f of features) {
+  for (const f of processedFeatures) {
     checkStopToken2(stopTokenChecker)
-    const strand = f.get('strand') as number
+    const refName = f.get('refName') as string
     const mate = f.get('mate') as {
       start: number
       end: number
       refName: string
-      name: string
       assemblyName: string
     }
-    const refName = f.get('refName')
-    const start = f.get('start')
-    const end = f.get('end')
-
-    let f1s = start
-    let f1e = end
-    if (strand === -1) {
-      ;[f1e, f1s] = [f1s, f1e]
+    // Whole-genome PAF at low zoom: most features are on refNames not in the
+    // displayed regions of one or both views. Skip them before any bpToPx
+    // arithmetic / object allocation. bpToPxFromIndex would also return
+    // undefined here, but only after a Map.get + result-object construction
+    // per call (4 per feature).
+    if (!v1RefNames.has(refName) || !v2RefNames.has(mate.refName)) {
+      continue
     }
+
+    const strand = f.get('strand') as number
+    const start = f.get('start') as number
+    const end = f.get('end') as number
+    const f1s = strand === -1 ? end : start
+    const f1e = strand === -1 ? start : end
 
     const p11 = bpToPxFromIndex(v1Index, refName, f1s)
     const p12 = bpToPxFromIndex(v1Index, refName, f1e)
@@ -282,8 +321,10 @@ export async function executeSyntenyFeaturesAndPositions({
     const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2Offset
     const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2Offset
 
-    const topOffScreen = topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
-    const botOffScreen = botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+    const topOffScreen =
+      topMaxX < offScreenLeftBound || topMinX > offScreenRightBound
+    const botOffScreen =
+      botMaxX < offScreenLeftBound || botMinX > offScreenRightBound
 
     if (topOffScreen && botOffScreen) {
       continue
@@ -302,100 +343,96 @@ export async function executeSyntenyFeaturesAndPositions({
     const identity = f.get('identity') as number | undefined
     identitiesArray[validCount] = identity ?? -1
 
+    mateStartsArray[validCount] = mate.start
+    mateEndsArray[validCount] = mate.end
+
     featureIds.push(f.id())
-    names.push((f.get('name') as string) || '')
+    names.push((f.get('name') as string | undefined) ?? '')
     refNames.push(refName)
-    assemblyNames.push((f.get('assemblyName') as string) || '')
-    cigars.push((f.get('CIGAR') as string) || '')
+    assemblyNames.push((f.get('assemblyName') as string | undefined) ?? '')
+    mateRefNames.push(mate.refName)
+    mateAssemblyNames.push(mate.assemblyName)
+    parsedCigars.push(parseCigar2((f.get('CIGAR') as string | undefined) ?? ''))
     precomputedSyriTypes.push(f.get('syriType') as string | undefined)
-    mates.push(mate)
 
     validCount++
   }
 
-  const positionData = {
-    p11_offsetPx: p11Array.subarray(0, validCount),
-    p12_offsetPx: p12Array.subarray(0, validCount),
-    p21_offsetPx: p21Array.subarray(0, validCount),
-    p22_offsetPx: p22Array.subarray(0, validCount),
+  // Pixel-space positions / pad arrays are intermediate buffers consumed only
+  // by buildSyntenyGeometry below. They never leave the worker — the main
+  // thread reads bp-space hi/lo pairs out of `instanceData`.
+  const p11_offsetPx = p11Array.subarray(0, validCount)
+  const p12_offsetPx = p12Array.subarray(0, validCount)
+  const p21_offsetPx = p21Array.subarray(0, validCount)
+  const p22_offsetPx = p22Array.subarray(0, validCount)
+  const padTop = padTopArray.subarray(0, validCount)
+  const padBottom = padBottomArray.subarray(0, validCount)
+
+  const featureData = {
     strands: strandsArray.subarray(0, validCount),
     starts: startsArray.subarray(0, validCount),
     ends: endsArray.subarray(0, validCount),
     identities: identitiesArray.subarray(0, validCount),
-    padTop: padTopArray.subarray(0, validCount),
-    padBottom: padBottomArray.subarray(0, validCount),
     featureIds,
     names,
     refNames,
     assemblyNames,
-    cigars,
-    mates,
+    syriTypes: precomputedSyriTypes,
+    mateStarts: mateStartsArray.subarray(0, validCount),
+    mateEnds: mateEndsArray.subarray(0, validCount),
+    mateRefNames,
+    mateAssemblyNames,
   }
 
-  const parsedCigars = cigars.map(s => (s ? parseCigar2(s) : []))
-  const bpPerPxs = viewSnaps.map(v => v.bpPerPx)
+  // colorBy lives on the main thread now; the worker always emits
+  // geometry + per-instance `kinds`/`instanceFeatureIdx` descriptors, and
+  // the display model recomputes `colors` on colorBy change. SyRI types
+  // are likewise computed on the main thread when needed.
 
-  // Compute SyRI types when colorBy='syri'
-  // If features already carry syriType from structural tier, use those directly
-  let syriTypes: ReturnType<typeof computeSyriTypes> | undefined
-  if (colorBy === 'syri') {
-    const hasPrecomputed = precomputedSyriTypes.some(t => t !== undefined)
-    syriTypes = hasPrecomputed
-      ? precomputedSyriTypes.map(
-          // eslint-disable-next-line unicorn/prefer-logical-operator-over-ternary
-          t => (t ? (t as ReturnType<typeof computeSyriTypes>[number]) : 'SYN'),
-        )
-      : computeSyriTypes(
-          Array.from({ length: validCount }, (_, i) => ({
-            qname: names[i]!,
-            qstart: positionData.starts[i]!,
-            qend: positionData.ends[i]!,
-            tname: mates[i]!.refName,
-            tstart: mates[i]!.start,
-            tend: mates[i]!.end,
-            strand: positionData.strands[i]!,
-          })),
-        )
-  }
+  const instanceData = await updateStatus(
+    'Computing synteny layout',
+    statusCallback,
+    () =>
+      buildSyntenyGeometry({
+        p11_offsetPx,
+        p12_offsetPx,
+        p21_offsetPx,
+        p22_offsetPx,
+        padTop,
+        padBottom,
+        strands: featureData.strands,
+        names,
+        parsedCigars,
+        starts: featureData.starts,
+        ends: featureData.ends,
+        drawCIGAR,
+        drawCIGARMatchesOnly,
+        drawLocationMarkers,
+        bpPerPx0: v1.bpPerPx,
+        bpPerPx1: v2.bpPerPx,
+        viewOff0: v1.offsetPx,
+        viewOff1: v2.offsetPx,
+        viewWidth,
+      }),
+  )
 
-  const instanceData = executeSyntenyInstanceData({
-    ...positionData,
-    parsedCigars,
-    colorBy,
-    syriTypes,
-    drawCurves,
-    drawCIGAR,
-    drawCIGARMatchesOnly,
-    drawLocationMarkers,
-    bpPerPxs,
-    level,
-    viewOffsets: viewSnaps.map(v => v.offsetPx),
-    viewWidth: viewSnaps[0]!.width,
-  })
-
-  const result = {
-    ...positionData,
-    instanceData,
-  }
-
-  return rpcResult(result, [
-    result.p11_offsetPx.buffer,
-    result.p12_offsetPx.buffer,
-    result.p21_offsetPx.buffer,
-    result.p22_offsetPx.buffer,
-    result.strands.buffer,
-    result.starts.buffer,
-    result.ends.buffer,
-    result.identities.buffer,
-    result.padTop.buffer,
-    result.padBottom.buffer,
-    instanceData.x1.buffer,
-    instanceData.x2.buffer,
-    instanceData.x3.buffer,
-    instanceData.x4.buffer,
-    instanceData.colors.buffer,
-    instanceData.featureIds.buffer,
-    instanceData.isCurves.buffer,
+  return rpcResult({ ...featureData, instanceData }, [
+    featureData.strands.buffer,
+    featureData.starts.buffer,
+    featureData.ends.buffer,
+    featureData.identities.buffer,
+    featureData.mateStarts.buffer,
+    featureData.mateEnds.buffer,
+    instanceData.bp1Hi.buffer,
+    instanceData.bp1Lo.buffer,
+    instanceData.bp2Hi.buffer,
+    instanceData.bp2Lo.buffer,
+    instanceData.bp3Hi.buffer,
+    instanceData.bp3Lo.buffer,
+    instanceData.bp4Hi.buffer,
+    instanceData.bp4Lo.buffer,
+    instanceData.kinds.buffer,
+    instanceData.instanceFeatureIdx.buffer,
     instanceData.queryTotalLengths.buffer,
     instanceData.padTops.buffer,
     instanceData.padBottoms.buffer,

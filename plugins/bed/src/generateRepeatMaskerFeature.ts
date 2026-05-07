@@ -1,7 +1,7 @@
 export function isRepeatMaskerDescriptionField(desc?: string): desc is string {
   const ret = desc?.trim().split(' ')
-  return [0, 1, 2, 3, 5, 6].every(s =>
-    ret?.[s] !== undefined ? !Number.isNaN(+ret[s]) : false,
+  return [0, 1, 2, 3, 5, 6].every(
+    s => ret?.[s] !== undefined && !Number.isNaN(+ret[s]),
   )
 }
 

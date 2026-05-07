@@ -25,10 +25,7 @@ async function testFilterTrack(trackId: string, tag: string, value: string) {
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Filter by...'))
   await user.click(await screen.findByText('Edit filters...'))
-  await user.type(
-    await screen.findByPlaceholderText('Enter tag name', ...opts),
-    tag,
-  )
+  await user.type(await screen.findByLabelText('Tag name', ...opts), tag)
   await user.type(await screen.findByPlaceholderText('Enter tag value'), value)
   await user.click(await screen.findByText('Submit'))
   const display = await screen.findByTestId('pileup-display-done', ...opts)

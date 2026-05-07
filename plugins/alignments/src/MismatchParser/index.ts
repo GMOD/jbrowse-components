@@ -1,7 +1,6 @@
-import { cigarToMismatches } from './cigarToMismatches.ts'
-import { mdToMismatches } from './mdToMismatches.ts'
+import { cigarToMismatches2 } from './cigarToMismatches2.ts'
+import { mdToMismatches2 } from './mdToMismatches2.ts'
 
-import type { Mismatch } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const startClip = new RegExp(/(\d+)[SH]$/)
@@ -60,20 +59,11 @@ export function getMismatches(
   ref?: string,
   qual?: Uint8Array,
 ) {
-  let mismatches: Mismatch[] = []
-  const ops = parseCigar(cigar)
-  // parse the CIGAR tag if it has one
-  if (cigar) {
-    mismatches = mismatches.concat(cigarToMismatches(ops, seq, ref, qual))
-  }
-
-  // now let's look for CRAM or MD mismatches
+  const ops = parseCigar2(cigar)
+  const mismatches = cigar ? cigarToMismatches2(ops, seq, ref, qual) : []
   if (md && seq) {
-    mismatches = mismatches.concat(
-      mdToMismatches(md, ops, mismatches, seq, qual),
-    )
+    return mismatches.concat(mdToMismatches2(md, ops, mismatches, seq, qual))
   }
-
   return mismatches
 }
 
@@ -118,8 +108,8 @@ export function getLengthSansClipping(cigar: string) {
 
 export function getClip(cigar: string, strand: number) {
   return strand === -1
-    ? +(startClip.exec(cigar) || [])[1]! || 0
-    : +(endClip.exec(cigar) || [])[1]! || 0
+    ? +(startClip.exec(cigar) ?? [])[1]! || 0
+    : +(endClip.exec(cigar) ?? [])[1]! || 0
 }
 
 export function getTag(feature: Feature, tag: string) {
@@ -172,7 +162,7 @@ export function featurizeSA(
             refName: readName,
           },
         }
-      }) || []
+      }) ?? []
   )
 }
 

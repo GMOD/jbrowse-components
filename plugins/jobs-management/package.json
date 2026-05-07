@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-jobs-management",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 jobs management",
   "keywords": [
@@ -22,11 +22,11 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/jobs-management",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/jobs-management",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
@@ -34,7 +34,7 @@
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1"
   },
   "peerDependencies": {

@@ -48,7 +48,7 @@ layout: types.optional(types.frozen<Source[]>(), [])
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -244,14 +244,14 @@ string
 
 ```js
 // type
-Source[]
+Source[] | undefined
 ```
 
 #### getter: sources
 
 ```js
 // type
-Source[]
+Source[] | undefined
 ```
 
 #### getter: root
@@ -265,7 +265,7 @@ any
 
 ```js
 // type
-{ [k: string]: Source; }
+{ [k: string]: Source; } | undefined
 ```
 
 #### getter: availableHeight
@@ -339,14 +339,14 @@ adapterProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => any[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
 ```
 
 #### method: getPortableSettings
 
 ```js
 // type signature
-getPortableSettings: () => { minorAlleleFrequencyFilter: any; showSidebarLabelsSetting: boolean; showTree: any; renderingMode: string; lengthCutoffFilter: number; jexlFilters: IMSTArray<ISimpleType<string>> & IStateTreeNode<...>; ... 4 more ...; height: number; }
+getPortableSettings: () => { minorAlleleFrequencyFilter: any; showSidebarLabelsSetting: boolean | undefined; showTree: any; renderingMode: string; lengthCutoffFilter: number; jexlFilters: (IMSTArray<ISimpleType<string>> & IStateTreeNode<...>) | undefined; ... 4 more ...; height: number; }
 ```
 
 #### method: renderProps
@@ -360,7 +360,7 @@ renderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { [x: string]: any; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } &...
+renderingProps: () => { displayModel: { id: string; type: never; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userBpPerPxLimit: number | undefined; userByteSizeLimit: number | undefined; ... 16 more ...; subtreeFilter: (IMSTArray<...> & IStateTreeNode<...>) | undefined; } & ... 32 more ... & IStateTreeNod...
 ```
 
 #### method: legendItems
@@ -378,7 +378,7 @@ legendItems: () => LegendItem[]
 
 ```js
 // type signature
-setJexlFilters: (f?: string[]) => void
+setJexlFilters: (f?: string[] | undefined) => void
 ```
 
 #### action: setRowHeight
@@ -392,28 +392,28 @@ setRowHeight: (arg: number | "auto") => void
 
 ```js
 // type signature
-setHoveredGenotype: (arg?: { genotype: string; name: string; }) => void
+setHoveredGenotype: (arg?: { genotype: string; name: string; } | undefined) => void
 ```
 
 #### action: setHoveredTreeNode
 
 ```js
 // type signature
-setHoveredTreeNode: (node?: HoveredTreeNode) => void
+setHoveredTreeNode: (node?: HoveredTreeNode | undefined) => void
 ```
 
 #### action: setTreeCanvasRef
 
 ```js
 // type signature
-setTreeCanvasRef: (ref: HTMLCanvasElement) => void
+setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
 ```
 
 #### action: setMouseoverCanvasRef
 
 ```js
 // type signature
-setMouseoverCanvasRef: (ref: HTMLCanvasElement) => void
+setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
 ```
 
 #### action: setTreeAreaWidth
@@ -455,21 +455,21 @@ clearLayout: () => void
 
 ```js
 // type signature
-setClusterTree: (tree?: string) => void
+setClusterTree: (tree?: string | undefined) => void
 ```
 
 #### action: setSourcesLoading
 
 ```js
 // type signature
-setSourcesLoading: (token: StopToken) => void
+setSourcesLoading: (token: string) => void
 ```
 
 #### action: setSimplifiedFeaturesLoading
 
 ```js
 // type signature
-setSimplifiedFeaturesLoading: (token: StopToken) => void
+setSimplifiedFeaturesLoading: (token: string) => void
 ```
 
 #### action: setSources
@@ -504,7 +504,7 @@ setShowTree: (arg: boolean) => void
 
 ```js
 // type signature
-setSubtreeFilter: (names?: string[]) => void
+setSubtreeFilter: (names?: string[] | undefined) => void
 ```
 
 #### action: setPhasedMode

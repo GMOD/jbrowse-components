@@ -42,7 +42,7 @@ export default class RpcServer {
     })
   }
 
-  protected handler(e: MessageEvent<RpcMessageData>) {
+  handler(e: MessageEvent<RpcMessageData>) {
     const { libRpc, method, uid, data } = e.data
     if (!libRpc) {
       return
@@ -75,7 +75,7 @@ export default class RpcServer {
       } else {
         workerSelf.postMessage(
           { uid, method, data: response, libRpc: true },
-          [] as Transferable[],
+          [],
         )
       }
     } catch (e) {
@@ -90,7 +90,7 @@ export default class RpcServer {
   emit(eventName: string, data: unknown, transferables?: Transferable[]) {
     workerSelf.postMessage(
       { eventName, data, libRpc: true },
-      transferables ?? ([] as Transferable[]),
+      transferables ?? [],
     )
   }
 }

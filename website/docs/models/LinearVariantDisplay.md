@@ -40,7 +40,7 @@ type: types.literal('LinearVariantDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -94,7 +94,7 @@ activeFilters: () => string[]
 
 ```js
 // type signature
-filterMenuItems: () => any[]
+filterMenuItems: () => MenuItem[]
 ```
 
 ### LinearVariantDisplay - Actions

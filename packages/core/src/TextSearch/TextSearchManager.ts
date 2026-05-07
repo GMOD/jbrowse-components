@@ -98,50 +98,17 @@ export default class TextSearchManager {
       )
   }
 
-  /**
-   * legacy API for searching:
-   * Returns list of relevant results given a search query and options
-   */
   async search(
     args: BaseTextSearchArgs,
     searchScope: SearchScope,
     rankFn: (results: BaseResult[]) => BaseResult[],
   ) {
-    return this.search2({ args, searchScope, rankFn })
-  }
-
-  /**
-   * modern API for searching:
-   * Returns list of relevant results given a search query and options
-   */
-  async search2({
-    args,
-    searchScope,
-    rankFn,
-  }: {
-    args: BaseTextSearchArgs
-    searchScope: SearchScope
-    rankFn: (results: BaseResult[]) => BaseResult[]
-  }) {
     const adapters = await this.loadTextSearchAdapters(searchScope)
     const results = await Promise.all(adapters.map(a => a.searchIndex(args)))
-
-    return this.sortResults2({
-      args,
-      results: results.flat(),
-      rankFn,
-    })
+    return this.sortResults({ args, results: results.flat(), rankFn })
   }
 
-  /**
-   * Returns array of revelevant and sorted results. Note: renamed to
-   * sortResults2 to accommodate new format
-   *
-   * @param results - array of results from all text search adapters
-   * @param rankFn - function that updates results scores
-   * based on more relevance
-   */
-  sortResults2({
+  sortResults({
     results,
     rankFn,
     args,
@@ -162,7 +129,7 @@ export default class TextSearchManager {
     // false positive, this is not Array.prototype.filter
     // eslint-disable-next-line unicorn/no-array-method-this-argument
     const idxs = uf.filter(haystack, needle)
-    const res = []
+    const res: BaseResult[] = []
 
     // idxs can be null when the needle is non-searchable (has no alpha-numeric chars)
     if (idxs != null && idxs.length > 0) {

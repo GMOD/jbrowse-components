@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
+import { CascadingMenuButton, ErrorBanner } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Help from '@mui/icons-material/Help'
@@ -15,6 +15,7 @@ import SkeletonLoader from './SkeletonLoader.tsx'
 import TablePagination from './TablePagination.tsx'
 import { getColumnDefinitions } from './getColumnDefinitions.tsx'
 import { useGenomesData } from './useGenomesData.ts'
+import { useSearchHighlight } from './useSearchHighlight.ts'
 import defaultFavs from '../defaultFavs.ts'
 import useCategories from './useCategories.ts'
 
@@ -124,6 +125,8 @@ export default function GenomesDataTable({
     'ucsc',
   )
   const [showAllColumns, setShowAllColumns] = useState(false)
+  const tableRef = useRef<HTMLDivElement>(null)
+  useSearchHighlight(tableRef, searchQuery)
   const { classes } = useStyles()
   const {
     categories,
@@ -174,18 +177,9 @@ export default function GenomesDataTable({
         toggleFavorite,
         launch,
         onClose,
-        searchQuery,
         showAllColumns,
       }),
-    [
-      typeOption,
-      favs,
-      launch,
-      onClose,
-      toggleFavorite,
-      searchQuery,
-      showAllColumns,
-    ],
+    [typeOption, favs, launch, onClose, toggleFavorite, showAllColumns],
   )
 
   const sortedData = useMemo(() => {
@@ -350,14 +344,14 @@ export default function GenomesDataTable({
         </IconButton>
       </div>
 
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
 
       {categoriesLoading ? (
         <SkeletonLoader />
       ) : data.length === 0 && !url ? (
         <SkeletonLoader />
       ) : (
-        <div>
+        <div ref={tableRef}>
           <table className={classes.table}>
             <thead>
               <tr>

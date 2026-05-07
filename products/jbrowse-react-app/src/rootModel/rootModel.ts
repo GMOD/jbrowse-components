@@ -118,6 +118,8 @@ export default function RootModel({
       /**
        * #volatile
        */
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
     }))
     .actions(self => {
@@ -223,8 +225,7 @@ export default function RootModel({
                   label: 'Export session',
                   icon: GetAppIcon,
                   onClick: async (session: IAnyStateTreeNode) => {
-                    // eslint-disable-next-line @typescript-eslint/no-deprecated
-                    const { saveAs } = await import('file-saver-es')
+                    const { saveAs } = await import('@jbrowse/core/util')
 
                     saveAs(
                       new Blob(
@@ -249,7 +250,7 @@ export default function RootModel({
                   onClick: (session: SessionWithWidgets) => {
                     if (session.views.length === 0) {
                       session.notify('Please open a view to add a track first')
-                    } else if (session.views.length > 0) {
+                    } else {
                       const widget = session.addWidget(
                         'AddTrackWidget',
                         'addTrackWidget',

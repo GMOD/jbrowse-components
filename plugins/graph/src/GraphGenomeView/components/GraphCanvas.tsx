@@ -1,25 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 
+import ErrorBanner from '@jbrowse/core/ui/ErrorBanner'
+import { useGpuModelLifecycle } from '@jbrowse/core/util'
 import { LinearProgress, Typography } from '@mui/material'
-import { autorun, untracked } from 'mobx'
 import { observer } from 'mobx-react'
 
 import GraphToolbar from './GraphToolbar.tsx'
-import {
-  brightenColors,
-  buildGeometry,
-  extractColorSlice,
-} from '../../renderer/GeometryBuilder.ts'
-import { GraphRenderer } from '../../renderer/GraphRenderer.ts'
-import { findHoveredEdge, findHoveredNode } from '../../util/hitDetection.ts'
-import useRafCallback from '../../util/useRafCallback.ts'
+import { createGraphRenderer } from '../renderer/GraphRenderer.ts'
+import { findHoveredEdge, findHoveredNode } from '../util/hitDetection.ts'
 
 import type { GraphGenomeViewModel } from '../model.ts'
-
-const CANVAS_HEIGHT = 600
-const HOVER_BRIGHTEN = 1.4
-const SELECT_BRIGHTEN = 1.6
-const VIEWPORT_DEBOUNCE_MS = 150
 
 const tooltipStyle = {
   position: 'absolute' as const,
@@ -33,44 +23,30 @@ const tooltipStyle = {
   pointerEvents: 'none' as const,
 }
 
-function renderFrame(renderer: GraphRenderer, model: GraphGenomeViewModel) {
-  const dpr = window.devicePixelRatio || 1
-  renderer.updateTransform({
-    scaleX: model.scale * dpr,
-    scaleY: model.scale * dpr,
-    translateX: model.translateX * dpr,
-    translateY: model.translateY * dpr,
-    viewportWidth: model.width * dpr,
-    viewportHeight: CANVAS_HEIGHT * dpr,
-  })
-  renderer.render(model.darkMode ? [0.12, 0.12, 0.12, 1] : [1, 1, 1, 1])
+const loadingOverlayStyle = {
+  position: 'absolute' as const,
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  zIndex: 10,
+  background: 'rgba(255,255,255,0.8)',
+  padding: 16,
+  borderRadius: 8,
+  minWidth: 200,
 }
 
-function computeViewportBounds(model: GraphGenomeViewModel) {
-  const padding = 0.2
-  const minX = -model.translateX / model.scale
-  const minY = -model.translateY / model.scale
-  const maxX = (model.width - model.translateX) / model.scale
-  const maxY = (CANVAS_HEIGHT - model.translateY) / model.scale
-  const w = maxX - minX
-  const h = maxY - minY
-  return {
-    minX: minX - w * padding,
-    minY: minY - h * padding,
-    maxX: maxX + w * padding,
-    maxY: maxY + h * padding,
-  }
-}
+const progressStyle = { marginTop: 8 }
+
+const wrapperStyle = { position: 'relative' as const }
 
 const HoverTooltips = observer(function HoverTooltips({
   model,
 }: {
   model: GraphGenomeViewModel
 }) {
-  const hoveredNodeData =
-    model.hoveredNode && model.graph
-      ? model.graph.nodes.find(n => n.id === model.hoveredNode)
-      : null
+  const hoveredNodeData = model.hoveredNode
+    ? model.nodeById?.get(model.hoveredNode)
+    : null
 
   const hoveredEdgeData =
     model.hoveredEdge !== null && model.graph
@@ -100,266 +76,34 @@ const GraphCanvas = observer(function GraphCanvas({
 }: {
   model: GraphGenomeViewModel
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<GraphRenderer | null>(null)
-  const [rendererReady, setRendererReady] = useState(false)
+  const { canvasRef, canvas } = useGpuModelLifecycle(createGraphRenderer, model)
   const isDraggingRef = useRef(false)
   const [isDragging, setIsDragging] = useState(false)
   const lastMouseRef = useRef({ x: 0, y: 0 })
 
-  const scheduleRender = useRafCallback(() => {
-    const renderer = rendererRef.current
-    if (renderer) {
-      renderFrame(renderer, model)
-    }
-  })
+  const hasMovedRef = useRef(false)
 
+  // wheel events need passive:false to call preventDefault — React registers
+  // wheel listeners as passive, so we must add this imperatively
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
+    if (canvas) {
+      const c = canvas
+      function handleWheel(e: WheelEvent) {
+        e.preventDefault()
+        const rect = c.getBoundingClientRect()
+        model.zoom(
+          e.deltaY < 0 ? 1.1 : 1 / 1.1,
+          e.clientX - rect.left,
+          e.clientY - rect.top,
+        )
+      }
+      c.addEventListener('wheel', handleWheel, { passive: false })
+      return () => {
+        c.removeEventListener('wheel', handleWheel)
+      }
     }
-
-    const renderer = new GraphRenderer(canvas)
-    let destroyed = false
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    renderer.init().then(() => {
-      if (destroyed) {
-        renderer.destroy()
-        return
-      }
-      renderer.resize(model.width, CANVAS_HEIGHT)
-      rendererRef.current = renderer
-      setRendererReady(true)
-    })
-
-    return () => {
-      destroyed = true
-      rendererRef.current?.destroy()
-      rendererRef.current = null
-      setRendererReady(false)
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (rendererRef.current) {
-      rendererRef.current.resize(model.width, CANVAS_HEIGHT)
-    }
-  }, [model.width])
-
-  useEffect(() => {
-    let first = true
-    return autorun(() => {
-      const lr = model.layoutResult
-      if (first) {
-        first = false
-        return
-      }
-      if (lr) {
-        model.zoomToFit(CANVAS_HEIGHT)
-      }
-    })
-  }, [model])
-
-  // Autorun 1: Rebuild geometry when graph data or display options change.
-  // computeViewportBounds is wrapped in untracked so scale/translate changes
-  // don't trigger a rebuild — only the debounced viewportDirty flag does.
-  useEffect(() => {
-    if (!rendererReady) {
-      return
-    }
-    return autorun(() => {
-      const renderer = rendererRef.current
-      if (!renderer || !model.nodePositions || !model.graph) {
-        return
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.viewportDirty
-      const batch = buildGeometry({
-        nodePositions: model.nodePositions,
-        graph: model.graph,
-        colorScheme: model.colorScheme,
-        contigThickness: model.contigThickness,
-        connectorThickness: model.connectorThickness,
-        drawPaths: model.drawPaths,
-        viewportBounds: untracked(() => computeViewportBounds(model)),
-      })
-      model.storeRenderBatchMeta(
-        batch.nodeVertexRanges,
-        batch.edgeVertexRanges,
-        batch.arrowVertexRanges,
-        batch.nodes.colors,
-        batch.edges.colors,
-        batch.arrows.colors,
-      )
-      renderer.uploadGeometry(batch)
-      scheduleRender()
-    })
-  }, [model, rendererReady, scheduleRender])
-
-  // Autorun 2: Hover/select color-only updates — no geometry rebuild.
-  useEffect(() => {
-    if (!rendererReady) {
-      return
-    }
-
-    let prevHoveredNode: string | null = null
-    let prevHoveredEdge: number | null = null
-    let prevSelectedNode: string | null = null
-
-    return autorun(() => {
-      const hoveredNode = model.hoveredNode
-      const hoveredEdge = model.hoveredEdge
-      const selectedNode = model.selectedNode
-      const renderer = rendererRef.current
-      if (!renderer) {
-        return
-      }
-
-      // Restore previous node highlights
-      if (prevHoveredNode && model.baseNodeColors && model.nodeVertexRanges) {
-        const range = model.nodeVertexRanges.get(prevHoveredNode)
-        if (range) {
-          const original = extractColorSlice(model.baseNodeColors, range)
-          renderer.updateSubBatchColors('nodes', original, range.start)
-        }
-      }
-      if (
-        prevSelectedNode &&
-        prevSelectedNode !== prevHoveredNode &&
-        model.baseNodeColors &&
-        model.nodeVertexRanges
-      ) {
-        const range = model.nodeVertexRanges.get(prevSelectedNode)
-        if (range) {
-          const original = extractColorSlice(model.baseNodeColors, range)
-          renderer.updateSubBatchColors('nodes', original, range.start)
-        }
-      }
-
-      // Restore previous edge highlights
-      if (prevHoveredEdge !== null) {
-        if (model.baseEdgeColors && model.edgeVertexRanges) {
-          const range = model.edgeVertexRanges.get(prevHoveredEdge)
-          if (range) {
-            const original = extractColorSlice(model.baseEdgeColors, range)
-            renderer.updateSubBatchColors('edges', original, range.start)
-          }
-        }
-        if (model.baseArrowColors && model.arrowVertexRanges) {
-          const range = model.arrowVertexRanges.get(prevHoveredEdge)
-          if (range) {
-            const original = extractColorSlice(model.baseArrowColors, range)
-            renderer.updateSubBatchColors('arrows', original, range.start)
-          }
-        }
-      }
-
-      // Apply selected node highlight
-      if (selectedNode && model.baseNodeColors && model.nodeVertexRanges) {
-        const range = model.nodeVertexRanges.get(selectedNode)
-        if (range) {
-          const brightened = brightenColors(
-            model.baseNodeColors,
-            range,
-            SELECT_BRIGHTEN,
-          )
-          renderer.updateSubBatchColors('nodes', brightened, range.start)
-        }
-      }
-
-      // Apply hovered node highlight
-      if (
-        hoveredNode &&
-        hoveredNode !== selectedNode &&
-        model.baseNodeColors &&
-        model.nodeVertexRanges
-      ) {
-        const range = model.nodeVertexRanges.get(hoveredNode)
-        if (range) {
-          const brightened = brightenColors(
-            model.baseNodeColors,
-            range,
-            HOVER_BRIGHTEN,
-          )
-          renderer.updateSubBatchColors('nodes', brightened, range.start)
-        }
-      }
-
-      // Apply hovered edge highlight
-      if (hoveredEdge !== null) {
-        if (model.baseEdgeColors && model.edgeVertexRanges) {
-          const range = model.edgeVertexRanges.get(hoveredEdge)
-          if (range) {
-            const brightened = brightenColors(
-              model.baseEdgeColors,
-              range,
-              HOVER_BRIGHTEN,
-            )
-            renderer.updateSubBatchColors('edges', brightened, range.start)
-          }
-        }
-        if (model.baseArrowColors && model.arrowVertexRanges) {
-          const range = model.arrowVertexRanges.get(hoveredEdge)
-          if (range) {
-            const brightened = brightenColors(
-              model.baseArrowColors,
-              range,
-              HOVER_BRIGHTEN,
-            )
-            renderer.updateSubBatchColors('arrows', brightened, range.start)
-          }
-        }
-      }
-
-      prevHoveredNode = hoveredNode
-      prevHoveredEdge = hoveredEdge
-      prevSelectedNode = selectedNode
-
-      scheduleRender()
-    })
-  }, [model, rendererReady, scheduleRender])
-
-  // Autorun 3: Re-render on pan/zoom/darkMode without rebuilding geometry (cheap).
-  // Uses autorun so MobX automatically tracks all observables read by renderFrame.
-  useEffect(() => {
-    if (!rendererReady) {
-      return
-    }
-    return autorun(() => {
-      const renderer = rendererRef.current
-      if (!renderer || !model.nodePositions) {
-        return
-      }
-      renderFrame(renderer, model)
-    })
-  }, [model, rendererReady])
-
-  // Autorun 4: Debounced viewport culling — rebuild geometry after pan/zoom settles
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null
-    let first = true
-    return autorun(() => {
-      // Read scale/translate to track them as dependencies
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.scale
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.translateX
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      model.translateY
-      if (first) {
-        first = false
-        return
-      }
-      if (timer) {
-        clearTimeout(timer)
-      }
-      timer = setTimeout(() => {
-        model.setViewportDirty()
-      }, VIEWPORT_DEBOUNCE_MS)
-    })
-  }, [model])
+    return undefined
+  }, [canvas, model])
 
   function screenToGraph(screenX: number, screenY: number) {
     return {
@@ -368,35 +112,63 @@ const GraphCanvas = observer(function GraphCanvas({
     }
   }
 
+  function getMouseCoord(e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLCanvasElement).getBoundingClientRect()
+    return screenToGraph(e.clientX - rect.left, e.clientY - rect.top)
+  }
+
   function handleMouseDown(e: React.MouseEvent) {
     if (e.button === 0) {
-      isDraggingRef.current = true
-      setIsDragging(true)
+      hasMovedRef.current = false
+      if (model.nodePositions) {
+        const { x, y } = getMouseCoord(e)
+        const node = findHoveredNode(
+          model.nodePositions,
+          x,
+          y,
+          model.scale,
+          model.viewportDirty,
+        )
+        if (node) {
+          model.setDraggingNode(node)
+        } else {
+          isDraggingRef.current = true
+          setIsDragging(true)
+        }
+      } else {
+        isDraggingRef.current = true
+        setIsDragging(true)
+      }
       lastMouseRef.current = { x: e.clientX, y: e.clientY }
     }
   }
 
   function handleMouseMove(e: React.MouseEvent) {
-    if (isDraggingRef.current) {
-      const dx = e.clientX - lastMouseRef.current.x
-      const dy = e.clientY - lastMouseRef.current.y
-      lastMouseRef.current = { x: e.clientX, y: e.clientY }
+    const dx = e.clientX - lastMouseRef.current.x
+    const dy = e.clientY - lastMouseRef.current.y
+    lastMouseRef.current = { x: e.clientX, y: e.clientY }
+
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+      hasMovedRef.current = true
+    }
+
+    if (model.draggingNode) {
+      model.moveNode(model.draggingNode, dx / model.scale, dy / model.scale)
+    } else if (isDraggingRef.current) {
       model.setTransform(
         model.scale,
         model.translateX + dx,
         model.translateY + dy,
       )
     } else if (model.nodePositions && model.graph) {
-      const rect = canvasRef.current?.getBoundingClientRect()
-      if (!rect) {
-        return
-      }
-      const { x, y } = screenToGraph(
-        e.clientX - rect.left,
-        e.clientY - rect.top,
+      const { x, y } = getMouseCoord(e)
+      const node = findHoveredNode(
+        model.nodePositions,
+        x,
+        y,
+        model.scale,
+        model.viewportDirty,
       )
-
-      const node = findHoveredNode(model.nodePositions, x, y, model.scale)
       model.setHoveredNode(node)
       model.setHoveredEdge(
         node
@@ -408,88 +180,66 @@ const GraphCanvas = observer(function GraphCanvas({
               y,
               model.scale,
               model.drawPaths,
+              model.viewportDirty,
             ),
       )
     }
   }
 
-  function handleMouseUp() {
+  function stopDragging() {
     isDraggingRef.current = false
     setIsDragging(false)
+    model.setDraggingNode(null)
+  }
+
+  function handleMouseUp() {
+    stopDragging()
   }
 
   function handleMouseLeave() {
-    isDraggingRef.current = false
-    setIsDragging(false)
+    stopDragging()
     model.setHoveredNode(null)
     model.setHoveredEdge(null)
   }
 
   function handleClick(e: React.MouseEvent) {
+    if (hasMovedRef.current) {
+      return
+    }
     if (model.nodePositions) {
-      const rect = canvasRef.current?.getBoundingClientRect()
-      if (!rect) {
-        return
+      const { x, y } = getMouseCoord(e)
+      const node = findHoveredNode(
+        model.nodePositions,
+        x,
+        y,
+        model.scale,
+        model.viewportDirty,
+      )
+      model.setSelectedNode(node)
+      if (node) {
+        model.showNodeDetails(node)
       }
-      const { x, y } = screenToGraph(
-        e.clientX - rect.left,
-        e.clientY - rect.top,
-      )
-      model.setSelectedNode(
-        findHoveredNode(model.nodePositions, x, y, model.scale),
-      )
     }
   }
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return undefined
-    }
-    function handleWheel(e: WheelEvent) {
-      e.preventDefault()
-      const rect = canvas!.getBoundingClientRect()
-      model.zoom(
-        e.deltaY < 0 ? 1.1 : 1 / 1.1,
-        e.clientX - rect.left,
-        e.clientY - rect.top,
-      )
-    }
-    canvas.addEventListener('wheel', handleWheel, { passive: false })
-    return () => {
-      canvas.removeEventListener('wheel', handleWheel)
-    }
-  }, [model])
-
   return (
-    <div style={{ position: 'relative' }}>
-      <GraphToolbar model={model} canvasHeight={CANVAS_HEIGHT} />
+    <div style={wrapperStyle}>
+      <GraphToolbar model={model} />
 
       {model.isLoading ? (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 10,
-            background: 'rgba(255,255,255,0.8)',
-            padding: 16,
-            borderRadius: 8,
-            minWidth: 200,
-          }}
-        >
+        <div style={loadingOverlayStyle}>
           <Typography>{model.statusMessage || 'Loading...'}</Typography>
-          <LinearProgress variant="indeterminate" style={{ marginTop: 8 }} />
+          <LinearProgress variant="indeterminate" style={progressStyle} />
         </div>
       ) : null}
 
       <canvas
         ref={canvasRef}
+        data-testid="graph-genome-canvas"
         style={{
           width: model.width,
-          height: CANVAS_HEIGHT,
-          cursor: isDragging ? 'grabbing' : 'grab',
+          height: model.canvasHeight,
+          cursor: isDragging || model.draggingNode ? 'grabbing' : 'grab',
           display: 'block',
         }}
         onMouseDown={handleMouseDown}
@@ -501,11 +251,7 @@ const GraphCanvas = observer(function GraphCanvas({
 
       <HoverTooltips model={model} />
 
-      {model.error ? (
-        <Typography color="error" variant="body2" style={{ padding: 8 }}>
-          {model.error}
-        </Typography>
-      ) : null}
+      {model.error ? <ErrorBanner error={model.error} /> : null}
     </div>
   )
 })

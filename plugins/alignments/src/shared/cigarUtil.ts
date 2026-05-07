@@ -1,16 +1,6 @@
-import { parseCigar2 } from '../MismatchParser/index.ts'
-
-// Bitmasks for CIGAR operation categories (use with: (1 << op) & MASK)
-// Alignment match ops (M=0, ==7) - may contain mismatches, need MD tag
+// Bitmask for CIGAR operation categories (use with: (1 << op) & MASK)
+// Alignment match ops (M=0, ==7) — may contain mismatches, need MD tag
 export const CIGAR_M_EQ_MASK = 0b10000001 // (1<<0)|(1<<7) = 129
-// Match/mismatch ops that consume both ref and seq (M=0, ==7, X=8)
-export const CIGAR_MATCH_MASK = 0b110000001 // (1<<0)|(1<<7)|(1<<8) = 385
-// Seq-only ops (S=4, I=1)
-export const CIGAR_SEQ_ONLY_MASK = 0b10010 // (1<<1)|(1<<4) = 18
-// Ref-skip ops (D=2, N=3)
-export const CIGAR_REF_SKIP_MASK = 0b1100 // (1<<2)|(1<<3) = 12
-// Ref-consuming ops (M=0, D=2, ==7, X=8)
-export const CIGAR_REF_CONSUMING_MASK = 0b110000101 // (1<<0)|(1<<2)|(1<<7)|(1<<8) = 389
 
 // BAM 4-bit encoded sequence lookup table
 export const SEQRET = '=ACMGRSVTWYHKDBN'
@@ -26,13 +16,6 @@ export const SEQRET_NUMERIC_DECODER = new Uint8Array([
 export const CHAR_FROM_CODE: string[] = Array.from({ length: 128 }, (_, i) =>
   String.fromCharCode(i),
 )
-
-// Helper to ensure we have Uint32Array (packed format)
-export function getCigarOps(
-  cigar: number[] | string | undefined,
-): ArrayLike<number> {
-  return typeof cigar === 'string' ? parseCigar2(cigar) : cigar || []
-}
 
 export {
   CIGAR_D,

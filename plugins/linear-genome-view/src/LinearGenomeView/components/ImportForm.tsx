@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
+import {
+  AssemblySelector,
+  ErrorBanner,
+  RefNameAutocomplete,
+} from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
@@ -13,8 +17,11 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete.tsx'
-import { handleSelectedRegion, navToOption } from '../../searchUtils.ts'
+import {
+  fetchResults,
+  handleSelectedRegion,
+  navToOption,
+} from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -37,7 +44,8 @@ const LinearGenomeViewImportForm = observer(
   function LinearGenomeViewImportForm({ model }: { model: LGV }) {
     const { classes } = useStyles()
     const session = getSession(model)
-    const { assemblyNames, assemblyManager } = session
+    const { assemblyNames, assemblyManager, textSearchManager } = session
+    const { rankSearchResults } = model
     const { initialized, error } = model
     const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
     const [option, setOption] = useState<BaseResult>()
@@ -51,8 +59,9 @@ const LinearGenomeViewImportForm = observer(
     const [userValue, setUserValue] = useState<string | null>(null)
     const regions = assembly?.regions
     const assemblyLoaded = !!regions
-    const r0 = regions ? regions[0]?.refName || '' : ''
+    const r0 = regions?.[0]?.refName ?? ''
     const value = userValue ?? r0
+    const searchScope = model.searchScope(selectedAsm)
     const setValue = (v: string) => {
       setUserValue(v)
     }
@@ -61,7 +70,7 @@ const LinearGenomeViewImportForm = observer(
     // having this wrapped in a form allows intuitive use of enter key to submit
     return (
       <div className={classes.container}>
-        {displayError ? <ErrorMessage error={displayError} /> : null}
+        {displayError ? <ErrorBanner error={displayError} /> : null}
         {initialized ? (
           <Container className={classes.importFormContainer}>
             <form
@@ -89,7 +98,7 @@ const LinearGenomeViewImportForm = observer(
                     } else if (assembly) {
                       await handleSelectedRegion({
                         input: value,
-                        assembly,
+                        assemblyName: selectedAsm,
                         model,
                       })
                     }
@@ -122,12 +131,23 @@ const LinearGenomeViewImportForm = observer(
                     <CloseIcon style={{ color: 'red' }} />
                   ) : assemblyLoaded ? (
                     <FormControl>
-                      <ImportFormRefNameAutocomplete
+                      <RefNameAutocomplete
+                        fetchResults={queryString =>
+                          fetchResults({
+                            queryString,
+                            assembly,
+                            textSearchManager,
+                            rankSearchResults,
+                            searchScope,
+                          })
+                        }
+                        session={session}
+                        assemblyName={selectedAsm}
                         value={value}
-                        setValue={setValue}
-                        selectedAsm={selectedAsm}
-                        setOption={setOption}
-                        model={model}
+                        minWidth={270}
+                        onChange={setValue}
+                        onSelect={setOption}
+                        helperText="Enter sequence name, feature name, or location"
                       />
                     </FormControl>
                   ) : (

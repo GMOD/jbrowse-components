@@ -6,10 +6,8 @@ import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, observable, when } from 'mobx'
 
-import { Curves } from './components/Icons.tsx'
 import baseModel from '../LinearComparativeView/model.ts'
 
 import type {
@@ -19,6 +17,8 @@ import type {
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+const DEFAULT_OVERDRAW_PX = 1000
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
@@ -58,20 +58,43 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawLocationMarkers: false,
         /**
          * #property
-         * maximum number of pixels off screen before a synteny line is culled
          */
-        maxOffScreenDrawPx: 300,
+        chainMerge: false,
         /**
          * #property
-         * used for initializing the view from a session snapshot
+         * pixels beyond the visible viewport edge that synteny lines are still drawn
+         */
+        overdrawPx: DEFAULT_OVERDRAW_PX,
+        /**
+         * #property
+         */
+        alpha: types.optional(types.number, 0.2),
+        /**
+         * #property
+         */
+        autoAlpha: types.optional(types.boolean, true),
+        /**
+         * #property
+         */
+        minAlignmentLength: types.optional(types.number, 0),
+        /**
+         * #property
+         */
+        colorBy: types.optional(types.string, 'default'),
+        /**
+         * #property
+         * used for initializing the view from a session snapshot. tracks is
+         * 2D — outer index is the level (the gap between views[i] and
+         * views[i+1]), so a 3-way view has two entries.
          * example:
          * ```json
          * {
          *   views: [
          *     { loc: "chr1:1-100", assembly: "hg38", tracks: ["genes"] },
-         *     { loc: "chr1:1-100", assembly: "mm39" }
+         *     { loc: "chr1:1-100", assembly: "mm39" },
+         *     { loc: "chr1:1-100", assembly: "rn7" }
          *   ],
-         *   tracks: ["hg38_vs_mm39_synteny"]
+         *   tracks: [["hg38_vs_mm39_synteny"], ["mm39_vs_rn7_synteny"]]
          * }
          * ```
          */
@@ -86,6 +109,28 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         observable.array<ImportFormSyntenyTrack>(),
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get numFeats() {
+        let n = 0
+        for (const level of self.levels) {
+          n += (level as unknown as { numFeats: number }).numFeats
+        }
+        return n
+      },
+      /**
+       * #getter
+       * When autoAlpha is on, scales opacity down as total feature count grows.
+       * Formula keeps ~500 feats at 0.2 (the manual default).
+       */
+      get effectiveAlpha() {
+        if (!self.autoAlpha) {
+          return self.alpha
+        }
+        const n = this.numFeats
+        return n > 0 ? Math.min(0.8, Math.max(0.05, 100 / n)) : 0.8
+      },
       /**
        * #getter
        */
@@ -161,8 +206,38 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setMaxOffScreenDrawPx(arg: number) {
-        self.maxOffScreenDrawPx = arg
+      setChainMerge(arg: boolean) {
+        self.chainMerge = arg
+      },
+      /**
+       * #action
+       */
+      setOverdrawPx(arg: number) {
+        self.overdrawPx = arg
+      },
+      /**
+       * #action
+       */
+      setAlpha(arg: number) {
+        self.alpha = arg
+      },
+      /**
+       * #action
+       */
+      setAutoAlpha(arg: boolean) {
+        self.autoAlpha = arg
+      },
+      /**
+       * #action
+       */
+      setMinAlignmentLength(arg: number) {
+        self.minAlignmentLength = arg
+      },
+      /**
+       * #action
+       */
+      setColorBy(arg: string) {
+        self.colorBy = arg
       },
       /**
        * #action
@@ -187,8 +262,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGLinearSyntenyView.tsx')
         const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const { saveAs } = await import('file-saver-es')
+        const { saveAs } = await import('@jbrowse/core/util')
 
         if (opts.format === 'png') {
           const img = new Image()
@@ -243,10 +317,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Show all regions',
               onClick: self.showAllRegions,
-              description: 'Show entire genome assemblies',
-              icon: VisibilityIcon,
-              helpText:
-                'This command will zoom out all views to display the entire genome assemblies. This is useful when you want to get a high-level overview of syntenic relationships across whole genomes or when you need to reset the view after zooming into specific regions.',
             },
             {
               label: 'Show dynamic controls',
@@ -255,60 +325,30 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               onClick: () => {
                 self.setShowDynamicControls(!self.showDynamicControls)
               },
-              helpText:
-                'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust synteny visualization parameters in real-time.',
-            },
-            {
-              label: 'CIGAR display mode',
-              subMenu: [
-                {
-                  label: 'Colorize indels',
-                  type: 'radio',
-                  checked: self.cigarMode === 'full',
-                  onClick: () => {
-                    self.setCigarMode('full')
-                  },
-                },
-                {
-                  label: "Don't colorize indels",
-                  type: 'radio',
-                  checked: self.cigarMode === 'matches',
-                  onClick: () => {
-                    self.setCigarMode('matches')
-                  },
-                },
-                {
-                  label: "Don't draw CIGAR",
-                  type: 'radio',
-                  checked: self.cigarMode === 'off',
-                  onClick: () => {
-                    self.setCigarMode('off')
-                  },
-                },
-              ],
             },
             {
               label: 'Show curved lines',
               type: 'checkbox',
               checked: self.drawCurves,
-              icon: Curves,
               onClick: () => {
                 self.setDrawCurves(!self.drawCurves)
               },
-              helpText:
-                'Toggle between straight lines and smooth bezier curves for synteny connections. Curved lines can make the visualization more aesthetically pleasing and may help reduce visual clutter when many syntenic regions are displayed. Straight lines provide a more direct representation.',
+            },
+            {
+              label: 'Chain collinear alignments',
+              type: 'checkbox',
+              checked: self.chainMerge,
+              onClick: () => {
+                self.setChainMerge(!self.chainMerge)
+              },
             },
             {
               label: 'Show location markers',
               type: 'checkbox',
               checked: self.drawLocationMarkers,
-              description:
-                'Draw periodic markers to show location within large matches',
               onClick: () => {
                 self.setDrawLocationMarkers(!self.drawLocationMarkers)
               },
-              helpText:
-                'Location markers add periodic visual indicators along long syntenic blocks, helping you track position and scale within large conserved regions. This is particularly useful when examining very long syntenic matches where it can be difficult to gauge relative position.',
             },
           ]
         },
@@ -323,11 +363,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Square view',
               onClick: self.squareView,
-              description:
-                'Makes both views use the same zoom level, adjusting to the average of each',
               icon: CropFreeIcon,
-              helpText:
-                'Square view synchronizes the zoom levels of both genome views by calculating the average zoom level and applying it to both panels. This helps ensure features are displayed at comparable scales, making it easier to compare syntenic regions visually.',
             },
             {
               label: 'Re-order chromosomes',
@@ -341,34 +377,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 ])
               },
               icon: ShuffleIcon,
-              description:
-                "Reorder and reorient query regions to minimize crossing lines, also known as 'diagonalizing'",
-              helpText:
-                "This operation 'diagonalizes' the data which algorithmically reorders and reorients chromosomes to minimize crossing synteny lines, creating a more diagonal pattern. This makes it easier to identify large-scale genomic rearrangements, inversions, and translocations. The process may take a few moments for large genomes.",
-            },
-            {
-              label: 'Link views',
-              type: 'checkbox',
-              checked: self.linkViews,
-              icon: LinkIcon,
-              onClick: () => {
-                self.setLinkViews(!self.linkViews)
-              },
-              helpText:
-                'When linked, panning and zooming in one genome view will automatically adjust the other view to maintain the correspondence shown by synteny lines. This makes it easier to explore syntenic regions interactively. Unlink views to navigate each genome independently.',
-            },
-            {
-              label: 'Export SVG',
-              icon: PhotoCameraIcon,
-              onClick: (): void => {
-                getSession(self).queueDialog(handleClose => [
-                  ExportSvgDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
             },
             ...(self.levels.length > 1
               ? [
@@ -395,7 +403,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                       },
                       { label: '', type: 'divider' as const },
                       ...self.levels.map((level, idx) => ({
-                        label: `Focus: ${self.views[idx]!.assemblyNames[0]} ↔ ${self.views[idx + 1]!.assemblyNames[0]}`,
+                        label: `Focus: ${self.views[idx]!.assemblyNames[0] ?? ''} ↔ ${self.views[idx + 1]!.assemblyNames[0] ?? ''}`,
                         type: 'radio' as const,
                         checked:
                           !level.collapsed &&
@@ -438,6 +446,57 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   },
                 ]
               : []),
+            {
+              label: 'CIGAR display mode',
+              subMenu: [
+                {
+                  label: 'Colorize indels',
+                  type: 'radio',
+                  checked: self.cigarMode === 'full',
+                  onClick: () => {
+                    self.setCigarMode('full')
+                  },
+                },
+                {
+                  label: "Don't colorize indels",
+                  type: 'radio',
+                  checked: self.cigarMode === 'matches',
+                  onClick: () => {
+                    self.setCigarMode('matches')
+                  },
+                },
+                {
+                  label: "Don't draw CIGAR",
+                  type: 'radio',
+                  checked: self.cigarMode === 'off',
+                  onClick: () => {
+                    self.setCigarMode('off')
+                  },
+                },
+              ],
+            },
+            {
+              label: 'Link views',
+              type: 'checkbox',
+              checked: self.linkViews,
+              icon: LinkIcon,
+              onClick: () => {
+                self.setLinkViews(!self.linkViews)
+              },
+            },
+            {
+              label: 'Export SVG',
+              icon: PhotoCameraIcon,
+              onClick: (): void => {
+                getSession(self).queueDialog(handleClose => [
+                  ExportSvgDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
           ]
         },
         /**
@@ -527,20 +586,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   }),
                 )
 
-                // Show synteny tracks per level
-                // Normalize: flat string[] becomes [string[]] (single level)
-                if (init.tracks && init.tracks.length > 0) {
-                  const perLevel = Array.isArray(init.tracks[0])
-                    ? (init.tracks as string[][])
-                    : [init.tracks as string[]]
-                  for (const [level, levelTracks] of perLevel.entries()) {
-                    for (const trackId of levelTracks) {
-                      self.showTrack(trackId, level)
+                // Show synteny tracks. tracks is string[][] — outer index is
+                // the level (between views[i] and views[i+1]).
+                if (init.tracks) {
+                  for (let i = 0; i < init.tracks.length; i++) {
+                    const ids = init.tracks[i]
+                    if (!ids) {
+                      continue
+                    }
+                    for (const trackId of ids) {
+                      self.showTrack(trackId, i)
                     }
                   }
                 }
 
-                // Auto-scale level heights for many genomes
                 if (self.levels.length >= 4) {
                   self.autoScaleLevelHeights()
                 }
@@ -568,7 +627,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         cigarMode,
         drawCurves,
         drawLocationMarkers,
-        maxOffScreenDrawPx,
+        overdrawPx,
+        chainMerge,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -576,7 +636,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(cigarMode !== 'full' ? { cigarMode } : {}),
         ...(drawCurves ? { drawCurves } : {}),
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
-        ...(maxOffScreenDrawPx !== 300 ? { maxOffScreenDrawPx } : {}),
+        ...(overdrawPx !== DEFAULT_OVERDRAW_PX ? { overdrawPx } : {}),
+        ...(chainMerge ? { chainMerge } : {}),
       } as typeof snap
     })
 }

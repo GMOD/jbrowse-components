@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-trix",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 trix text search adapter",
   "keywords": [
@@ -22,18 +22,18 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/trix",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/trix",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "peerDependencies": {
     "react": ">=18.0.0"
   },
   "dependencies": {
-    "@gmod/trix": "^3.0.10",
+    "@gmod/trix": "^3.0.12",
     "@jbrowse/core": "workspace:^"
   },
   "publishConfig": {

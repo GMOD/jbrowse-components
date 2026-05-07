@@ -1,14 +1,12 @@
-import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
@@ -18,6 +16,7 @@ import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
+import type { VariantMatrixBackend } from './variantMatrixBackendTypes.ts'
 import type { VariantDisplayModelBase } from '../../shared/VariantDisplayModelInterface.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -28,7 +27,9 @@ const useStyles = makeStyles()(scrollbarStyles)
 export interface VariantMatrixDisplayModel extends VariantDisplayModelBase {
   cellData: MatrixCellData | undefined
   canvasDrawn: boolean
-  setCanvasDrawn: (flag: boolean) => void
+  startGpuBackendLifecycle: (backend: VariantMatrixBackend) => void
+  stopGpuBackendLifecycle: () => void
+  renderNow: () => void
 }
 
 const VariantMatrixComponent = observer(function VariantMatrixComponent({
@@ -40,19 +41,18 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
     [number, number] | undefined
   >()
   const lastHoveredRef = useRef<string | undefined>(undefined)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const { classes } = useStyles()
 
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
+  const { canvas, canvasRef, error, retry } = useGpuModelLifecycle(
     VariantMatrixRenderer,
+    model,
   )
 
   const view = getContainingView(model) as LGV
 
   const { hasOverflow, thumbHeight, thumbTop, handleScrollbarMouseDown } =
     useVariantVirtualScroll({
-      canvasRef,
+      canvas,
       scrollTop: model.scrollTop,
       setScrollTop: model.setScrollTop,
       totalHeight: model.totalHeight,
@@ -62,50 +62,6 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
       nrow: model.nrow,
       setRowHeight: model.setRowHeight,
     })
-
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    const cellData = model.cellData
-    if (!renderer || !view.initialized || !cellData) {
-      return
-    }
-    renderer.render({
-      canvasWidth: Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders),
-      canvasHeight: model.availableHeight,
-      rowHeight: model.rowHeight,
-      scrollTop: model.scrollTop,
-      numFeatures: cellData.numFeatures,
-    })
-  })
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    let lastCellData: MatrixCellData | null = null
-    return autorun(() => {
-      if (!view.initialized) {
-        return
-      }
-      const cellData = model.cellData
-      if (!cellData) {
-        lastCellData = null
-        return
-      }
-
-      if (lastCellData !== cellData) {
-        lastCellData = cellData
-        renderer.uploadCellData(cellData)
-      }
-
-      renderNow()
-      model.setCanvasDrawn(true)
-    })
-  }, [model, view, ready, rendererRef])
-
-  useTabVisibilityRerender(renderNow)
 
   function getFeatureUnderMouse(
     rect: DOMRect,
@@ -117,7 +73,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
     if (!cellData || !sources?.length || cellData.numFeatures === 0) {
       return undefined
     }
-    const w = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
+    const w = view.totalWidthPxWithoutBorders
     const mouseX = eventClientX - rect.left
     const mouseY = eventClientY - rect.top
 
@@ -141,6 +97,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           sampleName,
           name: source.name,
           featureId: feature.featureId,
+          featureData: feature,
         }
       }
     }
@@ -156,13 +113,10 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
     if (!baseFeature) {
       return undefined
     }
-    const feature = model.cellData?.featureData.find(
-      f => f.featureId === result.featureId,
-    )
-    return enrichFeatureFromClick(baseFeature, feature, result)
+    return enrichFeatureFromClick(baseFeature, result.featureData, result)
   }
 
-  const width = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
+  const width = view.totalWidthPxWithoutBorders
   const height = model.availableHeight
 
   if (error) {
@@ -181,13 +135,13 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
   return (
     <div style={{ position: 'relative', width, height }}>
       {/* The canvas must remain mounted even when regionTooLarge is true.
-          useGpuRenderer binds the WebGL/WebGPU context to this specific
-          canvas element during init(). If the canvas were conditionally
-          unmounted (e.g. replaced by TooLargeMessage), a new canvas would
-          mount after force-load but the renderer would still reference the
-          old unmounted one, causing all draw calls to go to a detached
-          canvas. We use visibility:'hidden' instead so the canvas stays
-          in the DOM and the renderer connection is preserved. */}
+          The GPU renderer binds its context to this specific canvas element
+          during init(). If the canvas were conditionally unmounted (e.g.
+          replaced by TooLargeMessage), a new canvas would mount after
+          force-load but the renderer would still reference the old unmounted
+          one, causing all draw calls to go to a detached canvas. We use
+          visibility:'hidden' instead so the canvas stays in the DOM and the
+          renderer connection is preserved. */}
       <canvas
         ref={canvasRef}
         style={{
@@ -209,7 +163,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           if (key !== lastHoveredRef.current) {
             lastHoveredRef.current = key
             if (result) {
-              const { featureId, sampleName, ...tooltip } = result
+              const { featureId, sampleName, featureData, ...tooltip } = result
               model.setHoveredGenotype(tooltip)
             } else {
               model.setHoveredGenotype(undefined)
@@ -254,9 +208,9 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
         </div>
       ) : null}
       {model.regionTooLarge ? model.regionCannotBeRendered() : null}
-      {model.displayError ? (
+      {model.error ? (
         <ErrorBar
-          error={model.displayError}
+          error={model.error}
           onRetry={() => {
             model.reload()
           }}

@@ -1,41 +1,47 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
 
 import { getTooltip } from './components/util.ts'
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
+import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
+import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 
-import type { SyntenyRenderer } from './SyntenyRenderer.ts'
+import type { ClickCoord } from './components/util.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
+import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  AlignmentRecord,
+  DupConflict,
+  SyriType,
+} from '@jbrowse/plugin-comparative-adapters'
 
 export interface SyntenyFeatureData {
-  p11_offsetPx: Float64Array
-  p12_offsetPx: Float64Array
-  p21_offsetPx: Float64Array
-  p22_offsetPx: Float64Array
   strands: Int8Array
-  starts: Float64Array
-  ends: Float64Array
-  identities: Float64Array
-  padTop: Float64Array
-  padBottom: Float64Array
+  starts: Uint32Array
+  ends: Uint32Array
+  identities: Float32Array
   featureIds: string[]
   names: string[]
   refNames: string[]
   assemblyNames: string[]
-  cigars: string[]
-  mates: {
-    start: number
-    end: number
-    refName: string
-    name: string
-    assemblyName: string
-  }[]
+  // Per-feature SyRI type precomputed by structural-tier adapters. Populated
+  // for every feature (undefined where the adapter didn't provide one) so
+  // main-thread colorBy='syri' can short-circuit to precomputed values
+  // without a worker round-trip.
+  syriTypes: (string | undefined)[]
+  // Mate fields packed as parallel arrays. Uint32 buffers are RPC-transferable
+  // and match the bp coord convention used elsewhere in the codebase.
+  // mate.name was always undefined (no adapter sets it) so it's dropped.
+  mateStarts: Uint32Array
+  mateEnds: Uint32Array
+  mateRefNames: string[]
+  mateAssemblyNames: string[]
 }
 
 export interface FeatPos {
@@ -50,7 +56,6 @@ export interface FeatPos {
     start: number
     end: number
     refName: string
-    name: string
     assemblyName: string
   }
   identity?: number
@@ -69,7 +74,12 @@ export function getFeatureAtIndex(
     start: data.starts[i]!,
     end: data.ends[i]!,
     assemblyName: data.assemblyNames[i]!,
-    mate: data.mates[i]!,
+    mate: {
+      start: data.mateStarts[i]!,
+      end: data.mateEnds[i]!,
+      refName: data.mateRefNames[i]!,
+      assemblyName: data.mateAssemblyNames[i]!,
+    },
     identity: identity === -1 ? undefined : identity,
   }
 }
@@ -78,6 +88,11 @@ export function getFeatureAtIndex(
  * #stateModel LinearSyntenyDisplay
  * extends
  * - [BaseDisplay](../basedisplay)
+ *
+ * Pure-data model. The containing LinearSyntenyView owns the shared GPU
+ * backend, the upload autorun (which watches every display's `instanceData`
+ * and keys it by `displayKey`), and the render autorun. This display only
+ * carries per-track state and the `renderParams` the view reads out.
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -93,21 +108,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         * color scheme to use for rendering synteny features
-         */
-        colorBy: types.optional(types.string, 'default'),
-        /**
-         * #property
-         * alpha transparency value for synteny drawing (0-1)
-         */
-        alpha: types.optional(types.number, 0.2),
-        /**
-         * #property
-         * minimum alignment length to display (in bp)
-         */
-        minAlignmentLength: types.optional(types.number, 0),
       }),
     )
     .volatile(() => ({
@@ -115,58 +115,33 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        */
       featureData: undefined as SyntenyFeatureData | undefined,
-
+      /**
+       * #volatile
+       * Raw GPU-instance geometry produced by the RPC. The view observes
+       * this on every display and uploads it to the shared backend keyed by
+       * `displayKey`. Clearing it (undefined) triggers backend eviction.
+       */
+      instanceData: undefined as SyntenyGeometry | undefined,
       hoveredFeatureIdx: -1,
-
       clickedFeatureIdx: -1,
-
-      /**
-       * #volatile
-       */
-      gpuInstanceData: undefined as SyntenyInstanceData | undefined,
-
-      /**
-       * #volatile
-       */
-      gpuRenderer: null as SyntenyRenderer | null,
-
-      /**
-       * #volatile
-       */
-      gpuInitialized: false,
-
-      canvasDrawn: false,
-
-      /**
-       * #volatile
-       */
-      isScrolling: false,
-
-      fetchStopToken: undefined as StopToken | undefined,
-
-      /**
-       * #volatile
-       * Incremented on tab visibility restore to re-trigger the draw autorun.
-       */
-      tabVisibilityVersion: 0,
-    }))
-    .views(self => ({
-      get isLoading() {
-        return self.fetchStopToken !== undefined
-      },
+      contextMenuAnchor: undefined as ClickCoord | undefined,
+      statusMessage: undefined as string | undefined,
     }))
     .actions(self => ({
       /**
        * #action
+       * Set both feature and instance data in one MST action so downstream
+       * autoruns (upload, render) fire once per RPC completion, not twice.
        */
-      bumpTabVisibility() {
-        self.tabVisibilityVersion++
+      setRpcData(
+        featureData: SyntenyFeatureData | undefined,
+        instanceData: SyntenyGeometry | undefined,
+      ) {
+        self.featureData = featureData
+        self.instanceData = instanceData
       },
-      setFeatureData(arg: SyntenyFeatureData | undefined) {
-        self.featureData = arg
-      },
-      setFetchStopToken(token: StopToken | undefined) {
-        self.fetchStopToken = token
+      setStatusMessage(msg?: string) {
+        self.statusMessage = msg
       },
       setHoveredFeatureIdx(idx: number) {
         self.hoveredFeatureIdx = idx
@@ -174,53 +149,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setClickedFeatureIdx(idx: number) {
         self.clickedFeatureIdx = idx
       },
-      /**
-       * #action
-       */
-      setAlpha(value: number) {
-        self.alpha = value
+      openContextMenu(anchor: ClickCoord) {
+        self.contextMenuAnchor = anchor
       },
-      /**
-       * #action
-       */
-      setMinAlignmentLength(value: number) {
-        self.minAlignmentLength = value
-      },
-      /**
-       * #action
-       */
-      setColorBy(value: string) {
-        self.colorBy = value
-      },
-      /**
-       * #action
-       */
-      setGpuInstanceData(data: SyntenyInstanceData | undefined) {
-        self.gpuInstanceData = data
-      },
-      /**
-       * #action
-       */
-      setGpuRenderer(renderer: SyntenyRenderer | null) {
-        self.gpuRenderer = renderer
-      },
-      /**
-       * #action
-       */
-      setGpuInitialized(value: boolean) {
-        self.gpuInitialized = value
-      },
-      setCanvasDrawn(value: boolean) {
-        self.canvasDrawn = value
-      },
-      /**
-       * #action
-       */
-      setIsScrolling(value: boolean) {
-        self.isScrolling = value
+      closeContextMenu() {
+        self.contextMenuAnchor = undefined
       },
     }))
-
     .views(self => ({
       /**
        * #getter
@@ -235,6 +170,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       get level() {
         return this.parentHelper.level
+      },
+      /**
+       * #getter
+       * Stable backend key under the view-shared backend.
+       */
+      get displayKey() {
+        return syntenyDisplayKey(self.id)
       },
       /**
        * #getter
@@ -256,48 +198,68 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           ...getConf(self.parentTrack, 'adapter'),
         }
       },
-
       /**
        * #getter
        */
       get trackIds() {
         return getConf(self, 'trackIds') as string[]
       },
-
+      /**
+       * #getter
+       * LOD bucket for `chainMerge` collinear-alignment distance. The worker
+       * threshold (`chainCollinearAlignments`) is continuous in `bpPerPx`,
+       * which would cause every zoom tick to invalidate the fetch. MST
+       * getters are memoized on return value — when the computed bucket is
+       * the same number, observers don't re-fire. For the non-chainMerge
+       * path the bucket is a constant, so zoom/pan never touch the autorun
+       * through this getter. Phase 2 may quantize further (power-of-2).
+       */
+      get chainMergeLodBucket() {
+        const view = getContainingView(self) as LinearSyntenyViewModel
+        if (!view.chainMerge) {
+          return 0
+        }
+        const level = this.level
+        const v0 = view.views[level]
+        const v1 = view.views[level + 1]
+        if (!v0 || !v1) {
+          return 0
+        }
+        return Math.min(10_000_000, Math.max(v0.bpPerPx, v1.bpPerPx) * 50)
+      },
       /**
        * #getter
        */
       get numFeats() {
         return self.featureData?.featureIds.length ?? 0
       },
-
-      get parsedCigars() {
-        return self.featureData?.cigars.map(s => (s ? parseCigar2(s) : []))
-      },
-
       /**
        * #getter
-       * used for synteny svg rendering
        */
       get ready() {
         return this.numFeats > 0
       },
-
       /**
        * #getter
-       * cached color scheme config based on colorBy
        */
       get colorSchemeConfig() {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        return colorSchemes[self.colorBy as ColorScheme] || colorSchemes.default
+        const key = (getContainingView(self) as LinearSyntenyViewModel).colorBy
+        return key in colorSchemes
+          ? colorSchemes[key as ColorScheme]
+          : colorSchemes.default
       },
-
       /**
        * #getter
-       * cached CIGAR colors with alpha applied
+       */
+      get effectiveAlpha() {
+        return (getContainingView(self) as LinearSyntenyViewModel)
+          .effectiveAlpha
+      },
+      /**
+       * #getter
        */
       get colorMapWithAlpha() {
-        const { alpha } = self
+        const alpha = this.effectiveAlpha
         const activeColorMap = this.colorSchemeConfig.cigarColors
         return {
           I: applyAlpha(activeColorMap.I, alpha),
@@ -308,33 +270,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           '=': applyAlpha(activeColorMap['='], alpha),
         }
       },
-
       /**
        * #getter
-       * cached positive strand color with alpha
        */
       get posColorWithAlpha() {
-        const posColor =
-          self.colorBy === 'strand' ? colorSchemes.strand.posColor : 'red'
-        return applyAlpha(posColor, self.alpha)
+        return applyAlpha('red', this.effectiveAlpha)
       },
-
       /**
        * #getter
-       * cached negative strand color with alpha
        */
       get negColorWithAlpha() {
-        const negColor =
-          self.colorBy === 'strand' ? colorSchemes.strand.negColor : 'blue'
-        return applyAlpha(negColor, self.alpha)
+        return applyAlpha('blue', this.effectiveAlpha)
       },
-
       /**
        * #getter
-       * cached query colors with alpha - returns a function that caches results
        */
       get queryColorWithAlphaMap() {
-        const { alpha } = self
+        const alpha = this.effectiveAlpha
         const cache = new Map<string, string>()
         return (queryName: string) => {
           if (!cache.has(queryName)) {
@@ -344,45 +296,196 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return cache.get(queryName)!
         }
       },
-
-      /**
-       * #getter
-       * cached query total lengths for minAlignmentLength filtering
-       */
-      get queryTotalLengths() {
-        const { featureData } = self
-        if (self.minAlignmentLength <= 0 || !featureData) {
-          return undefined
-        }
-        const lengths = new Map<string, number>()
-        for (let i = 0; i < featureData.featureIds.length; i++) {
-          const queryName = featureData.names[i] || featureData.featureIds[i]!
-          const alignmentLength = Math.abs(
-            featureData.ends[i]! - featureData.starts[i]!,
-          )
-          const currentTotal = lengths.get(queryName) || 0
-          lengths.set(queryName, currentTotal + alignmentLength)
-        }
-        return lengths
-      },
-
       getFeature(index: number) {
         if (!self.featureData) {
           return undefined
         }
-        return getFeatureAtIndex(self.featureData, index)
+        const featureIdx = self.instanceData?.instanceFeatureIdx[index] ?? index
+        return getFeatureAtIndex(self.featureData, featureIdx)
       },
-
+      /**
+       * #getter
+       * Full SyRI classification (types + DUP conflict locations). Only
+       * computed when colorBy='syri'. Uses adapter-precomputed values when
+       * present; adapter path has no conflict info so dupConflicts is all
+       * undefined in that case.
+       */
+      get syriClassification() {
+        if (
+          (getContainingView(self) as LinearSyntenyViewModel).colorBy !== 'syri'
+        ) {
+          return undefined
+        }
+        const { featureData } = self
+        if (!featureData) {
+          return undefined
+        }
+        const {
+          syriTypes,
+          names,
+          starts,
+          ends,
+          mateStarts,
+          mateEnds,
+          mateRefNames,
+          strands,
+        } = featureData
+        const n = names.length
+        if (syriTypes.some(t => t !== undefined)) {
+          const types = new Array<SyriType>(n)
+          for (let i = 0; i < n; i++) {
+            types[i] = (syriTypes[i] || 'SYN') as SyriType
+          }
+          return {
+            types,
+            dupConflicts: new Array<DupConflict | undefined>(n).fill(undefined),
+          }
+        }
+        const input = new Array<AlignmentRecord>(n)
+        for (let i = 0; i < n; i++) {
+          input[i] = {
+            qname: names[i]!,
+            qstart: starts[i]!,
+            qend: ends[i]!,
+            tname: mateRefNames[i]!,
+            tstart: mateStarts[i]!,
+            tend: mateEnds[i]!,
+            strand: strands[i]!,
+          }
+        }
+        return computeSyriTypes(input)
+      },
+      /**
+       * #getter
+       * SyRI types array aligned with featureData. Only computed when
+       * colorBy='syri'; otherwise undefined so computedColors skips the work.
+       */
+      get syriTypesForColoring() {
+        return this.syriClassification?.types
+      },
+      /**
+       * #getter
+       * Main-thread-computed per-instance colors. Recomputes whenever
+       * colorBy, featureData, or instanceData descriptors change — this is
+       * the gpuProps half of the rpcProps/gpuProps split. colorBy changes
+       * flow through here without touching the RPC.
+       */
+      get computedColors() {
+        const { instanceData, featureData } = self
+        const { colorBy } = getContainingView(self) as LinearSyntenyViewModel
+        if (!instanceData || !featureData) {
+          return undefined
+        }
+        return computeSyntenyColors({
+          kinds: instanceData.kinds,
+          featureIdx: instanceData.instanceFeatureIdx,
+          strands: featureData.strands,
+          refNames: featureData.refNames,
+          instanceCount: instanceData.instanceCount,
+          colorBy,
+          syriTypes: this.syriTypesForColoring,
+        })
+      },
+      /**
+       * #getter
+       * Instance data with main-thread-computed colors substituted in. The
+       * view's upload autorun reads this, so any colorBy change re-fires
+       * upload without an RPC round-trip.
+       */
+      get renderInstanceData() {
+        const { instanceData } = self
+        const colors = this.computedColors
+        if (!instanceData || !colors) {
+          return undefined
+        }
+        return { ...instanceData, colors }
+      },
       get tooltipText() {
         const { hoveredFeatureIdx, featureData } = self
-        if (
-          hoveredFeatureIdx < 0 ||
-          !featureData ||
-          hoveredFeatureIdx >= featureData.featureIds.length
-        ) {
+        if (hoveredFeatureIdx < 0 || !featureData) {
           return ''
         }
-        return getTooltip(getFeatureAtIndex(featureData, hoveredFeatureIdx))
+        const featureIdx =
+          self.instanceData?.instanceFeatureIdx[hoveredFeatureIdx] ??
+          hoveredFeatureIdx
+        if (featureIdx >= featureData.featureIds.length) {
+          return ''
+        }
+        const sc = this.syriClassification
+        return getTooltip(
+          getFeatureAtIndex(featureData, featureIdx),
+          sc?.types[featureIdx],
+          sc?.dupConflicts[featureIdx],
+        )
+      },
+      /**
+       * #getter
+       * Per-track render params consumed by the view's aggregator. The view
+       * substitutes yTop before handing this to the backend.
+       */
+      get renderParams() {
+        if (self.isMinimized || this.isLevelCollapsed) {
+          console.warn(
+            '[renderParams] blocked: isMinimized or isLevelCollapsed',
+          )
+          return undefined
+        }
+        const view = getContainingView(self) as LinearSyntenyViewModel
+        if (!view.initialized) {
+          console.warn(
+            '[renderParams] blocked: view.initialized=false, views:',
+            view.views.length,
+            'width:',
+            view.width,
+          )
+          return undefined
+        }
+        if (
+          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+        ) {
+          console.warn(
+            '[renderParams] blocked: not all views have displayedRegions>0 and initialized',
+            JSON.stringify(
+              view.views.map(a => ({
+                dr: a.displayedRegions.length,
+                init: a.initialized,
+              })),
+            ),
+          )
+          return undefined
+        }
+        const level = this.level
+        if (level + 1 >= view.views.length) {
+          console.warn(
+            '[renderParams] blocked: level+1 >= view.views.length',
+            level,
+            view.views.length,
+          )
+          return undefined
+        }
+        const v0 = view.views[level]!
+        const v1 = view.views[level + 1]!
+        const { hoveredFeatureIdx, clickedFeatureIdx } = self
+        return {
+          yTop: 0,
+          height: this.height,
+          alpha: this.effectiveAlpha,
+          minAlignmentLength: view.minAlignmentLength,
+          hoveredFeatureId:
+            hoveredFeatureIdx >= 0 && self.instanceData
+              ? self.instanceData.instanceFeatureIdx[hoveredFeatureIdx]! + 1
+              : 0,
+          clickedFeatureId:
+            clickedFeatureIdx >= 0 && self.instanceData
+              ? self.instanceData.instanceFeatureIdx[clickedFeatureIdx]! + 1
+              : 0,
+          offsetPx0: v0.offsetPx,
+          offsetPx1: v1.offsetPx,
+          bpPerPx0: v0.bpPerPx,
+          bpPerPx1: v1.bpPerPx,
+          drawCurves: view.drawCurves,
+          isSyriMode: view.colorBy === 'syri',
+        }
       },
     }))
     .actions(self => ({

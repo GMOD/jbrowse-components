@@ -7,7 +7,10 @@ export interface Feature {
    * 'start' and 'end', but everything else is optional.
    */
   get(name: 'refName'): string
+  get(name: 'name' | 'type'): string | undefined
   get(name: 'start' | 'end'): number
+  get(name: 'strand'): number | undefined
+  get(name: 'phase'): 0 | 1 | 2 | undefined
   get(name: 'subfeatures'): Feature[] | undefined
 
   get(name: string): any
@@ -128,7 +131,7 @@ export default class SimpleFeature implements Feature {
               data: {
                 strand: this.data.strand,
                 ...f,
-              } as Record<string, any>,
+              } as Record<string, unknown>,
               parent: this,
             })
           : f,
@@ -153,7 +156,7 @@ export default class SimpleFeature implements Feature {
    * Set an item of data.
    */
 
-  public set(name: string, val: any): void {
+  public set(name: string, val: unknown): void {
     this.data[name] = val
   }
 

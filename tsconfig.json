@@ -3,7 +3,9 @@
     "target": "esnext",
     "verbatimModuleSyntax": true,
     "lib": ["dom", "dom.iterable", "esnext"],
+    "rootDir": "./",
     "outDir": "dist",
+    "noEmit": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "noUncheckedIndexedAccess": true,
@@ -30,6 +32,7 @@
     "**/embedded_demos/",
     "**/component_tests/",
     "**/website",
-    "products/jbrowse-desktop/test"
+    "products/jbrowse-desktop/test",
+    "products/jbrowse-desktop/electron"
   ]
 }

@@ -3,9 +3,10 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { ldShader } from './LDDisplay/components/ldShaders.ts'
-import { variantShader } from './MultiVariantDisplay/components/variantShaders.ts'
-import { variantMatrixShader } from './MultiVariantMatrixDisplay/components/variantMatrixShaders.ts'
+import { WGSL_SOURCE as ldGenomicShader } from './LDDisplay/components/shaders/ldGenomic.generated.ts'
+import { WGSL_SOURCE as ldUniformShader } from './LDDisplay/components/shaders/ldUniform.generated.ts'
+import { WGSL_SOURCE as variantShader } from './MultiVariantDisplay/components/shaders/variant.generated.ts'
+import { WGSL_SOURCE as variantMatrixShader } from './MultiVariantMatrixDisplay/components/shaders/variantMatrix.generated.ts'
 
 let tmpDir: string
 
@@ -24,18 +25,15 @@ function validateWgsl(name: string, code: string) {
   try {
     execSync(`naga ${file}`, { stdio: 'pipe' })
   } catch (e) {
-    const msg =
-      e instanceof Error
-        ? ((e as { stderr?: Buffer }).stderr?.toString() ?? e.message)
-        : String(e)
-    throw new Error(`WGSL validation failed for "${name}":\n${msg}`)
+    throw new Error(`WGSL validation failed for "${name}": ${e}`, { cause: e })
   }
 }
 
 const wgslShaders: [string, string][] = [
   ['variant', variantShader],
   ['variantMatrix', variantMatrixShader],
-  ['ld', ldShader],
+  ['ld-genomic', ldGenomicShader],
+  ['ld-uniform', ldUniformShader],
 ]
 
 const skipIfNoNaga = hasNaga() ? describe : describe.skip

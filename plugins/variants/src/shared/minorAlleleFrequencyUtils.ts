@@ -1,6 +1,8 @@
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
+import { GENOTYPE_SPLITTER } from './constants.ts'
 import {
+  buildAlleleCounts,
   calculateAlleleCountsFromRaw,
   getRawCallGenotype,
 } from './rawGenotypes.ts'
@@ -8,9 +10,33 @@ import {
 import type VcfFeature from '../VcfFeature/index.ts'
 import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
 
-const GENOTYPE_SPLIT_REGEX = /[/|]/
 const SLASH = 47
 const PIPE = 124
+
+interface AlleleBuckets {
+  count0: number
+  count1: number
+  count2: number
+  count3: number
+  countDot: number
+  otherCounts: Record<string, number>
+}
+
+function countStringAllele(allele: string, b: AlleleBuckets) {
+  if (allele === '0') {
+    b.count0++
+  } else if (allele === '1') {
+    b.count1++
+  } else if (allele === '2') {
+    b.count2++
+  } else if (allele === '3') {
+    b.count3++
+  } else if (allele === '.') {
+    b.countDot++
+  } else {
+    b.otherCounts[allele] = (b.otherCounts[allele] ?? 0) + 1
+  }
+}
 
 /**
  * Count alleles using the fast processGenotypes callback API.
@@ -19,12 +45,14 @@ const PIPE = 124
 export function calculateAlleleCountsFast(
   feature: VcfFeature,
 ): Record<string, number> {
-  let count0 = 0
-  let count1 = 0
-  let count2 = 0
-  let count3 = 0
-  let countDot = 0
-  const otherCounts = {} as Record<string, number>
+  const b: AlleleBuckets = {
+    count0: 0,
+    count1: 0,
+    count2: 0,
+    count3: 0,
+    countDot: 0,
+    otherCounts: {},
+  }
 
   feature.processGenotypes((str, start, end) => {
     const len = end - start
@@ -37,33 +65,33 @@ export function calculateAlleleCountsFast(
 
         // 48='0', 49='1', 50='2', 51='3', 46='.'
         if (c0 === 48) {
-          count0++
+          b.count0++
         } else if (c0 === 49) {
-          count1++
+          b.count1++
         } else if (c0 === 50) {
-          count2++
+          b.count2++
         } else if (c0 === 51) {
-          count3++
+          b.count3++
         } else if (c0 === 46) {
-          countDot++
+          b.countDot++
         } else {
           const a0 = str[start]!
-          otherCounts[a0] = (otherCounts[a0] || 0) + 1
+          b.otherCounts[a0] = (b.otherCounts[a0] ?? 0) + 1
         }
 
         if (c1 === 48) {
-          count0++
+          b.count0++
         } else if (c1 === 49) {
-          count1++
+          b.count1++
         } else if (c1 === 50) {
-          count2++
+          b.count2++
         } else if (c1 === 51) {
-          count3++
+          b.count3++
         } else if (c1 === 46) {
-          countDot++
+          b.countDot++
         } else {
           const a1 = str[start + 2]!
-          otherCounts[a1] = (otherCounts[a1] || 0) + 1
+          b.otherCounts[a1] = (b.otherCounts[a1] ?? 0) + 1
         }
         return
       }
@@ -72,62 +100,37 @@ export function calculateAlleleCountsFast(
     if (len === 1) {
       const c = str.charCodeAt(start)
       if (c === 48) {
-        count0++
+        b.count0++
       } else if (c === 49) {
-        count1++
+        b.count1++
       } else if (c === 50) {
-        count2++
+        b.count2++
       } else if (c === 51) {
-        count3++
+        b.count3++
       } else if (c === 46) {
-        countDot++
+        b.countDot++
       } else {
         const a = str[start]!
-        otherCounts[a] = (otherCounts[a] || 0) + 1
+        b.otherCounts[a] = (b.otherCounts[a] ?? 0) + 1
       }
       return
     }
 
     // General case: polyploid or multi-digit alleles
-    const gt = str.slice(start, end)
-    const alleles = gt.split(GENOTYPE_SPLIT_REGEX)
+    const alleles = str.slice(start, end).split(GENOTYPE_SPLITTER)
     for (const allele of alleles) {
-      if (allele === '0') {
-        count0++
-      } else if (allele === '1') {
-        count1++
-      } else if (allele === '2') {
-        count2++
-      } else if (allele === '3') {
-        count3++
-      } else if (allele === '.') {
-        countDot++
-      } else {
-        otherCounts[allele] = (otherCounts[allele] || 0) + 1
-      }
+      countStringAllele(allele, b)
     }
   })
 
-  const result = {} as Record<string, number>
-  if (count0 > 0) {
-    result['0'] = count0
-  }
-  if (count1 > 0) {
-    result['1'] = count1
-  }
-  if (count2 > 0) {
-    result['2'] = count2
-  }
-  if (count3 > 0) {
-    result['3'] = count3
-  }
-  if (countDot > 0) {
-    result['.'] = countDot
-  }
-  for (const key in otherCounts) {
-    result[key] = otherCounts[key]!
-  }
-  return result
+  return buildAlleleCounts(
+    b.count0,
+    b.count1,
+    b.count2,
+    b.count3,
+    b.countDot,
+    b.otherCounts,
+  )
 }
 
 /**
@@ -139,7 +142,7 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
   let count2 = 0
   let count3 = 0
   let countDot = 0
-  const otherCounts = {} as Record<string, number>
+  const otherCounts: Record<string, number> = {}
 
   for (const key in genotypes) {
     const genotype = genotypes[key]!
@@ -150,7 +153,6 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
       if (sep === '/' || sep === '|') {
         const a0 = genotype[0]!
         const a1 = genotype[2]!
-
         if (a0 === '0') {
           count0++
         } else if (a0 === '1') {
@@ -162,9 +164,8 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
         } else if (a0 === '.') {
           countDot++
         } else {
-          otherCounts[a0] = (otherCounts[a0] || 0) + 1
+          otherCounts[a0] = (otherCounts[a0] ?? 0) + 1
         }
-
         if (a1 === '0') {
           count0++
         } else if (a1 === '1') {
@@ -176,7 +177,7 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
         } else if (a1 === '.') {
           countDot++
         } else {
-          otherCounts[a1] = (otherCounts[a1] || 0) + 1
+          otherCounts[a1] = (otherCounts[a1] ?? 0) + 1
         }
         continue
       }
@@ -194,14 +195,13 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
       } else if (genotype === '.') {
         countDot++
       } else {
-        otherCounts[genotype] = (otherCounts[genotype] || 0) + 1
+        otherCounts[genotype] = (otherCounts[genotype] ?? 0) + 1
       }
       continue
     }
 
     // General case: polyploid or multi-digit alleles
-    const alleles = genotype.split(GENOTYPE_SPLIT_REGEX)
-    for (const allele of alleles) {
+    for (const allele of genotype.split(GENOTYPE_SPLITTER)) {
       if (allele === '0') {
         count0++
       } else if (allele === '1') {
@@ -213,31 +213,19 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
       } else if (allele === '.') {
         countDot++
       } else {
-        otherCounts[allele] = (otherCounts[allele] || 0) + 1
+        otherCounts[allele] = (otherCounts[allele] ?? 0) + 1
       }
     }
   }
 
-  const result = {} as Record<string, number>
-  if (count0 > 0) {
-    result['0'] = count0
-  }
-  if (count1 > 0) {
-    result['1'] = count1
-  }
-  if (count2 > 0) {
-    result['2'] = count2
-  }
-  if (count3 > 0) {
-    result['3'] = count3
-  }
-  if (countDot > 0) {
-    result['.'] = countDot
-  }
-  for (const key in otherCounts) {
-    result[key] = otherCounts[key]!
-  }
-  return result
+  return buildAlleleCounts(
+    count0,
+    count1,
+    count2,
+    count3,
+    countDot,
+    otherCounts,
+  )
 }
 
 export function calculateMinorAlleleFrequency(
@@ -314,15 +302,13 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
         }
       }
 
+      const mostFrequentAlt = getMostFrequentAlt(alleleCounts)
       if (
+        mostFrequentAlt !== undefined &&
         calculateMinorAlleleFrequency(alleleCounts) >=
-        minorAlleleFrequencyFilter
+          minorAlleleFrequencyFilter
       ) {
-        results.push({
-          feature,
-          mostFrequentAlt: getMostFrequentAlt(alleleCounts)!,
-          alleleCounts,
-        })
+        results.push({ feature, mostFrequentAlt, alleleCounts })
       }
     }
     checkStopToken2(stopTokenCheck)

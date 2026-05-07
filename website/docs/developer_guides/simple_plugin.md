@@ -253,8 +253,6 @@ thanks to the observer. We export the widget such that it can be seen by
 We'll make our widget do something basic: display the chord's information and a
 message we can edit.
 
-<!-- TODO: upgrade to @mui when the template upgrades to mui -->
-
 ```ts
 
 import { observer } from 'mobx-react'

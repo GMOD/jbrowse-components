@@ -2,8 +2,8 @@ import {
   coverageLayout,
   drawCoverageBins,
   drawIndicators,
+  drawModCovSegments,
   drawSnpSegments,
-  rgbaString,
   snpColorForType,
 } from './rendererUtils.ts'
 
@@ -31,16 +31,10 @@ function makeCtx() {
 }
 
 describe('coverageLayout', () => {
-  it('computes depth scale, effective height, and bottom', () => {
-    const layout = coverageLayout(100, 50)
+  it('computes effective height and bottom', () => {
+    const layout = coverageLayout(50)
     expect(layout.effectiveH).toBe(40) // 50 - 2*5
     expect(layout.bottom).toBe(45) // 50 - 5
-    expect(layout.depthScale).toBe(1) // 100/niceNum(100)=100/100=1
-  })
-
-  it('handles non-nice max depth', () => {
-    const layout = coverageLayout(73, 50)
-    expect(layout.depthScale).toBeCloseTo(73 / 100) // niceNum(73)=100
   })
 })
 
@@ -67,30 +61,26 @@ describe('snpColorForType', () => {
   })
 })
 
-describe('rgbaString', () => {
-  it('converts normalized floats to CSS rgba', () => {
-    expect(rgbaString(1, 0, 0, 1)).toBe('rgba(255,0,0,1.000)')
-    expect(rgbaString(0.5, 0.5, 0.5, 0.5)).toBe('rgba(128,128,128,0.500)')
-  })
-})
-
 describe('drawCoverageBins', () => {
+  const identity = (d: number) => d
+
   it('draws bins as rectangles', () => {
     const buf = new ArrayBuffer(2 * 12)
     const f32 = new Float32Array(buf)
-    // bin 0: pos=100, min=0.2, max=0.8
-    f32[0] = 100
+    const u32 = new Uint32Array(buf)
+    // bin 0: pos=100, yOffset=0.2, depth=0.8
+    u32[0] = 100
     f32[1] = 0.2
     f32[2] = 0.8
-    // bin 1: pos=101, min=0.1, max=0.5
-    f32[3] = 101
+    // bin 1: pos=101, yOffset=0.1, depth=0.5
+    u32[3] = 101
     f32[4] = 0.1
     f32[5] = 0.5
 
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 100) * 10
 
-    drawCoverageBins(ctx, buf, 2, 100, 50, 'blue', bpToX, 200)
+    drawCoverageBins(ctx, buf, 2, identity, 50, 'blue', bpToX, 200)
 
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(2)
@@ -99,24 +89,32 @@ describe('drawCoverageBins', () => {
   it('skips bins outside viewport', () => {
     const buf = new ArrayBuffer(12)
     const f32 = new Float32Array(buf)
-    f32[0] = 1000
+    const u32 = new Uint32Array(buf)
+    u32[0] = 1000
     f32[1] = 0.5
     f32[2] = 0.5
 
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 1000) * 10 + 500
 
-    drawCoverageBins(ctx, buf, 1, 100, 50, 'blue', bpToX, 200)
+    drawCoverageBins(ctx, buf, 1, identity, 50, 'blue', bpToX, 200)
 
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(0)
   })
 
-  it('does nothing with zero bins or zero maxDepth', () => {
+  it('does nothing with zero bins', () => {
     const { ctx, calls } = makeCtx()
-    drawCoverageBins(ctx, new ArrayBuffer(0), 0, 100, 50, 'blue', () => 0, 200)
-    expect(calls.length).toBe(0)
-    drawCoverageBins(ctx, new ArrayBuffer(12), 1, 0, 50, 'blue', () => 0, 200)
+    drawCoverageBins(
+      ctx,
+      new ArrayBuffer(0),
+      0,
+      identity,
+      50,
+      'blue',
+      () => 0,
+      200,
+    )
     expect(calls.length).toBe(0)
   })
 })
@@ -125,7 +123,8 @@ describe('drawSnpSegments', () => {
   it('draws segments with correct colors', () => {
     const buf = new ArrayBuffer(16)
     const f32 = new Float32Array(buf)
-    f32[0] = 100
+    const u32 = new Uint32Array(buf)
+    u32[0] = 100
     f32[1] = 0.5
     f32[2] = 0.3
     f32[3] = 1 // colorType=1 → baseA
@@ -140,10 +139,63 @@ describe('drawSnpSegments', () => {
       insertion: '',
     }
     const { ctx, calls } = makeCtx()
-    drawSnpSegments(ctx, buf, 1, 100, 50, colors, bp => bp - 100, 200)
+    drawSnpSegments(ctx, buf, 1, 1, 50, colors, bp => bp - 100, 200)
 
     const styleCalls = calls.filter(c => c.method === 'fillStyle')
     expect(styleCalls.some(c => c.args[0] === 'red')).toBe(true)
+  })
+})
+
+describe('drawModCovSegments', () => {
+  function makeModCovBuf(
+    pos: number,
+    yOffset: number,
+    segH: number,
+    r: number,
+    g: number,
+    b: number,
+    a: number,
+  ) {
+    const buf = new ArrayBuffer(16)
+    const u32 = new Uint32Array(buf)
+    const f32 = new Float32Array(buf)
+    u32[0] = pos
+    f32[1] = yOffset
+    f32[2] = segH
+    // packed ABGR: r in bits 0-7, g in 8-15, b in 16-23, a in 24-31
+    u32[3] =
+      (r & 0xff) | ((g & 0xff) << 8) | ((b & 0xff) << 16) | ((a & 0xff) << 24)
+    return buf
+  }
+
+  it('draws with 1bp width at high zoom', () => {
+    const buf = makeModCovBuf(100, 0.5, 0.3, 255, 0, 0, 255)
+    const { ctx, calls } = makeCtx()
+    // 10px per bp — width should be 10, not 1
+    drawModCovSegments(ctx, buf, 1, 1, 50, bp => (bp - 100) * 10, 200)
+    const fillCalls = calls.filter(c => c.method === 'fillRect')
+    expect(fillCalls.length).toBe(1)
+    const [, , w] = fillCalls[0]!.args as [number, number, number, number]
+    expect(w).toBe(10)
+  })
+
+  it('clamps width to 1px at low zoom', () => {
+    const buf = makeModCovBuf(100, 0.5, 0.3, 255, 0, 0, 255)
+    const { ctx, calls } = makeCtx()
+    // 0.1px per bp — width should clamp to 1
+    drawModCovSegments(ctx, buf, 1, 1, 50, bp => (bp - 100) * 0.1, 200)
+    const fillCalls = calls.filter(c => c.method === 'fillRect')
+    expect(fillCalls.length).toBe(1)
+    const [, , w] = fillCalls[0]!.args as [number, number, number, number]
+    expect(w).toBe(1)
+  })
+
+  it('unpacks color correctly', () => {
+    const buf = makeModCovBuf(100, 0.5, 0.3, 200, 100, 50, 255)
+    const { ctx, calls } = makeCtx()
+    drawModCovSegments(ctx, buf, 1, 1, 50, bp => (bp - 100) * 5, 200)
+    const styleCall = calls.find(c => c.method === 'fillStyle')
+    expect(styleCall?.args[0]).toBe('rgba(200,100,50,1)')
   })
 })
 
@@ -157,9 +209,10 @@ describe('drawIndicators', () => {
   it('draws triangles at positions with correct colors', () => {
     const buf = new ArrayBuffer(16)
     const f32 = new Float32Array(buf)
-    f32[0] = 50
+    const u32 = new Uint32Array(buf)
+    u32[0] = 50
     f32[1] = 1 // insertion
-    f32[2] = 150
+    u32[2] = 150
     f32[3] = 2 // softclip
 
     const { ctx, calls } = makeCtx()

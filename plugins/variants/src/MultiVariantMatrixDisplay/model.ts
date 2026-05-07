@@ -1,13 +1,18 @@
 import { lazy } from 'react'
 
-import { clamp } from '@jbrowse/core/util'
+import { clamp, getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
+import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
+import type { VariantMatrixBackend } from './components/variantMatrixBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 const VariantMatrixComponent = lazy(
   () => import('./components/VariantMatrixComponent.tsx'),
@@ -38,8 +43,26 @@ export default function stateModelFactory(
       get cellDataMode() {
         return 'matrix' as const
       },
-      renderProps() {
-        return { notReady: true }
+      /**
+       * #getter
+       * Per-frame render state for the GPU backend — the autorun reads this
+       * every time any tracked observable (cellData, scrollTop, rowHeight,
+       * canvas width, …) changes.
+       */
+      get renderState() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const cellData = self.cellData as MatrixCellData | undefined
+        if (!cellData) {
+          return undefined
+        }
+        return {
+          canvasWidth: Math.round(
+            view.dynamicBlocks.totalWidthPxWithoutBorders,
+          ),
+          canvasHeight: self.availableHeight,
+          rowHeight: self.rowHeight,
+          scrollTop: self.scrollTop,
+        }
       },
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
@@ -50,6 +73,27 @@ export default function stateModelFactory(
       setLineZoneHeight(n: number) {
         self.lineZoneHeight = clamp(n, 10, 1000)
         return self.lineZoneHeight
+      },
+      /**
+       * #action
+       */
+      startGpuBackendLifecycle(backend: VariantMatrixBackend) {
+        self.installGpuDisplay<VariantMatrixBackend>(backend, {
+          upload: b => {
+            const data = self.cellData as MatrixCellData | undefined
+            if (data) {
+              b.uploadCellData(data)
+            }
+          },
+          render: b => {
+            const state = self.renderState
+            if (!state) {
+              return false
+            }
+            b.render(state)
+            return true
+          },
+        })
       },
     }))
     .postProcessSnapshot(snap => {

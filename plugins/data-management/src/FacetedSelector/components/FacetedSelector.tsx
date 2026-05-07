@@ -20,63 +20,11 @@ const useStyles = makeStyles()({
   },
   resizeHandle: {
     marginLeft: 5,
-    background: 'grey',
     width: 5,
   },
 })
 
-function HighlightText({
-  text,
-  query,
-  className,
-}: {
-  text: string
-  query: string
-  className?: string
-}) {
-  if (!query || !text) {
-    return <SanitizedHTML html={text} className={className} />
-  }
-  const lowerText = text.toLowerCase()
-  const lowerQuery = query.toLowerCase()
-  const parts: React.ReactNode[] = []
-  let lastIndex = 0
-  let idx = lowerText.indexOf(lowerQuery, lastIndex)
-  while (idx !== -1) {
-    if (idx > lastIndex) {
-      parts.push(text.slice(lastIndex, idx))
-    }
-    parts.push(
-      <mark key={idx} style={{ background: '#FFEB3B' }}>
-        {text.slice(idx, idx + query.length)}
-      </mark>,
-    )
-    lastIndex = idx + query.length
-    idx = lowerText.indexOf(lowerQuery, lastIndex)
-  }
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex))
-  }
-  return <span className={className}>{parts}</span>
-}
-
 const frac = 0.75
-
-function HighlightCell({
-  value,
-  filterText,
-  className,
-}: {
-  value: string | undefined
-  filterText: string
-  className: string
-}) {
-  return value ? (
-    <HighlightText className={className} text={value} query={filterText} />
-  ) : (
-    ''
-  )
-}
 
 const FacetedSelector = observer(function FacetedSelector({
   model,
@@ -91,7 +39,6 @@ const FacetedSelector = observer(function FacetedSelector({
     rows,
     panelWidth,
     showFilters,
-    filterText,
     filteredNonMetadataKeys,
     filteredMetadataKeys,
   } = faceted
@@ -104,7 +51,7 @@ const FacetedSelector = observer(function FacetedSelector({
       header: 'name',
       cell: row => (
         <div className={classes.cell}>
-          <HighlightText text={row.name} query={filterText} />
+          <SanitizedHTML html={row.name} />
           <TrackSelectorTrackMenu id={row.id} conf={row.conf} model={model} />
         </div>
       ),
@@ -114,23 +61,7 @@ const FacetedSelector = observer(function FacetedSelector({
         ({
           id: e,
           header: e,
-          cell: row => {
-            const val =
-              e === 'category'
-                ? row.category
-                : e === 'adapter'
-                  ? row.adapter
-                  : e === 'description'
-                    ? row.description
-                    : ''
-            return (
-              <HighlightCell
-                value={`${val ?? ''}`}
-                filterText={filterText}
-                className={classes.cell}
-              />
-            )
-          },
+          cell: row => row[e as 'category' | 'adapter' | 'description'],
         }) satisfies FacetedColumn,
     ),
     ...filteredMetadataKeys.map(
@@ -138,13 +69,10 @@ const FacetedSelector = observer(function FacetedSelector({
         ({
           id: `metadata.${e}`,
           header: nonMetadataFieldSet.has(e) ? `${e} (from metadata)` : e,
-          cell: row => (
-            <HighlightCell
-              value={`${row.metadata[e] ?? ''}`}
-              filterText={filterText}
-              className={classes.cell}
-            />
-          ),
+          cell: row => {
+            const val = row.metadata[e]
+            return val != null ? `${val}` : null
+          },
         }) satisfies FacetedColumn,
     ),
   ]

@@ -10,6 +10,7 @@ export function RootAppMenuMixin() {
   return types
     .model({})
     .volatile(() => ({
+      // array reference is replaced (not mutated) so MobX observers detect the change
       mutableMenuActions: [] as MenuAction[],
     }))
     .actions(self => ({
@@ -41,7 +42,7 @@ export function RootAppMenuMixin() {
        *
        * @param menuName - Name of the menu to insert.
        *
-       * @param position - Position to insert menu. If negative, counts from th
+       * @param position - Position to insert menu. If negative, counts from the
        * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
        * second-to-last one.
        *
@@ -49,11 +50,7 @@ export function RootAppMenuMixin() {
       insertMenu(menuName: string, position: number) {
         self.mutableMenuActions = [
           ...self.mutableMenuActions,
-          {
-            type: 'insertMenu',
-            menuName,
-            position,
-          },
+          { type: 'insertMenu', menuName, position },
         ]
       },
       /**
@@ -67,11 +64,7 @@ export function RootAppMenuMixin() {
       appendToMenu(menuName: string, menuItem: MenuItem) {
         self.mutableMenuActions = [
           ...self.mutableMenuActions,
-          {
-            type: 'appendToMenu',
-            menuName,
-            menuItem,
-          },
+          { type: 'appendToMenu', menuName, menuItem },
         ]
       },
       /**
@@ -87,12 +80,10 @@ export function RootAppMenuMixin() {
        * the second-to-last one.
        */
       insertInMenu(menuName: string, menuItem: MenuItem, position: number) {
-        self.mutableMenuActions.push({
-          type: 'insertInMenu',
-          menuName,
-          menuItem,
-          position,
-        })
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          { type: 'insertInMenu', menuName, menuItem, position },
+        ]
       },
       /**
        * #action
@@ -108,11 +99,7 @@ export function RootAppMenuMixin() {
       appendToSubMenu(menuPath: string[], menuItem: MenuItem) {
         self.mutableMenuActions = [
           ...self.mutableMenuActions,
-          {
-            type: 'appendToSubMenu',
-            menuPath,
-            menuItem,
-          },
+          { type: 'appendToSubMenu', menuPath, menuItem },
         ]
       },
       /**
@@ -135,12 +122,7 @@ export function RootAppMenuMixin() {
       ) {
         self.mutableMenuActions = [
           ...self.mutableMenuActions,
-          {
-            type: 'insertInSubMenu',
-            menuPath,
-            menuItem,
-            position,
-          },
+          { type: 'insertInSubMenu', menuPath, menuItem, position },
         ]
       },
     }))

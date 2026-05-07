@@ -11,7 +11,6 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import { isReadyOrHasError } from '../svgExportUtil.ts'
 import SVGBackground from './SVGBackground.tsx'
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHeader from './SVGHeader.tsx'
@@ -61,16 +60,13 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     0,
   )
 
+  // Every display's `renderSvg` owns its own readiness wait — block
+  // renderers await their feature-density stats inside
+  // `renderBaseLinearDisplaySvg`, GPU renderers await their data/layout
+  // inside their own `renderSvg` implementations.
   const displayResults = await Promise.all(
     visibleTracks.map(async track => {
       const display = track.displays[0]
-      // Canvas-based displays (alignments, wiggle, canvas plugin) always return
-      // notReady:true and do their own internal await when() inside renderSvg.
-      // Server-side rendered displays use notReady:false when loaded, so we
-      // wait for them here to avoid rendering before data or error is known.
-      if (!display.renderProps().notReady) {
-        await when(() => isReadyOrHasError(display))
-      }
       return {
         track,
         result: await display.renderSvg({ ...opts, theme, legendWidth }),
@@ -90,7 +86,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(theme)}>
+    <ThemeProvider theme={jbrowseTheme}>
       <Wrapper>
         <svg
           width={w}
@@ -122,6 +118,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
                 displayResults={displayResults}
                 trackLabels={trackLabels}
                 trackLabelOffset={trackLabelOffset}
+                leftBuffer={shift}
               />
             </g>
           </g>

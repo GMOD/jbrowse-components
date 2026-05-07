@@ -3,7 +3,6 @@ import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 export interface RecentSessionData {
   path: string
   name: string
-  screenshot?: string
   updated?: number
 }
 

@@ -212,9 +212,6 @@ export async function storeFileHandleLocation(
   }
 }
 
-// Helper to restore file handles from a list of handleIds
-// Call this on app startup or when restoring a session
-// Returns an array of { handleId, success, error? } results
 export async function restoreFileHandles(
   handleIds: string[],
   requestPermission = false,
@@ -231,7 +228,6 @@ export async function restoreFileHandles(
   return results
 }
 
-// Recursively find all FileHandleLocation handleIds in a session snapshot
 export function findFileHandleIds(
   obj: unknown,
   handleIds = new Set<string>(),
@@ -265,8 +261,6 @@ export function findFileHandleIds(
   return handleIds
 }
 
-// Restore all file handles found in a session snapshot
-// Call this before setSession to ensure files are available
 export async function restoreFileHandlesFromSnapshot(
   sessionSnapshot: unknown,
   requestPermission = false,
@@ -276,32 +270,6 @@ export async function restoreFileHandlesFromSnapshot(
     return restoreFileHandles([...handleIds], requestPermission)
   }
   return []
-}
-
-// Track pending file handle IDs that failed to restore and need user gesture
-let pendingFileHandleIds: string[] = []
-
-export function getPendingFileHandleIds() {
-  return pendingFileHandleIds
-}
-
-export function setPendingFileHandleIds(ids: string[]) {
-  pendingFileHandleIds = ids
-}
-
-export function clearPendingFileHandleIds() {
-  pendingFileHandleIds = []
-}
-
-// Call this from a user gesture (button click) to restore pending file handles
-export async function restorePendingFileHandles() {
-  if (pendingFileHandleIds.length === 0) {
-    return []
-  }
-  const results = await restoreFileHandles(pendingFileHandleIds, true)
-  const stillFailed = results.filter(r => !r.success).map(r => r.handleId)
-  pendingFileHandleIds = stillFailed
-  return results
 }
 
 /**
@@ -520,16 +488,16 @@ export function showTrackGeneric(
     return found
   }
 
-  const rawConf = session.getTracksById()[trackId]
+  const rawConf = session.tracksById[trackId]
   if (!rawConf) {
     throw new Error(`Could not resolve identifier "${trackId}"`)
   }
 
   // Allow plugins to preprocess the track config (e.g. to add default displays)
   // Use getSnapshot for MST models, structuredClone for plain objects
-  const confSnapshot = isStateTreeNode(rawConf)
-    ? getSnapshot(rawConf)
-    : structuredClone(rawConf)
+  const confSnapshot = structuredClone(
+    isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
+  )
   const conf = pluginManager.evaluateExtensionPoint(
     'Core-preProcessTrackConfig',
     confSnapshot,

@@ -14,8 +14,9 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { featureData2 } from '../util.ts'
 
+import type { FeatureData } from '../util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Observer } from 'rxjs'
 
@@ -43,12 +44,10 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
   }
 
   public async configure(opts?: BaseOptions) {
-    if (!this.cachedP) {
-      this.cachedP = this.configurePre(opts).catch((e: unknown) => {
-        this.cachedP = undefined
-        throw e
-      })
-    }
+    this.cachedP ??= this.configurePre(opts).catch((e: unknown) => {
+      this.cachedP = undefined
+      throw e
+    })
     return this.cachedP
   }
 
@@ -152,60 +151,39 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     )
 
     await updateStatus('Processing features', statusCallback, async () => {
-      const parentAggregation = {} as Record<string, SimpleFeatureSerialized[]>
-      const parentAggregationFlat = []
+      const parentAggregation: Record<string, FeatureData[]> = {}
+      let minAggStart = Infinity
+      let maxAggEnd = -Infinity
 
-      if (feats.some(f => f.uniqueId === undefined)) {
-        throw new Error('found uniqueId undefined')
-      }
       for (const feat of feats) {
         const splitLine = [
           query.refName,
           `${feat.start}`,
           `${feat.end}`,
-          ...(feat.rest?.split('\t') || []),
+          ...(feat.rest?.split('\t') ?? []),
         ]
-        const data = parser.parseLine(splitLine, {
-          uniqueId: feat.uniqueId!,
-        })
-
-        const aggr = data[aggregateField]
-        const aggrIsNotNone = aggr && aggr !== 'none'
-        if (aggrIsNotNone && !parentAggregation[aggr]) {
-          parentAggregation[aggr] = []
-        }
-        const {
-          uniqueId,
-          type,
-          chrom,
-          chromStart,
-          chromEnd,
-          description,
-          chromStarts: chromStarts2,
-          blockStarts: blockStarts2,
-          blockSizes: blockSizes2,
-          score: score2,
-          blockCount,
-          thickStart,
-          thickEnd,
-          strand,
-          ...rest
-        } = data
-
         const f = featureData2({
-          ...rest,
           scoreColumn,
           splitLine,
           parser,
-          uniqueId,
+          uniqueId: feat.uniqueId!,
           start: feat.start,
           end: feat.end,
           refName: query.refName,
           disableGeneHeuristic,
         })
+        const aggr = f[aggregateField]
+        const aggrIsNotNone =
+          typeof aggr === 'string' && aggr && aggr !== 'none'
         if (aggrIsNotNone) {
-          parentAggregation[aggr]!.push(f)
-          parentAggregationFlat.push(f)
+          parentAggregation[aggr] ??= []
+          parentAggregation[aggr].push(f)
+          if (f.start < minAggStart) {
+            minAggStart = f.start
+          }
+          if (f.end > maxAggEnd) {
+            maxAggEnd = f.end
+          }
         } else {
           if (
             doesIntersect2(
@@ -217,7 +195,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           ) {
             observer.next(
               new SimpleFeature({
-                id: `${this.id}-${uniqueId}`,
+                id: `${this.id}-${feat.uniqueId}`,
                 data: f,
               }),
             )
@@ -225,26 +203,15 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      if (allowRedispatch && parentAggregationFlat.length) {
-        let minStart = Number.POSITIVE_INFINITY
-        let maxEnd = Number.NEGATIVE_INFINITY
-        for (const feat of parentAggregationFlat) {
-          if (feat.start < minStart) {
-            minStart = feat.start
-          }
-          if (feat.end > maxEnd) {
-            maxEnd = feat.end
-          }
-        }
-
-        if (maxEnd > query.end || minStart < query.start) {
+      if (allowRedispatch && maxAggEnd > -Infinity) {
+        if (maxAggEnd > query.end || minAggStart < query.start) {
           await this.getFeaturesHelper({
             query: {
               ...query,
-              // re-query with 500kb added onto start and end, in order to catch
-              // gene subfeatures that may not overlap your view
-              start: minStart - 500_000,
-              end: maxEnd + 500_000,
+              // extend query to catch gene subfeatures outside the current view;
+              // 500 kbp heuristic covers most genes/transcripts
+              start: minAggStart - 500_000,
+              end: maxAggEnd + 500_000,
             },
             opts,
             observer,
@@ -255,35 +222,27 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      Object.entries(parentAggregation).map(([name, subfeatures]) => {
+      for (const [name, subfeatures] of Object.entries(parentAggregation)) {
         const s = min(subfeatures.map(f => f.start))
         const e = max(subfeatures.map(f => f.end))
         if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
           const subs = subfeatures.sort((a, b) =>
             a.uniqueId.localeCompare(b.uniqueId),
           )
-          // Check if any features in the subs array overlap with each other.
-          // This helps avoid aggregating features, like in bacterial GFF,
-          // where two genes have the same gene name but are distinct locations
-          // on the genome
-          //
-          // If they do, we'll create a single parent feature with all
-          // subfeatures (use the computed parent aggregation)
-          if (
-            subs.some((a, i) =>
-              subs.some(
-                (b, j) =>
-                  i !== j && doesIntersect2(a.start, a.end, b.start, b.end),
-              ),
-            )
-          ) {
+          // overlapping subs → one gene parent; non-overlapping → separate parents
+          // (handles bacterial GFF where two genes share a name but are distinct loci)
+          const sortedByStart = [...subs].sort((a, b) => a.start - b.start)
+          const hasOverlaps = sortedByStart.some(
+            (f, i) => i > 0 && sortedByStart[i - 1]!.end > f.start,
+          )
+          if (hasOverlaps) {
             observer.next(
               new SimpleFeature({
                 id: `${this.id}-${subs[0]?.uniqueId}-parent`,
                 data: {
                   type: 'gene',
                   subfeatures: subs,
-                  strand: subs[0]?.strand || 1,
+                  strand: subs.find(f => f.strand !== 0)?.strand ?? 1,
                   name,
                   start: s,
                   end: e,
@@ -291,10 +250,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                 },
               }),
             )
-          }
-
-          // Otherwise, we'll create individual parent features for each subfeature (remove parent aggregation)
-          else {
+          } else {
             for (const sub of subs) {
               observer.next(
                 new SimpleFeature({
@@ -302,7 +258,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                   data: {
                     type: 'gene',
                     subfeatures: [sub],
-                    strand: subs[0]?.strand || 1,
+                    strand: subs.find(f => f.strand !== 0)?.strand ?? 1,
                     name,
                     start: sub.start,
                     end: sub.end,
@@ -313,7 +269,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
             }
           }
         }
-      })
+      }
     })
 
     observer.complete()
@@ -322,11 +278,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       try {
         await this.getFeaturesHelper({
-          query: {
-            ...query,
-            start: query.start,
-            end: query.end,
-          },
+          query,
           opts,
           observer,
           allowRedispatch: true,

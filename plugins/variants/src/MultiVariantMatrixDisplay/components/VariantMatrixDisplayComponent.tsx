@@ -1,6 +1,5 @@
 import { Suspense, useRef } from 'react'
 
-import { LoadingOverlay } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
@@ -9,6 +8,7 @@ import { observer } from 'mobx-react'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import LegendBar from '../../shared/components/MultiSampleVariantLegendBar.tsx'
+import { VariantLoadingOverlay } from '../../shared/components/VariantStatusOverlays.tsx'
 import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
 import type { LinearVariantMatrixDisplayModel } from '../model.ts'
@@ -80,14 +80,7 @@ const VariantMatrixDisplayComponent = observer(
             <LegendBar model={model} />
           </g>
         </svg>
-        <LoadingOverlay
-          statusMessage={model.statusMessage || 'Computing display data'}
-          isVisible={
-            !model.displayError &&
-            !model.regionTooLarge &&
-            (!model.cellData || model.cellDataLoading)
-          }
-        />
+        <VariantLoadingOverlay model={model} />
         {showLegend ? <FloatingLegend items={model.legendItems()} /> : null}
         {inMatrix ? (
           <Crosshair

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -11,14 +11,15 @@ type LGV = LinearGenomeViewModel
 interface MenuState {
   anchorEl: HTMLElement
   refName: string
-  regionNumber: number
+  displayedRegionIndex: number
 }
 
 const useStyles = makeStyles()(theme => ({
   refLabel: {
     fontSize: 11,
     position: 'absolute',
-    left: 2,
+    // x-position is driven by transform:translateX (compositor-only) not left
+    left: 0,
     top: -1,
     fontWeight: 'bold',
     lineHeight: 'normal',
@@ -32,7 +33,6 @@ const useStyles = makeStyles()(theme => ({
     },
   },
   b0: {
-    left: 0,
     zIndex: 100,
   },
 }))
@@ -43,105 +43,100 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   model: LGV
 }) {
   const { classes, cx } = useStyles()
-  const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
   const [menuState, setMenuState] = useState<MenuState>()
 
-  useEffect(() => {
-    model.setIsScalebarRefNameMenuOpen(!!menuState)
-  }, [model, menuState])
+  const { staticBlocks, offsetPx } = model
+  const blocks = staticBlocks.blocks
+  const val = model.scalebarDisplayPrefix()
+  const regionEndPx = model.scalebarRegionEndPx
 
-  // find the block that needs pinning to the left side for context
-  // default to first ContentBlock if nothing is scrolled left
-  let lastLeftBlock = staticBlocks.blocks.findIndex(
-    b => b.type === 'ContentBlock',
-  )
-  if (lastLeftBlock < 0) {
-    lastLeftBlock = 0
-  }
-
-  // eslint-disable-next-line unicorn/no-array-for-each
-  staticBlocks.forEach((block, i) => {
-    if (block.type === 'ContentBlock' && block.offsetPx - offsetPx < 0) {
+  // rightmost content block whose offsetPx is left of viewport (= sticky)
+  let lastLeftBlock = -1
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i]!
+    if (b.type !== 'ContentBlock') {
+      continue
+    }
+    if (lastLeftBlock === -1 || b.offsetPx < offsetPx) {
       lastLeftBlock = i
     }
-  })
-  const val = scalebarDisplayPrefix()
-  const b0 = staticBlocks.blocks[0]
+  }
 
-  // Calculate the end position (in pixels) of each displayed region
-  const regionEndPx = new Map<number, number>()
-  for (const block of staticBlocks.blocks) {
-    if (block.type === 'ContentBlock' && block.regionNumber !== undefined) {
-      const endPx = block.offsetPx + block.widthPx
-      const current = regionEndPx.get(block.regionNumber)
-      if (current === undefined || endPx > current) {
-        regionEndPx.set(block.regionNumber, endPx)
-      }
+  const labels = []
+
+  if (blocks[0]?.type !== 'ContentBlock' && val) {
+    labels.push(
+      <span
+        key="b0"
+        className={cx(classes.b0, classes.refLabel)}
+        data-testid="refLabel-prefix"
+      >
+        {val}
+      </span>,
+    )
+  }
+
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i]!
+    if (block.type !== 'ContentBlock') {
+      continue
     }
+    const last = i === lastLeftBlock
+    if (!block.isLeftEndOfDisplayedRegion && !last) {
+      continue
+    }
+    const regEndPxVal =
+      block.displayedRegionIndex !== undefined
+        ? regionEndPx.get(block.displayedRegionIndex)
+        : undefined
+    const labelStartPx = last ? offsetPx : block.offsetPx
+    const maxWidth =
+      regEndPxVal !== undefined ? regEndPxVal - labelStartPx - 2 : undefined
+    if (maxWidth !== undefined && maxWidth < 20) {
+      continue
+    }
+    const transform = last
+      ? Math.max(0, -offsetPx)
+      : block.offsetPx - offsetPx - 1
+    const refName = block.refName
+    const displayedRegionIndex = block.displayedRegionIndex ?? -1
+    labels.push(
+      <span
+        key={block.key}
+        className={classes.refLabel}
+        style={{
+          transform: `translateX(${transform}px)`,
+          paddingLeft: last ? 0 : 1,
+          maxWidth,
+        }}
+        data-testid={`refLabel-${refName}`}
+        onMouseDown={() => {
+          model.setScalebarRefNameClickPending(true)
+        }}
+        onClick={e => {
+          model.setScalebarRefNameClickPending(false)
+          model.setIsScalebarRefNameMenuOpen(true)
+          setMenuState({
+            anchorEl: e.currentTarget,
+            refName,
+            displayedRegionIndex,
+          })
+        }}
+      >
+        {last && val ? `${val}:${refName}` : refName}
+      </span>,
+    )
   }
 
   return (
     <>
-      {b0?.type !== 'ContentBlock' && val ? (
-        <span className={cx(classes.b0, classes.refLabel)}>{val}</span>
-      ) : null}
-      {staticBlocks.map((block, index) => {
-        const {
-          offsetPx: blockOffsetPx,
-          isLeftEndOfDisplayedRegion,
-          key,
-          type,
-          refName,
-          regionNumber,
-        } = block
-        const last = index === lastLeftBlock
-        // Calculate max width to clip label at the displayed region boundary
-        const regEndPx =
-          regionNumber !== undefined ? regionEndPx.get(regionNumber) : undefined
-        const labelStartPx = last ? offsetPx : blockOffsetPx
-        const maxWidth =
-          regEndPx !== undefined ? regEndPx - labelStartPx - 2 : undefined
-        // Don't render label if available width is too small (avoids overlap slivers)
-        const minLabelWidth = 20
-        const hasEnoughSpace =
-          maxWidth === undefined || maxWidth >= minLabelWidth
-        return type === 'ContentBlock' &&
-          (isLeftEndOfDisplayedRegion || last) &&
-          hasEnoughSpace ? (
-          <span
-            key={`refLabel-${key}-${index}`}
-            style={{
-              left: last
-                ? Math.max(0, -offsetPx)
-                : blockOffsetPx - offsetPx - 1,
-              paddingLeft: last ? 0 : 1,
-              maxWidth:
-                maxWidth !== undefined && maxWidth > 0 ? maxWidth : undefined,
-            }}
-            className={classes.refLabel}
-            data-testid={`refLabel-${refName}`}
-            onMouseDown={() => {
-              model.setScalebarRefNameClickPending(true)
-            }}
-            onClick={event => {
-              model.setScalebarRefNameClickPending(false)
-              setMenuState({
-                anchorEl: event.currentTarget,
-                refName,
-                regionNumber: regionNumber!,
-              })
-            }}
-          >
-            {last && val ? `${val}:` : ''}
-            {refName}
-          </span>
-        ) : null
-      })}
+      <div>{labels}</div>
       {menuState ? (
         <RefNameMenu
           model={model}
           menuState={menuState}
           onClose={() => {
+            model.setIsScalebarRefNameMenuOpen(false)
             setMenuState(undefined)
           }}
         />
@@ -160,7 +155,7 @@ function RefNameMenu({
   onClose: () => void
 }) {
   const { displayedRegions } = model
-  const { refName, regionNumber } = menuState
+  const { refName, displayedRegionIndex } = menuState
   const numRegions = displayedRegions.length
 
   function moveRegion(fromIndex: number, toIndex: number) {
@@ -176,42 +171,42 @@ function RefNameMenu({
   }
 
   const actionItems = [
-    ...(regionNumber > 0
+    ...(displayedRegionIndex > 0
       ? [
           {
             label: 'Move left',
             onClick: () => {
-              moveRegion(regionNumber, regionNumber - 1)
+              moveRegion(displayedRegionIndex, displayedRegionIndex - 1)
             },
           },
         ]
       : []),
-    ...(regionNumber < numRegions - 1
+    ...(displayedRegionIndex < numRegions - 1
       ? [
           {
             label: 'Move right',
             onClick: () => {
-              moveRegion(regionNumber, regionNumber + 1)
+              moveRegion(displayedRegionIndex, displayedRegionIndex + 1)
             },
           },
         ]
       : []),
-    ...(numRegions > 2 && regionNumber > 0
+    ...(numRegions > 2 && displayedRegionIndex > 0
       ? [
           {
             label: 'Move to far left',
             onClick: () => {
-              moveRegion(regionNumber, 0)
+              moveRegion(displayedRegionIndex, 0)
             },
           },
         ]
       : []),
-    ...(numRegions > 2 && regionNumber < numRegions - 1
+    ...(numRegions > 2 && displayedRegionIndex < numRegions - 1
       ? [
           {
             label: 'Move to far right',
             onClick: () => {
-              moveRegion(regionNumber, numRegions - 1)
+              moveRegion(displayedRegionIndex, numRegions - 1)
             },
           },
         ]
@@ -219,7 +214,7 @@ function RefNameMenu({
     {
       label: 'Remove this region from view',
       onClick: () => {
-        removeRegion(regionNumber)
+        removeRegion(displayedRegionIndex)
       },
     },
   ]

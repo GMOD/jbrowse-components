@@ -35,17 +35,15 @@ export interface PassDescriptor {
   blend: boolean
   // custom blend factors (defaults to src-alpha / one-minus-src-alpha if omitted)
   blendState?: BlendState
-  glAttributes: GlAttributeLayout[]
-  // if true, this pass renders to an offscreen picking target (no blend)
-  picking?: boolean
+  glAttributes: readonly GlAttributeLayout[]
   // WGSL fragment entry point override (default: 'fs_main')
   wgslFragmentEntry?: string
-  // GLSL fragment shader override for picking (uses different shader for picking)
+  // GLSL fragment shader override (e.g. alternate fragment program)
   glslFragmentOverride?: string
   // primitive topology (default: 'triangle-list')
   topology?: 'triangle-list' | 'triangle-strip' | 'line-list'
   // texture bindings for this pass
-  textures?: TextureBinding[]
+  textures?: readonly TextureBinding[]
 }
 
 export interface RegionMeta {
@@ -59,7 +57,7 @@ export interface GpuHal {
   uploadBuffer(
     regionKey: number,
     passId: string,
-    data: ArrayBuffer,
+    data: ArrayBuffer | ArrayBufferView,
     count: number,
   ): void
   setRegionMeta(regionKey: number, meta: Partial<RegionMeta>): void
@@ -89,31 +87,11 @@ export interface GpuHal {
   drawPass(passId: string, regionKey: number, bufferPassId?: string): void
   endFrame(): void
 
-  // Render a picking pass to the offscreen target. The pass must have picking: true.
-  // Optional instanceCount overrides the uploaded count (for rendering a subset).
-  // Optional bufferPassId uses another pass's data buffer.
-  drawPickingPass(
-    passId: string,
-    regionKey: number,
-    instanceCount?: number,
-    bufferPassId?: string,
-  ): void
-  // Synchronous pixel read from picking target (WebGL) or last cached result.
-  readPickingPixel(x: number, y: number): number
-  // Async pixel read from picking target (WebGPU mapAsync).
-  readPickingPixelAsync(x: number, y: number): Promise<number>
-
-  pick(x: number, y: number): number
-
   // Scissor and viewport control (coordinates in physical pixels, top-left origin)
   setScissor(x: number, y: number, w: number, h: number): void
   clearScissor(): void
   setViewport(x: number, y: number, w: number, h: number): void
   clearViewport(): void
-
-  // Access to underlying WebGL context (for advanced use cases).
-  // Returns null for non-WebGL backends.
-  getWebGLContext(): WebGL2RenderingContext | null
 
   dispose(): void
 }

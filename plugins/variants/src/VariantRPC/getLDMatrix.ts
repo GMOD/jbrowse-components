@@ -11,6 +11,7 @@ import {
   computeLDMatrixGPU,
   computeLDMatrixGPUPhased,
 } from './getLDMatrixGPU.ts'
+import { GENOTYPE_SPLITTER as SPLITTER } from '../shared/constants.ts'
 import {
   encodeGenotypeFromRaw,
   getRawCallGenotype,
@@ -21,8 +22,10 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-
-const SPLITTER = /[/|]/
+const SLASH_CODE = 47 // '/'
+const PIPE_CODE = 124 // '|'
+const ZERO_CODE = 48 // '0'
+const DOT_CODE = 46 // '.'
 
 function isPhased(genotypes: Record<string, string>): boolean {
   const firstVal = Object.values(genotypes)[0]
@@ -42,16 +45,72 @@ function isPhasedRaw(feature: Feature): boolean {
   return false
 }
 
-function encodeGenotypesFromRaw(
+/**
+ * Fill `out` with encoded genotypes (0=hom ref, 1=het, 2=hom alt, -1=missing)
+ * and return allele counts. Combines encoding and counting in a single pass.
+ * Includes a diploid fast path that avoids per-sample function call overhead.
+ */
+function fillEncodedFromRaw(
+  out: Int8Array,
   callGenotype: Int8Array,
   ploidy: number,
   nSamples: number,
 ) {
-  const encoded = new Int8Array(nSamples)
-  for (let si = 0; si < nSamples; si++) {
-    encoded[si] = encodeGenotypeFromRaw(callGenotype, si, ploidy)
+  let nHomRef = 0
+  let nHet = 0
+  let nHomAlt = 0
+  let nValid = 0
+  if (ploidy === 2) {
+    for (let s = 0; s < nSamples; s++) {
+      const off = s << 1
+      const a0 = callGenotype[off]!
+      const a1 = callGenotype[off + 1]!
+      if (a0 >= 0 && a1 >= 0) {
+        // Fast path: both alleles called. nonRef ∈ {0,1,2} directly encodes
+        // the genotype; hoist nValid++ since both alleles are always valid here.
+        nValid++
+        const nonRef = (a0 !== 0 ? 1 : 0) + (a1 !== 0 ? 1 : 0)
+        out[s] = nonRef
+        if (nonRef === 0) {
+          nHomRef++
+        } else if (nonRef === 1) {
+          nHet++
+        } else {
+          nHomAlt++
+        }
+      } else {
+        // Slow path: missing (-1) or padding (-2)
+        const g = encodeGenotypeFromRaw(callGenotype, s, 2)
+        out[s] = g
+        if (g === 0) {
+          nHomRef++
+          nValid++
+        } else if (g === 1) {
+          nHet++
+          nValid++
+        } else if (g === 2) {
+          nHomAlt++
+          nValid++
+        }
+      }
+    }
+  } else {
+    for (let s = 0; s < nSamples; s++) {
+      const g = encodeGenotypeFromRaw(callGenotype, s, ploidy)
+      out[s] = g
+      if (g === 0) {
+        nHomRef++
+        nValid++
+      } else if (g === 1) {
+        nHet++
+        nValid++
+      } else if (g === 2) {
+        nHomAlt++
+        nValid++
+      }
+    }
   }
-  return encoded
+  return { nHomRef, nHet, nHomAlt, nValid }
 }
 
 function packHaplotypesFromRaw(
@@ -70,43 +129,87 @@ function packHaplotypesFromRaw(
   let nHomAlt = 0
   let nValid = 0
 
-  for (let s = 0; s < nSamples; s++) {
-    if (callGenotypePhased && !callGenotypePhased[s]) {
-      continue
-    }
-    const a0 = callGenotype[s * ploidy]!
-    const a1 = ploidy > 1 ? callGenotype[s * ploidy + 1]! : -2
-    if (a0 === -2 || a1 === -2) {
-      continue
-    }
-
-    const w = s >>> 5
-    const bit = 1 << (s & 31)
-    const v0 = a0 !== -1
-    const v1 = a1 !== -1
-
-    if (v0) {
-      validH1[w] = validH1[w]! | bit
-      if (a0 !== 0) {
-        altH1[w] = altH1[w]! | bit
+  if (ploidy === 2) {
+    // Diploid fast path: hoist ploidy=2 constant, use s<<1 offset.
+    // A single loop handles both phased and unphased — V8 hoists the
+    // `callGenotypePhased &&` null-check, which is faster than splitting into
+    // two separate loops (benchmark showed the split added overhead).
+    for (let s = 0; s < nSamples; s++) {
+      if (callGenotypePhased && !callGenotypePhased[s]) {
+        continue
       }
-    }
-    if (v1) {
-      validH2[w] = validH2[w]! | bit
-      if (a1 !== 0) {
-        altH2[w] = altH2[w]! | bit
+      const off = s << 1
+      const a0 = callGenotype[off]!
+      const a1 = callGenotype[off + 1]!
+      if (a0 === -2 || a1 === -2) {
+        continue
       }
-    }
-    if (v0 && v1) {
+      const w = s >>> 5
+      const bit = 1 << (s & 31)
+      const v0 = a0 !== -1
+      const v1 = a1 !== -1
       const isAlt0 = a0 !== 0
       const isAlt1 = a1 !== 0
-      nValid++
-      if (!isAlt0 && !isAlt1) {
-        nHomRef++
-      } else if (isAlt0 && isAlt1) {
-        nHomAlt++
-      } else {
-        nHet++
+      if (v0) {
+        validH1[w] = validH1[w]! | bit
+        if (isAlt0) {
+          altH1[w] = altH1[w]! | bit
+        }
+      }
+      if (v1) {
+        validH2[w] = validH2[w]! | bit
+        if (isAlt1) {
+          altH2[w] = altH2[w]! | bit
+        }
+      }
+      if (v0 && v1) {
+        nValid++
+        if (!isAlt0 && !isAlt1) {
+          nHomRef++
+        } else if (isAlt0 && isAlt1) {
+          nHomAlt++
+        } else {
+          nHet++
+        }
+      }
+    }
+  } else {
+    for (let s = 0; s < nSamples; s++) {
+      if (callGenotypePhased && !callGenotypePhased[s]) {
+        continue
+      }
+      const a0 = callGenotype[s * ploidy]!
+      const a1 = ploidy > 1 ? callGenotype[s * ploidy + 1]! : -2
+      if (a0 === -2 || a1 === -2) {
+        continue
+      }
+      const w = s >>> 5
+      const bit = 1 << (s & 31)
+      const v0 = a0 !== -1
+      const v1 = a1 !== -1
+      const isAlt0 = a0 !== 0
+      const isAlt1 = a1 !== 0
+      if (v0) {
+        validH1[w] = validH1[w]! | bit
+        if (isAlt0) {
+          altH1[w] = altH1[w]! | bit
+        }
+      }
+      if (v1) {
+        validH2[w] = validH2[w]! | bit
+        if (isAlt1) {
+          altH2[w] = altH2[w]! | bit
+        }
+      }
+      if (v0 && v1) {
+        nValid++
+        if (!isAlt0 && !isAlt1) {
+          nHomRef++
+        } else if (isAlt0 && isAlt1) {
+          nHomAlt++
+        } else {
+          nHet++
+        }
       }
     }
   }
@@ -187,19 +290,75 @@ function getChiSquareCritical(pValue: number): number {
 }
 
 /**
- * Encode genotypes for all samples as a single Int8Array
- * Values: 0=hom ref, 1=het, 2=hom alt, -1=missing
+ * Fill `out` with encoded genotypes and return allele counts.
+ * Uses charCode fast path for the common 3-char diploid case ("X/Y", "X|Y")
+ * to avoid split() allocation and iterator overhead.
  */
-function encodeGenotypes(
+function fillEncoded(
+  out: Int8Array,
   genotypes: Record<string, string>,
   samples: string[],
   splitCache: Record<string, string[]>,
-): Int8Array {
-  const encoded = new Int8Array(samples.length)
-  for (const [i, sample] of samples.entries()) {
-    const val = genotypes[sample]!
-    const alleles = splitCache[val] ?? (splitCache[val] = val.split(SPLITTER))
+) {
+  let nHomRef = 0
+  let nHet = 0
+  let nHomAlt = 0
+  let nValid = 0
 
+  for (let i = 0; i < samples.length; i++) {
+    const val = genotypes[samples[i]!]!
+    const len = val.length
+
+    if (len === 3) {
+      const sep = val.charCodeAt(1)
+      if (sep === SLASH_CODE || sep === PIPE_CODE) {
+        const c0 = val.charCodeAt(0)
+        const c1 = val.charCodeAt(2)
+        if (c0 === DOT_CODE) {
+          if (c1 === DOT_CODE) {
+            out[i] = -1
+          } else if (c1 === ZERO_CODE) {
+            out[i] = 0
+            nHomRef++
+            nValid++
+          } else {
+            out[i] = 1
+            nHet++
+            nValid++
+          }
+        } else if (c1 === DOT_CODE) {
+          if (c0 === ZERO_CODE) {
+            out[i] = 0
+            nHomRef++
+            nValid++
+          } else {
+            out[i] = 1
+            nHet++
+            nValid++
+          }
+        } else {
+          const isAlt0 = c0 !== ZERO_CODE
+          const isAlt1 = c1 !== ZERO_CODE
+          if (!isAlt0 && !isAlt1) {
+            out[i] = 0
+            nHomRef++
+            nValid++
+          } else if (isAlt0 && isAlt1) {
+            out[i] = 2
+            nHomAlt++
+            nValid++
+          } else {
+            out[i] = 1
+            nHet++
+            nValid++
+          }
+        }
+        continue
+      }
+    }
+
+    // General case: haploid, polyploid, or multi-digit alleles
+    const alleles = splitCache[val] ?? (splitCache[val] = val.split(SPLITTER))
     let nonRefCount = 0
     let uncalledCount = 0
     for (const allele of alleles) {
@@ -209,18 +368,24 @@ function encodeGenotypes(
         nonRefCount++
       }
     }
-
     if (uncalledCount === alleles.length) {
-      encoded[i] = -1
+      out[i] = -1
     } else if (nonRefCount === 0) {
-      encoded[i] = 0
+      out[i] = 0
+      nHomRef++
+      nValid++
     } else if (nonRefCount === alleles.length) {
-      encoded[i] = 2
+      out[i] = 2
+      nHomAlt++
+      nValid++
     } else {
-      encoded[i] = 1
+      out[i] = 1
+      nHet++
+      nValid++
     }
   }
-  return encoded
+
+  return { nHomRef, nHet, nHomAlt, nValid }
 }
 
 function popcount32(v: number) {
@@ -260,6 +425,44 @@ function packHaplotypesWithCounts(
   let nValid = 0
   for (let s = 0; s < numSamples; s++) {
     const val = genotypes[samples[s]!]!
+    const len = val.length
+
+    if (len === 3 && val.charCodeAt(1) === PIPE_CODE) {
+      // Fast path: 3-char phased "X|Y" — avoids indexOf/slice allocation
+      const c0 = val.charCodeAt(0)
+      const c1 = val.charCodeAt(2)
+      const w = s >>> 5
+      const bit = 1 << (s & 31)
+      const v0 = c0 !== DOT_CODE
+      const v1 = c1 !== DOT_CODE
+      if (v0) {
+        validH1[w] = validH1[w]! | bit
+        if (c0 !== ZERO_CODE) {
+          altH1[w] = altH1[w]! | bit
+        }
+      }
+      if (v1) {
+        validH2[w] = validH2[w]! | bit
+        if (c1 !== ZERO_CODE) {
+          altH2[w] = altH2[w]! | bit
+        }
+      }
+      if (v0 && v1) {
+        nValid++
+        const isAlt0 = c0 !== ZERO_CODE
+        const isAlt1 = c1 !== ZERO_CODE
+        if (!isAlt0 && !isAlt1) {
+          nHomRef++
+        } else if (isAlt0 && isAlt1) {
+          nHomAlt++
+        } else {
+          nHet++
+        }
+      }
+      continue
+    }
+
+    // General path: multi-digit alleles or non-standard ploidy
     const pipe = val.indexOf('|')
     if (pipe === -1) {
       continue
@@ -283,9 +486,9 @@ function packHaplotypesWithCounts(
       }
     }
     if (v0 && v1) {
+      nValid++
       const isAlt0 = a0 !== '0'
       const isAlt1 = a1 !== '0'
-      nValid++
       if (!isAlt0 && !isAlt1) {
         nHomRef++
       } else if (isAlt0 && isAlt1) {
@@ -384,8 +587,8 @@ function calculateLDStats(
   // Genotype encoding: 0=AA, 1=Aa, 2=aa (where A=ref, a=alt)
   // We count allele dosages and estimate haplotype freqs
 
-  for (const [i, element] of geno1.entries()) {
-    const g1 = element
+  for (let i = 0; i < geno1.length; i++) {
+    const g1 = geno1[i]!
     const g2 = geno2[i]!
     // Only include samples where both genotypes are called
     if (g1 >= 0 && g2 >= 0) {
@@ -537,7 +740,7 @@ export async function getLDMatrix({
     }
   }
 
-  const splitCache = {} as Record<string, string[]>
+  const splitCache: Record<string, string[]> = {}
 
   const rawFeatures = await updateStatus(
     'Loading features',
@@ -578,6 +781,15 @@ export async function getLDMatrix({
     }
   }
 
+  const nSamples = samples.length
+  // Pre-allocate a flat buffer for all encoded genotypes to avoid per-variant
+  // Int8Array allocation. Variants that fail filters reuse the same slot
+  // (snpIdx is only incremented when a variant passes all filters).
+  const encodedFlat = dataIsPhased
+    ? null
+    : new Int8Array(totalVariants * nSamples)
+  let snpIdx = 0
+
   for (const feature of rawFeatures) {
     if (feature.get('end') - feature.get('start') > lengthCutoffFilter) {
       filteredByLength++
@@ -594,71 +806,40 @@ export async function getLDMatrix({
       continue
     }
 
-    let nHomRef = 0
-    let nHet = 0
-    let nHomAlt = 0
-    let nValid = 0
-    let packed:
-      | (PackedHaplotypes & {
-          nHomRef: number
-          nHet: number
-          nHomAlt: number
-          nValid: number
-        })
-      | undefined
-    let encoded: Int8Array | undefined
-
     const rawGt = getRawCallGenotype(feature)
-    if (rawGt) {
-      const ploidy = feature.get('ploidy') as number
-      const rawPhased = feature.get('callGenotypePhased') as
-        | Uint8Array
-        | undefined
+    const ploidy = feature.get('ploidy') as number
+    const genotypes = rawGt
+      ? undefined
+      : (feature.get('genotypes') as Record<string, string>)
 
-      if (dataIsPhased) {
-        packed = packHaplotypesFromRaw(rawGt, rawPhased, ploidy, samples.length)
-        nHomRef = packed.nHomRef
-        nHet = packed.nHet
-        nHomAlt = packed.nHomAlt
-        nValid = packed.nValid
-      } else {
-        encoded = encodeGenotypesFromRaw(rawGt, ploidy, samples.length)
-        for (const g of encoded) {
-          if (g === 0) {
-            nHomRef++
-            nValid++
-          } else if (g === 1) {
-            nHet++
-            nValid++
-          } else if (g === 2) {
-            nHomAlt++
-            nValid++
-          }
-        }
-      }
+    let packed:
+      | ReturnType<typeof packHaplotypesFromRaw>
+      | ReturnType<typeof packHaplotypesWithCounts>
+      | undefined
+    let encodedSlot: Int8Array | undefined
+    let nHomRef: number
+    let nHet: number
+    let nHomAlt: number
+    let nValid: number
+
+    if (dataIsPhased) {
+      packed = rawGt
+        ? packHaplotypesFromRaw(
+            rawGt,
+            feature.get('callGenotypePhased') as Uint8Array | undefined,
+            ploidy,
+            nSamples,
+          )
+        : packHaplotypesWithCounts(genotypes!, samples)
+      ;({ nHomRef, nHet, nHomAlt, nValid } = packed)
     } else {
-      const genotypes = feature.get('genotypes') as Record<string, string>
-      if (dataIsPhased) {
-        packed = packHaplotypesWithCounts(genotypes, samples)
-        nHomRef = packed.nHomRef
-        nHet = packed.nHet
-        nHomAlt = packed.nHomAlt
-        nValid = packed.nValid
-      } else {
-        encoded = encodeGenotypes(genotypes, samples, splitCache)
-        for (const g of encoded) {
-          if (g === 0) {
-            nHomRef++
-            nValid++
-          } else if (g === 1) {
-            nHet++
-            nValid++
-          } else if (g === 2) {
-            nHomAlt++
-            nValid++
-          }
-        }
-      }
+      encodedSlot = encodedFlat!.subarray(
+        snpIdx * nSamples,
+        (snpIdx + 1) * nSamples,
+      )
+      ;({ nHomRef, nHet, nHomAlt, nValid } = rawGt
+        ? fillEncodedFromRaw(encodedSlot, rawGt, ploidy, nSamples)
+        : fillEncoded(encodedSlot, genotypes!, samples, splitCache))
     }
 
     const altFreq = nValid > 0 ? (nHet + 2 * nHomAlt) / (2 * nValid) : 0
@@ -667,7 +848,7 @@ export async function getLDMatrix({
       continue
     }
 
-    if (callRateFilterEnabled && nValid / samples.length < callRateFilter) {
+    if (callRateFilterEnabled && nValid / nSamples < callRateFilter) {
       filteredByCallRate++
       continue
     }
@@ -703,9 +884,9 @@ export async function getLDMatrix({
 
     if (packed) {
       packedHaplotypes.push(packed)
-    }
-    if (encoded) {
-      encodedGenotypes.push(encoded)
+    } else {
+      encodedGenotypes.push(encodedSlot!)
+      snpIdx++
     }
 
     checkStopToken2(stopTokenCheck)
@@ -726,30 +907,28 @@ export async function getLDMatrix({
     console.warn('GPU LD computation failed, falling back to CPU', e)
   }
 
-  if (!ldValues) {
-    ldValues = await updateStatus('Computing LD values', statusCallback, () => {
-      const vals = new Float32Array(ldSize)
-      let idx = 0
-      for (let i = 1; i < n; i++) {
-        for (let j = 0; j < i; j++) {
-          const stats = dataIsPhased
-            ? calculateLDStatsPhasedBits(
-                packedHaplotypes[i]!,
-                packedHaplotypes[j]!,
-                signedLD,
-              )
-            : calculateLDStats(
-                encodedGenotypes[i]!,
-                encodedGenotypes[j]!,
-                signedLD,
-              )
-          vals[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
-          checkStopToken2(stopTokenCheck)
-        }
+  ldValues ??= await updateStatus('Computing LD values', statusCallback, () => {
+    const vals = new Float32Array(ldSize)
+    let idx = 0
+    for (let i = 1; i < n; i++) {
+      for (let j = 0; j < i; j++) {
+        const stats = dataIsPhased
+          ? calculateLDStatsPhasedBits(
+              packedHaplotypes[i]!,
+              packedHaplotypes[j]!,
+              signedLD,
+            )
+          : calculateLDStats(
+              encodedGenotypes[i]!,
+              encodedGenotypes[j]!,
+              signedLD,
+            )
+        vals[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
+        checkStopToken2(stopTokenCheck)
       }
-      return vals
-    })
-  }
+    }
+    return vals
+  })
 
   const filterStats: FilterStats = {
     totalVariants,
@@ -769,18 +948,19 @@ export async function getLDMatrix({
   for (let i = 0; i < n - 1; i++) {
     let r2: number
 
-    if (dataIsPhased) {
-      const stats = calculateLDStatsPhasedBits(
+    // When ldMetric is 'r2', ldValues already holds r² for every pair in
+    // lower-triangular order: index of pair (i+1, i) = (i+1)*i/2 + i.
+    // Reuse those values rather than recomputing.
+    if (ldMetric === 'r2') {
+      const v = ldValues[((i + 1) * i) / 2 + i]!
+      r2 = signedLD ? v * v : v
+    } else if (dataIsPhased) {
+      r2 = calculateLDStatsPhasedBits(
         packedHaplotypes[i]!,
         packedHaplotypes[i + 1]!,
-      )
-      r2 = stats.r2
+      ).r2
     } else {
-      const stats = calculateLDStats(
-        encodedGenotypes[i]!,
-        encodedGenotypes[i + 1]!,
-      )
-      r2 = stats.r2
+      r2 = calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[i + 1]!).r2
     }
 
     // 1 - r² gives recombination evidence (higher = more recombination)

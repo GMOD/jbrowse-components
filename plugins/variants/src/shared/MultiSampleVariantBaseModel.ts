@@ -1,28 +1,26 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { set1 } from '@jbrowse/core/ui/colors'
 import {
+  SimpleFeature,
   getContainingTrack,
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import {
-  getParentRenderProps,
-  getRpcSessionId,
-} from '@jbrowse/core/util/tracks'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  AUTO_FORCE_LOAD_BP,
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
-import { computeHierarchyLayout, parseClusterTree } from '@jbrowse/tree-sidebar'
+import { TreeSidebarMixin, clusterLayout } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
@@ -32,26 +30,32 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
 import {
+  GENOTYPE_SPLITTER,
   NO_CALL_COLOR,
   OTHER_ALT_COLOR,
   REFERENCE_COLOR,
   UNPHASED_COLOR,
   getAltColorForDosage,
 } from './constants.ts'
-import { getSources } from './getSources.ts'
+import { getSources, makeHaplotypeSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
 
-import type { SampleInfo, Source } from './types.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { ProcessedSource, Source } from './types.ts'
+import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
+import type {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
+  ByteEstimateConfig,
+  FetchContext,
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { HoveredTreeNode } from '@jbrowse/tree-sidebar'
 
 // lazies
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
@@ -65,8 +69,6 @@ const ClusterDialog = lazy(
 const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
-
-const GENOTYPE_SPLITTER = /[/|]/
 
 function encodeGenotype(gt: string) {
   const alleles = gt.split(GENOTYPE_SPLITTER)
@@ -82,39 +84,65 @@ function encodeGenotype(gt: string) {
   return uncalledCount === alleles.length ? -1 : nonRefCount
 }
 
-interface GenotypeMap {
-  genotypes: Record<string, string>
+// Module-local helper for the variant cell data RPC call. Kept here (not an
+// MST action) so the RPC payload shape is easy to read at the call site. self
+// is typed structurally because cellDataMode is defined on each subclass
+// (MultiVariantDisplay = 'regular', MultiVariantMatrixDisplay = 'matrix').
+async function callMultiSampleVariantCellData(
+  self: {
+    adapterConfig: AnyConfigurationModel
+    cellDataMode: 'regular' | 'matrix'
+    rpcProps: {
+      sources: ProcessedSource[]
+      minorAlleleFrequencyFilter: number
+      lengthCutoffFilter: number
+      renderingMode: string
+      referenceDrawingMode: string
+    }
+    setStatusMessage: (msg?: string) => void
+  },
+  ctx: FetchContext,
+) {
+  const view = getContainingView(self) as LinearGenomeViewModel
+  const allBuffered = view.bufferedVisibleRegions
+  const sessionId = getRpcSessionId(self)
+  return getSession(self).rpcManager.call(
+    sessionId,
+    'MultiSampleVariantGetCellData',
+    {
+      regions: allBuffered.map(r => r.region),
+      displayedRegionIndices: allBuffered.map(r => r.displayedRegionIndex),
+      ...self.rpcProps,
+      mode: self.cellDataMode,
+      sessionId,
+      adapterConfig: self.adapterConfig,
+      stopToken: ctx.stopToken,
+      statusCallback: (msg: string) => {
+        if (isAlive(self)) {
+          self.setStatusMessage(msg)
+        }
+      },
+    },
+  )
 }
 
-function getGenotypeMapForFeature(cellData: unknown, featureId: string) {
-  const data = cellData as
-    | {
-        featureGenotypeMap?: Record<string, GenotypeMap>
-        featureData?: (GenotypeMap & { featureId: string })[]
-        perRegionCellData?: Record<
-          number,
-          { featureGenotypeMap?: Record<string, GenotypeMap> }
-        >
-      }
-    | undefined
-  if (!data) {
+function getGenotypeMapForFeature(
+  cellData: CellDataResult | undefined,
+  featureId: string,
+) {
+  if (!cellData) {
     return undefined
   }
-  if (data.perRegionCellData) {
-    for (const regionData of Object.values(data.perRegionCellData)) {
-      const result = regionData.featureGenotypeMap?.[featureId]
+  if (cellData.mode === 'regular') {
+    for (const regionData of Object.values(cellData.perRegionCellData)) {
+      const result = regionData.featureGenotypeMap[featureId]
       if (result) {
         return result
       }
     }
+    return undefined
   }
-  if (data.featureGenotypeMap) {
-    return data.featureGenotypeMap[featureId]
-  }
-  if (data.featureData) {
-    return data.featureData.find(f => f.featureId === featureId)
-  }
-  return undefined
+  return cellData.featureData.find(f => f.featureId === featureId)
 }
 
 /**
@@ -133,9 +161,9 @@ export default function MultiSampleVariantBaseModelF(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       ConfigOverrideMixin(),
+      TreeSidebarMixin<Source>(),
       types.model({
         type: types.literal('LinearVariantMatrixDisplay'),
-        layout: types.optional(types.frozen<Source[]>(), []),
         configuration: ConfigurationReference(configSchema),
         rowHeightMode: types.optional(types.number, 0),
         lengthCutoffFilter: types.optional(
@@ -143,10 +171,7 @@ export default function MultiSampleVariantBaseModelF(
           Number.MAX_SAFE_INTEGER,
         ),
         jexlFilters: types.maybe(types.array(types.string)),
-        clusterTree: types.maybe(types.string),
-        treeAreaWidth: types.optional(types.number, 80),
         lineZoneHeight: types.optional(types.number, 0),
-        subtreeFilter: types.maybe(types.array(types.string)),
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -164,7 +189,7 @@ export default function MultiSampleVariantBaseModelF(
         snap = { ...rest, heightPreConfig: height }
       }
 
-      return migrateVariantSettings(snap)
+      return migrateOldSettingSnapshots(snap)
     })
     .volatile(() => ({
       /**
@@ -175,10 +200,6 @@ export default function MultiSampleVariantBaseModelF(
        * #volatile
        */
       sourcesLoadingStopToken: undefined as StopToken | undefined,
-      /**
-       * #volatile
-       */
-      simplifiedFeaturesStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
@@ -200,50 +221,59 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #volatile
        */
-      featuresVolatile: undefined as Feature[] | undefined,
-      /**
-       * #volatile
-       */
-      hasPhased: false,
-      /**
-       * #volatile
-       */
-      sampleInfo: undefined as undefined | Record<string, SampleInfo>,
-      /**
-       * #volatile
-       */
       hoveredGenotype: undefined as
         | (Record<string, unknown> & { genotype: string; name: string })
         | undefined,
       /**
        * #volatile
+       *
+       * Single source of truth for fetched per-display data. hasPhased,
+       * sampleInfo, and featuresVolatile are derived from this via getters
+       * — fetchNeeded only needs to call setCellData(result).
        */
-      hoveredTreeNode: undefined as HoveredTreeNode | undefined,
-      /**
-       * #volatile
-       */
-      treeCanvas: undefined as HTMLCanvasElement | undefined,
-      /**
-       * #volatile
-       */
-      mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
-      cellData: undefined as unknown,
-      cellDataLoading: false,
-      displayError: undefined as unknown,
-      errorRetryCount: 0,
+      cellData: undefined as CellDataResult | undefined,
+      // Bumped by reload() to retrigger the sources autorun. Sources is a
+      // one-shot fetch (per adapter, not per viewport), so it doesn't go
+      // through FetchMixin and can't watch fetchGeneration — that would
+      // refetch sources on every viewport change. This counter is its
+      // dedicated user-reload signal.
+      reloadCount: 0,
+      pendingClusterTree: undefined as string | undefined,
     }))
     .actions(self => ({
-      setCellData(data: unknown) {
+      setCellData(data: CellDataResult | undefined) {
         self.cellData = data
-      },
-      setCellDataLoading(val: boolean) {
-        self.cellDataLoading = val
-      },
-      setDisplayError(e: unknown) {
-        self.displayError = e
+        if (self.pendingClusterTree !== undefined) {
+          self.clusterTree = self.pendingClusterTree
+          self.pendingClusterTree = undefined
+        }
       },
       setContextMenuFeature(feature?: Feature) {
         self.contextMenuFeature = feature
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * SimpleFeature instances derived from the simplifiedFeatures list in
+       * the most recent cellData payload. Cached by MobX while cellData is
+       * unchanged. Named `featuresVolatile` for backwards-compat with
+       * consumers that originally read it as a volatile field.
+       */
+      get featuresVolatile(): Feature[] | undefined {
+        return self.cellData?.simplifiedFeatures.map(f => new SimpleFeature(f))
+      },
+      /**
+       * #getter
+       */
+      get hasPhased() {
+        return self.cellData?.hasPhased ?? false
+      },
+      /**
+       * #getter
+       */
+      get sampleInfo() {
+        return self.cellData?.sampleInfo
       },
     }))
     .views(self => ({
@@ -264,7 +294,7 @@ export default function MultiSampleVariantBaseModelF(
 
       get fetchSizeLimit() {
         return (
-          self.userByteSizeLimit ||
+          self.userByteSizeLimit ??
           self.getConfWithOverride<number>('fetchSizeLimit')
         )
       },
@@ -330,71 +360,10 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #action
        */
-      setHoveredTreeNode(node?: HoveredTreeNode) {
-        self.hoveredTreeNode = node
-      },
-      /**
-       * #action
-       */
-      setTreeCanvasRef(ref: HTMLCanvasElement | null) {
-        self.treeCanvas = ref || undefined
-      },
-      /**
-       * #action
-       */
-      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref || undefined
-      },
-      /**
-       * #action
-       */
-      setTreeAreaWidth(width: number) {
-        self.treeAreaWidth = width
-      },
-      /**
-       * #action
-       */
-      setFeatures(f: Feature[]) {
-        self.featuresVolatile = f
-      },
-
-      /**
-       * #action
-       */
       setColorByApplied(value: boolean) {
         self.colorByApplied = value
       },
 
-      /**
-       * #action
-       */
-      setLayout(layout: Source[], clearTree = true) {
-        const orderChanged =
-          clearTree &&
-          self.clusterTree &&
-          self.layout.length === layout.length &&
-          self.layout.some(
-            (source: Source, idx: number) => source.name !== layout[idx]?.name,
-          )
-
-        self.layout = layout
-        if (orderChanged) {
-          self.clusterTree = undefined
-        }
-      },
-      /**
-       * #action
-       */
-      clearLayout() {
-        self.layout = []
-        self.clusterTree = undefined
-      },
-      /**
-       * #action
-       */
-      setClusterTree(tree?: string) {
-        self.clusterTree = tree
-      },
       /**
        * #action
        */
@@ -404,16 +373,6 @@ export default function MultiSampleVariantBaseModelF(
         }
         self.sourcesLoadingStopToken = token
       },
-      /**
-       * #action
-       */
-      setSimplifiedFeaturesLoading(token: StopToken) {
-        if (self.simplifiedFeaturesStopToken) {
-          stopStopToken(self.simplifiedFeaturesStopToken)
-        }
-        self.simplifiedFeaturesStopToken = token
-      },
-
       /**
        * #action
        */
@@ -434,11 +393,14 @@ export default function MultiSampleVariantBaseModelF(
       setShowTree(arg: boolean) {
         self.setOverride('showTree', arg)
       },
-      /**
-       * #action
-       */
-      setSubtreeFilter(names?: string[]) {
-        self.subtreeFilter = names ? cast(names) : undefined
+      setLayoutAndClusterTree(layout: Source[], tree?: string) {
+        self.layout = layout
+        if (tree !== undefined) {
+          self.pendingClusterTree = tree
+        } else {
+          self.clusterTree = undefined
+          self.pendingClusterTree = undefined
+        }
       },
       /**
        * #action
@@ -475,20 +437,6 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #action
        */
-      setHasPhased(arg: boolean) {
-        self.hasPhased = arg
-      },
-      /**
-       * #action
-       */
-      setSampleInfo(arg: Record<string, SampleInfo>) {
-        if (!deepEqual(arg, self.sampleInfo)) {
-          self.sampleInfo = arg
-        }
-      },
-      /**
-       * #action
-       */
       setReferenceDrawingMode(arg: string) {
         self.setOverride('referenceDrawingMode', arg)
       },
@@ -520,17 +468,11 @@ export default function MultiSampleVariantBaseModelF(
           : 'skip'
       },
 
-      activeFilters() {
-        return (
-          self.jexlFilters ??
-          self
-            .getConfWithOverride<string[]>('jexlFilters')
-            .map((r: string) => `jexl:${r}`)
-        )
-      },
-
       /**
        * #getter
+       * Original adapter order, no layout reordering. Reads sampleInfo
+       * (cellData-derived) for phased expansion — safe in React components
+       * and user actions, never put in rpcProps (would cause infinite loop).
        */
       get sourcesWithoutLayout() {
         return self.sourcesVolatile
@@ -543,106 +485,118 @@ export default function MultiSampleVariantBaseModelF(
       },
       /**
        * #getter
+       * Layout-ordered, subtree-filtered, never haplotype-expanded.
+       * Does NOT read sampleInfo — safe to use in rpcProps. Three-getter
+       * hierarchy: sourcesBase → sources (adds phased expansion) →
+       * sourcesWithoutLayout (no layout, reads sampleInfo for phased).
+       */
+      get sourcesBase() {
+        if (!self.sourcesVolatile) {
+          return undefined
+        }
+        const base = getSources({
+          sources: self.sourcesVolatile,
+          layout: self.layout.length ? self.layout : undefined,
+          renderingMode: 'alleleCount',
+        })
+        if (!self.subtreeFilter?.length) {
+          return base
+        }
+        const filterSet = new Set(self.subtreeFilter)
+        return base.filter(s => filterSet.has(s.sampleName))
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * sourcesBase expanded for phased rendering when sampleInfo is available.
+       * Sources already carrying HP (from clustering) pass through unchanged.
        */
       get sources() {
-        let result = self.sourcesVolatile
-          ? getSources({
-              sources: self.sourcesVolatile,
-              layout: self.layout.length ? self.layout : undefined,
-              renderingMode: self.renderingMode,
-              sampleInfo: self.sampleInfo,
-            })
-          : undefined
-
-        // Filter to subtree if filter is active
-        if (result && self.subtreeFilter?.length) {
-          const filterSet = new Set(self.subtreeFilter)
-          result = result.filter(s => filterSet.has(s.sampleName ?? s.name))
+        const base = self.sourcesBase
+        if (!base || self.renderingMode !== 'phased') {
+          return base
         }
-        return result
+        const sampleInfo = self.sampleInfo
+        if (!sampleInfo) {
+          return base
+        }
+        return base.flatMap(s =>
+          s.HP !== undefined
+            ? [s]
+            : makeHaplotypeSources(s, sampleInfo[s.sampleName]?.maxPloidy ?? 2),
+        )
+      },
+    }))
+    .views(self => ({
+      // Payload for MultiSampleVariantGetCellData. SettingsInvalidate watches
+      // this — any change clears loaded data and triggers a refetch. Uses
+      // sourcesBase (not sources) to avoid reading sampleInfo, which comes from
+      // the fetch result and would cause an infinite invalidation loop.
+      get rpcProps() {
+        return {
+          sources: self.sourcesBase,
+          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          lengthCutoffFilter: self.lengthCutoffFilter,
+          renderingMode: self.renderingMode,
+          referenceDrawingMode: self.referenceDrawingMode,
+        }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get sourceMap() {
+        return self.sources
+          ? Object.fromEntries(
+              self.sources.map((source: Source) => [source.name, source]),
+            )
+          : undefined
+      },
+      /**
+       * #getter
+       * Available height for rows (total height minus lineZoneHeight)
+       */
+      get availableHeight() {
+        return self.height - self.lineZoneHeight
       },
       /**
        * #getter
        */
-      get root() {
-        const newick = self.clusterTree
-        if (!newick) {
+      get nrow() {
+        return Math.max(1, self.sources?.length ?? 0)
+      },
+
+      /**
+       * #getter
+       */
+      get autoRowHeight() {
+        return this.availableHeight / this.nrow
+      },
+
+      /**
+       * #getter
+       */
+      get rowHeight() {
+        if (self.rowHeightMode === 0) {
+          return this.autoRowHeight
+        }
+        return Math.abs(self.rowHeightMode - this.autoRowHeight) < 0.01
+          ? this.autoRowHeight
+          : self.rowHeightMode
+      },
+      /**
+       * #getter
+       */
+      get hierarchy() {
+        const r = self.root
+        if (!r || !self.sources?.length) {
           return undefined
         }
-        return parseClusterTree(newick, self.subtreeFilter?.slice())
+        return clusterLayout(r, this.rowHeight * this.nrow, self.treeAreaWidth)
       },
     }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-
-      return {
-        /**
-         * #getter
-         */
-        get sourceMap() {
-          return self.sources
-            ? Object.fromEntries(
-                self.sources.map((source: Source) => [source.name, source]),
-              )
-            : undefined
-        },
-        /**
-         * #getter
-         * Available height for rows (total height minus lineZoneHeight)
-         */
-        get availableHeight() {
-          return self.height - self.lineZoneHeight
-        },
-        /**
-         * #getter
-         */
-        get nrow() {
-          return self.sources?.length || 1
-        },
-
-        /**
-         * #getter
-         */
-        get autoRowHeight() {
-          return this.availableHeight / this.nrow
-        },
-
-        /**
-         * #getter
-         */
-        get rowHeight() {
-          if (self.rowHeightMode === 0) {
-            return this.autoRowHeight
-          }
-          return Math.abs(self.rowHeightMode - this.autoRowHeight) < 0.01
-            ? this.autoRowHeight
-            : self.rowHeightMode
-        },
-        /**
-         * #getter
-         */
-        get hierarchy() {
-          const r = self.root
-          if (!r || !self.sources?.length) {
-            return undefined
-          }
-          return computeHierarchyLayout(
-            r,
-            this.rowHeight * this.nrow,
-            self.treeAreaWidth,
-          )
-        },
-        /**
-         * #method
-         */
-        adapterProps() {
-          return {
-            ...superRenderProps(),
-            ...getParentRenderProps(self),
-          }
-        },
-      }
-    })
     .views(self => ({
       get featureNearestCenter() {
         const view = getContainingView(self) as LinearGenomeViewModel
@@ -874,18 +828,17 @@ export default function MultiSampleVariantBaseModelF(
             },
             {
               label: 'Copy to clipboard',
-              onClick: () => {
-                const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
-                const id = feat.get('name') || feat.id()
-                import('copy-to-clipboard')
-                  .then(({ default: copy }) => {
-                    copy(`${id} ${loc}`)
-                    getSession(self).notify('Copied to clipboard', 'info')
-                  })
-                  .catch((e: unknown) => {
-                    console.error(e)
-                    getSession(self).notifyError(`${e}`, e)
-                  })
+              onClick: async () => {
+                try {
+                  const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
+                  const id = feat.get('name') || feat.id()
+                  const { default: copy } = await import('copy-to-clipboard')
+                  await copy(`${id} ${loc}`)
+                  getSession(self).notify('Copied to clipboard', 'info')
+                } catch (e) {
+                  console.error(e)
+                  getSession(self).notifyError(`${e}`, e)
+                }
               },
             },
             {
@@ -910,13 +863,21 @@ export default function MultiSampleVariantBaseModelF(
        * #getter
        */
       get totalHeight() {
-        return self.rowHeight * (self.sources?.length || 1)
+        return self.rowHeight * (self.sources?.length ?? 1)
       },
       /**
        * #getter
        */
       get featuresReady() {
         return !!self.featuresVolatile
+      },
+
+      get isDisplayLoading() {
+        return (
+          !self.error &&
+          !self.regionTooLarge &&
+          (!self.cellData || self.isLoading)
+        )
       },
       /**
        * #method
@@ -934,45 +895,6 @@ export default function MultiSampleVariantBaseModelF(
       },
     }))
     .views(self => ({
-      /**
-       * #method
-       */
-      renderProps() {
-        const superProps = self.adapterProps()
-        return {
-          ...superProps,
-          notReady: superProps.notReady || !self.sources || !self.featuresReady,
-          height: self.height,
-          totalHeight: self.totalHeight,
-          renderingMode: self.renderingMode,
-          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
-          lengthCutoffFilter: self.lengthCutoffFilter,
-          rowHeight: self.rowHeight,
-          sources: self.sources,
-          scrollTop: self.scrollTop,
-          referenceDrawingMode: self.referenceDrawingMode,
-          filters: new SerializableFilterChain({
-            filters: self.activeFilters(),
-          }),
-        }
-      },
-      /**
-       * #method
-       */
-      renderingProps() {
-        return {
-          displayModel: self,
-          onFeatureClick(_: React.MouseEvent, featureId: string) {
-            const features = self.featuresVolatile
-            if (features) {
-              const feature = features.find(f => f.id() === featureId)
-              if (feature && isAlive(self)) {
-                self.selectFeature(feature)
-              }
-            }
-          },
-        }
-      },
       /**
        * #method
        * Returns legend items for rendering colors based on current mode
@@ -1018,10 +940,16 @@ export default function MultiSampleVariantBaseModelF(
           }
           return items
         }
-        const hasSecondaryAlt = self.featuresVolatile?.some(f => {
-          const alt = f.get('ALT') as string[] | undefined
-          return alt && alt.length > 1
-        })
+        let hasSecondaryAlt = false
+        if (self.featuresVolatile) {
+          for (const f of self.featuresVolatile) {
+            const alt = f.get('ALT') as string[] | undefined
+            if (alt && alt.length > 1) {
+              hasSecondaryAlt = true
+              break
+            }
+          }
+        }
         const items: LegendItem[] = [
           { color: REFERENCE_COLOR, label: 'Homozygous reference' },
           { color: getAltColorForDosage(0.5), label: 'Heterozygous alt' },
@@ -1034,17 +962,71 @@ export default function MultiSampleVariantBaseModelF(
         return items
       },
     }))
-    .actions(self => {
-      const superReload = self.reload
-      return {
-        reload() {
-          self.displayError = undefined
-          self.setRegionTooLarge(false)
-          self.errorRetryCount++
-          superReload()
-        },
-      }
-    })
+    .views(self => ({
+      get adapterConfigSnapshot() {
+        return getConf(getContainingTrack(self), 'adapter') as Record<
+          string,
+          unknown
+        >
+      },
+    }))
+    .actions(self => ({
+      clearDisplaySpecificData() {
+        // hasPhased / sampleInfo / featuresVolatile are derived from cellData
+        // via getters, so clearing cellData clears all of them.
+        self.cellData = undefined
+      },
+
+      getByteEstimateConfig(): ByteEstimateConfig | null {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
+          return null
+        }
+        return {
+          adapterConfig: self.adapterConfigSnapshot,
+          fetchSizeLimit: self.getConfWithOverride<number>('fetchSizeLimit'),
+          userByteSizeLimit: self.userByteSizeLimit,
+          visibleBp: view.visibleBp,
+        }
+      },
+
+      // Ignores `needed` and refetches all visible regions because the
+      // cellData RPC payload is monolithic — one call returns data covering
+      // all visible regions, so partial refetches don't fit. Other LGV
+      // displays pass `needed` directly to fetchRegions for per-region
+      // caching of rpcDataMap entries.
+      async fetchNeeded(
+        _needed: { region: Region; displayedRegionIndex: number }[],
+      ) {
+        if (self.isMinimized || !self.rpcProps.sources) {
+          return
+        }
+        const allBuffered = (getContainingView(self) as LinearGenomeViewModel)
+          .bufferedVisibleRegions
+        if (allBuffered.length === 0) {
+          return
+        }
+        // cellDataMode is defined per-subclass; cast widens self structurally
+        const helperSelf = self as unknown as Parameters<
+          typeof callMultiSampleVariantCellData
+        >[0]
+        await self.fetchRegions(allBuffered, async (ctx: FetchContext) => {
+          const result = await callMultiSampleVariantCellData(helperSelf, ctx)
+          if (!ctx.isStale() && isAlive(self)) {
+            self.setCellData(result)
+          }
+        })
+      },
+    }))
+    .actions(self => ({
+      reload() {
+        // Bump reloadCount so the sources autorun re-fires; clearAllRpcData
+        // clears error/regionTooLarge and bumps fetchGeneration to retrigger
+        // the cellData fetch via FetchVisibleRegions.
+        self.reloadCount++
+        self.clearAllRpcData()
+      },
+    }))
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -1074,7 +1056,6 @@ export default function MultiSampleVariantBaseModelF(
         jexlFilters,
         clusterTree,
         treeAreaWidth,
-        lineZoneHeight,
         subtreeFilter,
         ...rest
       } = snap as Omit<typeof snap, symbol>
@@ -1088,7 +1069,6 @@ export default function MultiSampleVariantBaseModelF(
         ...(jexlFilters?.length ? { jexlFilters } : {}),
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
-        ...(lineZoneHeight ? { lineZoneHeight } : {}),
         ...(subtreeFilter?.length ? { subtreeFilter } : {}),
       } as typeof snap
     })
@@ -1099,7 +1079,3 @@ export type MultiSampleVariantBaseStateModel = ReturnType<
 >
 export type MultiSampleVariantBaseModel =
   Instance<MultiSampleVariantBaseStateModel>
-
-function migrateVariantSettings(snap: Record<string, unknown>) {
-  return migrateOldSettingSnapshots(snap)
-}

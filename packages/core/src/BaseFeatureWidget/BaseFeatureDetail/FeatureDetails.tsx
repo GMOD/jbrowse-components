@@ -5,7 +5,7 @@ import BaseCard from './BaseCard.tsx'
 import CoreDetails from './CoreDetails.tsx'
 import { generateTitle } from './util.ts'
 import { ErrorBoundary } from '../../ui/ErrorBoundary.tsx'
-import { ErrorMessage } from '../../ui/index.ts'
+import { ErrorBanner } from '../../ui/index.ts'
 import { getEnv, getSession } from '../../util/index.ts'
 import SequenceFeatureDetails from '../SequenceFeatureDetails/index.tsx'
 
@@ -59,13 +59,7 @@ export default function FeatureDetails(props: {
           <Typography>Mate details</Typography>
           <CoreDetails
             {...props}
-            feature={{
-              ...m,
-              start: m.start,
-              end: m.end,
-              refName: m.refName,
-              uniqueId: `${uniqueId}-mate`,
-            }}
+            feature={{ ...m, uniqueId: `${uniqueId}-mate` }}
           />
         </>
       ) : null}
@@ -79,7 +73,7 @@ export default function FeatureDetails(props: {
         omitSingleLevel={coreDetails}
       />
 
-      <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
+      <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
         <SequenceFeatureDetails {...props} />
       </ErrorBoundary>
 
@@ -93,10 +87,13 @@ export default function FeatureDetails(props: {
       ) : null}
 
       {depth < maxDepth && subfeatures?.length ? (
-        <BaseCard title="Subfeatures" defaultExpanded={depth < 1}>
+        <BaseCard
+          title="Subfeatures"
+          defaultExpanded={depth === 0 && subfeatures.length <= 20}
+        >
           {subfeatures.map((sub, idx) => (
             <FeatureDetails
-              key={JSON.stringify(sub)}
+              key={`${uniqueId}_${idx}`}
               feature={{
                 ...sub,
                 uniqueId: `${uniqueId}_${idx}`,

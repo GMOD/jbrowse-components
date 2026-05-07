@@ -1,272 +1,152 @@
 import {
-  dedupe,
   getContainingView,
   getSession,
-  makeAbortableReaction,
+  isAbortException,
 } from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { parseCigar } from '@jbrowse/plugin-alignments'
-import { autorun, reaction } from 'mobx'
+import { autorun } from 'mobx'
 
 import { createDotplotColorFunction } from './dotplotWebGLColors.ts'
 import { buildLineSegments } from './drawDotplotWebGL.ts'
 
+import type { DotplotGetFeaturesAndPositionsArgs } from './DotplotGetFeaturesAndPositions.ts'
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
-import type { DotplotFeatPos, DotplotFeatureData } from './types.ts'
+import type { DotplotRpcData } from './types.ts'
+import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { ViewSnap } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-function serializeFeatures(
-  features: Feature[],
-  assemblyManager: { get: (name: string) => any },
-) {
-  const serialized: DotplotFeatureData[] = []
-  for (const f of features) {
-    const mate = f.get('mate')
-    const refName = f.get('refName')
-    const mateRefName = mate.refName
-    const a1 = assemblyManager.get(f.get('assemblyName'))
-    const a2 = assemblyManager.get(mate.assemblyName)
-    serialized.push({
-      id: f.id(),
-      refName: a1?.getCanonicalRefName(refName) || refName,
-      mateRefName: a2?.getCanonicalRefName(mateRefName) || mateRefName,
-      start: f.get('start'),
-      end: f.get('end'),
-      mateStart: mate.start,
-      mateEnd: mate.end,
-      strand: f.get('strand') || 1,
-      cigar: f.get('CIGAR') as string | undefined,
-    })
+const RPC_DEBOUNCE_MS = 1000
+
+function makeViewSnap(view: Dotplot1DViewModel): ViewSnap {
+  return {
+    bpPerPx: view.bpPerPx,
+    offsetPx: view.offsetPx,
+    displayedRegions: view.displayedRegions,
+    staticBlocks: { contentBlocks: [], blocks: [] },
+    interRegionPaddingWidth: view.interRegionPaddingWidth,
+    minimumBlockWidth: view.minimumBlockWidth,
+    width: view.width,
   }
-  return serialized
 }
 
-export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
-  makeAbortableReaction(
-    self,
-    () => {
-      const view = getContainingView(self) as DotplotViewModel
-      if (!view.initialized) {
-        return undefined
-      }
-      const { hview } = view
-      return {
-        adapterConfig: self.adapterConfig,
-        regions: hview.dynamicBlocks.contentBlocks,
-        sessionId: getRpcSessionId(self),
-      }
-    },
-    async args => {
-      if (!args) {
-        return undefined
-      }
-      const { rpcManager } = getSession(self)
-      const { adapterConfig, regions, sessionId } = args
-      const rawFeatures = await rpcManager.call(sessionId, 'CoreGetFeatures', {
-        regions,
-        adapterConfig,
-      })
-      return { features: dedupe(rawFeatures, f => f.id()) }
-    },
-    {
-      name: `${self.type} ${self.id} feature loading`,
-      delay: 500,
-      fireImmediately: true,
-    },
-    self.setLoading,
-    self.setFeatures,
-    self.setError,
-  )
-
-  let cachedFeatures: Feature[] | undefined
-  let cachedSerialized: DotplotFeatureData[] = []
-
-  addDisposer(
-    self,
-    reaction(
-      () => {
-        try {
-          const view = getContainingView(self) as DotplotViewModel
-          return {
-            bpPerPx: [view.hview.bpPerPx, view.vview.bpPerPx],
-            displayedRegions: JSON.stringify([
-              view.hview.displayedRegions,
-              view.vview.displayedRegions,
-            ]),
-            features: self.features,
-            initialized: view.initialized,
-          }
-        } catch {
-          return { initialized: false as const }
-        }
-      },
-      async ({ initialized }) => {
-        if (!initialized || !self.features) {
-          return
-        }
-        const { assemblyManager, rpcManager } = getSession(self)
-        const view = getContainingView(self) as DotplotViewModel
-        const sessionId = getRpcSessionId(self)
-        const { hview, vview } = view
-
-        const snapshotBpPerPxH = hview.bpPerPx
-        const snapshotBpPerPxV = vview.bpPerPx
-
-        const hViewSnap = {
-          ...getSnapshot(hview),
-          width: hview.width,
-          staticBlocks: { contentBlocks: [], blocks: [] },
-          interRegionPaddingWidth: hview.interRegionPaddingWidth,
-          minimumBlockWidth: hview.minimumBlockWidth,
-        }
-
-        const vViewSnap = {
-          ...getSnapshot(vview),
-          width: vview.width,
-          staticBlocks: { contentBlocks: [], blocks: [] },
-          interRegionPaddingWidth: vview.interRegionPaddingWidth,
-          minimumBlockWidth: vview.minimumBlockWidth,
-        }
-
-        if (self.features !== cachedFeatures) {
-          cachedFeatures = self.features
-          cachedSerialized = serializeFeatures(self.features, assemblyManager)
-        }
-
-        const result = await rpcManager.call(
-          sessionId,
-          'DotplotGetWebGLGeometry',
-          {
-            features: cachedSerialized,
-            hViewSnap,
-            vViewSnap,
-            sessionId,
-          },
-        )
-
-        const featureMap = new Map(self.features.map(f => [f.id(), f]))
-        const positions: DotplotFeatPos[] = []
-        for (let i = 0; i < result.featureIds.length; i++) {
-          const f = featureMap.get(result.featureIds[i]!)
-          if (f) {
-            positions.push({
-              p11: result.p11_offsetPx[i]!,
-              p12: result.p12_offsetPx[i]!,
-              p21: result.p21_offsetPx[i]!,
-              p22: result.p22_offsetPx[i]!,
-              f,
-              cigar: parseCigar(result.cigars[i]),
-            })
-          }
-        }
-        self.setFeatPositions(positions, snapshotBpPerPxH, snapshotBpPerPxV)
-      },
-      { fireImmediately: true, delay: 300 },
-    ),
-  )
-
-  let lastGeometryKey = ''
-  let lastFeatPositions: DotplotFeatPos[] = []
-  let lastRenderer: unknown = null
-  let resizeSent = ''
+// SYNC: stop-token autorun fetch skeleton mirrors afterAttach.ts in linear-comparative-view
+export function doAfterAttach(
+  self: Omit<DotplotDisplayModel, 'afterAttach' | 'beforeDestroy'>,
+) {
+  let currentStopToken: StopToken | undefined
 
   addDisposer(
     self,
     autorun(
-      function dotplotDrawAutorun() {
-        let view: DotplotViewModel
-        try {
-          view = getContainingView(self) as DotplotViewModel
-        } catch {
-          return
-        }
+      async function dotplotFetchAutorun() {
+        const view = getContainingView(self) as DotplotViewModel
         if (!view.initialized) {
           return
         }
+        const regions = view.hview.dynamicBlocks.contentBlocks
+        const { adapterConfig } = self
+        const hViewSnap = makeViewSnap(view.hview)
+        const vViewSnap = makeViewSnap(view.vview)
 
-        const {
-          alpha,
-          colorBy,
-          featPositions,
-          featPositionsBpPerPxH,
-          featPositionsBpPerPxV,
-          minAlignmentLength,
-        } = self
-        const { viewWidth, viewHeight, hview, vview, drawCigar } = view
-
-        const hBpPerPx = hview.bpPerPx
-        const vBpPerPx = vview.bpPerPx
-
-        if (!self.gpuRenderer || !self.gpuInitialized) {
-          return
+        if (currentStopToken) {
+          stopStopToken(currentStopToken)
         }
+        const thisStopToken = createStopToken()
+        currentStopToken = thisStopToken
+        self.setLoading(thisStopToken)
 
-        if (self.gpuRenderer !== lastRenderer) {
-          lastGeometryKey = ''
-          lastRenderer = self.gpuRenderer
-        }
-
-        const resizeKey = `${viewWidth}-${viewHeight}`
-        if (resizeKey !== resizeSent) {
-          self.gpuRenderer.resize(viewWidth, viewHeight)
-          resizeSent = resizeKey
-        }
-
-        let filteredPositions = featPositions
-        if (minAlignmentLength > 0) {
-          filteredPositions = featPositions.filter(fp => {
-            const alignmentLength = Math.abs(
-              fp.f.get('end') - fp.f.get('start'),
-            )
-            return alignmentLength >= minAlignmentLength
-          })
-        }
-
-        const geometryKey = `${filteredPositions.length}-${colorBy}-${alpha}-${drawCigar}-${minAlignmentLength}`
-
-        if (
-          geometryKey !== lastGeometryKey ||
-          filteredPositions !== lastFeatPositions
-        ) {
-          const colorFn = createDotplotColorFunction(colorBy, alpha)
-          const segments = buildLineSegments(
-            filteredPositions,
-            colorFn,
-            drawCigar,
-            hBpPerPx,
-            vBpPerPx,
+        try {
+          const sessionId = getRpcSessionId(self)
+          const result = await getSession(self).rpcManager.call(
+            sessionId,
+            'DotplotGetFeaturesAndPositions',
+            {
+              sessionId,
+              adapterConfig,
+              regions,
+              hViewSnap,
+              vViewSnap,
+              stopToken: thisStopToken,
+            } satisfies DotplotGetFeaturesAndPositionsArgs,
           )
-          self.gpuRenderer.uploadGeometry({
-            x1s: new Float32Array(segments.x1s),
-            y1s: new Float32Array(segments.y1s),
-            x2s: new Float32Array(segments.x2s),
-            y2s: new Float32Array(segments.y2s),
-            colors: new Float32Array(segments.colors),
-            instanceCount: segments.x1s.length,
-          })
-          lastGeometryKey = geometryKey
-          lastFeatPositions = filteredPositions
-        }
-
-        const scaleX =
-          featPositionsBpPerPxH > 0 ? featPositionsBpPerPxH / hBpPerPx : 1
-        const scaleY =
-          featPositionsBpPerPxV > 0 ? featPositionsBpPerPxV / vBpPerPx : 1
-
-        self.gpuRenderer.render(
-          hview.offsetPx,
-          vview.offsetPx,
-          2,
-          scaleX,
-          scaleY,
-        )
-        if (self.features && self.features.length > 0) {
-          self.setCanvasDrawn(true)
+          if (thisStopToken !== currentStopToken || !isAlive(self)) {
+            return
+          }
+          const cigars = result.cigars
+          const parsedCigars = new Array<string[]>(cigars.length)
+          for (let i = 0; i < cigars.length; i++) {
+            parsedCigars[i] = cigars[i] ? parseCigar(cigars[i]) : []
+          }
+          const rpcData: DotplotRpcData = {
+            parsedCigars,
+            p11s: result.p11_offsetPx,
+            p12s: result.p12_offsetPx,
+            p21s: result.p21_offsetPx,
+            p22s: result.p22_offsetPx,
+            strands: result.strands,
+            starts: result.starts,
+            ends: result.ends,
+            identities: result.identities,
+            meanScores: result.meanScores,
+            mappingQuals: result.mappingQuals,
+            refNames: result.refNames,
+            bpPerPxH: result.bpPerPxH,
+            bpPerPxV: result.bpPerPxV,
+          }
+          self.setRpcData(rpcData)
+        } catch (e) {
+          if (
+            thisStopToken === currentStopToken &&
+            !isAbortException(e) &&
+            isAlive(self)
+          ) {
+            self.setError(e)
+          }
         }
       },
-      { name: 'DotplotDraw' },
+      { name: 'DotplotFetch', delay: RPC_DEBOUNCE_MS },
     ),
   )
+
+  addDisposer(
+    self,
+    autorun(
+      function dotplotGeometryRecompute() {
+        const view = getContainingView(self) as DotplotViewModel
+        const { rpcData, alpha, colorBy, minAlignmentLength } = self
+        if (!rpcData) {
+          return
+        }
+        const { drawCigar } = view
+        const segments = buildLineSegments(
+          rpcData,
+          createDotplotColorFunction(colorBy, alpha, rpcData),
+          drawCigar,
+          minAlignmentLength,
+        )
+        self.setGeometry({
+          x1s: segments.x1s,
+          y1s: segments.y1s,
+          x2s: segments.x2s,
+          y2s: segments.y2s,
+          colors: segments.colors,
+          instanceCount: segments.count,
+          bpPerPxH: rpcData.bpPerPxH,
+          bpPerPxV: rpcData.bpPerPxV,
+        })
+      },
+      { name: 'DotplotGeometryRecompute' },
+    ),
+  )
+
+  addDisposer(self, () => {
+    if (currentStopToken) {
+      stopStopToken(currentStopToken)
+    }
+  })
 }

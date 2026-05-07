@@ -38,14 +38,14 @@ export async function doSubmit({
   if (!isSessionWithAddTracks(session)) {
     session.notify("Can't add tracks", 'warning')
   } else {
-    toJS(importFormSyntenyTrackSelections).map((f, idx) => {
-      if (f.type === 'userOpened') {
+    for (const [idx, f] of toJS(importFormSyntenyTrackSelections).entries()) {
+      if (f.type === 'userOpened' && f.value !== undefined) {
         session.addTrackConf(f.value)
-        model.toggleTrack(f.value?.trackId, idx)
+        model.toggleTrack(f.value.trackId, idx)
       } else if (f.type === 'preConfigured') {
         model.showTrack(f.value, idx)
       }
-    })
+    }
   }
   if (model.levels.length >= 4) {
     model.autoScaleLevelHeights()

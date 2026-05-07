@@ -1,36 +1,98 @@
 import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
-import { lookupColorRamp } from './colorRamp.ts'
+import { lookupColorRamp, mapHicCount } from './colorRamp.ts'
 
 import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-const SQRT_HALF = 0.7071067811865476
+const SQRT_HALF = Math.SQRT1_2
 
-export class Canvas2DHicRenderer implements HicBackend {
-  private ctx: CanvasRenderingContext2D
-  private canvas: HTMLCanvasElement
-  private positions: Float32Array | null = null
-  private counts: Float32Array | null = null
-  private numContacts = 0
-  private colorRamp: Uint8Array | null = null
+export interface HicData {
+  positions: Float32Array
+  counts: Float32Array
+  numContacts: number
+}
 
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
-    this.ctx = ctx
+/**
+ * Pure draw entry point. Paints the hic contact-matrix diamonds into any
+ * 2D-canvas-like context using inline rotation/scaling math (rather than
+ * ctx.transform stack), so the same path works for on-screen rendering and
+ * SVG export.
+ */
+export function drawHicBlocks(
+  ctx: Ctx2D,
+  data: HicData,
+  colorRamp: Uint8Array,
+  state: HicRenderState,
+) {
+  const {
+    binWidth,
+    yScalar,
+    colorMaxScore,
+    useLogScale,
+    viewScale,
+    viewOffsetX,
+  } = state
+  const { positions, counts, numContacts } = data
+  if (numContacts === 0) {
+    return
   }
 
-  uploadData(data: {
-    positions: Float32Array
-    counts: Float32Array
-    numContacts: number
-  }) {
-    this.positions = data.positions
-    this.counts = data.counts
-    this.numContacts = data.numContacts
+  const s = SQRT_HALF * viewScale
+  const hw = binWidth * s
+  const hh = binWidth * s * yScalar
+
+  for (let i = 0; i < numContacts; i++) {
+    const px = positions[i * 2]!
+    const py = positions[i * 2 + 1]!
+    const count = counts[i]!
+
+    const t = mapHicCount(count, colorMaxScore, useLogScale)
+    const { r, g, b, a } = lookupColorRamp(colorRamp, t)
+
+    if (a < 0.01) {
+      continue
+    }
+
+    // Rotate square corners by -45° and apply viewport transform inline.
+    // The four corners of the square [px,py]→[px+bw,py+bw] map to a diamond:
+    //   top=(base,rBase), right, bottom, left — rotated 45° in screen space.
+    const base = (px + py) * s + viewOffsetX
+    const rBase = (-px + py) * s * yScalar
+
+    ctx.beginPath()
+    ctx.moveTo(base, rBase)
+    ctx.lineTo(base + hw, rBase - hh)
+    ctx.lineTo(base + 2 * hw, rBase)
+    ctx.lineTo(base + hw, rBase + hh)
+    ctx.closePath()
+    ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+    ctx.fill()
+  }
+}
+
+export class Canvas2DHicRenderer implements HicBackend {
+  private ctx: Ctx2D
+  private canvas: HTMLCanvasElement | null = null
+  private data: HicData = {
+    positions: new Float32Array(0),
+    counts: new Float32Array(0),
+    numContacts: 0,
+  }
+  private colorRamp: Uint8Array | null = null
+
+  constructor(canvasOrCtx: HTMLCanvasElement | SvgCanvas) {
+    if (canvasOrCtx instanceof SvgCanvas) {
+      this.ctx = canvasOrCtx
+    } else {
+      this.canvas = canvasOrCtx
+      this.ctx = canvasOrCtx.getContext('2d')!
+    }
+  }
+
+  uploadData(data: HicData) {
+    this.data = data
   }
 
   uploadColorRamp(colors: Uint8Array) {
@@ -38,77 +100,26 @@ export class Canvas2DHicRenderer implements HicBackend {
   }
 
   render(state: HicRenderState) {
-    const {
-      canvasWidth,
-      canvasHeight,
-      binWidth,
-      yScalar,
-      maxScore,
-      useLogScale,
-      viewScale,
-      viewOffsetX,
-    } = state
-
-    const ctx = this.ctx
-    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
-
-    if (
-      this.numContacts === 0 ||
-      !this.positions ||
-      !this.counts ||
-      !this.colorRamp
-    ) {
+    if (this.canvas) {
+      prepareCanvas(
+        this.canvas,
+        this.ctx as CanvasRenderingContext2D,
+        state.canvasWidth,
+        state.canvasHeight,
+      )
+    }
+    if (!this.colorRamp) {
       return
     }
-
-    const logMax = useLogScale ? Math.log2(Math.max(maxScore, 1)) : 1
-    const m = useLogScale ? maxScore : maxScore / 20
-
-    for (let i = 0; i < this.numContacts; i++) {
-      const px = this.positions[i * 2]!
-      const py = this.positions[i * 2 + 1]!
-      const count = this.counts[i]!
-
-      const raw = useLogScale
-        ? Math.log2(Math.max(count, 1)) / Math.max(logMax, 0.001)
-        : count / Math.max(m, 0.001)
-      const t = Math.max(0, Math.min(1, raw))
-
-      const { r, g, b, a } = lookupColorRamp(this.colorRamp, t)
-
-      if (a < 0.01) {
-        continue
-      }
-
-      const corners = [
-        [px, py],
-        [px + binWidth, py],
-        [px + binWidth, py + binWidth],
-        [px, py + binWidth],
-      ] as const
-
-      ctx.beginPath()
-      for (let c = 0; c < 4; c++) {
-        const cx = corners[c]![0]
-        const cy = corners[c]![1]
-        const rx = (cx + cy) * SQRT_HALF * viewScale + viewOffsetX
-        const ry = (-cx + cy) * SQRT_HALF * viewScale * yScalar
-
-        if (c === 0) {
-          ctx.moveTo(rx, ry)
-        } else {
-          ctx.lineTo(rx, ry)
-        }
-      }
-      ctx.closePath()
-      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-      ctx.fill()
-    }
+    drawHicBlocks(this.ctx, this.data, this.colorRamp, state)
   }
 
   dispose() {
-    this.positions = null
-    this.counts = null
+    this.data = {
+      positions: new Float32Array(0),
+      counts: new Float32Array(0),
+      numContacts: 0,
+    }
     this.colorRamp = null
   }
 }

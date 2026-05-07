@@ -12,7 +12,11 @@ import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 
 import type { VariantFeatureWidgetModel } from './stateModelFactory.ts'
-import type { Descriptions, ReducedFeature } from './types.ts'
+import type {
+  Descriptions,
+  ReducedFeature,
+  VCFFeatureSerialized,
+} from './types.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
@@ -37,8 +41,8 @@ function AnnotationPanel({
   regex: RegExp
 }) {
   const desc = descriptions?.INFO?.[fieldKey]?.Description
-  const fields = desc?.match(regex)?.[1]?.split('|') || []
-  const data = feature.INFO?.[fieldKey] || []
+  const fields = desc?.match(regex)?.[1]?.split('|') ?? []
+  const data = feature.INFO?.[fieldKey] ?? []
   return (
     <VariantConsequenceDataGrid fields={fields} data={data} title={title} />
   )
@@ -52,13 +56,13 @@ function LaunchBreakendWidgetArea({
   model: VariantFeatureWidgetModel
 }) {
   const { featureData } = model
-  const feat = JSON.parse(JSON.stringify(featureData))
+  const feat = structuredClone(featureData) as VCFFeatureSerialized
   const { type = '' } = feat
 
   return type === 'breakend' ? (
     <LaunchBreakendPanel
       feature={feat}
-      locStrings={feat.ALT.map(
+      locStrings={feat.ALT!.map(
         (alt: string) => parseBreakend(alt)?.MatePosition || '',
       )}
       model={model}
@@ -67,13 +71,13 @@ function LaunchBreakendWidgetArea({
     <LaunchBreakendPanel
       feature={feat}
       model={model}
-      locStrings={[`${feat.INFO.CHR2[0]}:${feat.INFO.END}`]}
+      locStrings={[`${feat.INFO!.CHR2![0]}:${feat.INFO!.END}`]}
     />
   ) : type === 'paired_feature' ? (
     <LaunchBreakendPanel
       feature={feat}
       model={model}
-      locStrings={[`${feat.mate.refName}:${feat.mate.start}`]}
+      locStrings={[`${feat.mate!.refName}:${feat.mate!.start}`]}
     />
   ) : svTypes.some(t => type.includes(t)) ? (
     <LaunchBreakendPanel
@@ -165,7 +169,6 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget(props: {
   const { model } = props
   const { featureData } = model
   const feat = structuredClone(featureData)
-
   return feat ? (
     <FeatDefined feat={feat} {...props} />
   ) : (

@@ -220,7 +220,7 @@ function SourcesGrid({
           onSortModelChange={args => {
             const sort = args[0]
             const idx = (currSort.idx + 1) % 2
-            const field = sort!.field || currSort.field
+            const field = sort?.field ?? currSort.field
             setCurrSort({ idx, field })
             onChange(
               field

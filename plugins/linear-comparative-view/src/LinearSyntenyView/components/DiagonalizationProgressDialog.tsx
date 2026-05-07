@@ -63,27 +63,24 @@ const DiagonalizationProgressDialog = observer(
                 const { featureData } = display as {
                   featureData?: {
                     refNames: string[]
-                    starts: Float64Array
-                    ends: Float64Array
+                    starts: Uint32Array
+                    ends: Uint32Array
                     strands: Int8Array
-                    mates: {
-                      refName: string
-                      start: number
-                      end: number
-                    }[]
+                    mateStarts: Uint32Array
+                    mateEnds: Uint32Array
+                    mateRefNames: string[]
                   }
                 }
 
                 if (featureData) {
                   for (let i = 0; i < featureData.refNames.length; i++) {
-                    const mate = featureData.mates[i]!
                     alignments.push({
                       queryRefName: featureData.refNames[i]!,
-                      refRefName: mate.refName,
+                      refRefName: featureData.mateRefNames[i]!,
                       queryStart: featureData.starts[i]!,
                       queryEnd: featureData.ends[i]!,
-                      refStart: mate.start,
-                      refEnd: mate.end,
+                      refStart: featureData.mateStarts[i]!,
+                      refEnd: featureData.mateEnds[i]!,
                       strand: featureData.strands[i]! || 1,
                     })
                   }
@@ -152,7 +149,7 @@ const DiagonalizationProgressDialog = observer(
           />
           <Typography
             variant="caption"
-            color="textSecondary"
+            color="text.secondary"
             style={{ marginTop: 8, display: 'block' }}
           >
             {Math.round(progress)}% complete

@@ -2,22 +2,15 @@
 
 exports[`five 1`] = `
 [
-  ContentBlock {
+  {
     "assemblyName": "test",
+    "displayedRegionIndex": 0,
     "end": 72.4,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
-    "key": "{test}ctgA:27.05..72.4-0",
+    "key": "test:ctgA:26.05:72.4:0",
     "offsetPx": 521,
-    "parentRegion": {
-      "assemblyName": "test",
-      "end": 50000,
-      "refName": "ctgA",
-      "reversed": false,
-      "start": 0,
-    },
     "refName": "ctgA",
-    "regionNumber": 0,
     "reversed": false,
     "start": 26.05,
     "type": "ContentBlock",
@@ -28,28 +21,22 @@ exports[`five 1`] = `
 
 exports[`four 1`] = `
 [
-  InterRegionPaddingBlock {
-    "key": "{test}ctgA:1..250-0-beforeFirstRegion",
+  {
+    "key": "test:ctgA:0:250:0-beforeFirstRegion",
     "offsetPx": -100,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": 100,
   },
-  ContentBlock {
+  {
     "assemblyName": "test",
+    "displayedRegionIndex": 0,
     "end": 250,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "{test}ctgA:1..250-0",
+    "key": "test:ctgA:0:250:0",
     "offsetPx": 0,
-    "parentRegion": {
-      "assemblyName": "test",
-      "end": 50000,
-      "refName": "ctgA",
-      "start": 0,
-    },
     "refName": "ctgA",
-    "regionNumber": 0,
     "reversed": undefined,
     "start": 0,
     "type": "ContentBlock",
@@ -60,28 +47,22 @@ exports[`four 1`] = `
 
 exports[`one 1`] = `
 [
-  InterRegionPaddingBlock {
-    "key": "{test}ctgA:1..200-0-beforeFirstRegion",
+  {
+    "key": "test:ctgA:0:200:0-beforeFirstRegion",
     "offsetPx": 0,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": -0,
   },
-  ContentBlock {
+  {
     "assemblyName": "test",
+    "displayedRegionIndex": 0,
     "end": 200,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "{test}ctgA:1..200-0",
+    "key": "test:ctgA:0:200:0",
     "offsetPx": 0,
-    "parentRegion": {
-      "assemblyName": "test",
-      "end": 50000,
-      "refName": "ctgA",
-      "start": 0,
-    },
     "refName": "ctgA",
-    "regionNumber": 0,
     "reversed": undefined,
     "start": 0,
     "type": "ContentBlock",
@@ -92,29 +73,22 @@ exports[`one 1`] = `
 
 exports[`three 1`] = `
 [
-  InterRegionPaddingBlock {
-    "key": "{test}ctgA:49901..50000[rev]-0-reversed-beforeFirstRegion",
+  {
+    "key": "test:ctgA:49900:50000:0:rev-beforeFirstRegion",
     "offsetPx": -100,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": 100,
   },
-  ContentBlock {
+  {
     "assemblyName": "test",
+    "displayedRegionIndex": 0,
     "end": 50000,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "{test}ctgA:49901..50000[rev]-0-reversed",
+    "key": "test:ctgA:49900:50000:0:rev",
     "offsetPx": 0,
-    "parentRegion": {
-      "assemblyName": "test",
-      "end": 50000,
-      "refName": "ctgA",
-      "reversed": true,
-      "start": 0,
-    },
     "refName": "ctgA",
-    "regionNumber": 0,
     "reversed": true,
     "start": 49900,
     "type": "ContentBlock",
@@ -125,29 +99,22 @@ exports[`three 1`] = `
 
 exports[`two 1`] = `
 [
-  InterRegionPaddingBlock {
-    "key": "{test}ctgA:49801..50000[rev]-0-reversed-beforeFirstRegion",
+  {
+    "key": "test:ctgA:49800:50000:0:rev-beforeFirstRegion",
     "offsetPx": 0,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
     "widthPx": -0,
   },
-  ContentBlock {
+  {
     "assemblyName": "test",
+    "displayedRegionIndex": 0,
     "end": 50000,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
-    "key": "{test}ctgA:49801..50000[rev]-0-reversed",
+    "key": "test:ctgA:49800:50000:0:rev",
     "offsetPx": 0,
-    "parentRegion": {
-      "assemblyName": "test",
-      "end": 50000,
-      "refName": "ctgA",
-      "reversed": true,
-      "start": 0,
-    },
     "refName": "ctgA",
-    "regionNumber": 0,
     "reversed": true,
     "start": 49800,
     "type": "ContentBlock",

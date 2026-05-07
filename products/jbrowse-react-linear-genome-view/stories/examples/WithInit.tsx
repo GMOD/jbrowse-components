@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 // in your code:
@@ -16,7 +16,7 @@ const ViewWithErrorHandling = observer(function ViewWithErrorHandling({
 }) {
   const error = state.session.view.error
   if (error) {
-    return <ErrorMessage error={error} />
+    return <ErrorBanner error={error} />
   }
   return <JBrowseLinearGenomeView viewState={state} />
 })

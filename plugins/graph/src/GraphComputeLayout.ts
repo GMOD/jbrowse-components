@@ -1,0 +1,77 @@
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+
+import type { Graph, LayoutResult } from './GraphGenomeView/types.ts'
+
+export interface GraphComputeLayoutArgs {
+  sessionId: string
+  graph: { nodes: Graph['nodes']; edges: Graph['edges'] }
+  options: Record<string, unknown>
+  layoutUrl?: string
+  statusCallback?: (message: string) => void
+}
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    GraphComputeLayout: {
+      args: GraphComputeLayoutArgs
+      return: { result: LayoutResult; duration: number }
+    }
+  }
+}
+
+interface BandageModule {
+  computeLayout(
+    graph: { nodes: Graph['nodes']; edges: Graph['edges'] },
+    options: Record<string, unknown>,
+  ): LayoutResult
+}
+
+const DEFAULT_LAYOUT_URL = 'https://jbrowse.org/demos/bandage'
+
+// Lazily initialized WASM module, shared across calls within same worker
+let layoutModule: BandageModule | null = null
+let initPromise: Promise<BandageModule> | null = null
+let lastBaseUrl = ''
+
+async function ensureModule(baseUrl: string): Promise<BandageModule> {
+  if (layoutModule && lastBaseUrl === baseUrl) {
+    return layoutModule
+  }
+  if (lastBaseUrl !== baseUrl) {
+    layoutModule = null
+    initPromise = null
+    lastBaseUrl = baseUrl
+  }
+  initPromise ??= (async () => {
+    const jsUrl = `${baseUrl}/bandage-layout.js`
+    const wasmUrl = `${baseUrl}/bandage-layout.wasm`
+    const mod = await import(/* webpackIgnore: true */ jsUrl)
+    return mod.default({
+      locateFile: () => wasmUrl,
+    }) as Promise<BandageModule>
+  })().catch((e: unknown) => {
+    initPromise = null
+    throw e
+  })
+  layoutModule = await initPromise
+  return layoutModule
+}
+
+export default class GraphComputeLayout extends RpcMethodType {
+  name = 'GraphComputeLayout'
+
+  async execute(args: GraphComputeLayoutArgs) {
+    const { graph, options, layoutUrl, statusCallback } = args
+    const baseUrl = (layoutUrl || DEFAULT_LAYOUT_URL).replace(/\/$/, '')
+
+    statusCallback?.('Downloading layout engine')
+    const module = await ensureModule(baseUrl)
+
+    statusCallback?.('Computing layout')
+    const startTime = performance.now()
+    const result = module.computeLayout(graph, options)
+    const duration = performance.now() - startTime
+
+    return { result, duration }
+  }
+}

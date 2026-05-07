@@ -11,11 +11,15 @@ interface RpcMessageData {
   data: unknown
 }
 
+interface PendingCall {
+  resolve: (data: unknown) => void
+  reject: (error: Error) => void
+}
+
 export default class RpcClient {
   worker: Worker
-  protected calls = new Map<string, (data: unknown) => void>()
-  protected errors = new Map<string, (error: Error) => void>()
-  private events: Record<string, Listener[]> = {}
+  pending = new Map<string, PendingCall>()
+  private events = new Map<string, Listener[]>()
   private counter = 0
 
   constructor(worker: Worker) {
@@ -29,17 +33,16 @@ export default class RpcClient {
   }
 
   on(event: string, listener: Listener) {
-    let listeners = this.events[event]
+    let listeners = this.events.get(event)
     if (!listeners) {
-      listeners = []
-      this.events[event] = listeners
+      this.events.set(event, (listeners = []))
     }
     listeners.push(listener)
     return this
   }
 
   off(event: string, listener: Listener) {
-    const listeners = this.events[event]
+    const listeners = this.events.get(event)
     if (listeners) {
       const idx = listeners.indexOf(listener)
       if (idx !== -1) {
@@ -50,7 +53,7 @@ export default class RpcClient {
   }
 
   emit(event: string, data: unknown) {
-    const listeners = this.events[event]
+    const listeners = this.events.get(event)
     if (listeners) {
       for (const listener of listeners) {
         listener(data)
@@ -74,6 +77,11 @@ export default class RpcClient {
   }
 
   protected catch(e: ErrorEvent) {
+    const error = new Error(e.message)
+    for (const { reject } of this.pending.values()) {
+      reject(error)
+    }
+    this.pending.clear()
     this.emit('error', {
       message: e.message,
       lineno: e.lineno,
@@ -82,24 +90,19 @@ export default class RpcClient {
   }
 
   protected reject(uid: string, error: string | Error) {
-    const errorFn = this.errors.get(uid)
-    if (errorFn) {
-      errorFn(deserializeError(error))
-      this.clear(uid)
+    const p = this.pending.get(uid)
+    if (p) {
+      p.reject(deserializeError(error))
+      this.pending.delete(uid)
     }
   }
 
   protected resolve(uid: string, data: unknown) {
-    const callFn = this.calls.get(uid)
-    if (callFn) {
-      callFn(data)
-      this.clear(uid)
+    const p = this.pending.get(uid)
+    if (p) {
+      p.resolve(data)
+      this.pending.delete(uid)
     }
-  }
-
-  protected clear(uid: string) {
-    this.calls.delete(uid)
-    this.errors.delete(uid)
   }
 
   call(
@@ -109,8 +112,7 @@ export default class RpcClient {
   ) {
     const uid = String(++this.counter)
     return new Promise((resolve, reject) => {
-      this.calls.set(uid, resolve)
-      this.errors.set(uid, reject)
+      this.pending.set(uid, { resolve, reject })
       this.worker.postMessage(
         { method, uid, data, libRpc: true },
         transferables,

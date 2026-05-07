@@ -42,7 +42,7 @@ type: types.literal('LinearHicDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -141,14 +141,14 @@ svgLegendWidth: () => number
 
 ```js
 // type signature
-trackMenuItems: () => any[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: renderSvg
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 ```
 
 ### LinearHicDisplay - Actions
@@ -157,7 +157,7 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 
 ```js
 // type signature
-setFlatbushData: (flatbush: ArrayBufferLike, items: HicFlatbushItem[], maxScore: number, yScalar: number) => void
+setFlatbushData: (flatbush: ArrayBufferLike | undefined, items: HicFlatbushItem[], maxScore: number, yScalar: number) => void
 ```
 
 #### action: reload
@@ -185,7 +185,7 @@ setUseLogScale: (f: boolean) => void
 
 ```js
 // type signature
-setColorScheme: (f?: string) => void
+setColorScheme: (f?: string | undefined) => void
 ```
 
 #### action: setActiveNormalization

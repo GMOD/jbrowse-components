@@ -37,7 +37,7 @@ Filter settings override (if set, overrides configuration)
 
 ```js
 // type signature
-IType<FilterBy, FilterBy, FilterBy>
+IType<FilterBy | undefined, FilterBy | undefined, FilterBy | undefined>
 // code
 filterBySetting: types.frozen<FilterBy | undefined>()
 ```
@@ -48,7 +48,7 @@ Color scheme settings override (if set, overrides configuration)
 
 ```js
 // type signature
-IType<ColorBy, ColorBy, ColorBy>
+IType<ColorBy | undefined, ColorBy | undefined, ColorBy | undefined>
 // code
 colorBySetting: types.frozen<ColorBy | undefined>()
 ```

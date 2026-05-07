@@ -1,8 +1,14 @@
-import { readConfigValue } from '../renderConfig.ts'
-
-import type { RenderConfigContext } from '../renderConfig.ts'
+import type { DisplayConfig } from '../renderConfig.ts'
 import type { FeatureLayout, GlyphType, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
+
+const HEIGHT_MULTIPLIERS: Record<string, number> = {
+  normal: 1,
+  compact: 0.6,
+  superCompact: 0.3,
+  reducedRepresentation: 1,
+  collapse: 1,
+}
 
 // Sort children left-to-right; ties broken by longest first
 export function sortByPosition(children: FeatureLayout[]) {
@@ -16,89 +22,47 @@ export function sortByPosition(children: FeatureLayout[]) {
   })
 }
 
-export function getFeatureDimensions(
-  feature: Feature,
-  bpPerPx: number,
-  configContext: RenderConfigContext,
-) {
-  const { config, heightMultiplier } = configContext
-  const start = feature.get('start')
-  const end = feature.get('end')
-  const heightPx =
-    readConfigValue(config, 'featureHeight', feature) * heightMultiplier
-  const widthPx = (end - start) / bpPerPx
-  return { start, end, heightPx, widthPx }
+export function getFeatureHeightPx(_feature: Feature, config: DisplayConfig) {
+  const heightMultiplier = HEIGHT_MULTIPLIERS[config.displayMode] ?? 1
+  return config.featureHeight * heightMultiplier
 }
 
+// Used by main-thread label-fit math in LinearBasicDisplay/layout.ts —
+// kept exported for that consumer.
 export const STRAND_ARROW_WIDTH = 8
-
-export function getStrandArrowPadding(strand: number) {
-  return {
-    left: strand === -1 ? STRAND_ARROW_WIDTH : 0,
-    right: strand === 1 ? STRAND_ARROW_WIDTH : 0,
-    visualSide: strand === -1 ? 'left' : strand === 1 ? 'right' : null,
-    width: strand ? STRAND_ARROW_WIDTH : 0,
-  }
-}
 
 export function layoutChild(
   child: Feature,
-  parentFeature: Feature,
+  _parentFeature: Feature,
   args: LayoutArgs,
 ): FeatureLayout {
-  const { bpPerPx, configContext } = args
-  const { start, heightPx, widthPx } = getFeatureDimensions(
-    child,
-    bpPerPx,
-    configContext,
-  )
-  const parentStart = parentFeature.get('start')
-
   return {
     feature: child,
     glyphType: 'Box',
-    x: (start - parentStart) / bpPerPx,
     y: 0,
-    width: widthPx,
-    height: heightPx,
-    totalLayoutHeight: heightPx,
-    totalLayoutWidth: widthPx,
-    leftPadding: 0,
+    height: getFeatureHeightPx(child, args.config),
+    totalLayoutHeight: getFeatureHeightPx(child, args.config),
     children: [],
   }
 }
 
 // Shared layout for container glyphs (ProcessedTranscript, Segments)
-// that have strand arrows and sorted children
+// that have sorted children
 export function layoutContainerGlyph(
   glyphType: GlyphType,
   args: LayoutArgs,
   subfeatures: Feature[],
 ): FeatureLayout {
-  const { feature, bpPerPx, configContext } = args
-  const { heightPx, widthPx } = getFeatureDimensions(
-    feature,
-    bpPerPx,
-    configContext,
-  )
-
-  const strand = feature.get('strand') as number
-  const arrowPadding = getStrandArrowPadding(strand)
-
+  const heightPx = getFeatureHeightPx(args.feature, args.config)
   const children = sortByPosition(
-    subfeatures.map(child => layoutChild(child, feature, args)),
+    subfeatures.map(child => layoutChild(child, args.feature, args)),
   )
-
   return {
-    feature,
+    feature: args.feature,
     glyphType,
-    x: 0,
     y: 0,
-    width: widthPx,
     height: heightPx,
     totalLayoutHeight: heightPx,
-    totalLayoutWidth: widthPx + arrowPadding.left + arrowPadding.right,
-    leftPadding: arrowPadding.left,
     children,
   }
 }

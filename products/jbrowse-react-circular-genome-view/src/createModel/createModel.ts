@@ -26,8 +26,7 @@ export default function createModel(
 ) {
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
-  )
-  pluginManager.createPluggableElements()
+  ).createPluggableElements()
   const Session = createSessionModel(pluginManager)
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const assemblyManagerType = assemblyManagerFactory(
@@ -59,6 +58,7 @@ export default function createModel(
       /**
        * #volatile
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       /**
        * #volatile
@@ -94,9 +94,7 @@ export default function createModel(
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-        snapshot.name = sessionName
-        this.setSession(snapshot)
+        this.setSession({ ...getSnapshot(self.session), name: sessionName })
       },
       /**
        * #action

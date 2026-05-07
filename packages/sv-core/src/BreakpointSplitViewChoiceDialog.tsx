@@ -95,7 +95,10 @@ const BreakpointSplitViewChoiceDialog = observer(
                 stableViewId: stableViewId
                   ? `${stableViewId}_singlelevel`
                   : undefined,
-                tracks: copyTracks ? view?.tracks : undefined,
+                tracks:
+                  copyTracks && view
+                    ? (getSnapshot(view.tracks) as Track[])
+                    : undefined,
                 windowSize: +windowSize || 0,
               }))
         } catch (e) {

@@ -5,6 +5,8 @@ import {
   parseAttributes,
 } from './common.ts'
 
+import type { IndexerOptions } from '../util.ts'
+
 export async function* indexVcf({
   config,
   attributesToIndex,
@@ -12,14 +14,7 @@ export async function* indexVcf({
   outDir,
   onStart,
   onUpdate,
-}: {
-  config: { trackId: string }
-  attributesToIndex: string[]
-  inLocation: string
-  outDir: string
-  onStart: (totalBytes: number) => void
-  onUpdate: (progressBytes: number) => void
-}) {
+}: IndexerOptions) {
   const { trackId } = config
   const stream = await getLocalOrRemoteStream({
     file: inLocation,
@@ -36,8 +31,7 @@ export async function* indexVcf({
       continue
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [ref, pos, id, _ref, _alt, _qual, _filter, info] = line.split('\t')
+    const [ref, pos, id, , , , , info] = line.split('\t')
 
     if (id === '.') {
       continue

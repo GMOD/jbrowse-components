@@ -1,46 +1,32 @@
-import type { RenderConfigContext } from './renderConfig.ts'
+import type { DisplayConfig } from './renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-export interface SequenceData {
-  seq: string
-  cds: { start: number; end: number }[]
-}
-
 export interface PeptideData {
-  sequenceData: SequenceData
-  protein?: string
+  protein: string
 }
 
 export interface FeatureLayout {
   feature: Feature
   glyphType: GlyphType
-  x: number
+  // Y is per-feature relative; main-thread Y-row packing
+  // (`computeLaidOutData`) shifts it to its final track-relative value.
   y: number
-  width: number
+  // height is config-driven (`config.featureHeight * heightMultiplier`),
+  // not bpPerPx-dependent.
   height: number
+  // height + label space (label visibility depends on config, not bpPerPx).
   totalLayoutHeight: number
-  totalLayoutWidth: number
-  leftPadding: number
   children: FeatureLayout[]
 }
 
+// `bpPerPx` is intentionally NOT part of LayoutArgs — feature widths and
+// X positions are looked up from `feature.get('start')` /
+// `feature.get('end')` in `collectRenderData`, not pre-baked here.
 export interface LayoutArgs {
   feature: Feature
-  bpPerPx: number
   reversed: boolean
-  configContext: RenderConfigContext
+  config: DisplayConfig
   parentFeature?: Feature
-}
-
-export interface Glyph {
-  type: GlyphType
-  layout(args: LayoutArgs): FeatureLayout
-}
-
-export interface LayoutRecord {
-  feature: Feature
-  layout: FeatureLayout
-  layoutHeight: number
 }
 
 export type GlyphType =

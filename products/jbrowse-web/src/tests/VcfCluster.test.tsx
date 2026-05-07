@@ -18,7 +18,7 @@ beforeEach(() => {
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })
 
-jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
+jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 const delay = { timeout: 60000 }
 const opts = [{}, delay]

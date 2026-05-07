@@ -10,13 +10,16 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export default function LinearSyntenyDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF()
+    const stateModel = stateModelFactory(configSchema)
     return new DisplayType({
       name: 'LinearSyntenyDisplay',
       configSchema,
-      stateModel: stateModelFactory(configSchema),
+      stateModel,
       trackType: 'SyntenyTrack',
       viewType: 'LinearSyntenyViewHelper',
-      ReactComponent: lazy(() => import('./components/Component.tsx')),
+      ReactComponent: lazy(
+        () => import('./components/LinearSyntenyRendering.tsx'),
+      ),
     })
   })
 }

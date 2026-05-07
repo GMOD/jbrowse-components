@@ -6,7 +6,8 @@ function sendStatusToWindow(
   mainWindow: Electron.BrowserWindow | null,
   text: string,
 ) {
-  console.error(text)
+  // eslint-disable-next-line no-console
+  console.log(text)
   if (mainWindow) {
     mainWindow.webContents.send('message', text)
   }

@@ -5,10 +5,8 @@ export async function loadHubSpec(
   {
     hubURL,
     sessionName,
-    // sessionTracks = [],
   }: {
     hubURL: string[]
-    sessionTracks: Record<string, unknown>[]
     sessionName?: string
   },
   pluginManager: PluginManager,

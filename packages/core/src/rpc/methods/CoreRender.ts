@@ -56,7 +56,10 @@ export default class CoreRender extends RpcMethodType {
     return validateRendererType(
       rendererType,
       this.pluginManager.getRendererType(rendererType),
-    ).renderDirect({ ...rest, renderingProps } as RenderArgs)
+    ).renderDirect({
+      ...rest,
+      renderingProps,
+    })
   }
 
   async execute(

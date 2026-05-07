@@ -2,7 +2,7 @@ import { lazy, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import ZoomIn from '@mui/icons-material/ZoomIn'
@@ -26,12 +26,21 @@ const DotplotControls = observer(function DotplotControls({
   model: DotplotViewModel
 }) {
   const [showDynamicControls, setShowDynamicControls] = useState(true)
+  const session = getSession(model)
 
   // Check if we have any displays to show sliders
   const hasDisplays = model.tracks[0]?.displays[0]
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+      {isSessionModelWithWidgets(session) ? (
+        <IconButton
+          onClick={model.activateTrackSelector}
+          title="Open track selector"
+        >
+          <TrackSelectorIcon />
+        </IconButton>
+      ) : null}
       <IconButton
         onClick={() => {
           model.zoomOut()
@@ -49,10 +58,14 @@ const DotplotControls = observer(function DotplotControls({
       </IconButton>
 
       <IconButton
-        onClick={() => model.activateTrackSelector()}
-        title="Open track selector"
+        onClick={() => {
+          model.setCursorMode(
+            model.cursorMode === 'move' ? 'crosshair' : 'move',
+          )
+        }}
+        title="Toggle click and drag mode"
       >
-        <TrackSelectorIcon />
+        {model.cursorMode === 'move' ? <CursorMove /> : <CursorMouse />}
       </IconButton>
 
       <CascadingMenuButton
@@ -77,7 +90,7 @@ const DotplotControls = observer(function DotplotControls({
             label: 'Re-order chromosomes',
             icon: ShuffleIcon,
             onClick: () => {
-              getSession(model).queueDialog(handleClose => [
+              session.queueDialog(handleClose => [
                 DiagonalizationProgressDialog,
                 {
                   handleClose,
@@ -98,16 +111,6 @@ const DotplotControls = observer(function DotplotControls({
                 },
                 helpText:
                   'Zooms out to display all genome assemblies in their entirety. Useful for getting a high-level overview or resetting the view after zooming into specific regions.',
-              },
-              {
-                label: 'Show pan buttons',
-                type: 'checkbox',
-                checked: model.showPanButtons,
-                onClick: () => {
-                  model.setShowPanButtons(!model.showPanButtons)
-                },
-                helpText:
-                  'Show or hide directional pan buttons that allow you to navigate the dotplot view by clicking arrows. Useful for precise navigation without using mouse drag.',
               },
               {
                 label: 'Show dynamic controls',
@@ -157,43 +160,6 @@ const DotplotControls = observer(function DotplotControls({
                 },
                 helpText:
                   'Click and drag to select a region for zooming or creating a linear synteny view. Hold Ctrl/Cmd while dragging to pan the view instead.',
-              },
-            ],
-          },
-          {
-            label: 'Wheel scroll mode',
-            helpText:
-              'Configure how mouse wheel scrolling behaves in the dotplot view.',
-            subMenu: [
-              {
-                label: 'Pan view',
-                type: 'radio',
-                checked: model.wheelMode === 'pan',
-                onClick: () => {
-                  model.setWheelMode('pan')
-                },
-                helpText:
-                  'Mouse wheel scrolling will pan the view up/down. Useful for navigating through the genome without changing zoom level.',
-              },
-              {
-                label: 'Zoom view',
-                type: 'radio',
-                checked: model.wheelMode === 'zoom',
-                onClick: () => {
-                  model.setWheelMode('zoom')
-                },
-                helpText:
-                  'Mouse wheel scrolling will zoom in/out of the view. Provides quick zoom control for detailed inspection of regions.',
-              },
-              {
-                label: 'Disable',
-                type: 'radio',
-                checked: model.wheelMode === 'none',
-                onClick: () => {
-                  model.setWheelMode('none')
-                },
-                helpText:
-                  'Mouse wheel scrolling will be disabled for the dotplot view. Use this to prevent accidental zoom or pan when scrolling the page.',
               },
             ],
           },

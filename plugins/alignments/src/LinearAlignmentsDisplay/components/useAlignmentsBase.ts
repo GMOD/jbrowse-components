@@ -1,18 +1,13 @@
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import type React from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
-import { getContainingView, useGpuRenderer } from '@jbrowse/core/util'
+import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
-import { autorun } from 'mobx'
 
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
 import {
   buildColorPaletteFromTheme,
-  formatCigarTooltip,
-  formatCoverageTooltip,
-  formatIndicatorTooltip,
   getCanvasCoords,
-  uploadRegionDataToGPU,
 } from './alignmentComponentUtils.ts'
 import { performHitTest } from './hitTestPipeline.ts'
 import {
@@ -20,138 +15,57 @@ import {
   openCoverageWidget,
   openIndicatorWidget,
 } from './openFeatureWidget.ts'
+import {
+  formatCigarTooltip,
+  formatCoverageTooltip,
+  formatIndicatorTooltip,
+  formatModificationTooltip,
+} from './tooltipUtils.ts'
 import { getContrastBaseMap } from '../../shared/util.ts'
 
-import type { ColorPalette } from './AlignmentsRenderer.ts'
-import type { CoverageTicks } from './CoverageYScaleBar.tsx'
-import type { VisibleLabel } from './computeVisibleLabels.ts'
-import type {
-  CigarHitResult,
-  IndicatorHitResult,
-  ResolvedBlock,
-} from './hitTesting.ts'
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
-import type {
-  LegendItem,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type { LinearAlignmentsDisplayModel } from '../model.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-interface FeatureInfo {
-  id: string
-  name: string
-  start: number
-  end: number
-  flags: number | undefined
-  mapq: number | undefined
-  strand: string
-  refName: string
-}
-
-export interface LinearAlignmentsDisplayModel {
-  height: number
-  rpcDataMap: Map<number, PileupDataResult>
-  isLoading: boolean
-  error: Error | null
-  featureHeightSetting: number
-  featureSpacing: number
-  showCoverage: boolean
-  coverageHeight: number
-  showArcs: boolean
-  arcsHeight: number
-  coverageDisplayHeight: number
-  showInterbaseIndicators: boolean
-  showSashimiArcs: boolean
-  totalPileupHeight: number
-  scrollableHeight: number
-  pileupViewportHeight: number
-  regionTooLarge: boolean
-  regionTooLargeReason: string
-  setFeatureDensityStatsLimit: (s?: unknown) => void
-  reload: () => void
-  featureIdUnderMouse: string | undefined
-  coverageTicks?: CoverageTicks
-  showLegend: boolean | undefined
-  legendItems: LegendItem[]
-  currentRangeY: [number, number]
-  highlightedChainIds: string[]
-  selectedChainIds: string[]
-  chainIdMap: Map<number, string[]>
-  overCigarItem: boolean
-  visibleLabels: VisibleLabel[]
-  isChainMode: boolean
-  setOverCigarItem: (flag: boolean) => void
-  colorPalette: ColorPalette | null
-  colorSchemeIndex: number
-  dataVersion: number
-  canvasDrawn: boolean
-  arcsState: {
-    rpcDataMap: Map<
-      number,
-      {
-        regionStart: number
-        arcX1: Float32Array
-        arcX2: Float32Array
-        arcColorTypes: Float32Array
-        arcIsArc: Uint8Array
-        numArcs: number
-        linePositions: Uint32Array
-        lineYs: Float32Array
-        lineColorTypes: Float32Array
-        numLines: number
-      }
-    >
-    dataVersion: number
-    lineWidth: number
-    drawInter: boolean
-  }
-  showMismatches: boolean
-  showSoftClipping: boolean
-  showModifications: boolean
-  showOutlineSetting: boolean
-  selectedFeatureId: string | undefined
-  flipStrandLongReadChains: boolean
-  setMaxY: (val: number) => void
-  setColorPalette: (palette: ColorPalette | null) => void
-  setCanvasDrawn: (val: boolean) => void
-  setCurrentRangeY: (rangeY: [number, number]) => void
-  setCoverageHeight: (height: number) => void
-  setArcsHeight: (height: number) => void
-  setHighlightedChainIds: (ids: string[]) => void
-  setSelectedChainIds: (ids: string[]) => void
-  clearHighlights: () => void
-  clearMouseoverState: () => void
-  clearSelection: () => void
-  setFeatureIdUnderMouse: (id: string | undefined) => void
-  setMouseoverExtraInformation: (info: string | undefined) => void
-  selectFeatureById: (featureId: string) => void
-  setContextMenuFeatureById: (featureId: string) => void
-  setContextMenuCoord: (coord?: [number, number]) => void
-  setContextMenuCigarHit: (hit?: CigarHitResult) => void
-  setContextMenuIndicatorHit: (hit?: IndicatorHitResult) => void
-  setContextMenuRefName: (refName?: string) => void
-  contextMenuCoord: [number, number] | undefined
-  contextMenuItems: () => {
-    label: string
-    onClick: () => void
-    icon?: unknown
-  }[]
-  setContextMenuFeature: (feature?: unknown) => void
-  getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
-  renderingMode: 'pileup' | 'linkedRead'
-  scalebarOverlapLeft: number
-  clearAllRpcData: () => void
-  setError: (error?: unknown) => void
-}
+// eslint-disable-next-line unicorn/prefer-export-from -- also used locally in function signatures
+export type { LinearAlignmentsDisplayModel }
 
 export interface FeatureHit {
   id: string
   index: number
 }
 
+function makeResizeHandler(
+  getHeight: () => number,
+  setHeight: (h: number) => void,
+) {
+  return (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const startY = e.clientY
+    const startHeight = getHeight()
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      setHeight(Math.max(20, startHeight + moveEvent.clientY - startY))
+    }
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
+}
+
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const {
+    canvas,
+    canvasRef,
+    error: gpuError,
+    retry,
+  } = useGpuModelLifecycle(AlignmentsRenderer, model)
   const [resizeHandleHovered, setResizeHandleHovered] = useState(false)
   const [arcsResizeHovered, setArcsResizeHovered] = useState(false)
+  const [sashimiResizeHovered, setSashimiResizeHovered] = useState(false)
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
     null,
@@ -176,17 +90,35 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   const width = view.initialized ? view.width : undefined
 
+  function runHitTest(canvasX: number, canvasY: number) {
+    const resolved = resolveBlockForCanvasX(canvasX)
+    return {
+      resolved,
+      result: performHitTest(canvasX, canvasY, resolved, {
+        showCoverage,
+        showInterbaseIndicators,
+        coverageHeight,
+        topOffset,
+        featureHeightSetting,
+        featureSpacing,
+        rangeY: model.currentRangeY,
+        isChainMode,
+        bpPerPx: view.bpPerPx,
+      }),
+    }
+  }
+
   function resolveBlockForCanvasX(canvasX: number): ResolvedBlock | undefined {
     if (!view.initialized) {
       return undefined
     }
 
     const regions = view.visibleRegions
-    const dataMap = model.rpcDataMap
+    const dataMap = model.laidOutPileupMap
 
     for (const r of regions) {
       if (canvasX >= r.screenStartPx && canvasX < r.screenEndPx) {
-        const data = dataMap.get(r.regionNumber)
+        const data = dataMap.get(r.displayedRegionIndex)
         if (data) {
           return {
             rpcData: data,
@@ -235,68 +167,39 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   function handleMouseLeave() {
     dragRef.current.isDragging = false
-    model.clearMouseoverState()
+    if (!model.contextMenuCoord) {
+      model.clearMouseoverState()
+    }
   }
 
-  function handleResizeMouseDown(e: React.MouseEvent) {
-    e.preventDefault()
-    e.stopPropagation()
-    const startY = e.clientY
-    const startHeight = coverageHeight
+  const handleResizeMouseDown = makeResizeHandler(
+    () => coverageHeight,
+    h => {
+      model.setCoverageHeight(h)
+    },
+  )
 
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      model.setCoverageHeight(
-        Math.max(20, startHeight + moveEvent.clientY - startY),
-      )
-    }
+  const handleArcsResizeMouseDown = makeResizeHandler(
+    () => arcsHeight,
+    h => {
+      model.setArcsHeight(h)
+    },
+  )
 
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }
-
-  function handleArcsResizeMouseDown(e: React.MouseEvent) {
-    e.preventDefault()
-    e.stopPropagation()
-    const startY = e.clientY
-    const startHeight = arcsHeight
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      model.setArcsHeight(
-        Math.max(20, startHeight + moveEvent.clientY - startY),
-      )
-    }
-
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }
+  const handleSashimiArcsResizeMouseDown = makeResizeHandler(
+    () => model.sashimiArcsHeight,
+    h => {
+      model.setSashimiArcsHeight(h)
+    },
+  )
 
   function handleContextMenu(e: React.MouseEvent) {
-    const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+    const coords = getCanvasCoords(e, canvas, canvasRectRef)
     if (!coords) {
       return
     }
 
-    const resolved = resolveBlockForCanvasX(coords.canvasX)
-    const result = performHitTest(coords.canvasX, coords.canvasY, resolved, {
-      showCoverage,
-      showInterbaseIndicators,
-      coverageHeight,
-      topOffset,
-      featureHeightSetting,
-      featureSpacing,
-      rangeY: model.currentRangeY,
-      isChainMode,
-    })
+    const { resolved, result } = runHitTest(coords.canvasX, coords.canvasY)
     if (
       result.type === 'cigar' ||
       result.type === 'indicator' ||
@@ -312,9 +215,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         result.type === 'indicator' ? result.hit : undefined,
       )
       if (result.type === 'cigar' && result.featureHit) {
-        model.setContextMenuFeatureById(result.featureHit.id)
+        void model.setContextMenuFeatureById(result.featureHit.id)
       } else if (result.type === 'feature') {
-        model.setContextMenuFeatureById(result.hit.id)
+        void model.setContextMenuFeatureById(result.hit.id)
       }
     }
   }
@@ -331,22 +234,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return
     }
 
-    const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+    const coords = getCanvasCoords(e, canvas, canvasRectRef)
     if (!coords) {
       return
     }
 
-    const resolved = resolveBlockForCanvasX(coords.canvasX)
-    const result = performHitTest(coords.canvasX, coords.canvasY, resolved, {
-      showCoverage,
-      showInterbaseIndicators,
-      coverageHeight,
-      topOffset,
-      featureHeightSetting,
-      featureSpacing,
-      rangeY: model.currentRangeY,
-      isChainMode,
-    })
+    const { result } = runHitTest(coords.canvasX, coords.canvasY)
 
     if (result.type === 'indicator') {
       model.setOverCigarItem(true)
@@ -376,6 +269,24 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return
     }
 
+    if (result.type === 'modification') {
+      model.setOverCigarItem(true)
+      model.setFeatureIdUnderMouse(result.featureHit?.id)
+      const snpBase =
+        result.cigarHit?.type === 'mismatch' ? result.cigarHit.base : undefined
+      model.setMouseoverExtraInformation(
+        formatModificationTooltip(
+          result.hit.position,
+          result.hit.modType,
+          result.hit.probability,
+          result.hit.color,
+          result.resolved.refName,
+          snpBase,
+        ),
+      )
+      return
+    }
+
     if (result.type === 'cigar') {
       model.setOverCigarItem(true)
       model.setMouseoverExtraInformation(formatCigarTooltip(result.hit))
@@ -397,24 +308,13 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     onFeature: (hit: FeatureHit, resolved: ResolvedBlock) => void,
     onNoFeature: () => void,
   ) {
-    const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+    const coords = getCanvasCoords(e, canvas, canvasRectRef)
     if (!coords) {
       return
     }
     const { canvasX, canvasY } = coords
 
-    const resolved = resolveBlockForCanvasX(canvasX)
-
-    const result = performHitTest(canvasX, canvasY, resolved, {
-      showCoverage,
-      showInterbaseIndicators,
-      coverageHeight,
-      topOffset,
-      featureHeightSetting,
-      featureSpacing,
-      rangeY: model.currentRangeY,
-      isChainMode,
-    })
+    const { result } = runHitTest(canvasX, canvasY)
 
     if (result.type === 'indicator') {
       const refName = result.resolved.refName
@@ -439,6 +339,17 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return
     }
 
+    if (result.type === 'modification') {
+      openCoverageWidget(
+        model,
+        result.hit.position,
+        result.resolved.refName,
+        result.resolved.rpcData,
+        result.hit.modType,
+      )
+      return
+    }
+
     if (result.type === 'feature') {
       onFeature(result.hit, result.resolved)
     } else {
@@ -448,147 +359,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   // --- Effects ---
 
-  const {
-    error: gpuError,
-    ready,
-    rendererRef,
-    retry,
-  } = useGpuRenderer(canvasRef, AlignmentsRenderer)
-
   useEffect(() => {
     model.setColorPalette(colorPalette)
   }, [model, colorPalette])
 
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !view.initialized) {
-      return
-    }
-    const palette = model.colorPalette
-    if (!palette) {
-      return
-    }
-    const regions = view.visibleRegions
-    renderer.renderBlocks(
-      regions.map(r => ({
-        regionNumber: r.regionNumber,
-        bpRangeX: [r.start, r.end] as [number, number],
-        screenStartPx: r.screenStartPx,
-        screenEndPx: r.screenEndPx,
-        reversed: r.reversed ?? false,
-      })),
-      {
-        rangeY: model.currentRangeY,
-        colorScheme: model.colorSchemeIndex,
-        featureHeight: model.featureHeightSetting,
-        featureSpacing: model.featureSpacing,
-        showCoverage: model.showCoverage,
-        coverageHeight: model.coverageHeight,
-        coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-        coverageNicedMax: model.coverageTicks?.nicedMax,
-        showMismatches: model.showMismatches,
-        showSoftClipping: model.showSoftClipping,
-        showInterbaseIndicators: model.showInterbaseIndicators,
-        showModifications: model.showModifications,
-        showSashimiArcs: model.showSashimiArcs,
-        showOutline: model.showOutlineSetting,
-        showArcs: model.showArcs,
-        arcsHeight: model.arcsHeight,
-        canvasWidth: view.width,
-        canvasHeight: model.height,
-        highlightedFeatureId: model.featureIdUnderMouse,
-        selectedFeatureId: model.selectedFeatureId,
-        highlightedChainIds: model.highlightedChainIds,
-        selectedChainIds: model.selectedChainIds,
-        colors: palette,
-        renderingMode: model.renderingMode,
-        flipStrandLongReadChains: model.flipStrandLongReadChains,
-        arcLineWidth: model.arcsState.lineWidth,
-        bpRangeX: [0, 0],
-      },
-    )
-  })
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    let lastRpcDataMap: Map<number, PileupDataResult> | null = null
-    let lastArcsDataMap: Map<number, unknown> | null = null
-
-    return autorun(() => {
-      const rpcDataMap = model.rpcDataMap
-
-      if (lastRpcDataMap !== rpcDataMap) {
-        lastRpcDataMap = rpcDataMap
-        const maxYVal = uploadRegionDataToGPU(renderer, rpcDataMap)
-        if (maxYVal > 0) {
-          model.setMaxY(maxYVal)
-        }
-        for (const [regionNumber, data] of rpcDataMap) {
-          if (
-            data.connectingLinePositions &&
-            data.connectingLineYs &&
-            data.connectingLineColorTypes &&
-            data.numConnectingLines
-          ) {
-            renderer.uploadConnectingLinesForRegion(regionNumber, {
-              regionStart: data.regionStart,
-              connectingLinePositions: data.connectingLinePositions,
-              connectingLineYs: data.connectingLineYs,
-              connectingLineColorTypes: data.connectingLineColorTypes,
-              numConnectingLines: data.numConnectingLines,
-            })
-          }
-        }
-      }
-
-      const arcsRpcDataMap = model.arcsState.rpcDataMap
-      if (lastArcsDataMap !== arcsRpcDataMap) {
-        lastArcsDataMap = arcsRpcDataMap
-        for (const [regionNumber, data] of arcsRpcDataMap) {
-          renderer.uploadArcsFromTypedArraysForRegion(regionNumber, {
-            regionStart: data.regionStart,
-            arcX1: data.arcX1,
-            arcX2: data.arcX2,
-            arcColorTypes: data.arcColorTypes,
-            arcIsArc: data.arcIsArc,
-            numArcs: data.numArcs,
-            linePositions: data.linePositions,
-            lineYs: data.lineYs,
-            lineColorTypes: data.lineColorTypes,
-            numLines: data.numLines,
-          })
-        }
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _dv = model.dataVersion
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _adv = model.arcsState.dataVersion
-
-      renderNow()
-      if (rpcDataMap.size > 0 && !model.canvasDrawn) {
-        model.setCanvasDrawn(true)
-      }
-    })
-  }, [model, view, ready, rendererRef])
-
-  useEffect(() => {
-    const handle = () => {
-      if (!document.hidden) {
-        renderNow()
-      }
-    }
-    document.addEventListener('visibilitychange', handle)
-    return () => {
-      document.removeEventListener('visibilitychange', handle)
-    }
-  }, [])
-
   return {
+    canvas,
     canvasRef,
     gpuError,
     retry,
@@ -603,6 +379,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     handleArcsResizeMouseDown,
     arcsResizeHovered,
     setArcsResizeHovered,
+    handleSashimiArcsResizeMouseDown,
+    sashimiResizeHovered,
+    setSashimiResizeHovered,
     handleContextMenu,
     processMouseMove,
     processClick,

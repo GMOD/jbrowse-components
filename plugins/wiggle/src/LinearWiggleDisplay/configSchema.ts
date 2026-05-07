@@ -1,7 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { WIGGLE_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
+import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
+import { WIGGLE_COLOR_DEFAULT } from '../util.ts'
 
 export default ConfigurationSchema(
   'LinearWiggleDisplay',
@@ -27,37 +28,7 @@ export default ConfigurationSchema(
       defaultValue: WIGGLE_COLOR_DEFAULT,
       description: 'Color for the wiggle bars',
     },
-    posColor: {
-      type: 'color',
-      defaultValue: WIGGLE_POS_COLOR_DEFAULT,
-      description: 'Color for positive scores (when using bicolor)',
-    },
-    negColor: {
-      type: 'color',
-      defaultValue: '#f0636b',
-      description: 'Color for negative scores (when using bicolor)',
-    },
-    bicolorPivot: {
-      type: 'number',
-      defaultValue: 0,
-      description: 'Pivot value for bicolor mode',
-    },
-    minScore: {
-      type: 'number',
-      defaultValue: Number.MIN_VALUE,
-      description: 'Minimum score bound',
-    },
-    maxScore: {
-      type: 'number',
-      defaultValue: Number.MAX_VALUE,
-      description: 'Maximum score bound',
-    },
-    scaleType: {
-      type: 'stringEnum',
-      model: types.enumeration('Scale type', ['linear', 'log']),
-      defaultValue: 'linear',
-      description: 'Scale type (linear or log)',
-    },
+    ...wiggleConfigSchemaFields,
     summaryScoreMode: {
       type: 'stringEnum',
       model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),

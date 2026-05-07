@@ -35,28 +35,28 @@ Map<string, SnackbarMessage>
 
 ```js
 // type signature
-notify: (message: string, level?: NotificationLevel, action?: SnackAction | SnackAction[]) => void
+notify: (message: string, level?: NotificationLevel | undefined, action?: SnackAction | SnackAction[] | undefined) => void
 ```
 
 #### action: notifyError
 
 ```js
 // type signature
-notifyError: (errorMessage: string, error?: unknown, extra?: unknown, action?: SnackAction) => void
+notifyError: (errorMessage: string, error?: unknown, extra?: unknown, action?: SnackAction | undefined) => void
 ```
 
 #### action: pushSnackbarMessage
 
 ```js
 // type signature
-pushSnackbarMessage: (message: string, level?: NotificationLevel, actions?: SnackAction[]) => void
+pushSnackbarMessage: (message: string, level?: NotificationLevel | undefined, actions?: SnackAction[] | undefined) => void
 ```
 
 #### action: popSnackbarMessage
 
 ```js
 // type signature
-popSnackbarMessage: () => SnackbarMessage
+popSnackbarMessage: () => SnackbarMessage | undefined
 ```
 
 #### action: removeSnackbarMessage

@@ -1,11 +1,34 @@
 import { gatherOverlaps, getSession, when } from '@jbrowse/core/util'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { getBreakendCoveringRegions, makeTitle, stripIds } from './util.ts'
 
-import type { BreakpointSplitView } from './types.ts'
+import type { BreakpointSplitView, Track } from './types.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+function getAssemblyRegions(
+  feature: Feature,
+  session: AbstractSessionModel,
+  assemblyName: string,
+) {
+  const { assemblyManager } = session
+  const assembly = assemblyManager.get(assemblyName)
+  if (!assembly) {
+    throw new Error(`assembly ${assemblyName} not found`)
+  }
+  if (!assembly.regions) {
+    throw new Error(`assembly ${assemblyName} regions not loaded`)
+  }
+  const coverage = getBreakendCoveringRegions({ feature, assembly })
+  const { refName, mateRefName } = coverage
+  const topRegion = assembly.regions.find(f => f.refName === refName)
+  const bottomRegion = assembly.regions.find(f => f.refName === mateRefName)
+  if (!topRegion || !bottomRegion) {
+    throw new Error(
+      `regions ${refName}, ${mateRefName} not found in assembly ${assemblyName}`,
+    )
+  }
+  return { coverage, topRegion, bottomRegion }
+}
 
 export function singleLevelFocusedSnapshotFromBreakendFeature({
   feature,
@@ -18,21 +41,11 @@ export function singleLevelFocusedSnapshotFromBreakendFeature({
   assemblyName: string
   windowSize?: number
 }) {
-  const { assemblyManager } = session
-  const assembly = assemblyManager.get(assemblyName)
-  if (!assembly) {
-    throw new Error(`assembly ${assemblyName} not found`)
-  }
-  if (!assembly.regions) {
-    throw new Error(`assembly ${assemblyName} regions not loaded`)
-  }
-  const coverage = getBreakendCoveringRegions({
+  const { coverage, topRegion, bottomRegion } = getAssemblyRegions(
     feature,
-    assembly,
-  })
-  const { refName, mateRefName } = coverage
-  const topRegion = assembly.regions.find(f => f.refName === refName)!
-  const bottomRegion = assembly.regions.find(f => f.refName === mateRefName)!
+    session,
+    assemblyName,
+  )
   return {
     coverage,
     snap: {
@@ -68,21 +81,11 @@ export function singleLevelEncompassingSnapshotFromBreakendFeature({
   session: AbstractSessionModel
   assemblyName: string
 }) {
-  const { assemblyManager } = session
-  const assembly = assemblyManager.get(assemblyName)
-  if (!assembly) {
-    throw new Error(`assembly ${assemblyName} not found`)
-  }
-  if (!assembly.regions) {
-    throw new Error(`assembly ${assemblyName} regions not loaded`)
-  }
-  const coverage = getBreakendCoveringRegions({
+  const { coverage, topRegion, bottomRegion } = getAssemblyRegions(
     feature,
-    assembly,
-  })
-  const { refName, mateRefName } = coverage
-  const topRegion = assembly.regions.find(f => f.refName === refName)!
-  const bottomRegion = assembly.regions.find(f => f.refName === mateRefName)!
+    session,
+    assemblyName,
+  )
   return {
     coverage,
     snap: {
@@ -115,7 +118,7 @@ export async function navToSingleLevelBreak({
   assemblyName: string
   windowSize?: number
   session: AbstractSessionModel
-  tracks?: any
+  tracks?: Track[]
   focusOnBreakends?: boolean
 }) {
   const { snap, coverage } = focusOnBreakends
@@ -140,13 +143,12 @@ export async function navToSingleLevelBreak({
       views: [
         {
           ...snap.views[0],
-          tracks: tracks ? stripIds(getSnapshot(tracks)) : [],
+          tracks: tracks ? stripIds(tracks) : [],
         },
       ],
-    }) as unknown as { views: LinearGenomeViewModel[] }
+    }) as unknown as BreakpointSplitView
   } else {
     view.views[0]?.setDisplayedRegions(snap.views[0]!.displayedRegions)
-    // @ts-expect-error
     view.setDisplayName(snap.displayName)
   }
   const lgv = view.views[0]!

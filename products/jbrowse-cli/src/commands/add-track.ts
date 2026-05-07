@@ -1,10 +1,16 @@
 import path from 'path'
 import { parseArgs } from 'util'
 
-import { printHelp, resolveConfigPath } from '../utils.ts'
-import { guessAdapter } from './add-track-utils/adapter-utils.ts'
+import { printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
+import {
+  guessAdapter,
+  guessFileNames,
+  guessTrackType,
+} from './add-track-utils/adapter-utils.ts'
+import { loadFile } from './add-track-utils/file-operations.ts'
 import {
   addSyntenyAssemblyNames,
+  buildTrackConfig,
   mapLocationForFiles,
 } from './add-track-utils/track-config.ts'
 import {
@@ -16,13 +22,9 @@ import {
   validateTrackArg,
 } from './add-track-utils/validators.ts'
 import {
-  addTrackToConfig,
-  buildTrackParams,
-  createTrackConfiguration,
-  loadTrackConfig,
-  processTrackFiles,
-  saveTrackConfigAndReport,
-} from './track-utils.ts'
+  findAndUpdateOrAdd,
+  saveConfigAndReport,
+} from './shared/config-operations.ts'
 
 import type { Config } from '../base.ts'
 
@@ -88,18 +90,10 @@ export async function run(args?: string[]) {
       short: 'l',
       description: 'How to manage the track (copy, symlink, move, inPlace)',
     },
-    skipCheck: {
-      type: 'boolean',
-      description: 'Skip check for whether file or URL exists',
-    },
-    overwrite: {
-      type: 'boolean',
-      description: 'Overwrites existing track if it shares the same trackId',
-    },
     force: {
       type: 'boolean',
       short: 'f',
-      description: 'Equivalent to --skipCheck --overwrite',
+      description: 'Overwrite existing track and any existing files',
     },
     protocol: {
       type: 'string',
@@ -160,7 +154,6 @@ export async function run(args?: string[]) {
   const {
     config,
     force,
-    overwrite,
     category,
     description: trackDescription,
     load,
@@ -194,47 +187,53 @@ export async function run(args?: string[]) {
   validateLoadAndLocation(location, load)
   validateAdapterType(adapter.type)
 
-  const configContents: Config = await loadTrackConfig(targetConfigPath)
+  const configContents: Config = await readJsonFile(targetConfigPath)
   validateAssemblies(configContents, flags.assemblyNames)
 
-  const trackParams = buildTrackParams({
-    flags,
-    location,
+  const trackType = flags.trackType || guessTrackType(adapter.type)
+  const trackId =
+    flags.trackId || path.basename(location, path.extname(location))
+  const name = flags.name || trackId
+  const assemblyNames =
+    flags.assemblyNames || configContents.assemblies?.[0]?.name || ''
+
+  const trackConfig = buildTrackConfig({
+    trackType,
+    trackId,
+    name,
+    assemblyNames,
+    category,
+    description: trackDescription,
+    config,
     adapter,
-    configContents,
-  })
-  const trackConfig = createTrackConfiguration({
-    location,
-    trackParams,
-    flags: { category, description: trackDescription, config },
-    adapter,
-    configContents,
   })
 
-  const { updatedConfig, wasOverwritten } = addTrackToConfig({
-    configContents,
-    trackConfig,
-    trackId: trackParams.trackId,
-    force,
-    overwrite,
+  const { updatedItems: tracks, wasOverwritten } = findAndUpdateOrAdd({
+    items: configContents.tracks ?? [],
+    newItem: trackConfig,
+    idField: 'trackId',
+    getId: item => item.trackId,
+    force: force ?? false,
+    itemType: 'track',
   })
+  const updatedConfig = { ...configContents, tracks }
 
-  await processTrackFiles({
-    location,
-    index,
-    bed1,
-    bed2,
-    load,
-    configDir,
-    subDir,
-    force,
-  })
+  if (load) {
+    await Promise.all(
+      Object.values(guessFileNames({ location, index, bed1, bed2 }))
+        .filter((f): f is string => !!f)
+        .map(src =>
+          loadFile({ src, destDir: configDir, mode: load, subDir, force }),
+        ),
+    )
+  }
 
-  await saveTrackConfigAndReport({
+  await saveConfigAndReport({
     config: updatedConfig,
-    targetConfigPath,
-    name: trackParams.name,
-    trackId: trackParams.trackId,
+    target: targetConfigPath,
+    itemType: 'track',
+    itemName: name,
+    itemId: trackId,
     wasOverwritten,
   })
 }

@@ -35,7 +35,7 @@ type: types.literal('GoogleDriveOAuthInternetAccount')
 
 ```js
 // type signature
-any
+ConfigurationSchemaType<{ authEndpoint: { description: string; type: string; defaultValue: string; }; scopes: { description: string; type: string; defaultValue: string; }; domains: { description: string; type: string; defaultValue: string[]; }; responseType: { ...; }; }, ConfigurationSchemaOptions<...>>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -64,7 +64,7 @@ string
 
 ```js
 // type signature
-getFetcher: (location?: UriLocation) => (input: RequestInfo, init?: RequestInitWithMetadata) => Promise<Response>
+getFetcher: (location?: UriLocation | undefined) => (input: RequestInfo, init?: RequestInitWithMetadata | undefined) => Promise<Response>
 ```
 
 #### method: openLocation

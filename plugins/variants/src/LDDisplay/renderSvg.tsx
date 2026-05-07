@@ -1,10 +1,8 @@
-import {
-  lookupColorRamp,
-  lookupColorRampCSS,
-} from '@jbrowse/core/gpu/canvas2dUtils'
 import { getContainingView, max } from '@jbrowse/core/util'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { when } from 'mobx'
 
+import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
 import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './components/VariantLabels.tsx'
@@ -20,11 +18,6 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-function computeT(ldVal: number, signedLD: boolean) {
-  const t = signedLD ? (ldVal + 1) / 2 : ldVal
-  return Math.max(0, Math.min(1, t))
-}
 
 export async function renderSvg(
   self: SharedLDModel,
@@ -48,81 +41,22 @@ export async function renderSvg(
     return null
   }
 
-  const { positions, ldValues, cellSizes, numCells, yScalar } = rpcData
+  const { ldValues, boundaries, yScalar, numCells, uniformW } = rpcData
   const visibleWidth = view.width
   const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
-  const rasterize = opts.rasterizeLayers
   const triangleHeight = height - lineZoneHeight
 
-  let matrixEl: React.ReactNode
-
-  if (rasterize) {
-    const scale = 2
-    const canvas =
-      opts.createCanvas?.(
-        Math.round(visibleWidth * scale),
-        Math.round(triangleHeight * scale),
-      ) ?? document.createElement('canvas')
-    canvas.width = Math.round(visibleWidth * scale)
-    canvas.height = Math.round(triangleHeight * scale)
-    const ctx = canvas.getContext('2d')
-    if (ctx) {
-      ctx.scale(scale, scale)
-      ctx.save()
-      ctx.scale(1, yScalar)
-      ctx.rotate(-Math.PI / 4)
-
-      for (let i = 0; i < numCells; i++) {
-        const px = positions[i * 2]!
-        const py = positions[i * 2 + 1]!
-        const cw = cellSizes[i * 2]!
-        const ch = cellSizes[i * 2 + 1]!
-        const t = computeT(ldValues[i]!, signedLD)
-        ctx.fillStyle = lookupColorRampCSS(ramp, t)
-        ctx.fillRect(px, py, cw, ch)
-      }
-      ctx.restore()
-    }
-    matrixEl = (
-      <image
-        x={0}
-        y={0}
-        width={visibleWidth}
-        height={triangleHeight}
-        xlinkHref={canvas.toDataURL('image/png')}
-      />
-    )
-  } else {
-    const SQRT2_INV = 0.7071067811865476
-    let content = ''
-
-    for (let i = 0; i < numCells; i++) {
-      const px = positions[i * 2]!
-      const py = positions[i * 2 + 1]!
-      const cw = cellSizes[i * 2]!
-      const ch = cellSizes[i * 2 + 1]!
-      const t = computeT(ldValues[i]!, signedLD)
-      const { r, g, b, a } = lookupColorRamp(ramp, t)
-
-      const corners = [
-        [px, py],
-        [px + cw, py],
-        [px + cw, py + ch],
-        [px, py + ch],
-      ] as const
-
-      const pts = corners
-        .map(([cx, cy]) => {
-          const rx = (cx + cy) * SQRT2_INV
-          const ry = (-cx + cy) * SQRT2_INV * yScalar
-          return `${rx},${ry}`
-        })
-        .join(' ')
-
-      content += `<polygon points="${pts}" fill="rgb(${r},${g},${b})" fill-opacity="${a.toFixed(3)}"/>`
-    }
-    matrixEl = <g dangerouslySetInnerHTML={{ __html: content }} />
-  }
+  const matrixEl = paintLayer(visibleWidth, triangleHeight, opts, ctx => {
+    drawLDBlocks(ctx, { ldValues, boundaries, numCells }, ramp, {
+      yScalar,
+      canvasWidth: visibleWidth,
+      canvasHeight: triangleHeight,
+      signedLD,
+      viewScale: 1,
+      viewOffsetX: 0,
+      uniformW,
+    })
+  })
 
   const clipId = `clip-${self.id}-svg`
   const recombTrackHeight = lineZoneHeight / 2

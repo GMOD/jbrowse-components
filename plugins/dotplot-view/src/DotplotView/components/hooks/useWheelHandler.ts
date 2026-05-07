@@ -2,24 +2,22 @@ import { useEffect, useRef } from 'react'
 
 import { transaction } from 'mobx'
 
-type Coord = [number, number] | undefined
+import type { Coord } from '../../types.ts'
 
 interface View {
-  scroll: (distance: number) => void
   zoomTo: (bpPerPx: number, position: number) => void
   bpPerPx: number
 }
 
 export function useWheelHandler(
-  ref: React.RefObject<HTMLDivElement | null>,
-  wheelMode: string,
+  el: HTMLDivElement | null,
   hview: View,
   vview: View,
   mousecurr: Coord,
   rootRectHeight: number,
 ) {
-  const distanceX = useRef(0)
   const distanceY = useRef(0)
+  const distanceX = useRef(0)
   const scheduled = useRef(false)
 
   useEffect(() => {
@@ -33,18 +31,13 @@ export function useWheelHandler(
 
         window.requestAnimationFrame(() => {
           transaction(() => {
-            if (wheelMode === 'pan') {
-              hview.scroll(distanceX.current / 10)
-              vview.scroll(distanceY.current / 30)
-            } else if (wheelMode === 'zoom') {
-              if (
-                Math.abs(distanceY.current) > Math.abs(distanceX.current) * 2 &&
-                mousecurr
-              ) {
-                const val = distanceY.current < 0 ? 1.1 : 0.9
-                hview.zoomTo(hview.bpPerPx * val, mousecurr[0])
-                vview.zoomTo(vview.bpPerPx * val, rootRectHeight - mousecurr[1])
-              }
+            if (
+              Math.abs(distanceY.current) > Math.abs(distanceX.current) * 2 &&
+              mousecurr
+            ) {
+              const val = distanceY.current < 0 ? 1.07 : 0.935
+              hview.zoomTo(hview.bpPerPx * val, mousecurr[0])
+              vview.zoomTo(vview.bpPerPx * val, rootRectHeight - mousecurr[1])
             }
           })
           scheduled.current = false
@@ -53,13 +46,12 @@ export function useWheelHandler(
         })
       }
     }
-    if (ref.current) {
-      const curr = ref.current
-      curr.addEventListener('wheel', onWheel)
+    if (el) {
+      el.addEventListener('wheel', onWheel)
       return () => {
-        curr.removeEventListener('wheel', onWheel)
+        el.removeEventListener('wheel', onWheel)
       }
     }
     return () => {}
-  }, [hview, vview, wheelMode, mousecurr, rootRectHeight, ref])
+  }, [hview, vview, mousecurr, rootRectHeight, el])
 }

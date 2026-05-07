@@ -41,6 +41,7 @@ declare module '@mui/material/styles' {
     deletion: string
     modificationFwd: string
     modificationRev: string
+    mutedSnpBase: string
     bases: {
       A: PaletteColor
       C: PaletteColor
@@ -64,6 +65,7 @@ declare module '@mui/material/styles' {
     deletion?: string
     modificationFwd?: string
     modificationRev?: string
+    mutedSnpBase?: string
     bases?: {
       A?: PaletteColorOptions
       C?: PaletteColorOptions
@@ -87,7 +89,7 @@ const bases = {
   G: refTheme.palette.augmentColor({ color: orange }),
   T: refTheme.palette.augmentColor({ color: red }),
 }
-const framesCDS = [
+const framesCDS: Frames = [
   null,
   refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
   refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
@@ -95,8 +97,8 @@ const framesCDS = [
   refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
   refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
   refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
-] as Frames
-const frames = [
+]
+const frames: Frames = [
   null,
   refTheme.palette.augmentColor({ color: { main: '#8f8f8f' } }),
   refTheme.palette.augmentColor({ color: { main: '#adadad' } }),
@@ -104,7 +106,7 @@ const frames = [
   refTheme.palette.augmentColor({ color: { main: '#d8d8d8' } }),
   refTheme.palette.augmentColor({ color: { main: '#adadad' } }),
   refTheme.palette.augmentColor({ color: { main: '#8f8f8f' } }),
-] as Frames
+]
 const stopCodon = '#e22'
 const startCodon = '#3e3'
 const coverage = grey[400]
@@ -115,6 +117,11 @@ const softclip = '#00f'
 const skip = '#009a8a'
 const modificationFwd = '#c8c8c8'
 const modificationRev = '#c8dcc8'
+const mutedSnpBase = '#888'
+export const methylated5mC = '#ff0000'
+export const unmethylated5mC = '#0000ff'
+export const methylated5hmC = '#ffc0cb'
+export const unmethylated5hmC = '#800080'
 
 const defaults = {
   primary: midnight,
@@ -131,6 +138,7 @@ const defaults = {
   hardclip,
   modificationFwd,
   modificationRev,
+  mutedSnpBase,
   bases,
   frames,
   framesCDS,
@@ -471,7 +479,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       },
     },
   }
-  return deepmerge(themeP, theme || {}, { arrayMerge: overwriteArrayMerge })
+  return deepmerge(themeP, theme ?? {}, { arrayMerge: overwriteArrayMerge })
 }
 
 type ThemeMap = Record<string, ThemeOptions>
@@ -542,9 +550,9 @@ function addMissingColors(theme: ThemeOptions = {}) {
   return augmentThemeColors(
     deepmerge(theme, {
       palette: {
-        quaternary: palette?.quaternary || lightgrey,
-        tertiary: palette?.tertiary || lightgrey,
-        highlight: palette?.highlight || mandarin,
+        quaternary: palette?.quaternary ?? lightgrey,
+        tertiary: palette?.tertiary ?? lightgrey,
+        highlight: palette?.highlight ?? mandarin,
         coverage: palette?.coverage || coverage,
         insertion: palette?.insertion || insertion,
         softclip: palette?.softclip || softclip,
@@ -553,11 +561,12 @@ function addMissingColors(theme: ThemeOptions = {}) {
         deletion: palette?.deletion || deletion,
         modificationFwd: palette?.modificationFwd || modificationFwd,
         modificationRev: palette?.modificationRev || modificationRev,
+        mutedSnpBase: palette?.mutedSnpBase || mutedSnpBase,
         startCodon: palette?.startCodon || startCodon,
         stopCodon: palette?.stopCodon || stopCodon,
-        bases: palette?.bases || bases,
-        frames: palette?.frames || frames,
-        framesCDS: palette?.framesCDS || framesCDS,
+        bases: palette?.bases ?? bases,
+        frames: palette?.frames ?? frames,
+        framesCDS: palette?.framesCDS ?? framesCDS,
       },
     }),
   )

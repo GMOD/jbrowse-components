@@ -2,7 +2,12 @@ import { bpToPx, pxToBp } from './Base1DUtils.ts'
 import calculateBlocks from './calculateStaticBlocks.ts'
 
 function makeSnap(
-  regions: { refName: string; start: number; end: number }[],
+  regions: {
+    refName: string
+    start: number
+    end: number
+    reversed?: boolean
+  }[],
   opts: { bpPerPx?: number; offsetPx?: number } = {},
 ) {
   const bpPerPx = opts.bpPerPx ?? 1
@@ -170,6 +175,52 @@ describe('pxToBp', () => {
     const result = pxToBp(self, 1500)
     expect(result.oob).toBe(true)
     expect(result.refName).toBe('chr1')
+  })
+})
+
+describe('reversed region handling', () => {
+  it('bpToPx places coord at correct pixel for reversed region', () => {
+    const self = makeSnap([
+      { refName: 'ctgA', start: 0, end: 1000, reversed: true },
+    ])
+    // reversed: bpSoFar = r.end - coord = 1000 - 500 = 500 → offsetPx = 500
+    const result = bpToPx({ self, refName: 'ctgA', coord: 500 })
+    expect(result).toBeDefined()
+    expect(result!.offsetPx).toBe(500)
+  })
+
+  it('pxToBp returns correct offset for reversed region', () => {
+    const self = makeSnap([
+      { refName: 'ctgA', start: 0, end: 1000, reversed: true },
+    ])
+    const result = pxToBp(self, 300)
+    expect(result.oob).toBe(false)
+    expect(result.refName).toBe('ctgA')
+    expect(result.reversed).toBe(true)
+    expect(result.offset).toBe(300)
+  })
+
+  it('bpToPx and pxToBp round-trip for reversed region', () => {
+    const self = makeSnap([
+      { refName: 'ctgA', start: 0, end: 1000, reversed: true },
+    ])
+    const bp2px = bpToPx({ self, refName: 'ctgA', coord: 300 })
+    expect(bp2px).toBeDefined()
+    const px2bp = pxToBp(self, bp2px!.offsetPx)
+    expect(px2bp.refName).toBe('ctgA')
+    // offset = r.end - coord = 1000 - 300 = 700
+    expect(px2bp.offset).toBe(700)
+  })
+
+  it('bpToPx gives symmetric results for reversed vs forward at same bp distance', () => {
+    const forward = makeSnap([{ refName: 'ctgA', start: 0, end: 1000 }])
+    const reversed = makeSnap([
+      { refName: 'ctgA', start: 0, end: 1000, reversed: true },
+    ])
+    // coord 200 is 200bp from start in forward, 800bp from start (200bp from end) in reversed
+    const fwdPx = bpToPx({ self: forward, refName: 'ctgA', coord: 200 })
+    const revPx = bpToPx({ self: reversed, refName: 'ctgA', coord: 800 })
+    expect(fwdPx!.offsetPx).toBe(revPx!.offsetPx)
   })
 })
 

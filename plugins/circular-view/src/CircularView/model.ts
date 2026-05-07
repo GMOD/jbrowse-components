@@ -1,5 +1,5 @@
-import type React from 'react'
 import { lazy } from 'react'
+import type { FC, ReactNode } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -19,7 +19,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
-import { calculateStaticSlices, sliceIsVisible } from './slices.ts'
+import { calculateStaticSlices } from './slices.ts'
 import { viewportVisibleSection } from './viewportVisibleRegion.ts'
 
 import type { SliceRegion } from './slices.ts'
@@ -40,7 +40,7 @@ export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   format?: 'svg' | 'png'
   filename?: string
-  Wrapper?: React.FC<{ children: React.ReactNode }>
+  Wrapper?: FC<{ children: ReactNode }>
   themeName?: string
 }
 
@@ -58,7 +58,6 @@ function stateModelFactory(pluginManager: PluginManager) {
   const defaultMinimumRadiusPx = 25
   const defaultSpacingPx = 10
   const defaultPaddingPx = 80
-  const defaultLockedPaddingPx = 100
   const defaultMinVisibleWidth = 6
   const defaultMinimumBlockWidth = 20
   return types
@@ -97,10 +96,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        lockedFitToWindow: true,
-        /**
-         * #property
-         */
         disableImportForm: false,
 
         /**
@@ -114,15 +109,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        scrollX: 0,
-        /**
-         * #property
-         */
-        scrollY: 0,
-
-        /**
-         * #property
-         */
         minimumRadiusPx: defaultMinimumRadiusPx,
         /**
          * #property
@@ -132,10 +118,6 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         paddingPx: defaultPaddingPx,
-        /**
-         * #property
-         */
-        lockedPaddingPx: defaultLockedPaddingPx,
         /**
          * #property
          */
@@ -157,7 +139,11 @@ function stateModelFactory(pluginManager: PluginManager) {
     )
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       volatileError: undefined as unknown,
+      panX: 0,
+      panY: 0,
     }))
     .views(self => ({
       /**
@@ -176,9 +162,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get visibleSection() {
-        const { scrollX, scrollY, width, height } = self
+        const { width, height } = self
         return viewportVisibleSection(
-          [scrollX, scrollX + width, scrollY, scrollY + height],
+          [0, width, 0, height],
           this.centerXY,
           this.radiusPx,
         )
@@ -187,13 +173,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get circumferencePx() {
-        let elidedBp = 0
-
-        for (const r of this.elidedRegions) {
-          elidedBp += r.widthBp
-        }
-        return (
-          elidedBp / self.bpPerPx + self.spacingPx * this.elidedRegions.length
+        return this.elidedRegions.reduce(
+          (sum, r) => sum + r.widthBp / self.bpPerPx + self.spacingPx,
+          0,
         )
       },
       /**
@@ -218,25 +200,23 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get centerXY(): [number, number] {
-        return [this.radiusPx + self.paddingPx, this.radiusPx + self.paddingPx]
+        const c = this.radiusPx + self.paddingPx
+        return [c, c]
       },
       /**
        * #getter
        */
       get totalBp() {
-        let total = 0
-        for (const region of self.displayedRegions) {
-          total += region.end - region.start
-        }
-        return total
+        return self.displayedRegions.reduce(
+          (sum, r) => sum + r.end - r.start,
+          0,
+        )
       },
       /**
        * #getter
        */
       get maximumRadiusPx() {
-        return self.lockedFitToWindow
-          ? Math.min(self.width, self.height) / 2 - self.lockedPaddingPx
-          : 1000000
+        return 5000
       },
       /**
        * #getter
@@ -272,17 +252,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get tooSmallToLock() {
-        return this.minBpPerPx <= 0.0000000001
-      },
-      /**
-       * #getter
-       */
       get figureDimensions(): [number, number] {
-        return [
-          this.radiusPx * 2 + 2 * self.paddingPx,
-          this.radiusPx * 2 + 2 * self.paddingPx,
-        ]
+        const d = this.radiusPx * 2 + 2 * self.paddingPx
+        return [d, d]
       },
       /**
        * #getter
@@ -326,25 +298,17 @@ function stateModelFactory(pluginManager: PluginManager) {
         }
 
         // remove any single-region elisions
-        for (let i = 0; i < visible.length; i += 1) {
-          const v = visible[i]!
-          if (v.elided && v.regions.length === 1) {
-            visible[i] = { ...v, ...v.regions[0]!, elided: false }
-          }
-        }
-        return visible
+        return visible.map(v =>
+          v.elided && v.regions.length === 1
+            ? { ...v, ...v.regions[0]!, elided: false as const }
+            : v,
+        )
       },
       /**
        * #getter
        */
       get assemblyNames() {
-        const assemblyNames: string[] = []
-        for (const displayedRegion of self.displayedRegions) {
-          if (!assemblyNames.includes(displayedRegion.assemblyName)) {
-            assemblyNames.push(displayedRegion.assemblyName)
-          }
-        }
-        return assemblyNames
+        return [...new Set(self.displayedRegions.map(r => r.assemblyName))]
       },
       /**
        * #getter
@@ -360,7 +324,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           return !!(asm?.initialized && asm.regions)
         }
         return this.assemblyNames.every(
-          a => assemblyManager.get(a)?.initialized,
+          name => assemblyManager.get(name)?.initialized,
         )
       },
 
@@ -370,8 +334,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
         return this.assemblyNames
-          .map(a => assemblyManager.get(a)?.error)
-          .filter(f => !!f)
+          .map(name => assemblyManager.get(name)?.error)
+          .filter(e => !!e)
           .join(', ')
       },
 
@@ -429,7 +393,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         return (
           !!self.displayedRegions.length &&
           !!this.figureWidth &&
-          !!this.figureHeight &&
           this.initialized
         )
       },
@@ -453,21 +416,24 @@ function stateModelFactory(pluginManager: PluginManager) {
         return calculateStaticSlices(self)
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get visibleStaticSlices() {
-        return self.staticSlices.filter(s => sliceIsVisible(self, s))
-      },
-    }))
-
     .actions(self => ({
       /**
        * #action
        */
+      fitToWindow() {
+        if (!self.displayedRegions.length) {
+          return
+        }
+        const r = Math.min(self.width, self.height) / 2 - self.paddingPx
+        this.setBpPerPx(
+          self.totalBp / (2 * Math.PI * Math.max(r, self.minimumRadiusPx)),
+        )
+        self.panX = 0
+        self.panY = 0
+      },
       setWidth(newWidth: number) {
         self.volatileWidth = Math.max(newWidth, minWidth)
+        this.fitToWindow()
         return self.volatileWidth
       },
       /**
@@ -475,6 +441,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setHeight(newHeight: number) {
         self.height = Math.max(newHeight, minHeight)
+        this.fitToWindow()
         return self.height
       },
       /**
@@ -483,7 +450,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       resizeHeight(distance: number) {
         const oldHeight = self.height
         const newHeight = this.setHeight(self.height + distance)
-        this.setModelViewWhenAdjust(!self.tooSmallToLock)
         return newHeight - oldHeight
       },
       /**
@@ -492,35 +458,27 @@ function stateModelFactory(pluginManager: PluginManager) {
       resizeWidth(distance: number) {
         const oldWidth = self.width
         const newWidth = this.setWidth(self.width + distance)
-        this.setModelViewWhenAdjust(!self.tooSmallToLock)
         return newWidth - oldWidth
       },
       /**
        * #action
        */
       rotateClockwiseButton() {
-        this.rotateClockwise(Math.PI / 6)
+        self.offsetRadians += Math.PI / 6
       },
 
       /**
        * #action
        */
       rotateCounterClockwiseButton() {
-        this.rotateCounterClockwise(Math.PI / 6)
+        self.offsetRadians -= Math.PI / 6
       },
 
       /**
        * #action
        */
-      rotateClockwise(distance = 0.17) {
-        self.offsetRadians += distance
-      },
-
-      /**
-       * #action
-       */
-      rotateCounterClockwise(distance = 0.17) {
-        self.offsetRadians -= distance
+      rotate(delta: number) {
+        self.offsetRadians += delta
       },
 
       /**
@@ -546,44 +504,40 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * zoom toward/away from a specific angle on the circle, keeping the
+       * genome position at that angle visually fixed under the cursor
        */
-      setModelViewWhenAdjust(secondCondition: boolean) {
-        if (self.lockedFitToWindow && secondCondition) {
-          this.setBpPerPx(self.minBpPerPx)
-        }
+      zoomToPoint(newBpPerPx: number, cursorAngle: number) {
+        const oldRadius = self.radiusPx
+        self.bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        const dr = oldRadius - self.radiusPx
+        self.panX += dr * (1 + Math.cos(cursorAngle))
+        self.panY += dr * (1 + Math.sin(cursorAngle))
       },
 
       /**
        * #action
        */
       setDisplayedRegions(regions: Region[]) {
-        const previouslyEmpty = self.displayedRegions.length === 0
         self.displayedRegions = cast(regions)
-
-        if (previouslyEmpty) {
-          this.setBpPerPx(self.minBpPerPx)
-        } else {
-          this.setBpPerPx(self.bpPerPx)
-        }
+        this.fitToWindow()
       },
 
       /**
        * #action
        */
       activateTrackSelector() {
-        if (self.trackSelectorType === 'hierarchical') {
-          const session = getSession(self)
-          if (isSessionModelWithWidgets(session)) {
-            const selector = session.addWidget(
-              'HierarchicalTrackSelectorWidget',
-              'hierarchicalTrackSelector',
-              { view: self },
-            )
-            session.showWidget(selector)
-            return selector
-          }
+        const session = getSession(self)
+        if (!isSessionModelWithWidgets(session)) {
+          return
         }
-        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
+        const selector = session.addWidget(
+          'HierarchicalTrackSelectorWidget',
+          'hierarchicalTrackSelector',
+          { view: self },
+        )
+        session.showWidget(selector)
+        return selector
       },
 
       /**
@@ -652,13 +606,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleFitToWindowLock() {
-        // when going unlocked -> locked and circle is cut off, set to the
-        // locked minBpPerPx
-        self.lockedFitToWindow = !self.lockedFitToWindow
-        this.setModelViewWhenAdjust(self.atMinBpPerPx)
-        return self.lockedFitToWindow
+      openExportDialog() {
+        getSession(self).queueDialog(handleClose => [
+          ExportSvgDialog,
+          { model: self as CircularViewModel, handleClose },
+        ])
       },
+
       /**
        * #action
        * creates an svg export and save using FileSaver
@@ -667,8 +621,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGCircularView.tsx')
         const html = await renderToSvg(self as CircularViewModel, opts)
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const { saveAs } = await import('file-saver-es')
+        const { saveAs } = await import('@jbrowse/core/util')
 
         if (opts.format === 'png') {
           const img = new Image()
@@ -759,12 +712,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                ExportSvgDialog,
-                { model: self, handleClose },
-              ])
-            },
+            onClick: self.openExportDialog,
           },
           {
             label: 'Open track selector',
@@ -785,16 +733,12 @@ function stateModelFactory(pluginManager: PluginManager) {
         bpPerPx,
         hideVerticalResizeHandle,
         hideTrackSelectorButton,
-        lockedFitToWindow,
         disableImportForm,
         height,
         displayedRegions,
-        scrollX,
-        scrollY,
         minimumRadiusPx,
         spacingPx,
         paddingPx,
-        lockedPaddingPx,
         minVisibleWidth,
         minimumBlockWidth,
         trackSelectorType,
@@ -806,20 +750,14 @@ function stateModelFactory(pluginManager: PluginManager) {
         ...(bpPerPx !== defaultBpPerPx ? { bpPerPx } : {}),
         ...(hideVerticalResizeHandle ? { hideVerticalResizeHandle } : {}),
         ...(hideTrackSelectorButton ? { hideTrackSelectorButton } : {}),
-        ...(!lockedFitToWindow ? { lockedFitToWindow } : {}),
         ...(disableImportForm ? { disableImportForm } : {}),
         ...(height !== defaultHeight ? { height } : {}),
         ...(displayedRegions.length ? { displayedRegions } : {}),
-        ...(scrollX ? { scrollX } : {}),
-        ...(scrollY ? { scrollY } : {}),
         ...(minimumRadiusPx !== defaultMinimumRadiusPx
           ? { minimumRadiusPx }
           : {}),
         ...(spacingPx !== defaultSpacingPx ? { spacingPx } : {}),
         ...(paddingPx !== defaultPaddingPx ? { paddingPx } : {}),
-        ...(lockedPaddingPx !== defaultLockedPaddingPx
-          ? { lockedPaddingPx }
-          : {}),
         ...(minVisibleWidth !== defaultMinVisibleWidth
           ? { minVisibleWidth }
           : {}),

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-grid-bookmark",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 grid bookmark widget",
   "keywords": [
@@ -22,11 +22,11 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/grid-bookmark",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/grid-bookmark",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
@@ -35,12 +35,10 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "@mui/x-data-grid": "^9.0.0-rc.0",
-    "@types/file-saver-es": "^2.0.3",
+    "@mui/x-data-grid": "9.0.4",
     "base64-js": "^1.5.1",
-    "copy-to-clipboard": "^3.3.3",
-    "file-saver-es": "^2.0.5",
-    "mobx": "^6.15.0",
+    "copy-to-clipboard": "^4.0.2",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1",
     "pako-esm2": "^2.0.2"
   },

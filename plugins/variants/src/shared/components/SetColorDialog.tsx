@@ -19,13 +19,13 @@ export default function SetColorDialog({
 }) {
   return (
     <SharedSetColorDialog
-      model={model as any}
+      model={model}
       handleClose={handleClose}
       title="Multi-sample variant display - Color/arrangement editor"
       enableBulkEdit
       enableRowPalettizer
       showTipsStorageKey="multivariant-showTips"
-      SourcesGridComponent={SourcesGrid as any}
+      SourcesGridComponent={SourcesGrid}
     />
   )
 }

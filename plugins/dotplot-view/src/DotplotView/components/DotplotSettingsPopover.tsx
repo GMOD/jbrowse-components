@@ -8,7 +8,6 @@ import { observer } from 'mobx-react'
 
 import SliderTooltip from './SliderTooltip.tsx'
 
-import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory.tsx'
 import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -38,12 +37,11 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
-  const firstDisplay = model.tracks[0]?.displays[0] as
-    | DotplotDisplayModel
-    | undefined
-
+  const { dotplotDisplays } = model
+  const firstDisplay = dotplotDisplays[0]
   const alpha = firstDisplay?.alpha ?? 1
   const minAlignmentLength = firstDisplay?.minAlignmentLength ?? 0
+  const lineWidth = firstDisplay?.lineWidth ?? 2
 
   // Opacity: cubic scaling for more granularity near 0
   const exponent = 3
@@ -88,10 +86,8 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
               onChange={(_, value) => {
                 const v = typeof value === 'number' ? value : value[0]
                 const newAlpha = sliderToAlpha(v)
-                for (const track of model.tracks) {
-                  for (const display of track.displays) {
-                    ;(display as DotplotDisplayModel).setAlpha(newAlpha)
-                  }
+                for (const d of dotplotDisplays) {
+                  d.setAlpha(newAlpha)
                 }
               }}
               min={0}
@@ -105,21 +101,38 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
           </div>
           <div className={classes.row}>
             <Typography variant="body2" className={classes.label}>
+              Line width:
+            </Typography>
+            <Slider
+              value={lineWidth}
+              onChange={(_, value) => {
+                const v = typeof value === 'number' ? value : value[0]
+                for (const d of dotplotDisplays) {
+                  d.setLineWidth(v)
+                }
+              }}
+              min={0.5}
+              max={10}
+              step={0.5}
+              valueLabelDisplay="auto"
+              size="small"
+              slots={{ valueLabel: SliderTooltip }}
+            />
+          </div>
+          <div className={classes.row}>
+            <Typography variant="body2" className={classes.label}>
               Min length:
             </Typography>
             <Slider
               value={minLengthValue}
               onChange={(_, val) => {
-                setMinLengthValue(val)
+                const v = typeof val === 'number' ? val : val[0]
+                setMinLengthValue(v)
               }}
               onChangeCommitted={() => {
                 const newMinLength = Math.round(2 ** (minLengthValue / 100))
-                for (const track of model.tracks) {
-                  for (const display of track.displays) {
-                    ;(display as DotplotDisplayModel).setMinAlignmentLength(
-                      newMinLength,
-                    )
-                  }
+                for (const d of dotplotDisplays) {
+                  d.setMinAlignmentLength(newMinLength)
                 }
               }}
               min={0}

@@ -90,10 +90,10 @@ const ImportSessionWidget = observer(function ImportSessionWidget({
         >
           <input {...getInputProps()} />
           <CloudUploadIcon className={classes.uploadIcon} fontSize="large" />
-          <Typography color="textSecondary" align="center" variant="body1">
+          <Typography color="text.secondary" align="center" variant="body1">
             Drag and drop files here
           </Typography>
-          <Typography color="textSecondary" align="center" variant="body2">
+          <Typography color="text.secondary" align="center" variant="body2">
             or
           </Typography>
           <Button color="primary" variant="contained">

@@ -52,13 +52,13 @@ const CDNASequence = observer(function CDNASequence({
   const mult = fullGenomicCoordinates ? strand : 1
   let coordStart = fullGenomicCoordinates
     ? strand > 0
-      ? feature.start + 1 - (upstream?.length || 0)
-      : feature.end + (upstream?.length || 0)
+      ? feature.start + 1 - (upstream?.length ?? 0)
+      : feature.end + (upstream?.length ?? 0)
     : 0
   let currStart = 0
   let currRemainder = 0
 
-  let upstreamChunk = null as React.ReactNode
+  let upstreamChunk: React.ReactNode = null
   if (upstream) {
     const { segments, remainder } = splitString({
       str: toLower(upstream),
@@ -80,7 +80,7 @@ const CDNASequence = observer(function CDNASequence({
     coordStart = coordStart + upstream.length * mult
   }
 
-  const middleChunks = [] as React.ReactNode[]
+  const middleChunks: React.ReactNode[] = []
   for (let idx = 0; idx < chunks.length; idx++) {
     const chunk = chunks[idx]!
     const intron = sequence.slice(chunk.end, chunks[idx + 1]?.start)
@@ -98,7 +98,7 @@ const CDNASequence = observer(function CDNASequence({
 
     middleChunks.push(
       <SequenceDisplay
-        key={`${JSON.stringify(chunk)}-mid`}
+        key={`${chunk.start}-${chunk.end}-${chunk.type}-mid`}
         model={model}
         color={chunk.type === 'CDS' ? cdsColor : utrColor}
         strand={mult}
@@ -127,7 +127,7 @@ const CDNASequence = observer(function CDNASequence({
       if (segments.length) {
         middleChunks.push(
           <SequenceDisplay
-            key={`${JSON.stringify(chunk)}-intron`}
+            key={`${chunk.start}-${chunk.end}-${chunk.type}-intron`}
             model={model}
             strand={mult}
             coordStart={coordStart}
@@ -142,7 +142,7 @@ const CDNASequence = observer(function CDNASequence({
     }
   }
 
-  let downstreamChunk = null as React.ReactNode
+  let downstreamChunk: React.ReactNode = null
   if (downstream) {
     const { segments } = splitString({
       str: toLower(downstream),

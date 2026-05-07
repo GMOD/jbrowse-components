@@ -20,3 +20,15 @@ test('remove track', async () => {
     expect(contents.tracks.length).toBe(0)
   })
 })
+
+test('remove track prints message when trackId not found', async () => {
+  await runInTmpDir(async ctx => {
+    fs.copyFileSync(twoPath, path.join(ctx.dir, path.basename(twoPath)))
+    await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    await runCommand(['add-track', 'simple.bam', '--load', 'inPlace'])
+    const { stdout } = await runCommand(['remove-track', 'nonexistent'])
+    expect(stdout).toContain('No track found with trackId: nonexistent')
+    // original track should be untouched
+    expect(readConf(ctx).tracks?.length).toBe(1)
+  })
+})

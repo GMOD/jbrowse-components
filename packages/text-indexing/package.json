@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/text-indexing",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 text indexing for desktop",
   "keywords": [
@@ -24,7 +24,7 @@
     "esm"
   ],
   "scripts": {
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "build": "pnpm build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/text-indexing",
     "clean": "rimraf esm *.tsbuildinfo",
@@ -34,8 +34,7 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/text-indexing-core": "workspace:^",
-    "ixixx": "^3.0.3",
-    "sanitize-filename": "^1.6.4"
+    "ixixx": "^3.0.4"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

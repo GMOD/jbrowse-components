@@ -27,6 +27,60 @@ exports[`adds bam track from a url 1`] = `
 ]
 `;
 
+exports[`adds bam track with --load move 1`] = `
+[
+  {
+    "adapter": {
+      "bamLocation": {
+        "locationType": "UriLocation",
+        "uri": "simple.bam",
+      },
+      "index": {
+        "indexType": "BAI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "simple.bam.bai",
+        },
+      },
+      "type": "BamAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "simple",
+    "trackId": "simple",
+    "type": "AlignmentsTrack",
+  },
+]
+`;
+
+exports[`adds bam track with --force flag (overwrite) 1`] = `
+[
+  {
+    "adapter": {
+      "bamLocation": {
+        "locationType": "UriLocation",
+        "uri": "/path/to/simple.bam",
+      },
+      "index": {
+        "indexType": "BAI",
+        "location": {
+          "locationType": "UriLocation",
+          "uri": "/path/to/simple.bam.bai",
+        },
+      },
+      "type": "BamAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "simple",
+    "trackId": "simple",
+    "type": "AlignmentsTrack",
+  },
+]
+`;
+
 exports[`adds bam track with all the custom fields 1`] = `
 [
   {
@@ -248,6 +302,34 @@ exports[`adds bam+bai track with load inPlace 1`] = `
 ]
 `;
 
+exports[`adds bgzip fasta track 1`] = `
+[
+  {
+    "adapter": {
+      "faiLocation": {
+        "locationType": "UriLocation",
+        "uri": "simple.fasta.gz.fai",
+      },
+      "fastaLocation": {
+        "locationType": "UriLocation",
+        "uri": "simple.fasta.gz",
+      },
+      "gziLocation": {
+        "locationType": "UriLocation",
+        "uri": "simple.fasta.gz.gzi",
+      },
+      "type": "BgzipFastaAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "simple.fasta",
+    "trackId": "simple.fasta",
+    "type": "ReferenceSequenceTrack",
+  },
+]
+`;
+
 exports[`adds chain file 1`] = `
 [
   {
@@ -294,6 +376,30 @@ exports[`adds delta file 1`] = `
     "name": "volvox_inv_indels",
     "trackId": "volvox_inv_indels",
     "type": "SyntenyTrack",
+  },
+]
+`;
+
+exports[`adds indexed fasta track 1`] = `
+[
+  {
+    "adapter": {
+      "faiLocation": {
+        "locationType": "UriLocation",
+        "uri": "simple.fasta.fai",
+      },
+      "fastaLocation": {
+        "locationType": "UriLocation",
+        "uri": "simple.fasta",
+      },
+      "type": "IndexedFastaAdapter",
+    },
+    "assemblyNames": [
+      "testAssembly",
+    ],
+    "name": "simple",
+    "trackId": "simple",
+    "type": "ReferenceSequenceTrack",
   },
 ]
 `;
@@ -595,7 +701,7 @@ exports[`adds tabix gff with tbi 1`] = `
 
 exports[`cannot add a track if there is no config file 1`] = `"Error: Error: ENOENT: no such file or directory, open './config.json'"`;
 
-exports[`cannot add a track with the same track id 1`] = `"Error: Cannot add track with id simple, a track with that id already exists (use --force to override)"`;
+exports[`cannot add a track with the same track id 1`] = `"Error: Cannot add track with trackId simple, a track with that trackId already exists"`;
 
 exports[`fails if URL with load flag is passed 1`] = `"Error: The --load flag is used for local files only, but a URL was provided"`;
 
@@ -614,3 +720,5 @@ See more help with --help"
 `;
 
 exports[`fails multiple assemblies exist but no assemblyNames passed 1`] = `"Error: Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag"`;
+
+exports[`fails with invalid --load value 1`] = `"Error: --load must be one of: copy, symlink, move, inPlace"`;

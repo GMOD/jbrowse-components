@@ -64,7 +64,15 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
 
   return (
     <Dialog open onClose={onClose} title="Add custom plugin">
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={event => {
+          event.preventDefault()
+          if (ready) {
+            handleSubmit()
+            onClose()
+          }
+        }}
+      >
         <DialogContent className={classes.dialogContent}>
           <DialogContentText>
             Enter the name of the plugin and its URL. The name should match what
@@ -134,9 +142,9 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
             Cancel
           </Button>
           <Button
+            type="submit"
             variant="contained"
             color="primary"
-            onClick={handleSubmit}
             disabled={!ready}
           >
             Submit

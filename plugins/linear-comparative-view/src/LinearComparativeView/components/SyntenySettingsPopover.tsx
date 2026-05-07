@@ -1,17 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import HelpIcon from '@mui/icons-material/Help'
 import TuneIcon from '@mui/icons-material/Tune'
-import { IconButton, Popover, Slider, Tooltip, Typography } from '@mui/material'
+import {
+  IconButton,
+  Popover,
+  Slider,
+  Switch,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import SliderTooltip from './SliderTooltip.tsx'
 
-import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
-import type { LinearComparativeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   content: {
@@ -35,36 +40,22 @@ const useStyles = makeStyles()(theme => ({
 const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
   model,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
 }) {
   const { classes } = useStyles()
-  const { levels } = model
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
-  const firstDisplay = levels[0]?.tracks[0]?.displays[0] as
-    | LinearSyntenyDisplayModel
-    | undefined
-
-  const alpha = firstDisplay?.alpha ?? 1
-  const minAlignmentLength = firstDisplay?.minAlignmentLength ?? 0
+  const { autoAlpha, alpha, minAlignmentLength, effectiveAlpha } = model
 
   // Opacity: cubic scaling for more granularity near 0
-  const exponent = 3
-  const alphaToSlider = (a: number) => Math.pow(a, 1 / exponent)
-  const sliderToAlpha = (s: number) => Math.pow(s, exponent)
-  const sliderValue = alphaToSlider(alpha)
+  const sliderValue = Math.cbrt(autoAlpha ? effectiveAlpha : alpha)
 
-  // Min length: log2 scaling
-  const [minLengthValue, setMinLengthValue] = useState(
-    Math.log2(Math.max(1, minAlignmentLength)) * 100,
+  // Min length: log2 scaling. null = not dragging, derive from model.
+  const [minLengthDragValue, setMinLengthDragValue] = useState<number | null>(
+    null,
   )
-
-  useEffect(() => {
-    setMinLengthValue(Math.log2(Math.max(1, minAlignmentLength)) * 100)
-  }, [minAlignmentLength])
-
-  const view = model as unknown as LinearSyntenyViewModel
-  const hasOffScreen = 'maxOffScreenDrawPx' in view
+  const minLengthValue =
+    minLengthDragValue ?? Math.log2(Math.max(1, minAlignmentLength)) * 100
 
   return (
     <>
@@ -89,18 +80,21 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
             <Typography variant="body2" className={classes.label}>
               Opacity:
             </Typography>
+            <Tooltip title="Auto-scale opacity based on feature count">
+              <Switch
+                size="small"
+                checked={autoAlpha}
+                onChange={(_, checked) => {
+                  model.setAutoAlpha(checked)
+                }}
+              />
+            </Tooltip>
             <Slider
+              disabled={autoAlpha}
               value={sliderValue}
               onChange={(_, value) => {
                 const v = typeof value === 'number' ? value : value[0]
-                const newAlpha = sliderToAlpha(v)
-                for (const level of levels) {
-                  for (const track of level.tracks) {
-                    for (const display of track.displays) {
-                      ;(display as LinearSyntenyDisplayModel).setAlpha(newAlpha)
-                    }
-                  }
-                }
+                model.setAlpha(v ** 3)
               }}
               min={0}
               max={1}
@@ -108,7 +102,9 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
               valueLabelDisplay="auto"
               size="small"
               slots={{ valueLabel: SliderTooltip }}
-              valueLabelFormat={(v: number) => sliderToAlpha(v).toFixed(3)}
+              valueLabelFormat={(v: number) =>
+                (autoAlpha ? effectiveAlpha : v ** 3).toFixed(3)
+              }
             />
           </div>
           <div className={classes.row}>
@@ -118,19 +114,13 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
             <Slider
               value={minLengthValue}
               onChange={(_, val) => {
-                setMinLengthValue(val)
+                setMinLengthDragValue(val)
               }}
               onChangeCommitted={() => {
-                const newMinLength = Math.round(2 ** (minLengthValue / 100))
-                for (const level of levels) {
-                  for (const track of level.tracks) {
-                    for (const display of track.displays) {
-                      ;(
-                        display as LinearSyntenyDisplayModel
-                      ).setMinAlignmentLength(newMinLength)
-                    }
-                  }
-                }
+                setMinLengthDragValue(null)
+                model.setMinAlignmentLength(
+                  Math.round(2 ** (minLengthValue / 100)),
+                )
               }}
               min={0}
               max={Math.log2(1000000) * 100}
@@ -140,32 +130,30 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
               slots={{ valueLabel: SliderTooltip }}
             />
           </div>
-          {hasOffScreen ? (
-            <div className={classes.row}>
-              <Typography variant="body2" className={classes.label}>
-                Overdraw:
-                <Tooltip
-                  title="Extra pixels drawn beyond the visible area. Higher values keep off-screen synteny lines visible when scrolling, but may reduce performance."
-                  arrow
-                >
-                  <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
-                </Tooltip>
-              </Typography>
-              <Slider
-                value={view.maxOffScreenDrawPx}
-                onChange={(_, val) => {
-                  view.setMaxOffScreenDrawPx(val)
-                }}
-                min={0}
-                max={10000}
-                step={100}
-                valueLabelDisplay="auto"
-                size="small"
-                valueLabelFormat={(val: number) => `${val}px`}
-                slots={{ valueLabel: SliderTooltip }}
-              />
-            </div>
-          ) : null}
+          <div className={classes.row}>
+            <Typography variant="body2" className={classes.label}>
+              Overdraw:
+              <Tooltip
+                title="Extra pixels drawn beyond the visible area. Higher values keep off-screen synteny lines visible when scrolling, but may reduce performance."
+                arrow
+              >
+                <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
+              </Tooltip>
+            </Typography>
+            <Slider
+              value={model.overdrawPx}
+              onChange={(_, val) => {
+                model.setOverdrawPx(val)
+              }}
+              min={0}
+              max={10000}
+              step={100}
+              valueLabelDisplay="auto"
+              size="small"
+              valueLabelFormat={(val: number) => `${val}px`}
+              slots={{ valueLabel: SliderTooltip }}
+            />
+          </div>
         </div>
       </Popover>
     </>

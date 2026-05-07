@@ -2,7 +2,7 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-import ErrorMessage from './ErrorMessage.tsx'
+import ErrorBanner from './ErrorBanner.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
 import { makeStyles } from '../util/tss-react/index.ts'
 
@@ -10,7 +10,7 @@ export interface CanvasDisplayModel {
   error?: unknown
   regionTooLarge?: boolean
   regionCannotBeRendered: () => React.ReactElement | null
-  loading: boolean
+  isLoading: boolean
   statusMessage?: string
 }
 
@@ -60,7 +60,7 @@ const DataDisplay = observer(function DataDisplay({
   return (
     <div>
       {children}
-      {model.loading ? <LoadingBar model={model} /> : null}
+      {model.isLoading ? <LoadingBar model={model} /> : null}
     </div>
   )
 })
@@ -74,7 +74,7 @@ const CanvasDisplayWrapper = observer(function CanvasDisplayWrapper({
 }) {
   const { error, regionTooLarge } = model
   return error ? (
-    <ErrorMessage error={error} />
+    <ErrorBanner error={error} />
   ) : regionTooLarge ? (
     model.regionCannotBeRendered()
   ) : (

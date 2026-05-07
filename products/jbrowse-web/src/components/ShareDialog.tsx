@@ -1,6 +1,6 @@
-import { lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
 import {
   type AbstractSessionModel,
   localStorageGetItem,
@@ -46,47 +46,51 @@ const ShareDialog = observer(function ShareDialog({
   const url = session.shareURL
   const currentSetting =
     localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'
-  const snap = getSnapshot(session)
+  // Capture snapshot once when dialog opens — we don't want to re-upload every
+  // time the session mutates while the dialog is open
+  const [snap] = useState(() => getSnapshot(session))
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
-      // checking !error allows retry when error state is cleared
-      if (error) {
-        return
-      }
-      try {
-        if (currentSetting === 'short') {
-          setLoading(true)
-          const locationUrl = new URL(window.location.href)
-          const result = await shareSessionToDynamo(snap, url, locationUrl.href)
-          const params = new URLSearchParams(locationUrl.search)
-          params.set('session', `share-${result.json.sessionId}`)
-          params.set('password', result.password)
-          locationUrl.search = params.toString()
-          setShortUrl(locationUrl.href)
-
-          setSessionParam(`share-${result.json.sessionId}`)
-          setPasswordParam(result.password)
-        } else {
-          const sess = await toUrlSafeB64(JSON.stringify(getSnapshot(session)))
-          const longUrl = new URL(window.location.href)
-          const longParams = new URLSearchParams(longUrl.search)
-          longParams.set('session', `encoded-${sess}`)
-          setSessionParam(`encoded-${sess}`)
-          longUrl.search = longParams.toString()
-          setLongUrl(longUrl.toString())
+      // !error allows retry when the error banner's onReset clears error state
+      if (!error) {
+        try {
+          if (currentSetting === 'short') {
+            setLoading(true)
+            const locationUrl = new URL(window.location.href)
+            const result = await shareSessionToDynamo(
+              snap,
+              url,
+              locationUrl.href,
+            )
+            const params = new URLSearchParams(locationUrl.search)
+            params.set('session', `share-${result.json.sessionId}`)
+            params.set('password', result.password)
+            locationUrl.search = params.toString()
+            setShortUrl(locationUrl.href)
+            setSessionParam(`share-${result.json.sessionId}`)
+            setPasswordParam(result.password)
+          } else {
+            const sess = await toUrlSafeB64(JSON.stringify(snap))
+            const locationUrl = new URL(window.location.href)
+            const params = new URLSearchParams(locationUrl.search)
+            params.set('session', `encoded-${sess}`)
+            setSessionParam(`encoded-${sess}`)
+            locationUrl.search = params.toString()
+            setLongUrl(locationUrl.toString())
+          }
+        } catch (e) {
+          console.error(e)
+          setError(e)
+        } finally {
+          setLoading(false)
         }
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      } finally {
-        setLoading(false)
       }
     })()
-  }, [currentSetting, error, session, url, snap])
+  }, [currentSetting, error, url, snap])
 
-  const disabled = (currentSetting === 'short' && loading) || !!error
+  const disabled = loading || !!error
   return (
     <>
       <Dialog
@@ -109,7 +113,7 @@ const ShareDialog = observer(function ShareDialog({
 
           {currentSetting === 'short' ? (
             error ? (
-              <ErrorMessage
+              <ErrorBanner
                 error={error}
                 onReset={() => {
                   setError(undefined)
@@ -145,7 +149,7 @@ const ShareDialog = observer(function ShareDialog({
             disabled={disabled}
             onClick={async () => {
               const { default: copy } = await import('copy-to-clipboard')
-              copy(shortUrl || longUrl)
+              await copy(shortUrl || longUrl)
               session.notify('Copied to clipboard', 'success')
             }}
           >
@@ -158,13 +162,15 @@ const ShareDialog = observer(function ShareDialog({
         </DialogActions>
       </Dialog>
 
-      <SettingsDialog
-        open={settingsDialogOpen}
-        currentSetting={currentSetting}
-        onClose={() => {
-          setSettingsDialogOpen(false)
-        }}
-      />
+      <Suspense fallback={null}>
+        <SettingsDialog
+          open={settingsDialogOpen}
+          currentSetting={currentSetting}
+          onClose={() => {
+            setSettingsDialogOpen(false)
+          }}
+        />
+      </Suspense>
     </>
   )
 })

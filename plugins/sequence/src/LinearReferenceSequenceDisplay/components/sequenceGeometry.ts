@@ -1,9 +1,4 @@
-import {
-  defaultCodonTable,
-  defaultStarts,
-  defaultStops,
-  generateCodonTable,
-} from '@jbrowse/core/util'
+import { defaultStarts, defaultStops } from '@jbrowse/core/util'
 
 import type { SequenceRegionData } from '../model.ts'
 import type { Frame } from '@jbrowse/core/util'
@@ -17,7 +12,6 @@ export interface RenderSettings {
   showTranslation: boolean
   sequenceType: string
   rowHeight: number
-  colorByCDS: boolean
   showBorders: boolean
 }
 
@@ -36,47 +30,32 @@ function hexToRGB(hex: string): RGB {
   ] as const
 }
 
-const DEFAULT_BASE_COLOR: RGB = [170, 170, 170]
-const DEFAULT_FRAME_COLOR: RGB = [200, 200, 200]
-
 export interface ColorPalette {
   baseColors: Map<string, RGB>
   frameColors: Map<number, RGB>
-  frameCDSColors: Map<number, RGB>
   startColor: RGB
   stopColor: RGB
 }
 
 export function buildColorPalette(theme: Theme): ColorPalette {
+  const bases = theme.palette.bases as Record<string, { main: string }>
   const baseColors = new Map<string, RGB>()
   for (const base of ['A', 'C', 'G', 'T']) {
-    // @ts-expect-error
-    const color = theme.palette.bases[base] as { main: string } | undefined
-    baseColors.set(base, color ? hexToRGB(color.main) : DEFAULT_BASE_COLOR)
+    baseColors.set(base, hexToRGB(bases[base]!.main))
   }
 
   const frameColors = new Map<number, RGB>()
-  const frameCDSColors = new Map<number, RGB>()
   for (const frame of [1, 2, 3, -1, -2, -3] as Frame[]) {
-    const entry = theme.palette.frames.at(frame)
-    frameColors.set(frame, entry ? hexToRGB(entry.main) : DEFAULT_FRAME_COLOR)
-    const cdsEntry = theme.palette.framesCDS.at(frame)
-    frameCDSColors.set(
-      frame,
-      cdsEntry ? hexToRGB(cdsEntry.main) : DEFAULT_FRAME_COLOR,
-    )
+    frameColors.set(frame, hexToRGB(theme.palette.frames.at(frame)!.main))
   }
 
   return {
     baseColors,
     frameColors,
-    frameCDSColors,
     startColor: hexToRGB(theme.palette.startCodon),
     stopColor: hexToRGB(theme.palette.stopCodon),
   }
 }
-
-const codonTable = generateCodonTable(defaultCodonTable)
 
 const complementMap: Record<string, string> = {
   A: 'T',
@@ -89,8 +68,8 @@ const complementMap: Record<string, string> = {
   c: 'g',
 }
 
-const startsSet = new Set(defaultStarts)
-const stopsSet = new Set(defaultStops)
+export const startsSet = new Set(defaultStarts)
+export const stopsSet = new Set(defaultStops)
 
 const BORDER_ALPHA = 255
 const NO_BORDER_ALPHA = 254
@@ -166,7 +145,6 @@ export function buildSequenceGeometry(
     showTranslation,
     sequenceType,
     rowHeight,
-    colorByCDS,
     showBorders,
   } = settings
   const { seq, start } = data
@@ -196,7 +174,6 @@ export function buildSequenceGeometry(
       currentY,
       rowHeight,
       reversed,
-      colorByCDS,
       showBorders,
       palette,
     )
@@ -242,7 +219,6 @@ export function buildSequenceGeometry(
       currentY,
       rowHeight,
       !reversed,
-      colorByCDS,
       showBorders,
       palette,
     )
@@ -271,9 +247,18 @@ function writeBaseRects(
       base = complementMap[base] ?? base
     }
     const [r, g, b] =
-      palette.baseColors.get(base.toUpperCase()) ?? DEFAULT_BASE_COLOR
+      palette.baseColors.get(base.toUpperCase()) ?? ([170, 170, 170] as const)
     writer.push(seqStart + i, y, 1, height, r, g, b, showBorders)
   }
+}
+
+export function frameShiftBounds(seq: string, seqStart: number, frame: Frame) {
+  const normalizedFrame = Math.abs(frame) - 1
+  const seqFrame = seqStart % 3
+  const frameShift = (normalizedFrame - seqFrame + 3) % 3
+  const adjLen = seq.length - frameShift
+  const sliceEnd = frameShift + adjLen - (adjLen % 3)
+  return { frameShift, sliceEnd }
 }
 
 function revcomCodonUpper(seq: string, i: number) {
@@ -303,24 +288,12 @@ function writeTranslationRects(
   y: number,
   height: number,
   reverse: boolean,
-  colorByCDS: boolean,
   showBorders: boolean,
   palette: ColorPalette,
 ) {
-  const frameColorMap = colorByCDS
-    ? palette.frameCDSColors
-    : palette.frameColors
-  const [bgR, bgG, bgB] = frameColorMap.get(frame) ?? DEFAULT_FRAME_COLOR
+  const [bgR, bgG, bgB] = palette.frameColors.get(frame)!
   const { startColor, stopColor } = palette
-
-  const normalizedFrame = Math.abs(frame) - 1
-  const seqFrame = seqStart % 3
-  const frameShift = (normalizedFrame - seqFrame + 3) % 3
-
-  const frameShiftAdjustedSeqLength = seq.length - frameShift
-  const multipleOfThreeLength =
-    frameShiftAdjustedSeqLength - (frameShiftAdjustedSeqLength % 3)
-  const sliceEnd = frameShift + multipleOfThreeLength
+  const { frameShift, sliceEnd } = frameShiftBounds(seq, seqStart, frame)
 
   if (showBorders) {
     if (frameShift > 0) {
@@ -389,5 +362,3 @@ function writeTranslationRects(
     }
   }
 }
-
-export { codonTable }

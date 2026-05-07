@@ -41,12 +41,38 @@
             "locationType": "UriLocation"
           }
         },
-        "segmentsLocation": {
-          "uri": "volvox/volvox_pangenome_50.segments.bin",
+        "syntenyLocation": {
+          "uri": "volvox/volvox_pangenome_50.synteny.bed.gz",
           "locationType": "UriLocation"
         },
-        "segmentsIdxLocation": {
-          "uri": "volvox/volvox_pangenome_50.segments.idx",
+        "syntenyIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome_50.synteny.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "syntenyCoarseLocation": {
+          "uri": "volvox/volvox_pangenome_50.synteny.coarse.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "syntenyCoarseIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome_50.synteny.coarse.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "edgesLocation": {
+          "uri": "volvox/volvox_pangenome_50.edges.spatial.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "edgesIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome_50.edges.spatial.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "seqlensLocation": {
+          "uri": "volvox/volvox_pangenome_50.seglens.bin",
           "locationType": "UriLocation"
         },
         "bubblesLocation": {

@@ -52,6 +52,7 @@ export default function LoadingOverlay({
   isVisible?: boolean
 }) {
   const { classes } = useStyles()
+
   return (
     <span
       className={cx(classes.overlay, isVisible && classes.visible)}

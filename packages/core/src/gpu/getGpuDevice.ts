@@ -1,22 +1,14 @@
 /// <reference types="@webgpu/types" />
 
 let device: GPUDevice | null = null
+// devicePromise serializes concurrent calls during async init and after recovery.
 let devicePromise: Promise<GPUDevice | null> | null = null
-const deviceLostListeners = new WeakMap<GPUDevice, Set<() => void>>()
+const deviceLostListeners = new Set<() => void>()
 
 export function onDeviceLost(listener: () => void) {
-  if (device) {
-    let listeners = deviceLostListeners.get(device)
-    if (!listeners) {
-      listeners = new Set()
-      deviceLostListeners.set(device, listeners)
-    }
-    listeners.add(listener)
-  }
+  deviceLostListeners.add(listener)
   return () => {
-    if (device) {
-      deviceLostListeners.get(device)?.delete(listener)
-    }
+    deviceLostListeners.delete(listener)
   }
 }
 
@@ -42,15 +34,18 @@ async function createDevice(): Promise<GPUDevice | null> {
         maxBufferSize: adapter.limits.maxBufferSize,
       },
     })
+    // Surface any WebGPU validation / out-of-memory / internal errors that
+    // would otherwise be silently swallowed. Without this, a bad draw/pipeline
+    // results in a blank canvas with no console output.
+    d.addEventListener('uncapturederror', (event: GPUUncapturedErrorEvent) => {
+      console.error('[GPU] UNCAPTURED ERROR:', event.error.message)
+    })
     void d.lost.then(info => {
       console.error('[GPU] Device lost:', info.message)
       device = null
       devicePromise = null
-      const listeners = deviceLostListeners.get(d)
-      if (listeners) {
-        for (const listener of listeners) {
-          listener()
-        }
+      for (const listener of deviceLostListeners) {
+        listener()
       }
     })
     device = d
@@ -61,19 +56,23 @@ async function createDevice(): Promise<GPUDevice | null> {
   }
 }
 
-let gpuOverride: string | null | undefined
+let gpuOverride: string | null = null
+
+export function setGpuOverride(value: string | null) {
+  gpuOverride = value
+}
 
 export function getGpuOverride() {
-  if (gpuOverride === undefined) {
-    gpuOverride =
-      new URLSearchParams(window.location.search).get('renderer') ?? null
-  }
   return gpuOverride
 }
 
 export default function getGpuDevice() {
   const override = getGpuOverride()
-  if (override === 'webgl' || override === 'off' || override === 'canvas2d') {
+  if (
+    override === 'webgl' ||
+    override === 'canvas2d' ||
+    override === 'canvas'
+  ) {
     return Promise.resolve(null)
   }
   if (device) {

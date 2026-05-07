@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { type IAnyStateTreeNode, getParent } from '@jbrowse/mobx-state-tree'
+import { getParent } from '@jbrowse/mobx-state-tree'
 
 import stateModelFactory from './model.ts'
 
@@ -15,12 +15,12 @@ const BreakpointSplitViewChoiceDialog = lazy(
   () => import('./BreakpointSplitViewChoiceDialog.tsx'),
 )
 
-function defaultOnChordClick(feature: Feature, chordTrack: IAnyStateTreeNode) {
+function defaultOnChordClick(feature: Feature, chordTrack: object) {
   const session = getSession(chordTrack)
   try {
     session.setSelection(feature)
     const view = getContainingView(chordTrack) as CircularViewModel
-    const parentView = getParent<any>(view) as SvInspectorViewModel
+    const parentView = getParent<SvInspectorViewModel>(view)
     const stableViewId = `${parentView.id}_spawned`
     const assemblyName = view.assemblyNames[0]!
     session.queueDialog(handleClose => [

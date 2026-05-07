@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-lollipop",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 plugin for lollipops",
   "keywords": [
@@ -22,18 +22,18 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/lollipop",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/lollipop",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1"
   },
   "peerDependencies": {

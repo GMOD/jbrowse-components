@@ -25,9 +25,12 @@ import type {
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
 } from './types.ts'
+import type { Feature } from '../util/index.ts'
 
 interface ConfigSlot {
-  getValue: (args: Record<string, unknown>) => unknown
+  isCallback: boolean
+  value: unknown
+  getValue: (args?: Record<string, unknown>) => unknown
 }
 
 // confObject[slotPath] can return:
@@ -78,9 +81,8 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     if (val === null || typeof val !== 'object') {
       return val
     }
-    // For objects, clone to prevent mutation of config state
-    // Use structuredClone for MST snapshots (faster than JSON.parse/stringify)
-    return isStateTreeNode(val) ? structuredClone(getSnapshot(val)) : val
+    // Clone to prevent mutation of config state
+    return structuredClone(isStateTreeNode(val) ? getSnapshot(val) : val)
   } else if (Array.isArray(slotPath)) {
     const slotName = slotPath[0]!
     if (slotPath.length > 1) {
@@ -145,7 +147,6 @@ export function getConf<CONFMODEL extends AnyConfigurationModel>(
   slotPath?: Parameters<typeof readConfObject<CONFMODEL>>[1],
   args?: Parameters<typeof readConfObject<CONFMODEL>>[2],
 ) {
-  // Trust TypeScript types - the generic constraint ensures configuration is valid
   return readConfObject(model.configuration, slotPath, args)
 }
 
@@ -170,10 +171,11 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
           typeName = [def.type]
         }
         if (!typeName[0]) {
-          // debugger
           throw new Error(`invalid config schema type ${type}`)
         }
-        typeNames.push(...typeName)
+        for (const name of typeName) {
+          typeNames.push(name)
+        }
       }
       return typeNames
     }
@@ -258,10 +260,6 @@ export function isConfigurationSlotType(thing: unknown) {
     'isJBrowseConfigurationSlot' in thing
   )
 }
-
-// --- Plain-object config utilities (no MST dependency) ---
-
-import type { Feature } from '../util/index.ts'
 
 function resolveConfigValue(
   config: Record<string, unknown>,

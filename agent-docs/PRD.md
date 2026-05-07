@@ -1,132 +1,107 @@
-# JBrowse 2 WebGL/WebGPU Migration — Project Requirements Document
+# JBrowse 2 — Agent PRD (root)
 
-**Branch:** `webgl-poc` **Last updated:** 2026-03-17 **Status:** Active
-development — many features working, significant polish and testing needed
+Governs agent work on `webgl-poc`. Read first: invariants, where the code
+lives, how to know when you're done. **Backlog and priorities live in
+`TODO.md`** — keep this doc stable.
 
-> **Note:** When items are completed, move them to `COMPLETED.md`.
-
----
-
-## Executive Summary
-
-JBrowse 2 is being migrated from its block-based HTML canvas rendering to a
-unified GPU-accelerated rendering pipeline supporting three backends:
-**WebGPU**, **WebGL 2.0**, and **HTML5 Canvas** (fallback + SVG export). The
-branch has working implementations for most track types with known bugs and gaps
-documented below.
+**Branch:** `webgl-poc` | **Updated:** 2026-04-20
 
 ---
 
-## Priority 1 — Critical / Blocking
+## Mission
 
-These issues block production readiness or affect the majority of users.
+Migrate JBrowse 2 from block-based HTML canvas rendering to a GPU pipeline
+(WebGPU → WebGL2 → Canvas 2D; SVG export via Canvas 2D). Keep every existing
+track type working on every backend.
 
-### P1.3 Expand Browser Test Suite
+---
 
-**Requirements:**
+## Where the code lives
 
-- WebGPU does not work on CI action runners — tests must work with WebGL and
-  Canvas fallback
+Verify against source, not memory.
 
-### P1.4 Demo Session Loading
+| Concern                     | Path                                                     |
+| --------------------------- | -------------------------------------------------------- |
+| GPU primitives / HAL        | `packages/core/src/gpu/`                                 |
+| Lifecycle mixin             | `packages/core/src/gpu/GpuBackendLifecycleSlotMixin.ts`  |
+| Shader codegen              | `scripts/build-shaders.ts`, `scripts/shader-codegen/`    |
+| Shared slang modules        | `packages/core/src/gpu/shaders/`                         |
+| Browser tests               | `products/jbrowse-web/browser-tests/`                    |
+| Canvas display              | `plugins/canvas/`                                        |
+| Wiggle / multi-wiggle       | `plugins/wiggle/`                                        |
+| Alignments + coverage       | `plugins/alignments/`                                    |
+| Variants + variant matrix   | `plugins/variants/`                                      |
+| HiC / LD                    | `plugins/hic/`, `plugins/variants/` (matrix + LD)        |
+| Dotplot                     | `plugins/dotplot-view/`                                  |
+| Linear synteny              | `plugins/linear-comparative-view/`                       |
 
-- Many shared session links fail to load or load with incorrect settings. This
-  is the primary way users encounter the app.
+---
 
-### Extra ideas
+## Non-negotiable invariants
 
-Make curvy breakpoint split view lines in the alignments track for link
-paired/supp reads
+Correctness contracts — violations cause silent bugs.
 
-- Idea: The 'Link supplementary alignments has the concept of connecting reads
-  using a single line. But, we have logic in breakpoint split view for properly
-  linking the ORIENTATION of the reads using curved lines. evaluate whether we
-  can do this in the Linked paired end/supplementary reads mode in the normal
-  alignments track. If might be a separate mode from Link supplementary reads,
-  like "Link paired/supp reads with curved lines"
+- **MST owns the upload + render autoruns.** They are spawned by
+  `installGpuDisplay` on `GpuBackendLifecycleSlotMixin`, not by React
+  `useEffect`.
+- **Per-region upload values must be freshly constructed, never mutated.**
+  Backends diff by reference identity; in-place mutation leaks stale bytes.
+- **Only write MST observables via actions.** Direct writes inside an
+  autorun body (e.g. `self.canvasDrawn = true`, `self.maxY = x`) silently
+  fail under MST action enforcement. Use the defined action.
+- **Plugins define only `startGpuBackendLifecycle(backend)`.** Body is
+  one `self.installGpuDisplay(backend, {upload, render})` call.
+  `canvasDrawn`, `renderNow`, `stopGpuBackendLifecycle`, tab-visibility
+  rerender all live in the mixin.
+- **Structural types across lazy boundaries.** Importing MST model types
+  across lazy imports is a circular-reference trap — use duck-typed
+  interfaces.
+- **Shared backends (dotplot, synteny) use a per-plugin `lastKeys`
+  closure** to fire `deleteGeometry` on removed keys; active-set prune
+  would wipe sibling displays' data.
+- **Render callback returns `false` to skip.** Any other return
+  (including `void`) marks the canvas drawn via `markCanvasDrawn`.
+- **`readConfObject` / `getConf` are hot-path traversals.** Cache outside
+  loops; prefer `getConfSnapshot` + `readConfigValue` on plain objects at
+  the rendering layer (`CONFIG_PATTERN.md`).
 
-## Priority 4 — Low / Future Enhancements
+Coding conventions live in `CLAUDE.md` (root) and `~/.claude/CLAUDE.md` —
+follow them.
 
-### P4.3 Loading old configs
+---
 
-- Ensure all old renderer configuration settings e.g. PileupRenderer (which were
-  all effectively removed) are mapped to new display model settings (e.g. to
-  LinearAlignmentsDisplay)
+## Definition of done
 
-## Architecture Notes
+- **Type check** the touched packages (`pnpm tsgo -b` scoped), full project
+  once locally.
+- **Unit tests** for changed paths (`pnpm test -- <path>`).
+- **Browser test** when UI behavior changed, on the backend(s) you touched
+  (`node --experimental-strip-types browser-tests/runner.ts --filter=<suite>`;
+  flags in `TEST_INFRASTRUCTURE.md`).
+- **Lint** with `--cache --fix` on changed files.
+- **Snapshots** regenerated only after intentional, visually verified change
+  (`--update-snapshots`).
+- **Invariants** preserved — re-read the invariants section after lifecycle
+  or upload changes.
 
-### Current Rendering Backends
+Do **not** open a PR (`gh pr create`) unless explicitly asked.
 
-```
-┌─────────────────────────────────────────────┐
-│            Track Display Model              │
-│         (prepares data, layout)             │
-└──────────────┬──────────────────────────────┘
-               │
-    ┌──────────┴──────────┐
-    ▼                     ▼
-┌────────┐  ┌────────┐  ┌────────────┐
-│ WebGPU │  │WebGL2  │  │ Canvas 2D  │ ← COMPLETE (all track types)
-│ (WGSL) │  │(GLSL)  │  │ (fallback) │
-└────────┘  └────────┘  └────────────┘
-                              │
-                         ┌────┴────┐
-                         ▼         ▼
-                    ┌────────┐ ┌───────┐
-                    │ Screen │ │  SVG  │ (via SvgCanvas.ts)
-                    └────────┘ │Export │
-                               └───────┘
-```
+---
 
-### Backend Selection
+## Reading order for new agents
 
-- `?gpu=webgpu` — force WebGPU
-- `?gpu=webgl` — force WebGL2
-- `?gpu=off` — disable GPU (uses Canvas 2D fallback)
-- Default: auto-detect (WebGPU → WebGL2 → Canvas 2D)
+- `PRD.md` (this file) — invariants, paths, definition of done.
+- `TODO.md` — what to work on, categorized.
+- `ARCHITECTURE.md` — canonical GPU lifecycle.
+- `CONFIG_PATTERN.md` — config flow from MST → renderers / workers.
+- `TEST_INFRASTRUCTURE.md` — browser + unit test invocation.
+- `architecture-decision-records/` — ADR-001 … ADR-005.
+- `OTHER_IDEAS.md` — future directions.
 
-### Test Infrastructure
+---
 
-- Puppeteer-based browser tests in `products/jbrowse-web/browser-tests/`
-- **21 test suites** with **~120 test cases** covering: alignments, bigwig,
-  variants, synteny, dotplot, HiC, canvas2d-fallback (8 tests: features,
-  multi-track, zoom, alignments+coverage, SNP coverage, arcs, sequence, wiggle),
-  canvas2d-variants, rendering-backends (16 tests: VCF, GFF3, wiggle, BAM/CRAM
-  pileup, SNP coverage, multi-wiggle, SV, JEXL, sequence, alignments+coverage,
-  arcs, synteny LGV, synteny linear, dotplot), color-by-tag, wiggle-color,
-  workspaces, session-spec, demo-inventory, svg-export, authentication,
-  main-thread-rpc, custom-url, redraw, basic-lgv, misc
-- Screenshot comparison via pixelmatch (threshold 0.1)
-- Backend-specific golden snapshots in `__snapshots__/{webgl,webgpu,canvas2d}/`
-- `--backend=webgl|webgpu|canvas2d` flag, `--filter=` for running subsets
-- `compare-backends.ts` for cross-backend visual regression (categories:
-  identical, similar <5%, different ≥5%)
-- Unit tests co-located with source (`*.test.ts`) using Jest with jsdom — **157
-  tests across 15 suites** in modified plugins
-- Canvas 2D renderer unit tests use mock canvas context pattern (20 tests
-  including picking)
-- Density-based feature limit unit tests (7 tests covering all threshold
-  scenarios)
-- Strand swap coordinate tests (4 tests covering all strand×reversed
-  combinations)
-- `copyView.renameIds()` unit tests (8 tests verifying ID uniqueness)
-- Fetch autorun tests include error recovery via `reload()` flow
-- Interbase indicator tests (7 tests for `computeNoncovCoverage` threshold
-  logic, depth boundaries, dominant type selection)
-- Interbase frequency tests (6 tests for `computePositionFrequencies`
-  edge/cliff/offset cases)
-- Depth-dependent threshold tests (2 tests for `applyDepthDependentThreshold`
-  interbase mode)
-- `featureFrequencyThreshold` tests (5 tests covering step boundaries,
-  interpolation, monotonicity)
-- Floating label regression test verifying description data stability across
-  zoom levels
-- Browser test runner forwards `[alignments]` and `[webgl-wiggle]` console logs
-  for debugging
+## When to update this PRD
 
-## Next Steps
-
-### Cross-Backend Testing
-
-1. **Cross-backend visual regression**: Use `compare-backends.ts` to flag
-   rendering differences between WebGL and Canvas2D for each track type
+- New invariant discovered → add it with a one-line reason.
+- Path in the code-locations table moves → update.
+- Backlog churn → `TODO.md`, not here.

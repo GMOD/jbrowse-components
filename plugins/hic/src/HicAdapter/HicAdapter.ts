@@ -75,7 +75,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setup(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Downloading .hic header', statusCallback, () =>
       this.hic.getMetaData(),
     )
@@ -123,7 +123,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         bpPerPx = 1,
         statusCallback = () => {},
       } = opts
-      const res = await this.getResolution(bpPerPx / (resolution || 1000), opts)
+      const res = await this.getResolution(bpPerPx / (resolution ?? 1000), opts)
 
       await updateStatus('Downloading .hic data', statusCallback, async () => {
         const records = await this.hic.getContactRecords(
@@ -141,14 +141,10 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     }, opts.stopToken) as any
   }
 
-  /**
-   * Get contact records between all pairs of regions.
-   * This enables rendering Hi-C data across multiple chromosomes/regions.
-   */
   async getMultiRegionContactRecords(
     regions: Region[],
     opts: HicOptions = {},
-  ): Promise<MultiRegionContactRecord[]> {
+  ): Promise<{ records: MultiRegionContactRecord[]; resolution: number }> {
     const {
       resolution,
       normalization = 'KR',
@@ -156,12 +152,27 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       statusCallback = () => {},
     } = opts
 
-    const res = await this.getResolution(bpPerPx / (resolution || 1000), opts)
+    const metadata = await this.setup(opts)
+    const res = await this.getResolution(bpPerPx / (resolution ?? 1), opts)
+
+    // Build a chromosome → hic-file index map. hic-straw transposes queries
+    // when idx(chr1) > idx(chr2), returning bin1/bin2 in the swapped order.
+    // We mirror that logic so bin1 always maps back to region[i] coordinates.
+    const chrIndexMap = new Map(
+      metadata.chromosomes.map(c => [c.name, c.index]),
+    )
+    const getChrIndex = (refName: string) => {
+      const direct = chrIndexMap.get(refName)
+      if (direct !== undefined) {
+        return direct
+      }
+      const alt = refName.startsWith('chr') ? refName.slice(3) : `chr${refName}`
+      return chrIndexMap.get(alt) ?? 0
+    }
 
     const allRecords: MultiRegionContactRecord[] = []
 
     await updateStatus('Downloading .hic data', statusCallback, async () => {
-      // Query contacts between all pairs of regions (including self-contacts)
       for (let i = 0; i < regions.length; i++) {
         for (let j = i; j < regions.length; j++) {
           const region1 = regions[i]!
@@ -175,10 +186,18 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
             res,
           )
 
+          // hic-straw transposes the query when idx1 > idx2 (or same chr,
+          // region1 starts after region2). In that case bin1/bin2 are swapped
+          // relative to our (i, j) order, so we un-swap before storing.
+          const idx1 = getChrIndex(region1.refName)
+          const idx2 = getChrIndex(region2.refName)
+          const transposed =
+            idx1 > idx2 || (idx1 === idx2 && region1.start >= region2.end)
+
           for (const { bin1, bin2, counts } of records) {
             allRecords.push({
-              bin1,
-              bin2,
+              bin1: transposed ? bin2 : bin1,
+              bin2: transposed ? bin1 : bin2,
               counts,
               region1Idx: i,
               region2Idx: j,
@@ -188,7 +207,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       }
     })
 
-    return allRecords
+    return { records: allRecords, resolution: res }
   }
 
   // don't do feature stats estimation, similar to bigwigadapter

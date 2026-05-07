@@ -1,17 +1,18 @@
-import { boxGlyph } from './box.ts'
+import { layoutBox } from './box.ts'
 import {
   hasMatureProteinChildren,
-  matureProteinRegionGlyph,
+  layoutMatureProteinRegion,
 } from './matureProteinRegion.ts'
-import { processedTranscriptGlyph } from './processed.ts'
-import { segmentsGlyph } from './segments.ts'
-import { subfeaturesGlyph } from './subfeatures.ts'
+import { layoutProcessedTranscript } from './processed.ts'
+import { layoutSegments } from './segments.ts'
+import { layoutSubfeatures } from './subfeatures.ts'
 
-import type { RenderConfigContext } from '../renderConfig.ts'
+import type { DisplayConfig } from '../renderConfig.ts'
+import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// Selects the glyph that best represents a feature's structure.
-// When called from subfeaturesGlyph for children, pass isTopLevel=false to
+// Selects the layout function that best represents a feature's structure.
+// When called from layoutSubfeatures for children, pass isTopLevel=false to
 // skip container/nesting checks that only apply to root features.
 //
 // Layout categories:
@@ -23,41 +24,39 @@ import type { Feature } from '@jbrowse/core/util'
 //   Subfeatures         — gene-level: stacks child transcripts vertically
 export function findGlyph(
   feature: Feature,
-  configContext: RenderConfigContext,
+  config: DisplayConfig,
   isTopLevel?: boolean,
-) {
-  if (isTopLevel === undefined) {
-    isTopLevel = !feature.parent?.()
-  }
-  const type = feature.get('type') as string
+): (args: LayoutArgs) => FeatureLayout {
+  isTopLevel ??= !feature.parent?.()
+  const type = feature.get('type') ?? ''
   const subfeatures = feature.get('subfeatures')
   const hasSubfeatures = !!subfeatures?.length
 
   if (type === 'CDS') {
     return hasMatureProteinChildren(feature)
-      ? matureProteinRegionGlyph
-      : boxGlyph
+      ? layoutMatureProteinRegion
+      : layoutBox
   }
   if (hasSubfeatures) {
-    const { transcriptTypes } = configContext
-    if (isTopLevel && configContext.containerTypes.includes(type)) {
-      return subfeaturesGlyph
+    const { transcriptTypes, containerTypes } = config
+    if (isTopLevel && containerTypes.includes(type)) {
+      return layoutSubfeatures
     }
     const hasCDS = subfeatures.some((f: Feature) => f.get('type') === 'CDS')
     if (transcriptTypes.includes(type) && hasCDS) {
-      return processedTranscriptGlyph
+      return layoutProcessedTranscript
     }
     // Top-level features with nested subfeatures (e.g. gene→mRNA→CDS)
-    // get the multi-row subfeatures glyph
+    // get the multi-row subfeatures layout
     if (isTopLevel) {
       const hasNested = subfeatures.some(
         (f: Feature) => f.get('subfeatures')?.length,
       )
       if (hasNested) {
-        return subfeaturesGlyph
+        return layoutSubfeatures
       }
     }
-    return segmentsGlyph
+    return layoutSegments
   }
-  return boxGlyph
+  return layoutBox
 }

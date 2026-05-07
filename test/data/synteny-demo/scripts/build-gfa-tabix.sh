@@ -44,7 +44,6 @@ fi
 HPRC_S3="https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/minigraph-cactus/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38.chroms"
 
 # Download per-chromosome .vg from HPRC S3, convert to GFA with vg
-# Use d9 variant when available (has segment sequences needed for --aln-bin)
 download_hprc_chr() {
   local chr="$1"
   local variant="${2:-}" # "d9" for d9 graphs with sequences
@@ -100,18 +99,17 @@ HPRC_CHRM="$(download_hprc_chr chrM)"
 HPRC_CHRM_OUT="$OUT_DIR/hprc-v1.1-mc-grch38-chrM"
 run_gfa_tabix_rust "$HPRC_CHRM" "$HPRC_CHRM_OUT" --ref-assembly 'GRCh38#0'
 # Copy to repo test data for unit tests
-cp "$HPRC_CHRM_OUT".pos.bed.gz     "$REPO_ROOT/test/data/synteny-demo/hprc/"
-cp "$HPRC_CHRM_OUT".pos.bed.gz.tbi "$REPO_ROOT/test/data/synteny-demo/hprc/"
-cp "$HPRC_CHRM_OUT".segments.gz     "$REPO_ROOT/test/data/synteny-demo/hprc/"
-cp "$HPRC_CHRM_OUT".segments.gz.gzi "$REPO_ROOT/test/data/synteny-demo/hprc/"
-cp "$HPRC_CHRM_OUT".segments.idx    "$REPO_ROOT/test/data/synteny-demo/hprc/"
+cp "$HPRC_CHRM_OUT".pos.bed.gz      "$REPO_ROOT/test/data/synteny-demo/hprc/"
+cp "$HPRC_CHRM_OUT".pos.bed.gz.tbi  "$REPO_ROOT/test/data/synteny-demo/hprc/"
+cp "$HPRC_CHRM_OUT".synteny.bed.gz      "$REPO_ROOT/test/data/synteny-demo/hprc/" 2>/dev/null || true
+cp "$HPRC_CHRM_OUT".synteny.bed.gz.tbi  "$REPO_ROOT/test/data/synteny-demo/hprc/" 2>/dev/null || true
 echo ""
 
 # ── 5. HPRC minigraph-cactus chr20 ──────────────────────────────────────────
 
-echo "── 5. HPRC minigraph-cactus chr20 (d9, with aln-bin) ──"
-HPRC_CHR20="$(download_hprc_chr chr20 d9)"
-run_gfa_tabix_rust "$HPRC_CHR20" "$OUT_DIR/hprc-v1.1-mc-grch38-chr20" --aln-bin --threads 0 --ref-assembly 'GRCh38#0'
+echo "── 5. HPRC minigraph-cactus chr20 ──"
+HPRC_CHR20="$(download_hprc_chr chr20)"
+run_gfa_tabix_rust "$HPRC_CHR20" "$OUT_DIR/hprc-v1.1-mc-grch38-chr20" --ref-assembly 'GRCh38#0'
 echo ""
 
 # ── Optional: all remaining chromosomes ──────────────────────────────────────
@@ -137,4 +135,4 @@ done
 echo ""
 echo "To upload to S3:"
 echo "  aws s3 sync $OUT_DIR/ s3://jbrowse.org/demos/gfadata/ \\"
-echo "    --exclude 'downloads/*'"
+echo "    --exclude 'downloads/*' --acl public-read"

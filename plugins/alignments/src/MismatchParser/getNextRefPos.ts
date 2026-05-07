@@ -15,11 +15,11 @@ import {
 export function getNextRefPos(
   cigarOps: ArrayLike<number>,
   positions: number[],
-) {
+  callback: (ref: number, idx: number) => void,
+): void {
   let readPos = 0
   let refPos = 0
   let currPos = 0
-  const ret = []
 
   for (
     let i = 0, l = cigarOps.length, l2 = positions.length;
@@ -41,10 +41,7 @@ export function getNextRefPos(
     } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
       for (let j = 0; j < len && currPos < l2; j++) {
         if (positions[currPos] === readPos + j) {
-          ret.push({
-            ref: refPos + j,
-            idx: currPos,
-          })
+          callback(refPos + j, currPos)
           currPos++
         }
       }
@@ -52,6 +49,4 @@ export function getNextRefPos(
       refPos += len
     }
   }
-
-  return ret
 }

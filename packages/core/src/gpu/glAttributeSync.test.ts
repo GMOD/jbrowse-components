@@ -1,4 +1,4 @@
-import { CANVAS_FEATURE_PASSES } from '../../../../plugins/canvas/src/LinearFeatureDisplay/components/GpuCanvasFeatureRenderer.ts'
+import { CANVAS_FEATURE_PASSES } from '../../../../plugins/canvas/src/LinearBasicDisplay/components/GpuCanvasFeatureRenderer.ts'
 import { DOTPLOT_PASSES } from '../../../../plugins/dotplot-view/src/DotplotDisplay/GpuDotplotRenderer.ts'
 import { HIC_PASSES } from '../../../../plugins/hic/src/LinearHicDisplay/components/GpuHicRenderer.ts'
 import { SYNTENY_PASSES } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/GpuSyntenyRenderer.ts'
@@ -59,18 +59,21 @@ function parseGlslAttributes(glsl: string): GlslAttribute[] {
 
 function validateSync(
   passId: string,
-  glAttributes: GlAttributeLayout[],
+  glAttributes: readonly GlAttributeLayout[],
   glslVertex: string,
 ) {
   const glslAttrs = parseGlslAttributes(glslVertex)
 
+  // glAttributes describes the VERTEX BUFFER layout — every byte the GPU
+  // reads. The GLSL shader may omit an attribute if its body doesn't
+  // reference it (Slang's compiler dead-code-eliminates unused inputs, and
+  // buffer-sharing passes like line/chevron declare all fields even if only
+  // one side uses each). So it's a sync error only when the GLSL declares an
+  // attribute that's NOT in the buffer layout — the reverse direction is
+  // fine. When the GLSL does have the attribute, its type/components must
+  // match the TS descriptor.
   for (const attr of glAttributes) {
     const glslAttr = glslAttrs.find(a => a.name === attr.name)
-
-    it(`${passId}: "${attr.name}" exists in GLSL`, () => {
-      expect(glslAttr).toBeDefined()
-    })
-
     if (glslAttr) {
       it(`${passId}: "${attr.name}" type=${attr.type} components=${attr.components} integer=${attr.integer}`, () => {
         expect(glslAttr.type).toBe(attr.type)

@@ -13,4 +13,5 @@ export interface Track {
 
 export interface BreakpointSplitView {
   views: LinearGenomeViewModel[]
+  setDisplayName(name: string): void
 }

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
-import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
+import { ConfirmDialog, ErrorBanner } from '@jbrowse/core/ui'
 import { DialogContentText, Input } from '@mui/material'
 const { ipcRenderer } = window.require('electron')
 
@@ -42,11 +41,11 @@ const RenameQuickstartDialog = ({
       }}
     >
       <DialogContentText>
-        Please enter a new name for the session:
+        Please enter a new name for the quickstart:
       </DialogContentText>
       {quickstartNames.includes(newQuickstartName) ? (
         <DialogContentText color="error">
-          There is already a session named &quot;{newQuickstartName}&quot;
+          There is already a quickstart named &quot;{newQuickstartName}&quot;
         </DialogContentText>
       ) : null}
       <Input
@@ -56,7 +55,7 @@ const RenameQuickstartDialog = ({
           setNewQuickstartName(event.target.value)
         }}
       />
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
     </ConfirmDialog>
   )
 }

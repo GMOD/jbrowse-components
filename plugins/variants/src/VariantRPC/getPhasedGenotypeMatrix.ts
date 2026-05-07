@@ -24,7 +24,7 @@ export async function getPhasedGenotypeMatrix({
     headers?: Record<string, string>
     regions: Region[]
     sources: Source[]
-    bpPerPx: number
+    bpPerPx?: number
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
     sampleInfo: Record<string, SampleInfo>
@@ -45,7 +45,7 @@ export async function getPhasedGenotypeMatrix({
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
-  const rows = {} as Record<string, number[]>
+  const rows: Record<string, number[]> = {}
 
   for (const { name } of sources) {
     const info = sampleInfo[name]

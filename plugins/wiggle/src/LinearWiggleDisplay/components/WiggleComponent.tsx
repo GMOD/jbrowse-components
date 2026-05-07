@@ -1,194 +1,86 @@
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
-import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  useGpuRenderer,
-  useTabVisibilityRerender,
-} from '@jbrowse/core/util'
-import { autorun } from 'mobx'
+import { ErrorOverlay } from '@jbrowse/core/ui'
+import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import WiggleTooltip from './WiggleTooltip.tsx'
-import { buildSourceRenderData } from './buildSourceRenderData.ts'
 import DensityLegend from '../../shared/DensityLegend.tsx'
-import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
-import YScaleBar from '../../shared/YScaleBar.tsx'
 import {
+  WiggleErrorBar,
+  WiggleLoadingOverlay,
+} from '../../shared/WiggleStatusOverlays.tsx'
+import {
+  findFeatureAtBp,
+  hitTestMouse,
   isSummaryFeature,
-  makeRenderState,
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
-import type { WiggleRenderBlock } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+const COORD0: [number, number] = [0, 0]
 
 const WiggleComponent = observer(function WiggleComponent({
   model,
 }: {
   model: WiggleDisplayModel
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
+  // The model owns the upload/render autorun and the GPU backend lifecycle —
+  // see startGpuBackendLifecycle / stopGpuBackendLifecycle / renderNow on the
+  // LinearWiggleDisplay model. This component is just a thin bridge that
+  // plugs the canvas and the backend into those model actions.
+  const { canvasRef, error, retry } = useGpuModelLifecycle(
     WiggleRenderer,
+    model,
   )
 
   const view = getContainingView(model) as LGV
 
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !view.initialized) {
-      return
-    }
-    const { domain } = model
-    const visibleRegions = view.visibleRegions
-    const width = view.trackWidthPx
-    if (!domain || visibleRegions.length === 0) {
-      renderer.renderBlocks(
-        [],
-        makeRenderState([0, 1], 'linear', 'xyplot', width, model.height),
-      )
-      return
-    }
-    const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
-      regionNumber: vr.regionNumber,
-      bpRangeX: [vr.start, vr.end] as [number, number],
-      screenStartPx: vr.screenStartPx,
-      screenEndPx: vr.screenEndPx,
-      reversed: vr.reversed ?? false,
-    }))
-    renderer.renderBlocks(
-      blocks,
-      makeRenderState(
-        domain,
-        model.scaleType,
-        model.renderingType,
-        width,
-        model.height,
-      ),
-    )
-  })
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    let lastDataMap: unknown = null
-
-    return autorun(() => {
-      const dataMap = model.rpcDataMap
-
-      if (lastDataMap !== dataMap) {
-        lastDataMap = dataMap
-        if (dataMap.size === 0) {
-          renderer.pruneRegions([])
-        } else {
-          const activeRegions: number[] = []
-          for (const [regionNumber, data] of dataMap) {
-            activeRegions.push(regionNumber)
-            const sources = buildSourceRenderData(data, model)
-            renderer.uploadRegion(regionNumber, data.regionStart, sources)
-          }
-          renderer.pruneRegions(activeRegions)
-        }
-      }
-
-      // See dataVersion comment in MultiRegionDisplayMixin.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _dv = model.dataVersion
-
-      renderNow()
-      if (dataMap.size > 0 && model.domain) {
-        model.setCanvasDrawn(true)
-      }
-    })
-  }, [model, view, ready, rendererRef])
-
-  useTabVisibilityRerender(renderNow)
-
-  const coord0: [number, number] = [0, 0]
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState(coord0)
-  const [clientMouseCoord, setClientMouseCoord] = useState(coord0)
+  const [offsetMouseCoord, setOffsetMouseCoord] = useState(COORD0)
+  const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {
       const container = containerRef.current
-      if (!container) {
-        return
-      }
-      const rect = container.getBoundingClientRect()
-      const offsetX = event.clientX - rect.left
-      setOffsetMouseCoord([offsetX, event.clientY - rect.top])
-      setClientMouseCoord([event.clientX, event.clientY])
+      if (container) {
+        const rect = container.getBoundingClientRect()
+        const offsetX = event.clientX - rect.left
+        setOffsetMouseCoord([offsetX, event.clientY - rect.top])
+        setClientMouseCoord([event.clientX, event.clientY])
 
-      const { rpcDataMap, summaryScoreMode } = model
-      if (rpcDataMap.size === 0) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const visibleRegions = view.visibleRegions
-      const region = visibleRegions.find(
-        r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
-      )
-      if (!region) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const data = rpcDataMap.get(region.regionNumber)
-      if (!data) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const blockWidth = region.screenEndPx - region.screenStartPx
-      const frac = (offsetX - region.screenStartPx) / blockWidth
-      const bp = region.reversed
-        ? Math.round(region.end - frac * (region.end - region.start))
-        : Math.round(region.start + frac * (region.end - region.start))
-      const bpOffset = bp - data.regionStart
-
-      const { featurePositions, featureScores, numFeatures } = data
-      let foundIdx = -1
-      for (let i = 0; i < numFeatures; i++) {
-        const fStart = featurePositions[i * 2]!
-        const fEnd = featurePositions[i * 2 + 1]!
-        if (bpOffset >= fStart && bpOffset < fEnd) {
-          foundIdx = i
-          break
+        const { rpcDataMap, summaryScoreMode } = model
+        const hit = hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
+        if (!hit) {
+          model.setFeatureUnderMouse(undefined)
+        } else {
+          const { region, data, bp } = hit
+          const { featurePositions, featureScores, numFeatures } = data
+          const foundIdx = findFeatureAtBp(featurePositions, numFeatures, bp)
+          if (foundIdx === -1) {
+            model.setFeatureUnderMouse(undefined)
+          } else {
+            const score = featureScores[foundIdx]!
+            const minScore = data.featureMinScores[foundIdx]
+            const maxScore = data.featureMaxScores[foundIdx]
+            model.setFeatureUnderMouse({
+              refName: region.refName,
+              start: featurePositions[foundIdx * 2]!,
+              end: featurePositions[foundIdx * 2 + 1]!,
+              score,
+              ...(summaryScoreMode !== 'avg' &&
+              isSummaryFeature(score, minScore, maxScore)
+                ? { summary: true, minScore, maxScore }
+                : {}),
+            })
+          }
         }
       }
-
-      if (foundIdx === -1) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const fStart = featurePositions[foundIdx * 2]! + data.regionStart
-      const fEnd = featurePositions[foundIdx * 2 + 1]! + data.regionStart
-      const score = featureScores[foundIdx]!
-      const minScore = data.featureMinScores[foundIdx]
-      const maxScore = data.featureMaxScores[foundIdx]
-
-      model.setFeatureUnderMouse({
-        refName: region.refName,
-        start: fStart,
-        end: fEnd,
-        score,
-        ...(summaryScoreMode !== 'avg' &&
-        isSummaryFeature(score, minScore, maxScore)
-          ? { summary: true, minScore, maxScore }
-          : {}),
-      })
     },
     [model, view],
   )
@@ -262,7 +154,7 @@ const WiggleComponent = observer(function WiggleComponent({
             width: 50,
           }}
         >
-          <YScaleBar model={model} />
+          <YScaleBar ticks={model.ticks} orientation="left" />
         </svg>
       ) : null}
       {model.displayCrossHatches && model.ticks ? (
@@ -276,23 +168,17 @@ const WiggleComponent = observer(function WiggleComponent({
             width,
           }}
         >
-          {model.ticks.values.map((v: number, idx: number) => {
-            const pos = model.ticks!.position(v)
-            if (!Number.isFinite(pos)) {
-              return null
-            }
-            return (
-              <line
-                key={idx}
-                x1={0}
-                x2={width}
-                y1={pos}
-                y2={pos}
-                stroke="rgba(200,200,200,0.8)"
-                strokeWidth={1}
-              />
-            )
-          })}
+          {model.ticks.ticks.map(({ value, y }) => (
+            <line
+              key={value}
+              x1={0}
+              x2={width}
+              y1={y}
+              y2={y}
+              stroke="rgba(200,200,200,0.8)"
+              strokeWidth={1}
+            />
+          ))}
         </svg>
       ) : null}
       <WiggleTooltip
@@ -301,18 +187,8 @@ const WiggleComponent = observer(function WiggleComponent({
         offsetMouseCoord={offsetMouseCoord}
         height={height}
       />
-      {model.error ? (
-        <ErrorBar
-          error={model.error}
-          onRetry={() => {
-            model.reload()
-          }}
-        />
-      ) : null}
-      <LoadingOverlay
-        statusMessage={model.statusMessage || 'Loading'}
-        isVisible={model.isLoading}
-      />
+      <WiggleErrorBar model={model} />
+      <WiggleLoadingOverlay model={model} />
     </div>
   )
 })

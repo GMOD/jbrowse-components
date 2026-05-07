@@ -95,6 +95,61 @@ describe('computeAutoscaleDomain', () => {
     expect(result![1]).toBeGreaterThanOrEqual(10)
   })
 
+  test('localsd result is always finite (regression: numStdDev=undefined caused NaN)', () => {
+    const data = makeFeatureArrays([5, 10, 15])
+    const entries = [{ data, visStart: 0, visEnd: 300 }]
+    const result = computeAutoscaleDomain('localsd', 'avg', 3, entries, entries)
+    expect(result).toBeDefined()
+    expect(Number.isFinite(result![0])).toBe(true)
+    expect(Number.isFinite(result![1])).toBe(true)
+    // non-negative scores: min clamps to 0, max extends beyond the largest score
+    expect(result![0]).toBe(0)
+    expect(result![1]).toBeGreaterThan(15)
+  })
+
+  test('globalsd uses all data not only visible features', () => {
+    // visible: uniform [10, 10] → std=0 → max≈10
+    // all: includes [50, 50] → higher mean+std → max>10
+    const visibleData = makeFeatureArrays([10, 10])
+    const allData = makeFeatureArrays([10, 10, 50, 50])
+    const visEntries = [{ data: visibleData, visStart: 0, visEnd: 200 }]
+    const allEntries = [{ data: allData }]
+    const localResult = computeAutoscaleDomain(
+      'localsd',
+      'avg',
+      3,
+      visEntries,
+      allEntries,
+    )
+    const globalResult = computeAutoscaleDomain(
+      'globalsd',
+      'avg',
+      3,
+      visEntries,
+      allEntries,
+    )
+    expect(Number.isFinite(globalResult![1])).toBe(true)
+    expect(globalResult![1]).toBeGreaterThan(localResult![1])
+  })
+
+  test('localsd only considers visible features', () => {
+    // features: [0,100]=score 1, [100,200]=score 100 (outside visible [0,100])
+    const data = makeFeatureArrays([1, 100, 5])
+    const visEntries = [{ data, visStart: 0, visEnd: 100 }]
+    const allEntries = [{ data }]
+    const result = computeAutoscaleDomain(
+      'localsd',
+      'avg',
+      3,
+      visEntries,
+      allEntries,
+    )
+    expect(result).toBeDefined()
+    // only score=1 visible; stddev=0 → max = 1+3*0 = 1
+    expect(result![0]).toBe(0)
+    expect(result![1]).toBeCloseTo(1)
+  })
+
   test('filters features outside visible range', () => {
     const data = makeFeatureArrays([1, 100, 5])
     const entries = [{ data, visStart: 0, visEnd: 100 }]

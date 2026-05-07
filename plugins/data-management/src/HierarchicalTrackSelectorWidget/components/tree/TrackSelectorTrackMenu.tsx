@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -32,52 +30,51 @@ const TrackSelectorTrackMenu = function ({
   const { classes } = useStyles()
   const trackId = conf.trackId as string
 
-  const getMenuItems = useCallback(() => {
-    const session = getSession(model)
-    const flatMenuItems = session.getTrackListMenuItems?.(conf) || []
-    return [
-      ...flatMenuItems,
-      model.isFavorite(trackId)
-        ? {
-            label: 'Remove from favorites',
-            onClick: () => {
-              model.removeFromFavorites(trackId)
-            },
-            icon: StarIcon,
-          }
-        : {
-            label: 'Add to favorites',
-            onClick: () => {
-              model.addToFavorites(trackId)
-            },
-            icon: FilledStarIcon,
-          },
-      {
-        label: 'Add to selection',
-        onClick: () => {
-          model.addToSelection([conf])
-        },
-      },
-      ...(model.isSelected(conf)
-        ? [
-            {
-              label: 'Remove from selection',
-              onClick: () => {
-                model.removeFromSelection([conf])
-              },
-            },
-          ]
-        : []),
-    ]
-  }, [conf, model, trackId])
-
   return (
     <CascadingMenuButton
       className={classes.cascadingStyle}
       stopPropagation={stopPropagation}
       setOpen={setOpen}
       data-testid={`htsTrackEntryMenu-${id}`}
-      menuItems={getMenuItems}
+      menuItems={() => {
+        const session = getSession(model)
+        const flatMenuItems =
+          session.getTrackListMenuItems?.(conf, model.view) ?? []
+        return [
+          ...flatMenuItems,
+          model.isFavorite(trackId)
+            ? {
+                label: 'Remove from favorites',
+                onClick: () => {
+                  model.removeFromFavorites(trackId)
+                },
+                icon: StarIcon,
+              }
+            : {
+                label: 'Add to favorites',
+                onClick: () => {
+                  model.addToFavorites(trackId)
+                },
+                icon: FilledStarIcon,
+              },
+          {
+            label: 'Add to selection',
+            onClick: () => {
+              model.addToSelection([conf])
+            },
+          },
+          ...(model.isSelected(conf)
+            ? [
+                {
+                  label: 'Remove from selection',
+                  onClick: () => {
+                    model.removeFromSelection([conf])
+                  },
+                },
+              ]
+            : []),
+        ]
+      }}
     >
       <MoreHorizIcon />
     </CascadingMenuButton>

@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-any
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
@@ -82,49 +82,49 @@ aborted: types.array(Job)
 
 ```js
 // type signature
-addJob: (job: NewJob) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
+addJob: (job: NewJob) => { name: string; statusMessage: string | undefined; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string | undefined): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
 ```
 
 #### action: removeJob
 
 ```js
 // type signature
-removeJob: (jobName: string) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
+removeJob: (jobName: string) => ({ name: string; statusMessage: string | undefined; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string | undefined): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>) | u...
 ```
 
 #### action: addFinishedJob
 
 ```js
 // type signature
-addFinishedJob: (job: NewJob) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
+addFinishedJob: (job: NewJob) => { name: string; statusMessage: string | undefined; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string | undefined): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
 ```
 
 #### action: addQueuedJob
 
 ```js
 // type signature
-addQueuedJob: (job: NewJob) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
+addQueuedJob: (job: NewJob) => { name: string; statusMessage: string | undefined; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string | undefined): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
 ```
 
 #### action: addAbortedJob
 
 ```js
 // type signature
-addAbortedJob: (job: NewJob) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
+addAbortedJob: (job: NewJob) => { name: string; statusMessage: string | undefined; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string | undefined): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
 ```
 
 #### action: removeQueuedJob
 
 ```js
 // type signature
-removeQueuedJob: (jobName: string) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
+removeQueuedJob: (jobName: string) => ({ name: string; statusMessage: string | undefined; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string | undefined): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>) | u...
 ```
 
 #### action: updateJobStatusMessage
 
 ```js
 // type signature
-updateJobStatusMessage: (jobName: string, message?: string) => void
+updateJobStatusMessage: (jobName: string, message?: string | undefined) => void
 ```
 
 #### action: updateJobProgressPct

@@ -1,34 +1,25 @@
-import {
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingView,
   reducePrecision,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { HicRenderer, generateColorRamp } from './HicRenderer.ts'
-import HicColorLegend from '../../HicRenderer/components/HicColorLegend.tsx'
+import HicColorLegend from './HicColorLegend.tsx'
+import { HicRenderer } from './HicRenderer.ts'
 
-import type { HicFlatbushItem } from '../../HicRenderer/types.ts'
+import type { HicFlatbushItem } from '../../RenderHicDataRPC/types.ts'
 import type { LinearHicDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-const SQRT2 = Math.sqrt(2)
+const SQRT2 = Math.SQRT2
 
 function HicTooltip({
   item,
@@ -95,7 +86,7 @@ const HicCanvas = observer(function HicCanvas({
   model: LinearHicDisplayModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const width = view.totalWidthPx
   const {
     height,
     rpcData,
@@ -103,14 +94,11 @@ const HicCanvas = observer(function HicCanvas({
     flatbushItems,
     yScalar,
     showLegend,
-    maxScore,
+    colorMaxScore,
     colorScheme,
     useLogScale,
-    lastDrawnOffsetPx,
-    lastDrawnBpPerPx,
   } = model
 
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<HicFlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
@@ -122,124 +110,56 @@ const HicCanvas = observer(function HicCanvas({
     y: number
   }>()
 
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
-    HicRenderer,
-  )
+  // Model owns the upload/render autorun — see startGpuBackendLifecycle on
+  // the LinearHicDisplay model. The rpcData and colorScheme uploads are
+  // identity-diffed independently so a colorScheme change doesn't re-upload
+  // the contact matrix.
+  const { canvasRef, error, retry } = useGpuModelLifecycle(HicRenderer, model)
 
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    const data = model.rpcData
-    if (!renderer || !data) {
-      return
-    }
-    const w = Math.round(view.dynamicBlocks.totalWidthPx)
-    const scale =
-      model.lastDrawnBpPerPx !== undefined
-        ? model.lastDrawnBpPerPx / view.bpPerPx
-        : 1
-    const offsetX =
-      model.lastDrawnOffsetPx !== undefined
-        ? model.lastDrawnOffsetPx * scale - view.offsetPx
-        : 0
-    renderer.render({
-      binWidth: data.binWidth,
-      yScalar: data.yScalar,
-      canvasWidth: w,
-      canvasHeight: model.height,
-      maxScore: data.maxScore,
-      useLogScale: model.useLogScale,
-      viewScale: scale,
-      viewOffsetX: offsetX,
-    })
-  })
-
-  // Compute view transform for smooth zoom/scroll
-  const viewScale =
-    lastDrawnBpPerPx !== undefined ? lastDrawnBpPerPx / view.bpPerPx : 1
-  const viewOffsetX =
-    lastDrawnOffsetPx !== undefined
-      ? lastDrawnOffsetPx * viewScale - view.offsetPx
-      : 0
+  // View transform for hit-test math — mirrors renderState on the model.
+  const { scale: viewScale, translateX: viewOffsetX } =
+    model.viewportTransform(view)
 
   const flatbushIndex = useMemo(
     () => (flatbush ? Flatbush.from(flatbush) : null),
     [flatbush],
   )
 
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
+  const onMouseMove = (event: React.MouseEvent) => {
+    if (!containerRef.current || !flatbushIndex || !flatbushItems.length) {
+      setHoveredItem(undefined)
+      setMousePosition(undefined)
       return
     }
 
-    let lastRpcData: unknown = null
-    let lastColorScheme: string | undefined
+    const rect = containerRef.current.getBoundingClientRect()
+    const mouseX = event.clientX - rect.left
+    const mouseY = event.clientY - rect.top
 
-    return autorun(() => {
-      const data = model.rpcData
-      if (!data) {
-        return
-      }
+    setMousePosition({ x: event.clientX, y: event.clientY })
+    setLocalMousePos({ x: mouseX, y: mouseY })
 
-      if (lastRpcData !== data) {
-        lastRpcData = data
-        renderer.uploadData({
-          positions: data.positions,
-          counts: data.counts,
-          numContacts: data.numContacts,
-        })
-      }
+    // Reverse the shader transform to get data-space screen coordinates
+    const dataScreenX = (mouseX - viewOffsetX) / viewScale
+    const dataScreenY = mouseY / viewScale
 
-      if (lastColorScheme !== model.colorScheme) {
-        lastColorScheme = model.colorScheme
-        renderer.uploadColorRamp(generateColorRamp(model.colorScheme))
-      }
+    const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar)
 
-      renderNow()
-    })
-  }, [model, view, ready, rendererRef])
+    const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
 
-  useTabVisibilityRerender(renderNow)
+    if (results.length > 0) {
+      const item = flatbushItems[results[0]!]
+      setHoveredItem(item)
+    } else {
+      setHoveredItem(undefined)
+    }
+  }
 
-  const onMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      if (!containerRef.current || !flatbushIndex || !flatbushItems.length) {
-        setHoveredItem(undefined)
-        setMousePosition(undefined)
-        return
-      }
-
-      const rect = containerRef.current.getBoundingClientRect()
-      const mouseX = event.clientX - rect.left
-      const mouseY = event.clientY - rect.top
-
-      setMousePosition({ x: event.clientX, y: event.clientY })
-      setLocalMousePos({ x: mouseX, y: mouseY })
-
-      // Reverse the shader transform to get data-space screen coordinates
-      const dataScreenX = (mouseX - viewOffsetX) / viewScale
-      const dataScreenY = mouseY / viewScale
-
-      const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar)
-
-      const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
-
-      if (results.length > 0) {
-        const item = flatbushItems[results[0]!]
-        setHoveredItem(item)
-      } else {
-        setHoveredItem(undefined)
-      }
-    },
-    [flatbushIndex, flatbushItems, yScalar, viewScale, viewOffsetX],
-  )
-
-  const onMouseLeave = useCallback(() => {
+  const onMouseLeave = () => {
     setHoveredItem(undefined)
     setMousePosition(undefined)
     setLocalMousePos(undefined)
-  }, [])
+  }
 
   if (error) {
     return (
@@ -294,9 +214,9 @@ const HicCanvas = observer(function HicCanvas({
           y={mousePosition.y}
         />
       ) : null}
-      {showLegend && maxScore > 0 ? (
+      {showLegend && colorMaxScore > 0 ? (
         <HicColorLegend
-          maxScore={maxScore}
+          maxScore={colorMaxScore}
           colorScheme={colorScheme}
           useLogScale={useLogScale}
         />

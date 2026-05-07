@@ -59,7 +59,7 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
         const obj = {
           type: adapterName,
           fastaLocation: file,
-          faiLocation: index || makeIndex(file, '.fai'),
+          faiLocation: index ?? makeIndex(file, '.fai'),
         }
 
         if (regexGuess.test(fileName) && !adapterHint) {

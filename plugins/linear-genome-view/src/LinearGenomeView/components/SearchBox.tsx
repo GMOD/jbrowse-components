@@ -1,22 +1,24 @@
+import type React from 'react'
+
+import {
+  RefNameAutocomplete,
+  RefNameAutocompleteEndAdornment,
+} from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import EndAdornment from './RefNameAutocomplete/EndAdornment.tsx'
-import RefNameAutocomplete from './RefNameAutocomplete/index.tsx'
-import { fetchResults } from './util.ts'
-import { handleSelectedRegion, navToOption } from '../../searchUtils.ts'
+import {
+  fetchResults,
+  handleSelectedRegion,
+  navToOption,
+} from '../../searchUtils.ts'
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
+
+const defaultStyle = { margin: SPACING }
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-
-const useStyles = makeStyles()({
-  headerRefName: {
-    minWidth: 100,
-  },
-})
 
 async function onSelect({
   option,
@@ -36,11 +38,11 @@ async function onSelect({
       assemblyName,
     })
   } else if (option.results?.length) {
-    model.setSearchResults(option.results, option.getLabel())
+    model.setSearchResults(option.results, option.getLabel(), assemblyName)
   } else if (assembly) {
     await handleSelectedRegion({
       input: option.getLabel(),
-      assembly,
+      assemblyName,
       model,
     })
   }
@@ -51,16 +53,16 @@ const SearchBox = observer(function SearchBox({
   showHelp = true,
   minWidth = 175,
   maxWidth,
+  style = defaultStyle,
 }: {
   showHelp?: boolean
   model: LinearGenomeViewModel
   minWidth?: number
   maxWidth?: number
+  style?: React.CSSProperties
 }) {
-  const { classes } = useStyles()
   const theme = useTheme()
   const session = getSession(model)
-
   const { textSearchManager, assemblyManager } = session
   const { assemblyNames, rankSearchResults } = model
   const assemblyName = assemblyNames[0]!
@@ -71,14 +73,10 @@ const SearchBox = observer(function SearchBox({
     <RefNameAutocomplete
       onSelect={async option => {
         try {
-          await onSelect({
-            model,
-            assemblyName,
-            option,
-          })
+          await onSelect({ model, assemblyName, option })
         } catch (e) {
           console.error(e)
-          getSession(model).notify(`${e}`, 'warning')
+          session.notify(`${e}`, 'warning')
         }
       }}
       assemblyName={assemblyName}
@@ -91,25 +89,16 @@ const SearchBox = observer(function SearchBox({
           assembly,
         })
       }
-      model={model}
+      session={session}
+      value={model.coarseVisibleLocStrings}
       minWidth={minWidth}
       maxWidth={maxWidth}
-      TextFieldProps={{
-        variant: 'outlined',
-        className: classes.headerRefName,
-        style: {
-          margin: SPACING,
-        },
-        slotProps: {
-          input: {
-            style: {
-              padding: 0,
-              height: WIDGET_HEIGHT,
-              background: alpha(theme.palette.background.paper, 0.8),
-            },
-            endAdornment: <EndAdornment showHelp={showHelp} />,
-          },
-        },
+      style={style}
+      endAdornment={<RefNameAutocompleteEndAdornment showHelp={showHelp} />}
+      inputStyle={{
+        padding: 0,
+        height: WIDGET_HEIGHT,
+        background: alpha(theme.palette.background.paper, 0.8),
       }}
     />
   )

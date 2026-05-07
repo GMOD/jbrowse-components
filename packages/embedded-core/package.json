@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/embedded-core",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 code shared between embedded products",
   "keywords": [
@@ -24,7 +24,7 @@
     "esm"
   ],
   "scripts": {
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "build": "pnpm build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/embedded-core",
     "clean": "rimraf esm *.tsbuildinfo",
@@ -36,7 +36,7 @@
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1"
   },
   "peerDependencies": {

@@ -1,74 +1,28 @@
 import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DWiggleRenderer } from './Canvas2DWiggleRenderer.ts'
-import {
-  GpuWiggleRenderer,
-  WIGGLE_PASSES,
-  WIGGLE_UNIFORM_BYTE_SIZE,
-} from './GpuWiggleRenderer.ts'
+import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
+import { UNIFORMS_SIZE_BYTES } from './shaders/wiggle.generated.ts'
 
-import type {
-  SourceRenderData,
-  WiggleBackend,
-  WiggleGPURenderState,
-  WiggleRenderBlock,
-} from './wiggleBackendTypes.ts'
+import type { WiggleBackend } from './wiggleBackendTypes.ts'
 
-export type {
-  SourceRenderData,
-  WiggleBackend,
-  WiggleGPURenderState,
-  WiggleRenderBlock,
-} from './wiggleBackendTypes.ts'
-
-export class WiggleRenderer {
-  private static cache = new WeakMap<HTMLCanvasElement, WiggleRenderer>()
-
-  private canvas: HTMLCanvasElement
-  private backend: WiggleBackend | null = null
-
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-  }
-
-  static getOrCreate(canvas: HTMLCanvasElement) {
-    let r = WiggleRenderer.cache.get(canvas)
-    if (!r) {
-      r = new WiggleRenderer(canvas)
-      WiggleRenderer.cache.set(canvas, r)
-    }
-    return r
-  }
-
-  async init() {
-    this.backend = await initDualBackend<WiggleBackend>(
-      this.canvas,
-      WIGGLE_PASSES,
-      WIGGLE_UNIFORM_BYTE_SIZE,
-      hal => new GpuWiggleRenderer(hal),
-      canvas => new Canvas2DWiggleRenderer(canvas),
-    )
-    return true
-  }
-
-  uploadRegion(
-    regionNumber: number,
-    regionStart: number,
-    sources: SourceRenderData[],
-  ) {
-    this.backend?.uploadRegion(regionNumber, regionStart, sources)
-  }
-
-  pruneRegions(activeRegions: number[]) {
-    this.backend?.pruneRegions(activeRegions)
-  }
-
-  renderBlocks(blocks: WiggleRenderBlock[], renderState: WiggleGPURenderState) {
-    this.backend?.renderBlocks(blocks, renderState)
-  }
-
-  dispose() {
-    this.backend?.dispose()
-    this.backend = null
-  }
+export function WiggleRenderer(canvas: HTMLCanvasElement) {
+  console.warn('[WiggleRenderer] factory called, canvas:', {
+    width: canvas.width,
+    height: canvas.height,
+    id: canvas.id,
+  })
+  return initDualBackend<WiggleBackend>(
+    canvas,
+    WIGGLE_PASSES,
+    UNIFORMS_SIZE_BYTES,
+    hal => {
+      console.warn('[WiggleRenderer] Creating GPU wiggle renderer')
+      return new GpuWiggleRenderer(hal)
+    },
+    c => {
+      console.warn('[WiggleRenderer] Creating Canvas2D wiggle renderer')
+      return new Canvas2DWiggleRenderer(c)
+    },
+  )
 }

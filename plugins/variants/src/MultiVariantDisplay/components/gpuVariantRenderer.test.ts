@@ -1,16 +1,14 @@
 import { MockHal } from '@jbrowse/core/gpu/hal'
 
 import { GpuVariantRenderer, VARIANT_PASSES } from './GpuVariantRenderer.ts'
-import { INSTANCE_STRIDE } from './variantShaders.ts'
+import { INSTANCE_STRIDE_F32 as INSTANCE_STRIDE } from './shaders/variant.generated.ts'
 
 import type { VariantRenderBlock } from './variantBackendTypes.ts'
 
-beforeAll(() => {
-  ;(globalThis as Record<string, unknown>).window = { devicePixelRatio: 1 }
-})
-
-afterAll(() => {
-  delete (globalThis as Record<string, unknown>).window
+Object.defineProperty(globalThis, 'devicePixelRatio', {
+  value: 1,
+  writable: true,
+  configurable: true,
 })
 
 function makeUploadData() {
@@ -18,7 +16,9 @@ function makeUploadData() {
     regionStart: 5000,
     cellPositions: new Uint32Array([100, 200, 300, 400]),
     cellRowIndices: new Uint32Array([0, 1]),
-    cellColors: new Uint8Array([255, 0, 0, 255, 0, 255, 0, 128]),
+    // ABGR-packed u32 per cell (R=255 G=0 B=0 A=255) → 0xff0000ff;
+    // (R=0 G=255 B=0 A=128) → 0x8000ff00
+    cellColors: new Uint32Array([0xff0000ff, 0x8000ff00]),
     cellShapeTypes: new Uint8Array([0, 1]),
     numCells: 2,
   }
@@ -28,7 +28,7 @@ function makeBlock(
   overrides?: Partial<VariantRenderBlock>,
 ): VariantRenderBlock {
   return {
-    regionNumber: 0,
+    displayedRegionIndex: 0,
     bpRangeX: [0, 10000],
     screenStartPx: 0,
     screenEndPx: 800,
@@ -50,7 +50,6 @@ describe('GpuVariantRenderer', () => {
     expect(buf!.data.byteLength).toBe(2 * INSTANCE_STRIDE * 4)
 
     const u32 = new Uint32Array(buf!.data)
-    const f32 = new Float32Array(buf!.data)
     // first cell: start=100, end=200
     expect(u32[0]).toBe(100)
     expect(u32[1]).toBe(200)
@@ -58,8 +57,8 @@ describe('GpuVariantRenderer', () => {
     expect(u32[2]).toBe(0)
     // shape_type=0
     expect(u32[3]).toBe(0)
-    // color: r=255/255=1.0
-    expect(f32[4]).toBeCloseTo(1)
+    // color ABGR packed (R=255, G=0, B=0, A=255) -> 0xFF0000FF
+    expect(u32[4]).toBe(0xff0000ff)
 
     // second cell: start=300, end=400, row=1, shape=1
     const off = INSTANCE_STRIDE
@@ -67,10 +66,8 @@ describe('GpuVariantRenderer', () => {
     expect(u32[off + 1]).toBe(400)
     expect(u32[off + 2]).toBe(1)
     expect(u32[off + 3]).toBe(1)
-    // green: 255/255=1.0
-    expect(f32[off + 5]).toBeCloseTo(1)
-    // alpha: 128/255
-    expect(f32[off + 7]).toBeCloseTo(128 / 255)
+    // color ABGR packed (R=0, G=255, B=0, A=128) -> 0x8000FF00
+    expect(u32[off + 4]).toBe(0x8000ff00)
   })
 
   it('deletes region on empty upload', () => {
@@ -128,7 +125,7 @@ describe('GpuVariantRenderer', () => {
     renderer.uploadRegion(1, makeUploadData())
     renderer.uploadRegion(2, makeUploadData())
 
-    renderer.pruneStaleRegions([1])
+    renderer.pruneRegions([1])
 
     expect(hal.getBufferCount(0, 'main')).toBe(0)
     expect(hal.getBufferCount(1, 'main')).toBe(2)
@@ -139,7 +136,7 @@ describe('GpuVariantRenderer', () => {
     const hal = new MockHal(VARIANT_PASSES)
     const renderer = new GpuVariantRenderer(hal)
 
-    renderer.renderBlocks([makeBlock({ regionNumber: 99 })], {
+    renderer.renderBlocks([makeBlock({ displayedRegionIndex: 99 })], {
       canvasWidth: 800,
       canvasHeight: 600,
       rowHeight: 20,
@@ -158,8 +155,16 @@ describe('GpuVariantRenderer', () => {
 
     renderer.renderBlocks(
       [
-        makeBlock({ regionNumber: 0, screenStartPx: 0, screenEndPx: 400 }),
-        makeBlock({ regionNumber: 1, screenStartPx: 400, screenEndPx: 800 }),
+        makeBlock({
+          displayedRegionIndex: 0,
+          screenStartPx: 0,
+          screenEndPx: 400,
+        }),
+        makeBlock({
+          displayedRegionIndex: 1,
+          screenStartPx: 400,
+          screenEndPx: 800,
+        }),
       ],
       {
         canvasWidth: 800,

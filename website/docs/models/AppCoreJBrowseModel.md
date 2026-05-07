@@ -51,7 +51,7 @@ RpcManager
 
 ```js
 // type signature
-addAssemblyConf: (conf: AnyConfigurationModel) => any
+addAssemblyConf: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => { ...; } & ... 2 more ... & IStateTreeNode<...>
 ```
 
 #### action: removeAssemblyConf
@@ -65,28 +65,28 @@ removeAssemblyConf: (assemblyName: string) => void
 
 ```js
 // type signature
-addTrackConf: (trackConf: { trackId: string; type: string; }) => any
+addTrackConf: (trackConf: { trackId: string; type: string; }) => { [key: string]: unknown; trackId: string; } | undefined
 ```
 
 #### action: addConnectionConf
 
 ```js
 // type signature
-addConnectionConf: (connectionConf: AnyConfigurationModel) => any
+addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
 ```
 
 #### action: deleteConnectionConf
 
 ```js
 // type signature
-deleteConnectionConf: (configuration: AnyConfigurationModel) => any
+deleteConnectionConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
 ```
 
 #### action: deleteTrackConf
 
 ```js
 // type signature
-deleteTrackConf: (trackConf: any) => void
+deleteTrackConf: (trackConf: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) | { ...; }) => void
 ```
 
 #### action: updateTrackConf
@@ -117,19 +117,19 @@ removePlugin: (pluginDefinition: PluginDefinition) => void
 
 ```js
 // type signature
-setDefaultSessionConf: (sessionConf: AnyConfigurationModel) => void
+setDefaultSessionConf: (sessionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: addInternetAccountConf
 
 ```js
 // type signature
-addInternetAccountConf: (internetAccountConf: AnyConfigurationModel) => any
+addInternetAccountConf: (internetAccountConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
 ```
 
 #### action: deleteInternetAccountConf
 
 ```js
 // type signature
-deleteInternetAccountConf: (configuration: AnyConfigurationModel) => any
+deleteInternetAccountConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
 ```

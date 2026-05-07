@@ -17,6 +17,7 @@ import { createRoot } from 'react-dom/client'
 import { coarseStripHTML } from './coarseStripHTML.ts'
 import { colord } from './colord.ts'
 import { parseLocString } from './locString.ts'
+import { measureText } from './measureText.ts'
 import { checkStopToken } from './stopToken.ts'
 import {
   isDisplayModel,
@@ -54,6 +55,8 @@ export * from './when.ts'
 export * from './range.ts'
 export * from './dedupe.ts'
 export * from './coarseStripHTML.ts'
+export * from './measureText.ts'
+export { IntervalTree } from './IntervalTree.ts'
 
 export * from './offscreenCanvasPonyfill.ts'
 export * from './offscreenCanvasUtils.tsx'
@@ -203,8 +206,8 @@ export function springAnimate(
   function update(animation: Animation) {
     const time = performance.now()
     let position = animation.lastPosition
-    let lastTime = animation.lastTime || time
-    let velocity = animation.lastVelocity || 0
+    let lastTime = animation.lastTime ?? time
+    let velocity = animation.lastVelocity ?? 0
     // If we lost a lot of frames just jump to the end.
     if (time > lastTime + 64) {
       lastTime = time
@@ -550,7 +553,7 @@ export function iterMap<T, U>(
   func: (arg: T) => U,
   sizeHint?: number,
 ) {
-  const results = Array.from<U>({ length: sizeHint || 0 })
+  const results = Array.from<U>({ length: sizeHint ?? 0 })
   let counter = 0
   for (const item of iter) {
     results[counter] = func(item)
@@ -790,20 +793,6 @@ export const rIC =
         cb()
       }
 
-// prettier-ignore
-const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
-const avgWidth = 0.5279276315789471
-
-// xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
-export function measureText(str: unknown, fontSize = 10) {
-  const s = String(str)
-  let total = 0
-  for (let i = 0, l = s.length; i < l; i++) {
-    total += widths[s.charCodeAt(i)] ?? avgWidth
-  }
-  return total * fontSize
-}
-
 export type Frame = 1 | 2 | 3 | -1 | -2 | -3
 
 export function getFrame(
@@ -890,10 +879,10 @@ export const defaultCodonTable = {
  * take CodonTable above and generate larger codon table that includes all
  * permutations of upper and lower case nucleotides
  */
-export function generateCodonTable(table: any) {
+export function generateCodonTable(table: Record<string, string>) {
   const tempCodonTable: Record<string, string> = {}
   for (const codon of Object.keys(table)) {
-    const aa = table[codon]
+    const aa = table[codon]!
     const nucs: string[][] = []
     for (let i = 0; i < 3; i++) {
       const nuc = codon.charAt(i)
@@ -915,6 +904,8 @@ export function generateCodonTable(table: any) {
   }
   return tempCodonTable
 }
+
+export const codonTable = generateCodonTable(defaultCodonTable)
 
 // call statusCallback with current status and clear when finished
 export async function updateStatus<U>(
@@ -1140,14 +1131,6 @@ export function getStr(obj: unknown) {
     : String(obj)
 }
 
-// based on autolink-js, license MIT
-// https://github.com/bryanwoods/autolink-js/blob/1418049970152c56ced73d43dcc62d80b320fb71/autolink.js#L9
-export function linkify(s: string) {
-  const pattern =
-    /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[-A-Z0-9+\u0026\u2019@#/%?=()~_|!:,.;]*[-A-Z0-9+\u0026@#/%=~()_|])/gi
-  return s.replaceAll(pattern, '$1<a href=\'$2\' target="_blank">$2</a>')
-}
-
 // heuristic measurement for a column of a @mui/x-data-grid, pass in
 // values from a column
 export function measureGridWidth(
@@ -1166,7 +1149,7 @@ export function measureGridWidth(
     fontSize = 12,
     maxWidth = 1000,
     stripHTML = false,
-  } = args || {}
+  } = args ?? {}
   return max(
     elements
       .map(element => getStr(element))
@@ -1192,41 +1175,43 @@ export function localStorageSetItem(str: string, item: string) {
   }
 }
 
-export function max(arr: Iterable<number>, init = Number.NEGATIVE_INFINITY) {
+// Index iteration so these accept both arrays and typed arrays (e.g.
+// Float32Array) without requiring Iterable.
+/* eslint-disable @typescript-eslint/prefer-for-of */
+export function max(arr: ArrayLike<number>, init = Number.NEGATIVE_INFINITY) {
   let max = init
-  for (const entry of arr) {
-    max = Math.max(entry, max)
+  for (let i = 0; i < arr.length; i++) {
+    max = Math.max(arr[i]!, max)
   }
   return max
 }
 
-export function min(arr: Iterable<number>, init = Number.POSITIVE_INFINITY) {
+export function min(arr: ArrayLike<number>, init = Number.POSITIVE_INFINITY) {
   let min = init
-  for (const entry of arr) {
-    min = Math.min(entry, min)
+  for (let i = 0; i < arr.length; i++) {
+    min = Math.min(arr[i]!, min)
   }
   return min
 }
 
-export function sum(arr: Iterable<number>) {
+export function sum(arr: ArrayLike<number>) {
   let sum = 0
-  for (const entry of arr) {
-    sum += entry
+  for (let i = 0; i < arr.length; i++) {
+    sum += arr[i]!
   }
   return sum
 }
+/* eslint-enable @typescript-eslint/prefer-for-of */
 
-export function avg(arr: number[]) {
+export function avg(arr: ArrayLike<number>) {
   return sum(arr) / arr.length
 }
 
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
-  const result = {} as Record<string, T[]>
+  const result: Record<string, T[]> = {}
   for (const value of array) {
     const t = predicate(value)
-    if (!result[t]) {
-      result[t] = []
-    }
+    result[t] ??= []
     result[t].push(value)
   }
   return result
@@ -1245,7 +1230,7 @@ export function mergeIntervals<T extends { start: number; end: number }>(
     return intervals
   }
 
-  const stack = [] as T[]
+  const stack: T[] = []
 
   // sort the intervals based on their start values
   intervals = intervals.sort((a, b) => a.start - b.start)
@@ -1283,11 +1268,9 @@ export interface BasicFeature {
 
 // returns new array non-overlapping features
 export function gatherOverlaps<T extends BasicFeature>(regions: T[], w = 5000) {
-  const memo = {} as Record<string, T[]>
+  const memo: Record<string, T[]> = {}
   for (const x of regions) {
-    if (!memo[x.refName]) {
-      memo[x.refName] = []
-    }
+    memo[x.refName] ??= []
     memo[x.refName]!.push(x)
   }
 
@@ -1406,6 +1389,7 @@ export {
 } from './simpleFeature.ts'
 
 export { blobToDataURL } from './blobToDataURL.ts'
+export { saveAs } from './FileSaver/index.ts'
 export { makeAbortableReaction } from './makeAbortableReaction.ts'
 export * from './aborting.ts'
 export * from './linkify.ts'
@@ -1413,8 +1397,12 @@ export * from './locString.ts'
 export * from './stopToken.ts'
 export * from './tracks.ts'
 export * from './fileHandleStore.ts'
-export { IntervalTree } from './IntervalTree.ts'
-export { setupWebGLContextLossHandler } from './webglContextLoss.ts'
+export { useGpuModelLifecycle } from './useGpuModelLifecycle.ts'
 export { useGpuRenderer } from './useGpuRenderer.ts'
-export { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
 export { makeDisplayedRegionKey } from './blockTypes.ts'
+export {
+  type AlignmentData,
+  type DiagonalizationResult,
+  type ProgressCallback,
+  diagonalizeRegions,
+} from './diagonalizeRegions.ts'

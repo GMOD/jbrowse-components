@@ -1,4 +1,11 @@
-import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react'
+import {
+  createEvent,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 
 import { createView, doBeforeEach, hts, setup } from './util.tsx'
 setup()
@@ -159,21 +166,16 @@ test('click to display center line with correct value', async () => {
 }, 30000)
 
 test('test choose option from dropdown refName autocomplete', async () => {
-  const {
-    findByTestId,
-    findAllByText,
-    findByPlaceholderText,
-    getByPlaceholderText,
-  } = await createView()
+  const user = userEvent.setup()
+  const { findAllByText, findByPlaceholderText, getByPlaceholderText } =
+    await createView()
 
   await findAllByText('ctgA', ...opts)
-  fireEvent.click(await findByPlaceholderText('Search for location'))
-  const autocomplete = await findByTestId('autocomplete')
-  autocomplete.focus()
-  fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-  fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-  fireEvent.click((await screen.findAllByText(/ctgB/))[0]!)
-  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  const input = await findByPlaceholderText('Search for location')
+  await user.click(input)
+  await user.click(
+    within(await screen.findByRole('listbox', ...opts)).getByText(/ctgB/),
+  )
 
   await waitFor(() => {
     const n = getByPlaceholderText('Search for location') as HTMLInputElement

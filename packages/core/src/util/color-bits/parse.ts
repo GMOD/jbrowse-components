@@ -56,6 +56,14 @@ export function parseHex(color: string): Color {
       b = (hexValue(color.charCodeAt(3)) << 4) + hexValue(color.charCodeAt(3))
       break
     }
+    // #59fa
+    case 5: {
+      r = (hexValue(color.charCodeAt(1)) << 4) + hexValue(color.charCodeAt(1))
+      g = (hexValue(color.charCodeAt(2)) << 4) + hexValue(color.charCodeAt(2))
+      b = (hexValue(color.charCodeAt(3)) << 4) + hexValue(color.charCodeAt(3))
+      a = (hexValue(color.charCodeAt(4)) << 4) + hexValue(color.charCodeAt(4))
+      break
+    }
     // #5599ff
     case 7: {
       r = (hexValue(color.charCodeAt(1)) << 4) + hexValue(color.charCodeAt(2))

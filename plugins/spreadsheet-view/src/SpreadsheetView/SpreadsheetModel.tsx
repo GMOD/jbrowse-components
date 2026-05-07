@@ -13,20 +13,20 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { GridColDef } from '@mui/x-data-grid'
 
 export interface Row {
-  // optional feature per-row
   feature?: SimpleFeatureSerialized
-
-  // new style: object with key->name values
   cellData?: Record<string, unknown>
-
-  // old style: array of cells
-  cells?: {
-    text: unknown
-  }[]
+  // old snapshot format
+  cells?: { text: unknown }[]
 }
 
 export interface RowSet {
   rows: Row[]
+}
+
+export interface GridRow {
+  id: number
+  feature?: SimpleFeatureSerialized
+  [key: string]: unknown
 }
 
 /**
@@ -64,16 +64,13 @@ export default function stateModelFactory() {
        * #getter
        */
       get rows() {
-        return self.rowSet?.rows.map((row, i) => ({
-          id: i,
-          feature: row.feature,
-          ...Object.fromEntries(
-            self.columns.map((c, idx) => [
-              c.name,
-              row.cellData?.[c.name] ?? row.cells?.[idx]?.text,
-            ]),
-          ),
-        }))
+        return self.rowSet?.rows.map((row, i) => {
+          const result: GridRow = { id: i, feature: row.feature }
+          for (const [idx, c] of self.columns.entries()) {
+            result[c.name] = row.cellData?.[c.name] ?? row.cells?.[idx]?.text
+          }
+          return result
+        })
       },
 
       /**
@@ -82,7 +79,7 @@ export default function stateModelFactory() {
       get initialized() {
         const session = getSession(self)
         const name = self.assemblyName
-        return (
+        return !!(
           self.rowSet &&
           (name ? session.assemblyManager.get(name)?.initialized : false)
         )
@@ -137,13 +134,11 @@ export default function stateModelFactory() {
                   ({
                     field: f.name,
                     width: measureGridWidth(
-                      // @ts-expect-error
                       [...rows.map(r => r[f.name]), f.name],
                       { minWidth: 20 },
                     ),
                     type:
-                      // @ts-expect-error
-                      typeof rows[0][f.name] === 'number'
+                      typeof rows[0]?.[f.name] === 'number'
                         ? 'number'
                         : undefined,
                   }) satisfies GridColDef,
@@ -156,7 +151,7 @@ export default function stateModelFactory() {
       get visibleRows() {
         const { visibleRowFlags } = self
         return visibleRowFlags
-          ? self.rows?.filter((_f, idx) => visibleRowFlags[idx] !== false)
+          ? self.rows?.filter(row => visibleRowFlags[row.id] !== false)
           : self.rows
       },
     }))

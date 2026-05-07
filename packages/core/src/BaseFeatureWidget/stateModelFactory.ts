@@ -90,6 +90,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
     }))
 
@@ -179,7 +180,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .preProcessSnapshot(snap => {
-      // @ts-expect-error
+      // @ts-expect-error - old snapshots used `featureData`, new ones use
+      // `finalizedFeatureData`; accept both for backwards compat
       const { featureData, finalizedFeatureData, ...rest } = snap
       return {
         unformattedFeatureData: featureData,

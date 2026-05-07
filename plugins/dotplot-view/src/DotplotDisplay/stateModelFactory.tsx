@@ -1,15 +1,13 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { renderSvg } from './renderSvg.tsx'
 
-import type { DotplotRenderer } from './DotplotRenderer.ts'
-import type { DotplotFeatPos } from './types.ts'
+import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
+import type { DotplotRpcData } from './types.ts'
 import type { ExportSvgOptions } from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
@@ -42,63 +40,38 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         .volatile(() => ({
           /**
            * #volatile
+           * RPC-computed feature data
            */
-          features: undefined as Feature[] | undefined,
+          rpcData: undefined as DotplotRpcData | undefined,
           /**
            * #volatile
-           */
-          featPositions: [] as DotplotFeatPos[],
-          /**
-           * #volatile
-           */
-          gpuRenderer: null as DotplotRenderer | null,
-          /**
-           * #volatile
-           */
-          gpuInitialized: false,
-          /**
-           * #volatile
-           * alpha transparency value for synteny drawing (0-1)
            */
           alpha: 1,
           /**
            * #volatile
-           * minimum alignment length to display (in bp)
            */
           minAlignmentLength: 0,
           /**
            * #volatile
-           * bpPerPx at which featPositions were computed (h-axis)
            */
-          featPositionsBpPerPxH: 0,
+          lineWidth: 2,
           /**
            * #volatile
-           * bpPerPx at which featPositions were computed (v-axis)
+           * GPU-instance geometry produced from featPositions, self-
+           * describing via embedded bpPerPx. The containing DotplotView
+           * aggregates one of these per display and uploads them to the
+           * shared backend keyed by track index.
            */
-          featPositionsBpPerPxV: 0,
-          canvasDrawn: false,
+          geometry: undefined as DotplotGeometryData | undefined,
           fetchStopToken: undefined as StopToken | undefined,
         })),
     )
     .views(self => ({
       get isLoading() {
-        return self.fetchStopToken !== undefined
+        return self.fetchStopToken !== undefined && !self.rpcData
       },
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return getConf(self, ['renderer', 'type'])
-      },
-      /**
-       * #method
-       */
-      renderProps() {
-        return {
-          ...getParentRenderProps(self),
-          rpcDriverName: self.rpcDriverName,
-          config: self.configuration.renderer,
-        }
+      get isRefetching() {
+        return self.fetchStopToken !== undefined && !!self.rpcData
       },
     }))
     .views(self => ({
@@ -113,47 +86,19 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setLoading(stopToken?: StopToken) {
+      setLoading(stopToken: StopToken) {
         self.fetchStopToken = stopToken
         self.error = undefined
       },
       /**
        * #action
        */
-      setFeatures(args?: { features: Feature[] }) {
-        if (!args) {
-          return
-        }
-        self.features = args.features
+      setRpcData(data: DotplotRpcData) {
+        self.rpcData = data
         self.fetchStopToken = undefined
-        self.error = undefined
       },
-      /**
-       * #action
-       */
-      setFeatPositions(
-        positions: DotplotFeatPos[],
-        bpPerPxH: number,
-        bpPerPxV: number,
-      ) {
-        self.featPositions = positions
-        self.featPositionsBpPerPxH = bpPerPxH
-        self.featPositionsBpPerPxV = bpPerPxV
-      },
-      /**
-       * #action
-       */
-      setGpuRenderer(renderer: DotplotRenderer | null) {
-        self.gpuRenderer = renderer
-      },
-      /**
-       * #action
-       */
-      setGpuInitialized(value: boolean) {
-        self.gpuInitialized = value
-      },
-      setCanvasDrawn(value: boolean) {
-        self.canvasDrawn = value
+      setGeometry(data: DotplotGeometryData | undefined) {
+        self.geometry = data
       },
       /**
        * #action
@@ -178,6 +123,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setLineWidth(value: number) {
+        self.lineWidth = value
+      },
+      /**
+       * #action
+       */
       setColorBy(value: string) {
         self.colorBy = value
       },
@@ -198,5 +149,4 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
 }
 
-export type DotplotDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type DotplotDisplayModel = Instance<DotplotDisplayStateModel>
+export type DotplotDisplayModel = Instance<ReturnType<typeof stateModelFactory>>

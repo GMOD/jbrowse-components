@@ -1,16 +1,18 @@
 import {
-  bpToScreenX,
+  bpToScreenPx,
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
+import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
-import { WIGGLE_FUDGE_FACTOR, normalizeScore } from '../util.ts'
+import { WIGGLE_FUDGE_FACTOR, makeScoreNormalizer } from '../util.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_SCATTER,
   SCALE_TYPE_LOG,
-} from './wiggleShader.ts'
+} from './wiggleComponentUtils.ts'
+import { computeNumRows } from './wiggleInstanceBuffer.ts'
 
 import type {
   SourceRenderData,
@@ -18,286 +20,330 @@ import type {
   WiggleGPURenderState,
   WiggleRenderBlock,
 } from './wiggleBackendTypes.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 interface Canvas2DRegionData {
-  regionStart: number
   sources: SourceRenderData[]
   numRows: number
 }
 
-interface DrawParams {
-  ctx: CanvasRenderingContext2D
-  source: SourceRenderData
-  regionStart: number
-  block: WiggleRenderBlock
-  bpLength: number
-  fullBlockWidth: number
-  rowHeight: number
-  rowTop: number
-  domainY: [number, number]
-  scaleType: number
-  r: number
-  g: number
-  b: number
+interface FeatureBounds {
+  x1: number
+  x2: number
+  score: number
 }
 
+function makeScoreToY(
+  rowHeight: number,
+  domainY: [number, number],
+  scaleType: number,
+) {
+  const normalize = makeScoreNormalizer(
+    domainY[0],
+    domainY[1],
+    scaleType === SCALE_TYPE_LOG,
+  )
+  return (score: number) => (1 - normalize(score)) * rowHeight
+}
+
+function featureAt(
+  source: SourceRenderData,
+  i: number,
+  block: WiggleRenderBlock,
+): FeatureBounds {
+  const startBp = source.featurePositions[i * 2]!
+  const endBp = source.featurePositions[i * 2 + 1]!
+  const [bpStart, bpEnd] = block.bpRangeX
+  return {
+    x1: bpToScreenPx(
+      startBp,
+      bpStart,
+      bpEnd,
+      block.screenStartPx,
+      block.screenEndPx,
+      block.reversed,
+    ),
+    x2: bpToScreenPx(
+      endBp,
+      bpStart,
+      bpEnd,
+      block.screenStartPx,
+      block.screenEndPx,
+      block.reversed,
+    ),
+    score: source.featureScores[i]!,
+  }
+}
+
+function drawXYPlot(
+  ctx: Ctx2D,
+  source: SourceRenderData,
+  block: WiggleRenderBlock,
+  rowHeight: number,
+  rowTop: number,
+  domainY: [number, number],
+  scaleType: number,
+  rgb: string,
+) {
+  ctx.fillStyle = rgb
+  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
+  const originY = scoreToY(0) + rowTop
+  for (let i = 0; i < source.numFeatures; i++) {
+    const f = featureAt(source, i, block)
+    const scoreY = scoreToY(f.score) + rowTop
+    const w = Math.max(1.5, f.x2 - f.x1 + WIGGLE_FUDGE_FACTOR)
+    const h = originY - scoreY
+    if (h >= 0) {
+      ctx.fillRect(f.x1, scoreY, w, h)
+    } else {
+      ctx.fillRect(f.x1, originY, w, -h)
+    }
+  }
+}
+
+function drawDensity(
+  ctx: Ctx2D,
+  source: SourceRenderData,
+  block: WiggleRenderBlock,
+  rowHeight: number,
+  rowTop: number,
+  domainY: [number, number],
+  scaleType: number,
+  r: number,
+  g: number,
+  b: number,
+) {
+  const normalize = makeScoreNormalizer(
+    domainY[0],
+    domainY[1],
+    scaleType === SCALE_TYPE_LOG,
+  )
+  const zeroNorm = normalize(0)
+  const maxDist = Math.max(zeroNorm, 1 - zeroNorm)
+  const invMaxDist = maxDist > 0.0001 ? 1 / maxDist : 0
+  const rDelta = r - 255
+  const gDelta = g - 255
+  const bDelta = b - 255
+
+  for (let i = 0; i < source.numFeatures; i++) {
+    const f = featureAt(source, i, block)
+    const w = Math.max(1.5, f.x2 - f.x1 + WIGGLE_FUDGE_FACTOR)
+    const t = Math.abs(normalize(f.score) - zeroNorm) * invMaxDist
+    const cr = (255 + rDelta * t) | 0
+    const cg = (255 + gDelta * t) | 0
+    const cb = (255 + bDelta * t) | 0
+    ctx.fillStyle = `rgb(${cr},${cg},${cb})`
+    ctx.fillRect(f.x1, rowTop, w, rowHeight)
+  }
+}
+
+function drawLine(
+  ctx: Ctx2D,
+  source: SourceRenderData,
+  block: WiggleRenderBlock,
+  rowHeight: number,
+  rowTop: number,
+  domainY: [number, number],
+  scaleType: number,
+  rgb: string,
+) {
+  if (source.numFeatures === 0) {
+    return
+  }
+  ctx.strokeStyle = rgb
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
+
+  let prevY = scoreToY(source.featureScores[0]!) + rowTop
+  for (let i = 0; i < source.numFeatures; i++) {
+    const f = featureAt(source, i, block)
+    const scoreY = scoreToY(f.score) + rowTop
+    if (i > 0) {
+      ctx.moveTo(f.x1, prevY)
+      ctx.lineTo(f.x1, scoreY)
+    }
+    ctx.moveTo(f.x1, scoreY)
+    ctx.lineTo(f.x2, scoreY)
+    prevY = scoreY
+  }
+  ctx.stroke()
+}
+
+function drawScatter(
+  ctx: Ctx2D,
+  source: SourceRenderData,
+  block: WiggleRenderBlock,
+  rowHeight: number,
+  rowTop: number,
+  domainY: [number, number],
+  scaleType: number,
+  rgb: string,
+) {
+  ctx.fillStyle = rgb
+  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
+  for (let i = 0; i < source.numFeatures; i++) {
+    const f = featureAt(source, i, block)
+    const scoreY = scoreToY(f.score) + rowTop
+    const w = Math.max(1.5, f.x2 - f.x1)
+    ctx.fillRect(f.x1, scoreY - 1, w, 2)
+  }
+}
+
+/**
+ * Pure draw entry point. Takes any 2D-canvas-like context (real
+ * CanvasRenderingContext2D or SvgCanvas) plus a regions map and paints the
+ * wiggle display: line / density / scatter / xyplot per render type, one
+ * source per row.
+ *
+ * No `this`, no DOM, no DPR scaling — just data → ctx. The on-screen
+ * `Canvas2DWiggleRenderer` wraps this with `prepareCanvas` + lifecycle upload
+ * state; SVG export calls it directly with an `SvgCanvas`.
+ */
+export function drawWiggleBlocks(
+  ctx: Ctx2D,
+  regions: ReadonlyMap<number, Canvas2DRegionData>,
+  blocks: WiggleRenderBlock[],
+  state: WiggleGPURenderState,
+) {
+  const { canvasWidth, canvasHeight, renderingType, scaleType, domainY } = state
+
+  for (const block of blocks) {
+    const region = regions.get(block.displayedRegionIndex)
+    if (!region || region.sources.length === 0) {
+      continue
+    }
+    const clip = clipBlockForCanvas(block, canvasWidth)
+    if (!clip) {
+      continue
+    }
+
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
+    ctx.clip()
+
+    const rowHeight = canvasHeight / region.numRows
+
+    for (const source of region.sources) {
+      const rowTop = source.rowIndex * rowHeight
+      const r = Math.round(source.color[0] * 255)
+      const g = Math.round(source.color[1] * 255)
+      const b = Math.round(source.color[2] * 255)
+      const rgb = `rgb(${r},${g},${b})`
+
+      if (renderingType === RENDERING_TYPE_LINE) {
+        drawLine(ctx, source, block, rowHeight, rowTop, domainY, scaleType, rgb)
+      } else if (renderingType === RENDERING_TYPE_DENSITY) {
+        drawDensity(
+          ctx,
+          source,
+          block,
+          rowHeight,
+          rowTop,
+          domainY,
+          scaleType,
+          r,
+          g,
+          b,
+        )
+      } else if (renderingType === RENDERING_TYPE_SCATTER) {
+        drawScatter(
+          ctx,
+          source,
+          block,
+          rowHeight,
+          rowTop,
+          domainY,
+          scaleType,
+          rgb,
+        )
+      } else {
+        drawXYPlot(
+          ctx,
+          source,
+          block,
+          rowHeight,
+          rowTop,
+          domainY,
+          scaleType,
+          rgb,
+        )
+      }
+    }
+    ctx.restore()
+  }
+}
+
+/**
+ * Streaming-upload lifecycle holder around a `regions` Map, with the
+ * `renderBlocks` lifecycle wrapper that runs `prepareCanvas` (DPR + size) and
+ * delegates to the pure `drawWiggleBlocks`.
+ *
+ * Two construction modes:
+ *
+ *   1. **Bound** — `new Canvas2DWiggleRenderer(canvas)`.
+ *      Used by the on-screen lifecycle (initDualBackend). `renderBlocks` works.
+ *
+ *   2. **Headless** — `new Canvas2DWiggleRenderer(null)`.
+ *      Used by SVG export. Caller runs `uploadRegion` to fill the regions map,
+ *      then calls `drawWiggleBlocks(svgCanvas, instance.getRegions(), blocks,
+ *      state)` directly. `renderBlocks` throws — there's no canvas to prepare.
+ */
 export class Canvas2DWiggleRenderer implements WiggleBackend {
-  private ctx: CanvasRenderingContext2D
-  private canvas: HTMLCanvasElement
+  private canvas: HTMLCanvasElement | null
+  private ctx: CanvasRenderingContext2D | null
   private regions = new Map<number, Canvas2DRegionData>()
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement | null) {
     this.canvas = canvas
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
+    if (canvas) {
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        throw new Error('Canvas 2D context not available')
+      }
+      this.ctx = ctx
+    } else {
+      this.ctx = null
     }
-    this.ctx = ctx
   }
 
-  uploadRegion(
-    regionNumber: number,
-    regionStart: number,
-    sources: SourceRenderData[],
-  ) {
+  uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]) {
     let totalFeatures = 0
     for (const source of sources) {
       totalFeatures += source.numFeatures
     }
-    if (totalFeatures === 0 || sources.length === 0) {
-      this.regions.delete(regionNumber)
+    if (totalFeatures === 0) {
+      this.regions.delete(displayedRegionIndex)
       return
     }
-
-    let numRows = 0
-    for (const [i, source] of sources.entries()) {
-      const r = (source.rowIndex ?? i) + 1
-      if (r > numRows) {
-        numRows = r
-      }
-    }
-
-    this.regions.set(regionNumber, { regionStart, sources, numRows })
+    this.regions.set(displayedRegionIndex, {
+      sources,
+      numRows: computeNumRows(sources),
+    })
   }
 
-  renderBlocks(blocks: WiggleRenderBlock[], renderState: WiggleGPURenderState) {
-    const { canvasWidth, canvasHeight, renderingType, scaleType, domainY } =
-      renderState
-
-    const ctx = this.ctx
-    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
-
-    for (const block of blocks) {
-      const region = this.regions.get(block.regionNumber)
-      if (!region || region.sources.length === 0) {
-        continue
-      }
-
-      const clip = clipBlockForCanvas(block, canvasWidth)
-      if (!clip) {
-        continue
-      }
-
-      const { fullBlockWidth, bpLength } = clip
-
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-      ctx.clip()
-
-      const numRows = region.numRows
-      const rowHeight = canvasHeight / numRows
-
-      for (const [idx, source] of region.sources.entries()) {
-        const row = source.rowIndex ?? idx
-        const [r, g, b] = source.color
-        const params: DrawParams = {
-          ctx,
-          source,
-          regionStart: region.regionStart,
-          block,
-          bpLength,
-          fullBlockWidth,
-          rowHeight,
-          rowTop: row * rowHeight,
-          domainY,
-          scaleType,
-          r: Math.round(r * 255),
-          g: Math.round(g * 255),
-          b: Math.round(b * 255),
-        }
-
-        if (renderingType === RENDERING_TYPE_LINE) {
-          this.drawLine(params)
-        } else if (renderingType === RENDERING_TYPE_DENSITY) {
-          this.drawDensity(params)
-        } else if (renderingType === RENDERING_TYPE_SCATTER) {
-          this.drawScatter(params)
-        } else {
-          this.drawXYPlot(params)
-        }
-      }
-
-      ctx.restore()
-    }
-  }
-
-  private bpToScreenX(
-    absBp: number,
-    block: WiggleRenderBlock,
-    bpLength: number,
-    fullBlockWidth: number,
-  ) {
-    return bpToScreenX(absBp, block, bpLength, fullBlockWidth)
-  }
-
-  private makeScoreToY(p: DrawParams) {
-    const { rowHeight, domainY, scaleType } = p
-    const isLog = scaleType === SCALE_TYPE_LOG
-    if (isLog) {
-      const logMin = Math.log2(Math.max(domainY[0], 1))
-      const logRange = Math.log2(Math.max(domainY[1], 1)) - logMin
-      if (logRange === 0) {
-        return () => 0
-      }
-      return (score: number) => {
-        const logScore = Math.log2(Math.max(score, 1))
-        const norm = Math.max(0, Math.min(1, (logScore - logMin) / logRange))
-        return (1 - norm) * rowHeight
-      }
-    }
-    const domMin = domainY[0]
-    const domRange = domainY[1] - domMin
-    if (domRange === 0) {
-      return () => 0
-    }
-    const invRange = 1 / domRange
-    return (score: number) => {
-      const norm = Math.max(0, Math.min(1, (score - domMin) * invRange))
-      return (1 - norm) * rowHeight
-    }
-  }
-
-  private drawXYPlot(p: DrawParams) {
-    const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
-    const { rowTop, r, g, b } = p
-    ctx.fillStyle = `rgb(${r},${g},${b})`
-    const scoreToY = this.makeScoreToY(p)
-    const originY = scoreToY(0) + rowTop
-
-    for (let i = 0; i < source.numFeatures; i++) {
-      const startBp = source.featurePositions[i * 2]! + regionStart
-      const endBp = source.featurePositions[i * 2 + 1]! + regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const scoreY = scoreToY(source.featureScores[i]!) + rowTop
-      const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
-      const h = originY - scoreY
-      if (h >= 0) {
-        ctx.fillRect(x1, scoreY, w, h)
-      } else {
-        ctx.fillRect(x1, originY, w, -h)
-      }
-    }
-  }
-
-  private drawDensity(p: DrawParams) {
-    const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
-    const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
-    const isLog = scaleType === SCALE_TYPE_LOG
-    const domMin = domainY[0]
-    const domMax = domainY[1]
-    const zeroNorm = normalizeScore(0, domMin, domMax, isLog)
-    const maxDist = Math.max(zeroNorm, 1 - zeroNorm)
-    const invMaxDist = maxDist > 0.0001 ? 1 / maxDist : 0
-    const rDelta = r - 255
-    const gDelta = g - 255
-    const bDelta = b - 255
-
-    for (let i = 0; i < source.numFeatures; i++) {
-      const startBp = source.featurePositions[i * 2]! + regionStart
-      const endBp = source.featurePositions[i * 2 + 1]! + regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
-
-      const norm = normalizeScore(
-        source.featureScores[i]!,
-        domMin,
-        domMax,
-        isLog,
+  renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
+    if (!this.canvas || !this.ctx) {
+      throw new Error(
+        'Canvas2DWiggleRenderer.renderBlocks called without a canvas — call drawWiggleBlocks(ctx, regions, …) directly for headless rendering',
       )
-      const t = Math.abs(norm - zeroNorm) * invMaxDist
-
-      const cr = (255 + rDelta * t) | 0
-      const cg = (255 + gDelta * t) | 0
-      const cb = (255 + bDelta * t) | 0
-      ctx.fillStyle = `rgb(${cr},${cg},${cb})`
-      ctx.fillRect(x1, rowTop, w, rowHeight)
     }
-  }
-
-  private drawLine(p: DrawParams) {
-    const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
-    const { rowTop, r, g, b } = p
-    if (source.numFeatures === 0) {
-      return
-    }
-
-    ctx.strokeStyle = `rgb(${r},${g},${b})`
-    ctx.lineWidth = 1
-    ctx.beginPath()
-
-    const scoreToY = this.makeScoreToY(p)
-
-    for (let i = 0; i < source.numFeatures; i++) {
-      const startBp = source.featurePositions[i * 2]! + regionStart
-      const endBp = source.featurePositions[i * 2 + 1]! + regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const scoreY = scoreToY(source.featureScores[i]!) + rowTop
-      const prevScore =
-        i === 0 ? source.featureScores[i]! : source.featureScores[i - 1]!
-      const prevY = scoreToY(prevScore) + rowTop
-
-      ctx.moveTo(x1, prevY)
-      ctx.lineTo(x1, scoreY)
-      ctx.moveTo(x1, scoreY)
-      ctx.lineTo(x2, scoreY)
-    }
-
-    ctx.stroke()
-  }
-
-  private drawScatter(p: DrawParams) {
-    const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
-    const { rowTop, r, g, b } = p
-    ctx.fillStyle = `rgb(${r},${g},${b})`
-
-    const scoreToY = this.makeScoreToY(p)
-
-    for (let i = 0; i < source.numFeatures; i++) {
-      const startBp = source.featurePositions[i * 2]! + regionStart
-      const endBp = source.featurePositions[i * 2 + 1]! + regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const scoreY = scoreToY(source.featureScores[i]!) + rowTop
-      const w = Math.max(1.5, x2 - x1)
-
-      ctx.fillRect(x1, scoreY - 1, w, 2)
-    }
+    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    drawWiggleBlocks(this.ctx, this.regions, blocks, state)
   }
 
   pruneRegions(activeRegions: number[]) {
-    const active = new Set(activeRegions)
-    for (const regionNumber of this.regions.keys()) {
-      if (!active.has(regionNumber)) {
-        this.regions.delete(regionNumber)
-      }
-    }
+    pruneRegionMap(this.regions, activeRegions)
   }
 
   dispose() {
     this.regions.clear()
+  }
+
+  // Expose for headless callers (SVG export) that need to drive
+  // drawWiggleBlocks with an SvgCanvas after running upload methods.
+  getRegions(): ReadonlyMap<number, Canvas2DRegionData> {
+    return this.regions
   }
 }

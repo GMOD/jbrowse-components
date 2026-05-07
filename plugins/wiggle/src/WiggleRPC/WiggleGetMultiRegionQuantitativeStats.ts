@@ -1,23 +1,24 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
+import type { WiggleGetMultiRegionQuantitativeStatsArgs } from './types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { RectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    WiggleGetMultiRegionQuantitativeStats: {
+      args: WiggleGetMultiRegionQuantitativeStatsArgs
+      return: RectifiedQuantitativeStats
+    }
+  }
+}
 
 export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'WiggleGetMultiRegionQuantitativeStats'
 
   async execute(
-    args: {
-      adapterConfig: Record<string, unknown>
-      stopToken?: StopToken
-      sessionId: string
-      trackInstanceId: string
-      headers?: Record<string, string>
-      regions: Region[]
-      bpPerPx: number
-    },
+    args: WiggleGetMultiRegionQuantitativeStatsArgs,
     rpcDriverClassName: string,
   ) {
     const pm = this.pluginManager
@@ -27,10 +28,8 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFilt
     )
     const { regions, adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    const featureAdapter = dataAdapter as BaseFeatureDataAdapter
-    return featureAdapter.getMultiRegionQuantitativeStats(
-      regions,
-      deserializedArgs,
-    )
+    return (
+      dataAdapter as BaseFeatureDataAdapter
+    ).getMultiRegionQuantitativeStats(regions, deserializedArgs)
   }
 }

@@ -48,7 +48,7 @@ margin: 0
 
 ```js
 // type signature
-IArrayType<IType<any, any, any>>
+IArrayType<IType<PluginDefinition & { name: string; }, PluginDefinition & { name: string; }, PluginDefinition & { name: string; }>>
 // code
 sessionPlugins: types.array(
         types.frozen<PluginDefinition & { name: string }>(),
@@ -61,7 +61,7 @@ sessionPlugins: types.array(
 
 ```js
 // type
-AnyConfigurationModel[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 #### getter: root
@@ -79,7 +79,7 @@ dropdown
 
 ```js
 // type
-any[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...> & { ...; })[]
 ```
 
 #### getter: connections
@@ -88,7 +88,7 @@ list of config connections and session connections
 
 ```js
 // type
-BaseConnectionConfigModel[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 #### getter: assemblyNames
@@ -127,7 +127,7 @@ TextSearchManager
 
 ```js
 // type
-AssemblyManager
+{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefi...
 ```
 
 #### getter: savedSessionMetadata
@@ -158,7 +158,7 @@ any
 ```js
 // type signature
 renderProps: () => {
-  theme: any
+  theme: Theme
   highResolutionScaling: any
 }
 ```
@@ -169,7 +169,7 @@ raw track actions (Settings, Copy, Delete) without submenu wrapper
 
 ```js
 // type signature
-getTrackActions: (config: BaseTrackConfig) => MenuItem[]
+getTrackActions: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => MenuItem[]
 ```
 
 #### method: getTrackListMenuItems
@@ -178,14 +178,14 @@ flattened menu items for use in hierarchical track selector
 
 ```js
 // type signature
-getTrackListMenuItems: (config: BaseTrackConfig) => MenuItem[]
+getTrackListMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => MenuItem[]
 ```
 
 #### method: getTrackActionMenuItems
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: BaseTrackConfig, extraTrackActions?: MenuItem[]) => MenuItem[]
+getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, extraTrackActions?: MenuItem[] | undefined) => MenuItem[]
 ```
 
 #### method: menus
@@ -215,7 +215,7 @@ addAssemblyConf: (conf: AnyConfiguration) => void
 
 ```js
 // type signature
-addSessionPlugin: (plugin: any) => void
+addSessionPlugin: (plugin: PluginDefinition & { name: string; }) => void
 ```
 
 #### action: removeSessionPlugin
@@ -229,7 +229,7 @@ removeSessionPlugin: (pluginDefinition: PluginDefinition) => void
 
 ```js
 // type signature
-addSavedSession: (sessionSnapshot: unknown) => any
+addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ drawerPosition: IOptionalIType<ISimpleType<string>, [undefined]>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; widgets: IMapType<...>; activeWidgets: IMapType<...>; minimized: IOptionalIType<...>; } & ... 9 more ... & { ...; }>>) => any
 ```
 
 #### action: deleteSavedSession
@@ -299,12 +299,12 @@ loadAutosaveSession: () => any
 
 ```js
 // type signature
-setSession: (sessionSnapshot: unknown) => any
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ drawerPosition: IOptionalIType<ISimpleType<string>, [undefined]>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; widgets: IMapType<...>; activeWidgets: IMapType<...>; minimized: IOptionalIType<...>; } & ... 9 more ... & { ...; }>>) => any
 ```
 
 #### action: editTrackConfiguration
 
 ```js
 // type signature
-editTrackConfiguration: (configuration: any) => void
+editTrackConfiguration: (configuration: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) | { ...; }) => void
 ```

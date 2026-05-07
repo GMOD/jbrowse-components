@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
@@ -19,6 +19,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
 import type { ReducedModel } from './types.ts'
@@ -53,9 +54,15 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
         setRet(undefined)
         setLoading(true)
         const view = getContainingView(model) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
         const { dynamicBlocks, bpPerPx } = view
         const { rpcManager } = getSession(model)
         const { sourcesWithoutLayout, adapterConfig } = model
+        if (!sourcesWithoutLayout?.length) {
+          return
+        }
         const sessionId = getRpcSessionId(model)
         const ret = await rpcManager.call(
           sessionId,
@@ -116,8 +123,7 @@ cat(resultClusters$order,sep='\n')`
               <Button
                 variant="contained"
                 onClick={async () => {
-                  // eslint-disable-next-line @typescript-eslint/no-deprecated
-                  const { saveAs } = await import('file-saver-es')
+                  const { saveAs } = await import('@jbrowse/core/util')
 
                   saveAs(
                     new Blob([results || ''], {
@@ -133,8 +139,7 @@ cat(resultClusters$order,sep='\n')`
               <Button
                 variant="contained"
                 onClick={async () => {
-                  const { default: copy } = await import('copy-to-clipboard')
-                  copy(results || '')
+                  await copy(results || '')
                 }}
               >
                 Copy Rscript to clipboard
@@ -143,8 +148,7 @@ cat(resultClusters$order,sep='\n')`
               <Button
                 variant="contained"
                 onClick={async () => {
-                  // eslint-disable-next-line @typescript-eslint/no-deprecated
-                  const { saveAs } = await import('file-saver-es')
+                  const { saveAs } = await import('@jbrowse/core/util')
 
                   saveAs(
                     new Blob([resultsTsv || ''], {
@@ -213,7 +217,7 @@ cat(resultClusters$order,sep='\n')`
             ) : loading ? (
               <LoadingEllipses variant="h6" message="Generating score matrix" />
             ) : error ? (
-              <ErrorMessage error={error} />
+              <ErrorBanner error={error} />
             ) : null}
           </div>
 

@@ -5,23 +5,31 @@ import { indexTracks } from '@jbrowse/text-indexing'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Track, indexType } from '@jbrowse/text-indexing'
 
+interface TextIndexRpcMethodArgs {
+  sessionId: string
+  stopToken?: StopToken
+  outLocation?: string
+  attributes?: string[]
+  exclude?: string[]
+  assemblies?: string[]
+  indexType?: indexType
+  tracks: Track[]
+  statusCallback: (message: string) => void
+}
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    TextIndexRpcMethod: {
+      args: TextIndexRpcMethodArgs
+      return: undefined
+    }
+  }
+}
+
 export class TextIndexRpcMethod extends RpcMethodType {
   name = 'TextIndexRpcMethod'
 
-  async execute(
-    args: {
-      sessionId: string
-      stopToken?: StopToken
-      outLocation?: string
-      attributes?: string[]
-      exclude?: string[]
-      assemblies?: string[]
-      indexType?: indexType
-      tracks: Track[]
-      statusCallback: (message: string) => void
-    },
-    _rpcDriverClassName: string,
-  ) {
+  async execute(args: TextIndexRpcMethodArgs, _rpcDriverClassName: string) {
     const {
       tracks,
       outLocation,

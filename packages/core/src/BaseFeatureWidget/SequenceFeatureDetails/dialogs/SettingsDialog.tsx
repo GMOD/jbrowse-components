@@ -16,7 +16,6 @@ import {
 import { observer } from 'mobx-react'
 
 import type { SequenceFeatureDetailsModel } from '../model.ts'
-import type { TextFieldProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
   formElt: {
@@ -30,22 +29,6 @@ const useStyles = makeStyles()(theme => ({
     padding: 4,
   },
 }))
-
-function TextField2(props: TextFieldProps) {
-  return (
-    <div>
-      <TextField {...props} />
-    </div>
-  )
-}
-
-function FormControl2({ children }: { children: React.ReactNode }) {
-  return (
-    <div>
-      <FormControl>{children}</FormControl>
-    </div>
-  )
-}
 
 const SequenceFeatureSettingsDialog = observer(
   function SequenceFeatureSettingsDialog({
@@ -71,46 +54,52 @@ const SequenceFeatureSettingsDialog = observer(
         title="Feature sequence settings"
       >
         <DialogContent className={classes.dialogContent}>
-          <TextField2
-            label="Number of intronic bases around splice site to display"
-            className={classes.formElt}
-            value={intronBp}
-            helperText={!intronBpValid ? 'Not a number' : ''}
-            error={!intronBpValid}
-            onChange={event => {
-              setIntronBp(event.target.value)
-            }}
-          />
-          <TextField2
-            label="Number of bases up/down stream of feature to display"
-            className={classes.formElt}
-            value={upDownBp}
-            helperText={!upDownBpValid ? 'Not a number' : ''}
-            error={!upDownBpValid}
-            onChange={event => {
-              setUpDownBp(event.target.value)
-            }}
-          />
-          <FormControl2>
-            <FormLabel>Sequence capitalization</FormLabel>
-            <RadioGroup
-              value={upperCaseCDS ? 'cds' : 'unchanged'}
-              onChange={e => {
-                model.setUpperCaseCDS(e.target.value === 'cds')
+          <div>
+            <TextField
+              label="Number of intronic bases around splice site to display"
+              className={classes.formElt}
+              value={intronBp}
+              helperText={!intronBpValid ? 'Not a number' : ''}
+              error={!intronBpValid}
+              onChange={event => {
+                setIntronBp(event.target.value)
               }}
-            >
-              <FormControlLabel
-                value="cds"
-                control={<Radio className={classes.root} size="small" />}
-                label="Capitalize CDS and lower case everything else"
-              />
-              <FormControlLabel
-                value="unchanged"
-                control={<Radio className={classes.root} size="small" />}
-                label="Capitalization from reference genome sequence"
-              />
-            </RadioGroup>
-          </FormControl2>
+            />
+          </div>
+          <div>
+            <TextField
+              label="Number of bases up/down stream of feature to display"
+              className={classes.formElt}
+              value={upDownBp}
+              helperText={!upDownBpValid ? 'Not a number' : ''}
+              error={!upDownBpValid}
+              onChange={event => {
+                setUpDownBp(event.target.value)
+              }}
+            />
+          </div>
+          <div>
+            <FormControl>
+              <FormLabel>Sequence capitalization</FormLabel>
+              <RadioGroup
+                value={upperCaseCDS ? 'cds' : 'unchanged'}
+                onChange={e => {
+                  model.setUpperCaseCDS(e.target.value === 'cds')
+                }}
+              >
+                <FormControlLabel
+                  value="cds"
+                  control={<Radio className={classes.root} size="small" />}
+                  label="Capitalize CDS and lower case everything else"
+                />
+                <FormControlLabel
+                  value="unchanged"
+                  control={<Radio className={classes.root} size="small" />}
+                  label="Capitalization from reference genome sequence"
+                />
+              </RadioGroup>
+            </FormControl>
+          </div>
         </DialogContent>
 
         <DialogActions>

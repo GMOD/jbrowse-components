@@ -4,10 +4,9 @@ import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import { autorun, reaction } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 import type { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
@@ -129,9 +128,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        */
       get features() {
         return (
-          structuredClone(self.spreadsheetView.spreadsheet?.visibleRows)
+          self.spreadsheetView.spreadsheet?.visibleRows
             ?.map(row => row.feature)
-            .filter(f => !!f) || []
+            .filter(f => !!f) ?? []
         )
       },
       /**
@@ -159,6 +158,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           ),
         ]
       },
+      /**
+       * #getter
+       */
       get currentAssembly() {
         const { assemblyManager } = getSession(self)
         return this.assemblyName
@@ -220,12 +222,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setDisplayedRegions(regions: Region[]) {
-        self.circularView.setDisplayedRegions(regions)
-      },
-      /**
-       * #action
-       */
       setOnlyDisplayRelevantRegionsInCircularView(val: boolean) {
         self.onlyDisplayRelevantRegionsInCircularView = val
       },
@@ -263,42 +259,13 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         return newHeight - oldHeight
       },
       afterAttach() {
-        // Init autorun for initializing from session snapshot
         addDisposer(
           self,
           autorun(
-            async function svInspectorViewInitAutorun() {
-              const { init, width } = self
-              if (!width || !init) {
-                return
-              }
-
-              const session = getSession(self)
-
-              try {
-                const exts = init.uri.split('.')
-                let ext = exts.pop()?.toUpperCase()
-                if (ext === 'GZ') {
-                  ext = exts.pop()?.toUpperCase()
-                }
-
-                self.spreadsheetView.importWizard.setFileType(
-                  init.fileType || ext || '',
-                )
-                self.spreadsheetView.importWizard.setSelectedAssemblyName(
-                  init.assembly,
-                )
-                self.spreadsheetView.importWizard.setFileSource({
-                  uri: init.uri,
-                  locationType: 'UriLocation',
-                })
-                await self.spreadsheetView.importWizard.import(init.assembly)
-
-                // Clear init state
-                self.setInit(undefined)
-              } catch (e) {
-                console.error(e)
-                session.notifyError(`${e}`, e)
+            () => {
+              const { init } = self
+              if (init) {
+                self.spreadsheetView.setInit(init)
                 self.setInit(undefined)
               }
             },
@@ -345,18 +312,16 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(
-            async () => {
+            () => {
               const {
                 onlyDisplayRelevantRegionsInCircularView,
                 circularView,
                 canonicalFeatureRefNameSet,
                 currentAssembly,
               } = self
-              if (!circularView.initialized || !currentAssembly?.regions) {
-                return
-              } else if (onlyDisplayRelevantRegionsInCircularView) {
-                if (circularView.tracks.length === 1) {
-                  try {
+              if (circularView.initialized && currentAssembly?.regions) {
+                if (onlyDisplayRelevantRegionsInCircularView) {
+                  if (circularView.tracks.length === 1) {
                     circularView.setDisplayedRegions(
                       structuredClone(
                         currentAssembly.regions.filter(r =>
@@ -364,13 +329,12 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                         ),
                       ),
                     )
-                  } catch (e) {
-                    console.error(e)
-                    getSession(self).notifyError(`${e}`, e)
                   }
+                } else {
+                  circularView.setDisplayedRegions(
+                    structuredClone(currentAssembly.regions),
+                  )
                 }
-              } else {
-                circularView.setDisplayedRegions(currentAssembly.regions)
               }
             },
             { name: 'SvInspectorView displayed regions bind' },
@@ -380,42 +344,33 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         // bind circularview tracks to our track snapshot view
         addDisposer(
           self,
-          reaction(
-            () => ({
-              generatedTrackConf: self.featuresCircularTrackConfiguration,
-              assemblyName: self.assemblyName,
-            }),
-            data => {
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-              if (!data) {
-                return
-              }
-              const { assemblyName, generatedTrackConf } = data
-              const { circularView } = self
-              // hide any visible tracks
-              for (const t of circularView.tracks) {
-                circularView.hideTrack(t.configuration.trackId)
-              }
-
-              // put our track in as the only track
+          autorun(
+            () => {
+              const {
+                featuresCircularTrackConfiguration: generatedTrackConf,
+                assemblyName,
+                circularView,
+                id,
+              } = self
+              // hideTrack reads circularView.tracks internally; avoid tracking
+              // that dependency to prevent re-triggering on our own track changes
+              untracked(() => {
+                circularView.hideTrack(`sv-inspector-variant-track-${id}`)
+              })
               if (assemblyName) {
                 // @ts-expect-error
-                circularView.addTrackConf(generatedTrackConf, {
-                  assemblyName,
-                })
+                circularView.addTrackConf(generatedTrackConf, { assemblyName })
               }
             },
-            {
-              name: 'SvInspectorView track configuration binding',
-              fireImmediately: true,
-            },
+            { name: 'SvInspectorView track configuration binding' },
           ),
         )
       },
     }))
     .postProcessSnapshot(snap => {
+      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524
       const { init, circularView, ...rest } = snap as Omit<typeof snap, symbol>
-      return rest as Omit<typeof rest, symbol>
+      return rest
     })
 }
 

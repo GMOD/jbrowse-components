@@ -33,7 +33,6 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
 afterEach(() => {
   localStorage.clear()
   sessionStorage.clear()
-  // @ts-expect-error
   delete window.JBrowseRootModel
 })
 
@@ -55,7 +54,6 @@ test('Loader.tsx reloadPluginManagerCallback restores session correctly', async 
   await findByText('Help', {}, delay)
 
   // Access the rootModel exposed by JBrowse.tsx
-  // @ts-expect-error
   const rootModel = window.JBrowseRootModel as WebRootModel
 
   expect(rootModel).toBeDefined()
@@ -80,7 +78,6 @@ test('Loader.tsx reloadPluginManagerCallback restores session correctly', async 
   // Wait for the new session to be created
   await waitFor(
     () => {
-      // @ts-expect-error
       const newRootModel = window.JBrowseRootModel as WebRootModel
       // The rootModel reference changes after reload
       expect(newRootModel).toBeDefined()

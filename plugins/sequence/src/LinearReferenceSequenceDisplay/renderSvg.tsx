@@ -1,16 +1,18 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
+  codonTable,
   complement,
-  defaultStarts,
-  defaultStops,
   getContainingView,
   revcom,
 } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 import {
   buildColorPalette,
   buildSequenceGeometry,
-  codonTable,
+  frameShiftBounds,
+  startsSet,
+  stopsSet,
 } from './components/sequenceGeometry.ts'
 
 import type { SequenceRegionData } from './model.ts'
@@ -34,6 +36,7 @@ interface SequenceDisplayModel {
 }
 
 function renderRects(
+  ctx: SvgCanvas,
   rectBuf: Float32Array,
   colorBuf: Uint8Array,
   instanceCount: number,
@@ -41,7 +44,6 @@ function renderRects(
   bpPerPx: number,
   showBorders: boolean,
 ) {
-  let content = ''
   for (let i = 0; i < instanceCount; i++) {
     const xBpLocal = rectBuf[i * 4]!
     const yPx = rectBuf[i * 4 + 1]!
@@ -55,16 +57,18 @@ function renderRects(
     const b = colorBuf[i * 4 + 2]!
     const hasBorder = colorBuf[i * 4 + 3] === 255
 
-    content += `<rect x="${x}" y="${yPx}" width="${w}" height="${hPx}" fill="rgb(${r},${g},${b})"`
+    ctx.fillStyle = `rgb(${r},${g},${b})`
+    ctx.fillRect(x, yPx, w, hPx)
     if (showBorders && hasBorder) {
-      content += ` stroke="rgb(85,85,85)" stroke-width="1"`
+      ctx.strokeStyle = 'rgb(85,85,85)'
+      ctx.lineWidth = 1
+      ctx.strokeRect(x, yPx, w, hPx)
     }
-    content += `/>`
   }
-  return content
 }
 
 function renderBaseLetters(
+  ctx: SvgCanvas,
   seq: string,
   seqStart: number,
   y: number,
@@ -73,24 +77,26 @@ function renderBaseLetters(
   offsetPx: number,
   baseColors: Map<string, readonly [number, number, number]>,
 ) {
-  let content = ''
   const w = 1 / bpPerPx
   const fontSize = rowHeight - 2
+  ctx.font = `${fontSize}px monospace`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
 
-  for (const [i, letter] of seq.split('').entries()) {
+  for (let i = 0; i < seq.length; i++) {
+    const letter = seq[i]!
     const x = (seqStart + i) / bpPerPx - offsetPx
     const cx = x + w / 2
     const cy = y + rowHeight / 2
     const rgb = baseColors.get(letter.toUpperCase())
     const lum = rgb ? (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000 : 255
-    const fill = lum < 128 ? '#fff' : '#000'
-
-    content += `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" font-family="monospace" fill="${fill}">${letter}</text>`
+    ctx.fillStyle = lum < 128 ? '#fff' : '#000'
+    ctx.fillText(letter, cx, cy)
   }
-  return content
 }
 
 function renderTranslationLetters(
+  ctx: SvgCanvas,
   seq: string,
   seqStart: number,
   frame: Frame,
@@ -102,17 +108,13 @@ function renderTranslationLetters(
   startCodonContrastColor: string,
   stopCodonContrastColor: string,
 ) {
-  let content = ''
-  const normalizedFrame = Math.abs(frame) - 1
-  const seqFrame = seqStart % 3
-  const frameShift = (normalizedFrame - seqFrame + 3) % 3
-  const frameShiftAdjustedSeqLength = seq.length - frameShift
-  const multipleOfThreeLength =
-    frameShiftAdjustedSeqLength - (frameShiftAdjustedSeqLength % 3)
-  const sliceEnd = frameShift + multipleOfThreeLength
+  const { frameShift, sliceEnd } = frameShiftBounds(seq, seqStart, frame)
 
   const codonWidth = 3 / bpPerPx
   const fontSize = rowHeight - 2
+  ctx.font = `${fontSize}px monospace`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
 
   for (let i = frameShift; i < sliceEnd; i += 3) {
     const codon = seq.slice(i, i + 3)
@@ -124,17 +126,15 @@ function renderTranslationLetters(
     const cx = x + codonWidth / 2
     const cy = y + rowHeight / 2
 
-    const isStart = defaultStarts.includes(upperCodon)
-    const isStop = defaultStops.includes(upperCodon)
-    const fill = isStart
+    const isStart = startsSet.has(upperCodon)
+    const isStop = stopsSet.has(upperCodon)
+    ctx.fillStyle = isStart
       ? startCodonContrastColor
       : isStop
         ? stopCodonContrastColor
         : '#000'
-
-    content += `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" font-family="monospace" fill="${fill}">${letter}</text>`
+    ctx.fillText(letter, cx, cy)
   }
-  return content
 }
 
 export async function renderSvg(
@@ -160,7 +160,6 @@ export async function renderSvg(
   } = model
 
   const showBorders = 1 / bpPerPx >= 12
-  const showLetters = 1 / bpPerPx >= 12
   const isDna = sequenceType === 'dna'
 
   const settings = {
@@ -169,7 +168,6 @@ export async function renderSvg(
     showTranslation: showTranslationActual,
     sequenceType,
     rowHeight,
-    colorByCDS: false,
     showBorders,
   }
 
@@ -185,10 +183,15 @@ export async function renderSvg(
     theme.palette.stopCodon,
   )
 
-  let rectContent = ''
-  let textContent = ''
+  const rectCtx = new SvgCanvas()
+  const textCtx = new SvgCanvas()
 
-  const baseBp = Math.min(...[...sequenceData.values()].map(d => d.start))
+  let baseBp = Infinity
+  for (const d of sequenceData.values()) {
+    if (d.start < baseBp) {
+      baseBp = d.start
+    }
+  }
 
   for (const [regionNum, data] of sequenceData) {
     const reversed = view.displayedRegions[regionNum]?.reversed ?? false
@@ -201,7 +204,8 @@ export async function renderSvg(
     )
     const basePx = baseBp / bpPerPx - offsetPx
 
-    rectContent += renderRects(
+    renderRects(
+      rectCtx,
       geom.rectBuf,
       geom.colorBuf,
       geom.instanceCount,
@@ -210,7 +214,7 @@ export async function renderSvg(
       showBorders,
     )
 
-    if (showLetters) {
+    if (showBorders) {
       const [topFrames, bottomFrames] = reversed
         ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
         : [forwardFrames, reverseFrames]
@@ -218,7 +222,8 @@ export async function renderSvg(
       let currentY = 0
 
       for (const frame of topFrames) {
-        textContent += renderTranslationLetters(
+        renderTranslationLetters(
+          textCtx,
           data.seq,
           data.start,
           frame,
@@ -235,7 +240,8 @@ export async function renderSvg(
 
       if (showForwardActual) {
         const fwdSeq = reversed ? complement(data.seq) : data.seq
-        textContent += renderBaseLetters(
+        renderBaseLetters(
+          textCtx,
           fwdSeq,
           data.start,
           currentY,
@@ -249,7 +255,8 @@ export async function renderSvg(
 
       if (showReverseActual && isDna) {
         const revSeq = reversed ? data.seq : complement(data.seq)
-        textContent += renderBaseLetters(
+        renderBaseLetters(
+          textCtx,
           revSeq,
           data.start,
           currentY,
@@ -262,7 +269,8 @@ export async function renderSvg(
       }
 
       for (const frame of bottomFrames) {
-        textContent += renderTranslationLetters(
+        renderTranslationLetters(
+          textCtx,
           data.seq,
           data.start,
           frame,
@@ -288,8 +296,8 @@ export async function renderSvg(
         </clipPath>
       </defs>
       <g clipPath={`url(#${clipId})`}>
-        <g dangerouslySetInnerHTML={{ __html: rectContent }} />
-        <g dangerouslySetInnerHTML={{ __html: textContent }} />
+        <g dangerouslySetInnerHTML={{ __html: rectCtx.getSerializedSvg() }} />
+        <g dangerouslySetInnerHTML={{ __html: textCtx.getSerializedSvg() }} />
       </g>
     </g>
   )

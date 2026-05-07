@@ -29,7 +29,7 @@ everything will use it.
 
 ```js
 // type signature
-any
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
@@ -72,7 +72,7 @@ any
 
 ```js
 // type
-any
+RpcManager
 ```
 
 #### getter: configuration
@@ -93,14 +93,14 @@ boolean
 
 ```js
 // type
-any
+TextSearchManager
 ```
 
 #### getter: assemblies
 
 ```js
 // type
-any[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 ### BaseSessionModel - Actions

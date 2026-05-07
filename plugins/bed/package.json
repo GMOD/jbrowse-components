@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-bed",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "keywords": [
@@ -22,21 +22,21 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/bed",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/bed",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^2.0.3",
     "@gmod/bbi": "^9.0.9",
-    "@gmod/bed": "^2.1.10",
-    "@gmod/tabix": "^3.3.1",
+    "@gmod/bed": "^2.2.1",
+    "@gmod/tabix": "^3.3.3",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.6.0",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "rxjs": "^7.8.2"
   },
   "publishConfig": {

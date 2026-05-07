@@ -1,4 +1,8 @@
 import {
+  RENDERING_TYPE_DENSITY,
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_SCATTER,
+  RENDERING_TYPE_XYPLOT,
   getRowHeight,
   getRowTop,
   isOverlayMode,
@@ -6,12 +10,6 @@ import {
   makeWhiskersSourceData,
   renderingTypeToInt,
 } from './wiggleComponentUtils.ts'
-import {
-  RENDERING_TYPE_DENSITY,
-  RENDERING_TYPE_LINE,
-  RENDERING_TYPE_SCATTER,
-  RENDERING_TYPE_XYPLOT,
-} from './wiggleShader.ts'
 
 describe('isOverlayMode', () => {
   test('overlay types return true', () => {
@@ -46,7 +44,14 @@ describe('isScatterMode', () => {
 })
 
 describe('renderingTypeToInt', () => {
-  test('all variants map to same int', () => {
+  test('single-wiggle variants map correctly', () => {
+    expect(renderingTypeToInt('xyplot')).toBe(RENDERING_TYPE_XYPLOT)
+    expect(renderingTypeToInt('density')).toBe(RENDERING_TYPE_DENSITY)
+    expect(renderingTypeToInt('line')).toBe(RENDERING_TYPE_LINE)
+    expect(renderingTypeToInt('scatter')).toBe(RENDERING_TYPE_SCATTER)
+  })
+
+  test('multi-wiggle variants map to same int', () => {
     expect(renderingTypeToInt('multirowxy')).toBe(RENDERING_TYPE_XYPLOT)
     expect(renderingTypeToInt('multixyplot')).toBe(RENDERING_TYPE_XYPLOT)
     expect(renderingTypeToInt('multirowline')).toBe(RENDERING_TYPE_LINE)
@@ -56,8 +61,10 @@ describe('renderingTypeToInt', () => {
     expect(renderingTypeToInt('multirowdensity')).toBe(RENDERING_TYPE_DENSITY)
   })
 
-  test('unknown types default to xyplot', () => {
-    expect(renderingTypeToInt('unknown')).toBe(RENDERING_TYPE_XYPLOT)
+  test('unknown types throw', () => {
+    expect(() => renderingTypeToInt('unknown')).toThrow(
+      /Unknown wiggle rendering type/,
+    )
   })
 })
 

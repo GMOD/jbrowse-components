@@ -57,13 +57,10 @@ export async function run(args?: string[]) {
 
   const config: Config = await readJsonFile(target)
 
-  const originalLength = config.tracks?.length || 0
-  config.tracks = config.tracks?.filter(
-    ({ trackId: id }: { trackId: string }) => id !== trackId,
-  )
-  const newLength = config.tracks?.length || 0
+  const trackExists = config.tracks?.some(({ trackId: id }) => id === trackId)
+  config.tracks = config.tracks?.filter(({ trackId: id }) => id !== trackId)
 
-  if (originalLength === newLength) {
+  if (!trackExists) {
     console.log(`No track found with trackId: ${trackId}`)
   } else {
     await writeJsonFile(target, config)

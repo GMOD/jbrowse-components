@@ -2,7 +2,7 @@
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
@@ -49,7 +49,7 @@ function FlipButton({ state }: { state: ViewState }) {
       >
         Horizontally flip
       </button>
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
     </div>
   )
 }

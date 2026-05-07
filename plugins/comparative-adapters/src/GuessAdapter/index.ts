@@ -25,7 +25,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
       ) => {
         const fileName = getFileName(file)
         const indexName = index && getFileName(index)
-        if (testAdapter(fileName, /\.paf(.gz)?/i, adapterHint, 'PAFAdapter')) {
+        if (testAdapter(fileName, /\.paf(.gz)?$/i, adapterHint, 'PAFAdapter')) {
           return {
             type: 'PAFAdapter',
             pafLocation: file,
@@ -38,7 +38,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
         } else if (
           testAdapter(
             fileName,
-            /\.anchors.simple(.gz)?/i,
+            /\.anchors\.simple(.gz)?$/i,
             adapterHint,
             'MCScanSimpleAnchorsAdapter',
           )
@@ -50,7 +50,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
         } else if (
           testAdapter(
             fileName,
-            /\.anchors(.gz)?/i,
+            /\.anchors(.gz)?$/i,
             adapterHint,
             'MCScanAnchorsAdapter',
           )
@@ -60,21 +60,21 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
             mcscanAnchorsLocation: file,
           }
         } else if (
-          testAdapter(fileName, /\.delta(.gz)?/i, adapterHint, 'DeltaAdapter')
+          testAdapter(fileName, /\.delta(.gz)?$/i, adapterHint, 'DeltaAdapter')
         ) {
           return {
             type: 'DeltaAdapter',
             deltaLocation: file,
           }
         } else if (
-          testAdapter(fileName, /\.chain(.gz)?/i, adapterHint, 'ChainAdapter')
+          testAdapter(fileName, /\.chain(.gz)?$/i, adapterHint, 'ChainAdapter')
         ) {
           return {
             type: 'ChainAdapter',
             chainLocation: file,
           }
         } else if (
-          testAdapter(fileName, /\.out(.gz)?/i, adapterHint, 'MashMapAdapter')
+          testAdapter(fileName, /\.out(.gz)?$/i, adapterHint, 'MashMapAdapter')
         ) {
           return {
             type: 'MashMapAdapter',
@@ -83,7 +83,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
         } else if (
           testAdapter(
             fileName,
-            /\.pif\.gz/i,
+            /\.pif\.gz$/i,
             adapterHint,
             'PairwiseIndexedPAFAdapter',
           )
@@ -92,7 +92,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
             type: 'PairwiseIndexedPAFAdapter',
             pifGzLocation: file,
             index: {
-              location: index || makeIndex(file, '.tbi'),
+              location: index ?? makeIndex(file, '.tbi'),
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
             },
           }

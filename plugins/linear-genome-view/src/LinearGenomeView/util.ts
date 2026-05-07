@@ -1,7 +1,7 @@
 import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 /**
  * Expand a region by a grow factor, adding padding on each side.
@@ -99,10 +99,10 @@ export function makeTicks(
   ) {
     if (emitMinor && base % (gridPitch.majorPitch * 2)) {
       ticks.push({ type: 'minor', base: base - 1, index })
-      index += 1
+      index++
     } else if (emitMajor && !(base % (gridPitch.majorPitch * 2))) {
       ticks.push({ type: 'major', base: base - 1, index })
-      index += 1
+      index++
     }
   }
   return ticks
@@ -149,7 +149,7 @@ export async function generateLocations({
       if (!regions) {
         throw new Error(`regions not loaded yet for ${asmName}`)
       }
-      const canonicalRefName = asm.getCanonicalRefName(region.refName)
+      const canonicalRefName = asm.getCanonicalRefName(refName)
       if (!canonicalRefName) {
         throw new Error(`Could not find refName ${refName} in ${asm.name}`)
       }
@@ -164,7 +164,7 @@ export async function generateLocations({
           ? expandRegion(start, end, grow)
           : undefined
       return {
-        ...(region as Omit<typeof region, symbol>),
+        ...region,
         ...(expanded ? { start: expanded.start, end: expanded.end } : {}),
         assemblyName: asmName,
         parentRegion,
@@ -219,23 +219,22 @@ export function parseLocStrings(
   }
 }
 
-export function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
+export function calculateVisibleLocStrings(contentBlocks: ContentBlock[]) {
   if (!contentBlocks.length) {
     return ''
-  } else {
-    const isSingleAssemblyName = contentBlocks.every(
-      b => b.assemblyName === contentBlocks[0]!.assemblyName,
-    )
-    return contentBlocks
-      .map(block =>
-        assembleLocString({
-          refName: block.refName,
-          start: Math.round(block.start),
-          end: Math.round(block.end),
-          assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
-          reversed: block.reversed,
-        }),
-      )
-      .join(' ')
   }
+  const isSingleAssemblyName = contentBlocks.every(
+    b => b.assemblyName === contentBlocks[0]!.assemblyName,
+  )
+  return contentBlocks
+    .map(block =>
+      assembleLocString({
+        refName: block.refName,
+        start: Math.round(block.start),
+        end: Math.round(block.end),
+        assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+        reversed: block.reversed,
+      }),
+    )
+    .join(' ')
 }

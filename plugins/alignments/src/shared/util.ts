@@ -1,48 +1,10 @@
-import { SAM_FLAG_PAIRED } from './samFlags.ts'
-
-import type { ChainData } from './types.ts'
-import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
-
-/**
- * Check if ChainData contains paired-end reads
- * Note: This checks the data content, not the type.
- * For type-level checking, use hasPairedChainData() from fetchChains.ts
- */
-export function hasPairedReads(features: ChainData) {
-  for (const f of features.chains.values()) {
-    if (f[0]!.get('flags') & SAM_FLAG_PAIRED) {
-      return true
-    }
-  }
-  return false
-}
 
 export const defaultFilterFlags = {
   flagInclude: 0,
   flagExclude: 1540,
 }
 
-export function isDefaultFilterFlags(
-  filterBy:
-    | {
-        flagInclude?: number
-        flagExclude?: number
-        readName?: string
-        tagFilter?: unknown
-      }
-    | undefined,
-) {
-  if (!filterBy) {
-    return true
-  }
-  return (
-    filterBy.flagInclude === 0 &&
-    filterBy.flagExclude === 1540 &&
-    !filterBy.readName &&
-    !filterBy.tagFilter
-  )
-}
 export const negFlags = {
   flagInclude: 16,
   flagExclude: 1540,
@@ -135,7 +97,7 @@ export function parseSamHeader(samHeader: SamHeaderLine[]): ParsedSamHeader {
   return { idToName, nameToId, readGroups }
 }
 
-export function getColorBaseMap(theme: Theme) {
+function getColorBaseMap(theme: Theme) {
   const { skip, deletion, insertion, hardclip, softclip, bases } = theme.palette
   return {
     A: bases.A.main,
@@ -157,16 +119,6 @@ export function getContrastBaseMap(theme: Theme) {
       theme.palette.getContrastText(value),
     ]),
   )
-}
-
-export function shouldDrawSNPsMuted(type?: string) {
-  return ['methylation', 'modifications'].includes(type || '')
-}
-
-export interface LayoutFeature {
-  heightPx: number
-  topPx: number
-  feature: Feature
 }
 
 function isTypedArray(

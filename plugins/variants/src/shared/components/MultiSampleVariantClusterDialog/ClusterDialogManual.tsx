@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
@@ -76,8 +76,8 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
           'MultiSampleVariantGetGenotypeMatrix',
           {
             regions: view.dynamicBlocks.contentBlocks,
-            sources: sourcesWithoutLayout,
-            minorAlleleFrequencyFilter,
+            sources: sourcesWithoutLayout ?? [],
+            minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
             lengthCutoffFilter,
             sessionId,
             adapterConfig,
@@ -131,8 +131,7 @@ cat(resultClusters$order,sep='\n')`
               <Button
                 variant="contained"
                 onClick={async () => {
-                  // eslint-disable-next-line @typescript-eslint/no-deprecated
-                  const { saveAs } = await import('file-saver-es')
+                  const { saveAs } = await import('@jbrowse/core/util')
                   saveAs(
                     new Blob([results || ''], {
                       type: 'text/plain;charset=utf-8',
@@ -148,7 +147,7 @@ cat(resultClusters$order,sep='\n')`
                 variant="contained"
                 onClick={async () => {
                   const { default: copy } = await import('copy-to-clipboard')
-                  copy(results || '')
+                  await copy(results || '')
                 }}
               >
                 Copy Rscript to clipboard
@@ -157,8 +156,7 @@ cat(resultClusters$order,sep='\n')`
               <Button
                 variant="contained"
                 onClick={async () => {
-                  // eslint-disable-next-line @typescript-eslint/no-deprecated
-                  const { saveAs } = await import('file-saver-es')
+                  const { saveAs } = await import('@jbrowse/core/util')
                   saveAs(
                     new Blob([resultsTsv || ''], {
                       type: 'text/plain;charset=utf-8',
@@ -214,7 +212,7 @@ cat(resultClusters$order,sep='\n')`
                 message="Generating genotype matrix"
               />
             ) : error ? (
-              <ErrorMessage error={error} />
+              <ErrorBanner error={error} />
             ) : null}
           </div>
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   type SessionWithAddTracks,
   getContainingTrack,
@@ -199,7 +199,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         </TextField>
         {type === 'tag' ? (
           <>
-            <Typography color="textSecondary">
+            <Typography color="text.secondary">
               Examples: HP for haplotype, RG for read group, etc.
             </Typography>
 
@@ -221,7 +221,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
               }}
             />
             {error ? (
-              <ErrorMessage error={error} />
+              <ErrorBanner error={error} />
             ) : loading ? (
               <LoadingEllipses message="Loading unique tags" />
             ) : tagSet ? (
@@ -243,7 +243,9 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           autoFocus
           onClick={() => {
             const track = getContainingTrack(model)
-            const trackConf = isStateTreeNode(track.configuration)
+            const trackConf: Record<string, unknown> = isStateTreeNode(
+              track.configuration,
+            )
               ? structuredClone(getSnapshot(track.configuration))
               : track.configuration
             const session = getSession(model) as SessionWithAddTracks
@@ -251,7 +253,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
 
             if (type === 'tag' && tagSet) {
               createTagBasedTracks({
-                trackConf: trackConf as Record<string, unknown>,
+                trackConf,
                 tag,
                 tagSet,
                 session,
@@ -259,7 +261,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
               })
             } else if (type === 'strand') {
               createStrandBasedTracks({
-                trackConf: trackConf as Record<string, unknown>,
+                trackConf,
                 session,
                 view,
               })

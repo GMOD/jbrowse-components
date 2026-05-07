@@ -2,31 +2,22 @@ import { measureText } from '@jbrowse/core/util'
 
 import { readConfigValue } from './renderConfig.ts'
 import { truncateLabel } from './util.ts'
+import { LABEL_FONT_SIZE } from '../LinearBasicDisplay/components/sharedRendererConstants.ts'
 
-import type { RenderConfigContext } from './renderConfig.ts'
+import type { DisplayConfig } from './renderConfig.ts'
 import type { LabelItem } from './rpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
+const FEATURE_NAME_COLOR = 'black'
+const FEATURE_DESCRIPTION_COLOR = 'blue'
 
-const FLOATING_LABEL_FONT_SIZE = 11
-
-/**
- * Create floating labels for a top-level feature (gene, etc.)
- *
- * Labels are positioned relative to the feature's visual bottom.
- * relativeY = 0 means the label starts at the feature's bottom edge.
- */
 export function createFeatureFloatingLabels({
   feature,
-  configContext,
-  nameColor,
-  descriptionColor,
+  config,
   name: rawName,
   description: rawDescription,
 }: {
   feature: Feature
-  configContext: RenderConfigContext
-  nameColor: string
-  descriptionColor: string
+  config: DisplayConfig
   name: string
   description: string
 }) {
@@ -44,48 +35,35 @@ export function createFeatureFloatingLabels({
     nameLabel = {
       text: name,
       relativeY: currentY,
-      color: nameColor,
-      textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
+      color: FEATURE_NAME_COLOR,
+      textWidth: measureText(name, LABEL_FONT_SIZE),
     }
-    currentY += readConfigValue(
-      configContext.config,
-      ['labels', 'fontSize'],
-      feature,
-    )
+    currentY += readConfigValue<number>(config, ['labels', 'fontSize'], feature)
   }
 
   if (shouldShowDescription) {
     descriptionLabel = {
       text: description,
       relativeY: currentY,
-      color: descriptionColor,
-      textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
+      color: FEATURE_DESCRIPTION_COLOR,
+      textWidth: measureText(description, LABEL_FONT_SIZE),
     }
   }
 
   return { nameLabel, descriptionLabel }
 }
 
-/**
- * Create floating labels for a transcript subfeature
- *
- * For 'overlay' mode, labels are positioned at the top of the feature.
- * For 'below' mode, labels are positioned at the bottom.
- */
 export function createTranscriptFloatingLabel({
   displayLabel,
   featureHeight,
   subfeatureLabels,
-  color,
   parentFeatureId,
   tooltip,
 }: {
   displayLabel: string
   featureHeight: number
   subfeatureLabels: string
-  color: string
   parentFeatureId: string
-  subfeatureId: string
   tooltip: string
 }) {
   if (!displayLabel) {
@@ -101,8 +79,8 @@ export function createTranscriptFloatingLabel({
     subfeatureLabel: {
       text: truncatedName,
       relativeY,
-      color,
-      textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
+      color: FEATURE_NAME_COLOR,
+      textWidth: measureText(truncatedName, LABEL_FONT_SIZE),
       isOverlay,
       tooltip,
     },

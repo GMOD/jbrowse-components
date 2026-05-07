@@ -4,14 +4,12 @@ import { Menu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import BookmarkIcon from '@mui/icons-material/Bookmark'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model.ts'
-import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -46,7 +44,7 @@ const Highlight = observer(function Highlight({
   const { classes } = useStyles()
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
-  const session = getSession(model) as SessionWithWidgets
+  const session = getSession(model)
   const { assemblyManager } = session
 
   const dismissHighlight = () => {
@@ -122,22 +120,7 @@ const Highlight = observer(function Highlight({
               dismissHighlight()
             },
           },
-          {
-            label: 'Bookmark highlighted region',
-            icon: BookmarkIcon,
-            onClick: () => {
-              let bookmarkWidget = session.widgets.get('GridBookmark')
-              if (!bookmarkWidget) {
-                bookmarkWidget = session.addWidget(
-                  'GridBookmarkWidget',
-                  'GridBookmark',
-                )
-              }
-              // @ts-expect-error
-              bookmarkWidget.addBookmark(highlight as Region)
-              dismissHighlight()
-            },
-          },
+          ...model.highlightMenuItems(highlight),
         ]}
       />
     </div>

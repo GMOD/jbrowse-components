@@ -1,24 +1,19 @@
-import { lazy } from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
   DialogQueueSessionMixin,
   DrawerWidgetSessionMixin,
   ReferenceManagementSessionMixin,
+  TrackMenuSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
-import InfoIcon from '@mui/icons-material/Info'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-
-const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
 
 /**
  * #stateModel JBrowseReactCircularGenomeViewSessionModel
@@ -41,6 +36,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       DialogQueueSessionMixin(pluginManager),
       TracksManagerSessionMixin(pluginManager),
       ReferenceManagementSessionMixin(pluginManager),
+      TrackMenuSessionMixin(pluginManager),
       SnackbarModel(),
     )
     .props({
@@ -115,10 +111,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           throw new Error(`unknown view type ${typeName}`)
         }
 
-        self.view = {
+        self.view = cast({
           ...initialState,
           type: typeName,
-        }
+        })
         return self.view
       },
 
@@ -127,29 +123,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * does nothing
        */
       removeView() {},
-    }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      getTrackActionMenuItems(
-        config: any,
-        extraTrackActions?: MenuItem[],
-      ): MenuItem[] {
-        return [
-          {
-            label: 'About track',
-            onClick: () => {
-              self.queueDialog(doneCallback => [
-                AboutDialog,
-                { config, session: self, handleClose: doneCallback },
-              ])
-            },
-            icon: InfoIcon,
-          },
-          ...(extraTrackActions || []),
-        ]
-      },
     }))
 }
 

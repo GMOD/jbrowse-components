@@ -139,19 +139,18 @@ child
 You can see why we mentioned the grandparents above: for instance, the DAD A1
 and DAD A2 alleles come from the crossing over of his two copies of his
 chromosomes that he got from his parents, which then recombine into a single
-chromosome in his child!
+chromosome in his child
 
 ## Footnote
 
 The above procedure, particularly the final visualization with marked-up blocks,
-was done manually. It may be able to be improved in the future!
+was done manually. It may be able to be improved in the future
 
-Author note: I found it quite wonderful to see this type of visualization! Feel
+Author note: I found it quite wonderful to see this type of visualization. Feel
 free to let me know if I missed anything or if you have any other feedback
 
 Live link
 https://jbrowse.org/code/jb2/main/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-4gbEzsiqFe&password=Q2O2L
 
-<!-- Google slide
+Docs
 https://docs.google.com/presentation/d/1UqF7k4x6YJlBfSEQIMXY7HZCnSP3cUgm3kSyBkfaNY0/edit?usp=sharing
--->

@@ -48,6 +48,13 @@ import * as trackUtils from '../util/tracks.ts'
 import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
 import * as mstTypes from '../util/types/mst.ts'
 
+function makeLegacyMakeStyles() {
+  return (args: Parameters<ReturnType<typeof makeStyles>>[0]) => {
+    const useStyles = makeStyles()(args)
+    return () => useStyles().classes
+  }
+}
+
 const libs = {
   mobx,
   '@jbrowse/mobx-state-tree': mst,
@@ -64,7 +71,6 @@ const libs = {
     ...lazyMap(DataGridEntries),
   },
 
-  // special case so plugins can easily use @mui/icons-material; don't remove
   '@mui/material/utils': MUIUtils,
   '@material-ui/core/utils': MUIUtils,
   'tss-react': {
@@ -83,10 +89,7 @@ const libs = {
     useTheme,
     alpha,
 
-    makeStyles: (args: any) => {
-      const useStyles = makeStyles()(args)
-      return () => useStyles().classes
-    },
+    makeStyles: makeLegacyMakeStyles(),
   },
   '@mui/material': {
     ...lazyMap(Entries),
@@ -99,19 +102,11 @@ const libs = {
 
   '@mui/material/styles': {
     ...MUIStyles,
-
-    makeStyles: (args: any) => {
-      const useStyles = makeStyles()(args)
-      return () => useStyles().classes
-    },
+    makeStyles: makeLegacyMakeStyles(),
   },
   '@material-ui/core/styles': {
     ...MUIStyles,
-
-    makeStyles: (args: any) => {
-      const useStyles = makeStyles()(args)
-      return () => useStyles().classes
-    },
+    makeStyles: makeLegacyMakeStyles(),
   },
 
   // these are core in @mui/material, but used to be in @material-ui/lab

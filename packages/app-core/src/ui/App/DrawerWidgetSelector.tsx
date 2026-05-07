@@ -51,7 +51,10 @@ const DrawerWidgetSelector = observer(function DrawerWidgetSelector({
               </Typography>
             )
           }
-          const widgetType = pluginManager.getWidgetType(widget.type)!
+          const widgetType = pluginManager.getWidgetType(widget.type)
+          if (!widgetType) {
+            throw new Error(`unknown widget type ${widget.type}`)
+          }
           const { HeadingComponent, heading } = widgetType
           return HeadingComponent ? (
             <HeadingComponent model={widget} />
@@ -71,7 +74,10 @@ const DrawerWidgetSelector = observer(function DrawerWidgetSelector({
         }}
       >
         {[...activeWidgets.values()].map(widget => {
-          const widgetType = pluginManager.getWidgetType(widget.type)!
+          const widgetType = pluginManager.getWidgetType(widget.type)
+          if (!widgetType) {
+            throw new Error(`unknown widget type ${widget.type}`)
+          }
           const { HeadingComponent, heading } = widgetType
           return (
             <MenuItem

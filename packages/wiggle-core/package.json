@@ -1,0 +1,53 @@
+{
+  "name": "@jbrowse/wiggle-core",
+  "version": "4.1.14",
+  "type": "module",
+  "description": "Shared scale and autoscale utilities for wiggle and coverage displays",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "wiggle",
+    "scale"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/wiggle-core"
+  },
+  "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "files": [
+    "esm"
+  ],
+  "scripts": {
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
+    "build": "pnpm build:esm",
+    "test": "cd ../..; jest --passWithNoTests packages/wiggle-core",
+    "clean": "rimraf esm *.tsbuildinfo",
+    "prebuild": "pnpm clean",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@mui/material": "^9.0.0",
+    "@mui/x-charts-vendor": "^8.26.0",
+    "mobx-react": "^9.2.1"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      }
+    }
+  },
+  "sideEffects": false
+}

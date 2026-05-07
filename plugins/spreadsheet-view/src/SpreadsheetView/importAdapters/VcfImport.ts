@@ -24,7 +24,7 @@ export function parseVcfBuffer(buffer: Uint8Array) {
           keys.add(k)
           const v = val.trim()
           return [k, isNumber(v) ? +v : v]
-        }) || [],
+        }) ?? [],
     )
     rows.push({
       // what is displayed

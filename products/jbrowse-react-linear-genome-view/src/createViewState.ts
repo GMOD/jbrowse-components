@@ -112,7 +112,7 @@ export default function createViewState(opts: ViewStateOptions) {
                   ...p,
                   start,
                   end,
-                  assemblyName: assembly,
+                  assemblyName: assembly.name,
                 })
               }
             }

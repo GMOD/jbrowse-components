@@ -181,7 +181,7 @@ chromosomes for example) or larger semi-circular arcs for off-screen
 interactions). You can turn off rendering these events using the track menu if
 they are not relevant to your interest.
 
-<!-- http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL -->
+https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL
 
 <Figure caption="The arc display showing a deletion with Illumina paired-end reads and Nanopore ultra-long reads on HG002. Also shows the menu-items for hiding inter-region lines." src="/img/alignments/arc_selector.png" />
 

@@ -1,17 +1,38 @@
-import type { ColorPalette, RGBColor } from './components/shaders/colors.ts'
+import {
+  abgrToCssRgba,
+  normalizedRgbToCss,
+  normalizedRgbToCssRgba,
+} from '@jbrowse/core/util/colorBits'
 
-export function rgb255(c: RGBColor) {
-  return `rgb(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)})`
+import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
+
+const CS_NORMAL = 0
+const CS_INSERT_SIZE = 3
+const CS_PAIR_ORIENTATION = 5
+const CS_INSERT_SIZE_AND_ORIENTATION = 6
+const CS_INSERT_SIZE_GRADIENT = 10
+
+function isOrientationScheme(cs: number) {
+  return (
+    cs === CS_INSERT_SIZE ||
+    cs === CS_PAIR_ORIENTATION ||
+    cs === CS_INSERT_SIZE_AND_ORIENTATION ||
+    cs === CS_INSERT_SIZE_GRADIENT
+  )
 }
 
-export function lerpRgb255(a: RGBColor, b: RGBColor, t: number) {
+// Re-exports from core — kept for backwards-compat with call sites.
+export const rgb255 = normalizedRgbToCss
+export const rgba255 = normalizedRgbToCssRgba
+
+function lerpRgb255(a: RGBColor, b: RGBColor, t: number) {
   const r = Math.round((a[0] + (b[0] - a[0]) * t) * 255)
   const g = Math.round((a[1] + (b[1] - a[1]) * t) * 255)
   const bl = Math.round((a[2] + (b[2] - a[2]) * t) * 255)
   return `rgb(${r},${g},${bl})`
 }
 
-export function hslToRgbString(h: number, s: number, l: number) {
+function hslToRgbString(h: number, s: number, l: number) {
   const c = (1 - Math.abs(2 * l - 1)) * s
   const hp = h * 6
   const x = c * (1 - Math.abs((hp % 2) - 1))
@@ -35,14 +56,14 @@ export function hslToRgbString(h: number, s: number, l: number) {
   return `rgb(${Math.round((r + m) * 255)},${Math.round((g + m) * 255)},${Math.round((b + m) * 255)})`
 }
 
-export interface ReadColorData {
+interface ReadColorData {
   readStrands: Int8Array
   readFlags: Uint16Array
   readMapqs: Uint8Array
   readAvgBaseQualities: Uint8Array
   readInsertSizes: Float32Array
   readPairOrientations: Uint8Array
-  readTagColors: Uint8Array
+  readTagColors: Uint32Array
   readChainHasSupp?: Uint8Array
   insertSizeStats?: { upper: number; lower: number }
 }
@@ -102,7 +123,11 @@ export function getReadColor(
 
   // In chain/linked-read mode, supplementary chains use orange for paired-end reads
   const chainSupp = data.readChainHasSupp?.[i] ?? 0
-  if (opts?.renderingMode === 'linkedRead' && chainSupp > 0) {
+  if (
+    (opts?.renderingMode === 'linkedRead' ||
+      opts?.renderingMode === 'linkedReadBezier') &&
+    chainSupp > 0
+  ) {
     const isPaired = (flags & 1) !== 0
     if (isPaired) {
       return rgb255(palette.colorSupplementary)
@@ -113,15 +138,15 @@ export function getReadColor(
     return strandColor(effectiveStrand, palette)
   }
 
-  // Unmapped mate (flag 8) — brown for color schemes where insert size/orientation
-  // would otherwise miscolor it (tlen=0 shows as "short insert" pink)
+  // unmapped mate (flag 8) — brown for orientation-aware schemes (tlen=0 would
+  // miscolor as "short insert" pink), or normal scheme in linked-read mode
+  const mateUnmapped = (flags & 8) !== 0
   if (
-    (flags & 8) !== 0 &&
-    (colorScheme === 0 ||
-      colorScheme === 3 ||
-      colorScheme === 5 ||
-      colorScheme === 6 ||
-      colorScheme === 10)
+    mateUnmapped &&
+    (isOrientationScheme(colorScheme) ||
+      (colorScheme === CS_NORMAL &&
+        (opts?.renderingMode === 'linkedRead' ||
+          opts?.renderingMode === 'linkedReadBezier')))
   ) {
     return rgb255(palette.colorUnmappedMate)
   }
@@ -182,11 +207,9 @@ export function getReadColor(
     // Tag-based coloring
     case 8: {
       if (data.readTagColors.length > 0) {
-        const r = data.readTagColors[i * 3]!
-        const g = data.readTagColors[i * 3 + 1]!
-        const b = data.readTagColors[i * 3 + 2]!
-        if (r !== 0 || g !== 0 || b !== 0) {
-          return `rgb(${r},${g},${b})`
+        const packed = data.readTagColors[i]!
+        if (packed !== 0) {
+          return abgrToCssRgba(packed)
         }
       }
       return rgb255(palette.colorPairLR)
@@ -233,4 +256,15 @@ export function getBaseColorString(
   return basePalette[base]
     ? rgb255(basePalette[base])
     : rgb255(palette.colorNostrand)
+}
+
+// Same as getBaseColorString but returns rgba() with the given alpha, so
+// callers don't need ctx.globalAlpha bracketing.
+export function getBaseColorStringWithAlpha(
+  base: string,
+  basePalette: Record<string, RGBColor>,
+  palette: ColorPalette,
+  alpha: number,
+) {
+  return rgba255(basePalette[base] ?? palette.colorNostrand, alpha)
 }

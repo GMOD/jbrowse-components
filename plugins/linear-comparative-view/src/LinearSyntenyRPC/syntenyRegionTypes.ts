@@ -10,7 +10,7 @@ export interface SyntenyRegionData {
   genomeFeatures: [string, MultiPairFeature[]][]
   coverageDepths: Float32Array
   coverageMaxDepth: number
-  coverageStartOffset: number
+  coverageStartPos: number
   snpPositions: Uint32Array
   snpYOffsets: Float32Array
   snpHeights: Float32Array
@@ -23,7 +23,9 @@ export interface SyntenyRegionData {
   numIndicators: number
 }
 
-export function mergeGenomeRows(rpcDataMap: Map<number, SyntenyRegionData>) {
+export function mergeGenomeRows(
+  rpcDataMap: ReadonlyMap<number, SyntenyRegionData>,
+) {
   const merged = new Map<string, MultiPairFeature[]>()
   for (const data of rpcDataMap.values()) {
     for (const [genome, features] of data.genomeFeatures) {
@@ -40,13 +42,15 @@ export function mergeGenomeRows(rpcDataMap: Map<number, SyntenyRegionData>) {
   return merged
 }
 
-export function getGlobalMaxDepth(rpcDataMap: Map<number, SyntenyRegionData>) {
+export function getGlobalMaxDepth(
+  rpcDataMap: ReadonlyMap<number, SyntenyRegionData>,
+) {
   return getGlobalMaxCoverageDepth(rpcDataMap, d => d.coverageMaxDepth)
 }
 
 export interface MultiPairGetFeaturesArgs {
   adapterConfig: Record<string, unknown>
-  regions: { region: Region; regionNumber: number }[]
+  regions: { region: Region; displayedRegionIndex: number }[]
   bpPerPx: number
   resolution?: number
   sessionId: string

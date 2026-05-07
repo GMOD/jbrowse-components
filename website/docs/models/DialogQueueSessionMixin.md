@@ -33,7 +33,7 @@ DialogComponentType
 
 ```js
 // type
-unknown
+Record<string, unknown>
 ```
 
 ### DialogQueueSessionMixin - Actions
@@ -49,5 +49,5 @@ removeActiveDialog: () => void
 
 ```js
 // type signature
-queueDialog: (cb: (doneCallback: () => void) => [DialogComponentType, unknown]) => void
+queueDialog: (doneCallback: DoneCallback) => void
 ```

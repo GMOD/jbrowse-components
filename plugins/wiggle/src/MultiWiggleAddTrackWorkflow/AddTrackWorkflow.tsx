@@ -14,7 +14,17 @@ import { Button, IconButton, Paper, TextField } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
+import {
+  buildAdapterPayload,
+  canSubmit,
+  itemToName,
+  makeTrackId,
+  parseItems,
+} from './util.ts'
+
+import type { TrackItem } from './util.ts'
 import type { AddTrackModel } from '@jbrowse/plugin-data-management'
+import type { GridRowSelectionModel } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -27,8 +37,6 @@ const useStyles = makeStyles()(theme => ({
     display: 'block',
   },
 }))
-
-type TrackItem = string | Record<string, unknown>
 
 interface TrackRow {
   id: string
@@ -46,23 +54,8 @@ function makeFileLocation(file: File) {
     : storeBlobLocation({ blob: file })
 }
 
-function parseItems(val: string): TrackItem[] {
-  try {
-    return JSON.parse(val) as TrackItem[]
-  } catch (e) {
-    return val
-      .split(/\n|\r\n|\r/)
-      .map(f => f.trim())
-      .filter(Boolean)
-  }
-}
-
 function itemToRow(item: TrackItem, id: string): TrackRow {
-  const name =
-    typeof item === 'string'
-      ? item
-      : String((item.source ?? item.name) || 'unnamed')
-  return { id, name, item }
+  return { id, name: itemToName(item), item }
 }
 
 function doSubmit({
@@ -75,34 +68,25 @@ function doSubmit({
   model: AddTrackModel
 }) {
   const session = getSession(model)
-  try {
-    const trackId = `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}${session.adminMode ? '' : '-sessionTrack'}`
+  const trackId = makeTrackId(trackName, !!session.adminMode)
 
-    const items = tracks.map(t => t.item)
-    const obj =
-      typeof items[0] === 'string' ? { bigWigs: items } : { subadapters: items }
+  if (isSessionWithAddTracks(session)) {
+    session.addTrackConf({
+      trackId,
+      type: 'MultiQuantitativeTrack',
+      name: trackName,
+      assemblyNames: [model.assembly],
+      adapter: {
+        type: 'MultiWiggleAdapter',
+        ...buildAdapterPayload(tracks.map(t => t.item)),
+      },
+    })
 
-    if (isSessionWithAddTracks(session)) {
-      session.addTrackConf({
-        trackId,
-        type: 'MultiQuantitativeTrack',
-        name: trackName,
-        assemblyNames: [model.assembly],
-        adapter: {
-          type: 'MultiWiggleAdapter',
-          ...obj,
-        },
-      })
-
-      model.view?.showTrack(trackId)
-    }
-    model.clearData()
-    if (isSessionModelWithWidgets(session)) {
-      session.hideWidget(model)
-    }
-  } catch (e) {
-    console.error(e)
-    session.notifyError(`${e}`, e)
+    model.view?.showTrack(trackId)
+  }
+  model.clearData()
+  if (isSessionModelWithWidgets(session)) {
+    session.hideWidget(model)
   }
 }
 
@@ -112,6 +96,10 @@ const MultiWiggleAddTrackWorkflow = observer(
     const [inputVal, setInputVal] = useState('')
     const [tracks, setTracks] = useState<TrackRow[]>([])
     const [trackName, setTrackName] = useState(`MultiWiggle${Date.now()}`)
+    const [selection, setSelection] = useState<GridRowSelectionModel>({
+      type: 'include',
+      ids: new Set(),
+    })
     const counter = useRef(0)
 
     function addTracks(items: TrackItem[]) {
@@ -128,7 +116,7 @@ const MultiWiggleAddTrackWorkflow = observer(
           fullWidth
           rows={5}
           value={inputVal}
-          placeholder="Paste list of URLs here, then click 'Add tracks'"
+          placeholder="Paste a list of URLs (one per line) or a JSON array of subadapter configs, then click 'Add tracks'"
           variant="outlined"
           onChange={event => {
             setInputVal(event.target.value)
@@ -153,47 +141,65 @@ const MultiWiggleAddTrackWorkflow = observer(
             multiple
             onChange={({ target }) => {
               addTracks(
-                [...(target.files || [])].map(file => ({
+                [...(target.files ?? [])].map(file => ({
                   type: 'BigWigAdapter',
                   bigWigLocation: makeFileLocation(file),
                   source: file.name,
                 })),
               )
+              target.value = ''
             }}
           />
         </Button>
         {tracks.length > 0 ? (
-          <div style={{ height: 300, width: '100%', marginTop: 8 }}>
-            <DataGrid
-              rows={tracks}
-              columns={[
-                {
-                  field: 'name',
-                  headerName: 'Name',
-                  flex: 1,
-                  renderCell: ({ value }) => <SanitizedHTML html={value} />,
-                },
-                {
-                  field: 'remove',
-                  headerName: '',
-                  width: 50,
-                  sortable: false,
-                  renderCell: ({ row }) => (
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setTracks(prev => prev.filter(t => t.id !== row.id))
-                      }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  ),
-                },
-              ]}
-              rowHeight={25}
-              columnHeaderHeight={33}
-              hideFooter
-            />
+          <div style={{ marginTop: 8 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<DeleteIcon />}
+              disabled={selection.ids.size === 0}
+              onClick={() => {
+                setTracks(prev => prev.filter(t => !selection.ids.has(t.id)))
+                setSelection({ type: 'include', ids: new Set() })
+              }}
+            >
+              Delete selected
+            </Button>
+            <div style={{ height: 300, width: '100%', marginTop: 4 }}>
+              <DataGrid
+                rows={tracks}
+                columns={[
+                  {
+                    field: 'name',
+                    headerName: 'Name',
+                    flex: 1,
+                    renderCell: ({ value }) => <SanitizedHTML html={value} />,
+                  },
+                  {
+                    field: 'remove',
+                    headerName: '',
+                    width: 50,
+                    sortable: false,
+                    renderCell: ({ row }) => (
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setTracks(prev => prev.filter(t => t.id !== row.id))
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    ),
+                  },
+                ]}
+                rowHeight={25}
+                columnHeaderHeight={33}
+                hideFooter
+                checkboxSelection
+                rowSelectionModel={selection}
+                onRowSelectionModelChange={setSelection}
+              />
+            </div>
           </div>
         ) : null}
         <TextField
@@ -206,7 +212,7 @@ const MultiWiggleAddTrackWorkflow = observer(
         <Button
           variant="contained"
           className={classes.submit}
-          disabled={!tracks.length}
+          disabled={!canSubmit({ tracks, trackName, assembly: model.assembly })}
           onClick={() => {
             doSubmit({ trackName, tracks, model })
           }}

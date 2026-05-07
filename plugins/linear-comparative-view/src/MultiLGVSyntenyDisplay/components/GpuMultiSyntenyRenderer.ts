@@ -1,294 +1,155 @@
 import {
-  computeDepthScale,
+  YSCALEBAR_LABEL_OFFSET,
   getDevicePixelRatio,
 } from '@jbrowse/alignments-core'
 
-import { BG_COLOR_GL } from './multiSyntenyBackendTypes.ts'
+import { packCoverageForGpu } from '../features/coverage/packGpu.ts'
 import {
-  INDICATOR_BYTE_SIZE,
-  SNP_SEGMENT_BYTE_SIZE,
-  computeBlockRenderParams,
-} from './multiSyntenyGpuData.ts'
+  COVERAGE_PASS,
+  PASS_COVERAGE,
+  uploadCoverageToGpu,
+} from '../features/coverage/uploadGpu.ts'
+import { prepareBlockGeometry } from '../features/fill/packGpu.ts'
 import {
-  COVERAGE_BIN_BYTE_SIZE,
-  COVERAGE_VERTEX_SHADER,
-  FILL_FRAGMENT_SHADER,
-  FILL_VERTEX_SHADER,
-  GLSL_INDICATOR_VERTEX_SHADER,
-  GLSL_SNP_COVERAGE_VERTEX_SHADER,
-  INSTANCE_BYTE_SIZE,
-  UNIFORM_BYTE_SIZE,
-  WGSL_COVERAGE_SHADER,
-  WGSL_FILL_SHADER,
-  WGSL_INDICATOR_SHADER,
-  WGSL_SNP_COVERAGE_SHADER,
-} from './multiSyntenyGpuShaders.ts'
-import { fillSyntenyUniforms } from './multiSyntenyGpuUtils.ts'
+  FILL_PASS,
+  PASS_FILL,
+  uploadFillToGpu,
+} from '../features/fill/uploadGpu.ts'
+import { packIndicatorsForGpu } from '../features/indicator/packGpu.ts'
+import {
+  INDICATORS_PASS,
+  PASS_INDICATORS,
+  uploadIndicatorsToGpu,
+} from '../features/indicator/uploadGpu.ts'
+import { packSnpCoverageForGpu } from '../features/snpCoverage/packGpu.ts'
+import {
+  PASS_SNP,
+  SNP_PASS,
+  uploadSnpCoverageToGpu,
+} from '../features/snpCoverage/uploadGpu.ts'
+import * as fillShader from '../shaders/slang/multiSyntenyFill.generated.ts'
+import { UNIFORM_OFFSET_F32 as U } from '../shaders/slang/multiSyntenyFill.generated.ts'
+import { computeBlockRenderParams } from '../shared/blockRenderParams.ts'
+import { BG_COLOR_GL } from '../shared/types.ts'
 
 import type {
   MultiSyntenyBackend,
   MultiSyntenyRenderState,
-} from './multiSyntenyBackendTypes.ts'
-import type {
-  BlockCoverageUploadData,
-  BlockGeometryData,
-  BlockIndicatorUploadData,
-  BlockRenderParams,
-  BlockSnpUploadData,
-} from './multiSyntenyGpuData.ts'
+  MultiSyntenySources,
+} from './rendererTypes.ts'
+import type { BlockRenderParams } from '../shared/blockRenderParams.ts'
+import type { SyntenyColorPalette } from '../shared/types.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
-const PASS_FILL = 'fill'
-const PASS_COVERAGE = 'coverage'
-const PASS_SNP = 'snp'
-const PASS_INDICATORS = 'indicators'
+const UNIFORMS_SIZE_BYTES = fillShader.UNIFORMS_SIZE_BYTES
 
 export const SYNTENY_PASSES: PassDescriptor[] = [
-  {
-    id: PASS_FILL,
-    wgslSource: WGSL_FILL_SHADER,
-    glslVertex: FILL_VERTEX_SHADER,
-    glslFragment: FILL_FRAGMENT_SHADER,
-    instanceStride: INSTANCE_BYTE_SIZE,
-    verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      {
-        name: 'a_data0',
-        components: 4,
-        type: 'uint',
-        offsetBytes: 0,
-        integer: true,
-      },
-      {
-        name: 'a_color',
-        components: 4,
-        type: 'float',
-        offsetBytes: 16,
-        integer: false,
-      },
-    ],
-  },
-  {
-    id: PASS_COVERAGE,
-    wgslSource: WGSL_COVERAGE_SHADER,
-    glslVertex: COVERAGE_VERTEX_SHADER,
-    glslFragment: FILL_FRAGMENT_SHADER,
-    instanceStride: COVERAGE_BIN_BYTE_SIZE,
-    verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      {
-        name: 'a_position',
-        components: 1,
-        type: 'float',
-        offsetBytes: 0,
-        integer: false,
-      },
-      {
-        name: 'a_minDepth',
-        components: 1,
-        type: 'float',
-        offsetBytes: 4,
-        integer: false,
-      },
-      {
-        name: 'a_maxDepth',
-        components: 1,
-        type: 'float',
-        offsetBytes: 8,
-        integer: false,
-      },
-    ],
-  },
-  {
-    id: PASS_SNP,
-    wgslSource: WGSL_SNP_COVERAGE_SHADER,
-    glslVertex: GLSL_SNP_COVERAGE_VERTEX_SHADER,
-    glslFragment: FILL_FRAGMENT_SHADER,
-    instanceStride: SNP_SEGMENT_BYTE_SIZE,
-    verticesPerInstance: 6,
-    blend: true,
-    glAttributes: [
-      {
-        name: 'a_position',
-        components: 1,
-        type: 'float',
-        offsetBytes: 0,
-        integer: false,
-      },
-      {
-        name: 'a_yOffset',
-        components: 1,
-        type: 'float',
-        offsetBytes: 4,
-        integer: false,
-      },
-      {
-        name: 'a_height',
-        components: 1,
-        type: 'float',
-        offsetBytes: 8,
-        integer: false,
-      },
-      {
-        name: 'a_colorType',
-        components: 1,
-        type: 'float',
-        offsetBytes: 12,
-        integer: false,
-      },
-    ],
-  },
-  {
-    id: PASS_INDICATORS,
-    wgslSource: WGSL_INDICATOR_SHADER,
-    glslVertex: GLSL_INDICATOR_VERTEX_SHADER,
-    glslFragment: FILL_FRAGMENT_SHADER,
-    instanceStride: INDICATOR_BYTE_SIZE,
-    verticesPerInstance: 3,
-    blend: true,
-    glAttributes: [
-      {
-        name: 'a_position',
-        components: 1,
-        type: 'float',
-        offsetBytes: 0,
-        integer: false,
-      },
-    ],
-  },
+  FILL_PASS,
+  COVERAGE_PASS,
+  SNP_PASS,
+  INDICATORS_PASS,
 ]
 
 export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
   private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
+  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
 
   constructor(hal: GpuHal) {
     this.hal = hal
   }
 
-  resize(width: number, height: number) {
-    this.hal.resize(width, height)
-  }
-
-  uploadGeometryForBlock(
-    regionNumber: number,
-    data: BlockGeometryData & { regionStart: number },
-  ) {
-    this.hal.setRegionMeta(regionNumber, { regionStart: data.regionStart })
-    this.hal.uploadBuffer(
-      regionNumber,
-      PASS_FILL,
-      data.buffer,
-      data.instanceCount,
-    )
-  }
-
-  uploadCoverageForBlock(
-    regionNumber: number,
-    data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
-  ) {
-    this.hal.setRegionMeta(regionNumber, { maxDepth: data.maxDepth })
-    this.hal.uploadBuffer(
-      regionNumber,
-      PASS_COVERAGE,
-      data.buffer,
-      data.binCount,
-    )
-  }
-
-  uploadSnpCoverageForBlock(regionNumber: number, data: BlockSnpUploadData) {
-    this.hal.uploadBuffer(
-      regionNumber,
-      PASS_SNP,
-      data.buffer,
-      data.segmentCount,
-    )
-  }
-
-  uploadIndicatorsForBlock(
-    regionNumber: number,
-    data: BlockIndicatorUploadData,
-  ) {
-    this.hal.uploadBuffer(
-      regionNumber,
-      PASS_INDICATORS,
-      data.buffer,
-      data.indicatorCount,
-    )
-  }
-
-  clearBlock(regionNumber: number) {
-    this.hal.deleteRegion(regionNumber)
-  }
-
-  clearAllBlocks() {
-    this.hal.deleteAllRegions()
-  }
-
-  renderBlocks(state: MultiSyntenyRenderState) {
+  sync(sources: MultiSyntenySources) {
+    const { rpcDataMap, gpuProps, palette } = sources
     const {
-      contentBlocks,
-      viewOffsetPx,
-      width,
-      height,
+      displayedGenomes,
+      colorBy,
+      showSnps,
+      showCoverage,
+      coverageGlobalMax,
+      viewWidth,
+    } = gpuProps
+
+    const active = new Set<number>()
+    for (const [idx, data] of rpcDataMap) {
+      active.add(idx)
+      uploadFillToGpu(
+        this.hal,
+        idx,
+        prepareBlockGeometry(
+          data.genomeFeatures,
+          displayedGenomes,
+          colorBy,
+          showSnps,
+          palette.syntenyColors,
+        ),
+      )
+      if (showCoverage) {
+        uploadCoverageToGpu(
+          this.hal,
+          idx,
+          packCoverageForGpu(
+            data.coverageDepths,
+            data.coverageStartPos,
+            coverageGlobalMax,
+            viewWidth,
+          ),
+          data.coverageMaxDepth,
+        )
+        uploadSnpCoverageToGpu(
+          this.hal,
+          idx,
+          packSnpCoverageForGpu(
+            data.snpPositions,
+            data.snpYOffsets,
+            data.snpHeights,
+            data.snpColorTypes,
+            data.snpCount,
+          ),
+        )
+        uploadIndicatorsToGpu(
+          this.hal,
+          idx,
+          packIndicatorsForGpu(data.indicatorPositions, data.numIndicators),
+        )
+      }
+    }
+    if (active.size === 0) {
+      this.hal.deleteAllRegions()
+    }
+  }
+
+  renderBlocks(blocks: RenderBlock[], state: MultiSyntenyRenderState) {
+    const {
+      canvasWidth,
+      canvasHeight,
       rowHeight,
       rowSpacing,
       coverageHeight,
       palette,
     } = state
 
-    this.hal.resize(width, height)
+    this.hal.resize(canvasWidth, canvasHeight)
     const dpr = getDevicePixelRatio()
-    const logicalW = Math.round(width * dpr) / dpr
-    const logicalH = Math.round(height * dpr) / dpr
+    const logicalW = Math.round(canvasWidth * dpr) / dpr
+    const logicalH = Math.round(canvasHeight * dpr) / dpr
     const rowPadding = rowSpacing ? 1 : 0
-
-    let globalMaxDepth = 0
-    for (const block of contentBlocks) {
-      if (block.regionNumber !== undefined) {
-        const meta = this.hal.getRegionMeta(block.regionNumber)
-        if (meta && meta.maxDepth > globalMaxDepth) {
-          globalMaxDepth = meta.maxDepth
-        }
-      }
-    }
-    const depthScale = computeDepthScale(globalMaxDepth)
+    // Coverage values are normalized against coverageGlobalMax at packing
+    // time (see packCoverageForGpu), so the shader multiplier is 1.
+    const depthScale = 1
 
     this.hal.beginFrame(BG_COLOR_GL, BG_COLOR_GL, BG_COLOR_GL)
 
-    if (coverageHeight > 0) {
+    const passes =
+      coverageHeight > 0
+        ? [PASS_COVERAGE, PASS_SNP, PASS_INDICATORS, PASS_FILL]
+        : [PASS_FILL]
+
+    for (const passId of passes) {
       this.drawPassForVisibleBlocks(
-        PASS_COVERAGE,
-        contentBlocks,
-        viewOffsetPx,
-        logicalW,
-        logicalH,
-        rowHeight,
-        rowPadding,
-        coverageHeight,
-        depthScale,
-        palette,
-      )
-      this.drawPassForVisibleBlocks(
-        PASS_SNP,
-        contentBlocks,
-        viewOffsetPx,
-        logicalW,
-        logicalH,
-        rowHeight,
-        rowPadding,
-        coverageHeight,
-        depthScale,
-        palette,
-      )
-      this.drawPassForVisibleBlocks(
-        PASS_INDICATORS,
-        contentBlocks,
-        viewOffsetPx,
+        passId,
+        blocks,
         logicalW,
         logicalH,
         rowHeight,
@@ -299,24 +160,8 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
       )
     }
 
-    this.drawPassForVisibleBlocks(
-      PASS_FILL,
-      contentBlocks,
-      viewOffsetPx,
-      logicalW,
-      logicalH,
-      rowHeight,
-      rowPadding,
-      coverageHeight,
-      depthScale,
-      palette,
-    )
-
     this.hal.endFrame()
-  }
-
-  pick(x: number, y: number) {
-    return this.hal.pick(x, y)
+    return true
   }
 
   dispose() {
@@ -325,21 +170,16 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
 
   private drawPassForVisibleBlocks(
     passId: string,
-    contentBlocks: BaseBlock[],
-    viewOffsetPx: number,
+    blocks: RenderBlock[],
     logicalW: number,
     logicalH: number,
     rowHeight: number,
     rowPadding: number,
     coverageHeight: number,
     depthScale: number,
-    palette: MultiSyntenyRenderState['palette'],
+    palette: SyntenyColorPalette,
   ) {
-    for (const [regionKey, params] of this.visibleBlocks(
-      contentBlocks,
-      viewOffsetPx,
-      logicalW,
-    )) {
+    for (const [regionKey, params] of this.visibleBlocks(blocks, logicalW)) {
       if (this.hal.getBufferCount(regionKey, passId) === 0) {
         continue
       }
@@ -364,27 +204,66 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
   }
 
   private *visibleBlocks(
-    contentBlocks: BaseBlock[],
-    viewOffsetPx: number,
+    blocks: RenderBlock[],
     viewWidth: number,
   ): Generator<[number, BlockRenderParams]> {
-    for (const block of contentBlocks) {
-      if (block.regionNumber === undefined) {
+    for (const block of blocks) {
+      if (!this.hal.getRegionMeta(block.displayedRegionIndex)) {
         continue
       }
-      if (!this.hal.getRegionMeta(block.regionNumber)) {
-        continue
-      }
-      const params = computeBlockRenderParams(block, viewOffsetPx)
+      const params = computeBlockRenderParams(block)
       if (
         params.regionScreenLeft + params.regionScreenWidth < 0 ||
         params.regionScreenLeft > viewWidth
       ) {
         continue
       }
-      yield [block.regionNumber, params]
+      yield [block.displayedRegionIndex, params]
     }
   }
 }
 
-export { UNIFORM_BYTE_SIZE as SYNTENY_UNIFORM_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
+export { UNIFORMS_SIZE_BYTES as SYNTENY_UNIFORM_BYTE_SIZE }
+
+type Rgb3 = [number, number, number]
+
+function writeRgb(f: Float32Array, offset: number, rgb: Rgb3) {
+  f[offset] = rgb[0]
+  f[offset + 1] = rgb[1]
+  f[offset + 2] = rgb[2]
+}
+
+function fillSyntenyUniforms(
+  f: Float32Array,
+  width: number,
+  height: number,
+  rowHeight: number,
+  bpRangeHi: number,
+  bpRangeLo: number,
+  bpRangeLen: number,
+  regionScreenLeft: number,
+  regionScreenWidth: number,
+  rowPadding: number,
+  coverageHeight: number,
+  depthScale: number,
+  palette: SyntenyColorPalette,
+) {
+  f[U.resolutionX] = width
+  f[U.resolutionY] = height
+  f[U.rowHeight] = rowHeight
+  f[U.coverageHeight] = coverageHeight
+  f[U.bpRangeHi] = bpRangeHi
+  f[U.bpRangeLo] = bpRangeLo
+  f[U.bpRangeLen] = bpRangeLen
+  f[U.regionScreenLeft] = regionScreenLeft
+  f[U.regionScreenWidth] = regionScreenWidth
+  f[U.hpZero] = 0
+  f[U.rowPadding] = rowPadding
+  f[U.coverageYOffset] = YSCALEBAR_LABEL_OFFSET
+  f[U.depthScale] = depthScale
+  writeRgb(f, U.coverageR, palette.coverageColorRgb)
+  writeRgb(f, U.baseAR, palette.baseColorGl.A)
+  writeRgb(f, U.baseCR, palette.baseColorGl.C)
+  writeRgb(f, U.baseGR, palette.baseColorGl.G)
+  writeRgb(f, U.baseTR, palette.baseColorGl.T)
+}

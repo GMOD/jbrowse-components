@@ -55,7 +55,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
         } else if (
           testAdapter(
             fileName,
-            /\.bg(\.gz)?$/i,
+            /\.bg\.gz$/i,
             adapterHint,
             'BedGraphTabixAdapter',
           )
@@ -64,7 +64,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
             type: 'BedGraphTabixAdapter',
             bedGraphGzLocation: file,
             index: {
-              location: index || makeIndex(file, '.tbi'),
+              location: index ?? makeIndex(file, '.tbi'),
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
             },
           }
@@ -75,7 +75,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
             type: 'BedTabixAdapter',
             bedGzLocation: file,
             index: {
-              location: index || makeIndex(file, '.tbi'),
+              location: index ?? makeIndex(file, '.tbi'),
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
             },
           }

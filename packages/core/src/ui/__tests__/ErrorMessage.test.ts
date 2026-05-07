@@ -1,4 +1,4 @@
-import { parseError } from '../ErrorMessage.tsx'
+import { parseError } from '../ErrorBanner.tsx'
 
 describe('parseError', () => {
   it('returns empty strings for non-MST errors', () => {
@@ -24,11 +24,10 @@ describe('parseError', () => {
     )
   })
 
-  it('case 1 does not fall through to case 2 (regression: path was being discarded)', () => {
+  it('case 1 does not fall through to case 2 (path info is preserved)', () => {
     const str =
       'at path "/configuration/displays/0" snapshot `{"type":"Display"}` is not assignable to type `ModelType`'
     const { message } = parseError(str)
-    // Before the fix, case 2 always ran after case 1, overwriting with the generic message
     expect(message).toContain('/configuration/displays/0')
   })
 })

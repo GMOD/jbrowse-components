@@ -3,6 +3,7 @@ import { colord } from '@jbrowse/core/util/colord'
 import {
   ALT_COLOR_HUE,
   ALT_COLOR_SATURATION,
+  GENOTYPE_SPLITTER,
   NO_CALL_COLOR,
   REFERENCE_COLOR,
 } from './constants.ts'
@@ -11,7 +12,7 @@ export function getAlleleColor(
   genotype: string,
   mostFrequentAlt: string,
   colorCache: Record<string, string | undefined>,
-  drawRef: boolean,
+  drawRef = true,
 ) {
   const cacheKey = `${genotype}:${mostFrequentAlt}`
   let c = colorCache[cacheKey]
@@ -24,7 +25,7 @@ export function getAlleleColor(
     const alleles =
       genotype.length === 3 && (genotype[1] === '/' || genotype[1] === '|')
         ? [genotype[0]!, genotype[2]!]
-        : genotype.split(/[/|]/)
+        : genotype.split(GENOTYPE_SPLITTER)
     const total = alleles.length
 
     for (let i = 0; i < total; i++) {

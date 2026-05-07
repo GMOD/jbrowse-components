@@ -28,7 +28,7 @@ extends BaseConnectionModel
 
 ```js
 // type signature
-any
+ConfigurationSchemaType<{ configJsonLocation: { type: string; defaultValue: { uri: string; locationType: string; }; description: string; }; assemblyNames: { type: string; defaultValue: never[]; description: string; }; }, ConfigurationSchemaOptions<...>>
 // code
 configuration: ConfigurationReference(configSchema)
 ```

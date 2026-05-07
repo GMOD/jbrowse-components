@@ -133,7 +133,7 @@ const Base1DView = types
      * #getter
      */
     get currBp() {
-      return sum(this.dynamicBlocks.map(a => a.end - a.start))
+      return sum(this.dynamicBlocks.contentBlocks.map(a => a.end - a.start))
     },
   }))
   .views(self => ({
@@ -150,13 +150,13 @@ const Base1DView = types
     bpToPx({
       refName,
       coord,
-      regionNumber,
+      displayedRegionIndex,
     }: {
       refName: string
       coord: number
-      regionNumber?: number
+      displayedRegionIndex?: number
     }) {
-      return bpToPx({ refName, coord, regionNumber, self })?.offsetPx
+      return bpToPx({ refName, coord, displayedRegionIndex, self })?.offsetPx
     },
   }))
   .actions(self => ({
@@ -233,14 +233,18 @@ const Base1DView = types
     /**
      * #action
      */
-    centerAt(coord: number, refName: string | undefined, regionNumber: number) {
+    centerAt(
+      coord: number,
+      refName: string | undefined,
+      displayedRegionIndex: number,
+    ) {
       if (!refName) {
         return
       }
       const centerPx = self.bpToPx({
         refName,
         coord,
-        regionNumber,
+        displayedRegionIndex,
       })
       if (centerPx) {
         this.scrollTo(Math.round(centerPx - self.width / 2))

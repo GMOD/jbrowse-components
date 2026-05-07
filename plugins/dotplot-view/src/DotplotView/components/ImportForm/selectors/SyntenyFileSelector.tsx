@@ -1,18 +1,9 @@
 import { FileSelector } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import SwapAssemblies from './SwapAssemblies.tsx'
 
 import type { SelectorProps } from './SelectorTypes.ts'
-
-const useStyles = makeStyles()({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 10,
-  },
-})
 
 const SyntenyFileSelector = observer(function SyntenyFileSelector({
   assembly1,
@@ -23,17 +14,14 @@ const SyntenyFileSelector = observer(function SyntenyFileSelector({
   setFileLocation,
   radioOption,
 }: SelectorProps) {
-  const { classes } = useStyles()
   return (
-    <div className={classes.container}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <FileSelector
         name={`${radioOption} location`}
         inline
         description=""
         location={fileLocation}
-        setLocation={loc => {
-          setFileLocation(loc)
-        }}
+        setLocation={setFileLocation}
       />
       <SwapAssemblies
         assembly1={assembly1}

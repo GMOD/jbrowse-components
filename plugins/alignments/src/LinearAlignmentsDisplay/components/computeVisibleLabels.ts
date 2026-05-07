@@ -77,25 +77,25 @@ export function computeVisibleLabels(
       (reversed ? bpEdge - bp : bp - bpEdge) / bpPerPx + blockScreenOffsetPx
     const pxPerBp = 1 / bpPerPx
     const charWidth = 6.5
-    const canRenderText =
-      pxPerBp >= charWidth && featureHeightSetting >= MIN_HEIGHT_FOR_TEXT
-    const { regionStart } = rpcData
+    const tallEnoughForText = featureHeightSetting >= MIN_HEIGHT_FOR_TEXT
+    const canRenderText = pxPerBp >= charWidth && tallEnoughForText
+
+    const rowYPx = (y: number) =>
+      y * rowHeight + featureHeightSetting / 2 - rangeY[0] + topOffset
+    const rowYInRange = (yPx: number) => yPx >= topOffset && yPx <= height
 
     // Process deletions (gaps)
-    const { gapPositions, gapYs, gapLengths, gapTypes, numGaps } = rpcData
-    if (featureHeightSetting >= MIN_HEIGHT_FOR_TEXT) {
+    const { gapPositions, gapYs, gapLengths, gapTypes } = rpcData
+    const numGaps = gapPositions.length / 2
+    if (tallEnoughForText) {
       for (let i = 0; i < numGaps; i++) {
         if (gapTypes[i] !== 0) {
           continue
         }
 
-        const startOffset = gapPositions[i * 2]!
-        const endOffset = gapPositions[i * 2 + 1]!
+        const gapStart = gapPositions[i * 2]!
+        const gapEnd = gapPositions[i * 2 + 1]!
         const length = gapLengths[i]!
-        const y = gapYs[i]!
-
-        const gapStart = regionStart + startOffset
-        const gapEnd = regionStart + endOffset
 
         if (gapEnd < blockStart || gapStart > blockEnd) {
           continue
@@ -114,10 +114,8 @@ export function computeVisibleLabels(
           continue
         }
 
-        const yPx =
-          y * rowHeight + featureHeightSetting / 2 - rangeY[0] + topOffset
-
-        if (yPx < topOffset || yPx > height) {
+        const yPx = rowYPx(gapYs[i]!)
+        if (!rowYInRange(yPx)) {
           continue
         }
 
@@ -138,36 +136,32 @@ export function computeVisibleLabels(
       interbaseYs,
       interbaseLengths,
       interbaseTypes,
-      numInterbases,
     } = rpcData
+    const numInterbases = interbasePositions.length
+
+    const clipPrefix: Record<number, string | undefined> = {
+      [INTERBASE_SOFTCLIP]: 'S',
+      [INTERBASE_HARDCLIP]: 'H',
+    }
 
     for (let i = 0; i < numInterbases; i++) {
-      const posOffset = interbasePositions[i]!
+      const pos = interbasePositions[i]!
       const length = interbaseLengths[i]!
-      const y = interbaseYs[i]!
       const type = interbaseTypes[i]!
-
-      const pos = regionStart + posOffset
 
       if (pos < blockStart || pos > blockEnd) {
         continue
       }
 
-      const xPx = bpToPx(pos)
-      const yPx =
-        y * rowHeight + featureHeightSetting / 2 - rangeY[0] + topOffset
-
-      if (yPx < topOffset || yPx > height) {
+      const yPx = rowYPx(interbaseYs[i]!)
+      if (!rowYInRange(yPx)) {
         continue
       }
+      const xPx = bpToPx(pos)
 
       if (type === INTERBASE_INSERTION) {
         const insertionType = getInsertionType(length, pxPerBp)
-
-        if (
-          insertionType === 'large' &&
-          featureHeightSetting >= MIN_HEIGHT_FOR_TEXT
-        ) {
+        if (insertionType === 'large' && tallEnoughForText) {
           labels.push({
             type: 'insertion',
             x: xPx,
@@ -186,43 +180,34 @@ export function computeVisibleLabels(
             fontSize,
           })
         }
-      }
-
-      if (type === INTERBASE_SOFTCLIP && canRenderText) {
-        labels.push({
-          type: 'softclip',
-          x: xPx + 3,
-          y: yPx,
-          text: `(S${length})`,
-          width: 0,
-          fontSize,
-        })
-      }
-
-      if (type === INTERBASE_HARDCLIP && canRenderText) {
-        labels.push({
-          type: 'hardclip',
-          x: xPx + 3,
-          y: yPx,
-          text: `(H${length})`,
-          width: 0,
-          fontSize,
-        })
+      } else if (canRenderText) {
+        const prefix = clipPrefix[type]
+        if (prefix !== undefined) {
+          labels.push({
+            type: type === INTERBASE_SOFTCLIP ? 'softclip' : 'hardclip',
+            x: xPx + 3,
+            y: yPx,
+            text: `(${prefix}${length})`,
+            width: 0,
+            fontSize,
+          })
+        }
       }
     }
 
     // Process mismatches
-    const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } =
-      rpcData
+    const { mismatchPositions, mismatchYs, mismatchBases } = rpcData
+    const numMismatches = mismatchPositions.length
     if (canRenderText) {
       for (let i = 0; i < numMismatches; i++) {
-        const posOffset = mismatchPositions[i]!
-        const baseCode = mismatchBases[i]!
-        const y = mismatchYs[i]!
-
-        const pos = regionStart + posOffset
+        const pos = mismatchPositions[i]!
 
         if (pos < blockStart || pos + 1 > blockEnd) {
+          continue
+        }
+
+        const yPx = rowYPx(mismatchYs[i]!)
+        if (!rowYInRange(yPx)) {
           continue
         }
 
@@ -230,20 +215,12 @@ export function computeVisibleLabels(
         const rawEndPx = bpToPx(pos + 1)
         const startPx = Math.min(rawStartPx, rawEndPx)
         const endPx = Math.max(rawStartPx, rawEndPx)
-        const xPx = (startPx + endPx) / 2
-
-        const yPx =
-          y * rowHeight + featureHeightSetting / 2 - rangeY[0] + topOffset
-
-        if (yPx < topOffset || yPx > height) {
-          continue
-        }
 
         labels.push({
           type: 'mismatch',
-          x: xPx,
+          x: (startPx + endPx) / 2,
           y: yPx,
-          text: String.fromCharCode(baseCode),
+          text: String.fromCharCode(mismatchBases[i]!),
           width: endPx - startPx,
           fontSize,
         })

@@ -1,5 +1,3 @@
-import { memo, useCallback } from 'react'
-
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox, FormControlLabel } from '@mui/material'
@@ -16,7 +14,6 @@ const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
     padding: 0,
   },
-
   checkboxLabel: {
     marginRight: 0,
     '&:hover': {
@@ -28,16 +25,16 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Memoized checkbox - only re-renders when checked state changes
-const TrackCheckbox = memo(function TrackCheckbox({
-  checked,
-  onChange,
+// Separate observer so only this checkbox re-renders when a track is toggled
+const TrackCheckbox = observer(function TrackCheckbox({
+  model,
+  trackId,
   id,
   disabled,
   className,
 }: {
-  checked: boolean
-  onChange: () => void
+  model: HierarchicalTrackSelectorModel
+  trackId: string
   id: string
   disabled: boolean
   className: string
@@ -45,8 +42,10 @@ const TrackCheckbox = memo(function TrackCheckbox({
   return (
     <Checkbox
       className={className}
-      checked={checked}
-      onChange={onChange}
+      checked={model.shownTrackIds.has(trackId)}
+      onChange={() => {
+        model.view.toggleTrack(trackId)
+      }}
       disabled={disabled}
       slotProps={{
         input: {
@@ -58,7 +57,7 @@ const TrackCheckbox = memo(function TrackCheckbox({
   )
 })
 
-// Small observer for selection state
+// Separate observer so only this label re-renders when selection changes
 const TrackLabelText = observer(function TrackLabelText({
   model,
   conf,
@@ -83,21 +82,15 @@ const TrackLabelText = observer(function TrackLabelText({
   )
 })
 
-// Memoized component - receives checked from parent to avoid observing shownTrackIds
-const TrackLabel = memo(function TrackLabel({
+function TrackLabel({
   model,
   item,
-  checked,
 }: {
   model: HierarchicalTrackSelectorModel
   item: TreeTrackNode
-  checked: boolean
 }) {
   const { classes } = useStyles()
   const { id, name, conf, trackId, description } = item
-  const onChange = useCallback(() => {
-    model.view.toggleTrack(trackId)
-  }, [model.view, trackId])
 
   return (
     <>
@@ -117,8 +110,8 @@ const TrackLabel = memo(function TrackLabel({
         }}
         control={
           <TrackCheckbox
-            checked={checked}
-            onChange={onChange}
+            model={model}
+            trackId={trackId}
             id={id}
             disabled={isUnsupported(name)}
             className={classes.compactCheckbox}
@@ -137,6 +130,6 @@ const TrackLabel = memo(function TrackLabel({
       <TrackSelectorTrackMenu model={model} id={id} conf={conf} />
     </>
   )
-})
+}
 
 export default TrackLabel

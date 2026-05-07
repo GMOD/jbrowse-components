@@ -23,7 +23,7 @@ export async function executeClusterGenotypeMatrix({
     sessionId: string
     headers?: Record<string, string>
     regions: Region[]
-    bpPerPx: number
+    bpPerPx?: number
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
     statusCallback: (arg: string) => void
@@ -39,16 +39,9 @@ export async function executeClusterGenotypeMatrix({
     renderingMode === 'phased' && sampleInfo
       ? await getPhasedGenotypeMatrix({
           pluginManager,
-          args: {
-            ...argsWithCheck,
-            sampleInfo,
-            statusCallback: args.statusCallback,
-          },
+          args: { ...argsWithCheck, sampleInfo },
         })
-      : await getGenotypeMatrix({
-          pluginManager,
-          args: { ...argsWithCheck, statusCallback: args.statusCallback },
-        })
+      : await getGenotypeMatrix({ pluginManager, args: argsWithCheck })
   const result = await clusterObject({
     data: matrix,
     onProgress: args.statusCallback,

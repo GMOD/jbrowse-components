@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
@@ -10,17 +8,14 @@ import {
   DrawerWidgetSessionMixin,
   ReferenceManagementSessionMixin,
   SessionTracksManagerSessionMixin,
+  TrackMenuSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
-import InfoIcon from '@mui/icons-material/Info'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
-
-const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewSessionModel
@@ -47,12 +42,14 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       TracksManagerSessionMixin(pluginManager),
       ReferenceManagementSessionMixin(pluginManager),
       SessionTracksManagerSessionMixin(pluginManager),
+      TrackMenuSessionMixin(pluginManager),
       SnackbarModel(),
     )
     .props({
       /**
        * #property
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel,
       /**
@@ -133,29 +130,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       removeView() {},
-    }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      getTrackActionMenuItems(
-        config: any,
-        extraTrackActions?: MenuItem[],
-      ): MenuItem[] {
-        return [
-          {
-            label: 'About track',
-            onClick: () => {
-              self.queueDialog(doneCallback => [
-                AboutDialog,
-                { config, session: self, handleClose: doneCallback },
-              ])
-            },
-            icon: InfoIcon,
-          },
-          ...(extraTrackActions || []),
-        ]
-      },
     }))
 }
 

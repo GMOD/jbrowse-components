@@ -4,6 +4,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
+import type HicAdapter from '../HicAdapter/HicAdapter.ts'
 import type { MultiRegionContactRecord } from '../HicAdapter/HicAdapter.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RenderArgsDeserialized as ServerSideRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
@@ -25,13 +26,6 @@ export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized
 export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
   features: HicFeature[]
   statusCallback?: (arg: string) => void
-}
-
-interface HicAdapter {
-  getMultiRegionContactRecords: (
-    regions: Region[],
-    opts: Record<string, unknown>,
-  ) => Promise<MultiRegionContactRecord[]>
 }
 
 export default class HicRenderer extends ServerSideRendererType {
@@ -81,9 +75,9 @@ export default class HicRenderer extends ServerSideRendererType {
       sessionId,
       adapterConfig,
     )
-    return (dataAdapter as unknown as HicAdapter).getMultiRegionContactRecords(
-      regions,
-      args,
-    )
+    const { records } = await (
+      dataAdapter as unknown as HicAdapter
+    ).getMultiRegionContactRecords(regions, args)
+    return records
   }
 }

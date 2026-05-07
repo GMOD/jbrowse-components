@@ -31,7 +31,7 @@ composed of
 
 ```js
 // type
-AnyConfigurationModel[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 #### getter: assemblies
@@ -57,7 +57,7 @@ Method to get tracks by ID. Includes tracks from connections if present.
 
 ```js
 // type signature
-getTracksById: () => Record<string, AnyConfigurationModel>
+getTracksById: () => Record<string, { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
 ```
 
 ### TracksManagerSessionMixin - Actions
@@ -73,5 +73,5 @@ addTrackConf: (trackConf: AnyConfiguration) => any
 
 ```js
 // type signature
-deleteTrackConf: (trackConf: AnyConfigurationModel) => any
+deleteTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
 ```

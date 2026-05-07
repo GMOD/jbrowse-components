@@ -1,13 +1,16 @@
-import type { SampleInfo, Source } from './types.ts'
+import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 
-function makeHaplotypeSources(source: Source, ploidy: number): Source[] {
-  const results: Source[] = []
+export function makeHaplotypeSources(
+  source: Source,
+  ploidy: number,
+): ProcessedSource[] {
+  const results: ProcessedSource[] = []
+  const sampleName = source.sampleName ?? source.name
   for (let i = 0; i < ploidy; i++) {
-    const name = `${source.sampleName ?? source.name} HP${i}`
     results.push({
       ...source,
-      name,
-      sampleName: source.sampleName ?? source.name,
+      name: `${sampleName} HP${i}`,
+      sampleName,
       HP: i,
     })
   }
@@ -20,7 +23,7 @@ export function expandSourcesToHaplotypes({
 }: {
   sources: Source[]
   sampleInfo: Record<string, SampleInfo>
-}) {
+}): ProcessedSource[] {
   return sources.flatMap(source => {
     const ploidy = sampleInfo[source.name]?.maxPloidy ?? 2
     return makeHaplotypeSources(source, ploidy)
@@ -37,7 +40,7 @@ export function getSources({
   layout?: Source[]
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>
-}) {
+}): ProcessedSource[] {
   const sourceMap = Object.fromEntries(sources.map(s => [s.name, s]))
 
   return layout.flatMap(row => {

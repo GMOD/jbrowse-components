@@ -22,7 +22,7 @@ const AutoSizedHierarchicalTree = ({
     <AutoSizer disableWidth>
       {args => (
         <HierarchicalTree
-          height={(args.height || offset) - offset}
+          height={Math.max(0, args.height - offset)}
           model={model}
         />
       )}

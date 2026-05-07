@@ -1,29 +1,7 @@
-import { subfeaturesGlyph } from './subfeatures.ts'
+import { layoutSubfeatures } from './subfeatures.ts'
+import { mockDisplayConfig } from '../testUtils.ts'
 
-import type { RenderConfigContext } from '../renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-// mock config has labels.name = '' to match the RPC worker's mock config
-function createMockConfigContext(
-  overrides: Partial<RenderConfigContext> = {},
-): RenderConfigContext {
-  return {
-    config: {
-      featureHeight: 10,
-      labels: { name: '', description: '', fontSize: 12 },
-      subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
-    } as any,
-    displayMode: 'normal',
-    subfeatureLabels: 'none',
-    transcriptTypes: ['mRNA'],
-    containerTypes: [],
-    geneGlyphMode: 'all',
-    displayDirectionalChevrons: true,
-    labelAllowed: true,
-    heightMultiplier: 1,
-    ...overrides,
-  }
-}
 
 function mockFeature(opts: {
   type: string
@@ -80,19 +58,18 @@ function makeGeneWithTranscripts(transcriptNames: string[]) {
 
 const TRANSCRIPT_PADDING = 2
 
-describe('subfeaturesGlyph layout', () => {
+describe('layoutSubfeatures layout', () => {
   describe('subfeatureLabels = "below"', () => {
     it('allocates extra height for transcript labels', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2'])
-      const configContext = createMockConfigContext({
+      const config = mockDisplayConfig({
         subfeatureLabels: 'below',
       })
 
-      const layout = subfeaturesGlyph.layout({
+      const layout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
-        configContext,
+        config,
       })
 
       const featureHeight = 10
@@ -111,15 +88,14 @@ describe('subfeaturesGlyph layout', () => {
 
     it('allocates space for a single transcript label', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1'])
-      const configContext = createMockConfigContext({
+      const config = mockDisplayConfig({
         subfeatureLabels: 'below',
       })
 
-      const layout = subfeaturesGlyph.layout({
+      const layout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
-        configContext,
+        config,
       })
 
       const featureHeight = 10
@@ -131,15 +107,14 @@ describe('subfeaturesGlyph layout', () => {
   describe('subfeatureLabels = "overlay"', () => {
     it('does not allocate extra height for labels', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2'])
-      const configContext = createMockConfigContext({
+      const config = mockDisplayConfig({
         subfeatureLabels: 'overlay',
       })
 
-      const layout = subfeaturesGlyph.layout({
+      const layout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
-        configContext,
+        config,
       })
 
       const featureHeight = 10
@@ -153,15 +128,14 @@ describe('subfeaturesGlyph layout', () => {
   describe('subfeatureLabels = "none"', () => {
     it('does not allocate extra height for labels', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2'])
-      const configContext = createMockConfigContext({
+      const config = mockDisplayConfig({
         subfeatureLabels: 'none',
       })
 
-      const layout = subfeaturesGlyph.layout({
+      const layout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
-        configContext,
+        config,
       })
 
       const featureHeight = 10
@@ -176,18 +150,16 @@ describe('subfeaturesGlyph layout', () => {
     it('below mode produces taller gene glyph than none mode', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2', 'mRNA-3'])
 
-      const belowLayout = subfeaturesGlyph.layout({
+      const belowLayout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
-        configContext: createMockConfigContext({ subfeatureLabels: 'below' }),
+        config: mockDisplayConfig({ subfeatureLabels: 'below' }),
       })
 
-      const noneLayout = subfeaturesGlyph.layout({
+      const noneLayout = layoutSubfeatures({
         feature: gene,
-        bpPerPx: 1,
         reversed: false,
-        configContext: createMockConfigContext({ subfeatureLabels: 'none' }),
+        config: mockDisplayConfig({ subfeatureLabels: 'none' }),
       })
 
       expect(belowLayout.height).toBeGreaterThan(noneLayout.height)

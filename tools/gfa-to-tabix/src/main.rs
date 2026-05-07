@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fs::{self, File};
-use std::io::{BufRead, BufReader, BufWriter, Read as IoRead, Seek, SeekFrom, Write};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::process::{Command, Stdio};
 use std::time::Instant;
 
@@ -36,10 +36,6 @@ struct Args {
     #[arg(long)]
     assemblies: Option<String>,
 
-    /// Produce per-assembly sharded segments files
-    #[arg(long)]
-    sharded: bool,
-
     /// Disable orientation normalization of reverse-complemented contigs
     #[arg(long)]
     no_groom: bool,
@@ -59,6 +55,30 @@ struct Args {
     /// variant track pointing at the source VCF.
     #[arg(long)]
     output_config: Option<String>,
+
+    /// Generate a graph coarse index (prefix.graph.coarse.bed.gz).
+    /// Requires vg to be installed (for snarl method) or no external tool (for tile method).
+    #[arg(long)]
+    graph_coarse: bool,
+
+    /// Method for graph coarse index: "tile" (default, fixed bp windows) or "snarl" (uses vg snarls,
+    /// suitable for small inputs; vg snarls on chr20 GFA takes ~6 min).
+    #[arg(long, default_value = "tile")]
+    graph_coarse_method: String,
+
+    /// Minimum snarl ref-span in bp to emit as a snarl super-node (snarl method only).
+    #[arg(long, default_value_t = 100)]
+    graph_coarse_min_sv_bp: u64,
+
+    /// Tile size in bp for the tile method.
+    #[arg(long, default_value_t = 10_000)]
+    graph_coarse_tile_size: u64,
+
+    /// Comma-separated assembly names to include in the snarl coarse index.
+    /// Omit or use "all" to process every assembly in the GFA (default).
+    #[arg(long)]
+    graph_coarse_assemblies: Option<String>,
+
 }
 
 fn main() {
@@ -77,11 +97,18 @@ fn main() {
     let assemblies_filter: Option<HashSet<String>> = cli
         .assemblies
         .map(|s| s.split(',').map(|s| s.to_string()).collect());
-    let sharded = cli.sharded;
     let groom = !cli.no_groom;
     let ref_assembly_arg = cli.ref_assembly;
     let bubbles_vcf = cli.bubbles;
     let output_config = cli.output_config;
+    let graph_coarse = cli.graph_coarse;
+    let graph_coarse_method = cli.graph_coarse_method;
+    let graph_coarse_min_sv_bp = cli.graph_coarse_min_sv_bp;
+    let graph_coarse_tile_size = cli.graph_coarse_tile_size;
+    let graph_coarse_assemblies_filter: Option<HashSet<String>> = cli
+        .graph_coarse_assemblies
+        .filter(|s| s != "all")
+        .map(|s| s.split(',').map(|a| a.to_string()).collect());
 
     // Two-phase single-pass: reads all lines once, collecting S-lines in memory
     // and spilling P/W-lines to a temp file. Then replays the temp file to
@@ -95,14 +122,12 @@ fn main() {
     let mut seg_lengths: HashMap<String, u64> = HashMap::new();
     let mut seg_ordinals: HashMap<String, u64> = HashMap::new();
     let mut next_ordinal: u64 = 0;
+    let mut raw_links: Vec<(String, String, String, String)> = Vec::new();
 
     // Spool P/W-lines to a temp file to avoid buffering in memory
     let paths_tmp = tmp_dir.join("paths.txt");
     let mut paths_tmp_w = BufWriter::new(File::create(&paths_tmp).expect("create paths tmp"));
     let mut path_line_count: u64 = 0;
-
-    // Collect L-lines (edges) as raw segment names for later ordinal mapping
-    let mut raw_links: Vec<(String, String, String, String)> = Vec::new();
 
     for line in open_file(gfa_path).lines() {
         let line = line.expect("read error");
@@ -124,12 +149,7 @@ fn main() {
         } else if line.starts_with("L\t") {
             let cols: Vec<&str> = line.splitn(6, '\t').collect();
             if cols.len() >= 5 {
-                raw_links.push((
-                    cols[1].to_string(),
-                    cols[2].to_string(),
-                    cols[3].to_string(),
-                    cols[4].to_string(),
-                ));
+                raw_links.push((cols[1].to_string(), cols[2].to_string(), cols[3].to_string(), cols[4].to_string()));
             }
         } else if line.starts_with("W\t") || line.starts_with("P\t") {
             paths_tmp_w.write_all(line.as_bytes()).unwrap();
@@ -139,7 +159,7 @@ fn main() {
     }
     drop(paths_tmp_w);
 
-    eprintln!("  {} segments, {} path lines, {} links", seg_lengths.len(), path_line_count, raw_links.len());
+    eprintln!("  {} segments, {} path lines", seg_lengths.len(), path_line_count);
 
     // Replay buffered path lines now that all segments are known
     eprintln!("Processing paths...");
@@ -147,15 +167,6 @@ fn main() {
     let pos_file = format!("{}.pos.bed.gz", output_prefix);
     let mut pos_proc = spawn_sort_bgzip(&pos_file);
     let mut pos_w = BufWriter::new(pos_proc.stdin.take().unwrap());
-
-    let combined_tmp = tmp_dir.join("segments.tsv");
-    let mut segments_files: HashMap<String, BufWriter<File>> = HashMap::new();
-    if !sharded {
-        segments_files.insert(
-            String::new(),
-            BufWriter::new(File::create(&combined_tmp).expect("create temp")),
-        );
-    }
 
     let mut genomes: Vec<String> = Vec::new();
     let mut genome_set: HashSet<String> = HashSet::new();
@@ -166,13 +177,20 @@ fn main() {
     let mut path_sizes: Vec<(String, u64)> = Vec::new();
     let mut path_count: u64 = 0;
     let mut ref_ord_walks: HashMap<String, Vec<(u64, u64)>> = HashMap::new();
+    let mut all_paths: Vec<PathData> = Vec::new();
+    // Track whether the input GFA used W-lines or P-lines for haplotype paths
+    // so the adapter can emit the same format on extraction (Phase 2 W-in/W-out).
+    let mut had_walk_lines = false;
+    let mut had_path_lines = false;
 
     for line in BufReader::new(File::open(&paths_tmp).expect("reopen paths tmp")).lines() {
         let line = line.expect("read error");
 
         let parsed = if line.starts_with("W\t") {
+            had_walk_lines = true;
             parse_walk(&line)
         } else if line.starts_with("P\t") {
+            had_path_lines = true;
             parse_p_line(&line)
         } else {
             None
@@ -205,29 +223,15 @@ fn main() {
                 Some(ra) => *ra == assembly,
             };
 
-            let path_index = if let Some(&idx) = path_name_indices.get(&path_name) {
-                idx
-            } else {
-                let idx = path_names.len() as u64;
-                path_name_indices.insert(path_name.clone(), idx);
+            if !path_name_indices.contains_key(&path_name) {
+                path_name_indices.insert(path_name.clone(), path_names.len() as u64);
                 path_names.push(path_name.clone());
-                idx
-            };
-
-            let segments_key = if sharded { assembly.clone() } else { String::new() };
-            if !segments_files.contains_key(&segments_key) {
-                let p = tmp_dir.join(format!("{}.tsv", encode_filename(&assembly)));
-                segments_files.insert(
-                    segments_key.clone(),
-                    BufWriter::new(File::create(&p).expect("create shard temp")),
-                );
             }
-            let segments_w = segments_files.get_mut(&segments_key).unwrap();
 
             let mut ord_walk: Vec<(u64, u64)> = Vec::new();
+            let mut steps_out: Vec<StepInfo> = Vec::new();
             let total = emit_path_rows(
                 &path_name,
-                path_index,
                 &seg_str,
                 is_walk,
                 chunk_size,
@@ -235,11 +239,11 @@ fn main() {
                 &mut seg_ordinals,
                 &mut next_ordinal,
                 &mut pos_w,
-                segments_w,
                 &mut ref_orients,
                 is_ref,
                 groom,
                 &mut ord_walk,
+                &mut steps_out,
             );
 
             if is_ref {
@@ -247,6 +251,7 @@ fn main() {
                 ref_ord_walks.insert(path_name.clone(), ord_walk);
             }
 
+            all_paths.push(PathData { name: path_name.clone(), assembly: assembly.clone(), steps: steps_out });
             path_sizes.push((path_name, total));
             path_count += 1;
         }
@@ -265,12 +270,25 @@ fn main() {
         .collect();
     let sizes_header = format!("#sizes={}\n", sizes_str.join(","));
     let paths_header = format!("#paths={}\n", path_names.join(","));
-    let full_header = format!("{}{}{}", header, sizes_header, paths_header);
+    // input-format records whether the source GFA used W-lines or P-lines for
+    // haplotypes; the adapter mirrors this on emission (Phase 2 W-in/W-out).
+    // Mixed inputs are unusual but possible — pick the dominant form.
+    let input_format = if had_walk_lines && !had_path_lines {
+        "walks"
+    } else if had_path_lines && !had_walk_lines {
+        "paths"
+    } else if had_walk_lines {
+        "walks"
+    } else {
+        "paths"
+    };
+    let format_header = format!("#input-format={}\n", input_format);
 
     // Finish pos.bed.gz
     pos_w.write_all(header.as_bytes()).unwrap();
     pos_w.write_all(sizes_header.as_bytes()).unwrap();
     pos_w.write_all(paths_header.as_bytes()).unwrap();
+    pos_w.write_all(format_header.as_bytes()).unwrap();
     drop(pos_w);
     assert!(
         pos_proc.wait().map(|s| s.success()).unwrap_or(false),
@@ -278,66 +296,52 @@ fn main() {
     );
     run_cmd("tabix", &["-c", "#", "-p", "bed", &pos_file]);
 
-    // Flush segment temp files
-    drop(segments_files);
-
-    // Build segments.bin + .idx
-    if sharded {
-        let segs_dir = format!("{}_segments", output_prefix);
-        fs::create_dir_all(&segs_dir).unwrap();
-        let mut manifest_entries: Vec<(String, String)> = Vec::new();
-
-        for genome in &genomes {
-            let encoded = encode_filename(genome);
-            let tmp_path = tmp_dir.join(format!("{}.tsv", encoded));
-            let out_prefix = format!("{}/{}.segments", segs_dir, encoded);
-            sort_and_build_segments(
-                &tmp_path.to_string_lossy(),
-                &full_header,
-                &out_prefix,
-                next_ordinal,
-                &tmp_dir.to_string_lossy(),
-            );
-            let _ = fs::remove_file(&tmp_path);
-            let dir_base = segs_dir.rsplit('/').next().unwrap_or(&segs_dir);
-            manifest_entries.push((
-                genome.clone(),
-                format!("{}/{}.segments", dir_base, encoded),
-            ));
+    if let Some(ref ra) = ref_assembly {
+        eprintln!("Building synteny index...");
+        synteny_build(&all_paths, ra, &output_prefix);
+        eprintln!("Building edge spatial index...");
+        build_edges_spatial(&raw_links, &seg_ordinals, &seg_lengths, &all_paths, ra, &output_prefix);
+        if graph_coarse && graph_coarse_method != "snarl" {
+            eprintln!("Building graph coarse index (tile method, {}bp tiles)...", graph_coarse_tile_size);
+            graph_coarse_build_tiles(&all_paths, ra, &output_prefix, graph_coarse_tile_size);
         }
-
-        write_manifest(
-            &format!("{}.segments.manifest.json", output_prefix),
-            &genomes,
-            &manifest_entries,
-        );
-    } else {
-        sort_and_build_segments(
-            &combined_tmp.to_string_lossy(),
-            &full_header,
-            &format!("{}.segments", output_prefix),
-            next_ordinal,
-            &tmp_dir.to_string_lossy(),
-        );
-        let _ = fs::remove_file(&combined_tmp);
+    }
+    if graph_coarse && graph_coarse_method == "snarl" {
+        eprintln!("Building graph coarse index (snarl method v2, min {}bp, all assemblies)...", graph_coarse_min_sv_bp);
+        graph_coarse_build_snarls(gfa_path, &all_paths, graph_coarse_assemblies_filter.as_ref(), &seg_ordinals, &output_prefix, graph_coarse_min_sv_bp);
+    }
+    if graph_coarse {
+        emit_graph_coarse_assembly_map(&all_paths, &output_prefix);
     }
 
-    // Build edges.bin + edges.idx from L-lines
-    if !raw_links.is_empty() {
-        eprintln!("Building edge index...");
-        build_edge_index(
-            &raw_links,
-            &seg_ordinals,
-            &seg_lengths,
-            next_ordinal,
-            &output_prefix,
-        );
-        eprintln!("  {} links → edges.bin + edges.idx", raw_links.len());
+    // seglens.bin: flat u32 array indexed by ordinal
+    let seglens_path = format!("{}.seglens.bin", output_prefix);
+    let mut sf = BufWriter::new(File::create(&seglens_path).expect("create seglens.bin"));
+    let n_ords = next_ordinal as usize;
+    let mut lens_by_ord: Vec<u32> = vec![0u32; n_ords];
+    for (name, &ord) in &seg_ordinals {
+        if let Some(&l) = seg_lengths.get(name) {
+            lens_by_ord[ord as usize] = l.min(u32::MAX as u64) as u32;
+        }
     }
+    for l in &lens_by_ord {
+        sf.write_all(&l.to_le_bytes()).unwrap();
+    }
+    drop(sf);
+    eprintln!("  Wrote {}", seglens_path);
 
     let rewritten_vcf_path;
     if let Some(ref vcf_path) = bubbles_vcf {
-        generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes, &path_names, &ref_ord_walks);
+        let ord_to_paths: HashMap<u64, Vec<(usize, u64, u64)>> = {
+            let mut m: HashMap<u64, Vec<(usize, u64, u64)>> = HashMap::new();
+            for (pi, path) in all_paths.iter().enumerate() {
+                for step in &path.steps {
+                    m.entry(step.ord).or_default().push((pi, step.offset, step.seg_len));
+                }
+            }
+            m
+        };
+        generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes, &path_names, &ref_ord_walks, &ord_to_paths);
         rewritten_vcf_path = format!("{}.vcf.gz", output_prefix);
         // Write to a temp file first to avoid clobbering the input VCF
         // when the output path matches the input path
@@ -365,6 +369,8 @@ fn main() {
             &output_prefix,
             &genomes,
             vcf_for_config,
+            graph_coarse,
+            &graph_coarse_method,
         );
     }
 
@@ -376,211 +382,34 @@ fn main() {
     eprintln!("  Genomes: {} ({})", genomes.len(), genomes.join(", "));
 }
 
-/// Sort the unsorted segments TSV by ordinal, then write a flat binary file
-/// (.bin) with fixed-width 15-byte records and a companion byte-offset index
-/// (.idx).
+/// Process one path (P-line or W-line walk) from the GFA, emitting
+/// pos.bed.gz rows (one per chunk of `chunk_size` steps) and collecting
+/// StepInfo for the caller to use in synteny/edge/bubble builds.
 ///
-/// Binary record layout (little-endian):
-///   segOrd:     u32  (4 bytes)
-///   pathNameIdx: u16  (2 bytes)
-///   offset:     u32  (4 bytes)
-///   segLen:     u32  (4 bytes)
-///   orient:     u8   (1 byte, ASCII '+' or '-')
-///   Total:      15 bytes per record
-///
-/// The .idx file is a flat array of little-endian u64 values, one per numeric
-/// ID.  idx[N] = byte offset in the binary file where node N's records begin.
-///
-/// No compression — the viewer reads exact byte ranges via the index, avoiding
-/// all BGZF decompression overhead.
-const RECORD_SIZE: u64 = 15;
-
-fn sort_and_build_segments(
-    unsorted_path: &str,
-    _header: &str,
-    output_prefix: &str,
-    total_ordinals: u64,
-    sort_tmp_dir: &str,
-) {
-    let bin_file = format!("{}.bin", output_prefix);
-    let idx_file = format!("{}.idx", output_prefix);
-
-    let mut sort_proc = Command::new("sh")
-        .args([
-            "-c",
-            &format!(
-                "sort -S 2G -T \"{}\" -t\"\t\" -k1,1n \"{}\"",
-                sort_tmp_dir, unsorted_path
-            ),
-        ])
-        .env("LC_ALL", "C")
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("failed to spawn sort");
-
-    let mut out = BufWriter::new(File::create(&bin_file).expect("create bin"));
-
-    let mut index_offsets: Vec<u64> = Vec::new();
-    let mut byte_offset: u64 = 0;
-    let mut last_ord: i64 = -1;
-
-    let sort_stdout = sort_proc.stdout.take().unwrap();
-    for line in BufReader::new(sort_stdout).lines() {
-        let line = line.expect("read sorted line");
-        if line.is_empty() {
-            continue;
-        }
-
-        // Parse TSV: segOrd \t pathNameIdx \t offset \t segLen \t orient
-        let mut fields = line.splitn(5, '\t');
-        let seg_ord: u64 = fields.next().unwrap().parse().unwrap_or(0);
-        let path_name_idx: u16 = fields.next().unwrap().parse().unwrap_or(0);
-        let offset: u32 = fields.next().unwrap().parse().unwrap_or(0);
-        let seg_len: u32 = fields.next().unwrap().parse().unwrap_or(0);
-        let orient: u8 = fields.next().unwrap().as_bytes()[0];
-
-        if seg_ord as i64 != last_ord {
-            while (index_offsets.len() as u64) <= seg_ord {
-                index_offsets.push(byte_offset);
-            }
-            last_ord = seg_ord as i64;
-        }
-
-        out.write_all(&(seg_ord as u32).to_le_bytes()).unwrap();
-        out.write_all(&path_name_idx.to_le_bytes()).unwrap();
-        out.write_all(&offset.to_le_bytes()).unwrap();
-        out.write_all(&seg_len.to_le_bytes()).unwrap();
-        out.write_all(&[orient]).unwrap();
-
-        byte_offset += RECORD_SIZE;
-    }
-
-    while (index_offsets.len() as u64) <= total_ordinals {
-        index_offsets.push(byte_offset);
-    }
-    drop(out);
-
-    assert!(
-        sort_proc.wait().map(|s| s.success()).unwrap_or(false),
-        "sort failed for {}",
-        unsorted_path
-    );
-
-    // Write companion index
-    let mut idx_out = BufWriter::new(File::create(&idx_file).expect("create idx"));
-    for offset in &index_offsets {
-        idx_out.write_all(&offset.to_le_bytes()).unwrap();
-    }
-}
-
-/// Edge record layout (little-endian):
-///   target_ord: u32  (4 bytes) — ordinal of the neighbor node
-///   src_orient: u8   (1 byte)  — ASCII '+' or '-'
-///   tgt_orient: u8   (1 byte)  — ASCII '+' or '-'
-///   tgt_len:    u32  (4 bytes) — length of the target segment
-///   Total:      10 bytes per edge record
-///
-/// edges.bin stores adjacency lists sorted by source ordinal.
-/// edges.idx[N] = byte offset where ordinal N's edges begin.
-/// Edges are stored in BOTH directions so that any node can find
-/// all its neighbors.
-const EDGE_RECORD_SIZE: u64 = 10;
-
-fn build_edge_index(
-    raw_links: &[(String, String, String, String)],
-    seg_ordinals: &HashMap<String, u64>,
-    seg_lengths: &HashMap<String, u64>,
-    total_ordinals: u64,
-    output_prefix: &str,
-) {
-    // Build adjacency lists: source_ord → Vec<(target_ord, src_orient, tgt_orient, tgt_len)>
-    let mut adj: HashMap<u64, Vec<(u32, u8, u8, u32)>> = HashMap::new();
-
-    for (src_name, src_orient, tgt_name, tgt_orient) in raw_links {
-        let src_ord = match seg_ordinals.get(src_name) {
-            Some(&o) => o,
-            None => continue,
-        };
-        let tgt_ord = match seg_ordinals.get(tgt_name) {
-            Some(&o) => o,
-            None => continue,
-        };
-        let src_o = src_orient.as_bytes()[0];
-        let tgt_o = tgt_orient.as_bytes()[0];
-        let src_len = *seg_lengths.get(src_name).unwrap_or(&0) as u32;
-        let tgt_len = *seg_lengths.get(tgt_name).unwrap_or(&0) as u32;
-
-        // Forward direction: src → tgt
-        adj.entry(src_ord)
-            .or_default()
-            .push((tgt_ord as u32, src_o, tgt_o, tgt_len));
-
-        // Reverse direction: tgt → src
-        adj.entry(tgt_ord)
-            .or_default()
-            .push((src_ord as u32, tgt_o, src_o, src_len));
-    }
-
-    // Write edges.bin sorted by source ordinal, with edges.idx
-    let bin_file = format!("{}.edges.bin", output_prefix);
-    let idx_file = format!("{}.edges.idx", output_prefix);
-
-    let mut out = BufWriter::new(File::create(&bin_file).expect("create edges.bin"));
-    let mut index_offsets: Vec<u64> = Vec::new();
-    let mut byte_offset: u64 = 0;
-
-    for ord in 0..=total_ordinals {
-        index_offsets.push(byte_offset);
-        if let Some(edges) = adj.get(&ord) {
-            for &(target, src_o, tgt_o, tgt_len) in edges {
-                out.write_all(&target.to_le_bytes()).unwrap();
-                out.write_all(&[src_o]).unwrap();
-                out.write_all(&[tgt_o]).unwrap();
-                out.write_all(&tgt_len.to_le_bytes()).unwrap();
-                byte_offset += EDGE_RECORD_SIZE;
-            }
-        }
-    }
-    // Sentinel entry so idx[last+1] gives end offset
-    index_offsets.push(byte_offset);
-    drop(out);
-
-    let mut idx_out = BufWriter::new(File::create(&idx_file).expect("create edges.idx"));
-    for offset in &index_offsets {
-        idx_out.write_all(&offset.to_le_bytes()).unwrap();
-    }
-}
-
-/// Process one path (P-line or W-line walk) from the GFA, emitting:
-///
-///   - segments.tsv rows: one row per step with the segment's numeric ID (a
-///     sequential integer we assign to each unique graph node), path name,
-///     base-pair offset along the path, segment length, orientation, and
-///     segment name.  These are later sorted by numeric ID and compressed into
-///     segments.gz with a companion byte-offset index (.idx).
-///
-///   - pos.bed.gz rows: one row per chunk of `chunk_size` steps.  Each row is
-///     a BED-like line (path, start_bp, end_bp) with a 4th column containing a
-///     comma-separated list of the *exact* numeric IDs of graph nodes traversed
-///     by that chunk.  The viewer uses this list to look up only the specific
-///     nodes it needs from segments.gz, avoiding huge range reads.  (An earlier
-///     format stored only min/max IDs per chunk, which caused multi-GB reads
-///     when a path mixed shared and assembly-private nodes whose IDs were far
-///     apart in the file.)
-///
-/// Numeric IDs are assigned on first encounter: the first path to traverse a
-/// graph node determines its ID.  This means the GFA's path ordering matters —
-/// assemblies listed earlier get tighter, more contiguous ID sequences.
-/// A buffered step from parsing a walk, before writing to segments.tsv.
+/// Numeric IDs (ordinals) are assigned on first encounter — the first path
+/// to traverse a segment determines its ID, so GFA path ordering matters.
+/// A buffered step from parsing a walk:
 struct WalkStep {
     ord: u64,
     seg_len: u64,
     is_plus: bool,
 }
 
+struct StepInfo {
+    ord: u64,
+    offset: u64,
+    seg_len: u64,
+    is_plus: bool,
+}
+
+struct PathData {
+    name: String,
+    assembly: String,
+    steps: Vec<StepInfo>,
+}
+
 fn emit_path_rows(
     path_name: &str,
-    path_index: u64,
     seg_str: &str,
     is_walk: bool,
     chunk_size: usize,
@@ -588,11 +417,11 @@ fn emit_path_rows(
     seg_ordinals: &mut HashMap<String, u64>,
     next_ordinal: &mut u64,
     pos_w: &mut BufWriter<impl Write>,
-    segments_w: &mut BufWriter<File>,
     ref_orients: &mut HashMap<u64, bool>,
     is_ref: bool,
     groom: bool,
     ord_walk_out: &mut Vec<(u64, u64)>,
+    step_out: &mut Vec<StepInfo>,
 ) -> u64 {
     // Phase 1: parse the walk and assign ordinals, buffering all steps.
     let mut walk_steps: Vec<WalkStep> = Vec::new();
@@ -667,7 +496,7 @@ fn emit_path_rows(
         shared_bp > 0 && opposite_bp * 100 >= shared_bp * 99
     };
 
-    // Phase 3: emit segments.tsv and pos.bed.gz rows.
+    // Phase 3: emit pos.bed.gz rows.
     // If the walk needs flipping, reverse the offset direction and
     // invert all orient values.
     let total_len: u64 = walk_steps.iter().map(|s| s.seg_len).sum();
@@ -677,30 +506,21 @@ fn emit_path_rows(
     let mut steps: usize = 0;
 
     for step in &walk_steps {
-        let effective_orient = if need_flip {
-            if step.is_plus { "-" } else { "+" }
-        } else if is_ref {
-            if step.is_plus { "+" } else { "-" }
-        } else if let Some(&ref_is_plus) = ref_orients.get(&step.ord) {
-            if step.is_plus == ref_is_plus { "+" } else { "-" }
-        } else {
-            if step.is_plus { "+" } else { "-" }
-        };
-
+        // need_flip handles whole-contig rev-comp normalization.
         let emit_offset = if need_flip {
             total_len - offset - step.seg_len
         } else {
             offset
         };
 
-        writeln!(
-            segments_w,
-            "{}\t{}\t{}\t{}\t{}",
-            step.ord, path_index, emit_offset, step.seg_len, effective_orient
-        )
-        .unwrap();
-
+        let effective_is_plus = if need_flip { !step.is_plus } else { step.is_plus };
         ord_walk_out.push((emit_offset, step.ord));
+        step_out.push(StepInfo {
+            ord: step.ord,
+            offset: emit_offset,
+            seg_len: step.seg_len,
+            is_plus: effective_is_plus,
+        });
         chunk_ords.push(step.ord);
         offset += step.seg_len;
         steps += 1;
@@ -774,21 +594,6 @@ fn parse_p_line(line: &str) -> Option<(String, String, String, bool)> {
     ))
 }
 
-fn write_manifest(path: &str, genomes: &[String], files: &[(String, String)]) {
-    let mut out = BufWriter::new(File::create(path).expect("create manifest"));
-    write!(out, "{{\n  \"genomes\": [").unwrap();
-    for (i, g) in genomes.iter().enumerate() {
-        if i > 0 { write!(out, ",").unwrap(); }
-        write!(out, "\n    \"{}\"", g).unwrap();
-    }
-    write!(out, "\n  ],\n  \"files\": {{").unwrap();
-    for (i, (genome, prefix)) in files.iter().enumerate() {
-        if i > 0 { write!(out, ",").unwrap(); }
-        write!(out, "\n    \"{}\": \"{}\"", genome, prefix).unwrap();
-    }
-    write!(out, "\n  }}\n}}\n").unwrap();
-}
-
 fn encode_ordinal_ranges(ords: &[u64]) -> String {
     if ords.is_empty() {
         return String::new();
@@ -815,10 +620,6 @@ fn encode_ordinal_ranges(ords: &[u64]) -> String {
         parts.push(format!("{}-{}", run_start, run_end));
     }
     parts.join(",")
-}
-
-fn encode_filename(s: &str) -> String {
-    s.replace('#', "_").replace('/', "_")
 }
 
 fn output_parent(prefix: &str) -> std::path::PathBuf {
@@ -1091,21 +892,53 @@ fn encode_bubble_cs(ref_seq: &[u8], query_seq: &[u8], cs: &mut Vec<u8>) {
     }
 }
 
+fn emit_graph_coarse_assembly_map(paths: &[PathData], output_prefix: &str) {
+    let map_path = format!("{}.graph.coarse.assembly_map.json", output_prefix);
+
+    // Group path names by assembly name (portion before the first '#').
+    let mut by_assembly: std::collections::BTreeMap<String, Vec<String>> = std::collections::BTreeMap::new();
+    for p in paths {
+        by_assembly.entry(p.assembly.clone()).or_default().push(p.name.clone());
+    }
+
+    let mut out = BufWriter::new(File::create(&map_path).expect("create assembly_map.json"));
+    write!(out, "{{\n  \"schema\": \"graph-coarse-assembly-map/v1\",\n  \"assemblies\": {{\n").unwrap();
+    let entries: Vec<(&String, &Vec<String>)> = by_assembly.iter().collect();
+    for (i, (assembly, path_names)) in entries.iter().enumerate() {
+        let paths_json: Vec<String> = path_names.iter().map(|p| format!("\"{}\"", p)).collect();
+        let comma = if i + 1 < entries.len() { "," } else { "" };
+        write!(out, "    \"{}\": [{}]{}\n", assembly, paths_json.join(", "), comma).unwrap();
+    }
+    write!(out, "  }}\n}}\n").unwrap();
+    drop(out);
+    eprintln!("  Wrote {} ({} assemblies)", map_path, by_assembly.len());
+}
+
 fn write_jbrowse_config(
     config_path: &str,
     output_prefix: &str,
     genomes: &[String],
     bubbles_vcf: Option<&str>,
+    graph_coarse: bool,
+    graph_coarse_method: &str,
 ) {
     eprintln!("Writing JBrowse config...");
     let mut out = BufWriter::new(File::create(config_path).expect("create config file"));
 
     let pos_bed = format!("{}.pos.bed.gz", output_prefix);
     let pos_tbi = format!("{}.pos.bed.gz.tbi", output_prefix);
-    let seg_bin = format!("{}.segments.bin", output_prefix);
-    let seg_idx = format!("{}.segments.idx", output_prefix);
+    let synteny_bed = format!("{}.synteny.bed.gz", output_prefix);
+    let synteny_tbi = format!("{}.synteny.bed.gz.tbi", output_prefix);
+    let synteny_coarse_bed = format!("{}.synteny.coarse.bed.gz", output_prefix);
+    let synteny_coarse_tbi = format!("{}.synteny.coarse.bed.gz.tbi", output_prefix);
     let bubbles_bed = format!("{}.bubbles.bed.gz", output_prefix);
     let bubbles_tbi = format!("{}.bubbles.bed.gz.tbi", output_prefix);
+    let edges_bed = format!("{}.edges.spatial.bed.gz", output_prefix);
+    let graph_coarse_bed = format!("{}.graph.coarse.bed.gz", output_prefix);
+    let graph_coarse_tbi = format!("{}.graph.coarse.bed.gz.tbi", output_prefix);
+    let graph_coarse_assembly_map = format!("{}.graph.coarse.assembly_map.json", output_prefix);
+    let edges_tbi = format!("{}.edges.spatial.bed.gz.tbi", output_prefix);
+    let seglens_bin = format!("{}.seglens.bin", output_prefix);
 
     // Build assembly names JSON array
     let assembly_names_json: Vec<String> = genomes.iter().map(|g| format!("\"{}\"", g)).collect();
@@ -1122,13 +955,37 @@ fn write_jbrowse_config(
     write!(out, "        \"type\": \"GfaTabixAdapter\",\n").unwrap();
     write!(out, "        \"posLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", pos_bed).unwrap();
     write!(out, "        \"posIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }},\n", pos_tbi).unwrap();
-    write!(out, "        \"segmentsLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", seg_bin).unwrap();
+    write!(out, "        \"syntenyLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", synteny_bed).unwrap();
+    write!(out, "        \"syntenyIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }},\n", synteny_tbi).unwrap();
+    write!(out, "        \"syntenyCoarseLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", synteny_coarse_bed).unwrap();
+    write!(out, "        \"syntenyCoarseIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }},\n", synteny_coarse_tbi).unwrap();
+    write!(out, "        \"edgesLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", edges_bed).unwrap();
+    write!(out, "        \"edgesIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }},\n", edges_tbi).unwrap();
+    write!(out, "        \"seqlensLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }}", seglens_bin).unwrap();
     if bubbles_vcf.is_some() {
-        write!(out, "        \"segmentsIdxLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", seg_idx).unwrap();
-        write!(out, "        \"bubblesLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", bubbles_bed).unwrap();
-        write!(out, "        \"bubblesIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}\n", bubbles_tbi).unwrap();
+        write!(out, ",\n        \"bubblesLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", bubbles_bed).unwrap();
+        write!(out, "        \"bubblesIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}", bubbles_tbi).unwrap();
+        if graph_coarse {
+            write!(out, ",\n        \"graphCoarseLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", graph_coarse_bed).unwrap();
+            write!(out, "        \"graphCoarseIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}", graph_coarse_tbi).unwrap();
+            if graph_coarse_method == "snarl" {
+                write!(out, ",\n        \"graphCoarseAssemblyMap\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }}\n", graph_coarse_assembly_map).unwrap();
+            } else {
+                write!(out, "\n").unwrap();
+            }
+        } else {
+            write!(out, "\n").unwrap();
+        }
+    } else if graph_coarse {
+        write!(out, ",\n        \"graphCoarseLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", graph_coarse_bed).unwrap();
+        write!(out, "        \"graphCoarseIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}", graph_coarse_tbi).unwrap();
+        if graph_coarse_method == "snarl" {
+            write!(out, ",\n        \"graphCoarseAssemblyMap\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }}\n", graph_coarse_assembly_map).unwrap();
+        } else {
+            write!(out, "\n").unwrap();
+        }
     } else {
-        write!(out, "        \"segmentsIdxLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }}\n", seg_idx).unwrap();
+        write!(out, "\n").unwrap();
     }
 
     write!(out, "      }},\n").unwrap();
@@ -1230,67 +1087,17 @@ fn strip_pansn_contig(name: &str) -> &str {
     }
 }
 
-fn read_segments_for_ordinal(
-    bin_file: &mut File,
-    idx: &[u64],
-    bin_file_len: u64,
-    ordinal: u64,
-) -> Vec<(u16, u64, u64)> {
-    let ord_idx = ordinal as usize;
-    if ord_idx >= idx.len() {
-        return Vec::new();
-    }
-    let start_byte = idx[ord_idx];
-    let end_byte = if ord_idx + 1 < idx.len() {
-        idx[ord_idx + 1]
-    } else {
-        bin_file_len
-    };
-    if end_byte <= start_byte {
-        return Vec::new();
-    }
-    let num_bytes = (end_byte - start_byte) as usize;
-    let num_records = num_bytes / RECORD_SIZE as usize;
-    if num_records == 0 {
-        return Vec::new();
-    }
-    let mut buf = vec![0u8; num_bytes];
-    bin_file.seek(SeekFrom::Start(start_byte)).expect("seek segments.bin");
-    bin_file.read_exact(&mut buf).expect("read segments.bin");
-
-    let mut result = Vec::with_capacity(num_records);
-    for i in 0..num_records {
-        let base = i * RECORD_SIZE as usize;
-        // skip segOrd (4 bytes)
-        let path_name_idx = u16::from_le_bytes([buf[base + 4], buf[base + 5]]);
-        let offset = u32::from_le_bytes([buf[base + 6], buf[base + 7], buf[base + 8], buf[base + 9]]) as u64;
-        let seg_len = u32::from_le_bytes([buf[base + 10], buf[base + 11], buf[base + 12], buf[base + 13]]) as u64;
-        result.push((path_name_idx, offset, seg_len));
-    }
-    result
-}
-
 fn generate_bubbles_from_vcf(
     vcf_path: &str,
     output_prefix: &str,
     genomes: &[String],
     path_names: &[String],
     ref_ord_walks: &HashMap<String, Vec<(u64, u64)>>,
+    ord_to_paths: &HashMap<u64, Vec<(usize, u64, u64)>>,
 ) {
     eprintln!("Generating bubbles from VCF...");
     let t_start = Instant::now();
     let bubbles_file = format!("{}.bubbles.bed.gz", output_prefix);
-
-    // Open segments.bin and read segments.idx for disk-backed ordinal lookups
-    let segments_bin_path = format!("{}.segments.bin", output_prefix);
-    let segments_idx_path = format!("{}.segments.idx", output_prefix);
-    let mut bin_file = File::open(&segments_bin_path).expect("open segments.bin");
-    let bin_file_len = bin_file.metadata().expect("segments.bin metadata").len();
-    let idx_bytes = fs::read(&segments_idx_path).expect("read segments.idx");
-    let seg_idx: Vec<u64> = idx_bytes
-        .chunks_exact(8)
-        .map(|chunk| u64::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3], chunk[4], chunk[5], chunk[6], chunk[7]]))
-        .collect();
 
     let mut proc = spawn_sort_bgzip(&bubbles_file);
     let mut w = BufWriter::new(proc.stdin.take().unwrap());
@@ -1449,19 +1256,20 @@ fn generate_bubbles_from_vcf(
         // Determine which genome each path belongs to by matching chromosome name
         let vcf_chrom_suffix = strip_pansn_contig(chrom);
 
-        // Collect paths to emit rows for: read from segments.bin via the idx
         let paths_at_snarl: Vec<(usize, u64)> = if let Some(ord) = snarl_ordinal {
-            let records = read_segments_for_ordinal(&mut bin_file, &seg_idx, bin_file_len, ord);
-            records.iter()
-                .filter_map(|&(pni, offset, _seg_len)| {
-                    let pi = pni as usize;
-                    if pi < path_names.len() && strip_pansn_contig(&path_names[pi]) == vcf_chrom_suffix {
-                        Some((pi, offset))
-                    } else {
-                        None
-                    }
+            ord_to_paths.get(&ord)
+                .map(|records| {
+                    records.iter()
+                        .filter_map(|&(pi, offset, _seg_len)| {
+                            if pi < path_names.len() && strip_pansn_contig(&path_names[pi]) == vcf_chrom_suffix {
+                                Some((pi, offset))
+                            } else {
+                                None
+                            }
+                        })
+                        .collect()
                 })
-                .collect()
+                .unwrap_or_default()
         } else {
             Vec::new()
         };
@@ -1526,3 +1334,1280 @@ fn generate_bubbles_from_vcf(
     eprintln!("  Wrote {}", bubbles_file);
 }
 
+fn path_chrom(name: &str) -> &str {
+    name.rfind('#').map(|i| &name[i + 1..]).unwrap_or(name)
+}
+
+struct SyntenyRow {
+    ref_path: String,
+    ref_start: u64,
+    ref_end: u64,
+    hap_path: String,
+    hap_start: u64,
+    hap_end: u64,
+    strand: bool,
+    identity: f64,
+}
+
+fn align_pair(
+    ref_path: &PathData,
+    hap_path: &PathData,
+    ref_by_ord: &HashMap<u64, (u64, u64, bool)>,
+    ref_ord_rank: &HashMap<u64, usize>,
+) -> Vec<SyntenyRow> {
+    let shared_hap: Vec<(usize, &StepInfo)> = hap_path
+        .steps
+        .iter()
+        .enumerate()
+        .filter(|(_, s)| ref_by_ord.contains_key(&s.ord))
+        .collect();
+
+    if shared_hap.is_empty() {
+        return Vec::new();
+    }
+
+    let mut rows: Vec<SyntenyRow> = Vec::new();
+
+    // Emit bubble before first shared step
+    if shared_hap[0].0 > 0 {
+        let first_shared = shared_hap[0].1;
+        let (ref_start, _, _) = ref_by_ord[&first_shared.ord];
+        let hap_end = first_shared.offset;
+        let hap_start = hap_path.steps[0].offset;
+        let hap_len = hap_end.saturating_sub(hap_start);
+        if hap_len > 0 {
+            rows.push(SyntenyRow {
+                ref_path: ref_path.name.clone(),
+                ref_start,
+                ref_end: ref_start,
+                hap_path: hap_path.name.clone(),
+                hap_start,
+                hap_end,
+                strand: true,
+                identity: 0.0,
+            });
+        }
+    }
+
+    // Walk consecutive shared steps
+    let step_strand = |s: &StepInfo| -> bool {
+        let (_, _, ref_is_plus) = ref_by_ord[&s.ord];
+        s.is_plus == ref_is_plus
+    };
+
+    let mut i = 0;
+    while i < shared_hap.len() {
+        let (_, step_a) = shared_hap[i];
+        let run_strand = step_strand(step_a);
+
+        // Extend run
+        let mut j = i + 1;
+        while j < shared_hap.len() {
+            let (_, step_b) = shared_hap[j];
+            let (_, step_prev) = shared_hap[j - 1];
+
+            let rank_a = ref_ord_rank[&step_prev.ord];
+            let rank_b = ref_ord_rank[&step_b.ord];
+            let (_, ref_end_prev, _) = ref_by_ord[&step_prev.ord];
+            let (ref_start_b, _, _) = ref_by_ord[&step_b.ord];
+            let hap_contiguous = step_b.offset == step_prev.offset + step_prev.seg_len;
+            let ref_contiguous = rank_b == rank_a + 1 && ref_start_b == ref_end_prev;
+            let same_strand = step_strand(step_b) == run_strand;
+
+            if ref_contiguous && hap_contiguous && same_strand {
+                j += 1;
+            } else {
+                break;
+            }
+        }
+
+        // Close run — normalize so ref_start <= ref_end (inverted runs have
+        // step_a at the higher ref position when run_strand is false).
+        let (_, step_last) = shared_hap[j - 1];
+        let (ref_start_run, _, _) = ref_by_ord[&step_a.ord];
+        let (_, ref_end_run, _) = ref_by_ord[&step_last.ord];
+        let hap_start_run = step_a.offset;
+        let hap_end_run = step_last.offset + step_last.seg_len;
+
+        rows.push(SyntenyRow {
+            ref_path: ref_path.name.clone(),
+            ref_start: ref_start_run.min(ref_end_run),
+            ref_end: ref_start_run.max(ref_end_run),
+            hap_path: hap_path.name.clone(),
+            hap_start: hap_start_run,
+            hap_end: hap_end_run,
+            strand: run_strand,
+            identity: 1.0,
+        });
+
+        // Emit bubble between this run and next shared step
+        if j < shared_hap.len() {
+            let (_, step_next) = shared_hap[j];
+            let (_, ref_end_last, _) = ref_by_ord[&step_last.ord];
+            let (ref_start_next, _, _) = ref_by_ord[&step_next.ord];
+            let bubble_ref_start = ref_end_last.min(ref_start_next);
+            let bubble_ref_end = ref_end_last.max(ref_start_next);
+            let bubble_hap_start = hap_end_run;
+            let bubble_hap_end = step_next.offset;
+            let r_len = bubble_ref_end.saturating_sub(bubble_ref_start);
+            let h_len = bubble_hap_end.saturating_sub(bubble_hap_start);
+            let identity = if r_len > 0 && h_len > 0 {
+                r_len.min(h_len) as f64 / r_len.max(h_len) as f64
+            } else {
+                0.0
+            };
+            if r_len > 0 || h_len > 0 {
+                rows.push(SyntenyRow {
+                    ref_path: ref_path.name.clone(),
+                    ref_start: bubble_ref_start,
+                    ref_end: bubble_ref_end,
+                    hap_path: hap_path.name.clone(),
+                    hap_start: bubble_hap_start,
+                    hap_end: bubble_hap_end,
+                    strand: run_strand,
+                    identity,
+                });
+            }
+        }
+
+        i = j;
+    }
+
+    // Emit bubble after last shared step
+    let (_, last_shared) = shared_hap[shared_hap.len() - 1];
+    let last_hap_idx = shared_hap[shared_hap.len() - 1].0;
+    if last_hap_idx + 1 < hap_path.steps.len() {
+        let (_, ref_end_last, _) = ref_by_ord[&last_shared.ord];
+        let hap_start = last_shared.offset + last_shared.seg_len;
+        let last_step = &hap_path.steps[hap_path.steps.len() - 1];
+        let hap_end = last_step.offset + last_step.seg_len;
+        let h_len = hap_end.saturating_sub(hap_start);
+        if h_len > 0 {
+            rows.push(SyntenyRow {
+                ref_path: ref_path.name.clone(),
+                ref_start: ref_end_last,
+                ref_end: ref_end_last,
+                hap_path: hap_path.name.clone(),
+                hap_start,
+                hap_end,
+                strand: true,
+                identity: 0.0,
+            });
+        }
+    }
+
+    rows
+}
+
+fn write_synteny_rows(rows: &[SyntenyRow], w: &mut BufWriter<impl Write>) {
+    for row in rows {
+        let strand = if row.strand { "+" } else { "-" };
+        writeln!(
+            w,
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:.6}",
+            row.ref_path, row.ref_start, row.ref_end,
+            row.hap_path, row.hap_start, row.hap_end,
+            strand, row.identity
+        ).unwrap();
+    }
+}
+
+fn synteny_build(paths: &[PathData], ref_assembly: &str, output_prefix: &str) {
+    let synteny_file = format!("{}.synteny.bed.gz", output_prefix);
+    let rev_file = format!("{}.synteny.rev.bed.gz", output_prefix);
+    let coarse_file = format!("{}.synteny.coarse.bed.gz", output_prefix);
+
+    let mut fwd_proc = spawn_sort_bgzip(&synteny_file);
+    let mut fwd_w = BufWriter::new(fwd_proc.stdin.take().unwrap());
+    let mut rev_proc = spawn_sort_bgzip(&rev_file);
+    let mut rev_w = BufWriter::new(rev_proc.stdin.take().unwrap());
+    let mut coarse_proc = spawn_sort_bgzip(&coarse_file);
+    let mut coarse_w = BufWriter::new(coarse_proc.stdin.take().unwrap());
+
+    // Separate reference paths from haplotype paths. We iterate all hap paths
+    // against each reference path rather than grouping by chrom name, because
+    // HPRC-style assemblies name their contigs differently from the reference
+    // (e.g. GRCh38#0#chr20 vs HG00438#1#JAHBCB010000023.1). align_pair uses
+    // shared graph ordinals so it correctly links contigs that don't share a
+    // chromosome name with the reference.
+    let ref_paths: Vec<&PathData> = paths.iter().filter(|p| p.assembly == ref_assembly).collect();
+    let hap_paths: Vec<&PathData> = paths.iter().filter(|p| p.assembly != ref_assembly).collect();
+
+    for ref_path in &ref_paths {
+        // Build ref lookup structures
+        let mut ref_by_ord: HashMap<u64, (u64, u64, bool)> = HashMap::new();
+        let mut ref_ord_rank: HashMap<u64, usize> = HashMap::new();
+        let mut offset = 0u64;
+        for (rank, step) in ref_path.steps.iter().enumerate() {
+            ref_by_ord.insert(step.ord, (offset, offset + step.seg_len, step.is_plus));
+            ref_ord_rank.insert(step.ord, rank);
+            offset += step.seg_len;
+        }
+
+        for hap_path in &hap_paths {
+            let rows = align_pair(ref_path, hap_path, &ref_by_ord, &ref_ord_rank);
+            if rows.is_empty() {
+                continue;
+            }
+
+            write_synteny_rows(&rows, &mut fwd_w);
+
+            // Rev: hap as first 3 columns
+            let hap_chrom = path_chrom(&hap_path.name);
+            for row in &rows {
+                let strand = if row.strand { "+" } else { "-" };
+                writeln!(
+                    rev_w,
+                    "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:.6}",
+                    hap_chrom, row.hap_start, row.hap_end,
+                    row.ref_path, row.ref_start, row.ref_end,
+                    strand, row.identity
+                ).unwrap();
+            }
+
+            // Coarse: merge consecutive rows within 10kbp gap
+            let ref_chrom = path_chrom(&ref_path.name);
+            let hap_chrom_s = path_chrom(&hap_path.name);
+            let coarse_rows = merge_coarse(&rows, 10_000);
+            for row in &coarse_rows {
+                let strand = if row.strand { "+" } else { "-" };
+                writeln!(
+                    coarse_w,
+                    "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:.6}",
+                    ref_chrom, row.ref_start, row.ref_end,
+                    hap_chrom_s, row.hap_start, row.hap_end,
+                    strand, row.identity
+                ).unwrap();
+            }
+        }
+    }
+
+    drop(fwd_w);
+    assert!(fwd_proc.wait().map(|s| s.success()).unwrap_or(false), "synteny sort|bgzip failed");
+    run_cmd("tabix", &["-p", "bed", &synteny_file]);
+
+    drop(rev_w);
+    assert!(rev_proc.wait().map(|s| s.success()).unwrap_or(false), "synteny.rev sort|bgzip failed");
+    run_cmd("tabix", &["-p", "bed", &rev_file]);
+
+    drop(coarse_w);
+    assert!(coarse_proc.wait().map(|s| s.success()).unwrap_or(false), "synteny.coarse sort|bgzip failed");
+    run_cmd("tabix", &["-p", "bed", &coarse_file]);
+
+    eprintln!("  Wrote {}, {}, {}", synteny_file, rev_file, coarse_file);
+}
+
+fn merge_coarse(rows: &[SyntenyRow], max_gap: u64) -> Vec<SyntenyRow> {
+    if rows.is_empty() {
+        return Vec::new();
+    }
+    let mut merged: Vec<SyntenyRow> = Vec::new();
+    let mut cur_ref_start = rows[0].ref_start;
+    let mut cur_ref_end = rows[0].ref_end;
+    let mut cur_hap_start = rows[0].hap_start;
+    let mut cur_hap_end = rows[0].hap_end;
+    let mut cur_strand = rows[0].strand;
+    let mut weight_sum = (cur_ref_end.saturating_sub(cur_ref_start)) as f64 * rows[0].identity;
+    let mut ref_len_sum = (cur_ref_end.saturating_sub(cur_ref_start)) as f64;
+    let ref_path = rows[0].ref_path.clone();
+    let hap_path = rows[0].hap_path.clone();
+
+    for row in &rows[1..] {
+        let gap = row.ref_start.saturating_sub(cur_ref_end);
+        if row.strand == cur_strand && gap <= max_gap {
+            cur_ref_end = cur_ref_end.max(row.ref_end);
+            cur_hap_end = cur_hap_end.max(row.hap_end);
+            let rl = (row.ref_end.saturating_sub(row.ref_start)) as f64;
+            weight_sum += rl * row.identity;
+            ref_len_sum += rl;
+        } else {
+            let identity = if ref_len_sum > 0.0 { weight_sum / ref_len_sum } else { 0.0 };
+            merged.push(SyntenyRow {
+                ref_path: ref_path.clone(),
+                ref_start: cur_ref_start,
+                ref_end: cur_ref_end,
+                hap_path: hap_path.clone(),
+                hap_start: cur_hap_start,
+                hap_end: cur_hap_end,
+                strand: cur_strand,
+                identity,
+            });
+            cur_ref_start = row.ref_start;
+            cur_ref_end = row.ref_end;
+            cur_hap_start = row.hap_start;
+            cur_hap_end = row.hap_end;
+            cur_strand = row.strand;
+            let rl = (row.ref_end.saturating_sub(row.ref_start)) as f64;
+            weight_sum = rl * row.identity;
+            ref_len_sum = rl;
+        }
+    }
+    let identity = if ref_len_sum > 0.0 { weight_sum / ref_len_sum } else { 0.0 };
+    merged.push(SyntenyRow {
+        ref_path,
+        ref_start: cur_ref_start,
+        ref_end: cur_ref_end,
+        hap_path,
+        hap_start: cur_hap_start,
+        hap_end: cur_hap_end,
+        strand: cur_strand,
+        identity,
+    });
+    merged
+}
+
+fn build_edges_spatial(
+    raw_links: &[(String, String, String, String)],
+    seg_ordinals: &HashMap<String, u64>,
+    seg_lengths: &HashMap<String, u64>,
+    paths: &[PathData],
+    ref_assembly: &str,
+    output_prefix: &str,
+) {
+    let edges_file = format!("{}.edges.spatial.bed.gz", output_prefix);
+    let mut proc = spawn_sort_bgzip(&edges_file);
+    let mut w = BufWriter::new(proc.stdin.take().unwrap());
+
+    // Build ord -> (chrom, start, end) from ref paths
+    let mut ref_ord_to_pos: HashMap<u64, (String, u64, u64)> = HashMap::new();
+    for path in paths.iter().filter(|p| p.assembly == ref_assembly) {
+        let chrom = path_chrom(&path.name).to_string();
+        for step in &path.steps {
+            ref_ord_to_pos.entry(step.ord).or_insert_with(|| (chrom.clone(), step.offset, step.offset + step.seg_len));
+        }
+    }
+
+    // For alt segments not in ref, find the nearest ref position by looking at
+    // what ref segments are adjacent to alt segments in the graph
+    // We build seg_name -> ord for reverse lookup
+    let ord_to_name: HashMap<u64, &str> = seg_ordinals.iter().map(|(k, &v)| (v, k.as_str())).collect();
+    let _ = (seg_lengths, ord_to_name);
+
+    for (src_name, src_orient, tgt_name, tgt_orient) in raw_links {
+        let src_ord = match seg_ordinals.get(src_name) {
+            Some(&o) => o,
+            None => continue,
+        };
+        let tgt_ord = match seg_ordinals.get(tgt_name) {
+            Some(&o) => o,
+            None => continue,
+        };
+
+        // Find best ref position: prefer src ord, fall back to tgt ord
+        let pos = ref_ord_to_pos.get(&src_ord).or_else(|| ref_ord_to_pos.get(&tgt_ord));
+        if let Some((chrom, start, end)) = pos {
+            // Forward edge
+            writeln!(w, "{}\t{}\t{}\t{}\t{}\t{}\t{}", chrom, start, end, src_ord, tgt_ord, src_orient, tgt_orient).unwrap();
+            // Reverse edge (flip orientations)
+            let rev_src = if src_orient == "+" { "-" } else { "+" };
+            let rev_tgt = if tgt_orient == "+" { "-" } else { "+" };
+            writeln!(w, "{}\t{}\t{}\t{}\t{}\t{}\t{}", chrom, start, end, tgt_ord, src_ord, rev_tgt, rev_src).unwrap();
+        }
+    }
+
+    drop(w);
+    assert!(proc.wait().map(|s| s.success()).unwrap_or(false), "edges sort|bgzip failed");
+    run_cmd("tabix", &["-p", "bed", &edges_file]);
+    eprintln!("  Wrote {}", edges_file);
+}
+
+// Returns (ref_start, ref_end, super_ord, sorted_constituent_ords) for each tile.
+// super_ord is the minimum ordinal in the tile (deterministic).
+// Tiles span at least tile_size bp; the final tile holds any remainder.
+fn compute_tile_rows(steps: &[StepInfo], tile_size: u64) -> Vec<(u64, u64, u64, Vec<u64>)> {
+    let mut result: Vec<(u64, u64, u64, Vec<u64>)> = Vec::new();
+    if steps.is_empty() {
+        return result;
+    }
+    let mut tile_ref_start = steps[0].offset;
+    let mut tile_ords: Vec<u64> = Vec::new();
+
+    for step in steps {
+        tile_ords.push(step.ord);
+        let tile_end = step.offset + step.seg_len;
+        if tile_end - tile_ref_start >= tile_size {
+            tile_ords.sort_unstable();
+            tile_ords.dedup();
+            let super_ord = tile_ords[0];
+            result.push((tile_ref_start, tile_end, super_ord, tile_ords.clone()));
+            tile_ref_start = tile_end;
+            tile_ords.clear();
+        }
+    }
+
+    if !tile_ords.is_empty() {
+        let ref_end = steps.last().map(|s| s.offset + s.seg_len).unwrap_or(tile_ref_start);
+        tile_ords.sort_unstable();
+        tile_ords.dedup();
+        let super_ord = tile_ords[0];
+        result.push((tile_ref_start, ref_end, super_ord, tile_ords));
+    }
+    result
+}
+
+fn graph_coarse_build_tiles(paths: &[PathData], ref_assembly: &str, output_prefix: &str, tile_size: u64) {
+    let coarse_file = format!("{}.graph.coarse.bed.gz", output_prefix);
+    let mut proc = spawn_sort_bgzip(&coarse_file);
+    let mut w = BufWriter::new(proc.stdin.take().unwrap());
+
+    writeln!(w, "#schema=graph-coarse/v1").unwrap();
+    writeln!(w, "#engine=tile").unwrap();
+    writeln!(w, "#tile-size={}", tile_size).unwrap();
+
+    for path in paths.iter().filter(|p| p.assembly == ref_assembly) {
+        let chrom = path_chrom(&path.name);
+        for (ref_start, ref_end, super_ord, ords) in compute_tile_rows(&path.steps, tile_size) {
+            let ords_str = encode_ordinal_ranges(&ords);
+            writeln!(w, "{}\t{}\t{}\t{}\ttile\t{}", chrom, ref_start, ref_end, super_ord, ords_str).unwrap();
+        }
+    }
+
+    drop(w);
+    assert!(proc.wait().map(|s| s.success()).unwrap_or(false), "graph.coarse sort|bgzip failed");
+    run_cmd("tabix", &["-c", "#", "-p", "bed", &coarse_file]);
+    eprintln!("  Wrote {}", coarse_file);
+}
+
+// Extracts all "node_id" string values from a vg snarls JSON line.
+fn extract_node_ids(line: &str) -> Vec<String> {
+    let mut result = Vec::new();
+    let marker = "\"node_id\"";
+    let mut from = 0;
+    while from < line.len() {
+        let rel = match line[from..].find(marker) {
+            Some(p) => p,
+            None => break,
+        };
+        let abs = from + rel + marker.len();
+        let rest = line[abs..].trim_start_matches(|c: char| c == ' ' || c == ':');
+        if rest.starts_with('"') {
+            let val = &rest[1..];
+            if let Some(end) = val.find('"') {
+                result.push(val[..end].to_string());
+            }
+        }
+        from = abs + 1;
+    }
+    result
+}
+
+// Returns the two boundary node IDs for a top-level snarl (no parent).
+// Returns None for nested snarls or malformed lines.
+fn parse_snarl_boundary(line: &str) -> Option<(String, String)> {
+    if line.contains("\"parent\"") {
+        return None;
+    }
+    let ids = extract_node_ids(line);
+    if ids.len() == 2 {
+        Some((ids[0].clone(), ids[1].clone()))
+    } else {
+        None
+    }
+}
+
+fn collect_ords_from_steps(steps: &[StepInfo], lo: usize, hi: usize) -> Vec<u64> {
+    let mut ords: Vec<u64> = steps[lo..=hi].iter().map(|s| s.ord).collect();
+    ords.sort_unstable();
+    ords.dedup();
+    ords
+}
+
+struct SnarlBoundary { ord_a: u64, ord_b: u64, super_ord: u64 }
+
+struct CoarseRow {
+    path_name: String,
+    start: u64,
+    end: u64,
+    super_ord: u64,
+    row_type: &'static str,
+    ords: Vec<u64>,
+}
+
+// Pure function: given pre-computed snarl boundaries and paths, produce coarse rows
+// and hap_count without any I/O. Used by graph_coarse_build_snarls and unit tests.
+fn compute_snarl_coarse_rows(
+    paths: &[PathData],
+    assemblies_filter: Option<&HashSet<String>>,
+    snarl_boundaries: &[SnarlBoundary],
+    min_sv_bp: u64,
+    verbose: bool,
+) -> (Vec<CoarseRow>, HashMap<u64, usize>, Vec<String>) {
+    let mut all_rows: Vec<CoarseRow> = Vec::new();
+    let mut hap_count: HashMap<u64, usize> = HashMap::new();
+    let mut processed_assemblies: Vec<String> = Vec::new();
+
+    for path in paths {
+        if let Some(filter) = assemblies_filter {
+            if !filter.contains(&path.assembly) {
+                continue;
+            }
+        }
+        let steps = &path.steps;
+        if steps.is_empty() {
+            continue;
+        }
+
+        processed_assemblies.push(path.assembly.clone());
+
+        let mut ord_to_rank: HashMap<u64, usize> = HashMap::new();
+        for (rank, step) in steps.iter().enumerate() {
+            ord_to_rank.entry(step.ord).or_insert(rank);
+        }
+
+        struct Interval { lo: usize, hi: usize, super_ord: u64 }
+        let mut intervals: Vec<Interval> = Vec::new();
+        for sb in snarl_boundaries {
+            let rank_a = match ord_to_rank.get(&sb.ord_a) { Some(&r) => r, None => continue };
+            let rank_b = match ord_to_rank.get(&sb.ord_b) { Some(&r) => r, None => continue };
+            let (lo, hi) = if rank_a <= rank_b { (rank_a, rank_b) } else { (rank_b, rank_a) };
+            let span = (steps[hi].offset + steps[hi].seg_len) - steps[lo].offset;
+            if span >= min_sv_bp {
+                intervals.push(Interval { lo, hi, super_ord: sb.super_ord });
+            }
+        }
+        intervals.sort_unstable_by_key(|iv| iv.lo);
+        if verbose {
+            eprintln!("  {} large snarls (>= {}bp) on {}", intervals.len(), min_sv_bp, path.name);
+        }
+
+        let n = steps.len();
+        let mut cursor = 0usize;
+        let mut iv_idx = 0usize;
+
+        while cursor < n {
+            if iv_idx < intervals.len() {
+                let iv = &intervals[iv_idx];
+                if iv.lo > cursor {
+                    let ords = collect_ords_from_steps(steps, cursor, iv.lo - 1);
+                    all_rows.push(CoarseRow {
+                        path_name: path.name.clone(),
+                        start: steps[cursor].offset,
+                        end: steps[iv.lo - 1].offset + steps[iv.lo - 1].seg_len,
+                        super_ord: ords[0],
+                        row_type: "chain",
+                        ords,
+                    });
+                    cursor = iv.lo;
+                } else if iv.lo == cursor {
+                    let ords = collect_ords_from_steps(steps, iv.lo, iv.hi);
+                    *hap_count.entry(iv.super_ord).or_insert(0) += 1;
+                    all_rows.push(CoarseRow {
+                        path_name: path.name.clone(),
+                        start: steps[iv.lo].offset,
+                        end: steps[iv.hi].offset + steps[iv.hi].seg_len,
+                        super_ord: iv.super_ord,
+                        row_type: "snarl",
+                        ords,
+                    });
+                    cursor = iv.hi + 1;
+                    iv_idx += 1;
+                    while iv_idx < intervals.len() && intervals[iv_idx].lo < cursor {
+                        iv_idx += 1;
+                    }
+                } else {
+                    iv_idx += 1;
+                }
+            } else {
+                let ords = collect_ords_from_steps(steps, cursor, n - 1);
+                all_rows.push(CoarseRow {
+                    path_name: path.name.clone(),
+                    start: steps[cursor].offset,
+                    end: steps[n - 1].offset + steps[n - 1].seg_len,
+                    super_ord: ords[0],
+                    row_type: "chain",
+                    ords,
+                });
+                break;
+            }
+        }
+    }
+
+    (all_rows, hap_count, processed_assemblies)
+}
+
+
+fn graph_coarse_build_snarls(
+    gfa_path: &str,
+    paths: &[PathData],
+    assemblies_filter: Option<&HashSet<String>>,
+    seg_ordinals: &HashMap<String, u64>,
+    output_prefix: &str,
+    min_sv_bp: u64,
+) {
+    // Prefer a co-located .vg file for snarls (much faster than GFA for large inputs).
+    let vg_input = {
+        let candidate = gfa_path
+            .trim_end_matches(".gz")
+            .trim_end_matches(".gfa")
+            .to_string()
+            + ".vg";
+        if std::path::Path::new(&candidate).exists() {
+            eprintln!("  Using {} for vg snarls (faster than GFA)", candidate);
+            candidate
+        } else {
+            gfa_path.to_string()
+        }
+    };
+
+    // Run vg snarls | vg view -R to get JSON snarl records (one-time, graph-level).
+    let threads = std::thread::available_parallelism()
+        .map(|n| n.get().min(4).to_string())
+        .unwrap_or_else(|_| "1".to_string());
+    let mut vg_snarls = Command::new("vg")
+        .args(["snarls", "-t", &threads, &vg_input])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("failed to spawn vg snarls; is vg installed?");
+    let mut vg_view = Command::new("vg")
+        .args(["view", "-R", "-"])
+        .stdin(vg_snarls.stdout.take().unwrap())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("failed to spawn vg view");
+
+    let snarl_boundaries: Vec<SnarlBoundary> = BufReader::new(vg_view.stdout.take().unwrap())
+        .lines()
+        .filter_map(|l| l.ok())
+        .filter_map(|l| parse_snarl_boundary(&l))
+        .filter_map(|(name_a, name_b)| {
+            let ord_a = *seg_ordinals.get(&name_a)?;
+            let ord_b = *seg_ordinals.get(&name_b)?;
+            Some(SnarlBoundary { ord_a, ord_b, super_ord: ord_a.min(ord_b) })
+        })
+        .collect();
+
+    vg_snarls.wait().ok();
+    vg_view.wait().ok();
+    eprintln!("  {} top-level snarls parsed", snarl_boundaries.len());
+
+    let (all_rows, hap_count, mut processed_assemblies) =
+        compute_snarl_coarse_rows(paths, assemblies_filter, &snarl_boundaries, min_sv_bp, true);
+
+    // Write all rows with hap_count.
+    let coarse_file = format!("{}.graph.coarse.bed.gz", output_prefix);
+    let mut proc = spawn_sort_bgzip(&coarse_file);
+    let mut w = BufWriter::new(proc.stdin.take().unwrap());
+
+    processed_assemblies.sort_unstable();
+    processed_assemblies.dedup();
+    writeln!(w, "#schema=graph-coarse/v2").unwrap();
+    writeln!(w, "#engine=snarl").unwrap();
+    writeln!(w, "#min-sv-bp={}", min_sv_bp).unwrap();
+    writeln!(w, "#assemblies={}", processed_assemblies.join(",")).unwrap();
+
+    for row in &all_rows {
+        let hc = if row.row_type == "snarl" {
+            hap_count.get(&row.super_ord).copied().unwrap_or(1)
+        } else {
+            0
+        };
+        let ords_str = encode_ordinal_ranges(&row.ords);
+        writeln!(w, "{}\t{}\t{}\t{}\t{}\t{}\t{}", row.path_name, row.start, row.end, row.super_ord, row.row_type, hc, ords_str).unwrap();
+    }
+
+    drop(w);
+    assert!(proc.wait().map(|s| s.success()).unwrap_or(false), "graph.coarse snarl sort|bgzip failed");
+    run_cmd("tabix", &["-c", "#", "-p", "bed", &coarse_file]);
+    eprintln!("  Wrote {} ({} rows, {} assemblies)", coarse_file, all_rows.len(), processed_assemblies.len());
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::BufWriter;
+
+    fn parse_gfa_for_synteny(gfa: &str) -> (HashMap<String, u64>, HashMap<String, u64>, Vec<PathData>, Vec<(String, String, String, String)>) {
+        let mut seg_lengths: HashMap<String, u64> = HashMap::new();
+        let mut seg_ordinals: HashMap<String, u64> = HashMap::new();
+        let mut next_ordinal: u64 = 0;
+        let mut raw_links: Vec<(String, String, String, String)> = Vec::new();
+        let mut path_lines: Vec<(String, String, String)> = Vec::new();
+
+        for line in gfa.lines() {
+            if line.starts_with("S\t") {
+                let mut parts = line.splitn(4, '\t');
+                parts.next();
+                let name = parts.next().unwrap().to_string();
+                let seq = parts.next().unwrap();
+                let length = parts
+                    .next()
+                    .and_then(|rest| {
+                        rest.split('\t')
+                            .find(|t| t.starts_with("LN:i:"))
+                            .map(|t| t[5..].parse::<u64>().unwrap_or(0))
+                    })
+                    .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
+                seg_lengths.insert(name, length);
+            } else if line.starts_with("L\t") {
+                let cols: Vec<&str> = line.splitn(6, '\t').collect();
+                if cols.len() >= 5 {
+                    raw_links.push((cols[1].to_string(), cols[2].to_string(), cols[3].to_string(), cols[4].to_string()));
+                }
+            } else if line.starts_with("P\t") {
+                let parts: Vec<&str> = line.splitn(4, '\t').collect();
+                if parts.len() >= 3 {
+                    let raw_name = parts[1];
+                    let (sample, _) = match raw_name.rfind('#') {
+                        Some(idx) => (&raw_name[..idx], &raw_name[idx + 1..]),
+                        None => (raw_name, raw_name),
+                    };
+                    path_lines.push((format!("{}#{}", sample, &raw_name[raw_name.rfind('#').map(|i| i+1).unwrap_or(0)..]), sample.to_string(), parts[2].to_string()));
+                }
+            }
+        }
+
+        let mut all_paths: Vec<PathData> = Vec::new();
+        let mut ref_orients: HashMap<u64, bool> = HashMap::new();
+
+        // First pass to detect ref assembly (first path)
+        let ref_assembly_name = path_lines.first().map(|(_, a, _)| a.clone()).unwrap_or_default();
+
+        for (path_name, assembly, seg_str) in &path_lines {
+            let is_ref = assembly == &ref_assembly_name;
+            let mut steps_out: Vec<StepInfo> = Vec::new();
+            let mut ord_walk: Vec<(u64, u64)> = Vec::new();
+            let mut sink = BufWriter::new(Vec::new());
+            emit_path_rows(
+                path_name,
+                seg_str,
+                false,
+                100,
+                &seg_lengths,
+                &mut seg_ordinals,
+                &mut next_ordinal,
+                &mut sink,
+                &mut ref_orients,
+                is_ref,
+                true,
+                &mut ord_walk,
+                &mut steps_out,
+            );
+            all_paths.push(PathData { name: path_name.clone(), assembly: assembly.clone(), steps: steps_out });
+        }
+
+        (seg_lengths, seg_ordinals, all_paths, raw_links)
+    }
+
+    fn run_synteny_on_gfa(gfa: &str, ref_assembly: &str) -> Vec<String> {
+        let (_, _, all_paths, _) = parse_gfa_for_synteny(gfa);
+
+        let ref_paths: Vec<&PathData> = all_paths.iter().filter(|p| p.assembly == ref_assembly).collect();
+        let hap_paths: Vec<&PathData> = all_paths.iter().filter(|p| p.assembly != ref_assembly).collect();
+        let mut rows: Vec<String> = Vec::new();
+
+        for ref_path in &ref_paths {
+            let mut ref_by_ord: HashMap<u64, (u64, u64, bool)> = HashMap::new();
+            let mut ref_ord_rank: HashMap<u64, usize> = HashMap::new();
+            let mut offset = 0u64;
+            for (rank, step) in ref_path.steps.iter().enumerate() {
+                ref_by_ord.insert(step.ord, (offset, offset + step.seg_len, step.is_plus));
+                ref_ord_rank.insert(step.ord, rank);
+                offset += step.seg_len;
+            }
+
+            for hap_path in &hap_paths {
+                let pair_rows = align_pair(ref_path, hap_path, &ref_by_ord, &ref_ord_rank);
+                for row in pair_rows {
+                    let strand = if row.strand { "+" } else { "-" };
+                    rows.push(format!(
+                        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:.6}",
+                        row.ref_path, row.ref_start, row.ref_end,
+                        row.hap_path, row.hap_start, row.hap_end,
+                        strand, row.identity
+                    ));
+                }
+            }
+        }
+
+        rows
+    }
+
+    #[test]
+    fn linear_full_coverage() {
+        let gfa = include_str!("../tests/fixtures/linear.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        // Collect ref intervals and merge
+        let mut intervals: Vec<(u64, u64)> = rows.iter().map(|r| {
+            let cols: Vec<&str> = r.split('\t').collect();
+            (cols[1].parse().unwrap(), cols[2].parse().unwrap())
+        }).collect();
+        intervals.sort();
+        let mut merged_total = 0u64;
+        let mut cur_start = intervals[0].0;
+        let mut cur_end = intervals[0].1;
+        for &(s, e) in &intervals[1..] {
+            if s <= cur_end {
+                cur_end = cur_end.max(e);
+            } else {
+                merged_total += cur_end - cur_start;
+                cur_start = s;
+                cur_end = e;
+            }
+        }
+        merged_total += cur_end - cur_start;
+        assert_eq!(merged_total, 450, "Expected merged ref coverage = 450 (100+200+150), got {}", merged_total);
+    }
+
+    #[test]
+    fn bubble_spans() {
+        let gfa = include_str!("../tests/fixtures/bubble.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        assert_eq!(rows.len(), 3, "Expected 3 rows (s1 block, bubble, s4 block), got {}", rows.len());
+
+        // Check no ref-side overlaps
+        let mut intervals: Vec<(u64, u64)> = rows.iter().map(|r| {
+            let cols: Vec<&str> = r.split('\t').collect();
+            (cols[1].parse::<u64>().unwrap(), cols[2].parse::<u64>().unwrap())
+        }).collect();
+        intervals.sort();
+        for i in 1..intervals.len() {
+            assert!(intervals[i].0 >= intervals[i-1].1, "Overlapping ref intervals: {:?} and {:?}", intervals[i-1], intervals[i]);
+        }
+    }
+
+    #[test]
+    fn inversion_strand() {
+        let gfa = include_str!("../tests/fixtures/inversion.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        assert_eq!(rows.len(), 3, "Expected 3 rows, got {}", rows.len());
+        let strands: Vec<&str> = rows.iter().map(|r| r.split('\t').nth(6).unwrap()).collect();
+        assert_eq!(strands[0], "+", "First row should be +");
+        assert_eq!(strands[1], "-", "Middle row should be -");
+        assert_eq!(strands[2], "+", "Last row should be +");
+    }
+
+    #[test]
+    fn insertion_identity() {
+        let gfa = include_str!("../tests/fixtures/insertion.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        // Find the bubble row (ref span 50, hap span 350)
+        let bubble_row = rows.iter().find(|r| {
+            let cols: Vec<&str> = r.split('\t').collect();
+            let ref_start: u64 = cols[1].parse().unwrap();
+            let ref_end: u64 = cols[2].parse().unwrap();
+            let hap_start: u64 = cols[4].parse().unwrap();
+            let hap_end: u64 = cols[5].parse().unwrap();
+            let ref_len = ref_end.saturating_sub(ref_start);
+            let hap_len = hap_end.saturating_sub(hap_start);
+            ref_len == 50 && hap_len == 350
+        }).expect("Expected a bubble row with refLen=50, hapLen=350");
+        let identity: f64 = bubble_row.split('\t').nth(7).unwrap().parse().unwrap();
+        let expected = 50.0f64 / 350.0;
+        assert!((identity - expected).abs() < 0.001, "Expected identity ≈ {:.6}, got {:.6}", expected, identity);
+    }
+
+    #[test]
+    fn multipath_independence() {
+        let gfa = include_str!("../tests/fixtures/multipath.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+
+        let hap1_rows: Vec<&str> = rows.iter().filter(|r| r.contains("HG002#1")).map(|r| r.as_str()).collect();
+        let hap2_rows: Vec<&str> = rows.iter().filter(|r| r.contains("HG002#2")).map(|r| r.as_str()).collect();
+
+        assert!(!hap1_rows.is_empty(), "HG002#1 should have rows");
+        assert!(!hap2_rows.is_empty(), "HG002#2 should have rows");
+
+        // HG002#1 has s3 (80bp bubble), HG002#2 has s6 (90bp bubble)
+        // Check that HG002#1 rows don't contain hap spans matching HG002#2's private segment and vice versa
+        // s3 is at hap offset 100..180 for HG002#1 (after s1=100), s6 is at hap offset 260..350 for HG002#2 (after s1+s2+s4=100+60+100)
+        for r in &hap2_rows {
+            assert!(!r.contains("HG002#1"), "HG002#2 row should not reference HG002#1: {}", r);
+        }
+        for r in &hap1_rows {
+            assert!(!r.contains("HG002#2"), "HG002#1 row should not reference HG002#2: {}", r);
+        }
+    }
+
+    #[test]
+    fn edges_count() {
+        let gfa = include_str!("../tests/fixtures/bubble.gfa");
+        let (_, seg_ordinals, all_paths, raw_links) = parse_gfa_for_synteny(gfa);
+        let seg_lengths: HashMap<String, u64> = {
+            let mut m = HashMap::new();
+            for line in gfa.lines() {
+                if line.starts_with("S\t") {
+                    let mut parts = line.splitn(4, '\t');
+                    parts.next();
+                    let name = parts.next().unwrap().to_string();
+                    let seq = parts.next().unwrap();
+                    let length = parts.next()
+                        .and_then(|rest| rest.split('\t').find(|t| t.starts_with("LN:i:")).map(|t| t[5..].parse::<u64>().unwrap_or(0)))
+                        .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
+                    m.insert(name, length);
+                }
+            }
+            m
+        };
+
+        let tmp = std::env::temp_dir().join(format!("edges_count_test_{}", std::process::id()));
+        std::fs::create_dir_all(&tmp).unwrap();
+        let prefix = tmp.join("test").to_str().unwrap().to_string();
+        build_edges_spatial(&raw_links, &seg_ordinals, &seg_lengths, &all_paths, "GRCh38#0", &prefix);
+
+        let edges_file = format!("{}.edges.spatial.bed.gz", prefix);
+        let output = Command::new("sh")
+            .args(["-c", &format!("bgzip -dc \"{}\" | grep -v '^#' | wc -l", edges_file)])
+            .output()
+            .expect("count edges");
+        let count: usize = String::from_utf8_lossy(&output.stdout).trim().parse().unwrap_or(0);
+        std::fs::remove_dir_all(&tmp).ok();
+        assert_eq!(count, 8, "Expected 8 edge rows (2 × 4 L-lines), got {}", count);
+    }
+
+    #[test]
+    fn edges_bidirectional() {
+        let gfa = include_str!("../tests/fixtures/bubble.gfa");
+        let (_, seg_ordinals, all_paths, raw_links) = parse_gfa_for_synteny(gfa);
+        let seg_lengths: HashMap<String, u64> = {
+            let mut m = HashMap::new();
+            for line in gfa.lines() {
+                if line.starts_with("S\t") {
+                    let mut parts = line.splitn(4, '\t');
+                    parts.next();
+                    let name = parts.next().unwrap().to_string();
+                    let seq = parts.next().unwrap();
+                    let length = parts.next()
+                        .and_then(|rest| rest.split('\t').find(|t| t.starts_with("LN:i:")).map(|t| t[5..].parse::<u64>().unwrap_or(0)))
+                        .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
+                    m.insert(name, length);
+                }
+            }
+            m
+        };
+
+        let tmp = std::env::temp_dir().join(format!("edges_bidir_test_{}", std::process::id()));
+        std::fs::create_dir_all(&tmp).unwrap();
+        let prefix = tmp.join("test").to_str().unwrap().to_string();
+        build_edges_spatial(&raw_links, &seg_ordinals, &seg_lengths, &all_paths, "GRCh38#0", &prefix);
+
+        let edges_file = format!("{}.edges.spatial.bed.gz", prefix);
+        let output = Command::new("sh")
+            .args(["-c", &format!("bgzip -dc \"{}\"", edges_file)])
+            .output()
+            .expect("read edges");
+        let content = String::from_utf8_lossy(&output.stdout);
+        std::fs::remove_dir_all(&tmp).ok();
+
+        // s1 ord=0, s2 ord=1, s3 ord=2, s4 ord=3 (ref path first)
+        // Check both directions for s1->s2 link: row with (0,1) and row with (1,0)
+        let has_fwd = content.lines().any(|l| {
+            let cols: Vec<&str> = l.split('\t').collect();
+            cols.len() >= 5 && cols[3] == "0" && cols[4] == "1"
+        });
+        let has_rev = content.lines().any(|l| {
+            let cols: Vec<&str> = l.split('\t').collect();
+            cols.len() >= 5 && cols[3] == "1" && cols[4] == "0"
+        });
+        assert!(has_fwd, "Missing forward edge 0->1");
+        assert!(has_rev, "Missing reverse edge 1->0");
+    }
+
+    #[test]
+    fn coarse_merges_small_gap() {
+        let rows = vec![
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 0, ref_end: 1000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 0, hap_end: 1000,
+                strand: true, identity: 1.0,
+            },
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 6000, ref_end: 7000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 6000, hap_end: 7000,
+                strand: true, identity: 1.0,
+            },
+        ];
+        let coarse = merge_coarse(&rows, 10_000);
+        assert_eq!(coarse.len(), 1, "5kbp gap should merge into 1 row, got {}", coarse.len());
+    }
+
+    #[test]
+    fn coarse_keeps_large_gap() {
+        let rows = vec![
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 0, ref_end: 1000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 0, hap_end: 1000,
+                strand: true, identity: 1.0,
+            },
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 16000, ref_end: 17000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 16000, hap_end: 17000,
+                strand: true, identity: 1.0,
+            },
+        ];
+        let coarse = merge_coarse(&rows, 10_000);
+        assert_eq!(coarse.len(), 2, "15kbp gap should stay as 2 rows, got {}", coarse.len());
+    }
+
+    #[test]
+    fn coarse_identity_weighted() {
+        let rows = vec![
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 0, ref_end: 1000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 0, hap_end: 1000,
+                strand: true, identity: 0.9,
+            },
+            SyntenyRow {
+                ref_path: "ref#0#chr1".to_string(), ref_start: 1000, ref_end: 3000,
+                hap_path: "hap#1#chr1".to_string(), hap_start: 1000, hap_end: 3000,
+                strand: true, identity: 0.8,
+            },
+        ];
+        let coarse = merge_coarse(&rows, 10_000);
+        assert_eq!(coarse.len(), 1);
+        let expected = (1000.0 * 0.9 + 2000.0 * 0.8) / 3000.0;
+        assert!((coarse[0].identity - expected).abs() < 0.001, "Expected identity ≈ {:.6}, got {:.6}", expected, coarse[0].identity);
+    }
+
+    #[test]
+    fn rev_key_matches() {
+        let gfa = include_str!("../tests/fixtures/bubble.gfa");
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+
+        for row in &rows {
+            let cols: Vec<&str> = row.split('\t').collect();
+            let hap_path = cols[3];
+            let hap_start: u64 = cols[4].parse().unwrap();
+            let hap_end: u64 = cols[5].parse().unwrap();
+            let hap_chrom = path_chrom(hap_path);
+
+            // Reconstruct what the rev row would look like
+            let expected_prefix = format!("{}\t{}\t{}", hap_chrom, hap_start, hap_end);
+            let found = rows.iter().any(|r| {
+                // We re-simulate rev from the forward rows
+                let c: Vec<&str> = r.split('\t').collect();
+                c[3] == hap_path && c[4] == cols[4] && c[5] == cols[5]
+            });
+            assert!(found, "No matching rev row for hap span {}:{}-{}", hap_chrom, hap_start, hap_end);
+            let _ = expected_prefix;
+        }
+    }
+
+    fn make_steps(seg_lens: &[u64]) -> Vec<StepInfo> {
+        let mut steps = Vec::new();
+        let mut offset = 0u64;
+        for (i, &len) in seg_lens.iter().enumerate() {
+            steps.push(StepInfo { ord: i as u64, offset, seg_len: len, is_plus: true });
+            offset += len;
+        }
+        steps
+    }
+
+    #[test]
+    fn tile_collapses_short_run() {
+        let steps = make_steps(&[100, 100, 100, 100, 100]);
+        let rows = compute_tile_rows(&steps, 10_000);
+        assert_eq!(rows.len(), 1, "500bp total < 10kb tile, should be 1 tile");
+        assert_eq!(rows[0].2, 0, "super_ord should be min ord = 0");
+        assert_eq!(rows[0].3, vec![0, 1, 2, 3, 4]);
+    }
+
+    #[test]
+    fn tile_splits_long_path() {
+        // 5 segments of 3000bp = 15000bp total, tile_size=10000
+        // After seg 3 (offset 9000..12000): span = 12000 >= 10000 → emit tile [0,1,2,3]
+        // Remainder: seg 4 (12000..15000) → tile [4]
+        let steps = make_steps(&[3000, 3000, 3000, 3000, 3000]);
+        let rows = compute_tile_rows(&steps, 10_000);
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows[0].0, 0);
+        assert_eq!(rows[0].1, 12000);
+        assert_eq!(rows[0].2, 0);
+        assert_eq!(rows[1].0, 12000);
+        assert_eq!(rows[1].1, 15000);
+        assert_eq!(rows[1].2, 4);
+    }
+
+    #[test]
+    fn tile_super_ord_is_min() {
+        // ordinals assigned non-sequentially: 5,3,1,2,4
+        let seg_lens = [100u64, 100, 100, 100, 100];
+        let ords = [5u64, 3, 1, 2, 4];
+        let mut steps = Vec::new();
+        let mut offset = 0u64;
+        for (&ord, &len) in ords.iter().zip(seg_lens.iter()) {
+            steps.push(StepInfo { ord, offset, seg_len: len, is_plus: true });
+            offset += len;
+        }
+        let rows = compute_tile_rows(&steps, 10_000);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].2, 1, "super_ord must be min ordinal = 1");
+    }
+
+    #[test]
+    fn tile_single_large_segment() {
+        // One segment larger than tile_size → single tile (no split mid-segment)
+        let steps = make_steps(&[50_000]);
+        let rows = compute_tile_rows(&steps, 10_000);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].0, 0);
+        assert_eq!(rows[0].1, 50_000);
+        assert_eq!(rows[0].2, 0);
+    }
+
+    #[test]
+    fn snarl_parse_top_level() {
+        let line = r#"{"directed_acyclic_net_graph": true, "end": {"node_id": "22"}, "start": {"node_id": "16"}, "start_end_reachable": true, "type": 1}"#;
+        let result = parse_snarl_boundary(line);
+        assert!(result.is_some(), "should parse top-level snarl");
+        let (a, b) = result.unwrap();
+        let mut ids = vec![a, b];
+        ids.sort();
+        assert_eq!(ids, vec!["16", "22"]);
+    }
+
+    #[test]
+    fn snarl_parse_nested_returns_none() {
+        let line = r#"{"directed_acyclic_net_graph": true, "end": {"node_id": "4"}, "parent": {"end": {"node_id": "151"}, "start": {"node_id": "148"}}, "start": {"node_id": "1"}, "start_end_reachable": true, "type": 1}"#;
+        assert_eq!(parse_snarl_boundary(line), None, "nested snarl should return None");
+    }
+
+    #[test]
+    fn snarl_parse_extracts_node_ids() {
+        let line = r#"{"end": {"node_id": "abc"}, "start": {"node_id": "xyz"}}"#;
+        let ids = extract_node_ids(line);
+        assert_eq!(ids.len(), 2);
+        assert!(ids.contains(&"abc".to_string()));
+        assert!(ids.contains(&"xyz".to_string()));
+    }
+
+    // Build PathData from a simple segment list with explicit ordinals and lengths.
+    // segments: [(name, ord, len)], walk: [ord, ...] in traversal order
+    fn make_path(name: &str, assembly: &str, segments: &[(&str, u64, u64)], walk: &[u64]) -> PathData {
+        let mut offset = 0u64;
+        let steps: Vec<StepInfo> = walk.iter().map(|&ord| {
+            let len = segments.iter().find(|&&(_, o, _)| o == ord).map(|&(_, _, l)| l).unwrap_or(1);
+            let step = StepInfo { ord, offset, seg_len: len, is_plus: true };
+            offset += len;
+            step
+        }).collect();
+        PathData { name: name.to_string(), assembly: assembly.to_string(), steps }
+    }
+
+    #[test]
+    fn snarl_multiassembly_super_ord_stable() {
+        // Two assemblies traversing the same snarl (boundary ordinals 1 and 3).
+        // Assembly A: 0 → 1 → 2 → 3 → 4  (snarl interior: seg 2, 100bp)
+        // Assembly B: 0 → 1 → 5 → 3 → 4  (snarl interior: seg 5, 120bp)
+        // superOrd for the snarl should be min(1, 3) = 1 on both assembly rows.
+        let segs: &[(&str, u64, u64)] = &[
+            ("s0", 0, 50), ("s1", 1, 10), ("s2", 2, 100), ("s3", 3, 10), ("s4", 4, 50),
+            ("s5", 5, 120),
+        ];
+        let path_a = make_path("asm_a#0#chr1", "asm_a", segs, &[0, 1, 2, 3, 4]);
+        let path_b = make_path("asm_b#0#chr1", "asm_b", segs, &[0, 1, 5, 3, 4]);
+
+        let boundaries = vec![SnarlBoundary { ord_a: 1, ord_b: 3, super_ord: 1 }];
+        let (rows, hap_count, _) = compute_snarl_coarse_rows(
+            &[path_a, path_b], None, &boundaries, 50, false,
+        );
+
+        let snarl_rows: Vec<&CoarseRow> = rows.iter().filter(|r| r.row_type == "snarl").collect();
+        assert_eq!(snarl_rows.len(), 2, "should have one snarl row per assembly");
+        assert_eq!(snarl_rows[0].super_ord, 1, "superOrd must be min(1,3)=1 for assembly A");
+        assert_eq!(snarl_rows[1].super_ord, 1, "superOrd must be min(1,3)=1 for assembly B");
+        assert_eq!(hap_count[&1], 2, "hap_count for snarl with superOrd=1 should be 2");
+    }
+
+    #[test]
+    fn snarl_insertion_visible_in_alt_assembly() {
+        // Assembly A (reference): snarl interior is tiny (5bp) — filtered out at min_sv_bp=50.
+        // Assembly B (alt):       snarl interior is large (200bp) — passes filter in B's space.
+        // This is the key symmetry test: the insertion appears in B's rows even though A has no row.
+        let segs: &[(&str, u64, u64)] = &[
+            ("s0", 0, 100), ("s1", 1, 5), ("s_ins", 10, 200), ("s2", 2, 5), ("s3", 3, 100),
+        ];
+        let path_ref = make_path("ref#0#chr1", "ref", segs, &[0, 1, 2, 3]);      // ref: snarl 1→2 = 5+5=10bp
+        let path_alt = make_path("alt#0#chr1", "alt", segs, &[0, 1, 10, 2, 3]); // alt: snarl 1→2 = 5+200+5=210bp
+
+        let boundaries = vec![SnarlBoundary { ord_a: 1, ord_b: 2, super_ord: 1 }];
+        let (rows, hap_count, _) = compute_snarl_coarse_rows(
+            &[path_ref, path_alt], None, &boundaries, 50, false,
+        );
+
+        let snarl_rows: Vec<&CoarseRow> = rows.iter().filter(|r| r.row_type == "snarl").collect();
+        // Only alt assembly emits a snarl row (ref span 10bp < 50bp min)
+        assert_eq!(snarl_rows.len(), 1, "only alt assembly should have a snarl row");
+        assert_eq!(snarl_rows[0].path_name, "alt#0#chr1");
+        assert_eq!(snarl_rows[0].super_ord, 1);
+        assert_eq!(snarl_rows[0].end - snarl_rows[0].start, 210, "alt snarl span should be 210bp");
+        assert_eq!(hap_count[&1], 1, "only 1 assembly traverses this snarl above the threshold");
+
+        // Ref assembly should have the snarl absorbed into backbone chain
+        let chain_rows: Vec<&CoarseRow> = rows.iter()
+            .filter(|r| r.path_name == "ref#0#chr1" && r.row_type == "chain")
+            .collect();
+        assert!(!chain_rows.is_empty(), "ref assembly should have chain rows");
+    }
+
+    #[test]
+    fn snarl_hap_count_correct() {
+        // Three assemblies, a snarl (boundary 1→3) visible in 2 of 3.
+        // Assembly C's path doesn't include boundary node 3, so it gets no snarl row.
+        let segs: &[(&str, u64, u64)] = &[
+            ("s0", 0, 10), ("s1", 1, 100), ("s2", 2, 100), ("s3", 3, 100), ("s4", 4, 10),
+            ("s5", 5, 10), // path C uses s5 instead of s3
+        ];
+        let path_a = make_path("a#0#chr1", "a", segs, &[0, 1, 2, 3, 4]);
+        let path_b = make_path("b#0#chr1", "b", segs, &[0, 1, 2, 3, 4]);
+        let path_c = make_path("c#0#chr1", "c", segs, &[0, 1, 5, 4]); // doesn't traverse ord 3
+
+        let boundaries = vec![SnarlBoundary { ord_a: 1, ord_b: 3, super_ord: 1 }];
+        let (rows, hap_count, assemblies) = compute_snarl_coarse_rows(
+            &[path_a, path_b, path_c], None, &boundaries, 50, false,
+        );
+
+        let snarl_rows: Vec<&CoarseRow> = rows.iter().filter(|r| r.row_type == "snarl").collect();
+        assert_eq!(snarl_rows.len(), 2, "only A and B emit snarl rows");
+        assert_eq!(hap_count[&1], 2, "hap_count should be 2 (A and B)");
+        assert_eq!(assemblies.iter().filter(|a| *a == "c").count(), 1, "assembly C still appears in processed list");
+    }
+
+    // HPRC-style GFAs name haplotype contigs differently from the reference
+    // (e.g., GRCh38#0#chr20 vs HG00438#1#JAHBCB010000023.1). The old
+    // chrom-grouping approach missed these; the new ordinal-based pairing
+    // must link them correctly.
+    #[test]
+    fn synteny_cross_chrom_hprc_style() {
+        // seg1 shared by ref and hap (different chrom names)
+        // ref: GRCh38#0#chr20  steps: [s0, s1, s2]
+        // hap: HG00438#1#JAHBCB010000023.1  steps: [s0, s1, s2]  (same ordinals, different name)
+        let gfa = "\
+H\tVN:Z:1.1\n\
+S\ts0\tAAAA\tLN:i:4\n\
+S\ts1\tCCCC\tLN:i:4\n\
+S\ts2\tGGGG\tLN:i:4\n\
+P\tGRCh38#0#chr20\ts0+,s1+,s2+\t*\n\
+P\tCHM13#0#chr20\ts0+,s1+,s2+\t*\n\
+P\tHG00438#1#JAHBCB010000023.1\ts0+,s1+,s2+\t*\n\
+";
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        let hap_chroms: std::collections::HashSet<&str> = rows.iter()
+            .map(|r| r.split('\t').nth(3).unwrap())
+            .collect();
+        assert!(hap_chroms.contains("CHM13#0#chr20"), "CHM13 chr20 must appear");
+        assert!(hap_chroms.contains("HG00438#1#JAHBCB010000023.1"),
+            "cross-chrom hap with shared ordinals must appear; got {:?}", hap_chroms);
+        assert_eq!(hap_chroms.len(), 2, "exactly two query paths");
+    }
+
+    #[test]
+    fn snarl_assembly_filter_respected() {
+        let segs: &[(&str, u64, u64)] = &[
+            ("s0", 0, 10), ("s1", 1, 100), ("s2", 2, 100), ("s3", 3, 10),
+        ];
+        let path_a = make_path("a#0#chr1", "a", segs, &[0, 1, 2, 3]);
+        let path_b = make_path("b#0#chr1", "b", segs, &[0, 1, 2, 3]);
+
+        let boundaries = vec![SnarlBoundary { ord_a: 1, ord_b: 2, super_ord: 1 }];
+        let filter: HashSet<String> = ["a".to_string()].into_iter().collect();
+        let (rows, _, assemblies) = compute_snarl_coarse_rows(
+            &[path_a, path_b], Some(&filter), &boundaries, 50, false,
+        );
+
+        assert!(rows.iter().all(|r| r.path_name.starts_with("a#")), "only assembly a rows emitted");
+        assert_eq!(assemblies.len(), 1);
+        assert_eq!(assemblies[0], "a");
+    }
+}

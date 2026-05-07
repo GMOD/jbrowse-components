@@ -1,6 +1,10 @@
 import { Suspense, lazy, useState } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  ErrorBanner,
+  LoadingEllipses,
+  PluggableComponent,
+} from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -20,17 +24,12 @@ const DrawerWidget = observer(function DrawerWidget({
   const { visibleWidget } = session
   const { pluginManager } = getEnv(session)
 
-  const DrawerComponent = visibleWidget
-    ? (pluginManager.evaluateExtensionPoint(
-        'Core-replaceWidget',
-        pluginManager.getWidgetType(visibleWidget.type)!.ReactComponent,
-        {
-          session,
-          model: visibleWidget,
-        },
-      ) as React.FC<any>)
+  const widgetType = visibleWidget
+    ? pluginManager.getWidgetType(visibleWidget.type)
     : null
-
+  if (visibleWidget && !widgetType) {
+    throw new Error(`unknown widget type ${visibleWidget.type}`)
+  }
   // we track the toolbar height because components that use virtualized
   // height want to be able to fill the contained, minus the toolbar height
   // (the position static/sticky is included in AutoSizer estimates)
@@ -48,9 +47,9 @@ const DrawerWidget = observer(function DrawerWidget({
       />
       <Suspense fallback={<LoadingEllipses />}>
         <ErrorBoundary
-          FallbackComponent={({ error }) => <ErrorMessage error={error} />}
+          FallbackComponent={({ error }) => <ErrorBanner error={error} />}
         >
-          {DrawerComponent ? (
+          {widgetType && visibleWidget ? (
             popoutDrawer ? (
               <>
                 <div>Opened in dialog...</div>
@@ -63,10 +62,15 @@ const DrawerWidget = observer(function DrawerWidget({
               </>
             ) : (
               <>
-                <DrawerComponent
-                  model={visibleWidget}
-                  session={session}
-                  toolbarHeight={toolbarHeight}
+                <PluggableComponent
+                  pluginManager={pluginManager}
+                  name="Core-replaceWidget"
+                  component={widgetType.ReactComponent}
+                  props={{
+                    model: visibleWidget,
+                    session,
+                    toolbarHeight,
+                  }}
                 />
                 <div style={{ height: 300 }} />
               </>

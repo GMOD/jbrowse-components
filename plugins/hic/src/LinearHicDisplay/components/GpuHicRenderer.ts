@@ -1,61 +1,51 @@
-import { FRAGMENT_SHADER, VERTEX_SHADER } from './hicGlslShaders.ts'
-import {
-  INSTANCE_STRIDE,
-  hicShader,
-  interleaveHicInstances,
-} from './hicShaders.ts'
+import { slangPass } from '@jbrowse/core/gpu/slangPass'
+
+import * as hicShader from './shaders/hic.generated.ts'
 
 import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_MAIN = 'main'
-const INSTANCE_BYTES = INSTANCE_STRIDE * 4
-const UNIFORM_BYTE_SIZE = 32
 const REGION_KEY = 0
+const UNIFORMS_SIZE_BYTES = hicShader.UNIFORMS_SIZE_BYTES
+const U = hicShader.UNIFORM_OFFSET_F32
+const F = hicShader.FIELD_OFFSET_F32
+const STRIDE = hicShader.INSTANCE_STRIDE_F32
+const STRIDE_BYTES = hicShader.INSTANCE_STRIDE_BYTES
 
 export const HIC_PASSES: PassDescriptor[] = [
-  {
+  slangPass({
     id: PASS_MAIN,
-    wgslSource: hicShader,
-    glslVertex: VERTEX_SHADER,
-    glslFragment: FRAGMENT_SHADER,
-    instanceStride: INSTANCE_BYTES,
-    verticesPerInstance: 6,
-    blend: true,
+    mod: hicShader,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
-    glAttributes: [
-      {
-        name: 'a_position',
-        components: 2,
-        type: 'float',
-        offsetBytes: 0,
-        integer: false,
-      },
-      {
-        name: 'a_count',
-        components: 1,
-        type: 'float',
-        offsetBytes: 8,
-        integer: false,
-      },
-    ],
-    textures: [
-      {
-        textureBinding: 2,
-        samplerBinding: 3,
-        glTextureUnit: 0,
-        glUniformName: 'u_colorRamp',
-        filter: 'linear',
-      },
-    ],
-  },
+  }),
 ]
 
-export { UNIFORM_BYTE_SIZE as HIC_UNIFORM_BYTE_SIZE }
+export {
+  STRIDE as HIC_INSTANCE_STRIDE_F32,
+  UNIFORMS_SIZE_BYTES as HIC_UNIFORM_BYTE_SIZE,
+}
+
+function interleaveHicInstances(data: {
+  positions: Float32Array
+  counts: Float32Array
+  numContacts: number
+}) {
+  const count = data.numContacts
+  const buf = new ArrayBuffer(count * STRIDE_BYTES)
+  const f32 = new Float32Array(buf)
+  for (let i = 0; i < count; i++) {
+    const off = i * STRIDE
+    f32[off + F.position] = data.positions[i * 2]!
+    f32[off + F.position + 1] = data.positions[i * 2 + 1]!
+    f32[off + F.count] = data.counts[i]!
+  }
+  return buf
+}
 
 export class GpuHicRenderer implements HicBackend {
   private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
+  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
 
@@ -88,14 +78,14 @@ export class GpuHicRenderer implements HicBackend {
     this.hal.beginFrame(0, 0, 0, 0)
 
     if (this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0) {
-      this.uniformF32[0] = canvasWidth
-      this.uniformF32[1] = canvasHeight
-      this.uniformF32[2] = state.binWidth
-      this.uniformF32[3] = state.yScalar
-      this.uniformF32[4] = state.maxScore
-      this.uniformF32[5] = state.viewScale
-      this.uniformF32[6] = state.viewOffsetX
-      this.uniformU32[7] = state.useLogScale ? 1 : 0
+      this.uniformF32[U.canvasSize] = canvasWidth
+      this.uniformF32[U.canvasSize + 1] = canvasHeight
+      this.uniformF32[U.binWidth] = state.binWidth
+      this.uniformF32[U.yScalar] = state.yScalar
+      this.uniformF32[U.colorMaxScore] = state.colorMaxScore
+      this.uniformF32[U.viewScale] = state.viewScale
+      this.uniformF32[U.viewOffsetX] = state.viewOffsetX
+      this.uniformU32[U.useLogScale] = state.useLogScale ? 1 : 0
 
       this.hal.writeUniforms(this.uniformData)
       this.hal.drawPass(PASS_MAIN, REGION_KEY)

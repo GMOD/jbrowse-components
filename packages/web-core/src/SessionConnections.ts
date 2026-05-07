@@ -41,7 +41,7 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
           } else {
             const { connectionId, type } = connectionConf
             if (!type) {
-              throw new Error(`unknown connection type "${type}"`)
+              throw new Error('connection type not specified')
             }
             const connection = self.sessionConnections.find(
               c => c.connectionId === connectionId,

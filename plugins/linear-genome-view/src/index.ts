@@ -96,10 +96,10 @@ export {
   ConfigOverrideMixin,
   FeatureDensityMixin,
   FloatingLegend,
+  GlobalDataDisplayMixin,
   MultiRegionDisplayMixin,
-  NonBlockCanvasDisplayComponent,
-  NonBlockCanvasDisplayMixin,
   SVGLegend,
+  StaleViewportRescaleMixin,
   TooLargeMessage,
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
@@ -112,11 +112,9 @@ export {
 export type {
   ByteEstimateConfig,
   FetchContext,
+  GlobalDataDisplayMixinType,
   MultiRegionDisplayMixinType,
-  MultiRegionRegion,
-  MultiRegionRegionWithNumber,
-  NonBlockCanvasDisplayMixinType,
-  NonBlockCanvasDisplayModel,
+  StaleViewportRescaleMixinType,
 } from './BaseLinearDisplay/index.ts'
 export {
   AUTO_FORCE_LOAD_BP,
@@ -140,18 +138,8 @@ export {
   SVGTracks,
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
-export { ErrorBox as SVGErrorBox } from './LinearGenomeView/SVGErrorBox.tsx'
+export {
+  ErrorBox as SVGErrorBox,
+  SvgClipRect,
+} from './LinearGenomeView/SVGErrorBox.tsx'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util.ts'
-export {
-  configSchema as linearBasicDisplayConfigSchemaFactory,
-  modelFactory as linearBasicDisplayModelFactory,
-} from './LinearBasicDisplay/index.ts'
-export {
-  configSchema as linearFeatureDisplayConfigSchemaFactory,
-  modelFactory as linearFeatureDisplayModelFactory,
-} from './LinearFeatureDisplay/index.ts'
-export type {
-  LinearFeatureDisplayModel,
-  LinearFeatureDisplayStateModel,
-} from './LinearFeatureDisplay/index.ts'
-export { default as LinearBasicDisplayComponent } from './LinearBasicDisplay/components/LinearBasicDisplayComponent.tsx'

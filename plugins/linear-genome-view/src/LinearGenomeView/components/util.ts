@@ -1,12 +1,10 @@
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
-export { fetchResults, splitLast } from '../../searchUtils.ts'
-
 export function getRelativeX(
   event: { clientX: number; target: EventTarget | null },
   element: HTMLElement | null,
 ) {
-  return event.clientX - (element?.getBoundingClientRect().left || 0)
+  return event.clientX - (element?.getBoundingClientRect().left ?? 0)
 }
 
 export function getCytobands(assembly: Assembly | undefined, refName: string) {
@@ -20,24 +18,8 @@ export function getCytobands(assembly: Assembly | undefined, refName: string) {
         type: f.get('gieStain') as string,
         name: f.get('name'),
       }))
-      .filter(f => f.refName === refName) || []
+      .filter(f => f.refName === refName) ?? []
   )
-}
-
-export const ELIDED_BG =
-  'background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)'
-
-export function joinElements(
-  container: HTMLElement,
-  count: number,
-  create?: () => HTMLElement,
-) {
-  while (container.childElementCount > count) {
-    container.lastElementChild!.remove()
-  }
-  while (container.childElementCount < count) {
-    container.append(create ? create() : document.createElement('div'))
-  }
 }
 
 const MIN_DRAG_DISTANCE = 30

@@ -1,10 +1,3 @@
-/**
- * EXPERIMENTAL: GenBank format exporter
- *
- * This module provides experimental support for exporting features to GenBank format.
- * The generated output may not fully conform to the GenBank specification and should
- * be validated before use in production workflows.
- */
 import { fetchSequence } from './fetchSequence.ts'
 import { max, min } from '../../../util/index.ts'
 
@@ -27,8 +20,7 @@ const coreFields = new Set([
 ])
 
 const TYPE_COLUMN_WIDTH = 16
-
-const blank = '                     '
+const QUALIFIER_INDENT = ' '.repeat(21)
 
 const retitle = {
   name: 'Name',
@@ -48,77 +40,98 @@ function fmt(obj: unknown): string | undefined {
   return `${obj}`
 }
 
-function formatTags(f: Feature, parentId?: string, parentType?: string) {
+function loc(f: Feature, minPos: number) {
+  const start = f.get('start') - minPos + 1
+  const end = f.get('end') - minPos
+  return `${start}..${end}`
+}
+
+function formatTags({
+  feature,
+  parentId,
+  parentType,
+}: {
+  feature: Feature
+  parentId?: string
+  parentType?: string
+}) {
   const tags: string[] = []
   if (parentId && parentType) {
-    tags.push(`${blank}/${parentType}="${parentId}"`)
+    tags.push(`${QUALIFIER_INDENT}/${parentType}="${parentId}"`)
   }
-  const id = f.get('id')
+  const id = feature.get('id')
   if (id) {
-    tags.push(`${blank}/name="${id}"`)
+    tags.push(`${QUALIFIER_INDENT}/name="${id}"`)
   }
-  for (const key of Object.keys(f.toJSON())) {
+  for (const key of Object.keys(feature.toJSON())) {
     if (!coreFields.has(key) && key !== parentType) {
-      const value = fmt(f.get(key))
+      const value = fmt(feature.get(key))
       if (value) {
-        tags.push(`${blank}/${retitle[key] || key}="${value}"`)
+        tags.push(`${QUALIFIER_INDENT}/${retitle[key] ?? key}="${value}"`)
       }
     }
   }
   return tags
 }
 
-function relativeStart(f: Feature, min: number) {
-  return f.get('start') - min + 1
-}
-function relativeEnd(f: Feature, min: number) {
-  return f.get('end') - min
-}
-function loc(f: Feature, min: number) {
-  return `${relativeStart(f, min)}..${relativeEnd(f, min)}`
-}
-function formatFeat(
-  f: Feature,
-  min: number,
-  parentType?: string,
-  parentId?: string,
-) {
-  const type = `${f.get('type')}`.slice(0, TYPE_COLUMN_WIDTH)
-  const l = loc(f, min)
-  const locstrand = f.get('strand') === -1 ? `complement(${l})` : l
+function formatFeat({
+  feature,
+  minPos,
+  parentId,
+  parentType,
+}: {
+  feature: Feature
+  minPos: number
+  parentId?: string
+  parentType?: string
+}) {
+  const type = `${feature.get('type')}`.slice(0, TYPE_COLUMN_WIDTH)
+  const l = loc(feature, minPos)
+  const locstrand = feature.get('strand') === -1 ? `complement(${l})` : l
   return [
     `     ${type.padEnd(TYPE_COLUMN_WIDTH)}${locstrand}`,
-    ...formatTags(f, parentType, parentId),
+    ...formatTags({ feature, parentId, parentType }),
   ]
 }
 
-function formatCDS(
-  feats: Feature[],
-  parentId: string,
-  parentType: string,
-  strand: number,
-  min: number,
-) {
+function formatCDS({
+  feats,
+  parentId,
+  parentType,
+  strand,
+  minPos,
+}: {
+  feats: Feature[]
+  parentId: string
+  parentType: string
+  strand: number
+  minPos: number
+}) {
   if (feats.length === 0) {
     return []
   }
-  const locs = feats.map(f => loc(f, min))
+  const locs = feats.map(f => loc(f, minPos))
   const locExpr = locs.length === 1 ? locs[0] : `join(${locs.join(',')})`
   const strandExpr = strand === -1 ? `complement(${locExpr})` : locExpr
   return [
     `     ${'CDS'.padEnd(TYPE_COLUMN_WIDTH)}${strandExpr}`,
-    `${blank}/${parentType}="${parentId}"`,
+    `${QUALIFIER_INDENT}/${parentType}="${parentId}"`,
   ]
 }
 
-export function formatFeatWithSubfeatures(
-  feature: Feature,
-  min: number,
-  parentId?: string,
-  parentType?: string,
-): string {
-  const primary = formatFeat(feature, min, parentId, parentType)
-  const subfeatures = feature.get('subfeatures') || []
+export function formatFeatWithSubfeatures({
+  feature,
+  minPos,
+  parentId,
+  parentType,
+}: {
+  feature: Feature
+  minPos: number
+  parentId?: string
+  parentType?: string
+}): string {
+  const primary = formatFeat({ feature, minPos, parentId, parentType })
+  const subfeatures = feature.get('subfeatures') ?? []
   const cds = subfeatures
     .filter(f => f.get('type') === 'CDS')
     .sort((a, b) => a.get('start') - b.get('start'))
@@ -127,16 +140,27 @@ export function formatFeatWithSubfeatures(
   )
   const newParentId = feature.get('id')
   const newParentType = feature.get('type')
-  const newParentStrand = feature.get('strand')
+  const newParentStrand = feature.get('strand') ?? 0
   const cdsLines =
     cds.length > 0 && newParentId && newParentType
-      ? formatCDS(cds, newParentId, newParentType, newParentStrand, min)
+      ? formatCDS({
+          feats: cds,
+          parentId: newParentId,
+          parentType: newParentType,
+          strand: newParentStrand,
+          minPos,
+        })
       : []
   return [
     ...primary,
     ...cdsLines,
     ...sansCDS.flatMap(sub =>
-      formatFeatWithSubfeatures(sub, min, newParentId, newParentType),
+      formatFeatWithSubfeatures({
+        feature: sub,
+        minPos,
+        parentId: newParentId,
+        parentType: newParentType,
+      }),
     ),
   ].join('\n')
 }
@@ -146,7 +170,7 @@ function formatOrigin(sequence: string): string[] {
   for (let i = 0; i < sequence.length; i += 60) {
     const pos = String(i + 1).padStart(9)
     const chunk = sequence.slice(i, i + 60).toLowerCase()
-    const groups = chunk.match(/.{1,10}/g) || []
+    const groups = chunk.match(/.{1,10}/g) ?? []
     lines.push(`${pos} ${groups.join(' ')}`)
   }
   lines.push('//')
@@ -166,15 +190,14 @@ export async function stringifyGBK({
     return ''
   }
   const date = '10-JAN-1970'
-
-  const start = min(features.map(f => f.get('start')))
-  const end = max(features.map(f => f.get('end')))
-  const length = end - start
+  const minPos = min(features.map(f => f.get('start')))
+  const maxPos = max(features.map(f => f.get('end')))
+  const length = maxPos - minPos
   const refName = features[0]!.get('refName') || ''
 
   const l1 = [
     'LOCUS'.padEnd(12),
-    `${refName}:${start + 1}..${end}`.padEnd(20),
+    `${refName}:${minPos + 1}..${maxPos}`.padEnd(20),
     ` ${length} bp`.padEnd(15),
     ` ${'DNA'.padEnd(10)}`,
     'linear'.padEnd(10),
@@ -184,8 +207,10 @@ export async function stringifyGBK({
   const contig =
     (await fetchSequence({
       session,
-      region: { assemblyName, start, end, refName },
+      region: { assemblyName, start: minPos, end: maxPos, refName },
     })) ?? ''
-  const lines = features.map(feat => formatFeatWithSubfeatures(feat, start))
+  const lines = features.map(feat =>
+    formatFeatWithSubfeatures({ feature: feat, minPos }),
+  )
   return `${[l1, l2, ...lines, ...formatOrigin(contig)].join('\n')}\n`
 }

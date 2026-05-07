@@ -5,16 +5,13 @@ import { observer } from 'mobx-react'
 
 import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './SequenceTypeSelector.tsx'
-import { Dialog, ErrorMessage, LoadingEllipses } from '../../../ui/index.ts'
-import {
-  SimpleFeature,
-  type SimpleFeatureSerialized,
-  getSession,
-} from '../../../util/index.ts'
+import { Dialog, ErrorBanner, LoadingEllipses } from '../../../ui/index.ts'
+import { getSession } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import { useFeatureSequence } from '../../../util/useFeatureSequence.ts'
 import SequencePanel from '../SequencePanel.tsx'
 
+import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 import type { BaseFeatureWidgetModel } from '../../stateModelFactory.ts'
 import type { SequenceFeatureDetailsModel } from '../model.ts'
 
@@ -44,7 +41,9 @@ const SequenceDialog = observer(function SequenceDialog({
   const { sequence, error } = useFeatureSequence({
     assemblyName,
     session,
-    feature: new SimpleFeature(feature),
+    start: feature.start,
+    end: feature.end,
+    refName: feature.refName,
     upDownBp,
     forceLoad,
   })
@@ -74,7 +73,7 @@ const SequenceDialog = observer(function SequenceDialog({
             </Typography>
           ) : null}
           {error ? (
-            <ErrorMessage error={error} />
+            <ErrorBanner error={error} />
           ) : !sequence ? (
             <LoadingEllipses />
           ) : 'error' in sequence ? (

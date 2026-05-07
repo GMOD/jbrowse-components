@@ -1,6 +1,6 @@
 import eslint from '@eslint/js'
 import { defineConfig } from 'eslint/config'
-import importPlugin from 'eslint-plugin-import'
+import { importX } from 'eslint-plugin-import-x'
 import eslintPluginReact from 'eslint-plugin-react'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
@@ -9,11 +9,13 @@ import tssUnusedClasses from 'eslint-plugin-tss-unused-classes'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
+import baselineJs from 'eslint-plugin-baseline-js'
 
 export default defineConfig(
   {
     ignores: [
       // Build outputs
+      'products/jbrowse-desktop/electron/',
       '**/build',
       '**/dist*',
       '**/esm',
@@ -29,6 +31,8 @@ export default defineConfig(
       'products/**/webpack.config.mjs',
       '**/.storybook',
       '**/umd_plugin.js',
+
+      'plugins/variants/src/VariantRPC/benchmark-genotypes.mjs',
 
       'products/jbrowse-desktop/test/e2e.ts',
 
@@ -96,7 +100,10 @@ export default defineConfig(
       react: {
         version: '19.2.4',
       },
-      'import/ignore': ['dockview-react'],
+      'import-x/resolver': {
+        typescript: true,
+        node: true,
+      },
     },
   },
   {
@@ -112,8 +119,15 @@ export default defineConfig(
   ...tseslint.configs.recommended,
   ...tseslint.configs.stylisticTypeChecked,
   ...tseslint.configs.strictTypeChecked,
-  importPlugin.flatConfigs.recommended,
+  importX.flatConfigs.recommended,
   eslintPluginReact.configs.flat.recommended,
+  {
+    files: ['**/*.{js,ts,jsx,tsx}'],
+    plugins: { 'baseline-js': baselineJs },
+    rules: {
+      'baseline-js/use-baseline': ['error', { available: 'widely' }],
+    },
+  },
   {
     plugins: {
       'react-hooks': eslintPluginReactHooks,
@@ -205,8 +219,8 @@ export default defineConfig(
       'unicorn/expiring-todo-comments': 'off',
       'unicorn/no-array-sort': 'off',
 
-      'import/no-unresolved': 'off',
-      'import/order': [
+      'import-x/no-unresolved': 'off',
+      'import-x/order': [
         'error',
         {
           named: true,
@@ -237,7 +251,7 @@ export default defineConfig(
         },
       ],
 
-      'import/extensions': ['error', 'ignorePackages'],
+      'import-x/extensions': ['error', 'ignorePackages'],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
@@ -251,7 +265,10 @@ export default defineConfig(
       '@typescript-eslint/restrict-plus-operands': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'off',
+      '@typescript-eslint/prefer-nullish-coalescing': [
+        'error',
+        { ignorePrimitives: { string: true } },
+      ],
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/require-await': 'off',

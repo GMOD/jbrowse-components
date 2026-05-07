@@ -1,4 +1,5 @@
-import { LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
+import { useGpuModelLifecycle } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -14,6 +15,7 @@ import { useMouseCoordinates } from './hooks/useMouseCoordinates.ts'
 import { useMouseMoveHandler } from './hooks/useMouseMoveHandler.ts'
 import { useMouseUpHandler } from './hooks/useMouseUpHandler.ts'
 import { useWheelHandler } from './hooks/useWheelHandler.ts'
+import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 
@@ -36,8 +38,7 @@ const useStyles = makeStyles()(theme => ({
   overlay: {
     pointerEvents: 'none',
     overflow: 'hidden',
-    display: 'flex',
-    width: '100%',
+    position: 'relative',
     gridRow: '1/2',
     gridColumn: '2/2',
     zIndex: 100, // needs to be below controls
@@ -55,11 +56,42 @@ const useStyles = makeStyles()(theme => ({
 
   resizeHandle: {
     height: 4,
-    background: '#ccc',
     boxSizing: 'border-box',
     borderTop: '1px solid #fafafa',
   },
 }))
+
+const DotplotCanvas = observer(function DotplotCanvas({
+  model,
+}: {
+  model: DotplotViewModel
+}) {
+  const { viewWidth, viewHeight } = model
+
+  const { canvasRef, error: gpuError } = useGpuModelLifecycle(
+    createDotplotRenderer,
+    model,
+  )
+
+  return (
+    <>
+      <canvas
+        ref={canvasRef}
+        data-testid={
+          model.canvasDrawn
+            ? 'dotplot_webgl_canvas_done'
+            : 'dotplot_webgl_canvas'
+        }
+        style={{
+          width: viewWidth,
+          height: viewHeight,
+          imageRendering: 'auto',
+        }}
+      />
+      {gpuError ? <ErrorBanner error={gpuError} /> : null}
+    </>
+  )
+})
 
 const RenderedComponent = observer(function RenderedComponent({
   model,
@@ -69,6 +101,7 @@ const RenderedComponent = observer(function RenderedComponent({
   const { classes } = useStyles()
   return (
     <div className={classes.overlay}>
+      <DotplotCanvas model={model} />
       {model.tracks.map(track => {
         const [display] = track.displays
         const { RenderingComponent } = display
@@ -89,7 +122,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
   model: DotplotViewModel
 }) {
   const { classes } = useStyles()
-  const { hview, vview, wheelMode, cursorMode } = model
+  const { hview, vview, cursorMode } = model
 
   // Mouse coordinate tracking
   const {
@@ -101,7 +134,8 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
     setMouseDownClient,
     setMouseUpClient,
     setMouseOvered,
-    ref,
+    refEl,
+    refCallback,
     root,
     rootRect,
     mousedown,
@@ -123,7 +157,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
   } = useCursorMode(cursorMode)
 
   // Event handlers
-  useWheelHandler(ref, wheelMode, hview, vview, mousecurr, rootRect.height)
+  useWheelHandler(refEl, hview, vview, mousecurr, rootRect.height)
   useMouseMoveHandler(
     mousecurrClient,
     mousedownClient,
@@ -170,7 +204,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
         <div className={classes.container}>
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />
-          <div ref={ref} className={classes.content}>
+          <div ref={refCallback} className={classes.content}>
             <DotplotTooltips
               model={model}
               mouseOvered={mouseOvered}

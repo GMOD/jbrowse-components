@@ -4,10 +4,10 @@ import path from 'path'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { saveAs } from '@jbrowse/core/util'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
-import { saveAs } from 'file-saver-es'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
@@ -44,7 +44,7 @@ export function getPluginManager(
     adminMode,
   }).create(
     {
-      jbrowse: initialState || configSnapshot,
+      jbrowse: initialState ?? configSnapshot,
     },
     { pluginManager },
   )
@@ -205,7 +205,7 @@ export async function exportAndVerifySvg({
   delay?: { timeout: number }
   findAllByText?: any
 }) {
-  const actualDelay = delay || { timeout: 40000 }
+  const actualDelay = delay ?? { timeout: 40000 }
   const opts = [{}, actualDelay]
   fireEvent.click(await findByTestId('view_menu_icon', ...opts))
 
@@ -218,12 +218,11 @@ export async function exportAndVerifySvg({
   fireEvent.click(await findByText('Submit', ...opts))
 
   await waitFor(() => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(saveAs).toHaveBeenCalled()
   }, actualDelay)
 
   // @ts-expect-error
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+
   const svg = saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
@@ -239,7 +238,7 @@ export async function testFileReload(config: {
   expectedCanvas: string | RegExp
   timeout?: number
 }) {
-  const delay = { timeout: config.timeout || 30000 }
+  const delay = { timeout: config.timeout ?? 30000 }
   const opts = [{}, delay]
 
   await mockConsole(async () => {
@@ -275,7 +274,7 @@ export async function openSpreadsheetView({
   fileUrl: string
   timeout?: number
 }) {
-  const delay = { timeout: timeout || 50000 }
+  const delay = { timeout: timeout ?? 50000 }
   const opts = [{}, delay]
   const { session } = await createView()
 
@@ -304,7 +303,7 @@ export async function openViewWithFileInput({
   fileUrl: string
   timeout?: number
 }) {
-  const delay = { timeout: timeout || 40000 }
+  const delay = { timeout: timeout ?? 40000 }
   const result = await createView()
   const { findByTestId, getByTestId, findByText } = result
 

@@ -16,10 +16,8 @@ export function locationLinkClick({
   let view = session.views.find(v => v.id === newViewId) as
     | LinearGenomeViewModel
     | undefined
-  if (!view) {
-    view = session.addView('LinearGenomeView', {
-      id: newViewId,
-    }) as LinearGenomeViewModel
-  }
+  view ??= session.addView('LinearGenomeView', {
+    id: newViewId,
+  }) as LinearGenomeViewModel
   return view.navToLocString(locString, assemblyName)
 }

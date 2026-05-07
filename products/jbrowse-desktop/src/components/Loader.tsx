@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import ErrorBanner from '@jbrowse/core/ui/ErrorBanner'
 import { localStorageGetItem } from '@jbrowse/core/util'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -12,6 +13,10 @@ import StartScreen from './StartScreen/StartScreen.tsx'
 import { loadPluginManager } from './StartScreen/util.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+setGpuOverride(
+  new URLSearchParams(window.location.search).get('renderer') ?? null,
+)
 
 const Loader = observer(function Loader() {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
@@ -54,7 +59,7 @@ const Loader = observer(function Loader() {
       )}
     >
       <CssBaseline />
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
       {pluginManager?.rootModel?.session ? (
         <JBrowse pluginManager={pluginManager} />
       ) : !config || error ? (

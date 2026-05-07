@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
@@ -60,7 +60,7 @@ export default function VariantSampleGrid(props: {
   const columns = useMemo(() => {
     const keys = [
       'sample',
-      ...Object.keys(rows[0] || {}).filter(k => k !== 'id' && k !== 'sample'),
+      ...Object.keys(rows[0] ?? {}).filter(k => k !== 'id' && k !== 'sample'),
     ]
     return keys.map(
       field =>
@@ -146,7 +146,7 @@ export default function VariantSampleGrid(props: {
           <Typography variant="subtitle2" style={{ marginTop: 8 }}>
             Genotype frequencies (click to filter)
           </Typography>
-          <ErrorBoundary FallbackComponent={ErrorMessage}>
+          <ErrorBoundary FallbackComponent={ErrorBanner}>
             <VariantGenotypeFrequencyTable
               rows={rows}
               selectedGenotypes={selectedGenotypes}

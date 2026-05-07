@@ -14,7 +14,7 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -25,38 +25,25 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import TimelineIcon from '@mui/icons-material/Timeline'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
-import { autorun } from 'mobx'
+import { observable } from 'mobx'
 
-import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
-import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
 import {
   getGlobalMaxDepth,
   mergeGenomeRows,
 } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import { legendItems as legendItemsMap } from './shared/colorUtils.ts'
+import { LABEL_WIDTH } from './shared/types.ts'
 
 import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
-import type { MultiSyntenyRenderer } from './components/MultiSyntenyRenderer.ts'
-import type { SyntenyColors } from './components/multiSyntenyBackendTypes.ts'
+import type { MultiSyntenyBackend } from './components/rendererTypes.ts'
+import type { SyntenyColorPalette } from './shared/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type {
   FetchContext,
   LinearGenomeViewModel,
-  MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
-
-export interface SyntenyColorPalette {
-  coverageColorRgb: [number, number, number]
-  coverageColorHex: string
-  baseColorGl: {
-    A: [number, number, number]
-    C: [number, number, number]
-    G: [number, number, number]
-    T: [number, number, number]
-  }
-  syntenyColors: SyntenyColors
-}
 
 type LGV = LinearGenomeViewModel
 
@@ -90,6 +77,15 @@ function regionFromViewport(view: LGV) {
   }
 }
 
+const SUBGRAPH_VIEW_TYPES = [
+  {
+    type: 'GraphGenomeView' as const,
+    label: 'Graph genome',
+    icon: BubbleChartIcon,
+  },
+  { type: 'TubeMapView' as const, label: 'Tube map', icon: TimelineIcon },
+]
+
 function regionLabel(region: { refName: string; start: number; end: number }) {
   return `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
 }
@@ -105,6 +101,10 @@ async function launchSubgraphView(
     adapterConfig,
     region,
     sessionId,
+    // Cap path emission to avoid stalls on multi-megabase regions; matches
+    // GraphGenomeView.loadFromTabixSubgraph default. See backlog item 2 in
+    // agent-docs/GRAPH_PLAN.md.
+    opts: { maxPathsEmitted: 50000 },
   })
   if (!gfaText) {
     session.notify(
@@ -133,16 +133,12 @@ const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
 
-// SYNC: This display follows the same fetch + GPU rendering architecture as
-// LinearAlignmentsDisplay (plugins/alignments/src/LinearAlignmentsDisplay/model.ts):
-//
-//   1. Compose with MultiRegionDisplayMixin for viewport-aware fetching
-//   2. Override onFetchNeeded → withFetchLifecycle for stop-token + stale checks
-//   3. Override clearDisplaySpecificData to reset display-specific state
-//   4. Capture superAfterAttach to register the mixin's autoruns
-//   5. GPU autoruns: upload (registered first) then draw (tracks dataVersion)
-//
-// Changes to this pattern should be mirrored in both displays.
+// Follows the canonical GPU display architecture (see
+// agent-docs/ARCHITECTURE.md): compose MultiRegionDisplayMixin,
+// override fetchNeeded, and call self.installGpuDisplay(backend,
+// {upload, render}) in startGpuBackendLifecycle. The mixin owns fetch
+// invalidation via rpcProps and the upload/render autorun pair via
+// installGpuDisplay.
 
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types
@@ -165,15 +161,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
-      rpcDataMap: new Map<number, SyntenyRegionData>(),
+      rpcDataMap: observable.map<number, SyntenyRegionData>(),
       allGenomeNames: [] as string[],
       contextMenuFeature: undefined as Feature | undefined,
-      statusMessage: undefined as string | undefined,
-      visibleMaxDepth: 0,
-      webglRenderer: null as MultiSyntenyRenderer | null,
       colorPalette: null as SyntenyColorPalette | null,
-      tabVisibilityVersion: 0,
-      canvasDrawn: false,
     }))
     .views(() => ({
       get featureWidgetType() {
@@ -238,34 +229,88 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         const view = getContainingView(self) as LGV
         return view.bpPerPx < self.snpBpPerPxThreshold
       },
+      // Max depth across visible content blocks. MobX-cached.
       get coverageMaxDepth() {
-        return self.visibleMaxDepth
+        if (!self.showCoverage) {
+          return 0
+        }
+        const view = getContainingView(self) as LGV
+        if (!view.initialized) {
+          return 0
+        }
+        return computeVisibleMaxDepth(view.dynamicBlocks.contentBlocks, b =>
+          self.rpcDataMap.get(b.displayedRegionIndex!),
+        )
       },
       get coverageTicks() {
-        if (self.visibleMaxDepth === 0 || this.syntenyCoverageHeight === 0) {
+        if (this.coverageMaxDepth === 0 || this.syntenyCoverageHeight === 0) {
           return undefined
         }
         return computeCoverageTicks(
-          self.visibleMaxDepth,
+          this.coverageMaxDepth,
           this.syntenyCoverageHeight,
         )
       },
       legendItems() {
         return legendItemsMap[self.colorBy] ?? []
       },
+
+      // Settings sent to the worker via RPC. Adding a field here propagates
+      // both into the RPC payload (via fetchNeeded) and into the
+      // mixin-owned SettingsInvalidate autorun (which reads this getter),
+      // so refetch happens automatically when any field changes.
+      get rpcProps() {
+        return {
+          resolution: self.resolution,
+        }
+      },
+
+      // Settings consumed during main-thread GPU buffer encoding
+      // (buildSyntenyRegionMap), not sent to the worker. Counterpart to
+      // rpcProps for things that affect the GPU side instead of the RPC
+      // side. Defined as a method (not a getter) so subclasses can
+      // override it via the standard `super` capture pattern. Mirrors
+      // wiggle's gpuProps() pattern.
+      gpuProps() {
+        const view = getContainingView(self) as LGV
+        return {
+          displayedGenomes: this.displayedGenomes,
+          colorBy: self.colorBy,
+          showSnps: this.showSnps,
+          showCoverage: self.showCoverage && view.initialized,
+          coverageGlobalMax: getGlobalMaxDepth(self.rpcDataMap),
+          viewWidth: Math.ceil(view.width),
+        }
+      },
+
+      // Per-frame render state. Returns undefined to skip render until
+      // the palette + view are ready.
+      get syntenyRenderState() {
+        const view = getContainingView(self) as LGV
+        const palette = self.colorPalette
+        if (!view.initialized || !palette) {
+          return undefined
+        }
+        return {
+          canvasWidth: view.width,
+          canvasHeight: self.height,
+          rowHeight: this.rowHeight,
+          rowSpacing: self.rowSpacing,
+          coverageHeight: this.syntenyCoverageHeight,
+          palette,
+          displayedGenomes: this.displayedGenomes,
+          labelW: this.rowHeight >= 12 ? LABEL_WIDTH : 0,
+        }
+      },
     }))
     .actions(self => ({
-      bumpTabVisibility() {
-        self.tabVisibilityVersion++
-      },
-      setRpcData(regionNumber: number, data: SyntenyRegionData) {
-        const next = new Map(self.rpcDataMap)
-        next.set(regionNumber, data)
-        self.rpcDataMap = next
+      setRpcData(displayedRegionIndex: number, data: SyntenyRegionData) {
+        self.rpcDataMap.set(displayedRegionIndex, data)
       },
       setAllGenomeNames(names: string[]) {
         self.allGenomeNames = names
       },
+
       setColorBy(value: string) {
         self.colorBy = value
       },
@@ -295,9 +340,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setShowCoverage(val: boolean) {
         self.showCoverage = val
       },
-      setVisibleMaxDepth(depth: number) {
-        self.visibleMaxDepth = depth
-      },
       setCoverageHeight(h: number) {
         self.coverageHeight = h
       },
@@ -307,23 +349,36 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setResolution(r: number) {
         self.resolution = r
       },
-      setStatusMessage(msg?: string) {
-        self.statusMessage = msg
-      },
-      setWebGLRenderer(renderer: MultiSyntenyRenderer | null) {
-        self.webglRenderer = renderer
-      },
-      setCanvasDrawn(value: boolean) {
-        self.canvasDrawn = value
-      },
       setColorPalette(palette: SyntenyColorPalette | null) {
         self.colorPalette = palette
       },
       clearDisplaySpecificData() {
-        self.rpcDataMap = new Map()
-        self.allGenomeNames = []
-        self.webglRenderer?.clearAllBlocks()
+        self.rpcDataMap.clear()
       },
+
+      startGpuBackendLifecycle(backend: MultiSyntenyBackend) {
+        self.installGpuDisplay<MultiSyntenyBackend>(backend, {
+          upload: b => {
+            const palette = self.colorPalette
+            if (!palette) {
+              return
+            }
+            b.sync({
+              rpcDataMap: self.rpcDataMap,
+              gpuProps: self.gpuProps(),
+              palette,
+            })
+          },
+          render: b => {
+            const state = self.syntenyRenderState
+            if (!state) {
+              return false
+            }
+            return b.renderBlocks(self.renderBlocks, state)
+          },
+        })
+      },
+
       selectFeature(feature: Feature) {
         const session = getSession(self)
         session.setSelection(feature)
@@ -340,11 +395,12 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => {
-      const superAfterAttach = self.afterAttach
-
       return {
-        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
-          self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
+        fetchNeeded(
+          needed: { region: Region; displayedRegionIndex: number }[],
+        ) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          self.fetchRegions(needed, async (ctx: FetchContext) => {
             const track = getContainingTrack(self)
             const adapterConfig = getConf(track, 'adapter')
             const session = getSession(self)
@@ -352,19 +408,14 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             const { rpcManager } = session
             const view = getContainingView(self) as LGV
 
-            const regions = needed.map(n => ({
-              region: n.region,
-              regionNumber: n.regionNumber,
-            }))
-
             const result = await rpcManager.call(
               sessionId,
               'MultiPairGetFeatures',
               {
                 adapterConfig,
-                regions,
+                regions: needed,
                 bpPerPx: view.bpPerPx,
-                resolution: self.resolution,
+                ...self.rpcProps,
                 sessionId,
                 stopToken: ctx.stopToken,
                 fetchMetadata: self.allGenomeNames.length === 0,
@@ -408,171 +459,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               self.setAllGenomeNames(result.sources.map(s => s.name))
             }
 
-            for (const [regionNumber, data] of result.regionData) {
-              self.setRpcData(regionNumber, data)
+            for (const [displayedRegionIndex, data] of result.regionData) {
+              self.setRpcData(displayedRegionIndex, data)
             }
           })
-        },
-
-        afterAttach() {
-          superAfterAttach()
-
-          // Autorun 1: upload geometry per region
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.webglRenderer
-                if (!renderer) {
-                  return
-                }
-                const {
-                  rpcDataMap,
-                  displayedGenomes,
-                  colorBy,
-                  showSnps,
-                  colorPalette,
-                } = self
-                if (!colorPalette) {
-                  return
-                }
-                for (const [regionNumber, data] of rpcDataMap) {
-                  renderer.uploadGeometryForBlock(
-                    regionNumber,
-                    data,
-                    displayedGenomes,
-                    colorBy,
-                    showSnps,
-                    colorPalette.syntenyColors,
-                  )
-                }
-              },
-              { name: 'MultiLGVSyntenyDisplay:uploadGeometry' },
-            ),
-          )
-
-          // Autorun 2: upload coverage per region
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.webglRenderer
-                if (!renderer || !self.showCoverage) {
-                  return
-                }
-                const { rpcDataMap } = self
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
-                const globalMax = getGlobalMaxDepth(rpcDataMap)
-                for (const [regionNumber, data] of rpcDataMap) {
-                  renderer.uploadCoverageDataForBlock(
-                    regionNumber,
-                    data,
-                    Math.ceil(view.width),
-                    globalMax,
-                  )
-                }
-              },
-              { name: 'MultiLGVSyntenyDisplay:uploadCoverage' },
-            ),
-          )
-
-          // Autorun 3: draw
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.webglRenderer
-                const palette = self.colorPalette
-                if (!renderer || !palette) {
-                  return
-                }
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const _dv = self.dataVersion
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const _tvv = self.tabVisibilityVersion
-                const {
-                  height,
-                  rowHeight,
-                  rowSpacing,
-                  syntenyCoverageHeight,
-                  displayedGenomes,
-                } = self
-                const contentBlocks = view.staticBlocks.contentBlocks
-                const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
-
-                renderer.renderBlocks({
-                  contentBlocks,
-                  viewOffsetPx: view.offsetPx,
-                  width: view.width,
-                  height,
-                  rowHeight,
-                  rowSpacing,
-                  coverageHeight: syntenyCoverageHeight,
-                  palette,
-                  displayedGenomes,
-                  labelW,
-                })
-                if (!self.canvasDrawn) {
-                  self.setCanvasDrawn(true)
-                }
-              },
-              { name: 'MultiLGVSyntenyDisplay:draw' },
-            ),
-          )
-
-          // Autorun 4: visible max depth (debounced).
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                if (!self.showCoverage) {
-                  return
-                }
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
-                const maxDepth = computeVisibleMaxDepth(
-                  view.dynamicBlocks.contentBlocks,
-                  b =>
-                    b.regionNumber !== undefined
-                      ? self.rpcDataMap.get(b.regionNumber)
-                      : undefined,
-                )
-                self.setVisibleMaxDepth(maxDepth)
-              },
-              {
-                delay: 400,
-                name: 'MultiLGVSyntenyDisplay:visibleMaxDepth',
-              },
-            ),
-          )
-
-          // Autorun 5: data invalidation on resolution change
-          let prevResolution: number | undefined
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const { resolution } = self
-                if (
-                  prevResolution !== undefined &&
-                  resolution !== prevResolution
-                ) {
-                  self.clearAllRpcData()
-                }
-                prevResolution = resolution
-              },
-              { name: 'MultiLGVSyntenyDisplay:invalidateOnResolution' },
-            ),
-          )
         },
 
         async renderSvg(): Promise<React.ReactNode> {
@@ -612,10 +502,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               ])
             },
           },
-          ...(['GraphGenomeView', 'TubeMapView'] as const).map(viewType => ({
-            label: `${viewType === 'GraphGenomeView' ? 'Graph genome' : 'Tube map'} view (feature)`,
-            icon:
-              viewType === 'GraphGenomeView' ? BubbleChartIcon : TimelineIcon,
+          ...SUBGRAPH_VIEW_TYPES.map(({ type: viewType, label, icon }) => ({
+            label: `${label} view (feature)`,
+            icon,
             onClick: async () => {
               const session = getSession(self)
               const fallback =
@@ -646,7 +535,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               const { uniqueId, ...rest } = feature.toJSON()
               const session = getSession(self)
               const { default: copy } = await import('copy-to-clipboard')
-              copy(JSON.stringify(rest, null, 4))
+              await copy(JSON.stringify(rest, null, 4))
               session.notify('Copied to clipboard', 'success')
             },
           },
@@ -701,11 +590,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           )
         }
 
-        for (const viewType of ['GraphGenomeView', 'TubeMapView'] as const) {
+        for (const { type: viewType, label, icon } of SUBGRAPH_VIEW_TYPES) {
           launchSubMenu.push({
-            label: `${viewType === 'GraphGenomeView' ? 'Graph genome' : 'Tube map'} view (local)`,
-            icon:
-              viewType === 'GraphGenomeView' ? BubbleChartIcon : TimelineIcon,
+            label: `${label} view (local)`,
+            icon,
             onClick: async () => {
               const session = getSession(self)
               const region = regionFromViewport(view)

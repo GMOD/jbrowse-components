@@ -42,6 +42,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       configuration: ConfigurationReference(configSchema),
     })
     .views(() => {
+      // Closure variable rather than MST state so it survives model re-renders
+      // without being serialized to the snapshot.
       let codeVerifier: string | undefined = undefined
       return {
         /**
@@ -204,6 +206,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
     }))
     .actions(self => {
       let listener: (event: MessageEvent) => undefined
+      // Shared across concurrent validateToken calls so parallel 401s all wait
+      // on the same refresh request rather than each triggering a separate one.
       let exchangedTokenPromise: Promise<string> | undefined = undefined
       return {
         /**
@@ -238,14 +242,21 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (
             event.data.name !== `JBrowseAuthWindow-${self.internetAccountId}`
           ) {
-            this.deleteMessageChannel()
             return
           }
+          // Remove listener before any branching so it's guaranteed to run
+          // exactly once — every exit path below either resolves or rejects.
+          this.deleteMessageChannel()
           const redirectUriWithInfo = event.data.redirectUri
           const fixedQueryString = redirectUriWithInfo.replace('#', '?')
           const redirectUrl = new URL(fixedQueryString)
           const queryStringSearch = redirectUrl.search
           const urlParams = new URLSearchParams(queryStringSearch)
+          const expectedState = self.state()
+          if (expectedState && urlParams.get('state') !== expectedState) {
+            reject(new Error('OAuth state mismatch — possible CSRF attack'))
+            return
+          }
           if (urlParams.has('access_token')) {
             const token = urlParams.get('access_token')
             if (!token) {
@@ -287,7 +298,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             reject(new Error(`OAuth flow error: ${queryStringSearch}`))
             return
           }
-          this.deleteMessageChannel()
         },
         /**
          * #action
@@ -308,8 +318,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             token_access_type: 'offline',
           }
 
-          if (self.state()) {
-            data.state = self.state()
+          const state = self.state()
+          if (state) {
+            data.state = state
           }
 
           if (self.scopes) {
@@ -387,14 +398,13 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             const refreshToken = self.retrieveRefreshToken()
             if (refreshToken) {
               try {
-                if (!exchangedTokenPromise) {
-                  exchangedTokenPromise =
-                    self.exchangeRefreshForAccessToken(refreshToken)
-                }
+                exchangedTokenPromise ??=
+                  self.exchangeRefreshForAccessToken(refreshToken)
                 const newToken = await exchangedTokenPromise
                 exchangedTokenPromise = undefined
                 return newToken
               } catch (err) {
+                exchangedTokenPromise = undefined
                 console.error('Token could not be refreshed', err)
                 // let original error be thrown
               }

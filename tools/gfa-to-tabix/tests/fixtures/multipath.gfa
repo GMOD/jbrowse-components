@@ -1,0 +1,19 @@
+H	VN:Z:1.0
+S	s1	*	LN:i:100
+S	s2	*	LN:i:60
+S	s3	*	LN:i:80
+S	s4	*	LN:i:100
+S	s5	*	LN:i:70
+S	s6	*	LN:i:90
+S	s7	*	LN:i:100
+L	s1	+	s2	+	0M
+L	s2	+	s4	+	0M
+L	s1	+	s3	+	0M
+L	s3	+	s4	+	0M
+L	s4	+	s5	+	0M
+L	s5	+	s7	+	0M
+L	s4	+	s6	+	0M
+L	s6	+	s7	+	0M
+P	GRCh38#0#chr1	s1+,s2+,s4+,s5+,s7+	*,*,*,*
+P	HG002#1#chr1	s1+,s3+,s4+,s5+,s7+	*,*,*,*
+P	HG002#2#chr1	s1+,s2+,s4+,s6+,s7+	*,*,*,*

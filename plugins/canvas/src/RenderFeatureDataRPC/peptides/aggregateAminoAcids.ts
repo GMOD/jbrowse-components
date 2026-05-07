@@ -1,17 +1,14 @@
 export interface AggregatedAminoAcid {
   aminoAcid: string
-  startIndex: number
-  endIndex: number
-  length: number
+  startBp: number
+  endBp: number
   proteinIndex: number
+  isStopOrNonTriplet: boolean
 }
 
-/**
- * Aggregates consecutive genomic positions that map to the same amino acid
- */
 export function aggregateAminos(
   protein: string,
-  g2p: Record<string, number>,
+  g2p: Record<number, number>,
   featureStart: number,
   featureEnd: number,
   strand: number,
@@ -19,49 +16,49 @@ export function aggregateAminos(
   const aggregated: AggregatedAminoAcid[] = []
   const len = featureEnd - featureStart
 
-  let currentElt: number | undefined = undefined
-  let currentAminoAcid: string | null = null
-  let startIndex = 0
-  let idx = 0
+  let groupElt = -1
+  let groupAA = ''
+  let groupStart = 0
+  let prevI = -1
+
+  const pushGroup = (endI: number) => {
+    const length = endI - groupStart + 1
+    const startBp =
+      strand === -1 ? featureEnd - 1 - endI : featureStart + groupStart
+    const endBp =
+      strand === -1 ? featureEnd - groupStart : featureStart + endI + 1
+    aggregated.push({
+      aminoAcid: groupAA,
+      startBp,
+      endBp,
+      proteinIndex: groupElt,
+      isStopOrNonTriplet: groupAA === '*' || length !== 3,
+    })
+  }
 
   for (let i = 0; i < len; i++) {
-    const pos = strand === -1 ? featureEnd - i : featureStart + i
+    const pos = strand === -1 ? featureEnd - 1 - i : featureStart + i
     const elt = g2p[pos]
-    // Skip positions without mapping (incomplete sequence data)
     if (elt === undefined) {
       console.warn(`No g2p mapping for position ${pos}`)
       continue
     }
-    const aminoAcid = protein[elt] ?? '&'
 
-    if (currentElt === undefined) {
-      currentElt = elt
-      currentAminoAcid = aminoAcid
-      startIndex = idx
-    } else if (currentElt !== elt) {
-      aggregated.push({
-        aminoAcid: currentAminoAcid!,
-        startIndex,
-        endIndex: idx - 1,
-        length: idx - startIndex,
-        proteinIndex: currentElt,
-      })
-      currentElt = elt
-      currentAminoAcid = aminoAcid
-      startIndex = idx
+    if (groupElt === -1) {
+      groupElt = elt
+      groupAA = protein[elt] ?? '&'
+      groupStart = i
+    } else if (groupElt !== elt) {
+      pushGroup(prevI)
+      groupElt = elt
+      groupAA = protein[elt] ?? '&'
+      groupStart = i
     }
-
-    idx++
+    prevI = i
   }
 
-  if (currentAminoAcid !== null) {
-    aggregated.push({
-      aminoAcid: currentAminoAcid,
-      startIndex,
-      endIndex: idx - 1,
-      length: idx - startIndex,
-      proteinIndex: currentElt!,
-    })
+  if (groupElt !== -1) {
+    pushGroup(prevI)
   }
 
   return aggregated

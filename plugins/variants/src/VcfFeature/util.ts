@@ -1,9 +1,9 @@
 import { parseBreakend } from '@gmod/vcf'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
-import type VCF from '@gmod/vcf'
+import { GENOTYPE_SPLITTER as genotypeDelimRegex } from '../shared/constants.ts'
 
-const genotypeDelimRegex = /[/|]/
+import type VCF from '@gmod/vcf'
 
 function isBreakend(alt: string) {
   return (

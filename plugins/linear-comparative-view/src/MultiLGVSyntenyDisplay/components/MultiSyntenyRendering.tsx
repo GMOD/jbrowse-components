@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   MISMATCH_COLOR,
@@ -11,29 +11,26 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
-import { hexToGLrgb } from '@jbrowse/core/util/colord'
-import {
-  CoverageTooltipContents,
-  CoverageYScaleBar,
-} from '@jbrowse/plugin-alignments'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
+import { CoverageTooltipContents } from '@jbrowse/plugin-alignments'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { Tooltip, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
-import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
+import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTestPipeline.ts'
 import {
   LABEL_FONT_MAX,
   LABEL_WIDTH,
   truncateGenomeName,
-} from './multiSyntenyBackendTypes.ts'
+} from '../shared/types.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
-import type { FeatureHitResult } from './hitTesting.ts'
+import type { FeatureHitResult } from './hitTestPipeline.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -296,50 +293,44 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
 }: {
   model: MultiLGVSyntenyDisplayModel
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const { palette } = useTheme()
-  const [tooltip, setTooltip] = useState<{
+  // Tooltip and hover store a viewport snapshot at the time they are set.
+  // The component is an observer so it re-renders on every bpPerPx/offsetPx
+  // change; tooltipOpen and hoveredHit are derived by comparing the stored
+  // snapshot against the current view — no useEffect needed to clear them.
+  const [tooltipState, setTooltipState] = useState<{
     content: React.ReactNode
-    open: boolean
-  }>({ content: '', open: false })
-  const [hoveredHit, setHoveredHit] = useState<FeatureHitResult | undefined>()
-  const [selectedHit, setSelectedHit] = useState<FeatureHitResult | undefined>()
-  const prevViewRef = useRef({ bpPerPx: 0, offsetPx: 0 })
-
+    bpPerPx: number
+    offsetPx: number
+  } | null>(null)
+  const [hoveredHitState, setHoveredHitState] = useState<
+    | {
+        hit: FeatureHitResult
+        bpPerPx: number
+        offsetPx: number
+      }
+    | undefined
+  >()
+  const [selectedFeatureId, setSelectedFeatureId] = useState<
+    string | undefined
+  >()
   const view = getContainingView(model) as LinearGenomeViewModel
 
-  // Renderer lifecycle: create, init, store in model
-  const gpuOpts = useMemo(
-    () => ({
-      onReady: (renderer: MultiSyntenyRenderer) => {
-        model.setWebGLRenderer(renderer)
-      },
-      onDispose: () => {
-        model.setWebGLRenderer(null)
-      },
-    }),
-    [model],
-  )
-  const { error, retry } = useGpuRenderer(
-    canvasRef,
+  const { canvasRef, error, retry } = useGpuModelLifecycle(
     MultiSyntenyRenderer,
-    gpuOpts,
+    model,
   )
-
-  useTabVisibilityRerender(() => {
-    model.bumpTabVisibility()
-  })
 
   // Theme color palette sync to model
   useEffect(() => {
     model.setColorPalette({
-      coverageColorRgb: hexToGLrgb(palette.coverage),
+      coverageColorRgb: cssColorToNormalizedRgb(palette.coverage),
       coverageColorHex: palette.coverage,
       baseColorGl: {
-        A: hexToGLrgb(palette.bases.A.main),
-        C: hexToGLrgb(palette.bases.C.main),
-        G: hexToGLrgb(palette.bases.G.main),
-        T: hexToGLrgb(palette.bases.T.main),
+        A: cssColorToNormalizedRgb(palette.bases.A.main),
+        C: cssColorToNormalizedRgb(palette.bases.C.main),
+        G: cssColorToNormalizedRgb(palette.bases.G.main),
+        T: cssColorToNormalizedRgb(palette.bases.T.main),
       },
       syntenyColors: {
         mismatch: MISMATCH_COLOR,
@@ -367,28 +358,38 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const { width, bpPerPx, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
 
-  // Hide tooltip and hover on zoom or scroll changes
-  useEffect(() => {
-    const prev = prevViewRef.current
-    if (
-      prev.bpPerPx !== 0 &&
-      (prev.bpPerPx !== bpPerPx || prev.offsetPx !== offsetPx)
-    ) {
-      setTooltip(t => (t.open ? { content: '', open: false } : t))
-      setHoveredHit(undefined)
-    }
-    prevViewRef.current = { bpPerPx, offsetPx }
-  }, [bpPerPx, offsetPx])
+  const tooltipOpen =
+    tooltipState !== null &&
+    tooltipState.bpPerPx === bpPerPx &&
+    tooltipState.offsetPx === offsetPx
+  const hoveredHit =
+    hoveredHitState?.bpPerPx === bpPerPx &&
+    hoveredHitState.offsetPx === offsetPx
+      ? hoveredHitState.hit
+      : undefined
 
   const spatialIndex = useMemo(
     () => buildSyntenyIndex(genomeRows, displayedGenomes, showSnps),
     [genomeRows, displayedGenomes, showSnps],
   )
 
-  // Clear stale selection when data changes
-  useEffect(() => {
-    setSelectedHit(undefined)
-  }, [genomeRows, displayedGenomes])
+  const selectedHit = useMemo(() => {
+    if (selectedFeatureId && spatialIndex) {
+      const featureIdx = spatialIndex.features.findIndex(
+        f => f.featureId === selectedFeatureId,
+      )
+      if (featureIdx !== -1) {
+        const feature = spatialIndex.features[featureIdx]!
+        const genomeName = spatialIndex.genomeNames[featureIdx]!
+        return {
+          feature,
+          genomeName,
+          sampleIdx: displayedGenomes.indexOf(genomeName),
+        }
+      }
+    }
+    return undefined
+  }, [selectedFeatureId, spatialIndex, displayedGenomes])
 
   const doHitTest = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
@@ -442,48 +443,54 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
 
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
+      const curBpPerPx = view.bpPerPx
+      const curOffsetPx = view.offsetPx
       const hit = doHitTest(e)
-      setHoveredHit(hit)
+      setHoveredHitState(
+        hit ? { hit, bpPerPx: curBpPerPx, offsetPx: curOffsetPx } : undefined,
+      )
       if (hit) {
-        setTooltip({
+        setTooltipState({
           content: (
             <span style={{ whiteSpace: 'pre-line', fontSize: 12 }}>
               {formatTooltip(hit)}
             </span>
           ),
-          open: true,
+          bpPerPx: curBpPerPx,
+          offsetPx: curOffsetPx,
         })
       } else {
         const covHit = doCoverageHitTest(e)
         if (covHit) {
-          setTooltip({
+          setTooltipState({
             content: (
               <CoverageTooltipContents
                 bin={covHit.bin}
                 refName={covHit.refName}
               />
             ),
-            open: true,
+            bpPerPx: curBpPerPx,
+            offsetPx: curOffsetPx,
           })
         } else {
-          setTooltip(t => (t.open ? { content: '', open: false } : t))
+          setTooltipState(null)
         }
       }
     },
-    [doHitTest, doCoverageHitTest],
+    [doHitTest, doCoverageHitTest, view],
   )
 
   const onMouseLeave = useCallback(() => {
-    setHoveredHit(undefined)
-    setTooltip({ content: '', open: false })
+    setHoveredHitState(undefined)
+    setTooltipState(null)
   }, [])
 
   const onClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
       const hit = doHitTest(e)
       if (hit) {
-        setSelectedHit(prev =>
-          hit.feature.featureId === prev?.feature.featureId ? undefined : hit,
+        setSelectedFeatureId(prev =>
+          hit.feature.featureId === prev ? undefined : hit.feature.featureId,
         )
       } else {
         const covHit = doCoverageHitTest(e)
@@ -525,17 +532,15 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         error={error}
         width={width}
         height={height}
-        onRetry={() => {
-          retry()
-        }}
+        onRetry={retry}
       />
     )
   }
 
   return (
     <Tooltip
-      open={tooltip.open}
-      title={tooltip.content}
+      open={tooltipOpen}
+      title={tooltipState?.content}
       placement="right"
       followCursor
     >
@@ -556,7 +561,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
             width,
             height,
             display: 'block',
-            cursor: tooltip.open ? 'pointer' : 'default',
+            cursor: tooltipOpen ? 'pointer' : 'default',
           }}
         />
         {coverageTicks ? (
@@ -571,7 +576,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
               overflow: 'visible',
             }}
           >
-            <CoverageYScaleBar model={{ coverageTicks }} />
+            <YScaleBar ticks={coverageTicks} orientation="left" />
           </svg>
         ) : null}
         <GenomeNameOverlay

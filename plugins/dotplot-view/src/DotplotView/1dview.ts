@@ -81,7 +81,7 @@ const Dotplot1DView = Base1DView.extend(self => {
 const DotplotHView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      return getParent<any>(self).viewWidth
+      return getParent<{ viewWidth: number }>(self).viewWidth
     },
   },
 }))
@@ -89,7 +89,7 @@ const DotplotHView = Dotplot1DView.extend(self => ({
 const DotplotVView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      return getParent<any>(self).viewHeight
+      return getParent<{ viewHeight: number }>(self).viewHeight
     },
   },
 }))

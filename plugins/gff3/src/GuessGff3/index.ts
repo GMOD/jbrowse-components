@@ -30,10 +30,9 @@ export default function GuessGff3F(pluginManager: PluginManager) {
         ) {
           return {
             type: 'Gff3TabixAdapter',
-            bamLocation: file,
             gffGzLocation: file,
             index: {
-              location: index || makeIndex(file, '.tbi'),
+              location: index ?? makeIndex(file, '.tbi'),
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
             },
           }

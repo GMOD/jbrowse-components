@@ -1,18 +1,13 @@
-import { useEffect, useRef } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useTheme } from '@mui/material'
-import { autorun } from 'mobx'
+import { observer } from 'mobx-react'
 
 import { makeTicks } from '../util.ts'
-import { ELIDED_BG, joinElements } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   verticalGuidesZoomContainer: {
     position: 'absolute',
     top: 0,
@@ -20,61 +15,117 @@ const useStyles = makeStyles()(() => ({
     width: '100%',
     pointerEvents: 'none',
   },
+  innerContainer: {
+    position: 'absolute',
+    height: '100%',
+    pointerEvents: 'none',
+  },
+  absoluteFill: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  tick: {
+    position: 'absolute',
+    height: '100%',
+    width: 1,
+  },
+  majorTick: {
+    background: theme.palette.action.disabled,
+  },
+  minorTick: {
+    background: theme.palette.divider,
+  },
+  block: {
+    position: 'absolute',
+    height: '100%',
+  },
+  boundaryBlock: {
+    background: theme.palette.action.disabledBackground,
+  },
+  textDisabledBlock: {
+    background: theme.palette.text.disabled,
+  },
+  elided: {
+    backgroundColor: '#999',
+    backgroundImage:
+      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+  },
 }))
 
-const TICK_STYLE = 'position:absolute;height:100%;width:1px'
-const BLOCK_STYLE = 'position:absolute;height:100%'
-function createTickDiv() {
-  const el = document.createElement('div')
-  el.style.cssText = TICK_STYLE
-  return el
-}
+// Reads only staticBlocks + bpPerPx. Re-renders on zoom or region change,
+// not on per-frame offsetPx changes — those move the outer transform only.
+const GridlinesContent = observer(function GridlinesContent({
+  model,
+}: {
+  model: LGV
+}) {
+  const { classes, cx } = useStyles()
+  const { staticBlocks, bpPerPx } = model
+  const blocks = staticBlocks.blocks
+  const firstBlockOffset = blocks[0]?.offsetPx ?? 0
 
-function createBlockDiv() {
-  const el = document.createElement('div')
-  el.style.cssText = BLOCK_STYLE
-  return el
-}
-
-function collectTicks(
-  blocks: BaseBlock[],
-  bpPerPx: number,
-  firstBlockOffset: number,
-) {
-  const ticks: { x: number; major: boolean }[] = []
+  const ticks: { key: string; x: number; major: boolean }[] = []
   for (const block of blocks) {
-    if (block.type === 'ContentBlock') {
-      const { start, end, reversed, widthPx } = block
-      const blockLeft = block.offsetPx - firstBlockOffset
-      for (const { type, base } of makeTicks(start, end, bpPerPx)) {
-        const x = blockLeft + (reversed ? end - base : base - start) / bpPerPx
-        if (x >= blockLeft && x <= blockLeft + widthPx) {
-          ticks.push({
-            x,
-            major: type === 'major' || type === 'labeledMajor',
-          })
-        }
+    if (block.type !== 'ContentBlock') {
+      continue
+    }
+    const { start, end, reversed, widthPx } = block
+    const blockLeft = block.offsetPx - firstBlockOffset
+    for (const { type, base } of makeTicks(start, end, bpPerPx)) {
+      const x = blockLeft + (reversed ? end - base : base - start) / bpPerPx
+      if (x >= blockLeft && x <= blockLeft + widthPx) {
+        ticks.push({
+          key: `${block.key}-${base}`,
+          x,
+          major: type === 'major' || type === 'labeledMajor',
+        })
       }
     }
   }
-  return ticks
-}
 
-function getBlockBackground(
-  block: BaseBlock,
-  disabledBgColor: string,
-  textDisabledColor: string,
-) {
-  if (block.type === 'ElidedBlock') {
-    return ELIDED_BG
-  }
-  if (block.variant === 'boundary') {
-    return `background:${disabledBgColor}`
-  }
-  return `background:${textDisabledColor}`
-}
+  return (
+    <>
+      <div className={classes.absoluteFill}>
+        {blocks.map(block => {
+          if (block.type === 'ContentBlock') {
+            return null
+          }
+          const bgClass =
+            block.type === 'ElidedBlock'
+              ? classes.elided
+              : block.variant === 'boundary'
+                ? classes.boundaryBlock
+                : classes.textDisabledBlock
+          return (
+            <div
+              key={block.key}
+              className={cx(classes.block, bgClass)}
+              style={{
+                transform: `translateX(${block.offsetPx - firstBlockOffset}px)`,
+                width: block.widthPx,
+              }}
+            />
+          )
+        })}
+      </div>
+      <div className={classes.absoluteFill}>
+        {ticks.map(({ key, x, major }) => (
+          <div
+            key={key}
+            className={cx(
+              classes.tick,
+              major ? classes.majorTick : classes.minorTick,
+            )}
+            style={{ transform: `translateX(${x}px)` }}
+          />
+        ))}
+      </div>
+    </>
+  )
+})
 
-export default function Gridlines({
+const Gridlines = observer(function Gridlines({
   model,
   offset = 0,
 }: {
@@ -82,69 +133,21 @@ export default function Gridlines({
   offset?: number
 }) {
   const { classes } = useStyles()
-  const theme = useTheme()
-  const innerRef = useRef<HTMLDivElement>(null)
-  const tickRef = useRef<HTMLDivElement>(null)
-  const blockRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const majorColor = theme.palette.action.disabled
-    const minorColor = theme.palette.divider
-    const textDisabledColor = theme.palette.text.disabled
-    const disabledBgColor = theme.palette.action.disabledBackground
-
-    return autorun(() => {
-      const inner = innerRef.current
-      const tickContainer = tickRef.current
-      const blockContainer = blockRef.current
-      if (!inner || !tickContainer || !blockContainer) {
-        return
-      }
-      const { staticBlocks, bpPerPx, offsetPx } = model
-      const blocks = staticBlocks.blocks
-      const firstBlockOffset = blocks[0]?.offsetPx ?? 0
-
-      inner.style.transform = `translateX(${staticBlocks.offsetPx - offsetPx - offset}px)`
-      inner.style.width = `${staticBlocks.totalWidthPx}px`
-
-      const ticks = collectTicks(blocks, bpPerPx, firstBlockOffset)
-      const nonContentBlocks = blocks.filter(b => b.type !== 'ContentBlock')
-
-      joinElements(tickContainer, ticks.length, createTickDiv)
-      joinElements(blockContainer, nonContentBlocks.length, createBlockDiv)
-
-      for (const [i, tick] of ticks.entries()) {
-        const { x, major } = tick
-        const el = tickContainer.children[i] as HTMLElement
-        el.style.transform = `translateX(${x}px)`
-        el.style.background = major ? majorColor : minorColor
-      }
-
-      for (const [i, nonContentBlock] of nonContentBlocks.entries()) {
-        const block = nonContentBlock
-        const blockLeft = block.offsetPx - firstBlockOffset
-        const bg = getBlockBackground(block, disabledBgColor, textDisabledColor)
-        const el = blockContainer.children[i] as HTMLElement
-        el.style.cssText = `${BLOCK_STYLE};transform:translateX(${blockLeft}px);width:${block.widthPx}px;${bg}`
-      }
-    })
-  }, [model, theme, offset])
+  const { staticBlocks, offsetPx } = model
 
   return (
     <div className={classes.verticalGuidesZoomContainer}>
       <div
-        ref={innerRef}
-        style={{ position: 'absolute', height: '100%', pointerEvents: 'none' }}
+        className={classes.innerContainer}
+        style={{
+          transform: `translateX(${staticBlocks.offsetPx - offsetPx - offset}px)`,
+          width: staticBlocks.totalWidthPx,
+        }}
       >
-        <div
-          ref={tickRef}
-          style={{ position: 'absolute', width: '100%', height: '100%' }}
-        />
-        <div
-          ref={blockRef}
-          style={{ position: 'absolute', width: '100%', height: '100%' }}
-        />
+        <GridlinesContent model={model} />
       </div>
     </div>
   )
-}
+})
+
+export default Gridlines

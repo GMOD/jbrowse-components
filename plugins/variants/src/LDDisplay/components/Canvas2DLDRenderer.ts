@@ -1,37 +1,92 @@
-import { lookupColorRamp } from '@jbrowse/core/gpu/canvas2dUtils'
+import { lookupColorRamp, prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
-import type { LDBackend, LDRenderState } from './ldBackendTypes.ts'
+import { mapLDValue } from './ldColorRamp.ts'
 
-const COS45 = 0.7071067811865476
+import type {
+  LDBackend,
+  LDRenderState,
+  LDUploadData,
+} from './ldBackendTypes.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-export class Canvas2DLDRenderer implements LDBackend {
-  private ctx: CanvasRenderingContext2D
-  private canvas: HTMLCanvasElement
-  private positions: Float32Array | null = null
-  private cellSizes: Float32Array | null = null
-  private ldValues: Float32Array | null = null
-  private numCells = 0
-  private colorRamp: Uint8Array | null = null
+const COS45 = Math.SQRT1_2
 
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
-    this.ctx = ctx
+/**
+ * Pure draw entry point. Paints the LD lower-triangle as 45°-rotated diamonds
+ * into any 2D-canvas-like context (real CanvasRenderingContext2D or
+ * SvgCanvas). The on-screen Canvas2DLDRenderer wraps this with prepareCanvas
+ * + lifecycle upload state; SVG export calls it directly with an SvgCanvas.
+ */
+export function drawLDBlocks(
+  ctx: Ctx2D,
+  data: LDUploadData,
+  colorRamp: Uint8Array,
+  state: LDRenderState,
+) {
+  const { yScalar, signedLD, viewScale, viewOffsetX } = state
+  const { ldValues, boundaries, numCells } = data
+  if (numCells === 0) {
+    return
   }
 
-  uploadData(data: {
-    positions: Float32Array
-    cellSizes: Float32Array
-    ldValues: Float32Array
-    numCells: number
-  }) {
-    this.positions = data.positions
-    this.cellSizes = data.cellSizes
-    this.ldValues = data.ldValues
-    this.numCells = data.numCells
+  const n = boundaries.length - 1
+  const s = COS45 * viewScale
+  let k = 0
+  for (let i = 1; i < n; i++) {
+    const py = boundaries[i]!
+    const ch = boundaries[i + 1]! - py
+    for (let j = 0; j < i; j++) {
+      const px = boundaries[j]!
+      const cw = boundaries[j + 1]! - px
+      const ldVal = ldValues[k++]!
+
+      const t = mapLDValue(ldVal, signedLD)
+      const { r, g, b, a } = lookupColorRamp(colorRamp, t)
+      if (a < 0.01) {
+        continue
+      }
+
+      // Inline the -45° rotation and viewport transform for the 4 diamond
+      // vertices, avoiding a per-cell array allocation and inner loop.
+      const leftX = (px + py) * s + viewOffsetX
+      const centerY = (-px + py) * s * yScalar
+      const halfW = cw * s
+      const halfH = ch * s * yScalar
+
+      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+      ctx.beginPath()
+      ctx.moveTo(leftX, centerY)
+      ctx.lineTo(leftX + halfW, centerY - halfH)
+      ctx.lineTo(leftX + 2 * halfW, centerY)
+      ctx.lineTo(leftX + halfW, centerY + halfH)
+      ctx.closePath()
+      ctx.fill()
+    }
+  }
+}
+
+export class Canvas2DLDRenderer implements LDBackend {
+  private ctx: Ctx2D
+  private canvas: HTMLCanvasElement | null = null
+  private data: LDUploadData = {
+    ldValues: new Float32Array(0),
+    boundaries: new Float32Array(0),
+    numCells: 0,
+  }
+  private colorRamp: Uint8Array | null = null
+
+  constructor(canvasOrCtx: HTMLCanvasElement | SvgCanvas) {
+    if (canvasOrCtx instanceof SvgCanvas) {
+      this.ctx = canvasOrCtx
+    } else {
+      this.canvas = canvasOrCtx
+      this.ctx = canvasOrCtx.getContext('2d')!
+    }
+  }
+
+  uploadData(data: LDUploadData) {
+    this.data = data
   }
 
   uploadColorRamp(colors: Uint8Array) {
@@ -39,85 +94,26 @@ export class Canvas2DLDRenderer implements LDBackend {
   }
 
   render(state: LDRenderState) {
-    const {
-      canvasWidth,
-      canvasHeight,
-      yScalar,
-      signedLD,
-      viewScale,
-      viewOffsetX,
-    } = state
-
-    const dpr = window.devicePixelRatio || 1
-    const bufW = Math.round(canvasWidth * dpr)
-    const bufH = Math.round(canvasHeight * dpr)
-
-    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
-      this.canvas.width = bufW
-      this.canvas.height = bufH
+    if (this.canvas) {
+      prepareCanvas(
+        this.canvas,
+        this.ctx as CanvasRenderingContext2D,
+        state.canvasWidth,
+        state.canvasHeight,
+      )
     }
-
-    const ctx = this.ctx
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight)
-
-    if (
-      !this.positions ||
-      !this.cellSizes ||
-      !this.ldValues ||
-      !this.colorRamp ||
-      this.numCells === 0
-    ) {
+    if (!this.colorRamp) {
       return
     }
-
-    for (let i = 0; i < this.numCells; i++) {
-      const px = this.positions[i * 2]!
-      const py = this.positions[i * 2 + 1]!
-      const cw = this.cellSizes[i * 2]!
-      const ch = this.cellSizes[i * 2 + 1]!
-      const ldVal = this.ldValues[i]!
-
-      let t = signedLD ? (ldVal + 1) / 2 : ldVal
-      t = Math.max(0, Math.min(1, t))
-
-      const { r, g, b, a } = lookupColorRamp(this.colorRamp, t)
-
-      if (a < 0.01) {
-        continue
-      }
-
-      const corners = [
-        [px, py],
-        [px + cw, py],
-        [px + cw, py + ch],
-        [px, py + ch],
-      ] as const
-
-      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-      ctx.beginPath()
-      for (let j = 0; j < 4; j++) {
-        const [cx, cy] = corners[j]!
-        const rx = (cx + cy) * COS45
-        const ry = (-cx + cy) * COS45
-        const sx = rx * viewScale + viewOffsetX
-        const sy = ry * viewScale * yScalar
-        if (j === 0) {
-          ctx.moveTo(sx, sy)
-        } else {
-          ctx.lineTo(sx, sy)
-        }
-      }
-      ctx.closePath()
-      ctx.fill()
-    }
+    drawLDBlocks(this.ctx, this.data, this.colorRamp, state)
   }
 
   dispose() {
-    this.positions = null
-    this.cellSizes = null
-    this.ldValues = null
+    this.data = {
+      ldValues: new Float32Array(0),
+      boundaries: new Float32Array(0),
+      numCells: 0,
+    }
     this.colorRamp = null
-    this.numCells = 0
   }
 }

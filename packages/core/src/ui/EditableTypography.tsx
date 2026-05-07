@@ -52,7 +52,7 @@ const EditableTypography = forwardRef<HTMLDivElement, Props>(
     const { classes } = useStyles(props, { props })
     const theme = useTheme()
 
-    const val = editedValue === undefined ? value : editedValue
+    const val = editedValue ?? value
 
     return (
       <div {...other} ref={ref}>
@@ -69,12 +69,14 @@ const EditableTypography = forwardRef<HTMLDivElement, Props>(
         <InputBase
           inputRef={inputRef}
           className={classes.inputBase}
-          inputProps={{
-            style: {
-              width,
-              ...(variant && variant !== 'inherit'
-                ? theme.typography[variant]
-                : {}),
+          slotProps={{
+            input: {
+              style: {
+                width,
+                ...(variant && variant !== 'inherit'
+                  ? theme.typography[variant]
+                  : {}),
+              },
             },
           }}
           classes={{

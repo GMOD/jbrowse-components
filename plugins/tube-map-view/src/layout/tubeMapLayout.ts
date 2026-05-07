@@ -9,12 +9,25 @@
 // 5. X coordinate calculation
 
 import type {
-  NodeAssignment,
   PathSegment,
   TubeMapLayout,
   TubeMapNode,
   TubeMapTrack,
 } from './types.ts'
+
+interface NodeAssignment {
+  node: number | null
+  tracks: TrackAssignment[]
+  idealLane: number
+}
+
+interface TrackAssignment {
+  trackID: number
+  segmentID: number
+  lane: number
+  idealLane: number
+  idealY: number | null
+}
 
 const NODE_GAP = 10
 const TRACK_WIDTH = 7
@@ -87,9 +100,10 @@ export function computeTubeMapLayout(
 
   generateNodeOrder(nodes, tracks)
   generateNodeSuccessors(nodes, tracks)
-  const assignments = generateLaneAssignment(nodes, tracks)
+  const mo = maxOrder(nodes)
+  const assignments = generateLaneAssignment(nodes, tracks, mo)
   applyVerticalPositions(nodes, tracks, assignments)
-  const orderToX = generateNodeXCoords(nodes, tracks)
+  const orderToX = generateNodeXCoords(nodes, tracks, mo)
 
   let maxX = 0
   let maxY = 0
@@ -121,8 +135,7 @@ function maxOrder(nodes: TubeMapNode[]) {
 function generateNodeOrder(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
   let nextOrder = 0
 
-  for (let t = 0; t < tracks.length; t++) {
-    const track = tracks[t]!
+  for (const [t, track] of tracks.entries()) {
     const seq = track.sequence
 
     if (t === 0) {
@@ -204,8 +217,11 @@ function generateNodeSuccessors(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
 }
 
 // Pass 3: assign lanes (vertical slots) to track segments at each order position
-function generateLaneAssignment(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
-  const mo = maxOrder(nodes)
+function generateLaneAssignment(
+  nodes: TubeMapNode[],
+  tracks: TubeMapTrack[],
+  mo: number,
+) {
   const assignments: NodeAssignment[][] = Array.from(
     { length: mo + 1 },
     () => [],
@@ -214,8 +230,7 @@ function generateLaneAssignment(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
   // map from (order, nodeIdx) → index in assignments[order] for O(1) lookup
   const slotIndex = new Map<string, number>()
 
-  for (let t = 0; t < tracks.length; t++) {
-    const track = tracks[t]!
+  for (const [t, track] of tracks.entries()) {
     const seq = track.sequence
     const path: PathSegment[] = []
     track.path = path
@@ -299,27 +314,23 @@ function addToAssignment(
     const existingIdx = slotIndex.get(key)
     if (existingIdx !== undefined) {
       slot[existingIdx]!.tracks.push(ta)
-      return
+    } else {
+      slotIndex.set(key, slot.length)
+      slot.push({ node: nodeIdx, tracks: [ta], idealLane: 0 })
     }
-    slotIndex.set(key, slot.length)
+  } else {
+    slot.push({ node: null, tracks: [ta], idealLane: 0 })
   }
-
-  slot.push({
-    node: nodeIdx,
-    tracks: [ta],
-    idealLane: 0,
-  })
 }
 
 function assignLanesAtOrder(slot: NodeAssignment[]) {
   for (const assignment of slot) {
     let sumIdeal = 0
-    let count = 0
     for (const ta of assignment.tracks) {
       sumIdeal += ta.idealLane
-      count++
     }
-    assignment.idealLane = count > 0 ? sumIdeal / count : 0
+    assignment.idealLane =
+      assignment.tracks.length > 0 ? sumIdeal / assignment.tracks.length : 0
   }
 
   slot.sort((a, b) => a.idealLane - b.idealLane)
@@ -367,7 +378,7 @@ function applyVerticalPositions(
         const node = nodes[assignment.node]!
         const lastTrack = assignment.tracks.at(-1)
         node.contentHeight =
-          lastTrack?.idealY !== undefined && lastTrack.idealY !== null
+          lastTrack?.idealY != null
             ? lastTrack.idealY - node.y + TRACK_WIDTH
             : TRACK_WIDTH
       }
@@ -376,8 +387,11 @@ function applyVerticalPositions(
 }
 
 // Pass 5: compute x coordinates for nodes; returns orderToX lookup
-function generateNodeXCoords(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
-  const mo = maxOrder(nodes)
+function generateNodeXCoords(
+  nodes: TubeMapNode[],
+  tracks: TubeMapTrack[],
+  mo: number,
+) {
   const extraSpace = calculateExtraSpace(nodes, tracks, mo)
 
   const sorted = [...nodes].sort((a, b) => a.order - b.order)

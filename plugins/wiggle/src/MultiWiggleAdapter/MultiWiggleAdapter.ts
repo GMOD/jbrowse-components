@@ -22,7 +22,8 @@ interface WiggleOptions extends WiggleAdapterOptions {
 
 function getFilename(uri: string) {
   const filename = uri.slice(uri.lastIndexOf('/') + 1)
-  return filename.slice(0, filename.lastIndexOf('.'))
+  const dotIdx = filename.lastIndexOf('.')
+  return dotIdx !== -1 ? filename.slice(0, dotIdx) : filename
 }
 
 interface AdapterConfig {
@@ -53,11 +54,8 @@ function getFilenameFromAdapterConfig(config: AdapterConfig) {
 interface AdapterEntry {
   dataAdapter: BaseFeatureDataAdapter
   source: string
-  name: string
   [key: string]: unknown
 }
-
-type MaybeStats = { scoreMin: number; scoreMax: number } | undefined
 
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public static capabilities = [
@@ -69,9 +67,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   private adaptersP?: Promise<AdapterEntry[]>
 
   public async getAdapters(): Promise<AdapterEntry[]> {
-    if (!this.adaptersP) {
-      this.adaptersP = this.getAdaptersImpl()
-    }
+    this.adaptersP ??= this.getAdaptersImpl()
     return this.adaptersP
   }
 
@@ -126,14 +122,16 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
 
   public async getGlobalStats(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
-    const stats = (
-      (await Promise.all(
-        adapters.map(adp => adp.dataAdapter.getGlobalStats(opts)),
-      )) as MaybeStats[]
-    ).filter(f => !!f)
+    const results = await Promise.all(
+      adapters.map(adp => adp.dataAdapter.getGlobalStats(opts)),
+    )
+    const stats = results.filter(s => s !== undefined)
+    if (!stats.length) {
+      return undefined
+    }
     return {
-      scoreMin: min(stats.map(s => s.scoreMin)),
-      scoreMax: max(stats.map(s => s.scoreMax)),
+      scoreMin: min(stats.map(s => s.scoreMin ?? 0)),
+      scoreMax: max(stats.map(s => s.scoreMax ?? 0)),
     }
   }
 
@@ -174,12 +172,11 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   ) {
     const adapters = await this.getAdapters()
     const allStats = await Promise.all(
-      adapters.map(async adp => {
-        const { dataAdapter } = adp
-        return dataAdapter.getRegionQuantitativeStats(region, opts)
-      }),
+      adapters.map(adp =>
+        adp.dataAdapter.getRegionQuantitativeStats(region, opts),
+      ),
     )
-    return aggregateQuantitativeStats(allStats.filter(Boolean))
+    return aggregateQuantitativeStats(allStats)
   }
 
   // always render bigwig instead of calculating a feature density for it
@@ -200,13 +197,12 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     const adapters = await this.getAdapters()
 
     const allStats = await Promise.all(
-      adapters.map(async adp => {
-        const { dataAdapter } = adp
-        return dataAdapter.getMultiRegionQuantitativeStats(regions, opts)
-      }),
+      adapters.map(adp =>
+        adp.dataAdapter.getMultiRegionQuantitativeStats(regions, opts),
+      ),
     )
 
-    return aggregateQuantitativeStats(allStats.filter(Boolean))
+    return aggregateQuantitativeStats(allStats)
   }
 
   // in another adapter type, this could be dynamic depending on region or

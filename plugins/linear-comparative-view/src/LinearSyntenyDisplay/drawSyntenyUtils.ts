@@ -5,70 +5,67 @@ import {
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 
-export const lineLimit = 3
+import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
 
-export const oobLimit = 1600
-
-// Simple hash function to generate consistent colors for query names
-function hashString(str: string) {
+// SYNC: keep in sync with util.ts in dotplot-view
+export function hashString(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
     hash = (hash << 5) - hash + char
-    hash = hash & hash // Convert to 32bit integer
+    hash |= 0
   }
   return Math.abs(hash)
 }
 
-// Generate a color from a query name using the category10 color palette
 export function getQueryColor(queryName: string) {
   const hash = hashString(queryName)
   return category10[hash % category10.length]!
 }
 
-// Default CIGAR operation colors
+// CIGAR operation colors. Kept opaque — every consumer either runs them
+// through applyAlpha() (model.ts) or packs them via cssColorToABGR() and
+// applies u.alpha in the shader / `a * alpha` in Canvas2D. A non-opaque
+// literal here would multiply with that uniform and render fainter than
+// intended.
 export const defaultCigarColors = {
-  I: '#ff0a',
-  N: '#0a0a',
-  D: '#00fa',
+  I: '#ff0',
+  N: '#0a0',
+  D: '#00f',
   X: 'brown',
-  M: '#f00a',
-  '=': '#f00a',
+  M: '#f00',
+  '=': '#f00',
 }
 
-// Strand-specific CIGAR operation colors (purple deletion instead of blue)
+// Strand-specific CIGAR operation colors (purple indels instead of blue/green)
 export const strandCigarColors = {
-  I: '#ff0a',
+  I: '#ff0',
   N: '#a020f0',
   D: '#a020f0',
   X: 'brown',
-  M: '#f00a',
-  '=': '#f00a',
+  M: '#f00',
+  '=': '#f00',
 }
 
-// SyRI structural type colors (plotsr-compatible)
+// SyRI structural type colors matching plotsr defaults exactly
 export const syriColors = {
-  SYN: '#CCCCCC',
+  SYN: '#DEDEDE',
   INV: '#FFA500',
-  TRANS: '#6495ED',
-  DUP: '#00CED1',
-}
+  TRANS: '#9ACD32',
+  DUP: '#00BBFF',
+} satisfies Record<SyriType, string>
 
-// Color scheme configuration
+// Color scheme configuration. `query` and `syri` reuse the default CIGAR
+// palette; only `strand` differs (indels in purple instead of blue/green, plus
+// strand-aware feature colors).
 export const colorSchemes = {
   default: {
     cigarColors: defaultCigarColors,
   },
   strand: {
-    posColor: 'red',
-    negColor: 'blue',
+    posColor: '#f00',
+    negColor: '#00f',
     cigarColors: strandCigarColors,
-  },
-  query: {
-    cigarColors: defaultCigarColors,
-  },
-  syri: {
-    cigarColors: defaultCigarColors,
   },
 }
 

@@ -1,53 +1,45 @@
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
-import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  useGpuRenderer,
-  useTabVisibilityRerender,
-} from '@jbrowse/core/util'
-import { TreeSidebar } from '@jbrowse/tree-sidebar'
-import { autorun } from 'mobx'
+import { ErrorOverlay } from '@jbrowse/core/ui'
+import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
+import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import MultiWiggleTooltip from './Tooltip.tsx'
 import DensityLegend from '../../shared/DensityLegend.tsx'
-import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
-import MultiRowLabels from '../../shared/MultiRowLabels.tsx'
 import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
-import YScaleBar from '../../shared/YScaleBar.tsx'
-import { parseColor } from '../../shared/webglUtils.ts'
 import {
+  WiggleErrorBar,
+  WiggleLoadingOverlay,
+} from '../../shared/WiggleStatusOverlays.tsx'
+import {
+  findFeatureAtBp,
   getRowTop,
-  isOverlayMode,
-  isScatterMode,
+  hitTestMouse,
   isSummaryFeature,
-  makeRenderState,
-  makeWhiskersSourceData,
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type {
   MultiWiggleDataResult,
   MultiWiggleSourceData,
 } from '../../RenderMultiWiggleDataRPC/types.ts'
-import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
-import type {
-  SourceRenderData,
-  WiggleRenderBlock,
-} from '../../shared/wiggleBackendTypes.ts'
+import type { WiggleBackend } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
 } from '@jbrowse/tree-sidebar'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 type LGV = LinearGenomeViewModel
 
+const COORD0: [number, number] = [0, 0]
+
 export interface MultiWiggleDisplayModel {
   rpcDataMap: Map<number, MultiWiggleDataResult>
-  dataVersion: number
   sources: { name: string; color?: string; labelColor?: string }[]
   height: number
   domain: [number, number] | undefined
@@ -61,7 +53,7 @@ export interface MultiWiggleDisplayModel {
   numSources: number
   rowHeight: number
   rowHeightTooSmallForScalebar: boolean
-  ticks?: ReturnType<typeof axisPropsFromTickScale>
+  ticks?: YScaleTicks
   error: Error | null
   isLoading: boolean
   statusMessage?: string
@@ -74,8 +66,8 @@ export interface MultiWiggleDisplayModel {
   showRowSeparators: boolean
   subtreeFilter?: string[]
   hoveredTreeNode?: HoveredTreeNode
-  treeCanvas?: HTMLCanvasElement
-  mouseoverCanvas?: HTMLCanvasElement
+  treeCanvas?: HTMLCanvasElement | null
+  mouseoverCanvas?: HTMLCanvasElement | null
   featureUnderMouse?: {
     refName: string
     start: number
@@ -105,7 +97,10 @@ export interface MultiWiggleDisplayModel {
     feat: NonNullable<MultiWiggleDisplayModel['featureUnderMouse']>,
   ) => void
   canvasDrawn: boolean
-  setCanvasDrawn: (flag: boolean) => void
+  isReady: boolean
+  startGpuBackendLifecycle: (backend: WiggleBackend) => void
+  stopGpuBackendLifecycle: () => void
+  renderNow: () => void
 }
 
 const MultiWiggleComponent = observer(function MultiWiggleComponent({
@@ -113,319 +108,151 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 }: {
   model: MultiWiggleDisplayModel
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
+  // The model owns the upload/render autorun and the GPU backend lifecycle —
+  // see startGpuBackendLifecycle / stopGpuBackendLifecycle / renderNow on
+  // the MultiLinearWiggleDisplay model. Sources changes trigger a full
+  // re-upload via the lifecycle's `getUploadInvalidationToken`.
+  const { canvasRef, error, retry } = useGpuModelLifecycle(
     WiggleRenderer,
+    model,
   )
 
   const view = getContainingView(model) as LGV
 
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !view.initialized) {
-      return
-    }
-    // See dataVersion comment in MultiRegionDisplayMixin.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _dv = model.dataVersion
-    const { domain } = model
-    const visibleRegions = view.visibleRegions
-    const totalWidth = Math.round(view.width)
-    if (!domain || visibleRegions.length === 0) {
-      renderer.renderBlocks(
-        [],
-        makeRenderState([0, 1], 'linear', 'xyplot', totalWidth, model.height),
-      )
-      return
-    }
-    const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
-      regionNumber: vr.regionNumber,
-      bpRangeX: [vr.start, vr.end] as [number, number],
-      screenStartPx: vr.screenStartPx,
-      screenEndPx: vr.screenEndPx,
-      reversed: vr.reversed ?? false,
-    }))
-    renderer.renderBlocks(
-      blocks,
-      makeRenderState(
-        domain,
-        model.scaleType,
-        model.renderingType,
-        totalWidth,
-        model.height,
-      ),
-    )
-  })
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    let lastDataMap: unknown = null
-
-    return autorun(() => {
-      const dataMap = model.rpcDataMap
-
-      if (lastDataMap !== dataMap) {
-        lastDataMap = dataMap
-        if (dataMap.size === 0) {
-          renderer.pruneRegions([])
-        } else {
-          const modelSources = model.sources
-          const defaultPosColor = parseColor(model.posColor)
-          const defaultNegColor = parseColor(model.negColor)
-          const { summaryScoreMode, renderingType } = model
-          const overlay = isOverlayMode(renderingType)
-          const activeRegions: number[] = []
-          for (const [regionNumber, data] of dataMap) {
-            activeRegions.push(regionNumber)
-            const sourcesByName = Object.fromEntries(
-              data.sources.map(s => [s.name, s]),
-            )
-            const orderedSources =
-              modelSources.length > 0 ? modelSources : data.sources
-            const sourcesData: SourceRenderData[] = []
-            let rowCounter = 0
-            for (const orderedSource of orderedSources) {
-              const rpcSource = sourcesByName[orderedSource.name]
-              if (!rpcSource) {
-                continue
-              }
-
-              const posColor = orderedSource.color
-                ? parseColor(orderedSource.color)
-                : defaultPosColor
-              const negColor = overlay ? posColor : defaultNegColor
-              const row = overlay ? 0 : rowCounter
-              rowCounter++
-
-              if (summaryScoreMode === 'whiskers') {
-                for (const s of makeWhiskersSourceData(
-                  rpcSource,
-                  posColor,
-                  model.isDensityMode,
-                  isScatterMode(renderingType),
-                  row,
-                )) {
-                  sourcesData.push(s)
-                }
-              } else if (
-                summaryScoreMode === 'min' ||
-                summaryScoreMode === 'max'
-              ) {
-                const scores =
-                  summaryScoreMode === 'min'
-                    ? rpcSource.featureMinScores
-                    : rpcSource.featureMaxScores
-                sourcesData.push({
-                  featurePositions: rpcSource.featurePositions,
-                  featureScores: scores,
-                  numFeatures: rpcSource.numFeatures,
-                  color: posColor,
-                  rowIndex: row,
-                })
-              } else {
-                if (rpcSource.posNumFeatures > 0) {
-                  sourcesData.push({
-                    featurePositions: rpcSource.posFeaturePositions,
-                    featureScores: rpcSource.posFeatureScores,
-                    numFeatures: rpcSource.posNumFeatures,
-                    color: posColor,
-                    rowIndex: row,
-                  })
-                }
-                if (rpcSource.negNumFeatures > 0) {
-                  sourcesData.push({
-                    featurePositions: rpcSource.negFeaturePositions,
-                    featureScores: rpcSource.negFeatureScores,
-                    numFeatures: rpcSource.negNumFeatures,
-                    color: negColor,
-                    rowIndex: row,
-                  })
-                }
-              }
-            }
-
-            renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
-          }
-          renderer.pruneRegions(activeRegions)
-        }
-      }
-
-      renderNow()
-      if (dataMap.size > 0 && model.domain) {
-        model.setCanvasDrawn(true)
-      }
-    })
-  }, [model, view, ready, rendererRef])
-
-  useTabVisibilityRerender(renderNow)
-
   const containerRef = useRef<HTMLDivElement>(null)
-  const coord0: [number, number] = [0, 0]
-  const [clientMouseCoord, setClientMouseCoord] = useState(coord0)
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState(coord0)
+  const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
+  const [offsetMouseCoord, setOffsetMouseCoord] = useState(COORD0)
 
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {
       const container = containerRef.current
-      if (!container) {
-        return
-      }
-      const rect = container.getBoundingClientRect()
-      const offsetX = event.clientX - rect.left
-      const offsetY = event.clientY - rect.top
+      if (container) {
+        const rect = container.getBoundingClientRect()
+        const offsetX = event.clientX - rect.left
+        const offsetY = event.clientY - rect.top
 
-      setClientMouseCoord([event.clientX, event.clientY])
-      setOffsetMouseCoord([offsetX, offsetY])
+        setClientMouseCoord([event.clientX, event.clientY])
+        setOffsetMouseCoord([offsetX, offsetY])
 
-      const { rowHeight, sources, rpcDataMap, summaryScoreMode, domain } = model
-      if (sources.length === 0 || rpcDataMap.size === 0) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
+        const { rowHeight, sources, rpcDataMap, summaryScoreMode, domain } =
+          model
+        const hit =
+          sources.length === 0
+            ? undefined
+            : hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
 
-      const visibleRegions = view.visibleRegions
-      const region = visibleRegions.find(
-        r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
-      )
-      if (!region) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
+        if (!hit) {
+          model.setFeatureUnderMouse(undefined)
+        } else {
+          const { region, data, bp } = hit
 
-      const data = rpcDataMap.get(region.regionNumber)
-      if (!data) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
+          if (model.isOverlay && domain) {
+            let bestSource: MultiWiggleSourceData | undefined
+            let bestScore = 0
+            let bestDist = Infinity
+            let bestIdx = -1
+            const mouseScore =
+              domain[1] - (offsetY / model.height) * (domain[1] - domain[0])
+            const allSources: NonNullable<
+              MultiWiggleDisplayModel['featureUnderMouse']
+            >['allSources'] = []
+            const visibleSourceNames = new Set(sources.map(s => s.name))
 
-      const blockWidth = region.screenEndPx - region.screenStartPx
-      const frac = (offsetX - region.screenStartPx) / blockWidth
-      const bp = Math.round(region.start + frac * (region.end - region.start))
-      const bpOffset = bp - data.regionStart
-
-      if (model.isOverlay && domain) {
-        let bestSource: MultiWiggleSourceData | undefined
-        let bestScore = 0
-        let bestDist = Infinity
-        let bestIdx = -1
-        const mouseScore =
-          domain[1] - (offsetY / model.height) * (domain[1] - domain[0])
-        const allSources: NonNullable<
-          MultiWiggleDisplayModel['featureUnderMouse']
-        >['allSources'] = []
-
-        for (const src of data.sources) {
-          if (!sources.some(s => s.name === src.name)) {
-            continue
-          }
-          for (let i = 0; i < src.numFeatures; i++) {
-            const fStart = src.featurePositions[i * 2]!
-            const fEnd = src.featurePositions[i * 2 + 1]!
-            if (bpOffset >= fStart && bpOffset < fEnd) {
-              const score = src.featureScores[i]!
-              const minS = src.featureMinScores[i]
-              const maxS = src.featureMaxScores[i]
-              const dist = Math.abs(score - mouseScore)
-              if (dist < bestDist) {
-                bestDist = dist
-                bestSource = src
-                bestScore = score
-                bestIdx = i
+            for (const src of data.sources) {
+              if (visibleSourceNames.has(src.name)) {
+                const i = findFeatureAtBp(
+                  src.featurePositions,
+                  src.numFeatures,
+                  bp,
+                )
+                if (i !== -1) {
+                  const score = src.featureScores[i]!
+                  const minS = src.featureMinScores[i]
+                  const maxS = src.featureMaxScores[i]
+                  const dist = Math.abs(score - mouseScore)
+                  if (dist < bestDist) {
+                    bestDist = dist
+                    bestSource = src
+                    bestScore = score
+                    bestIdx = i
+                  }
+                  allSources.push({
+                    source: src.name,
+                    score,
+                    ...(summaryScoreMode !== 'avg' &&
+                    isSummaryFeature(score, minS, maxS)
+                      ? { summary: true, minScore: minS, maxScore: maxS }
+                      : {}),
+                  })
+                }
               }
-              allSources.push({
-                source: src.name,
-                score,
+            }
+
+            if (!bestSource || bestIdx === -1) {
+              model.setFeatureUnderMouse(undefined)
+            } else {
+              const fStart = bestSource.featurePositions[bestIdx * 2]!
+              const fEnd = bestSource.featurePositions[bestIdx * 2 + 1]!
+              const minS = bestSource.featureMinScores[bestIdx]
+              const maxS = bestSource.featureMaxScores[bestIdx]
+
+              model.setFeatureUnderMouse({
+                refName: region.refName,
+                start: fStart,
+                end: fEnd,
+                score: bestScore,
+                source: bestSource.name,
                 ...(summaryScoreMode !== 'avg' &&
-                isSummaryFeature(score, minS, maxS)
+                isSummaryFeature(bestScore, minS, maxS)
                   ? { summary: true, minScore: minS, maxScore: maxS }
                   : {}),
+                allSources,
               })
-              break
+            }
+          } else {
+            const rowIdx = Math.floor(offsetY / rowHeight)
+            if (rowIdx < 0 || rowIdx >= sources.length) {
+              model.setFeatureUnderMouse(undefined)
+            } else {
+              const sourceName = sources[rowIdx]!.name
+              const rpcSource = data.sources.find(s => s.name === sourceName)
+              if (!rpcSource) {
+                model.setFeatureUnderMouse(undefined)
+              } else {
+                const { featurePositions, featureScores, numFeatures } =
+                  rpcSource
+                const foundIdx = findFeatureAtBp(
+                  featurePositions,
+                  numFeatures,
+                  bp,
+                )
+
+                if (foundIdx === -1) {
+                  model.setFeatureUnderMouse(undefined)
+                } else {
+                  const fStart = featurePositions[foundIdx * 2]!
+                  const fEnd = featurePositions[foundIdx * 2 + 1]!
+                  const score = featureScores[foundIdx]!
+                  const minScore = rpcSource.featureMinScores[foundIdx]
+                  const maxScore = rpcSource.featureMaxScores[foundIdx]
+
+                  model.setFeatureUnderMouse({
+                    refName: region.refName,
+                    start: fStart,
+                    end: fEnd,
+                    score,
+                    source: sourceName,
+                    ...(summaryScoreMode !== 'avg' &&
+                    isSummaryFeature(score, minScore, maxScore)
+                      ? { summary: true, minScore, maxScore }
+                      : {}),
+                  })
+                }
+              }
             }
           }
         }
-
-        if (!bestSource || bestIdx === -1) {
-          model.setFeatureUnderMouse(undefined)
-          return
-        }
-
-        const fStart =
-          bestSource.featurePositions[bestIdx * 2]! + data.regionStart
-        const fEnd =
-          bestSource.featurePositions[bestIdx * 2 + 1]! + data.regionStart
-        const minS = bestSource.featureMinScores[bestIdx]
-        const maxS = bestSource.featureMaxScores[bestIdx]
-
-        model.setFeatureUnderMouse({
-          refName: region.refName,
-          start: fStart,
-          end: fEnd,
-          score: bestScore,
-          source: bestSource.name,
-          ...(summaryScoreMode !== 'avg' &&
-          isSummaryFeature(bestScore, minS, maxS)
-            ? { summary: true, minScore: minS, maxScore: maxS }
-            : {}),
-          allSources,
-        })
-        return
       }
-
-      const rowIdx = Math.floor(offsetY / rowHeight)
-      if (rowIdx < 0 || rowIdx >= sources.length) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const sourceName = sources[rowIdx]!.name
-      const rpcSource = data.sources.find(
-        (s: MultiWiggleSourceData) => s.name === sourceName,
-      )
-      if (!rpcSource) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const { featurePositions, featureScores, numFeatures } = rpcSource
-      let foundIdx = -1
-      for (let i = 0; i < numFeatures; i++) {
-        const fStart = featurePositions[i * 2]!
-        const fEnd = featurePositions[i * 2 + 1]!
-        if (bpOffset >= fStart && bpOffset < fEnd) {
-          foundIdx = i
-          break
-        }
-      }
-
-      if (foundIdx === -1) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const fStart = featurePositions[foundIdx * 2]! + data.regionStart
-      const fEnd = featurePositions[foundIdx * 2 + 1]! + data.regionStart
-      const score = featureScores[foundIdx]!
-      const minScore = rpcSource.featureMinScores[foundIdx]
-      const maxScore = rpcSource.featureMaxScores[foundIdx]
-
-      model.setFeatureUnderMouse({
-        refName: region.refName,
-        start: fStart,
-        end: fEnd,
-        score,
-        source: sourceName,
-        ...(summaryScoreMode !== 'avg' &&
-        isSummaryFeature(score, minScore, maxScore)
-          ? { summary: true, minScore, maxScore }
-          : {}),
-      })
     },
     [model, view],
   )
@@ -441,7 +268,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     }
   }, [model])
 
-  const totalWidth = Math.round(view.width)
+  const totalWidth = view.trackWidthPx
   const height = model.height
   const scalebarLeft = model.scalebarOverlapLeft
 
@@ -511,7 +338,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
               canvasWidth={totalWidth}
             />
           ) : (
-            <MultiRowLabels
+            <SvgRowLabels
               sources={displaySources}
               rowHeight={rowHeight}
               labelOffset={labelOffset}
@@ -525,16 +352,16 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
             scaleType={model.scaleType}
             canvasWidth={totalWidth}
           />
-        ) : model.ticks ? (
+        ) : model.ticks && model.domain ? (
           model.rowHeightTooSmallForScalebar ? (
             <ScoreLegend
-              ticks={model.ticks}
+              domain={model.domain}
               scaleType={model.scaleType}
               canvasWidth={totalWidth}
             />
           ) : model.isOverlay ? (
             <g transform={`translate(${scalebarLeft || 50} 0)`}>
-              <YScaleBar model={model} />
+              <YScaleBar ticks={model.ticks} orientation="left" />
             </g>
           ) : (
             <g transform={`translate(${scalebarLeft || 50} 0)`}>
@@ -543,7 +370,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
                   transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
                   key={`scalebar-${idx}`}
                 >
-                  <YScaleBar model={model} />
+                  <YScaleBar ticks={model.ticks} orientation="left" />
                 </g>
               ))}
             </g>
@@ -569,37 +396,27 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
         {model.displayCrossHatches && model.ticks
           ? model.isOverlay
-            ? model.ticks.values.map((v, idx) => {
-                const pos = model.ticks!.position(v)
-                if (!Number.isFinite(pos)) {
-                  return null
-                }
-                return (
-                  <line
-                    key={`ch-${idx}`}
-                    x1={0}
-                    x2={totalWidth}
-                    y1={pos}
-                    y2={pos}
-                    stroke="rgba(200,200,200,0.8)"
-                    strokeWidth={1}
-                  />
-                )
-              })
+            ? model.ticks.ticks.map(({ value, y }) => (
+                <line
+                  key={`ch-${value}`}
+                  x1={0}
+                  x2={totalWidth}
+                  y1={y}
+                  y2={y}
+                  stroke="rgba(200,200,200,0.8)"
+                  strokeWidth={1}
+                />
+              ))
             : Array.from({ length: numSources }).map((_, rowIdx) => {
                 const top = getRowTop(rowIdx, rowHeight)
-                return model.ticks!.values.map((v, idx) => {
-                  const pos = model.ticks!.position(v)
-                  if (!Number.isFinite(pos)) {
-                    return null
-                  }
-                  const y = top + pos
+                return model.ticks!.ticks.map(({ value, y: tickY }) => {
+                  const y = top + tickY
                   if (y < top || y > top + rowHeight) {
                     return null
                   }
                   return (
                     <line
-                      key={`ch-${rowIdx}-${idx}`}
+                      key={`ch-${rowIdx}-${value}`}
                       x1={0}
                       x2={totalWidth}
                       y1={y}
@@ -622,18 +439,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         offsetMouseCoord={offsetMouseCoord}
       />
 
-      {model.error ? (
-        <ErrorBar
-          error={model.error}
-          onRetry={() => {
-            model.reload()
-          }}
-        />
-      ) : null}
-      <LoadingOverlay
-        statusMessage={model.statusMessage || 'Loading'}
-        isVisible={model.isLoading}
-      />
+      <WiggleErrorBar model={model} />
+      <WiggleLoadingOverlay model={model} />
     </div>
   )
 })

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import {
   AssemblySelector,
   Dialog,
-  ErrorMessage,
+  ErrorBanner,
   FileSelector,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -174,7 +174,7 @@ const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
             />
           </AccordionDetails>
         </Accordion>
-        {error ? <ErrorMessage error={error} /> : null}
+        {error ? <ErrorBanner error={error} /> : null}
       </DialogContent>
       <DialogActions>
         <Button variant="contained" color="secondary" onClick={onClose}>

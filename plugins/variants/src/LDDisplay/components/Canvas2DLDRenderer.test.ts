@@ -2,7 +2,7 @@ import { Canvas2DLDRenderer } from './Canvas2DLDRenderer.ts'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 
-const COS45 = 0.7071067811865476
+const COS45 = Math.SQRT1_2
 
 function createMockCanvas() {
   const fillRectCalls: [number, number, number, number][] = []
@@ -58,6 +58,7 @@ function makeRenderState(
     signedLD: boolean
     viewScale: number
     viewOffsetX: number
+    uniformW: number
   }>,
 ) {
   return {
@@ -67,7 +68,21 @@ function makeRenderState(
     signedLD: false,
     viewScale: 1,
     viewOffsetX: 0,
+    uniformW: 10,
     ...overrides,
+  }
+}
+
+// n=2 SNPs -> 1 cell (i=1, j=0)
+// boundaries=[0, 10, 20]: cell at x=0, y=10, cw=10, ch=10
+function makeOneCell(overrides?: {
+  boundaries?: Float32Array
+  ldValues?: Float32Array
+}) {
+  return {
+    boundaries: overrides?.boundaries ?? new Float32Array([0, 10, 20]),
+    ldValues: overrides?.ldValues ?? new Float32Array([0.5]),
+    numCells: 1,
   }
 }
 
@@ -77,12 +92,7 @@ describe('Canvas2DLDRenderer', () => {
       const { canvas, pathOps } = createMockCanvas()
       const renderer = new Canvas2DLDRenderer(canvas)
 
-      renderer.uploadData({
-        positions: new Float32Array([10, 20]),
-        cellSizes: new Float32Array([5, 5]),
-        ldValues: new Float32Array([0.5]),
-        numCells: 1,
-      })
+      renderer.uploadData(makeOneCell())
       renderer.uploadColorRamp(makeColorRamp())
 
       renderer.render(makeRenderState())
@@ -109,12 +119,7 @@ describe('Canvas2DLDRenderer', () => {
       const { canvas, pathOps } = createMockCanvas()
       const renderer = new Canvas2DLDRenderer(canvas)
 
-      renderer.uploadData({
-        positions: new Float32Array([10, 20]),
-        cellSizes: new Float32Array([5, 5]),
-        ldValues: new Float32Array([0.5]),
-        numCells: 1,
-      })
+      renderer.uploadData(makeOneCell())
 
       renderer.render(makeRenderState())
 
@@ -125,17 +130,13 @@ describe('Canvas2DLDRenderer', () => {
       const { canvas, ctx } = createMockCanvas()
       const renderer = new Canvas2DLDRenderer(canvas)
 
-      const px = 10
-      const py = 20
-      const cw = 5
-      const ch = 5
+      // boundaries=[0, 10, 20]: cell (i=1,j=0) -> px=0, py=10, cw=10, ch=10
+      const px = 0
+      const py = 10
+      const cw = 10
+      const ch = 10
 
-      renderer.uploadData({
-        positions: new Float32Array([px, py]),
-        cellSizes: new Float32Array([cw, ch]),
-        ldValues: new Float32Array([1]),
-        numCells: 1,
-      })
+      renderer.uploadData(makeOneCell())
       renderer.uploadColorRamp(makeColorRamp())
 
       const state = makeRenderState({
@@ -146,10 +147,10 @@ describe('Canvas2DLDRenderer', () => {
       renderer.render(state)
 
       // Verify the four corners are rotated by 45 degrees
-      // corner0 = (px, py) = (10, 20)
-      // corner1 = (px+cw, py) = (15, 20)
-      // corner2 = (px+cw, py+ch) = (15, 25)
-      // corner3 = (px, py+ch) = (10, 25)
+      // corner0 = (px, py) = (0, 10)
+      // corner1 = (px+cw, py) = (10, 10)
+      // corner2 = (px+cw, py+ch) = (10, 20)
+      // corner3 = (px, py+ch) = (0, 20)
       //
       // Rotated: rx = (cx+cy)*COS45, ry = (-cx+cy)*COS45
       // Then: sx = rx * viewScale + viewOffsetX, sy = ry * viewScale * yScalar
@@ -192,12 +193,7 @@ describe('Canvas2DLDRenderer', () => {
       const renderer = new Canvas2DLDRenderer(canvas)
 
       // ldValue = -1 in signed mode should map to t=0, rampIdx=0
-      renderer.uploadData({
-        positions: new Float32Array([0, 0]),
-        cellSizes: new Float32Array([1, 1]),
-        ldValues: new Float32Array([-1]),
-        numCells: 1,
-      })
+      renderer.uploadData(makeOneCell({ ldValues: new Float32Array([-1]) }))
       renderer.uploadColorRamp(makeColorRamp())
 
       renderer.render(makeRenderState({ signedLD: true }))
@@ -211,12 +207,7 @@ describe('Canvas2DLDRenderer', () => {
       const { canvas, ctx } = createMockCanvas()
       const renderer = new Canvas2DLDRenderer(canvas)
 
-      renderer.uploadData({
-        positions: new Float32Array([0, 0]),
-        cellSizes: new Float32Array([1, 1]),
-        ldValues: new Float32Array([1]),
-        numCells: 1,
-      })
+      renderer.uploadData(makeOneCell({ ldValues: new Float32Array([1]) }))
       renderer.uploadColorRamp(makeColorRamp())
 
       renderer.render(makeRenderState({ signedLD: true }))
@@ -230,12 +221,7 @@ describe('Canvas2DLDRenderer', () => {
       const { canvas, ctx } = createMockCanvas()
       const renderer = new Canvas2DLDRenderer(canvas)
 
-      renderer.uploadData({
-        positions: new Float32Array([0, 0]),
-        cellSizes: new Float32Array([1, 1]),
-        ldValues: new Float32Array([0.5]),
-        numCells: 1,
-      })
+      renderer.uploadData(makeOneCell({ ldValues: new Float32Array([0.5]) }))
       renderer.uploadColorRamp(makeColorRamp())
 
       renderer.render(makeRenderState({ signedLD: false }))
@@ -253,12 +239,7 @@ describe('Canvas2DLDRenderer', () => {
       const ramp = makeColorRamp()
       ramp[3] = 0 // first entry alpha = 0
 
-      renderer.uploadData({
-        positions: new Float32Array([0, 0]),
-        cellSizes: new Float32Array([1, 1]),
-        ldValues: new Float32Array([0]),
-        numCells: 1,
-      })
+      renderer.uploadData(makeOneCell({ ldValues: new Float32Array([0]) }))
       renderer.uploadColorRamp(ramp)
 
       renderer.render(makeRenderState({ signedLD: false }))
@@ -273,12 +254,7 @@ describe('Canvas2DLDRenderer', () => {
       const { canvas, pathOps } = createMockCanvas()
       const renderer = new Canvas2DLDRenderer(canvas)
 
-      renderer.uploadData({
-        positions: new Float32Array([0, 0]),
-        cellSizes: new Float32Array([1, 1]),
-        ldValues: new Float32Array([0.5]),
-        numCells: 1,
-      })
+      renderer.uploadData(makeOneCell())
       renderer.uploadColorRamp(makeColorRamp())
 
       renderer.dispose()

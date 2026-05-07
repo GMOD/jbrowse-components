@@ -18,10 +18,11 @@ const SessionTriaged = observer(function SessionTriaged({
   return sessionTriaged.origin === 'session' ? (
     <SessionWarningDialog
       onConfirm={async () => {
-        const session = JSON.parse(JSON.stringify(sessionTriaged.snap))
-
         // second param true says we passed user confirmation
-        await loader.loadSession({ ...session, id: createElementId() }, true)
+        await loader.loadSession(
+          { ...sessionTriaged.snap, id: createElementId() },
+          true,
+        )
         loader.setSessionTriaged(undefined)
       }}
       onCancel={() => {
@@ -33,9 +34,11 @@ const SessionTriaged = observer(function SessionTriaged({
   ) : (
     <ConfigWarningDialog
       onConfirm={async () => {
-        const session = JSON.parse(JSON.stringify(sessionTriaged.snap))
-        await loader.fetchPlugins(session)
-        loader.setConfigSnapshot({ ...session, id: createElementId() })
+        await loader.fetchPlugins(sessionTriaged.snap)
+        loader.setConfigSnapshot({
+          ...sessionTriaged.snap,
+          id: createElementId(),
+        })
         loader.setSessionTriaged(undefined)
       }}
       onCancel={async () => {

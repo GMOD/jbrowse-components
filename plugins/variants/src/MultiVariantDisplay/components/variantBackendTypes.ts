@@ -1,32 +1,26 @@
-export interface VariantRenderBlock {
-  regionNumber: number
-  bpRangeX: [number, number]
-  screenStartPx: number
-  screenEndPx: number
-  reversed: boolean
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+
+export type { RenderBlock as VariantRenderBlock } from '@jbrowse/core/gpu/renderBlock'
+
+export interface VariantUploadData {
+  regionStart: number
+  cellPositions: Uint32Array
+  cellRowIndices: Uint32Array
+  cellColors: Uint32Array
+  cellShapeTypes: Uint8Array
+  numCells: number
+}
+
+export interface VariantRenderState {
+  canvasWidth: number
+  canvasHeight: number
+  rowHeight: number
+  scrollTop: number
 }
 
 export interface VariantBackend {
-  uploadRegion(
-    regionNumber: number,
-    data: {
-      regionStart: number
-      cellPositions: Uint32Array
-      cellRowIndices: Uint32Array
-      cellColors: Uint8Array
-      cellShapeTypes: Uint8Array
-      numCells: number
-    },
-  ): void
-  pruneStaleRegions(activeRegionNumbers: number[]): void
-  renderBlocks(
-    blocks: VariantRenderBlock[],
-    state: {
-      canvasWidth: number
-      canvasHeight: number
-      rowHeight: number
-      scrollTop: number
-    },
-  ): void
+  uploadRegion(displayedRegionIndex: number, data: VariantUploadData): void
+  pruneRegions(activeRegions: number[]): void
+  renderBlocks(blocks: RenderBlock[], state: VariantRenderState): void
   dispose(): void
 }

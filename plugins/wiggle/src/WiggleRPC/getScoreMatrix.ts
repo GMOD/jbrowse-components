@@ -41,7 +41,7 @@ export async function getScoreMatrix({
 
   for (const source of sources) {
     const { name } = source
-    const features = groups[name] || []
+    const features = groups[name] ?? []
 
     // use Float32Array for better performance with numeric data
     const arr = new Float32Array(w)

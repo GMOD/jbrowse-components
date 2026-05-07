@@ -29,7 +29,7 @@ export default function GuessAlignmentsTypesF(pluginManager: PluginManager) {
             type: 'BamAdapter',
             bamLocation: file,
             index: {
-              location: index || makeIndex(file, '.bai'),
+              location: index ?? makeIndex(file, '.bai'),
               indexType: makeIndexType(indexName, 'CSI', 'BAI'),
             },
           }
@@ -39,7 +39,7 @@ export default function GuessAlignmentsTypesF(pluginManager: PluginManager) {
           return {
             type: 'CramAdapter',
             cramLocation: file,
-            craiLocation: index || makeIndex(file, '.crai'),
+            craiLocation: index ?? makeIndex(file, '.crai'),
           }
         } else {
           return adapterGuesser(file, index, adapterHint)

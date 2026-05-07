@@ -6,6 +6,8 @@ import {
 } from '@jbrowse/core/util'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -15,7 +17,6 @@ import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
-import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 
 import {
   ExportSvgDialog,
@@ -30,6 +31,16 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 function toLocaleRounded(n: number) {
   return toLocale(Math.round(n))
+}
+
+export function cloneMenuItems(items: MenuItem[]): MenuItem[] {
+  return items.map(item => {
+    const clone = { ...item }
+    if ('subMenu' in clone && Array.isArray(clone.subMenu)) {
+      clone.subMenu = cloneMenuItems(clone.subMenu)
+    }
+    return clone
+  })
 }
 
 /**
@@ -57,6 +68,62 @@ export function rewriteOnClicks(
   }
 }
 
+type Compactness = 'normal' | 'compact' | 'super-compact'
+
+// SYNC: plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts, plugins/linear-comparative-view/src/LinearComparativeView/model.ts
+function buildCompactAllTracksMenu(
+  tracks: { displays: unknown[] }[],
+): MenuItem[] {
+  const hasAny = tracks.some(t =>
+    t.displays.some(
+      d => d !== null && typeof d === 'object' && 'setCompactness' in d,
+    ),
+  )
+  if (!hasAny) {
+    return []
+  }
+  function applyCompactness(level: Compactness) {
+    for (const track of tracks) {
+      for (const display of track.displays) {
+        if (
+          display !== null &&
+          typeof display === 'object' &&
+          'setCompactness' in display
+        ) {
+          ;(
+            display as { setCompactness: (v: Compactness) => void }
+          ).setCompactness(level)
+        }
+      }
+    }
+  }
+  return [
+    {
+      label: 'Compact all tracks',
+      subMenu: [
+        {
+          label: 'Normal',
+          onClick: () => {
+            applyCompactness('normal')
+          },
+        },
+        {
+          label: 'Compact',
+          onClick: () => {
+            applyCompactness('compact')
+          },
+        },
+        {
+          label: 'Super-compact',
+          onClick: () => {
+            applyCompactness('super-compact')
+          },
+        },
+      ],
+    },
+  ]
+}
+
 /**
  * Build the main view menu items
  */
@@ -67,6 +134,13 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
   const { canShowCytobands, showCytobands } = self
   const session = getSession(self)
   const menuItems: MenuItem[] = [
+    {
+      label: self.scalebarOnly ? 'Expand tracks' : 'Collapse to ruler',
+      icon: self.scalebarOnly ? ExpandMoreIcon : ExpandLessIcon,
+      onClick: () => {
+        self.setScalebarOnly(!self.scalebarOnly)
+      },
+    },
     {
       label: 'Return to import form',
       onClick: () => {
@@ -191,7 +265,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           label: 'Scroll zoom on WebGL tracks',
           type: 'checkbox',
           checked: self.scrollZoom,
-          icon: ZoomInMapIcon,
           onClick: () => {
             self.setScrollZoom(!self.scrollZoom)
           },
@@ -245,6 +318,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         },
       ],
     },
+    ...buildCompactAllTracksMenu(self.tracks),
   ]
 
   // add track's view level menu options
@@ -310,7 +384,7 @@ export function buildRubberBandMenuItems(
       icon: ContentCopyIcon,
       onClick: async () => {
         const { default: copy } = await import('copy-to-clipboard')
-        copy(rangeString)
+        await copy(rangeString)
       },
     },
   ]
@@ -349,7 +423,7 @@ export function buildRubberbandClickMenuItems(
       icon: ContentCopyIcon,
       onClick: async () => {
         const { default: copy } = await import('copy-to-clipboard')
-        copy(locString)
+        await copy(locString)
       },
     },
   ]

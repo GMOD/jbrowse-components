@@ -83,7 +83,7 @@ export class MultiPairGetFeatures extends RpcMethodType {
 
     const regionData: [number, SyntenyRegionData][] = []
 
-    for (const { region, regionNumber } of regions) {
+    for (const { region, displayedRegionIndex } of regions) {
       const { genomeRows } = await adapter.getMultiPairFeatures(region, {
         bpPerPx,
         stopToken,
@@ -96,9 +96,8 @@ export class MultiPairGetFeatures extends RpcMethodType {
       const coverageFeatures: { start: number; end: number }[] = []
       const mismatches: MismatchEntry[] = []
       const indels: IndelEntry[] = []
-      const genomeFeatures: [string, MultiPairFeature[]][] = []
-      for (const [genome, features] of genomeRows) {
-        genomeFeatures.push([genome, features])
+      const genomeFeatures = [...genomeRows]
+      for (const [, features] of genomeRows) {
         for (const f of features) {
           coverageFeatures.push({ start: f.start, end: f.end })
           if (f.cs) {
@@ -119,8 +118,7 @@ export class MultiPairGetFeatures extends RpcMethodType {
       const indicators = computeInsertionIndicators(
         indels,
         coverage.depths,
-        coverage.startOffset,
-        regionStart,
+        coverage.startPos,
       )
 
       const mismatchPositions = new Uint32Array(mismatches.length)
@@ -131,14 +129,14 @@ export class MultiPairGetFeatures extends RpcMethodType {
       }
 
       regionData.push([
-        regionNumber,
+        displayedRegionIndex,
         {
           refName: region.refName,
           regionStart,
           genomeFeatures,
           coverageDepths: coverage.depths,
           coverageMaxDepth: coverage.maxDepth,
-          coverageStartOffset: coverage.startOffset,
+          coverageStartPos: coverage.startPos,
           snpPositions: snp.positions,
           snpYOffsets: snp.yOffsets,
           snpHeights: snp.heights,

@@ -2,20 +2,23 @@ import {
   getContainingView,
   getRpcSessionId,
   getSession,
-  isAbortException,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { autorun, untracked } from 'mobx'
+import { autorun } from 'mobx'
 
-import type { LinearHicDisplayModel } from './model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-export function doAfterAttach(self: LinearHicDisplayModel) {
-  // Fetch available normalizations
+interface HicModel {
+  isMinimized: boolean
+  rpcProps: Record<string, unknown>
+  adapterConfig: Record<string, unknown>
+  setAvailableNormalizations(norms: string[]): void
+  performHicFetch(): void
+}
 
+export function doAfterAttach(self: HicModel) {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   ;(async () => {
     try {
@@ -35,78 +38,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
     }
   })()
 
-  const performRender = async () => {
-    if (self.isMinimized) {
-      return
-    }
-    const view = getContainingView(self) as LGV
-    const { bpPerPx, dynamicBlocks } = view
-    const regions = dynamicBlocks.contentBlocks
-
-    if (!regions.length) {
-      return
-    }
-
-    const { adapterConfig } = self
-
-    try {
-      const session = getSession(self)
-      const { rpcManager } = session
-      const rpcSessionId = getRpcSessionId(self)
-
-      const previousToken = untracked(() => self.renderingStopToken)
-      if (previousToken) {
-        stopStopToken(previousToken)
-      }
-
-      const stopToken = createStopToken()
-      self.setRenderingStopToken(stopToken)
-
-      const result = await rpcManager.call(
-        rpcSessionId,
-        'RenderHicData',
-        {
-          adapterConfig,
-          regions: [...regions],
-          bpPerPx,
-          resolution: self.resolution,
-          normalization: self.activeNormalization,
-          displayHeight: self.mode === 'adjust' ? self.height : undefined,
-          mode: self.mode,
-          stopToken,
-        },
-        {
-          statusCallback: (msg: string) => {
-            if (isAlive(self)) {
-              self.setStatusMessage(msg)
-            }
-          },
-        },
-      )
-
-      self.setRpcData(result)
-      self.setLastDrawnOffsetPx(view.offsetPx)
-      self.setLastDrawnBpPerPx(view.bpPerPx)
-      self.setFlatbushData(
-        result.flatbush,
-        result.items,
-        result.maxScore,
-        result.yScalar,
-      )
-    } catch (error) {
-      if (!isAbortException(error)) {
-        console.error(error)
-        if (isAlive(self)) {
-          self.setError(error)
-        }
-      }
-    } finally {
-      if (isAlive(self)) {
-        self.setRenderingStopToken(undefined)
-      }
-    }
-  }
-
   addDisposer(
     self,
     autorun(
@@ -118,22 +49,14 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         if (!view.initialized) {
           return
         }
-        const { dynamicBlocks } = view
-        const regions = dynamicBlocks.contentBlocks
-
-        /* eslint-disable @typescript-eslint/no-unused-expressions */
-        self.resolution
-        self.activeNormalization
-        self.mode
-        self.height
-        /* eslint-enable @typescript-eslint/no-unused-expressions */
-
-        if (untracked(() => self.error) || !regions.length) {
+        if (!view.dynamicBlocks.contentBlocks.length) {
           return
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        performRender()
+        // rpcProps IS the full RPC payload; any field change refires the
+        // autorun. The viewport read above already retriggers on pan/zoom.
+        void self.rpcProps
+        self.performHicFetch()
       },
       {
         delay: 1000,

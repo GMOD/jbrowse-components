@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { getSession, notEmpty } from '@jbrowse/core/util'
+import { avg, getSession, notEmpty } from '@jbrowse/core/util'
 import {
   addDisposer,
   addMiddleware,
@@ -9,13 +9,87 @@ import {
   getPath,
   types,
 } from '@jbrowse/mobx-state-tree'
-import LinkIcon from '@mui/icons-material/Link'
+import CropFreeIcon from '@mui/icons-material/CropFree'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun } from 'mobx'
 
-import { calc, getBlockFeatures, intersect } from './util.ts'
+import {
+  classifyVariantFeatures,
+  getBadlyPairedAlignments,
+  getMatchedAlignmentFeatures,
+  getMatchedBreakendFeatures,
+  getMatchedPairedFeatures,
+  getMatchedTranslocationFeatures,
+  hasPairedReads,
+} from './components/util.ts'
+import {
+  VIEW_DIVIDER_HEIGHT,
+  calc,
+  getBlockFeatures,
+  intersect,
+} from './util.ts'
 
-import type { BreakpointSplitViewInit, ExportSvgOptions } from './types.ts'
+type Compactness = 'normal' | 'compact' | 'super-compact'
+
+// SYNC: plugins/linear-genome-view/src/LinearGenomeView/menuItems.ts, plugins/linear-comparative-view/src/LinearComparativeView/model.ts
+function buildCompactAllTracksMenu(tracks: { displays: unknown[] }[]) {
+  const hasAny = tracks.some(t =>
+    t.displays.some(
+      d => d !== null && typeof d === 'object' && 'setCompactness' in d,
+    ),
+  )
+  if (!hasAny) {
+    return []
+  }
+  function applyCompactness(level: Compactness) {
+    for (const track of tracks) {
+      for (const display of track.displays) {
+        if (
+          display !== null &&
+          typeof display === 'object' &&
+          'setCompactness' in display
+        ) {
+          ;(
+            display as { setCompactness: (v: Compactness) => void }
+          ).setCompactness(level)
+        }
+      }
+    }
+  }
+  return [
+    {
+      label: 'Compact all tracks',
+      subMenu: [
+        {
+          label: 'Normal',
+          onClick: () => {
+            applyCompactness('normal')
+          },
+        },
+        {
+          label: 'Compact',
+          onClick: () => {
+            applyCompactness('compact')
+          },
+        },
+        {
+          label: 'Super-compact',
+          onClick: () => {
+            applyCompactness('super-compact')
+          },
+        },
+      ],
+    },
+  ]
+}
+
+import type {
+  BreakpointSplitViewInit,
+  ExportSvgOptions,
+  LayoutRecord,
+  OverlayMatch,
+} from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -63,7 +137,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        showHeader: false,
+        showHeader: true,
         /**
          * #property
          */
@@ -86,6 +160,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       matchedTrackFeatures: {} as Record<string, Feature[][]>,
     }))
     .views(self => ({
@@ -109,6 +185,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get showImportForm() {
         return !this.hasSomethingToShow
       },
+
+      /**
+       * #getter
+       */
+      get assembly() {
+        const name = self.views[0]?.assemblyNames[0]
+        if (name) {
+          return getSession(self).assemblyManager.get(name)
+        }
+        return undefined
+      },
     }))
     .views(self => ({
       /**
@@ -119,8 +206,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGBreakpointSplitView.tsx')
         const html = await renderToSvg(self as BreakpointViewModel, opts)
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const { saveAs } = await import('file-saver-es')
+        const { saveAs } = await import('@jbrowse/core/util')
 
         if (opts.format === 'png') {
           const img = new Image()
@@ -190,27 +276,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Translocation features are handled differently since they do not have
-       * a mate e.g. they are one sided
-       */
-      hasTranslocations(trackConfigId: string) {
-        return [...this.getTrackFeatures(trackConfigId).values()].some(
-          f => f.get('type') === 'translocation',
-        )
-      },
-
-      /**
-       * #method
-       * Paired features similar to breakends, but simpler, like BEDPE
-       */
-      hasPairedFeatures(trackConfigId: string) {
-        return [...this.getTrackFeatures(trackConfigId).values()].some(
-          f => f.get('type') === 'paired_feature',
-        )
-      },
-
-      /**
-       * #method
        * Get a composite map of featureId-\>feature map for a track across
        * multiple views
        */
@@ -224,7 +289,70 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
+       * Per-render precompute for an overlay track. Gathers scroll top,
+       * display height, coverage offset, and view offsetPx per level, then
+       * returns getX/getY closures for converting feature layout records to SVG
+       * coordinates.
+       *
+       * `yOffsetsOverride` — SVG export: fixed track tops, scrollTops zeroed.
+       * `domYOffsets` — live rendering: DOM-measured track tops (relative to
+       * the overlay SVG), scrollTops still read from model.
        */
+      getTrackOverlayData(
+        trackId: string,
+        yOffsetsOverride?: number[],
+        domYOffsets?: number[],
+      ) {
+        const { views } = self
+        const tracks = this.getMatchedTracks(trackId)
+        const n = views.length
+        const scrollTops = new Array(n)
+        const heights = new Array(n)
+        const coverageOffsets = new Array(n)
+        const viewOffsetPxs = new Array(n)
+        const yOffsets = yOffsetsOverride ?? new Array(n)
+
+        let viewTop = 0
+        for (let level = 0; level < n; level++) {
+          const view = views[level]!
+          if (!view.initialized) {
+            continue
+          }
+          const d = tracks[level]!.displays[0]!
+          scrollTops[level] = yOffsetsOverride ? 0 : (d.scrollTop ?? 0)
+          heights[level] = d.height
+          coverageOffsets[level] = d.coverageDisplayHeight ?? 0
+          viewOffsetPxs[level] = view.offsetPx
+
+          if (!yOffsetsOverride) {
+            yOffsets[level] =
+              domYOffsets?.[level] ??
+              viewTop + (view.getTrackYOffset(trackId) ?? 0)
+          }
+          if (level < n - 1) {
+            viewTop += view.height + VIEW_DIVIDER_HEIGHT
+          }
+        }
+
+        function getY(level: number, c: LayoutRecord) {
+          const off = coverageOffsets[level]
+          const top = c[1]
+          const bot = c[3]
+          const mid = top - scrollTops[level] + (bot - top) / 2 + off
+          const max = heights[level]
+          return yOffsets[level] + (mid < off ? off : Math.min(mid, max))
+        }
+
+        function getX(level: number, refName: string, coord: number) {
+          const offsetPx = views[level]!.bpToPx({ refName, coord })?.offsetPx
+          return offsetPx !== undefined
+            ? offsetPx - viewOffsetPxs[level]
+            : undefined
+        }
+
+        return { tracks, yOffsets, heights, getX, getY }
+      },
+
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
         const tracks = this.getMatchedTracks(trackConfigId)
         return features.map(c =>
@@ -247,42 +375,69 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             .filter(notEmpty),
         )
       },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          addMiddleware(self, (rawCall, next) => {
-            if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
-              const syncActions = [
-                'horizontalScroll',
-                'zoomTo',
-                'showTrack',
-                'toggleTrack',
-                'hideTrack',
-                'setTrackLabels',
-                'toggleCenterLine',
-              ]
 
-              if (self.linkViews && syncActions.includes(rawCall.name)) {
-                const sourcePath = getPath(rawCall.context)
-                next(rawCall)
-                // Sync to all other views
-                for (const view of self.views) {
-                  const viewPath = getPath(view)
-                  if (viewPath !== sourcePath) {
-                    // @ts-expect-error
-                    view[rawCall.name](rawCall.args[0])
-                  }
-                }
-                return
+      /**
+       * #getter
+       * Zero-arg cached getter: classifies each matched track, pairs its
+       * features, looks up layout rectangles, and returns a Map keyed by
+       * trackId. Mobx caches this across renders and only invalidates when
+       * the underlying feature or layout reads change — so horizontal/vertical
+       * scrolling and track resizing do NOT trigger re-pairing or re-lookup.
+       */
+      get overlayMatches(): Map<string, OverlayMatch> {
+        const result = new Map<string, OverlayMatch>()
+        for (const track of this.matchedTracks) {
+          const trackId = track.configuration.trackId
+          const featureArrays = self.matchedTrackFeatures[trackId]
+          if (!featureArrays) {
+            continue
+          }
+          const allFeatures = new Map(
+            featureArrays.flat().map(f => [f.id(), f] as const),
+          )
+          const type = track.type
+          if (type === 'AlignmentsTrack') {
+            const paired = hasPairedReads(allFeatures)
+            const matched = paired
+              ? getBadlyPairedAlignments(allFeatures)
+              : getMatchedAlignmentFeatures(allFeatures)
+            const layoutMatches = this.getMatchedFeaturesInLayout(
+              trackId,
+              matched,
+            )
+            if (!paired) {
+              for (const m of layoutMatches) {
+                m.sort(
+                  (a, b) =>
+                    a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead,
+                )
               }
             }
-            next(rawCall)
-          }),
-        )
+            result.set(trackId, {
+              kind: 'alignment',
+              allFeatures,
+              layoutMatches,
+              hasPairedReads: paired,
+            })
+          } else if (type === 'VariantTrack') {
+            const kind = classifyVariantFeatures(allFeatures)
+            const matched =
+              kind === 'translocation'
+                ? getMatchedTranslocationFeatures(allFeatures)
+                : kind === 'paired'
+                  ? getMatchedPairedFeatures(allFeatures)
+                  : getMatchedBreakendFeatures(allFeatures)
+            result.set(trackId, {
+              kind,
+              allFeatures,
+              layoutMatches: this.getMatchedFeaturesInLayout(trackId, matched),
+            })
+          }
+        }
+        return result
       },
-
+    }))
+    .actions(self => ({
       /**
        * #action
        */
@@ -337,6 +492,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      squareView() {
+        const average = avg(self.views.map(v => v.bpPerPx))
+        for (const view of self.views) {
+          const center = view.pxToBp(view.width / 2)
+          view.setNewView(average, view.offsetPx)
+          if (center.refName) {
+            view.centerAt(center.coord, center.refName, center.index)
+          }
+        }
+      },
+
+      /**
+       * #action
+       */
       setInit(init?: BreakpointSplitViewInit) {
         self.init = init
       },
@@ -362,7 +531,36 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
-        // Init autorun for initializing from session snapshot
+        addDisposer(
+          self,
+          addMiddleware(self, (rawCall, next) => {
+            if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
+              const syncActions = [
+                'horizontalScroll',
+                'zoomTo',
+                'showTrack',
+                'toggleTrack',
+                'hideTrack',
+                'setTrackLabels',
+                'toggleCenterLine',
+              ]
+
+              if (self.linkViews && syncActions.includes(rawCall.name)) {
+                const sourcePath = getPath(rawCall.context)
+                next(rawCall)
+                for (const view of self.views) {
+                  const viewPath = getPath(view)
+                  if (viewPath !== sourcePath) {
+                    // @ts-expect-error
+                    view[rawCall.name](rawCall.args[0])
+                  }
+                }
+                return
+              }
+            }
+            next(rawCall)
+          }),
+        )
         addDisposer(
           self,
           autorun(
@@ -372,11 +570,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 return
               }
 
-              // Set up the views with their init properties
-              // The child LinearGenomeViews will handle their own initialization
               self.setViews(init.views)
-
-              // Clear init state
               self.setInit(undefined)
             },
             { name: 'BreakpointSplitViewInit' },
@@ -387,11 +581,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           autorun(
             async () => {
               try {
-                // check all views 'initialized'
                 if (!self.views.every(view => view.initialized)) {
                   return
                 }
-                // check that tracks are 'ready' (not notReady or regionTooLarge)
                 if (
                   self.matchedTracks.some(track => {
                     const display = track.displays[0]
@@ -428,6 +620,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       menuItems() {
+        const allTracks = self.views.flatMap(v => v.tracks)
         return [
           ...self.views.map((view, idx) => ({
             label: `Row ${idx + 1} view menu`,
@@ -442,40 +635,47 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     self.reverseViewOrder()
                   },
                 },
+                {
+                  label: 'Square view',
+                  icon: CropFreeIcon,
+                  onClick: () => {
+                    if (self.initialized) {
+                      self.squareView()
+                    }
+                  },
+                },
               ]
             : []),
           {
-            label: 'Show header',
-            type: 'checkbox',
-            checked: self.showHeader,
-            onClick: () => {
-              self.setShowHeader(!self.showHeader)
-            },
-          },
-          {
-            label: 'Show intra-view links',
-            type: 'checkbox',
-            checked: self.showIntraviewLinks,
-            onClick: () => {
-              self.setShowIntraviewLinks(!self.showIntraviewLinks)
-            },
-          },
-          {
-            label: 'Allow clicking alignment squiggles?',
-            type: 'checkbox',
-            checked: self.interactiveOverlay,
-            onClick: () => {
-              self.setInteractiveOverlay(!self.interactiveOverlay)
-            },
-          },
-          {
-            label: 'Link views',
-            type: 'checkbox',
-            icon: LinkIcon,
-            checked: self.linkViews,
-            onClick: () => {
-              self.setLinkViews(!self.linkViews)
-            },
+            label: 'Show...',
+            icon: VisibilityIcon,
+            subMenu: [
+              ...buildCompactAllTracksMenu(allTracks),
+              {
+                label: 'Show header',
+                type: 'checkbox',
+                checked: self.showHeader,
+                onClick: () => {
+                  self.setShowHeader(!self.showHeader)
+                },
+              },
+              {
+                label: 'Show intra-view links',
+                type: 'checkbox',
+                checked: self.showIntraviewLinks,
+                onClick: () => {
+                  self.setShowIntraviewLinks(!self.showIntraviewLinks)
+                },
+              },
+              {
+                label: 'Allow clicking alignment squiggles',
+                type: 'checkbox',
+                checked: self.interactiveOverlay,
+                onClick: () => {
+                  self.setInteractiveOverlay(!self.interactiveOverlay)
+                },
+              },
+            ],
           },
           {
             label: 'Export SVG',
@@ -534,7 +734,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
         ...(linkViews ? { linkViews } : {}),
         ...(!interactiveOverlay ? { interactiveOverlay } : {}),
-        ...(showHeader ? { showHeader } : {}),
+        ...(!showHeader ? { showHeader } : {}),
       } as typeof snap
     })
 }

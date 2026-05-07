@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-any
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
@@ -44,7 +44,7 @@ type: types.literal('AddTrackWidget')
 
 ```js
 // type signature
-IMaybe<IReferenceType<any>>
+IMaybe<IReferenceType<IAnyType>>
 // code
 view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
@@ -57,14 +57,14 @@ view: types.safeReference(
 
 ```js
 // type
-any
+AdapterConfig | undefined
 ```
 
 #### getter: trackName
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: isFtp
@@ -92,28 +92,28 @@ boolean
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: trackHttp
 
 ```js
 // type
-any
+boolean | undefined
 ```
 
 #### getter: indexHttp
 
 ```js
 // type
-any
+boolean | undefined
 ```
 
 #### getter: wrongProtocol
 
 ```js
 // type
-any
+boolean | undefined
 ```
 
 #### getter: unsupported
@@ -144,21 +144,21 @@ any
 
 ```js
 // type
-any
+string | undefined
 ```
 
 #### getter: trackType
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: getTrackConfig
 
 ```js
 // type
-(timestamp: number) => any
+(timestamp: number) => { [x: string]: ...; } | undefined
 ```
 
 #### getter: warningMessage

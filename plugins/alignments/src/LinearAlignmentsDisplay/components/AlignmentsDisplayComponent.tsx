@@ -2,7 +2,7 @@ import { Suspense, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
-import { getContainingView, useDebounce } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -29,11 +29,13 @@ const AlignmentsDisplayComponent = observer(
   }) {
     const { classes } = useStyles()
     const ref = useRef<HTMLDivElement>(null)
-    const coord0: [number, number] = [0, 0]
-    const [offsetMouseCoord, setOffsetMouseCoord] = useState(coord0)
-    const [clientMouseCoord, setClientMouseCoord] = useState(coord0)
+    const [offsetMouseCoord, setOffsetMouseCoord] = useState<[number, number]>([
+      0, 0,
+    ])
+    const [clientMouseCoord, setClientMouseCoord] = useState<[number, number]>([
+      0, 0,
+    ])
     const view = getContainingView(model) as LinearGenomeViewModel
-    const debouncedLoading = useDebounce(model.isLoading, 500)
 
     if (!view.initialized) {
       return (
@@ -50,6 +52,12 @@ const AlignmentsDisplayComponent = observer(
       contextMenuCoord,
     } = model
     const items = contextMenuCoord ? model.contextMenuItems() : []
+    const clearContextMenu = () => {
+      model.setContextMenuCoord(undefined)
+      model.setContextMenuFeature(undefined)
+      model.setContextMenuCigarHit(undefined)
+      model.setContextMenuIndicatorHit(undefined)
+    }
     return (
       <div
         ref={ref}
@@ -66,10 +74,7 @@ const AlignmentsDisplayComponent = observer(
         }}
       >
         <DisplayMessageComponent model={model} />
-        <LoadingOverlay
-          statusMessage={model.statusMessage ?? 'Loading features'}
-          isVisible={debouncedLoading && !model.regionTooLarge}
-        />
+        <AlignmentsLoadingOverlay model={model} />
         <Suspense fallback={null}>
           <TooltipComponent
             model={model}
@@ -85,21 +90,9 @@ const AlignmentsDisplayComponent = observer(
               callback()
               model.setContextMenuCoord(undefined)
             }}
-            onClose={() => {
-              model.setContextMenuCoord(undefined)
-              model.setContextMenuFeature(undefined)
-              model.setContextMenuCigarHit(undefined)
-              model.setContextMenuIndicatorHit(undefined)
-            }}
+            onClose={clearContextMenu}
             slotProps={{
-              transition: {
-                onExit: () => {
-                  model.setContextMenuCoord(undefined)
-                  model.setContextMenuFeature(undefined)
-                  model.setContextMenuCigarHit(undefined)
-                  model.setContextMenuIndicatorHit(undefined)
-                },
-              },
+              transition: { onExit: clearContextMenu },
             }}
             anchorReference="anchorPosition"
             anchorPosition={{
@@ -113,5 +106,21 @@ const AlignmentsDisplayComponent = observer(
     )
   },
 )
+
+const AlignmentsLoadingOverlay = observer(function AlignmentsLoadingOverlay({
+  model,
+}: {
+  model: Pick<
+    LinearAlignmentsDisplayModel,
+    'isReady' | 'statusMessage' | 'regionTooLarge' | 'error'
+  >
+}) {
+  return (
+    <LoadingOverlay
+      statusMessage={model.statusMessage ?? 'Loading features'}
+      isVisible={!model.isReady && !model.regionTooLarge && !model.error}
+    />
+  )
+})
 
 export default AlignmentsDisplayComponent

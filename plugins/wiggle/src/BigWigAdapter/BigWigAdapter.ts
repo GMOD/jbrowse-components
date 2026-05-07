@@ -15,19 +15,22 @@ import type { WiggleFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions as WiggleOptions } from '../wiggleAdapterOptions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-import type { UnrectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
+import type { RectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 function computeStatsFromView(
   view: ArrayFeatureView,
   targetStart: number,
   targetEnd: number,
-) {
+): RectifiedQuantitativeStats {
   const basesCovered = targetEnd - targetStart
+  // Number.MAX_VALUE not Infinity: precautionary, since Infinity serializes as
+  // null in JSON and these stats cross the RPC boundary. In practice the
+  // sentinels are always replaced (featureCount===0 returns zeros early).
   let scoreMin = Number.MAX_VALUE
-  let scoreMax = Number.MIN_VALUE
+  let scoreMax = -Number.MAX_VALUE
   let scoreMeanMin = Number.MAX_VALUE
-  let scoreMeanMax = Number.MIN_VALUE
+  let scoreMeanMax = -Number.MAX_VALUE
   let scoreSum = 0
   let scoreSumSquares = 0
   let featureCount = 0
@@ -97,7 +100,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   ]
 
   private async setupPre(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     const pluginManager = this.pluginManager
     const bigwig = new BigWig({
       filehandle: openLocation(this.getConf('bigWigLocation'), pluginManager),
@@ -113,12 +116,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   }
 
   async setup(opts?: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
@@ -134,35 +135,13 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   public async getGlobalStats(opts?: BaseOptions) {
     const { header } = await this.setup(opts)
-    return rectifyStats(header.totalSummary as UnrectifiedQuantitativeStats)
+    return rectifyStats(header.totalSummary)
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
-    const { refName, start, end } = region
-    const {
-      bpPerPx = 0,
-      resolution = 1,
-      stopToken,
-      statusCallback = () => {},
-    } = opts
-    const source = this.getConf('source')
-    const resolutionMultiplier = this.getConf('resolutionMultiplier')
-
+    const { stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
-      const { bigwig } = await this.setup(opts)
-
-      const arrays = await updateStatus(
-        'Downloading bigwig data',
-        statusCallback,
-        () =>
-          bigwig.getFeaturesAsArrays(refName, start, end, {
-            ...opts,
-            basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
-          }),
-      )
-
-      const view = new ArrayFeatureView(arrays, source, refName)
-
+      const view = await this.getArrayFeatureView(region, opts)
       for (let i = 0; i < view.length; i++) {
         observer.next(new BigWigFeature(view, i))
       }
@@ -199,7 +178,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     opts: WiggleOptions & { bicolorPivot?: number } = {},
   ): Promise<WiggleFeatureArrays> {
     const view = await this.getArrayFeatureView(region, opts)
-    const regionStart = Math.floor(region.start)
     return processFeaturesFromArrays(
       view.starts,
       view.ends,
@@ -207,7 +185,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       view.minScores,
       view.maxScores,
       view.length,
-      regionStart,
       opts.bicolorPivot ?? 0,
     )
   }

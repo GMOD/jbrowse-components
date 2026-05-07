@@ -2,7 +2,10 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { toP } from '../../util.ts'
+import {
+  WiggleCursorLine,
+  WiggleScoreDisplay,
+} from '../../shared/WiggleTooltipShared.tsx'
 
 import type { MultiWiggleDisplayModel } from './MultiWiggleComponent.tsx'
 
@@ -38,13 +41,12 @@ function SourceRow({
         ) : null}
         {src}
         {': '}
-        {summary && minScore != null && maxScore != null ? (
-          <span>
-            min:{toP(minScore)} avg:{toP(score)} max:{toP(maxScore)}
-          </span>
-        ) : (
-          <span>{toP(score)}</span>
-        )}
+        <WiggleScoreDisplay
+          score={score}
+          summary={summary}
+          minScore={minScore}
+          maxScore={maxScore}
+        />
       </span>
     </div>
   )
@@ -132,19 +134,7 @@ const MultiWiggleTooltip = observer(function MultiWiggleTooltip({
       >
         <TooltipContents model={model} />
       </BaseTooltip>
-      <div
-        style={{
-          background: 'black',
-          border: 'none',
-          width: 1,
-          height,
-          top: 0,
-          cursor: 'default',
-          position: 'absolute',
-          pointerEvents: 'none',
-          left: offsetMouseCoord[0],
-        }}
-      />
+      <WiggleCursorLine height={height} left={offsetMouseCoord[0]} />
     </>
   ) : null
 })

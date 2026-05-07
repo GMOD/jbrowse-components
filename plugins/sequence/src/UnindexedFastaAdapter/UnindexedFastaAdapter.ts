@@ -6,7 +6,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-import type { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 function parseSmallFasta(text: string) {
   return new Map(
@@ -48,22 +48,20 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
   }
 
   public async setupPre(_opts?: BaseOptions) {
-    const fastaLocation = this.getConf('fastaLocation') as FileLocation
     const res = parseSmallFasta(
-      await openLocation(fastaLocation, this.pluginManager).readFile('utf8'),
+      await openLocation(
+        this.getConf('fastaLocation'),
+        this.pluginManager,
+      ).readFile('utf8'),
     )
 
-    return {
-      fasta: new Map(
-        [...res.entries()].map(([refName, val]) => {
-          return [
-            readConfObject(this.config, 'rewriteRefNames', { refName }) ||
-              refName,
-            val,
-          ]
-        }),
-      ),
+    const fasta = new Map<string, { description: string; sequence: string }>()
+    for (const [refName, val] of res) {
+      const name =
+        readConfObject(this.config, 'rewriteRefNames', { refName }) || refName
+      fasta.set(name, val)
     }
+    return { fasta }
   }
 
   public async getHeader() {
@@ -74,12 +72,10 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
   }
 
   public async setup(opts?: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 

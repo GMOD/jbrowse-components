@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/react-circular-genome-view2",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 circular genome view React component",
   "keywords": [
@@ -29,7 +29,7 @@
     "prebuild": "pnpm clean",
     "build": "pnpm run /^build:/",
     "prepack": "pnpm build",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "build:webpack": "webpack -c webpack.config.mjs",
     "clean": "rimraf esm dist *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
@@ -52,7 +52,7 @@
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1"
   },
   "peerDependencies": {

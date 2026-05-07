@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/react-linear-genome-view2",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 linear genome view React component",
   "keywords": [
@@ -33,7 +33,7 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:esm": "tsgo --build tsconfig.build.esm.json",
     "build:webpack": "webpack -c webpack.config.mjs",
     "clean": "rimraf esm *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
@@ -67,7 +67,7 @@
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1",
     "rxjs": "^7.8.2"
   },

@@ -83,7 +83,7 @@ Set reference to the canvas element
 
 ```js
 // type signature
-setRef: (ref: HTMLCanvasElement) => void
+setRef: (ref: HTMLCanvasElement | null) => void
 ```
 
 #### action: setRenderingImageData
@@ -92,7 +92,7 @@ Set the rendering imageData from RPC
 
 ```js
 // type signature
-setRenderingImageData: (imageData: ImageBitmap) => void
+setRenderingImageData: (imageData: ImageBitmap | undefined) => void
 ```
 
 #### action: setRenderingStopToken
@@ -101,7 +101,7 @@ Set the rendering stop token
 
 ```js
 // type signature
-setRenderingStopToken: (token?: StopToken) => void
+setRenderingStopToken: (token?: string | undefined) => void
 ```
 
 #### action: setStatusMessage
@@ -110,7 +110,7 @@ Set the status message displayed during loading
 
 ```js
 // type signature
-setStatusMessage: (msg?: string) => void
+setStatusMessage: (msg?: string | undefined) => void
 ```
 
 #### action: setCanvasDrawn

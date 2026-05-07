@@ -32,10 +32,9 @@ interface LabelContext {
 }
 
 function makeLabelVisitor(ctx: LabelContext) {
-  const { x, y, w, h, bpLen, labels } = ctx
+  const { x, y, w, h, bpLen, labels, featStart } = ctx
   const pxPerBp = w / bpLen
   const fontSize = computeLabelFontSize(h)
-  const featStart = ctx.featStart
 
   return {
     onMismatch(refPos: number, len: number, queryBase?: string) {

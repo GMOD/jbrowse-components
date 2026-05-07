@@ -73,7 +73,7 @@ describe('renameIds', () => {
 
   it('only transforms string-valued id fields', () => {
     const input = { id: 42, name: 'test' }
-    const result = renameIds(input as unknown as Record<string, unknown>)
+    const result = renameIds(input)
     expect(result.id).toBe(42)
   })
 })

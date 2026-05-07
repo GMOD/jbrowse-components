@@ -1,6 +1,6 @@
 export type SyriType = 'SYN' | 'INV' | 'TRANS' | 'DUP'
 
-interface AlignmentRecord {
+export interface AlignmentRecord {
   qname: string
   qstart: number
   qend: number
@@ -10,18 +10,30 @@ interface AlignmentRecord {
   strand: number
 }
 
-// Classifies PAF alignments into SyRI-style structural types.
-// Algorithm:
-// 1. Group alignments by (query chromosome, target chromosome)
-// 2. Within each group, sort by target start
-// 3. Detect inversions (negative strand), translocations (different
-//    chromosome from primary mapping), and duplications (overlapping
-//    regions on the same chromosome)
-// 4. Everything else is syntenic (SYN)
-export function computeSyriTypes(records: AlignmentRecord[]): SyriType[] {
-  const types = new Array<SyriType>(records.length).fill('SYN')
+export interface DupConflict {
+  tname: string
+  tstart: number
+  tend: number
+}
 
-  // Build a map of query chromosome -> target chromosome with most coverage
+export interface SyriClassification {
+  types: SyriType[]
+  // For DUP features: the target coords of the prior SYN they overlap
+  dupConflicts: (DupConflict | undefined)[]
+}
+
+// Classifies PAF alignments into SyRI-style structural types.
+// Only SYN alignments participate in DUP detection — INV/TRANS are already
+// classified and must not be overwritten (an inversion's target coords are
+// typically nested inside the surrounding syntenic block).
+export function computeSyriTypes(
+  records: AlignmentRecord[],
+): SyriClassification {
+  const types = new Array<SyriType>(records.length).fill('SYN')
+  const dupConflicts: (DupConflict | undefined)[] = new Array(
+    records.length,
+  ).fill(undefined)
+
   const queryCoverage = new Map<string, Map<string, number>>()
   for (const r of records) {
     let targets = queryCoverage.get(r.qname)
@@ -33,7 +45,6 @@ export function computeSyriTypes(records: AlignmentRecord[]): SyriType[] {
     targets.set(r.tname, existing + (r.tend - r.tstart))
   }
 
-  // For each query chromosome, find the primary target chromosome
   const primaryTarget = new Map<string, string>()
   for (const [qname, targets] of queryCoverage) {
     let best = ''
@@ -47,8 +58,6 @@ export function computeSyriTypes(records: AlignmentRecord[]): SyriType[] {
     primaryTarget.set(qname, best)
   }
 
-  // Track target coverage for duplication detection
-  // Group records by target chromosome
   const targetGroups = new Map<
     string,
     { idx: number; rec: AlignmentRecord }[]
@@ -63,44 +72,44 @@ export function computeSyriTypes(records: AlignmentRecord[]): SyriType[] {
     group.push({ idx: i, rec: r })
   }
 
-  // Sort each group by target start position
   for (const group of targetGroups.values()) {
     group.sort((a, b) => a.rec.tstart - b.rec.tstart)
   }
 
-  // Classify each alignment
   for (let i = 0; i < records.length; i++) {
     const r = records[i]!
-
-    // Inversions: negative strand on the primary target chromosome
     if (r.strand === -1 && primaryTarget.get(r.qname) === r.tname) {
       types[i] = 'INV'
       continue
     }
-
-    // Translocations: mapped to a non-primary target chromosome
     if (primaryTarget.get(r.qname) !== r.tname) {
       types[i] = 'TRANS'
       continue
     }
   }
 
-  // Duplication detection: find overlapping regions on same target chromosome
+  // DUP detection sweeps only SYN records — INV/TRANS must not be overwritten.
+  // An inversion's target coords are typically nested inside the surrounding
+  // syntenic block, which would otherwise trigger a false DUP.
   for (const group of targetGroups.values()) {
-    let maxEnd = 0
+    let maxEndRec: AlignmentRecord | undefined
     for (const { idx, rec } of group) {
-      if (types[idx] === 'TRANS') {
+      if (types[idx] !== 'SYN') {
         continue
       }
-      if (rec.tstart < maxEnd) {
-        // This alignment overlaps with a previous one on the same target
+      if (maxEndRec && rec.tstart < maxEndRec.tend) {
         types[idx] = 'DUP'
+        dupConflicts[idx] = {
+          tname: maxEndRec.tname,
+          tstart: maxEndRec.tstart,
+          tend: maxEndRec.tend,
+        }
       }
-      if (rec.tend > maxEnd) {
-        maxEnd = rec.tend
+      if (!maxEndRec || rec.tend > maxEndRec.tend) {
+        maxEndRec = rec
       }
     }
   }
 
-  return types
+  return { types, dupConflicts }
 }

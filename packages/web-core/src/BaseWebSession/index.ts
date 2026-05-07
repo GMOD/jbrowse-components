@@ -10,6 +10,10 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
+  restoreFileHandles,
+  restoreFileHandlesFromSnapshot,
+} from '@jbrowse/core/util/tracks'
+import {
   addDisposer,
   cast,
   getParent,
@@ -19,7 +23,6 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import {
   DialogQueueSessionMixin,
-  DrawerWidgetSessionMixin,
   MultipleViewsSessionMixin,
   ReferenceManagementSessionMixin,
   SessionTracksManagerSessionMixin,
@@ -28,11 +31,13 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
 
 import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
 
+import type { WebRootModelInterface } from '../WebRootModel.ts'
 import type { Menu } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -60,7 +65,6 @@ interface Display {
  * used for "web based" products, including jbrowse-web and react-app
  * composed of
  * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
- * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
  * - [DialogQueueSessionMixin](../dialogqueuesessionmixin)
  * - [ThemeManagerSessionMixin](../thememanagersessionmixin)
  * - [MultipleViewsSessionMixin](../multipleviewssessionmixin)
@@ -83,7 +87,6 @@ export function BaseWebSession({
       types.compose(
         'WebCoreSessionModelGroupA',
         ReferenceManagementSessionMixin(pluginManager),
-        DrawerWidgetSessionMixin(pluginManager),
         DialogQueueSessionMixin(pluginManager),
         ThemeManagerSessionMixin(pluginManager),
         MultipleViewsSessionMixin(pluginManager),
@@ -100,10 +103,6 @@ export function BaseWebSession({
       ),
     )
     .props({
-      /**
-       * #property
-       */
-      margin: 0,
       /**
        * #property
        */
@@ -124,6 +123,10 @@ export function BaseWebSession({
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
+      /**
+       * #volatile
+       */
+      pendingFileHandleIds: [] as string[],
     }))
     .views(self => ({
       /**
@@ -135,8 +138,8 @@ export function BaseWebSession({
       /**
        * #getter
        */
-      get root() {
-        return getParent<any>(self)
+      get root(): WebRootModelInterface {
+        return getParent<WebRootModelInterface>(self)
       },
       /**
        * #getter
@@ -206,12 +209,6 @@ export function BaseWebSession({
       get savedSessionMetadata() {
         return self.root.savedSessionMetadata
       },
-      /**
-       * #getter
-       */
-      get previousAutosaveId() {
-        return self.root.previousAutosaveId
-      },
 
       /**
        * #getter
@@ -270,14 +267,7 @@ export function BaseWebSession({
             )
           }),
         )
-        getParent<any>(self).setPluginsUpdated(true)
-      },
-
-      /**
-       * #action
-       */
-      addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return self.root.addSavedSession(sessionSnapshot)
+        self.root.setPluginsUpdated(true)
       },
 
       /**
@@ -290,29 +280,16 @@ export function BaseWebSession({
       /**
        * #action
        */
-      favoriteSavedSession(id: string) {
-        return self.root.favoriteSavedSession(id)
-      },
-
-      /**
-       * #action
-       */
-      unfavoriteSavedSession(id: string) {
-        return self.root.unfavoriteSavedSession(id)
+      setSavedSessionFavorite(id: string, favorite: boolean) {
+        return self.root.setSavedSessionFavorite(id, favorite)
       },
       /**
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        return self.root.renameCurrentSession(sessionName)
+        self.root.renameCurrentSession(sessionName)
       },
 
-      /**
-       * #action
-       */
-      duplicateCurrentSession() {
-        return self.root.duplicateCurrentSession()
-      },
       /**
        * #action
        */
@@ -324,28 +301,14 @@ export function BaseWebSession({
        * #action
        */
       setDefaultSession() {
-        return self.root.setDefaultSession()
-      },
-
-      /**
-       * #action
-       */
-      saveSessionToLocalStorage() {
-        return self.root.saveSessionToLocalStorage()
-      },
-
-      /**
-       * #action
-       */
-      loadAutosaveSession() {
-        return self.root.loadAutosaveSession()
+        self.root.setDefaultSession()
       },
 
       /**
        * #action
        */
       setSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return self.root.setSession(sessionSnapshot)
+        self.root.setSession(sessionSnapshot)
       },
     }))
     .actions(self => ({
@@ -369,11 +332,35 @@ export function BaseWebSession({
        * #method
        * raw track actions (Settings, Copy, Delete) without submenu wrapper
        */
-      getTrackActions(config: BaseTrackConfig): MenuItem[] {
+      getTrackActions(
+        config: BaseTrackConfig,
+        view?: { showTrack: (id: string) => void },
+      ): MenuItem[] {
         const { adminMode, sessionTracks } = self
         const canEdit =
-          adminMode || sessionTracks.find(t => t.trackId === config.trackId)
+          adminMode || sessionTracks.some(t => t.trackId === config.trackId)
         const isRefSeq = config.type === 'ReferenceSequenceTrack'
+        const makeSnap = () => {
+          const snap = structuredClone(
+            isStateTreeNode(config) ? getSnapshot(config) : config,
+          ) as { [key: string]: unknown; displays?: Display[] }
+          const now = Date.now()
+          snap.trackId += `-${now}`
+          if (snap.displays) {
+            for (const display of snap.displays) {
+              display.displayId += `-${now}`
+            }
+          }
+          // the -sessionTrack suffix to trackId is used as metadata for
+          // the track selector to store the track in a special category,
+          // and default category is also cleared
+          if (!self.adminMode) {
+            snap.trackId += '-sessionTrack'
+            snap.category = undefined
+          }
+          snap.name += ' (copy)'
+          return snap
+        }
         return [
           {
             label: 'Settings',
@@ -387,30 +374,19 @@ export function BaseWebSession({
             label: 'Copy track',
             disabled: isRefSeq,
             onClick: () => {
-              const snap = structuredClone(
-                isStateTreeNode(config) ? getSnapshot(config) : config,
-              ) as {
-                [key: string]: unknown
-                displays?: Display[]
-              }
-              const now = Date.now()
-              snap.trackId += `-${now}`
-              if (snap.displays) {
-                for (const display of snap.displays) {
-                  display.displayId += `-${now}`
-                }
-              }
-              // the -sessionTrack suffix to trackId is used as metadata for
-              // the track selector to store the track in a special category,
-              // and default category is also cleared
-              if (!self.adminMode) {
-                snap.trackId += '-sessionTrack'
-                snap.category = undefined
-              }
-              snap.name += ' (copy)'
-              self.addTrackConf(snap)
+              self.addTrackConf(makeSnap())
             },
             icon: CopyIcon,
+          },
+          {
+            label: 'Copy and open track',
+            disabled: isRefSeq || !view,
+            onClick: () => {
+              const snap = makeSnap()
+              self.addTrackConf(snap)
+              view!.showTrack(snap.trackId as string)
+            },
+            icon: OpenInNewIcon,
           },
           {
             label: 'Delete track',
@@ -428,7 +404,10 @@ export function BaseWebSession({
        * #method
        * flattened menu items for use in hierarchical track selector
        */
-      getTrackListMenuItems(config: BaseTrackConfig): MenuItem[] {
+      getTrackListMenuItems(
+        config: BaseTrackConfig,
+        view?: { showTrack: (id: string) => void },
+      ): MenuItem[] {
         return [
           {
             label: 'About track',
@@ -444,7 +423,7 @@ export function BaseWebSession({
             },
             icon: InfoIcon,
           },
-          ...self.getTrackActions(config),
+          ...self.getTrackActions(config, view),
         ]
       },
 
@@ -457,6 +436,7 @@ export function BaseWebSession({
         config: BaseTrackConfig,
         extraTrackActions?: MenuItem[],
         effectiveConfig?: Record<string, unknown>,
+        view?: { showTrack: (id: string) => void },
       ): MenuItem[] {
         return [
           {
@@ -479,8 +459,8 @@ export function BaseWebSession({
             label: 'Track actions',
             priority: 1001,
             subMenu: [
-              ...self.getTrackActions(config),
-              ...(extraTrackActions || []),
+              ...self.getTrackActions(config, view),
+              ...(extraTrackActions ?? []),
             ],
           },
           { type: 'divider' as const },
@@ -495,16 +475,39 @@ export function BaseWebSession({
       },
     }))
     .actions(self => ({
+      setPendingFileHandleIds(ids: string[]) {
+        self.pendingFileHandleIds = ids
+      },
+    }))
+    .actions(self => ({
       afterAttach() {
         addDisposer(
           self,
           autorun(
             function sessionLocalStorageAutorun() {
-              localStorageSetItem('drawerPosition', self.drawerPosition)
               localStorageSetItem('themeName', self.themeName)
             },
             { name: 'SessionLocalStorage' },
           ),
+        )
+        restoreFileHandlesFromSnapshot(getSnapshot(self), false)
+          .then(results => {
+            const failed = results.filter(r => !r.success)
+            if (failed.length > 0) {
+              self.setPendingFileHandleIds(failed.map(f => f.handleId))
+            }
+          })
+          .catch((err: unknown) => {
+            console.error('Error restoring file handles:', err)
+          })
+      },
+      async restorePendingFileHandles() {
+        const results = await restoreFileHandles(
+          self.pendingFileHandleIds,
+          true,
+        )
+        self.setPendingFileHandleIds(
+          results.filter(r => !r.success).map(r => r.handleId),
         )
       },
     }))

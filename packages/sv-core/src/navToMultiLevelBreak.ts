@@ -9,7 +9,6 @@ import {
 
 import type { BreakpointSplitView, Track } from './types.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export async function navToMultiLevelBreak({
   stableViewId,
@@ -33,10 +32,13 @@ export async function navToMultiLevelBreak({
   if (!assembly) {
     throw new Error(`assembly ${assemblyName} not found`)
   }
+  if (!assembly.regions) {
+    throw new Error(`assembly ${assemblyName} regions not loaded`)
+  }
 
   const { refName, pos, mateRefName, matePos } = getBreakendCoveringRegions({
     feature,
-    assembly: assembly,
+    assembly,
   })
 
   let view = session.views.find(f => f.id === stableViewId) as
@@ -59,14 +61,16 @@ export async function navToMultiLevelBreak({
           tracks: stripIds(mirror ? [...viewTracks].reverse() : viewTracks),
         },
       ],
-    }) as unknown as { views: LinearGenomeViewModel[] }
+    }) as unknown as BreakpointSplitView
+  } else {
+    view.setDisplayName(makeTitle(feature))
   }
-  // @ts-expect-error
-  view.setDisplayName(makeTitle(feature))
-  const r1 = assembly.regions!.find(r => r.refName === refName)
-  const r2 = assembly.regions!.find(r => r.refName === mateRefName)
+  const r1 = assembly.regions.find(r => r.refName === refName)
+  const r2 = assembly.regions.find(r => r.refName === mateRefName)
   if (!r1 || !r2) {
-    throw new Error("can't find regions")
+    throw new Error(
+      `regions ${refName}, ${mateRefName} not found in assembly ${assemblyName}`,
+    )
   }
   await Promise.all([
     view.views[0]!.navToLocations(splitRegionAtPosition(r1, pos, assemblyName)),

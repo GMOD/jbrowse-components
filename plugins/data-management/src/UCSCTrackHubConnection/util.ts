@@ -31,7 +31,7 @@ export function makeLoc2(first: string, alt?: string) {
   return first
     ? {
         uri: first,
-        locationType: 'LocalPath',
+        locationType: 'LocalPathLocation',
       }
     : {
         uri: alt,
@@ -39,6 +39,6 @@ export function makeLoc2(first: string, alt?: string) {
       }
 }
 
-export function resolve(uri: string, baseUri: string) {
+export function resolve(uri: string, baseUri?: string) {
   return new URL(uri, baseUri).href
 }

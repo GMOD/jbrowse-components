@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gccontent",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 gccontent concepts",
   "keywords": [
@@ -26,7 +26,7 @@
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
@@ -36,7 +36,7 @@
     "@jbrowse/plugin-sequence": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@mui/material": "^9.0.0",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1",
     "rxjs": "^7.8.2"
   },

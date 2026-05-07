@@ -2,26 +2,69 @@
 
 ## Display rendering and RPC
 
-All display types fetch data via RPC workers and render on the main thread. The
-difference is where layout decisions happen:
+All displays fetch via RPC workers, render on main thread. Worker output is
+**absolute genomic uint32** — no regionStart-relative arithmetic crosses the
+worker boundary (see `agent-docs/ARCHITECTURE.md` "Coordinate convention").
 
-- **Canvas plugin**: worker computes layout (feature heights, glyph selection,
-  packing) so it needs config sent as a plain snapshot (`getConfSnapshot` +
-  `readConfigValue`). Returns pre-computed geometry for GPU rendering.
-- **Wiggle/alignments**: worker only fetches and bins data, returns raw arrays.
-  Layout and rendering happen on the main thread because they need cross-region
-  coordination — e.g. wiggle's autoscale aggregates scores across all visible
-  chromosomes to compute a global Y-axis domain, alignments builds a global
-  chain index across regions for linked-read highlighting.
+- **Canvas**: worker does glyph selection, subfeature breakdown, color, label
+  measurement; config sent as plain snapshot. Main thread: Y-row packing
+  (`computeLaidOutData`). Within-feature Y stacking is worker-side. Only
+  `bpPerPx`-dependent worker decision: amino-acid overlay
+  (`shouldRenderPeptideBackground`).
+- **Wiggle**: worker fetches BigWig bins, returns absolute uint32 positions;
+  `bpPerPx` only selects zoom level. Main thread: autoscale.
+- **Alignments**: worker fetches reads only. Y-row packing, chain lines, and
+  Flatbush indices are main-thread.
+- **HiC / LD / variants**: worker returns genomic data; GPU shader handles zoom
+  transform.
+
+`isCacheValid` overrides on wiggle and canvas only — see
+`agent-docs/ARCHITECTURE.md` "Per-region zoom-staleness".
 
 ## GPU rendering (plugins/canvas, packages/core/src/gpu)
 
-Shader uniforms `canvas_width`/`canvas_height` are CSS pixels. The HAL sets the
-canvas backing store to `css * dpr`, so `N / canvas_width` in clip space = `N`
-CSS pixels at any DPR. Do NOT manually scale by devicePixelRatio.
+`canvas_width`/`canvas_height` uniforms are CSS pixels. HAL sets backing store
+to `css * dpr`, so `N / canvas_width` = `N` CSS pixels. Do NOT scale by
+devicePixelRatio.
 
-WebGPU uses 4x MSAA; WebGL2 uses `antialias: true`. Picking passes skip MSAA.
+WebGPU uses 4x MSAA; WebGL2 uses `antialias: true`.
 
-WGSL (`canvasShaders.ts`) and GLSL (`canvasGlslShaders.ts`) must stay in sync.
-The Uniforms struct/UBO layout must match the byte offsets in
+Uniforms struct/UBO layout must match byte offsets in
 `GpuCanvasFeatureRenderer.ts`.
+
+**Never hand-edit `*.generated.ts` shader files.** Edit `.slang` source and run
+`pnpm gen:shaders` — Slang generates both WGSL and GLSL.
+
+**hp-math (hi/lo bp splits) is shader-only.** `splitPositionWithFrac`,
+`hpSplitUint`, and `bpHi`/`bpLo` pairs preserve float32 precision in shaders. JS
+is float64 — use plain `bp - bpStart`. Hi/lo recombination in `.ts` outside
+shader-uniform writes is a bug.
+
+## Large file generation (tools/gfa-to-tabix)
+
+The `/tmp` partition is small (16 GB, often >50% full). Set `TMPDIR=~/tmpdir`
+before any `gfa-to-tabix` run that writes intermediate files (vg snarls writes
+to TMPDIR). Clean stale `/tmp/hprc-*`, `/tmp/volvox*`, etc. before long runs.
+
+## rpcProps vs gpuProps — what stays in the worker
+
+The upload autorun (`installGpuDisplay`) fires for **every** `rpcDataMap` change
+and re-runs `buildSourceRenderData` / `buildMultiSourceRenderData` for **all**
+cached regions. Moving an expensive per-feature computation from the worker into
+that path multiplies the cost by the number of cached regions and fires it on
+every region arrival, not just on settings changes.
+
+**Rule:** Only move worker computation into `gpuProps` (main-thread re-encode)
+when the setting changes frequently (e.g., color, scale type) **and** the
+per-feature work is cheap or can be expressed as a shader uniform. For settings
+that rarely change but feed expensive per-feature loops (e.g., `bicolorPivot`),
+keep them in `rpcProps` and accept the occasional refetch. See
+`agent-docs/architecture-decision-records/adr-016-bicolorpivot-stays-in-worker.md`.
+
+## MST model files
+
+**Do not split large model files (e.g. `LinearGenomeView/model.ts`) across
+multiple files.** MST's `.views()`/`.actions()` chaining makes type inference
+harder to get right across file boundaries. Small self-contained pieces of logic
+(mixins, pure utility functions) can be extracted, but the main model chain
+should stay in one file.

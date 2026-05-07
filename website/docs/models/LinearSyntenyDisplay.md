@@ -39,7 +39,7 @@ type: types.literal('LinearSyntenyDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -113,7 +113,7 @@ boolean
 
 ```js
 // type
-any
+{ [k: string]: FeatPos; }
 ```
 
 #### getter: colorSchemeConfig
@@ -122,7 +122,7 @@ cached color scheme config based on colorBy
 
 ```js
 // type
-{ cigarColors: { I: string; N: string; D: string; X: string; M: string; '=': string; }; }
+{ cigarColors: { I: string; N: string; D: string; X: string; M: string; '=': string; }; } | { posColor: string; negColor: string; cigarColors: { I: string; N: string; D: string; X: string; M: string; '=': string; }; } | { ...; }
 ```
 
 #### getter: colorMapWithAlpha
@@ -131,7 +131,7 @@ cached CIGAR colors with alpha applied
 
 ```js
 // type
-{ I: any; N: any; D: any; X: any; M: any; '=': any; }
+{ I: string; N: string; D: string; X: string; M: string; '=': string; }
 ```
 
 #### getter: posColorWithAlpha
@@ -140,7 +140,7 @@ cached positive strand color with alpha
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: negColorWithAlpha
@@ -149,7 +149,7 @@ cached negative strand color with alpha
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: queryColorWithAlphaMap
@@ -167,7 +167,7 @@ cached query total lengths for minAlignmentLength filtering
 
 ```js
 // type
-Map<string, number>
+Map<string, number> | undefined
 ```
 
 ### LinearSyntenyDisplay - Actions
@@ -183,35 +183,35 @@ setFeatPositions: (arg: FeatPos[]) => void
 
 ```js
 // type signature
-setMainCanvasRef: (ref: HTMLCanvasElement) => void
+setMainCanvasRef: (ref: HTMLCanvasElement | null) => void
 ```
 
 #### action: setClickMapCanvasRef
 
 ```js
 // type signature
-setClickMapCanvasRef: (ref: HTMLCanvasElement) => void
+setClickMapCanvasRef: (ref: HTMLCanvasElement | null) => void
 ```
 
 #### action: setCigarClickMapCanvasRef
 
 ```js
 // type signature
-setCigarClickMapCanvasRef: (ref: HTMLCanvasElement) => void
+setCigarClickMapCanvasRef: (ref: HTMLCanvasElement | null) => void
 ```
 
 #### action: setMouseoverCanvasRef
 
 ```js
 // type signature
-setMouseoverCanvasRef: (ref: HTMLCanvasElement) => void
+setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
 ```
 
 #### action: setMouseoverId
 
 ```js
 // type signature
-setMouseoverId: (arg?: string) => void
+setMouseoverId: (arg?: string | undefined) => void
 ```
 
 #### action: setCigarMouseoverId
@@ -225,7 +225,7 @@ setCigarMouseoverId: (arg: number) => void
 
 ```js
 // type signature
-setClickId: (arg?: string) => void
+setClickId: (arg?: string | undefined) => void
 ```
 
 #### action: setAlpha

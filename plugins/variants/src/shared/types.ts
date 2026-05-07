@@ -11,6 +11,8 @@ export interface Source {
   [key: string]: unknown
 }
 
+export type ProcessedSource = Source & { sampleName: string }
+
 export interface SampleInfo {
   isPhased: boolean
   maxPloidy: number

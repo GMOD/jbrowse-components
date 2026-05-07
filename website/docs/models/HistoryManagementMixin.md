@@ -28,7 +28,7 @@ used for undo/redo
 
 ```js
 // type signature
-IOptionalIType<any, [undefined]>
+IOptionalIType<IModelType<{ undoIdx: IType<number | undefined, number, number>; targetPath: IType<string | undefined, string, string>; }, { history: unknown[]; notTrackingUndo: boolean; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 history: types.optional(TimeTraveller, { targetPath: '../session' })
 ```

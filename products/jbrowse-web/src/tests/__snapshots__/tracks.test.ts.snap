@@ -192,10 +192,6 @@ exports[`file types 18`] = `
 
 exports[`file types 19`] = `
 {
-  "bamLocation": {
-    "locationType": "UriLocation",
-    "uri": "test.gff.gz",
-  },
   "gffGzLocation": {
     "locationType": "UriLocation",
     "uri": "test.gff.gz",
@@ -213,10 +209,6 @@ exports[`file types 19`] = `
 
 exports[`file types 20`] = `
 {
-  "bamLocation": {
-    "locationType": "UriLocation",
-    "uri": "test.gff3.gz",
-  },
   "gffGzLocation": {
     "locationType": "UriLocation",
     "uri": "test.gff3.gz",

@@ -1,7 +1,11 @@
 export function splitPositionWithFrac(value: number): [number, number] {
   const intValue = Math.floor(value)
   const frac = value - intValue
-  const loInt = intValue & 0xfff
+  // Plain `intValue & 0xfff` would wrap for values > 2^31 because JS bitwise
+  // ops are int32 — that's wrong for synteny across multi-gigabase genomes
+  // where the cumulative-bp coordinate can run into the 10s of Gbp range.
+  // Float64 modulo handles the full 2^53 safe range.
+  const loInt = intValue - Math.floor(intValue / 4096) * 4096
   const hi = intValue - loInt
   const lo = loInt + frac
   return [hi, lo]
@@ -56,26 +60,4 @@ export function bindUniformBlock(
   if (idx !== gl.INVALID_INDEX) {
     gl.uniformBlockBinding(program, idx, bindingPoint)
   }
-}
-
-export function enableStandardBlend(gl: WebGL2RenderingContext) {
-  gl.enable(gl.BLEND)
-  gl.blendFuncSeparate(
-    gl.SRC_ALPHA,
-    gl.ONE_MINUS_SRC_ALPHA,
-    gl.ONE,
-    gl.ONE_MINUS_SRC_ALPHA,
-  )
-}
-
-export function cacheUniforms(
-  gl: WebGL2RenderingContext,
-  program: WebGLProgram,
-  names: string[],
-) {
-  const cache: Record<string, WebGLUniformLocation | null> = {}
-  for (const name of names) {
-    cache[name] = gl.getUniformLocation(program, name)
-  }
-  return cache
 }

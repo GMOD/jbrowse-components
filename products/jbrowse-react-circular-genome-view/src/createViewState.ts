@@ -41,18 +41,16 @@ export default function createViewState(opts: ViewStateOptions) {
     onChange,
   } = opts
   const { model, pluginManager } = createModel(
-    plugins || [],
+    plugins ?? [],
     makeWorkerInstance,
   )
   let { defaultSession } = opts
-  if (!defaultSession) {
-    defaultSession = {
-      name: 'this session',
-      view: {
-        id: 'circularView',
-        type: 'CircularView',
-      },
-    }
+  defaultSession ??= {
+    name: 'this session',
+    view: {
+      id: 'circularView',
+      type: 'CircularView',
+    },
   }
   const stateSnapshot = {
     config: {
@@ -61,9 +59,7 @@ export default function createViewState(opts: ViewStateOptions) {
       tracks,
       internetAccounts,
       aggregateTextSearchAdapters,
-      defaultSession,
     },
-
     session: defaultSession,
   }
   const stateTree = model.create(stateSnapshot, { pluginManager })
@@ -86,7 +82,7 @@ export default function createViewState(opts: ViewStateOptions) {
     if (!session.view.initialized) {
       return
     }
-    const regions = assemblyManager.get(assembly?.name)?.regions
+    const regions = assembly && assemblyManager.get(assembly.name)?.regions
     if (!regions) {
       return
     }

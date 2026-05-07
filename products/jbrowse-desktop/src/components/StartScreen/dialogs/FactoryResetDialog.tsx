@@ -1,4 +1,4 @@
-import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
+import { ConfirmDialog } from '@jbrowse/core/ui'
 import { DialogContentText } from '@mui/material'
 
 export default function FactoryResetDialog({
@@ -13,13 +13,8 @@ export default function FactoryResetDialog({
   return (
     <ConfirmDialog
       open={open}
-      onClose={() => {
-        onClose()
-      }}
       title="Reset"
-      onCancel={() => {
-        onClose()
-      }}
+      onCancel={onClose}
       onSubmit={() => {
         onFactoryReset()
       }}

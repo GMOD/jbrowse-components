@@ -1,43 +1,36 @@
 import {
   buildCoverageTooltipBin,
   computeCoverageTicks,
-  computeDepthScale,
   computeVisibleMaxDepth,
   countSnpsAtPosition,
   downsampleMinMax,
-  niceNum,
 } from './coverageDownsampling.ts'
 
-describe('niceNum', () => {
-  test('returns 1 for zero or negative', () => {
-    expect(niceNum(0)).toBe(1)
-    expect(niceNum(-5)).toBe(1)
-  })
-
-  test('returns nice numbers', () => {
-    expect(niceNum(7)).toBe(10)
-    expect(niceNum(13)).toBe(20)
-    expect(niceNum(45)).toBe(50)
-    expect(niceNum(99)).toBe(100)
-    expect(niceNum(350)).toBe(500)
-    expect(niceNum(1500)).toBe(2000)
-  })
-})
-
 describe('computeCoverageTicks', () => {
-  test('produces ticks with correct structure', () => {
+  test('produces nice round tick values', () => {
     const result = computeCoverageTicks(100, 150)
-    expect(result.maxDepth).toBe(100)
-    expect(result.nicedMax).toBe(100)
-    expect(result.ticks.length).toBeGreaterThanOrEqual(2)
     expect(result.yTop).toBe(5)
     expect(result.yBottom).toBe(145)
+    // step = 50 for maxDepth=100; ticks at 0, 50, 100
+    expect(result.ticks.map(t => t.value)).toEqual([0, 50, 100])
   })
 
-  test('fewer ticks for small height', () => {
+  test('short height uses only 0 and max ticks', () => {
+    const small = computeCoverageTicks(50, 50)
+    expect(small.ticks.length).toBe(2)
+    expect(small.ticks[0]!.value).toBe(0)
+    expect(small.ticks[1]!.value).toBe(50)
+  })
+
+  test('tall height uses nice step (more ticks than short)', () => {
     const small = computeCoverageTicks(50, 50)
     const large = computeCoverageTicks(50, 150)
-    expect(small.ticks.length).toBeLessThanOrEqual(large.ticks.length)
+    expect(large.ticks.length).toBeGreaterThan(small.ticks.length)
+    // all values are multiples of a nice step
+    const step = large.ticks[1]!.value - large.ticks[0]!.value
+    for (const tick of large.ticks) {
+      expect(tick.value % step).toBe(0)
+    }
   })
 
   test('tick y values are within bounds', () => {
@@ -119,7 +112,7 @@ describe('downsampleMinMax', () => {
     expect(result.count).toBe(0)
   })
 
-  test('startOffset is applied to positions', () => {
+  test('startPos is applied to positions', () => {
     const depths = new Float32Array([5, 10])
     const result = downsampleMinMax(depths, 1000, 100, 10)
     expect(result.positions[0]).toBe(1000)
@@ -128,12 +121,8 @@ describe('downsampleMinMax', () => {
 })
 
 describe('computeVisibleMaxDepth', () => {
-  function region(
-    coverageDepths: Float32Array,
-    coverageStartOffset: number,
-    regionStart: number,
-  ) {
-    return { coverageDepths, coverageStartOffset, regionStart }
+  function region(coverageDepths: Float32Array, coverageStartPos: number) {
+    return { coverageDepths, coverageStartPos }
   }
 
   test('returns 0 for empty blocks', () => {
@@ -146,28 +135,28 @@ describe('computeVisibleMaxDepth', () => {
   })
 
   test('finds max depth in visible range', () => {
-    const data = region(new Float32Array([5, 10, 20, 8, 3]), 0, 100)
+    const data = region(new Float32Array([5, 10, 20, 8, 3]), 100)
     const dataMap = new Map([['region1', data]])
     const blocks = [{ start: 100, end: 105, key: 'region1' }]
     expect(computeVisibleMaxDepth(blocks, b => dataMap.get(b.key))).toBe(20)
   })
 
   test('only scans bins within visible block range', () => {
-    const data = region(new Float32Array([100, 5, 3, 2, 1]), 0, 0)
+    const data = region(new Float32Array([100, 5, 3, 2, 1]), 0)
     const dataMap = new Map([['region1', data]])
     const blocks = [{ start: 2, end: 5, key: 'region1' }]
     expect(computeVisibleMaxDepth(blocks, b => dataMap.get(b.key))).toBe(3)
   })
 
-  test('handles coverageStartOffset correctly', () => {
-    const data = region(new Float32Array([10, 20, 30]), 50, 1000)
+  test('handles coverageStartPos correctly', () => {
+    const data = region(new Float32Array([10, 20, 30]), 1050)
     const dataMap = new Map([['region1', data]])
     const blocks = [{ start: 1050, end: 1053, key: 'region1' }]
     expect(computeVisibleMaxDepth(blocks, b => dataMap.get(b.key))).toBe(30)
   })
 
   test('skips blocks with no matching data', () => {
-    const data = region(new Float32Array([5, 10]), 0, 0)
+    const data = region(new Float32Array([5, 10]), 0)
     const dataMap = new Map([['region1', data]])
     const blocks = [
       { start: 0, end: 2, key: 'region1' },
@@ -177,24 +166,11 @@ describe('computeVisibleMaxDepth', () => {
   })
 })
 
-describe('computeDepthScale', () => {
-  test('returns 1 for zero depth', () => {
-    expect(computeDepthScale(0)).toBe(1)
-  })
-
-  test('returns ratio of maxDepth to niced max', () => {
-    expect(computeDepthScale(7)).toBeCloseTo(7 / 10)
-    expect(computeDepthScale(100)).toBe(1)
-    expect(computeDepthScale(45)).toBeCloseTo(45 / 50)
-  })
-})
-
 describe('countSnpsAtPosition', () => {
   test('returns empty object when no mismatches at position', () => {
     const mismatches = {
       mismatchPositions: new Uint32Array([5, 10]),
       mismatchBases: new Uint8Array([65, 67]),
-      numMismatches: 2,
     }
     const snps = countSnpsAtPosition(20, mismatches)
     expect(Object.keys(snps).length).toBe(0)
@@ -204,7 +180,6 @@ describe('countSnpsAtPosition', () => {
     const mismatches = {
       mismatchPositions: new Uint32Array([5, 5, 5, 10]),
       mismatchBases: new Uint8Array([65, 65, 67, 71]),
-      numMismatches: 4,
     }
     const snps = countSnpsAtPosition(5, mismatches)
     expect(snps.A!.count).toBe(2)
@@ -217,7 +192,6 @@ describe('countSnpsAtPosition', () => {
       mismatchPositions: new Uint32Array([5, 5, 5]),
       mismatchBases: new Uint8Array([65, 65, 65]),
       mismatchStrands: new Int8Array([1, 1, -1]),
-      numMismatches: 3,
     }
     const snps = countSnpsAtPosition(5, mismatches)
     expect(snps.A!.count).toBe(3)
@@ -229,7 +203,6 @@ describe('countSnpsAtPosition', () => {
     const mismatches = {
       mismatchPositions: new Uint32Array([5]),
       mismatchBases: new Uint8Array([84]),
-      numMismatches: 1,
     }
     const snps = countSnpsAtPosition(5, mismatches)
     expect(snps.T!.count).toBe(1)
@@ -241,7 +214,6 @@ describe('countSnpsAtPosition', () => {
     const mismatches = {
       mismatchPositions: new Uint32Array([5]),
       mismatchBases: new Uint8Array([78]),
-      numMismatches: 1,
     }
     const snps = countSnpsAtPosition(5, mismatches)
     expect(snps.N!.count).toBe(1)
@@ -256,11 +228,9 @@ describe('buildCoverageTooltipBin', () => {
     const mm = mismatches ?? []
     return {
       coverageDepths: new Float32Array(depths),
-      coverageStartOffset: 0,
-      regionStart: 100,
-      mismatchPositions: new Uint32Array(mm.map(m => m.pos - 100)),
+      coverageStartPos: 100,
+      mismatchPositions: new Uint32Array(mm.map(m => m.pos)),
       mismatchBases: new Uint8Array(mm.map(m => m.base)),
-      numMismatches: mm.length,
     }
   }
 

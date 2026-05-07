@@ -14,6 +14,8 @@ export {
 
 export const INSERTION_SERIF_MIN_PX_PER_BP = 3
 
+export const ALIGNMENTS_FUDGE_FACTOR = 0.8
+
 export type InsertionType = 'large' | 'long' | 'small'
 
 export function getInsertionType(

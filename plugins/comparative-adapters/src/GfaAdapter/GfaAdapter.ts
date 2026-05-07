@@ -2,6 +2,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { parseGfaPathName } from '../GfaTabixAdapter/gfaTabixUtils.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
 import type { MultiPairFeature } from '../MultiPairFeature.ts'
@@ -38,17 +39,6 @@ interface ParsedGfa {
   paths: GfaPathEntry[]
   genomes: string[]
   chromSizes: Map<string, { refName: string; length: number }[]>
-}
-
-function parseGfaPathName(path: string) {
-  const parts = path.split('#')
-  if (parts.length >= 3) {
-    return {
-      genome: parts.slice(0, -1).join('#'),
-      refName: parts[parts.length - 1]!,
-    }
-  }
-  return { genome: parts[0]!, refName: parts[1] ?? parts[0]! }
 }
 
 function parseGfa(text: string) {
@@ -177,14 +167,12 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
   }
 
   private async getGfa() {
-    if (!this.gfaPromise) {
-      this.gfaPromise = (async () => {
-        const loc = this.getConf('gfaLocation') as FileLocation
-        const handle = openLocation(loc, this.pluginManager)
-        const text = await handle.readFile('utf8')
-        return parseGfa(text)
-      })()
-    }
+    this.gfaPromise ??= (async () => {
+      const loc = this.getConf('gfaLocation') as FileLocation
+      const handle = openLocation(loc, this.pluginManager)
+      const text = await handle.readFile('utf8')
+      return parseGfa(text)
+    })()
     return this.gfaPromise
   }
 

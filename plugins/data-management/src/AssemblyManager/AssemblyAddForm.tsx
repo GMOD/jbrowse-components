@@ -287,7 +287,7 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
           variant="contained"
           color="primary"
           onClick={() => {
-            if (assemblyName === '') {
+            if (!assemblyName.trim()) {
               session.notify("Can't create an assembly without a name")
             } else {
               onClose()

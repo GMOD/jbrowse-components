@@ -1,6 +1,24 @@
-import type { ColorPalette } from './shaders/colors.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { ArcsUploadData } from '../../features/arcs/types.ts'
+import type { ColorPalette } from '../../shaders/colors.ts'
+import type { ArcColorByType } from '../../shared/types.ts'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
+export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
+export type {
+  CigarUploadData,
+  CoverageUploadData,
+  ModCoverageUploadData,
+  ReadUploadData,
+} from '../../shared/uploadTypes.ts'
 
-export type { ColorPalette, RGBColor } from './shaders/colors.ts'
+export function buildReadIdToIndex(ids: string[], n: number) {
+  const m = new Map<string, number>()
+  for (let i = 0; i < n; i++) {
+    m.set(ids[i]!, i)
+  }
+  return m
+}
 
 export interface RenderState {
   bpRangeX: [number, number] // absolute genomic positions
@@ -11,7 +29,8 @@ export interface RenderState {
   showCoverage: boolean
   coverageHeight: number
   coverageYOffset: number // padding at top/bottom of coverage area for scalebar labels
-  coverageNicedMax: number | undefined // niced domain max from D3 scale (matches Y scalebar labels)
+  coverageMaxDepth: number | undefined
+  coverageIsLog: boolean
   showMismatches: boolean
   showSoftClipping: boolean
   showInterbaseIndicators: boolean
@@ -25,171 +44,86 @@ export interface RenderState {
   selectedChainIds: string[]
   // Color palette from theme
   colors: ColorPalette
-  renderingMode?: 'pileup' | 'linkedRead'
+  renderingMode?: 'pileup' | 'linkedRead' | 'linkedReadBezier'
   flipStrandLongReadChains?: boolean
   reversed?: boolean
   arcLineWidth?: number
-  // Sashimi arcs (splice junctions overlaid on coverage)
-  showSashimiArcs?: boolean
+  arcColorByType?: ArcColorByType
+  // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode
+  // passes availH/pxPerBp (zoom-proportional); samplot mode passes the
+  // autoscaled max |tlen| so Y is zoom-stable. See arc.slang `arcsYDomainBp`.
+  arcsYDomainBp?: number
   // Show arcs alongside pileup (between coverage and reads)
   showArcs?: boolean
   arcsHeight?: number
+  pairedArcsDown: boolean
+  pileupTopOffset: number
   showOutline?: boolean
 }
 
-export interface RenderBlock {
-  regionNumber: number
-  bpRangeX: [number, number]
-  screenStartPx: number
-  screenEndPx: number
-  reversed: boolean
-}
-
-export interface ReadUploadData {
-  regionStart: number
-  readPositions: Uint32Array
-  readYs: Uint16Array
-  readFlags: Uint16Array
-  readMapqs: Uint8Array
-  readAvgBaseQualities: Uint8Array
-  readInsertSizes: Float32Array
-  readPairOrientations: Uint8Array
-  readStrands: Int8Array
-  readTagColors: Uint8Array
-  readChainHasSupp?: Uint8Array
-  readIds: string[]
-  numReads: number
-  maxY: number
-  insertSizeStats?: { upper: number; lower: number }
-  segmentPositions: Uint32Array
-  segmentReadIndices: Uint32Array
-  segmentEdgeFlags: Uint8Array
-  numSegments: number
-}
-
-export interface CigarUploadData {
-  gapPositions: Uint32Array
-  gapYs: Uint16Array
-  gapTypes: Uint8Array
-  gapFrequencies: Uint8Array
-  numGaps: number
-  mismatchPositions: Uint32Array
-  mismatchYs: Uint16Array
-  mismatchBases: Uint8Array
-  mismatchFrequencies: Uint8Array
-  numMismatches: number
-  interbasePositions: Uint32Array
-  interbaseYs: Uint16Array
-  interbaseLengths: Uint16Array
-  interbaseTypes: Uint8Array
-  interbaseFrequencies: Uint8Array
-  numInterbases: number
-  softclipBasePositions: Uint32Array
-  softclipBaseYs: Uint16Array
-  softclipBaseBases: Uint8Array
-  numSoftclipBases: number
-}
-
-export interface ModificationUploadData {
-  modificationPositions: Uint32Array
-  modificationYs: Uint16Array
-  modificationColors: Uint8Array
-  numModifications: number
-}
-
-export interface CoverageUploadData {
-  coverageDepths: Float32Array
-  coverageMaxDepth: number
-  coverageStartOffset: number
-  numCoverageBins: number
-  snpPositions: Uint32Array
-  snpYOffsets: Float32Array
-  snpHeights: Float32Array
-  snpColorTypes: Uint8Array
-  numSnpSegments: number
-  noncovPositions: Uint32Array
-  noncovYOffsets: Float32Array
-  noncovHeights: Float32Array
-  noncovColorTypes: Uint8Array
-  noncovMaxCount: number
-  numNoncovSegments: number
-  indicatorPositions: Uint32Array
-  indicatorColorTypes: Uint8Array
-  numIndicators: number
-}
-
-export interface ModCoverageUploadData {
-  modCovPositions: Uint32Array
-  modCovYOffsets: Float32Array
-  modCovHeights: Float32Array
-  modCovColors: Uint8Array
-  numModCovSegments: number
-}
-
-export interface SashimiUploadData {
-  sashimiX1: Float32Array
-  sashimiX2: Float32Array
-  sashimiScores: Float32Array
-  sashimiColorTypes: Uint8Array
-  numSashimiArcs: number
-}
-
-export interface ArcsUploadData {
-  regionStart: number
-  arcX1: Float32Array
-  arcX2: Float32Array
-  arcColorTypes: Float32Array
-  arcIsArc: Uint8Array
-  numArcs: number
-  linePositions: Uint32Array
-  lineYs: Float32Array
-  lineColorTypes: Float32Array
-  numLines: number
-}
-
-export interface ConnectingLinesUploadData {
-  regionStart: number
-  connectingLinePositions: Uint32Array
-  connectingLineYs: Uint16Array
-  connectingLineColorTypes: Uint8Array
-  numConnectingLines: number
+export interface AlignmentsSources {
+  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
+  arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
 }
 
 export interface AlignmentsBackend {
-  clearLegacyBuffers(): void
-  ensureBuffers(regionStart: number): void
-  uploadFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ReadUploadData,
-  ): void
-  uploadCigarFromTypedArraysForRegion(
-    regionNumber: number,
-    data: CigarUploadData,
-  ): void
-  uploadModificationsFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ModificationUploadData,
-  ): void
-  uploadCoverageFromTypedArraysForRegion(
-    regionNumber: number,
-    data: CoverageUploadData,
-  ): void
-  uploadModCoverageFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ModCoverageUploadData,
-  ): void
-  uploadSashimiFromTypedArraysForRegion(
-    regionNumber: number,
-    data: SashimiUploadData,
-  ): void
-  uploadArcsFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ArcsUploadData,
-  ): void
-  uploadConnectingLinesForRegion(
-    regionNumber: number,
-    data: ConnectingLinesUploadData,
-  ): void
-  renderBlocks(blocks: RenderBlock[], state: RenderState): void
+  sync(sources: AlignmentsSources): void
+  renderBlocks(blocks: RenderBlock[], state: RenderState): boolean
   dispose(): void
+}
+
+export type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+
+export function ensureRegion<T>(
+  regions: Map<number, T>,
+  idx: number,
+  factory: () => T,
+): T {
+  let r = regions.get(idx)
+  if (!r) {
+    r = factory()
+    regions.set(idx, r)
+  }
+  return r
+}
+
+export function computeBlockHeights(state: RenderState) {
+  return {
+    effectiveArcsHeight:
+      state.showArcs && state.arcsHeight ? state.arcsHeight : 0,
+    covH: state.showCoverage ? state.coverageHeight : 0,
+  }
+}
+
+// Canvas Y for a pileup row index, mirroring shader-side `pileupY()` in
+// alignmentsUniforms.slang. Single source of truth for the row → canvas-Y
+// formula used by every Canvas2D draw method.
+export function pileupRowY(yRow: number, state: RenderState) {
+  return (
+    yRow * (state.featureHeight + state.featureSpacing) +
+    state.pileupTopOffset -
+    state.rangeY[0]
+  )
+}
+
+// Block geometry shared by every Canvas2D feature draw function. Defining
+// the shape here breaks an otherwise-cyclic dependency between the per-
+// feature drawCanvas modules and Canvas2DAlignmentsRenderer.
+export interface DrawBlock {
+  bpRangeX: [number, number]
+  screenStartPx: number
+  reversed?: boolean
+}
+
+// Linear interpolation from an absolute bp position into the block's screen-
+// pixel x. `reversed` blocks flip the mapping (low-bp edge on the right).
+export function bpToScreenX(
+  absBp: number,
+  block: DrawBlock,
+  bpLength: number,
+  fullBlockWidth: number,
+) {
+  const bpEdge = block.reversed ? block.bpRangeX[1] : block.bpRangeX[0]
+  const offset = block.reversed ? bpEdge - absBp : absBp - bpEdge
+  return block.screenStartPx + (offset / bpLength) * fullBlockWidth
 }

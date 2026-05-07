@@ -30,6 +30,7 @@ const includeRemote = args.includes('--include-remote')
 const backendArg = args.find(a => a.startsWith('--backend='))
 const backendValue = backendArg ? backendArg.split('=')[1]! : undefined
 const skipWebGPU = args.includes('--skip-webgpu')
+const quiet = args.includes('--quiet')
 const useFirefoxArg = args.find(a => a.startsWith('--firefox='))
 const firefoxPath = useFirefoxArg
   ? useFirefoxArg.split('=')[1]!
@@ -99,6 +100,7 @@ async function runTests(
   browser: Browser,
   suites: TestSuite[],
   includeAuth: boolean,
+  launchBrowser?: () => Promise<Browser>,
 ) {
   let passed = 0
   let failed = 0
@@ -143,6 +145,9 @@ async function runTests(
 
       const start = performance.now()
       testStartTime = start
+      console.log(
+        `    ⏳ [${suitesToRun.indexOf(suite) + 1}/${suitesToRun.length}] Starting: ${test.name}`,
+      )
       process.stdout.write(`    ⏳ ${test.name}...`)
 
       try {
@@ -154,6 +159,20 @@ async function runTests(
         await page.goto('about:blank')
         await test.fn(page, browser)
 
+        // Clean up any GPU resources after test completes, before we navigate again
+        try {
+          await page.evaluate(() => {
+            const w = window as typeof window & {
+              __jbrowseCleanupGpuBackends?: () => void
+            }
+            if (w.__jbrowseCleanupGpuBackends) {
+              w.__jbrowseCleanupGpuBackends()
+            }
+          })
+        } catch {
+          // Cleanup might fail if page has been navigated away, that's ok
+        }
+
         const duration = performance.now() - start
         passed++
 
@@ -162,6 +181,20 @@ async function runTests(
           process.stdout.cursorTo(0)
         }
         console.log(`    ✓ ${test.name} (${Math.round(duration)}ms)`)
+
+        // Recycle browser after every test to prevent resource exhaustion
+        // (swiftshader limitation in headless Chrome accumulates resources across tests)
+        if (launchBrowser) {
+          try {
+            await browser.close()
+            browser = await launchBrowser()
+            page = await setupPage(browser)
+          } catch (recycleErr) {
+            console.warn(
+              `      [browser recycle] Failed to recycle browser: ${recycleErr instanceof Error ? recycleErr.message : recycleErr}`,
+            )
+          }
+        }
       } catch (e) {
         failed++
         const error = e instanceof Error ? e.message : String(e)
@@ -170,26 +203,18 @@ async function runTests(
           process.stdout.clearLine(0)
           process.stdout.cursorTo(0)
         }
-        console.log(`    ✗ ${test.name}`)
+        console.log(`    ✗ FAILED: ${suite.name} > ${test.name}`)
         console.log(`      Error: ${error}`)
 
-        // If the page/frame became detached (browser crash or GPU failure),
-        // open a fresh page so subsequent tests can continue
-        const isPageCrash =
-          error.includes('detached') ||
-          error.includes('Session closed') ||
-          error.includes('Target closed') ||
-          error.includes('Navigating frame was detached')
-        if (isPageCrash) {
+        // Always recycle browser after failed test to ensure clean state for next test
+        if (launchBrowser) {
           try {
-            console.log(
-              '      [recovery] Page/frame crashed, opening fresh page...',
-            )
+            await browser.close().catch(() => {})
+            browser = await launchBrowser()
             page = await setupPage(browser)
-            console.log('      [recovery] Fresh page ready')
-          } catch (recoveryErr) {
+          } catch (recycleErr) {
             console.error(
-              `      [recovery] Browser itself has crashed, cannot recover: ${recoveryErr instanceof Error ? recoveryErr.message : recoveryErr}`,
+              `      [recovery] Browser recycle failed, cannot recover: ${recycleErr instanceof Error ? recycleErr.message : recycleErr}`,
             )
             return { passed, failed }
           }
@@ -244,6 +269,7 @@ async function runTestsWithRestart(
 
       const start = performance.now()
       testStartTime = start
+      console.log(`    ⏳ Starting: ${test.name}`)
       process.stdout.write(`    ⏳ ${test.name}...`)
 
       let browser: Browser | undefined
@@ -268,7 +294,7 @@ async function runTestsWithRestart(
           process.stdout.clearLine(0)
           process.stdout.cursorTo(0)
         }
-        console.log(`    ✗ ${test.name}`)
+        console.log(`    ✗ FAILED: ${suite.name} > ${test.name}`)
         console.log(`      Error: ${error}`)
       } finally {
         if (browser) {
@@ -294,12 +320,15 @@ async function setupPage(browser: Browser) {
     if (text.includes('favicon')) {
       return
     }
+    const type = msg.type()
+    if (quiet && type !== 'error') {
+      return
+    }
     const elapsed =
       testStartTime > 0
         ? `+${((performance.now() - testStartTime) / 1000).toFixed(1)}s`
         : ''
     const prefix = elapsed ? `  [${elapsed}] Browser:` : '  Browser:'
-    const type = msg.type()
     if (type === 'error') {
       console.error(prefix, text)
     } else if (type === 'warn') {
@@ -358,8 +387,17 @@ async function runWithBackend(
 
   const page = await setupPage(browser)
 
+  // Create a factory function to relaunch the browser for GPU-heavy tests
+  const launchBrowser = () =>
+    launch({
+      headless: useHeadless,
+      slowMo,
+      args: chromeArgs,
+      defaultViewport: { width: 1280, height: 800 },
+    })
+
   try {
-    return await runTests(page, browser, suites, runAuthTests)
+    return await runTests(page, browser, suites, runAuthTests, launchBrowser)
   } finally {
     await browser.close()
   }

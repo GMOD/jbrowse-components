@@ -1,4 +1,5 @@
 import GetFeatureDetails from './GetFeatureDetails.ts'
+import GetGlobalValueForTag from './GetGlobalValueForTag.ts'
 import RenderPileupData from './RenderPileupData.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -6,4 +7,5 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export default function PileupDataRPCMethodsF(pm: PluginManager) {
   pm.addRpcMethod(() => new RenderPileupData(pm))
   pm.addRpcMethod(() => new GetFeatureDetails(pm))
+  pm.addRpcMethod(() => new GetGlobalValueForTag(pm))
 }

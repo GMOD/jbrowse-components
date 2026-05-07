@@ -63,7 +63,6 @@ function formatAttributes(f: Feature, parentId?: string) {
   if (id) {
     attributes.push(`ID=${encodeGFF3Value(String(id))}`)
   }
-
   if (parentId) {
     attributes.push(`Parent=${encodeGFF3Value(String(parentId))}`)
   }
@@ -86,42 +85,59 @@ function formatAttributes(f: Feature, parentId?: string) {
   return attributes.join(';')
 }
 
-function formatFeat(f: Feature, parentId?: string, parentRef?: string) {
-  const strand = f.get('strand')
-  const score = f.get('score')
-  const phase = f.get('phase')
+function formatFeat({
+  feature,
+  parentId,
+  parentRef,
+}: {
+  feature: Feature
+  parentId?: string
+  parentRef?: string
+}) {
+  const strand = feature.get('strand')
+  const score = feature.get('score')
+  const phase = feature.get('phase')
   return [
-    f.get('refName') || parentRef,
-    f.get('source') || '.',
-    f.get('type') || '.',
-    f.get('start') + 1,
-    f.get('end'),
-    score !== undefined && score !== null ? score : '.',
+    feature.get('refName') || parentRef,
+    feature.get('source') || '.',
+    feature.get('type') || '.',
+    feature.get('start') + 1,
+    feature.get('end'),
+    score ?? '.',
     strand === 1 ? '+' : strand === -1 ? '-' : '.',
-    phase !== undefined && phase !== null ? phase : '.',
-    formatAttributes(f, parentId),
+    phase ?? '.',
+    formatAttributes(feature, parentId),
   ].join('\t')
 }
-export function formatMultiLevelFeat(
-  feature: Feature,
-  parentId?: string,
-  parentRef?: string,
-): string {
+
+export function formatMultiLevelFeat({
+  feature,
+  parentId,
+  parentRef,
+}: {
+  feature: Feature
+  parentId?: string
+  parentRef?: string
+}): string {
   const featureRefName = parentRef || feature.get('refName')
   const featureId = feature.get('id')
-  const primary = formatFeat(feature, parentId, featureRefName)
+  const primary = formatFeat({ feature, parentId, parentRef: featureRefName })
 
   return [
     primary,
-    ...(feature
-      .get('subfeatures')
-      ?.map(sub => formatMultiLevelFeat(sub, featureId, featureRefName)) || []),
+    ...(feature.get('subfeatures')?.map(sub =>
+      formatMultiLevelFeat({
+        feature: sub,
+        parentId: featureId,
+        parentRef: featureRefName,
+      }),
+    ) ?? []),
   ].join('\n')
 }
 
 export function stringifyGFF3({ features }: { features: Feature[] }) {
   return `${[
     '##gff-version 3',
-    ...features.map(f => formatMultiLevelFeat(f)),
+    ...features.map(f => formatMultiLevelFeat({ feature: f })),
   ].join('\n')}\n`
 }

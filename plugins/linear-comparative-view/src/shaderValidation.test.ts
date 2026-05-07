@@ -3,16 +3,12 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import {
-  edgeVertexShader,
-  fillVertexShader,
-} from './LinearSyntenyDisplay/wgslShaders.ts'
-import {
-  WGSL_COVERAGE_SHADER,
-  WGSL_FILL_SHADER,
-  WGSL_INDICATOR_SHADER,
-  WGSL_SNP_COVERAGE_SHADER,
-} from './MultiLGVSyntenyDisplay/components/multiSyntenyGpuShaders.ts'
+import { WGSL_SOURCE as edgeVertexShader } from './LinearSyntenyDisplay/shaders/syntenyEdge.generated.ts'
+import { WGSL_SOURCE as fillVertexShader } from './LinearSyntenyDisplay/shaders/syntenyFill.generated.ts'
+import { WGSL_SOURCE as WGSL_COVERAGE_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenyCoverage.generated.ts'
+import { WGSL_SOURCE as WGSL_FILL_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenyFill.generated.ts'
+import { WGSL_SOURCE as WGSL_INDICATOR_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenyIndicator.generated.ts'
+import { WGSL_SOURCE as WGSL_SNP_COVERAGE_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenySnp.generated.ts'
 
 let tmpDir: string
 
@@ -31,11 +27,7 @@ function validateWgsl(name: string, code: string) {
   try {
     execSync(`naga ${file}`, { stdio: 'pipe' })
   } catch (e) {
-    const msg =
-      e instanceof Error
-        ? ((e as { stderr?: Buffer }).stderr?.toString() ?? e.message)
-        : String(e)
-    throw new Error(`WGSL validation failed for "${name}":\n${msg}`)
+    throw new Error(`WGSL validation failed for "${name}": ${e}`, { cause: e })
   }
 }
 

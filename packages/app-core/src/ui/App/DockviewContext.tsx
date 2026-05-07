@@ -24,12 +24,6 @@ export function clearPendingMoveAction() {
   pendingMoveAction = null
 }
 
-export function getPendingMoveAction() {
-  const action = pendingMoveAction
-  pendingMoveAction = null
-  return action
-}
-
 // Functions to set pending actions (used by default context and for testing)
 export function setPendingMoveToNewTab(viewId: string) {
   pendingMoveAction = { type: 'newTab', viewId }

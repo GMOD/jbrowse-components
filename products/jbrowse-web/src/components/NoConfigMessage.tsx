@@ -1,5 +1,10 @@
 import React from 'react'
 
+const extractConfigFromHref = (h: string) => {
+  const params = new URLSearchParams(h.split('?')[1] || '')
+  return params.get('config')
+}
+
 function LinkList({
   links,
   buildUrl,
@@ -21,19 +26,10 @@ function LinkList({
           href ||
           (config && buildUrl ? buildUrl(config) : `?config=${config || ''}`)
 
-        const extractConfigFromHref = (h: string) => {
-          const params = new URLSearchParams(h.split('?')[1] || '')
-          return params.get('config')
-        }
-
         const configForRenderers =
           config || (href ? extractConfigFromHref(href) : null)
 
-        const defaultRenderers: readonly string[] = [
-          'webgpu',
-          'webgl',
-          'canvas',
-        ]
+        const defaultRenderers = ['webgpu', 'webgl', 'canvas']
         const badgeList = renderers?.length ? renderers : defaultRenderers
         const badgeKey = `${label}:${renderers?.length ? renderers.join(',') : 'default'}`
         return (
@@ -44,7 +40,6 @@ function LinkList({
                 const badgeId = `${badgeKey}:${r}`
                 return (
                   <span key={r}>
-                    {' '}
                     <a
                       href={
                         configForRenderers && buildUrl
@@ -332,7 +327,8 @@ export default function NoConfigMessage() {
   const { config: _config, ...rest } = Object.fromEntries(
     new URLSearchParams(search),
   )
-  const root = href.split('?')[0] ?? href
+
+  const root = href.split('?')[0]
 
   const buildConfigUrl = (config: string, params?: Record<string, string>) => {
     return `${root}?${new URLSearchParams(

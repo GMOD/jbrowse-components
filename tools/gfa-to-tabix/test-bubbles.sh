@@ -97,11 +97,10 @@ check "tabix query from ref returns records" "[ $REF_HITS -gt 0 ]"
 SAMPLE_HITS="$(tabix "$BUBBLES" sample01#0#ctgA:0-1000 2>/dev/null | wc -l)"
 check "tabix query from sample01 returns records" "[ $SAMPLE_HITS -gt 0 ]"
 
-# pos/segments/edges files also generated
+# other output files also generated
 check "pos.bed.gz exists" "[ -f '$OUT.pos.bed.gz' ]"
-check "segments.bin exists" "[ -f '$OUT.segments.bin' ]"
-check "segments.idx exists" "[ -f '$OUT.segments.idx' ]"
-check "edges.bin exists" "[ -f '$OUT.edges.bin' ]"
+check "synteny.bed.gz exists" "[ -f '$OUT.synteny.bed.gz' ]"
+check "edges.spatial.bed.gz exists" "[ -f '$OUT.edges.spatial.bed.gz' ]"
 
 echo ""
 echo "Results: $PASS passed, $FAIL failed"

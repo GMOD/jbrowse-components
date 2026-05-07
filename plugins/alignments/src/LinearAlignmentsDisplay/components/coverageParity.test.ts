@@ -1,4 +1,10 @@
-import { coverageLayout } from '@jbrowse/alignments-core'
+import {
+  coverageLayout,
+  packCoverageBinsForGpu,
+  packIndicatorsForGpu,
+  packNoncovSegmentsForGpu,
+  packSnpSegmentsForGpu,
+} from '@jbrowse/alignments-core'
 import { MockHal } from '@jbrowse/core/gpu/hal'
 
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
@@ -12,38 +18,71 @@ import type {
   ReadUploadData,
   RenderState,
 } from './rendererTypes.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
-beforeAll(() => {
-  ;(globalThis as Record<string, unknown>).window = { devicePixelRatio: 1 }
-})
-
-afterAll(() => {
-  delete (globalThis as Record<string, unknown>).window
+Object.defineProperty(globalThis, 'devicePixelRatio', {
+  value: 1,
+  writable: true,
+  configurable: true,
 })
 
 const REGION_START = 10000
-const COVERAGE_START_OFFSET = 5
+// Absolute genomic position where coverage depths[0] begins.
+const COVERAGE_START_OFFSET = REGION_START + 5
 
 function makeCoverageData(): CoverageUploadData {
+  const coverageDepths = new Float32Array([10, 30, 50, 20, 40])
+  const coverageMaxDepth = 50
+  const snpPositions = new Uint32Array([REGION_START + 1, REGION_START + 3])
+  const snpYOffsets = new Float32Array([0, 0.2])
+  const snpHeights = new Float32Array([0.4, 0.3])
+  const snpColorTypes = new Uint8Array([1, 2])
+  const noncovPositions = new Uint32Array([])
+  const noncovYOffsets = new Float32Array([])
+  const noncovHeights = new Float32Array([])
+  const noncovColorTypes = new Uint8Array([])
+  const indicatorPositions = new Uint32Array([REGION_START + 2])
+  const indicatorColorTypes = new Uint8Array([1])
   return {
-    coverageDepths: new Float32Array([10, 30, 50, 20, 40]),
-    coverageMaxDepth: 50,
-    coverageStartOffset: COVERAGE_START_OFFSET,
-    numCoverageBins: 5,
-    snpPositions: new Uint32Array([1, 3]),
-    snpYOffsets: new Float32Array([0, 0.2]),
-    snpHeights: new Float32Array([0.4, 0.3]),
-    snpColorTypes: new Uint8Array([1, 2]),
-    numSnpSegments: 2,
-    noncovPositions: new Uint32Array([]),
-    noncovYOffsets: new Float32Array([]),
-    noncovHeights: new Float32Array([]),
-    noncovColorTypes: new Uint8Array([]),
+    coverageDepths,
+    coverageMaxDepth,
+    coverageStartPos: COVERAGE_START_OFFSET,
+    coveragePackedBuffer: packCoverageBinsForGpu(
+      coverageDepths,
+      coverageMaxDepth,
+      COVERAGE_START_OFFSET,
+      coverageDepths.length,
+    ).buffer,
+    snpPositions,
+    snpYOffsets,
+    snpHeights,
+    snpColorTypes,
+    snpPackedBuffer: packSnpSegmentsForGpu(
+      snpPositions,
+      snpYOffsets,
+      snpHeights,
+      snpColorTypes,
+      snpPositions.length,
+    ).buffer,
+    noncovPositions,
+    noncovYOffsets,
+    noncovHeights,
+    noncovColorTypes,
     noncovMaxCount: 0,
-    numNoncovSegments: 0,
-    indicatorPositions: new Uint32Array([2]),
-    indicatorColorTypes: new Uint8Array([1]),
-    numIndicators: 1,
+    noncovPackedBuffer: packNoncovSegmentsForGpu(
+      noncovPositions,
+      noncovYOffsets,
+      noncovHeights,
+      noncovColorTypes,
+      0,
+    ).buffer,
+    indicatorPositions,
+    indicatorColorTypes,
+    indicatorPackedBuffer: packIndicatorsForGpu(
+      indicatorPositions,
+      indicatorColorTypes,
+      indicatorPositions.length,
+    ).buffer,
   }
 }
 
@@ -58,9 +97,8 @@ function makeMinimalReadData() {
     readInsertSizes: new Float32Array([]),
     readPairOrientations: new Uint8Array([]),
     readStrands: new Int8Array([]),
-    readTagColors: new Uint8Array([]),
+    readTagColors: new Uint32Array(0),
     readChainHasSupp: undefined,
-    numReads: 0,
     readIds: [],
     insertSizeStats: undefined,
     maxY: 0,
@@ -69,6 +107,51 @@ function makeMinimalReadData() {
     segmentEdgeFlags: new Uint8Array([]),
     numSegments: 0,
   } as ReadUploadData
+}
+
+// Stubs for the CIGAR / modification / mod-coverage fields of
+// PileupDataResult. Coverage tests don't exercise these but uploadRegion
+// reads them.
+const EMPTY_PILEUP_STUBS = {
+  gapPositions: new Uint32Array(),
+  gapYs: new Uint16Array(),
+  gapTypes: new Uint8Array(),
+  gapFrequencies: new Uint8Array(),
+  mismatchPositions: new Uint32Array(),
+  mismatchYs: new Uint16Array(),
+  mismatchBases: new Uint8Array(),
+  mismatchFrequencies: new Uint8Array(),
+  interbasePositions: new Uint32Array(),
+  interbaseYs: new Uint16Array(),
+  interbaseLengths: new Uint16Array(),
+  interbaseFrequencies: new Uint8Array(),
+  numInsertions: 0,
+  numSoftclips: 0,
+  numHardclips: 0,
+  softclipBasePositions: new Uint32Array(),
+  softclipBaseYs: new Uint16Array(),
+  softclipBaseBases: new Uint8Array(),
+  modificationPositions: new Uint32Array(),
+  modificationYs: new Uint16Array(),
+  modificationColors: new Uint32Array(),
+  modCovPositions: new Uint32Array(),
+  modCovYOffsets: new Float32Array(),
+  modCovHeights: new Float32Array(),
+  modCovColors: new Uint32Array(),
+  connectingLinePositions: new Uint32Array(),
+  connectingLineYs: new Uint16Array(),
+  linkedReadLinePositions: new Uint32Array(),
+  linkedReadLineYs: new Uint16Array(),
+  linkedReadLineColorTypes: new Uint8Array(),
+  numLinkedReadLines: 0,
+}
+
+function makeMinimalPileupResult(cov: CoverageUploadData) {
+  return {
+    ...makeMinimalReadData(),
+    ...EMPTY_PILEUP_STUBS,
+    ...cov,
+  } as unknown as PileupDataResult
 }
 
 function recordingCtx() {
@@ -112,16 +195,16 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const covData = makeCoverageData()
 
     // GPU path: upload to HAL
-    gpu.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
-    gpu.uploadCoverageFromTypedArraysForRegion(0, covData)
+    gpu.uploadReads(0, makeMinimalReadData())
+    gpu.uploadCoverage(0, covData)
 
     const gpuCovBuf = hal.getBuffer(0, 'coverage')
     expect(gpuCovBuf).toBeDefined()
 
-    // GPU stores [offset(f32), normalizedDepth(f32)] per bin
+    // GPU layout per bin: [posOffset(f32), normalizedDepth(f32)] = 2 floats
     const gpuF32 = new Float32Array(gpuCovBuf!.data)
     const gpuNormalizedDepths: number[] = []
-    for (let i = 0; i < covData.numCoverageBins; i++) {
+    for (let i = 0; i < covData.coverageDepths.length; i++) {
       gpuNormalizedDepths.push(gpuF32[i * 2 + 1]!)
     }
 
@@ -130,8 +213,10 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       getContext: () => ({ setTransform() {}, clearRect() {} }),
     } as unknown as HTMLCanvasElement
     const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
-    canvas2d.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
-    canvas2d.uploadCoverageFromTypedArraysForRegion(0, covData)
+    canvas2d.sync({
+      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+      arcsRpcDataMap: new Map(),
+    })
 
     // The normalized depths should be identical
     const expectedDepths = [10 / 50, 30 / 50, 50 / 50, 20 / 50, 40 / 50]
@@ -145,8 +230,8 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const gpu = new GpuAlignmentsRenderer(hal)
     const covData = makeCoverageData()
 
-    gpu.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
-    gpu.uploadCoverageFromTypedArraysForRegion(0, covData)
+    gpu.uploadReads(0, makeMinimalReadData())
+    gpu.uploadCoverage(0, covData)
 
     const gpuSnpBuf = hal.getBuffer(0, 'snpCov')
     expect(gpuSnpBuf).toBeDefined()
@@ -159,13 +244,15 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       getContext: () => ({ setTransform() {}, clearRect() {} }),
     } as unknown as HTMLCanvasElement
     const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
-    canvas2d.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
-    canvas2d.uploadCoverageFromTypedArraysForRegion(0, covData)
+    canvas2d.sync({
+      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+      arcsRpcDataMap: new Map(),
+    })
 
     // Both should have same yOffset, height, colorType per segment
     // GPU positions are relative (no regionStart), Canvas2D are absolute
     // But yOffset/height/colorType must match
-    for (let i = 0; i < covData.numSnpSegments; i++) {
+    for (let i = 0; i < covData.snpPositions.length; i++) {
       const gpuOff = i * 4
       expect(gpuF32[gpuOff + 1]).toBeCloseTo(covData.snpYOffsets[i]!)
       expect(gpuF32[gpuOff + 2]).toBeCloseTo(covData.snpHeights[i]!)
@@ -183,12 +270,14 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     } as unknown as HTMLCanvasElement
     const renderer = new Canvas2DAlignmentsRenderer(canvas)
 
-    renderer.uploadFromTypedArraysForRegion(0, makeMinimalReadData())
-    renderer.uploadCoverageFromTypedArraysForRegion(0, covData)
+    renderer.sync({
+      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+      arcsRpcDataMap: new Map(),
+    })
 
     const covH = 100
     const block = {
-      regionNumber: 0,
+      displayedRegionIndex: 0,
       bpRangeX: [REGION_START, REGION_START + 20] as [number, number],
       screenStartPx: 0,
       screenEndPx: 200,
@@ -206,10 +295,11 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       showCoverage: true,
       showArcs: false,
       arcsHeight: 0,
+      pairedArcsDown: true,
+      pileupTopOffset: covH,
       showMismatches: false,
       showSoftClipping: false,
       showModifications: false,
-      showSashimiArcs: false,
       colors: {
         colorCoverage: [0.2, 0.4, 0.8] as [number, number, number],
         colorBaseA: [0, 1, 0] as [number, number, number],
@@ -227,7 +317,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       bpRangeX: [REGION_START, REGION_START + 20] as [number, number],
       rangeY: [0, 200] as [number, number],
       colorScheme: 0,
-      coverageNicedMax: 50,
+      coverageMaxDepth: 50,
     } as unknown as RenderState)
 
     // Coverage bins should produce rectangles
@@ -261,31 +351,17 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
   })
 
   it('drawCoverageBins Y mapping matches GPU shader formula', () => {
-    const maxDepth = 73
     const coverageHeight = 100
-    const normalizedDepth = 0.6 // depth/maxDepth
+    const normalizedDepth = 0.6 // depth/maxDepth, already in [0,1]
 
-    // Shared coverageLayout (used by drawCoverageBins)
-    const { depthScale, effectiveH, bottom } = coverageLayout(
-      maxDepth,
-      coverageHeight,
-    )
+    const { effectiveH, bottom } = coverageLayout(coverageHeight)
 
-    // drawCoverageBins computes: bandTop = bottom - depth * depthScale * effectiveH
-    const sharedTop = bottom - normalizedDepth * depthScale * effectiveH
-    const sharedBottom = bottom
-    const sharedBarH = sharedBottom - sharedTop
+    // drawCoverageBins: bandTop = bottom - normalizedDepth * effectiveH
+    const sharedTop = bottom - normalizedDepth * effectiveH
+    const sharedBarH = bottom - sharedTop
 
-    // GPU shader computes: bar_top = cov_bottom + (depth * depth_scale * eff_height / canvas_height) * 2.0
-    // where cov_bottom = 1.0 - ((covH - covYOffset) / canvasH) * 2.0
-    // Converting from clip space to pixel space:
-    // pixel_bar_top = (1.0 - clip_bar_top) * canvasH / 2.0
-    //               = (1.0 - cov_bottom - (depth * depth_scale * eff_height / canvasH) * 2.0) * canvasH / 2.0
-    // Since canvas2D works in CSS pixels and the coverage area starts at y=0:
-    // GPU effective: bar_top_px = covYOffset + effectiveH - depth * depthScale * effectiveH
-    //              = bottom - depth * depthScale * effectiveH
-    // This is exactly what the shared function computes
-    const gpuBarTopPx = bottom - normalizedDepth * depthScale * effectiveH
+    // GPU shader: same formula in clip space, converted to pixels
+    const gpuBarTopPx = bottom - normalizedDepth * effectiveH
     const gpuBarH = bottom - gpuBarTopPx
 
     expect(sharedTop).toBeCloseTo(gpuBarTopPx)

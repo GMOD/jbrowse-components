@@ -5,9 +5,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { mockFetch, readConf, runCommand, runInTmpDir } from '../testUtil.ts'
-
-jest.mock('../cliFetch')
+import { readConf, runCommand, runInTmpDir } from '../testUtil.ts'
 
 const { copyFile, rename } = fs.promises
 
@@ -32,7 +30,6 @@ async function copyConf(ctx: { dir: string }) {
 beforeAll(() => (Date.now = jest.fn(() => 1)))
 
 test('fails if no config file', async () => {
-  mockFetch({})
   const { error } = await runCommand([
     'add-connection',
     'https://example.com/hub.txt',
@@ -45,18 +42,8 @@ test('fails if data directory is not an url', async () => {
   expect(error?.message).toMatchSnapshot()
 })
 
-test('fails when fetching from url fails', async () => {
-  mockFetch({ ok: false, status: 500 })
-  const { error } = await runCommand([
-    'add-connection',
-    'https://mysite.com/notafile.txt',
-  ])
-  expect(error?.message).toMatchSnapshot()
-})
-
 test('adds an UCSCTrackHubConnection connection from a url', async () => {
   await runInTmpDir(async ctx => {
-    mockFetch({})
     await copyConf(ctx)
     await runCommand(['add-connection', 'https://mysite.com/data/hub.txt'])
     expect(readConf(ctx).connections).toMatchSnapshot()
@@ -65,7 +52,6 @@ test('adds an UCSCTrackHubConnection connection from a url', async () => {
 
 test('adds JBrowse1 connection from a url', async () => {
   await runInTmpDir(async ctx => {
-    mockFetch({})
     await copyConf(ctx)
     await runCommand(['add-connection', 'https://mysite.com/jbrowse/data'])
     expect(readConf(ctx).connections).toMatchSnapshot()
@@ -74,7 +60,6 @@ test('adds JBrowse1 connection from a url', async () => {
 
 test('adds a custom connection with user set fields', async () => {
   await runInTmpDir(async ctx => {
-    mockFetch({})
     await copyConf(ctx)
     await runCommand([
       'add-connection',
@@ -96,7 +81,6 @@ test('adds a custom connection with user set fields', async () => {
 
 test('fails to add a duplicate connection', async () => {
   await runInTmpDir(async ctx => {
-    mockFetch({})
     await copyConf(ctx)
     await runCommand([
       'add-connection',
@@ -118,9 +102,8 @@ test('fails to add a duplicate connection', async () => {
   })
 })
 
-test('overwrites an existing custom connection and does not check URL', async () => {
+test('can use --force to overwrite an existing connection', async () => {
   await runInTmpDir(async ctx => {
-    mockFetch({})
     await copyConf(ctx)
     await runCommand([
       'add-connection',

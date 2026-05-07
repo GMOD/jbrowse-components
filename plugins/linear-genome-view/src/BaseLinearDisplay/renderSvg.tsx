@@ -7,6 +7,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
+import { when } from 'mobx'
 
 import SVGLegend from './SVGLegend.tsx'
 import {
@@ -28,6 +29,11 @@ export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
   opts: ExportSvgDisplayOptions,
 ) {
+  // Block-rendered SVG pulls from `renderProps()` which stays
+  // `notReady: true` until the feature-density stats are computed.
+  // Wait here so the export path is self-contained.
+  await when(() => !self.renderProps().notReady || !!self.error)
+
   const { height, id } = self
   const { overrideHeight } = opts
   const view = getContainingView(self) as LinearGenomeViewModel
@@ -73,7 +79,13 @@ export async function renderBaseLinearDisplaySvg(
         renderProps,
         renderingProps,
         rendererType,
+        displayError,
       } = blockData
+      if (displayError || !renderProps || !rendererType) {
+        throw displayError instanceof Error
+          ? displayError
+          : new Error(`${displayError || 'Unknown'}`)
+      }
 
       return [
         block,
@@ -82,7 +94,7 @@ export async function renderBaseLinearDisplaySvg(
           ...renderProps,
           renderingProps,
           exportSVG: opts,
-          theme: opts.theme || renderProps.theme,
+          theme: opts.theme ?? renderProps.theme,
         }),
       ] as const
     }),
@@ -128,7 +140,7 @@ export async function renderBaseLinearDisplaySvg(
                   x={0}
                   y={0}
                   width={widthPx}
-                  height={overrideHeight || height}
+                  height={overrideHeight ?? height}
                 />
               </clipPath>
             </defs>
@@ -143,7 +155,7 @@ export async function renderBaseLinearDisplaySvg(
       {/* Render floating labels with clipping */}
       <defs>
         <clipPath id={labelsClipId}>
-          <rect x={0} y={0} width={width} height={overrideHeight || height} />
+          <rect x={0} y={0} width={width} height={overrideHeight ?? height} />
         </clipPath>
       </defs>
       <g clipPath={`url(#${labelsClipId})`}>

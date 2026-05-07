@@ -1,27 +1,36 @@
 import type React from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getSession } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
 import {
+  getContainingView,
+  getRpcSessionId,
+  getSession,
+} from '@jbrowse/core/util'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  AUTO_FORCE_LOAD_BP,
   ConfigOverrideMixin,
-  MultiRegionDisplayMixin,
+  GlobalDataDisplayMixin,
+  StaleViewportRescaleMixin,
   TrackHeightMixin,
+  getDisplayStr,
   migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { generateLDColorRamp } from './components/LDRenderer.ts'
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
-import type { LDFlatbushItem } from '../LDRenderer/types.ts'
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
 import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
+import type { LDBackend } from './components/ldBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LegendItem,
+  LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -30,6 +39,9 @@ import type {
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
+ * - [GlobalDataDisplayMixin](../globaldatadisplaymixin)
+ * - [StaleViewportRescaleMixin](../staleviewportrescalemixin)
+ * - [ConfigOverrideMixin](../configoverridemixin)
  */
 export default function sharedModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -39,7 +51,8 @@ export default function sharedModelFactory(
       'SharedLDModel',
       BaseDisplay,
       TrackHeightMixin(),
-      MultiRegionDisplayMixin(),
+      GlobalDataDisplayMixin(),
+      StaleViewportRescaleMixin(),
       ConfigOverrideMixin(),
       types.model({
         configuration: ConfigurationReference(configSchema),
@@ -56,101 +69,13 @@ export default function sharedModelFactory(
        * #volatile
        */
       rpcData: null as LDDataResult | null,
-      /**
-       * #volatile
-       */
-      statusMessage: undefined as string | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnOffsetPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnBpPerPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      flatbush: undefined as ArrayBuffer | undefined,
-      /**
-       * #volatile
-       */
-      flatbushItems: [] as LDFlatbushItem[],
-      /**
-       * #volatile
-       */
-      snps: [] as LDMatrixResult['snps'],
-      /**
-       * #volatile
-       */
-      maxScore: 1,
-      /**
-       * #volatile
-       */
-      yScalar: 1,
-      /**
-       * #volatile
-       * Width of each cell in the LD matrix (in unrotated coordinates)
-       */
-      cellWidth: 0,
-      /**
-       * #volatile
-       * Stats about filtered variants
-       */
-      filterStats: undefined as FilterStats | undefined,
-      /**
-       * #volatile
-       * Recombination rate estimates between adjacent SNPs
-       */
-      recombination: undefined as
-        | { values: number[]; positions: number[] }
-        | undefined,
     }))
     .actions(self => ({
       setRpcData(data: LDDataResult | null) {
         self.rpcData = data
       },
-      /**
-       * #action
-       */
-      setStatusMessage(msg?: string) {
-        self.statusMessage = msg
-      },
-      /**
-       * #action
-       */
-      setLastDrawnOffsetPx(px: number) {
-        self.lastDrawnOffsetPx = px
-      },
-      /**
-       * #action
-       */
-      setLastDrawnBpPerPx(bpPerPx: number) {
-        self.lastDrawnBpPerPx = bpPerPx
-      },
-      /**
-       * #action
-       */
-      setFlatbushData(
-        flatbush: ArrayBuffer | undefined,
-        items: LDFlatbushItem[],
-        snps: LDMatrixResult['snps'],
-        maxScore: number,
-        yScalar: number,
-        cellWidth: number,
-      ) {
-        self.flatbush = flatbush
-        self.flatbushItems = items
-        self.snps = snps
-        self.maxScore = maxScore
-        self.yScalar = yScalar
-        self.cellWidth = cellWidth
-      },
       setLineZoneHeight(n: number) {
         self.setOverride('lineZoneHeight', Math.max(0, n))
-      },
-      reload() {
-        self.error = undefined
       },
       setMafFilter(arg: number) {
         self.setOverride('minorAlleleFrequencyFilter', arg)
@@ -185,18 +110,6 @@ export default function sharedModelFactory(
       setCallRateFilter(threshold: number) {
         self.setOverride('callRateFilter', threshold)
       },
-      /**
-       * #action
-       */
-      setFilterStats(stats: typeof self.filterStats) {
-        self.filterStats = stats
-      },
-      /**
-       * #action
-       */
-      setRecombination(data: typeof self.recombination) {
-        self.recombination = data
-      },
       setShowVerticalGuides(show: boolean) {
         self.setOverride('showVerticalGuides', show)
       },
@@ -217,12 +130,6 @@ export default function sharedModelFactory(
       },
     }))
     .views(self => ({
-      get loading() {
-        return self.isLoading
-      },
-      get blockType() {
-        return 'dynamicBlocks'
-      },
       /**
        * #getter
        */
@@ -234,12 +141,6 @@ export default function sharedModelFactory(
        */
       get rendererTypeName() {
         return 'LDRenderer'
-      },
-      get drawn() {
-        return !!self.rpcData
-      },
-      get fullyDrawn() {
-        return !!self.rpcData
       },
       get minorAlleleFrequencyFilter() {
         return self.getConfWithOverride<number>('minorAlleleFrequencyFilter')
@@ -300,8 +201,26 @@ export default function sharedModelFactory(
        * Returns true if this display uses pre-computed LD data (PLINK, ldmat)
        * rather than computing LD from VCF genotypes
        */
+      get snps(): LDMatrixResult['snps'] {
+        return self.rpcData?.snps ?? []
+      },
+      get maxScore() {
+        return self.rpcData?.maxScore ?? 1
+      },
+      get yScalar() {
+        return self.rpcData?.yScalar ?? 1
+      },
+      get cellWidth() {
+        return self.rpcData?.uniformW ?? 0
+      },
+      get filterStats(): FilterStats | undefined {
+        return self.rpcData?.filterStats
+      },
+      get recombination() {
+        return self.rpcData?.recombination
+      },
       get isPrecomputedLD() {
-        const adapterType = self.adapterConfig?.type as string | undefined
+        const adapterType = self.adapterConfig?.type
         return (
           adapterType === 'PlinkLDAdapter' ||
           adapterType === 'PlinkLDTabixAdapter' ||
@@ -317,6 +236,96 @@ export default function sharedModelFactory(
        */
       get ldCanvasHeight() {
         return Math.max(50, self.height - self.lineZoneHeight)
+      },
+
+      // Literal RPC payload for RenderLDData. Adding a field here
+      // automatically flows into both the RPC call (via the fetch autorun
+      // in afterAttach.ts) and into mobx's dependency tracking — the
+      // fetch autorun reads `self.rpcProps` once, so any change to any
+      // field refires it. No hand-enumerated fields at the top of the
+      // autorun.
+      get rpcProps() {
+        return {
+          ldMetric: self.ldMetric,
+          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          lengthCutoffFilter: self.lengthCutoffFilter,
+          hweFilterThreshold: self.hweFilterThreshold,
+          callRateFilter: self.callRateFilter,
+          jexlFilters: self.jexlFilters,
+          signedLD: self.signedLD,
+          useGenomicPositions: self.useGenomicPositions,
+          fitToHeight: self.fitToHeight,
+          displayHeight: self.fitToHeight ? this.ldCanvasHeight : undefined,
+        }
+      },
+      /**
+       * #getter
+       * Per-frame render state for the GPU backend. Read by the upload/render
+       * autorun — every change to any tracked observable (view.bpPerPx,
+       * view.offsetPx, model.fitToHeight, rpcData contents, …) re-fires it.
+       */
+      get renderState() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const data = self.rpcData
+        if (!data) {
+          return undefined
+        }
+        const scale =
+          self.lastDrawnBpPerPx !== undefined
+            ? self.lastDrawnBpPerPx / view.bpPerPx
+            : 1
+        const offsetX =
+          self.lastDrawnOffsetPx !== undefined
+            ? self.lastDrawnOffsetPx * scale - view.offsetPx
+            : 0
+        const canvasWidth = Math.round(
+          view.dynamicBlocks.totalWidthPxWithoutBorders,
+        )
+        return {
+          yScalar: data.yScalar,
+          canvasWidth,
+          canvasHeight: self.fitToHeight
+            ? this.ldCanvasHeight
+            : canvasWidth / 2,
+          signedLD: data.signedLD,
+          viewScale: scale,
+          viewOffsetX: offsetX,
+          uniformW: data.uniformW,
+        }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Starts the upload/render autorun. Data + color ramp both derive from
+       * the same rpcData object, so a single identity-diffed slot handles
+       * both uploads.
+       */
+      startGpuBackendLifecycle(backend: LDBackend) {
+        self.installGpuDisplay<LDBackend>(backend, {
+          upload: b => {
+            const d = self.rpcData as LDDataResult | undefined
+            if (!d) {
+              return
+            }
+            b.uploadData({
+              ldValues: d.ldValues,
+              boundaries: d.boundaries,
+              numCells: d.numCells,
+              positions: d.positions,
+              cellSizes: d.cellSizes,
+            })
+            b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
+          },
+          render: b => {
+            const state = self.renderState
+            if (!state) {
+              return false
+            }
+            b.render(state)
+            return true
+          },
+        })
       },
     }))
     .views(self => ({
@@ -354,9 +363,6 @@ export default function sharedModelFactory(
             },
           },
         ]
-      },
-      renderProps() {
-        return { notReady: true }
       },
       /**
        * #method
@@ -508,6 +514,86 @@ export default function sharedModelFactory(
       }
     })
     .actions(self => ({
+      /**
+       * #action
+       * Re-fetches LD matrix for the current viewport. Both the autorun
+       * (in `afterAttach`) and `reload()` invoke this directly.
+       */
+      async performLDFetch() {
+        if (self.isMinimized) {
+          return
+        }
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
+        const regions = view.dynamicBlocks.contentBlocks
+        if (!self.showLDTriangle || self.regionTooLarge || !regions.length) {
+          return
+        }
+        const { bpPerPx, visibleBp } = view
+        const { adapterConfig } = self
+        await self.runFetch(async ctx => {
+          const { rpcManager } = getSession(self)
+          const sessionId = getRpcSessionId(self)
+          const stats = (await rpcManager.call(
+            sessionId,
+            'CoreGetFeatureDensityStats',
+            { regions: [...regions], adapterConfig },
+          )) as { bytes?: number; fetchSizeLimit?: number }
+          if (ctx.isStale()) {
+            return
+          }
+          self.setFeatureDensityStats(stats)
+          if (visibleBp >= AUTO_FORCE_LOAD_BP) {
+            const fetchSizeLimit =
+              stats.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
+            const limit = self.userByteSizeLimit ?? fetchSizeLimit
+            if (stats.bytes && stats.bytes > limit) {
+              self.setRegionTooLarge(
+                true,
+                `Requested too much data (${getDisplayStr(stats.bytes)})`,
+              )
+              return
+            }
+          }
+          self.setRegionTooLarge(false)
+
+          const result = await rpcManager.call(
+            sessionId,
+            'RenderLDData',
+            {
+              adapterConfig,
+              regions: [...regions],
+              bpPerPx,
+              ...self.rpcProps,
+              stopToken: ctx.stopToken,
+            },
+            {
+              statusCallback: (msg: string) => {
+                if (isAlive(self)) {
+                  self.setStatusMessage(msg)
+                }
+              },
+            },
+          )
+          if (ctx.isStale()) {
+            return
+          }
+          self.setRpcData(result)
+          self.setLastDrawnViewport(view.offsetPx, view.bpPerPx)
+        })
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      reload() {
+        self.setError(undefined)
+        // TODO should just auto-rerun via 'some state resetting' rather than manually call here
+        void self.performLDFetch()
+      },
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {

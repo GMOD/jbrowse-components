@@ -4,10 +4,12 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { parseNamesFromHeader } from '../util.ts'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export default class BedGraphAdapter extends BaseFeatureDataAdapter {
+export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter {
   private configured?: Promise<{
     bedGraph: TabixIndexedFile
     header: string
@@ -39,29 +41,16 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
   }
 
   protected async configure() {
-    if (!this.configured) {
-      this.configured = this.configurePre().catch((e: unknown) => {
-        this.configured = undefined
-        throw e
-      })
-    }
+    this.configured ??= this.configurePre().catch((e: unknown) => {
+      this.configured = undefined
+      throw e
+    })
     return this.configured
   }
 
   async getNames() {
-    const { bedGraph, columnNames } = await this.configure()
-    if (columnNames.length) {
-      return columnNames
-    }
-    const header = await bedGraph.getHeader()
-    const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs.at(-1)
-    return defline?.includes('\t')
-      ? defline
-          .slice(1)
-          .split('\t')
-          .map(f => f.trim())
-      : undefined
+    const { header, columnNames } = await this.configure()
+    return columnNames.length ? columnNames : parseNamesFromHeader(header)
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
@@ -70,8 +59,8 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader() {
-    const { bedGraph } = await this.configure()
-    return bedGraph.getHeader()
+    const { header } = await this.configure()
+    return header
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
@@ -83,7 +72,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1
       const same = colStart === colEnd
-      const names = (await this.getNames())?.slice(same ? 2 : 3) || []
+      const names = (await this.getNames())?.slice(same ? 2 : 3) ?? []
       await bedGraph.getLines(
         query.refName,
         query.start + (same ? -1 : 0),
@@ -103,9 +92,9 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
 
             for (let j = 0; j < rest.length; j++) {
               const uniqueId = `${this.id}-${fileOffset}-${j}`
-              const score = Math.abs(+rest[j]!)
+              const score = +rest[j]!
               const source = names[j] || `col${j}`
-              if (score) {
+              if (!Number.isNaN(score)) {
                 observer.next(
                   new SimpleFeature({
                     id: uniqueId,
@@ -125,6 +114,6 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
         },
       )
       observer.complete()
-    })
+    }, opts.stopToken)
   }
 }

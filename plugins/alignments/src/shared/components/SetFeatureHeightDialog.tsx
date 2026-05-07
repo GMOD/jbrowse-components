@@ -1,11 +1,8 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { SubmitDialog } from '@jbrowse/core/ui'
 import {
-  Button,
   Checkbox,
-  DialogActions,
-  DialogContent,
   FormControlLabel,
   TextField,
   Typography,
@@ -29,60 +26,44 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
   const ok = height !== '' && !Number.isNaN(+height)
 
   return (
-    <Dialog open onClose={handleClose} title="Set feature height">
-      <DialogContent>
-        <Typography>
-          Adjust the feature height and whether there is any spacing between
-          features. Setting feature height to 1 and removing spacing makes the
-          display very compact.
-        </Typography>
-        <TextField
-          value={height}
-          helperText="Feature height"
-          onChange={event => {
-            setHeight(event.target.value)
-          }}
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={!!noSpacing}
-              onChange={() => {
-                setNoSpacing(val => !val)
-              }}
-            />
-          }
-          label="Remove spacing between features in y-direction?"
-        />
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            autoFocus
-            disabled={!ok}
-            onClick={() => {
-              model.setFeatureHeight(
-                height !== '' && !Number.isNaN(+height) ? +height : undefined,
-              )
-              model.setNoSpacing(noSpacing)
-              handleClose()
+    <SubmitDialog
+      open
+      title="Set feature height"
+      submitDisabled={!ok}
+      onCancel={handleClose}
+      onSubmit={() => {
+        model.setFeatureHeight(
+          height !== '' && !Number.isNaN(+height) ? +height : undefined,
+        )
+        model.setNoSpacing(noSpacing)
+        handleClose()
+      }}
+    >
+      <Typography>
+        Adjust the feature height and whether there is any spacing between
+        features. Setting feature height to 1 and removing spacing makes the
+        display very compact.
+      </Typography>
+      <TextField
+        value={height}
+        label="Feature height (px)"
+        autoFocus
+        onChange={event => {
+          setHeight(event.target.value)
+        }}
+      />
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={!!noSpacing}
+            onChange={() => {
+              setNoSpacing(val => !val)
             }}
-          >
-            Submit
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              handleClose()
-            }}
-          >
-            Cancel
-          </Button>
-        </DialogActions>
-      </DialogContent>
-    </Dialog>
+          />
+        }
+        label="Remove spacing between features in y-direction?"
+      />
+    </SubmitDialog>
   )
 })
 

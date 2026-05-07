@@ -99,7 +99,7 @@ subtreeFilter: types.maybe(types.array(types.string))
 
 ```js
 // type
-any
+Feature | undefined
 ```
 
 #### getter: TooltipComponent
@@ -171,21 +171,21 @@ everything else
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: sourcesWithoutLayout
 
 ```js
 // type
-{ color: any; baseUri?: string; name: string; source: string; group?: string; }[]
+{ color: string; baseUri?: string | undefined; name: string; source: string; group?: string | undefined; }[] | undefined
 ```
 
 #### getter: sources
 
 ```js
 // type
-{ color: any; baseUri?: string; name: string; source: string; group?: string; }[]
+{ color: string; baseUri?: string | undefined; name: string; source: string; group?: string | undefined; }[] | undefined
 ```
 
 #### getter: quantitativeStatsReady
@@ -220,7 +220,7 @@ boolean
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: root
@@ -248,7 +248,7 @@ any
 
 ```js
 // type
-{ range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; }
+{ range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; } | undefined
 ```
 
 #### getter: colors
@@ -271,14 +271,14 @@ boolean
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: hasGlobalStats
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: fillSetting
@@ -308,14 +308,14 @@ renderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { [x: string]: any; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } &...
+renderingProps: () => { displayModel: { id: string; type: "MultiLinearWiggleDisplay"; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userBpPerPxLimit: number | undefined; ... 23 more ...; subtreeFilter: (IMSTArray<...> & IStateTreeNode<...>) | undefined; } & ... 38 more ... & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => any[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 ### MultiLinearWiggleDisplay - Actions
@@ -331,7 +331,7 @@ setShowSidebar: (arg: boolean) => void
 
 ```js
 // type signature
-setSourcesLoading: (str: StopToken) => void
+setSourcesLoading: (str: string) => void
 ```
 
 #### action: setLayout
@@ -352,7 +352,7 @@ clearLayout: () => void
 
 ```js
 // type signature
-setClusterTree: (tree?: string) => void
+setClusterTree: (tree?: string | undefined) => void
 ```
 
 #### action: setTreeAreaWidth
@@ -373,28 +373,28 @@ setShowTree: (arg: boolean) => void
 
 ```js
 // type signature
-setSubtreeFilter: (names?: string[]) => void
+setSubtreeFilter: (names?: string[] | undefined) => void
 ```
 
 #### action: setHoveredTreeNode
 
 ```js
 // type signature
-setHoveredTreeNode: (node?: HoveredTreeNode) => void
+setHoveredTreeNode: (node?: HoveredTreeNode | undefined) => void
 ```
 
 #### action: setTreeCanvasRef
 
 ```js
 // type signature
-setTreeCanvasRef: (ref: HTMLCanvasElement) => void
+setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
 ```
 
 #### action: setMouseoverCanvasRef
 
 ```js
 // type signature
-setMouseoverCanvasRef: (ref: HTMLCanvasElement) => void
+setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
 ```
 
 #### action: setSources
@@ -408,7 +408,7 @@ setSources: (sources: Source[]) => void
 
 ```js
 // type signature
-setFeatureUnderMouse: (f?: Feature) => void
+setFeatureUnderMouse: (f?: Feature | undefined) => void
 ```
 
 #### action: renderSvg

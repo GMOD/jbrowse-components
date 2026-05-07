@@ -6,6 +6,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { parseVcfBuffer } from './vcfParser.ts'
 import VcfFeature from '../VcfFeature/index.ts'
+import { parseSamplesTsv } from '../shared/parseSamplesTsv.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -37,7 +38,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   }
 
   public async setupP(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     const loc = openLocation(this.getConf('vcfLocation'), this.pluginManager)
     const buffer = await fetchAndMaybeUnzip(loc, opts)
 
@@ -76,12 +77,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   }
 
   public async setup() {
-    if (!this.vcfFeatures) {
-      this.vcfFeatures = this.setupP().catch((e: unknown) => {
-        this.vcfFeatures = undefined
-        throw e
-      })
-    }
+    this.vcfFeatures ??= this.setupP().catch((e: unknown) => {
+      this.vcfFeatures = undefined
+      throw e
+    })
     return this.vcfFeatures
   }
 
@@ -97,7 +96,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       for (const f of intervalTreeMap[refName]?.(opts.statusCallback).search([
         start,
         end,
-      ]) || []) {
+      ]) ?? []) {
         observer.next(f)
       }
       observer.complete()
@@ -118,7 +117,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
     for (const region of regions) {
       const { refName, start, end } = region
-      const lines = featureMap[refName] || []
+      const lines = featureMap[refName] ?? []
 
       for (const line of lines) {
         // VCF format: CHROM POS ID REF ALT QUAL FILTER ...
@@ -146,23 +145,8 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       }))
     } else {
       const txt = await openLocation(conf).readFile('utf8')
-      const lines = txt.split(/\n|\r\n|\r/)
-      const header = lines[0]!.split('\t')
       const { parser } = await this.setup()
-      const s = new Set(parser.samples)
-      return lines
-        .slice(1)
-        .filter(Boolean)
-        .map(line => {
-          const cols = line.split('\t')
-          return {
-            name: cols[0]!,
-            ...Object.fromEntries(
-              cols.slice(1).map((c, idx) => [header[idx + 1]!, c] as const),
-            ),
-          }
-        })
-        .filter(f => s.has(f.name))
+      return parseSamplesTsv(txt, parser.samples)
     }
   }
 }

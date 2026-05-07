@@ -50,6 +50,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
+import type { WebRootModelInterface } from '@jbrowse/web-core'
 import type { IDBPDatabase } from 'idb'
 
 // lazies
@@ -128,7 +129,7 @@ export default function RootModel({
       /**
        * #volatile
        */
-      version: packageJSON.version,
+      version: `${packageJSON.version} (${process.env.BUILD_GIT_HASH ?? 'dev'})`,
       /**
        * #volatile
        */
@@ -155,6 +156,7 @@ export default function RootModel({
       /**
        * #volatile
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       /**
        * #volatile
@@ -183,7 +185,7 @@ export default function RootModel({
           const ret = await self.sessionDB.getAll('metadata')
           this.setSavedSessionMetadata(
             ret
-              .filter(f => f.configPath === (self.configPath || ''))
+              .filter(f => f.configPath === (self.configPath ?? ''))
               .sort((a, b) => +b.createdAt - +a.createdAt),
           )
         }
@@ -232,18 +234,24 @@ export default function RootModel({
                           }
 
                           const ret = await self.sessionDB.get('metadata', s.id)
+                          if (!isAlive(self)) {
+                            return
+                          }
                           await sessionDB.put(
                             'metadata',
                             {
                               ...ret,
-                              favorite: ret?.favorite || false,
+                              favorite: ret?.favorite ?? false,
                               name: s.name,
                               id: s.id,
-                              createdAt: new Date(),
-                              configPath: self.configPath || '',
+                              createdAt: ret?.createdAt ?? new Date(),
+                              configPath: self.configPath ?? '',
                             },
                             s.id,
                           )
+                        }
+                        if (!isAlive(self)) {
+                          return
                         }
                         // step 2. refetch the metadata
                         await self.fetchSessionMetadata()
@@ -377,39 +385,13 @@ export default function RootModel({
       /**
        * #action
        */
-      async favoriteSavedSession(id: string) {
+      async setSavedSessionFavorite(id: string, favorite: boolean) {
         if (self.sessionDB) {
-          const ret = self.savedSessionMetadata!.find(f => f.id === id)
+          const ret = self.savedSessionMetadata?.find(f => f.id === id)
           if (ret) {
-            await self.sessionDB.put(
-              'metadata',
-              {
-                ...ret,
-                favorite: true,
-              },
-              ret.id,
-            )
+            await self.sessionDB.put('metadata', { ...ret, favorite }, ret.id)
             await self.fetchSessionMetadata()
           }
-        }
-      },
-      /**
-       * #action
-       */
-      async unfavoriteSavedSession(id: string) {
-        if (self.sessionDB) {
-          const ret = self.savedSessionMetadata!.find(f => f.id === id)
-          if (ret) {
-            await self.sessionDB.put(
-              'metadata',
-              {
-                ...ret,
-                favorite: false,
-              },
-              ret.id,
-            )
-          }
-          await self.fetchSessionMetadata()
         }
       },
       /**
@@ -486,8 +468,7 @@ export default function RootModel({
                   icon: GetAppIcon,
                   onClick: async () => {
                     if (self.session) {
-                      // eslint-disable-next-line @typescript-eslint/no-deprecated
-                      const { saveAs } = await import('file-saver-es')
+                      const { saveAs } = await import('@jbrowse/core/util')
 
                       saveAs(
                         new Blob(
@@ -501,7 +482,6 @@ export default function RootModel({
                           { type: 'text/plain;charset=utf-8' },
                         ),
                         'session.json',
-                        { autoBom: false },
                       )
                     }
                   },
@@ -761,3 +741,10 @@ export default function RootModel({
 
 export type WebRootModelType = ReturnType<typeof RootModel>
 export type WebRootModel = Instance<WebRootModelType>
+
+// Verify WebRootModel satisfies WebRootModelInterface at compile time.
+// If this errors, the root model is missing something BaseWebSession expects.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _checkWebRootModel(m: WebRootModel): WebRootModelInterface {
+  return m
+}

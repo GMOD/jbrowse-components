@@ -28,7 +28,7 @@ raw track actions (Settings, Copy, Delete, Index) without submenu wrapper
 
 ```js
 // type signature
-getTrackActions: (trackConfig: BaseTrackConfig) => MenuItem[]
+getTrackActions: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => MenuItem[]
 ```
 
 #### method: getTrackListMenuItems
@@ -37,12 +37,12 @@ flattened menu items for use in hierarchical track selector
 
 ```js
 // type signature
-getTrackListMenuItems: (trackConfig: BaseTrackConfig) => MenuItem[]
+getTrackListMenuItems: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => MenuItem[]
 ```
 
 #### method: getTrackActionMenuItems
 
 ```js
 // type signature
-getTrackActionMenuItems: (trackConfig: BaseTrackConfig, extraTrackActions?: MenuItem[]) => MenuItem[]
+getTrackActionMenuItems: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, extraTrackActions?: MenuItem[] | undefined) => MenuItem[]
 ```

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
+import { ErrorBanner, FileSelector } from '@jbrowse/core/ui'
 import {
   FormControlLabel,
   Grid,
@@ -65,6 +65,15 @@ const ImportSyntenyOpenCustomTrack = observer(
       if (fileLocation && !error) {
         const fn = fileName ? basename(fileName) : 'MyTrack'
         const trackId = `${fn}-${Date.now()}-sessionTrack`
+        const adapter = getAdapter({
+          radioOption,
+          assembly1: swap ? assembly2 : assembly1,
+          assembly2: swap ? assembly1 : assembly2,
+          fileLocation,
+          indexFileLocation,
+          bed1Location,
+          bed2Location,
+        })
         model.setImportFormSyntenyTrack(selectedRow, {
           type: 'userOpened',
           value: {
@@ -72,15 +81,7 @@ const ImportSyntenyOpenCustomTrack = observer(
             name: fn,
             assemblyNames: [assembly2, assembly1],
             type: 'SyntenyTrack',
-            adapter: getAdapter({
-              radioOption,
-              assembly1: swap ? assembly2 : assembly1,
-              assembly2: swap ? assembly1 : assembly2,
-              fileLocation,
-              indexFileLocation,
-              bed1Location,
-              bed2Location,
-            }),
+            adapter,
           },
         })
       }
@@ -100,7 +101,7 @@ const ImportSyntenyOpenCustomTrack = observer(
     ])
     return (
       <Paper style={{ padding: 12 }}>
-        {error ? <ErrorMessage error={error} /> : null}
+        {error ? <ErrorBanner error={error} /> : null}
         <Typography style={{ textAlign: 'center' }}>
           Add a .paf (minimap2), .delta (Mummer), .chain (UCSC liftover),
           .anchors or .anchors.simple (MCScan), or .pif.gz (jbrowse CLI
@@ -157,7 +158,8 @@ const ImportSyntenyOpenCustomTrack = observer(
               setIndexFileLocation={setIndexFileLocation}
               radioOption={radioOption}
             />
-          ) : value === '.anchors' || value === '.anchors.simple' ? (
+          ) : radioOption === '.anchors' ||
+            radioOption === '.anchors.simple' ? (
             <AnchorsSelector
               assembly1={assembly1}
               assembly2={assembly2}
@@ -169,16 +171,14 @@ const ImportSyntenyOpenCustomTrack = observer(
               setBed1Location={setBed1Location}
               bed2Location={bed2Location}
               setBed2Location={setBed2Location}
-              radioOption={value}
+              radioOption={radioOption}
             />
           ) : (
             <FileSelector
               name={value ? `${value} location` : ''}
               description=""
               location={fileLocation}
-              setLocation={loc => {
-                setFileLocation(loc)
-              }}
+              setLocation={setFileLocation}
             />
           )}
         </Grid>

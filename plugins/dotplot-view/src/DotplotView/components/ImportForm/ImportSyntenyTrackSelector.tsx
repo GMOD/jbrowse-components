@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
@@ -35,12 +35,7 @@ const ImportSyntenyTrackSelector = observer(
     assembly2: string
   }) {
     const session = getSession(model)
-    const { tracks, sessionTracks } = session
-    const allTracks = [
-      ...tracks,
-      ...(sessionTracks || []),
-    ] as AnyConfigurationModel[]
-    const filteredTracks = allTracks.filter(t =>
+    const filteredTracks = session.tracks.filter(t =>
       isRelevantTrack(t, assembly2, assembly1),
     )
     const resetTrack = filteredTracks[0]?.trackId || ''
@@ -48,9 +43,10 @@ const ImportSyntenyTrackSelector = observer(
     useEffect(() => {
       model.setImportFormSyntenyTrack(0, {
         type: 'preConfigured',
-        value,
+        value: resetTrack,
       })
-    }, [model, value])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     return (
       <Paper style={{ padding: 12 }}>
@@ -65,7 +61,12 @@ const ImportSyntenyTrackSelector = observer(
           <Select
             value={value}
             onChange={event => {
-              setValue(event.target.value)
+              const v = event.target.value
+              setValue(v)
+              model.setImportFormSyntenyTrack(0, {
+                type: 'preConfigured',
+                value: v,
+              })
             }}
           >
             {filteredTracks.map(track => (
@@ -75,7 +76,7 @@ const ImportSyntenyTrackSelector = observer(
             ))}
           </Select>
         ) : (
-          <ErrorMessage
+          <ErrorBanner
             error={`No synteny tracks found for ${assembly1},${assembly2}`}
           />
         )}

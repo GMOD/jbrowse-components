@@ -195,24 +195,22 @@ export default class BamSlightlyLazyFeature
   }
 
   get fields(): SimpleFeatureSerialized {
-    if (this._cachedFields === undefined) {
-      this._cachedFields = {
-        start: this.start,
-        name: this.name,
-        end: this.end,
-        score: this.score,
-        strand: this.strand,
-        template_length: this.template_length,
-        flags: this.flags,
-        tags: this.tags,
-        refName: this.refName,
-        type: 'match',
-        pair_orientation: this.pair_orientation,
-        next_ref: this.next_ref,
-        next_pos: this.next_pos,
-        next_segment_position: this.next_segment_position,
-        uniqueId: this.id(),
-      }
+    this._cachedFields ??= {
+      start: this.start,
+      name: this.name,
+      end: this.end,
+      score: this.score,
+      strand: this.strand,
+      template_length: this.template_length,
+      flags: this.flags,
+      tags: this.tags,
+      refName: this.refName,
+      type: 'match',
+      pair_orientation: this.pair_orientation,
+      next_ref: this.next_ref,
+      next_pos: this.next_pos,
+      next_segment_position: this.next_segment_position,
+      uniqueId: this.id(),
     }
     return this._cachedFields
   }

@@ -1,0 +1,521 @@
+import { performMultiRegionHitDetection } from './hitTesting.ts'
+
+import type { FlatbushRegionCache, VisibleRegion } from './hitTesting.ts'
+import type {
+  FeatureDataResult,
+  FlatbushItem,
+  SubfeatureInfo,
+} from '../../RenderFeatureDataRPC/rpcTypes.ts'
+
+function makeItem(
+  featureId: string,
+  startBp: number,
+  endBp: number,
+  topPx: number,
+  bottomPx: number,
+): FlatbushItem {
+  return {
+    kind: 'feature',
+    featureId,
+    type: 'gene',
+    startBp,
+    endBp,
+    topPx,
+    bottomPx,
+    featureHeightPx: bottomPx - topPx,
+    tooltip: featureId,
+  }
+}
+
+function makeSub(
+  featureId: string,
+  parentFeatureId: string,
+  startBp: number,
+  endBp: number,
+  topPx: number,
+  bottomPx: number,
+): SubfeatureInfo {
+  return {
+    kind: 'subfeature',
+    featureId,
+    parentFeatureId,
+    type: 'mRNA',
+    startBp,
+    endBp,
+    topPx,
+    bottomPx,
+  }
+}
+
+function makeData(
+  flatbushItems: FlatbushItem[],
+  subfeatureInfos: SubfeatureInfo[] = [],
+): FeatureDataResult {
+  return {
+    flatbushItems,
+    subfeatureInfos,
+    floatingLabelsData: {},
+    rectPositions: new Uint32Array(0),
+    rectYs: new Float32Array(0),
+    rectHeights: new Float32Array(0),
+    rectColors: new Uint32Array(0),
+    rectFeatureIndices: new Uint32Array(0),
+    linePositions: new Uint32Array(0),
+    lineYs: new Float32Array(0),
+    lineColors: new Uint32Array(0),
+    lineDirections: new Int8Array(0),
+    lineFeatureIndices: new Uint32Array(0),
+    arrowXs: new Uint32Array(0),
+    arrowYs: new Float32Array(0),
+    arrowDirections: new Int8Array(0),
+    arrowColors: new Uint32Array(0),
+    arrowFeatureIndices: new Uint32Array(0),
+    outlineColor: 0,
+    featureCount: 0,
+  }
+}
+
+function makeRegion(
+  displayedRegionIndex: number,
+  start: number,
+  end: number,
+  screenStartPx: number,
+  screenEndPx: number,
+): VisibleRegion {
+  return {
+    refName: 'ctgA',
+    displayedRegionIndex,
+    start,
+    end,
+    assemblyName: 'volvox',
+    screenStartPx,
+    screenEndPx,
+  }
+}
+
+function freshCacheMap() {
+  return new Map<number, FlatbushRegionCache>()
+}
+
+test('hits feature at correct coordinates', () => {
+  const item = makeItem('gene1', 1000, 5000, 0, 20)
+  const data = makeData([item])
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+
+  const result = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    320,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+
+  expect(result.feature).not.toBeNull()
+  expect(result.feature!.featureId).toBe('gene1')
+})
+
+test('misses when clicking outside feature bounds', () => {
+  const item = makeItem('gene1', 1000, 5000, 0, 20)
+  const data = makeData([item])
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+
+  const result = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    10,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+
+  expect(result.feature).toBeNull()
+})
+
+test('misses when clicking below feature', () => {
+  const item = makeItem('gene1', 1000, 5000, 0, 20)
+  const data = makeData([item])
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+
+  const result = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    320,
+    25,
+    { showLabels: true, showDescriptions: false },
+  )
+
+  expect(result.feature).toBeNull()
+})
+
+test('returns correct displayedRegionIndex', () => {
+  const item = makeItem('gene1', 1000, 5000, 0, 20)
+  const data = makeData([item])
+
+  const laidOutDataMap = new Map([[7, data]])
+  const region = makeRegion(7, 0, 10000, 0, 800)
+
+  const result = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    320,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+
+  expect(result.feature).not.toBeNull()
+  expect((result as any).displayedRegionIndex).toBe(7)
+})
+
+test('skips regions where mouseX is outside screen bounds', () => {
+  const item = makeItem('gene1', 1000, 5000, 0, 20)
+  const data = makeData([item])
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 100, 500)
+
+  const outside = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    50,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+  expect(outside.feature).toBeNull()
+
+  const inside = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    250,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+  expect(inside.feature).not.toBeNull()
+})
+
+test('hits subfeature when within subfeature bounds', () => {
+  const parent = makeItem('gene1', 1000, 5000, 0, 30)
+  const sub = makeSub('mRNA1', 'gene1', 2000, 3000, 5, 15)
+  const data = makeData([parent], [sub])
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+
+  const result = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    200,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+
+  expect(result.feature).not.toBeNull()
+  expect(result.feature!.featureId).toBe('gene1')
+  expect(result.subfeature).not.toBeNull()
+  expect(result.subfeature!.featureId).toBe('mRNA1')
+})
+
+test('returns null subfeature when outside subfeature but inside feature', () => {
+  const parent = makeItem('gene1', 1000, 5000, 0, 30)
+  const sub = makeSub('mRNA1', 'gene1', 2000, 3000, 5, 15)
+  const data = makeData([parent], [sub])
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+
+  const result = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    120,
+    25,
+    { showLabels: true, showDescriptions: false },
+  )
+
+  expect(result.feature).not.toBeNull()
+  expect(result.feature!.featureId).toBe('gene1')
+  expect(result.subfeature).toBeNull()
+})
+
+test('returns no hit when laidOutDataMap is empty', () => {
+  const region = makeRegion(0, 0, 10000, 0, 800)
+
+  const result = performMultiRegionHitDetection(
+    freshCacheMap(),
+    new Map(),
+    [region],
+    400,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+
+  expect(result.feature).toBeNull()
+})
+
+test('returns no hit when no visible regions', () => {
+  const item = makeItem('gene1', 1000, 5000, 0, 20)
+  const data = makeData([item])
+
+  const result = performMultiRegionHitDetection(
+    freshCacheMap(),
+    new Map([[0, data]]),
+    [],
+    400,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+
+  expect(result.feature).toBeNull()
+})
+
+test('caches flatbush index across calls', () => {
+  const item = makeItem('gene1', 1000, 5000, 0, 20)
+  const data = makeData([item])
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+  const cacheMap = freshCacheMap()
+
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 320, 10, {
+    showLabels: true,
+    showDescriptions: false,
+  })
+
+  const cache = cacheMap.get(0)!
+  expect(cache.featureIndex).not.toBeNull()
+  expect(cache.cachedItems).toBe(data.flatbushItems)
+
+  const savedIndex = cache.featureIndex
+
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 320, 10, {
+    showLabels: true,
+    showDescriptions: false,
+  })
+
+  expect(cacheMap.get(0)!.featureIndex).toBe(savedIndex)
+})
+
+test('rebuilds cache when data changes', () => {
+  const item1 = makeItem('gene1', 1000, 5000, 0, 20)
+  const data1 = makeData([item1])
+
+  const laidOutDataMap = new Map([[0, data1]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+  const cacheMap = freshCacheMap()
+
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 320, 10, {
+    showLabels: true,
+    showDescriptions: false,
+  })
+
+  const savedIndex = cacheMap.get(0)!.featureIndex
+
+  const item2 = makeItem('gene2', 6000, 9000, 0, 20)
+  const data2 = makeData([item2])
+  laidOutDataMap.set(0, data2)
+
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 560, 10, {
+    showLabels: true,
+    showDescriptions: false,
+  })
+
+  expect(cacheMap.get(0)!.featureIndex).not.toBe(savedIndex)
+  expect(cacheMap.get(0)!.cachedItems).toBe(data2.flatbushItems)
+})
+
+test('multi-region selects correct region', () => {
+  const item1 = makeItem('geneA', 100, 400, 0, 20)
+  const item2 = makeItem('geneB', 100, 400, 0, 20)
+  const data1 = makeData([item1])
+  const data2 = makeData([item2])
+
+  const laidOutDataMap = new Map([
+    [0, data1],
+    [1, data2],
+  ])
+  const regions = [
+    makeRegion(0, 0, 1000, 0, 400),
+    makeRegion(1, 0, 1000, 400, 800),
+  ]
+
+  const hitR0 = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    regions,
+    100,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+  expect(hitR0.feature!.featureId).toBe('geneA')
+  expect((hitR0 as any).displayedRegionIndex).toBe(0)
+
+  const hitR1 = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    regions,
+    500,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+  expect(hitR1.feature!.featureId).toBe('geneB')
+  expect((hitR1 as any).displayedRegionIndex).toBe(1)
+})
+
+test('multi-region continues to next region when first has no hit', () => {
+  // region 0 is within X range but has no feature at Y=999; region 1 has a feature
+  const item1 = makeItem('geneA', 100, 400, 0, 20)
+  const item2 = makeItem('geneB', 100, 400, 0, 20)
+  const data1 = makeData([item1])
+  const data2 = makeData([item2])
+
+  const laidOutDataMap = new Map([
+    [0, data1],
+    [1, data2],
+  ])
+  // both regions span x=0..800 so both are candidates for any mouseX in that range
+  const regions = [
+    makeRegion(0, 0, 1000, 0, 800),
+    makeRegion(1, 0, 1000, 0, 800),
+  ]
+
+  // y=999 is outside the feature rect (height=20 at y=0), so region 0 yields no hit
+  // but region 1 should still be checked and also yields no hit at y=999
+  const miss = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    regions,
+    100,
+    999,
+    { showLabels: true, showDescriptions: false },
+  )
+  expect(miss.feature).toBeNull()
+
+  // y=10 hits in region 0 (first match wins)
+  const hit = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    regions,
+    100,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+  expect(hit.feature!.featureId).toBe('geneA')
+  expect((hit as any).displayedRegionIndex).toBe(0)
+})
+
+test('handles reversed region', () => {
+  const item = makeItem('gene1', 1000, 5000, 0, 20)
+  const data = makeData([item])
+
+  const laidOutDataMap = new Map([[0, data]])
+  const reversed = makeRegion(0, 10000, 0, 0, 800)
+
+  const result = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [reversed],
+    500,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+
+  expect(result.feature).not.toBeNull()
+  expect(result.feature!.featureId).toBe('gene1')
+})
+
+function makeDataWithLabel(
+  flatbushItems: FlatbushItem[],
+  labelTextWidth: number,
+): FeatureDataResult {
+  const data = makeData(flatbushItems)
+  const item = flatbushItems[0]!
+  return {
+    ...data,
+    floatingLabelsData: {
+      [item.featureId]: {
+        featureId: item.featureId,
+        minX: item.startBp,
+        maxX: item.endBp,
+        topY: 0,
+        featureHeight: item.bottomPx - item.topPx,
+        nameLabel: {
+          text: 'longname',
+          relativeY: 0,
+          color: '#000',
+          textWidth: labelTextWidth,
+        },
+      },
+    },
+  }
+}
+
+test('label hit area extends past feature when showLabels is true', () => {
+  const item = makeItem('gene1', 1000, 1100, 0, 20)
+  const data = makeDataWithLabel([item], 200)
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+
+  const hit = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    250,
+    10,
+    { showLabels: true, showDescriptions: false },
+  )
+
+  expect(hit.feature).not.toBeNull()
+})
+
+test('label hit area collapses when showLabels is false', () => {
+  const item = makeItem('gene1', 1000, 1100, 0, 20)
+  const data = makeDataWithLabel([item], 200)
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+
+  const hit = performMultiRegionHitDetection(
+    freshCacheMap(),
+    laidOutDataMap,
+    [region],
+    250,
+    10,
+    { showLabels: false, showDescriptions: false },
+  )
+
+  expect(hit.feature).toBeNull()
+})
+
+test('cache rebuilds when label visibility flags change', () => {
+  const item = makeItem('gene1', 1000, 1100, 0, 20)
+  const data = makeDataWithLabel([item], 200)
+
+  const laidOutDataMap = new Map([[0, data]])
+  const region = makeRegion(0, 0, 10000, 0, 800)
+  const cacheMap = freshCacheMap()
+
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 50, 10, {
+    showLabels: true,
+    showDescriptions: false,
+  })
+  const firstIndex = cacheMap.get(0)!.featureIndex
+
+  performMultiRegionHitDetection(cacheMap, laidOutDataMap, [region], 50, 10, {
+    showLabels: false,
+    showDescriptions: false,
+  })
+
+  expect(cacheMap.get(0)!.featureIndex).not.toBe(firstIndex)
+})

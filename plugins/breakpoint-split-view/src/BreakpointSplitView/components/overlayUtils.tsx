@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import type { BreakpointViewModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { getSession } from '@jbrowse/core/util'
@@ -7,9 +9,24 @@ export const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
 export interface OverlayProps {
   model: BreakpointViewModel
   trackId: string
-  getTrackYPosOverride?: (trackId: string, level: number) => number
-  cachedTrackTops?: number[]
-  cachedYOffset?: number
+  /** SVG export: fixed track tops, scrollTops zeroed */
+  yOffsetsOverride?: number[]
+  /** Live rendering: DOM-measured track tops relative to the overlay SVG */
+  domYOffsets?: number[]
+}
+
+export function useMouseoverElt() {
+  const [mouseoverElt, setMouseoverElt] = useState<string>()
+  useEffect(() => {
+    function clear() {
+      setMouseoverElt(undefined)
+    }
+    window.addEventListener('wheel', clear, { passive: true })
+    return () => {
+      window.removeEventListener('wheel', clear)
+    }
+  }, [])
+  return [mouseoverElt, setMouseoverElt] as const
 }
 
 export function createVariantMouseHandlers(
@@ -48,7 +65,9 @@ export function getCanonicalRefs(
   const f1ref = assembly.getCanonicalRefName(f1RefName)
   const f2ref = assembly.getCanonicalRefName(f2RefName)
   if (!f1ref || !f2ref) {
-    throw new Error(`unable to find ref for ${f1ref || f2ref}`)
+    throw new Error(
+      `unable to find canonical ref for ${!f1ref ? f1RefName : f2RefName}`,
+    )
   }
   return { f1ref, f2ref }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-legacy-jbrowse",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "keywords": [
@@ -22,19 +22,19 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/legacy-jbrowse",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/legacy-jbrowse",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/nclist": "^3.0.6",
+    "@gmod/nclist": "^3.0.7",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.6.0",
-    "generic-filehandle2": "^2.1.4",
-    "mobx": "^6.15.0",
+    "generic-filehandle2": "^2.1.7",
+    "mobx": "6.15.0",
     "rxjs": "^7.8.2",
     "set-value": "^4.1.0"
   },

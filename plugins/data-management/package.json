@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-data-management",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
@@ -22,24 +22,24 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/data-management",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/data-management",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/ucsc-hub": "^2.0.3",
+    "@gmod/ucsc-hub": "^2.0.4",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@jbrowse/plugin-config": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "@mui/x-data-grid": "^9.0.0-rc.0",
+    "@mui/x-data-grid": "9.0.4",
     "deepmerge": "^4.3.1",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1"
   },
   "peerDependencies": {

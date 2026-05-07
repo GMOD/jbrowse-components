@@ -1,6 +1,6 @@
 import { lazy, useEffect, useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import { getAssemblyName } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
@@ -41,7 +41,7 @@ export default function LaunchBreakpointSplitViewPanel({
     })()
   }, [feature, view])
 
-  const ret = [] as [ReducedFeature, ReducedFeature][]
+  const ret: [ReducedFeature, ReducedFeature][] = []
   if (res) {
     for (let i = 0; i < res.length - 1; i++) {
       ret.push([res[i]!, res[i + 1]!] as const)
@@ -52,12 +52,12 @@ export default function LaunchBreakpointSplitViewPanel({
   return ret.length && assemblyName ? (
     <div>
       <Typography>Launch split view</Typography>
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
       <ul>
-        {ret.map((arg, index) => {
+        {ret.map(arg => {
           const [f1, f2] = arg
           return (
-            <li key={`${JSON.stringify(arg)}-${index}`}>
+            <li key={`${f1.uniqueId}-${f2.uniqueId}`}>
               {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
               {f2.refName}:{toLocale(f2.strand === 1 ? f2.start : f2.end)}{' '}
               <Link

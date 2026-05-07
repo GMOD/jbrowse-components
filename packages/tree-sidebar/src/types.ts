@@ -1,4 +1,5 @@
-import type { HierarchyNode } from 'd3-hierarchy'
+import type { PositionedHierarchyNode } from './hierarchy.ts'
+import type Flatbush from '@jbrowse/core/util/flatbush'
 
 export interface ClusterNodeData {
   name: string
@@ -6,7 +7,7 @@ export interface ClusterNodeData {
   children?: ClusterNodeData[]
 }
 
-export type ClusterHierarchyNode = HierarchyNode<ClusterNodeData>
+export type ClusterHierarchyNode = PositionedHierarchyNode<ClusterNodeData>
 
 export interface HoveredTreeNode {
   node: ClusterHierarchyNode
@@ -28,6 +29,10 @@ export interface TreeSidebarModel {
   showTree: boolean
   sources?: TreeSource[]
   subtreeFilter?: string[]
+  spatialIndex?: {
+    index: Flatbush
+    nodes: ClusterHierarchyNode[]
+  }
   setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
@@ -36,8 +41,8 @@ export interface TreeSidebarModel {
 }
 
 export interface TreeDrawingModel {
-  treeCanvas?: HTMLCanvasElement
-  mouseoverCanvas?: HTMLCanvasElement
+  treeCanvas?: HTMLCanvasElement | null
+  mouseoverCanvas?: HTMLCanvasElement | null
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   height: number

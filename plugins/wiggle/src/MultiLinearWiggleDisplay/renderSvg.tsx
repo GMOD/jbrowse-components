@@ -1,221 +1,30 @@
+import type React from 'react'
+
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
-import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
+import { buildMultiSourceRenderData } from './components/buildMultiSourceRenderData.ts'
+import {
+  Canvas2DWiggleRenderer,
+  drawWiggleBlocks,
+} from '../shared/Canvas2DWiggleRenderer.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
-import MultiRowLabels from '../shared/MultiRowLabels.tsx'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
-import YScaleBar from '../shared/YScaleBar.tsx'
-import { getDensityColor } from '../shared/getDensityColor.ts'
-import {
-  getRowTop,
-  renderingTypeToInt,
-} from '../shared/wiggleComponentUtils.ts'
-import {
-  RENDERING_TYPE_DENSITY,
-  RENDERING_TYPE_LINE,
-  RENDERING_TYPE_SCATTER,
-  RENDERING_TYPE_XYPLOT,
-} from '../shared/wiggleShader.ts'
-import { getScale } from '../util.ts'
+import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
-import type { MultiWiggleSourceData } from '../RenderMultiWiggleDataRPC/types.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-interface FeatureSlice {
-  positions: Uint32Array
-  scores: Float32Array
-  numFeatures: number
-  color: string
-}
-
-function getFeatureSlices(
-  source: MultiWiggleSourceData,
-  posColor: string,
-  negColor: string,
-  isOverlay: boolean,
-) {
-  const slices: FeatureSlice[] = []
-  if (source.posNumFeatures > 0) {
-    slices.push({
-      positions: source.posFeaturePositions,
-      scores: source.posFeatureScores,
-      numFeatures: source.posNumFeatures,
-      color: posColor,
-    })
-  }
-  if (source.negNumFeatures > 0) {
-    slices.push({
-      positions: source.negFeaturePositions,
-      scores: source.negFeatureScores,
-      numFeatures: source.negNumFeatures,
-      color: isOverlay ? posColor : negColor,
-    })
-  }
-  return slices
-}
-
-function renderFeatureSlice(
-  ctx: CanvasRenderingContext2D | SvgCanvas,
-  slice: FeatureSlice,
-  regionStart: number,
-  block: { start: number; end: number },
-  blockScreenX: number,
-  bpPerPx: number,
-  renderType: number,
-  scale: (v: number) => number,
-  rowY: number,
-  rowHeight: number,
-  minScore: number,
-  maxScore: number,
-  scaleType: string,
-) {
-  const { positions, scores, numFeatures, color } = slice
-
-  if (renderType === RENDERING_TYPE_LINE) {
-    ctx.beginPath()
-    ctx.strokeStyle = color
-    ctx.lineWidth = 1
-    let started = false
-    for (let i = 0; i < numFeatures; i++) {
-      const posIdx = i * 2
-      const featureStart = regionStart + positions[posIdx]!
-      const featureEnd = regionStart + positions[posIdx + 1]!
-      const score = scores[i]!
-      if (featureEnd < block.start || featureStart > block.end) {
-        continue
-      }
-      const x = (featureStart - block.start) / bpPerPx + blockScreenX
-      const xEnd = (featureEnd - block.start) / bpPerPx + blockScreenX
-      const y = scale(score) + rowY
-      if (!started) {
-        ctx.moveTo(x, y)
-        started = true
-      } else {
-        ctx.lineTo(x, y)
-      }
-      ctx.lineTo(xEnd, y)
-    }
-    ctx.stroke()
-  } else {
-    for (let i = 0; i < numFeatures; i++) {
-      const posIdx = i * 2
-      const featureStart = regionStart + positions[posIdx]!
-      const featureEnd = regionStart + positions[posIdx + 1]!
-      const score = scores[i]!
-      if (featureEnd < block.start || featureStart > block.end) {
-        continue
-      }
-      const x = (featureStart - block.start) / bpPerPx + blockScreenX
-      const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
-
-      if (renderType === RENDERING_TYPE_XYPLOT) {
-        const y = scale(score) + rowY
-        const originY = scale(0) + rowY
-        const rectY = Math.min(y, originY)
-        const rectHeight = Math.abs(originY - y) || 1
-        ctx.fillStyle = color
-        ctx.fillRect(x, rectY, w + 0.5, rectHeight)
-      } else if (renderType === RENDERING_TYPE_SCATTER) {
-        const y = scale(score) + rowY
-        ctx.fillStyle = color
-        ctx.fillRect(x, y - 1, w, 2)
-      } else if (renderType === RENDERING_TYPE_DENSITY) {
-        ctx.fillStyle = getDensityColor(
-          score,
-          minScore,
-          maxScore,
-          scaleType,
-          color,
-        )
-        ctx.fillRect(x, rowY, w, rowHeight)
-      }
-    }
-  }
-}
-
-function renderToCtx(
-  ctx: CanvasRenderingContext2D | SvgCanvas,
-  model: MultiLinearWiggleDisplayModel,
-  view: LGV,
-) {
-  const { offsetPx, bpPerPx } = view
-  const {
-    renderingType,
-    rpcDataMap,
-    domain,
-    scaleType,
-    sources: modelSources,
-    isOverlay,
-    rowHeight,
-  } = model
-  const defaultPosColor = model.posColor
-  const defaultNegColor = model.negColor
-
-  if (!domain || modelSources.length === 0) {
-    return
-  }
-
-  const [minScore, maxScore] = domain
-  const renderType = renderingTypeToInt(renderingType)
-  const overlay = isOverlay
-
-  const scale = getScale({
-    scaleType,
-    domain,
-    range: [rowHeight, 0],
-    inverted: false,
-  })
-
-  for (const block of view.dynamicBlocks.contentBlocks) {
-    if (block.regionNumber === undefined) {
-      continue
-    }
-    const data = rpcDataMap.get(block.regionNumber)
-    if (!data) {
-      continue
-    }
-    const blockScreenX = block.offsetPx - offsetPx
-
-    for (let sourceIdx = 0; sourceIdx < data.sources.length; sourceIdx++) {
-      const source = data.sources[sourceIdx]!
-      const modelSource = modelSources.find(s => s.name === source.name)
-      if (!modelSource) {
-        continue
-      }
-      const posColor = modelSource.color ?? defaultPosColor
-      const negColor = overlay ? posColor : defaultNegColor
-      const rowY = overlay ? 0 : getRowTop(sourceIdx, rowHeight)
-
-      const slices = getFeatureSlices(source, posColor, negColor, overlay)
-      for (const slice of slices) {
-        renderFeatureSlice(
-          ctx,
-          slice,
-          data.regionStart,
-          block,
-          blockScreenX,
-          bpPerPx,
-          renderType,
-          scale,
-          rowY,
-          rowHeight,
-          minScore,
-          maxScore,
-          scaleType,
-        )
-      }
-    }
-  }
-}
 
 export async function renderSvg(
   model: MultiLinearWiggleDisplayModel,
@@ -226,6 +35,8 @@ export async function renderSvg(
     () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
   )
   const { offsetPx } = view
+  // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
+  const scalebarLeft = Math.max(-offsetPx, 0)
   const height = model.height
   const {
     ticks,
@@ -235,6 +46,7 @@ export async function renderSvg(
     numSources,
     isOverlay,
     rowHeight,
+    renderState,
   } = model
 
   if (model.error) {
@@ -243,12 +55,11 @@ export async function renderSvg(
     )
   }
 
-  if (rpcDataMap.size === 0 || !domain || numSources === 0) {
+  if (rpcDataMap.size === 0 || !domain || numSources === 0 || !renderState) {
     return null
   }
 
-  const canvasWidth = Math.round(view.width)
-  const tooSmallForScalebar = rowHeight < 70
+  const totalWidth = view.totalWidthPx
 
   let legendEl: React.ReactNode = null
   if (model.isDensityMode) {
@@ -256,33 +67,33 @@ export async function renderSvg(
       <DensityLegend
         domain={domain}
         scaleType={scaleType}
-        canvasWidth={canvasWidth}
+        canvasWidth={view.width}
       />
     )
   } else if (ticks) {
-    if (tooSmallForScalebar) {
+    if (rowHeight < 70) {
       legendEl = (
         <ScoreLegend
-          ticks={ticks}
+          domain={domain}
           scaleType={scaleType}
-          canvasWidth={canvasWidth}
+          canvasWidth={view.width}
         />
       )
     } else if (isOverlay) {
       legendEl = (
-        <g transform={`translate(${Math.max(-offsetPx, 0)} 0)`}>
-          <YScaleBar model={model} orientation="left" />
+        <g transform={`translate(${scalebarLeft})`}>
+          <YScaleBar ticks={ticks} orientation="left" />
         </g>
       )
     } else {
       legendEl = (
-        <g transform={`translate(${Math.max(-offsetPx, 0)} 0)`}>
+        <g transform={`translate(${scalebarLeft})`}>
           {Array.from({ length: numSources }).map((_, idx) => (
             <g
-              transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
               key={`scalebar-${idx}`}
+              transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
             >
-              <YScaleBar model={model} orientation="left" />
+              <YScaleBar ticks={ticks} orientation="left" />
             </g>
           ))}
         </g>
@@ -299,10 +110,10 @@ export async function renderSvg(
       <OverlayColorLegend
         sources={sources}
         fallbackColor={model.posColor}
-        canvasWidth={canvasWidth}
+        canvasWidth={view.width}
       />
     ) : (
-      <MultiRowLabels
+      <SvgRowLabels
         sources={sources}
         rowHeight={rowHeight}
         labelOffset={labelOffset}
@@ -310,41 +121,36 @@ export async function renderSvg(
     )
   }
 
-  let treeEl: React.ReactNode = null
-  if (showTree && hierarchy) {
-    let treePaths = ''
-    for (const link of hierarchy.links()) {
-      const sx = link.source.y!
-      const sy = link.source.x!
-      const tx = link.target.y!
-      const ty = link.target.x!
-      treePaths += `M${sx},${sy}L${sx},${ty}M${sx},${ty}L${tx},${ty}`
-    }
-    treeEl = <path d={treePaths} fill="none" stroke="#0008" strokeWidth={1} />
+  const treeEl =
+    showTree && hierarchy ? <SvgTreePath hierarchy={hierarchy} /> : null
+
+  // Headless renderer: same drawWiggleBlocks pipeline as on-screen.
+  // buildMultiSourceRenderData converts RPC data + gpuProps → SourceRenderData[]
+  // (one per row); the renderer paints each source at rowIndex × rowHeight.
+  const props = model.gpuProps()
+  const renderer = new Canvas2DWiggleRenderer(null)
+  for (const [displayedRegionIndex, data] of rpcDataMap) {
+    renderer.uploadRegion(
+      displayedRegionIndex,
+      buildMultiSourceRenderData(data, props),
+    )
   }
 
-  const totalWidth = view.dynamicBlocks.totalWidthPx
-  const clipId = `wiggle-clip-${model.id}`
+  const renderBlocks = buildRenderBlocks(view.visibleRegions)
+  const state = {
+    ...renderState,
+    canvasWidth: totalWidth,
+    canvasHeight: height,
+  }
+
+  const wiggleNode = paintLayer(totalWidth, height, opts, ctx => {
+    drawWiggleBlocks(ctx, renderer.getRegions(), renderBlocks, state)
+  })
 
   if (opts?.rasterizeLayers) {
-    const canvas =
-      opts.createCanvas?.(totalWidth * 2, height * 2) ??
-      document.createElement('canvas')
-    canvas.width = totalWidth * 2
-    canvas.height = height * 2
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return null
-    }
-    ctx.scale(2, 2)
-    renderToCtx(ctx, model, view)
     return (
       <>
-        <image
-          width={totalWidth}
-          height={height}
-          xlinkHref={canvas.toDataURL('image/png')}
-        />
+        {wiggleNode}
         {labelsEl}
         {legendEl}
         {treeEl}
@@ -352,20 +158,15 @@ export async function renderSvg(
     )
   }
 
-  const ctx = new SvgCanvas()
-  renderToCtx(ctx, model, view)
-
   return (
     <>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={view.width} height={height} />
-        </clipPath>
-      </defs>
-      <g
-        dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }}
-        clipPath={`url(#${clipId})`}
-      />
+      <SvgClipRect
+        id={`wiggle-clip-${model.id}`}
+        width={view.width}
+        height={height}
+      >
+        {wiggleNode}
+      </SvgClipRect>
       {labelsEl}
       {legendEl}
       {treeEl}

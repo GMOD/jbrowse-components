@@ -1,12 +1,13 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
+import { types } from '@jbrowse/mobx-state-tree'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * Configuration schema for the LinearAlignmentsDisplay
  */
-export default function configSchemaFactory(pluginManager: PluginManager) {
+export default function configSchemaFactory(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearAlignmentsDisplay',
     {
@@ -42,12 +43,42 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         },
         description: 'Filter settings for reads',
       },
+      autoscale: {
+        type: 'stringEnum',
+        model: types.enumeration('Coverage autoscale type', [
+          'local',
+          'localsd',
+        ]),
+        defaultValue: 'local',
+        description: 'Coverage autoscale type',
+      },
+      minScore: {
+        type: 'number',
+        defaultValue: Number.MIN_VALUE,
+        description: 'Minimum coverage depth bound',
+      },
+      maxScore: {
+        type: 'number',
+        defaultValue: Number.MAX_VALUE,
+        description: 'Maximum coverage depth bound',
+      },
+      scaleType: {
+        type: 'stringEnum',
+        model: types.enumeration('Coverage scale type', ['linear', 'log']),
+        defaultValue: 'linear',
+        description: 'Coverage scale type (linear or log)',
+      },
+      numStdDev: {
+        type: 'number',
+        defaultValue: 3,
+        description: 'Number of standard deviations for localsd autoscale',
+      },
     },
     {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
     },
   )

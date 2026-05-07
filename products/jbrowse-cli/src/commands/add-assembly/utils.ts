@@ -2,20 +2,44 @@ import fs from 'fs'
 import path from 'path'
 
 import { isURL } from '../../types/common.ts'
-import {
-  debug,
-  readInlineOrFileJson,
-  readJsonFile,
-  resolveFileLocation,
-} from '../../utils.ts'
-import {
-  findAndUpdateOrAdd,
-  saveConfigAndReport as saveConfigAndReportBase,
-} from '../shared/config-operations.ts'
+import { debug, readInlineOrFileJson, readJsonFile } from '../../utils.ts'
+import { mapLocationForFiles } from '../add-track-utils/track-config.ts'
+import { findAndUpdateOrAdd } from '../shared/config-operations.ts'
 
 import type { Assembly, Config, Sequence } from '../../base.ts'
 
-const { rename, copyFile, symlink } = fs.promises
+export type SequenceType =
+  | 'indexedFasta'
+  | 'bgzipFasta'
+  | 'twoBit'
+  | 'chromSizes'
+  | 'custom'
+
+const sequenceTypes = new Set<SequenceType>([
+  'indexedFasta',
+  'bgzipFasta',
+  'twoBit',
+  'chromSizes',
+  'custom',
+])
+
+export function isSequenceType(t: string | undefined): t is SequenceType {
+  return sequenceTypes.has(t as SequenceType)
+}
+
+interface AssemblyFlags {
+  type?: SequenceType
+  name?: string
+  alias?: string[]
+  displayName?: string
+  faiLocation?: string
+  gziLocation?: string
+  refNameAliases?: string
+  refNameAliasesType?: string
+  refNameColors?: string
+  load?: string
+  force?: boolean
+}
 
 export function isValidJSON(string: string) {
   try {
@@ -27,27 +51,30 @@ export function isValidJSON(string: string) {
 }
 
 export function guessSequenceType(sequence: string) {
+  const s = sequence.toLowerCase()
   if (
-    sequence.endsWith('.fa') ||
-    sequence.endsWith('.fna') ||
-    sequence.endsWith('.fasta')
+    s.endsWith('.fa') ||
+    s.endsWith('.fna') ||
+    s.endsWith('.fasta') ||
+    s.endsWith('.mfa')
   ) {
     return 'indexedFasta'
   }
   if (
-    sequence.endsWith('.fa.gz') ||
-    sequence.endsWith('.fna.gz') ||
-    sequence.endsWith('.fasta.gz')
+    s.endsWith('.fa.gz') ||
+    s.endsWith('.fna.gz') ||
+    s.endsWith('.fasta.gz') ||
+    s.endsWith('.mfa.gz')
   ) {
     return 'bgzipFasta'
   }
-  if (sequence.endsWith('.2bit')) {
+  if (s.endsWith('.2bit')) {
     return 'twoBit'
   }
-  if (sequence.endsWith('.chrom.sizes')) {
+  if (s.endsWith('.chrom.sizes')) {
     return 'chromSizes'
   }
-  if (sequence.endsWith('.json')) {
+  if (s.endsWith('.json')) {
     return 'custom'
   }
   if (isValidJSON(sequence)) {
@@ -58,83 +85,25 @@ export function guessSequenceType(sequence: string) {
   )
 }
 
-export function needLoadData(location: string) {
-  return !isURL(location)
-}
-
-export async function loadData({
-  load,
-  filePaths,
-  destination,
-}: {
-  load: string
-  filePaths: string[]
-  destination: string
-}) {
-  if (isURL(filePaths[0]!)) {
-    return false
-  }
-
-  if (load === 'inPlace') {
-    return false
-  }
-
-  const destDir = path.dirname(destination)
-  const validPaths = filePaths.filter(f => !!f)
-
-  const operations: Record<
-    string,
-    (src: string, dest: string) => Promise<void>
-  > = {
-    copy: copyFile,
-    symlink: (src, dest) => symlink(path.resolve(src), dest),
-    move: rename,
-  }
-
-  const operation = operations[load]
-  if (operation) {
-    await Promise.all(
-      validPaths.map(filePath =>
-        operation(filePath, path.join(destDir, path.basename(filePath))),
-      ),
-    )
-    return true
-  }
-
-  return false
-}
-
 export async function getAssembly({
   runFlags,
   argsSequence,
-  target,
 }: {
-  runFlags: any
+  runFlags: AssemblyFlags
   argsSequence: string
-  target: string
-}): Promise<Assembly> {
-  let sequence: Sequence
-
-  if (needLoadData(argsSequence) && !runFlags.load) {
+}): Promise<{ assembly: Assembly; filesToLoad: string[] }> {
+  if (!isURL(argsSequence) && !runFlags.load) {
     throw new Error(
       'Please specify the loading operation for this file with --load copy|symlink|move|inPlace',
     )
-  } else if (!needLoadData(argsSequence) && runFlags.load) {
+  } else if (isURL(argsSequence) && runFlags.load) {
     throw new Error(
       'URL detected with --load flag. Please rerun the function without the --load flag',
     )
   }
 
   let { name } = runFlags
-  let { type } = runFlags as {
-    type:
-      | 'indexedFasta'
-      | 'bgzipFasta'
-      | 'twoBit'
-      | 'chromSizes'
-      | 'custom'
-      | undefined
-  }
+  let { type } = runFlags
   if (type) {
     debug(`Type is: ${type}`)
   } else {
@@ -144,163 +113,87 @@ export async function getAssembly({
   if (name) {
     debug(`Name is: ${name}`)
   }
+
+  const { load, faiLocation, gziLocation } = runFlags
+  const mapLoc = (p: string) => mapLocationForFiles(p, load)
+  let sequence: Sequence
+  let filesToLoad: string[] = []
+
   switch (type) {
     case 'indexedFasta': {
-      const { skipCheck, force, load, faiLocation } = runFlags
-      let sequenceLocation = await resolveFileLocation(
-        argsSequence,
-        !(skipCheck || force),
-        load === 'inPlace',
-      )
-      debug(`FASTA location resolved to: ${sequenceLocation}`)
-      let indexLocation = await resolveFileLocation(
-        faiLocation || `${argsSequence}.fai`,
-        !(skipCheck || force),
-        load === 'inPlace',
-      )
-      debug(`FASTA index location resolved to: ${indexLocation}`)
+      const faiLoc = faiLocation || `${argsSequence}.fai`
+      debug(`FASTA: ${argsSequence}, index: ${faiLoc}`)
       if (!name) {
         name = path.basename(
-          sequenceLocation,
-          sequenceLocation.endsWith('.fasta') ? '.fasta' : '.fa',
+          argsSequence,
+          argsSequence.endsWith('.fasta') ? '.fasta' : '.fa',
         )
         debug(`Guessing name: ${name}`)
-      }
-      const loaded = load
-        ? await loadData({
-            load,
-            filePaths: [sequenceLocation, indexLocation],
-            destination: target,
-          })
-        : false
-      if (loaded) {
-        sequenceLocation = path.basename(sequenceLocation)
-        indexLocation = path.basename(indexLocation)
       }
       sequence = {
         type: 'ReferenceSequenceTrack',
         trackId: `${name}-ReferenceSequenceTrack`,
         adapter: {
           type: 'IndexedFastaAdapter',
-          fastaLocation: {
-            uri: sequenceLocation,
-            locationType: 'UriLocation',
-          },
-          faiLocation: { uri: indexLocation, locationType: 'UriLocation' },
+          fastaLocation: { uri: mapLoc(argsSequence), locationType: 'UriLocation' },
+          faiLocation: { uri: mapLoc(faiLoc), locationType: 'UriLocation' },
         },
+      }
+      if (load) {
+        filesToLoad = [argsSequence, faiLoc]
       }
       break
     }
     case 'bgzipFasta': {
-      let sequenceLocation = await resolveFileLocation(
-        argsSequence,
-        !(runFlags.skipCheck || runFlags.force),
-        runFlags.load === 'inPlace',
-      )
-      debug(`compressed FASTA location resolved to: ${sequenceLocation}`)
-      let indexLocation = await resolveFileLocation(
-        runFlags.faiLocation || `${sequenceLocation}.fai`,
-        !(runFlags.skipCheck || runFlags.force),
-        runFlags.load === 'inPlace',
-      )
-      debug(`compressed FASTA index location resolved to: ${indexLocation}`)
-      let bgzipIndexLocation = await resolveFileLocation(
-        runFlags.gziLocation || `${sequenceLocation}.gzi`,
-        !(runFlags.skipCheck || runFlags.force),
-        runFlags.load === 'inPlace',
-      )
-      debug(`bgzip index location resolved to: ${bgzipIndexLocation}`)
+      const faiLoc = faiLocation || `${argsSequence}.fai`
+      const gziLoc = gziLocation || `${argsSequence}.gzi`
+      debug(`bgzipFASTA: ${argsSequence}, fai: ${faiLoc}, gzi: ${gziLoc}`)
       if (!name) {
         name = path.basename(
-          sequenceLocation,
-          sequenceLocation.endsWith('.fasta.gz') ? '.fasta.gz' : '.fa.gz',
+          argsSequence,
+          argsSequence.endsWith('.fasta.gz') ? '.fasta.gz' : '.fa.gz',
         )
         debug(`Guessing name: ${name}`)
-      }
-      const loaded = runFlags.load
-        ? await loadData({
-            load: runFlags.load,
-            filePaths: [sequenceLocation, indexLocation, bgzipIndexLocation],
-            destination: target,
-          })
-        : false
-      if (loaded) {
-        sequenceLocation = path.basename(sequenceLocation)
-        indexLocation = path.basename(indexLocation)
-        bgzipIndexLocation = path.basename(bgzipIndexLocation)
       }
       sequence = {
         type: 'ReferenceSequenceTrack',
         trackId: `${name}-ReferenceSequenceTrack`,
         adapter: {
           type: 'BgzipFastaAdapter',
-          fastaLocation: {
-            uri: sequenceLocation,
-            locationType: 'UriLocation',
-          },
-          faiLocation: { uri: indexLocation, locationType: 'UriLocation' },
-          gziLocation: {
-            uri: bgzipIndexLocation,
-            locationType: 'UriLocation',
-          },
+          fastaLocation: { uri: mapLoc(argsSequence), locationType: 'UriLocation' },
+          faiLocation: { uri: mapLoc(faiLoc), locationType: 'UriLocation' },
+          gziLocation: { uri: mapLoc(gziLoc), locationType: 'UriLocation' },
         },
+      }
+      if (load) {
+        filesToLoad = [argsSequence, faiLoc, gziLoc]
       }
       break
     }
     case 'twoBit': {
-      let sequenceLocation = await resolveFileLocation(
-        argsSequence,
-        !(runFlags.skipCheck || runFlags.force),
-        runFlags.load === 'inPlace',
-      )
-      debug(`2bit location resolved to: ${sequenceLocation}`)
+      debug(`2bit: ${argsSequence}`)
       if (!name) {
-        name = path.basename(sequenceLocation, '.2bit')
+        name = path.basename(argsSequence, '.2bit')
         debug(`Guessing name: ${name}`)
-      }
-      const loaded = runFlags.load
-        ? await loadData({
-            load: runFlags.load,
-            filePaths: [sequenceLocation],
-            destination: target,
-          })
-        : false
-      if (loaded) {
-        sequenceLocation = path.basename(sequenceLocation)
       }
       sequence = {
         type: 'ReferenceSequenceTrack',
         trackId: `${name}-ReferenceSequenceTrack`,
         adapter: {
           type: 'TwoBitAdapter',
-          twoBitLocation: {
-            uri: sequenceLocation,
-            locationType: 'UriLocation',
-          },
+          twoBitLocation: { uri: mapLoc(argsSequence), locationType: 'UriLocation' },
         },
+      }
+      if (load) {
+        filesToLoad = [argsSequence]
       }
       break
     }
     case 'chromSizes': {
-      let sequenceLocation = await resolveFileLocation(
-        argsSequence,
-        !(runFlags.skipCheck || runFlags.force),
-        runFlags.load === 'inPlace',
-      )
-      debug(`chrom.sizes location resolved to: ${sequenceLocation}`)
+      debug(`chrom.sizes: ${argsSequence}`)
       if (!name) {
-        name = path.basename(sequenceLocation, '.chrom.sizes')
+        name = path.basename(argsSequence, '.chrom.sizes')
         debug(`Guessing name: ${name}`)
-      }
-      const loaded = runFlags.load
-        ? await loadData({
-            load: runFlags.load,
-            filePaths: [sequenceLocation],
-            destination: target,
-          })
-        : false
-      if (loaded) {
-        sequenceLocation = path.basename(sequenceLocation)
       }
       sequence = {
         type: 'ReferenceSequenceTrack',
@@ -308,10 +201,13 @@ export async function getAssembly({
         adapter: {
           type: 'ChromSizesAdapter',
           chromSizesLocation: {
-            uri: sequenceLocation,
+            uri: mapLoc(argsSequence),
             locationType: 'UriLocation',
           },
         },
+      }
+      if (load) {
+        filesToLoad = [argsSequence]
       }
       break
     }
@@ -344,98 +240,55 @@ export async function getAssembly({
     }
   }
 
-  return { name, sequence }
-}
-
-export async function exists(s: string): Promise<boolean> {
-  try {
-    await fs.promises.access(s, fs.constants.F_OK)
-    return true
-  } catch {
-    return false
-  }
+  return { assembly: { name, sequence }, filesToLoad }
 }
 
 export async function resolveTargetPath(output: string): Promise<string> {
-  if (!(await exists(output))) {
+  const stat = await fs.promises.stat(output).catch(() => null)
+  if (!stat) {
     const dir = output.endsWith('.json') ? path.dirname(output) : output
     await fs.promises.mkdir(dir, { recursive: true })
   }
+  const finalStat = stat ?? (await fs.promises.stat(output).catch(() => null))
+  return finalStat?.isDirectory() ? path.join(output, 'config.json') : output
+}
 
-  let isDir = false
-  try {
-    isDir = fs.statSync(output).isDirectory()
-  } catch (e) {}
-
-  return isDir ? path.join(output, 'config.json') : output
+async function resolveRefNameAliasAdapter(runFlags: AssemblyFlags) {
+  if (runFlags.refNameAliasesType === 'custom') {
+    const config = await readInlineOrFileJson<{ type: string }>(
+      runFlags.refNameAliases!,
+    )
+    if (!config.type) {
+      throw new Error(
+        `No "type" specified in refNameAliases adapter "${JSON.stringify(config)}"`,
+      )
+    }
+    debug(`Adding custom refNameAliases config: ${JSON.stringify(config)}`)
+    return config
+  }
+  const location = mapLocationForFiles(runFlags.refNameAliases!, runFlags.load)
+  debug(`refName aliases file location: ${location}`)
+  return {
+    type: 'RefNameAliasAdapter',
+    location: { uri: location, locationType: 'UriLocation' },
+  }
 }
 
 export async function enhanceAssembly(
   assembly: Assembly,
-  runFlags: any,
+  runFlags: AssemblyFlags,
 ): Promise<Assembly> {
-  const enhancedAssembly = { ...assembly }
-
-  if (runFlags.alias?.length) {
-    debug(`Adding assembly aliases: ${runFlags.alias}`)
-    enhancedAssembly.aliases = runFlags.alias
+  return {
+    ...assembly,
+    ...(runFlags.alias?.length && { aliases: runFlags.alias }),
+    ...(runFlags.refNameColors && {
+      refNameColors: runFlags.refNameColors.split(',').map(c => c.trim()),
+    }),
+    ...(runFlags.displayName && { displayName: runFlags.displayName }),
+    ...(runFlags.refNameAliases && {
+      refNameAliases: { adapter: await resolveRefNameAliasAdapter(runFlags) },
+    }),
   }
-
-  if (runFlags.refNameColors) {
-    enhancedAssembly.refNameColors = runFlags.refNameColors
-      .split(',')
-      .map((color: string) => color.trim())
-  }
-
-  if (runFlags.refNameAliases) {
-    if (
-      runFlags.refNameAliasesType &&
-      runFlags.refNameAliasesType === 'custom'
-    ) {
-      const refNameAliasesConfig = await readInlineOrFileJson<{ type: string }>(
-        runFlags.refNameAliases,
-      )
-      if (!refNameAliasesConfig.type) {
-        throw new Error(
-          `No "type" specified in refNameAliases adapter "${JSON.stringify(
-            refNameAliasesConfig,
-          )}"`,
-        )
-      }
-      debug(
-        `Adding custom refNameAliases config: ${JSON.stringify(
-          refNameAliasesConfig,
-        )}`,
-      )
-      enhancedAssembly.refNameAliases = {
-        adapter: refNameAliasesConfig,
-      }
-    } else {
-      const refNameAliasesLocation = await resolveFileLocation(
-        runFlags.refNameAliases,
-        !(runFlags.skipCheck || runFlags.force),
-        runFlags.load === 'inPlace',
-      )
-      debug(
-        `refName aliases file location resolved to: ${refNameAliasesLocation}`,
-      )
-      enhancedAssembly.refNameAliases = {
-        adapter: {
-          type: 'RefNameAliasAdapter',
-          location: {
-            uri: refNameAliasesLocation,
-            locationType: 'UriLocation',
-          },
-        },
-      }
-    }
-  }
-
-  if (runFlags.displayName) {
-    enhancedAssembly.displayName = runFlags.displayName
-  }
-
-  return enhancedAssembly
 }
 
 export function createDefaultConfig(): Config {
@@ -472,14 +325,14 @@ export async function addAssemblyToConfig({
 }: {
   config: Config
   assembly: Assembly
-  runFlags: any
+  runFlags: AssemblyFlags
 }): Promise<{ config: Config; wasOverwritten: boolean }> {
   const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
-    items: config.assemblies || [],
+    items: config.assemblies ?? [],
     newItem: assembly,
     idField: 'name',
     getId: item => item.name,
-    allowOverwrite: runFlags.overwrite || runFlags.force || false,
+    force: runFlags.force ?? false,
     itemType: 'assembly',
   })
 
@@ -487,24 +340,4 @@ export async function addAssemblyToConfig({
     config: { ...config, assemblies: updatedItems },
     wasOverwritten,
   }
-}
-
-export async function saveConfigAndReport({
-  config,
-  target,
-  assembly,
-  wasOverwritten,
-}: {
-  config: Config
-  target: string
-  assembly: Assembly
-  wasOverwritten: boolean
-}): Promise<void> {
-  await saveConfigAndReportBase({
-    config,
-    target,
-    itemType: 'assembly',
-    itemName: assembly.name,
-    wasOverwritten,
-  })
 }

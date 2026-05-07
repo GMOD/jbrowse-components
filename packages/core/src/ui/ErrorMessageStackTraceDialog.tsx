@@ -165,7 +165,7 @@ export default function ErrorMessageStackTraceDialog({
           color="secondary"
           onClick={async () => {
             const { default: copy } = await import('copy-to-clipboard')
-            copy(errorBoxText)
+            await copy(errorBoxText)
             setClicked(true)
             setTimeout(() => {
               setClicked(false)

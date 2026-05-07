@@ -107,7 +107,7 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
     const childType = getChildType(map)
     if (isReferenceType(childType)) {
       // filter the map members
-      for (const key in map.keys()) {
+      for (const key of map.keys()) {
         if (!isValidReference(() => map.get(key))) {
           map.delete(key)
         }
@@ -143,13 +143,16 @@ export function addRelativeUris(
   }
 }
 
-export interface Root {
-  configuration?: Record<string, unknown>
-}
-
 // raw readConf alternative for before conf is initialized
-export function readConf({ configuration }: Root, attr: string, def: string) {
-  return configuration?.[attr] || def
+export function readConf(
+  root: Record<string, unknown> | undefined,
+  attr: string,
+  def: string,
+) {
+  const configuration = root?.configuration as
+    | Record<string, unknown>
+    | undefined
+  return configuration?.[attr] ?? def
 }
 
 export { checkPlugins, fetchPlugins } from './checkPlugins.ts'
@@ -158,9 +161,13 @@ export function removeAttr(obj: Record<string, unknown>, attr: string) {
   for (const prop in obj) {
     if (prop === attr) {
       delete obj[prop]
-    } else if (typeof obj[prop] === 'object') {
+    } else if (typeof obj[prop] === 'object' && obj[prop] !== null) {
       removeAttr(obj[prop] as Record<string, unknown>, attr)
     }
   }
   return obj
+}
+
+export const reloadPage = () => {
+  window.location.reload()
 }

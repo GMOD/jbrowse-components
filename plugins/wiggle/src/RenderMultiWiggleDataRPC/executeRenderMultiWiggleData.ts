@@ -53,11 +53,9 @@ export async function executeRenderMultiWiggleData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  let sourcesList: SourceInfo[] = sourcesArg || []
-  if (sourcesList.length === 0) {
-    const adapterSources = await dataAdapter.getSources([region])
-    sourcesList = adapterSources
-  }
+  const sourcesList: SourceInfo[] = sourcesArg?.length
+    ? sourcesArg
+    : await dataAdapter.getSources([region])
 
   const fetchOpts = { bpPerPx, resolution }
   const featuresArray = await updateStatus(
@@ -71,11 +69,9 @@ export async function executeRenderMultiWiggleData({
 
   checkStopToken2(stopTokenCheck)
 
-  const regionStart = Math.floor(region.start)
-
   const featuresBySource = new Map<string, typeof featuresArray>()
   for (const feature of featuresArray) {
-    const source = feature.get('source') || 'default'
+    const source = feature.get('source') ?? 'default'
     const existing = featuresBySource.get(source)
     if (existing) {
       existing.push(feature)
@@ -84,22 +80,16 @@ export async function executeRenderMultiWiggleData({
     }
   }
 
-  const sourceNames =
+  const orderedSources: SourceInfo[] =
     sourcesList.length > 0
-      ? sourcesList.map(s => s.name)
-      : Array.from(featuresBySource.keys())
+      ? sourcesList
+      : Array.from(featuresBySource.keys(), name => ({ name }))
 
   return {
-    regionStart,
-    sources: sourceNames.map(sourceName => {
-      const features = featuresBySource.get(sourceName) || []
-      const sourceInfo = sourcesList.find(s => s.name === sourceName)
-      const color = sourceInfo?.color
-      return {
-        name: sourceName,
-        color,
-        ...processFeatures(features, regionStart, bicolorPivot),
-      }
-    }),
+    sources: orderedSources.map(({ name, color }) => ({
+      name,
+      color,
+      ...processFeatures(featuresBySource.get(name) ?? [], bicolorPivot),
+    })),
   }
 }

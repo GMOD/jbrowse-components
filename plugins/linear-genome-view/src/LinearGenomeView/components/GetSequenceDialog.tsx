@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { complement, reverse, toLocale } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -122,7 +122,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
     >
       <DialogContent>
         {error ? (
-          <ErrorMessage error={error} />
+          <ErrorBanner error={error} />
         ) : loading ? (
           <LoadingEllipses message="Retrieving sequences" />
         ) : null}
@@ -180,7 +180,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         <Button
           onClick={async () => {
             const { default: copy } = await import('copy-to-clipboard')
-            copy(sequence)
+            await copy(sequence)
             setCopied(true)
             setTimeout(() => {
               setCopied(false)
@@ -194,8 +194,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         </Button>
         <Button
           onClick={async () => {
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
-            const { saveAs } = await import('file-saver-es')
+            const { saveAs } = await import('@jbrowse/core/util')
             saveAs(
               new Blob([sequence || ''], {
                 type: 'text/x-fasta;charset=utf-8',

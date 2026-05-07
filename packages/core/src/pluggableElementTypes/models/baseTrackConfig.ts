@@ -12,7 +12,7 @@ interface BasicTrack {
   displays?: {
     type: string
     displayId?: string
-    renderer?: { type: string; [key: string]: unknown }
+    renderer?: { type: string; height?: unknown; [key: string]: unknown }
     [key: string]: unknown
   }[]
 }
@@ -215,23 +215,25 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
                   ...d,
                   displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
                 }
-              }
-              // Promote renderer properties to display level so they
-              // survive even when the renderer type is no longer registered.
-              // Rename 'height' to 'featureHeight' to avoid collision with
-              // the display-level track height setting.
-              const {
-                type: _rendererType,
-                height: rendererHeight,
-                ...rendererProps
-              } = renderer ?? {}
-              return {
-                ...rendererProps,
-                ...(rendererHeight !== undefined
-                  ? { featureHeight: rendererHeight }
-                  : undefined),
-                ...rest,
-                displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
+              } else if (renderer) {
+                const {
+                  type: _rendererType,
+                  height: rendererHeight,
+                  ...rendererProps
+                } = renderer
+                return {
+                  ...rendererProps,
+                  ...(rendererHeight !== undefined
+                    ? { featureHeight: rendererHeight }
+                    : undefined),
+                  ...rest,
+                  displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
+                }
+              } else {
+                return {
+                  ...rest,
+                  displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
+                }
               }
             }),
         }
@@ -246,10 +248,10 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         addDisplayConf(conf: { type: string; displayId: string }) {
           const { type } = conf
           if (!type) {
-            throw new Error(`unknown display type ${type}`)
+            throw new Error('display type not specified')
           }
           const display = self.displays.find(
-            (d: any) => d?.displayId === conf.displayId,
+            (d: { displayId?: string }) => d.displayId === conf.displayId,
           )
           if (display) {
             return display

@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, PluggableComponent } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import { AppBar, Paper, Toolbar, Typography } from '@mui/material'
@@ -26,17 +26,12 @@ const ModalWidget = observer(function ModalWidget({
   if (!visibleWidget) {
     return null
   }
-  const { ReactComponent, HeadingComponent, heading } =
-    pluginManager.getWidgetType(visibleWidget.type)
+  const widgetType = pluginManager.getWidgetType(visibleWidget.type)
+  if (!widgetType) {
+    throw new Error(`unknown widget type ${visibleWidget.type}`)
+  }
+  const { ReactComponent, HeadingComponent, heading } = widgetType
 
-  const Component = pluginManager.evaluateExtensionPoint(
-    'Core-replaceWidget',
-    ReactComponent,
-    {
-      session,
-      model: visibleWidget,
-    },
-  ) as React.FC<any>
   return (
     <Dialog
       open
@@ -58,12 +53,17 @@ const ModalWidget = observer(function ModalWidget({
     >
       <Suspense fallback={<div>Loading...</div>}>
         <Paper className={classes.paper}>
-          <Component
-            model={visibleWidget}
-            session={session}
-            overrideDimensions={{
-              height: (window.innerHeight * 5) / 8,
-              width: 800,
+          <PluggableComponent
+            pluginManager={pluginManager}
+            name="Core-replaceWidget"
+            component={ReactComponent}
+            props={{
+              model: visibleWidget,
+              session,
+              overrideDimensions: {
+                height: (window.innerHeight * 5) / 8,
+                width: 800,
+              },
             }}
           />
         </Paper>

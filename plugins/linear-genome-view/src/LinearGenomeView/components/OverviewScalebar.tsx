@@ -74,6 +74,14 @@ const useStyles = makeStyles()(theme => ({
     width: '100%',
     position: 'absolute',
   },
+  elidedOverviewBlock: {
+    backgroundColor: '#999',
+    backgroundImage:
+      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+  },
+  cytoSvg: {
+    width: '100%',
+  },
 }))
 
 type LGV = LinearGenomeViewModel
@@ -119,7 +127,7 @@ const OverviewBox = observer(function OverviewBox({
             width: block.widthPx,
           }}
         >
-          <svg style={{ width: '100%' }}>
+          <svg className={classes.cytoSvg}>
             <Cytobands overview={overview} assembly={assembly} block={block} />
           </svg>
         </div>
@@ -183,12 +191,12 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
     overview.bpToPx({
       refName: first.refName,
       coord: first.reversed ? first.end : first.start,
-    }) || 0
+    }) ?? 0
   const lastOverviewPx =
     overview.bpToPx({
       refName: last.refName,
       coord: last.reversed ? last.start : last.end,
-    }) || 0
+    }) ?? 0
 
   const color = showCytobands ? '#f00' : scalebarColor
   const transparency = showCytobands ? 0.1 : 0.3
@@ -238,13 +246,10 @@ const Scalebar = observer(function Scalebar({
         return !(block.type === 'ContentBlock') ? (
           <div
             key={`${JSON.stringify(block)}-${idx}`}
-            className={classes.scalebarContig}
+            className={cx(classes.scalebarContig, classes.elidedOverviewBlock)}
             style={{
               width: block.widthPx,
               transform: `translateX(${block.offsetPx}px)`,
-              backgroundColor: '#999',
-              backgroundImage:
-                'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
             }}
           />
         ) : (

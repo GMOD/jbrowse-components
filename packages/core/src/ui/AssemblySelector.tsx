@@ -66,7 +66,7 @@ const AssemblySelector = observer(function AssemblySelector({
 
   const error = assemblyNames.length ? '' : 'No configured assemblies'
   const { slotProps: textFieldSlotProps, ...restTextFieldProps } =
-    TextFieldProps || {}
+    TextFieldProps ?? {}
   return (
     <TextField
       select

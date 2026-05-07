@@ -1,9 +1,9 @@
-import { useState } from 'react'
-
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 import { FormGroup, ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -13,6 +13,7 @@ import ColorLegend from './ColorLegend.tsx'
 import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
 import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
 
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
@@ -22,6 +23,9 @@ const useStyles = makeStyles()({
   },
   inline: {
     display: 'inline-flex',
+  },
+  vertical: {
+    flexDirection: 'column' as const,
   },
   searchBoxContainer: {
     display: 'flex',
@@ -42,11 +46,17 @@ const Header = observer(function Header({
 }) {
   const { classes } = useStyles()
   const { views, levels, showDynamicControls } = model
-  const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
-  const [sideBySide, setSideBySide] = useState(views.length <= 3)
+  const [showSearchBoxes, setShowSearchBoxes] = useLocalStorage(
+    'lcv-showSearchBoxes',
+    views.length <= 3,
+  )
+  const [sideBySide, setSideBySide] = useLocalStorage(
+    'lcv-sideBySide',
+    views.length <= 3,
+  )
 
-  // Check if we have any displays to show sliders
   const hasDisplays = levels[0]?.tracks[0]?.displays[0]
+  const syntenyModel = model as LinearSyntenyViewModel
 
   return (
     <FormGroup row className={classes.header}>
@@ -88,6 +98,7 @@ const Header = observer(function Header({
           ...model.headerMenuItems(),
           {
             label: 'Show...',
+            icon: VisibilityIcon,
             subMenu: [
               ...model.showMenuItems(),
               {
@@ -99,20 +110,25 @@ const Header = observer(function Header({
                 },
               },
               {
-                label: 'Search box orientation - Side-by-side',
-                type: 'radio' as const,
-                checked: sideBySide,
-                onClick: () => {
-                  setSideBySide(!sideBySide)
-                },
-              },
-              {
-                label: 'Search box orientation - Vertical',
-                type: 'radio' as const,
-                checked: !sideBySide,
-                onClick: () => {
-                  setSideBySide(!sideBySide)
-                },
+                label: 'Search box orientation',
+                subMenu: [
+                  {
+                    label: 'Side-by-side',
+                    type: 'radio' as const,
+                    checked: sideBySide,
+                    onClick: () => {
+                      setSideBySide(true)
+                    },
+                  },
+                  {
+                    label: 'Vertical',
+                    type: 'radio' as const,
+                    checked: !sideBySide,
+                    onClick: () => {
+                      setSideBySide(false)
+                    },
+                  },
+                ],
               },
             ],
           },
@@ -135,15 +151,15 @@ const Header = observer(function Header({
 
       {hasDisplays && showDynamicControls ? (
         <>
-          <ColorBySelector model={model} />
-          <ColorLegend model={model} />
-          <SyntenySettingsPopover model={model} />
+          <ColorBySelector model={syntenyModel} />
+          <ColorLegend model={syntenyModel} />
+          <SyntenySettingsPopover model={syntenyModel} />
         </>
       ) : null}
 
       {showSearchBoxes ? (
         <span
-          className={`${classes.searchBoxContainer} ${sideBySide ? classes.inline : ''}`}
+          className={`${classes.searchBoxContainer} ${sideBySide ? classes.inline : classes.vertical}`}
         >
           {views.map(view => (
             <HeaderSearchBoxes key={view.id} view={view} />

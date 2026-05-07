@@ -1,10 +1,5 @@
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-} from '@mui/material'
+import { ConfirmDialog } from '@jbrowse/core/ui'
+import { DialogContentText } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -24,33 +19,21 @@ const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
 }) {
   const { connectionConf, name } = deleteDialogDetails
   return (
-    <Dialog open title={`Delete connection "${name}"`} onClose={handleClose}>
-      <DialogContent>
-        <DialogContentText>
-          Are you sure you want to delete this connection?
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            handleClose()
-          }}
-          color="primary"
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            session.deleteConnection?.(connectionConf)
-            handleClose()
-          }}
-        >
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open
+      title={`Delete connection "${name}"`}
+      submitText="Delete"
+      onCancel={handleClose}
+      onSubmit={() => {
+        session.deleteConnection?.(connectionConf)
+        handleClose()
+      }}
+    >
+      <DialogContentText>
+        This will remove the connection and all of its tracks from the session.
+        The underlying data source will not be modified.
+      </DialogContentText>
+    </ConfirmDialog>
   )
 })
 

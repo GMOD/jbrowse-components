@@ -433,7 +433,7 @@ function generateFromConfigTrackConfig(
   jb1TrackConfig: Track,
   jb2TrackConfig: Jb2Track,
 ): Jb2Track {
-  const jb1Features = jb1TrackConfig.features || []
+  const jb1Features = jb1TrackConfig.features ?? []
   const jb2Features = jb1Features.map((feature): Jb2Feature => {
     const jb2Feature: Jb2Feature = JSON.parse(JSON.stringify(feature))
     jb2Feature.refName = feature.seq_id
@@ -495,7 +495,7 @@ export async function createRefSeqsAdapter(
     return refSeqAdapterFromConfig(refSeqsData)
   }
   if ('data' in refSeqs) {
-    return refSeqAdapterFromConfig(refSeqs.data || [])
+    return refSeqAdapterFromConfig(refSeqs.data ?? [])
   }
   throw new Error(
     `Could not determine adapter for JBrowse1 refSeqs: ${

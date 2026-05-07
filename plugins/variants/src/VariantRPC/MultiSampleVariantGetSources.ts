@@ -1,29 +1,15 @@
+import { isFeatureAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import type { CellDataResult } from './executeVariantCellData.ts'
+import type { MultiSampleVariantGetSourcesArgs } from './types.ts'
 import type { Source } from '../shared/types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MultiSampleVariantGetSources: {
-      args: Record<string, unknown>
+      args: MultiSampleVariantGetSourcesArgs
       return: Source[]
-    }
-    MultiSampleVariantGetCellData: {
-      args: Record<string, unknown>
-      return: CellDataResult
-    }
-    MultiSampleVariantClusterGenotypeMatrix: {
-      args: Record<string, unknown>
-      return: { order: number[]; tree: string }
-    }
-    MultiSampleVariantGetGenotypeMatrix: {
-      args: Record<string, unknown>
-      return: Record<string, number[]>
     }
   }
 }
@@ -32,14 +18,7 @@ export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRen
   name = 'MultiSampleVariantGetSources'
 
   async execute(
-    args: {
-      adapterConfig: AnyConfigurationModel
-      stopToken?: StopToken
-      sessionId: string
-      headers?: Record<string, string>
-      regions: Region[]
-      bpPerPx: number
-    },
+    args: MultiSampleVariantGetSourcesArgs,
     rpcDriverClassName: string,
   ) {
     const deserializedArgs = await this.deserializeArguments(
@@ -52,8 +31,9 @@ export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRen
       sessionId,
       adapterConfig,
     )
-
-    // @ts-expect-error
-    return dataAdapter.getSources(regions, deserializedArgs)
+    if (!isFeatureAdapter(dataAdapter)) {
+      throw new Error('Expected a feature data adapter')
+    }
+    return dataAdapter.getSources(regions ?? [])
   }
 }

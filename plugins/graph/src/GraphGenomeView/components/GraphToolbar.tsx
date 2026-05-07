@@ -1,3 +1,4 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import ZoomOutIcon from '@mui/icons-material/ZoomOut'
@@ -6,10 +7,19 @@ import { observer } from 'mobx-react'
 
 import ColorSchemeSelect from './ColorSchemeSelect.tsx'
 import GraphStats from './GraphStats.tsx'
-import LinearLayoutToggle from './LinearLayoutToggle.tsx'
 import SettingsMenu from './SettingsMenu.tsx'
 
 import type { GraphGenomeViewModel } from '../model.ts'
+
+const useStyles = makeStyles()({
+  toolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    padding: '2px 4px',
+    borderBottom: '1px solid #ddd',
+  },
+})
 
 const ZoomDisplay = observer(function ZoomDisplay({
   model,
@@ -21,28 +31,18 @@ const ZoomDisplay = observer(function ZoomDisplay({
 
 const GraphToolbar = observer(function GraphToolbar({
   model,
-  canvasHeight,
 }: {
   model: GraphGenomeViewModel
-  canvasHeight: number
 }) {
+  const { classes } = useStyles()
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: '2px 4px',
-        borderBottom: '1px solid #ddd',
-      }}
-    >
+    <div className={classes.toolbar}>
       <ColorSchemeSelect model={model} />
-      <LinearLayoutToggle model={model} />
       <Tooltip title="Zoom in">
         <IconButton
           size="small"
           onClick={() => {
-            model.zoom(1.5, model.width / 2, canvasHeight / 2)
+            model.zoom(1.5, model.width / 2, model.canvasHeight / 2)
           }}
         >
           <ZoomInIcon />
@@ -52,7 +52,7 @@ const GraphToolbar = observer(function GraphToolbar({
         <IconButton
           size="small"
           onClick={() => {
-            model.zoom(1 / 1.5, model.width / 2, canvasHeight / 2)
+            model.zoom(1 / 1.5, model.width / 2, model.canvasHeight / 2)
           }}
         >
           <ZoomOutIcon />
@@ -62,7 +62,7 @@ const GraphToolbar = observer(function GraphToolbar({
         <IconButton
           size="small"
           onClick={() => {
-            model.zoomToFit(canvasHeight)
+            model.zoomToFit()
           }}
         >
           <CropFreeIcon />

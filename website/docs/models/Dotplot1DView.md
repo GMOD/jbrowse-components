@@ -31,7 +31,7 @@ this uses padding=false and elision=false
 
 ```js
 // type
-any
+BlockSet
 ```
 
 #### getter: scaleFactor

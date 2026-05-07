@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
@@ -10,6 +10,7 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import { buildClusteredLayout } from '@jbrowse/tree-sidebar'
 import {
   Button,
   DialogActions,
@@ -20,7 +21,6 @@ import {
 import { observer } from 'mobx-react'
 
 import type { ReducedModel } from './types.ts'
-import type { Source } from '../../../util.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -87,7 +87,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
               </Button>
             </div>
           ) : null}
-          {error ? <ErrorMessage error={error} /> : null}
+          {error ? <ErrorBanner error={error} /> : null}
         </div>
       </DialogContent>
       <DialogActions>
@@ -125,27 +125,14 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                   },
                 )
 
-                const currentLayout = model.layout.length
-                  ? model.layout
-                  : sourcesWithoutLayout
-                const sourcesByName = Object.fromEntries(
-                  currentLayout.map((s: Source) => [s.name, s]),
+                model.setLayoutAndClusterTree(
+                  buildClusteredLayout(
+                    sourcesWithoutLayout,
+                    model.layout,
+                    ret.order,
+                  ),
+                  ret.tree,
                 )
-
-                model.setLayout(
-                  ret.order.map(idx => {
-                    const sourceItem = sourcesWithoutLayout[idx]
-                    if (!sourceItem) {
-                      throw new Error(`out of bounds at ${idx}`)
-                    }
-                    return {
-                      ...sourceItem,
-                      ...sourcesByName[sourceItem.name],
-                    }
-                  }),
-                  false,
-                )
-                model.setClusterTree(ret.tree)
               }
               handleClose()
             } catch (e) {

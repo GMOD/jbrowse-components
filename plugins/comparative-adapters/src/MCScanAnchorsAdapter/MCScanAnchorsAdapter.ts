@@ -31,12 +31,10 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   async setup(opts: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
   async setupPre(opts: BaseOptions) {
@@ -141,10 +139,4 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the foreseeable future and can be purged
-   * from caches, etc
-   */
 }

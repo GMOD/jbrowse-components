@@ -25,7 +25,7 @@ export default function CoreDetails(props: BaseProps) {
   const formattedFeat = { ...obj, ...obj.__jbrowsefmt }
   const { start, end } = formattedFeat
 
-  const displayedDetails: Record<string, any> = {
+  const displayedDetails: Record<string, unknown> = {
     ...formattedFeat,
     length: toLocale(end - start),
   }
@@ -43,15 +43,17 @@ export default function CoreDetails(props: BaseProps) {
         value={<Position {...props} feature={formattedFeat} />}
       />
       {Object.entries(coreRenderedDetails)
-        .map(([key, name]) => [name, displayedDetails[key]])
-        .filter(([, value]) => value != null)
-        .map(([name, value]) => (
-          <SimpleField
-            key={name}
-            name={name}
-            value={Array.isArray(value) ? value.join(', ') : value}
-          />
-        ))}
+        .filter(([key]) => displayedDetails[key] != null)
+        .map(([key, name]) => {
+          const value = displayedDetails[key]
+          return (
+            <SimpleField
+              key={name}
+              name={name}
+              value={Array.isArray(value) ? value.join(', ') : value}
+            />
+          )
+        })}
     </>
   )
 }

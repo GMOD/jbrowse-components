@@ -39,7 +39,7 @@ type: types.literal('LinearArcDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -87,9 +87,7 @@ any
 
 ```js
 // type
-{
-  displayMode: any
-}
+any
 ```
 
 ### LinearArcDisplay - Methods
@@ -105,7 +103,7 @@ renderProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => any[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 ### LinearArcDisplay - Actions

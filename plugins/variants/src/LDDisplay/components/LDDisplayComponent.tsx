@@ -1,39 +1,29 @@
-import {
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingView,
   max,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
-import Flatbush from '@jbrowse/core/util/flatbush'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import LDColorLegend from './LDColorLegend.tsx'
-import { LDRenderer, generateLDColorRamp } from './LDRenderer.ts'
+import { LDRenderer } from './LDRenderer.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './VariantLabels.tsx'
 import Wrapper from './Wrapper.tsx'
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
 
-import type { LDFlatbushItem } from '../../LDRenderer/types.ts'
+import type { LDFlatbushItem } from '../../RenderLDDataRPC/types.ts'
 import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-const SQRT2 = Math.sqrt(2)
+const SQRT2 = Math.SQRT2
 
 function LDTooltip({
   item,
@@ -191,14 +181,26 @@ function Crosshairs({
   )
 }
 
+function upperBound(arr: Float32Array, val: number) {
+  let lo = 0
+  let hi = arr.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (arr[mid]! <= val) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  return lo
+}
+
 function screenToUnrotated(
   screenX: number,
   screenY: number,
   yScalar: number,
-  lineZoneHeight: number,
 ): { x: number; y: number } {
-  const matrixY = screenY - lineZoneHeight
-  const scaledY = matrixY / yScalar
+  const scaledY = screenY / yScalar
   const x = (screenX - scaledY) / SQRT2
   const y = (screenX + scaledY) / SQRT2
   return { x, y }
@@ -254,11 +256,9 @@ const LDCanvas = observer(function LDCanvas({
   model: SharedLDModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
+  const width = view.totalWidthPxWithoutBorders
   const {
     rpcData,
-    flatbush,
-    flatbushItems,
     yScalar,
     cellWidth,
     showLegend,
@@ -270,9 +270,8 @@ const LDCanvas = observer(function LDCanvas({
     showRecombination,
     recombinationZoneHeight,
     snps,
-    lastDrawnOffsetPx,
     signedLD,
-    loading,
+    isLoading,
   } = model
 
   const triangleHeight = width / 2
@@ -284,7 +283,6 @@ const LDCanvas = observer(function LDCanvas({
     : lineZoneHeight
   const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
 
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
@@ -292,10 +290,7 @@ const LDCanvas = observer(function LDCanvas({
     y: number
   }>()
 
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
-    LDRenderer,
-  )
+  const { canvasRef, error, retry } = useGpuModelLifecycle(LDRenderer, model)
 
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx
@@ -309,14 +304,8 @@ const LDCanvas = observer(function LDCanvas({
       : undefined
 
   // Compute view transform for smooth zoom/scroll
-  const viewScale =
-    model.lastDrawnBpPerPx !== undefined
-      ? model.lastDrawnBpPerPx / view.bpPerPx
-      : 1
-  const viewOffsetX =
-    lastDrawnOffsetPx !== undefined
-      ? lastDrawnOffsetPx * viewScale - view.offsetPx
-      : 0
+  const { scale: viewScale, translateX: viewOffsetX } =
+    model.viewportTransform(view)
 
   useEffect(() => {
     if (
@@ -337,131 +326,66 @@ const LDCanvas = observer(function LDCanvas({
     }
   }, [genomicX1, genomicX2, model.showVerticalGuides, view, viewOffsetX])
 
-  const flatbushIndex = useMemo(
-    () => (flatbush ? Flatbush.from(flatbush) : null),
-    [flatbush],
-  )
-
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
+  const onMouseMove = (event: React.MouseEvent) => {
+    const container = containerRef.current
     const data = model.rpcData
-    if (!renderer || !data) {
-      return
-    }
-    const w = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
-    const scale =
-      model.lastDrawnBpPerPx !== undefined
-        ? model.lastDrawnBpPerPx / view.bpPerPx
-        : 1
-    const offsetX =
-      model.lastDrawnOffsetPx !== undefined
-        ? model.lastDrawnOffsetPx * scale - view.offsetPx
-        : 0
-    renderer.render({
-      yScalar: data.yScalar,
-      canvasWidth: w,
-      canvasHeight: model.fitToHeight ? model.ldCanvasHeight : w / 2,
-      signedLD: data.signedLD,
-      viewScale: scale,
-      viewOffsetX: offsetX,
-    })
-  })
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
+    if (!container || !data || isLoading) {
+      setHoveredItem(undefined)
+      setMousePosition(undefined)
       return
     }
 
-    let lastRpcData: unknown = null
-    let lastColorKey: string | undefined
+    const rect = container.getBoundingClientRect()
+    const mouseX = event.clientX - rect.left
+    const mouseY = event.clientY - rect.top
 
-    return autorun(() => {
-      const data = model.rpcData
-      if (!data) {
-        return
+    setMousePosition({ x: event.clientX, y: event.clientY })
+
+    if (mouseY < effectiveLineZoneHeight) {
+      setHoveredItem(undefined)
+      return
+    }
+
+    // Reverse the viewport transform, then un-rotate to get data-space coords
+    const dataScreenX = (mouseX - viewOffsetX) / viewScale
+    const dataScreenY = (mouseY - effectiveLineZoneHeight) / viewScale
+
+    const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar)
+
+    const { boundaries, ldValues } = data
+    const n = boundaries.length - 1
+
+    let hitI = -1
+    let hitJ = -1
+    if (useGenomicPositions) {
+      hitJ = upperBound(boundaries, x) - 1
+      hitI = upperBound(boundaries, y) - 1
+    } else {
+      const w = cellWidth
+      if (w > 0) {
+        hitJ = Math.floor(x / w)
+        hitI = Math.floor(y / w)
       }
+    }
 
-      if (lastRpcData !== data) {
-        lastRpcData = data
-        renderer.uploadData({
-          positions: data.positions,
-          cellSizes: data.cellSizes,
-          ldValues: data.ldValues,
-          numCells: data.numCells,
-        })
-      }
+    if (hitI > hitJ && hitI > 0 && hitJ >= 0 && hitI < n) {
+      const ldIdx = (hitI * (hitI - 1)) / 2 + hitJ
+      setHoveredItem({
+        i: hitI,
+        j: hitJ,
+        ldValue: ldValues[ldIdx]!,
+        snp1: snps[hitI]!,
+        snp2: snps[hitJ]!,
+      })
+    } else {
+      setHoveredItem(undefined)
+    }
+  }
 
-      const colorKey = `${data.metric},${data.signedLD}`
-      if (lastColorKey !== colorKey) {
-        lastColorKey = colorKey
-        renderer.uploadColorRamp(
-          generateLDColorRamp(data.metric, data.signedLD),
-        )
-      }
-
-      renderNow()
-    })
-  }, [model, view, ready, rendererRef])
-
-  useTabVisibilityRerender(renderNow)
-
-  const onMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      const container = containerRef.current
-      if (!container || !flatbushIndex || !flatbushItems.length || loading) {
-        setHoveredItem(undefined)
-        setMousePosition(undefined)
-        return
-      }
-
-      const rect = container.getBoundingClientRect()
-      const mouseX = event.clientX - rect.left
-      const mouseY = event.clientY - rect.top
-
-      setMousePosition({ x: event.clientX, y: event.clientY })
-
-      if (mouseY < effectiveLineZoneHeight) {
-        setHoveredItem(undefined)
-        return
-      }
-
-      // Reverse the shader transform to get data-space screen coordinates
-      const dataScreenX = (mouseX - viewOffsetX) / viewScale
-      const dataScreenY =
-        (mouseY - effectiveLineZoneHeight) / viewScale + effectiveLineZoneHeight
-
-      const { x, y } = screenToUnrotated(
-        dataScreenX,
-        dataScreenY,
-        yScalar,
-        effectiveLineZoneHeight,
-      )
-
-      const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
-
-      if (results.length > 0) {
-        const item = flatbushItems[results[0]!]
-        setHoveredItem(item)
-      } else {
-        setHoveredItem(undefined)
-      }
-    },
-    [
-      flatbushIndex,
-      flatbushItems,
-      yScalar,
-      effectiveLineZoneHeight,
-      viewScale,
-      viewOffsetX,
-      loading,
-    ],
-  )
-
-  const onMouseLeave = useCallback(() => {
+  const onMouseLeave = () => {
     setHoveredItem(undefined)
     setMousePosition(undefined)
-  }, [])
+  }
 
   if (error) {
     return (
@@ -563,7 +487,7 @@ const LDDisplayContent = observer(function LDDisplayContent({
   model: SharedLDModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
+  const width = view.totalWidthPxWithoutBorders
   const { height, showLDTriangle, showRecombination } = model
 
   if (!showLDTriangle && !showRecombination) {

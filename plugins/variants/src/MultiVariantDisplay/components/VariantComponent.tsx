@@ -1,25 +1,27 @@
-import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
-import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
+import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
-  useGpuRenderer,
-  useTabVisibilityRerender,
+  useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { VariantRenderer } from './VariantRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
-import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
+import {
+  VariantErrorBar,
+  VariantLoadingOverlay,
+} from '../../shared/components/VariantStatusOverlays.tsx'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { VariantCellData } from './computeVariantCells.ts'
+import type { VariantBackend } from './variantBackendTypes.ts'
 import type { VariantDisplayModelBase } from '../../shared/VariantDisplayModelInterface.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -29,13 +31,15 @@ interface PerRegionCellData {
 
 export interface VariantDisplayModel extends VariantDisplayModelBase {
   cellData: PerRegionCellData | undefined
-  cellDataLoading: boolean
+  isDisplayLoading: boolean
   statusMessage?: string
   canvasDrawn: boolean
-  setCanvasDrawn: (flag: boolean) => void
+  startGpuBackendLifecycle: (backend: VariantBackend) => void
+  stopGpuBackendLifecycle: () => void
+  renderNow: () => void
   visibleRegions: {
     refName: string
-    regionNumber: number
+    displayedRegionIndex: number
     start: number
     end: number
     reversed?: boolean
@@ -69,12 +73,12 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
     rowIndex: number
     genomicStart: number
     genomicEnd: number
-    regionNumber: number
+    displayedRegionIndex: number
   }
   model: VariantDisplayModel
 }) {
   const region = model.visibleRegions.find(
-    r => r.regionNumber === cell.regionNumber,
+    r => r.displayedRegionIndex === cell.displayedRegionIndex,
   )
   if (!region) {
     return null
@@ -123,25 +127,24 @@ const VariantComponent = observer(function VariantComponent({
         rowIndex: number
         genomicStart: number
         genomicEnd: number
-        regionNumber: number
+        displayedRegionIndex: number
       }
     | undefined
   >()
   const lastHoveredRef = useRef<string | undefined>(undefined)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const flatbushCacheRef = useRef(new WeakMap<ArrayBuffer, Flatbush>())
   const { classes } = useStyles()
 
-  const { error, ready, rendererRef, retry } = useGpuRenderer(
-    canvasRef,
+  const { canvas, canvasRef, error, retry } = useGpuModelLifecycle(
     VariantRenderer,
+    model,
   )
 
   const view = getContainingView(model) as LGV
 
   const { hasOverflow, thumbHeight, thumbTop, handleScrollbarMouseDown } =
     useVariantVirtualScroll({
-      canvasRef,
+      canvas,
       scrollTop: model.scrollTop,
       setScrollTop: model.setScrollTop,
       totalHeight: model.totalHeight,
@@ -151,68 +154,6 @@ const VariantComponent = observer(function VariantComponent({
       nrow: model.nrow,
       setRowHeight: model.setRowHeight,
     })
-
-  const renderNow = useEffectEvent(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !view.initialized) {
-      return
-    }
-    const regions = model.visibleRegions
-    if (regions.length === 0) {
-      return
-    }
-    const blocks = regions.map(r => ({
-      regionNumber: r.regionNumber,
-      bpRangeX: [r.start, r.end] as [number, number],
-      screenStartPx: r.screenStartPx,
-      screenEndPx: r.screenEndPx,
-      reversed: r.reversed ?? false,
-    }))
-    renderer.renderBlocks(blocks, {
-      canvasWidth: view.trackWidthPx,
-      canvasHeight: model.availableHeight,
-      rowHeight: model.rowHeight,
-      scrollTop: model.scrollTop,
-    })
-  })
-
-  useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !ready) {
-      return
-    }
-
-    let lastCellData: PerRegionCellData | null = null
-    return autorun(() => {
-      if (!view.initialized) {
-        return
-      }
-
-      const cellData = model.cellData
-      if (!cellData) {
-        lastCellData = null
-        return
-      }
-
-      if (lastCellData !== cellData) {
-        lastCellData = cellData
-        const activeRegions: number[] = []
-        for (const [regionNumStr, regionData] of Object.entries(
-          cellData.perRegionCellData,
-        )) {
-          const regionNum = Number(regionNumStr)
-          activeRegions.push(regionNum)
-          renderer.uploadRegion(regionNum, regionData)
-        }
-        renderer.pruneStaleRegions(activeRegions)
-      }
-
-      renderNow()
-      model.setCanvasDrawn(true)
-    })
-  }, [model, view, ready, rendererRef])
-
-  useTabVisibilityRerender(renderNow)
 
   function getFeatureUnderMouse(
     rect: DOMRect,
@@ -234,7 +175,8 @@ const VariantComponent = observer(function VariantComponent({
       return undefined
     }
 
-    const regionCellData = cellData.perRegionCellData[region.regionNumber]
+    const regionCellData =
+      cellData.perRegionCellData[region.displayedRegionIndex]
     if (!regionCellData) {
       return undefined
     }
@@ -267,12 +209,13 @@ const VariantComponent = observer(function VariantComponent({
     let bestIdx = -1
     let bestDist = Infinity
     for (const idx of hits) {
-      const item = regionCellData.flatbushItems[idx]!
+      const gStart = regionCellData.flatbushGenomicStarts[idx]!
+      const gEnd = regionCellData.flatbushGenomicEnds[idx]!
       const dx =
-        genomicPos < item.genomicStart
-          ? item.genomicStart - genomicPos
-          : genomicPos > item.genomicEnd
-            ? genomicPos - item.genomicEnd
+        genomicPos < gStart
+          ? gStart - genomicPos
+          : genomicPos > gEnd
+            ? genomicPos - gEnd
             : 0
       if (dx < bestDist) {
         bestDist = dx
@@ -281,10 +224,17 @@ const VariantComponent = observer(function VariantComponent({
     }
 
     if (bestIdx >= 0) {
-      const item = regionCellData.flatbushItems[bestIdx]!
-      const info = regionCellData.featureGenotypeMap[item.featureId]!
-      const genotype = info.genotypes[item.sourceName]!
-      const source = model.sources?.find(s => s.name === item.sourceName)
+      const featureId =
+        regionCellData.featureIdList[
+          regionCellData.flatbushFeatureIndices[bestIdx]!
+        ]!
+      const sourceName =
+        regionCellData.sourceNameList[regionCellData.cellRowIndices[bestIdx]!]!
+      const genomicStart = regionCellData.flatbushGenomicStarts[bestIdx]!
+      const genomicEnd = regionCellData.flatbushGenomicEnds[bestIdx]!
+      const info = regionCellData.featureGenotypeMap[featureId]!
+      const genotype = info.genotypes[sourceName]!
+      const source = model.sources?.find(s => s.name === sourceName)
       return {
         genotype,
         alleles: makeSimpleAltString(genotype, info.ref, info.alt),
@@ -292,14 +242,15 @@ const VariantComponent = observer(function VariantComponent({
         description:
           info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
         length: getBpDisplayStr(info.length),
-        sampleName: source?.sampleName ?? item.sourceName,
-        name: item.sourceName,
-        featureId: item.featureId,
+        sampleName: source?.sampleName ?? sourceName,
+        name: sourceName,
+        featureId,
+        featureInfo: info,
         cell: {
           rowIndex: regionCellData.cellRowIndices[bestIdx]!,
-          genomicStart: item.genomicStart,
-          genomicEnd: item.genomicEnd,
-          regionNumber: region.regionNumber,
+          genomicStart,
+          genomicEnd,
+          displayedRegionIndex: region.displayedRegionIndex,
         },
       }
     }
@@ -316,13 +267,7 @@ const VariantComponent = observer(function VariantComponent({
     if (!baseFeature) {
       return undefined
     }
-    const cellData = model.cellData
-    const info = cellData
-      ? Object.values(cellData.perRegionCellData).find(
-          r => r.featureGenotypeMap[result.featureId],
-        )?.featureGenotypeMap[result.featureId]
-      : undefined
-    return enrichFeatureFromClick(baseFeature, info, result)
+    return enrichFeatureFromClick(baseFeature, result.featureInfo, result)
   }
 
   const width = view.trackWidthPx
@@ -366,7 +311,8 @@ const VariantComponent = observer(function VariantComponent({
           if (key !== lastHoveredRef.current) {
             lastHoveredRef.current = key
             if (result) {
-              const { featureId, cell, sampleName, ...tooltip } = result
+              const { featureId, cell, sampleName, featureInfo, ...tooltip } =
+                result
               model.setHoveredGenotype(tooltip)
               setHoveredCell(cell)
             } else {
@@ -420,30 +366,9 @@ const VariantComponent = observer(function VariantComponent({
           />
         </div>
       ) : null}
-      <LoadingOverlay
-        statusMessage={
-          model.statusMessage ||
-          (!model.sources
-            ? 'Loading samples'
-            : !model.featuresReady
-              ? 'Loading features'
-              : 'Computing display data')
-        }
-        isVisible={
-          !model.displayError &&
-          !model.regionTooLarge &&
-          (!model.cellData || model.cellDataLoading)
-        }
-      />
+      <VariantErrorBar model={model} />
       {model.regionTooLarge ? model.regionCannotBeRendered() : null}
-      {model.displayError ? (
-        <ErrorBar
-          error={model.displayError}
-          onRetry={() => {
-            model.reload()
-          }}
-        />
-      ) : null}
+      <VariantLoadingOverlay model={model} />
       {contextMenuCoord ? (
         <Menu
           open

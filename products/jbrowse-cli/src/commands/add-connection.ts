@@ -3,33 +3,22 @@ import { parseArgs } from 'util'
 
 import parseJSON from 'json-parse-better-errors'
 
-import fetch from '../cliFetch.ts'
+import { debug, printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
 import {
-  debug,
-  printHelp,
-  readJsonFile,
-  resolveConfigPath,
-  writeJsonFile,
-} from '../utils.ts'
+  findAndUpdateOrAdd,
+  saveConfigAndReport,
+} from './shared/config-operations.ts'
 
 import type { Config } from '../base.ts'
 
-async function resolveURL(location: string, check = true) {
-  let locationUrl: URL | undefined
+function resolveURL(location: string) {
   try {
-    locationUrl = new URL(location)
+    return new URL(location).href
   } catch (error) {
     throw new Error(`The location ${location} provided is not a valid URL`, {
       cause: error,
     })
   }
-  if (check) {
-    const response = await fetch(`${locationUrl}`, { method: 'HEAD' })
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} fetching ${locationUrl}`)
-    }
-  }
-  return locationUrl.href
 }
 
 function determineConnectionType(url: string) {
@@ -85,18 +74,10 @@ export async function run(args?: string[]) {
       type: 'string',
       description: 'Synonym for target',
     },
-    skipCheck: {
-      type: 'boolean',
-      description: "Don't check whether the data directory URL exists",
-    },
-    overwrite: {
-      type: 'boolean',
-      description: 'Overwrites any existing connections if same connection id',
-    },
     force: {
       type: 'boolean',
       short: 'f',
-      description: 'Equivalent to --skipCheck --overwrite',
+      description: 'Overwrite existing connection if one with the same id exists',
     },
   } as const
   const { values: flags, positionals } = parseArgs({
@@ -135,10 +116,9 @@ export async function run(args?: string[]) {
 
   const target = await resolveConfigPath(flags.target, flags.out)
 
-  const { assemblyNames, type, name, config, connectionId, skipCheck, force } =
-    flags
+  const { assemblyNames, type, name, config, connectionId, force } = flags
 
-  const url = await resolveURL(connectionUrlOrPath, !(skipCheck || force))
+  const url = resolveURL(connectionUrlOrPath)
   const configContents = await readJsonFile<Config>(target)
   debug(`Using config file ${target}`)
 
@@ -151,7 +131,7 @@ export async function run(args?: string[]) {
   const configType = type || determineConnectionType(url)
   const id =
     connectionId ||
-    [configType, assemblyNames, Date.now()].filter(f => !!f).join('-')
+    [configType, assemblyNames, Date.now()].filter(Boolean).join('-')
 
   const connectionConfig = {
     type: configType,
@@ -181,31 +161,21 @@ export async function run(args?: string[]) {
     ...(config ? parseJSON(config) : {}),
   }
 
-  if (!configContents.connections) {
-    configContents.connections = []
-  }
-  const idx = configContents.connections.findIndex(
-    c => c.connectionId === connectionId,
-  )
+  const { updatedItems: connections, wasOverwritten } = findAndUpdateOrAdd({
+    items: configContents.connections ?? [],
+    newItem: connectionConfig,
+    idField: 'connectionId',
+    getId: item => item.connectionId,
+    force: force ?? false,
+    itemType: 'connection',
+  })
 
-  if (idx !== -1) {
-    if (force || flags.overwrite) {
-      configContents.connections[idx] = connectionConfig
-    } else {
-      throw new Error(
-        `Cannot add connection with id ${connectionId}, a connection with that id already exists.\nUse --overwrite if you would like to replace the existing connection`,
-      )
-    }
-  } else {
-    configContents.connections.push(connectionConfig)
-  }
-
-  debug(`Writing configuration to file ${target}`)
-  await writeJsonFile(target, configContents)
-
-  console.log(
-    `${idx !== -1 ? 'Overwrote' : 'Added'} connection "${name || id}" ${
-      idx !== -1 ? 'in' : 'to'
-    } ${target}`,
-  )
+  await saveConfigAndReport({
+    config: { ...configContents, connections },
+    target,
+    itemType: 'connection',
+    itemName: name || id,
+    itemId: id,
+    wasOverwritten,
+  })
 }

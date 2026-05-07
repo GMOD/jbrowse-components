@@ -22,7 +22,7 @@ const VisibleRegions = observer(function VisibleRegions({
   return view.initialized ? (
     <div>
       <p>Visible region {view.coarseDynamicBlocks.map(loc).join(',')}</p>
-      <p>Static blocks {view.staticBlocks.map(loc).join(',')}</p>
+      <p>Static blocks {view.staticBlocks.contentBlocks.map(loc).join(',')}</p>
     </div>
   ) : null
 })

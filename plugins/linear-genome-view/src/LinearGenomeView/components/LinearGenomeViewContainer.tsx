@@ -6,9 +6,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 
+import Scalebar from './Scalebar.tsx'
 import TrackContainer from './TrackContainer.tsx'
 import TracksContainer from './TracksContainer.tsx'
 import { useWheelScroll } from './useWheelScroll.ts'
+import { SCALE_BAR_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -41,6 +43,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
     pinnedTracksTop,
     tracks,
     unpinnedTracks,
+    hideHeader,
   } = model
   const { classes } = useStyles()
   const session = getSession(model)
@@ -89,32 +92,43 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
         style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
       >
         <HeaderComponent model={model} />
-        <MiniControlsComponent model={model} />
+        {hideHeader ? <MiniControlsComponent model={model} /> : null}
       </div>
-      <TracksContainer model={model}>
-        {!tracks.length ? (
-          <Suspense fallback={null}>
-            <NoTracksActiveButton model={model} />
-          </Suspense>
-        ) : (
-          <>
-            {pinnedTracks.length ? (
-              <Paper
-                elevation={6}
-                className={classes.pinnedTracks}
-                style={{ top: pinnedTracksTop }}
-              >
-                {pinnedTracks.map(track => (
-                  <TrackContainer key={track.id} model={model} track={track} />
-                ))}
-              </Paper>
-            ) : null}
-            {unpinnedTracks.map(track => (
-              <TrackContainer key={track.id} model={model} track={track} />
-            ))}
-          </>
-        )}
-      </TracksContainer>
+      {model.scalebarOnly ? (
+        <Scalebar
+          model={model}
+          style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
+        />
+      ) : (
+        <TracksContainer model={model}>
+          {!tracks.length ? (
+            <Suspense fallback={null}>
+              <NoTracksActiveButton model={model} />
+            </Suspense>
+          ) : (
+            <>
+              {pinnedTracks.length ? (
+                <Paper
+                  elevation={6}
+                  className={classes.pinnedTracks}
+                  style={{ top: pinnedTracksTop }}
+                >
+                  {pinnedTracks.map(track => (
+                    <TrackContainer
+                      key={track.id}
+                      model={model}
+                      track={track}
+                    />
+                  ))}
+                </Paper>
+              ) : null}
+              {unpinnedTracks.map(track => (
+                <TrackContainer key={track.id} model={model} track={track} />
+              ))}
+            </>
+          )}
+        </TracksContainer>
+      )}
     </div>
   )
 })

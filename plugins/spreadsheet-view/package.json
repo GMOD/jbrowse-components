@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-spreadsheet-view",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 spreadsheet view",
   "keywords": [
@@ -22,15 +22,15 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/spreadsheet-view",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/spreadsheet-view",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/vcf": "^7.0.0",
+    "@gmod/vcf": "^7.0.2",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
@@ -38,8 +38,8 @@
     "@jbrowse/sv-core": "workspace:^",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "@mui/x-data-grid": "^9.0.0-rc.0",
-    "mobx": "^6.15.0",
+    "@mui/x-data-grid": "9.0.4",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1"
   },
   "peerDependencies": {

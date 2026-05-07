@@ -8,6 +8,7 @@
  *   LinearSNPCoverageDisplay → LinearAlignmentsDisplay
  *   LinearReadArcsDisplay → LinearAlignmentsDisplay
  *   LinearReadCloudDisplay → LinearAlignmentsDisplay
+ *   LinearFeatureDisplay → LinearBasicDisplay
  */
 
 const displayTypeMap: Record<string, string> = {
@@ -15,6 +16,7 @@ const displayTypeMap: Record<string, string> = {
   LinearSNPCoverageDisplay: 'LinearAlignmentsDisplay',
   LinearReadArcsDisplay: 'LinearAlignmentsDisplay',
   LinearReadCloudDisplay: 'LinearAlignmentsDisplay',
+  LinearFeatureDisplay: 'LinearBasicDisplay',
 }
 
 function migrateDisplaySnapshot(display: Record<string, unknown>) {
@@ -30,7 +32,7 @@ function migrateDisplaysArray(displays: unknown[]) {
   let changed = false
   const result = displays.map(d => {
     if (d && typeof d === 'object' && 'type' in d) {
-      const migrated = migrateDisplaySnapshot(d as Record<string, unknown>)
+      const migrated = migrateDisplaySnapshot(d)
       if (migrated !== d) {
         changed = true
       }

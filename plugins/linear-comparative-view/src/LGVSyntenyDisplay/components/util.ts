@@ -28,7 +28,7 @@ function findPosInCigar(cigar: string[], startX: number) {
   return [featX, mateX] as const
 }
 
-export interface SimpleRegion {
+interface SimpleRegion {
   refName: string
   start: number
   end: number

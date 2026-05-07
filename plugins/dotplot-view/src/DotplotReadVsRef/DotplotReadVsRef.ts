@@ -7,9 +7,16 @@ import {
   getLengthSansClipping,
 } from '@jbrowse/plugin-alignments'
 
-import type { ReducedFeature } from '../util.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
+
+interface ReducedFeature {
+  refName: string
+  start: number
+  end: number
+  clipLengthAtStartOfRead: number
+  [key: string]: unknown
+}
 
 export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
   const session = getSession(self)
@@ -17,8 +24,8 @@ export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
     const cigar = feature.get('CIGAR')
     const clipLengthAtStartOfRead = getClip(cigar, 1)
     const flags = feature.get('flags')
-    const strand = feature.get('strand')
-    const readName = feature.get('name')
+    const strand = feature.get('strand')!
+    const readName = feature.get('name')!
     const readAssembly = `${readName}_assembly_${Date.now()}`
     const { parentTrack } = self
     const [trackAssembly] = getConf(parentTrack, 'assemblyNames')

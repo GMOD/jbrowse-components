@@ -21,33 +21,26 @@ const FacetFilters = observer(function FacetFilters({
     facets.map(f => [f.field, new Map<string, number>()] as const),
   )
 
-  // prioritize facets that already have active filters for drill-down behavior
-  const facetKeysPrioritizingUserSelections = new Set<string>()
-  for (const entry of filters.keys()) {
-    if (filters.get(entry)?.length) {
-      facetKeysPrioritizingUserSelections.add(entry)
-    }
-  }
-  for (const f of facets) {
-    facetKeysPrioritizingUserSelections.add(f.field)
-  }
+  // Active-filter facets first for drill-down: their counts reflect the pre-filter row set
+  const orderedFacets = [
+    ...facets.filter(f => filters.get(f.field)?.length),
+    ...facets.filter(f => !filters.get(f.field)?.length),
+  ]
 
   let currentRows = rows
-  for (const facetKey of facetKeysPrioritizingUserSelections) {
-    const categoryCountMap = facetFieldToCategoryCountMap.get(facetKey)
-    if (categoryCountMap) {
-      for (const row of currentRows) {
-        const key = getRowStr(facetKey, row)
-        if (key) {
-          categoryCountMap.set(key, (categoryCountMap.get(key) ?? 0) + 1)
-        }
+  for (const facet of orderedFacets) {
+    const categoryCountMap = facetFieldToCategoryCountMap.get(facet.field)!
+    for (const row of currentRows) {
+      const key = getRowStr(facet.field, row)
+      if (key) {
+        categoryCountMap.set(key, (categoryCountMap.get(key) ?? 0) + 1)
       }
     }
-    const filterValues = filters.get(facetKey)
+    const filterValues = filters.get(facet.field)
     if (filterValues?.length) {
       const filterSet = new Set(filterValues)
       currentRows = currentRows.filter(row =>
-        filterSet.has(getRowStr(facetKey, row)),
+        filterSet.has(getRowStr(facet.field, row)),
       )
     }
   }

@@ -5,8 +5,9 @@
  * cleanup saves the current session to the loader before destroying, so
  * createPluginManager can restore it.
  */
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 
+import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { destroy, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
@@ -24,10 +25,12 @@ import { deleteQueryParams, readQueryParams } from '../useQueryParam.ts'
 import type { SessionLoaderModel } from '../SessionLoader.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const SessionTriaged = lazy(() => import('./SessionTriaged.tsx'))
-const StartScreenErrorMessage = lazy(
-  () => import('./StartScreenErrorMessage.tsx'),
+setGpuOverride(
+  new URLSearchParams(window.location.search).get('renderer') ?? null,
 )
+
+const SessionTriaged = lazy(() => import('./SessionTriaged.tsx'))
+const LoaderErrorBanner = lazy(() => import('./LoaderErrorBanner.tsx'))
 
 const paramsToDelete = [
   'loc',
@@ -112,8 +115,9 @@ const Renderer = observer(function Renderer({
 }) {
   // Store loader in state so reloadPluginManager can replace it
   const [loader, setLoader] = useState(firstLoader)
-  const pluginManager = useRef<PluginManager | undefined>(undefined)
-  const [pluginManagerCreated, setPluginManagerCreated] = useState(false)
+  const [pluginManager, setPluginManager] = useState<PluginManager | undefined>(
+    undefined,
+  )
 
   // Called by rootModel when plugins are installed/removed. Creates a new
   // loader with the updated config and current session, triggering a full
@@ -142,7 +146,7 @@ const Renderer = observer(function Renderer({
         sessionSnapshot,
       })
       setLoader(newLoader)
-      setPluginManagerCreated(false)
+      setPluginManager(undefined)
     },
     [loader],
   )
@@ -152,21 +156,19 @@ const Renderer = observer(function Renderer({
   useEffect(() => {
     // Skip destroy in Jest since it interferes with test cleanup
     const isJest = typeof jest !== 'undefined'
+    let pm: PluginManager | undefined
     if (ready) {
       try {
-        if (pluginManager.current?.rootModel && !isJest) {
-          destroy(pluginManager.current.rootModel)
-        }
-        pluginManager.current = createPluginManager(loader, reloadPluginManager)
-        setPluginManagerCreated(true)
+        pm = createPluginManager(loader, reloadPluginManager)
+        setPluginManager(pm)
       } catch (e) {
         console.error(e)
         setError(e)
       }
     }
     return () => {
-      if (pluginManager.current?.rootModel && !isJest) {
-        const rootModel = pluginManager.current.rootModel
+      if (pm?.rootModel && !isJest) {
+        const { rootModel } = pm
         const session = rootModel.session
         // Note: isAlive check crucial because if not a 'dead' session is
         // snapshotted and the safeReference in activeWidgets is stripped from
@@ -179,7 +181,7 @@ const Renderer = observer(function Renderer({
           // discarded - the new loader already has sessionSnapshot pre-set.
           loader.setSessionSnapshot(getSnapshot(session))
         }
-        destroy(pluginManager.current.rootModel)
+        destroy(rootModel)
       }
     }
   }, [ready, loader, reloadPluginManager])
@@ -188,13 +190,17 @@ const Renderer = observer(function Renderer({
   if (err) {
     return (
       <Suspense fallback={null}>
-        <StartScreenErrorMessage error={err} />
+        <LoaderErrorBanner error={err} />
       </Suspense>
     )
   } else if (sessionTriaged) {
-    return <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
-  } else if (pluginManagerCreated && pluginManager.current) {
-    return <JBrowse pluginManager={pluginManager.current} />
+    return (
+      <Suspense fallback={null}>
+        <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
+      </Suspense>
+    )
+  } else if (pluginManager) {
+    return <JBrowse pluginManager={pluginManager} />
   } else {
     return <Loading />
   }

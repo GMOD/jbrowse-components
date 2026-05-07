@@ -39,7 +39,7 @@ type: types.literal('LinearBareDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```

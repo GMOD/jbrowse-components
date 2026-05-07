@@ -30,7 +30,7 @@ export async function writeAWSAnalytics(
     const stats: AnalyticsObj = {
       ver,
       'plugins-count': plugins?.length || 0,
-      'plugin-names': plugins?.map((p: any) => p.name).join(','),
+      'plugin-names': plugins?.map((p: { name?: string }) => p.name).join(','),
       'assemblies-count': assemblies.length,
       'tracks-count': tracks.length,
       'session-tracks-count': session?.sessionTracks.length || 0,
@@ -58,14 +58,14 @@ export async function writeAWSAnalytics(
     // eslint-disable-next-line unicorn/no-array-for-each
     tracks.forEach((track: Track) => {
       const key = `track-types-${track.type}`
-      stats[key] = (stats[key] ?? 0) + 1
+      stats[key] = ((stats[key] as number | undefined) ?? 0) + 1
     })
 
     // stringifies the session track type counts, gets processed in lambda
     // eslint-disable-next-line unicorn/no-array-for-each
     session?.sessionTracks.forEach((track: Track) => {
       const key = `sessionTrack-types-${track.type}`
-      stats[key] = (stats[key] ?? 0) + 1
+      stats[key] = ((stats[key] as number | undefined) ?? 0) + 1
     })
 
     // put stats into a query string for get request
@@ -90,7 +90,9 @@ export async function writeGAAnalytics(
     electron: isElectron,
     loadTime: Date.now() - initialTimestamp,
     pluginNames:
-      rootModel.jbrowse.plugins?.map((plugin: any) => plugin.name) || '',
+      rootModel.jbrowse.plugins?.map(
+        (plugin: { name?: string }) => plugin.name,
+      ) || '',
   }
 
   // create script

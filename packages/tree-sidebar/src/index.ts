@@ -1,7 +1,18 @@
 export { default as TreeSidebar } from './TreeSidebar.tsx'
+export { SvgRowLabels } from './SvgRowLabels.tsx'
+export { SvgTreePath } from './SvgTreePath.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
-export { computeHierarchyLayout, parseClusterTree } from './clusterUtils.ts'
-export { cluster, hierarchy } from './d3-hierarchy2/index.ts'
+export { buildClusteredLayout, parseClusterTree } from './clusterUtils.ts'
+export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
+export {
+  clusterLayout,
+  descendants,
+  hierarchy,
+  leaves,
+  links,
+  renderTreeSVG,
+} from './hierarchy.ts'
+export type { PositionedHierarchyNode } from './hierarchy.ts'
 export type {
   ClusterHierarchyNode,
   ClusterNodeData,

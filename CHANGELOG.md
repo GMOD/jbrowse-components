@@ -1,3 +1,40 @@
+## Changes since v4.2.0 (2026-04-16)
+
+### bug
+
+- Fix nav to search string via &loc=
+  ([#5544](https://github.com/GMOD/jbrowse-components/pull/5544)) @cmdcolin
+
+## Changes since v4.1.15 (2026-04-02)
+
+### bug
+
+- Fix inconsistent sanitization causing broken trix index file paths on desktop
+  ([#5540](https://github.com/GMOD/jbrowse-components/pull/5540)) @cmdcolin
+
+### enhancement
+
+- Create github actions based publishing workflow using NPM trusted publishing
+  ([#5530](https://github.com/GMOD/jbrowse-components/pull/5530)) @cmdcolin
+- Create supertrack/folder concept, browse categories/folders with faceted
+  selector, and plugin hooks for custom track selection UI
+  ([#5515](https://github.com/GMOD/jbrowse-components/pull/5515)) @cmdcolin
+
+## Changes since v4.1.15 (2026-04-02)
+
+### bug
+
+- Fix inconsistent sanitization causing broken trix index file paths on desktop
+  ([#5540](https://github.com/GMOD/jbrowse-components/pull/5540)) @cmdcolin
+
+### enhancement
+
+- Create github actions based publishing workflow using NPM trusted publishing
+  ([#5530](https://github.com/GMOD/jbrowse-components/pull/5530)) @cmdcolin
+- Create supertrack/folder concept, browse categories/folders with faceted
+  selector, and plugin hooks for custom track selection UI
+  ([#5515](https://github.com/GMOD/jbrowse-components/pull/5515)) @cmdcolin
+
 ## Changes since v4.1.14 (2026-03-08)
 
 ### bug

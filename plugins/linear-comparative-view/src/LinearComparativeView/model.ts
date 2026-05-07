@@ -20,7 +20,59 @@ import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
+type Compactness = 'normal' | 'compact' | 'super-compact'
 
+// SYNC: plugins/linear-genome-view/src/LinearGenomeView/menuItems.ts, plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts
+function buildCompactAllTracksMenu(tracks: { displays: unknown[] }[]) {
+  const hasAny = tracks.some(t =>
+    t.displays.some(
+      d => d !== null && typeof d === 'object' && 'setCompactness' in d,
+    ),
+  )
+  if (!hasAny) {
+    return []
+  }
+  function applyCompactness(level: Compactness) {
+    for (const track of tracks) {
+      for (const display of track.displays) {
+        if (
+          display !== null &&
+          typeof display === 'object' &&
+          'setCompactness' in display
+        ) {
+          ;(
+            display as { setCompactness: (v: Compactness) => void }
+          ).setCompactness(level)
+        }
+      }
+    }
+  }
+  return [
+    {
+      label: 'Compact all tracks',
+      subMenu: [
+        {
+          label: 'Normal',
+          onClick: () => {
+            applyCompactness('normal')
+          },
+        },
+        {
+          label: 'Compact',
+          onClick: () => {
+            applyCompactness('compact')
+          },
+        },
+        {
+          label: 'Super-compact',
+          onClick: () => {
+            applyCompactness('super-compact')
+          },
+        },
+      ],
+    },
+  ]
+}
 // lazies
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
@@ -94,11 +146,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         ),
-        /**
-         * #property
-         * per-view compact mode: when true, the LGV is collapsed to a label bar
-         */
-        compactViews: types.optional(types.array(types.boolean), []),
       }),
     )
     .volatile(() => ({
@@ -160,7 +207,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       isViewCompact(idx: number) {
-        return self.compactViews[idx] ?? false
+        return self.views[idx]?.scalebarOnly ?? false
       },
     }))
     .actions(self => ({
@@ -189,6 +236,19 @@ function stateModelFactory(pluginManager: PluginManager) {
             }
             next(rawCall)
           }),
+        )
+        addDisposer(
+          self,
+          autorun(
+            function comparativeViewWidthAutorun() {
+              if (self.width) {
+                for (const view of self.views) {
+                  view.setWidth(self.width)
+                }
+              }
+            },
+            { name: 'ComparativeViewWidth' },
+          ),
         )
       },
 
@@ -331,28 +391,25 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleCompactView(idx: number) {
-        while (self.compactViews.length <= idx) {
-          self.compactViews.push(false)
+        const view = self.views[idx]
+        if (view) {
+          view.setScalebarOnly(!view.scalebarOnly)
         }
-        self.compactViews[idx] = !self.compactViews[idx]
       },
       /**
        * #action
        */
       compactAllViews() {
-        while (self.compactViews.length < self.views.length) {
-          self.compactViews.push(false)
-        }
-        for (let i = 0; i < self.views.length; i++) {
-          self.compactViews[i] = true
+        for (const view of self.views) {
+          view.setScalebarOnly(true)
         }
       },
       /**
        * #action
        */
       expandAllViews() {
-        for (let i = 0; i < self.compactViews.length; i++) {
-          self.compactViews[i] = false
+        for (const view of self.views) {
+          view.setScalebarOnly(false)
         }
       },
       /**
@@ -375,8 +432,8 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       focusLevel(idx: number) {
-        for (let i = 0; i < self.levels.length; i++) {
-          self.levels[i]!.setCollapsed(i !== idx)
+        for (const [i, level] of self.levels.entries()) {
+          level.setCollapsed(i !== idx)
         }
       },
       /**
@@ -416,7 +473,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       menuItems(): MenuItem[] {
+        const allTracks = self.views.flatMap(v => v.tracks)
         return [
+          ...buildCompactAllTracksMenu(allTracks),
           {
             label: 'Return to import form',
             onClick: () => {
@@ -451,23 +510,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function comparativeViewWidthAutorun() {
-              if (self.width) {
-                for (const view of self.views) {
-                  view.setWidth(self.width)
-                }
-              }
-            },
-            { name: 'ComparativeViewWidth' },
-          ),
-        )
-      },
-    }))
     .preProcessSnapshot(snap => {
       // @ts-expect-error
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -490,7 +532,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         scrollZoom,
         showDynamicControls,
         viewTrackConfigs,
-        compactViews,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -502,7 +543,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         ...(scrollZoom ? { scrollZoom } : {}),
         ...(!showDynamicControls ? { showDynamicControls } : {}),
         ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
-        ...(compactViews.some(Boolean) ? { compactViews } : {}),
       } as typeof snap
     })
 }

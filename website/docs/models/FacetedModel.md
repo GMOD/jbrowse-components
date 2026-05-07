@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/HierarchicalTrackSelectorWidget/facetedModel.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/FacetedSelector/facetedModel.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/FacetedModel.md)
 
@@ -81,14 +81,26 @@ panelWidth: types.optional(types.number, () =>
 
 ```js
 // type
-AnyConfigurationModel[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+```
+
+#### getter: allRows
+
+Builds row objects from track configs. Cached and only recomputes when track
+configurations change, not on every filterText keystroke.
+
+```js
+// type
+{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: rows
 
+Text-filtered rows. Cheap string filtering on already-built allRows.
+
 ```js
 // type
-{ readonly id: string; readonly conf: AnyConfigurationModel; readonly name: any; readonly category: string; readonly adapter: string; readonly description: string; readonly metadata: Record<string, unknown>; }[]
+{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: filteredNonMetadataKeys
@@ -102,31 +114,38 @@ string[] | readonly ["category", "adapter", "description"]
 
 ```js
 // type
-any[]
+string[]
 ```
 
 #### getter: filteredMetadataKeys
 
 ```js
 // type
-any
+string[]
 ```
 
 #### getter: fields
 
 ```js
 // type
-any[]
+string[]
 ```
 
 #### getter: filteredRows
 
 ```js
 // type
-{ readonly id: string; readonly conf: AnyConfigurationModel; readonly name: any; readonly category: string; readonly adapter: string; readonly description: string; readonly metadata: Record<string, unknown>; }[]
+{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 ### FacetedModel - Actions
+
+#### action: setTrackConfigurations
+
+```js
+// type signature
+setTrackConfigurations: (tracks: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[], session: AbstractSessionModel) => void
+```
 
 #### action: setFilter
 

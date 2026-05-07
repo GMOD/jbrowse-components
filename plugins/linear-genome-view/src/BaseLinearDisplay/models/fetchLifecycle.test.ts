@@ -1,3 +1,12 @@
+// Tests the fetch lifecycle state machine in isolation (no MobX).
+// withFetchLifecycle combines the behavior of two production functions:
+//   FetchMixin.runFetch              — stop-token rotation, staleness, error capture
+//   MultiRegionDisplayMixin.fetchRegions — byte-estimate gating, setLoadedRegion
+//
+// Field name mappings to production:
+//   renderingStopToken → activeStopToken  (FetchMixin volatile)
+//   dataVersion        → test-only counter tracking setLoadedRegion call count
+
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -9,9 +18,9 @@ interface Region {
   assemblyName: string
 }
 
-interface RegionWithNumber {
+interface IndexedRegion {
   region: Region
-  regionNumber: number
+  displayedRegionIndex: number
 }
 
 interface LifecycleModel {
@@ -52,20 +61,20 @@ function createModel(): LifecycleModel {
   }
 }
 
-function setLoadedRegionForRegion(
+function setLoadedRegion(
   model: LifecycleModel,
-  regionNumber: number,
+  displayedRegionIndex: number,
   region: Region,
 ) {
   const next = new Map(model.loadedRegions)
-  next.set(regionNumber, region)
+  next.set(displayedRegionIndex, region)
   model.loadedRegions = next
   model.dataVersion++
 }
 
 function withFetchLifecycle(
   model: LifecycleModel,
-  needed: RegionWithNumber[],
+  needed: IndexedRegion[],
   byteEstimate:
     | (() => Promise<{
         tooLarge: boolean
@@ -108,8 +117,8 @@ function withFetchLifecycle(
       model.regionTooLargeState = false
       await work(ctx)
       if (!isStale()) {
-        for (const { regionNumber, region } of needed) {
-          setLoadedRegionForRegion(model, regionNumber, region)
+        for (const { displayedRegionIndex, region } of needed) {
+          setLoadedRegion(model, displayedRegionIndex, region)
         }
       }
     } catch (e) {
@@ -422,9 +431,9 @@ describe('withFetchLifecycle state management', () => {
 })
 
 describe('data-before-loaded invariant', () => {
-  const needed: RegionWithNumber[] = [
-    { regionNumber: 0, region: makeRegion('chr1', 0, 1000) },
-    { regionNumber: 1, region: makeRegion('chr1', 1000, 2000) },
+  const needed: IndexedRegion[] = [
+    { displayedRegionIndex: 0, region: makeRegion('chr1', 0, 1000) },
+    { displayedRegionIndex: 1, region: makeRegion('chr1', 1000, 2000) },
   ]
 
   it('marks regions loaded only after work callback completes', async () => {
@@ -512,8 +521,8 @@ describe('data-before-loaded invariant', () => {
     expect(model.loadedRegions.size).toBe(2)
     expect(model.dataVersion).toBe(2)
 
-    const needed2: RegionWithNumber[] = [
-      { regionNumber: 0, region: makeRegion('chr2', 0, 500) },
+    const needed2: IndexedRegion[] = [
+      { displayedRegionIndex: 0, region: makeRegion('chr2', 0, 500) },
     ]
 
     await withFetchLifecycle(model, needed2, null, async () => {})

@@ -119,7 +119,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   }
 
   private resultsToRefNames(response: SPARQLResponse): string[] {
-    const rows = response.results.bindings || []
+    const rows = response.results.bindings ?? []
     const fields = response.head.vars
     if (!fields.includes('refName')) {
       throw new Error('"refName" not found in refNamesQueryTemplate response')
@@ -131,7 +131,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     results: SPARQLResponse,
     refName: string,
   ): SimpleFeature[] {
-    const rows = results.results.bindings || []
+    const rows = results.results.bindings ?? []
     const fields = results.head.vars
     const requiredFields = ['start', 'end', 'uniqueId']
     for (const requiredField of requiredFields) {
@@ -184,9 +184,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
       if (pid) {
         const p = seenFeatures[pid]
         if (p) {
-          if (!p.data.subfeatures) {
-            p.data.subfeatures = []
-          }
+          p.data.subfeatures ??= []
           p.data.subfeatures.push({
             ...f.data,
             uniqueId,
@@ -200,9 +198,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
           let found = false
           for (const subfeature of subfeatures) {
             if (subfeature.uniqueId === pid) {
-              if (!subfeature.subfeatures) {
-                subfeature.subfeatures = []
-              }
+              subfeature.subfeatures ??= []
               subfeature.subfeatures.push({
                 ...f.data,
                 uniqueId,

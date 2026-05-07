@@ -25,9 +25,9 @@ export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions) {
     return ObservableCreate<Feature>(async observer => {
       const sequenceAdapter = await this.configure()
-      const hw = 10000
-      const queryEnd = query.end + hw
-      const queryStart = Math.max(0, query.start - hw)
+      const searchPaddingBp = 10_000
+      const queryEnd = query.end + searchPaddingBp
+      const queryStart = Math.max(0, query.start - searchPaddingBp)
 
       if (queryEnd < 0 || queryStart > queryEnd) {
         observer.complete()

@@ -1,14 +1,10 @@
 import { getSubparts } from '../filterSubparts.ts'
 import { layoutContainerGlyph } from './glyphUtils.ts'
 
-import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
+import type { FeatureLayout, LayoutArgs } from '../types.ts'
 
-export const processedTranscriptGlyph: Glyph = {
-  type: 'ProcessedTranscript',
-
-  layout(args: LayoutArgs): FeatureLayout {
-    // getSubparts filters to configured subParts and synthesizes implied UTRs
-    const subparts = getSubparts(args.feature, args.configContext.config)
-    return layoutContainerGlyph('ProcessedTranscript', args, subparts)
-  },
+// getSubparts filters to configured subParts and synthesizes implied UTRs
+export function layoutProcessedTranscript(args: LayoutArgs): FeatureLayout {
+  const subparts = getSubparts(args.feature, args.config)
+  return layoutContainerGlyph('ProcessedTranscript', args, subparts)
 }

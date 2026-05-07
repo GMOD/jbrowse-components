@@ -1,12 +1,12 @@
+import { saveAs } from '@jbrowse/core/util'
 import { fireEvent, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { saveAs } from 'file-saver-es'
 
 import { createView, doBeforeEach, setup } from './util.tsx'
 
-jest.mock('file-saver-es', () => {
+jest.mock('@jbrowse/core/util/FileSaver', () => {
   return {
-    ...jest.requireActual('file-saver-es'),
+    ...jest.requireActual('@jbrowse/core/util/FileSaver'),
     saveAs: jest.fn(),
   }
 })
@@ -265,7 +265,6 @@ test('Downloads a BED file correctly', async () => {
   fireEvent.click(await findByText(/Download/, ...opts))
 
   await waitFor(() => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(saveAs).toHaveBeenCalled()
   }, delay)
 
@@ -273,7 +272,6 @@ test('Downloads a BED file correctly', async () => {
     type: 'text/x-bed;charset=utf-8',
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_volvox.bed')
 }, 60000)
 
@@ -303,7 +301,6 @@ test('Downloads a TSV file correctly', async () => {
   fireEvent.click(await findByText(/Download/))
 
   await waitFor(() => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(saveAs).toHaveBeenCalled()
   }, delay)
 
@@ -311,6 +308,5 @@ test('Downloads a TSV file correctly', async () => {
     type: 'text/tab-separated-values;charset=utf-8',
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks.tsv')
 }, 60000)

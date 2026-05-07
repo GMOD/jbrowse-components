@@ -31,7 +31,7 @@ composed of
 
 ```js
 // type signature
-IArrayType<any>
+IArrayType<IAnyType>
 // code
 views: types.array(
           pluginManager.pluggableMstType('view', 'stateModel'),

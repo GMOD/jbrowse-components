@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/desktop",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "license": "Apache-2.0",
@@ -8,7 +8,11 @@
   "author": "JBrowse Team",
   "main": "build/electron.js",
   "dir": "src",
-  "repository": "https://github.com/GMOD/jbrowse-components.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "products/jbrowse-desktop"
+  },
   "scripts": {
     "start": "cross-env NODE_ENV=development node scripts/start.ts",
     "electron": "electron . --no-sandbox",
@@ -73,30 +77,30 @@
     "@jbrowse/text-indexing": "workspace:^",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "@mui/x-data-grid": "^9.0.0-rc.0",
+    "@mui/x-data-grid": "9.0.4",
     "date-fns": "^4.1.0",
     "deepmerge": "^4.3.1",
-    "dockview": "^5.2.0",
+    "dockview": "^6.0.1",
     "electron-context-menu": "^4.1.2",
     "electron-debug": "^4.1.0",
     "electron-updater": "^6.8.3",
     "json-parse-even-better-errors": "^5.0.0",
-    "mobx": "^6.15.0",
+    "mobx": "6.15.0",
     "mobx-react": "^9.2.1",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "sanitize-filename": "^1.6.4",
     "swr": "^2.4.1"
   },
   "devDependencies": {
     "@electron/notarize": "^3.1.1",
-    "@electron/packager": "^19.1.0",
+    "@electron/packager": "^20.0.0",
     "@types/selenium-webdriver": "^4.35.5",
     "cross-env": "^10.1.0",
-    "electron": "41.1.1",
-    "electron-chromedriver": "^41.1.1",
+    "electron": "^41.5.0",
+    "electron-chromedriver": "^41.5.0",
     "esbuild": "^0.28.0",
-    "selenium-webdriver": "^4.41.0"
+    "selenium-webdriver": "^4.43.0"
   },
   "browserslist": [
     "last 1 chrome version"

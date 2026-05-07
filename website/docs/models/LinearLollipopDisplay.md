@@ -39,7 +39,7 @@ type: types.literal('LinearLollipopDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```

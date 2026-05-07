@@ -18,7 +18,6 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -90,8 +89,13 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
       },
       afterCreate() {
-        if (!self.colorBySetting && self.colorBy.type === 'normal') {
-          self.setColorScheme({ type: 'strand' })
+        const alignSelf = self as unknown as {
+          colorBySetting: unknown
+          colorBy: { type: string }
+          setColorScheme(scheme: { type: string }): void
+        }
+        if (!alignSelf.colorBySetting && alignSelf.colorBy.type === 'normal') {
+          alignSelf.setColorScheme({ type: 'strand' })
         }
       },
     }))
@@ -132,7 +136,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   const { uniqueId, ...rest } = feature.toJSON()
                   const session = getSession(self)
                   const { default: copy } = await import('copy-to-clipboard')
-                  copy(JSON.stringify(rest, null, 4))
+                  await copy(JSON.stringify(rest, null, 4))
                   session.notify('Copied to clipboard', 'success')
                 },
               },
@@ -143,20 +147,17 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
        * #method
        */
       trackMenuItems() {
-        const items: MenuItem[] = [
+        return [
           getFeatureHeightMenuItem(self),
           getColorByMenuItem(self, {
             colorOptions: [
               { label: 'Normal', type: 'normal' },
               { label: 'Strand', type: 'strand' },
               { label: 'Mapping quality', type: 'mappingQuality' },
-              // TODO: implement
-              { label: 'Query name', type: 'query' },
             ],
           }),
           getFiltersMenuItem(self),
         ]
-        return items
       },
     }))
 }

@@ -1,244 +1,263 @@
 import {
-  BASE_A_COLOR,
-  BASE_C_COLOR,
-  BASE_G_COLOR,
-  BASE_T_COLOR,
-  drawCoverageBins,
-  drawIndicators,
-  drawModCovSegments,
-  drawNoncovSegments,
-  drawSnpSegments,
-  packIndicatorsForGpu,
-  packModCovSegmentsForGpu,
-  packNoncovSegmentsForGpu,
-  packSnpSegmentsForGpu,
-} from '@jbrowse/alignments-core'
-import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 
-import {
-  INTERBASE_HARDCLIP,
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-} from '../../shared/types.ts'
-import { getReadColor, rgb255 } from '../colorUtils.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
 import {
-  arcColorPalette,
-  arcLineColorPalette,
-  sashimiColorPalette,
-} from './shaders/arcShaders.ts'
+  bpToScreenX,
+  computeBlockHeights,
+  pileupRowY,
+} from './rendererTypes.ts'
+import {
+  buildArcsFields,
+  emptyArcsFields,
+} from '../../features/arcs/buildRegion.ts'
+import { drawArcs } from '../../features/arcs/drawCanvas.ts'
+import {
+  buildConnectingLinesFields,
+  emptyConnectingLinesFields,
+} from '../../features/connectingLines/buildRegion.ts'
+import { drawConnectingLines } from '../../features/connectingLines/drawCanvas.ts'
+import {
+  buildCoverageFields,
+  emptyCoverageFields,
+} from '../../features/coverage/buildRegion.ts'
+import { drawCoverageBars } from '../../features/coverage/drawCanvas.ts'
+import {
+  buildGapFields,
+  emptyGapFields,
+} from '../../features/gap/buildRegion.ts'
+import { drawGaps } from '../../features/gap/drawCanvas.ts'
+import {
+  buildHardclipFields,
+  emptyHardclipFields,
+} from '../../features/hardclip/buildRegion.ts'
+import { drawHardclips } from '../../features/hardclip/drawCanvas.ts'
+import {
+  buildIndicatorFields,
+  emptyIndicatorFields,
+} from '../../features/indicator/buildRegion.ts'
+import { drawIndicatorCanvas } from '../../features/indicator/drawCanvas.ts'
+import {
+  buildInsertionFields,
+  emptyInsertionFields,
+} from '../../features/insertion/buildRegion.ts'
+import { drawInsertions } from '../../features/insertion/drawCanvas.ts'
+import {
+  buildLinkedReadLinesFields,
+  emptyLinkedReadLinesFields,
+} from '../../features/linkedReads/buildRegion.ts'
+import { drawLinkedReadLines } from '../../features/linkedReads/drawCanvas.ts'
+import {
+  buildMismatchFields,
+  emptyMismatchFields,
+} from '../../features/mismatch/buildRegion.ts'
+import { drawMismatches } from '../../features/mismatch/drawCanvas.ts'
+import {
+  buildModCoverageFields,
+  emptyModCoverageFields,
+} from '../../features/modCoverage/buildRegion.ts'
+import { drawModCoverageCanvas } from '../../features/modCoverage/drawCanvas.ts'
+import {
+  buildModificationFields,
+  emptyModificationFields,
+} from '../../features/modification/buildRegion.ts'
+import { drawModifications } from '../../features/modification/drawCanvas.ts'
+import {
+  buildNoncovFields,
+  emptyNoncovFields,
+} from '../../features/noncov/buildRegion.ts'
+import { drawNoncovCanvas } from '../../features/noncov/drawCanvas.ts'
+import {
+  buildReadFields,
+  emptyReadFields,
+} from '../../features/read/buildRegion.ts'
+import { drawReads } from '../../features/read/drawCanvas.ts'
+import {
+  buildSnpCoverageFields,
+  emptySnpCoverageFields,
+} from '../../features/snpCoverage/buildRegion.ts'
+import { drawSnpSegmentsCanvas } from '../../features/snpCoverage/drawCanvas.ts'
+import {
+  buildSoftclipBaseFields,
+  buildSoftclipFields,
+  emptySoftclipBaseFields,
+  emptySoftclipFields,
+} from '../../features/softclip/buildRegion.ts'
+import { drawSoftclipBases } from '../../features/softclip/drawBases.ts'
+import { drawSoftclips } from '../../features/softclip/drawCanvas.ts'
 
 import type {
   AlignmentsBackend,
-  ArcsUploadData,
+  AlignmentsSources,
   CigarUploadData,
-  ConnectingLinesUploadData,
   CoverageUploadData,
   ModCoverageUploadData,
-  ModificationUploadData,
-  ReadUploadData,
   RenderBlock,
   RenderState,
-  SashimiUploadData,
 } from './rendererTypes.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { ArcsRegionFields } from '../../features/arcs/buildRegion.ts'
+import type { ArcsUploadData } from '../../features/arcs/types.ts'
+import type { ConnectingLinesRegionFields } from '../../features/connectingLines/buildRegion.ts'
+import type { CoverageRegionFields } from '../../features/coverage/buildRegion.ts'
+import type { GapRegionFields } from '../../features/gap/buildRegion.ts'
+import type { HardclipRegionFields } from '../../features/hardclip/buildRegion.ts'
+import type { IndicatorRegionFields } from '../../features/indicator/buildRegion.ts'
+import type { InsertionRegionFields } from '../../features/insertion/buildRegion.ts'
+import type { LinkedReadLinesRegionFields } from '../../features/linkedReads/buildRegion.ts'
+import type { MismatchRegionFields } from '../../features/mismatch/buildRegion.ts'
+import type { ModCoverageRegionFields } from '../../features/modCoverage/buildRegion.ts'
+import type { ModificationRegionFields } from '../../features/modification/buildRegion.ts'
+import type { NoncovRegionFields } from '../../features/noncov/buildRegion.ts'
+import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
+import type { SnpCoverageRegionFields } from '../../features/snpCoverage/buildRegion.ts'
+import type {
+  SoftclipBaseRegionFields,
+  SoftclipRegionFields,
+} from '../../features/softclip/buildRegion.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-interface Canvas2DRegionData {
-  regionStart: number
-  readIdToIndex: Map<string, number>
-  readPositions: Uint32Array
-  readYs: Uint16Array
-  readFlags: Uint16Array
-  readMapqs: Uint8Array
-  readAvgBaseQualities: Uint8Array
-  readInsertSizes: Float32Array
-  readPairOrientations: Uint8Array
-  readStrands: Int8Array
-  readTagColors: Uint8Array
-  readChainHasSupp: Uint8Array | undefined
-  numReads: number
-  insertSizeStats?: { upper: number; lower: number }
+export interface Canvas2DRegionData
+  extends
+    ReadRegionFields,
+    ArcsRegionFields,
+    ConnectingLinesRegionFields,
+    CoverageRegionFields,
+    GapRegionFields,
+    HardclipRegionFields,
+    IndicatorRegionFields,
+    InsertionRegionFields,
+    LinkedReadLinesRegionFields,
+    MismatchRegionFields,
+    ModCoverageRegionFields,
+    ModificationRegionFields,
+    NoncovRegionFields,
+    SnpCoverageRegionFields,
+    SoftclipBaseRegionFields,
+    SoftclipRegionFields {}
 
-  // CIGAR
-  gapPositions: Uint32Array
-  gapYs: Uint16Array
-  gapTypes: Uint8Array
-  gapFrequencies: Uint8Array
-  numGaps: number
-  mismatchPositions: Uint32Array
-  mismatchYs: Uint16Array
-  mismatchBases: Uint8Array
-  mismatchFrequencies: Uint8Array
-  numMismatches: number
-  insertionPositions: Uint32Array
-  insertionYs: Uint16Array
-  insertionLengths: Uint16Array
-  insertionFrequencies: Uint8Array
-  numInsertions: number
-  softclipPositions: Uint32Array
-  softclipYs: Uint16Array
-  softclipLengths: Uint16Array
-  softclipFrequencies: Uint8Array
-  numSoftclips: number
-  hardclipPositions: Uint32Array
-  hardclipYs: Uint16Array
-  hardclipLengths: Uint16Array
-  hardclipFrequencies: Uint8Array
-  numHardclips: number
-  softclipBasePositions: Uint32Array
-  softclipBaseYs: Uint16Array
-  softclipBaseBases: Uint8Array
-  numSoftclipBases: number
-
-  // Modifications
-  modificationPositions: Uint32Array
-  modificationYs: Uint16Array
-  modificationColors: Uint8Array
-  numModifications: number
-
-  // Coverage — stored in GPU-compatible packed buffer formats
-  coverageBuffer: ArrayBuffer
-  coverageBinCount: number
-  coverageMaxDepth: number
-  snpBuffer: ArrayBuffer
-  snpSegmentCount: number
-  noncovBuffer: ArrayBuffer
-  noncovSegmentCount: number
-  noncovMaxCount: number
-  indicatorBuffer: ArrayBuffer
-  indicatorCount: number
-
-  // Mod coverage — packed buffer: [position(f32), yOffset(f32), height(f32), rgba(u32)]
-  modCovBuffer: ArrayBuffer
-  modCovSegmentCount: number
-
-  // Arcs
-  arcX1: Float32Array
-  arcX2: Float32Array
-  arcColorTypes: Float32Array
-  arcIsArc: Uint8Array
-  numArcs: number
-  arcLinePositions: Uint32Array
-  arcLineYs: Float32Array
-  arcLineColorTypes: Float32Array
-  numArcLines: number
-
-  // Sashimi
-  sashimiX1: Float32Array
-  sashimiX2: Float32Array
-  sashimiScores: Float32Array
-  sashimiColorTypes: Uint8Array
-  numSashimiArcs: number
-
-  // Connecting lines
-  connectingLinePositions: Uint32Array
-  connectingLineYs: Uint16Array
-  connectingLineColorTypes: Uint8Array
-  numConnectingLines: number
-}
-
-// Gap types from CIGAR
-const GAP_DELETION = 0
-const GAP_SKIP = 1
-
-const BASE_COLORS: Record<number, string> = {
-  0: BASE_A_COLOR,
-  1: BASE_C_COLOR,
-  2: BASE_G_COLOR,
-  3: BASE_T_COLOR,
-}
-
-function emptyRegion(regionStart: number): Canvas2DRegionData {
-  const empty32 = new Uint32Array(0)
-  const empty16 = new Uint16Array(0)
-  const empty8 = new Uint8Array(0)
-  const emptyF32 = new Float32Array(0)
+// Per-feature builders own the slicing of the merged interbase array (the
+// worker lays it out as (insertions, softclips, hardclips); each feature
+// folder slices its own subrange via `subarray`).
+function buildCigarFields(data: CigarUploadData) {
   return {
-    regionStart,
-    readIdToIndex: new Map(),
-    readPositions: empty32,
-    readYs: empty16,
-    readFlags: empty16,
-    readMapqs: empty8,
-    readAvgBaseQualities: empty8,
-    readInsertSizes: emptyF32,
-    readPairOrientations: empty8,
-    readStrands: new Int8Array(0),
-    readTagColors: empty8,
-    readChainHasSupp: undefined,
-    numReads: 0,
-    gapPositions: empty32,
-    gapYs: empty16,
-    gapTypes: empty8,
-    gapFrequencies: empty8,
-    numGaps: 0,
-    mismatchPositions: empty32,
-    mismatchYs: empty16,
-    mismatchBases: empty8,
-    mismatchFrequencies: empty8,
-    numMismatches: 0,
-    insertionPositions: empty32,
-    insertionYs: empty16,
-    insertionLengths: empty16,
-    insertionFrequencies: empty8,
-    numInsertions: 0,
-    softclipPositions: empty32,
-    softclipYs: empty16,
-    softclipLengths: empty16,
-    softclipFrequencies: empty8,
-    numSoftclips: 0,
-    hardclipPositions: empty32,
-    hardclipYs: empty16,
-    hardclipLengths: empty16,
-    hardclipFrequencies: empty8,
-    numHardclips: 0,
-    softclipBasePositions: empty32,
-    softclipBaseYs: empty16,
-    softclipBaseBases: empty8,
-    numSoftclipBases: 0,
-    modificationPositions: empty32,
-    modificationYs: empty16,
-    modificationColors: empty8,
-    numModifications: 0,
-    coverageBuffer: new ArrayBuffer(0),
-    coverageBinCount: 0,
-    coverageMaxDepth: 0,
-    snpBuffer: new ArrayBuffer(0),
-    snpSegmentCount: 0,
-    noncovBuffer: new ArrayBuffer(0),
-    noncovSegmentCount: 0,
-    noncovMaxCount: 0,
-    indicatorBuffer: new ArrayBuffer(0),
-    indicatorCount: 0,
-    modCovBuffer: new ArrayBuffer(0),
-    modCovSegmentCount: 0,
-    arcX1: emptyF32,
-    arcX2: emptyF32,
-    arcColorTypes: emptyF32,
-    arcIsArc: empty8,
-    numArcs: 0,
-    arcLinePositions: empty32,
-    arcLineYs: emptyF32,
-    arcLineColorTypes: emptyF32,
-    numArcLines: 0,
-    sashimiX1: emptyF32,
-    sashimiX2: emptyF32,
-    sashimiScores: emptyF32,
-    sashimiColorTypes: empty8,
-    numSashimiArcs: 0,
-    connectingLinePositions: empty32,
-    connectingLineYs: empty16,
-    connectingLineColorTypes: empty8,
-    numConnectingLines: 0,
+    ...buildGapFields(data),
+    ...buildMismatchFields(data),
+    ...buildInsertionFields(data),
+    ...buildSoftclipFields(data),
+    ...buildHardclipFields(data),
+    ...buildSoftclipBaseFields(data),
   }
 }
 
+function buildCoverageAreaFields(
+  data: CoverageUploadData & ModCoverageUploadData,
+) {
+  return {
+    ...buildCoverageFields(data),
+    ...buildSnpCoverageFields(data),
+    ...buildModCoverageFields(data),
+    ...buildNoncovFields(data),
+    ...buildIndicatorFields(data),
+  }
+}
+
+function emptyPileupFields(): Canvas2DRegionData {
+  return {
+    ...emptyReadFields(),
+    ...emptyGapFields(),
+    ...emptyMismatchFields(),
+    ...emptyInsertionFields(),
+    ...emptySoftclipFields(),
+    ...emptyHardclipFields(),
+    ...emptySoftclipBaseFields(),
+    ...emptyModificationFields(),
+    ...emptyCoverageFields(),
+    ...emptySnpCoverageFields(),
+    ...emptyNoncovFields(),
+    ...emptyIndicatorFields(),
+    ...emptyModCoverageFields(),
+    ...emptyArcsFields(),
+    ...emptyConnectingLinesFields(),
+    ...emptyLinkedReadLinesFields(),
+  }
+}
+
+function buildPileupRegion(
+  data: PileupDataResult,
+  arcs: ArcsUploadData | undefined,
+): Canvas2DRegionData {
+  return {
+    ...buildReadFields(data),
+    ...buildCigarFields(data),
+    ...buildModificationFields(data),
+    ...buildCoverageAreaFields(data),
+    ...buildConnectingLinesFields(data),
+    ...buildLinkedReadLinesFields(data),
+    ...buildArcsFields(arcs),
+  }
+}
+
+function buildArcsOnlyRegion(arcs: ArcsUploadData): Canvas2DRegionData {
+  return {
+    ...emptyPileupFields(),
+    ...buildArcsFields(arcs),
+  }
+}
+
+/**
+ * Pure builder: turns the model's observable per-region inputs into the
+ * regions map that `drawAlignmentBlocks` consumes. The on-screen
+ * Canvas2DAlignmentsRenderer.sync calls this directly, so on-screen and
+ * SVG export share one builder.
+ */
+export function buildAlignmentsRegionMap(
+  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
+  arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>,
+) {
+  const regions = new Map<number, Canvas2DRegionData>()
+  for (const [idx, data] of laidOutPileupMap) {
+    regions.set(idx, buildPileupRegion(data, arcsRpcDataMap.get(idx)))
+  }
+  for (const [idx, arcs] of arcsRpcDataMap) {
+    if (!regions.has(idx)) {
+      regions.set(idx, buildArcsOnlyRegion(arcs))
+    }
+  }
+  return regions
+}
+
+/**
+ * One-shot pure entry point: build a regions map from observable sources
+ * and paint into any 2D-context-shaped surface (real canvas for raster,
+ * SvgCanvas for vector). Used by SVG export as a single call.
+ */
+export function drawAlignmentsToCtx(
+  ctx: Ctx2D,
+  sources: AlignmentsSources,
+  blocks: RenderBlock[],
+  state: RenderState,
+) {
+  return drawAlignmentBlocks(
+    ctx,
+    buildAlignmentsRegionMap(sources.laidOutPileupMap, sources.arcsRpcDataMap),
+    blocks,
+    state,
+  )
+}
+
+/**
+ * On-screen Canvas2D backend. Thin shell: `sync` rebuilds the regions map
+ * via the same pure `buildAlignmentsRegionMap` the SVG path uses; on-screen
+ * and export can't drift. `renderBlocks` paints via the pure
+ * `drawAlignmentBlocks` entry point.
+ */
 export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
-  private regions = new Map<number, Canvas2DRegionData>()
+  private regions: ReadonlyMap<number, Canvas2DRegionData> = new Map()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -249,966 +268,274 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     this.ctx = ctx
   }
 
-  uploadFromTypedArraysForRegion(regionNumber: number, data: ReadUploadData) {
-    let r = this.regions.get(regionNumber)
-    if (!r) {
-      r = emptyRegion(data.regionStart)
-      this.regions.set(regionNumber, r)
-    }
-    r.regionStart = data.regionStart
-    r.readPositions = data.readPositions
-    r.readYs = data.readYs
-    r.readFlags = data.readFlags
-    r.readMapqs = data.readMapqs
-    r.readAvgBaseQualities = data.readAvgBaseQualities
-    r.readInsertSizes = data.readInsertSizes
-    r.readPairOrientations = data.readPairOrientations
-    r.readStrands = data.readStrands
-    r.readTagColors = data.readTagColors
-    r.readChainHasSupp = data.readChainHasSupp
-    r.numReads = data.numReads
-    r.insertSizeStats = data.insertSizeStats
-    r.readIdToIndex = new Map()
-    for (let i = 0; i < data.numReads; i++) {
-      r.readIdToIndex.set(data.readIds[i]!, i)
-    }
-  }
-
-  uploadCigarFromTypedArraysForRegion(
-    regionNumber: number,
-    data: CigarUploadData,
-  ) {
-    const r = this.regions.get(regionNumber)
-    if (!r) {
-      return
-    }
-    r.gapPositions = data.gapPositions
-    r.gapYs = data.gapYs
-    r.gapTypes = data.gapTypes
-    r.gapFrequencies = data.gapFrequencies
-    r.numGaps = data.numGaps
-    r.mismatchPositions = data.mismatchPositions
-    r.mismatchYs = data.mismatchYs
-    r.mismatchBases = data.mismatchBases
-    r.mismatchFrequencies = data.mismatchFrequencies
-    r.numMismatches = data.numMismatches
-
-    // Split interbases into types
-    const insIdx: number[] = []
-    const scIdx: number[] = []
-    const hcIdx: number[] = []
-    for (let i = 0; i < data.numInterbases; i++) {
-      const interbaseType = data.interbaseTypes[i]
-      if (interbaseType === INTERBASE_INSERTION) {
-        insIdx.push(i)
-      } else if (interbaseType === INTERBASE_SOFTCLIP) {
-        scIdx.push(i)
-      } else if (interbaseType === INTERBASE_HARDCLIP) {
-        hcIdx.push(i)
-      }
-    }
-
-    const extractInterbases = (indices: number[]) => ({
-      positions: new Uint32Array(indices.map(i => data.interbasePositions[i]!)),
-      ys: new Uint16Array(indices.map(i => data.interbaseYs[i]!)),
-      lengths: new Uint16Array(indices.map(i => data.interbaseLengths[i]!)),
-      frequencies: new Uint8Array(
-        indices.map(i => data.interbaseFrequencies[i]!),
-      ),
-    })
-
-    const ins = extractInterbases(insIdx)
-    r.insertionPositions = ins.positions
-    r.insertionYs = ins.ys
-    r.insertionLengths = ins.lengths
-    r.insertionFrequencies = ins.frequencies
-    r.numInsertions = insIdx.length
-
-    const sc = extractInterbases(scIdx)
-    r.softclipPositions = sc.positions
-    r.softclipYs = sc.ys
-    r.softclipLengths = sc.lengths
-    r.softclipFrequencies = sc.frequencies
-    r.numSoftclips = scIdx.length
-
-    const hc = extractInterbases(hcIdx)
-    r.hardclipPositions = hc.positions
-    r.hardclipYs = hc.ys
-    r.hardclipLengths = hc.lengths
-    r.hardclipFrequencies = hc.frequencies
-    r.numHardclips = hcIdx.length
-
-    r.softclipBasePositions = data.softclipBasePositions
-    r.softclipBaseYs = data.softclipBaseYs
-    r.softclipBaseBases = data.softclipBaseBases
-    r.numSoftclipBases = data.numSoftclipBases
-  }
-
-  uploadModificationsFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ModificationUploadData,
-  ) {
-    const r = this.regions.get(regionNumber)
-    if (!r) {
-      return
-    }
-    r.modificationPositions = data.modificationPositions
-    r.modificationYs = data.modificationYs
-    r.modificationColors = data.modificationColors
-    r.numModifications = data.numModifications
-  }
-
-  uploadCoverageFromTypedArraysForRegion(
-    regionNumber: number,
-    data: CoverageUploadData,
-  ) {
-    const r = this.regions.get(regionNumber)
-    if (!r) {
-      return
-    }
-
-    r.coverageMaxDepth = data.coverageMaxDepth
-
-    if (data.numCoverageBins > 0 && data.coverageMaxDepth > 0) {
-      const n = data.numCoverageBins
-      const buf = new ArrayBuffer(n * 12)
-      const f32 = new Float32Array(buf)
-      for (let i = 0; i < n; i++) {
-        const off = i * 3
-        const normalizedDepth =
-          (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
-        f32[off] = data.coverageStartOffset + i + r.regionStart
-        f32[off + 1] = 0
-        f32[off + 2] = normalizedDepth
-      }
-      r.coverageBuffer = buf
-      r.coverageBinCount = n
-    }
-
-    if (data.numSnpSegments > 0) {
-      const packed = packSnpSegmentsForGpu(
-        data.snpPositions,
-        data.snpYOffsets,
-        data.snpHeights,
-        data.snpColorTypes,
-        data.numSnpSegments,
-        r.regionStart,
-      )
-      r.snpBuffer = packed.buffer
-      r.snpSegmentCount = packed.segmentCount
-    }
-
-    if (data.numNoncovSegments > 0) {
-      const packed = packNoncovSegmentsForGpu(
-        data.noncovPositions,
-        data.noncovYOffsets,
-        data.noncovHeights,
-        data.noncovColorTypes,
-        data.numNoncovSegments,
-        r.regionStart,
-      )
-      r.noncovBuffer = packed.buffer
-      r.noncovSegmentCount = packed.segmentCount
-    }
-    r.noncovMaxCount = data.noncovMaxCount
-
-    if (data.numIndicators > 0) {
-      const packed = packIndicatorsForGpu(
-        data.indicatorPositions,
-        data.indicatorColorTypes,
-        data.numIndicators,
-        r.regionStart,
-      )
-      r.indicatorBuffer = packed.buffer
-      r.indicatorCount = packed.indicatorCount
-    }
-  }
-
-  uploadModCoverageFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ModCoverageUploadData,
-  ) {
-    const r = this.regions.get(regionNumber)
-    if (!r) {
-      return
-    }
-    if (data.numModCovSegments > 0) {
-      const packed = packModCovSegmentsForGpu(
-        data.modCovPositions,
-        data.modCovYOffsets,
-        data.modCovHeights,
-        data.modCovColors,
-        data.numModCovSegments,
-        r.regionStart,
-      )
-      r.modCovBuffer = packed.buffer
-      r.modCovSegmentCount = packed.segmentCount
-    }
-  }
-
-  uploadSashimiFromTypedArraysForRegion(
-    regionNumber: number,
-    data: SashimiUploadData,
-  ) {
-    const r = this.regions.get(regionNumber)
-    if (!r) {
-      return
-    }
-    r.sashimiX1 = data.sashimiX1
-    r.sashimiX2 = data.sashimiX2
-    r.sashimiScores = data.sashimiScores
-    r.sashimiColorTypes = data.sashimiColorTypes
-    r.numSashimiArcs = data.numSashimiArcs
-  }
-
-  uploadArcsFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ArcsUploadData,
-  ) {
-    let r = this.regions.get(regionNumber)
-    if (!r) {
-      r = emptyRegion(data.regionStart)
-      this.regions.set(regionNumber, r)
-    }
-    r.arcX1 = data.arcX1
-    r.arcX2 = data.arcX2
-    r.arcColorTypes = data.arcColorTypes
-    r.arcIsArc = data.arcIsArc
-    r.numArcs = data.numArcs
-    r.arcLinePositions = data.linePositions
-    r.arcLineYs = data.lineYs
-    r.arcLineColorTypes = data.lineColorTypes
-    r.numArcLines = data.numLines
-  }
-
-  uploadConnectingLinesForRegion(
-    regionNumber: number,
-    data: ConnectingLinesUploadData,
-  ) {
-    let r = this.regions.get(regionNumber)
-    if (!r) {
-      r = emptyRegion(data.regionStart)
-      this.regions.set(regionNumber, r)
-    }
-    r.connectingLinePositions = data.connectingLinePositions
-    r.connectingLineYs = data.connectingLineYs
-    r.connectingLineColorTypes = data.connectingLineColorTypes
-    r.numConnectingLines = data.numConnectingLines
-  }
-
-  ensureBuffers(_regionStart: number) {
-    // no-op for Canvas 2D
-  }
-
-  clearLegacyBuffers() {
-    this.regions.clear()
+  sync(sources: AlignmentsSources) {
+    this.regions = buildAlignmentsRegionMap(
+      sources.laidOutPileupMap,
+      sources.arcsRpcDataMap,
+    )
   }
 
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
-    const { canvasWidth, canvasHeight } = state
-
-    const ctx = this.ctx
-    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
-
-    if (this.regions.size === 0) {
-      return
-    }
-
-    const arcsHeight = state.showArcs && state.arcsHeight ? state.arcsHeight : 0
-    const covH = state.showCoverage ? state.coverageHeight : 0
-    const pileupTop = covH + arcsHeight
-    const mode = state.renderingMode ?? 'pileup'
-
-    for (const block of blocks) {
-      const region = this.regions.get(block.regionNumber)
-      if (!region) {
-        continue
-      }
-
-      const blockClip = clipBlockForCanvas(block, canvasWidth)
-      if (!blockClip) {
-        continue
-      }
-
-      const { fullBlockWidth, bpLength, scissorX, scissorW } = blockClip
-
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(scissorX, 0, scissorW, canvasHeight)
-      ctx.clip()
-
-      if (state.showCoverage) {
-        this.drawCoverage(ctx, region, block, bpLength, fullBlockWidth, state)
-      }
-
-      if (state.showSashimiArcs) {
-        this.drawSashimiArcs(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          state,
-        )
-      }
-
-      // Clip pileup area
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(scissorX, pileupTop, scissorW, canvasHeight - pileupTop)
-      ctx.clip()
-
-      if (mode === 'linkedRead') {
-        this.drawConnectingLines(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          state,
-        )
-      }
-
-      this.drawReads(ctx, region, block, bpLength, fullBlockWidth, state)
-
-      if (state.showMismatches) {
-        this.drawGaps(ctx, region, block, bpLength, fullBlockWidth, state)
-        this.drawMismatches(ctx, region, block, bpLength, fullBlockWidth, state)
-        this.drawInsertions(ctx, region, block, bpLength, fullBlockWidth, state)
-      }
-
-      this.drawClips(
-        ctx,
-        region.softclipPositions,
-        region.softclipYs,
-        region.softclipLengths,
-        region.numSoftclips,
-        region.regionStart,
-        rgb255(state.colors.colorSoftclip),
-        block,
-        bpLength,
-        fullBlockWidth,
-        state,
-      )
-      this.drawClips(
-        ctx,
-        region.hardclipPositions,
-        region.hardclipYs,
-        region.hardclipLengths,
-        region.numHardclips,
-        region.regionStart,
-        rgb255(state.colors.colorHardclip),
-        block,
-        bpLength,
-        fullBlockWidth,
-        state,
-      )
-
-      if (state.showSoftClipping) {
-        this.drawSoftclipBases(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          state,
-        )
-      }
-
-      if (state.showModifications) {
-        this.drawModifications(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          state,
-        )
-      }
-
-      // Feature highlight/selection overlays
-      this.drawHighlightOverlays(ctx, region, block, state)
-
-      if (mode === 'linkedRead') {
-        this.drawChainOverlays(ctx, region, block, state)
-      }
-
-      ctx.restore() // pileup clip
-
-      if (arcsHeight > 0) {
-        ctx.save()
-        ctx.beginPath()
-        ctx.rect(scissorX, covH, scissorW, arcsHeight)
-        ctx.clip()
-        this.drawArcs(ctx, region, block, bpLength, fullBlockWidth, state, covH)
-        ctx.restore()
-      }
-
-      ctx.restore() // block clip
-    }
-  }
-
-  private covOffset(state: RenderState) {
-    return (
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
-    )
-  }
-
-  private bpToScreenX(
-    absBp: number,
-    block: {
-      bpRangeX: [number, number]
-      screenStartPx: number
-      reversed?: boolean
-    },
-    bpLength: number,
-    fullBlockWidth: number,
-  ) {
-    const bpEdge = block.reversed ? block.bpRangeX[1] : block.bpRangeX[0]
-    const offset = block.reversed ? bpEdge - absBp : absBp - bpEdge
-    return block.screenStartPx + (offset / bpLength) * fullBlockWidth
-  }
-
-  private drawReads(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    const covOffset = this.covOffset(state)
-    const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
-
-    for (let i = 0; i < region.numReads; i++) {
-      const startBp = region.readPositions[i * 2]! + region.regionStart
-      const endBp = region.readPositions[i * 2 + 1]! + region.regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const y =
-        region.readYs[i]! * (fH + fSpacing) + covOffset - state.rangeY[0]
-      const w = Math.max(1, x2 - x1)
-
-      ctx.fillStyle = getReadColor(i, region, state.colorScheme, state.colors, {
-        renderingMode: state.renderingMode,
-        flipStrandLongReadChains: state.flipStrandLongReadChains,
-      })
-      ctx.fillRect(x1, y, w, fH)
-
-      if (state.showOutline && w > 2) {
-        ctx.strokeStyle = 'rgba(0,0,0,0.3)'
-        ctx.lineWidth = 0.5
-        ctx.strokeRect(x1, y, w, fH)
-      }
-    }
-  }
-
-  private drawGaps(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    const covOffset = this.covOffset(state)
-    const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
-
-    for (let i = 0; i < region.numGaps; i++) {
-      const startBp = region.gapPositions[i * 2]! + region.regionStart
-      const endBp = region.gapPositions[i * 2 + 1]! + region.regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const yRow = region.gapYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
-      const gapType = region.gapTypes[i]!
-      const w = Math.max(1, x2 - x1)
-
-      if (gapType === GAP_DELETION) {
-        // Deletion: dark line through read
-        const midY = y + fH / 2
-        ctx.fillStyle = rgb255(state.colors.colorDeletion)
-        ctx.fillRect(x1, midY - 0.5, w, 1)
-      } else if (gapType === GAP_SKIP) {
-        // Skip/intron: thin line with lighter color
-        ctx.fillStyle = rgb255(state.colors.colorSkip)
-        // Erase the read body first
-        ctx.clearRect(x1, y, w, fH)
-        const midY = y + fH / 2
-        ctx.fillRect(x1, midY - 0.5, w, 1)
-      }
-    }
-  }
-
-  private drawMismatches(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    const covOffset = this.covOffset(state)
-    const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
-    const bpPerPx = bpLength / fullBlockWidth
-
-    for (let i = 0; i < region.numMismatches; i++) {
-      const bp = region.mismatchPositions[i]! + region.regionStart
-      const x = this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const w = Math.max(1, 1 / bpPerPx)
-      const yRow = region.mismatchYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
-      const base = region.mismatchBases[i]!
-      const color = BASE_COLORS[base] ?? '#999'
-      ctx.fillStyle = color
-      ctx.fillRect(x, y, w, fH)
-    }
-  }
-
-  private drawInsertions(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    const covOffset = this.covOffset(state)
-    const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
-    const insColor = rgb255(state.colors.colorInsertion)
-
-    for (let i = 0; i < region.numInsertions; i++) {
-      const bp = region.insertionPositions[i]! + region.regionStart
-      const x = this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const yRow = region.insertionYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
-
-      ctx.fillStyle = insColor
-      // Insertion indicator: vertical line + small triangle
-      ctx.fillRect(x - 0.5, y, 1, fH)
-      // Top triangle
-      ctx.beginPath()
-      ctx.moveTo(x - 2, y)
-      ctx.lineTo(x + 2, y)
-      ctx.lineTo(x, y + 2)
-      ctx.closePath()
-      ctx.fill()
-      // Bottom triangle
-      ctx.beginPath()
-      ctx.moveTo(x - 2, y + fH)
-      ctx.lineTo(x + 2, y + fH)
-      ctx.lineTo(x, y + fH - 2)
-      ctx.closePath()
-      ctx.fill()
-    }
-  }
-
-  private drawClips(
-    ctx: CanvasRenderingContext2D,
-    positions: Uint32Array,
-    ys: Uint16Array,
-    lengths: Uint16Array,
-    count: number,
-    regionStart: number,
-    color: string,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (count === 0) {
-      return
-    }
-    const covOffset = this.covOffset(state)
-    const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
-    const bpPerPx = bpLength / fullBlockWidth
-
-    ctx.fillStyle = color
-    for (let i = 0; i < count; i++) {
-      const bp = positions[i]! + regionStart
-      const x = this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const yRow = ys[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
-      const len = lengths[i]!
-      const w = Math.max(1, len / bpPerPx)
-      ctx.fillRect(x, y, w, fH)
-    }
-  }
-
-  private drawSoftclipBases(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (region.numSoftclipBases === 0) {
-      return
-    }
-    const covOffset = this.covOffset(state)
-    const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
-    const bpPerPx = bpLength / fullBlockWidth
-
-    for (let i = 0; i < region.numSoftclipBases; i++) {
-      const bp = region.softclipBasePositions[i]! + region.regionStart
-      const x = this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const w = Math.max(1, 1 / bpPerPx)
-      const yRow = region.softclipBaseYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
-      const base = region.softclipBaseBases[i]!
-      const color = BASE_COLORS[base] ?? '#999'
-      ctx.fillStyle = color
-      ctx.fillRect(x, y, w, fH)
-    }
-  }
-
-  private drawModifications(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (region.numModifications === 0) {
-      return
-    }
-    const covOffset = this.covOffset(state)
-    const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
-    const bpPerPx = bpLength / fullBlockWidth
-
-    for (let i = 0; i < region.numModifications; i++) {
-      const bp = region.modificationPositions[i]! + region.regionStart
-      const x = this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const w = Math.max(1, 1 / bpPerPx)
-      const yRow = region.modificationYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
-      const ci = i * 4
-      const r = region.modificationColors[ci]!
-      const g = region.modificationColors[ci + 1]!
-      const b = region.modificationColors[ci + 2]!
-      const a = region.modificationColors[ci + 3]! / 255
-      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-      ctx.fillRect(x, y, w, fH)
-    }
-  }
-
-  private drawCoverage(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    const covH = state.coverageHeight
-    const covColor = rgb255(state.colors.colorCoverage)
-    const bpToX = (bp: number) =>
-      this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
-    const viewWidth = fullBlockWidth + block.screenStartPx
-
-    const snpColors = {
-      baseA: rgb255(state.colors.colorBaseA),
-      baseC: rgb255(state.colors.colorBaseC),
-      baseG: rgb255(state.colors.colorBaseG),
-      baseT: rgb255(state.colors.colorBaseT),
-      mismatch: '',
-      deletion: rgb255(state.colors.colorDeletion),
-      insertion: '',
-    }
-
-    const noncovColors = {
-      insertion: rgb255(state.colors.colorInsertion),
-      softclip: rgb255(state.colors.colorSoftclip),
-      hardclip: rgb255(state.colors.colorHardclip),
-    }
-
-    drawCoverageBins(
-      ctx,
-      region.coverageBuffer,
-      region.coverageBinCount,
-      region.coverageMaxDepth,
-      covH,
-      covColor,
-      bpToX,
-      viewWidth,
-    )
-    drawSnpSegments(
-      ctx,
-      region.snpBuffer,
-      region.snpSegmentCount,
-      region.coverageMaxDepth,
-      covH,
-      snpColors,
-      bpToX,
-      viewWidth,
-    )
-    drawModCovSegments(
-      ctx,
-      region.modCovBuffer,
-      region.modCovSegmentCount,
-      region.coverageMaxDepth,
-      covH,
-      bpToX,
-      viewWidth,
-    )
-    drawNoncovSegments(
-      ctx,
-      region.noncovBuffer,
-      region.noncovSegmentCount,
-      region.noncovMaxCount,
-      noncovColors,
-      bpToX,
-      viewWidth,
-    )
-    drawIndicators(
-      ctx,
-      region.indicatorBuffer,
-      region.indicatorCount,
-      noncovColors,
-      bpToX,
-      viewWidth,
-    )
-  }
-
-  private paletteColor(palette: [number, number, number][], idx: number) {
-    return rgb255(palette[idx % palette.length]!)
-  }
-
-  private drawArcs(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-    arcsTop: number,
-  ) {
-    const arcsH = state.arcsHeight ?? 0
-    const lineWidth = state.arcLineWidth ?? 1
-
-    // Draw filled arcs
-    for (let i = 0; i < region.numArcs; i++) {
-      const x1Bp = region.arcX1[i]! + region.regionStart
-      const x2Bp = region.arcX2[i]! + region.regionStart
-      const colorIdx = Math.round(region.arcColorTypes[i]!)
-
-      const sx1 = this.bpToScreenX(x1Bp, block, bpLength, fullBlockWidth)
-      const sx2 = this.bpToScreenX(x2Bp, block, bpLength, fullBlockWidth)
-      const midX = (sx1 + sx2) / 2
-      const span = Math.abs(sx2 - sx1)
-      const arcH = Math.min(span * 0.5, arcsH - 2)
-
-      ctx.strokeStyle = this.paletteColor(arcColorPalette, colorIdx)
-      ctx.lineWidth = lineWidth
-      ctx.beginPath()
-      ctx.moveTo(sx1, arcsTop + arcsH)
-      ctx.quadraticCurveTo(midX, arcsTop + arcsH - arcH, sx2, arcsTop + arcsH)
-      ctx.stroke()
-    }
-
-    // Draw arc lines (straight lines between positions)
-    for (let i = 0; i < region.numArcLines; i++) {
-      const bp = region.arcLinePositions[i]! + region.regionStart
-      const x = this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const y = arcsTop + region.arcLineYs[i]! * arcsH
-      const colorIdx = Math.round(region.arcLineColorTypes[i]!)
-
-      ctx.fillStyle = this.paletteColor(arcLineColorPalette, colorIdx)
-      ctx.fillRect(x - 1, y - 1, 2, 2)
-    }
-  }
-
-  private drawSashimiArcs(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (region.numSashimiArcs === 0) {
-      return
-    }
-    const covH = state.showCoverage ? state.coverageHeight : 0
-    const covYOffset = state.showCoverage ? state.coverageYOffset : 0
-
-    for (let i = 0; i < region.numSashimiArcs; i++) {
-      const x1Bp = region.sashimiX1[i]! + region.regionStart
-      const x2Bp = region.sashimiX2[i]! + region.regionStart
-      const colorIdx = region.sashimiColorTypes[i]!
-      const score = region.sashimiScores[i]!
-
-      const sx1 = this.bpToScreenX(x1Bp, block, bpLength, fullBlockWidth)
-      const sx2 = this.bpToScreenX(x2Bp, block, bpLength, fullBlockWidth)
-      const midX = (sx1 + sx2) / 2
-      const arcH = Math.min(
-        Math.abs(sx2 - sx1) * 0.3,
-        (covH - covYOffset * 2) * 0.8,
-      )
-
-      ctx.strokeStyle = this.paletteColor(sashimiColorPalette, colorIdx)
-      ctx.lineWidth = Math.max(1, Math.min(score / 5, 4))
-      ctx.beginPath()
-      ctx.moveTo(sx1, covYOffset)
-      ctx.quadraticCurveTo(midX, covYOffset + arcH, sx2, covYOffset)
-      ctx.stroke()
-    }
-  }
-
-  private drawConnectingLines(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (region.numConnectingLines === 0) {
-      return
-    }
-    const covOffset = this.covOffset(state)
-    const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
-
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)'
-    ctx.lineWidth = 1
-
-    for (let i = 0; i < region.numConnectingLines; i++) {
-      const startBp =
-        region.connectingLinePositions[i * 2]! + region.regionStart
-      const endBp =
-        region.connectingLinePositions[i * 2 + 1]! + region.regionStart
-      const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const yRow = region.connectingLineYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0] + fH / 2
-
-      ctx.beginPath()
-      ctx.moveTo(x1, y)
-      ctx.lineTo(x2, y)
-      ctx.stroke()
-    }
-  }
-
-  private drawHighlightOverlays(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: {
-      bpRangeX: [number, number]
-      screenStartPx: number
-      screenEndPx: number
-    },
-    state: RenderState,
-  ) {
-    const covOffset = this.covOffset(state)
-    const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
-    const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
-    const fullBlockWidth = block.screenEndPx - block.screenStartPx
-
-    if (state.highlightedChainIds.length === 0 && state.highlightedFeatureId) {
-      const idx = region.readIdToIndex.get(state.highlightedFeatureId)
-      if (idx !== undefined && idx < region.numReads) {
-        const startBp = region.readPositions[idx * 2]! + region.regionStart
-        const endBp = region.readPositions[idx * 2 + 1]! + region.regionStart
-        const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-        const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y =
-          region.readYs[idx]! * (fH + fSpacing) + covOffset - state.rangeY[0]
-        ctx.fillStyle = 'rgba(0,0,0,0.15)'
-        ctx.fillRect(x1, y, x2 - x1, fH)
-      }
-    }
-
-    if (state.selectedChainIds.length === 0 && state.selectedFeatureId) {
-      const idx = region.readIdToIndex.get(state.selectedFeatureId)
-      if (idx !== undefined && idx < region.numReads) {
-        const startBp = region.readPositions[idx * 2]! + region.regionStart
-        const endBp = region.readPositions[idx * 2 + 1]! + region.regionStart
-        const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-        const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y =
-          region.readYs[idx]! * (fH + fSpacing) + covOffset - state.rangeY[0]
-        ctx.strokeStyle = '#00b8ff'
-        ctx.lineWidth = 2
-        ctx.strokeRect(x1, y, x2 - x1, fH)
-      }
-    }
-  }
-
-  private drawChainOverlays(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: {
-      bpRangeX: [number, number]
-      screenStartPx: number
-      screenEndPx: number
-    },
-    state: RenderState,
-  ) {
-    const covOffset = this.covOffset(state)
-    const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
-    const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
-    const fullBlockWidth = block.screenEndPx - block.screenStartPx
-
-    if (state.highlightedChainIds.length > 0) {
-      const bounds = getChainBounds(
-        state.highlightedChainIds,
-        region.readIdToIndex,
-        region.readPositions,
-        region.readYs,
-      )
-      if (bounds) {
-        const startBp = bounds.minStart + region.regionStart
-        const endBp = bounds.maxEnd + region.regionStart
-        const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-        const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y = bounds.y * (fH + fSpacing) + covOffset - state.rangeY[0]
-        ctx.fillStyle = 'rgba(0,0,0,0.4)'
-        ctx.fillRect(x1, y, x2 - x1, fH)
-      }
-    }
-
-    if (state.selectedChainIds.length > 0) {
-      const bounds = getChainBounds(
-        state.selectedChainIds,
-        region.readIdToIndex,
-        region.readPositions,
-        region.readYs,
-      )
-      if (bounds) {
-        const startBp = bounds.minStart + region.regionStart
-        const endBp = bounds.maxEnd + region.regionStart
-        const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-        const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y = bounds.y * (fH + fSpacing) + covOffset - state.rangeY[0]
-        ctx.strokeStyle = '#00b8ff'
-        ctx.lineWidth = 2
-        ctx.strokeRect(x1, y, x2 - x1, fH)
-      }
-    }
-  }
-
-  pruneStaleRegions(activeRegionNumbers: Set<number>) {
-    for (const regionNumber of this.regions.keys()) {
-      if (!activeRegionNumbers.has(regionNumber)) {
-        this.regions.delete(regionNumber)
-      }
-    }
+    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    return drawAlignmentBlocks(this.ctx, this.regions, blocks, state)
   }
 
   dispose() {
-    this.regions.clear()
+    this.regions = new Map()
+  }
+}
+
+/**
+ * Pure draw entry point. Takes any 2D-canvas-like context (real
+ * CanvasRenderingContext2D or SvgCanvas) plus a prepared regions map and
+ * paints the alignments display: arcs, coverage, pileup reads, mismatches,
+ * insertions, soft/hard clips, modifications, and highlight/chain overlays.
+ *
+ * No `this`, no DOM, no DPR scaling — just data → ctx. The on-screen
+ * Canvas2DAlignmentsRenderer wraps this with prepareCanvas + lifecycle
+ * upload state; renderSvg.tsx calls it directly with an SvgCanvas.
+ */
+export function drawAlignmentBlocks(
+  ctx: Ctx2D,
+  regions: ReadonlyMap<number, Canvas2DRegionData>,
+  blocks: RenderBlock[],
+  state: RenderState,
+) {
+  const { canvasWidth, canvasHeight } = state
+
+  if (regions.size === 0) {
+    return false
+  }
+
+  const { effectiveArcsHeight, covH } = computeBlockHeights(state)
+  const pileupTop = state.pileupTopOffset
+  const mode = state.renderingMode ?? 'pileup'
+
+  for (const block of blocks) {
+    const region = regions.get(block.displayedRegionIndex)
+    if (!region) {
+      continue
+    }
+
+    const blockClip = clipBlockForCanvas(block, canvasWidth)
+    if (!blockClip) {
+      continue
+    }
+
+    const { fullBlockWidth, bpLength, scissorX, scissorW } = blockClip
+
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(scissorX, 0, scissorW, canvasHeight)
+    ctx.clip()
+
+    if (effectiveArcsHeight > 0 && !state.pairedArcsDown && covH > 0) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.rect(scissorX, 0, scissorW, covH)
+      ctx.clip()
+      drawArcs(
+        ctx,
+        region,
+        block,
+        bpLength,
+        fullBlockWidth,
+        state,
+        0,
+        covH,
+        false,
+      )
+      ctx.restore()
+    }
+
+    if (state.showCoverage) {
+      drawCoverage(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    // Clip pileup area
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(scissorX, pileupTop, scissorW, canvasHeight - pileupTop)
+    ctx.clip()
+
+    if (mode === 'linkedRead') {
+      drawConnectingLines(ctx, region, block, bpLength, fullBlockWidth, state)
+    } else if (mode === 'linkedReadBezier') {
+      drawLinkedReadLines(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    drawReads(ctx, region, block, bpLength, fullBlockWidth, state)
+
+    if (state.showMismatches) {
+      drawGaps(ctx, region, block, bpLength, fullBlockWidth, state)
+      drawMismatches(ctx, region, block, bpLength, fullBlockWidth, state)
+      drawInsertions(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    drawSoftclips(ctx, region, block, bpLength, fullBlockWidth, state)
+    drawHardclips(ctx, region, block, bpLength, fullBlockWidth, state)
+
+    if (state.showSoftClipping) {
+      drawSoftclipBases(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    if (state.showModifications) {
+      drawModifications(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    drawHighlightOverlays(ctx, region, block, state)
+
+    if (mode === 'linkedRead') {
+      drawChainOverlays(ctx, region, block, state)
+    }
+
+    ctx.restore() // pileup clip
+
+    if (effectiveArcsHeight > 0 && state.pairedArcsDown) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.rect(scissorX, covH, scissorW, effectiveArcsHeight)
+      ctx.clip()
+      drawArcs(
+        ctx,
+        region,
+        block,
+        bpLength,
+        fullBlockWidth,
+        state,
+        covH,
+        effectiveArcsHeight,
+        state.pairedArcsDown,
+      )
+      ctx.restore()
+    }
+
+    ctx.restore() // block clip
+  }
+  return true
+}
+
+function drawCoverage(
+  ctx: Ctx2D,
+  region: Canvas2DRegionData,
+  block: { bpRangeX: [number, number]; screenStartPx: number },
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  const bpToX = (bp: number) => bpToScreenX(bp, block, bpLength, fullBlockWidth)
+  const viewWidth = fullBlockWidth + block.screenStartPx
+
+  const domainMax = state.coverageMaxDepth
+  if (!domainMax) {
+    return
+  }
+  drawCoverageBars(ctx, region, bpToX, viewWidth, state)
+  drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state)
+  drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state)
+  drawNoncovCanvas(ctx, region, bpToX, viewWidth, state)
+  drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
+}
+
+interface OverlayBounds {
+  startBp: number
+  endBp: number
+  yRow: number
+}
+
+interface OverlayBlock {
+  bpRangeX: [number, number]
+  screenStartPx: number
+  screenEndPx: number
+}
+
+function paintOverlayBox(
+  ctx: Ctx2D,
+  bounds: OverlayBounds,
+  block: OverlayBlock,
+  state: RenderState,
+  style: 'highlight' | 'selection' | 'chainHighlight',
+) {
+  const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
+  const fullBlockWidth = block.screenEndPx - block.screenStartPx
+  const x1 = bpToScreenX(bounds.startBp, block, bpLength, fullBlockWidth)
+  const x2 = bpToScreenX(bounds.endBp, block, bpLength, fullBlockWidth)
+  const y = pileupRowY(bounds.yRow, state)
+  const w = x2 - x1
+  const h = state.featureHeight
+  if (style === 'selection') {
+    ctx.strokeStyle = '#00b8ff'
+    ctx.lineWidth = 2
+    ctx.strokeRect(x1, y, w, h)
+  } else {
+    ctx.fillStyle =
+      style === 'chainHighlight' ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.15)'
+    ctx.fillRect(x1, y, w, h)
+  }
+}
+
+function readBoundsForId(
+  region: Canvas2DRegionData,
+  id: string,
+): OverlayBounds | undefined {
+  const idx = region.readIdToIndex.get(id)
+  if (idx === undefined || idx >= region.numReads) {
+    return undefined
+  }
+  return {
+    startBp: region.readPositions[idx * 2]!,
+    endBp: region.readPositions[idx * 2 + 1]!,
+    yRow: region.readYs[idx]!,
+  }
+}
+
+function chainBoundsFor(
+  region: Canvas2DRegionData,
+  ids: string[],
+): OverlayBounds | undefined {
+  const b = getChainBounds(ids, region)
+  if (!b) {
+    return undefined
+  }
+  return { startBp: b.minStart, endBp: b.maxEnd, yRow: b.y }
+}
+
+function drawHighlightOverlays(
+  ctx: Ctx2D,
+  region: Canvas2DRegionData,
+  block: OverlayBlock,
+  state: RenderState,
+) {
+  if (state.highlightedChainIds.length === 0 && state.highlightedFeatureId) {
+    const bounds = readBoundsForId(region, state.highlightedFeatureId)
+    if (bounds) {
+      paintOverlayBox(ctx, bounds, block, state, 'highlight')
+    }
+  }
+  if (state.selectedChainIds.length === 0 && state.selectedFeatureId) {
+    const bounds = readBoundsForId(region, state.selectedFeatureId)
+    if (bounds) {
+      paintOverlayBox(ctx, bounds, block, state, 'selection')
+    }
+  }
+}
+
+function drawChainOverlays(
+  ctx: Ctx2D,
+  region: Canvas2DRegionData,
+  block: OverlayBlock,
+  state: RenderState,
+) {
+  if (state.highlightedChainIds.length > 0) {
+    const bounds = chainBoundsFor(region, state.highlightedChainIds)
+    if (bounds) {
+      paintOverlayBox(ctx, bounds, block, state, 'chainHighlight')
+    }
+  }
+  if (state.selectedChainIds.length > 0) {
+    const bounds = chainBoundsFor(region, state.selectedChainIds)
+    if (bounds) {
+      paintOverlayBox(ctx, bounds, block, state, 'selection')
+    }
   }
 }

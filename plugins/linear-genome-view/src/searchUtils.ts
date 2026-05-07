@@ -1,7 +1,10 @@
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { filterRefNames } from '@jbrowse/core/TextSearch/fetchResults'
 import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
 
+import { parseLocStrings } from './LinearGenomeView/util.ts'
+
 import type { LinearGenomeViewModel } from './LinearGenomeView/index.ts'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -16,15 +19,21 @@ export async function navToOption({
   option: BaseResult
   assemblyName: string
 }) {
-  const location = option.getLocation()
+  const location = option.getLocation() ?? option.getLabel()
   const trackId = option.getTrackId()
-  if (location) {
-    await model.navToLocString(location, assemblyName, 0.2)
-    if (trackId) {
-      model.showTrack(trackId)
-    }
-  }
   const session = getSession(model)
+  const { assemblyManager } = session
+  await model.navToLocations(
+    parseLocStrings(location, assemblyName, (ref, asm) =>
+      assemblyManager.isValidRefName(ref, asm),
+    ),
+    assemblyName,
+    0.2,
+  )
+  if (trackId) {
+    model.showTrack(trackId)
+  }
+
   const { pluginManager } = getEnv(session)
   await pluginManager.evaluateAsyncExtensionPoint(
     'LinearGenomeView-searchResultSelected',
@@ -33,27 +42,36 @@ export async function navToOption({
   )
 }
 
-// gets a string as input, or use stored option results from previous query,
-// then re-query and
-// 1) if it has multiple results: pop a dialog
-// 2) if it's a single result navigate to it
-// 3) else assume it's a locstring and navigate to it
+// if input is a known ref or locstring, navigate directly;
+// otherwise search and: pop a dialog for multiple results, navigate for one,
+// or fall back to treating input as a locstring
 export async function handleSelectedRegion({
   input,
   model,
-  assembly,
+  assemblyName,
+  grow,
 }: {
   input: string
   model: LinearGenomeViewModel
-  assembly: Assembly
+  assemblyName: string
+  grow?: number
 }) {
-  const allRefs = assembly.allRefNamesWithLowerCase!
-  const assemblyName = assembly.name
-  if (input.split(' ').every(entry => checkRef(entry, allRefs))) {
-    await model.navToLocString(input, assembly.name)
+  const { assemblyManager, textSearchManager } = getSession(model)
+  const assembly = assemblyManager.get(assemblyName)
+  const allRefs = assembly?.allRefNamesWithLowerCase
+
+  if (allRefs && input.split(' ').every(entry => checkRef(entry, allRefs))) {
+    await model.navToLocations(
+      parseLocStrings(
+        input,
+        assemblyName,
+        ref => allRefs.has(ref) || allRefs.has(ref.toLowerCase()),
+      ),
+      assemblyName,
+      grow,
+    )
   } else {
     const searchScope = model.searchScope(assemblyName)
-    const { textSearchManager } = getSession(model)
     const results = await fetchResults({
       queryString: input,
       searchType: 'exact',
@@ -72,17 +90,20 @@ export async function handleSelectedRegion({
         assemblyName,
       })
     } else {
-      await model.navToLocString(input, assemblyName)
+      await model.navToLocations(
+        parseLocStrings(input, assemblyName, (ref, asm) =>
+          assemblyManager.isValidRefName(ref, asm),
+        ),
+        assemblyName,
+        grow,
+      )
     }
   }
 }
 
 export function checkRef(str: string, allRefs: Set<string>) {
   const [ref, rest] = splitLast(str, ':')
-  return (
-    allRefs.has(str) ||
-    (allRefs.has(ref) && !Number.isNaN(Number.parseInt(rest, 10)))
-  )
+  return allRefs.has(str) || (allRefs.has(ref) && /^\d/.test(rest))
 }
 
 export async function fetchResults({
@@ -100,10 +121,6 @@ export async function fetchResults({
   textSearchManager?: TextSearchManager
   assembly?: Assembly
 }) {
-  if (!textSearchManager) {
-    console.warn('No text search manager')
-  }
-
   const textSearchResults = await textSearchManager?.search(
     {
       queryString,
@@ -113,14 +130,14 @@ export async function fetchResults({
     rankSearchResults,
   )
 
-  const refNameResults = assembly?.allRefNames
-    ?.filter(ref => ref.toLowerCase().startsWith(queryString.toLowerCase()))
-    .slice(0, 10)
-    .map(r => new BaseResult({ label: r }))
+  const refNameResults = filterRefNames(
+    assembly?.allRefNames,
+    queryString,
+    searchType,
+  )
 
-  return dedupe(
-    [...(refNameResults || []), ...(textSearchResults || [])],
-    elt => elt.getId(),
+  return dedupe([...refNameResults, ...(textSearchResults ?? [])], elt =>
+    elt.getId(),
   )
 }
 

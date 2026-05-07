@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IArrayType<any>
+IArrayType<IAnyModelType>
 // code
 sessionTracks: types.array(
         pluginManager.pluggableConfigSchemaType('track'),
@@ -39,7 +39,7 @@ sessionTracks: types.array(
 
 ```js
 // type
-AnyConfigurationModel[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 ### SessionTracksManagerSessionMixin - Actions
@@ -55,5 +55,5 @@ addTrackConf: (trackConf: AnyConfiguration) => any
 
 ```js
 // type signature
-deleteTrackConf: (trackConf: AnyConfigurationModel) => any
+deleteTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
 ```

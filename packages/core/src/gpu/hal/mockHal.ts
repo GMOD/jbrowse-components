@@ -9,11 +9,9 @@ export class MockHal implements GpuHal {
   calls: MockCall[] = []
   passes: PassDescriptor[]
 
-  private buffers = new Map<string, { data: ArrayBuffer; count: number }>()
+  private buffers = new Map<string, { data: ArrayBufferLike; count: number }>()
   private regionMeta = new Map<number, RegionMeta>()
   private lastUniforms: ArrayBuffer | null = null
-  private width = 0
-  private height = 0
 
   constructor(passes: PassDescriptor[]) {
     this.passes = passes
@@ -29,21 +27,19 @@ export class MockHal implements GpuHal {
 
   resize(width: number, height: number) {
     this.record('resize', width, height)
-    this.width = width
-    this.height = height
   }
 
   uploadBuffer(
     regionKey: number,
     passId: string,
-    data: ArrayBuffer,
+    data: ArrayBuffer | ArrayBufferView,
     count: number,
   ) {
     this.record('uploadBuffer', regionKey, passId, data.byteLength, count)
-    this.buffers.set(this.bufferKey(regionKey, passId), {
-      data: data.slice(0),
-      count,
-    })
+    const copy = ArrayBuffer.isView(data)
+      ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
+      : data.slice(0)
+    this.buffers.set(this.bufferKey(regionKey, passId), { data: copy, count })
   }
 
   setRegionMeta(regionKey: number, meta: Partial<RegionMeta>) {
@@ -110,33 +106,6 @@ export class MockHal implements GpuHal {
     this.record('endFrame')
   }
 
-  drawPickingPass(
-    passId: string,
-    regionKey: number,
-    instanceCount?: number,
-    bufferPassId?: string,
-  ) {
-    this.record(
-      'drawPickingPass',
-      passId,
-      regionKey,
-      instanceCount,
-      bufferPassId,
-    )
-  }
-
-  readPickingPixel(_x: number, _y: number) {
-    return -1
-  }
-
-  async readPickingPixelAsync(_x: number, _y: number) {
-    return -1
-  }
-
-  pick(_x: number, _y: number) {
-    return -1
-  }
-
   setScissor(x: number, y: number, w: number, h: number) {
     this.record('setScissor', x, y, w, h)
   }
@@ -151,10 +120,6 @@ export class MockHal implements GpuHal {
 
   clearViewport() {
     this.record('clearViewport')
-  }
-
-  getWebGLContext() {
-    return null
   }
 
   dispose() {

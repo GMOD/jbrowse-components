@@ -1,6 +1,58 @@
 import MultiWiggleAdapter from './MultiWiggleAdapter.ts'
 import configSchema from './configSchema.ts'
 
+describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
+  it('derives source names from URI filenames', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: [
+          'http://example.com/path/sample.bw',
+          'http://example.com/path/track.bigwig',
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters[0]!.source).toBe('sample')
+    expect(adapters[1]!.source).toBe('track')
+  })
+
+  it('does not strip the last char from filenames with no extension', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({ bigWigs: ['http://example.com/data/noext'] }),
+      mockGetSubAdapter,
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters[0]!.source).toBe('noext')
+  })
+
+  it('handles filenames with multiple dots', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: ['http://example.com/data/sample.data.bw'],
+      }),
+      mockGetSubAdapter,
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters[0]!.source).toBe('sample.data')
+  })
+})
+
 describe('MultiWiggleAdapter.getSources', () => {
   let adapter: MultiWiggleAdapter
 

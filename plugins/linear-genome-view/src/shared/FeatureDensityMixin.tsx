@@ -14,6 +14,7 @@ import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 
 import type { FeatureDensityModel } from './autorunFeatureDensityStats.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -21,6 +22,9 @@ type LGV = LinearGenomeViewModel
 
 type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
 
+interface WithConfiguration {
+  configuration: AnyConfigurationModel
+}
 /**
  * Block-based display mixin that adds reactive density-stats checking
  * on top of RegionTooLargeMixin.
@@ -48,17 +52,19 @@ export default function FeatureDensityMixin() {
     }))
     .views(self => ({
       get currentBytesRequested() {
-        return self.featureDensityStats?.bytes || 0
+        return self.featureDensityStats?.bytes ?? 0
       },
 
       get currentFeatureScreenDensity() {
         const view = getContainingView(self) as LGV
-        return (self.featureDensityStats?.featureDensity || 0) * view.bpPerPx
+        return (self.featureDensityStats?.featureDensity ?? 0) * view.bpPerPx
       },
 
       get maxFeatureScreenDensity() {
-        // @ts-expect-error
-        return getConf(self, 'maxFeatureScreenDensity')
+        return getConf(
+          self as unknown as WithConfiguration,
+          'maxFeatureScreenDensity',
+        )
       },
 
       get featureDensityStatsReady() {
@@ -71,10 +77,12 @@ export default function FeatureDensityMixin() {
 
       get maxAllowableBytes() {
         return (
-          self.userByteSizeLimit ||
-          self.featureDensityStats?.fetchSizeLimit ||
-          // @ts-expect-error
-          (getConf(self, 'fetchSizeLimit') as number)
+          self.userByteSizeLimit ??
+          self.featureDensityStats?.fetchSizeLimit ??
+          (getConf(
+            self as unknown as WithConfiguration,
+            'fetchSizeLimit',
+          ) as number)
         )
       },
     }))
@@ -106,16 +114,14 @@ export default function FeatureDensityMixin() {
       },
 
       getFeatureDensityStats() {
-        if (!self.featureDensityStatsP) {
-          self.featureDensityStatsP = getFeatureDensityStatsPre(
-            self as unknown as FeatureDensityStatsSelf,
-          ).catch((e: unknown) => {
-            if (isAlive(self)) {
-              this.setFeatureDensityStatsP(undefined)
-            }
-            throw e
-          })
-        }
+        self.featureDensityStatsP ??= getFeatureDensityStatsPre(
+          self as unknown as FeatureDensityStatsSelf,
+        ).catch((e: unknown) => {
+          if (isAlive(self)) {
+            this.setFeatureDensityStatsP(undefined)
+          }
+          throw e
+        })
         return self.featureDensityStatsP
       },
 

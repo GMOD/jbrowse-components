@@ -10,7 +10,7 @@ import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapte
  * Composed by both FeatureDensityMixin (block-based server-side rendered
  * displays like LinearBasicDisplay, LinearArcDisplay, LinearLollipopDisplay)
  * and MultiRegionDisplayMixin (canvas/GPU displays like
- * LinearAlignmentsDisplay, LinearWiggleDisplay, LinearFeatureDisplay).
+ * LinearAlignmentsDisplay, LinearWiggleDisplay, LinearBasicDisplay).
  *
  * Owns the state that TooLargeMessage reads: regionTooLarge,
  * regionTooLargeReason, featureDensityStats, setFeatureDensityStatsLimit.
@@ -33,9 +33,10 @@ export default function RegionTooLargeMixin() {
       get regionTooLargeReason() {
         return self.regionTooLargeReasonState
       },
-
+    }))
+    .views(self => ({
       regionCannotBeRenderedText() {
-        return self.regionTooLargeState ? 'Force load to see features' : ''
+        return self.regionTooLarge ? 'Force load to see features' : ''
       },
     }))
     .actions(self => ({
@@ -61,10 +62,12 @@ export default function RegionTooLargeMixin() {
       },
     }))
     .views(self => ({
+      // Reads through the `regionTooLarge` getter (not `regionTooLargeState`
+      // directly) so subclasses that override the getter with a derived
+      // computation — e.g. canvas's density-based derivation — see the
+      // banner reflect their state.
       regionCannotBeRendered() {
-        return self.regionTooLargeState ? (
-          <TooLargeMessage model={self} />
-        ) : null
+        return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
       },
     }))
 }

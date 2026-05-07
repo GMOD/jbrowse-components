@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/web-core",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 code shared between web-app type products",
   "keywords": [
@@ -24,7 +24,7 @@
     "esm"
   ],
   "scripts": {
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "build": "pnpm build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/web-core",
     "clean": "rimraf esm *.tsbuildinfo",
@@ -38,8 +38,8 @@
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "dockview-core": "^5.2.0",
-    "mobx": "^6.15.0"
+    "dockview-core": "^6.0.1",
+    "mobx": "6.15.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

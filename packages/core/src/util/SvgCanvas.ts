@@ -1,8 +1,9 @@
+import { measureText as measureTextWidth } from './measureText.ts'
+
 interface SavedState {
   fillStyle: string
   strokeStyle: string
   lineWidth: number
-  globalAlpha: number
   font: string
   textAlign: CanvasTextAlign
   textBaseline: CanvasTextBaseline
@@ -15,6 +16,10 @@ interface SavedState {
   sx: number
   sy: number
   rotation: number
+  // Number of `<g clip-path="…">` groups opened since this save() — closed
+  // on restore(). Lets clip() be properly scoped to save/restore brackets,
+  // matching the CanvasRenderingContext2D semantics.
+  groupsToClose: number
 }
 
 function escapeXml(s: string) {
@@ -25,6 +30,16 @@ function escapeXml(s: string) {
     .replace(/"/g, '&quot;')
 }
 
+// Parse CSS font shorthand like "10px sans-serif" or "bold 12px monospace"
+// into SVG-compatible font-size and font-family attributes.
+function fontAttrs(font: string) {
+  const m = /(\d+(?:\.\d+)?)px\s+(.+)/.exec(font)
+  if (m) {
+    return ` font-size="${m[1]}" font-family="${m[2]}"`
+  }
+  return ` font-size="${Number.parseFloat(font) || 10}"`
+}
+
 export class SvgCanvas {
   private parts: string[] = []
   private pathData = ''
@@ -33,7 +48,6 @@ export class SvgCanvas {
   fillStyle: string | CanvasGradient | CanvasPattern = '#000'
   strokeStyle: string | CanvasGradient | CanvasPattern = '#000'
   lineWidth = 1
-  globalAlpha = 1
   font = '10px sans-serif'
   textAlign: CanvasTextAlign = 'start'
   textBaseline: CanvasTextBaseline = 'alphabetic'
@@ -47,6 +61,7 @@ export class SvgCanvas {
   private sx = 1
   private sy = 1
   private rotation = 0
+  private clipIdCounter = 0
 
   private transformPoint(x: number, y: number): [number, number] {
     const sx = x * this.sx
@@ -63,12 +78,33 @@ export class SvgCanvas {
     return [w * Math.abs(this.sx), h * Math.abs(this.sy)]
   }
 
-  private alphaAttr() {
-    return this.globalAlpha < 1 ? ` opacity="${this.globalAlpha}"` : ''
+  private textAnchor() {
+    return this.textAlign === 'center'
+      ? 'middle'
+      : this.textAlign === 'right' || this.textAlign === 'end'
+        ? 'end'
+        : 'start'
+  }
+
+  // Split rgba(r,g,b,a) into separate color + opacity SVG attributes for
+  // compatibility with SVG 1.1 consumers like Inkscape that don't honor the
+  // alpha component of CSS3 rgba() fill/stroke values.
+  private paintAttr(
+    name: string,
+    style: string | CanvasGradient | CanvasPattern,
+  ) {
+    const s = `${style}`
+    const m = /^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/.exec(s)
+    if (m) {
+      const a = parseFloat(m[4]!)
+      const base = `${name}="rgb(${m[1]},${m[2]},${m[3]})"`
+      return a < 1 ? `${base} ${name}-opacity="${a}"` : base
+    }
+    return `${name}="${s}"`
   }
 
   private strokeAttrs() {
-    let attrs = ` stroke="${this.strokeStyle}" stroke-width="${this.lineWidth}"`
+    let attrs = ` ${this.paintAttr('stroke', this.strokeStyle)} stroke-width="${this.lineWidth}"`
     if (this.lineCap !== 'butt') {
       attrs += ` stroke-linecap="${this.lineCap}"`
     }
@@ -86,7 +122,6 @@ export class SvgCanvas {
       fillStyle: `${this.fillStyle}`,
       strokeStyle: `${this.strokeStyle}`,
       lineWidth: this.lineWidth,
-      globalAlpha: this.globalAlpha,
       font: this.font,
       textAlign: this.textAlign,
       textBaseline: this.textBaseline,
@@ -99,16 +134,19 @@ export class SvgCanvas {
       sx: this.sx,
       sy: this.sy,
       rotation: this.rotation,
+      groupsToClose: 0,
     })
   }
 
   restore() {
     const s = this.stack.pop()
     if (s) {
+      for (let i = 0; i < s.groupsToClose; i++) {
+        this.parts.push('</g>')
+      }
       this.fillStyle = s.fillStyle
       this.strokeStyle = s.strokeStyle
       this.lineWidth = s.lineWidth
-      this.globalAlpha = s.globalAlpha
       this.font = s.font
       this.textAlign = s.textAlign
       this.textBaseline = s.textBaseline
@@ -192,15 +230,14 @@ export class SvgCanvas {
   fillRect(x: number, y: number, w: number, h: number) {
     const [tx, ty] = this.transformPoint(x, y)
     const [tw, th] = this.transformSize(w, h)
-    const alpha = this.alphaAttr()
     if (this.rotation !== 0 && this.rotation % (Math.PI / 2) !== 0) {
       const deg = (this.rotation * 180) / Math.PI
       this.parts.push(
-        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="${this.fillStyle}"${alpha} transform="rotate(${deg} ${tx} ${ty})"/>`,
+        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" ${this.paintAttr('fill', this.fillStyle)} transform="rotate(${deg} ${tx} ${ty})"/>`,
       )
     } else {
       this.parts.push(
-        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="${this.fillStyle}"${alpha}/>`,
+        `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" ${this.paintAttr('fill', this.fillStyle)}/>`,
       )
     }
   }
@@ -212,9 +249,8 @@ export class SvgCanvas {
   strokeRect(x: number, y: number, w: number, h: number) {
     const [tx, ty] = this.transformPoint(x, y)
     const [tw, th] = this.transformSize(w, h)
-    const alpha = this.alphaAttr()
     this.parts.push(
-      `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="none"${this.strokeAttrs()}${alpha}/>`,
+      `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="none"${this.strokeAttrs()}/>`,
     )
   }
 
@@ -296,31 +332,23 @@ export class SvgCanvas {
 
   stroke() {
     if (this.pathData) {
-      const alpha = this.alphaAttr()
       this.parts.push(
-        `<path d="${this.pathData}" fill="none"${this.strokeAttrs()}${alpha}/>`,
+        `<path d="${this.pathData}" fill="none"${this.strokeAttrs()}/>`,
       )
     }
   }
 
   fill() {
     if (this.pathData) {
-      const alpha = this.alphaAttr()
       this.parts.push(
-        `<path d="${this.pathData}" fill="${this.fillStyle}" stroke="none"${alpha}/>`,
+        `<path d="${this.pathData}" ${this.paintAttr('fill', this.fillStyle)} stroke="none"/>`,
       )
     }
   }
 
   fillText(text: string, x: number, y: number) {
     const [tx, ty] = this.transformPoint(x, y)
-    const alpha = this.alphaAttr()
-    const anchor =
-      this.textAlign === 'center'
-        ? 'middle'
-        : this.textAlign === 'right' || this.textAlign === 'end'
-          ? 'end'
-          : 'start'
+    const anchor = this.textAnchor()
     const baseline =
       this.textBaseline === 'middle'
         ? 'middle'
@@ -329,22 +357,16 @@ export class SvgCanvas {
           : 'auto'
     const escaped = escapeXml(text)
     this.parts.push(
-      `<text x="${tx}" y="${ty}" fill="${this.fillStyle}" font="${this.font}" text-anchor="${anchor}" dominant-baseline="${baseline}"${alpha}>${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" ${this.paintAttr('fill', this.fillStyle)}${fontAttrs(this.font)} text-anchor="${anchor}" dominant-baseline="${baseline}">${escaped}</text>`,
     )
   }
 
   strokeText(text: string, x: number, y: number) {
     const [tx, ty] = this.transformPoint(x, y)
-    const alpha = this.alphaAttr()
-    const anchor =
-      this.textAlign === 'center'
-        ? 'middle'
-        : this.textAlign === 'right' || this.textAlign === 'end'
-          ? 'end'
-          : 'start'
+    const anchor = this.textAnchor()
     const escaped = escapeXml(text)
     this.parts.push(
-      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()} font="${this.font}" text-anchor="${anchor}"${alpha}>${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font)} text-anchor="${anchor}">${escaped}</text>`,
     )
   }
 
@@ -357,12 +379,26 @@ export class SvgCanvas {
   }
 
   clip(..._args: unknown[]) {
-    // no-op: clipping is handled at the SVG wrapper level
+    // Use the current path as a clipPath, then open a `<g clip-path>`
+    // group that subsequent draws will land inside. The group is closed by
+    // restore() — see groupsToClose on the save stack. Without a preceding
+    // save() the clip becomes permanent (matches Canvas2D semantics).
+    if (!this.pathData) {
+      return
+    }
+    const id = `svgcanvas-clip-${this.clipIdCounter++}`
+    this.parts.push(
+      `<clipPath id="${id}"><path d="${this.pathData}"/></clipPath><g clip-path="url(#${id})">`,
+    )
+    if (this.stack.length > 0) {
+      this.stack[this.stack.length - 1]!.groupsToClose++
+    }
   }
 
   measureText(text: string) {
-    const fontSize = Number.parseFloat(this.font) || 10
-    return { width: text.length * fontSize * 0.6 }
+    const m = /(\d+(?:\.\d+)?)px/.exec(this.font)
+    const fontSize = m ? +m[1]! : Number.parseFloat(this.font) || 10
+    return { width: measureTextWidth(text, fontSize) }
   }
 
   getSerializedSvg() {

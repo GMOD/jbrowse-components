@@ -13,8 +13,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import ErrorBanner from './ErrorBanner.tsx'
 import { ErrorBoundary } from './ErrorBoundary.tsx'
-import ErrorMessage from './ErrorMessage.tsx'
 import SanitizedHTML from './SanitizedHTML.tsx'
 import { makeStyles } from '../util/tss-react/index.ts'
 
@@ -37,7 +37,7 @@ function DialogError({ error }: { error: unknown }) {
   const { classes } = useStyles()
   return (
     <div className={classes.errorBox}>
-      <ErrorMessage error={error} />
+      <ErrorBanner error={error} />
     </div>
   )
 }

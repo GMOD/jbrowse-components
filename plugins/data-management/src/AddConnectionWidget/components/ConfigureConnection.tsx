@@ -18,7 +18,7 @@ const ConfigureConnection = observer(function ConfigureConnection({
   session: AbstractSessionModel
 }) {
   const ConfigEditorComponent =
-    connectionType.configEditorComponent || ConfigurationEditor
+    connectionType.configEditorComponent ?? ConfigurationEditor
 
   return (
     <Suspense fallback={<LoadingEllipses />}>

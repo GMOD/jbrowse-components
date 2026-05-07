@@ -2,13 +2,31 @@ import { type Feature, SimpleFeature } from '@jbrowse/core/util'
 
 import { isUTR } from './util.ts'
 
-function makeSubpartsFilter(confKey: string, config: Record<string, unknown>) {
-  const filter = (config[confKey] ??
-    'CDS,UTR,five_prime_UTR,three_prime_UTR') as string[] | string
-  const ret = typeof filter === 'string' ? filter.split(/\s*,\s*/) : filter
-  const lowerRet = new Set(ret.map(t => t.toLowerCase()))
+import type { DisplayConfig } from './renderConfig.ts'
 
-  return (feature: Feature) => lowerRet.has(feature.get('type').toLowerCase())
+const subpartsFilterCache = new Map<string, (f: Feature) => boolean>()
+
+function makeSubpartsFilter(subParts: string) {
+  let f = subpartsFilterCache.get(subParts)
+  if (!f) {
+    const lowerRet = new Set(
+      subParts.split(/\s*,\s*/).map(t => t.toLowerCase()),
+    )
+    f = (feature: Feature) =>
+      lowerRet.has(feature.get('type')?.toLowerCase() ?? '')
+    subpartsFilterCache.set(subParts, f)
+  }
+  return f
+}
+
+function utrType(strand: number, isFivePrime: boolean) {
+  if (strand > 0) {
+    return isFivePrime ? 'five_prime_UTR' : 'three_prime_UTR'
+  }
+  if (strand < 0) {
+    return isFivePrime ? 'three_prime_UTR' : 'five_prime_UTR'
+  }
+  return 'UTR'
 }
 
 export function makeUTRs(parent: Feature, subs: Feature[]) {
@@ -39,7 +57,8 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
 
   const parentStart = parent.get('start')
   const parentEnd = parent.get('end')
-  const parentStrand = parent.get('strand')
+  const parentStrand = parent.get('strand') ?? 0
+  const parentRefName = parent.get('refName')
 
   for (const sub of subparts) {
     const type = sub.get('type')
@@ -51,15 +70,11 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
         subparts.push(
           new SimpleFeature({
             uniqueId: `${sub.id()}-utr`,
+            refName: parentRefName,
             start: exonStart,
             end: Math.min(exonEnd, codeStart),
             strand: parentStrand,
-            type:
-              parentStrand > 0
-                ? 'five_prime_UTR'
-                : parentStrand < 0
-                  ? 'three_prime_UTR'
-                  : 'UTR',
+            type: utrType(parentStrand, true),
           }),
         )
       }
@@ -68,15 +83,11 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
         subparts.push(
           new SimpleFeature({
             uniqueId: `${sub.id()}-utr2`,
+            refName: parentRefName,
             start: Math.max(exonStart, codeEnd),
             end: exonEnd,
             strand: parentStrand,
-            type:
-              parentStrand > 0
-                ? 'three_prime_UTR'
-                : parentStrand < 0
-                  ? 'five_prime_UTR'
-                  : 'UTR',
+            type: utrType(parentStrand, false),
           }),
         )
       }
@@ -87,15 +98,11 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
     subparts.push(
       new SimpleFeature({
         uniqueId: `${parent.id()}-utr-left`,
+        refName: parentRefName,
         start: parentStart,
         end: codeStart,
         strand: parentStrand,
-        type:
-          parentStrand > 0
-            ? 'five_prime_UTR'
-            : parentStrand < 0
-              ? 'three_prime_UTR'
-              : 'UTR',
+        type: utrType(parentStrand, true),
       }),
     )
   }
@@ -104,15 +111,11 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
     subparts.push(
       new SimpleFeature({
         uniqueId: `${parent.id()}-utr-right`,
+        refName: parentRefName,
         start: codeEnd,
         end: parentEnd,
         strand: parentStrand,
-        type:
-          parentStrand > 0
-            ? 'three_prime_UTR'
-            : parentStrand < 0
-              ? 'five_prime_UTR'
-              : 'UTR',
+        type: utrType(parentStrand, false),
       }),
     )
   }
@@ -120,19 +123,18 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
   return subparts
 }
 
-export function getSubparts(f: Feature, config: Record<string, unknown>) {
+export function getSubparts(f: Feature, config: DisplayConfig) {
   let c = f.get('subfeatures')
   if (!c || c.length === 0) {
     return []
   }
   const hasUTRs = c.some(child => isUTR(child))
-  const isTranscript = ['mRNA', 'transcript'].includes(f.get('type'))
+  const isTranscript = ['mRNA', 'transcript'].includes(f.get('type') ?? '')
   const impliedUTRs = !hasUTRs && isTranscript
 
   if (impliedUTRs || config.impliedUTRs) {
     c = makeUTRs(f, c)
   }
 
-  const subpartFilter = makeSubpartsFilter('subParts', config)
-  return c.filter(subpartFilter)
+  return c.filter(makeSubpartsFilter(config.subParts))
 }

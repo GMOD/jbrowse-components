@@ -9,7 +9,7 @@ import type { BaseSession } from '@jbrowse/product-core'
  * #category root
  */
 export function TemporaryAssembliesMixin(
-  pluginManager: PluginManager,
+  _pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(),
 ) {
   return types
@@ -30,7 +30,7 @@ export function TemporaryAssembliesMixin(
         addTemporaryAssembly(conf: AnyConfiguration) {
           const asm = self.temporaryAssemblies.find(f => f.name === conf.name)
           if (asm) {
-            console.warn(`Assembly ${conf.name} was already existing`)
+            console.warn(`Assembly ${conf.name} already exists`)
             return asm
           }
           const length = self.temporaryAssemblies.push(conf)

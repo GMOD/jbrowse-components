@@ -93,7 +93,7 @@ showHeader: false
 
 ```js
 // type signature
-IArrayType<IModelType<ModelProperties & { id: any; type: IType<string, string, string>; offsetPx: IType<number, number, number>; bpPerPx: IType<number, number, number>; ... 13 more ...; init: IType<...>; }, { ...; } & ... 13 more ... & { ...; }, ModelCreationType<...>, ModelSnapshotType<...>>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 16 more ... & { ...; }, ModelCreationType<...>, ModelSnapshotType<...>>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -107,7 +107,7 @@ used for initializing the view from a session snapshot
 
 ```js
 // type signature
-IType<BreakpointSplitViewInit, BreakpointSplitViewInit, BreakpointSplitViewInit>
+IType<BreakpointSplitViewInit | undefined, BreakpointSplitViewInit | undefined, BreakpointSplitViewInit | undefined>
 // code
 init: types.frozen<BreakpointSplitViewInit | undefined>()
 ```
@@ -142,7 +142,7 @@ view's track if only a single row is used
 
 ```js
 // type
-(IMSTArray<any> & IStateTreeNode<IArrayType<any>>) | { configuration: { trackId: string; }; }[]
+(IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>) | { configuration: { trackId: string; }; }[]
 ```
 
 ### BreakpointSplitView - Methods
@@ -190,14 +190,14 @@ Get a composite map of featureId-\>feature map for a track across multiple views
 
 ```js
 // type signature
-getTrackFeatures: (trackConfigId: string) => Map<any, Feature>
+getTrackFeatures: (trackConfigId: string) => Map<string, Feature>
 ```
 
 #### method: getMatchedFeaturesInLayout
 
 ```js
 // type signature
-getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: any; clipLengthAtStartOfRead: any; }[][]
+getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: number; clipLengthAtStartOfRead: any; }[][]
 ```
 
 #### method: menuItems
@@ -269,12 +269,12 @@ reverseViewOrder: () => void
 
 ```js
 // type signature
-setInit: (init?: BreakpointSplitViewInit) => void
+setInit: (init?: BreakpointSplitViewInit | undefined) => void
 ```
 
 #### action: setViews
 
 ```js
 // type signature
-setViews: (viewInits: { loc?: string; assembly: string; tracks?: string[]; }[]) => void
+setViews: (viewInits: { loc?: string | undefined; assembly: string; tracks?: string[] | undefined; }[]) => void
 ```

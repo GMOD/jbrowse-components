@@ -66,9 +66,6 @@ export default function JexlF(/* config?: any*/) {
   j.addFunction('slice', (s: string, start: number, end?: number) =>
     s.slice(start, end),
   )
-  j.addFunction('startsWith', (s: string, search: string, pos?: number) =>
-    s.startsWith(search, pos),
-  )
   j.addFunction('substring', (s: string, start: number, end?: number) =>
     // eslint-disable-next-line unicorn/prefer-string-slice
     s.substring(start, end),

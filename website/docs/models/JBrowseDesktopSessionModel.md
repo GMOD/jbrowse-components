@@ -43,14 +43,14 @@ composed of
 
 ```js
 // type
-BaseAssemblyConfigSchema[]
+ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaType<...>; displayName: { ....
 ```
 
 #### getter: root
 
 ```js
 // type
-{ jbrowse: any; session: any; sessionPath: string; assemblyManager: any; internetAccounts: IMSTArray<any> & IStateTreeNode<IArrayType<any>>; history: any; jobsManager: {} & ... 5 more ... & IStateTreeNode<...>; } & ... 13 more ... & IStateTreeNode<...>
+{ jbrowse: any; session: any; sessionPath: string; assemblyManager: { assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & ... 5 more ... & IStateTreeNode<...>; internetAccounts: IMSTAr...
 ```
 
 #### getter: assemblyNames
@@ -64,14 +64,14 @@ string[]
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: history
 
 ```js
 // type
-any
+{ undoIdx: number; targetPath: string; } & NonEmptyObject & { history: unknown[]; notTrackingUndo: boolean; } & { readonly canUndo: boolean; readonly canRedo: boolean; } & { stopTrackingUndo(): void; ... 5 more ...; redo(): void; } & IStateTreeNode<...>
 ```
 
 #### getter: menus
@@ -85,7 +85,7 @@ any
 
 ```js
 // type
-any
+{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefi...
 ```
 
 ### JBrowseDesktopSessionModel - Methods
@@ -95,7 +95,7 @@ any
 ```js
 // type signature
 renderProps: () => {
-  theme: any
+  theme: Theme
   highResolutionScaling: any
 }
 ```
@@ -113,5 +113,5 @@ renameCurrentSession: (sessionName: string) => void
 
 ```js
 // type signature
-editTrackConfiguration: (configuration: BaseTrackConfig) => void
+editTrackConfiguration: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```

@@ -21,7 +21,7 @@ export class BaseAdapter {
 
   sequenceAdapterConfig?: Record<string, unknown>
 
-  static capabilities = [] as string[]
+  static capabilities: string[] = []
 
   constructor(
     config: AnyConfigurationModel = EmptyConfig.create(),
@@ -33,7 +33,7 @@ export class BaseAdapter {
     this.pluginManager = pluginManager
     if (typeof jest === 'undefined') {
       const data = isStateTreeNode(config) ? getSnapshot(config) : config
-      this.id = idMaker(data as Record<string, unknown>)
+      this.id = idMaker(data)
     } else {
       this.id = 'test'
     }

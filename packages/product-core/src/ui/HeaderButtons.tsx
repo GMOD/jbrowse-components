@@ -36,7 +36,7 @@ function HeaderButtons({ conf, setShowRefNames }: HeaderButtonsProps) {
         onClick={async () => {
           const { default: copy } = await import('copy-to-clipboard')
           const snap = removeAttr(JSON.parse(JSON.stringify(conf)), 'baseUri')
-          copy(JSON.stringify(snap, null, 2))
+          await copy(JSON.stringify(snap, null, 2))
           setCopied(true)
           setTimeout(() => {
             setCopied(false)

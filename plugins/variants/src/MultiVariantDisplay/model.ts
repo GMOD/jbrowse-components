@@ -5,6 +5,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
+import type { VariantCellData } from './components/computeVariantCells.ts'
+import type { VariantBackend } from './components/variantBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -37,12 +39,24 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         get cellDataMode() {
           return 'regular' as const
         },
-        renderProps() {
-          return { notReady: true }
+        get renderState() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          const cellData = self.cellData as
+            | { perRegionCellData: Record<number, VariantCellData> }
+            | undefined
+          if (!view.initialized || !cellData) {
+            return undefined
+          }
+          return {
+            canvasWidth: view.trackWidthPx,
+            canvasHeight: self.availableHeight,
+            rowHeight: self.rowHeight,
+            scrollTop: self.scrollTop,
+          }
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self as MultiLinearVariantDisplayModel, opts)
+          return renderSvg(self, opts)
         },
         showSubmenuItems() {
           return [
@@ -63,6 +77,34 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .actions(self => ({
+      startGpuBackendLifecycle(backend: VariantBackend) {
+        self.installGpuDisplay<VariantBackend>(backend, {
+          upload: b => {
+            const cellData = self.cellData as
+              | { perRegionCellData: Record<number, VariantCellData> }
+              | undefined
+            const active: number[] = []
+            if (cellData) {
+              for (const [k, v] of Object.entries(cellData.perRegionCellData)) {
+                const n = Number(k)
+                b.uploadRegion(n, v)
+                active.push(n)
+              }
+            }
+            b.pruneRegions(active)
+          },
+          render: b => {
+            const state = self.renderState
+            if (!state) {
+              return false
+            }
+            b.renderBlocks(self.renderBlocks, state)
+            return true
+          },
+        })
+      },
+    }))
 }
 
 export type MultiLinearVariantDisplayStateModel = ReturnType<

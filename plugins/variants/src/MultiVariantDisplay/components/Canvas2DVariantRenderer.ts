@@ -2,162 +2,138 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
+import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+
+import { drawVariantShape } from './variantShape.ts'
 
 import type {
   VariantBackend,
   VariantRenderBlock,
+  VariantRenderState,
+  VariantUploadData,
 } from './variantBackendTypes.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-interface Canvas2DRegionData {
-  regionStart: number
-  cellPositions: Uint32Array
-  cellRowIndices: Uint32Array
-  cellColors: Uint8Array
-  cellShapeTypes: Uint8Array
-  numCells: number
+/**
+ * Pure draw entry point. Paints the variant matrix cells (one shape per
+ * variant×sample) into any 2D-canvas-like context. Per-block scissor clip
+ * keeps off-block cells from bleeding across boundaries; per-row Y-cull
+ * skips off-screen rows fast (meaningful when the matrix is taller than the
+ * viewport and scrolled).
+ *
+ * The on-screen `Canvas2DVariantRenderer` wraps this with `prepareCanvas`;
+ * SVG export calls it directly with an `SvgCanvas`.
+ */
+export function drawVariantBlocks(
+  ctx: Ctx2D,
+  regions: ReadonlyMap<number, VariantUploadData>,
+  blocks: VariantRenderBlock[],
+  state: VariantRenderState,
+) {
+  const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
+
+  for (const block of blocks) {
+    const region = regions.get(block.displayedRegionIndex)
+    if (!region || region.numCells === 0) {
+      continue
+    }
+
+    const clip = clipBlockForCanvas(block, canvasWidth)
+    if (!clip) {
+      continue
+    }
+
+    const { fullBlockWidth, bpLength } = clip
+
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
+    ctx.clip()
+
+    let prevColor = -1
+    for (let i = 0; i < region.numCells; i++) {
+      // Y-cull first: y depends only on rowIndex + scroll, so off-screen
+      // rows skip all the bp→px math below. Meaningful when scrolling
+      // through a dense matrix where most rows are out of view.
+      const y = region.cellRowIndices[i]! * rowHeight - scrollTop
+      if (y + rowHeight < 0 || y > canvasHeight) {
+        continue
+      }
+
+      const startBp = region.cellPositions[i * 2]! + region.regionStart
+      const endBp = region.cellPositions[i * 2 + 1]! + region.regionStart
+
+      const frac1 = (startBp - block.bpRangeX[0]) / bpLength
+      const frac2 = (endBp - block.bpRangeX[0]) / bpLength
+      const rawX1 = block.reversed
+        ? block.screenEndPx - frac1 * fullBlockWidth
+        : block.screenStartPx + frac1 * fullBlockWidth
+      const rawX2 = block.reversed
+        ? block.screenEndPx - frac2 * fullBlockWidth
+        : block.screenStartPx + frac2 * fullBlockWidth
+      const x1 = Math.min(rawX1, rawX2)
+      const w = Math.max(2, Math.max(rawX1, rawX2) - x1)
+
+      const color = region.cellColors[i]!
+      if (color !== prevColor) {
+        ctx.fillStyle = abgrToCssRgba(color)
+        prevColor = color
+      }
+      drawVariantShape(ctx, region.cellShapeTypes[i]!, x1, y, w, rowHeight)
+    }
+
+    ctx.restore()
+  }
 }
 
 export class Canvas2DVariantRenderer implements VariantBackend {
-  private ctx: CanvasRenderingContext2D
-  private canvas: HTMLCanvasElement
-  private regions = new Map<number, Canvas2DRegionData>()
+  private ctx: CanvasRenderingContext2D | null
+  private canvas: HTMLCanvasElement | null
+  private regions = new Map<number, VariantUploadData>()
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement | null) {
     this.canvas = canvas
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
+    if (canvas) {
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        throw new Error('Canvas 2D context not available')
+      }
+      this.ctx = ctx
+    } else {
+      this.ctx = null
     }
-    this.ctx = ctx
   }
 
-  uploadRegion(
-    regionNumber: number,
-    data: {
-      regionStart: number
-      cellPositions: Uint32Array
-      cellRowIndices: Uint32Array
-      cellColors: Uint8Array
-      cellShapeTypes: Uint8Array
-      numCells: number
-    },
-  ) {
+  uploadRegion(displayedRegionIndex: number, data: VariantUploadData) {
     if (data.numCells === 0) {
-      this.regions.delete(regionNumber)
-      return
-    }
-    this.regions.set(regionNumber, {
-      regionStart: data.regionStart,
-      cellPositions: data.cellPositions,
-      cellRowIndices: data.cellRowIndices,
-      cellColors: data.cellColors,
-      cellShapeTypes: data.cellShapeTypes,
-      numCells: data.numCells,
-    })
-  }
-
-  pruneStaleRegions(activeRegionNumbers: number[]) {
-    const active = new Set(activeRegionNumbers)
-    for (const regionNumber of this.regions.keys()) {
-      if (!active.has(regionNumber)) {
-        this.regions.delete(regionNumber)
-      }
+      this.regions.delete(displayedRegionIndex)
+    } else {
+      this.regions.set(displayedRegionIndex, data)
     }
   }
 
-  renderBlocks(
-    blocks: VariantRenderBlock[],
-    state: {
-      canvasWidth: number
-      canvasHeight: number
-      rowHeight: number
-      scrollTop: number
-    },
-  ) {
-    const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
+  pruneRegions(activeRegions: number[]) {
+    pruneRegionMap(this.regions, activeRegions)
+  }
 
-    const ctx = this.ctx
-    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
-
-    for (const block of blocks) {
-      const region = this.regions.get(block.regionNumber)
-      if (!region || region.numCells === 0) {
-        continue
-      }
-
-      const clip = clipBlockForCanvas(block, canvasWidth)
-      if (!clip) {
-        continue
-      }
-
-      const { fullBlockWidth, bpLength } = clip
-
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-      ctx.clip()
-
-      for (let i = 0; i < region.numCells; i++) {
-        const startBp = region.cellPositions[i * 2]! + region.regionStart
-        const endBp = region.cellPositions[i * 2 + 1]! + region.regionStart
-        const rowIdx = region.cellRowIndices[i]!
-        const shapeType = region.cellShapeTypes[i]!
-
-        const frac1 = (startBp - block.bpRangeX[0]) / bpLength
-        const frac2 = (endBp - block.bpRangeX[0]) / bpLength
-        const rawX1 = block.reversed
-          ? block.screenEndPx - frac1 * fullBlockWidth
-          : block.screenStartPx + frac1 * fullBlockWidth
-        const rawX2 = block.reversed
-          ? block.screenEndPx - frac2 * fullBlockWidth
-          : block.screenStartPx + frac2 * fullBlockWidth
-        const x1 = Math.min(rawX1, rawX2)
-        const x2 = Math.max(rawX1, rawX2)
-        const y = rowIdx * rowHeight - scrollTop
-        const w = Math.max(2, x2 - x1)
-
-        if (y + rowHeight < 0 || y > canvasHeight) {
-          continue
-        }
-
-        const ci = i * 4
-        const r = region.cellColors[ci]!
-        const g = region.cellColors[ci + 1]!
-        const b = region.cellColors[ci + 2]!
-        const a = region.cellColors[ci + 3]! / 255
-
-        ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-
-        const effectiveShape = shapeType === 3 && w < 1 ? 0 : shapeType
-
-        if (effectiveShape === 0) {
-          ctx.fillRect(x1, y, w, rowHeight)
-        } else if (effectiveShape === 1) {
-          ctx.beginPath()
-          ctx.moveTo(x1, y)
-          ctx.lineTo(x1 + w, y + rowHeight / 2)
-          ctx.lineTo(x1, y + rowHeight)
-          ctx.fill()
-        } else if (effectiveShape === 2) {
-          ctx.beginPath()
-          ctx.moveTo(x1 + w, y)
-          ctx.lineTo(x1, y + rowHeight / 2)
-          ctx.lineTo(x1 + w, y + rowHeight)
-          ctx.fill()
-        } else if (effectiveShape === 3) {
-          ctx.beginPath()
-          ctx.moveTo(x1, y)
-          ctx.lineTo(x1 + w, y)
-          ctx.lineTo(x1 + w / 2, y + rowHeight)
-          ctx.fill()
-        }
-      }
-
-      ctx.restore()
+  renderBlocks(blocks: VariantRenderBlock[], state: VariantRenderState) {
+    if (!this.canvas || !this.ctx) {
+      throw new Error(
+        'Canvas2DVariantRenderer.renderBlocks called without a canvas — call drawVariantBlocks(ctx, regions, …) directly for headless rendering',
+      )
     }
+    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    drawVariantBlocks(this.ctx, this.regions, blocks, state)
   }
 
   dispose() {
     this.regions.clear()
+  }
+
+  // Expose for headless callers (SVG export) that drive drawVariantBlocks
+  // with an SvgCanvas after running upload methods.
+  getRegions(): ReadonlyMap<number, VariantUploadData> {
+    return this.regions
   }
 }

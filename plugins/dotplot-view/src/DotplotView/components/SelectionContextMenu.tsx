@@ -1,8 +1,7 @@
 import { Menu } from '@jbrowse/core/ui'
 
 import type { DotplotViewModel } from '../model.ts'
-
-type Coord = [number, number] | undefined
+import type { Coord } from '../types.ts'
 
 interface SelectionContextMenuProps {
   model: DotplotViewModel

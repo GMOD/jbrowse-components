@@ -1,3 +1,4 @@
+import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { cast, getParent, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { toJS } from 'mobx'
@@ -83,7 +84,7 @@ export function JBrowseModelF({
       addTrackConf(trackConf: { trackId: string; type: string }) {
         const { type } = trackConf
         if (!type) {
-          throw new Error(`unknown track type ${type}`)
+          throw new Error(`track type not specified for "${trackConf.trackId}"`)
         }
         self.tracks = [...self.tracks, trackConf]
         return self.tracks.at(-1)
@@ -94,7 +95,7 @@ export function JBrowseModelF({
       addConnectionConf(connectionConf: AnyConfigurationModel) {
         const { type } = connectionConf
         if (!type) {
-          throw new Error(`unknown connection type ${type}`)
+          throw new Error('connection type not specified')
         }
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
@@ -104,7 +105,7 @@ export function JBrowseModelF({
        */
       deleteConnectionConf(configuration: AnyConfigurationModel) {
         const elt = self.connections.find(conn => conn.id === configuration.id)
-        return self.connections.remove(elt)
+        return elt ? self.connections.remove(elt) : false
       },
       /**
        * #action
@@ -141,18 +142,9 @@ export function JBrowseModelF({
        * #action
        */
       removePlugin(pluginDefinition: PluginDefinition) {
+        const targetUrl = pluginUrl(pluginDefinition)
         self.plugins = cast(
-          self.plugins.filter(
-            plugin =>
-              // @ts-expect-error
-              plugin.url !== pluginDefinition.url ||
-              // @ts-expect-error
-              plugin.umdUrl !== pluginDefinition.umdUrl ||
-              // @ts-expect-error
-              plugin.cjsUrl !== pluginDefinition.cjsUrl ||
-              // @ts-expect-error
-              plugin.esmUrl !== pluginDefinition.esmUrl,
-          ),
+          self.plugins.filter(plugin => pluginUrl(plugin) !== targetUrl),
         )
 
         getParent<any>(self).setPluginsUpdated(true)
@@ -168,7 +160,7 @@ export function JBrowseModelF({
             : toJS(sessionConf)
 
         if (!newDefault.name) {
-          throw new Error(`unable to set default session to ${newDefault.name}`)
+          throw new Error('default session must have a name')
         }
 
         self.defaultSession = cast(newDefault)
@@ -179,7 +171,7 @@ export function JBrowseModelF({
       addInternetAccountConf(internetAccountConf: AnyConfigurationModel) {
         const { type } = internetAccountConf
         if (!type) {
-          throw new Error(`unknown internetAccount type ${type}`)
+          throw new Error('internet account type not specified')
         }
         const length = self.internetAccounts.push(internetAccountConf)
         return self.internetAccounts[length - 1]
@@ -189,7 +181,7 @@ export function JBrowseModelF({
        */
       deleteInternetAccountConf(configuration: AnyConfigurationModel) {
         const elt = self.internetAccounts.find(a => a.id === configuration.id)
-        return self.internetAccounts.remove(elt)
+        return elt ? self.internetAccounts.remove(elt) : false
       },
     }))
 }

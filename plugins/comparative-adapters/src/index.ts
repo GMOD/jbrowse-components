@@ -13,12 +13,16 @@ import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
 import MashMapAdapterF from './MashMapAdapter/index.ts'
 import PAFAdapterF from './PAFAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
-import ShardedGfaTabixAdapterF from './ShardedGfaTabixAdapter/index.ts'
 
 export { computeSyriTypes } from './syriUtils.ts'
 export { csToCigar, flipCs } from './csUtils.ts'
 export { multiPairTypes } from './syntenyTypes.ts'
-export type { SyriType } from './syriUtils.ts'
+export type {
+  AlignmentRecord,
+  DupConflict,
+  SyriClassification,
+  SyriType,
+} from './syriUtils.ts'
 export type { MultiPairFeature, PairInfo } from './MultiPairFeature.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -37,7 +41,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     BlastTabularAdapter(pluginManager)
     GfaAdapterF(pluginManager)
     GfaTabixAdapterF(pluginManager)
-    ShardedGfaTabixAdapterF(pluginManager)
+
     ComparativeAddTrackComponentF(pluginManager)
     MCScanAddTrackComponentF(pluginManager)
     GuessAdapterF(pluginManager)

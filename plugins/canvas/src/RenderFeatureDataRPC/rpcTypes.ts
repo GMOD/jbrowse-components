@@ -1,12 +1,4 @@
-/**
- * WebGL Feature Data RPC Types
- *
- * COORDINATE SYSTEM REQUIREMENT:
- * regionStart must be an integer (use Math.floor of view region start).
- * All position arrays store integer offsets from regionStart.
- * This is critical for alignment between features and hit detection.
- */
-
+import type { DisplayConfig } from './renderConfig.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface LabelItem {
@@ -17,14 +9,15 @@ export interface LabelItem {
 }
 
 export interface RenderFeatureDataArgs {
+  [key: string]: unknown
   sessionId: string
   adapterConfig: Record<string, unknown>
-  displayConfig: Record<string, unknown>
+  displayConfig: DisplayConfig
   region: {
     refName: string
     start: number
     end: number
-    assemblyName?: string
+    assemblyName: string
     reversed?: boolean
     seqAdapterRefName?: string
   }
@@ -34,34 +27,29 @@ export interface RenderFeatureDataArgs {
   showOnlyGenes?: boolean
   maxFeatureDensity?: number
   stopToken?: StopToken
+  statusCallback?: (msg: string) => void
 }
 
 export interface FeatureDataResult {
-  // Integer reference point for all positions (floor of view region start).
-  // All position data in this result is stored as integer offsets from regionStart.
-  regionStart: number
-
   // Feature rectangles (box, CDS, UTR, exons)
   rectPositions: Uint32Array
   rectYs: Float32Array
   rectHeights: Float32Array
-  rectColors: Uint8Array
-  numRects: number
+  // RGBA packed as a single u32 per rect (R=byte0 … A=byte3). Consumed
+  // directly by interleaveRects — the rect shader unpacks with bit shifts.
+  rectColors: Uint32Array
 
   // Connecting lines (introns) with strand info for dynamic chevron generation
   linePositions: Uint32Array
   lineYs: Float32Array
-  lineColors: Uint8Array
+  lineColors: Uint32Array
   lineDirections: Int8Array // strand direction: -1, 0, or 1
-  numLines: number
 
   // Strand arrows (at feature ends)
   arrowXs: Uint32Array
   arrowYs: Float32Array
   arrowDirections: Int8Array
-  arrowHeights: Float32Array
-  arrowColors: Uint8Array
-  numArrows: number
+  arrowColors: Uint32Array
 
   // Hit detection
   flatbushItems: FlatbushItem[]
@@ -81,29 +69,25 @@ export interface FeatureDataResult {
   // Number of top-level features in this region (used for density calculations)
   featureCount: number
 
-  // Layout info (computed on main thread after layout pass)
-  maxY: number
+  // Packed RGBA outline color for all rects (0 = no outline)
+  outlineColor: number
 }
 
-export type RegionGpuData = Pick<
+export type RegionRenderData = Pick<
   FeatureDataResult,
-  | 'regionStart'
   | 'rectPositions'
   | 'rectYs'
   | 'rectHeights'
   | 'rectColors'
-  | 'numRects'
+  | 'outlineColor'
   | 'linePositions'
   | 'lineYs'
   | 'lineColors'
   | 'lineDirections'
-  | 'numLines'
   | 'arrowXs'
   | 'arrowYs'
   | 'arrowDirections'
-  | 'arrowHeights'
   | 'arrowColors'
-  | 'numArrows'
 >
 
 export interface RegionTooLargeResult {
@@ -124,30 +108,26 @@ export interface AminoAcidOverlayItem {
   flatbushIdx: number
 }
 
-export interface FlatbushItem {
-  kind: 'feature'
+interface HitItemBase {
   featureId: string
   type: string
   startBp: number
   endBp: number
-  layoutEndBp: number
   topPx: number
   bottomPx: number
+}
+
+export interface FlatbushItem extends HitItemBase {
+  kind: 'feature'
   featureHeightPx: number
   tooltip: string
   name?: string
   strand?: number
 }
 
-export interface SubfeatureInfo {
+export interface SubfeatureInfo extends HitItemBase {
   kind: 'subfeature'
-  featureId: string
   parentFeatureId: string
-  type: string
-  startBp: number
-  endBp: number
-  topPx: number
-  bottomPx: number
   displayLabel?: string
   tooltip?: string
 }
@@ -164,15 +144,21 @@ export interface FeatureLabelData {
   subfeatureLabel?: LabelItem & { isOverlay: boolean; tooltip: string }
 }
 
+// Returns the max rendered width of any label that will actually display for
+// this feature. Mirrors the visibility logic in useOverlayElements: name is
+// gated on showLabels, description is gated on showDescriptions only (not
+// showLabels), subfeature labels always render.
 export function maxLabelTextWidth(
   labelData: FeatureLabelData,
+  showLabels = true,
   showDescriptions = true,
 ) {
-  return Math.max(
-    labelData.nameLabel?.textWidth ?? 0,
-    showDescriptions ? (labelData.descriptionLabel?.textWidth ?? 0) : 0,
-    labelData.subfeatureLabel?.textWidth ?? 0,
-  )
+  const nameWidth = showLabels ? (labelData.nameLabel?.textWidth ?? 0) : 0
+  const descWidth = showDescriptions
+    ? (labelData.descriptionLabel?.textWidth ?? 0)
+    : 0
+  const subfeatureWidth = labelData.subfeatureLabel?.textWidth ?? 0
+  return Math.max(nameWidth, descWidth, subfeatureWidth)
 }
 
 export type FloatingLabelsDataMap = Record<string, FeatureLabelData>

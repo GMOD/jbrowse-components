@@ -82,13 +82,13 @@ const Cytobands = observer(function Cytobands({
       {cytobands.map((args, index) => {
         const k = JSON.stringify(args)
         const { refName, name, type, start, end } = args
-        const s = overview.bpToPx({ refName, coord: start }) || 0
-        const e = overview.bpToPx({ refName, coord: end }) || 0
+        const s = overview.bpToPx({ refName, coord: start }) ?? 0
+        const e = overview.bpToPx({ refName, coord: end }) ?? 0
         const l = Math.min(s, e)
         const w = Math.abs(e - s)
         if (type === 'n/a') {
           const match = name?.match(/^(\d+)([A-Za-z])/)
-          const ret = match[1] + match[2]
+          const ret = match?.[1] && match[2] ? match[1] + match[2] : undefined
           if (ret && ret !== curr) {
             curr = ret
             idx++

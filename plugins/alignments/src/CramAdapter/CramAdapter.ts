@@ -161,7 +161,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       filterBy?: FilterBy
     },
   ) {
-    const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
+    const { stopToken, filterBy, statusCallback = () => {} } = opts ?? {}
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
@@ -197,7 +197,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           flagExclude = 0,
           tagFilter,
           readName,
-        } = filterBy || {}
+        } = filterBy ?? {}
 
         for (const record of records) {
           if (filterReadFlag(record.flags, flagInclude, flagExclude)) {

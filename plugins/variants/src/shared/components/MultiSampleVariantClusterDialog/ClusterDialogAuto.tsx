@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
@@ -9,6 +9,7 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import { buildClusteredLayout } from '@jbrowse/tree-sidebar'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -64,7 +65,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
               </Button>
             </div>
           ) : null}
-          {error ? <ErrorMessage error={error} /> : null}
+          {error ? <ErrorBanner error={error} /> : null}
         </div>
       </DialogContent>
       <DialogActions>
@@ -90,7 +91,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                   {
                     regions: view.dynamicBlocks.contentBlocks,
                     sources: sourcesVolatile,
-                    minorAlleleFrequencyFilter,
+                    minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
                     lengthCutoffFilter,
                     sessionId,
                     adapterConfig,
@@ -103,33 +104,17 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                   },
                 )
 
-                const existingLayoutMap = Object.fromEntries(
-                  model.layout.map(s => [s.name, s]),
+                const baseSources =
+                  isHaplotypeClustering && sampleInfo
+                    ? expandSourcesToHaplotypes({
+                        sources: sourcesVolatile,
+                        sampleInfo,
+                      })
+                    : sourcesVolatile
+                model.setLayoutAndClusterTree(
+                  buildClusteredLayout(baseSources, model.layout, ret.order),
+                  ret.tree,
                 )
-                if (isHaplotypeClustering && sampleInfo) {
-                  const expandedSources = expandSourcesToHaplotypes({
-                    sources: sourcesVolatile,
-                    sampleInfo,
-                  })
-                  model.setLayout(
-                    ret.order.map(idx => {
-                      const source = expandedSources[idx]!
-                      const existing = existingLayoutMap[source.name]
-                      return existing ? { ...source, ...existing } : source
-                    }),
-                    false,
-                  )
-                } else {
-                  model.setLayout(
-                    ret.order.map(idx => {
-                      const source = sourcesVolatile[idx]!
-                      const existing = existingLayoutMap[source.name]
-                      return existing ? { ...source, ...existing } : source
-                    }),
-                    false,
-                  )
-                }
-                model.setClusterTree(ret.tree)
               }
               handleClose()
             } catch (e) {

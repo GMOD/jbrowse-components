@@ -54,8 +54,7 @@ function buildRegionData(
   const indicators = computeInsertionIndicators(
     indels,
     coverage.depths,
-    coverage.startOffset,
-    regionStart,
+    coverage.startPos,
   )
   const mismatchPositions = new Uint32Array(mismatches.length)
   const mismatchBases = new Uint8Array(mismatches.length)
@@ -69,7 +68,7 @@ function buildRegionData(
     genomeFeatures: [['genomeA', features]],
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
-    coverageStartOffset: coverage.startOffset,
+    coverageStartPos: coverage.startPos,
     snpPositions: snp.positions,
     snpYOffsets: snp.yOffsets,
     snpHeights: snp.heights,
@@ -121,8 +120,8 @@ describe('collapsed intron view: same refName, different regions', () => {
   })
 })
 
-describe('regionNumber round-trip: fetch stores and render looks up by number', () => {
-  test('data stored by regionNumber is retrievable', () => {
+describe('displayedRegionIndex round-trip: fetch stores and render looks up by number', () => {
+  test('data stored by displayedRegionIndex is retrievable', () => {
     const displayedRegions = [
       { assemblyName: 'hg38', refName: 'chr1', start: 0, end: 248956422 },
       { assemblyName: 'hg38', refName: 'chr2', start: 0, end: 242193529 },
@@ -140,11 +139,11 @@ describe('regionNumber round-trip: fetch stores and render looks up by number', 
     }
 
     for (
-      let regionNumber = 0;
-      regionNumber < displayedRegions.length;
-      regionNumber++
+      let displayedRegionIndex = 0;
+      displayedRegionIndex < displayedRegions.length;
+      displayedRegionIndex++
     ) {
-      const data = rpcDataMap.get(regionNumber)
+      const data = rpcDataMap.get(displayedRegionIndex)
       expect(data).toBeDefined()
     }
   })
@@ -193,7 +192,7 @@ describe('genomeRows aggregation across regions', () => {
           ],
           coverageDepths: new Float32Array(0),
           coverageMaxDepth: 0,
-          coverageStartOffset: 0,
+          coverageStartPos: 0,
           snpPositions: new Uint32Array(0),
           snpYOffsets: new Float32Array(0),
           snpHeights: new Float32Array(0),
@@ -226,10 +225,8 @@ describe('coverage correctness for overlapping synteny features', () => {
     expect(data.coverageMaxDepth).toBe(1)
 
     // Check actual depths at specific positions
-    const depthAt150 =
-      data.coverageDepths[150 - data.regionStart - data.coverageStartOffset]
-    const depthAt250 =
-      data.coverageDepths[250 - data.regionStart - data.coverageStartOffset]
+    const depthAt150 = data.coverageDepths[150 - data.coverageStartPos]
+    const depthAt250 = data.coverageDepths[250 - data.coverageStartPos]
     expect(depthAt150).toBe(1)
     // Gap between features should be 0
     expect(depthAt250).toBe(0)
@@ -245,11 +242,11 @@ describe('coverage correctness for overlapping synteny features', () => {
     expect(data.coverageMaxDepth).toBe(3)
 
     // At position 275, all three features overlap
-    const idx275 = 275 - data.regionStart - data.coverageStartOffset
+    const idx275 = 275 - data.coverageStartPos
     expect(data.coverageDepths[idx275]).toBe(3)
 
     // At position 150, only the first feature
-    const idx150 = 150 - data.regionStart - data.coverageStartOffset
+    const idx150 = 150 - data.coverageStartPos
     expect(idx150).toBeGreaterThanOrEqual(0)
     expect(data.coverageDepths[idx150]).toBe(1)
   })
@@ -363,7 +360,7 @@ describe('multi-region coverage rendering data', () => {
       feat({ start: 120, end: 180 }),
     ])
     expect(data.coverageDepths).toBeInstanceOf(Float32Array)
-    expect(typeof data.coverageStartOffset).toBe('number')
+    expect(typeof data.coverageStartPos).toBe('number')
     expect(typeof data.regionStart).toBe('number')
   })
 })

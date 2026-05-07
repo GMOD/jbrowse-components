@@ -37,6 +37,7 @@ function stateModelFactory() {
     })
     .volatile(() => ({
       rendererTypeName: '',
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       statusMessage: undefined as string | undefined,
     }))
@@ -47,14 +48,14 @@ function stateModelFactory() {
       get RenderingComponent(): React.FC<{
         model: typeof self
         onHorizontalScroll?: () => void
-        blockState?: Record<string, any>
+        blockState?: Record<string, unknown>
       }> {
         const { pluginManager } = getEnv(self)
         return pluginManager.getDisplayType(self.type)!
           .ReactComponent as React.FC<{
           model: typeof self
           onHorizontalScroll?: () => void
-          blockState?: Record<string, any>
+          blockState?: Record<string, unknown>
         }>
       },
 
@@ -94,12 +95,17 @@ function stateModelFactory() {
        * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
        */
       get parentDisplay() {
-        if (!hasParent(self)) {
-          return undefined
-        }
-        const parent = getParent<any>(self)
-        if (typeof parent?.type === 'string' && parent.type.endsWith('Display')) {
-          return parent
+        if (hasParent(self)) {
+          const parent = getParent<{
+            type?: string
+            effectiveRpcDriverName?: string
+          }>(self)
+          if (
+            typeof parent.type === 'string' &&
+            parent.type.endsWith('Display')
+          ) {
+            return parent
+          }
         }
         return undefined
       },
@@ -118,7 +124,7 @@ function stateModelFactory() {
         if (this.parentDisplay?.effectiveRpcDriverName) {
           return this.parentDisplay.effectiveRpcDriverName
         }
-        return getConf(this.parentTrack, 'rpcDriverName') || undefined
+        return getConf(this.parentTrack, 'rpcDriverName')
       },
     }))
     .views(self => ({
@@ -194,13 +200,7 @@ function stateModelFactory() {
 
       get effectiveTrackConfig() {
         const track = getContainingTrack(self)
-        return getEffectiveTrackConfig(
-          track.configuration,
-          self as unknown as {
-            configuration: Record<string, unknown>
-            [key: string]: unknown
-          },
-        )
+        return getEffectiveTrackConfig(track.configuration, self)
       },
     }))
     .actions(self => ({

@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { wiggleShader } from './wiggleShader.ts'
+import { WGSL_SOURCE as wiggleShader } from './shaders/wiggle.generated.ts'
 
 let tmpDir: string
 
@@ -22,11 +22,7 @@ function validateWgsl(name: string, code: string) {
   try {
     execSync(`naga ${file}`, { stdio: 'pipe' })
   } catch (e) {
-    const msg =
-      e instanceof Error
-        ? ((e as { stderr?: Buffer }).stderr?.toString() ?? e.message)
-        : String(e)
-    throw new Error(`WGSL validation failed for "${name}":\n${msg}`)
+    throw new Error(`WGSL validation failed for "${name}": ${e}`, { cause: e })
   }
 }
 

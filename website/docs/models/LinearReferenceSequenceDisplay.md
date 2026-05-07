@@ -37,7 +37,7 @@ type: types.literal('LinearReferenceSequenceDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -141,7 +141,7 @@ renderProps: () => any
 
 ```js
 // type signature
-regionCannotBeRendered: () => 'Zoom in to see sequence'
+regionCannotBeRendered: () => 'Zoom in to see sequence' | undefined
 ```
 
 #### method: trackMenuItems

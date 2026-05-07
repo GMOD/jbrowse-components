@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IArrayType<any>
+IArrayType<IAnyType>
 // code
 connectionInstances: types.array(
         pluginManager.pluggableMstType('connection', 'stateModel'),
@@ -39,7 +39,7 @@ connectionInstances: types.array(
 
 ```js
 // type
-BaseConnectionConfigModel[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 ### ConnectionManagementSessionMixin - Actions
@@ -48,35 +48,35 @@ BaseConnectionConfigModel[]
 
 ```js
 // type signature
-makeConnection: (configuration: AnyConfigurationModel, initialSnapshot?: {}) => any
+makeConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => any
 ```
 
 #### action: prepareToBreakConnection
 
 ```js
 // type signature
-prepareToBreakConnection: (configuration: AnyConfigurationModel) => (Record<string, number> | (() => void))[]
+prepareToBreakConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => [...] | undefined
 ```
 
 #### action: breakConnection
 
 ```js
 // type signature
-breakConnection: (configuration: AnyConfigurationModel) => void
+breakConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: deleteConnection
 
 ```js
 // type signature
-deleteConnection: (configuration: AnyConfigurationModel) => any
+deleteConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
 ```
 
 #### action: addConnectionConf
 
 ```js
 // type signature
-addConnectionConf: (connectionConf: AnyConfigurationModel) => any
+addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
 ```
 
 #### action: clearConnections

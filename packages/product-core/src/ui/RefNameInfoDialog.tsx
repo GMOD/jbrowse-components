@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 
-import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogContent } from '@mui/material'
+import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
 import { readConf } from './util.ts'
@@ -67,11 +68,11 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   }, [config, rpcManager, trackId, assemblyNames])
 
   const result = (refNames ?? [])
-    .flatMap(([assemblyName, refNames]) => {
+    .flatMap(([assemblyName, names]) => {
       return [
         `--- ${assemblyName} ---`,
-        ...refNames.slice(0, MAX_REF_NAMES),
-        refNames.length > MAX_REF_NAMES
+        ...names.slice(0, MAX_REF_NAMES),
+        names.length > MAX_REF_NAMES
           ? `\nToo many refNames to show in browser for ${assemblyName}, use "Copy ref names" button to copy to clipboard`
           : '',
       ]
@@ -88,7 +89,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
     >
       <DialogContent className={classes.container}>
         {error ? (
-          <ErrorMessage error={error} />
+          <ErrorBanner error={error} />
         ) : refNames === undefined ? (
           <LoadingEllipses message="Loading refNames" />
         ) : (
@@ -96,12 +97,11 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
             <Button
               variant="contained"
               onClick={async () => {
-                const { default: copy } = await import('copy-to-clipboard')
-                copy(
+                await copy(
                   refNames
-                    .flatMap(([assemblyName, refNames]) => [
+                    .flatMap(([assemblyName, names]) => [
                       `--- ${assemblyName} ---`,
-                      ...refNames,
+                      ...names,
                     ])
                     .filter(f => !!f)
                     .join('\n'),

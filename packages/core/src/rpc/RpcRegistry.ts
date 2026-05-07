@@ -40,7 +40,7 @@ export interface RpcRegistry {
       adapterConfig: Record<string, unknown>
       statusCallback?: (arg: string) => void
       stopToken?: StopToken
-      opts?: unknown
+      opts?: Record<string, unknown>
     }
     return: Feature[]
   }
@@ -72,7 +72,7 @@ export interface RpcRegistry {
       regions: RegionLike[]
       adapterConfig: Record<string, unknown>
       formatType: string
-      opts?: unknown
+      opts?: Record<string, unknown>
     }
     return: string
   }

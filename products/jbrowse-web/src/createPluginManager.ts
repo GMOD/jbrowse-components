@@ -1,9 +1,6 @@
+import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
-import {
-  restoreFileHandlesFromSnapshot,
-  setPendingFileHandleIds,
-} from '@jbrowse/core/util/tracks'
 
 import corePlugins from './corePlugins.ts'
 import { loadHubSpec } from './loadHubSpec.ts'
@@ -33,18 +30,12 @@ export function createPluginManager(
     ...(model.runtimePlugins ?? []).map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: {
-        // @ts-expect-error
-        url: definition.url,
-      },
+      metadata: { url: pluginUrl(definition) },
     })),
     ...(model.sessionPlugins ?? []).map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: {
-        // @ts-expect-error
-        url: definition.url,
-      },
+      metadata: { url: pluginUrl(definition) },
     })),
   ]).createPluggableElements()
 
@@ -65,8 +56,10 @@ export function createPluginManager(
 
     rootModel.setReloadPluginManagerCallback(reloadPluginManagerCallback)
 
-    // @ts-expect-error
-    if (!model.configSnapshot.configuration?.rpc?.defaultDriver) {
+    const configWithRpc = model.configSnapshot as {
+      configuration?: { rpc?: { defaultDriver?: unknown } }
+    }
+    if (!configWithRpc.configuration?.rpc?.defaultDriver) {
       rootModel.jbrowse.configuration.rpc.defaultDriver.set(
         'WebWorkerRpcDriver',
       )
@@ -88,29 +81,6 @@ export function createPluginManager(
         // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw sessionError
       } else if (sessionSnapshot) {
-        // Attempt to restore file handles from the session snapshot
-        // This is async but we kick it off before setting the session
-        // If permission is already granted (persisted), files will be available
-        // If not, user will need to click to grant permission
-        restoreFileHandlesFromSnapshot(sessionSnapshot, false)
-          .then(results => {
-            const failed = results.filter(r => !r.success)
-            if (failed.length > 0) {
-              const failedIds = failed.map(f => f.handleId)
-              console.warn(
-                '[createPluginManager] Some file handles could not be restored (need user gesture):',
-                failedIds,
-              )
-              // Track failed handles so UI can prompt user
-              setPendingFileHandleIds(failedIds)
-            }
-          })
-          .catch((err: unknown) => {
-            console.error(
-              '[createPluginManager] Error restoring file handles:',
-              err,
-            )
-          })
         rootModel.setSession(migrateSessionSnapshot(sessionSnapshot))
       } else if (hubSpec) {
         afterInitializedCb = () =>

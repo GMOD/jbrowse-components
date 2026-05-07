@@ -89,11 +89,11 @@ async function loadRefNameMap(
     throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)
   }
 
+  for (const name of refNames) {
+    checkRefName(name)
+  }
   const refNameMap = Object.fromEntries(
-    refNames.map(name => {
-      checkRefName(name)
-      return [assembly.getCanonicalRefName(name), name]
-    }),
+    refNames.map(name => [assembly.getCanonicalRefName(name), name]),
   )
 
   return {
@@ -181,6 +181,8 @@ export default function assemblyFactory(
       /**
        * #volatile
        */
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       /**
        * #volatile
@@ -449,12 +451,10 @@ export default function assemblyFactory(
        * #action
        */
       load() {
-        if (!self.loadingP) {
-          self.loadingP = this.loadPre().catch((e: unknown) => {
-            this.setLoadingP(undefined)
-            this.setError(e)
-          })
-        }
+        self.loadingP ??= this.loadPre().catch((e: unknown) => {
+          this.setLoadingP(undefined)
+          this.setError(e)
+        })
         return self.loadingP
       },
       /**
@@ -475,7 +475,7 @@ export default function assemblyFactory(
         for (const r of regions) {
           checkRefName(r.refName)
         }
-        const refNameAliases = {} as Record<string, string>
+        const refNameAliases: Record<string, string> = {}
 
         const refNameAliasCollection = await getRefNameAliases({
           config: refNameAliasesAdapterConf,
@@ -496,14 +496,14 @@ export default function assemblyFactory(
         }
         // Build lowercase aliases, combined name set, and sparse canonical
         // mapping in a single pass over regions + refNameAliases
-        const lowerCaseAliases = {} as Record<string, string>
+        const lowerCaseAliases: Record<string, string> = {}
         const nameSet = new Set<string>()
-        const canonicalToSeqAdapterRefNames = {} as Record<string, string>
+        const canonicalToSeqAdapterRefNames: Record<string, string> = {}
         for (const region of regions) {
-          // add identity mapping (||= so refNameAliasAdapter can override)
-          refNameAliases[region.refName] ||= region.refName
+          // add identity mapping (??= so refNameAliasAdapter can override)
+          refNameAliases[region.refName] ??= region.refName
 
-          const canonicalName = refNameAliases[region.refName] || region.refName
+          const canonicalName = refNameAliases[region.refName] ?? region.refName
           if (canonicalName !== region.refName) {
             canonicalToSeqAdapterRefNames[canonicalName] = region.refName
           }
@@ -522,7 +522,7 @@ export default function assemblyFactory(
           refNameAliases,
           regions: regions.map(r => ({
             ...r,
-            refName: refNameAliases[r.refName] || r.refName,
+            refName: refNameAliases[r.refName] ?? r.refName,
             assemblyName,
           })),
           cytobands: await getCytobands({

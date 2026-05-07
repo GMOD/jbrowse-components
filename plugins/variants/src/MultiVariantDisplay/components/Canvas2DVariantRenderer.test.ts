@@ -41,7 +41,7 @@ function makeBlock(
   overrides?: Partial<VariantRenderBlock>,
 ): VariantRenderBlock {
   return {
-    regionNumber: 0,
+    displayedRegionIndex: 0,
     bpRangeX: [0, 1000],
     screenStartPx: 0,
     screenEndPx: 800,
@@ -49,6 +49,9 @@ function makeBlock(
     ...overrides,
   }
 }
+
+// Default opaque-white cell color (ABGR u32 — A=255 B=255 G=255 R=255).
+const DEFAULT_COLOR = 0xffffffff
 
 function makeRegionData(overrides?: {
   regionStart?: number
@@ -59,21 +62,20 @@ function makeRegionData(overrides?: {
   cellShapeTypes?: number[]
 }) {
   const numCells = overrides?.numCells ?? 1
-  const cellPositions =
-    overrides?.cellPositions ?? Array.from({ length: numCells * 2 }, () => 0)
-  const cellRowIndices =
-    overrides?.cellRowIndices ?? Array.from({ length: numCells }, () => 0)
-  const cellColors =
-    overrides?.cellColors ?? Array.from({ length: numCells * 4 }, () => 255)
-  const cellShapeTypes =
-    overrides?.cellShapeTypes ?? Array.from({ length: numCells }, () => 0)
-
   return {
     regionStart: overrides?.regionStart ?? 0,
-    cellPositions: new Uint32Array(cellPositions),
-    cellRowIndices: new Uint32Array(cellRowIndices),
-    cellColors: new Uint8Array(cellColors),
-    cellShapeTypes: new Uint8Array(cellShapeTypes),
+    cellPositions: new Uint32Array(
+      overrides?.cellPositions ?? new Array(numCells * 2).fill(0),
+    ),
+    cellRowIndices: new Uint32Array(
+      overrides?.cellRowIndices ?? new Array(numCells).fill(0),
+    ),
+    cellColors: new Uint32Array(
+      overrides?.cellColors ?? new Array(numCells).fill(DEFAULT_COLOR),
+    ),
+    cellShapeTypes: new Uint8Array(
+      overrides?.cellShapeTypes ?? new Array(numCells).fill(0),
+    ),
     numCells,
   }
 }
@@ -89,7 +91,7 @@ describe('Canvas2DVariantRenderer', () => {
       // Verify data was stored by rendering a block that references it
       createMockCanvas()
       // The region is stored internally; we verify by rendering
-      renderer.renderBlocks([makeBlock({ regionNumber: 0 })], {
+      renderer.renderBlocks([makeBlock({ displayedRegionIndex: 0 })], {
         canvasWidth: 800,
         canvasHeight: 600,
         rowHeight: 10,
@@ -107,7 +109,7 @@ describe('Canvas2DVariantRenderer', () => {
 
       // Render with the block - since the region was removed, save should
       // not be called (the block is skipped)
-      renderer.renderBlocks([makeBlock({ regionNumber: 0 })], {
+      renderer.renderBlocks([makeBlock({ displayedRegionIndex: 0 })], {
         canvasWidth: 800,
         canvasHeight: 600,
         rowHeight: 10,
@@ -117,7 +119,7 @@ describe('Canvas2DVariantRenderer', () => {
     })
   })
 
-  describe('pruneStaleRegions', () => {
+  describe('pruneRegions', () => {
     test('removes inactive regions', () => {
       const { canvas, ctx } = createMockCanvas()
       const renderer = new Canvas2DVariantRenderer(canvas)
@@ -126,14 +128,14 @@ describe('Canvas2DVariantRenderer', () => {
       renderer.uploadRegion(1, makeRegionData())
       renderer.uploadRegion(2, makeRegionData())
 
-      renderer.pruneStaleRegions([1])
+      renderer.pruneRegions([1])
 
       // Region 0 and 2 should be gone; rendering blocks for them should skip
       renderer.renderBlocks(
         [
-          makeBlock({ regionNumber: 0 }),
-          makeBlock({ regionNumber: 1 }),
-          makeBlock({ regionNumber: 2 }),
+          makeBlock({ displayedRegionIndex: 0 }),
+          makeBlock({ displayedRegionIndex: 1 }),
+          makeBlock({ displayedRegionIndex: 2 }),
         ],
         { canvasWidth: 800, canvasHeight: 600, rowHeight: 10, scrollTop: 0 },
       )
@@ -154,7 +156,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [100, 200],
           cellRowIndices: [0],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [0],
         }),
       )
@@ -184,7 +186,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [0, 100],
           cellRowIndices: [0],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [0],
         }),
       )
@@ -210,7 +212,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [0, 100],
           cellRowIndices: [100],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [0],
         }),
       )
@@ -238,7 +240,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [0, 100],
           cellRowIndices: [0],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [1],
         }),
       )
@@ -256,7 +258,7 @@ describe('Canvas2DVariantRenderer', () => {
       expect(moveIdx).toBeGreaterThanOrEqual(0)
       expect(pathOps[moveIdx + 1]).toMatch(/^lineTo/)
       expect(pathOps[moveIdx + 2]).toMatch(/^lineTo/)
-      expect(pathOps[moveIdx + 3]).toBe('fill')
+      expect(pathOps.indexOf('fill', moveIdx)).toBeGreaterThan(moveIdx + 2)
     })
 
     test('shape 2 draws left triangle via path', () => {
@@ -269,7 +271,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [0, 100],
           cellRowIndices: [0],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [2],
         }),
       )
@@ -300,7 +302,7 @@ describe('Canvas2DVariantRenderer', () => {
           numCells: 1,
           cellPositions: [0, 100],
           cellRowIndices: [0],
-          cellColors: [255, 0, 0, 255],
+          cellColors: [0xff0000ff],
           cellShapeTypes: [3],
         }),
       )
@@ -328,7 +330,7 @@ describe('Canvas2DVariantRenderer', () => {
       renderer.uploadRegion(0, makeRegionData())
       renderer.dispose()
 
-      renderer.renderBlocks([makeBlock({ regionNumber: 0 })], {
+      renderer.renderBlocks([makeBlock({ displayedRegionIndex: 0 })], {
         canvasWidth: 800,
         canvasHeight: 600,
         rowHeight: 10,

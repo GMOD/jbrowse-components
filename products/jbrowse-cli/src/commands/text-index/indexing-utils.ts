@@ -63,11 +63,11 @@ export async function* indexFiles({
 }) {
   for (const config of trackConfigs) {
     const { adapter, textSearching, trackId } = config
-    const { type } = adapter || {}
+    const { type } = adapter ?? {}
     const {
       indexingFeatureTypesToExclude = typesToExclude,
       indexingAttributes = attributes,
-    } = textSearching || {}
+    } = textSearching ?? {}
 
     const loc = getAdapterLocation(adapter)
     if (!loc) {
@@ -162,7 +162,7 @@ export async function indexDriver({
     quiet,
   })
 
-  await generateMeta({
+  generateMeta({
     configs: trackConfigs,
     attributesToIndex: attributes,
     outDir: outLocation,

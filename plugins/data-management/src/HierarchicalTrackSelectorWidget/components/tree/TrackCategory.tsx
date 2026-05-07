@@ -1,4 +1,4 @@
-import { lazy, useCallback, useState } from 'react'
+import { lazy, useState } from 'react'
 
 import { CascadingMenuButton, SanitizedHTML } from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
@@ -57,12 +57,6 @@ function getAllSubcategories(node: TreeCategoryNode): string[] {
   return categoryIds
 }
 
-function getTrackIdsFromCategory(node: TreeCategoryNode): string[] {
-  return node.children
-    .filter(entry => entry.type === 'track')
-    .map(entry => entry.trackId)
-}
-
 function openFolderDialog(
   model: HierarchicalTrackSelectorModel,
   item: TreeCategoryNode,
@@ -104,52 +98,6 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
   const stats = model.folderCategoryStats.get(id)
   const hasActiveSubtracks = (stats?.active ?? 0) > 0
 
-  const getMenuItems = useCallback(() => {
-    const nodes = getAllTrackNodes(item)
-    return [
-      {
-        label: 'Expand to category',
-        onClick: () => {
-          model.toggleFolderCategory(id)
-        },
-      },
-      {
-        label: 'Open as faceted selector...',
-        onClick: () => {
-          openFolderDialog(model, item)
-        },
-      },
-      {
-        label: 'Add to selection',
-        onClick: () => {
-          model.addToSelection(getAllChildren(item))
-        },
-      },
-      {
-        label: 'Remove from selection',
-        onClick: () => {
-          model.removeFromSelection(getAllChildren(item))
-        },
-      },
-      {
-        label: 'Show all',
-        onClick: () => {
-          for (const child of nodes) {
-            model.view.showTrack(child.trackId)
-          }
-        },
-      },
-      {
-        label: 'Hide all',
-        onClick: () => {
-          for (const child of nodes) {
-            model.view.hideTrack(child.trackId)
-          }
-        },
-      },
-    ]
-  }, [model, item, id])
-
   return (
     <div
       className={classes.folderLabel}
@@ -170,7 +118,51 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
       ) : null}
       <CascadingMenuButton
         className={classes.menuButton}
-        menuItems={getMenuItems}
+        menuItems={() => {
+          const nodes = getAllTrackNodes(item)
+          return [
+            {
+              label: 'Expand to category',
+              onClick: () => {
+                model.toggleFolderCategory(id)
+              },
+            },
+            {
+              label: 'Open as faceted selector...',
+              onClick: () => {
+                openFolderDialog(model, item)
+              },
+            },
+            {
+              label: 'Add to selection',
+              onClick: () => {
+                model.addToSelection(getAllChildren(item))
+              },
+            },
+            {
+              label: 'Remove from selection',
+              onClick: () => {
+                model.removeFromSelection(getAllChildren(item))
+              },
+            },
+            {
+              label: 'Show all',
+              onClick: () => {
+                for (const child of nodes) {
+                  model.view.showTrack(child.trackId)
+                }
+              },
+            },
+            {
+              label: 'Hide all',
+              onClick: () => {
+                for (const child of nodes) {
+                  model.view.hideTrack(child.trackId)
+                }
+              },
+            },
+          ]
+        }}
         stopPropagation
         setOpen={setMenuOpen}
       >
@@ -192,74 +184,6 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
   const { name, id } = item
   const isOpen = !model.collapsed.get(id)
 
-  const getMenuItems = useCallback(() => {
-    const subcategoryIds = getAllSubcategories(item)
-    const hasSubcategories = subcategoryIds.length > 0
-
-    return [
-      {
-        label: 'Collapse into folder',
-        onClick: () => {
-          model.toggleFolderCategory(id)
-        },
-      },
-      {
-        label: 'Open as faceted selector...',
-        onClick: () => {
-          openFolderDialog(model, item)
-        },
-      },
-      {
-        label: 'Add to selection',
-        onClick: () => {
-          model.addToSelection(getAllChildren(item))
-        },
-      },
-      {
-        label: 'Remove from selection',
-        onClick: () => {
-          model.removeFromSelection(getAllChildren(item))
-        },
-      },
-      {
-        label: 'Show all',
-        onClick: () => {
-          for (const trackId of getTrackIdsFromCategory(item)) {
-            model.view.showTrack(trackId)
-          }
-        },
-      },
-      {
-        label: 'Hide all',
-        onClick: () => {
-          for (const trackId of getTrackIdsFromCategory(item)) {
-            model.view.hideTrack(trackId)
-          }
-        },
-      },
-      ...(hasSubcategories
-        ? [
-            {
-              label: 'Collapse all subcategories',
-              onClick: () => {
-                for (const subcategoryId of subcategoryIds) {
-                  model.setCategoryCollapsed(subcategoryId, true)
-                }
-              },
-            },
-            {
-              label: 'Expand all subcategories',
-              onClick: () => {
-                for (const subcategoryId of subcategoryIds) {
-                  model.setCategoryCollapsed(subcategoryId, false)
-                }
-              },
-            },
-          ]
-        : []),
-    ]
-  }, [item, model, id])
-
   return (
     <div
       className={classes.accordionText}
@@ -273,7 +197,76 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         <SanitizedHTML html={name} />
         <CascadingMenuButton
-          menuItems={getMenuItems}
+          menuItems={() => {
+            const subcategoryIds = getAllSubcategories(item)
+            const hasSubcategories = subcategoryIds.length > 0
+            return [
+              {
+                label: 'Collapse into folder',
+                onClick: () => {
+                  model.toggleFolderCategory(id)
+                },
+              },
+              {
+                label: 'Open as faceted selector...',
+                onClick: () => {
+                  openFolderDialog(model, item)
+                },
+              },
+              {
+                label: 'Add to selection',
+                onClick: () => {
+                  model.addToSelection(getAllChildren(item))
+                },
+              },
+              {
+                label: 'Remove from selection',
+                onClick: () => {
+                  model.removeFromSelection(getAllChildren(item))
+                },
+              },
+              {
+                label: 'Show all',
+                onClick: () => {
+                  for (const child of item.children) {
+                    if (child.type === 'track') {
+                      model.view.showTrack(child.trackId)
+                    }
+                  }
+                },
+              },
+              {
+                label: 'Hide all',
+                onClick: () => {
+                  for (const child of item.children) {
+                    if (child.type === 'track') {
+                      model.view.hideTrack(child.trackId)
+                    }
+                  }
+                },
+              },
+              ...(hasSubcategories
+                ? [
+                    {
+                      label: 'Collapse all subcategories',
+                      onClick: () => {
+                        for (const subcategoryId of subcategoryIds) {
+                          model.setCategoryCollapsed(subcategoryId, true)
+                        }
+                      },
+                    },
+                    {
+                      label: 'Expand all subcategories',
+                      onClick: () => {
+                        for (const subcategoryId of subcategoryIds) {
+                          model.setCategoryCollapsed(subcategoryId, false)
+                        }
+                      },
+                    },
+                  ]
+                : []),
+            ]
+          }}
           className={classes.contrastColor}
           stopPropagation
           setOpen={setMenuOpen}

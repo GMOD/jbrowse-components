@@ -1,12 +1,11 @@
 import { getFillProps, getStrokeProps, max } from '@jbrowse/core/util'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
-
-const YSCALEBAR_LABEL_OFFSET = 5
 const FILL_COLOR = 'rgba(59, 130, 246, 0.2)'
 const STROKE_COLOR = 'rgb(59, 130, 246)'
 
 interface RecombinationTrackModel {
-  recombination?: { values: number[]; positions: number[] }
+  recombination?: { values: ArrayLike<number>; positions: number[] }
   recombinationZoneHeight: number
 }
 
@@ -31,7 +30,7 @@ const RecombinationTrack = observer(function RecombinationTrack({
   bpPerPx,
 }: {
   model?: RecombinationTrackModel
-  recombination?: { values: number[]; positions: number[] }
+  recombination?: { values: ArrayLike<number>; positions: number[] }
   width: number
   height?: number
   exportSVG?: boolean
@@ -70,9 +69,7 @@ const RecombinationTrack = observer(function RecombinationTrack({
       x = ((i + 1) * width) / numSnps
     }
     const y = topPadding + plotHeight * (1 - value / maxValue)
-    if (firstX === undefined) {
-      firstX = x
-    }
+    firstX ??= x
     lastX = x
     points.push(
       `${points.length === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`,

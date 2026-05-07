@@ -75,7 +75,7 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
       removeReferring(
         referring: ReferringNode[],
         track: BaseTrackConfig,
-        callbacks: ((arg: string) => void)[],
+        callbacks: (() => void)[],
         dereferenceTypeCount: Record<string, number>,
       ) {
         for (const { node } of referring) {
@@ -89,9 +89,7 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
               view.hideTrack(track.trackId)
             })
             dereferenced = true
-            if (!dereferenceTypeCount[type]) {
-              dereferenceTypeCount[type] = 0
-            }
+            dereferenceTypeCount[type] ??= 0
             dereferenceTypeCount[type] += 1
           } catch (err1) {
             // ignore
@@ -101,15 +99,11 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
             // If a configuration editor widget has the track config
             // open, close the widget
             const type = 'configuration editor widget(s)'
-            if (isSessionModelWithWidgets(self)) {
-              callbacks.push(() => {
-                self.hideWidget(node)
-              })
-            }
+            callbacks.push(() => {
+              self.hideWidget(node)
+            })
             dereferenced = true
-            if (!dereferenceTypeCount[type]) {
-              dereferenceTypeCount[type] = 0
-            }
+            dereferenceTypeCount[type] ??= 0
             dereferenceTypeCount[type] += 1
           }
           if (!dereferenced) {

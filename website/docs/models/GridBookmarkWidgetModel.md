@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-any
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
@@ -46,7 +46,7 @@ removed by postProcessSnapshot, only loaded from localStorage
 
 ```js
 // type signature
-IOptionalIType<IArrayType<IModelType<ModelProperties & { label: IOptionalIType<ISimpleType<string>, [undefined]>; highlight: IOptionalIType<ISimpleType<string>, [...]>; }, { ...; }, _NotCustomized, _NotCustomized>>, [...]>
+IOptionalIType<IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
 // code
 bookmarks: types.optional(types.array(LabeledRegionModel), () =>
         JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
@@ -59,56 +59,56 @@ bookmarks: types.optional(types.array(LabeledRegionModel), () =>
 
 ```js
 // type
-any[]
+string[]
 ```
 
 #### getter: validAssemblies
 
 ```js
 // type
-Set<unknown>
+Set<string>
 ```
 
 #### getter: areBookmarksHighlightedOnAllOpenViews
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: areBookmarksHighlightLabelsOnAllOpenViews
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: bookmarksWithValidAssemblies
 
 ```js
 // type
-({ [x: string]: any; label: string; highlight: string; } & NonEmptyObject & { setLabel(label: string): void; setHighlight(color: string): void; } & IStateTreeNode<IModelType<ModelProperties & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>)[]
+({ refName: string; start: number; end: number; reversed: boolean; assemblyName: string; label: string; highlight: string; } & NonEmptyObject & { setRefName(newRefName: string): void; } & { ...; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: sharedBookmarksModel
 
 ```js
 // type
-{ sharedBookmarks: IMSTArray<IModelType<ModelProperties & { label: IOptionalIType<ISimpleType<string>, [undefined]>; highlight: IOptionalIType<ISimpleType<string>, [...]>; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & NonEmptyObject & IStateTreeNode<...>
+{ sharedBookmarks: (IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>) | undefined; } & NonEmptyObject &...
 ```
 
 #### getter: allBookmarksModel
 
 ```js
 // type
-{ sharedBookmarks: IMSTArray<IModelType<ModelProperties & { label: IOptionalIType<ISimpleType<string>, [undefined]>; highlight: IOptionalIType<ISimpleType<string>, [...]>; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & NonEmptyObject & IStateTreeNode<...>
+{ sharedBookmarks: (IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>) | undefined; } & NonEmptyObject &...
 ```
 
 #### getter: selectedAssemblies
 
 ```js
 // type
-any[]
+string[]
 ```
 
 ### GridBookmarkWidgetModel - Actions
@@ -117,7 +117,7 @@ any[]
 
 ```js
 // type signature
-setSelectedAssemblies: (assemblies?: string[]) => void
+setSelectedAssemblies: (assemblies?: string[] | undefined) => void
 ```
 
 #### action: importBookmarks
@@ -173,7 +173,7 @@ setSelectedBookmarks: (bookmarks: IExtendedLabeledRegionModel[]) => void
 
 ```js
 // type signature
-setBookmarkedRegions: (regions: IMSTArray<IModelType<ModelProperties & { label: IOptionalIType<ISimpleType<string>, [undefined]>; highlight: IOptionalIType<ISimpleType<string>, [...]>; }, { ...; }, _NotCustomized, _NotCustomized>>) => void
+setBookmarkedRegions: (regions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>) => void
 ```
 
 #### action: setBookmarkHighlightsVisible

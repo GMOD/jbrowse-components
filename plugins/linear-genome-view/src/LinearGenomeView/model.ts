@@ -40,6 +40,7 @@ import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
   INTER_REGION_PADDING_WIDTH,
+  MINIMIZED_TRACK_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from './consts.ts'
@@ -48,13 +49,13 @@ import {
   buildMenuItems,
   buildRubberBandMenuItems,
   buildRubberbandClickMenuItems,
+  cloneMenuItems,
   rewriteOnClicks,
 } from './menuItems.ts'
 import {
   calculateVisibleLocStrings,
   expandRegion,
   generateLocations,
-  parseLocStrings,
 } from './util.ts'
 
 import type {
@@ -67,10 +68,9 @@ import type {
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
-import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
+import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -192,7 +192,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         trackLabels: types.optional(
           types.string,
-          () => localStorageGetItem('lgv-trackLabels') || '',
+          () => localStorageGetItem('lgv-trackLabels') ?? '',
         ),
 
         /**
@@ -235,6 +235,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
+         * when true, only the header and coordinate scalebar are rendered
+         */
+        scalebarOnly: types.optional(types.boolean, false),
+        /**
+         * #property
          * this is a non-serialized property that can be used for loading the
          * linear genome view via session snapshots
          * example:
@@ -269,15 +274,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       volatileError: undefined as unknown,
       /**
        * #volatile
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       trackRefs: {} as Record<string, HTMLDivElement>,
       /**
        * #volatile
        */
-      coarseDynamicBlocks: [] as BaseBlock[],
+      coarseDynamicBlocks: [] as ContentBlock[],
       /**
        * #volatile
        */
@@ -307,9 +314,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * temporary vertical guides that can be set by displays (e.g., LD display hover)
        */
       volatileGuides: [] as VolatileGuide[],
-      /**
-       * #volatile
-       */
     }))
     .views(self => ({
       /**
@@ -420,7 +424,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       scalebarDisplayPrefix() {
-        return getParent<any>(self, 2).type === 'LinearSyntenyView'
+        return getParent<{ type: string }>(self, 2).type === 'LinearSyntenyView'
           ? self.assemblyDisplayNames[0]
           : ''
       },
@@ -446,8 +450,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assembliesNotFound() {
         const { assemblyManager } = getSession(self)
         const r0 = self.assemblyNames
-          .map(a => (!assemblyManager.get(a) ? a : undefined))
-          .filter(f => !!f)
+          .filter(a => !assemblyManager.assemblyNameMap[a])
           .join(',')
         return r0 ? `Assemblies ${r0} not found` : undefined
       },
@@ -458,8 +461,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
         return self.assemblyNames
-          .map(a => assemblyManager.get(a)?.error)
-          .filter(f => !!f)
+          .map(name => assemblyManager.get(name)?.error)
+          .filter(e => !!e)
           .join(', ')
       },
 
@@ -469,7 +472,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assembliesInitialized() {
         const { assemblyManager } = getSession(self)
         return self.assemblyNames.every(
-          a => assemblyManager.get(a)?.initialized,
+          name => assemblyManager.get(name)?.initialized,
         )
       },
 
@@ -550,7 +553,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get trackHeights() {
-        return sum(self.tracks.map(t => t.displays[0].height))
+        return sum(
+          self.tracks.map(t => (t.minimized ? 0 : t.displays[0].height)),
+        )
       },
 
       /**
@@ -564,11 +569,48 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get height() {
+        if (self.scalebarOnly) {
+          return this.headerHeight + this.scalebarHeight
+        }
         return (
           this.trackHeightsWithResizeHandles +
           this.headerHeight +
           this.scalebarHeight
         )
+      },
+
+      /**
+       * #method
+       * Y offset (in pixels, from the top of the view) where a track's
+       * rendering container starts. Walks tracks in DOM render order (pinned
+       * first, then unpinned), matching TrackContainer's layout and using the
+       * same constants it renders with. Returns `undefined` if the track is
+       * not present in the view.
+       */
+      getTrackYOffset(trackId: string) {
+        let y = this.headerHeight + this.scalebarHeight
+        let found = false
+        for (const t of self.pinnedTracks) {
+          if (t.configuration.trackId === trackId) {
+            found = true
+            break
+          }
+          y +=
+            (t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height) +
+            RESIZE_HANDLE_HEIGHT
+        }
+        if (!found) {
+          for (const t of self.unpinnedTracks) {
+            if (t.configuration.trackId === trackId) {
+              found = true
+              break
+            }
+            y +=
+              (t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height) +
+              RESIZE_HANDLE_HEIGHT
+          }
+        }
+        return found ? y : undefined
       },
 
       /**
@@ -651,11 +693,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (self.init) {
           const { assemblyManager } = getSession(self)
           const asm = assemblyManager.get(self.init.assembly)
-          if (asm?.error) {
-            return asm.error
-          }
           if (!asm) {
             return `Assembly ${self.init.assembly} not found`
+          }
+          if (asm.error) {
+            return asm.error
           }
         }
         return undefined
@@ -746,7 +788,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         for (const track of self.tracks) {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
-            const viewMenuActions = structuredClone(track.viewMenuActions)
+            const viewMenuActions = cloneMenuItems(track.viewMenuActions)
             rewriteOnClicks(
               self as LinearGenomeViewModel,
               track.type,
@@ -823,6 +865,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setScalebarOnly(b: boolean) {
+        self.scalebarOnly = b
+      },
+      /**
+       * #action
+       */
       setHideNoTracksActive(b: boolean) {
         self.hideNoTracksActive = b
       },
@@ -857,9 +905,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setVolatileGuides(guides: VolatileGuide[]) {
         self.volatileGuides = guides
       },
-      /**
-       * #action
-       */
       /**
        * #action
        */
@@ -1115,7 +1160,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showAllRegions() {
-        self.bpPerPx = clamp(self.maxBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        self.bpPerPx = self.maxBpPerPx
         self.scrollTo(
           getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
         )
@@ -1194,8 +1239,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGLinearGenomeView.tsx')
         const html = await renderToSvg(self as LinearGenomeViewModel, opts)
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const { saveAs } = await import('file-saver-es')
+        const { saveAs } = await import('@jbrowse/core/util')
 
         if (opts.format === 'png') {
           const img = new Image()
@@ -1270,9 +1314,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         cancelLastAnimation()
 
         // Clamp to zoom limits
-        const effectiveTarget = Math.max(
+        const effectiveTarget = clamp(
+          targetBpPerPx,
           self.minBpPerPx,
-          Math.min(self.maxBpPerPx, targetBpPerPx),
+          self.maxBpPerPx,
         )
 
         // If already at limit (or effectively no change), do nothing
@@ -1412,6 +1457,48 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
         /**
          * #getter
+         * Max right-edge pixel position for each displayedRegionIndex, derived
+         * from staticBlocks geometry. staticBlocks caches a stable reference
+         * when only offsetPx changes, so this getter is also stable during
+         * normal scroll — avoiding a Map rebuild every frame.
+         * Used by ScalebarRefNameLabels to clip chromosome name labels.
+         */
+        get scalebarRegionEndPx() {
+          const m = new Map<number, number>()
+          for (const block of this.staticBlocks.blocks) {
+            if (
+              block.type === 'ContentBlock' &&
+              block.displayedRegionIndex !== undefined
+            ) {
+              const endPx = block.offsetPx + block.widthPx
+              const cur = m.get(block.displayedRegionIndex)
+              if (cur === undefined || endPx > cur) {
+                m.set(block.displayedRegionIndex, endPx)
+              }
+            }
+          }
+          return m
+        },
+        /**
+         * #getter
+         * Integer-rounded sum of all visible block widths. Slightly less than
+         * view.width when the genome ends before the right edge; use view.width
+         * for SVG clip rects (display boundary) and this for paint canvas sizing
+         * (actual content width).
+         */
+        get totalWidthPx(): number {
+          return Math.round(this.dynamicBlocks.totalWidthPx)
+        },
+        /**
+         * #getter
+         * Like totalWidthPx but excluding inter-region boundary blocks. Used
+         * when column layout divides the canvas width by feature count.
+         */
+        get totalWidthPxWithoutBorders(): number {
+          return Math.round(this.dynamicBlocks.totalWidthPxWithoutBorders)
+        },
+        /**
+         * #getter
          */
         get visibleBp() {
           return this.dynamicBlocks.totalBp
@@ -1421,21 +1508,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * rounded dynamic blocks are dynamic blocks without fractions of bp
          */
         get roundedDynamicBlocks() {
-          return this.dynamicBlocks.contentBlocks.map(
-            block =>
-              ({
-                // eslint-disable-next-line @typescript-eslint/no-misused-spread
-                ...block,
-                start: Math.floor(block.start),
-                end: Math.ceil(block.end),
-              }) as BaseBlock,
-          )
+          return this.dynamicBlocks.contentBlocks.map(block => ({
+            ...block,
+            start: Math.floor(block.start),
+            end: Math.ceil(block.end),
+          }))
         },
 
         /**
          * #getter
          * Returns the currently visible content blocks with screen pixel
-         * positions and regionNumber guaranteed.
+         * positions and displayedRegionIndex guaranteed.
          * Used by WebGL displays for per-region data fetching and rendering.
          */
         get visibleRegions() {
@@ -1445,7 +1528,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             end: block.end,
             assemblyName: block.assemblyName,
             reversed: block.reversed,
-            regionNumber: block.regionNumber!,
+            displayedRegionIndex: block.displayedRegionIndex!,
             offsetPx: block.offsetPx,
             widthPx: block.widthPx,
             screenStartPx: block.offsetPx - self.offsetPx,
@@ -1455,51 +1538,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * Merges visibleRegions (exact viewport content) by regionNumber.
-         * Used by the fetch autorun to decide WHEN data needs re-fetching.
-         * The actual fetch region is expanded with an explicit buffer.
-         */
-        get mergedVisibleRegions() {
-          const regionMap = new Map<number, Region & { regionNumber: number }>()
-          for (const block of this.dynamicBlocks.contentBlocks) {
-            const regionNumber = block.regionNumber!
-            const existing = regionMap.get(regionNumber)
-            if (existing) {
-              existing.start = Math.min(existing.start, Math.floor(block.start))
-              existing.end = Math.max(existing.end, Math.ceil(block.end))
-            } else {
-              regionMap.set(regionNumber, {
-                refName: block.refName,
-                start: Math.floor(block.start),
-                end: Math.ceil(block.end),
-                assemblyName: block.assemblyName,
-                regionNumber,
-                reversed: block.reversed,
-              })
-            }
-          }
-          return [...regionMap.values()]
-        },
-
-        /**
-         * #getter
-         * mergedVisibleRegions expanded by a half-screen buffer on each side,
+         * visibleRegions expanded by a half-screen buffer on each side,
          * clamped to displayedRegion bounds, with integer-rounded coordinates.
          * Use this when fetching data that should extend slightly beyond the
          * viewport for smooth scrolling.
          */
         get bufferedVisibleRegions() {
           const bufferBp = Math.ceil(self.width * self.bpPerPx * 0.5)
-          return this.mergedVisibleRegions.map(vr => {
-            const dr = self.displayedRegions[vr.regionNumber]!
+          return this.visibleRegions.map(vr => {
+            const dr = self.displayedRegions[vr.displayedRegionIndex]!
             return {
               region: {
                 refName: vr.refName,
-                start: Math.max(dr.start, vr.start - bufferBp),
-                end: Math.min(dr.end, vr.end + bufferBp),
+                start: Math.max(dr.start, Math.floor(vr.start) - bufferBp),
+                end: Math.min(dr.end, Math.ceil(vr.end) + bufferBp),
                 assemblyName: vr.assemblyName,
               },
-              regionNumber: vr.regionNumber,
+              displayedRegionIndex: vr.displayedRegionIndex,
             }
           })
         },
@@ -1515,7 +1570,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * same as visibleLocStrings, but only updated every 300ms
+         * same as visibleLocStrings, but only updated every 500ms
          */
         get coarseVisibleLocStrings() {
           return calculateVisibleLocStrings(self.coarseDynamicBlocks)
@@ -1590,37 +1645,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         grow?: number,
       ) {
         const { assemblyNames } = self
-        const { assemblyManager } = getSession(self)
+        const session = getSession(self)
+        const { assemblyManager } = session
         const assemblyName = optAssemblyName || assemblyNames[0]!
         if (assemblyName) {
           await assemblyManager.waitForAssembly(assemblyName)
         }
-
-        return this.navToLocations(
-          parseLocStrings(input, assemblyName, (ref, asm) =>
-            assemblyManager.isValidRefName(ref, asm),
-          ),
-          assemblyName,
-          grow,
-        )
-      },
-
-      /**
-       * #action
-       * Performs a text index search, and navigates to it immediately if a
-       * single result is returned. Will pop up a search dialog if multiple
-       * results are returned
-       */
-      async navToSearchString({
-        input,
-        assembly,
-      }: {
-        input: string
-        assembly: Assembly
-      }) {
         await handleSelectedRegion({
           input,
-          assembly,
+          assemblyName,
+          grow,
           model: self as LinearGenomeViewModel,
         })
       },
@@ -1798,18 +1832,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
 
         // Calculate coordinates, using region bounds if not specified
-        let firstStart =
-          firstLocation.start === undefined
-            ? firstRegion.start
-            : firstLocation.start
-        let firstEnd =
-          firstLocation.end === undefined ? firstRegion.end : firstLocation.end
-        let lastStart =
-          lastLocation.start === undefined
-            ? lastRegion.start
-            : lastLocation.start
-        let lastEnd =
-          lastLocation.end === undefined ? lastRegion.end : lastLocation.end
+        let firstStart = firstLocation.start ?? firstRegion.start
+        let firstEnd = firstLocation.end ?? firstRegion.end
+        let lastStart = lastLocation.start ?? lastRegion.start
+        let lastEnd = lastLocation.end ?? lastRegion.end
 
         // Apply grow factor to add padding around the region
         if (grow) {
@@ -1891,13 +1917,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       bpToPx({
         refName,
         coord,
-        regionNumber,
+        displayedRegionIndex,
       }: {
         refName: string
         coord: number
-        regionNumber?: number
+        displayedRegionIndex?: number
       }) {
-        return bpToPx({ refName, coord, regionNumber, self })
+        return bpToPx({ refName, coord, displayedRegionIndex, self })
       },
 
       /**
@@ -1907,13 +1933,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        *
        * @param coord - basepair at which you want to center the view
        * @param refName - refName of the displayedRegion you are centering at
-       * @param regionNumber - index of the displayedRegion
+       * @param displayedRegionIndex - index of the displayedRegion
        */
-      centerAt(coord: number, refName: string, regionNumber?: number) {
+      centerAt(coord: number, refName: string, displayedRegionIndex?: number) {
         const centerPx = this.bpToPx({
           refName,
           coord,
-          regionNumber,
+          displayedRegionIndex,
         })
         if (centerPx !== undefined) {
           self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))
@@ -1935,8 +1961,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ? this.pxToBp(self.width / 2)
           : undefined
       },
-
-      /**
     }))
     .views(self => ({
       /**
@@ -1947,6 +1971,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self as LinearGenomeViewModel,
           clickOffset,
         )
+      },
+
+      /**
+       * #method
+       * returns menu items for a highlight context menu. plugins can extend
+       * this via Core-extendPluggableElement to add their own items
+       */
+      highlightMenuItems(_highlight: HighlightType): MenuItem[] {
+        return []
       },
     }))
     .actions(self => ({
@@ -2027,7 +2060,8 @@ export {
   default as ReactComponent,
 } from './components/LinearGenomeView.tsx'
 
-export { default as RefNameAutocomplete } from './components/RefNameAutocomplete/index.tsx'
+// RefNameAutocomplete moved to @jbrowse/core/ui; re-exported for back-compat.
+export { RefNameAutocomplete } from '@jbrowse/core/ui'
 export { default as SearchBox } from './components/SearchBox.tsx'
 
 export { renderToSvg } from './svgcomponents/SVGLinearGenomeView.tsx'

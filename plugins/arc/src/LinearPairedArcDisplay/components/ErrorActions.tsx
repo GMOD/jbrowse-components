@@ -35,7 +35,7 @@ export default function ErrorActions({
               ErrorMessageStackTraceDialog,
               {
                 onClose,
-                error: model.error as Error,
+                error: model.error,
               },
             ])
           }}

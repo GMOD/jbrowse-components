@@ -44,7 +44,7 @@ for (const dir of workspaceDirs) {
         )
         if (signal || (status !== null && status > 0)) {
           console.error(`Failed to pack ${pkgJson.name}`)
-          process.exit(status || 1)
+          process.exit(status ?? 1)
         }
 
         // Verify esm folder exists for packages that should have it

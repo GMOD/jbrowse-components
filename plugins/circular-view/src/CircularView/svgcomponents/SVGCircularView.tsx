@@ -10,9 +10,10 @@ import Ruler from '../components/Ruler.tsx'
 
 import type { CircularViewModel, ExportSvgOptions } from '../model.ts'
 
-type CGV = CircularViewModel
-
-export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
+export async function renderToSvg(
+  model: CircularViewModel,
+  opts: ExportSvgOptions,
+) {
   await when(() => model.initialized)
   const { themeName = 'default', Wrapper = ({ children }) => children } = opts
   const session = getSession(model)
@@ -23,7 +24,7 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
   const displayResults = await Promise.all(
     tracks.map(async track => {
       const display = track.displays[0]
-      await when(() => (display.ready !== undefined ? display.ready : true))
+      await when(() => display.ready)
       return { track, result: await display.renderSvg({ ...opts, theme }) }
     }),
   )
@@ -44,9 +45,8 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
         >
           <SVGBackground width={width} height={height} shift={shift} />
           <g transform={`translate(${centerXY}) rotate(${deg})`}>
-            {staticSlices.map((slice, i) => (
-              /* biome-ignore lint/suspicious/noArrayIndexKey: */
-              <Ruler key={i} model={model} slice={slice} />
+            {staticSlices.map(slice => (
+              <Ruler key={slice.key} model={model} slice={slice} />
             ))}
             {displayResults.map(({ result }, i) => (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */

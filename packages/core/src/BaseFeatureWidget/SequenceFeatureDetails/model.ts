@@ -25,6 +25,7 @@ type SequenceDisplayMode =
   | 'gene'
   | 'gene_collapsed_intron'
   | 'gene_updownstream'
+  | 'gene_updownstream_collapsed_intron'
   | 'cdna'
   | 'cds'
   | 'genomic'
@@ -65,6 +66,8 @@ export function SequenceFeatureDetailsF() {
       /**
        * #volatile
        */
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       mode: '' as SequenceDisplayMode,
     }))
     .actions(self => ({
@@ -146,7 +149,7 @@ export function SequenceFeatureDetailsF() {
        * #getter
        */
       get hasExonOrCDS() {
-        return this.hasExon || this.hasCDS
+        return this.hasExon ?? this.hasCDS
       },
     }))
     .actions(self => ({

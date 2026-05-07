@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-authentication",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "JBrowse 2 Authentication",
   "keywords": [
@@ -22,19 +22,19 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "cd ../..; jest --passWithNoTests plugins/authentication",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/authentication",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@mui/material": "^9.0.0",
-    "generic-filehandle2": "^2.1.4",
-    "mobx": "^6.15.0"
+    "generic-filehandle2": "^2.1.7",
+    "mobx": "6.15.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

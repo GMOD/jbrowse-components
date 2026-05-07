@@ -391,7 +391,7 @@ describe('formatFeatWithSubfeatures', () => {
         strand: 1,
       },
     })
-    const result = formatFeatWithSubfeatures(f, 100)
+    const result = formatFeatWithSubfeatures({ feature: f, minPos: 100 })
     expect(result).toContain('gene            1..100')
     expect(result).toContain('/name="test_feat"')
   })
@@ -407,7 +407,7 @@ describe('formatFeatWithSubfeatures', () => {
         strand: -1,
       },
     })
-    const result = formatFeatWithSubfeatures(f, 100)
+    const result = formatFeatWithSubfeatures({ feature: f, minPos: 100 })
     expect(result).toContain('complement(1..100)')
   })
 
@@ -450,7 +450,7 @@ describe('formatFeatWithSubfeatures', () => {
         ],
       },
     })
-    const result = formatFeatWithSubfeatures(f, 0)
+    const result = formatFeatWithSubfeatures({ feature: f, minPos: 0 })
     // CDS should be sorted: 101..200, 401..500, 701..900
     expect(result).toContain('join(101..200,401..500,701..900)')
   })
@@ -499,7 +499,7 @@ describe('formatFeatWithSubfeatures', () => {
         ],
       },
     })
-    const result = formatFeatWithSubfeatures(f, 0)
+    const result = formatFeatWithSubfeatures({ feature: f, minPos: 0 })
     expect(result).toContain('gene            1..1000')
     expect(result).toContain('mRNA            1..1000')
     expect(result).toContain('CDS             join(101..400,601..900)')

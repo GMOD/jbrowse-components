@@ -1,0 +1,8 @@
+H	VN:Z:1.0
+S	s1	*	LN:i:100
+S	s2	*	LN:i:200
+S	s3	*	LN:i:150
+L	s1	+	s2	+	0M
+L	s2	+	s3	+	0M
+P	GRCh38#0#chr1	s1+,s2+,s3+	*,*
+P	HG002#1#chr1	s1+,s2+,s3+	*,*

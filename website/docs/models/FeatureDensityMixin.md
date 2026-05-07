@@ -46,7 +46,7 @@ userByteSizeLimit: types.maybe(types.number)
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: currentFeatureScreenDensity
@@ -74,7 +74,7 @@ boolean
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: regionTooLarge
@@ -121,7 +121,7 @@ regionCannotBeRenderedText: (_region: Region) => "" | "Force load to see feature
 
 ```js
 // type signature
-regionCannotBeRendered: (_region: Region) => Element
+regionCannotBeRendered: (_region: Region) => Element | null
 ```
 
 ### FeatureDensityMixin - Actions
@@ -137,7 +137,7 @@ setCurrStatsBpPerPx: (n: number) => void
 
 ```js
 // type signature
-setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
+setFeatureDensityStatsLimit: (stats?: FeatureDensityStats | undefined) => void
 ```
 
 #### action: getFeatureDensityStats
@@ -158,7 +158,7 @@ setFeatureDensityStatsP: (arg: any) => void
 
 ```js
 // type signature
-setFeatureDensityStats: (featureDensityStats?: FeatureDensityStats) => void
+setFeatureDensityStats: (featureDensityStats?: FeatureDensityStats | undefined) => void
 ```
 
 #### action: clearFeatureDensityStats

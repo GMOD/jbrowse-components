@@ -23,6 +23,7 @@ type LGV = LinearGenomeViewModel
 // use initializer function to avoid having console.warn jest.fn in a global
 function initialize() {
   console.warn = jest.fn()
+  console.error = jest.fn()
   // a stub linear genome view state model that only accepts base track types.
   // used in unit tests.
   const stubManager = new PluginManager()
@@ -60,10 +61,13 @@ function initialize() {
   stubManager.configure()
 
   const Assembly = types
-    .model({})
+    .model({
+      name: types.maybe(types.string),
+    })
     .volatile(() => ({
       regions: volvoxDisplayedRegions,
       initialized: true,
+      allRefNamesWithLowerCase: new Set(['ctgA', 'ctgB', 'ctga', 'ctgb']),
     }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
@@ -78,6 +82,16 @@ function initialize() {
     .model({
       assemblies: types.map(Assembly),
     })
+    .views(self => ({
+      get assemblyNameMap() {
+        return Object.fromEntries(
+          [...self.assemblies.entries()].map(([name, assembly]) => [
+            name,
+            assembly,
+          ]),
+        )
+      },
+    }))
     .actions(self => ({
       isValidRefName(str: string) {
         return str === 'ctgA' || str === 'ctgB'
@@ -99,16 +113,28 @@ function initialize() {
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: {
           volvox: {
+            name: 'volvox',
             // @ts-expect-error
             regions: volvoxDisplayedRegions,
           },
         },
       }),
     })
+    .views(() => ({
+      getTracksById() {
+        return {}
+      },
+      get tracksById() {
+        return this.getTracksById()
+      },
+    }))
     .actions(self => ({
       setView(view: LGV) {
         self.view = view
         return view
+      },
+      notifyError(message: string, _error?: unknown) {
+        console.error(message)
       },
     }))
 
@@ -1086,6 +1112,7 @@ test('showLoading is true when init is set and becomes false after initializatio
   await waitFor(() => {
     expect(model.initialized).toBe(true)
   })
+  expect(console.error).not.toHaveBeenCalled()
 })
 
 test('showAllRegions accounts for inter-region padding when centering', () => {
@@ -1367,6 +1394,9 @@ describe('TrackInit with display configuration', () => {
       .views(() => ({
         getTracksById() {
           return trackConfigs
+        },
+        get tracksById() {
+          return this.getTracksById()
         },
       }))
       .actions(self => ({

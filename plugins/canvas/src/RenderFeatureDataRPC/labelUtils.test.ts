@@ -1,48 +1,15 @@
 import { applyLabelDimensions } from './labelUtils.ts'
+import { mockDisplayConfig } from './testUtils.ts'
 
-import type { RenderConfigContext } from './renderConfig.ts'
 import type { FeatureLayout } from './types.ts'
-
-// mock config has labels.name = '' to match the RPC worker's mock config
-// in executeRenderFeatureData.ts — this is the scenario that caused the bug
-function createMockConfigContext(
-  overrides: Partial<RenderConfigContext> = {},
-): RenderConfigContext {
-  return {
-    config: {
-      labels: { name: '', description: '', fontSize: 12 },
-    } as any,
-    displayMode: 'normal',
-    subfeatureLabels: 'below',
-    transcriptTypes: [],
-    containerTypes: [],
-    geneGlyphMode: 'gene',
-    displayDirectionalChevrons: true,
-    color1: { value: 'goldenrod', isCallback: false },
-    color2: { value: '#f0f', isCallback: false },
-    color3: { value: '#357089', isCallback: false },
-    outline: { value: '', isCallback: false },
-    featureHeight: { value: 10, isCallback: false },
-    fontHeight: { value: 12, isCallback: false },
-    nameColor: { value: 'black', isCallback: false },
-    descriptionColor: { value: 'blue', isCallback: false },
-    labelAllowed: true,
-    heightMultiplier: 1,
-    ...overrides,
-  }
-}
 
 function createMockLayout(height = 10): FeatureLayout {
   return {
     feature: null as any,
     glyphType: 'ProcessedTranscript',
-    x: 0,
     y: 0,
-    width: 100,
     height,
     totalLayoutHeight: height,
-    totalLayoutWidth: 100,
-    leftPadding: 0,
     children: [],
   }
 }
@@ -68,7 +35,7 @@ describe('applyLabelDimensions', () => {
       const layout = createMockLayout(10)
       applyLabelDimensions(layout, {
         feature: createMockFeature('NM_001234'),
-        configContext: createMockConfigContext({ subfeatureLabels: 'below' }),
+        config: mockDisplayConfig({ subfeatureLabels: 'below' }),
         isNested: true,
         isTranscriptChild: true,
       })
@@ -79,7 +46,7 @@ describe('applyLabelDimensions', () => {
       const layout = createMockLayout(10)
       applyLabelDimensions(layout, {
         feature: createMockFeature('', 'transcript-fallback-id'),
-        configContext: createMockConfigContext({ subfeatureLabels: 'below' }),
+        config: mockDisplayConfig({ subfeatureLabels: 'below' }),
         isNested: true,
         isTranscriptChild: true,
       })
@@ -90,23 +57,11 @@ describe('applyLabelDimensions', () => {
       const layout = createMockLayout(10)
       applyLabelDimensions(layout, {
         feature: createMockFeature('', ''),
-        configContext: createMockConfigContext({ subfeatureLabels: 'below' }),
+        config: mockDisplayConfig({ subfeatureLabels: 'below' }),
         isNested: true,
         isTranscriptChild: true,
       })
       expect(layout.totalLayoutHeight).toBe(10)
-    })
-
-    it('sets totalLayoutWidth based on label text width', () => {
-      const layout = createMockLayout(10)
-      layout.totalLayoutWidth = 50
-      applyLabelDimensions(layout, {
-        feature: createMockFeature('A_very_long_transcript_name_here'),
-        configContext: createMockConfigContext({ subfeatureLabels: 'below' }),
-        isNested: true,
-        isTranscriptChild: true,
-      })
-      expect(layout.totalLayoutWidth).toBeGreaterThan(50)
     })
   })
 
@@ -115,7 +70,7 @@ describe('applyLabelDimensions', () => {
       const layout = createMockLayout(10)
       applyLabelDimensions(layout, {
         feature: createMockFeature('NM_001234'),
-        configContext: createMockConfigContext({ subfeatureLabels: 'overlay' }),
+        config: mockDisplayConfig({ subfeatureLabels: 'overlay' }),
         isNested: true,
         isTranscriptChild: true,
       })
@@ -128,7 +83,7 @@ describe('applyLabelDimensions', () => {
       const layout = createMockLayout(10)
       applyLabelDimensions(layout, {
         feature: createMockFeature('NM_001234'),
-        configContext: createMockConfigContext({ subfeatureLabels: 'none' }),
+        config: mockDisplayConfig({ subfeatureLabels: 'none' }),
         isNested: true,
         isTranscriptChild: true,
       })
@@ -141,7 +96,7 @@ describe('applyLabelDimensions', () => {
       const layout = createMockLayout(10)
       applyLabelDimensions(layout, {
         feature: createMockFeature('exon-1'),
-        configContext: createMockConfigContext({ subfeatureLabels: 'below' }),
+        config: mockDisplayConfig({ subfeatureLabels: 'below' }),
         isNested: true,
         isTranscriptChild: false,
       })
@@ -149,15 +104,12 @@ describe('applyLabelDimensions', () => {
     })
   })
 
-  describe('labelAllowed = false', () => {
+  describe('collapse mode disables labels', () => {
     it('skips all label calculation', () => {
       const layout = createMockLayout(10)
       applyLabelDimensions(layout, {
         feature: createMockFeature('NM_001234'),
-        configContext: createMockConfigContext({
-          subfeatureLabels: 'below',
-          labelAllowed: false,
-        }),
+        config: mockDisplayConfig({ displayMode: 'collapse' }),
         isNested: true,
         isTranscriptChild: true,
       })

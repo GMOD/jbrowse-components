@@ -37,20 +37,15 @@ export {
   CIGAR_S,
   CIGAR_X,
 } from './cigarConstants.ts'
-export { visitCigarOps, visitCsOps } from './cigarOpsVisitor.ts'
+export {
+  visitCigarOps,
+  visitCigarRenderedSegments,
+  visitCsOps,
+} from './cigarOpsVisitor.ts'
 export type { CigarOpsVisitor } from './cigarOpsVisitor.ts'
-export { HP_GLSL_CORE, HP_GLSL_WITH_UNIFORM } from './hpGlsl.ts'
-export { HP_WGSL_CORE } from './hpWgsl.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
-  PICKING_FS_GLSL,
-  PICKING_FS_WGSL,
-  RECT_LOCALS_WGSL,
-  SIMPLE_FS_GLSL,
-  SIMPLE_FS_WGSL,
-  SIMPLE_VERTEX_OUTPUT_WGSL,
-} from './sharedShaders.ts'
-export {
+  CANVAS2D_COVERAGE,
   coverageLayout,
   drawCoverageBins,
   drawIndicators,
@@ -59,17 +54,22 @@ export {
   drawSnpSegments,
   getDevicePixelRatio,
   resizeCanvas,
-  rgbaString,
   snpColorForType,
 } from './rendererUtils.ts'
 export type { NoncovDrawColors } from './rendererUtils.ts'
 export {
+  packCoverageBinsForGpu,
+  packIndicatorsForCanvas2D,
   packIndicatorsForGpu,
+  packModCovSegmentsForCanvas2D,
   packModCovSegmentsForGpu,
+  packNoncovSegmentsForCanvas2D,
   packNoncovSegmentsForGpu,
+  packSnpSegmentsForCanvas2D,
   packSnpSegmentsForGpu,
 } from './coverageGpuPacking.ts'
 export type {
+  CoverageBinsGpuUpload,
   IndicatorGpuUpload,
   ModCovGpuUpload,
   NoncovGpuUpload,
@@ -79,19 +79,20 @@ export {
   YSCALEBAR_LABEL_OFFSET,
   buildCoverageTooltipBin,
   computeCoverageTicks,
-  computeDepthScale,
+  computeGlobalCoverageStats,
   computeInsertionIndicators,
   computeSNPCoverage,
+  computeVisibleCoverageStats,
   computeVisibleMaxDepth,
   countSnpsAtPosition,
   downsampleMinMax,
   getGlobalMaxCoverageDepth,
-  niceNum,
+  niceStep,
 } from './coverageDownsampling.ts'
+export type { YScaleTicks as CoverageTicks } from '@jbrowse/wiggle-core'
 export type {
   CoverageArrays,
   CoverageRegion,
-  CoverageTicks,
   CoverageTooltipBin,
   DownsampledBins,
   InsertionIndicatorResult,

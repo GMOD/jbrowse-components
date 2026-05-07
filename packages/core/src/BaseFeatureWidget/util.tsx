@@ -149,13 +149,13 @@ export function formatSubfeatures(
   depth: number,
   parse: (obj: Record<string, unknown>) => void,
   currentDepth = 0,
-  returnObj = {} as Record<string, unknown>,
+  returnObj: Record<string, unknown> = {},
 ) {
   if (depth <= currentDepth) {
     return
   }
-  obj.subfeatures?.map(sub => {
+  for (const sub of obj.subfeatures ?? []) {
     formatSubfeatures(sub, depth, parse, currentDepth + 1, returnObj)
     parse(sub)
-  })
+  }
 }

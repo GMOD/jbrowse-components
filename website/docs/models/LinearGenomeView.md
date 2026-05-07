@@ -30,7 +30,7 @@ extends
 
 ```js
 // type signature
-any
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
@@ -89,7 +89,7 @@ array of currently displayed tracks state models instances
 
 ```js
 // type signature
-IArrayType<any>
+IArrayType<IAnyType>
 // code
 tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
@@ -244,7 +244,7 @@ view via session snapshots example:
 
 ```js
 // type signature
-IType<InitState, InitState, InitState>
+IType<InitState | undefined, InitState | undefined, InitState | undefined>
 // code
 init: types.frozen<InitState | undefined>()
 ```
@@ -293,14 +293,14 @@ number
 
 ```js
 // type
-any[]
+string[]
 ```
 
 #### getter: assemblyDisplayNames
 
 ```js
 // type
-any
+string[]
 ```
 
 #### getter: isTopLevelView
@@ -310,7 +310,7 @@ sticky positioning
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: stickyViewHeaders
@@ -334,7 +334,7 @@ number
 
 ```js
 // type
-string
+string | undefined
 ```
 
 #### getter: assemblyErrors
@@ -355,7 +355,7 @@ boolean
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: hasDisplayedRegions
@@ -369,14 +369,14 @@ boolean
 
 ```js
 // type
-string
+'Loading' | undefined
 ```
 
 #### getter: hasSomethingToShow
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: showLoading
@@ -385,7 +385,7 @@ Whether to show a loading indicator instead of the import form or view
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: showImportForm
@@ -415,28 +415,28 @@ number
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: trackHeightsWithResizeHandles
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: height
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: totalBp
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: maxBpPerPx
@@ -478,7 +478,7 @@ number
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: trackMap
@@ -499,7 +499,7 @@ Map<string, MenuItem[]>
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: showCytobands
@@ -523,7 +523,7 @@ is calculated manually with this method
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: staticBlocks
@@ -536,7 +536,7 @@ block
 
 ```js
 // type
-any
+BlockSet
 ```
 
 #### getter: dynamicBlocks
@@ -547,7 +547,7 @@ go offscreen while dynamic blocks represent exactly what is on screen
 
 ```js
 // type
-any
+BlockSet
 ```
 
 #### getter: roundedDynamicBlocks
@@ -556,7 +556,7 @@ rounded dynamic blocks are dynamic blocks without fractions of bp
 
 ```js
 // type
-any
+BaseBlock[]
 ```
 
 #### getter: visibleLocStrings
@@ -581,7 +581,7 @@ string
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: effectiveBpPerPx
@@ -608,14 +608,14 @@ display string for effective total bp (updates immediately on zoom click)
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: centerLineInfo
 
 ```js
 // type
-any
+{ coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean | undefined; } | undefined
 ```
 
 ### LinearGenomeView - Methods
@@ -624,21 +624,21 @@ any
 
 ```js
 // type signature
-scalebarDisplayPrefix: () => any
+scalebarDisplayPrefix: () => string
 ```
 
 #### method: MiniControlsComponent
 
 ```js
 // type signature
-MiniControlsComponent: () => React.FC<any>
+MiniControlsComponent: () => FC<any>
 ```
 
 #### method: HeaderComponent
 
 ```js
 // type signature
-HeaderComponent: () => React.FC<any>
+HeaderComponent: () => FC<any>
 ```
 
 #### method: getNonElidedRegionCount
@@ -672,7 +672,7 @@ renderProps: () => any
 
 ```js
 // type signature
-searchScope: (assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<any> & IStateTreeNode<IArrayType<any>>; }
+searchScope: (assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>; }
 ```
 
 #### method: getTrack
@@ -698,7 +698,7 @@ were selected by the rubberband
 
 ```js
 // type signature
-getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => any
+getSelectedRegions: (leftOffset?: BpOffset | undefined, rightOffset?: BpOffset | undefined) => { assemblyName: string; refName: string; start: number; end: number; }[]
 ```
 
 #### method: exportSvg
@@ -730,7 +730,7 @@ rubberBandMenuItems: () => MenuItem[]
 
 ```js
 // type signature
-bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => any
+bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number | undefined; }) => { index: number; offsetPx: number; } | undefined
 ```
 
 #### method: centerAt
@@ -740,14 +740,14 @@ displayed regions, does nothing
 
 ```js
 // type signature
-centerAt: (coord: number, refName: string, regionNumber?: number) => void
+centerAt: (coord: number, refName: string, regionNumber?: number | undefined) => void
 ```
 
 #### method: pxToBp
 
 ```js
 // type signature
-pxToBp: (px: number) => any
+pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean | undefined; }
 ```
 
 #### method: rubberbandClickMenuItems
@@ -847,7 +847,7 @@ addToHighlights: (highlight: HighlightType) => void
 
 ```js
 // type signature
-setHighlight: (highlight?: HighlightType[]) => void
+setHighlight: (highlight?: HighlightType[] | undefined) => void
 ```
 
 #### action: removeHighlight
@@ -870,14 +870,14 @@ setVolatileGuides: (guides: VolatileGuide[]) => void
 
 ```js
 // type signature
-scrollTo: (offsetPx: number) => any
+scrollTo: (offsetPx: number) => number
 ```
 
 #### action: zoomTo
 
 ```js
 // type signature
-zoomTo: (bpPerPx: number, offset?: number, centerAtOffset?: boolean) => any
+zoomTo: (bpPerPx: number, offset?: number, centerAtOffset?: boolean) => number
 ```
 
 #### action: setOffsets
@@ -888,14 +888,14 @@ selected regions from the offsets
 
 ```js
 // type signature
-setOffsets: (left?: BpOffset, right?: BpOffset) => void
+setOffsets: (left?: BpOffset | undefined, right?: BpOffset | undefined) => void
 ```
 
 #### action: setSearchResults
 
 ```js
 // type signature
-setSearchResults: (searchResults: BaseResult[], searchQuery: string, assemblyName?: string) => void
+setSearchResults: (searchResults: BaseResult[], searchQuery: string, assemblyName?: string | undefined) => void
 ```
 
 #### action: setNewView
@@ -923,7 +923,7 @@ showTrack: (trackId: string, initialSnapshot?: {}, displayInitialSnapshot?: {}) 
 
 ```js
 // type signature
-hideTrack: (trackId: string) => any
+hideTrack: (trackId: string) => 0 | 1
 ```
 
 #### action: moveTrackDown
@@ -993,7 +993,7 @@ setDisplayedRegions: (regions: Region[]) => void
 
 ```js
 // type signature
-activateTrackSelector: () => any
+activateTrackSelector: () => Widget
 ```
 
 #### action: horizontalScroll
@@ -1014,14 +1014,14 @@ showAllRegions: () => void
 
 ```js
 // type signature
-showAllRegionsInAssembly: (assemblyName?: string) => void
+showAllRegionsInAssembly: (assemblyName?: string | undefined) => void
 ```
 
 #### action: setDraggingTrackId
 
 ```js
 // type signature
-setDraggingTrackId: (idx?: string) => void
+setDraggingTrackId: (idx?: string | undefined) => void
 ```
 
 #### action: setLastTrackDragY
@@ -1042,7 +1042,7 @@ setScaleFactor: (factor: number) => void
 
 ```js
 // type signature
-setTargetBpPerPx: (target: number) => void
+setTargetBpPerPx: (target: number | undefined) => void
 ```
 
 #### action: clearView
@@ -1058,7 +1058,7 @@ clearView: () => void
 
 ```js
 // type signature
-setInit: (arg?: InitState) => void
+setInit: (arg?: InitState | undefined) => void
 ```
 
 #### action: slide
@@ -1093,7 +1093,7 @@ the displayed region in the linear genome view
 
 ```js
 // type signature
-moveTo: (start?: BpOffset, end?: BpOffset) => void
+moveTo: (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
 ```
 
 #### action: navToLocString
@@ -1103,7 +1103,7 @@ wait for assemblies to be initialized
 
 ```js
 // type signature
-navToLocString: (input: string, optAssemblyName?: string, grow?: number) => Promise<any>
+navToLocString: (input: string, optAssemblyName?: string | undefined, grow?: number | undefined) => Promise<void>
 ```
 
 #### action: navToSearchString
@@ -1113,7 +1113,7 @@ is returned. Will pop up a search dialog if multiple results are returned
 
 ```js
 // type signature
-navToSearchString: ({ input, assembly, }: { input: string; assembly: Assembly; }) => Promise<void>
+navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | un...
 ```
 
 #### action: navToLocation
@@ -1123,7 +1123,7 @@ locstring. Will try to perform `setDisplayedRegions` if changing regions
 
 ```js
 // type signature
-navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string, grow?: number) => Promise<any>
+navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string | undefined, grow?: number | undefined) => Promise<void>
 ```
 
 #### action: navToLocations
@@ -1134,7 +1134,7 @@ regions
 
 ```js
 // type signature
-navToLocations: (regions: ParsedLocString[], assemblyName?: string, grow?: number) => Promise<void>
+navToLocations: (regions: ParsedLocString[], assemblyName?: string | undefined, grow?: number | undefined) => Promise<void>
 ```
 
 #### action: navTo
@@ -1148,7 +1148,7 @@ Throws an error if navigation was unsuccessful
 
 ```js
 // type signature
-navTo: (query: NavLocation, grow?: number) => void
+navTo: (query: NavLocation, grow?: number | undefined) => void
 ```
 
 #### action: navToMultiple
@@ -1162,5 +1162,5 @@ Throws an error if navigation was unsuccessful
 
 ```js
 // type signature
-navToMultiple: (locations: NavLocation[], grow?: number) => void
+navToMultiple: (locations: NavLocation[], grow?: number | undefined) => void
 ```

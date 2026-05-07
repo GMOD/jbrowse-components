@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-type Coord = [number, number] | undefined
+import type { Coord } from '../../types.ts'
 
 export function useMouseUpHandler(
   mousedown: Coord,

@@ -42,7 +42,7 @@ type: types.literal('LinearReadArcsDisplay')
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -108,14 +108,14 @@ renderProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => any[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: renderSvg
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 ```
 
 ### LinearReadArcsDisplay - Actions

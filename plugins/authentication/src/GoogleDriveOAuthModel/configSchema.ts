@@ -35,7 +35,7 @@ const GoogleDriveOAuthConfigSchema = ConfigurationSchema(
       description:
         'array of valid domains the url can contain to use this account',
       type: 'stringArray',
-      defaultValue: ['drive.google.com"'],
+      defaultValue: ['drive.google.com'],
     },
     /**
      * #slot

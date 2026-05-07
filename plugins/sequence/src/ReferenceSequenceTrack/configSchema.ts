@@ -101,7 +101,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
             }
           }
           const trackType = pluginManager.getTrackType(snap.type)
-          for (const displayType of trackType?.displayTypes || []) {
+          for (const displayType of trackType?.displayTypes ?? []) {
             if (!displayTypes.has(displayType.name)) {
               displays.push({
                 displayId: `${snap.trackId}-${displayType.name}`,
@@ -122,7 +122,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
         addDisplayConf(displayConf: { type: string; displayId: string }) {
           const { type } = displayConf
           if (!type) {
-            throw new Error(`unknown display type ${type}`)
+            throw new Error('display type not specified')
           }
           const display = self.displays.find(
             (d: any) => d?.displayId === displayConf.displayId,

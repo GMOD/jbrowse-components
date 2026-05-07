@@ -2,20 +2,32 @@ import type React from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  getContainingView,
+  getRpcSessionId,
+  getSession,
+} from '@jbrowse/core/util'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   ConfigOverrideMixin,
-  MultiRegionDisplayMixin,
+  GlobalDataDisplayMixin,
+  StaleViewportRescaleMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import type { HicFlatbushItem } from '../HicRenderer/types.ts'
-import type { HicDataResult } from '../RenderHicDataRPC/types.ts'
+import { generateColorRamp } from './components/HicRenderer.ts'
+
+import type {
+  HicDataResult,
+  HicFlatbushItem,
+} from '../RenderHicDataRPC/types.ts'
+import type { HicBackend } from './components/hicBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LegendItem,
+  LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -25,7 +37,7 @@ import type {
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
- * - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
+ * - [GlobalDataDisplayMixin](../globaldatadisplaymixin)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -37,7 +49,8 @@ export default function stateModelFactory(
       'LinearHicDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      MultiRegionDisplayMixin(),
+      GlobalDataDisplayMixin(),
+      StaleViewportRescaleMixin(),
       ConfigOverrideMixin(),
       types.model({
         type: types.literal('LinearHicDisplay'),
@@ -56,50 +69,19 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      statusMessage: undefined as string | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnOffsetPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnBpPerPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
       availableNormalizations: undefined as string[] | undefined,
-      /**
-       * #volatile
-       */
-      flatbush: undefined as ArrayBuffer | undefined,
-      /**
-       * #volatile
-       */
-      flatbushItems: [] as HicFlatbushItem[],
-      /**
-       * #volatile
-       */
-      maxScore: 0,
-      /**
-       * #volatile
-       */
-      yScalar: 1,
     }))
     .preProcessSnapshot((snap: any) => {
       if (!snap) {
         return snap
       }
       const { colorScheme, showLegend, ...rest } = snap
-      const overrides: Record<string, unknown> = {}
-      if (colorScheme !== undefined) {
-        overrides.colorScheme = colorScheme
-      }
-      if (showLegend !== undefined) {
-        overrides.showLegend = showLegend
-      }
-      if (Object.keys(overrides).length === 0) {
+      if (colorScheme === undefined && showLegend === undefined) {
         return rest
+      }
+      const overrides = {
+        ...(colorScheme !== undefined && { colorScheme }),
+        ...(showLegend !== undefined && { showLegend }),
       }
       return {
         ...rest,
@@ -116,19 +98,56 @@ export default function stateModelFactory(
       get rendererTypeName() {
         return 'HicRenderer'
       },
-      get drawn() {
-        return !!self.rpcData
+      get flatbush() {
+        return self.rpcData?.flatbush
       },
-      get fullyDrawn() {
-        return !!self.rpcData
+      get flatbushItems(): HicFlatbushItem[] {
+        return self.rpcData?.items ?? []
       },
-      get loading() {
-        return self.isLoading
+      get colorMaxScore() {
+        return self.rpcData?.colorMaxScore ?? 0
+      },
+      get yScalar() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const hyp = view.totalWidthPx / 2
+        const h = self.height
+        return self.mode === 'adjust' ? h / Math.max(h, hyp) : 1
       },
     }))
     .views(self => ({
-      renderProps() {
-        return { notReady: true }
+      // Literal RPC payload for RenderHicData. Adding a field here flows
+      // into both the RPC call (via the fetch autorun in afterAttach.ts)
+      // and into mobx's dependency tracking — the fetch autorun reads
+      // `self.rpcProps` once, so any change refires it.
+      get rpcProps() {
+        return {
+          resolution: self.resolution,
+          normalization: self.activeNormalization,
+        }
+      },
+
+      /**
+       * #method
+       * Computed per-frame render state for the GPU backend. Read by the
+       * autorun lifecycle on every change to any tracked observable.
+       */
+      get renderState() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const data = self.rpcData
+        if (!data) {
+          return undefined
+        }
+        const { scale, translateX } = self.viewportTransform(view)
+        return {
+          binWidth: data.binWidth,
+          yScalar: self.yScalar,
+          canvasWidth: view.totalWidthPx,
+          canvasHeight: self.height,
+          colorMaxScore: data.colorMaxScore,
+          useLogScale: self.useLogScale,
+          viewScale: scale,
+          viewOffsetX: translateX,
+        }
       },
 
       /**
@@ -137,9 +156,7 @@ export default function stateModelFactory(
        */
       legendItems(): LegendItem[] {
         const colorScheme = self.colorScheme ?? 'juicebox'
-        const displayMax = self.useLogScale
-          ? self.maxScore
-          : Math.round(self.maxScore / 20)
+        const displayMax = Math.round(self.colorMaxScore)
         const minLabel = self.useLogScale ? '1' : '0'
         const maxLabel = `${displayMax.toLocaleString()}${self.useLogScale ? ' (log)' : ''}`
 
@@ -155,7 +172,7 @@ export default function stateModelFactory(
        * Returns the width needed for the SVG legend if showLegend is enabled.
        */
       svgLegendWidth(): number {
-        return self.showLegend && self.maxScore > 0 ? 140 : 0
+        return self.showLegend && self.colorMaxScore > 0 ? 140 : 0
       },
     }))
     .actions(self => ({
@@ -167,41 +184,32 @@ export default function stateModelFactory(
       },
       /**
        * #action
+       * Called by the React hook (`useGpuModelLifecycle`) when the HAL
+       * resolves. Wires the backend into the mixin-owned autorun pair via
+       * `installGpuDisplay`.
        */
-      setFlatbushData(
-        flatbush: ArrayBuffer | undefined,
-        items: HicFlatbushItem[],
-        maxScore: number,
-        yScalar: number,
-      ) {
-        self.flatbush = flatbush
-        self.flatbushItems = items
-        self.maxScore = maxScore
-        self.yScalar = yScalar
-      },
-      /**
-       * #action
-       */
-      setStatusMessage(msg?: string) {
-        self.statusMessage = msg
-      },
-      /**
-       * #action
-       */
-      setLastDrawnOffsetPx(px: number) {
-        self.lastDrawnOffsetPx = px
-      },
-      /**
-       * #action
-       */
-      setLastDrawnBpPerPx(bpPerPx: number) {
-        self.lastDrawnBpPerPx = bpPerPx
-      },
-      /**
-       * #action
-       */
-      reload() {
-        self.error = undefined
+      startGpuBackendLifecycle(backend: HicBackend) {
+        self.installGpuDisplay<HicBackend>(backend, {
+          upload: b => {
+            const data = self.rpcData
+            if (data) {
+              b.uploadData({
+                positions: data.positions,
+                counts: data.counts,
+                numContacts: data.numContacts,
+              })
+            }
+            b.uploadColorRamp(generateColorRamp(self.colorScheme ?? 'juicebox'))
+          },
+          render: b => {
+            const state = self.renderState
+            if (!state) {
+              return false
+            }
+            b.render(state)
+            return true
+          },
+        })
       },
       /**
        * #action
@@ -379,6 +387,62 @@ export default function stateModelFactory(
       }
     })
     .actions(self => ({
+      /**
+       * #action
+       * Re-fetches contact matrix for the current viewport. Both the
+       * autorun (in `afterAttach`) and `reload()` invoke this directly.
+       */
+      async performHicFetch() {
+        if (self.isMinimized) {
+          return
+        }
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
+        const regions = view.dynamicBlocks.contentBlocks
+        if (!regions.length) {
+          return
+        }
+        const { bpPerPx } = view
+        const { adapterConfig } = self
+        await self.runFetch(async ctx => {
+          const { rpcManager } = getSession(self)
+          const result = await rpcManager.call(
+            getRpcSessionId(self),
+            'RenderHicData',
+            {
+              adapterConfig,
+              regions: [...regions],
+              bpPerPx,
+              ...self.rpcProps,
+              stopToken: ctx.stopToken,
+            },
+            {
+              statusCallback: (msg: string) => {
+                if (isAlive(self)) {
+                  self.setStatusMessage(msg)
+                }
+              },
+            },
+          )
+          if (ctx.isStale()) {
+            return
+          }
+          self.setRpcData(result)
+          self.setLastDrawnViewport(view.offsetPx, view.bpPerPx)
+        })
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      reload() {
+        self.setError(undefined)
+        // TODO find way to avoid manually triggering fetch here instead just bumping a redraw counter or something
+        void self.performHicFetch()
+      },
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {

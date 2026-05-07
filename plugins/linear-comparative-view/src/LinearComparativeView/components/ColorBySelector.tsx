@@ -2,31 +2,14 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
-import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
-import type { LinearComparativeViewModel } from '../model.ts'
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 
 const ColorBySelector = observer(function ColorBySelector({
   model,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
 }) {
-  // Get the first display from the first level (if it exists)
-  const firstDisplay = model.levels[0]?.tracks[0]?.displays[0] as
-    | LinearSyntenyDisplayModel
-    | undefined
-
-  const colorBy = firstDisplay?.colorBy ?? 'default'
-
-  const setColorBy = (value: string) => {
-    // Set colorBy for all displays across all levels
-    for (const level of model.levels) {
-      for (const track of level.tracks) {
-        for (const display of track.displays) {
-          ;(display as LinearSyntenyDisplayModel).setColorBy(value)
-        }
-      }
-    }
-  }
+  const { colorBy } = model
 
   return (
     <CascadingMenuButton
@@ -36,7 +19,7 @@ const ColorBySelector = observer(function ColorBySelector({
           type: 'radio',
           checked: colorBy === 'default',
           onClick: () => {
-            setColorBy('default')
+            model.setColorBy('default')
           },
           helpText:
             'Use the default color scheme with CIGAR operation coloring. Insertions, deletions, matches, and mismatches are shown in different colors with transparency.',
@@ -46,7 +29,7 @@ const ColorBySelector = observer(function ColorBySelector({
           type: 'radio',
           checked: colorBy === 'strand',
           onClick: () => {
-            setColorBy('strand')
+            model.setColorBy('strand')
           },
           helpText:
             'Color alignments by strand orientation. Forward strand alignments and reverse strand alignments are shown in different colors, making it easy to identify inversions and strand-specific patterns.',
@@ -56,7 +39,7 @@ const ColorBySelector = observer(function ColorBySelector({
           type: 'radio',
           checked: colorBy === 'query',
           onClick: () => {
-            setColorBy('query')
+            model.setColorBy('query')
           },
           helpText:
             'Color alignments by query sequence name. Each unique query sequence is assigned a consistent color based on its name, making it easy to visually distinguish between different sequences.',
@@ -66,10 +49,10 @@ const ColorBySelector = observer(function ColorBySelector({
           type: 'radio',
           checked: colorBy === 'syri',
           onClick: () => {
-            setColorBy('syri')
+            model.setColorBy('syri')
           },
           helpText:
-            'Color alignments by structural variant type using SyRI-style classification: syntenic (gray), inversions (orange), translocations (blue), and duplications (cyan). Compatible with plotsr color conventions.',
+            'Color alignments by structural variant type using SyRI-style classification: syntenic (gray), inversions (orange), translocations (yellow-green), and duplications (cyan). Colors match plotsr defaults.',
         },
       ]}
     >

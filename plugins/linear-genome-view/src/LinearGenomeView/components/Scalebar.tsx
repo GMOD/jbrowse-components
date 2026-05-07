@@ -45,7 +45,7 @@ const Scalebar = observer(function Scalebar({
 
   return (
     <Paper
-      data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
+      data-resizer="true"
       className={cx(classes.container, className)}
       variant="outlined"
       style={style}

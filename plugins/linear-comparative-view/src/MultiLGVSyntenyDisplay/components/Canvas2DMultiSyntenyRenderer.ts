@@ -1,62 +1,56 @@
 import {
-  coverageLayout,
-  downsampleMinMax,
-  drawCigarOps,
-  drawCoverageBins,
-  drawCsOps,
-  drawIndicatorTriangle,
-  drawIndicators,
-  drawSnpSegments,
-  getDevicePixelRatio,
-  rgbaString,
-  snpColorForType,
-} from '@jbrowse/alignments-core'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
+  bpToScreenPx,
+  clipBlockForCanvas,
+  prepareCanvas,
+} from '@jbrowse/core/gpu/canvas2dUtils'
 
+import { drawCoverageCanvas } from '../features/coverage/drawCanvas.ts'
+import { packCoverageForGpu } from '../features/coverage/packGpu.ts'
+import { drawFillCanvas } from '../features/fill/drawCanvas.ts'
+import { prepareBlockGeometry } from '../features/fill/packGpu.ts'
+import { drawIndicatorCanvas } from '../features/indicator/drawCanvas.ts'
+import { packIndicatorsForGpu } from '../features/indicator/packGpu.ts'
+import { drawSnpCoverageCanvas } from '../features/snpCoverage/drawCanvas.ts'
+import { packSnpCoverageForGpu } from '../features/snpCoverage/packGpu.ts'
 import {
   BG_COLOR_HEX,
   LABEL_FONT_MAX,
+  LABEL_TEXT,
+  ROW_BG_ALT,
+  ROW_DIVIDER,
   truncateGenomeName,
-} from './multiSyntenyBackendTypes.ts'
-import { getFeatureColor } from './multiSyntenyColorUtils.ts'
-import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
-import { INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
+} from '../shared/types.ts'
 
 import type {
   MultiSyntenyBackend,
-  MultiSyntenyCanvasRenderOpts,
   MultiSyntenyRenderState,
-  SyntenyColors,
-} from './multiSyntenyBackendTypes.ts'
-import type {
-  BlockCoverageUploadData,
-  BlockGeometryData,
-  BlockIndicatorUploadData,
-  BlockSnpUploadData,
-} from './multiSyntenyGpuData.ts'
-import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
-import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
+  MultiSyntenySources,
+} from './rendererTypes.ts'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-type Ctx = CanvasRenderingContext2D | SvgCanvas
+interface RegionData {
+  geometry: { buffer: ArrayBuffer; instanceCount: number } | null
+  coverage: { buffer: ArrayBuffer; binCount: number; maxDepth: number } | null
+  snp: { buffer: ArrayBuffer; segmentCount: number } | null
+  indicators: { buffer: ArrayBuffer; indicatorCount: number } | null
+}
 
 function drawRowBackgrounds(
-  ctx: Ctx,
+  ctx: Ctx2D,
   numGenomes: number,
   coverageHeight: number,
   rowHeight: number,
   width: number,
 ) {
-  for (let g = 0; g < numGenomes; g++) {
-    if (g % 2 === 0) {
-      ctx.fillStyle = '#f8f8f8'
-      ctx.fillRect(0, coverageHeight + g * rowHeight, width, rowHeight)
-    }
+  ctx.fillStyle = ROW_BG_ALT
+  for (let g = 0; g < numGenomes; g += 2) {
+    ctx.fillRect(0, coverageHeight + g * rowHeight, width, rowHeight)
   }
 }
 
 function drawRowDividers(
-  ctx: Ctx,
+  ctx: Ctx2D,
   numGenomes: number,
   coverageHeight: number,
   rowHeight: number,
@@ -65,7 +59,7 @@ function drawRowDividers(
   if (rowHeight < 4) {
     return
   }
-  ctx.strokeStyle = '#e0e0e0'
+  ctx.strokeStyle = ROW_DIVIDER
   ctx.lineWidth = 0.5
   for (let g = 0; g < numGenomes; g++) {
     const y = coverageHeight + (g + 1) * rowHeight
@@ -76,109 +70,8 @@ function drawRowDividers(
   }
 }
 
-// renderMultiSyntenyToCtx is the SVG export path — it renders from
-// high-level feature objects and a bpToPx coordinate function.
-export function renderMultiSyntenyToCtx(
-  ctx: Ctx,
-  genomeRows: Map<string, MultiPairFeature[]>,
-  displayedGenomes: string[],
-  opts: MultiSyntenyCanvasRenderOpts,
-) {
-  const {
-    width,
-    height,
-    rowHeight,
-    rowSpacing,
-    bpToPx,
-    colorBy,
-    labelW,
-    showSnps,
-    colors,
-    coverageHeight,
-    coverageRegions,
-    coverageColor,
-  } = opts
-
-  ctx.fillStyle = BG_COLOR_HEX
-  ctx.fillRect(0, 0, width, coverageHeight + height)
-
-  if (coverageHeight > 0) {
-    for (const coverage of coverageRegions) {
-      renderCoverageForSvg(
-        ctx,
-        coverage,
-        bpToPx,
-        width,
-        coverageHeight,
-        coverageColor,
-        colors,
-      )
-    }
-  }
-
-  const numGenomes = displayedGenomes.length
-  drawRowBackgrounds(ctx, numGenomes, coverageHeight, rowHeight, width)
-
-  const padding = rowSpacing ? 1 : 0
-  for (let g = 0; g < numGenomes; g++) {
-    const genomeName = displayedGenomes[g]!
-    const rowY = coverageHeight + g * rowHeight
-    const features = genomeRows.get(genomeName) ?? []
-
-    for (const feat of features) {
-      const px1 = bpToPx(feat.origRefName, feat.start)
-      const px2 = bpToPx(feat.origRefName, feat.end)
-      if (px1 === undefined || px2 === undefined) {
-        continue
-      }
-      const blockWidth = Math.max(px2 - px1, 1)
-      if (px1 + blockWidth < 0 || px1 > width) {
-        continue
-      }
-
-      const fy = rowY + padding
-      const fh = rowHeight - padding * 2
-      const clippedX = Math.max(px1, 0)
-
-      ctx.fillStyle = getFeatureColor(feat, colorBy)
-      ctx.fillRect(clippedX, fy, Math.min(blockWidth, width - clippedX), fh)
-
-      if (showSnps) {
-        const bpLen = feat.end - feat.start
-        if (feat.cs) {
-          drawCsOps(ctx, feat.cs, px1, fy, blockWidth, fh, bpLen, colors)
-        } else if (feat.cigar) {
-          drawCigarOps(
-            ctx,
-            parseCigar2(feat.cigar),
-            px1,
-            fy,
-            blockWidth,
-            fh,
-            bpLen,
-            colors,
-          )
-        }
-      }
-    }
-  }
-
-  drawRowDividers(ctx, numGenomes, coverageHeight, rowHeight, width)
-
-  if (labelW > 0) {
-    drawGenomeLabels(
-      ctx,
-      displayedGenomes,
-      coverageHeight,
-      labelW,
-      rowHeight,
-      height,
-    )
-  }
-}
-
 function drawGenomeLabels(
-  ctx: Ctx,
+  ctx: Ctx2D,
   displayedGenomes: string[],
   coverageHeight: number,
   labelW: number,
@@ -196,7 +89,7 @@ function drawGenomeLabels(
   )
 
   const fontSize = Math.min(rowHeight - 4, LABEL_FONT_MAX)
-  ctx.fillStyle = '#333'
+  ctx.fillStyle = LABEL_TEXT
   ctx.font = `${fontSize}px sans-serif`
   ctx.textBaseline = 'middle'
   for (let g = 0; g < displayedGenomes.length; g++) {
@@ -213,96 +106,204 @@ function drawGenomeLabels(
   )
 }
 
-// Coverage rendering for SVG export — reads raw SyntenyRegionData
-function renderCoverageForSvg(
-  ctx: Ctx,
-  coverage: SyntenyRegionData,
-  bpToPx: (refName: string, coord: number) => number | undefined,
-  width: number,
-  coverageHeight: number,
-  coverageColor: string,
-  snpColors: SyntenyColors,
+/**
+ * Pure builder: turns the model's observable per-region inputs (raw RPC
+ * payloads) plus gpuProps into a regions map of pre-packed buffers. The
+ * on-screen Canvas2DMultiSyntenyRenderer.sync calls this directly, and so
+ * does renderSvg.tsx — on-screen and SVG export share one builder.
+ */
+export function buildSyntenyRegionMap(
+  sources: MultiSyntenySources,
+): Map<number, RegionData> {
+  const { rpcDataMap, gpuProps, palette } = sources
+  const {
+    displayedGenomes,
+    colorBy,
+    showSnps,
+    showCoverage,
+    coverageGlobalMax,
+    viewWidth,
+  } = gpuProps
+  const out = new Map<number, RegionData>()
+  for (const [idx, data] of rpcDataMap) {
+    const geometry = prepareBlockGeometry(
+      data.genomeFeatures,
+      displayedGenomes,
+      colorBy,
+      showSnps,
+      palette.syntenyColors,
+    )
+    const coverage = showCoverage
+      ? {
+          ...packCoverageForGpu(
+            data.coverageDepths,
+            data.coverageStartPos,
+            coverageGlobalMax,
+            viewWidth,
+          ),
+          maxDepth: data.coverageMaxDepth,
+        }
+      : null
+    const snp = showCoverage
+      ? packSnpCoverageForGpu(
+          data.snpPositions,
+          data.snpYOffsets,
+          data.snpHeights,
+          data.snpColorTypes,
+          data.snpCount,
+        )
+      : null
+    const indicators = showCoverage
+      ? packIndicatorsForGpu(data.indicatorPositions, data.numIndicators)
+      : null
+    out.set(idx, { geometry, coverage, snp, indicators })
+  }
+  return out
+}
+
+/**
+ * Pure draw entry point. Takes any 2D-canvas-like context (real
+ * CanvasRenderingContext2D or SvgCanvas) plus a prepared regions map and
+ * paints the multi-synteny display: row backgrounds, coverage, SNPs,
+ * indicators, fill features, dividers, and genome name labels.
+ *
+ * No `this`, no DOM, no DPR scaling — just data → ctx. The on-screen
+ * Canvas2DMultiSyntenyRenderer wraps this with prepareCanvas + lifecycle
+ * upload state; renderSvg.tsx calls it directly with an SvgCanvas via
+ * paintLayer.
+ */
+export function drawSyntenyBlocks(
+  ctx: Ctx2D,
+  regions: ReadonlyMap<number, RegionData>,
+  blocks: RenderBlock[],
+  state: MultiSyntenyRenderState,
 ) {
   const {
-    coverageDepths,
-    coverageMaxDepth,
-    coverageStartOffset,
-    regionStart,
-    refName,
-  } = coverage
-  if (coverageMaxDepth === 0) {
-    return
-  }
-
-  const { depthScale, effectiveH, bottom } = coverageLayout(
-    coverageMaxDepth,
+    canvasWidth,
+    canvasHeight,
+    rowHeight,
+    rowSpacing,
     coverageHeight,
-  )
-  const ds = downsampleMinMax(
-    coverageDepths,
-    coverageStartOffset,
-    Math.ceil(width),
-    coverageMaxDepth,
-  )
+    palette,
+    displayedGenomes,
+    labelW,
+  } = state
 
-  const refBpToPx = (bp: number) => bpToPx(refName, bp)
+  ctx.fillStyle = BG_COLOR_HEX
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
-  ctx.fillStyle = coverageColor
-  for (let i = 0; i < ds.count; i++) {
-    const binPos = regionStart + ds.positions[i]!
-    const px = refBpToPx(binPos)
-    const px2 = refBpToPx(binPos + 1)
-    if (px === undefined || px2 === undefined || px > width || px2 < 0) {
+  const rowPadding = rowSpacing ? 1 : 0
+  const numGenomes = displayedGenomes.length
+
+  drawRowBackgrounds(ctx, numGenomes, coverageHeight, rowHeight, canvasWidth)
+
+  for (const block of blocks) {
+    const region = regions.get(block.displayedRegionIndex)
+    if (!region) {
       continue
     }
-    const bandBottom = bottom - ds.mins[i]! * depthScale * effectiveH
-    const bandTop = bottom - ds.maxs[i]! * depthScale * effectiveH
-    ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
-  }
+    const clip = clipBlockForCanvas(block, canvasWidth)
+    if (!clip) {
+      continue
+    }
 
-  if (coverage.snpCount <= width * 4) {
-    for (let i = 0; i < coverage.snpCount; i++) {
-      const px = refBpToPx(regionStart + coverage.snpPositions[i]!)
-      const px2 = refBpToPx(regionStart + coverage.snpPositions[i]! + 1)
-      if (px === undefined || px2 === undefined || px > width || px2 < 0) {
-        continue
+    const [bpStart, bpEnd] = block.bpRangeX
+    const bpToX = (absBp: number) =>
+      bpToScreenPx(
+        absBp,
+        bpStart,
+        bpEnd,
+        block.screenStartPx,
+        block.screenEndPx,
+        block.reversed,
+      )
+
+    if (coverageHeight > 0) {
+      if (region.coverage) {
+        drawCoverageCanvas(
+          ctx,
+          region.coverage,
+          bpToX,
+          canvasWidth,
+          coverageHeight,
+          palette.coverageColorHex,
+        )
       }
-      const segBottom =
-        bottom - coverage.snpYOffsets[i]! * depthScale * effectiveH
-      const segTop =
-        segBottom - coverage.snpHeights[i]! * depthScale * effectiveH
-      ctx.fillStyle = snpColorForType(coverage.snpColorTypes[i]!, snpColors)
-      ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
+      if (region.snp) {
+        drawSnpCoverageCanvas(
+          ctx,
+          region.snp,
+          bpToX,
+          canvasWidth,
+          coverageHeight,
+          palette.syntenyColors,
+        )
+      }
+      if (region.indicators) {
+        drawIndicatorCanvas(
+          ctx,
+          region.indicators,
+          bpToX,
+          canvasWidth,
+          palette.syntenyColors.insertion,
+        )
+      }
+    }
+
+    if (region.geometry) {
+      drawFillCanvas(
+        ctx,
+        region.geometry,
+        bpToX,
+        canvasWidth,
+        coverageHeight,
+        rowHeight,
+        rowPadding,
+      )
     }
   }
 
-  ctx.fillStyle = snpColors.insertion
-  for (let i = 0; i < coverage.numIndicators; i++) {
-    const px = refBpToPx(regionStart + coverage.indicatorPositions[i]!)
-    if (px === undefined || px < 0 || px > width) {
-      continue
-    }
-    drawIndicatorTriangle(ctx, px)
+  drawRowDividers(ctx, numGenomes, coverageHeight, rowHeight, canvasWidth)
+
+  if (labelW > 0) {
+    drawGenomeLabels(
+      ctx,
+      displayedGenomes,
+      coverageHeight,
+      labelW,
+      rowHeight,
+      canvasHeight - coverageHeight,
+    )
   }
+
+  return true
 }
 
-// Unified Canvas2D renderer — implements MultiSyntenyBackend using
-// pre-packed typed arrays, sharing drawing functions with alignments.
-
-interface RegionData {
-  regionStart: number
-  geometry: { buffer: ArrayBuffer; instanceCount: number } | null
-  coverage: { buffer: ArrayBuffer; binCount: number; maxDepth: number } | null
-  snp: { buffer: ArrayBuffer; segmentCount: number } | null
-  indicators: { buffer: ArrayBuffer; indicatorCount: number } | null
+/**
+ * One-shot pure entry point: build a regions map from observable sources
+ * and paint into any 2D-context-shaped surface (real canvas for raster,
+ * SvgCanvas for vector). Used by SVG export as a single call. Mirrors
+ * `drawAlignmentsToCtx` from plugins/alignments.
+ */
+export function drawSyntenyToCtx(
+  ctx: Ctx2D,
+  sources: MultiSyntenySources,
+  blocks: RenderBlock[],
+  state: MultiSyntenyRenderState,
+) {
+  return drawSyntenyBlocks(ctx, buildSyntenyRegionMap(sources), blocks, state)
 }
 
-const STRIDE = INSTANCE_BYTE_SIZE / 4
-
+/**
+ * On-screen Canvas2D backend. Thin shell: `sync` rebuilds the regions map
+ * via the same pure `buildSyntenyRegionMap` the SVG path uses; on-screen
+ * and export can't drift. `renderBlocks` paints via the pure
+ * `drawSyntenyBlocks` entry point. Mirrors Canvas2DAlignmentsRenderer.
+ */
 export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
-  private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
-  private regions = new Map<number, RegionData>()
+  private canvas: HTMLCanvasElement
+  private regions: ReadonlyMap<number, RegionData> = new Map()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -313,214 +314,16 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
     this.ctx = ctx
   }
 
-  private ensureRegion(regionNumber: number) {
-    let r = this.regions.get(regionNumber)
-    if (!r) {
-      r = {
-        regionStart: 0,
-        geometry: null,
-        coverage: null,
-        snp: null,
-        indicators: null,
-      }
-      this.regions.set(regionNumber, r)
-    }
-    return r
+  sync(sources: MultiSyntenySources) {
+    this.regions = buildSyntenyRegionMap(sources)
   }
 
-  uploadGeometryForBlock(
-    regionNumber: number,
-    data: BlockGeometryData & { regionStart: number },
-  ) {
-    const r = this.ensureRegion(regionNumber)
-    r.regionStart = data.regionStart
-    r.geometry = { buffer: data.buffer, instanceCount: data.instanceCount }
-  }
-
-  uploadCoverageForBlock(
-    regionNumber: number,
-    data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
-  ) {
-    const r = this.ensureRegion(regionNumber)
-    r.regionStart = data.regionStart
-    r.coverage = {
-      buffer: data.buffer,
-      binCount: data.binCount,
-      maxDepth: data.maxDepth,
-    }
-  }
-
-  uploadSnpCoverageForBlock(regionNumber: number, data: BlockSnpUploadData) {
-    this.ensureRegion(regionNumber).snp = {
-      buffer: data.buffer,
-      segmentCount: data.segmentCount,
-    }
-  }
-
-  uploadIndicatorsForBlock(
-    regionNumber: number,
-    data: BlockIndicatorUploadData,
-  ) {
-    this.ensureRegion(regionNumber).indicators = {
-      buffer: data.buffer,
-      indicatorCount: data.indicatorCount,
-    }
-  }
-
-  clearAllBlocks() {
-    this.regions.clear()
-  }
-  pick() {
-    return -1
-  }
-
-  renderBlocks(state: MultiSyntenyRenderState) {
-    const {
-      contentBlocks,
-      viewOffsetPx,
-      width,
-      height,
-      rowHeight,
-      rowSpacing,
-      coverageHeight,
-      palette,
-      displayedGenomes,
-      labelW,
-    } = state
-
-    const dpr = getDevicePixelRatio()
-    const pw = Math.round(width * dpr)
-    const ph = Math.round(height * dpr)
-    if (this.canvas.width !== pw || this.canvas.height !== ph) {
-      this.canvas.width = pw
-      this.canvas.height = ph
-    }
-    const ctx = this.ctx
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.fillStyle = BG_COLOR_HEX
-    ctx.fillRect(0, 0, width, height)
-
-    const rowPadding = rowSpacing ? 1 : 0
-    const numGenomes = displayedGenomes.length
-
-    drawRowBackgrounds(ctx, numGenomes, coverageHeight, rowHeight, width)
-
-    let globalMaxDepth = 0
-    for (const region of this.regions.values()) {
-      if (region.coverage && region.coverage.maxDepth > globalMaxDepth) {
-        globalMaxDepth = region.coverage.maxDepth
-      }
-    }
-
-    for (const block of contentBlocks) {
-      if (block.regionNumber === undefined) {
-        continue
-      }
-      const region = this.regions.get(block.regionNumber)
-      if (!region) {
-        continue
-      }
-      const params = computeBlockRenderParams(block, viewOffsetPx)
-      if (
-        params.regionScreenLeft + params.regionScreenWidth < 0 ||
-        params.regionScreenLeft > width
-      ) {
-        continue
-      }
-
-      const bpToX = (absBp: number) =>
-        params.regionScreenLeft +
-        ((absBp - block.start) / params.bpRangeLen) * params.regionScreenWidth
-
-      // Shared drawing functions from @jbrowse/alignments-core
-      if (
-        coverageHeight > 0 &&
-        region.coverage &&
-        region.coverage.binCount > 0
-      ) {
-        drawCoverageBins(
-          ctx,
-          region.coverage.buffer,
-          region.coverage.binCount,
-          globalMaxDepth,
-          coverageHeight,
-          palette.coverageColorHex,
-          bpToX,
-          width,
-        )
-      }
-      if (coverageHeight > 0 && region.snp && region.snp.segmentCount > 0) {
-        drawSnpSegments(
-          ctx,
-          region.snp.buffer,
-          region.snp.segmentCount,
-          globalMaxDepth,
-          coverageHeight,
-          palette.syntenyColors,
-          bpToX,
-          width,
-        )
-      }
-      if (
-        coverageHeight > 0 &&
-        region.indicators &&
-        region.indicators.indicatorCount > 0
-      ) {
-        drawIndicators(
-          ctx,
-          region.indicators.buffer,
-          region.indicators.indicatorCount,
-          {
-            insertion: palette.syntenyColors.insertion,
-            softclip: palette.syntenyColors.insertion,
-            hardclip: palette.syntenyColors.insertion,
-          },
-          bpToX,
-          width,
-        )
-      }
-
-      // Geometry instances
-      if (region.geometry && region.geometry.instanceCount > 0) {
-        const u32 = new Uint32Array(region.geometry.buffer)
-        const f32 = new Float32Array(region.geometry.buffer)
-        for (let i = 0; i < region.geometry.instanceCount; i++) {
-          const off = i * STRIDE
-          const x1 = bpToX(u32[off]!)
-          const x2 = bpToX(u32[off + 1]!)
-          const w = Math.max(x2 - x1, 1)
-          if (x1 + w < 0 || x1 > width) {
-            continue
-          }
-          const genomeRow = u32[off + 2]!
-          const y = coverageHeight + genomeRow * rowHeight + rowPadding
-          const h = rowHeight - rowPadding * 2
-          ctx.fillStyle = rgbaString(
-            f32[off + 4]!,
-            f32[off + 5]!,
-            f32[off + 6]!,
-            f32[off + 7]!,
-          )
-          ctx.fillRect(x1, y, w, h)
-        }
-      }
-    }
-
-    drawRowDividers(ctx, numGenomes, coverageHeight, rowHeight, width)
-
-    if (labelW > 0) {
-      drawGenomeLabels(
-        ctx,
-        displayedGenomes,
-        coverageHeight,
-        labelW,
-        rowHeight,
-        height - coverageHeight,
-      )
-    }
+  renderBlocks(blocks: RenderBlock[], state: MultiSyntenyRenderState) {
+    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    return drawSyntenyBlocks(this.ctx, this.regions, blocks, state)
   }
 
   dispose() {
-    this.regions.clear()
+    this.regions = new Map()
   }
 }

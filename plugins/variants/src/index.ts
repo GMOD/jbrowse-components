@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import ChordVariantDisplayF from './ChordVariantDisplay/index.ts'
 import LDDisplayF from './LDDisplay/index.ts'
 import LDRendererF from './LDRenderer/index.ts'
 import LDTrackF from './LDTrack/index.ts'
@@ -10,7 +9,6 @@ import MultiVariantMatrixDisplayF from './MultiVariantMatrixDisplay/index.ts'
 import PlinkLDAdapterF from './PlinkLDAdapter/index.ts'
 import LDDataRPCMethodsF from './RenderLDDataRPC/index.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
-import StructuralVariantChordRendererF from './StructuralVariantChordRenderer/index.ts'
 import VariantFeatureWidgetF from './VariantFeatureWidget/index.ts'
 import { MultiSampleVariantClusterGenotypeMatrix } from './VariantRPC/MultiSampleVariantClusterGenotypeMatrix.ts'
 import { MultiSampleVariantGetCellData } from './VariantRPC/MultiSampleVariantGetCellData.ts'
@@ -45,8 +43,6 @@ export default class VariantsPlugin extends Plugin {
     MultiVariantMatrixDisplayF(pluginManager)
     LDDisplayF(pluginManager)
     LDRendererF(pluginManager)
-    StructuralVariantChordRendererF(pluginManager)
-    ChordVariantDisplayF(pluginManager)
     LDDataRPCMethodsF(pluginManager)
 
     pluginManager.addRpcMethod(

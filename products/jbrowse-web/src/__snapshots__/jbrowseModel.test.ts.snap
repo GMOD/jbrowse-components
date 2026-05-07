@@ -3243,6 +3243,31 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox_test_vcf_jexl",
       "type": "VariantTrack",
     },
+    {
+      "adapter": {
+        "gfaLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_del_synteny.gfa",
+        },
+        "type": "GfaAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+        "volvox_del",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_del_gfa_multi-MultiLGVSyntenyDisplay",
+          "type": "MultiLGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox/volvox_del GFA (MultiLGV)",
+      "trackId": "volvox_del_gfa_multi",
+      "type": "MultiSyntenyTrack",
+    },
   ],
 }
 `;

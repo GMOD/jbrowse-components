@@ -75,16 +75,14 @@ export async function run(args?: string[]) {
   debug(`Found existing config file ${target}`)
 
   const trackConfig = await readInlineOrFileJson<Track>(track)
-  if (!config.tracks) {
-    config.tracks = []
-  }
+  config.tracks ??= []
 
   const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
     items: config.tracks,
     newItem: trackConfig,
     idField: 'trackId',
     getId: item => item.trackId,
-    allowOverwrite: update ?? false,
+    force: update ?? false,
     itemType: 'track',
   })
 

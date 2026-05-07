@@ -5,7 +5,6 @@ import { observer } from 'mobx-react'
 
 import DotplotControls from './DotplotControls.tsx'
 import DotplotWarnings from './DotplotWarnings.tsx'
-import PanButtons from './PanButtons.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
 
@@ -32,11 +31,11 @@ const DotplotHeader = observer(function DotplotHeader({
   selection?: { width: number; height: number }
 }) {
   const { classes } = useStyles()
-  const { hview, vview, showPanButtons } = model
+  const { hview, vview } = model
   return (
     <div className={classes.headerBar}>
       <DotplotControls model={model} />
-      <Typography className={classes.bp} variant="body2" color="textSecondary">
+      <Typography className={classes.bp} variant="body2" color="text.secondary">
         x: {hview.assemblyNames.join(',')} {getBpDisplayStr(hview.currBp)}
         <br />
         y: {vview.assemblyNames.join(',')} {getBpDisplayStr(vview.currBp)}
@@ -45,7 +44,7 @@ const DotplotHeader = observer(function DotplotHeader({
         <Typography
           className={classes.bp}
           variant="body2"
-          color="textSecondary"
+          color="text.secondary"
         >
           {`width:${getBpDisplayStr(hview.bpPerPx * selection.width)}`} <br />
           {`height:${getBpDisplayStr(vview.bpPerPx * selection.height)}`}
@@ -53,7 +52,6 @@ const DotplotHeader = observer(function DotplotHeader({
       ) : null}
       <div className={classes.spacer} />
       <DotplotWarnings model={model} />
-      {showPanButtons ? <PanButtons model={model} /> : null}
     </div>
   )
 })

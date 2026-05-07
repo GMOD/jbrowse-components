@@ -3,28 +3,20 @@ import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 import { renameRegionsIfNeeded } from '../../util/index.ts'
 
-import type { RenderArgs } from './util.ts'
 import type { Region } from '../../util/index.ts'
 import type { StopToken } from '../../util/stopToken.ts'
+import type { RpcArgs } from '../RpcRegistry.ts'
 
 export default class CoreGetFeatureDensityStats extends RpcMethodType {
   name = 'CoreGetFeatureDensityStats'
 
   async serializeArguments(
-    args: RenderArgs & {
-      stopToken?: StopToken
-      statusCallback?: (arg: string) => void
-    },
+    args: RpcArgs<'CoreGetFeatureDensityStats'> & { sessionId: string },
     rpcDriver: string,
   ) {
     const { rootModel } = this.pluginManager
     const assemblyManager = rootModel!.session!.assemblyManager
-
-    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
-      ...args,
-      filters: args.filters?.toJSON().filters,
-    })
-
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
     return super.serializeArguments(renamedArgs, rpcDriver)
   }
 
@@ -49,10 +41,9 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    const result = await dataAdapter.getMultiRegionFeatureDensityStats(
+    return dataAdapter.getMultiRegionFeatureDensityStats(
       regions,
       deserializedArgs,
     )
-    return result
   }
 }

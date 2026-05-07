@@ -2,3 +2,15 @@ packages:
   - 'packages/*'
   - 'products/*'
   - 'plugins/*'
+  - 'tools/gfa-to-tabix'
+  - 'tools/graph-truth-extractor'
+allowBuilds:
+  canvas: true
+  electron: true
+  electron-chromedriver: true
+  esbuild: true
+  puppeteer: true
+  unrs-resolver: true
+minimumReleaseAge: '1440'
+minimumReleaseAgeExclude:
+  - '@gmod/*'

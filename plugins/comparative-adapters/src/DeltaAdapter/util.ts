@@ -1,5 +1,6 @@
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
+import type { PAFRecord } from '../PAFAdapter/util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter/BaseOptions'
 
 /* paf2delta from paftools.js in the minimap2 repository, license reproduced below
@@ -31,7 +32,7 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter/BaseOp
  */
 
 export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
-  const { statusCallback = () => {} } = opts || {}
+  const { statusCallback = () => {} } = opts ?? {}
   let rname = ''
   let qname = ''
   let qs = 0
@@ -40,21 +41,12 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
   let re = 0
   let strand = 0
   let NM = 0
-  let cigar = [] as number[]
+  let cigar: number[] = []
   let x = 0
   let y = 0
   let seen_gt = false
 
-  const records = [] as {
-    qname: string
-    qstart: number
-    qend: number
-    tname: string
-    tstart: number
-    tend: number
-    strand: number
-    extra: Record<string, unknown>
-  }[]
+  const records: PAFRecord[] = []
   const regex = /^>(\S+)\s+(\S+)\s+(\d+)\s+(\d+)/
 
   parseLineByLine(

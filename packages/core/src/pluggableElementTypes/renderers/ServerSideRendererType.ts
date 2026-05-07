@@ -93,14 +93,14 @@ export default class ServerSideRenderer extends RendererType {
 
     const config = isStateTreeNode(args.config)
       ? args.config
-      : this.configSchema.create(args.config || {}, {
+      : this.configSchema.create(args.config ?? {}, {
           pluginManager: this.pluginManager,
         })
 
     const results = await this.render({
       ...rest,
       config,
-    } as RenderArgsDeserialized)
+    })
 
     if (isRpcResult(results)) {
       return this.deserializeResultsInClient(
@@ -112,10 +112,7 @@ export default class ServerSideRenderer extends RendererType {
     const { reactElement, ...resultRest } = results
     return {
       ...resultRest,
-      reactElement: this.createReactElement(
-        resultRest as ResultsSerialized,
-        args,
-      ),
+      reactElement: this.createReactElement(resultRest, args),
     }
   }
 
@@ -143,7 +140,7 @@ export default class ServerSideRenderer extends RendererType {
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
     return {
       ...args,
-      config: this.configSchema.create(args.config || {}, {
+      config: this.configSchema.create(args.config ?? {}, {
         pluginManager: this.pluginManager,
       }),
       filters: args.filters
@@ -160,7 +157,7 @@ export default class ServerSideRenderer extends RendererType {
     _args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const { reactElement, ...rest } = results
-    return rest as ResultsSerialized
+    return rest
   }
 
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {

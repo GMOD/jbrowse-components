@@ -2603,15 +2603,72 @@
           "displayId": "volvox_del_gfa_multi-MultiLGVSyntenyDisplay"
         }
       ]
+    },
+    {
+      "type": "MultiSyntenyTrack",
+      "trackId": "volvox_pangenome_50_gfa_tabix",
+      "name": "volvox pangenome 50 (GfaTabix)",
+      "category": ["Synteny"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "GfaTabixAdapter",
+        "assemblyNameMap": {
+          "ref#0": "volvox"
+        },
+        "posLocation": {
+          "uri": "volvox_pangenome_50.pos.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "posIndex": {
+          "location": {
+            "uri": "volvox_pangenome_50.pos.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "syntenyLocation": {
+          "uri": "volvox_pangenome_50.synteny.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "syntenyIndex": {
+          "location": {
+            "uri": "volvox_pangenome_50.synteny.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "syntenyCoarseLocation": {
+          "uri": "volvox_pangenome_50.synteny.coarse.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "syntenyCoarseIndex": {
+          "location": {
+            "uri": "volvox_pangenome_50.synteny.coarse.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "edgesLocation": {
+          "uri": "volvox_pangenome_50.edges.spatial.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "edgesIndex": {
+          "location": {
+            "uri": "volvox_pangenome_50.edges.spatial.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "seqlensLocation": {
+          "uri": "volvox_pangenome_50.seglens.bin",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "MultiLGVSyntenyDisplay",
+          "displayId": "volvox_pangenome_50_gfa_tabix-MultiLGVSyntenyDisplay"
+        }
+      ]
     }
   ],
   "plugins": [
-    {
-      "name": "UMDLocPlugin",
-      "umdLoc": {
-        "uri": "umd_plugin.js"
-      }
-    },
     {
       "name": "UMDUrlPlugin",
       "umdUrl": "umd_plugin.js"

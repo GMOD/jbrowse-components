@@ -2,6 +2,8 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import { links } from './hierarchy.ts'
+
 import type { TreeDrawingModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -13,17 +15,14 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         if (!isAlive(self) || self.isMinimized) {
           return
         }
+        // touch totalHeight so MobX tracks it as a dependency (row height changes)
+        void self.totalHeight
         const {
           treeCanvas,
           hierarchy,
           treeAreaWidth,
           height,
           scrollTop = 0,
-          // IMPORTANT: We must access totalHeight for MobX to track it as a
-          // dependency. Without this, the autorun won't re-run when row height
-          // changes.
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          totalHeight: _totalHeight,
         } = self
 
         if (!treeCanvas || !hierarchy) {
@@ -44,12 +43,12 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         ctx.lineWidth = 1
 
         ctx.beginPath()
-        for (const link of hierarchy.links()) {
+        for (const link of links(hierarchy)) {
           const { source, target } = link
-          const sy = source.x!
-          const ty = target.x!
-          const tx = target.y!
-          const sx = source.y!
+          const sy = source.x
+          const ty = target.x
+          const tx = target.y
+          const sx = source.y
 
           ctx.moveTo(sx, sy)
           ctx.lineTo(sx, ty)
@@ -70,6 +69,8 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         if (!isAlive(self) || self.isMinimized) {
           return
         }
+        // touch totalHeight so MobX tracks it as a dependency (row height changes)
+        void self.totalHeight
         const {
           mouseoverCanvas,
           hierarchy,
@@ -78,8 +79,6 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           height,
           scrollTop = 0,
           sources,
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          totalHeight,
         } = self
         if (!mouseoverCanvas) {
           return
@@ -115,7 +114,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           const { node } = hoveredTreeNode
           ctx.fillStyle = 'rgba(255,165,0,0.8)'
           ctx.beginPath()
-          ctx.arc(node.y!, node.x!, 4, 0, 2 * Math.PI)
+          ctx.arc(node.y, node.x, 4, 0, 2 * Math.PI)
           ctx.fill()
 
           ctx.strokeStyle = 'rgba(255,140,0,1)'

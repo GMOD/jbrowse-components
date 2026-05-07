@@ -1,14 +1,13 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { MenuItem, Paper, Select, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const ImportSyntenyTrackSelector = observer(
   function ImportSyntenyTrackSelector({
@@ -23,10 +22,7 @@ const ImportSyntenyTrackSelector = observer(
     assembly2: string
   }) {
     const session = getSession(model)
-    const { importFormSyntenyTrackSelections } = model
-    const { tracks, sessionTracks = [] } = session
-    const allTracks = [...tracks, ...sessionTracks] as AnyConfigurationModel[]
-    const filteredTracks = allTracks.filter(track => {
+    const filteredTracks = session.tracks.filter(track => {
       const assemblyNames = readConfObject(track, 'assemblyNames')
       return (
         assemblyNames.includes(assembly1) &&
@@ -34,15 +30,15 @@ const ImportSyntenyTrackSelector = observer(
         track.type.includes('Synteny')
       )
     })
-    const resetTrack = filteredTracks[0]?.trackId || ''
-    const r = importFormSyntenyTrackSelections[selectedRow]
-    const value = r?.type === 'preConfigured' ? r.value : undefined
+    const resetTrack = filteredTracks[0]?.trackId ?? ''
+    const [value, setValue] = useState(resetTrack)
     useEffect(() => {
       model.setImportFormSyntenyTrack(selectedRow, {
         type: 'preConfigured',
         value: resetTrack,
       })
-    }, [assembly2, assembly1, resetTrack, selectedRow, model])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
     return (
       <Paper style={{ padding: 12 }}>
         <Typography>
@@ -50,13 +46,15 @@ const ImportSyntenyTrackSelector = observer(
           you hit "Launch".
         </Typography>
 
-        {value && filteredTracks.map(r => r.trackId).includes(value) ? (
+        {filteredTracks.length ? (
           <Select
             value={value}
             onChange={event => {
+              const v = event.target.value
+              setValue(v)
               model.setImportFormSyntenyTrack(selectedRow, {
                 type: 'preConfigured',
-                value: event.target.value,
+                value: v,
               })
             }}
           >
@@ -67,7 +65,7 @@ const ImportSyntenyTrackSelector = observer(
             ))}
           </Select>
         ) : (
-          <ErrorMessage
+          <ErrorBanner
             error={`No synteny tracks found for ${assembly1},${assembly2}`}
           />
         )}

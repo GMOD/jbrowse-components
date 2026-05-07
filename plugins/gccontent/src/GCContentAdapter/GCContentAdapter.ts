@@ -34,7 +34,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
     query: Region,
     opts?: BaseOptions,
   ): Promise<{ starts: number[]; ends: number[]; scores: number[] }> {
-    const { statusCallback = () => {}, stopToken } = opts || {}
+    const { statusCallback = () => {}, stopToken } = opts ?? {}
     const sequenceAdapter = await this.configure()
     const windowSize = this.getConf('windowSize')
     const windowDelta = this.getConf('windowDelta')

@@ -4,6 +4,8 @@ import { createRoot } from 'react-dom/client'
 
 import InitialLoad from './InitialLoad.tsx'
 
+import 'dockview-core/dist/styles/dockview.css'
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <InitialLoad />

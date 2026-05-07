@@ -1,71 +1,73 @@
-export const YSCALEBAR_LABEL_OFFSET = 5
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 
-export function niceNum(val: number) {
-  if (val <= 0) {
-    return 1
-  }
-  const exp = Math.floor(Math.log10(val))
-  const frac = val / 10 ** exp
-  let nice: number
-  if (frac <= 1) {
-    nice = 1
-  } else if (frac <= 2) {
-    nice = 2
-  } else if (frac <= 5) {
-    nice = 5
+import type { IndelEntry } from './labelConstants.ts'
+import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
+
+export function niceStep(maxDepth: number) {
+  const rough = maxDepth / 3
+  const exp = Math.floor(Math.log10(rough))
+  const pow = Math.pow(10, exp)
+  const frac = rough / pow
+  let niceFrac
+  if (frac < 1.5) {
+    niceFrac = 1
+  } else if (frac < 3) {
+    niceFrac = 2
+  } else if (frac < 7) {
+    niceFrac = 5
   } else {
-    nice = 10
+    niceFrac = 10
   }
-  return nice * 10 ** exp
-}
-
-export interface CoverageTicks {
-  ticks: { value: number; y: number }[]
-  height: number
-  maxDepth: number
-  nicedMax: number
-  yTop: number
-  yBottom: number
+  return niceFrac * pow
 }
 
 export function computeCoverageTicks(
   maxDepth: number,
   coverageHeight: number,
-): CoverageTicks {
-  const nicedMax = niceNum(maxDepth)
+  scaleType = 'linear',
+): YScaleTicks {
+  const yTop = YSCALEBAR_LABEL_OFFSET
+  const yBottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
+
+  if (maxDepth === 0) {
+    return { ticks: [], yTop, yBottom }
+  }
+
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
+  const logMax = Math.log2(Math.max(1, maxDepth))
+  const yOf =
+    scaleType === 'log'
+      ? (value: number) =>
+          yBottom - (Math.log2(Math.max(1, value)) / logMax) * effectiveHeight
+      : (value: number) => yBottom - (value / maxDepth) * effectiveHeight
 
-  const numTicks = coverageHeight < 70 ? 2 : 4
-  const tickStep = nicedMax / (numTicks - 1)
-  const ticks: { value: number; y: number }[] = []
-  for (let i = 0; i < numTicks; i++) {
-    const value = Math.round(i * tickStep)
-    const y =
-      coverageHeight -
-      YSCALEBAR_LABEL_OFFSET -
-      (value / nicedMax) * effectiveHeight
-    ticks.push({ value, y })
+  const ticks: YScaleTicks['ticks'] = []
+  if (scaleType === 'log') {
+    ticks.push({ value: 1, y: yOf(1) })
+    let tick = 2
+    while (tick <= maxDepth) {
+      ticks.push({ value: tick, y: yOf(tick) })
+      tick *= 2
+    }
+    if (ticks.length < 2) {
+      ticks.push({ value: maxDepth, y: yOf(maxDepth) })
+    }
+  } else if (coverageHeight < 70) {
+    ticks.push({ value: 0, y: yOf(0) }, { value: maxDepth, y: yOf(maxDepth) })
+  } else {
+    const step = niceStep(maxDepth)
+    const stepCount = Math.floor(maxDepth / step)
+    for (let i = 0; i <= stepCount; i++) {
+      ticks.push({ value: i * step, y: yOf(i * step) })
+    }
   }
 
-  return {
-    ticks,
-    height: coverageHeight,
-    maxDepth,
-    nicedMax,
-    yTop: YSCALEBAR_LABEL_OFFSET,
-    yBottom: coverageHeight - YSCALEBAR_LABEL_OFFSET,
-  }
-}
-
-export function computeDepthScale(maxDepth: number) {
-  const nicedMax = maxDepth > 0 ? niceNum(maxDepth) : 1
-  return maxDepth > 0 ? maxDepth / nicedMax : 1
+  return { ticks, yTop, yBottom }
 }
 
 export interface CoverageRegion {
   coverageDepths: Float32Array
-  coverageStartOffset: number
-  regionStart: number
+  coverageStartPos: number
 }
 
 export function computeVisibleMaxDepth<
@@ -80,13 +82,10 @@ export function computeVisibleMaxDepth<
     if (!cov) {
       continue
     }
-    const startBin = Math.max(
-      0,
-      Math.floor(block.start - cov.regionStart - cov.coverageStartOffset),
-    )
+    const startBin = Math.max(0, Math.floor(block.start - cov.coverageStartPos))
     const endBin = Math.min(
       cov.coverageDepths.length,
-      Math.ceil(block.end - cov.regionStart - cov.coverageStartOffset),
+      Math.ceil(block.end - cov.coverageStartPos),
     )
     for (let i = startBin; i < endBin; i++) {
       const d = cov.coverageDepths[i]!
@@ -99,7 +98,7 @@ export function computeVisibleMaxDepth<
 }
 
 export function getGlobalMaxCoverageDepth<K, D>(
-  dataMap: Map<K, D>,
+  dataMap: ReadonlyMap<K, D>,
   getMaxDepth: (data: D) => number,
 ) {
   let max = 0
@@ -112,8 +111,86 @@ export function getGlobalMaxCoverageDepth<K, D>(
   return max
 }
 
+export function computeVisibleCoverageStats<
+  B extends { start: number; end: number },
+>(
+  visibleBlocks: B[],
+  getCoverageForBlock: (block: B) => CoverageRegion | undefined,
+): ScoreStats | undefined {
+  let min = Infinity
+  let max = -Infinity
+  let sum = 0
+  let sumSq = 0
+  let count = 0
+  for (const block of visibleBlocks) {
+    const cov = getCoverageForBlock(block)
+    if (!cov) {
+      continue
+    }
+    const startBin = Math.max(0, Math.floor(block.start - cov.coverageStartPos))
+    const endBin = Math.min(
+      cov.coverageDepths.length,
+      Math.ceil(block.end - cov.coverageStartPos),
+    )
+    for (let i = startBin; i < endBin; i++) {
+      const d = cov.coverageDepths[i]!
+      if (d < min) {
+        min = d
+      }
+      if (d > max) {
+        max = d
+      }
+      sum += d
+      sumSq += d * d
+      count++
+    }
+  }
+  if (count === 0 || !Number.isFinite(max)) {
+    return undefined
+  }
+  const mean = sum / count
+  const stdDev = Math.sqrt(Math.max(0, sumSq / count - mean * mean))
+  return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
+}
+
+export function computeGlobalCoverageStats<K, D>(
+  dataMap: ReadonlyMap<K, D>,
+  getCoverage: (data: D) => CoverageRegion | undefined,
+): ScoreStats | undefined {
+  let min = Infinity
+  let max = -Infinity
+  let sum = 0
+  let sumSq = 0
+  let count = 0
+  for (const data of dataMap.values()) {
+    const cov = getCoverage(data)
+    if (!cov) {
+      continue
+    }
+    for (let i = 0, l = cov.coverageDepths.length; i < l; i++) {
+      const d = cov.coverageDepths[i]!
+      if (d < min) {
+        min = d
+      }
+      if (d > max) {
+        max = d
+      }
+      sum += d
+      sumSq += d * d
+      count++
+    }
+  }
+  if (count === 0 || !Number.isFinite(max)) {
+    return undefined
+  }
+  const mean = sum / count
+  const stdDev = Math.sqrt(Math.max(0, sumSq / count - mean * mean))
+  return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
+}
+
 export interface DownsampledBins {
-  positions: Float32Array
+  // Absolute genomic positions stored as uint32 — exact at 3 Gbp.
+  positions: Uint32Array
   mins: Float32Array
   maxs: Float32Array
   count: number
@@ -124,14 +201,14 @@ export interface DownsampledBins {
 // When depthCount > targetBins, aggregates into targetBins bins.
 export function downsampleMinMax(
   depths: Float32Array,
-  startOffset: number,
+  startPos: number,
   targetBins: number,
   globalMaxDepth: number,
 ): DownsampledBins {
   const n = depths.length
   if (n === 0) {
     return {
-      positions: new Float32Array(0),
+      positions: new Uint32Array(0),
       mins: new Float32Array(0),
       maxs: new Float32Array(0),
       count: 0,
@@ -145,14 +222,14 @@ export function downsampleMinMax(
         count++
       }
     }
-    const positions = new Float32Array(count)
+    const positions = new Uint32Array(count)
     const mins = new Float32Array(count)
     const maxs = new Float32Array(count)
     let idx = 0
     for (let i = 0; i < n; i++) {
       const d = depths[i]!
       if (d > 0) {
-        positions[idx] = startOffset + i
+        positions[idx] = startPos + i
         mins[idx] = 0
         maxs[idx] = d / globalMaxDepth
         idx++
@@ -162,7 +239,7 @@ export function downsampleMinMax(
   }
 
   const bpPerBin = n / targetBins
-  const positions = new Float32Array(targetBins)
+  const positions = new Uint32Array(targetBins)
   const mins = new Float32Array(targetBins)
   const maxs = new Float32Array(targetBins)
   let count = 0
@@ -182,7 +259,7 @@ export function downsampleMinMax(
       }
     }
     if (hi > 0) {
-      positions[count] = startOffset + from
+      positions[count] = startPos + from
       mins[count] = (lo === Infinity ? 0 : lo) / globalMaxDepth
       maxs[count] = hi / globalMaxDepth
       count++
@@ -236,13 +313,11 @@ export interface MismatchArrays {
   mismatchPositions: Uint32Array
   mismatchBases: Uint8Array
   mismatchStrands?: Uint8Array | Int8Array
-  numMismatches: number
 }
 
 export interface CoverageArrays {
   coverageDepths: Float32Array
-  coverageStartOffset: number
-  regionStart: number
+  coverageStartPos: number
 }
 
 export function countSnpsAtPosition(
@@ -250,12 +325,10 @@ export function countSnpsAtPosition(
   mismatches: MismatchArrays,
 ) {
   const snps: Record<string, { count: number; fwd: number; rev: number }> = {}
-  for (let i = 0; i < mismatches.numMismatches; i++) {
+  for (let i = 0; i < mismatches.mismatchPositions.length; i++) {
     if (mismatches.mismatchPositions[i] === posOffset) {
       const base = String.fromCharCode(mismatches.mismatchBases[i]!)
-      if (!snps[base]) {
-        snps[base] = { count: 0, fwd: 0, rev: 0 }
-      }
+      snps[base] ??= { count: 0, fwd: 0, rev: 0 }
       snps[base].count++
       if (mismatches.mismatchStrands) {
         if (mismatches.mismatchStrands[i] === 1) {
@@ -274,13 +347,12 @@ export function buildCoverageTooltipBin(
   coverage: CoverageArrays,
   mismatches: MismatchArrays,
 ): CoverageTooltipBin | undefined {
-  const posOffset = position - coverage.regionStart
-  const binIdx = Math.floor(posOffset - coverage.coverageStartOffset)
+  const binIdx = Math.floor(position - coverage.coverageStartPos)
   const depth = coverage.coverageDepths[binIdx] ?? 0
   if (depth === 0) {
     return undefined
   }
-  const snps = countSnpsAtPosition(posOffset, mismatches)
+  const snps = countSnpsAtPosition(position, mismatches)
   return {
     position,
     depth,
@@ -402,7 +474,7 @@ export function computeSNPCoverage(
   const colorTypes = new Uint8Array(filteredSegments.length)
 
   for (const [i, seg] of filteredSegments.entries()) {
-    positions[i] = seg.position - regionStart
+    positions[i] = seg.position
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
     colorTypes[i] = seg.colorType
@@ -416,8 +488,6 @@ export function computeSNPCoverage(
     count: filteredSegments.length,
   }
 }
-
-import type { IndelEntry } from './labelConstants.ts'
 
 export interface InsertionIndicatorResult {
   positions: Uint32Array
@@ -433,8 +503,7 @@ export interface InsertionIndicatorResult {
 export function computeInsertionIndicators(
   indels: IndelEntry[],
   coverageDepths: Float32Array,
-  coverageStartOffset: number,
-  regionStart: number,
+  coverageStartPos: number,
   threshold = 0.15,
 ): InsertionIndicatorResult {
   if (indels.length === 0) {
@@ -453,7 +522,7 @@ export function computeInsertionIndicators(
 
   const resultPositions: number[] = []
   for (const [pos, count] of insertionCountByPos) {
-    const depthIdx = pos - regionStart - coverageStartOffset
+    const depthIdx = pos - coverageStartPos
     const localDepth =
       depthIdx >= 0 && depthIdx < coverageDepths.length
         ? coverageDepths[depthIdx]!
@@ -467,8 +536,10 @@ export function computeInsertionIndicators(
 
   const positions = new Uint32Array(resultPositions.length)
   for (let i = 0; i < resultPositions.length; i++) {
-    positions[i] = resultPositions[i]! - regionStart
+    positions[i] = resultPositions[i]!
   }
 
   return { positions, count: resultPositions.length }
 }
+
+export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'

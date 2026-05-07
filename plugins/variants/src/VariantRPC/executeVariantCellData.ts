@@ -5,6 +5,7 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { computeVariantCells } from '../MultiVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../MultiVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
+import { makeHaplotypeSources } from '../shared/getSources.ts'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 
 import type { GetCellDataArgs } from './types.ts'
@@ -31,25 +32,18 @@ interface CellDataBase {
   simplifiedFeatures: SimplifiedVariantFeature[]
 }
 
-export interface RegionTooLargeResult {
-  regionTooLarge: true
-  bytes: number
-  fetchSizeLimit: number
-}
-
 export type CellDataResult =
   | (CellDataBase & {
       mode: 'regular'
       perRegionCellData: Record<number, VariantCellData>
     })
   | (CellDataBase & MatrixCellData & { mode: 'matrix' })
-  | RegionTooLargeResult
 
 function computeSampleInfo(
   mafs: MAFFilteredFeature[],
   genotypesCache: Map<string, Record<string, string>>,
 ) {
-  const sampleInfo = {} as Record<string, SampleInfo>
+  const sampleInfo: Record<string, SampleInfo> = {}
   let hasPhased = false
 
   for (const { feature } of mafs) {
@@ -137,16 +131,15 @@ export async function executeVariantCellData({
     adapterConfig,
     sessionId,
     statusCallback,
-    regionNumbers,
-    byteSizeLimit,
+    displayedRegionIndices,
   } = args
 
-  const regionLookup = regionNumbers
+  const regionLookup = displayedRegionIndices
     ? regions.map((r, i) => ({
         refName: r.refName,
         start: r.start,
         end: r.end,
-        regionNumber: regionNumbers[i]!,
+        displayedRegionIndex: displayedRegionIndices[i]!,
       }))
     : undefined
 
@@ -157,16 +150,6 @@ export async function executeVariantCellData({
   )
 
   const adapter = dataAdapter as BaseFeatureDataAdapter
-  if (byteSizeLimit) {
-    const stats = await adapter.getMultiRegionFeatureDensityStats(regions, args)
-    if (stats.bytes && stats.bytes > byteSizeLimit) {
-      return {
-        regionTooLarge: true as const,
-        bytes: stats.bytes,
-        fetchSizeLimit: stats.fetchSizeLimit ?? byteSizeLimit,
-      }
-    }
-  }
 
   const rawFeatures = await updateStatus(
     'Loading features',
@@ -179,14 +162,75 @@ export async function executeVariantCellData({
 
   const genotypesCache = new Map<string, Record<string, string>>()
 
-  const mafs = await updateStatus('Filtering variants', statusCallback, () =>
-    getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: rawFeatures,
-      minorAlleleFrequencyFilter,
-      lengthCutoffFilter,
-      genotypesCache,
-    }),
-  )
+  // Group rawFeatures by region using a sorted pointer advance (O(N+R)).
+  // Features from adapters are position-sorted; regions are also sorted.
+  // This avoids any per-feature lookup when computing per-region cells.
+  let perRegionRawFeatures: Map<number, typeof rawFeatures> | undefined
+  if (regionLookup) {
+    const regionsByRefName = new Map<string, typeof regionLookup>()
+    for (const r of regionLookup) {
+      let list = regionsByRefName.get(r.refName)
+      if (!list) {
+        list = []
+        regionsByRefName.set(r.refName, list)
+      }
+      list.push(r)
+    }
+    perRegionRawFeatures = new Map()
+    const ptrs = new Map<string, number>()
+    for (const feature of rawFeatures) {
+      const refName = feature.get('refName')
+      const start = feature.get('start')
+      const candidates = regionsByRefName.get(refName)
+      if (!candidates) {
+        continue
+      }
+      let p = ptrs.get(refName) ?? 0
+      while (p < candidates.length && candidates[p]!.end <= start) {
+        p++
+      }
+      ptrs.set(refName, p)
+      const region = candidates[p]
+      if (!region || start < region.start) {
+        continue
+      }
+      let list = perRegionRawFeatures.get(region.displayedRegionIndex)
+      if (!list) {
+        list = []
+        perRegionRawFeatures.set(region.displayedRegionIndex, list)
+      }
+      list.push(feature)
+    }
+  }
+
+  let mafs: MAFFilteredFeature[]
+  let perRegionMafs: Map<number, MAFFilteredFeature[]> | undefined
+  if (perRegionRawFeatures) {
+    perRegionMafs = new Map()
+    const allMafs: MAFFilteredFeature[] = []
+    for (const [regionNum, features] of perRegionRawFeatures) {
+      const regionMafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
+        features,
+        minorAlleleFrequencyFilter,
+        lengthCutoffFilter,
+        genotypesCache,
+      })
+      perRegionMafs.set(regionNum, regionMafs)
+      for (const maf of regionMafs) {
+        allMafs.push(maf)
+      }
+    }
+    mafs = allMafs
+  } else {
+    mafs = await updateStatus('Filtering variants', statusCallback, () =>
+      getFeaturesThatPassMinorAlleleFrequencyFilter({
+        features: rawFeatures,
+        minorAlleleFrequencyFilter,
+        lengthCutoffFilter,
+        genotypesCache,
+      }),
+    )
+  }
 
   const { sampleInfo, hasPhased, simplifiedFeatures } = await updateStatus(
     'Computing sample info',
@@ -194,62 +238,48 @@ export async function executeVariantCellData({
     () => computeSampleInfo(mafs, genotypesCache),
   )
 
+  // For phased mode: expand sources that don't yet have HP set (i.e., not
+  // from haplotype clustering). The client sends layout-ordered sources without
+  // HP to avoid a circular sampleInfo dependency; we expand here using the
+  // sampleInfo we just computed. Sources from clustering already have HP.
+  let effectiveSources = sources
+  if (renderingMode === 'phased' && sources.some(s => s.HP === undefined)) {
+    effectiveSources = sources.flatMap(s =>
+      s.HP !== undefined
+        ? [s]
+        : makeHaplotypeSources(s, sampleInfo[s.sampleName]?.maxPloidy ?? 2),
+    )
+  }
+
   if (mode === 'regular') {
     const perRegionCellData = await updateStatus(
       'Computing variant cells',
       statusCallback,
       () => {
-        if (regionLookup) {
-          const grouped = new Map<number, MAFFilteredFeature[]>()
-          const regionsByRefName = new Map<string, typeof regionLookup>()
-          for (const r of regionLookup) {
-            let list = regionsByRefName.get(r.refName)
-            if (!list) {
-              list = []
-              regionsByRefName.set(r.refName, list)
-            }
-            list.push(r)
-          }
-          for (const maf of mafs) {
-            const refName = maf.feature.get('refName')
-            const featureStart = maf.feature.get('start')
-            const candidates = regionsByRefName.get(refName)
-            if (!candidates) {
-              continue
-            }
-            const entry = candidates.find(
-              r => featureStart >= r.start && featureStart < r.end,
-            )
-            if (!entry) {
-              continue
-            }
-            let list = grouped.get(entry.regionNumber)
-            if (!list) {
-              list = []
-              grouped.set(entry.regionNumber, list)
-            }
-            list.push(maf)
-          }
-
-          const result = {} as Record<number, VariantCellData>
-          for (const [regionNum, regionMafs] of grouped) {
+        if (perRegionMafs) {
+          const result: Record<number, VariantCellData> = {}
+          for (const [regionNum, regionMafs] of perRegionMafs) {
+            const inputKey = `${regionMafs.length}:${regionMafs[0]?.feature.id() ?? ''}:${regionMafs.at(-1)?.feature.id() ?? ''}`
             result[regionNum] = computeVariantCells({
               mafs: regionMafs,
-              sources,
+              sources: effectiveSources,
               renderingMode,
               referenceDrawingMode: referenceDrawingMode ?? 'skip',
               genotypesCache,
+              inputKey,
             })
           }
           return result
         }
+        const inputKey = `${mafs.length}:${mafs[0]?.feature.id() ?? ''}:${mafs.at(-1)?.feature.id() ?? ''}`
         return {
           0: computeVariantCells({
             mafs,
-            sources,
+            sources: effectiveSources,
             renderingMode,
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
             genotypesCache,
+            inputKey,
           }),
         }
       },
@@ -262,6 +292,10 @@ export async function executeVariantCellData({
         cellData.cellRowIndices.buffer,
         cellData.cellColors.buffer,
         cellData.cellShapeTypes.buffer,
+        cellData.flatbushData,
+        cellData.flatbushGenomicStarts.buffer,
+        cellData.flatbushGenomicEnds.buffer,
+        cellData.flatbushFeatureIndices.buffer,
       )
     }
 
@@ -282,7 +316,7 @@ export async function executeVariantCellData({
       () =>
         computeVariantMatrixCells({
           mafs,
-          sources,
+          sources: effectiveSources,
           renderingMode,
           genotypesCache,
         }),
@@ -300,7 +334,7 @@ export async function executeVariantCellData({
         cellData.cellFeatureIndices.buffer,
         cellData.cellRowIndices.buffer,
         cellData.cellColors.buffer,
-      ] as ArrayBuffer[],
+      ],
     )
   }
 }

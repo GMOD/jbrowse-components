@@ -8,32 +8,66 @@ export function makeDisplayedRegionKey(r: {
   return `${r.assemblyName}:${r.refName}:${r.start}:${r.end}${r.reversed ? ':rev' : ''}`
 }
 
-export interface BlockData {
+interface BlockData {
+  key: string
+  offsetPx: number
+  widthPx: number
+  assemblyName?: string
+  refName?: string
+  start?: number
+  end?: number
+  reversed?: boolean
+  displayedRegionIndex?: number
+  isLeftEndOfDisplayedRegion?: boolean
+  isRightEndOfDisplayedRegion?: boolean
+  variant?: 'boundary'
+}
+
+export interface ContentBlock extends BlockData {
+  type: 'ContentBlock'
   assemblyName: string
   refName: string
   start: number
   end: number
-  reversed?: boolean
-  offsetPx: number
-  parentRegion: {
-    assemblyName: string
-    refName: string
-    start: number
-    end: number
-    reversed?: boolean
-  }
-  regionNumber: number
-  widthPx: number
-  isLeftEndOfDisplayedRegion: boolean
-  isRightEndOfDisplayedRegion: boolean
-  key: string
 }
 
-interface PaddingBlockData {
-  key: string
-  widthPx: number
-  offsetPx: number
-  variant?: string
+export interface ElidedBlock extends BlockData {
+  type: 'ElidedBlock'
+  elidedBlockCount: number
+}
+
+export interface InterRegionPaddingBlock extends BlockData {
+  type: 'InterRegionPaddingBlock'
+}
+
+export type BaseBlock = ContentBlock | ElidedBlock | InterRegionPaddingBlock
+
+export function makeContentBlock(
+  data: Omit<ContentBlock, 'type'>,
+): ContentBlock {
+  return { ...data, type: 'ContentBlock' }
+}
+
+export function makeElidedBlock(
+  data: Omit<ElidedBlock, 'type' | 'elidedBlockCount'>,
+): ElidedBlock {
+  return { ...data, type: 'ElidedBlock', elidedBlockCount: 0 }
+}
+
+export function makeInterRegionPaddingBlock(
+  data: Omit<InterRegionPaddingBlock, 'type'>,
+): InterRegionPaddingBlock {
+  return { ...data, type: 'InterRegionPaddingBlock' }
+}
+
+export function blockToRegion(b: ContentBlock) {
+  return {
+    refName: b.refName,
+    start: b.start,
+    end: b.end,
+    assemblyName: b.assemblyName,
+    reversed: b.reversed,
+  }
 }
 
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
@@ -45,28 +79,17 @@ export class BlockSet {
     this.blocks = blocks
   }
 
-  *[Symbol.iterator]() {
-    yield* this.blocks
-  }
-
   push(block: BaseBlock) {
-    if (block.type === 'ElidedBlock' && this.blocks.length > 0) {
-      const lastBlock = this.blocks.at(-1)
-      if (lastBlock?.type === 'ElidedBlock') {
-        ;(lastBlock as ElidedBlock).push(block as ElidedBlock)
-        return
-      }
+    const last = this.blocks.at(-1)
+    if (block.type === 'ElidedBlock' && last?.type === 'ElidedBlock') {
+      last.elidedBlockCount += 1
+      last.refName = ''
+      last.start = 0
+      last.end = 0
+      last.widthPx += block.widthPx
+    } else {
+      this.blocks.push(block)
     }
-
-    this.blocks.push(block)
-  }
-
-  getBlocks() {
-    return this.blocks
-  }
-
-  getRegions() {
-    return this.blocks.map(block => block.toRegion())
   }
 
   map<T, U = this>(func: Func<T>, thisarg?: U) {
@@ -88,7 +111,6 @@ export class BlockSet {
     for (let i = 0, l = this.blocks.length; i < l; i++) {
       total += this.blocks[i]!.widthPx
     }
-
     return total
   }
 
@@ -99,7 +121,6 @@ export class BlockSet {
         total += this.blocks[i]!.widthPx
       }
     }
-
     return total
   }
 
@@ -108,96 +129,19 @@ export class BlockSet {
   }
 
   get contentBlocks() {
-    return this.blocks.filter(block => block.type === 'ContentBlock')
+    return this.blocks.filter(
+      (block): block is ContentBlock => block.type === 'ContentBlock',
+    )
   }
 
   get totalBp() {
     let total = 0
-    for (let i = 0, l = this.contentBlocks.length; i < l; i++) {
-      const b = this.contentBlocks[i]!
-      total += b.end - b.start
+    for (let i = 0, l = this.blocks.length; i < l; i++) {
+      const b = this.blocks[i]!
+      if (b.type === 'ContentBlock') {
+        total += b.end - b.start
+      }
     }
     return total
   }
-}
-
-export class BaseBlock {
-  type = 'BaseBlock'
-
-  regionNumber?: number
-
-  reversed?: boolean
-
-  // Fields set via Object.assign in constructor; ! asserts definite assignment
-  refName!: string
-
-  start!: number
-
-  end!: number
-
-  assemblyName!: string
-
-  key!: string
-
-  offsetPx!: number
-
-  widthPx = 0
-
-  variant?: string
-
-  isLeftEndOfDisplayedRegion?: boolean
-
-  constructor(data: BlockData | PaddingBlockData) {
-    Object.assign(this, data)
-  }
-
-  toRegion() {
-    return {
-      refName: this.refName,
-      start: this.start,
-      end: this.end,
-      assemblyName: this.assemblyName,
-      reversed: this.reversed,
-    }
-  }
-}
-
-export class ContentBlock extends BaseBlock {
-  type = 'ContentBlock'
-}
-
-/**
- * marker block representing one or more blocks that are
- * too small to be shown at the current zoom level
- */
-export class ElidedBlock extends BaseBlock {
-  type = 'ElidedBlock'
-
-  public widthPx: number
-
-  public elidedBlockCount = 0
-
-  constructor(data: BlockData) {
-    super(data)
-    // explicit assignment needed: ElidedBlock re-declares widthPx without an
-    // initializer, which in useDefineForClassFields mode would overwrite the
-    // value set by Object.assign in super()
-    this.widthPx = data.widthPx
-  }
-
-  push(otherBlock: ElidedBlock) {
-    this.elidedBlockCount += 1
-    this.refName = ''
-    this.start = 0
-    this.end = 0
-    this.widthPx += otherBlock.widthPx
-  }
-}
-
-/**
- * marker block that sits between two different displayed regions
- * and provides a thick border between them
- */
-export class InterRegionPaddingBlock extends BaseBlock {
-  type = 'InterRegionPaddingBlock'
 }

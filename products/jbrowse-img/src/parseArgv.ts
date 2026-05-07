@@ -1,19 +1,7 @@
 export type Entry = [string, string[]]
 
-// example (see parseArgv.test.js):
-// const args =
-//   '--bam dad.bam color:red --vcf variants.vcf --bam mom.bam --defaultSession --out out.svg --noRasterize'
-//
-// expect(parseArgv(args.split(' '))).toEqual([
-//   ['bam', ['dad.bam', 'color:red']],
-//   ['vcf', ['variants.vcf']],
-//   ['bam', ['mom.bam']],
-//   ['defaultSession', []],
-//   ['out', ['out.svg']],
-//   ['noRasterize', []],
-// ])
 export function parseArgv(argv: string[]) {
-  const map = [] as Entry[]
+  const map: Entry[] = []
   while (argv.length) {
     const val = argv[0]!.slice(2)
     argv = argv.slice(1)

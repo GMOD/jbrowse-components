@@ -75,16 +75,23 @@ const DPRIME_SIGNED_STOPS: [number, number, number][] = [
   [0, 0, 160],
 ]
 
+export function mapLDValue(ldVal: number, signedLD: boolean) {
+  return Math.max(0, Math.min(1, signedLD ? (ldVal + 1) / 2 : ldVal))
+}
+
+const RAMPS = {
+  r2: interpolateStops(R2_STOPS),
+  dprime: interpolateStops(DPRIME_STOPS),
+  r_signed: interpolateStops(R_SIGNED_STOPS),
+  dprime_signed: interpolateStops(DPRIME_SIGNED_STOPS),
+}
+
 export function generateLDColorRamp(
   metric: string,
   signedLD: boolean,
 ): Uint8Array {
   if (signedLD) {
-    return metric === 'dprime'
-      ? interpolateStops(DPRIME_SIGNED_STOPS)
-      : interpolateStops(R_SIGNED_STOPS)
+    return metric === 'dprime' ? RAMPS.dprime_signed : RAMPS.r_signed
   }
-  return metric === 'dprime'
-    ? interpolateStops(DPRIME_STOPS)
-    : interpolateStops(R2_STOPS)
+  return metric === 'dprime' ? RAMPS.dprime : RAMPS.r2
 }

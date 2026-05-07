@@ -16,12 +16,7 @@ export interface SelectorProps {
   radioOption: string
 }
 
-// Type for the FileSelector component's setLocation prop
-export type SetLocationFunction = (location: FileLocation | undefined) => void
-
-export type HelpStrings = Record<string, string>
-
-export const helpStrings: HelpStrings = {
+export const helpStrings: Record<string, string> = {
   '.paf': 'minimap2 target.fa query.fa',
   '.pif.gz': 'minimap2 target.fa query.fa',
   '.out': 'mashmap target.fa query.fa',

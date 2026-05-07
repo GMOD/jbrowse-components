@@ -17,7 +17,7 @@ function generateUID(length: number) {
 function getErrorMsg(err: string) {
   try {
     const obj = JSON.parse(err)
-    return obj.message
+    return obj.message ?? err
   } catch (e) {
     return err
   }
@@ -61,7 +61,7 @@ export async function readSessionFromDynamo(
   password: string,
   signal?: AbortSignal,
 ) {
-  const sessionId = sessionQueryParam.split('share-')[1]!
+  const sessionId = sessionQueryParam.slice('share-'.length)
   const url = `${baseUrl}?sessionId=${encodeURIComponent(sessionId)}`
   const response = await fetch(url, {
     signal,

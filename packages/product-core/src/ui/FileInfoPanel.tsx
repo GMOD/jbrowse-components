@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 
 import { readConf } from './util.ts'
 
@@ -46,12 +46,12 @@ export default function FileInfoPanel({
             .replaceAll('<', '&lt;')
             .replaceAll('>', '&gt;')}</pre>`,
         }
-      : info || {}
+      : (info ?? {})
 
   return (
     <BaseCard title="File info">
       {error ? (
-        <ErrorMessage error={error} />
+        <ErrorBanner error={error} />
       ) : info === undefined ? (
         <LoadingEllipses message="Loading file data" />
       ) : (

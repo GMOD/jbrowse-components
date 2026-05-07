@@ -1,24 +1,36 @@
-import { parseColor } from '../../shared/webglUtils.ts'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
+
 import { makeWhiskersSourceData } from '../../shared/wiggleComponentUtils.ts'
 import { getEffectiveScores, isDefaultBicolor } from '../../util.ts'
 
 import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
-import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
-import type { SourceRenderData } from '../../shared/wiggleBackendTypes.ts'
+import type {
+  SourceRenderData,
+  WiggleBackend,
+} from '../../shared/wiggleBackendTypes.ts'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
-export interface WiggleDisplayModel {
-  rpcDataMap: Map<number, WiggleDataResult>
-  dataVersion: number
-  height: number
-  domain: [number, number] | undefined
-  scaleType: string
+// The shape of `model.gpuProps` — the source of truth for "settings that
+// affect the per-instance GPU buffer encoding". buildSourceRenderData
+// consumes this exact type, so TS forces gpuProps and the encoder to stay
+// in sync. The SettingsInvalidate autorun reads `void self.gpuProps`, so
+// adding a field also auto-wires invalidation. Don't read these settings
+// off the model directly — go through gpuProps so the contract holds.
+export interface WiggleGpuProps {
   color: string
   posColor: string
   negColor: string
   renderingType: string
   isDensityMode: boolean
   summaryScoreMode: string
-  ticks?: ReturnType<typeof axisPropsFromTickScale>
+}
+
+export interface WiggleDisplayModel extends WiggleGpuProps {
+  rpcDataMap: Map<number, WiggleDataResult>
+  height: number
+  domain: [number, number] | undefined
+  scaleType: string
+  ticks?: YScaleTicks
   error: Error | null
   isLoading: boolean
   statusMessage?: string
@@ -36,26 +48,29 @@ export interface WiggleDisplayModel {
   setFeatureUnderMouse: (feat?: WiggleDisplayModel['featureUnderMouse']) => void
   reload: () => void
   canvasDrawn: boolean
-  setCanvasDrawn: (flag: boolean) => void
+  isReady: boolean
+  startGpuBackendLifecycle: (backend: WiggleBackend) => void
+  stopGpuBackendLifecycle: () => void
+  renderNow: () => void
 }
 
 export function buildSourceRenderData(
   data: WiggleDataResult,
-  model: WiggleDisplayModel,
+  gpuProps: WiggleGpuProps,
 ): SourceRenderData[] {
-  const useBicolor = isDefaultBicolor(model.color)
-  const baseColor = parseColor(model.color)
-  const posColor = parseColor(model.posColor)
-  const negColor = parseColor(model.negColor)
-  const { summaryScoreMode } = model
+  const useBicolor = isDefaultBicolor(gpuProps.color)
+  const baseColor = cssColorToNormalizedRgb(gpuProps.color)
+  const posColor = cssColorToNormalizedRgb(gpuProps.posColor)
+  const negColor = cssColorToNormalizedRgb(gpuProps.negColor)
+  const { summaryScoreMode } = gpuProps
 
   if (summaryScoreMode === 'whiskers') {
     const color = useBicolor ? posColor : baseColor
-    const isScatter = model.renderingType === 'scatter'
+    const isScatter = gpuProps.renderingType === 'scatter'
     return makeWhiskersSourceData(
       data,
       color,
-      model.isDensityMode,
+      gpuProps.isDensityMode,
       isScatter,
       0,
     )
@@ -64,13 +79,14 @@ export function buildSourceRenderData(
   const scores = getEffectiveScores(data, summaryScoreMode)
 
   if (!useBicolor) {
-    const color = model.isDensityMode ? posColor : baseColor
+    const color = gpuProps.isDensityMode ? posColor : baseColor
     return [
       {
         featurePositions: data.featurePositions,
         featureScores: scores,
         numFeatures: data.numFeatures,
         color,
+        rowIndex: 0,
       },
     ]
   }
@@ -106,14 +122,5 @@ export function buildSourceRenderData(
       rowIndex: 0,
     })
   }
-  return sources.length > 0
-    ? sources
-    : [
-        {
-          featurePositions: data.posFeaturePositions,
-          featureScores: data.posFeatureScores,
-          numFeatures: data.posNumFeatures,
-          color: baseColor,
-        },
-      ]
+  return sources
 }

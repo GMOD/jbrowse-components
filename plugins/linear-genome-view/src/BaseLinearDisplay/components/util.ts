@@ -58,8 +58,7 @@ function calculateFeatureLeftPx(
 
   if (leftBpPx !== undefined) {
     // Use Math.min to handle reversed regions where genomic left maps to visual right
-    const rightEstimate =
-      rightBpPx !== undefined ? rightBpPx : leftBpPx + (right - left) / bpPerPx
+    const rightEstimate = rightBpPx ?? leftBpPx + (right - left) / bpPerPx
     return Math.min(leftBpPx, rightEstimate)
   } else if (rightBpPx !== undefined) {
     const leftEstimate = rightBpPx - (right - left) / bpPerPx
@@ -109,11 +108,7 @@ function calculateMultiRegionLeftPx(
     }
   }
 
-  if (minLeftPx === Infinity) {
-    return undefined
-  }
-
-  return minLeftPx
+  return minLeftPx === Infinity ? undefined : minLeftPx
 }
 
 function getFeatureLeftPx(
@@ -182,10 +177,11 @@ export function deduplicateFeatureLabels(
       continue
     }
 
+    const floorLeftPx = Math.floor(leftPx)
     const existing = featureLabels.get(key)
-    if (!existing || leftPx < existing.leftPx) {
+    if (!existing || floorLeftPx < existing.leftPx) {
       featureLabels.set(key, {
-        leftPx,
+        leftPx: floorLeftPx,
         topPx: effectiveTopPx,
         totalFeatureHeight,
         floatingLabels,
@@ -222,7 +218,7 @@ export function calculateFloatingLabelPosition(
 
   if (labelWidth > featureWidth) {
     // Label doesn't fit within feature - don't float, use fixed position
-    return featureLeftPx - offsetPx
+    return Math.round(featureLeftPx - offsetPx)
   }
 
   // Label fits within feature - apply floating logic
@@ -231,5 +227,5 @@ export function calculateFloatingLabelPosition(
   const leftPx = Math.max(featureLeftPx, viewportLeft)
   const naturalX = leftPx - offsetPx
   const maxX = featureRightPx - offsetPx - labelWidth
-  return clamp(naturalX, 0, maxX)
+  return Math.round(clamp(naturalX, 0, maxX))
 }

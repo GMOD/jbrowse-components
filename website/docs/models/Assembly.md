@@ -37,7 +37,7 @@ configuration: types.safeReference(assemblyConfigType)
 
 ```js
 // type
-{ [k: string]: string; }
+{ [k: string]: string; } | undefined
 ```
 
 #### getter: initialized
@@ -61,7 +61,7 @@ string
 
 ```js
 // type
-BasicRegion[]
+BasicRegion[] | undefined
 ```
 
 #### getter: aliases
@@ -82,7 +82,7 @@ string
 
 ```js
 // type
-any[]
+string[]
 ```
 
 #### getter: allRefNames
@@ -93,21 +93,21 @@ resolve a lower-case name if needed
 
 ```js
 // type
-string[]
+string[] | undefined
 ```
 
 #### getter: lowerCaseRefNames
 
 ```js
 // type
-string[]
+string[] | undefined
 ```
 
 #### getter: allRefNamesWithLowerCase
 
 ```js
 // type
-any[]
+string[] | undefined
 ```
 
 #### getter: rpcManager
@@ -128,7 +128,7 @@ string[]
 
 ```js
 // type
-string[]
+string[] | undefined
 ```
 
 ### Assembly - Methods
@@ -144,7 +144,7 @@ getConf: (arg: string) => any
 
 ```js
 // type signature
-hasName: (name: string) => any
+hasName: (name: string) => boolean
 ```
 
 #### method: getCanonicalRefName
@@ -166,14 +166,14 @@ getCanonicalRefName() for details.
 
 ```js
 // type signature
-getCanonicalRefName2: (refName: string) => any
+getCanonicalRefName2: (refName: string) => string
 ```
 
 #### method: getRefNameColor
 
 ```js
 // type signature
-getRefNameColor: (refName: string) => string
+getRefNameColor: (refName: string) => string | undefined
 ```
 
 #### method: isValidRefName
@@ -206,7 +206,7 @@ get Map of `canonical-name -> adapter-specific-name`
 
 ```js
 // type signature
-getRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) => Promise<any>
+getRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) => Promise<RefNameAliases>
 ```
 
 #### method: getReverseRefNameMapForAdapter
@@ -215,7 +215,7 @@ get Map of `adapter-specific-name -> canonical-name`
 
 ```js
 // type signature
-getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) => Promise<any>
+getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) => Promise<RefNameAliases>
 ```
 
 ### Assembly - Actions
@@ -266,7 +266,7 @@ setCanonicalToSeqAdapterRefNames: (map: Record<string, string>) => void
 
 ```js
 // type signature
-setLoadingP: (p?: Promise<void>) => void
+setLoadingP: (p?: Promise<void> | undefined) => void
 ```
 
 #### action: load

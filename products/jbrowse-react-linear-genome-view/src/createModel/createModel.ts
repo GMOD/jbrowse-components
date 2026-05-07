@@ -59,6 +59,7 @@ export default function createModel(
       /**
        * #volatile
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       /**
        * #volatile
@@ -93,10 +94,7 @@ export default function createModel(
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        this.setSession({
-          ...JSON.parse(JSON.stringify(getSnapshot(self.session))),
-          name: sessionName,
-        })
+        this.setSession({ ...getSnapshot(self.session), name: sessionName })
       },
       /**
        * #action

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/cli",
-  "version": "4.1.15",
+  "version": "4.2.1",
   "type": "module",
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
@@ -30,7 +30,7 @@
   },
   "scripts": {
     "prebuild": "pnpm clean",
-    "build": "tsc && webpack -c webpack.config.mjs",
+    "build": "tsgo && webpack -c webpack.config.mjs",
     "clean": "rimraf bundle",
     "prepack": "pnpm clean && pnpm build && pnpm generate-readme",
     "generate-readme": "./generate_readme.sh > README.md"
@@ -42,7 +42,7 @@
     "cors": "^2.8.6",
     "decompress": "^4.2.1",
     "express": "^5.2.1",
-    "ixixx": "^3.0.3",
+    "ixixx": "^3.0.4",
     "json-parse-better-errors": "^1.0.2",
     "tmp": "^0.2.5"
   },

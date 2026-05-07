@@ -10,7 +10,7 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { featureData } from '../util.ts'
+import { featureData, parseNamesFromHeader } from '../util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -29,9 +29,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  setupP?: Promise<{
-    meta: Awaited<ReturnType<TabixIndexedFile['getMetadata']>>
-  }>
+  setupP?: Promise<Awaited<ReturnType<TabixIndexedFile['getMetadata']>>>
 
   public constructor(
     config: AnyConfigurationModel,
@@ -64,25 +62,18 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     return this.bed.getHeader(opts)
   }
 
-  async getMetadataPre2(_opts?: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.getMetadataPre().catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+  private async configure() {
+    this.setupP ??= this.bed.getMetadata().catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
-  async getMetadataPre() {
-    const meta = await this.bed.getMetadata()
-    return { meta }
-  }
-
   async getMetadata(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Downloading index', statusCallback, () =>
-      this.getMetadataPre2(opts),
+      this.configure(),
     )
   }
 
@@ -90,22 +81,13 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     if (this.columnNames.length) {
       return this.columnNames
     }
-    const header = await this.getHeader()
-    const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs.at(-1)
-    return defline?.includes('\t')
-      ? defline
-          .slice(1)
-          .split('\t')
-          .map(f => f.trim())
-      : undefined
+    return parseNamesFromHeader(await this.getHeader())
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {
-    const { stopToken, statusCallback = () => {} } = opts || {}
+    const { stopToken, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const { meta } = await this.getMetadata()
-      const { columnNumbers } = meta
+      const { columnNumbers } = await this.getMetadata()
       const colRef = columnNumbers.ref - 1
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1

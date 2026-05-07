@@ -1,5 +1,3 @@
-import { useCallback, useMemo } from 'react'
-
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
@@ -32,7 +30,7 @@ function SessionNameCell({
   addToQuickstartList,
 }: {
   value: string
-  row: any
+  row: RecentSessionData
   isFavorite: boolean
   setPluginManager: (pm: PluginManager) => void
   setError: (e: unknown) => void
@@ -41,71 +39,38 @@ function SessionNameCell({
   addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
   const { classes } = useStyles()
-  const handleLaunch = useCallback(async () => {
+  const handleLaunch = async () => {
     try {
       setPluginManager(await loadPluginManager(row.path))
     } catch (e) {
       console.error(e)
       setError(e)
     }
-  }, [row.path, setPluginManager, setError])
+  }
 
-  const handleToggleFavorite = useCallback(() => {
-    toggleFavorite(row.id)
-  }, [row.id, toggleFavorite])
+  const handleToggleFavorite = () => {
+    toggleFavorite(row.path)
+  }
 
-  const handleRename = useCallback(() => {
-    const { lastModified, ...rest } = row
-    setSessionToRename(rest)
-  }, [row, setSessionToRename])
+  const sessionData = {
+    path: row.path,
+    name: row.name,
+    updated: row.updated,
+  }
 
-  const handleAddToQuickstartList = useCallback(async () => {
+  const handleRename = () => {
+    setSessionToRename(sessionData)
+  }
+
+  const handleAddToQuickstartList = async () => {
     if (addToQuickstartList) {
-      const { lastModified, ...rest } = row
-      await addToQuickstartList(rest)
+      await addToQuickstartList(sessionData)
     }
-  }, [row, addToQuickstartList])
-
-  const handleLinkClick = useCallback(
-    async (event: React.MouseEvent) => {
-      event.preventDefault()
-      await handleLaunch()
-    },
-    [handleLaunch],
-  )
-
-  const menuItems = useMemo(
-    () => [
-      {
-        label: 'Launch',
-        onClick: handleLaunch,
-      },
-      {
-        label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-        onClick: handleToggleFavorite,
-      },
-      ...(addToQuickstartList
-        ? [
-            {
-              label: 'Add to quickstart list',
-              onClick: handleAddToQuickstartList,
-            },
-          ]
-        : []),
-      {
-        label: 'Rename',
-        onClick: handleRename,
-      },
-    ],
-    [
-      isFavorite,
-      handleLaunch,
-      handleToggleFavorite,
-      handleRename,
-      addToQuickstartList,
-      handleAddToQuickstartList,
-    ],
-  )
+  }
+  const handleLinkClick = async (event: React.MouseEvent) => {
+    event.preventDefault()
+    await handleLaunch()
+  }
 
   return (
     <div className={classes.flexContainer}>
@@ -115,7 +80,30 @@ function SessionNameCell({
       {isFavorite ? (
         <StarIcon isFavorite={isFavorite} onClick={handleToggleFavorite} />
       ) : null}
-      <CascadingMenuButton menuItems={menuItems}>
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Launch',
+            onClick: handleLaunch,
+          },
+          {
+            label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+            onClick: handleToggleFavorite,
+          },
+          ...(addToQuickstartList
+            ? [
+                {
+                  label: 'Add to quickstart list',
+                  onClick: handleAddToQuickstartList,
+                },
+              ]
+            : []),
+          {
+            label: 'Rename',
+            onClick: handleRename,
+          },
+        ]}
+      >
         <MoreHoriz />
       </CascadingMenuButton>
     </div>

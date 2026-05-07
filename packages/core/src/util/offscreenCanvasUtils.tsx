@@ -22,7 +22,6 @@ export function ReactRendering({
 }
 
 export { getSerializedSvg } from './offscreenCanvasGetSerializingSvg.ts'
-export { SvgCanvas } from './SvgCanvas.ts'
 
 /**
  * Converts a rendering result with canvasRecordedData to one with html.

@@ -1,7 +1,7 @@
-import { modificationRegex } from './consts.ts'
+import { parseModHeader } from './consts.ts'
 
 export function getModTypes(mm: string) {
-  const result = []
+  const result: { type: string; base: string; strand: string }[] = []
   const mods = mm.split(';')
   for (let i = 0, modsLen = mods.length; i < modsLen; i++) {
     const mod = mods[i]!
@@ -10,29 +10,30 @@ export function getModTypes(mm: string) {
     }
 
     const basemod = mod.split(',')[0]!
-    const matches = modificationRegex.exec(basemod)
-    if (!matches) {
-      throw new Error(`bad format for MM tag: "${mod}"`)
-    }
-
-    const base = matches[1]!
-    const strand = matches[2]!
-    const typestr = matches[3]!
+    const { base, strand, typestr } = parseModHeader(basemod, mod)
+    // Note: mod field ('.' or '?') indicates how skipped bases are interpreted
+    // but for getModTypes we only need base, strand, and typestr
 
     // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so split,
     // and they can also be chemical codes (ChEBI) e.g. C+16061
-    const types = typestr.split(/(\d+|.)/)
+    // Avoid creating array for single types (uppercase or all digits)
+    const isSingleType = typestr.charCodeAt(0) < 97 || typestr.length === 1
 
-    for (let j = 0, typesLen = types.length; j < typesLen; j++) {
-      const type = types[j]!
-      if (type === '') {
-        continue
-      }
+    if (isSingleType) {
       result.push({
-        type,
+        type: typestr,
         base,
         strand,
       })
+    } else {
+      // Multi-char lowercase: each character is a separate type
+      for (let j = 0, len = typestr.length; j < len; j++) {
+        result.push({
+          type: typestr[j]!,
+          base,
+          strand,
+        })
+      }
     }
   }
   return result

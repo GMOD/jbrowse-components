@@ -1,12 +1,18 @@
+import type React from 'react'
+
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
-import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import { SVGErrorBox } from '@jbrowse/plugin-linear-genome-view'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
+import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
+import {
+  Canvas2DWiggleRenderer,
+  drawWiggleBlocks,
+} from '../shared/Canvas2DWiggleRenderer.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
-import YScaleBar from '../shared/YScaleBar.tsx'
-import { getDensityColor } from '../shared/getDensityColor.ts'
-import { YSCALEBAR_LABEL_OFFSET, getScale, isDefaultBicolor } from '../util.ts'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
 import type {
@@ -15,123 +21,6 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-function renderToCtx(
-  ctx: CanvasRenderingContext2D | SvgCanvas,
-  model: LinearWiggleDisplayModel,
-  view: LGV,
-) {
-  const { offsetPx, bpPerPx } = view
-  const height = model.height
-  const {
-    renderingType,
-    rpcDataMap,
-    domain,
-    scaleType,
-    color,
-    posColor,
-    negColor,
-    effectiveBicolorPivot,
-  } = model
-
-  if (!domain) {
-    return
-  }
-
-  const [minScore, maxScore] = domain
-  const offset = YSCALEBAR_LABEL_OFFSET
-  const effectiveHeight = height - offset * 2
-  const useBicolor = isDefaultBicolor(color)
-
-  const scale = getScale({
-    scaleType,
-    domain,
-    range: [effectiveHeight, 0],
-    inverted: false,
-  })
-
-  for (const block of view.dynamicBlocks.contentBlocks) {
-    if (block.regionNumber === undefined) {
-      continue
-    }
-    const data = rpcDataMap.get(block.regionNumber)
-    if (!data) {
-      continue
-    }
-    const { featurePositions, featureScores, regionStart, numFeatures } = data
-    const blockScreenX = block.offsetPx - offsetPx
-
-    if (renderingType === 'line') {
-      const strokeColor = useBicolor ? posColor : color
-      ctx.beginPath()
-      ctx.strokeStyle = strokeColor
-      ctx.lineWidth = 1
-      let started = false
-      for (let i = 0; i < numFeatures; i++) {
-        const posIdx = i * 2
-        const featureStart = regionStart + featurePositions[posIdx]!
-        const featureEnd = regionStart + featurePositions[posIdx + 1]!
-        const score = featureScores[i]!
-        if (featureEnd < block.start || featureStart > block.end) {
-          continue
-        }
-        const x = (featureStart - block.start) / bpPerPx + blockScreenX
-        const xEnd = (featureEnd - block.start) / bpPerPx + blockScreenX
-        const y = scale(score) + offset
-        if (!started) {
-          ctx.moveTo(x, y)
-          started = true
-        } else {
-          ctx.lineTo(x, y)
-        }
-        ctx.lineTo(xEnd, y)
-      }
-      ctx.stroke()
-    } else {
-      for (let i = 0; i < numFeatures; i++) {
-        const posIdx = i * 2
-        const featureStart = regionStart + featurePositions[posIdx]!
-        const featureEnd = regionStart + featurePositions[posIdx + 1]!
-        const score = featureScores[i]!
-        if (featureEnd < block.start || featureStart > block.end) {
-          continue
-        }
-        const x = (featureStart - block.start) / bpPerPx + blockScreenX
-        const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
-
-        if (renderingType === 'xyplot') {
-          const y = scale(score) + offset
-          const originY = scale(effectiveBicolorPivot) + offset
-          const rectY = Math.min(y, originY)
-          const rectHeight = Math.abs(originY - y) || 1
-          ctx.fillStyle = useBicolor
-            ? score >= effectiveBicolorPivot
-              ? posColor
-              : negColor
-            : color
-          ctx.fillRect(x, rectY, w + 0.5, rectHeight)
-        } else if (renderingType === 'scatter') {
-          const y = scale(score) + offset
-          ctx.fillStyle = useBicolor
-            ? score >= effectiveBicolorPivot
-              ? posColor
-              : negColor
-            : color
-          ctx.fillRect(x, y - 1, w, 2)
-        } else if (renderingType === 'density') {
-          ctx.fillStyle = getDensityColor(
-            score,
-            minScore,
-            maxScore,
-            scaleType,
-            posColor,
-          )
-          ctx.fillRect(x, 0, w, height)
-        }
-      }
-    }
-  }
-}
 
 export async function renderSvg(
   model: LinearWiggleDisplayModel,
@@ -142,8 +31,10 @@ export async function renderSvg(
     () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
   )
   const { offsetPx } = view
+  // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
+  const scalebarLeft = Math.max(-offsetPx, 0)
   const height = model.height
-  const { ticks, rpcDataMap, domain, scaleType } = model
+  const { ticks, rpcDataMap, domain, renderState } = model
 
   if (model.error) {
     return (
@@ -151,7 +42,7 @@ export async function renderSvg(
     )
   }
 
-  if (rpcDataMap.size === 0 || !domain) {
+  if (rpcDataMap.size === 0 || !domain || !renderState) {
     return null
   }
 
@@ -160,58 +51,61 @@ export async function renderSvg(
     legendEl = (
       <DensityLegend
         domain={domain}
-        scaleType={scaleType}
-        canvasWidth={Math.round(view.width)}
+        scaleType={model.scaleType}
+        canvasWidth={view.width}
       />
     )
   } else if (ticks) {
     legendEl = (
-      <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-        <YScaleBar model={model} orientation="left" />
+      <g transform={`translate(${scalebarLeft})`}>
+        <YScaleBar ticks={ticks} orientation="left" />
       </g>
     )
   }
 
+  // Headless renderer: drive the same drawWiggleBlocks pipeline used
+  // on-screen. Upload region sources via buildSourceRenderData (same path the
+  // GPU autorun takes), then paint into a real canvas (rasterize) or an
+  // SvgCanvas (vector). Single source of truth — no separate SVG draw path.
+  const props = model.gpuProps()
+  const renderer = new Canvas2DWiggleRenderer(null)
+  for (const [displayedRegionIndex, data] of rpcDataMap) {
+    renderer.uploadRegion(
+      displayedRegionIndex,
+      buildSourceRenderData(data, props),
+    )
+  }
+
+  const totalWidth = view.totalWidthPx
+  const renderBlocks = buildRenderBlocks(view.visibleRegions)
+  const state = {
+    ...renderState,
+    canvasWidth: totalWidth,
+    canvasHeight: height,
+  }
+
+  const wiggleNode = paintLayer(totalWidth, height, opts, ctx => {
+    drawWiggleBlocks(ctx, renderer.getRegions(), renderBlocks, state)
+  })
+
   if (opts?.rasterizeLayers) {
-    const totalWidth = view.dynamicBlocks.totalWidthPx
-    const canvas =
-      opts.createCanvas?.(totalWidth * 2, height * 2) ??
-      document.createElement('canvas')
-    canvas.width = totalWidth * 2
-    canvas.height = height * 2
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return null
-    }
-    ctx.scale(2, 2)
-    renderToCtx(ctx, model, view)
     return (
       <>
-        <image
-          width={totalWidth}
-          height={height}
-          xlinkHref={canvas.toDataURL('image/png')}
-        />
+        {wiggleNode}
         {legendEl}
       </>
     )
   }
 
-  const ctx = new SvgCanvas()
-  renderToCtx(ctx, model, view)
-
-  const clipId = `wiggle-clip-${model.id}`
   return (
     <>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={view.width} height={height} />
-        </clipPath>
-      </defs>
-      <g
-        dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }}
-        clipPath={`url(#${clipId})`}
-      />
+      <SvgClipRect
+        id={`wiggle-clip-${model.id}`}
+        width={view.width}
+        height={height}
+      >
+        {wiggleNode}
+      </SvgClipRect>
       {legendEl}
     </>
   )

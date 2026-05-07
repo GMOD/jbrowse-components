@@ -1,14 +1,15 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
 import { getMinimalDesc, makeSimpleAltString } from '../../VcfFeature/util.ts'
+import { GENOTYPE_SPLITTER } from '../../shared/constants.ts'
 
 import type { Filters, InfoFields, VariantSampleGridRow } from './types.ts'
 
 function gtToAlleleCounts(gt: string) {
-  const alleleCounts = {} as Record<string, number>
-  const alleles = gt.split(/[/|]/)
+  const alleleCounts: Record<string, number> = {}
+  const alleles = gt.split(GENOTYPE_SPLITTER)
   for (const allele of alleles) {
-    alleleCounts[allele] = (alleleCounts[allele] || 0) + 1
+    alleleCounts[allele] = (alleleCounts[allele] ?? 0) + 1
   }
   return Object.entries(alleleCounts)
     .map(([key, val]) => `${key}:${val}`)
@@ -16,17 +17,17 @@ function gtToAlleleCounts(gt: string) {
 }
 
 function genotypeToAlleleCounts(gt: string, ref: string, alt: string[]) {
-  const alleleCounts = {} as Record<string, number>
-  const alleles = gt.split(/[/|]/)
+  const alleleCounts: Record<string, number> = {}
+  const alleles = gt.split(GENOTYPE_SPLITTER)
   for (const allele of alleles) {
     if (allele === '.') {
-      alleleCounts['.'] = (alleleCounts['.'] || 0) + 1
+      alleleCounts['.'] = (alleleCounts['.'] ?? 0) + 1
     } else {
       const resolved =
         +allele === 0
           ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
           : getMinimalDesc(ref, alt[+allele - 1] || '')
-      alleleCounts[resolved] = (alleleCounts[resolved] || 0) + 1
+      alleleCounts[resolved] = (alleleCounts[resolved] ?? 0) + 1
     }
   }
   return Object.entries(alleleCounts)
@@ -49,6 +50,10 @@ export function getSampleGridRows(
   const filterKeys = Object.keys(filter)
 
   try {
+    const compiledFilters = filterKeys.map(k => ({
+      key: k,
+      re: filter[k] ? new RegExp(filter[k], 'i') : null,
+    }))
     rows = Object.entries(samples)
       .map(([key, val]) => {
         const gt = val.GT?.[0]
@@ -71,14 +76,9 @@ export function getSampleGridRows(
         } as VariantSampleGridRow
       })
       .filter(row =>
-        filterKeys.length
-          ? filterKeys.every(key => {
-              const currFilter = filter[key]
-              return currFilter
-                ? new RegExp(currFilter, 'i').exec(row[key]!)
-                : true
-            })
-          : true,
+        compiledFilters.every(({ key, re }) =>
+          re ? re.exec(row[key]!) : true,
+        ),
       )
   } catch (e) {
     console.error(e)

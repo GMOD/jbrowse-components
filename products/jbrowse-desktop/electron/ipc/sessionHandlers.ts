@@ -1,9 +1,10 @@
 import fs from 'fs'
+import path from 'path'
 
 import { ipcMain } from 'electron'
 import parseJson from 'json-parse-even-better-errors'
 
-import { getThumbnailPath } from '../paths.ts'
+import { getThumbnailPath, stringify } from '../paths.ts'
 
 import type { AppPaths } from '../paths.ts'
 
@@ -22,10 +23,6 @@ export interface SessionSnap {
     name: string
   }
   [key: string]: unknown
-}
-
-function stringify(obj: unknown) {
-  return JSON.stringify(obj, null, 2)
 }
 
 async function readRecentSessions(
@@ -79,10 +76,6 @@ export function registerSessionHandlers(
     },
   )
 
-  ipcMain.handle('loadExternalConfig', async (_event: unknown, sessionPath) => {
-    return readFile(sessionPath, ENCODING)
-  })
-
   ipcMain.handle(
     'loadSession',
     async (_event: unknown, sessionPath: string) => {
@@ -100,7 +93,10 @@ export function registerSessionHandlers(
     'createInitialAutosaveFile',
     async (_event: unknown, snap: SessionSnap) => {
       const rows = await readRecentSessions(paths.recentSessionsPath)
-      const autosavePath = `${paths.autosaveDir}/${encodeURIComponent(`${Date.now()}`)}.json`
+      const autosavePath = path.join(
+        paths.autosaveDir,
+        `${encodeURIComponent(Date.now())}.json`,
+      )
       const entry: RecentSession = {
         path: autosavePath,
         updated: Date.now(),
@@ -148,26 +144,18 @@ export function registerSessionHandlers(
     'deleteSessions',
     async (_event: unknown, sessionPaths: string[]) => {
       const sessions = await readRecentSessions(paths.recentSessionsPath)
-      const indices = sessions
-        .map((r, i) => (sessionPaths.includes(r.path) ? i : undefined))
-        .filter((f): f is number => f !== undefined)
-
-      for (let i = indices.length - 1; i >= 0; i--) {
-        sessions.splice(indices[i]!, 1)
-      }
+      const remaining = sessions.filter(s => !sessionPaths.includes(s.path))
 
       await Promise.all([
-        writeFile(paths.recentSessionsPath, stringify(sessions)),
-        ...sessionPaths.map(sessionPath =>
+        writeFile(paths.recentSessionsPath, stringify(remaining)),
+        ...sessionPaths.flatMap(sessionPath => [
           unlink(getThumbnailPath(paths, sessionPath)).catch((e: unknown) => {
             console.error(e)
           }),
-        ),
-        ...sessionPaths.map(sessionPath =>
           unlink(sessionPath).catch((e: unknown) => {
             console.error(e)
           }),
-        ),
+        ]),
       ])
     },
   )
@@ -198,12 +186,29 @@ export function registerSessionHandlers(
   )
 
   ipcMain.handle('loadThumbnail', async (_event: unknown, name: string) => {
-    const thumbnailPath = getThumbnailPath(paths, name)
     try {
-      await fs.promises.access(thumbnailPath)
-      return await readFile(thumbnailPath, ENCODING)
+      return await readFile(getThumbnailPath(paths, name), ENCODING)
     } catch {
       return undefined
     }
+  })
+
+  ipcMain.handle('reset', async (_event: unknown) => {
+    const [autosaveFiles, thumbnailFiles] = await Promise.all([
+      fs.promises.readdir(paths.autosaveDir).catch(() => [] as string[]),
+      fs.promises.readdir(paths.thumbnailDir).catch(() => [] as string[]),
+    ])
+    const filesToDelete = [
+      ...autosaveFiles.map(f => path.join(paths.autosaveDir, f)),
+      ...thumbnailFiles.map(f => path.join(paths.thumbnailDir, f)),
+    ]
+    await Promise.all([
+      writeFile(paths.recentSessionsPath, stringify([])),
+      ...filesToDelete.map(f =>
+        unlink(f).catch((e: unknown) => {
+          console.error(e)
+        }),
+      ),
+    ])
   })
 }

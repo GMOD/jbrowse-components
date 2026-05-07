@@ -27,10 +27,7 @@ test('color by tag', async () => {
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Color by...'))
   await user.click(await screen.findByText('Color by tag...'))
-  await user.type(
-    await screen.findByPlaceholderText('Enter tag name', ...opts),
-    'HP',
-  )
+  await user.type(await screen.findByLabelText('Tag name', ...opts), 'HP')
   await user.click(await screen.findByText('Submit'))
   const display = await screen.findByTestId('pileup-display-done', ...opts)
   expectCanvasMatch(findCanvasIn(display))

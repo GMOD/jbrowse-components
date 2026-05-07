@@ -12,12 +12,9 @@ const useStyles = makeStyles()({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
   },
   text: {
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
+    wordBreak: 'break-word',
   },
 })
 

@@ -29,17 +29,15 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   async setup(opts?: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
   async setupPre(opts?: BaseOptions) {
-    const lines = [] as PAFRecord[]
+    const lines: PAFRecord[] = []
     parseLineByLine(
       await fetchAndMaybeUnzip(
         openLocation(this.getConf('pafLocation'), this.pluginManager),
@@ -136,12 +134,12 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
           const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
 
-          let CIGAR = extra.cg
-          if (extra.cg) {
+          let CIGAR = cg
+          if (cg) {
             if (flip && strand === -1) {
-              CIGAR = flipCigar(parseCigar(extra.cg)).join('')
+              CIGAR = flipCigar(parseCigar(cg)).join('')
             } else if (flip) {
-              CIGAR = swapIndelCigar(extra.cg)
+              CIGAR = swapIndelCigar(cg)
             }
           }
 

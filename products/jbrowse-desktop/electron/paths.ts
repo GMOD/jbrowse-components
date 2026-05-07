@@ -55,17 +55,10 @@ export function getThumbnailPath(paths: AppPaths, sessionPath: string) {
   )
 }
 
-export function getAutosavePath(
-  paths: AppPaths,
-  sessionName: string,
-  ext = 'json',
-) {
-  return path.join(
-    paths.autosaveDir,
-    `${encodeURIComponent(sessionName)}.${ext}`,
-  )
-}
-
 export function getFaiPath(paths: AppPaths, name: string) {
   return path.join(paths.faiDir, `${encodeURIComponent(name)}.fai`)
+}
+
+export function stringify(obj: unknown) {
+  return JSON.stringify(obj, null, 2)
 }

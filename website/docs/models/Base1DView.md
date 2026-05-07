@@ -92,7 +92,7 @@ number
 
 ```js
 // type
-any[]
+string[]
 ```
 
 #### getter: displayedRegionsTotalPx
@@ -150,14 +150,14 @@ number
 
 ```js
 // type signature
-pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean; }
+pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean | undefined; }
 ```
 
 #### method: bpToPx
 
 ```js
 // type signature
-bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => number
+bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number | undefined; }) => number | undefined
 ```
 
 ### Base1DView - Actions
@@ -232,7 +232,7 @@ scrollTo: (offsetPx: number) => number
 
 ```js
 // type signature
-centerAt: (coord: number, refName: string, regionNumber: number) => void
+centerAt: (coord: number, refName: string | undefined, regionNumber: number) => void
 ```
 
 #### action: scroll
@@ -251,5 +251,5 @@ the displayed region in the linear genome view
 
 ```js
 // type signature
-moveTo: (start?: BpOffset, end?: BpOffset) => void
+moveTo: (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
 ```

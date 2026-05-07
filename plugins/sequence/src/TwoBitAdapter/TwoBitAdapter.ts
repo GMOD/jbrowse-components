@@ -1,9 +1,10 @@
 import { TwoBitFile } from '@gmod/twobit'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+
+import { parseChromSizes, refSizesToRegions } from '../chromSizesUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
@@ -15,18 +16,10 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
   }>
 
   private async initChromSizes() {
-    const conf = readConfObject(this.config, 'chromSizesLocation')
+    const conf = this.getConf('chromSizesLocation')
     if (conf.uri !== '/path/to/default.chrom.sizes' && conf.uri !== '') {
-      const file = openLocation(conf, this.pluginManager)
-      const data = await file.readFile('utf8')
-      return Object.fromEntries(
-        data
-          .split(/\n|\r\n|\r/)
-          .filter(line => !!line.trim())
-          .map(line => {
-            const [name, length] = line.split('\t')
-            return [name!, +length!] as const
-          }),
+      return parseChromSizes(
+        await openLocation(conf, this.pluginManager).readFile('utf8'),
       )
     }
     return undefined
@@ -44,12 +37,10 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
     }
   }
   async setup() {
-    if (!this.setupP) {
-      this.setupP = this.setupPre().catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre().catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
@@ -62,20 +53,9 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
 
   public async getRegions() {
     const { chromSizesData, twobit } = await this.setup()
-    if (chromSizesData) {
-      return Object.keys(chromSizesData).map(refName => ({
-        refName,
-        start: 0,
-        end: chromSizesData[refName]!,
-      }))
-    } else {
-      const refSizes = await twobit.getSequenceSizes()
-      return Object.keys(refSizes).map(refName => ({
-        refName,
-        start: 0,
-        end: refSizes[refName]!,
-      }))
-    }
+    return refSizesToRegions(
+      chromSizesData ?? (await twobit.getSequenceSizes()),
+    )
   }
 
   /**
@@ -92,7 +72,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
       if (seq) {
         observer.next(
           new SimpleFeature({
-            id: `${refName} ${start}-${regionEnd}`,
+            id: `${refName}-${start}-${regionEnd}`,
             data: { refName, start, end: regionEnd, seq },
           }),
         )
@@ -100,9 +80,4 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
       observer.complete()
     })
   }
-
-  /**
-   * called to provide a hint that data tied to a certain region will not be
-   * needed for the foreseeable future and can be purged from caches, etc
-   */
 }

@@ -40,7 +40,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * #getter
        */
       get assemblyNameMap() {
-        const obj = {} as Record<string, Assembly>
+        const obj: Record<string, Assembly> = {}
         for (const assembly of self.assemblies) {
           for (const name of assembly.allAliases) {
             obj[name] = assembly
@@ -55,12 +55,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        */
       getCanonicalAssemblyName(asmName: string) {
         return self.assemblyNameMap[asmName]?.name
-      },
-      /**
-       * #method
-       */
-      getCanonicalAssemblyName2(asmName: string) {
-        return self.assemblyNameMap[asmName]?.name || asmName
       },
       /**
        * #method

@@ -98,7 +98,9 @@ export default class RpcManager {
       throw new Error(`RPC driver "${backendName}" is missing configuration`)
     }
 
-    const config = this.mainConfiguration.drivers.get('WebWorkerRpcDriver')
+    const config =
+      this.mainConfiguration.drivers.get(backendName) ??
+      this.mainConfiguration.drivers.get('WebWorkerRpcDriver')
     const newDriver = factory(config, backendConfig, this.pluginManager)
     this.driverObjects.set(backendName, newDriver)
     return newDriver
@@ -150,7 +152,7 @@ export default class RpcManager {
       sessionId,
       functionName,
       a,
-      opts as { rpcDriverName?: string } | undefined,
+      opts,
     )
     return driverForCall.call(
       this.pluginManager,

@@ -16,9 +16,9 @@ import {
   createPIFFromLines,
   getOutputFilename,
   spawnSortProcess,
-  waitForProcessClose,
 } from './pif-generator.ts'
 import { printHelp } from '../../utils.ts'
+import { waitForProcessClose } from '../process-utils.ts'
 import {
   validateFileArgument,
   validateRequiredCommands,

@@ -63,7 +63,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       get visibleWidget() {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
-          return [...self.activeWidgets.values()][self.activeWidgets.size - 1]
+          return [...self.activeWidgets.values()].at(-1)
         }
         return undefined
       },
@@ -74,7 +74,6 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        */
       setDrawerPosition(arg: string) {
         self.drawerPosition = arg
-        localStorage.setItem('drawerPosition', arg)
       },
 
       /**
@@ -136,13 +135,6 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         }
         self.activeWidgets.set(widget.id, widget)
         self.minimized = false
-      },
-
-      /**
-       * #action
-       */
-      hasWidget(widget: WidgetStateModel) {
-        return self.activeWidgets.has(widget.id)
       },
 
       /**

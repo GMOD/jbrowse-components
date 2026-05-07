@@ -12,5 +12,6 @@ export interface ReducedModel {
   sampleInfo?: Record<string, SampleInfo>
   setClusterTree: (arg?: string) => void
   setLayout: (arg: Source[], clearTree?: boolean) => void
+  setLayoutAndClusterTree: (layout: Source[], tree?: string) => void
   clearLayout: () => void
 }

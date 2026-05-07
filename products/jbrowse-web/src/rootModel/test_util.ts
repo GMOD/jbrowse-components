@@ -15,7 +15,7 @@ export function createTestSession(args?: {
     sessionSnapshot = {},
     adminMode = false,
     jbrowseConfig = {},
-  } = args || {}
+  } = args ?? {}
   const pluginManager = new PluginManager(
     corePlugins.map(P => new P()),
   ).createPluggableElements()

@@ -1,16 +1,9 @@
 import { useState } from 'react'
 
-import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
+import { AssemblySelector, ErrorBanner } from '@jbrowse/core/ui'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Button,
-  Container,
-  FormControl,
-  Grid,
-  Paper,
-  Typography,
-} from '@mui/material'
+import { Button, Container, Grid, Paper, Typography } from '@mui/material'
 import { toJS, transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -40,14 +33,14 @@ function doSubmit({
   model.setError(undefined)
   transaction(() => {
     if (isSessionWithAddTracks(session)) {
-      toJS(importFormSyntenyTrackSelections).map((f, idx) => {
-        if (f.type === 'userOpened') {
+      for (const f of toJS(importFormSyntenyTrackSelections)) {
+        if (f.type === 'userOpened' && f.value !== undefined) {
           session.addTrackConf(f.value)
-          model.toggleTrack(f.value?.trackId)
+          model.toggleTrack(f.value.trackId)
         } else if (f.type === 'preConfigured') {
-          model.showTrack(f.value, idx)
+          model.showTrack(f.value)
         }
-      })
+      }
     }
 
     model.setAssemblyNames(assembly2, assembly1)
@@ -62,15 +55,14 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
-  const [assembly2, setAssembly2] = useState(assemblyNames[0] || '')
-  const [assembly1, setAssembly1] = useState(assemblyNames[0] || '')
+  const [assembly2, setAssembly2] = useState(assemblyNames[0] ?? '')
+  const [assembly1, setAssembly1] = useState(assemblyNames[0] ?? '')
   const [error, setError] = useState<unknown>()
 
-  // this is a combination of any displayed error message we have
-  const displayError = error || model.error
+  const displayError = error ?? model.error
   return (
     <Container className={classes.importFormContainer}>
-      {displayError ? <ErrorMessage error={displayError} /> : null}
+      {displayError ? <ErrorBanner error={displayError} /> : null}
 
       <Paper style={{ padding: 12 }}>
         <Typography style={{ textAlign: 'center' }}>
@@ -85,42 +77,29 @@ const DotplotImportForm = observer(function DotplotImportForm({
             helperText="x-axis assembly"
             selected={assembly2}
             session={session}
-            onChange={val => {
-              setAssembly2(val)
-            }}
+            onChange={setAssembly2}
           />
           <AssemblySelector
             helperText="y-axis assembly"
             selected={assembly1}
             session={session}
-            onChange={val => {
-              setAssembly1(val)
-            }}
+            onChange={setAssembly1}
           />
-          <FormControl>
-            <Button
-              onClick={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                ;(async () => {
-                  try {
-                    setError(undefined)
-                    doSubmit({
-                      assembly1,
-                      assembly2,
-                      model,
-                    })
-                  } catch (e) {
-                    console.error(e)
-                    setError(e)
-                  }
-                })()
-              }}
-              variant="contained"
-              color="primary"
-            >
-              Launch
-            </Button>
-          </FormControl>
+          <Button
+            onClick={() => {
+              try {
+                setError(undefined)
+                doSubmit({ assembly1, assembly2, model })
+              } catch (e) {
+                console.error(e)
+                setError(e)
+              }
+            }}
+            variant="contained"
+            color="primary"
+          >
+            Launch
+          </Button>
         </Grid>
         <TrackSelector
           assembly2={assembly2}

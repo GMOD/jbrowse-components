@@ -69,7 +69,6 @@ const SessionManager = observer(function SessionManager({
                   differenceInDays(Date.now(), elt.createdAt) > 1 &&
                   !elt.favorite
                 ) {
-                  // @ts-expect-error
                   session.deleteSavedSession(elt.id)
                   i++
                 }
@@ -78,7 +77,7 @@ const SessionManager = observer(function SessionManager({
             session.notify(`${i} sessions deleted`, 'info')
           }}
         >
-          Delete non-fav sessions older than 7 days?
+          Delete non-fav sessions older than 1 day?
         </Button>
       </div>
       {rows ? (
@@ -102,13 +101,7 @@ const SessionManager = observer(function SessionManager({
                 renderCell: ({ row }) => (
                   <IconButton
                     onClick={() => {
-                      if (row.fav) {
-                        // @ts-expect-error
-                        session.unfavoriteSavedSession(row.id)
-                      } else {
-                        // @ts-expect-error
-                        session.favoriteSavedSession(row.id)
-                      }
+                      session.setSavedSessionFavorite(row.id, !row.fav)
                     }}
                   >
                     {row.fav ? <StarIcon /> : <StarBorderIcon />}
@@ -163,7 +156,6 @@ const SessionManager = observer(function SessionManager({
                 renderCell: ({ row }) => (
                   <IconButton
                     onClick={() => {
-                      // @ts-expect-error
                       session.deleteSavedSession(row.id)
                     }}
                   >

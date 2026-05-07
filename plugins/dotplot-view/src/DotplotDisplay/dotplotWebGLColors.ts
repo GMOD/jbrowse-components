@@ -1,42 +1,45 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import {
-  cssColorToNormalizedRgb,
   getBlue,
   getGreen,
   getRed,
+  packAbgr,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 
-import type { DotplotFeatPos } from './types.ts'
+import { hashString } from '../util.ts'
 
-type RGBA = [number, number, number, number]
+import type { DotplotRpcData } from './types.ts'
 
-function hashString(str: string) {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash = hash & hash
-  }
-  return Math.abs(hash)
+function packColor(r: number, g: number, b: number, alpha: number) {
+  return packAbgr(r, g, b, Math.round(alpha * 255))
 }
 
-const category10Normalized = category10.map(hex => cssColorToNormalizedRgb(hex))
+const category10Rgb = category10.map(hex => {
+  const c = parseCssColor(hex)
+  return [getRed(c), getGreen(c), getBlue(c)] as const
+})
 
-function hslColor(hue: number, alpha: number): RGBA {
+function hslColor(hue: number, alpha: number) {
   const c = parseCssColor(`hsl(${hue}, 100%, 40%)`)
-  return [getRed(c) / 255, getGreen(c) / 255, getBlue(c) / 255, alpha]
+  return packColor(getRed(c), getGreen(c), getBlue(c), alpha)
 }
 
-function hslColorFn(
-  featureField: string,
-  hueScale: number,
-  alpha: number,
-): (f: DotplotFeatPos) => RGBA {
-  const defaultColor: RGBA = [1, 0, 0, alpha]
-  return (f: DotplotFeatPos) => {
-    const val = f.f.get(featureField) as number | undefined
-    if (val !== undefined) {
+export type DotplotColorFn = (data: DotplotRpcData, index: number) => number
+
+export function unpackColorToCSS(packed: number) {
+  const r = packed & 0xff
+  const g = (packed >>> 8) & 0xff
+  const b = (packed >>> 16) & 0xff
+  const a = (packed >>> 24) / 255
+  return `rgba(${r},${g},${b},${a})`
+}
+
+function hslColorFn(values: Float32Array, hueScale: number, alpha: number) {
+  const defaultColor = packColor(255, 0, 0, alpha)
+  return (_data: DotplotRpcData, index: number) => {
+    const val = values[index]!
+    if (val >= 0) {
       return hslColor(val * hueScale, alpha)
     }
     return defaultColor
@@ -46,23 +49,22 @@ function hslColorFn(
 export function createDotplotColorFunction(
   colorBy: string,
   alpha: number,
-): (f: DotplotFeatPos, index: number) => RGBA {
+  data: DotplotRpcData,
+): DotplotColorFn {
   if (colorBy === 'strand') {
-    const neg: RGBA = [0, 0, 1, alpha]
-    const pos: RGBA = [1, 0, 0, alpha]
-    return (f: DotplotFeatPos) => (f.f.get('strand') === -1 ? neg : pos)
+    const neg = packColor(0, 0, 255, alpha)
+    const pos = packColor(255, 0, 0, alpha)
+    return (d, i) => (d.strands[i] === -1 ? neg : pos)
   }
 
   if (colorBy === 'query') {
-    const colorCache = new Map<string, RGBA>()
-    return (f: DotplotFeatPos) => {
-      const name = f.f.get('refName') || ''
+    const palette = category10Rgb.map(([r, g, b]) => packColor(r, g, b, alpha))
+    const colorCache = new Map<string, number>()
+    return (d, i) => {
+      const name = d.refNames[i]!
       let color = colorCache.get(name)
-      if (!color) {
-        const hash = hashString(name)
-        const [r, g, b] =
-          category10Normalized[hash % category10Normalized.length]!
-        color = [r, g, b, alpha]
+      if (color === undefined) {
+        color = palette[hashString(name) % palette.length]!
         colorCache.set(name, color)
       }
       return color
@@ -70,18 +72,17 @@ export function createDotplotColorFunction(
   }
 
   if (colorBy === 'identity') {
-    return hslColorFn('identity', 120, alpha)
+    return hslColorFn(data.identities, 120, alpha)
   }
 
   if (colorBy === 'meanQueryIdentity') {
-    return hslColorFn('meanScore', 200, alpha)
+    return hslColorFn(data.meanScores, 200, alpha)
   }
 
   if (colorBy === 'mappingQuality') {
-    return hslColorFn('mappingQual', 1, alpha)
+    return hslColorFn(data.mappingQuals, 1, alpha)
   }
 
-  // Default: red
-  const defaultColor: RGBA = [1, 0, 0, alpha]
+  const defaultColor = packColor(0, 0, 0, alpha)
   return () => defaultColor
 }

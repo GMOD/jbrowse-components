@@ -30,7 +30,7 @@ extends
 
 ```js
 // type signature
-any
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -75,7 +75,7 @@ trackMaxHeight: types.maybe(types.number)
 
 ```js
 // type signature
-IType<ColorBy, ColorBy, ColorBy>
+IType<ColorBy | undefined, ColorBy | undefined, ColorBy | undefined>
 // code
 colorBySetting: types.frozen<ColorBy | undefined>()
 ```
@@ -84,7 +84,7 @@ colorBySetting: types.frozen<ColorBy | undefined>()
 
 ```js
 // type signature
-IType<FilterBy, FilterBy, FilterBy>
+IType<FilterBy | undefined, FilterBy | undefined, FilterBy | undefined>
 // code
 filterBySetting: types.frozen<FilterBy | undefined>()
 ```
@@ -152,21 +152,21 @@ boolean
 
 ```js
 // type
-boolean
+boolean | undefined
 ```
 
 #### getter: hideMismatches
 
 ```js
 // type
-boolean
+boolean | undefined
 ```
 
 #### getter: hideLargeIndels
 
 ```js
 // type
-boolean
+boolean | undefined
 ```
 
 #### getter: rendererConfig
@@ -208,7 +208,7 @@ any
 
 ```js
 // type
-any
+Feature | undefined
 ```
 
 #### getter: renderReady
@@ -222,7 +222,7 @@ any
 
 ```js
 // type
-any
+SerializableFilterChain
 ```
 
 #### getter: rendererTypeName
@@ -236,7 +236,7 @@ string
 
 ```js
 // type
-({ model, }: { model: { sortedBy?: SortedBy; }; }) => Element
+({ model, }: { model: { sortedBy?: SortedBy | undefined; }; }) => Element | null
 ```
 
 ### SharedLinearPileupDisplayMixin - Methods
@@ -263,7 +263,7 @@ legendItems: (theme: Theme) => LegendItem[]
 
 ```js
 // type signature
-showSubMenuItems: () => ({ label: string; type: "subMenu"; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { label: string; type: string; checked: boolean; onClick: () => void; })[]
+showSubMenuItems: () => ({ label: string; type: "subMenu"; subMenu: { label: string; type: "radio"; checked: boolean | undefined; onClick: () => void; }[]; } | { label: string; type: string; checked: boolean | undefined; onClick: () => void; })[]
 ```
 
 #### method: contextMenuItems
@@ -284,7 +284,7 @@ adapterRenderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onClick(): void; onFeatureContextMenu(_: unknown, featureId?: string): Promise<void>; displayModel: { ...; } & ... 17 more ... & IStateTreeNode<...>; onMouseMove(_: unknown, featureId?: string): void; onMouseLeave(_: unknown): void; onContextMenu...
+renderingProps: () => { onFeatureClick(_: unknown, featureId?: string | undefined): Promise<void>; onClick(): void; onFeatureContextMenu(_: unknown, featureId?: string | undefined): Promise<void>; displayModel: { ...; } & ... 3 more ... & IStateTreeNode<...>; }
 ```
 
 #### method: colorSchemeSubMenuItems
@@ -298,7 +298,7 @@ colorSchemeSubMenuItems: () => { label: string; onClick: () => void; }[]
 
 ```js
 // type signature
-trackMenuItems: () => any[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 ### SharedLinearPileupDisplayMixin - Actions
@@ -314,21 +314,21 @@ setTagsReady: (flag: boolean) => void
 
 ```js
 // type signature
-setMaxHeight: (n?: number) => void
+setMaxHeight: (n?: number | undefined) => void
 ```
 
 #### action: setFeatureHeight
 
 ```js
 // type signature
-setFeatureHeight: (n?: number) => void
+setFeatureHeight: (n?: number | undefined) => void
 ```
 
 #### action: setNoSpacing
 
 ```js
 // type signature
-setNoSpacing: (flag?: boolean) => void
+setNoSpacing: (flag?: boolean | undefined) => void
 ```
 
 #### action: setColorScheme
@@ -349,7 +349,7 @@ updateColorTagMap: (uniqueTag: string[]) => void
 
 ```js
 // type signature
-setFeatureUnderMouse: (feat?: Feature) => void
+setFeatureUnderMouse: (feat?: Feature | undefined) => void
 ```
 
 #### action: selectFeature
@@ -363,7 +363,7 @@ selectFeature: (feature: Feature) => void
 
 ```js
 // type signature
-setConfig: (conf: AnyConfigurationModel) => void
+setConfig: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setFilterBy

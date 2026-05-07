@@ -12,7 +12,7 @@ test('one', () => {
       bpPerPx: 1,
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
-    }).getBlocks(),
+    }).blocks,
   ).toMatchSnapshot()
 })
 test('two', () => {
@@ -24,7 +24,7 @@ test('two', () => {
       bpPerPx: 1,
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
-    }).getBlocks(),
+    }).blocks,
   ).toMatchSnapshot()
 })
 test('three', () => {
@@ -36,7 +36,7 @@ test('three', () => {
       bpPerPx: 1,
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
-    }).getBlocks(),
+    }).blocks,
   ).toMatchSnapshot()
 })
 test('four', () => {
@@ -48,7 +48,7 @@ test('four', () => {
       bpPerPx: 1,
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
-    }).getBlocks(),
+    }).blocks,
   ).toMatchSnapshot()
 })
 test('five', () => {
@@ -60,8 +60,32 @@ test('five', () => {
       bpPerPx: 0.05,
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
-    }).getBlocks(),
+    }).blocks,
   ).toMatchSnapshot()
+})
+
+test('inter-region padding correct when bpPerPx causes float drift on region right-end', () => {
+  // bpPerPx = 3400/796 is irrational in float64: regionWidthPx * bpPerPx != regionEnd
+  // exactly, so the old end===regionEnd check would silently drop a padding segment.
+  const regions = [
+    { assemblyName: 'test', refName: 'ctgA', start: 0, end: 500 },
+    { assemblyName: 'test', refName: 'ctgB', start: 0, end: 3000 },
+    { assemblyName: 'test', refName: 'ctgC', start: 0, end: 200 },
+  ]
+  const bpPerPx = 3400 / 796
+  const params = makeParams(regions, { bpPerPx, offsetPx: 47, width: 800 })
+  const staticBlocks = calculateStaticBlocks(params)
+  const dynamicBlocks = calculateDynamicBlocks(params)
+
+  const dynamicCtgC = dynamicBlocks.contentBlocks.find(
+    b => b.refName === 'ctgC',
+  )
+  const staticCtgC = staticBlocks.contentBlocks.find(b => b.refName === 'ctgC')
+  expect(dynamicCtgC).toBeDefined()
+  expect(staticCtgC).toBeDefined()
+  expect(Math.abs(dynamicCtgC!.offsetPx - staticCtgC!.offsetPx)).toBeLessThan(
+    0.001,
+  )
 })
 
 test('off-screen regions contribute padding to block positions', () => {
@@ -475,12 +499,6 @@ describe('elided block handling', () => {
 
     expect(staticElided.length).toBe(1)
     expect(dynamicElided.length).toBe(1)
-    expect(
-      staticBlocks.contentBlocks.every(b => b.type === 'ContentBlock'),
-    ).toBe(true)
-    expect(
-      dynamicBlocks.contentBlocks.every(b => b.type === 'ContentBlock'),
-    ).toBe(true)
   })
 
   it('elided block offsetPx matches between static and dynamic', () => {

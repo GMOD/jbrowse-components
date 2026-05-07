@@ -1,11 +1,50 @@
+import { getDpr } from '../canvas2dUtils.ts'
 import { bindUniformBlock, createProgram } from '../webglUtils.ts'
 
 import type { BlendState, GpuHal, PassDescriptor, RegionMeta } from './types.ts'
 
+// Set `DEBUG.webgl2 = true` in devtools (or `?webgl2-debug=1` in URL) to
+// enable verbose logging. Kept guarded so production builds stay quiet.
+function debugEnabled() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+  const w = window as typeof window & { DEBUG?: { webgl2?: boolean } }
+  if (w.DEBUG?.webgl2) {
+    return true
+  }
+  return /(?:\?|&)webgl2-debug=1\b/.test(window.location.search)
+}
+
+function glErrorName(gl: WebGL2RenderingContext, code: number) {
+  if (code === gl.NO_ERROR) {
+    return 'NO_ERROR'
+  }
+  if (code === gl.INVALID_ENUM) {
+    return 'INVALID_ENUM'
+  }
+  if (code === gl.INVALID_VALUE) {
+    return 'INVALID_VALUE'
+  }
+  if (code === gl.INVALID_OPERATION) {
+    return 'INVALID_OPERATION'
+  }
+  if (code === gl.INVALID_FRAMEBUFFER_OPERATION) {
+    return 'INVALID_FRAMEBUFFER_OPERATION'
+  }
+  if (code === gl.OUT_OF_MEMORY) {
+    return 'OUT_OF_MEMORY'
+  }
+  if (code === gl.CONTEXT_LOST_WEBGL) {
+    return 'CONTEXT_LOST_WEBGL'
+  }
+  return `0x${code.toString(16)}`
+}
+
 function glBlendFactor(
   gl: WebGL2RenderingContext,
   factor: BlendState['srcFactor'],
-) {
+): number {
   switch (factor) {
     case 'one':
       return gl.ONE
@@ -42,18 +81,41 @@ interface RegionState {
   buffers: Map<string, RegionPassBuffer>
 }
 
+// Module-scope lifecycle tracking — Firefox caps active WebGL contexts
+// around 16 and Chrome around 8. Context leaks force the oldest contexts to
+// lose. These counters surface the leak when it happens.
+let totalCreated = 0
+let totalDisposed = 0
+
 export class WebGL2Hal implements GpuHal {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private passes: Map<string, PassState>
   private regions = new Map<number, RegionState>()
   private ubo: WebGLBuffer
-  private uniformByteSize: number
-  private pickingFbo: WebGLFramebuffer | null = null
-  private pickingTex: WebGLTexture | null = null
-  private pickingW = 0
-  private pickingH = 0
-  private pickPixel = new Uint8Array(4)
+  private debug = false
+  private instanceId = 0
+  private firstDrawSeen = new Set<string>()
+
+  // Guards dispose() against double invocation (pagehide + React cleanup can
+  // both fire) so the disposed-counter telemetry stays honest and gl.delete*
+  // isn't called twice on the same handle.
+  private disposed = false
+
+  private contextLostListener: ((e: Event) => void) | null = null
+  private contextRestoredListener: (() => void) | null = null
+
+  private checkGlError(label: string) {
+    if (!this.debug) {
+      return
+    }
+    const err = this.gl.getError()
+    if (err !== this.gl.NO_ERROR) {
+      console.error(
+        `[WebGL2Hal] GL error at "${label}": ${glErrorName(this.gl, err)}`,
+      )
+    }
+  }
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -61,11 +123,40 @@ export class WebGL2Hal implements GpuHal {
     uniformByteSize: number,
   ) {
     this.canvas = canvas
-    this.uniformByteSize = uniformByteSize
+    this.debug = debugEnabled()
+    totalCreated += 1
+    this.instanceId = totalCreated
+    // Always log lifecycle — the context-leak class of bugs needs this even
+    // outside debug mode, which is why these use warn instead of log.
+    console.warn(
+      `[WebGL2Hal #${this.instanceId}] init (live=${totalCreated - totalDisposed}/${totalCreated}, passes=${descriptors.length})`,
+    )
+    const onContextLost = (e: Event) => {
+      const ev = e as WebGLContextEvent
+      console.error(
+        `[WebGL2Hal #${this.instanceId}] context LOST (statusMessage="${ev.statusMessage}", live=${totalCreated - totalDisposed})`,
+      )
+      e.preventDefault()
+    }
+    const onContextRestored = () => {
+      console.warn(`[WebGL2Hal #${this.instanceId}] context restored`)
+    }
+    canvas.addEventListener('webglcontextlost', onContextLost, false)
+    canvas.addEventListener('webglcontextrestored', onContextRestored, false)
+    this.contextLostListener = onContextLost
+    this.contextRestoredListener = onContextRestored
+    // premultipliedAlpha:true is required for correct AA edge blending.
+    // The canvas is cleared to (0,0,0,0) and drawn with SRC_ALPHA,ONE_MINUS_SRC_ALPHA
+    // blend, which produces premultiplied-alpha values in the framebuffer
+    // (edge pixel: rgb = color*alpha, a = alpha).  With premultipliedAlpha:true
+    // the browser compositor reads those as premultiplied and composites correctly:
+    //   output = fb.rgb + bg*(1-fb.a)
+    // With premultipliedAlpha:false the compositor treats them as straight alpha and
+    // multiplies rgb by alpha a second time, making AA edges appear too dark.
+    // The WebGPU HAL uses alphaMode:'premultiplied' for the same reason.
     const gl = canvas.getContext('webgl2', {
       antialias: true,
-      premultipliedAlpha: false,
-      preserveDrawingBuffer: true,
+      premultipliedAlpha: true,
     })
     if (!gl) {
       throw new Error('WebGL2 not supported')
@@ -78,13 +169,37 @@ export class WebGL2Hal implements GpuHal {
 
     this.passes = new Map()
     for (const desc of descriptors) {
+      // The 16-byte stride constraint only applies to WebGPU storage buffers.
+      // WebGL2 vertex buffers just need stride to be a multiple of 4.
+      const usesStorageBuffer = /\bvar\s*<\s*storage\b/.test(desc.wgslSource)
+      if (usesStorageBuffer && desc.instanceStride % 16 !== 0) {
+        console.error(
+          `[WebGL2Hal] Pass "${desc.id}" instanceStride=${desc.instanceStride} is not a multiple of 16 — ` +
+            'Chrome WebGPU will reject draws with a binding-size validation error',
+        )
+      }
       const fragShader = desc.glslFragmentOverride ?? desc.glslFragment
       const program = createProgram(gl, desc.glslVertex, fragShader)
       bindUniformBlock(gl, program, 'Uniforms', 0)
+      this.checkGlError(`link pass "${desc.id}"`)
 
       const attrLocs = desc.glAttributes.map(attr =>
         gl.getAttribLocation(program, attr.name),
       )
+      if (this.debug) {
+        const pairs = desc.glAttributes.map(
+          (a, i) => `${a.name}@${attrLocs[i]}`,
+        )
+        console.warn(
+          `[WebGL2Hal] pass "${desc.id}" stride=${desc.instanceStride} attrs: ${pairs.join(', ')}`,
+        )
+        const missing = desc.glAttributes.filter((_, i) => attrLocs[i]! < 0)
+        if (missing.length > 0) {
+          console.warn(
+            `[WebGL2Hal] pass "${desc.id}" missing attribute locations: ${missing.map(a => a.name).join(', ')}`,
+          )
+        }
+      }
       const vao = gl.createVertexArray()
       gl.bindVertexArray(vao)
       for (const loc of attrLocs) {
@@ -99,7 +214,7 @@ export class WebGL2Hal implements GpuHal {
       if (desc.textures?.length) {
         const tb = desc.textures[0]!
         const uniformLoc = gl.getUniformLocation(program, tb.glUniformName)
-        textureState = { texture: null!, unit: tb.glTextureUnit, uniformLoc }
+        textureState = { texture: null, unit: tb.glTextureUnit, uniformLoc }
       }
 
       this.passes.set(desc.id, {
@@ -115,7 +230,7 @@ export class WebGL2Hal implements GpuHal {
   }
 
   resize(width: number, height: number) {
-    const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+    const dpr = getDpr()
     const pw = Math.round(width * dpr)
     const ph = Math.round(height * dpr)
     if (this.canvas.width !== pw || this.canvas.height !== ph) {
@@ -129,7 +244,7 @@ export class WebGL2Hal implements GpuHal {
   uploadBuffer(
     regionKey: number,
     passId: string,
-    data: ArrayBuffer,
+    data: ArrayBuffer | ArrayBufferView,
     count: number,
   ) {
     const gl = this.gl
@@ -301,6 +416,13 @@ export class WebGL2Hal implements GpuHal {
       pass.descriptor.verticesPerInstance,
       regionBuf.count,
     )
+    if (this.debug && !this.firstDrawSeen.has(passId)) {
+      this.firstDrawSeen.add(passId)
+      const err = gl.getError()
+      console.warn(
+        `[WebGL2Hal #${this.instanceId}] first draw pass="${passId}" verts=${pass.descriptor.verticesPerInstance} instances=${regionBuf.count} err=${glErrorName(gl, err)}`,
+      )
+    }
 
     gl.bindVertexArray(null)
   }
@@ -311,90 +433,41 @@ export class WebGL2Hal implements GpuHal {
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
   }
 
-  pick(_x: number, _y: number) {
-    return -1
-  }
-
-  drawPickingPass(
-    passId: string,
-    regionKey: number,
-    instanceCount?: number,
-    bufferPassId?: string,
-  ) {
-    const gl = this.gl
-    const pass = this.passes.get(passId)
-    if (!pass) {
-      return
-    }
-    const regionBuf = this.regions
-      .get(regionKey)
-      ?.buffers.get(bufferPassId ?? passId)
-    if (!regionBuf || regionBuf.count === 0) {
-      return
-    }
-
-    this.ensurePickingFbo()
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
-    gl.viewport(0, 0, this.pickingW, this.pickingH)
-    gl.clearColor(0, 0, 0, 0)
-    gl.clear(gl.COLOR_BUFFER_BIT)
-    gl.disable(gl.BLEND)
-
-    gl.useProgram(pass.program)
-    gl.bindVertexArray(pass.vao)
-    this.bindAttributes(pass, regionBuf.vbo)
-    gl.drawArraysInstanced(
-      gl.TRIANGLES,
-      0,
-      pass.descriptor.verticesPerInstance,
-      instanceCount ?? regionBuf.count,
-    )
-    gl.bindVertexArray(null)
-
-    gl.enable(gl.BLEND)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-  }
-
-  readPickingPixel(x: number, y: number) {
-    const gl = this.gl
-    if (!this.pickingFbo) {
-      return -1
-    }
-    const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
-    const px = Math.floor(x * dpr)
-    const py = Math.floor(y * dpr)
-    if (px < 0 || px >= this.pickingW || py < 0 || py >= this.pickingH) {
-      return -1
-    }
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
-    gl.readPixels(
-      px,
-      this.pickingH - py - 1,
-      1,
-      1,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      this.pickPixel,
-    )
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    const r = this.pickPixel[0]!
-    const g = this.pickPixel[1]!
-    const b = this.pickPixel[2]!
-    return r === 0 && g === 0 && b === 0 ? -1 : r + g * 256 + b * 65536 - 1
-  }
-
-  async readPickingPixelAsync(x: number, y: number) {
-    return this.readPickingPixel(x, y)
-  }
-
-  getWebGLContext() {
-    return this.gl
-  }
-
   dispose() {
+    console.error(
+      `[WebGL2Hal #${this.instanceId}] dispose() CALLED, already disposed=${this.disposed}`,
+    )
+    if (this.disposed) {
+      console.warn(
+        `[WebGL2Hal #${this.instanceId}] dispose() called but already disposed, returning`,
+      )
+      return
+    }
+    this.disposed = true
     const gl = this.gl
-    // eslint-disable-next-line no-console
-    console.log('[GPU] WebGL2Hal.dispose() — releasing GPU resources')
+    totalDisposed += 1
+    console.warn(
+      `[WebGL2Hal #${this.instanceId}] DISPOSING context (live=${totalCreated - totalDisposed}/${totalCreated})`,
+    )
+
+    // Remove canvas event listeners to prevent closure references from keeping
+    // the context alive after disposal. This is critical for test suites where
+    // multiple contexts are created in sequence (e.g. Puppeteer page navigation).
+    if (this.contextLostListener) {
+      this.canvas.removeEventListener(
+        'webglcontextlost',
+        this.contextLostListener,
+      )
+      this.contextLostListener = null
+    }
+    if (this.contextRestoredListener) {
+      this.canvas.removeEventListener(
+        'webglcontextrestored',
+        this.contextRestoredListener,
+      )
+      this.contextRestoredListener = null
+    }
+
     this.deleteAllRegions()
     for (const pass of this.passes.values()) {
       gl.deleteVertexArray(pass.vao)
@@ -405,61 +478,13 @@ export class WebGL2Hal implements GpuHal {
     }
     this.passes.clear()
     gl.deleteBuffer(this.ubo)
-    if (this.pickingFbo) {
-      gl.deleteFramebuffer(this.pickingFbo)
-      gl.deleteTexture(this.pickingTex)
-    }
 
-    // Explicitly release the WebGL context so Chrome's GPU process frees
-    // the memory immediately instead of waiting for GC.  Without this,
-    // long-running test suites accumulate unreleased contexts and OOM.
-    const ext = gl.getExtension('WEBGL_lose_context')
-    if (ext) {
-      ext.loseContext()
-    }
-  }
-
-  private ensurePickingFbo() {
-    const gl = this.gl
-    const w = this.canvas.width
-    const h = this.canvas.height
-    if (this.pickingW === w && this.pickingH === h && this.pickingFbo) {
-      return
-    }
-    if (this.pickingFbo) {
-      gl.deleteFramebuffer(this.pickingFbo)
-      gl.deleteTexture(this.pickingTex)
-    }
-    if (w === 0 || h === 0) {
-      return
-    }
-    this.pickingTex = gl.createTexture()!
-    gl.bindTexture(gl.TEXTURE_2D, this.pickingTex)
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA8,
-      w,
-      h,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      null,
-    )
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-    this.pickingFbo = gl.createFramebuffer()!
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
-    gl.framebufferTexture2D(
-      gl.FRAMEBUFFER,
-      gl.COLOR_ATTACHMENT0,
-      gl.TEXTURE_2D,
-      this.pickingTex,
-      0,
-    )
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    this.pickingW = w
-    this.pickingH = h
+    // Firefox appears to treat WEBGL_lose_context.loseContext() as a
+    // driver-wide reset: calling it on one disposed HAL synchronously
+    // knocks out sibling live contexts too, so tracks go blank en masse.
+    // Chrome only needs this as a test-suite optimisation; for production we
+    // let the browser reclaim the context when the canvas is GC'd. If we
+    // need explicit release again, gate it on navigator.userAgent.
   }
 
   private getOrCreateRegion(regionKey: number) {
@@ -481,19 +506,15 @@ export class WebGL2Hal implements GpuHal {
       return
     }
     gl.enable(gl.BLEND)
+    // RGB and alpha get different blend factors (blendFuncSeparate):
+    //   RGB:   out = src_rgb * srcFactor + dst_rgb * dstFactor  (default: src-alpha / 1-src-alpha)
+    //   Alpha: out = src_alpha * 1 + dst_alpha * (1 - src_alpha)
+    // The alpha channel uses ONE/ONE_MINUS_SRC_ALPHA regardless of the custom blend state;
+    // using the RGB srcFactor for alpha too would give out_alpha = src_alpha² + ..., which is wrong.
     const bs = desc.blendState
-    if (bs) {
-      const src = glBlendFactor(gl, bs.srcFactor)
-      const dst = glBlendFactor(gl, bs.dstFactor)
-      gl.blendFunc(src, dst)
-    } else {
-      gl.blendFuncSeparate(
-        gl.SRC_ALPHA,
-        gl.ONE_MINUS_SRC_ALPHA,
-        gl.ONE,
-        gl.ONE_MINUS_SRC_ALPHA,
-      )
-    }
+    const src = bs ? glBlendFactor(gl, bs.srcFactor) : gl.SRC_ALPHA
+    const dst = bs ? glBlendFactor(gl, bs.dstFactor) : gl.ONE_MINUS_SRC_ALPHA
+    gl.blendFuncSeparate(src, dst, gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
   }
 
   private bindTextures(pass: PassState) {
@@ -518,12 +539,7 @@ export class WebGL2Hal implements GpuHal {
       }
       const attr = desc.glAttributes[i]!
       if (attr.integer) {
-        const glType =
-          attr.type === 'uint'
-            ? gl.UNSIGNED_INT
-            : attr.type === 'int'
-              ? gl.INT
-              : gl.UNSIGNED_INT
+        const glType = attr.type === 'uint' ? gl.UNSIGNED_INT : gl.INT
         gl.vertexAttribIPointer(
           loc,
           attr.components,
