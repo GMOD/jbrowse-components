@@ -1,13 +1,15 @@
 import type React from 'react'
 
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
 import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
+import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
-import { paintHeadlessWiggle } from '../shared/paintHeadlessWiggle.ts'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
 import type {
@@ -59,13 +61,20 @@ export async function renderSvg(
   }
 
   const props = model.gpuProps()
-  const wiggleNode = paintHeadlessWiggle({
-    view,
-    height,
-    rpcDataMap,
-    encode: data => buildSourceRenderData(data, props),
-    renderState,
-    opts,
+  const totalWidth = view.totalWidthPx
+  const renderBlocks = buildRenderBlocks(view.visibleRegions)
+  const state = {
+    ...renderState,
+    canvasWidth: totalWidth,
+    canvasHeight: height,
+  }
+  const wiggleNode = paintLayer(totalWidth, height, opts, ctx => {
+    drawWiggleToCtx(
+      ctx,
+      { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
+      renderBlocks,
+      state,
+    )
   })
 
   if (opts?.rasterizeLayers) {

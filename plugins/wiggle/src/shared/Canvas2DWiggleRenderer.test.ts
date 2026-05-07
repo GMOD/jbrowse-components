@@ -1,4 +1,7 @@
-import { Canvas2DWiggleRenderer, drawWiggleBlocks } from './Canvas2DWiggleRenderer.ts'
+import {
+  Canvas2DWiggleRenderer,
+  drawWiggleToCtx,
+} from './Canvas2DWiggleRenderer.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -6,6 +9,8 @@ import {
   RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
 } from './wiggleComponentUtils.ts'
+
+import type { SourceRenderData } from './wiggleBackendTypes.ts'
 
 function createMockCanvas() {
   const fillRectCalls: [number, number, number, number][] = []
@@ -370,13 +375,13 @@ const score8Y = (1 - 8 / 10) * 200
 
 describe('drawLine path commands', () => {
   test('isolated feature: rise at x1, horizontal, drop at x2', () => {
-    const renderer = new Canvas2DWiggleRenderer(null)
-    renderer.uploadRegion(0, [makeSource([5], [0], [100])])
-
     const { ctx } = createMockCanvas()
-    drawWiggleBlocks(
+    drawWiggleToCtx(
       ctx as unknown as CanvasRenderingContext2D,
-      renderer.getRegions(),
+      {
+        rpcDataMap: new Map([[0, [makeSource([5], [0], [100])]]]),
+        encode: (s: SourceRenderData[]) => s,
+      },
       [lineBlock],
       lineState,
     )
@@ -394,13 +399,13 @@ describe('drawLine path commands', () => {
   })
 
   test('adjacent pair: transition at junction, drop only at end', () => {
-    const renderer = new Canvas2DWiggleRenderer(null)
-    renderer.uploadRegion(0, [makeSource([5, 8], [0, 100], [100, 200])])
-
     const { ctx } = createMockCanvas()
-    drawWiggleBlocks(
+    drawWiggleToCtx(
       ctx as unknown as CanvasRenderingContext2D,
-      renderer.getRegions(),
+      {
+        rpcDataMap: new Map([[0, [makeSource([5, 8], [0, 100], [100, 200])]]]),
+        encode: (s: SourceRenderData[]) => s,
+      },
       [lineBlock],
       lineState,
     )
@@ -427,14 +432,14 @@ describe('drawLine path commands', () => {
   })
 
   test('non-adjacent features: each has its own rise from zero and drop to zero', () => {
-    const renderer = new Canvas2DWiggleRenderer(null)
-    // gap between bp 100 and 300
-    renderer.uploadRegion(0, [makeSource([5, 8], [0, 300], [100, 400])])
-
     const { ctx } = createMockCanvas()
-    drawWiggleBlocks(
+    // gap between bp 100 and 300
+    drawWiggleToCtx(
       ctx as unknown as CanvasRenderingContext2D,
-      renderer.getRegions(),
+      {
+        rpcDataMap: new Map([[0, [makeSource([5, 8], [0, 300], [100, 400])]]]),
+        encode: (s: SourceRenderData[]) => s,
+      },
       [lineBlock],
       lineState,
     )

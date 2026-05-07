@@ -1,16 +1,18 @@
 import type React from 'react'
 
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
 import { buildMultiSourceRenderData } from './components/buildMultiSourceRenderData.ts'
+import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
-import { paintHeadlessWiggle } from '../shared/paintHeadlessWiggle.ts'
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
@@ -118,13 +120,20 @@ export async function renderSvg(
     showTree && hierarchy ? <SvgTreePath hierarchy={hierarchy} /> : null
 
   const props = model.gpuProps()
-  const wiggleNode = paintHeadlessWiggle({
-    view,
-    height,
-    rpcDataMap,
-    encode: data => buildMultiSourceRenderData(data, props),
-    renderState,
-    opts,
+  const totalWidth = view.totalWidthPx
+  const renderBlocks = buildRenderBlocks(view.visibleRegions)
+  const state = {
+    ...renderState,
+    canvasWidth: totalWidth,
+    canvasHeight: height,
+  }
+  const wiggleNode = paintLayer(totalWidth, height, opts, ctx => {
+    drawWiggleToCtx(
+      ctx,
+      { rpcDataMap, encode: data => buildMultiSourceRenderData(data, props) },
+      renderBlocks,
+      state,
+    )
   })
 
   if (opts?.rasterizeLayers) {

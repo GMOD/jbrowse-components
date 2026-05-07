@@ -160,7 +160,6 @@ function drawLine(
     return
   }
   ctx.strokeStyle = rgb
-  ctx.lineWidth = 1
   ctx.beginPath()
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const zeroY = scoreToY(0) + rowTop
@@ -336,60 +335,75 @@ export function drawWiggleBlocks(
   }
 }
 
+// Pure builder: turns a single region's encoded sources into a
+// Canvas2DRegionData entry, or undefined if it has zero features (signals
+// "delete from the regions map" to incremental upload callers).
+function buildWiggleRegion(
+  sources: SourceRenderData[],
+): Canvas2DRegionData | undefined {
+  let totalFeatures = 0
+  for (const source of sources) {
+    totalFeatures += source.numFeatures
+  }
+  if (totalFeatures === 0) {
+    return undefined
+  }
+  return { sources, numRows: computeNumRows(sources) }
+}
+
 /**
- * Streaming-upload lifecycle holder around a `regions` Map, with the
- * `renderBlocks` lifecycle wrapper that runs `prepareCanvas` (DPR + size) and
- * delegates to the pure `drawWiggleBlocks`.
- *
- * Two construction modes:
- *
- *   1. **Bound** — `new Canvas2DWiggleRenderer(canvas)`.
- *      Used by the on-screen lifecycle (initDualBackend). `renderBlocks` works.
- *
- *   2. **Headless** — `new Canvas2DWiggleRenderer(null)`.
- *      Used by SVG export. Caller runs `uploadRegion` to fill the regions map,
- *      then calls `drawWiggleBlocks(svgCanvas, instance.getRegions(), blocks,
- *      state)` directly. `renderBlocks` throws — there's no canvas to prepare.
+ * One-shot pure entry point: build the regions map from each rpcDataMap entry
+ * and paint into any 2D-context-shaped surface (real canvas for raster,
+ * SvgCanvas for vector). Used by SVG export as a single call. The on-screen
+ * lifecycle still uses the streamed per-region path via Canvas2DWiggleRenderer
+ * because rpcDataMap entries arrive incrementally.
+ */
+export function drawWiggleToCtx<Data>(
+  ctx: Ctx2D,
+  sources: {
+    rpcDataMap: ReadonlyMap<number, Data>
+    encode: (data: Data) => SourceRenderData[]
+  },
+  blocks: WiggleRenderBlock[],
+  state: WiggleGPURenderState,
+) {
+  const regions = new Map<number, Canvas2DRegionData>()
+  for (const [idx, data] of sources.rpcDataMap) {
+    const region = buildWiggleRegion(sources.encode(data))
+    if (region) {
+      regions.set(idx, region)
+    }
+  }
+  drawWiggleBlocks(ctx, regions, blocks, state)
+}
+
+/**
+ * Streaming-upload lifecycle holder around a `regions` Map. `uploadRegion`
+ * calls the pure `buildWiggleRegion`; `renderBlocks` runs `prepareCanvas`
+ * (DPR + size) and delegates to the pure `drawWiggleBlocks`.
  */
 export class Canvas2DWiggleRenderer implements WiggleBackend {
-  private canvas: HTMLCanvasElement | null
-  private ctx: CanvasRenderingContext2D | null
+  private ctx: CanvasRenderingContext2D
   private regions = new Map<number, Canvas2DRegionData>()
 
-  constructor(canvas: HTMLCanvasElement | null) {
-    this.canvas = canvas
-    if (canvas) {
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        throw new Error('Canvas 2D context not available')
-      }
-      this.ctx = ctx
-    } else {
-      this.ctx = null
+  constructor(private canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      throw new Error('Canvas 2D context not available')
     }
+    this.ctx = ctx
   }
 
   uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]) {
-    let totalFeatures = 0
-    for (const source of sources) {
-      totalFeatures += source.numFeatures
-    }
-    if (totalFeatures === 0) {
+    const region = buildWiggleRegion(sources)
+    if (region) {
+      this.regions.set(displayedRegionIndex, region)
+    } else {
       this.regions.delete(displayedRegionIndex)
-      return
     }
-    this.regions.set(displayedRegionIndex, {
-      sources,
-      numRows: computeNumRows(sources),
-    })
   }
 
   renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
-    if (!this.canvas || !this.ctx) {
-      throw new Error(
-        'Canvas2DWiggleRenderer.renderBlocks called without a canvas — call drawWiggleBlocks(ctx, regions, …) directly for headless rendering',
-      )
-    }
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     drawWiggleBlocks(this.ctx, this.regions, blocks, state)
   }
@@ -400,11 +414,5 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
 
   dispose() {
     this.regions.clear()
-  }
-
-  // Expose for headless callers (SVG export) that need to drive
-  // drawWiggleBlocks with an SvgCanvas after running upload methods.
-  getRegions(): ReadonlyMap<number, Canvas2DRegionData> {
-    return this.regions
   }
 }
