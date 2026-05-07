@@ -14,8 +14,7 @@ that produced the calls:
 ### Variant widget
 
 Clicking a variant opens a widget with a per-sample genotype table. Multi-sample
-VCFs (like 1000 Genomes) can contain thousands of samples, all shown in the
-table.
+VCFs (like 1000 Genomes) can contain thousands of samples.
 
 <Figure caption="Feature details panel for an SNV (C→T). The SAMPLES section lists every sample with its genotype (GT) and other per-sample fields. The 'Filter sample (regex)' field at the top of the SAMPLES section accepts a regex; typing '1' keeps only samples with the alt allele (1|0 or 0|1), hiding the many homozygous-reference rows." src="/img/variant_panel.png" />
 

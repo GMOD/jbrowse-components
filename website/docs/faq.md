@@ -468,15 +468,12 @@ carefully.
 
 ### What should I do if the Share system isn't working?
 
-If for any reason the session sharing system isn't working, e.g. you are behind
-a firewall, or you are not able to connect to the central share server, you can
-click the "Gear" icon in the "Share" button pop-up, and it will give you the
-option to use "Long URL" instead of "Short URL" which lets you create share
-links without the central server.
+If sharing isn't working (e.g. you're behind a firewall), click the "Gear" icon
+in the Share dialog to switch to "Long URL" mode, which doesn't require the
+central server.
 
-Also, if you are implementing JBrowse Web on your own server and would like to
-create your own URL shortener, you can use the shareURL parameter in the
-config.json file to point at your own server instead of ours.
+To use your own URL shortener, set the `shareURL` parameter in config.json to
+your server.
 
 ### Embedded views versus full JBrowse app
 
