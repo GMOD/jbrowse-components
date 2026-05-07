@@ -1,4 +1,4 @@
-import { Canvas2DWiggleRenderer } from './Canvas2DWiggleRenderer.ts'
+import { Canvas2DWiggleRenderer, drawWiggleBlocks } from './Canvas2DWiggleRenderer.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -307,7 +307,6 @@ describe('Canvas2DWiggleRenderer', () => {
     const renderer = new Canvas2DWiggleRenderer(canvas)
     renderer.uploadRegion(0, [makeSource([5], [0], [1000])])
     renderer.dispose()
-    // After dispose, rendering should produce no output
   })
 
   test('multi-row sources render at correct vertical offsets', () => {
@@ -345,5 +344,121 @@ describe('Canvas2DWiggleRenderer', () => {
     // First source in top half (0-100px), second in bottom half (100-200px)
     expect(fillRectCalls[0]![1]).toBeLessThan(100)
     expect(fillRectCalls[1]![1]).toBeGreaterThanOrEqual(100)
+  })
+})
+
+// Test parameters: bpRange [0,1000]→screen [0,800], domain [0,10], height 200.
+// x = bp * 0.8, scoreY = (1 - score/10) * 200, zeroY = 200.
+const lineBlock = {
+  displayedRegionIndex: 0,
+  bpRangeX: [0, 1000] as [number, number],
+  screenStartPx: 0,
+  screenEndPx: 800,
+  reversed: false,
+}
+const lineState = {
+  domainY: [0, 10] as [number, number],
+  scaleType: SCALE_TYPE_LINEAR,
+  renderingType: RENDERING_TYPE_LINE,
+  canvasWidth: 800,
+  canvasHeight: 200,
+}
+const zeroY = 200
+const score5Y = 100
+// Computed with same formula as renderer to stay consistent under float rounding.
+const score8Y = (1 - 8 / 10) * 200
+
+describe('drawLine path commands', () => {
+  test('isolated feature: rise at x1, horizontal, drop at x2', () => {
+    const renderer = new Canvas2DWiggleRenderer(null)
+    renderer.uploadRegion(0, [makeSource([5], [0], [100])])
+
+    const { ctx } = createMockCanvas()
+    drawWiggleBlocks(
+      ctx as unknown as CanvasRenderingContext2D,
+      renderer.getRegions(),
+      [lineBlock],
+      lineState,
+    )
+
+    const moves = ctx.moveTo.mock.calls as [number, number][]
+    const lines = ctx.lineTo.mock.calls as [number, number][]
+    expect(moves).toHaveLength(3)
+    expect(lines).toHaveLength(3)
+
+    // Rise from zero at x1=0
+    expect(moves[0]).toEqual([0, zeroY])
+    expect(lines[0]).toEqual([0, score5Y])
+
+    // Horizontal at score height
+    expect(moves[1]).toEqual([0, score5Y])
+    expect(lines[1]).toEqual([80, score5Y])
+
+    // Drop to zero at x2=80
+    expect(moves[2]).toEqual([80, score5Y])
+    expect(lines[2]).toEqual([80, zeroY])
+  })
+
+  test('adjacent pair: transition at junction, drop only at end', () => {
+    const renderer = new Canvas2DWiggleRenderer(null)
+    renderer.uploadRegion(0, [makeSource([5, 8], [0, 100], [100, 200])])
+
+    const { ctx } = createMockCanvas()
+    drawWiggleBlocks(
+      ctx as unknown as CanvasRenderingContext2D,
+      renderer.getRegions(),
+      [lineBlock],
+      lineState,
+    )
+
+    const moves = ctx.moveTo.mock.calls as [number, number][]
+    const lines = ctx.lineTo.mock.calls as [number, number][]
+    // rise, horiz0, transition, horiz1, drop — no drop after feature 0
+    expect(moves).toHaveLength(5)
+
+    // Rise from zero for first feature
+    expect(moves[0]).toEqual([0, zeroY])
+    expect(lines[0]).toEqual([0, score5Y])
+
+    // Transition at junction x=80: starts at prevScore Y (not zero — proves adjacency)
+    expect(moves[2]).toEqual([80, score5Y])
+    expect(lines[2]![0]).toBe(80)
+    expect(lines[2]![1]).toBeCloseTo(score8Y)
+
+    // Drop to zero only at end (x=160)
+    expect(moves[4]![0]).toBe(160)
+    expect(lines[4]).toEqual([160, zeroY])
+  })
+
+  test('non-adjacent features: each has its own rise from zero and drop to zero', () => {
+    const renderer = new Canvas2DWiggleRenderer(null)
+    // gap between bp 100 and 300
+    renderer.uploadRegion(0, [makeSource([5, 8], [0, 300], [100, 400])])
+
+    const { ctx } = createMockCanvas()
+    drawWiggleBlocks(
+      ctx as unknown as CanvasRenderingContext2D,
+      renderer.getRegions(),
+      [lineBlock],
+      lineState,
+    )
+
+    const moves = ctx.moveTo.mock.calls as [number, number][]
+    const lines = ctx.lineTo.mock.calls as [number, number][]
+    // rise0, horiz0, drop0, rise1, horiz1, drop1
+    expect(moves).toHaveLength(6)
+
+    // Feature 0 drop at x=80
+    expect(moves[2]).toEqual([80, score5Y])
+    expect(lines[2]).toEqual([80, zeroY])
+
+    // Feature 1 rise from zero at x=240 (not from prev score — proves gap handling)
+    expect(moves[3]).toEqual([240, zeroY])
+    expect(lines[3]![0]).toBe(240)
+    expect(lines[3]![1]).toBeCloseTo(score8Y)
+
+    // Feature 1 drop at x=320
+    expect(moves[5]![0]).toBe(320)
+    expect(lines[5]).toEqual([320, zeroY])
   })
 })

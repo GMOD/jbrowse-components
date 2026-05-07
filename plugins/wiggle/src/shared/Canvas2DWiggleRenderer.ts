@@ -31,6 +31,8 @@ interface FeatureBounds {
   x1: number
   x2: number
   score: number
+  startBp: number
+  endBp: number
 }
 
 function makeScoreToY(
@@ -55,6 +57,8 @@ function featureAt(
   const endBp = source.featurePositions[i * 2 + 1]!
   const [bpStart, bpEnd] = block.bpRangeX
   return {
+    startBp,
+    endBp,
     x1: bpToScreenPx(
       startBp,
       bpStart,
@@ -154,18 +158,30 @@ function drawLine(
   ctx.lineWidth = 1
   ctx.beginPath()
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
+  const zeroY = scoreToY(0) + rowTop
 
-  let prevY = scoreToY(source.featureScores[0]!) + rowTop
+  let prevY = zeroY
+  let prevEndBp = -1
   for (let i = 0; i < source.numFeatures; i++) {
     const f = featureAt(source, i, block)
     const scoreY = scoreToY(f.score) + rowTop
-    if (i > 0) {
-      ctx.moveTo(f.x1, prevY)
-      ctx.lineTo(f.x1, scoreY)
-    }
+    const nextStartBp =
+      i < source.numFeatures - 1 ? source.featurePositions[(i + 1) * 2]! : -1
+
+    const gapBefore = prevEndBp !== f.startBp
+    const gapAfter = nextStartBp !== f.endBp
+
+    ctx.moveTo(f.x1, gapBefore ? zeroY : prevY)
+    ctx.lineTo(f.x1, scoreY)
     ctx.moveTo(f.x1, scoreY)
     ctx.lineTo(f.x2, scoreY)
+    if (gapAfter) {
+      ctx.moveTo(f.x2, scoreY)
+      ctx.lineTo(f.x2, zeroY)
+    }
+
     prevY = scoreY
+    prevEndBp = f.endBp
   }
   ctx.stroke()
 }

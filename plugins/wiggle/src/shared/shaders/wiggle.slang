@@ -20,8 +20,9 @@ struct WiggleInstance {
   uint2 startEnd  : ATTR0;
   float score     : ATTR1;
   float prevScore : ATTR2;
-  uint  color     : ATTR3;
-  float rowIndex  : ATTR4;
+  float nextScore : ATTR3;
+  uint  color     : ATTR4;
+  float rowIndex  : ATTR5;
 };
 
 struct Uniforms {
@@ -79,17 +80,24 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   if (u.renderingType == RENDERING_TYPE_LINE) {
     float scoreY = scoreToY(inst.score,     u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
     float prevY  = scoreToY(inst.prevScore, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
+    float nextY  = scoreToY(inst.nextScore, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
     float clipScoreY = 1.0 - scoreY * pxToClip;
     float clipPrevY  = 1.0 - prevY  * pxToClip;
+    float clipNextY  = 1.0 - nextY  * pxToClip;
+    // line-list segments: (v0,v1)=vertical-at-start, (v2,v3)=horizontal, (v4,v5)=vertical-at-end
+    // prevScore=0 encodes gapBefore (rise from zero); nextScore=0 encodes gapAfter (drop to zero)
     if (v == 0u) {
       sx = sx1;
       sy = clipPrevY;
     } else if (v < 3u) {
       sx = sx1;
       sy = clipScoreY;
-    } else {
+    } else if (v < 5u) {
       sx = sx2;
       sy = clipScoreY;
+    } else {
+      sx = sx2;
+      sy = clipNextY;
     }
   } else {
     float2 q = quadLocal(vid);
