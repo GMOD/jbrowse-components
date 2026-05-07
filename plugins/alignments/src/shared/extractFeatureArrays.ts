@@ -4,6 +4,7 @@ import {
   extractMethylation,
   extractModifications,
 } from '../features/modification/extract.ts'
+import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
 
 import type { ColorBy, Mismatch } from './types.ts'
 import type {
@@ -15,6 +16,7 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
+import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 interface ExtractOpts {
@@ -51,6 +53,9 @@ export function extractFeatureArrays<T extends FeatureData>(
     hardclips: [] as HardclipData[],
   }
   const modifications: ModificationEntry[] = []
+  const perBaseQualities: PerBaseQualityEntry[] = []
+  const isPerBaseQualityMode = colorBy?.type === 'perBaseQuality'
+  const regionEnd = Math.ceil(region.end)
   const tagColorValues: string[] = []
   const nextPositions: number[] = []
   const nextRefs: string[] = []
@@ -109,9 +114,19 @@ export function extractFeatureArrays<T extends FeatureData>(
         featureStart,
         strand,
         regionStart,
-        Math.ceil(region.end),
+        regionEnd,
         modData,
         modifications,
+      )
+    }
+
+    if (isPerBaseQualityMode) {
+      extractPerBaseQuality(
+        feature,
+        featureId,
+        regionStart,
+        regionEnd,
+        perBaseQualities,
       )
     }
   }
@@ -130,6 +145,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     features,
     ...cigarOutput,
     modifications,
+    perBaseQualities,
     tagColors,
     uniqueTagValues,
     sortTagValues,

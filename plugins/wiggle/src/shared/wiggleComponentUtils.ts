@@ -163,35 +163,6 @@ export function isSummaryFeature(
   )
 }
 
-// Inverted equality used by the two display models' setFeatureUnderMouse.
-// Both sides undefined ⇒ no-op; both defined and matching ⇒ no-op; otherwise
-// returns true to signal a real change. `extraEqual` lets multi-wiggle add
-// `source` to the comparison without duplicating start/end/score.
-interface FeatureUnderMouseShared {
-  start: number
-  end: number
-  score: number
-}
-
-export function featureUnderMouseChanged<T extends FeatureUnderMouseShared>(
-  next: T | undefined,
-  prev: T | undefined,
-  extraEqual: (a: T, b: T) => boolean = () => true,
-) {
-  if (!next && !prev) {
-    return false
-  }
-  if (next && prev) {
-    return (
-      next.start !== prev.start ||
-      next.end !== prev.end ||
-      next.score !== prev.score ||
-      !extraEqual(next, prev)
-    )
-  }
-  return true
-}
-
 interface MouseRegion {
   refName: string
   screenStartPx: number
