@@ -117,9 +117,9 @@ export default function stateModelFactory(
     .views(self => ({
       // Literal RPC payload for RenderHicData. Adding a field here flows
       // into both the RPC call (via the fetch autorun in afterAttach.ts)
-      // and into mobx's dependency tracking — the fetch autorun reads
-      // `self.rpcProps` once, so any change refires it.
-      get rpcProps() {
+      // and into mobx's dependency tracking — the fetch autorun calls
+      // `self.rpcProps()` once, so any change refires it.
+      rpcProps() {
         return {
           resolution: self.resolution,
           normalization: self.activeNormalization,
@@ -415,7 +415,7 @@ export default function stateModelFactory(
               adapterConfig,
               regions: [...regions],
               bpPerPx,
-              ...self.rpcProps,
+              ...self.rpcProps(),
               stopToken: ctx.stopToken,
             },
             {

@@ -12,7 +12,7 @@ type LGV = LinearGenomeViewModel
 
 interface HicModel {
   isMinimized: boolean
-  rpcProps: Record<string, unknown>
+  rpcProps(): Record<string, unknown>
   adapterConfig: Record<string, unknown>
   setAvailableNormalizations(norms: string[]): void
   performHicFetch(): void
@@ -55,7 +55,7 @@ export function doAfterAttach(self: HicModel) {
 
         // rpcProps IS the full RPC payload; any field change refires the
         // autorun. The viewport read above already retriggers on pan/zoom.
-        void self.rpcProps
+        void self.rpcProps()
         self.performHicFetch()
       },
       {

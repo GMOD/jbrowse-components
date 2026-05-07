@@ -59,10 +59,7 @@ export default function SharedModelF(
       },
     }))
     .views(self => {
-      const {
-        trackMenuItems: superTrackMenuItems,
-        adapterProps: superAdapterProps,
-      } = self
+      const { trackMenuItems: superTrackMenuItems } = self
       return {
         trackMenuItems() {
           return [
@@ -79,20 +76,17 @@ export default function SharedModelF(
           ]
         },
         /**
-         * #method
+         * #getter
          * retrieves the sequence adapter from parent track, and puts it as a
          * subadapter on a GCContentAdapter
          */
-        adapterProps() {
+        get adapterConfig() {
           const sequenceAdapter = getConf(self.parentTrack, 'adapter')
           return {
-            ...superAdapterProps(),
-            adapterConfig: {
-              type: 'GCContentAdapter',
-              sequenceAdapter,
-              windowSize: self.windowSizeSetting,
-              windowDelta: self.windowDeltaSetting,
-            },
+            type: 'GCContentAdapter',
+            sequenceAdapter,
+            windowSize: self.windowSizeSetting,
+            windowDelta: self.windowDeltaSetting,
           }
         },
       }

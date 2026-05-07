@@ -19,7 +19,7 @@ variants) via four autoruns:
 | --- | --- | --- |
 | `DisplayedRegionsChange` | `view.displayedRegions` change | `clearAllRpcData()` |
 | `FetchVisibleRegions` | viewport / `fetchGeneration` (600ms debounce) | `fetchNeeded(needed)` for uncovered buffered regions; gated by `error`/`regionTooLarge` |
-| `SettingsInvalidate` | `rpcProps` change | `clearAllRpcData()` |
+| `SettingsInvalidate` | `rpcProps()` change | `clearAllRpcData()` |
 | `ClearBlockingStateOnViewportChange` | viewport change while `regionTooLarge` or `error` is set | `clearAllRpcData()` to unblock retry (no-op for canvas's derived `regionTooLarge`) |
 
 Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`,
@@ -79,30 +79,30 @@ payload covering all visible regions, so variants' `fetchNeeded` expands
 `needed` to all `bufferedVisibleRegions` and marks them all loaded together
 when the work callback returns.
 
-### `rpcProps` loop trap and how to break it
+### `rpcProps()` loop trap and how to break it
 
-Including any fetch-result derivative in `rpcProps` creates an infinite loop:
+Including any fetch-result derivative in `rpcProps()` creates an infinite loop:
 
 ```
-setCellData → <derived value> changes → rpcProps changes
+setCellData → <derived value> changes → rpcProps() changes
   → SettingsInvalidate → clearAllRpcData → cellData cleared
-  → <derived value> changes → rpcProps changes → …
+  → <derived value> changes → rpcProps() changes → …
 ```
 
-The fix is to split the computation: `rpcProps` gets a cache-key version
+The fix is to split the computation: `rpcProps()` gets a cache-key version
 computed from user-controlled inputs only; any part that needs fetch-result
 data is kept in a separate view used only for rendering or passed directly
 to the server.
 
-In the variant case, `rpcProps.sources` calls `getSources` with
+In the variant case, `rpcProps().sources` calls `getSources` with
 `renderingMode: 'alleleCount'` internally so haplotype expansion (which
 needs `sampleInfo`) is never triggered. The client's `sources` view still
-reads `sampleInfo` for rendering — safe because it is not in `rpcProps`.
+reads `sampleInfo` for rendering — safe because it is not in `rpcProps()`.
 The server receives the unexpanded sources and expands them after computing
 `sampleInfo` from features; sources from clustering already carry `HP` and
 pass through unchanged.
 
-**Rule**: `rpcProps` must contain only user-controlled settings. Never
+**Rule**: `rpcProps()` must contain only user-controlled settings. Never
 include `cellData`, `sampleInfo`, or any getter that reads them.
 
 See `plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md` for the
@@ -398,29 +398,57 @@ draw path that intentionally avoids `paintLayer`; treat the same.
 
 ---
 
-## `rpcProps` / `gpuProps` pattern
+## `rpcProps()` / `gpuProps()` pattern
 
-Domain-named getters that enumerate **what affects rendering output**.
+Domain-named methods that enumerate **what affects rendering output**. Both
+are MST view methods (not getters) so subclasses extend them via the standard
+`super` capture pattern, mirroring `renderProps`.
 
-| Getter             | Consumer                                                        | Invalidation route                                                                          |
-| ------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `rpcProps`         | `rpcManager.call(..., { ...self.rpcProps, ... })` — RPC payload | Mixin `SettingsInvalidate` autorun reads `void self.rpcProps` → `clearAllRpcData` → refetch |
-| `gpuProps()`       | `buildSourceRenderData(data, self.gpuProps())` — encoder input  | Upload callback reads it — MobX re-uploads without an RPC roundtrip                         |
-| Derived region map | Upload callback iterates it in place of raw `rpcDataMap`        | Upload autorun reads it — MobX re-uploads without an RPC roundtrip                          |
-| `renderState`      | `backend.render(state)` per frame                               | Render callback reads it — re-fires when deps shift                                         |
+| Method             | Consumer                                                          | Invalidation route                                                                              |
+| ------------------ | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `rpcProps()`       | `rpcManager.call(..., { ...self.rpcProps(), ... })` — RPC payload | Mixin `SettingsInvalidate` autorun reads `void self.rpcProps()` → `clearAllRpcData` → refetch   |
+| `gpuProps()`       | `buildSourceRenderData(data, self.gpuProps())` — encoder input    | Upload callback reads it — MobX re-uploads without an RPC roundtrip                             |
+| Derived region map | Upload callback iterates it in place of raw `rpcDataMap`          | Upload autorun reads it — MobX re-uploads without an RPC roundtrip                              |
+| `renderState`      | `backend.render(state)` per frame                                 | Render callback reads it — re-fires when deps shift                                             |
 
-`gpuProps` exists wherever the main thread encodes the GPU buffer (wiggle,
+`rpcProps()` is the **only** extension point for the RPC payload. Each display
+defines its own typed shape; subclasses that need to layer on additional
+fields capture `super` and spread:
+
+```ts
+.views(self => {
+  const { rpcProps: superRpcProps } = self
+  return {
+    rpcProps() {
+      const base = superRpcProps()
+      return {
+        ...base,
+        displayConfig: { ...base.displayConfig, geneGlyphMode: self.effectiveGeneGlyphMode },
+        showOnlyGenes: self.showOnlyGenes,
+      }
+    },
+  }
+})
+```
+
+`MultiRegionDisplayMixin` does **not** provide a base default — declaring one
+would widen the typed return through MST's `.views()` chain and force consumers
+to re-spread named fields. The mixin's `SettingsInvalidate` autorun looks up
+`rpcProps` dynamically (`(self as { rpcProps?: () => unknown }).rpcProps`) so
+displays without settings-driven refetch (HiC, LD) can simply not define it.
+
+`gpuProps()` exists wherever the main thread encodes the GPU buffer (wiggle,
 multi-wiggle, multi-LGV synteny). Canvas's worker pre-builds the buffer, so
-canvas has only `rpcProps`. This splits refetch from re-upload: wiggle color
+canvas has only `rpcProps()`. This splits refetch from re-upload: wiggle color
 change → re-encode only; `bicolorPivot` change → worker output differs →
-`rpcProps` → refetch.
+`rpcProps()` → refetch.
 
 Derived region maps apply when upload needs whole fresh per-region payloads,
 not just encoder parameters. Alignments' `laidOutPileupMap` returns shallow
 clones of `rpcDataMap` entries with freshly-allocated Y arrays from
 main-thread layout (+ connecting-line / Flatbush in chain mode). Raw
 `rpcDataMap` is never mutated. Use derived maps when settings change the
-shape/contents of per-region data; use `gpuProps` for scalars fed to an
+shape/contents of per-region data; use `gpuProps()` for scalars fed to an
 encoder.
 
 ---
@@ -640,12 +668,12 @@ key on a tuple of two displayedRegion indices.
 - **MST model:**
   - Compose `MultiRegionDisplayMixin()` for LGV-family displays (brings in
     `GpuBackendLifecycleSlotMixin`, `FetchMixin`, fetch autorun, and
-    `rpcProps`→refetch wiring); non-region displays compose
+    `rpcProps()`→refetch wiring); non-region displays compose
     `GpuBackendLifecycleSlotMixin()` directly.
   - Add a cached `renderState` view.
   - Define `startGpuBackendLifecycle(backend)` calling
     `self.installGpuDisplay(backend, { upload, render })`.
-  - Expose `rpcProps`; add `gpuProps()` only when main thread encodes GPU
+  - Expose `rpcProps()`; add `gpuProps()` only when main thread encodes GPU
     buffers from settings.
 - **React component** — `observer()`:
   ```tsx
@@ -670,6 +698,6 @@ key on a tuple of two displayedRegion indices.
 - Don't hand-maintain WGSL/GLSL/offset tables next to generated modules;
   consume the generated constants.
 - Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into
-  `rpcProps` — `SettingsInvalidate` watches `rpcProps` and calls
-  `clearAllRpcData`, which clears the very data `rpcProps` just read, creating
+  `rpcProps()` — `SettingsInvalidate` watches `rpcProps()` and calls
+  `clearAllRpcData`, which clears the very data `rpcProps()` just read, creating
   an infinite fetch loop.

@@ -9,7 +9,7 @@ Accepted
 `bicolorPivot` is a user-configurable threshold that splits wiggle features into
 positive (score ≥ pivot) and negative (score < pivot) groups so each can be
 drawn in a different color. The split runs inside `processFeaturesFromArrays`
-in the RPC worker, and `bicolorPivot` is part of `rpcProps`, which means
+in the RPC worker, and `bicolorPivot` is part of `rpcProps()`, which means
 changing it triggers a full refetch.
 
 The refetch seemed wasteful: the raw BigWig bins don't change when only the
@@ -38,7 +38,7 @@ zero additional cost.
 
 ## Decision
 
-Keep `bicolorPivot` in `rpcProps` and the pos/neg split in
+Keep `bicolorPivot` in `rpcProps()` and the pos/neg split in
 `processFeaturesFromArrays` (worker side).
 
 The refetch cost is proportional to how often the user changes the threshold.
@@ -53,7 +53,7 @@ For a setting that:
 - feeds into an expensive per-feature loop in the worker, AND
 - changes rarely in practice,
 
-the `rpcProps` → refetch path is acceptable even though it looks wasteful. The
+the `rpcProps()` → refetch path is acceptable even though it looks wasteful. The
 refetch is user-triggered and infrequent; the main-thread alternative would
 execute on every upload autorun fire.
 

@@ -69,15 +69,22 @@ export default function stateModelFactory(
         )
       },
     }))
-    .views(self => ({
-      get displayConfigOverrides(): Record<string, unknown> {
-        return { geneGlyphMode: self.effectiveGeneGlyphMode }
-      },
-
-      get extraRpcArgs(): Record<string, unknown> {
-        return { showOnlyGenes: self.showOnlyGenes }
-      },
-    }))
+    .views(self => {
+      const { rpcProps: superRpcProps } = self
+      return {
+        rpcProps() {
+          const base = superRpcProps()
+          return {
+            ...base,
+            displayConfig: {
+              ...base.displayConfig,
+              geneGlyphMode: self.effectiveGeneGlyphMode,
+            } as DisplayConfig,
+            showOnlyGenes: self.showOnlyGenes,
+          }
+        },
+      }
+    })
     .actions(self => ({
       setSubfeatureLabels(value: string) {
         self.setOverride('subfeatureLabels', value)

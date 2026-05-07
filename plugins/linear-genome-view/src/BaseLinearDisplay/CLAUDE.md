@@ -15,7 +15,7 @@
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | `DisplayedRegionsChange`             | `view.displayedRegions` entries change (chromosome navigation)                                          | `clearAllRpcData()`                                       |
 | `FetchVisibleRegions`                | `fetchGeneration` (bumps at fetch end), `view.visibleRegions`, `error`, `regionTooLarge` (600 ms delay) | calls `fetchNeeded` with uncovered buffered regions       |
-| `SettingsInvalidate`                 | `self.rpcProps` (any field it reads)                                                                    | `clearAllRpcData()`                                       |
+| `SettingsInvalidate`                 | `self.rpcProps()` (any field it reads); installed only when subclass defines the method                 | `clearAllRpcData()`                                       |
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions`                                                                                   | `clearAllRpcData()` if `regionTooLarge` or `error` is set |
 
 ### Overridable hooks — subclasses must/can override
@@ -23,7 +23,7 @@
 | Hook                         | Default     | Override to                                                                                              |
 | ---------------------------- | ----------- | -------------------------------------------------------------------------------------------------------- |
 | `fetchNeeded(needed)`        | no-op       | call `this.fetchRegions(needed, async ctx => { ... })`                                                   |
-| `rpcProps`                   | `undefined` | return the literal RPC payload object; every field it reads becomes a cache key via `SettingsInvalidate` |
+| `rpcProps()`                 | not defined | declare a method returning the literal RPC payload; every field it reads becomes a cache key via `SettingsInvalidate`. The mixin doesn't declare a base default so subclass return types stay narrow through MST `.views()` chains; subclasses extend via the standard super-capture pattern |
 | `isCacheValid(idx)`          | `true`      | return `false` to force re-fetch at current zoom (wiggle uses this for zoom-level changes)               |
 | `getByteEstimateConfig()`    | `null`      | return config to enable byte-estimate gating before fetch                                                |
 | `clearDisplaySpecificData()` | no-op       | clear subclass-owned data maps (rpcDataMap, cellData, etc.)                                              |

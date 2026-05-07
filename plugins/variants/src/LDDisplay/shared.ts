@@ -241,10 +241,10 @@ export default function sharedModelFactory(
       // Literal RPC payload for RenderLDData. Adding a field here
       // automatically flows into both the RPC call (via the fetch autorun
       // in afterAttach.ts) and into mobx's dependency tracking — the
-      // fetch autorun reads `self.rpcProps` once, so any change to any
+      // fetch autorun calls `self.rpcProps()` once, so any change to any
       // field refires it. No hand-enumerated fields at the top of the
       // autorun.
-      get rpcProps() {
+      rpcProps() {
         return {
           ldMetric: self.ldMetric,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
@@ -566,7 +566,7 @@ export default function sharedModelFactory(
               adapterConfig,
               regions: [...regions],
               bpPerPx,
-              ...self.rpcProps,
+              ...self.rpcProps(),
               stopToken: ctx.stopToken,
             },
             {

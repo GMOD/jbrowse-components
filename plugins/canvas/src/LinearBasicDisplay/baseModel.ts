@@ -106,11 +106,10 @@ const DESCRIPTION_DENSITY_THRESHOLD = 0.2
 
 // Shared GPU-accelerated feature display base for canvas-rendered tracks.
 // Handles fetching, layout, the "Show labels" / "Show descriptions" UI, and
-// the fetch-invalidation autorun. Subclasses (LinearBasicDisplay,
-// LinearVariantDisplay, ...) layer their own schema-specific property,
-// menu, and RPC extensions on top via the two extension hooks below
-// (displayConfigOverrides / extraRpcArgs) and the showSubmenuMenuItems /
-// trackMenuItems / contextMenuItems super-extension pattern.
+// the fetch-invalidation autorun. Subclasses layer schema-specific properties
+// and menus via the showSubmenuMenuItems / trackMenuItems / contextMenuItems
+// super-extension pattern, and extend rpcProps() via the standard
+// super-capture pattern.
 export default function baseStateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
@@ -252,16 +251,6 @@ export default function baseStateModelFactory(
             string,
             unknown
           >
-        },
-
-        get displayConfigSnapshot(): DisplayConfig {
-          return {
-            ...getConfSnapshot(self.configuration),
-            ...(self.configOverrides as Omit<
-              typeof self.configOverrides,
-              symbol
-            >),
-          } as DisplayConfig
         },
 
         get DisplayMessageComponent() {
@@ -416,19 +405,6 @@ export default function baseStateModelFactory(
             id: 'baseFeature',
           }
         },
-
-        // Subclasses override to inject additional fields into the
-        // `displayConfig` payload sent to the RenderFeatureData RPC (e.g.
-        // effectiveGeneGlyphMode resolving 'auto').
-        get displayConfigOverrides(): Record<string, unknown> {
-          return {}
-        },
-
-        // Subclasses override to inject additional top-level args into the
-        // RenderFeatureData RPC call (e.g. showOnlyGenes).
-        get extraRpcArgs(): Record<string, unknown> {
-          return {}
-        },
       }))
       .views(self => ({
         async renderSvg(opts?: ExportSvgDisplayOptions) {
@@ -437,22 +413,23 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
-        // The full payload sent to the RenderFeatureData RPC. Adding a
-        // field here propagates both into the RPC call (via
-        // fetchFeaturesForRegion) and into the SettingsInvalidate autorun
-        // (which reads this getter), so refetch happens automatically when
-        // any field changes — no separate cache key to maintain.
-        get rpcProps() {
+        // Full RPC payload for RenderFeatureData. Every field read here becomes
+        // a cache key: SettingsInvalidate autorun calls rpcProps() and clears
+        // data when any field changes. Subclasses extend via the super-capture
+        // pattern (like renderProps / gpuProps).
+        rpcProps() {
           return {
             adapterConfig: self.adapterConfigSnapshot,
             displayConfig: {
-              ...self.displayConfigSnapshot,
-              ...self.displayConfigOverrides,
-            },
+              ...getConfSnapshot(self.configuration),
+              ...(self.configOverrides as Omit<
+                typeof self.configOverrides,
+                symbol
+              >),
+            } as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
             sequenceAdapter: self.sequenceAdapter,
-            ...self.extraRpcArgs,
           }
         },
       }))
@@ -825,7 +802,7 @@ export default function baseStateModelFactory(
             'RenderFeatureData',
             {
               sessionId,
-              ...self.rpcProps,
+              ...self.rpcProps(),
               region,
               bpPerPx,
               stopToken,

@@ -30,7 +30,7 @@ The mixin provides:
 - `GpuBackendLifecycleSlotMixin` and `RegionTooLargeMixin` included
 
 Each display's `afterAttach` autorun reads its trigger conditions (viewport,
-`rpcProps`, display-specific toggles), then calls `self.performXFetch()` which
+`rpcProps()`, display-specific toggles), then calls `self.performXFetch()` which
 calls `self.withFetchLifecycle(async ctx => { ... })`. The mixin owns all
 cancellation logic; the display body contains only the fetch-specific work.
 

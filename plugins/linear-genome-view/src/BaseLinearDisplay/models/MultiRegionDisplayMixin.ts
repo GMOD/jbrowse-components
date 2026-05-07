@@ -50,16 +50,6 @@ export default function MultiRegionDisplayMixin() {
         return buildRenderBlocks(view.visibleRegions)
       },
 
-      // Default: subclasses override to return the literal RPC payload.
-      // The mixin's afterAttach installs an autorun that reads this
-      // getter — any change to the fields it reads clears all loaded
-      // data, letting FetchVisibleRegions re-fetch. Subclasses that do
-      // not refetch via FetchVisibleRegions (HiC, LD, variants) can
-      // still define `rpcProps` for documentation and consumer use,
-      // but they don't benefit from this mixin-owned invalidation.
-      get rpcProps(): Record<string, unknown> | undefined {
-        return undefined
-      },
     }))
     .actions(self => ({
       // Action wrapper so callers after async boundaries stay in MST strict mode.
@@ -251,22 +241,28 @@ export default function MultiRegionDisplayMixin() {
           ),
         )
 
-        // Re-fetch when track config changes. rpcProps is the full RPC
-        // payload, so reading it once tracks every param as a cache key.
-        addDisposer(
-          self,
-          autorun(
-            () => {
-              const view = getContainingView(self) as LinearGenomeViewModel
-              if (!view.initialized) {
-                return
-              }
-              void self.rpcProps
-              self.clearAllRpcData()
-            },
-            { name: 'SettingsInvalidate' },
-          ),
-        )
+        // Re-fetch when track config changes. Each subclass defines its own
+        // typed rpcProps() — reading it once tracks every param as a cache
+        // key. Looked up dynamically because the mixin doesn't declare the
+        // method on its public interface (subclasses keep their narrow
+        // return types unwidened by a base default).
+        const rpcProps = (self as { rpcProps?: () => unknown }).rpcProps
+        if (rpcProps) {
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const view = getContainingView(self) as LinearGenomeViewModel
+                if (!view.initialized) {
+                  return
+                }
+                void rpcProps.call(self)
+                self.clearAllRpcData()
+              },
+              { name: 'SettingsInvalidate' },
+            ),
+          )
+        }
 
         // When zoom or viewport position changes while regionTooLarge
         // or error is set, clear so the fetch autorun retries. Reads

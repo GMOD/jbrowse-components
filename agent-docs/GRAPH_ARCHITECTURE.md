@@ -252,12 +252,12 @@ Mirrors `plugins/alignments/src/LinearAlignmentsDisplay` per its
 (`emitMismatchGpu`). Strand-specific per-base colors come from
 `buildColorArrays(colors)`.
 
-### rpcProps / gpuProps split
+### rpcProps() / gpuProps() split
 
-`rpcProps` getter — fields that gate refetch via `SettingsInvalidate`
+`rpcProps()` method — fields that gate refetch via `SettingsInvalidate`
 (refetch when these change). `gpuProps()` method — fields that drive
 main-thread encoding only (no RPC roundtrip). The display CLAUDE.md
-warns against putting fetch-derived values into `rpcProps` (causes
+warns against putting fetch-derived values into `rpcProps()` (causes
 infinite-fetch loops).
 
 ## Graph view: `plugins/graph/src/GraphGenomeView`

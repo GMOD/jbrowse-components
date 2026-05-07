@@ -257,9 +257,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
 
       // Settings sent to the worker via RPC. Adding a field here propagates
       // both into the RPC payload (via fetchNeeded) and into the
-      // mixin-owned SettingsInvalidate autorun (which reads this getter),
+      // mixin-owned SettingsInvalidate autorun (which reads this method),
       // so refetch happens automatically when any field changes.
-      get rpcProps() {
+      rpcProps() {
         return {
           resolution: self.resolution,
         }
@@ -415,7 +415,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 adapterConfig,
                 regions: needed,
                 bpPerPx: view.bpPerPx,
-                ...self.rpcProps,
+                ...self.rpcProps(),
                 sessionId,
                 stopToken: ctx.stopToken,
                 fetchMetadata: self.allGenomeNames.length === 0,

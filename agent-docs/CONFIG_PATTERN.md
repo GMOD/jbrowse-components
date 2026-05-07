@@ -12,19 +12,42 @@ layer.
 
 ### Main thread: produce a plain config object
 
-```ts
-// In the display model's views:
-get displayConfigSnapshot() {
-  return getConfSnapshot(self.configuration) as Record<string, unknown>
-}
+The display config snapshot is built inline inside `rpcProps()` (the single
+RPC payload extension hook — see `ARCHITECTURE.md` §"`rpcProps()` /
+`gpuProps()` pattern"). Subclasses that need to layer fields onto
+`displayConfig` extend `rpcProps()` via super-capture and spread:
 
-// When sending to the RPC or rendering:
-const config = {
-  ...self.displayConfigSnapshot,
-  // Model overrides take precedence over config values
-  displayMode: self.displayMode,
-  geneGlyphMode: self.effectiveGeneGlyphMode,
-}
+```ts
+// Base view: assemble the snapshot once, inside rpcProps()
+.views(self => ({
+  rpcProps() {
+    return {
+      adapterConfig: self.adapterConfigSnapshot,
+      displayConfig: {
+        ...getConfSnapshot(self.configuration),
+        ...self.configOverrides,
+      } as DisplayConfig,
+      // ...
+    }
+  },
+}))
+
+// Subclass: extend via super-capture
+.views(self => {
+  const { rpcProps: superRpcProps } = self
+  return {
+    rpcProps() {
+      const base = superRpcProps()
+      return {
+        ...base,
+        displayConfig: {
+          ...base.displayConfig,
+          geneGlyphMode: self.effectiveGeneGlyphMode,
+        } as DisplayConfig,
+      }
+    },
+  }
+})
 ```
 
 `getConfSnapshot()` returns ALL config values including defaults (unlike

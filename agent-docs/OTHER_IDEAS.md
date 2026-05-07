@@ -295,10 +295,10 @@ explicitly document the fold in the code.
 
 
 **Canvas label relayout without refetch (blocked).** `showLabels` /
-`showDescriptions` flow through `rpcProps` so changing them refetches, but
+`showDescriptions` flow through `rpcProps()` so changing them refetches, but
 worker output doesn't depend on label placement (main thread re-derives
 via cached `rpcDataMap` view). Blocked by `ConfigOverrideMixin` reactivity
-below — destructuring label fields out of `rpcProps` doesn't help because
+below — destructuring label fields out of `rpcProps()` doesn't help because
 mobx subscribes to the whole frozen object. *Partial mitigation via ADR-006:* refetch still fires spuriously, but
 `rawRpcDataMap` is no longer cleared during it, so labels don't visually
 disappear.

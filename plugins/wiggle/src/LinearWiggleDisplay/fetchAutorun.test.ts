@@ -338,13 +338,13 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
     const { display } = createDisplay()
 
-    const before = JSON.stringify(display.rpcProps)
+    const before = JSON.stringify(display.rpcProps())
 
     jest.advanceTimersByTime(400)
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
     })
 
-    expect(JSON.stringify(display.rpcProps)).toBe(before)
+    expect(JSON.stringify(display.rpcProps())).toBe(before)
   })
 })

@@ -755,7 +755,7 @@ export default function stateModelFactory(
         // drive the arcs autorun below without refetching pileup. All
         // non-tag sort changes are handled main-thread by the
         // laidOutPileupMap getter.
-        get rpcProps() {
+        rpcProps() {
           return {
             filterBy: self.filterBy,
             colorBy: self.colorBy,
@@ -1353,7 +1353,7 @@ export default function stateModelFactory(
               adapterConfig,
               sequenceAdapter,
               regions: [region],
-              ...self.rpcProps,
+              ...self.rpcProps(),
               stopToken,
               statusCallback: (msg: string) => {
                 if (isAlive(self)) {
@@ -1379,7 +1379,7 @@ export default function stateModelFactory(
               adapterConfig,
               sequenceAdapter,
               regions: [region],
-              ...self.rpcProps,
+              ...self.rpcProps(),
               stopToken,
               statusCallback: (msg: string) => {
                 if (isAlive(self)) {

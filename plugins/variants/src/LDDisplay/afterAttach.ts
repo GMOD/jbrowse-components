@@ -10,7 +10,7 @@ interface LDModel {
   isMinimized: boolean
   showLDTriangle: boolean
   regionTooLarge: boolean
-  rpcProps: Record<string, unknown>
+  rpcProps(): Record<string, unknown>
   userByteSizeLimit: number | undefined
   performLDFetch(): void
 }
@@ -36,7 +36,7 @@ export function doAfterAttach(self: LDModel) {
         }
         // rpcProps IS the full RPC payload; any field change refires the
         // autorun. Viewport reads above already retrigger on pan/zoom.
-        void self.rpcProps
+        void self.rpcProps()
         void self.userByteSizeLimit
         self.performLDFetch()
       },

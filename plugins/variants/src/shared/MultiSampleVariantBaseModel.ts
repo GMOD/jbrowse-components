@@ -92,7 +92,7 @@ async function callMultiSampleVariantCellData(
   self: {
     adapterConfig: AnyConfigurationModel
     cellDataMode: 'regular' | 'matrix'
-    rpcProps: {
+    rpcProps(): {
       sources: ProcessedSource[]
       minorAlleleFrequencyFilter: number
       lengthCutoffFilter: number
@@ -112,7 +112,7 @@ async function callMultiSampleVariantCellData(
     {
       regions: allBuffered.map(r => r.region),
       displayedRegionIndices: allBuffered.map(r => r.displayedRegionIndex),
-      ...self.rpcProps,
+      ...self.rpcProps(),
       mode: self.cellDataMode,
       sessionId,
       adapterConfig: self.adapterConfig,
@@ -533,7 +533,7 @@ export default function MultiSampleVariantBaseModelF(
       // this — any change clears loaded data and triggers a refetch. Uses
       // sourcesBase (not sources) to avoid reading sampleInfo, which comes from
       // the fetch result and would cause an infinite invalidation loop.
-      get rpcProps() {
+      rpcProps() {
         return {
           sources: self.sourcesBase,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
@@ -998,7 +998,7 @@ export default function MultiSampleVariantBaseModelF(
       async fetchNeeded(
         _needed: { region: Region; displayedRegionIndex: number }[],
       ) {
-        if (self.isMinimized || !self.rpcProps.sources) {
+        if (self.isMinimized || !self.rpcProps().sources) {
           return
         }
         const allBuffered = (getContainingView(self) as LinearGenomeViewModel)
