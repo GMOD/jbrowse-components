@@ -38,7 +38,11 @@ function jbrowseDocsLoader(): Loader {
 
 export const collections = {
   blog: defineCollection({
-    loader: glob({ base: blogBase, pattern: '*.md' }),
+    loader: glob({
+      base: blogBase,
+      pattern: '*.md',
+      generateId: ({ entry }) => entry.replace(/\.md$/, ''),
+    }),
     schema: z.object({
       title: z.string(),
       date: z.coerce.date(),
