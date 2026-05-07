@@ -5,53 +5,29 @@ title: Creating custom adapters
 
 ### What is an adapter
 
-An adapter is essentially a class that fetches and parses your data and returns
-it in a format JBrowse understands.
+An adapter is a class that fetches and parses your data and returns it in a
+format JBrowse understands.
 
-For example, if you have some data source that contains genes, and you want to
-display those genes using JBrowse's existing gene displays, you can write a
-custom adapter to do so. If you want to do a custom display of your data,
-though, you'll probably need to create a custom display and/or renderer along
-with your adapter.
+If you have a data source containing genes and want to display them using
+JBrowse's existing gene displays, you can write a custom adapter. If you want
+a custom display, you'll also need a custom display and/or renderer.
 
-### What types of adapters are there
+### Adapter types
 
-- **Feature adapter** - This is the most common type of adapter. Essentially, it
-  takes a request for a _region_ (a chromosome, starting position, and ending
-  position) and returns the _features_ (e.g. genes, reads, variants, etc.) that
-  are in that region. Examples of this in JBrowse include adapters for
+- **Feature adapter** - Takes a request for a _region_ (chromosome, start, end)
+  and returns _features_ (genes, reads, variants, etc.) in that region. Examples:
   [BAM](https://samtools.github.io/hts-specs/SAMv1.pdf) and
-  [VCF](https://samtools.github.io/hts-specs/VCFv4.3.pdf) file formats.
-- **Regions adapter** - This type of adapter is used to define what regions are
-  in an assembly. It returns a list of chromosomes/contigs/scaffolds and their
-  sizes. An example of this in JBrowse is an adapter for a
-  [chrome.sizes](https://software.broadinstitute.org/software/igv/chromSizes)
-  file.
-- **Sequence adapter** - This is basically a combination of a regions adapter
-  and a feature adapter. It can give the list of regions in an assembly, and can
-  also return the sequence of a queried region. Examples of this in JBrowse
-  include adapters for
-  [FASTA](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp)
-  and [.2bit](https://genome.ucsc.edu/FAQ/FAQformat.html#format7) file formats.
-- **RefName alias adapter** - This type of adapter is used to return data about
-  aliases for reference sequence names, for example to define that "chr1" is an
-  alias for "1". An example of this in JBrowse is an adapter for
-  [alias files](http://software.broadinstitute.org/software/igv/LoadData/#aliasfile).
-- **Text search adapter** - This type of adapter is used to search through text
-  search indexes. Returns list of search results. An example of this in JBrowse
-  is the trix text search adapter.
-
-:::info
-
-Note When using the refName alias adapter, it's important that the first column
-match what is seen in your FASTA file.
-
-:::
+  [VCF](https://samtools.github.io/hts-specs/VCFv4.3.pdf) adapters.
+- **Regions adapter** - Defines what regions are in an assembly (chromosomes/contigs/scaffolds
+  and their sizes). Example: [chrom.sizes](https://software.broadinstitute.org/software/igv/chromSizes) adapter.
+- **Sequence adapter** - Combines regions and feature adapters: returns the region list
+  and sequences for queried regions. Examples: [FASTA](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp)
+  and [.2bit](https://genome.ucsc.edu/FAQ/FAQformat.html#format7) adapters.
+- **RefName alias adapter** - Returns alias data for reference sequence names,
+  e.g. "chr1" → "1". See [RefName aliasing](/docs/developer_guides/refname_aliasing).
+- **Text search adapter** - Searches text search indexes and returns results. Example: the trix adapter.
 
 ### Skeleton of a feature adapter
-
-A basic feature adapter might look like this (with implementation omitted for
-simplicity):
 
 ```js
 class MyAdapter extends BaseFeatureDataAdapter {
@@ -82,16 +58,10 @@ class MyAdapter extends BaseFeatureDataAdapter {
 }
 ```
 
-So to make a feature adapter, you implement the `getRefNames` function
-(optional), the `getFeatures` function (returns an rxjs observable stream of
-features, discussed below) and `freeResources` (optional).
+Implement `getRefNames` (optional), `getFeatures` (returns an rxjs observable
+stream of features), and `freeResources` (optional).
 
 ### Example feature adapter
-
-To take this a little slow, let's look at each function individually.
-
-This is a more complete description of the class interface that you can
-implement:
 
 ```js
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -100,16 +70,13 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 class MyAdapter extends BaseFeatureDataAdapter {
-  // your constructor gets a config object that you can read with readConfObject
-  // if you use "subadapters" then you can initialize those with getSubAdapter
+  // config can be read with readConfObject; subadapters via getSubAdapter
   constructor(config, getSubAdapter) {
     const fileLocation = readConfObject(config, 'fileLocation')
     const subadapter = readConfObject(config, 'sequenceAdapter')
     const sequenceAdapter = getSubAdapter(subadapter)
   }
 
-  // use rxjs observer.next(new SimpleFeature(...your feature data....) for each
-  // feature you want to return
   getFeatures(region, options) {
     return ObservableCreate(async observer => {
       try {
@@ -141,38 +108,29 @@ class MyAdapter extends BaseFeatureDataAdapter {
   }
 
   async getRefNames() {
-    // returns the list of refseq names in the file, used for refseq renaming
-    // you can hardcode this if you know it ahead of time e.g. for your own
-    // remote data API or fetch this from your data file e.g. from the bam header
+    // hardcode if known ahead of time, or fetch from file header
     return ['chr1', 'chr2', 'chr3'] // etc
   }
 
   freeResources(region) {
     // optionally remove cache resources for a region
-    // can just be an empty function
   }
 }
 ```
 
-### What is needed from a feature adapter
+### Feature adapter API
 
 #### getRefNames
 
-Returns the refNames that are contained in the file. This is used for "refname
-renaming" and is optional, but highly useful in scenarios like human chromosomes
-which have, for example, chr1 vs 1.
-
-Returning the refNames used by a given file or resource allows JBrowse to
-automatically smooth these small naming disparities over. See
+Returns the refNames in the file. Used for "refname renaming" — optional but
+useful when files use different conventions (e.g. chr1 vs 1). See
 [reference renaming](/docs/config_guides/assemblies/#configuring-reference-name-aliasing).
 
 #### getFeatures
 
-A function that returns features from the file given a genomic range query e.g.,
-
 `getFeatures(region, options)`
 
-The region parameter contains:
+The region parameter:
 
 ```typescript
 interface Region {
@@ -184,17 +142,13 @@ interface Region {
 }
 ```
 
-The `refName`, `start`, `end` specify a simple genomic range. The `assemblyName`
-is used to query a specific assembly if your adapter responds to multiple
-assemblies, e.g. for a synteny data file or a REST API that queries a backend
-with multiple assemblies.
+`refName`/`start`/`end` specify the genomic range. `assemblyName` is used when
+your adapter handles multiple assemblies (e.g. synteny or multi-assembly REST
+API). `originalRefName` is the queried refname before ref renaming — e.g. if
+the BAM uses chr1 but the reference uses 1, originalRefName is 1 and refName
+is chr1.
 
-The `originalRefName` field is also passed, where `originalRefName` is the
-queried refname before ref renaming e.g. in BamAdapter, if the BAM file uses
-chr1, and your reference genome file uses 1, then originalRefName will be 1 and
-refName will be chr1.
-
-The options parameter to getFeatures can contain any number of things:
+The options parameter:
 
 ```typescript
 interface Options {
@@ -204,21 +158,14 @@ interface Options {
 }
 ```
 
-- `bpPerPx` - number: resolution of the genome browser when the features were
-  fetched
-- `stopToken` - can be used to abort a fetch request when it is no longer
-  needed, from AbortController
-- `headers` - set of HTTP headers as a JSON object
-- anything from the `renderProps` of the display model type gets passed to the
-  getFeatures opts
+- `bpPerPx` - resolution of the genome browser when features were fetched
+- `stopToken` - abort signal from AbortController
+- `headers` - HTTP headers as a JSON object
+- any `renderProps` from the display model type are also passed
 
-We return an rxjs `Observable` from `getFeatures`. Each feature is emitted with
-`observer.next(new SimpleFeature(...))`, completion with `observer.complete()`,
-and errors with `observer.error(error)`.
+Returns an rxjs `Observable`. Emit features with `observer.next(new SimpleFeature(...))`,
+signal completion with `observer.complete()`, and errors with `observer.error(error)`.
 
 #### freeResources
 
-This is uncommonly used, so most adapters make this an empty function
-
-Most adapters in fact use an LRU cache to make resources go away over time
-instead of manually cleaning up resources
+Rarely used — most adapters use an LRU cache instead. Can be an empty function.
