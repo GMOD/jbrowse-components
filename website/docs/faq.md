@@ -68,21 +68,17 @@ so that JBrowse can get small slices of large binary data files.
 
 ### BAM files do not work on my server
 
-If you are using Apache then you will probably want to disable mime_magic. If
-mime_magic is enabled, you may see that your server responds with the HTTP
-header Content-Encoding: gzip which JBrowse does NOT want, because this
-instructs the browser to unzip the data but JBrowse should be in charge of this.
+If you use Apache, disable mime_magic. When enabled, the server sends
+`Content-Encoding: gzip`, which tells the browser to decompress the data —
+but JBrowse needs to handle decompression itself.
 
 ### How can I setup JBrowse 2 on my web server
 
 We recommend following the steps in the
 [quickstart web via CLI](/docs/quickstart_web) guide.
 
-The general procedure is using the `jbrowse create /var/www/html/jb2` and this
-will download the latest version of jbrowse to your web folder e.g. in
-`/var/www/html`.
-
-You can also use `jbrowse upgrade /var/www/html/jb2` to get the latest version.
+`jbrowse create /var/www/html/jb2` downloads the latest JBrowse into that
+folder. Run `jbrowse upgrade /var/www/html/jb2` to update it later.
 
 ### How do I install or update the @jbrowse/cli tool
 
@@ -273,25 +269,22 @@ Add the following configuration to your Apache configuration file (e.g.,
 
 ```
 
-By enabling gzip compression, your config.json and other specified files will be
-served in a compressed format, reducing the file size and improving download
-times for your users.
+With gzip enabled, config.json and other specified files are served compressed,
+reducing download sizes.
 
 ## Curiosities
 
 ### Why do all the tracks need an assembly specified
 
-We require that all tracks have a specific genome assembly specified in their
-config. This is because JBrowse 2 is a multi-genome-assembly browser (and can
-compare genomes given the data). This may be different to using, say, JBrowse 1
-where it knows which genome assembly you are working with at any given time.
+JBrowse 2 is a multi-genome-assembly browser that can compare genomes side by
+side, so every track must declare which assembly it belongs to. This differs
+from JBrowse 1, which operated on a single assembly at a time.
 
 ### How are the menus structured in the app
 
-In JBrowse 1, the app level menu operated on the single linear genome view, but
-with JBrowse 2, the top level menu only performs global operations and the
-linear genome view has its own hamburger menu. Note that each track also has its
-own track level menu.
+In JBrowse 2, the top-level menu performs only global operations; each linear
+genome view has its own hamburger menu and each track has its own track menu.
+In JBrowse 1 the app menu operated directly on the single view.
 
 ### Why do some of my reads not display soft-clipping
 
@@ -302,14 +295,11 @@ The soft-clipping indicators on these reads will appear black.
 
 ### Do you have any tips for learning React and @jbrowse/mobx-state-tree
 
-Here is a short guide to React and @jbrowse/mobx-state-tree that could help get
-you oriented:
-
-https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
+See this [short orientation guide](https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f).
 
 ### What technologies does JBrowse 2 use
 
-We build on a lot of great open source technology, some main ones include:
+Key technologies include:
 
 - React
 - @jbrowse/mobx-state-tree
