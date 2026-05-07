@@ -413,13 +413,14 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
-        // Full RPC payload for RenderFeatureData. Every field read here becomes
-        // a cache key: SettingsInvalidate autorun calls rpcProps() and clears
-        // data when any field changes. Subclasses extend via the super-capture
-        // pattern (like renderProps / gpuProps).
+        // User-controlled settings sent to the worker via RPC. Every field
+        // read here becomes a cache key: SettingsInvalidate autorun calls
+        // rpcProps() and clears data when any field changes. Structural args
+        // (adapterConfig, sequenceAdapter, region, bpPerPx) are added at the
+        // RPC call site, matching the pattern used by every other display
+        // type. Subclasses extend via the super-capture pattern.
         rpcProps() {
           return {
-            adapterConfig: self.adapterConfigSnapshot,
             displayConfig: {
               ...getConfSnapshot(self.configuration),
               ...(self.configOverrides as Omit<
@@ -429,7 +430,6 @@ export default function baseStateModelFactory(
             } as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
-            sequenceAdapter: self.sequenceAdapter,
           }
         },
       }))
@@ -802,6 +802,8 @@ export default function baseStateModelFactory(
             'RenderFeatureData',
             {
               sessionId,
+              adapterConfig: self.adapterConfigSnapshot,
+              sequenceAdapter: self.sequenceAdapter,
               ...self.rpcProps(),
               region,
               bpPerPx,
