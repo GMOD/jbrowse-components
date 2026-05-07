@@ -19,6 +19,7 @@ export function drawSnpCoverageCanvas(
     ctx,
     region.buffer,
     region.segmentCount,
+    d => d,
     1,
     coverageHeight,
     colors,

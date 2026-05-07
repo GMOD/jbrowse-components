@@ -119,15 +119,22 @@ export function drawCoverageBins(
   }
 }
 
+// normalizeDepth converts a raw depth value to [0,1] (linear or log).
+// regionMaxDepth is the per-region max used when packing yOffset/segHeight.
+// totalDepths, when provided, gives the actual total coverage at each segment's
+// position so SNPs are drawn as a linear fraction of the log-scaled bar.
+// Without totalDepths, regionMaxDepth is used as a fallback (correct for linear).
 export function drawSnpSegments(
   ctx: Ctx,
   buffer: ArrayBuffer,
   segmentCount: number,
-  depthScale: number,
+  normalizeDepth: (rawDepth: number) => number,
+  regionMaxDepth: number,
   coverageHeight: number,
   colors: CigarOpDrawColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
+  totalDepths?: Float32Array,
 ) {
   if (segmentCount === 0) {
     return
@@ -147,8 +154,12 @@ export function drawSnpSegments(
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const segBottom = bottom - yOff * depthScale * effectiveH
-    const segTop = segBottom - segH * depthScale * effectiveH
+    const rawTotal = totalDepths ? (totalDepths[i] ?? regionMaxDepth) : regionMaxDepth
+    const totalDepth = rawTotal > 0 ? rawTotal : regionMaxDepth
+    const barH = normalizeDepth(totalDepth) * effectiveH
+    const depthFrac = regionMaxDepth / totalDepth
+    const segBottom = bottom - yOff * depthFrac * barH
+    const segTop = segBottom - segH * depthFrac * barH
     ctx.fillStyle = snpColorForType(f32[off + SNP_FIELD.colorType]!, colors)
     ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
   }

@@ -120,29 +120,95 @@ describe('drawCoverageBins', () => {
 })
 
 describe('drawSnpSegments', () => {
-  it('draws segments with correct colors', () => {
+  // coverageHeight=50, YSCALEBAR_LABEL_OFFSET=5 → effectiveH=40, bottom=45
+  const coverageHeight = 50
+  const effectiveH = 40
+  const bottom = 45
+
+  const colors = {
+    baseA: 'red',
+    baseC: 'blue',
+    baseG: 'green',
+    baseT: 'yellow',
+    mismatch: '',
+    deletion: '',
+    insertion: '',
+  }
+
+  function makeSnpBuf(pos: number, yOffset: number, segHeight: number, colorType: number) {
     const buf = new ArrayBuffer(16)
     const f32 = new Float32Array(buf)
     const u32 = new Uint32Array(buf)
-    u32[0] = 100
-    f32[1] = 0.5
-    f32[2] = 0.3
-    f32[3] = 1 // colorType=1 → baseA
+    u32[0] = pos
+    f32[1] = yOffset
+    f32[2] = segHeight
+    f32[3] = colorType
+    return buf
+  }
 
-    const colors = {
-      baseA: 'red',
-      baseC: 'blue',
-      baseG: 'green',
-      baseT: 'yellow',
-      mismatch: '',
-      deletion: '',
-      insertion: '',
-    }
+  it('draws segments with correct colors', () => {
+    const buf = makeSnpBuf(100, 0.5, 0.3, 1)
     const { ctx, calls } = makeCtx()
-    drawSnpSegments(ctx, buf, 1, 1, 50, colors, bp => bp - 100, 200)
-
+    drawSnpSegments(ctx, buf, 1, d => d, 1, coverageHeight, colors, bp => bp - 100, 200)
     const styleCalls = calls.filter(c => c.method === 'fillStyle')
     expect(styleCalls.some(c => c.args[0] === 'red')).toBe(true)
+  })
+
+  it('linear scale: positions SNP at correct fraction of bar', () => {
+    // regionMaxDepth=100, totalDepth=100, domainMax=100 → full bar
+    // yOffset=0 (at bottom), segHeight=0.3 (30 reads / 100 max)
+    // barH = (100/100)*40 = 40, depthFrac = 100/100 = 1
+    // segBottom = 45 - 0*1*40 = 45, segTop = 45 - 0.3*1*40 = 33
+    const buf = makeSnpBuf(100, 0, 0.3, 1)
+    const totalDepths = new Float32Array([100])
+    const { ctx, calls } = makeCtx()
+    drawSnpSegments(ctx, buf, 1, (d: number) => d / 100, 100, coverageHeight, colors, bp => bp - 100, 200, totalDepths)
+    const rects = calls.filter(c => c.method === 'fillRect')
+    expect(rects).toHaveLength(1)
+    const [, y, , h] = rects[0]!.args as number[]
+    expect(y).toBeCloseTo(bottom - 0.3 * effectiveH, 5)
+    expect(h).toBeCloseTo(0.3 * effectiveH, 5)
+  })
+
+  it('log scale: SNP is a linear fraction of the log-scaled bar', () => {
+    // totalDepth=100, domainMax=1000 (log scale)
+    // log-normalized bar height = log2(100)/log2(1000) * effectiveH ≈ 0.6667 * 40
+    const domainMax = 1000
+    const totalDepth = 100
+    const logBarFrac = Math.log2(totalDepth) / Math.log2(domainMax)
+    const expectedBarH = logBarFrac * effectiveH
+
+    // snpFrac = 10 snps / 100 total = 0.1
+    // yOffset = 0/100 = 0, segHeight = 10/100 = 0.1 (regionMaxDepth = totalDepth = 100 here)
+    const buf = makeSnpBuf(100, 0, 0.1, 1)
+    const totalDepths = new Float32Array([totalDepth])
+    const logNormalize = (d: number) => Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
+    const { ctx, calls } = makeCtx()
+    drawSnpSegments(ctx, buf, 1, logNormalize, 100, coverageHeight, colors, bp => bp - 100, 200, totalDepths)
+    const rects = calls.filter(c => c.method === 'fillRect')
+    expect(rects).toHaveLength(1)
+    const [, y, , h] = rects[0]!.args as number[]
+    expect(h).toBeCloseTo(0.1 * expectedBarH, 5)
+    expect(y).toBeCloseTo(bottom - expectedBarH + (expectedBarH - 0.1 * expectedBarH), 5)
+  })
+
+  it('log scale bar is taller than linear for same depth', () => {
+    // At 10% of domain max, log scale produces a taller bar than linear
+    const domainMax = 1000
+    const totalDepth = 100
+    const buf = makeSnpBuf(100, 0, 0.1, 1)
+    const totalDepths = new Float32Array([totalDepth])
+
+    const { ctx: linCtx, calls: linCalls } = makeCtx()
+    drawSnpSegments(linCtx, buf, 1, (d: number) => d / domainMax, 100, coverageHeight, colors, bp => bp - 100, 200, totalDepths)
+
+    const { ctx: logCtx, calls: logCalls } = makeCtx()
+    const logNorm = (d: number) => Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
+    drawSnpSegments(logCtx, buf, 1, logNorm, 100, coverageHeight, colors, bp => bp - 100, 200, totalDepths)
+
+    const linH = (linCalls.find(c => c.method === 'fillRect')!.args as number[])[3]!
+    const logH = (logCalls.find(c => c.method === 'fillRect')!.args as number[])[3]!
+    expect(logH).toBeGreaterThan(linH)
   })
 })
 
