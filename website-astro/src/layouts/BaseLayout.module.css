@@ -1,6 +1,6 @@
 /* ── Nav ── */
 .nav {
-  background: #0d223f;
+  background: var(--color-navy);
   display: flex;
   align-items: center;
   padding: 0 1rem;
@@ -32,7 +32,7 @@
   transition: color 0.2s;
 }
 .navLinks a:hover {
-  color: #46cbae;
+  color: var(--color-teal-bright);
 }
 .newFeature::after {
   content: 'NEW!';
@@ -46,7 +46,7 @@
   flex-shrink: 0;
   width: 190px;
   --pagefind-ui-scale: 0.75;
-  --pagefind-ui-primary: #46cbae;
+  --pagefind-ui-primary: var(--color-teal-bright);
   --pagefind-ui-text: #111;
   --pagefind-ui-background: #fff;
   --pagefind-ui-border: #ccc;
@@ -78,7 +78,7 @@
   transition: color 0.2s;
 }
 .navRight a:hover {
-  color: #46cbae;
+  color: var(--color-teal-bright);
 }
 .socialIcon {
   width: 24px;
@@ -116,7 +116,7 @@
 
 /* ── Footer ── */
 .footer {
-  background: #0d223f;
+  background: var(--color-navy);
   color: #bbb;
   padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 4vw, 2rem);
   margin-top: 4rem;
@@ -174,7 +174,7 @@
     top: 60px;
     left: 0;
     right: 0;
-    background: #0d223f;
+    background: var(--color-navy);
     flex-direction: column;
     padding: 0.5rem 1rem 1rem;
     z-index: 100;

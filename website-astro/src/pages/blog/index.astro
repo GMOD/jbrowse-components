@@ -1,9 +1,8 @@
 ---
 import { getCollection } from 'astro:content'
 import { base } from 'astro:config/client'
-import BaseLayout from '../../layouts/BaseLayout.astro'
+import BlogLayout from '../../layouts/BlogLayout.astro'
 import blog from '../../styles/blog.module.css'
-import page from '../../styles/page.module.css'
 
 const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
@@ -17,8 +16,8 @@ function blogPath(post: (typeof posts)[0]) {
 }
 ---
 
-<BaseLayout title="JBrowse Blog">
-  <div class={page.contentNarrow}>
+<BlogLayout title="JBrowse Blog">
+  <div class="content">
     <h1>Blog</h1>
     {
       posts.map(post => (
@@ -42,14 +41,18 @@ function blogPath(post: (typeof posts)[0]) {
       ))
     }
   </div>
-</BaseLayout>
+</BlogLayout>
 
 <style>
+  .content {
+    max-width: 800px;
+    padding: clamp(1.25rem, 3vw, 2.5rem);
+  }
   h1 {
     font-size: 2rem;
     font-weight: 400;
     margin-bottom: 2rem;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-border);
     padding-bottom: 1rem;
   }
   article {
@@ -62,7 +65,7 @@ function blogPath(post: (typeof posts)[0]) {
   article a {
     font-size: 1.1rem;
     font-weight: 500;
-    color: #3f51b5;
+    color: var(--color-accent);
     text-decoration: none;
   }
   article a:hover {

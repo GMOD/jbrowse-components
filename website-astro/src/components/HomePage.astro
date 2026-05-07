@@ -2,30 +2,13 @@
 import { Icon } from 'astro-icon/components'
 import { base as baseConfig } from 'astro:config/client'
 import btn from '../styles/button.module.css'
+import OfficeHoursAlert from './OfficeHoursAlert.astro'
 import docusaurusConfig from '../../../website/docusaurus.config.json'
 const currentVersion = docusaurusConfig.customFields.currentVersion as string
 const base = baseConfig.replace(/\/$/, '')
 ---
 
-<!-- MUI Alert severity="info" -->
-<div class="mui-alert-info" style="margin:10px">
-  <span class="mui-alert-icon" aria-hidden="true">
-    <Icon name="mdi:information" width="22" height="22" />
-  </span>
-  <div class="mui-alert-message">
-    <p class="mui-h6">New: JBrowse 2 office hours!</p>
-    <p class="mui-body1">
-      Starting Fall 2023, we are offering 1-on-1 appointments with members of our team via Google Calendar
-      <a
-        class:list={[btn.btn, btn.btnPrimary, btn.btnSmall]}
-        style="margin:10px"
-        href="https://calendar.app.google/1AYZkNCQNmwdY2R26"
-      >
-        Schedule appointment
-      </a>
-    </p>
-  </div>
-</div>
+<OfficeHoursAlert />
 
 <div class="outer-box">
   <!-- Hero row -->
@@ -52,7 +35,7 @@ const base = baseConfig.replace(/\/$/, '')
       </div>
       <div style="text-align:center">
         <p class="mui-body1">
-          Check out our <a href={`${base}/blog`}>latest release blogpost</a>, our
+          Check out our <a href={`${base}/blog/`}>latest release blogpost</a>, our
           <a href={`${base}/docs/embedded_components/`}>embedded components</a>,
           and our
           <a href={`${base}/download/#jbrowse-cli-tools`}>command line tools</a>.
@@ -177,12 +160,6 @@ const base = baseConfig.replace(/\/$/, '')
     line-height: 1.235;
     margin: 0;
   }
-  .mui-h6 {
-    font-size: 1.25rem;
-    font-weight: 500;
-    line-height: 1.6;
-    margin: 0 0 4px;
-  }
   .mui-body1 {
     font-size: 1rem;
     font-weight: 400;
@@ -191,29 +168,6 @@ const base = baseConfig.replace(/\/$/, '')
   }
   .gutter-bottom {
     margin-bottom: 0.35em;
-  }
-
-  .mui-alert-info {
-    background-color: rgb(229, 246, 253);
-    color: rgb(1, 67, 97);
-    padding: 6px 16px;
-    border-radius: 4px;
-    display: flex;
-    align-items: flex-start;
-    font-size: 0.875rem;
-    line-height: 1.43;
-  }
-  .mui-alert-icon {
-    color: #0288d1;
-    opacity: 0.9;
-    padding: 7px 0;
-    margin-right: 12px;
-    display: flex;
-    flex-shrink: 0;
-  }
-  .mui-alert-message {
-    padding: 8px 0;
-    min-width: 0;
   }
 
   .outer-box {
@@ -233,7 +187,7 @@ const base = baseConfig.replace(/\/$/, '')
   }
   .hero-image img {
     border-radius: 8px;
-    border: 4px solid #e0e0e0;
+    border: 4px solid var(--color-border);
     height: auto;
     width: 100%;
     display: block;
@@ -259,7 +213,7 @@ const base = baseConfig.replace(/\/$/, '')
   }
 
   .features-image img {
-    border: 4px solid #e0e0e0;
+    border: 4px solid var(--color-border);
     border-radius: 8px;
     height: auto;
     width: 100%;

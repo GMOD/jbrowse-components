@@ -1,7 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { Icon } from 'astro-icon/components'
-import btn from '../styles/button.module.css'
 import page from '../styles/page.module.css'
 ---
 
@@ -9,33 +7,13 @@ import page from '../styles/page.module.css'
   <div class={page.content}>
     <h1>Contact us</h1>
 
-    <h2>Office hours</h2>
-    <aside class="office-hours-alert">
-      <span class="alert-icon" aria-hidden="true">
-        <Icon name="mdi:information" width="22" height="22" />
-      </span>
-      <div class="alert-body">
-        <strong>New: JBrowse 2 office hours!</strong>
-        <p>
-          Starting Fall 2023, we are offering 1-on-1 appointments with members
-          of our team via Google Calendar.
-        </p>
-        <a
-          class:list={[btn.btn, btn.btnPrimary, btn.btnSmall]}
-          style="margin-top:0.5rem"
-          href="https://calendar.app.google/1AYZkNCQNmwdY2R26"
-        >
-          Schedule appointment
-        </a>
-      </div>
-    </aside>
-
     <h2>Forums</h2>
     <ul>
+      <li><a href="https://calendar.app.google/1AYZkNCQNmwdY2R26">Schedule a 1-on-1 office hours appointment</a> — via Google Calendar</li>
       <li>Discussion forum: <a href="https://github.com/GMOD/jbrowse-components/discussions">github.com/GMOD/jbrowse-components/discussions</a></li>
       <li>Issues and feature requests: <a href="https://github.com/GMOD/jbrowse-components/issues/new/choose">github.com/GMOD/jbrowse-components/issues</a></li>
       <li>Chat: <a href="https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im">Gitter</a></li>
-      <li>Mailing list: send email to <code>gmod-ajax@lists.sourceforge.net</code></li>
+      <li>Mailing list: <code>gmod-ajax@lists.sourceforge.net</code></li>
       <li>Email: <a href="mailto:jbrowse2@berkeley.edu">jbrowse2@berkeley.edu</a></li>
       <li>Feedback: <a href="https://forms.gle/CRf9Ur9iXu2uuz1o9">Google Form</a></li>
     </ul>
@@ -58,32 +36,5 @@ import page from '../styles/page.module.css'
     font-size: 1.25rem;
     font-weight: 500;
     margin: 1.5rem 0 0.5rem;
-  }
-  .office-hours-alert {
-    background-color: rgb(229, 246, 253);
-    color: rgb(1, 67, 97);
-    padding: 6px 16px;
-    border-radius: 4px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    font-size: 0.875rem;
-    margin: 1rem 0;
-  }
-  .alert-icon {
-    color: #0288d1;
-    opacity: 0.9;
-    padding: 7px 0;
-    flex-shrink: 0;
-    display: flex;
-  }
-  .alert-body {
-    padding: 8px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .alert-body p {
-    margin: 0;
   }
 </style>

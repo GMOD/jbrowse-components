@@ -1,0 +1,168 @@
+---
+import { getCollection } from 'astro:content'
+import { base } from 'astro:config/client'
+import BaseLayout from './BaseLayout.astro'
+
+interface Props {
+  title: string
+  currentSlug?: string
+}
+
+const { title, currentSlug = '' } = Astro.props
+const baseUrl = base.replace(/\/$/, '')
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+)
+
+function blogPath(post: (typeof posts)[0]) {
+  const stem = post.filePath!.split('/').pop()!.replace(/\.md$/, '')
+  const m = stem.match(/^(\d{4})-(\d{2})-(\d{2})-(.+)$/)
+  return m ? `${m[1]}/${m[2]}/${m[3]}/${m[4]}` : stem
+}
+
+const byYear = new Map<string, { slug: string; title: string; href: string }[]>()
+for (const post of posts) {
+  const slug = blogPath(post)
+  const year = slug.split('/')[0]
+  if (!byYear.has(year)) {
+    byYear.set(year, [])
+  }
+  byYear.get(year)!.push({ slug, title: post.data.title, href: `${baseUrl}/blog/${slug}/` })
+}
+
+const years = [...byYear.keys()].sort((a, b) => Number(b) - Number(a))
+const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
+---
+
+<BaseLayout title={title}>
+  <div class="blog-layout">
+    <nav class="blog-sidebar" aria-label="Blog navigation">
+      <ul>
+        <li>
+          <a
+            href={`${baseUrl}/blog/`}
+            class:list={[{ active: !currentSlug }]}
+            aria-current={!currentSlug ? 'page' : undefined}
+          >
+            All posts
+          </a>
+        </li>
+        {
+          years.map(year => (
+            <li>
+              <details open={year === currentYear || year === years[0] || undefined}>
+                <summary>{year}</summary>
+                <ul>
+                  {byYear.get(year)!.map(post => (
+                    <li>
+                      <a
+                        href={post.href}
+                        class:list={[{ active: post.slug === currentSlug }]}
+                        aria-current={post.slug === currentSlug ? 'page' : undefined}
+                      >
+                        {post.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <div class="blog-content">
+      <slot />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .blog-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+  }
+
+  .blog-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: #f8f9fa;
+    border-right: 1px solid var(--color-border);
+    overflow-y: auto;
+    padding: 1rem 0;
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+  }
+
+  .blog-sidebar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 1rem;
+  }
+  .blog-sidebar > ul {
+    padding: 0;
+  }
+
+  .blog-sidebar a {
+    display: block;
+    padding: 0.3rem 1rem;
+    color: #333;
+    text-decoration: none;
+    font-size: 0.875rem;
+    border-radius: 3px;
+    transition: background 0.15s;
+  }
+  .blog-sidebar a:hover {
+    background: #e8e8e8;
+    color: var(--color-navy);
+  }
+  .blog-sidebar a.active {
+    background: #e0f5f0;
+    color: #0d6e5a;
+    font-weight: 600;
+  }
+
+  .blog-sidebar details > summary {
+    cursor: pointer;
+    padding: 0.35rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #555;
+    list-style: none;
+    user-select: none;
+  }
+  .blog-sidebar details > summary::-webkit-details-marker {
+    display: none;
+  }
+  .blog-sidebar details > summary::before {
+    content: '▶ ';
+    font-size: 0.65em;
+    opacity: 0.6;
+  }
+  .blog-sidebar details[open] > summary::before {
+    content: '▼ ';
+  }
+
+  .blog-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  @media (max-width: 768px) {
+    .blog-layout {
+      flex-direction: column;
+    }
+    .blog-sidebar {
+      width: 100%;
+      height: auto;
+      position: static;
+      border-right: none;
+      border-bottom: 1px solid var(--color-border);
+      max-height: 300px;
+    }
+  }
+</style>

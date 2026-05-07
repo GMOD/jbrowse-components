@@ -10,10 +10,10 @@ export interface SidebarLink {
 export interface SidebarGroup {
   type: 'group'
   label: string
-  items: SidebarItem[]
+  items: SidebarEntry[]
 }
 
-export type SidebarItem = SidebarLink | SidebarGroup
+export type SidebarEntry = SidebarLink | SidebarGroup
 
 type DocEntry = { id: string; data: { title: string; sidebar_label?: string } }
 
@@ -49,8 +49,8 @@ function convertItems(
   items: DocusaurusSidebarItem[],
   allDocs: DocEntry[],
   baseUrl: string,
-): SidebarItem[] {
-  const result: SidebarItem[] = []
+): SidebarEntry[] {
+  const result: SidebarEntry[] = []
   const docsBySlug = new Map(allDocs.map(d => [entrySlug(d.id), d]))
 
   for (const item of items) {
@@ -85,6 +85,6 @@ function convertItems(
   return result
 }
 
-export function buildSidebar(allDocs: DocEntry[], baseUrl: string): SidebarItem[] {
+export function buildSidebar(allDocs: DocEntry[], baseUrl: string): SidebarEntry[] {
   return convertItems(sidebarsJson.sidebar as DocusaurusSidebarItem[], allDocs, baseUrl)
 }

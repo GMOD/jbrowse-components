@@ -35,11 +35,12 @@
   font-size: 0.8125rem;
 }
 .btnPrimary {
-  background-color: #3f51b5;
+  background-color: var(--color-accent);
   color: white;
 }
 .btnPrimary:hover {
-  background-color: #303f9f;
+  background-color: var(--color-accent-dark);
+  color: white;
 }
 .btnSecondary {
   background-color: #cccccc;

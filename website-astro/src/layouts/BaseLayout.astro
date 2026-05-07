@@ -1,12 +1,12 @@
 ---
-import { base } from 'astro:config/client'
+import { baseUrl } from '../lib/base-url'
 import styles from './BaseLayout.module.css'
 
 interface Props {
   title?: string
+  description?: string
 }
-const { title = 'JBrowse' } = Astro.props
-const baseUrl = base.replace(/\/$/, '')
+const { title = 'JBrowse', description } = Astro.props
 ---
 
 <!doctype html>
@@ -15,6 +15,7 @@ const baseUrl = base.replace(/\/$/, '')
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    {description && <meta name="description" content={description} />}
     <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
     <link
       rel="stylesheet"
@@ -22,8 +23,21 @@ const baseUrl = base.replace(/\/$/, '')
     />
     <link rel="stylesheet" href={`${baseUrl}/pagefind/pagefind-ui.css`} />
     <style is:global>
+      :root {
+        --color-accent: hsl(160, 51%, 35%);
+        --color-accent-dark: hsl(160, 55%, 26%);
+        --color-navy: #0d223f;
+        --color-teal-bright: #46cbae;
+        --color-border: #e0e0e0;
+        --color-surface: #f5f5f5;
+        --color-sidebar-active-bg: #e0f5f0;
+        --color-sidebar-active-text: #0d6e5a;
+        --color-text-muted: #666;
+      }
       * { box-sizing: border-box; }
       body { margin: 0; font-family: 'Roboto', sans-serif; }
+      a { color: var(--color-accent); }
+      a:hover { color: var(--color-accent-dark); }
     </style>
   </head>
   <body>

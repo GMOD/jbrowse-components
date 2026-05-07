@@ -1,9 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content'
 import { base } from 'astro:config/client'
-import BaseLayout from '../../layouts/BaseLayout.astro'
+import BlogLayout from '../../layouts/BlogLayout.astro'
 import blog from '../../styles/blog.module.css'
-import page from '../../styles/page.module.css'
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog')
@@ -16,12 +15,13 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props
+const { slug } = Astro.params
 const { Content } = await render(post)
 const baseUrl = base.replace(/\/$/, '')
 ---
 
-<BaseLayout title={post.data.title}>
-  <article class={page.contentNarrow}>
+<BlogLayout title={post.data.title} currentSlug={slug}>
+  <article class="post">
     <header>
       <h1>{post.data.title}</h1>
       <div class="meta">
@@ -52,12 +52,17 @@ const baseUrl = base.replace(/\/$/, '')
       <a href={`${baseUrl}/blog/`}>&larr; Back to blog</a>
     </footer>
   </article>
-</BaseLayout>
+</BlogLayout>
 
 <style>
+  .post {
+    max-width: 800px;
+    padding: clamp(1.25rem, 3vw, 2.5rem);
+    line-height: 1.7;
+  }
   header {
     margin-bottom: 2rem;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-border);
     padding-bottom: 1rem;
   }
   h1 {
@@ -93,14 +98,14 @@ const baseUrl = base.replace(/\/$/, '')
     display: block;
   }
   .content :global(pre) {
-    background: #f5f5f5;
+    background: var(--color-surface);
     padding: 1rem;
     border-radius: 4px;
     overflow-x: auto;
     font-size: 0.9rem;
   }
   .content :global(code) {
-    background: #f5f5f5;
+    background: var(--color-surface);
     padding: 2px 5px;
     border-radius: 3px;
     font-size: 0.9em;
@@ -110,7 +115,7 @@ const baseUrl = base.replace(/\/$/, '')
     padding: 0;
   }
   .content :global(blockquote) {
-    border-left: 4px solid #3f51b5;
+    border-left: 4px solid var(--color-accent);
     margin: 1rem 0;
     padding: 0.5rem 1rem;
     color: #555;
@@ -118,11 +123,7 @@ const baseUrl = base.replace(/\/$/, '')
   footer {
     margin-top: 3rem;
     padding-top: 1rem;
-    border-top: 1px solid #e0e0e0;
-  }
-  footer a {
-    color: #3f51b5;
-    text-decoration: none;
+    border-top: 1px solid var(--color-border);
   }
   footer a:hover {
     text-decoration: underline;

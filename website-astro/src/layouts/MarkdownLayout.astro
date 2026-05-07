@@ -1,5 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro'
+import page from '../styles/page.module.css'
 import type { MarkdownLayoutProps } from 'astro'
 
 type Props = MarkdownLayoutProps<{ title?: string }>
@@ -7,42 +8,36 @@ const { frontmatter } = Astro.props
 ---
 
 <BaseLayout title={frontmatter.title}>
-  <div class="markdown-content">
+  <div class:list={[page.content, 'md']}>
     <slot />
   </div>
 </BaseLayout>
 
 <style>
-  .markdown-content {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem;
-    line-height: 1.6;
-  }
-  .markdown-content :global(img) {
+  .md :global(img) {
     max-width: 100%;
     height: auto;
     display: block;
     border-radius: 4px;
     margin: 0.5rem 0;
   }
-  .markdown-content table {
+  .md :global(table) {
     border-collapse: collapse;
     width: 100%;
     margin: 1rem 0;
   }
-  .markdown-content th,
-  .markdown-content td {
+  .md :global(th),
+  .md :global(td) {
     border: 1px solid #ddd;
     padding: 0.5rem 0.75rem;
     text-align: left;
   }
-  .markdown-content th {
-    background: #f0f0f0;
+  .md :global(th) {
+    background: var(--color-surface);
   }
-  .markdown-content hr {
+  .md :global(hr) {
     margin: 2rem 0;
     border: none;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid var(--color-border);
   }
 </style>
