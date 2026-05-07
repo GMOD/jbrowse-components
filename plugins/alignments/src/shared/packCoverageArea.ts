@@ -9,91 +9,62 @@
 
 import { packCoverageBinsForGpu } from '@jbrowse/alignments-core'
 
+import { computeCoverage } from '../features/coverage/compute.ts'
 import { packIndicatorsForGpu } from '../features/indicator/packGpu.ts'
+import { computeModificationCoverage } from '../features/modCoverage/compute.ts'
 import { packModCovSegmentsForGpu } from '../features/modCoverage/packGpu.ts'
+import { computeNoncovCoverage } from '../features/noncov/compute.ts'
 import { packNoncovSegmentsForGpu } from '../features/noncov/packGpu.ts'
 import { packSnpSegmentsForGpu } from '../features/snpCoverage/packGpu.ts'
 
-export interface CoverageAreaPackedBuffers {
-  coveragePackedBuffer: ArrayBuffer
-  snpPackedBuffer: ArrayBuffer
-  noncovPackedBuffer: ArrayBuffer
-  indicatorPackedBuffer: ArrayBuffer
-  modCovPackedBuffer: ArrayBuffer
-}
+import type { SNPCoverageResult } from '@jbrowse/alignments-core'
 
-interface CoverageInput {
-  depths: Float32Array
-  maxDepth: number
-  startPos: number
-}
-interface SnpInput {
-  positions: Uint32Array
-  yOffsets: Float32Array
-  heights: Float32Array
-  colorTypes: Uint8Array
-  count: number
-}
-interface NoncovInput {
-  positions: Uint32Array
-  yOffsets: Float32Array
-  heights: Float32Array
-  colorTypes: Uint8Array
-  segmentCount: number
-  indicatorPositions: Uint32Array
-  indicatorColorTypes: Uint8Array
-  indicatorCount: number
-}
-interface ModCovInput {
-  positions: Uint32Array
-  yOffsets: Float32Array
-  heights: Float32Array
-  colors: Uint32Array
-  count: number
-}
-
-// All packed buffers store absolute genomic uint32 positions. Shaders
-// read via hp-math (hpSplitUint + hpClipX) for precision at 3+ Gbp.
+// All packed buffers store absolute genomic uint32 positions. Shaders read via
+// hp-math (hpSplitUint + hpClipX) for precision at 3+ Gbp. Input shapes are
+// the compute fns' return types — this fn is the worker's last step before
+// transferring the packed buffers to the main thread.
 export function packCoverageAreaForGpu(
-  coverage: CoverageInput,
-  snp: SnpInput,
-  noncov: NoncovInput,
-  modCov: ModCovInput | undefined,
-): CoverageAreaPackedBuffers {
+  coverage: ReturnType<typeof computeCoverage>,
+  snp: SNPCoverageResult,
+  noncov: ReturnType<typeof computeNoncovCoverage>,
+  modCov: ReturnType<typeof computeModificationCoverage> | undefined,
+) {
   return {
     coveragePackedBuffer: packCoverageBinsForGpu(
       coverage.depths,
       coverage.maxDepth,
       coverage.startPos,
       coverage.depths.length,
-    ).buffer,
+    ),
     snpPackedBuffer: packSnpSegmentsForGpu(
       snp.positions,
       snp.yOffsets,
       snp.heights,
       snp.colorTypes,
+      snp.relDepths,
       snp.count,
-    ).buffer,
+    ),
     noncovPackedBuffer: packNoncovSegmentsForGpu(
       noncov.positions,
       noncov.yOffsets,
       noncov.heights,
       noncov.colorTypes,
       noncov.segmentCount,
-    ).buffer,
+    ),
     indicatorPackedBuffer: packIndicatorsForGpu(
       noncov.indicatorPositions,
       noncov.indicatorColorTypes,
       noncov.indicatorCount,
-    ).buffer,
+    ),
     modCovPackedBuffer: modCov
       ? packModCovSegmentsForGpu(
           modCov.positions,
           modCov.yOffsets,
           modCov.heights,
           modCov.colors,
+          modCov.relDepths,
           modCov.count,
-        ).buffer
+        )
       : new ArrayBuffer(0),
   }
 }

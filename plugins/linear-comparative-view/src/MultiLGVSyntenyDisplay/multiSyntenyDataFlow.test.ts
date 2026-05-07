@@ -50,7 +50,7 @@ function buildRegionData(
     }
   }
   const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
-  const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+  const snp = computeSNPCoverage(mismatches, regionStart, coverage)
   const indicators = computeInsertionIndicators(
     indels,
     coverage.depths,
@@ -73,6 +73,7 @@ function buildRegionData(
     snpYOffsets: snp.yOffsets,
     snpHeights: snp.heights,
     snpColorTypes: snp.colorTypes,
+    snpRelDepths: snp.relDepths,
     snpCount: snp.count,
     mismatchPositions,
     mismatchBases,
@@ -197,6 +198,7 @@ describe('genomeRows aggregation across regions', () => {
           snpYOffsets: new Float32Array(0),
           snpHeights: new Float32Array(0),
           snpColorTypes: new Uint8Array(0),
+          snpRelDepths: new Float32Array(0),
           snpCount: 0,
           mismatchPositions: new Uint32Array(0),
           mismatchBases: new Uint8Array(0),
@@ -292,7 +294,11 @@ describe('SNP coverage from CS tags', () => {
   test('computeSNPCoverage produces stacked segments', () => {
     const mismatches: { position: number; base: number; strand: number }[] = []
     extractMismatchesFromCs(':5*ag*ct:3', 0, mismatches)
-    const result = computeSNPCoverage(mismatches, 10, 0)
+    const result = computeSNPCoverage(mismatches, 0, {
+      depths: new Float32Array(20).fill(10),
+      maxDepth: 10,
+      startPos: 0,
+    })
     expect(result.count).toBeGreaterThan(0)
     expect(result.positions.length).toBe(result.count)
     expect(result.colorTypes.length).toBe(result.count)
@@ -316,7 +322,7 @@ describe('SNP coverage from CS tags', () => {
       regionStart,
       regionEnd,
     )
-    const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+    const snp = computeSNPCoverage(mismatches, regionStart, coverage)
 
     expect(mismatches.length).toBe(2)
     expect(snp.count).toBe(2)
@@ -404,7 +410,7 @@ describe('rendering parity: Canvas2D and GPU paths use same data', () => {
       regionStart,
       regionEnd,
     )
-    const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+    const snp = computeSNPCoverage(mismatches, regionStart, coverage)
 
     expect(mismatches.length).toBe(1)
     expect(snp.count).toBe(1)

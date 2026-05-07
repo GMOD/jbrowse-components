@@ -60,9 +60,12 @@ export interface CoverageUploadData {
   coverageStartPos: number
   coveragePackedBuffer: ArrayBuffer
   snpPositions: Uint32Array
+  // SNP yOffsets/heights are fractions of THIS position's coverage bar.
+  // relDepth = totalDepthAtPos / regionMaxDepth scales the bar at draw time.
   snpYOffsets: Float32Array
   snpHeights: Float32Array
   snpColorTypes: Uint8Array
+  snpRelDepths: Float32Array
   snpPackedBuffer: ArrayBuffer
   noncovPositions: Uint32Array
   noncovYOffsets: Float32Array
@@ -77,9 +80,11 @@ export interface CoverageUploadData {
 
 export interface ModCoverageUploadData {
   modCovPositions: Uint32Array
+  // see CoverageUploadData.snpRelDepths
   modCovYOffsets: Float32Array
   modCovHeights: Float32Array
   modCovColors: Uint32Array
+  modCovRelDepths: Float32Array
   modCovPackedBuffer: ArrayBuffer
 }
 

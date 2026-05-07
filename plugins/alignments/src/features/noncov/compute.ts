@@ -23,11 +23,14 @@ export function computeNoncovCoverage(
   insertions: InsertionEntry[],
   softclips: ClipEntry[],
   hardclips: ClipEntry[],
-  maxDepth: number,
-  startPos: number,
-  coverageDepths?: Float32Array,
-  coverageStartPos?: number,
+  regionStart: number,
+  coverage: { depths: Float32Array; maxDepth: number; startPos: number },
 ) {
+  const {
+    depths: coverageDepths,
+    maxDepth,
+    startPos: coverageStartPos,
+  } = coverage
   const noncovByPosition = new Map<
     number,
     { position: number; insertion: number; softclip: number; hardclip: number }
@@ -114,17 +117,14 @@ export function computeNoncovCoverage(
         colorType: 3,
       })
     }
-    let localDepth = maxDepth
-    if (coverageDepths !== undefined && coverageStartPos !== undefined) {
-      const depthIdx = entry.position - coverageStartPos
-      const leftDepth =
-        depthIdx - 1 >= 0 ? (coverageDepths[depthIdx - 1] ?? 0) : 0
-      const rightDepth =
-        depthIdx >= 0 && depthIdx < coverageDepths.length
-          ? (coverageDepths[depthIdx] ?? 0)
-          : 0
-      localDepth = Math.max(leftDepth, rightDepth)
-    }
+    const depthIdx = entry.position - coverageStartPos
+    const leftDepth =
+      depthIdx - 1 >= 0 ? (coverageDepths[depthIdx - 1] ?? 0) : 0
+    const rightDepth =
+      depthIdx >= 0 && depthIdx < coverageDepths.length
+        ? (coverageDepths[depthIdx] ?? 0)
+        : 0
+    const localDepth = Math.max(leftDepth, rightDepth)
     if (
       maxDepth >= MINIMUM_INDICATOR_READ_DEPTH &&
       total > localDepth * INDICATOR_THRESHOLD &&
@@ -143,8 +143,10 @@ export function computeNoncovCoverage(
     }
   }
 
-  const filteredSegments = segments.filter(seg => seg.position >= startPos)
-  const filteredIndicators = indicators.filter(ind => ind.position >= startPos)
+  const filteredSegments = segments.filter(seg => seg.position >= regionStart)
+  const filteredIndicators = indicators.filter(
+    ind => ind.position >= regionStart,
+  )
 
   const positions = new Uint32Array(filteredSegments.length)
   const yOffsets = new Float32Array(filteredSegments.length)

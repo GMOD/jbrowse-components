@@ -80,7 +80,6 @@ export const CANVAS2D_COVERAGE = {
 export function drawCoverageBins(
   ctx: Ctx,
   buffer: ArrayBuffer,
-  binCount: number,
   normalizeDepth: (depth: number) => number,
   coverageHeight: number,
   coverageColor: string,
@@ -88,16 +87,15 @@ export function drawCoverageBins(
   viewWidth: number,
   widthCompensation = 0,
 ) {
+  const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
+  const binCount = buffer.byteLength / (STRIDE_F32 * 4)
   if (binCount === 0) {
     return
   }
-
   const { effectiveH, bottom } = coverageLayout(coverageHeight)
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
-
   ctx.fillStyle = coverageColor
-  const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
   for (let i = 0; i < binCount; i++) {
     const off = i * STRIDE_F32
     const pos = u32[off + FIELD.position]!
@@ -119,47 +117,39 @@ export function drawCoverageBins(
   }
 }
 
-// normalizeDepth converts a raw depth value to [0,1] (linear or log).
-// regionMaxDepth is the per-region max used when packing yOffset/segHeight.
-// totalDepths, when provided, gives the actual total coverage at each segment's
-// position so SNPs are drawn as a linear fraction of the log-scaled bar.
-// Without totalDepths, regionMaxDepth is used as a fallback (correct for linear).
+// yOffset/segHeight are fractions of THIS position's bar (per-position
+// semantics). relDepth = totalDepthAtPos / regionMaxDepth feeds the bar height
+// via `normalizeDepth(relDepth * regionMaxDepth)` (raw-depth normalizer).
+// Mirrors snpCoverage.slang exactly. No depthFrac un-mixing, no parallel arrays.
 export function drawSnpSegments(
   ctx: Ctx,
   buffer: ArrayBuffer,
-  segmentCount: number,
   normalizeDepth: (rawDepth: number) => number,
   regionMaxDepth: number,
   coverageHeight: number,
   colors: CigarOpDrawColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
-  totalDepths?: Float32Array,
 ) {
-  if (segmentCount === 0) {
-    return
-  }
-
   const { effectiveH, bottom } = coverageLayout(coverageHeight)
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
+  const segmentCount = buffer.byteLength / (SNP_STRIDE * 4)
 
   for (let i = 0; i < segmentCount; i++) {
     const off = i * SNP_STRIDE
     const pos = u32[off + SNP_FIELD.position]!
-    const yOff = f32[off + SNP_FIELD.yOffset]!
-    const segH = f32[off + SNP_FIELD.segHeight]!
     const px = bpToX(pos)
     const px2 = bpToX(pos + 1)
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const rawTotal = totalDepths ? (totalDepths[i] ?? regionMaxDepth) : regionMaxDepth
-    const totalDepth = rawTotal > 0 ? rawTotal : regionMaxDepth
-    const barH = normalizeDepth(totalDepth) * effectiveH
-    const depthFrac = regionMaxDepth / totalDepth
-    const segBottom = bottom - yOff * depthFrac * barH
-    const segTop = segBottom - segH * depthFrac * barH
+    const yOff = f32[off + SNP_FIELD.yOffset]!
+    const segH = f32[off + SNP_FIELD.segHeight]!
+    const relDepth = f32[off + SNP_FIELD.relDepth]!
+    const barH = normalizeDepth(relDepth * regionMaxDepth) * effectiveH
+    const segBottom = bottom - yOff * barH
+    const segTop = segBottom - segH * barH
     ctx.fillStyle = snpColorForType(f32[off + SNP_FIELD.colorType]!, colors)
     ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
   }
@@ -168,18 +158,14 @@ export function drawSnpSegments(
 export function drawIndicators(
   ctx: Ctx,
   buffer: ArrayBuffer,
-  indicatorCount: number,
   colors: NoncovDrawColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
 ) {
-  if (indicatorCount === 0) {
-    return
-  }
-
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
   const colorLut = [colors.insertion, colors.softclip, colors.hardclip]
+  const indicatorCount = buffer.byteLength / (INDICATOR_STRIDE * 4)
   for (let i = 0; i < indicatorCount; i++) {
     const off = i * INDICATOR_STRIDE
     const px = bpToX(u32[off + INDICATOR_FIELD.position]!)
@@ -194,13 +180,12 @@ export function drawIndicators(
 export function drawNoncovSegments(
   ctx: Ctx,
   buffer: ArrayBuffer,
-  segmentCount: number,
   noncovMaxCount: number,
   colors: NoncovDrawColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
 ) {
-  if (segmentCount === 0 || noncovMaxCount === 0) {
+  if (noncovMaxCount === 0) {
     return
   }
 
@@ -208,6 +193,7 @@ export function drawNoncovSegments(
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
   const colorLut = [colors.insertion, colors.softclip, colors.hardclip]
+  const segmentCount = buffer.byteLength / (NONCOV_STRIDE * 4)
 
   for (let i = 0; i < segmentCount; i++) {
     const off = i * NONCOV_STRIDE
@@ -227,22 +213,20 @@ export function drawNoncovSegments(
   }
 }
 
+// See drawSnpSegments for the per-position fraction contract.
 export function drawModCovSegments(
   ctx: Ctx,
   buffer: ArrayBuffer,
-  segmentCount: number,
-  depthScale: number,
+  normalizeDepth: (rawDepth: number) => number,
+  regionMaxDepth: number,
   coverageHeight: number,
   bpToX: (bp: number) => number,
   viewWidth: number,
 ) {
-  if (segmentCount === 0) {
-    return
-  }
-
   const { effectiveH, bottom } = coverageLayout(coverageHeight)
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
+  const segmentCount = buffer.byteLength / (MOD_COV_STRIDE * 4)
 
   for (let i = 0; i < segmentCount; i++) {
     const off = i * MOD_COV_STRIDE
@@ -254,13 +238,15 @@ export function drawModCovSegments(
     }
     const yOffset = f32[off + MOD_COV_FIELD.yOffset]!
     const h = f32[off + MOD_COV_FIELD.segHeight]!
+    const relDepth = f32[off + MOD_COV_FIELD.relDepth]!
     const rgba = u32[off + MOD_COV_FIELD.packedColor]!
     const r = rgba & 0xff
     const g = (rgba >> 8) & 0xff
     const b = (rgba >> 16) & 0xff
     const a = ((rgba >> 24) & 0xff) / 255
-    const segBottom = bottom - yOffset * depthScale * effectiveH
-    const segTop = segBottom - h * depthScale * effectiveH
+    const barH = normalizeDepth(relDepth * regionMaxDepth) * effectiveH
+    const segBottom = bottom - yOffset * barH
+    const segTop = segBottom - h * barH
     ctx.fillStyle = `rgba(${r},${g},${b},${a})`
     ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
   }

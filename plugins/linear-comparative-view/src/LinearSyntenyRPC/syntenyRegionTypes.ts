@@ -15,6 +15,7 @@ export interface SyntenyRegionData {
   snpYOffsets: Float32Array
   snpHeights: Float32Array
   snpColorTypes: Uint8Array
+  snpRelDepths: Float32Array
   snpCount: number
   mismatchPositions: Uint32Array
   mismatchBases: Uint8Array

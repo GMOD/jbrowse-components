@@ -13,13 +13,9 @@ export function drawIndicatorCanvas(
   viewWidth: number,
   state: RenderState,
 ) {
-  if (region.indicatorCount === 0) {
-    return
-  }
   drawIndicators(
     ctx,
     region.indicatorBuffer,
-    region.indicatorCount,
     {
       insertion: rgb255(state.colors.colorInsertion),
       softclip: rgb255(state.colors.colorSoftclip),

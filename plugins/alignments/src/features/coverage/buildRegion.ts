@@ -6,9 +6,11 @@ import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
 // which detaches them. A module-level singleton causes DataCloneError on
 // the second RPC reply.
 
+// coverageMaxDepth is the per-region max depth used for vertical scaling at
+// draw time. Carried alongside the buffer because it's needed even when the
+// buffer is empty (the y-axis legend uses it).
 export interface CoverageRegionFields {
   coverageBuffer: ArrayBuffer
-  coverageBinCount: number
   coverageMaxDepth: number
 }
 
@@ -19,11 +21,7 @@ export function buildCoverageFields(
 ): CoverageRegionFields {
   const n = data.coverageDepths.length
   if (!(n > 0 && data.coverageMaxDepth > 0)) {
-    return {
-      coverageBuffer: new ArrayBuffer(0),
-      coverageBinCount: 0,
-      coverageMaxDepth: 0,
-    }
+    return { coverageBuffer: new ArrayBuffer(0), coverageMaxDepth: 0 }
   }
   const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
   const buf = new ArrayBuffer(n * STRIDE_F32 * 4)
@@ -37,17 +35,9 @@ export function buildCoverageFields(
     f32[off + FIELD.bandBottom] = 0
     f32[off + FIELD.bandTop] = depths[i]!
   }
-  return {
-    coverageBuffer: buf,
-    coverageBinCount: n,
-    coverageMaxDepth: data.coverageMaxDepth,
-  }
+  return { coverageBuffer: buf, coverageMaxDepth: data.coverageMaxDepth }
 }
 
 export function emptyCoverageFields(): CoverageRegionFields {
-  return {
-    coverageBuffer: new ArrayBuffer(0),
-    coverageBinCount: 0,
-    coverageMaxDepth: 0,
-  }
+  return { coverageBuffer: new ArrayBuffer(0), coverageMaxDepth: 0 }
 }

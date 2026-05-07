@@ -126,11 +126,14 @@ export interface PileupDataResult {
   // positions). Main thread uploads directly without re-packing.
   coveragePackedBuffer: ArrayBuffer
 
-  // SNP coverage data - absolute genomic coordinates
+  // SNP coverage data - absolute genomic coordinates.
+  // yOffset/height are fractions of THIS position's coverage bar.
   snpPositions: Uint32Array
-  snpYOffsets: Float32Array // normalized 0-1
-  snpHeights: Float32Array // normalized 0-1
+  snpYOffsets: Float32Array
+  snpHeights: Float32Array
   snpColorTypes: Uint8Array // 1=A, 2=C, 3=G, 4=T
+  // relDepth = totalDepthAtPos / regionMaxDepth, scales the bar at draw time.
+  snpRelDepths: Float32Array
   // Pre-packed GPU buffer for PASS_SNP_COV (worker-built).
   snpPackedBuffer: ArrayBuffer
 
@@ -167,11 +170,14 @@ export interface PileupDataResult {
   modificationReadIndices: Uint32Array // maps each modification to its parent read index
   modificationTypeIndices?: Uint8Array // maps each modification to index in detectedModifications
 
-  // Modification coverage data - stacked colored bars in coverage area
-  modCovPositions: Uint32Array // absolute genomic coordinates
-  modCovYOffsets: Float32Array // cumulative height below segment (normalized 0-1)
-  modCovHeights: Float32Array // segment height (normalized 0-1)
+  // Modification coverage data - stacked colored bars in coverage area.
+  // yOffset/height are fractions of THIS position's coverage bar.
+  modCovPositions: Uint32Array
+  modCovYOffsets: Float32Array
+  modCovHeights: Float32Array
   modCovColors: Uint32Array // ABGR u32 per segment
+  // relDepth = totalDepthAtPos / regionMaxDepth (see snpRelDepths above).
+  modCovRelDepths: Float32Array
   // Pre-packed GPU buffer for PASS_MOD_COV (worker-built).
   modCovPackedBuffer: ArrayBuffer
 

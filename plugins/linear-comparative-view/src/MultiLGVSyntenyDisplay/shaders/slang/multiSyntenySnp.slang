@@ -8,11 +8,15 @@ import multiSyntenyUniforms;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
+// yOffset/segHeight are fractions of THIS position's coverage bar (not regional).
+// relDepth = totalDepthAtPos / regionMaxDepth scales the bar; segments are
+// linear slices of that bar. Synteny is linear-only so no log normalize step.
 struct SnpSegment {
   uint  position   : ATTR0;
   float yOffset    : ATTR1;
   float segHeight  : ATTR2;
   float colorType  : ATTR3;
+  float relDepth   : ATTR4;
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -51,8 +55,9 @@ VsOut vs_main(SnpSegment seg, uint vid : SV_VertexID) {
   float sx = lerp(px1, px2, qc.x);
   float effectiveHeight = u.coverageHeight - 2.0 * u.coverageYOffset;
   float coverageBottom = u.coverageHeight - u.coverageYOffset;
-  float segBottom = coverageBottom - seg.yOffset * u.depthScale * effectiveHeight;
-  float segTop = segBottom - seg.segHeight * u.depthScale * effectiveHeight;
+  float barH = seg.relDepth * u.depthScale * effectiveHeight;
+  float segBottom = coverageBottom - seg.yOffset * barH;
+  float segTop = segBottom - seg.segHeight * barH;
   float sy = lerp(segBottom, segTop, qc.y);
 
   float2 clipPos = float2(sx, sy) / float2(u.resolutionX, u.resolutionY) * 2.0 - 1.0;

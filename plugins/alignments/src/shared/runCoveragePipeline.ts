@@ -86,19 +86,13 @@ export async function runCoveragePipeline({
       coverage.startPos,
     )
 
-  const snpCoverage = computeSNPCoverage(
-    mismatches,
-    coverage.maxDepth,
-    regionStart,
-  )
+  const snpCoverage = computeSNPCoverage(mismatches, regionStart, coverage)
   const noncovCoverage = computeNoncovCoverage(
     insertions,
     softclips,
     hardclips,
-    coverage.maxDepth,
     regionStart,
-    coverage.depths,
-    coverage.startPos,
+    coverage,
   )
 
   const modCoverage =
@@ -106,12 +100,8 @@ export async function runCoveragePipeline({
       ? computeModificationCoverage(
           modifications,
           mismatches,
-          coverage.depths,
-          coverage.maxDepth,
-          coverage.fwdDepths,
-          coverage.revDepths,
-          coverage.startPos,
           regionStart,
+          coverage,
           regionSequence,
           regionSequenceStart ?? regionStart,
         )

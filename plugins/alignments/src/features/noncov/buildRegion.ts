@@ -1,4 +1,4 @@
-import { packNoncovSegmentsForCanvas2D } from '@jbrowse/alignments-core'
+import { packNoncovSegmentsForGpu } from '@jbrowse/alignments-core'
 
 import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
 
@@ -6,41 +6,28 @@ import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
 // which detaches them. A module-level singleton causes DataCloneError on
 // the second RPC reply.
 
+// noncovMaxCount is needed for vertical scaling at draw time (peaks scale
+// linearly to the max), so it must be carried separately from the buffer.
 export interface NoncovRegionFields {
   noncovBuffer: ArrayBuffer
-  noncovSegmentCount: number
   noncovMaxCount: number
 }
 
 export function buildNoncovFields(
   data: CoverageUploadData,
 ): NoncovRegionFields {
-  const n = data.noncovPositions.length
-  if (n === 0) {
-    return {
-      noncovBuffer: new ArrayBuffer(0),
-      noncovSegmentCount: 0,
-      noncovMaxCount: 0,
-    }
-  }
-  const packed = packNoncovSegmentsForCanvas2D(
-    data.noncovPositions,
-    data.noncovYOffsets,
-    data.noncovHeights,
-    data.noncovColorTypes,
-    n,
-  )
   return {
-    noncovBuffer: packed.buffer,
-    noncovSegmentCount: packed.segmentCount,
+    noncovBuffer: packNoncovSegmentsForGpu(
+      data.noncovPositions,
+      data.noncovYOffsets,
+      data.noncovHeights,
+      data.noncovColorTypes,
+      data.noncovPositions.length,
+    ),
     noncovMaxCount: data.noncovMaxCount,
   }
 }
 
 export function emptyNoncovFields(): NoncovRegionFields {
-  return {
-    noncovBuffer: new ArrayBuffer(0),
-    noncovSegmentCount: 0,
-    noncovMaxCount: 0,
-  }
+  return { noncovBuffer: new ArrayBuffer(0), noncovMaxCount: 0 }
 }

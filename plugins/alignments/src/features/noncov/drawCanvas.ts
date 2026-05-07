@@ -13,13 +13,9 @@ export function drawNoncovCanvas(
   viewWidth: number,
   state: RenderState,
 ) {
-  if (region.noncovSegmentCount === 0) {
-    return
-  }
   drawNoncovSegments(
     ctx,
     region.noncovBuffer,
-    region.noncovSegmentCount,
     region.noncovMaxCount,
     {
       insertion: rgb255(state.colors.colorInsertion),

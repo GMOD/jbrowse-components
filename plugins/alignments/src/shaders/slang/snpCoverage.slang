@@ -11,11 +11,16 @@ import hpmath;
 public static const uint VERTS_PER_INSTANCE = 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
+// yOffset/segHeight are fractions of THIS position's coverage bar (not regional).
+// relDepth = totalDepthAtPos / regionMaxDepth feeds the bar-height calculation
+// via normalizeDepth, so each segment is a linear slice of a possibly-log-scaled
+// bar without any per-position un-mixing at draw time.
 struct Instance {
   uint  position   : ATTR0;
   float yOffset    : ATTR1;
   float segHeight  : ATTR2;
   float colorType  : ATTR3;
+  float relDepth   : ATTR4;
 };
 
 struct VsOut {
@@ -45,10 +50,10 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     x2 = mid + minW * 0.5;
   }
 
-  float eh = effHeight(u);
   float bottom = covBottom(u);
-  float segBot = bottom + (inst.yOffset * u.depthScale * eh / u.canvasH) * 2.0;
-  float segTop = segBot + (inst.segHeight * u.depthScale * eh / u.canvasH) * 2.0;
+  float k = normalizeDepth(inst.relDepth, u) * effHeight(u) / u.canvasH * 2.0;
+  float segBot = bottom + inst.yOffset * k;
+  float segTop = segBot + inst.segHeight * k;
   o.position = float4(
     flipX(lerp(x1, x2, local.x), u),
     lerp(segBot, segTop, local.y),

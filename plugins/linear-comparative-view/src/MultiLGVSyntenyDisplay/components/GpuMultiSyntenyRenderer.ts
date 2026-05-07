@@ -105,6 +105,7 @@ export class GpuMultiSyntenyRenderer implements MultiSyntenyBackend {
             data.snpYOffsets,
             data.snpHeights,
             data.snpColorTypes,
+            data.snpRelDepths,
             data.snpCount,
           ),
         )

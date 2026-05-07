@@ -168,3 +168,4 @@ public float normalizeDepth(float relDepth, Uniforms u) {
   }
   return relDepth * u.depthScale;
 }
+

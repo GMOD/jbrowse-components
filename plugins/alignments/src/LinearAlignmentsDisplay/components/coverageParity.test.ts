@@ -37,6 +37,7 @@ function makeCoverageData(): CoverageUploadData {
   const snpYOffsets = new Float32Array([0, 0.2])
   const snpHeights = new Float32Array([0.4, 0.3])
   const snpColorTypes = new Uint8Array([1, 2])
+  const snpRelDepths = new Float32Array([1, 1])
   const noncovPositions = new Uint32Array([])
   const noncovYOffsets = new Float32Array([])
   const noncovHeights = new Float32Array([])
@@ -52,18 +53,20 @@ function makeCoverageData(): CoverageUploadData {
       coverageMaxDepth,
       COVERAGE_START_OFFSET,
       coverageDepths.length,
-    ).buffer,
+    ),
     snpPositions,
     snpYOffsets,
     snpHeights,
     snpColorTypes,
+    snpRelDepths,
     snpPackedBuffer: packSnpSegmentsForGpu(
       snpPositions,
       snpYOffsets,
       snpHeights,
       snpColorTypes,
+      snpRelDepths,
       snpPositions.length,
-    ).buffer,
+    ),
     noncovPositions,
     noncovYOffsets,
     noncovHeights,
@@ -75,14 +78,14 @@ function makeCoverageData(): CoverageUploadData {
       noncovHeights,
       noncovColorTypes,
       0,
-    ).buffer,
+    ),
     indicatorPositions,
     indicatorColorTypes,
     indicatorPackedBuffer: packIndicatorsForGpu(
       indicatorPositions,
       indicatorColorTypes,
       indicatorPositions.length,
-    ).buffer,
+    ),
   }
 }
 
@@ -236,8 +239,10 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const gpuSnpBuf = hal.getBuffer(0, 'snpCov')
     expect(gpuSnpBuf).toBeDefined()
 
-    // GPU SNP layout: [position(f32), yOffset(f32), height(f32), colorType(f32)]
+    // GPU SNP layout: [position(u32), yOffset(f32), height(f32), colorType(f32),
+    // relDepth(f32)] — 5 floats per segment.
     const gpuF32 = new Float32Array(gpuSnpBuf!.data)
+    const SNP_GPU_STRIDE = 5
 
     // Canvas2D packs with regionStart offset
     const canvas = {
@@ -253,7 +258,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     // GPU positions are relative (no regionStart), Canvas2D are absolute
     // But yOffset/height/colorType must match
     for (let i = 0; i < covData.snpPositions.length; i++) {
-      const gpuOff = i * 4
+      const gpuOff = i * SNP_GPU_STRIDE
       expect(gpuF32[gpuOff + 1]).toBeCloseTo(covData.snpYOffsets[i]!)
       expect(gpuF32[gpuOff + 2]).toBeCloseTo(covData.snpHeights[i]!)
       expect(gpuF32[gpuOff + 3]).toBe(covData.snpColorTypes[i]!)

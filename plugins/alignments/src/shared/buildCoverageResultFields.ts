@@ -29,6 +29,7 @@ export function buildCoverageResultFields(
     snpYOffsets: snpCoverage.yOffsets,
     snpHeights: snpCoverage.heights,
     snpColorTypes: snpCoverage.colorTypes,
+    snpRelDepths: snpCoverage.relDepths,
 
     noncovPositions: noncovCoverage.positions,
     noncovYOffsets: noncovCoverage.yOffsets,
@@ -43,6 +44,7 @@ export function buildCoverageResultFields(
     modCovYOffsets: modCoverage?.yOffsets ?? new Float32Array(0),
     modCovHeights: modCoverage?.heights ?? new Float32Array(0),
     modCovColors: modCoverage?.colors ?? new Uint32Array(0),
+    modCovRelDepths: modCoverage?.relDepths ?? new Float32Array(0),
 
     ...coverageAreaPacked,
     ...sashimi,

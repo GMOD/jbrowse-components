@@ -150,6 +150,7 @@ export function buildSyntenyRegionMap(
           data.snpYOffsets,
           data.snpHeights,
           data.snpColorTypes,
+          data.snpRelDepths,
           data.snpCount,
         )
       : null

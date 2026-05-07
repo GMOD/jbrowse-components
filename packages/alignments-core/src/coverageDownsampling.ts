@@ -370,28 +370,36 @@ export interface MismatchEntry {
 
 export interface SNPCoverageResult {
   positions: Uint32Array
+  // yOffset/height are fractions of the per-position bar (not regional). Drawing
+  // multiplies by the bar height at that position.
   yOffsets: Float32Array
   heights: Float32Array
   colorTypes: Uint8Array
+  // relDepth = totalDepthAtPos / regionMaxDepth. Used to compute the per-position
+  // bar height via normalizeDepth (linear or log) at draw time.
+  relDepths: Float32Array
   count: number
 }
 
 /**
  * Compute SNP coverage segments for rendering colored bars in coverage area.
  * Groups mismatches by position, counts A/C/G/T per position, and creates
- * stacked segments normalized by maxDepth.
+ * stacked segments expressed as fractions of THIS position's coverage bar.
  */
 export function computeSNPCoverage(
   mismatches: MismatchEntry[],
-  maxDepth: number,
   regionStart: number,
+  coverage: { depths: Float32Array; maxDepth: number; startPos: number },
 ): SNPCoverageResult {
+  const { depths: coverageDepths, maxDepth, startPos: coverageStartPos } =
+    coverage
   if (mismatches.length === 0 || maxDepth === 0) {
     return {
       positions: new Uint32Array(0),
       yOffsets: new Float32Array(0),
       heights: new Float32Array(0),
       colorTypes: new Uint8Array(0),
+      relDepths: new Float32Array(0),
       count: 0,
     }
   }
@@ -422,6 +430,7 @@ export function computeSNPCoverage(
     yOffset: number
     height: number
     colorType: number
+    relDepth: number
   }[] = []
 
   for (const entry of snpByPosition.values()) {
@@ -429,41 +438,38 @@ export function computeSNPCoverage(
     if (total === 0) {
       continue
     }
+    // totalDepth at this position determines bar height; SNP fractions are
+    // counts / totalDepth so they fill the visible part of the bar correctly.
+    // Skip positions outside coverage or with zero depth — there can't be
+    // SNPs without reads, so this is a data-inconsistency guard.
+    const idx = entry.position - coverageStartPos
+    const totalDepth =
+      idx >= 0 && idx < coverageDepths.length
+        ? (coverageDepths[idx] ?? 0)
+        : 0
+    if (totalDepth === 0) {
+      continue
+    }
+    const relDepth = totalDepth / maxDepth
     let yOffset = 0
     if (entry.a > 0) {
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height: entry.a / maxDepth,
-        colorType: 1,
-      })
-      yOffset += entry.a / maxDepth
+      const h = entry.a / totalDepth
+      segments.push({ position: entry.position, yOffset, height: h, colorType: 1, relDepth })
+      yOffset += h
     }
     if (entry.c > 0) {
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height: entry.c / maxDepth,
-        colorType: 2,
-      })
-      yOffset += entry.c / maxDepth
+      const h = entry.c / totalDepth
+      segments.push({ position: entry.position, yOffset, height: h, colorType: 2, relDepth })
+      yOffset += h
     }
     if (entry.g > 0) {
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height: entry.g / maxDepth,
-        colorType: 3,
-      })
-      yOffset += entry.g / maxDepth
+      const h = entry.g / totalDepth
+      segments.push({ position: entry.position, yOffset, height: h, colorType: 3, relDepth })
+      yOffset += h
     }
     if (entry.t > 0) {
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height: entry.t / maxDepth,
-        colorType: 4,
-      })
+      const h = entry.t / totalDepth
+      segments.push({ position: entry.position, yOffset, height: h, colorType: 4, relDepth })
     }
   }
 
@@ -472,12 +478,14 @@ export function computeSNPCoverage(
   const yOffsets = new Float32Array(filteredSegments.length)
   const heights = new Float32Array(filteredSegments.length)
   const colorTypes = new Uint8Array(filteredSegments.length)
+  const relDepths = new Float32Array(filteredSegments.length)
 
   for (const [i, seg] of filteredSegments.entries()) {
     positions[i] = seg.position
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
     colorTypes[i] = seg.colorType
+    relDepths[i] = seg.relDepth
   }
 
   return {
@@ -485,6 +493,7 @@ export function computeSNPCoverage(
     yOffsets,
     heights,
     colorTypes,
+    relDepths,
     count: filteredSegments.length,
   }
 }

@@ -80,7 +80,7 @@ describe('drawCoverageBins', () => {
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 100) * 10
 
-    drawCoverageBins(ctx, buf, 2, identity, 50, 'blue', bpToX, 200)
+    drawCoverageBins(ctx, buf, identity, 50, 'blue', bpToX, 200)
 
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(2)
@@ -97,7 +97,7 @@ describe('drawCoverageBins', () => {
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 1000) * 10 + 500
 
-    drawCoverageBins(ctx, buf, 1, identity, 50, 'blue', bpToX, 200)
+    drawCoverageBins(ctx, buf, identity, 50, 'blue', bpToX, 200)
 
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(0)
@@ -105,16 +105,7 @@ describe('drawCoverageBins', () => {
 
   it('does nothing with zero bins', () => {
     const { ctx, calls } = makeCtx()
-    drawCoverageBins(
-      ctx,
-      new ArrayBuffer(0),
-      0,
-      identity,
-      50,
-      'blue',
-      () => 0,
-      200,
-    )
+    drawCoverageBins(ctx, new ArrayBuffer(0), identity, 50, 'blue', () => 0, 200)
     expect(calls.length).toBe(0)
   })
 })
@@ -135,34 +126,39 @@ describe('drawSnpSegments', () => {
     insertion: '',
   }
 
-  function makeSnpBuf(pos: number, yOffset: number, segHeight: number, colorType: number) {
-    const buf = new ArrayBuffer(16)
+  // 5-float SNP record matching snpCoverage.slang layout.
+  function makeSnpBuf(
+    pos: number,
+    yOffset: number,
+    segHeight: number,
+    colorType: number,
+    relDepth: number,
+  ) {
+    const buf = new ArrayBuffer(20)
     const f32 = new Float32Array(buf)
     const u32 = new Uint32Array(buf)
     u32[0] = pos
     f32[1] = yOffset
     f32[2] = segHeight
     f32[3] = colorType
+    f32[4] = relDepth
     return buf
   }
 
   it('draws segments with correct colors', () => {
-    const buf = makeSnpBuf(100, 0.5, 0.3, 1)
+    const buf = makeSnpBuf(100, 0.5, 0.3, 1, 1)
     const { ctx, calls } = makeCtx()
-    drawSnpSegments(ctx, buf, 1, d => d, 1, coverageHeight, colors, bp => bp - 100, 200)
+    drawSnpSegments(ctx, buf, d => d, 1, coverageHeight, colors, bp => bp - 100, 200)
     const styleCalls = calls.filter(c => c.method === 'fillStyle')
     expect(styleCalls.some(c => c.args[0] === 'red')).toBe(true)
   })
 
-  it('linear scale: positions SNP at correct fraction of bar', () => {
-    // regionMaxDepth=100, totalDepth=100, domainMax=100 → full bar
-    // yOffset=0 (at bottom), segHeight=0.3 (30 reads / 100 max)
-    // barH = (100/100)*40 = 40, depthFrac = 100/100 = 1
-    // segBottom = 45 - 0*1*40 = 45, segTop = 45 - 0.3*1*40 = 33
-    const buf = makeSnpBuf(100, 0, 0.3, 1)
-    const totalDepths = new Float32Array([100])
+  it('linear scale: positions SNP as fraction of per-position bar', () => {
+    // totalDepth=domainMax=100, so bar fills the whole effectiveH.
+    // yOffset=0, segHeight=0.3 (30% of this position's bar) → 30% of effectiveH.
+    const buf = makeSnpBuf(100, 0, 0.3, 1, 1)
     const { ctx, calls } = makeCtx()
-    drawSnpSegments(ctx, buf, 1, (d: number) => d / 100, 100, coverageHeight, colors, bp => bp - 100, 200, totalDepths)
+    drawSnpSegments(ctx, buf, (d: number) => d / 100, 100, coverageHeight, colors, bp => bp - 100, 200)
     const rects = calls.filter(c => c.method === 'fillRect')
     expect(rects).toHaveLength(1)
     const [, y, , h] = rects[0]!.args as number[]
@@ -171,40 +167,35 @@ describe('drawSnpSegments', () => {
   })
 
   it('log scale: SNP is a linear fraction of the log-scaled bar', () => {
-    // totalDepth=100, domainMax=1000 (log scale)
-    // log-normalized bar height = log2(100)/log2(1000) * effectiveH ≈ 0.6667 * 40
+    // totalDepth=100, domainMax=1000. relDepth=0.1 (=100/1000).
+    // log-normalized bar height = log2(100)/log2(1000) * effectiveH.
     const domainMax = 1000
     const totalDepth = 100
     const logBarFrac = Math.log2(totalDepth) / Math.log2(domainMax)
     const expectedBarH = logBarFrac * effectiveH
 
-    // snpFrac = 10 snps / 100 total = 0.1
-    // yOffset = 0/100 = 0, segHeight = 10/100 = 0.1 (regionMaxDepth = totalDepth = 100 here)
-    const buf = makeSnpBuf(100, 0, 0.1, 1)
-    const totalDepths = new Float32Array([totalDepth])
+    // yOffset=0, segHeight=0.1 (10 SNPs / 100 totalDepth at position).
+    const buf = makeSnpBuf(100, 0, 0.1, 1, totalDepth / domainMax)
     const logNormalize = (d: number) => Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
     const { ctx, calls } = makeCtx()
-    drawSnpSegments(ctx, buf, 1, logNormalize, 100, coverageHeight, colors, bp => bp - 100, 200, totalDepths)
+    drawSnpSegments(ctx, buf, logNormalize, domainMax, coverageHeight, colors, bp => bp - 100, 200)
     const rects = calls.filter(c => c.method === 'fillRect')
     expect(rects).toHaveLength(1)
-    const [, y, , h] = rects[0]!.args as number[]
+    const [, , , h] = rects[0]!.args as number[]
     expect(h).toBeCloseTo(0.1 * expectedBarH, 5)
-    expect(y).toBeCloseTo(bottom - expectedBarH + (expectedBarH - 0.1 * expectedBarH), 5)
   })
 
   it('log scale bar is taller than linear for same depth', () => {
-    // At 10% of domain max, log scale produces a taller bar than linear
     const domainMax = 1000
     const totalDepth = 100
-    const buf = makeSnpBuf(100, 0, 0.1, 1)
-    const totalDepths = new Float32Array([totalDepth])
+    const buf = makeSnpBuf(100, 0, 0.1, 1, totalDepth / domainMax)
 
     const { ctx: linCtx, calls: linCalls } = makeCtx()
-    drawSnpSegments(linCtx, buf, 1, (d: number) => d / domainMax, 100, coverageHeight, colors, bp => bp - 100, 200, totalDepths)
+    drawSnpSegments(linCtx, buf, (d: number) => d / domainMax, domainMax, coverageHeight, colors, bp => bp - 100, 200)
 
-    const { ctx: logCtx, calls: logCalls } = makeCtx()
     const logNorm = (d: number) => Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
-    drawSnpSegments(logCtx, buf, 1, logNorm, 100, coverageHeight, colors, bp => bp - 100, 200, totalDepths)
+    const { ctx: logCtx, calls: logCalls } = makeCtx()
+    drawSnpSegments(logCtx, buf, logNorm, domainMax, coverageHeight, colors, bp => bp - 100, 200)
 
     const linH = (linCalls.find(c => c.method === 'fillRect')!.args as number[])[3]!
     const logH = (logCalls.find(c => c.method === 'fillRect')!.args as number[])[3]!
@@ -213,6 +204,12 @@ describe('drawSnpSegments', () => {
 })
 
 describe('drawModCovSegments', () => {
+  // coverageHeight=50, YSCALEBAR_LABEL_OFFSET=5 → effectiveH=40, bottom=45
+  const coverageHeight = 50
+  const effectiveH = 40
+  const bottom = 45
+
+  // 5-float modCov record matching modCoverage.slang layout.
   function makeModCovBuf(
     pos: number,
     yOffset: number,
@@ -221,8 +218,9 @@ describe('drawModCovSegments', () => {
     g: number,
     b: number,
     a: number,
+    relDepth: number,
   ) {
-    const buf = new ArrayBuffer(16)
+    const buf = new ArrayBuffer(20)
     const u32 = new Uint32Array(buf)
     const f32 = new Float32Array(buf)
     u32[0] = pos
@@ -231,14 +229,14 @@ describe('drawModCovSegments', () => {
     // packed ABGR: r in bits 0-7, g in 8-15, b in 16-23, a in 24-31
     u32[3] =
       (r & 0xff) | ((g & 0xff) << 8) | ((b & 0xff) << 16) | ((a & 0xff) << 24)
+    f32[4] = relDepth
     return buf
   }
 
   it('draws with 1bp width at high zoom', () => {
-    const buf = makeModCovBuf(100, 0.5, 0.3, 255, 0, 0, 255)
+    const buf = makeModCovBuf(100, 0.5, 0.3, 255, 0, 0, 255, 1)
     const { ctx, calls } = makeCtx()
-    // 10px per bp — width should be 10, not 1
-    drawModCovSegments(ctx, buf, 1, 1, 50, bp => (bp - 100) * 10, 200)
+    drawModCovSegments(ctx, buf, d => d, 1, 50, bp => (bp - 100) * 10, 200)
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(1)
     const [, , w] = fillCalls[0]!.args as [number, number, number, number]
@@ -246,10 +244,9 @@ describe('drawModCovSegments', () => {
   })
 
   it('clamps width to 1px at low zoom', () => {
-    const buf = makeModCovBuf(100, 0.5, 0.3, 255, 0, 0, 255)
+    const buf = makeModCovBuf(100, 0.5, 0.3, 255, 0, 0, 255, 1)
     const { ctx, calls } = makeCtx()
-    // 0.1px per bp — width should clamp to 1
-    drawModCovSegments(ctx, buf, 1, 1, 50, bp => (bp - 100) * 0.1, 200)
+    drawModCovSegments(ctx, buf, d => d, 1, 50, bp => (bp - 100) * 0.1, 200)
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(1)
     const [, , w] = fillCalls[0]!.args as [number, number, number, number]
@@ -257,11 +254,57 @@ describe('drawModCovSegments', () => {
   })
 
   it('unpacks color correctly', () => {
-    const buf = makeModCovBuf(100, 0.5, 0.3, 200, 100, 50, 255)
+    const buf = makeModCovBuf(100, 0.5, 0.3, 200, 100, 50, 255, 1)
     const { ctx, calls } = makeCtx()
-    drawModCovSegments(ctx, buf, 1, 1, 50, bp => (bp - 100) * 5, 200)
+    drawModCovSegments(ctx, buf, d => d, 1, 50, bp => (bp - 100) * 5, 200)
     const styleCall = calls.find(c => c.method === 'fillStyle')
     expect(styleCall?.args[0]).toBe('rgba(200,100,50,1)')
+  })
+
+  it('linear scale: positions mod segment as fraction of per-position bar', () => {
+    const buf = makeModCovBuf(100, 0, 0.3, 200, 100, 50, 255, 1)
+    const { ctx, calls } = makeCtx()
+    drawModCovSegments(ctx, buf, (d: number) => d / 100, 100, coverageHeight, bp => bp - 100, 200)
+    const rects = calls.filter(c => c.method === 'fillRect')
+    expect(rects).toHaveLength(1)
+    const [, y, , h] = rects[0]!.args as number[]
+    expect(y).toBeCloseTo(bottom - 0.3 * effectiveH, 5)
+    expect(h).toBeCloseTo(0.3 * effectiveH, 5)
+  })
+
+  it('log scale: mod segment is a linear fraction of the log-scaled bar', () => {
+    const domainMax = 1000
+    const totalDepth = 100
+    const logBarFrac = Math.log2(totalDepth) / Math.log2(domainMax)
+    const expectedBarH = logBarFrac * effectiveH
+
+    const buf = makeModCovBuf(100, 0, 0.1, 200, 100, 50, 255, totalDepth / domainMax)
+    const logNormalize = (d: number) =>
+      Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
+    const { ctx, calls } = makeCtx()
+    drawModCovSegments(ctx, buf, logNormalize, domainMax, coverageHeight, bp => bp - 100, 200)
+    const rects = calls.filter(c => c.method === 'fillRect')
+    expect(rects).toHaveLength(1)
+    const [, , , h] = rects[0]!.args as number[]
+    expect(h).toBeCloseTo(0.1 * expectedBarH, 5)
+  })
+
+  it('log scale bar is taller than linear for same depth', () => {
+    const domainMax = 1000
+    const totalDepth = 100
+    const buf = makeModCovBuf(100, 0, 0.1, 200, 100, 50, 255, totalDepth / domainMax)
+
+    const { ctx: linCtx, calls: linCalls } = makeCtx()
+    drawModCovSegments(linCtx, buf, (d: number) => d / domainMax, domainMax, coverageHeight, bp => bp - 100, 200)
+
+    const logNorm = (d: number) =>
+      Math.log2(Math.max(d, 1)) / Math.log2(Math.max(domainMax, 1))
+    const { ctx: logCtx, calls: logCalls } = makeCtx()
+    drawModCovSegments(logCtx, buf, logNorm, domainMax, coverageHeight, bp => bp - 100, 200)
+
+    const linH = (linCalls.find(c => c.method === 'fillRect')!.args as number[])[3]!
+    const logH = (logCalls.find(c => c.method === 'fillRect')!.args as number[])[3]!
+    expect(logH).toBeGreaterThan(linH)
   })
 })
 
@@ -282,7 +325,7 @@ describe('drawIndicators', () => {
     f32[3] = 2 // softclip
 
     const { ctx, calls } = makeCtx()
-    drawIndicators(ctx, buf, 2, noncovColors, bp => bp, 200)
+    drawIndicators(ctx, buf, noncovColors, (bp: number) => bp, 200)
 
     const styleCalls = calls.filter(c => c.method === 'fillStyle')
     expect(styleCalls.some(c => c.args[0] === 'purple')).toBe(true)
@@ -296,7 +339,7 @@ describe('drawIndicators', () => {
     f32[1] = 1
 
     const { ctx, calls } = makeCtx()
-    drawIndicators(ctx, buf, 1, noncovColors, bp => bp, 200)
+    drawIndicators(ctx, buf, noncovColors, (bp: number) => bp, 200)
 
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(0)

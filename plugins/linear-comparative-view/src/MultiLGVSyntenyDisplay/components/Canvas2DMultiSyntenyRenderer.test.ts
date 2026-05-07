@@ -57,7 +57,7 @@ function buildRegion(
     }
   }
   const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
-  const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+  const snp = computeSNPCoverage(mismatches, regionStart, coverage)
   const indicators = computeInsertionIndicators(
     indels,
     coverage.depths,
@@ -80,6 +80,7 @@ function buildRegion(
     snpYOffsets: snp.yOffsets,
     snpHeights: snp.heights,
     snpColorTypes: snp.colorTypes,
+    snpRelDepths: snp.relDepths,
     snpCount: snp.count,
     mismatchPositions,
     mismatchBases,

@@ -1,4 +1,4 @@
-import { packModCovSegmentsForCanvas2D } from '@jbrowse/alignments-core'
+import { packModCovSegmentsForGpu } from '@jbrowse/alignments-core'
 
 import type { ModCoverageUploadData } from '../../shared/uploadTypes.ts'
 
@@ -8,29 +8,23 @@ import type { ModCoverageUploadData } from '../../shared/uploadTypes.ts'
 
 export interface ModCoverageRegionFields {
   modCovBuffer: ArrayBuffer
-  modCovSegmentCount: number
 }
 
 export function buildModCoverageFields(
   data: ModCoverageUploadData,
 ): ModCoverageRegionFields {
-  const n = data.modCovPositions.length
-  if (n === 0) {
-    return { modCovBuffer: new ArrayBuffer(0), modCovSegmentCount: 0 }
-  }
-  const packed = packModCovSegmentsForCanvas2D(
-    data.modCovPositions,
-    data.modCovYOffsets,
-    data.modCovHeights,
-    data.modCovColors,
-    n,
-  )
   return {
-    modCovBuffer: packed.buffer,
-    modCovSegmentCount: packed.segmentCount,
+    modCovBuffer: packModCovSegmentsForGpu(
+      data.modCovPositions,
+      data.modCovYOffsets,
+      data.modCovHeights,
+      data.modCovColors,
+      data.modCovRelDepths,
+      data.modCovPositions.length,
+    ),
   }
 }
 
 export function emptyModCoverageFields(): ModCoverageRegionFields {
-  return { modCovBuffer: new ArrayBuffer(0), modCovSegmentCount: 0 }
+  return { modCovBuffer: new ArrayBuffer(0) }
 }

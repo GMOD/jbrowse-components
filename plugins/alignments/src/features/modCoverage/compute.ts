@@ -25,21 +25,31 @@ interface ModificationColorEntry {
 export function computeModificationCoverage(
   modifications: ModificationEntry[],
   mismatches: MismatchData[],
-  depths: Float32Array,
-  regionMaxDepth: number,
-  fwdDepths: Float32Array | undefined,
-  revDepths: Float32Array | undefined,
-  depthStartOffset: number,
   regionStart: number,
+  coverage: {
+    depths: Float32Array
+    maxDepth: number
+    startPos: number
+    fwdDepths: Float32Array | undefined
+    revDepths: Float32Array | undefined
+  },
   regionSequence: string | undefined,
   regionSequenceStart: number,
 ) {
+  const {
+    depths,
+    maxDepth: regionMaxDepth,
+    startPos: depthStartOffset,
+    fwdDepths,
+    revDepths,
+  } = coverage
   if (modifications.length === 0) {
     return {
       positions: new Uint32Array(0),
       yOffsets: new Float32Array(0),
       heights: new Float32Array(0),
       colors: new Uint32Array(0),
+      relDepths: new Float32Array(0),
       count: 0,
     }
   }
@@ -93,10 +103,14 @@ export function computeModificationCoverage(
     entry.probabilityCount++
   }
 
+  // yOffset/height are fractions of THIS position's coverage bar (per-position
+  // semantics). relDepth = depthAtPos / regionMaxDepth feeds bar height at draw
+  // time. See computeSNPCoverage for the same contract.
   const segments: {
     position: number
     yOffset: number
     height: number
+    relDepth: number
     r: number
     g: number
     b: number
@@ -158,9 +172,10 @@ export function computeModificationCoverage(
         strandBaseCounts,
       })
 
-      // depthAtPosition cancels: (mod/depth * probTotal/det) * (depth/maxDepth)
+      // height = mod-fraction × avg-probability, both as fractions of this
+      // position's reads. Multiplied by per-position bar height at draw time.
       const height =
-        (modifiable * entry.probabilityTotal) / (detectable * regionMaxDepth)
+        (modifiable * entry.probabilityTotal) / (detectable * depthAtPosition)
 
       const avgProbability =
         entry.probabilityCount > 0
@@ -172,6 +187,7 @@ export function computeModificationCoverage(
           position,
           yOffset,
           height,
+          relDepth: depthAtPosition / regionMaxDepth,
           r: entry.r,
           g: entry.g,
           b: entry.b,
@@ -187,6 +203,7 @@ export function computeModificationCoverage(
   const heights = new Float32Array(segments.length)
   // Packed ABGR u32 per segment (alpha byte = seg.alpha, 0..255).
   const colors = new Uint32Array(segments.length)
+  const relDepths = new Float32Array(segments.length)
 
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i]!
@@ -194,7 +211,15 @@ export function computeModificationCoverage(
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
     colors[i] = packAbgr(seg.r, seg.g, seg.b, seg.alpha)
+    relDepths[i] = seg.relDepth
   }
 
-  return { positions, yOffsets, heights, colors, count: segments.length }
+  return {
+    positions,
+    yOffsets,
+    heights,
+    colors,
+    relDepths,
+    count: segments.length,
+  }
 }

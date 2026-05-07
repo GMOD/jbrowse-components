@@ -1,4 +1,4 @@
-import { packIndicatorsForCanvas2D } from '@jbrowse/alignments-core'
+import { packIndicatorsForGpu } from '@jbrowse/alignments-core'
 
 import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
 
@@ -8,27 +8,20 @@ import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
 
 export interface IndicatorRegionFields {
   indicatorBuffer: ArrayBuffer
-  indicatorCount: number
 }
 
 export function buildIndicatorFields(
   data: CoverageUploadData,
 ): IndicatorRegionFields {
-  const n = data.indicatorPositions.length
-  if (n === 0) {
-    return { indicatorBuffer: new ArrayBuffer(0), indicatorCount: 0 }
-  }
-  const packed = packIndicatorsForCanvas2D(
-    data.indicatorPositions,
-    data.indicatorColorTypes,
-    n,
-  )
   return {
-    indicatorBuffer: packed.buffer,
-    indicatorCount: packed.indicatorCount,
+    indicatorBuffer: packIndicatorsForGpu(
+      data.indicatorPositions,
+      data.indicatorColorTypes,
+      data.indicatorPositions.length,
+    ),
   }
 }
 
 export function emptyIndicatorFields(): IndicatorRegionFields {
-  return { indicatorBuffer: new ArrayBuffer(0), indicatorCount: 0 }
+  return { indicatorBuffer: new ArrayBuffer(0) }
 }

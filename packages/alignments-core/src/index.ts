@@ -59,22 +59,19 @@ export {
 export type { NoncovDrawColors } from './rendererUtils.ts'
 export {
   packCoverageBinsForGpu,
-  packIndicatorsForCanvas2D,
   packIndicatorsForGpu,
-  packModCovSegmentsForCanvas2D,
   packModCovSegmentsForGpu,
-  packNoncovSegmentsForCanvas2D,
   packNoncovSegmentsForGpu,
-  packSnpSegmentsForCanvas2D,
   packSnpSegmentsForGpu,
 } from './coverageGpuPacking.ts'
-export type {
-  CoverageBinsGpuUpload,
-  IndicatorGpuUpload,
-  ModCovGpuUpload,
-  NoncovGpuUpload,
-  SnpGpuUpload,
-} from './coverageGpuPacking.ts'
+export {
+  FIELD_OFFSET_F32 as SNP_COVERAGE_FIELD_OFFSET_F32,
+  INSTANCE_STRIDE_F32 as SNP_COVERAGE_STRIDE_F32,
+} from './snpCoverageLayout.generated.ts'
+export {
+  FIELD_OFFSET_F32 as MOD_COVERAGE_FIELD_OFFSET_F32,
+  INSTANCE_STRIDE_F32 as MOD_COVERAGE_STRIDE_F32,
+} from './modCoverageLayout.generated.ts'
 export {
   YSCALEBAR_LABEL_OFFSET,
   buildCoverageTooltipBin,

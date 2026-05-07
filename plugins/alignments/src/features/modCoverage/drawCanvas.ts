@@ -1,4 +1,5 @@
 import { drawModCovSegments } from '@jbrowse/alignments-core'
+import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import type { ModCoverageRegionFields } from './buildRegion.ts'
 import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
@@ -13,15 +14,14 @@ export function drawModCoverageCanvas(
   state: RenderState,
 ) {
   const domainMax = state.coverageMaxDepth
-  if (!domainMax || region.modCovSegmentCount === 0) {
+  if (!domainMax) {
     return
   }
-  const snpDepthScale = region.coverageMaxDepth / domainMax
   drawModCovSegments(
     ctx,
     region.modCovBuffer,
-    region.modCovSegmentCount,
-    snpDepthScale,
+    makeScoreNormalizer(0, domainMax, state.coverageIsLog),
+    region.coverageMaxDepth,
     state.coverageHeight,
     bpToX,
     viewWidth,

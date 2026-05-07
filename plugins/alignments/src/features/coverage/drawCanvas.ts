@@ -25,7 +25,6 @@ export function drawCoverageBars(
   drawCoverageBins(
     ctx,
     region.coverageBuffer,
-    region.coverageBinCount,
     makeScoreNormalizer(0, domainMax, state.coverageIsLog),
     state.coverageHeight,
     rgb255(state.colors.colorCoverage),

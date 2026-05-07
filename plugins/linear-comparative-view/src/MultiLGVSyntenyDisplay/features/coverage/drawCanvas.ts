@@ -13,14 +13,10 @@ export function drawCoverageCanvas(
   coverageHeight: number,
   coverageColor: string,
 ) {
-  if (region.binCount === 0) {
-    return
-  }
   drawCoverageBins(
     ctx,
     region.buffer,
-    region.binCount,
-    d => d,
+    (d: number) => d,
     coverageHeight,
     coverageColor,
     bpToX,
