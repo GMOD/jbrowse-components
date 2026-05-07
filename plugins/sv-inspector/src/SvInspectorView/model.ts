@@ -272,6 +272,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               if (!width || !init) {
                 return
               }
+              if (!init.uri) {
+                self.setInit(undefined)
+                return
+              }
 
               const session = getSession(self)
 

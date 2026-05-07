@@ -30,27 +30,46 @@ const DEFAULT_SETTLE_MS = 2500
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-function startServer(port: number): Promise<http.Server> {
+function proxyToPort(
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  targetPort: number,
+) {
+  const options: http.RequestOptions = {
+    hostname: 'localhost',
+    port: targetPort,
+    path: req.url ?? '/',
+    method: req.method,
+    headers: req.headers,
+  }
+  const proxyReq = http.request(options, proxyRes => {
+    res.writeHead(proxyRes.statusCode ?? 200, proxyRes.headers)
+    proxyRes.pipe(res, { end: true })
+  })
+  proxyReq.on('error', err => {
+    console.error(`    proxy error: ${err.message}`)
+    res.writeHead(502)
+    res.end('Bad Gateway')
+  })
+  req.pipe(proxyReq, { end: true })
+}
+
+function startServer(port: number, proxyPort?: number): Promise<http.Server> {
+  const corsHeaders = [
+    { source: '**/*', headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }] },
+  ]
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
       const url = req.url ?? '/'
-      let publicPath: string
       if (url.startsWith('/test_data/')) {
-        publicPath = testDataRoot
+        return handler(req, res, { public: testDataRoot, headers: corsHeaders })
       } else if (url.startsWith('/extra_test_data/')) {
-        publicPath = repoRoot
+        return handler(req, res, { public: repoRoot, headers: corsHeaders })
+      } else if (proxyPort !== undefined) {
+        proxyToPort(req, res, proxyPort)
       } else {
-        publicPath = buildPath
+        return handler(req, res, { public: buildPath, headers: corsHeaders })
       }
-      return handler(req, res, {
-        public: publicPath,
-        headers: [
-          {
-            source: '**/*',
-            headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }],
-          },
-        ],
-      })
     })
     server.on('error', reject)
     server.listen(port, () => resolve(server))
@@ -156,6 +175,24 @@ async function captureLGV(
   await delay(spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
 
+async function debugDump(page: Page, name: string) {
+  const bodyText = await page
+    .evaluate(() => document.body?.innerText?.substring(0, 800))
+    .catch(() => 'eval failed')
+  console.error(
+    `    debug text: ${(bodyText ?? '').replace(/\s+/g, ' ').trim()}`,
+  )
+  const debugPath = path.join(
+    outDir,
+    `debug_${name.replace(/\//g, '_')}.png`,
+  )
+  await page
+    .screenshot()
+    .then(png => fs.writeFileSync(debugPath, png))
+    .catch(() => {})
+  console.error(`    debug screenshot: ${debugPath}`)
+}
+
 async function captureUrl(
   page: Page,
   spec: ScreenshotSpec & { mode: 'url' },
@@ -165,21 +202,33 @@ async function captureUrl(
     ? spec.url
     : `http://localhost:${port}/${spec.url}`
   await page.goto(fullUrl, {
-    waitUntil: spec.url.startsWith('http') ? 'domcontentloaded' : 'networkidle0',
+    waitUntil:
+      spec.waitUntil ?? (spec.url.startsWith('http') ? 'domcontentloaded' : 'networkidle0'),
     timeout: 60000,
   })
 
+  const readyTimeout = spec.readyTimeout ?? 30000
   if (spec.readyText) {
-    await page.waitForSelector(`::-p-text(${spec.readyText})`, {
-      visible: true,
-      timeout: 30000,
-    })
+    await page
+      .waitForSelector(`::-p-text(${spec.readyText})`, {
+        visible: true,
+        timeout: readyTimeout,
+      })
+      .catch(async e => {
+        await debugDump(page, spec.name)
+        throw e
+      })
   }
   if (spec.readySelector) {
-    await page.waitForSelector(spec.readySelector, {
-      visible: true,
-      timeout: 30000,
-    })
+    await page
+      .waitForSelector(spec.readySelector, {
+        visible: true,
+        timeout: readyTimeout,
+      })
+      .catch(async e => {
+        await debugDump(page, spec.name)
+        throw e
+      })
   }
 
   await waitForLoadingComplete(page)
@@ -240,19 +289,21 @@ async function main() {
   )
 
   let server: http.Server | undefined
-  const port = externalPort ?? DEFAULT_PORT
+  const port = DEFAULT_PORT
 
-  if (needsLocalServer && !externalPort) {
-    if (!fs.existsSync(buildPath)) {
+  if (needsLocalServer) {
+    if (!externalPort && !fs.existsSync(buildPath)) {
       console.error(
         `Build not found at ${buildPath}. Run "pnpm build" in products/jbrowse-web first, or pass --port=N to use an existing server.`,
       )
       process.exit(1)
     }
-    server = await startServer(port)
-    console.log(`Server on port ${port}`)
-  } else if (externalPort) {
-    console.log(`Using server on port ${port}`)
+    server = await startServer(port, externalPort)
+    console.log(
+      externalPort
+        ? `Proxy on port ${port}, app on port ${externalPort}`
+        : `Server on port ${port}`,
+    )
   }
 
   const chromePaths = [
@@ -284,8 +335,9 @@ async function main() {
       try {
         const page = await browser.newPage()
         page.on('console', msg => {
-          if (msg.type() === 'error' && !msg.text().includes('favicon')) {
-            console.error(`    browser: ${msg.text().substring(0, 200)}`)
+          const t = msg.type()
+          if ((t === 'error' || t === 'warning') && !msg.text().includes('favicon')) {
+            console.error(`    browser[${t}]: ${msg.text().substring(0, 200)}`)
           }
         })
         await captureSpec(page, spec, port)

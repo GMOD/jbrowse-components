@@ -26,6 +26,8 @@ interface SessionUrlSpec {
   url: string // full query string starting with '?' or a full URL
   readyText?: string // text to wait for before settle
   readySelector?: string // CSS selector to wait for before settle
+  readyTimeout?: number // ms override for the ready wait (default 30000)
+  waitUntil?: 'networkidle0' | 'domcontentloaded' // override goto waitUntil
   crop?: { x: number; y: number; width: number; height: number }
   settleMs?: number
   actions?: ScreenshotAction[]
@@ -114,13 +116,6 @@ export const specs: ScreenshotSpec[] = [
     name: 'alignments_soft_clipped',
     loc: 'ctgA:1-10000',
     openTracks: ['volvox_samspec_cram'],
-    settleMs: 4000,
-  },
-
-  {
-    name: 'linear_longread',
-    loc: 'ctgA:1-50000',
-    openTracks: ['volvox-long-reads-cram'],
     settleMs: 4000,
   },
 
@@ -244,55 +239,8 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 5000,
   },
 
-  // COLO829 methylation (requires network — loads from public S3/jbrowse.org)
-  {
-    mode: 'url',
-    name: 'methylation/per_read_mod_bam',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr20:10,000,000-10,002,000',
-          tracks: [
-            {
-              trackId: 'COLO829_tumor.ht',
-              displaySnapshot: {
-                PileupDisplay: { colorBy: { type: 'methylation' } },
-              },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'chr20',
-    settleMs: 10000,
-  },
-
-  {
-    mode: 'url',
-    name: 'methylation/colo829_cram_and_bedmethyl',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr20:10,000,000-10,002,000',
-          tracks: [
-            {
-              trackId: 'COLO829_tumor.ht',
-              displaySnapshot: {
-                PileupDisplay: { colorBy: { type: 'methylation' } },
-              },
-            },
-            'COLO829_tumor.ht_modkit.bed_multi',
-          ],
-        },
-      ],
-    }),
-    readyText: 'chr20',
-    settleMs: 12000,
-  },
+  // COLO829 methylation specs removed pending LinearAlignmentsDisplay refactoring
+  // (displaySnapshot sub-display overrides are broken and being redesigned)
 
   // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
 
@@ -303,12 +251,14 @@ export const specs: ScreenshotSpec[] = [
       views: [
         {
           type: 'SvInspectorView',
-          tracks: ['breast_cancer_sniffles_hg19_traonly_tabix'],
+          assembly: 'hg19',
+          uri: 'https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz',
         },
       ],
     }),
-    readyText: 'chr1',
-    settleMs: 10000,
+    readyText: 'CHROM',
+    readyTimeout: 60000,
+    settleMs: 15000,
   },
 
   {
@@ -317,7 +267,7 @@ export const specs: ScreenshotSpec[] = [
     url: sessionSpec(VOLVOX, {
       views: [{ type: 'SvInspectorView' }],
     }),
-    readyText: 'SV Inspector',
+    readyText: 'Open file from URL or local computer',
     settleMs: 3000,
   },
 
@@ -326,6 +276,7 @@ export const specs: ScreenshotSpec[] = [
     name: 'horizontally_flip',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-6pkcSXlbFL&password=ER28C',
     readyText: 'chr',
+    readyTimeout: 60000,
     settleMs: 12000,
   },
 
@@ -334,6 +285,7 @@ export const specs: ScreenshotSpec[] = [
     name: 'cnv',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-AcZSrC_yOb&password=e7b64',
     readyText: 'chr',
+    readyTimeout: 60000,
     settleMs: 12000,
   },
 
@@ -342,6 +294,7 @@ export const specs: ScreenshotSpec[] = [
     name: 'skbr3_translocation',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-Swq8pJTX0z&password=yM41l',
     readyText: 'chr',
+    readyTimeout: 60000,
     settleMs: 12000,
   },
 
@@ -350,6 +303,7 @@ export const specs: ScreenshotSpec[] = [
     name: 'smalldel',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-psOr2x2efp&password=bErZE',
     readyText: 'chr20',
+    readyTimeout: 60000,
     settleMs: 12000,
   },
 
@@ -366,6 +320,7 @@ export const specs: ScreenshotSpec[] = [
     name: 'multisv',
     url: 'https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw',
     readyText: 'chr19',
+    readyTimeout: 60000,
     settleMs: 15000,
   },
 
@@ -402,14 +357,7 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-20000',
-          tracks: [
-            {
-              trackId: 'volvox-simple-inv-paired.cram',
-              displaySnapshot: {
-                PileupDisplay: { colorBy: { type: 'orientation' } },
-              },
-            },
-          ],
+          tracks: ['volvox-simple-inv-paired.cram'],
         },
       ],
     }),
@@ -422,8 +370,11 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/translocation_sv_inspector_start',
-    url: cgiabUrl(),
-    readyText: 'Structural Variant Inspector',
+    url: cgiabUrl({
+      views: [{ type: 'SvInspectorView' }],
+    }),
+    readyText: 'Open file from URL or local computer',
+    readyTimeout: 60000,
     settleMs: 3000,
   },
 
@@ -434,13 +385,13 @@ export const specs: ScreenshotSpec[] = [
       views: [
         {
           type: 'SvInspectorView',
-          tracks: [
-            'GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf',
-          ],
+          assembly: 'GRCh38_GIABv3',
+          uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.4-20250714/GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf.gz',
         },
       ],
     }),
     readyText: 'chr1',
+    readyTimeout: 60000,
     settleMs: 10000,
   },
 
@@ -451,6 +402,7 @@ export const specs: ScreenshotSpec[] = [
       views: [{ type: 'LinearGenomeView', assembly: 'GRCh38_GIABv3' }],
     }),
     readyText: 'Show all regions in assembly',
+    readyTimeout: 60000,
     settleMs: 3000,
   },
 
@@ -458,6 +410,28 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/deletion_linear_view',
     url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
+          name: 'HG008-T PacBio HiFi 116x',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam.bai',
+                locationType: 'UriLocation',
+              },
+              indexType: 'BAI',
+            },
+          },
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -471,6 +445,7 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr5',
+    readyTimeout: 60000,
     settleMs: 15000,
   },
 
@@ -491,6 +466,7 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr5',
+    readyTimeout: 60000,
     settleMs: 12000,
   },
 
@@ -531,6 +507,7 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr3',
+    readyTimeout: 60000,
     settleMs: 15000,
   },
 ]
