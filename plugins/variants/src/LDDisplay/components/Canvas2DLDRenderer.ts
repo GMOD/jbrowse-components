@@ -1,4 +1,8 @@
-import { lookupColorRamp, prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import {
+  lookupColorRamp,
+  makeRampFillStyleLut,
+  prepareCanvas,
+} from '@jbrowse/core/gpu/canvas2dUtils'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 import { mapLDValue } from './ldColorRamp.ts'
@@ -32,6 +36,7 @@ export function drawLDBlocks(
 
   const n = boundaries.length - 1
   const s = COS45 * viewScale
+  const fillStyleLut = makeRampFillStyleLut(colorRamp)
   let k = 0
   for (let i = 1; i < n; i++) {
     const py = boundaries[i]!
@@ -42,7 +47,7 @@ export function drawLDBlocks(
       const ldVal = ldValues[k++]!
 
       const t = mapLDValue(ldVal, signedLD)
-      const { r, g, b, a } = lookupColorRamp(colorRamp, t)
+      const { a } = lookupColorRamp(colorRamp, t)
       if (a < 0.01) {
         continue
       }
@@ -54,7 +59,7 @@ export function drawLDBlocks(
       const halfW = cw * s
       const halfH = ch * s * yScalar
 
-      ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+      ctx.fillStyle = fillStyleLut(t)
       ctx.beginPath()
       ctx.moveTo(leftX, centerY)
       ctx.lineTo(leftX + halfW, centerY - halfH)

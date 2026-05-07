@@ -1,4 +1,7 @@
-import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import {
+  makeRampFillStyleLut,
+  prepareCanvas,
+} from '@jbrowse/core/gpu/canvas2dUtils'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 import { lookupColorRamp, mapHicCount } from './colorRamp.ts'
@@ -42,6 +45,7 @@ export function drawHicBlocks(
   const s = SQRT_HALF * viewScale
   const hw = binWidth * s
   const hh = binWidth * s * yScalar
+  const fillStyleLut = makeRampFillStyleLut(colorRamp)
 
   for (let i = 0; i < numContacts; i++) {
     const px = positions[i * 2]!
@@ -49,7 +53,7 @@ export function drawHicBlocks(
     const count = counts[i]!
 
     const t = mapHicCount(count, colorMaxScore, useLogScale)
-    const { r, g, b, a } = lookupColorRamp(colorRamp, t)
+    const { a } = lookupColorRamp(colorRamp, t)
 
     if (a < 0.01) {
       continue
@@ -67,7 +71,7 @@ export function drawHicBlocks(
     ctx.lineTo(base + 2 * hw, rBase)
     ctx.lineTo(base + hw, rBase + hh)
     ctx.closePath()
-    ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+    ctx.fillStyle = fillStyleLut(t)
     ctx.fill()
   }
 }
