@@ -5,9 +5,8 @@ import SidebarItem from './SidebarItem.astro'
 interface Props {
   item: SidebarEntry
   currentSlug: string
-  depth: number
 }
-const { item, currentSlug, depth } = Astro.props
+const { item, currentSlug } = Astro.props
 ---
 
 {item.type === 'link' ? (
@@ -22,11 +21,11 @@ const { item, currentSlug, depth } = Astro.props
   </li>
 ) : (
   <li>
-    <details open={depth === 0}>
+    <details>
       <summary>{item.label}</summary>
       <ul>
         {item.items.map(child => (
-          <SidebarItem item={child} currentSlug={currentSlug} depth={depth + 1} />
+          <SidebarItem item={child} currentSlug={currentSlug} />
         ))}
       </ul>
     </details>

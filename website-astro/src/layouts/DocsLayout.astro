@@ -1,5 +1,4 @@
 ---
-import type { MarkdownHeading } from 'astro'
 import { getCollection } from 'astro:content'
 import { baseUrl } from '../lib/base-url'
 import BaseLayout from './BaseLayout.astro'
@@ -10,15 +9,13 @@ interface Props {
   title: string
   currentSlug: string
   description?: string
-  headings?: MarkdownHeading[]
 }
 
-const { title, currentSlug, description, headings = [] } = Astro.props
+const { title, currentSlug, description } = Astro.props
 
 const allDocs = await getCollection('docs')
 const sidebar = buildSidebar(allDocs, baseUrl)
 
-const tocHeadings = headings.filter(h => h.depth === 2 || h.depth === 3)
 ---
 
 <BaseLayout title={`${title} | JBrowse Docs`} description={description}>
@@ -26,7 +23,7 @@ const tocHeadings = headings.filter(h => h.depth === 2 || h.depth === 3)
     <nav class="docs-sidebar" aria-label="Documentation navigation">
       <ul>
         {sidebar.map(item => (
-          <SidebarItem item={item} currentSlug={currentSlug} depth={0} />
+          <SidebarItem item={item} currentSlug={currentSlug} />
         ))}
       </ul>
     </nav>
@@ -34,20 +31,23 @@ const tocHeadings = headings.filter(h => h.depth === 2 || h.depth === 3)
       <h1>{title}</h1>
       <slot />
     </article>
-    {tocHeadings.length > 1 && (
-      <aside class="docs-toc" aria-label="On this page">
-        <p class="toc-label">On this page</p>
-        <ul>
-          {tocHeadings.map(h => (
-            <li class={h.depth === 3 ? 'toc-h3' : ''}>
-              <a href={`#${h.slug}`}>{h.text}</a>
-            </li>
-          ))}
-        </ul>
-      </aside>
-    )}
   </div>
 </BaseLayout>
+
+<script>
+  const sidebar = document.querySelector('.docs-sidebar')
+  const active = sidebar?.querySelector('a[aria-current="page"]')
+  if (active) {
+    let el: HTMLElement | null = active.parentElement
+    while (el && el !== sidebar) {
+      if (el.tagName === 'DETAILS') {
+        (el as HTMLDetailsElement).open = true
+      }
+      el = el.parentElement
+    }
+  }
+  sidebar?.querySelector('a[aria-current="page"]')?.scrollIntoView({ block: 'nearest' })
+</script>
 
 <style>
   .docs-layout {
@@ -91,7 +91,9 @@ const tocHeadings = headings.filter(h => h.depth === 2 || h.depth === 3)
   .docs-sidebar :global(a.active) {
     background: var(--color-sidebar-active-bg);
     color: var(--color-sidebar-active-text);
-    font-weight: 500;
+    font-weight: 600;
+    border-left: 3px solid var(--color-accent);
+    padding-left: calc(12px - 3px);
   }
 
   .docs-sidebar :global(details > summary) {
@@ -102,22 +104,39 @@ const tocHeadings = headings.filter(h => h.depth === 2 || h.depth === 3)
     color: var(--color-sidebar-text);
     list-style: none;
     user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    border-radius: 3px;
+    transition: background 0.15s;
+  }
+  .docs-sidebar :global(details > summary:hover) {
+    background: var(--color-sidebar-hover-bg);
+    color: var(--color-navy);
   }
   .docs-sidebar :global(details > summary::-webkit-details-marker) {
     display: none;
   }
   .docs-sidebar :global(details > summary::before) {
-    content: '▶ ';
-    font-size: 0.65em;
-    opacity: 0.6;
+    content: '';
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0.4em;
+    height: 0.4em;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.15s ease;
+    opacity: 0.7;
   }
   .docs-sidebar :global(details[open] > summary::before) {
-    content: '▼ ';
+    transform: rotate(45deg);
   }
 
   .docs-content {
     flex: 1;
-    max-width: 860px;
+    max-width: 1060px;
+    margin: 0 auto;
     padding: clamp(1.25rem, 3vw, 2.5rem);
     min-width: 0;
     line-height: 1.7;
@@ -225,6 +244,7 @@ const tocHeadings = headings.filter(h => h.depth === 2 || h.depth === 3)
     border-radius: 0 4px 4px 0;
   }
   .docs-content :global(a) {
+    color: var(--color-primary);
     text-decoration: none;
   }
   .docs-content :global(a:hover) {
@@ -272,56 +292,6 @@ const tocHeadings = headings.filter(h => h.depth === 2 || h.depth === 3)
     border-left: 4px solid #e53e3e;
   }
   .docs-content :global(.admonition-warning .admonition-title) { color: #e53e3e; }
-
-  /* ── Table of contents ── */
-  .docs-toc {
-    display: none;
-    width: 220px;
-    flex-shrink: 0;
-    padding: 2rem 1rem 2rem 0.5rem;
-    position: sticky;
-    top: var(--nav-height);
-    height: calc(100vh - var(--nav-height));
-    overflow-y: auto;
-  }
-  .toc-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--color-text-muted);
-    margin: 0 0 0.6rem;
-  }
-  .docs-toc ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .docs-toc li {
-    margin: 0;
-  }
-  .docs-toc a {
-    display: block;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-    color: var(--color-text-muted);
-    text-decoration: none;
-    border-left: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
-    line-height: 1.4;
-  }
-  .docs-toc a:hover {
-    color: var(--color-navy);
-    border-left-color: var(--color-accent);
-    text-decoration: none !important;
-  }
-  .docs-toc .toc-h3 a {
-    padding-left: 1.25rem;
-  }
-
-  @media (min-width: 1280px) {
-    .docs-toc { display: block; }
-  }
 
   @media (max-width: 768px) {
     .docs-layout { flex-direction: column; }
