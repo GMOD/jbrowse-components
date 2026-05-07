@@ -56,11 +56,6 @@
 .navSearch {
   flex-shrink: 0;
   width: 190px;
-  --pagefind-ui-scale: 0.75;
-  --pagefind-ui-primary: var(--color-teal-bright);
-  --pagefind-ui-text: #111;
-  --pagefind-ui-background: #fff;
-  --pagefind-ui-border: #ccc;
 }
 .navRight {
   margin-left: auto;
