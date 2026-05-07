@@ -135,11 +135,12 @@ const sidebar = buildSidebar(allDocs, baseUrl)
 
   .docs-content {
     flex: 1;
-    max-width: 1060px;
+    max-width: min(1060px, 100%);
     margin: 0 auto;
     padding: clamp(1.25rem, 3vw, 2.5rem);
     min-width: 0;
     line-height: 1.7;
+    overflow-wrap: break-word;
   }
 
   .docs-content h1 {
@@ -183,8 +184,8 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   }
 
   .docs-content :global(pre) {
-    background: #1e1e2e;
-    color: #cdd6f4;
+    background: var(--color-code-bg);
+    color: var(--color-code-text);
     padding: 1rem 1.25rem;
     border-radius: 6px;
     overflow-x: auto;
@@ -193,11 +194,11 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     margin: 1rem 0;
   }
   .docs-content :global(code:not(pre code)) {
-    background: #f0f0f0;
+    background: var(--color-inline-code-bg);
     padding: 0.15em 0.4em;
     border-radius: 3px;
     font-size: 0.875em;
-    color: #c7254e;
+    color: var(--color-inline-code-text);
   }
   .docs-content :global(img) {
     max-width: 100%;
@@ -205,14 +206,14 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     display: block;
     margin: 1rem auto;
     border-radius: 4px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border);
   }
   .docs-content :global(figure) {
-    border: 1px solid #ccc;
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     padding: 1rem;
     margin: 1.5rem 0;
-    background: #fafafa;
+    background: var(--color-surface);
   }
   .docs-content :global(figcaption) {
     text-align: center;
@@ -231,17 +232,17 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   }
   .docs-content :global(th),
   .docs-content :global(td) {
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border);
     padding: 0.5rem 0.75rem;
     text-align: left;
   }
   .docs-content :global(th) { background: var(--color-surface); font-weight: 600; }
-  .docs-content :global(tr:nth-child(even)) { background: #fafafa; }
+  .docs-content :global(tr:nth-child(even)) { background: var(--color-surface); }
   .docs-content :global(blockquote) {
     border-left: 4px solid var(--color-accent);
     margin: 1.5rem 0;
     padding: 0.5rem 1.25rem;
-    background: #f0faf8;
+    background: var(--color-blockquote-bg);
     color: var(--color-text);
     border-radius: 0 4px 4px 0;
   }
@@ -303,7 +304,10 @@ const sidebar = buildSidebar(allDocs, baseUrl)
       position: static;
       border-right: none;
       border-bottom: 1px solid var(--color-border);
-      max-height: 300px;
+      max-height: 40vh;
     }
+    .docs-content h1 { font-size: 1.5rem; }
+    .docs-content :global(h2) { font-size: 1.3rem; }
+    .docs-content :global(h3) { font-size: 1.1rem; }
   }
 </style>

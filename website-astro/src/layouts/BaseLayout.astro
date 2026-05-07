@@ -55,9 +55,15 @@ function isActive(href: string) {
         --color-sidebar-active-text: hsl(160, 55%, 26%);
         --color-text: #1c1e21;
         --color-text-muted: #606770;
+        --color-code-bg: #1e1e2e;
+        --color-code-text: #cdd6f4;
+        --color-inline-code-bg: #f0f0f0;
+        --color-inline-code-text: #c7254e;
+        --color-blockquote-bg: #f0faf8;
       }
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: 'Roboto', sans-serif; color: var(--color-text); display: flex; flex-direction: column; min-height: 100vh; }
+      html { overflow-x: hidden; }
+      body { margin: 0; font-family: 'Roboto', sans-serif; color: var(--color-text); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
       a { color: var(--color-accent); }
       a:hover { color: var(--color-accent-dark); }
     </style>
