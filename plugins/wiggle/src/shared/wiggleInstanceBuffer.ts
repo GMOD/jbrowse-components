@@ -33,8 +33,8 @@ export function interleaveInstances(
       const currEnd = positions[pi + 1]!
       const prevEnd = positions[pi - 1]
       const nextStart = positions[pi + 2]
-      const prevAdj = i > 0 && prevEnd === currStart
-      const nextAdj = i < n - 1 && nextStart === currEnd
+      const prevAdj = prevEnd === currStart
+      const nextAdj = nextStart === currEnd
       u32[off + FIELD_OFFSET_F32.startEnd] = currStart
       u32[off + FIELD_OFFSET_F32.startEnd + 1] = currEnd
       f32[off + FIELD_OFFSET_F32.score] = score
@@ -49,12 +49,5 @@ export function interleaveInstances(
 }
 
 export function computeNumRows(sources: SourceRenderData[]) {
-  let numRows = 0
-  for (const source of sources) {
-    const r = source.rowIndex + 1
-    if (r > numRows) {
-      numRows = r
-    }
-  }
-  return numRows
+  return sources.reduce((max, s) => Math.max(max, s.rowIndex + 1), 0)
 }

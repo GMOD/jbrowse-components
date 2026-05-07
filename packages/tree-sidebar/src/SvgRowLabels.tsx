@@ -13,6 +13,9 @@ export function SvgRowLabels({
   scrollTop?: number
   availableHeight?: number
 }) {
+  if (rowHeight < 6) {
+    return null
+  }
   const fontSize = Math.min(rowHeight, 12)
   const boxHeight = Math.min(rowHeight, 20)
   const labelWidth = max(sources.map(s => measureText(s.name, fontSize))) + 10

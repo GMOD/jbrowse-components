@@ -312,4 +312,4 @@ disappear.
 ## Synteny view
 
 - Connect to gene glyps for mcscan type results?
-- add 'synteny rects' in the area to show for example where there is non-ribbon based synteny e.g. non-dispayed-region translocations?
+- add 'synteny rects' in the area to show for example where there is non-ribbon based synteny e.g. non-displayed-region translocations?
