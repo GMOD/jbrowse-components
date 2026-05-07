@@ -29,8 +29,7 @@ The following formats are supported:
 
 ### Sources of data for SV inspector
 
-The SV inspector currently is designed for viewing `<TRA>` and breakend type
-entries.
+The SV inspector is designed for viewing `<TRA>` and breakend type entries.
 
 Compatible variant callers:
 
@@ -45,17 +44,13 @@ Long read based
 - pbsv
 - Sniffles
 
-### Example SV inspector workflow
+### Example workflow
 
-As an example, load this file of translocation events called from the SKBR3
-breast cancer cell line
-([published data](https://schatz-lab.org/publications/SKBR3/)).
-
-### Example VCF for use in the SV inspector
-
-https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf
-
-Copy this URL and paste it into the import form and select hg19:
+As an example, load this
+[VCF of translocation events](https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf)
+called from the SKBR3 breast cancer cell line
+([published data](https://schatz-lab.org/publications/SKBR3/)). Paste the URL
+into the import form and select hg19:
 
 <Figure caption="The SV inspector with the import form and URL pasted." src="/img/sv_inspector_importform_after.png" />
 
