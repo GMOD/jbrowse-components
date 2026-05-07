@@ -5,12 +5,10 @@ title: Pluggable elements
 
 import Figure from '../figure'
 
-A plugin is an independently distributed package of code that is designed to
-"plug in" to a JBrowse application.
-
-It's implemented as a class that extends `@jbrowse/core/Plugin`. It gets
-instantiated by the application that it plugs into, and it has a `install`
-method and a `configure` method that the application calls.
+A plugin is an independently distributed package of code that plugs into a
+JBrowse application. It's implemented as a class that extends
+`@jbrowse/core/Plugin`, and has `install` and `configure` methods the
+application calls.
 
 This class is distributed as an ESM module (or UMD bundle for legacy
 compatibility) that gets loaded by the JBrowse application at runtime. **This
@@ -28,11 +26,9 @@ tracks, renderers, and so forth.
 
 :::info
 
-Many of the plugins referenced in the following section are found in
-[the JBrowse Github repo](https://github.com/gmod/jbrowse-components).
-
-We encourage you to reference and review the concepts presented here using the
-functional and up-to-date plugin code found there.
+Many plugins referenced below are in the
+[JBrowse Github repo](https://github.com/gmod/jbrowse-components) and serve as
+up-to-date examples.
 
 :::
 
@@ -54,42 +50,26 @@ Examples of pluggable types include:
 - Text search adapter types
 - Add track workflow
 
-In addition to creating plugins that create new adapters, track types, etc. note
-that you can also wrap the behavior of another track, so these elements are
-composable.
-
-For example, we can have adapters that perform calculations on the results of
-another adapter, views that contain other sub-views, and tracks that contain
-other tracks, leading to a lot of interesting behavior.
-
-Let's dive further into these details, and look at some examples.
+Elements are composable — adapters can wrap other adapters, views can contain
+sub-views, and tracks can contain other tracks.
 
 ### View types
 
-Creating view types is one of the most powerful features of JBrowse 2, because
-it allows us to put entirely different visualizations in the same context as the
-standard linear-genome-view.
-
-We have demonstrated a couple new view types in JBrowse 2 already, including:
+View types allow entirely different visualizations alongside the standard
+linear genome view. Examples include:
 
 - `LinearGenomeView` - the classic linear view of a genome
 - `CircularView` - a Circos-like circular whole genome view
 - `DotplotView` - a comparative 2-D genome view
 - `SvInspectorView` - super-view containing `CircularView` and `SpreadsheetView`
   sub-views
-- And more!
-
-We think the boundaries for this are just your imagination, and there can also
-be interplay between view types e.g. popup dotplot from a linear view, etc.
+- And more
 
 ### Adapters
 
-Adapters are parsers for a given data format. We will review what adapters the
-alignments plugin has (to write your own adapter, see
-[creating adapters](/docs/developer_guides/creating_adapter/)).
-
-Example adapters: the `@jbrowse/plugin-alignments` plugin creates multiple
-adapter types:
+Adapters parse a given data format. To write your own, see
+[creating adapters](/docs/developer_guides/creating_adapter/). The
+`@jbrowse/plugin-alignments` plugin creates:
 
 - `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it for
   use by the browser.
@@ -142,11 +122,8 @@ which has two display methods
 
 ### Renderers
 
-Renderers are a new concept in JBrowse 2, and are related to the concept of
-server side rendering (SSR), but can be used not just on the server but also in
-contexts like the web worker (e.g. the web worker can draw the features to an
-OffscreenCanvas). For more info see
-[creating renderers](/docs/developer_guides/creating_renderer/).
+Renderers run in a web worker and draw features (e.g. to an OffscreenCanvas).
+See [creating renderers](/docs/developer_guides/creating_renderer/).
 
 For example, the `@jbrowse/plugin-alignments` exports several renderer types:
 
@@ -158,21 +135,12 @@ For example, the `@jbrowse/plugin-alignments` exports several renderer types:
 
 :::info
 
-Views, tracks, displays, renderers? If you're confused about what kind of
-pluggable element you might need to accomplish your development goals, a way to
-remember the relationship between these four pluggable elements is as follows:
+How views, tracks, displays, and renderers relate:
 
-1. A view is a container for anything, views typically _have tracks_ (the linear
-   genome view especially)
-2. A track controls _what_ (kind of data, data adapters used) and _how_
-   (displays, renderers) of the data you'd like to display, typically within a
-   view
-3. A display is a way you might want to display the data on a track, you might
-   have multiple displays for a given view, for example, displays can determine
-   if a feature is drawn with rectangles or with triangles; displays _may_ have
-   renderers
-4. A renderer controls how the display is presented, for example what might
-   happen when you mouse over a feature
+- A **view** is a container that typically _has tracks_
+- A **track** controls _what_ data (adapter) and _how_ it's displayed (display/renderer)
+- A **display** is a specific way to render a track's data — a track may have multiple displays for different view types
+- A **renderer** controls the actual drawing, e.g. what happens on mouse over
 
 :::
 
@@ -227,11 +195,5 @@ more detailed information.
 
 ### Next steps
 
-Now that you have an overview of the different pluggable element types that are
-available to you, review your
-[understanding of the configuration model](/docs/developer_guides/config_model).
-
-Also, checkout the [guided tutorial](/docs/developer_guides/simple_plugin/) for
-writing a plugin, which will take you through everything from installation,
-creating a new pluggable element, and general development tips for working with
-JBrowse 2.
+- [Configuration model](/docs/developer_guides/config_model)
+- [Plugin tutorial](/docs/developer_guides/simple_plugin/)
