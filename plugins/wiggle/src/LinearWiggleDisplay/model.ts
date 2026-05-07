@@ -100,10 +100,6 @@ export default function stateModelFactory(
         return self.getConfWithOverride<string>('color')
       },
 
-      get adapterConfig() {
-        return getConf(getContainingTrack(self), 'adapter')
-      },
-
       get isDensityMode() {
         return self.renderingType === 'density'
       },

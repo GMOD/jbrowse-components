@@ -125,10 +125,6 @@ export default function stateModelFactory(
         return MultiWiggleComponent
       },
 
-      get adapterConfig() {
-        return getConf(getContainingTrack(self), 'adapter')
-      },
-
       get isDensityMode() {
         return self.renderingType === 'multirowdensity'
       },
