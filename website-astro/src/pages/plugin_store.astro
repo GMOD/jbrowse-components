@@ -13,8 +13,8 @@ const { plugins } = pluginJSON
     <h1>Plugin Store</h1>
 
     <div class="info-row">
-      <details class="info-box">
-        <summary>About the plugin store</summary>
+      <div class="info-box">
+        <div class="info-box-title">About the plugin store</div>
         <div class="info-body">
           <p>
             This store contains the current list of white-listed JBrowse 2
@@ -35,10 +35,10 @@ const { plugins } = pluginJSON
 }`}</code></pre>
           <p>Plugins can also be added directly inside the app via the File menu.</p>
         </div>
-      </details>
+      </div>
 
-      <details class="info-box">
-        <summary>Developer information</summary>
+      <div class="info-box">
+        <div class="info-box-title">Developer information</div>
         <div class="info-body">
           <p>
             We welcome developers who want to create a new JBrowse 2 plugin.
@@ -55,7 +55,7 @@ const { plugins } = pluginJSON
             </a>.
           </p>
         </div>
-      </details>
+      </div>
     </div>
 
     <div class="plugin-list">
@@ -95,10 +95,10 @@ const { plugins } = pluginJSON
                 </span>
               </div>
               <p class="plugin-description">{plugin.description}</p>
-              <details class="config-details">
-                <summary class="config-toggle">Show configuration</summary>
+              <div class="config-section">
+                <div class="config-label">Configuration</div>
                 <pre><code>{configString}</code></pre>
-              </details>
+              </div>
             </div>
           </div>
         )
@@ -116,7 +116,6 @@ const { plugins } = pluginJSON
     padding-bottom: 0.75rem;
   }
 
-  /* Info accordion row */
   .info-row {
     display: flex;
     gap: 1rem;
@@ -130,30 +129,13 @@ const { plugins } = pluginJSON
     border-radius: 6px;
     overflow: hidden;
   }
-  .info-box summary {
+  .info-box-title {
     background: #f5f5f5;
     color: #333;
     padding: 0.7rem 1rem;
-    cursor: pointer;
-    user-select: none;
     font-weight: 500;
     font-size: 0.9rem;
-    list-style: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     border-bottom: 1px solid var(--color-border);
-  }
-  .info-box summary::-webkit-details-marker {
-    display: none;
-  }
-  .info-box summary::after {
-    content: '▾';
-    font-size: 0.8em;
-    color: #666;
-  }
-  .info-box[open] summary::after {
-    content: '▴';
   }
   .info-body {
     padding: 1rem;
@@ -172,7 +154,6 @@ const { plugins } = pluginJSON
     margin: 0.5rem 0;
   }
 
-  /* Plugin list */
   .plugin-list {
     display: flex;
     flex-direction: column;
@@ -189,8 +170,7 @@ const { plugins } = pluginJSON
   }
   .plugin-image {
     width: 100%;
-    max-height: 180px;
-    object-fit: cover;
+    height: auto;
     display: block;
     border-bottom: 1px solid var(--color-border);
   }
@@ -230,36 +210,13 @@ const { plugins } = pluginJSON
     line-height: 1.5;
   }
 
-  /* Inline config toggle */
-  .config-details {
-    margin-top: 0.25rem;
-  }
-  .config-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+  .config-label {
     font-size: 0.8rem;
-    color: var(--color-accent);
-    cursor: pointer;
-    user-select: none;
-    list-style: none;
-    padding: 0;
-    border: none;
-    background: none;
+    color: #666;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
   }
-  .config-toggle::-webkit-details-marker {
-    display: none;
-  }
-  .config-toggle::before {
-    content: '▶';
-    font-size: 0.6em;
-    transition: transform 0.15s;
-  }
-  .config-details[open] .config-toggle::before {
-    transform: rotate(90deg);
-  }
-  .config-details pre {
-    margin-top: 0.5rem;
+  .config-section pre {
     background: #f5f5f5;
     padding: 0.75rem 1rem;
     border-radius: 4px;
