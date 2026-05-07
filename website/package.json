@@ -8,13 +8,13 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "@astrojs/react": "^4.4.2",
+    "@astrojs/react": "^5.0.4",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@iconify-json/mdi": "^1.2.3",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "astro": "^5.18.1",
+    "astro": "^6.3.0",
     "astro-icon": "^1.1.5",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
@@ -23,7 +23,7 @@
     "rehype-stringify": "^10.0.1",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
-    "sharp": "^0.33.5",
+    "sharp": "^0.34.5",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0"
   },
