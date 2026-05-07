@@ -1,6 +1,6 @@
 ---
 id: sv_multisamples
-title: Multi-sample SV visualization with 1000 Genomes
+title: Multi-sample SV visualization w/ 1kG
 description:
   Inspect population-level SVs, explore a family trio, and characterize a large
   chromosomal inversion
