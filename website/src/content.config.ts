@@ -2,8 +2,8 @@ import { type Loader, glob } from 'astro/loaders'
 import { z } from 'astro/zod'
 import { defineCollection } from 'astro:content'
 
-const blogBase = new URL('../../../website/blog', import.meta.url).pathname
-const docsBase = new URL('../../../website/docs', import.meta.url).pathname
+const blogBase = new URL('../blog', import.meta.url).pathname
+const docsBase = new URL('../docs', import.meta.url).pathname
 
 const docsSchema = z.object({
   title: z.string(),

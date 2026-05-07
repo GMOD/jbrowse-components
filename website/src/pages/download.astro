@@ -4,8 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import { Icon } from 'astro-icon/components'
 import btn from '../styles/button.module.css'
 import page from '../styles/page.module.css'
-import config from '../../../website/docusaurus.config.json'
-const { currentVersion } = config.customFields
+import { currentVersion } from '../config.ts'
 const ghRelease = `https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}`
 const desktopBase = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}`
 const webZip = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}/jbrowse-web-${currentVersion}.zip`

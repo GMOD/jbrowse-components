@@ -64,7 +64,7 @@ function isActive(href: string) {
       }
       * { box-sizing: border-box; }
       html { overflow-x: hidden; }
-      body { margin: 0; font-family: 'Roboto', sans-serif; color: var(--color-text); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+      body { margin: 0; font-family: 'Roboto', sans-serif; color: var(--color-text); display: flex; flex-direction: column; min-height: 100vh; }
       a { color: var(--color-accent); }
       a:hover { color: var(--color-accent-dark); }
     </style>
@@ -72,7 +72,7 @@ function isActive(href: string) {
   <body>
     <nav class={styles.nav}>
       <a class={styles.brand} href={`${baseUrl}/`}>
-        <img src={`${baseUrl}/img/logo.svg`} alt="JBrowse" />
+        <img src={`${baseUrl}/img/logo.svg`} alt="" />
         JBrowse
       </a>
 

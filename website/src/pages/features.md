@@ -34,22 +34,26 @@ app. Third-party plugins can also add new view types.
 
 ## Key features
 
-- Status updates during track loading (e.g. "Downloading BAM index...")
-- Sort, color, and filter alignments by BAM/CRAM tags and other options
-- Web workers for parallel track parsing and rendering
-- Interactive configuration editing in the app
-- Flip / reverse complement the linear view
-- Hi-C contact matrix rendering
-- Multiple chromosomes in a single linear view
-- Sort and color read pileup in alignment tracks
-- Soft clipping visualization in alignment tracks
-- Sequence search within the visible region
-- SVG export of the current view
-- Can open UCSC track hubs [^1]
-- Add and remove plugins without running scripts
-- Non-administrator users can open tracks and share sessions with others
-- Embeddable directly in React applications [^2]
-- Embeddable in JavaScript projects via NPM [^3]
+JBrowse 2 was rebuilt from the ground up, with a primary focus on synteny and
+structural variant visualization that JBrowse 1 could not support, while also
+expanding on many other capabilities. The table below highlights what is new.
+
+| Feature | JBrowse 1 | JBrowse 2 |
+| ------- | :-------: | :-------: |
+| Multiple simultaneous view types | ✗ | ✓ |
+| Circular / dotplot / synteny views | ✗ | ✓ |
+| Structural variant visualization (breakpoint split view, circular arcs) | ✗ | ✓ |
+| CRAM support | ✗ | ✓ |
+| Hi-C contact matrix | ✗ | ✓ |
+| Web worker parallel rendering | ✗ | ✓ |
+| Sort, color, and filter alignments by BAM/CRAM tag | ✗ | ✓ |
+| Session sharing for non-administrator users | ✗ | ✓ |
+| Non-admin users can load their own tracks | ✗ | ✓ |
+| Install / remove plugins without running scripts | ✗ | ✓ |
+| UCSC track hub support [^1] | ✗ | ✓ |
+| SVG export of the current view | ✗ | ✓ |
+| Embeddable as React / NPM components [^2] [^3] | ✗ | ✓ |
+| Interactive configuration editing in the app | ✗ | ✓ |
 
 ## Supported data formats
 
@@ -60,7 +64,7 @@ Core JBrowse 2 supports the following formats. Plugins extend this list further.
 - BAM / CRAM
 - htsget
 - VCF (Tabix-indexed or plain text)
-- GFF3 (Tabix-indexed)
+- GFF3 (Tabix-indexed or plain text)
 - BED (Tabix-indexed or plain text)
 - BigBed
 - BigWig
@@ -74,6 +78,7 @@ Core JBrowse 2 supports the following formats. Plugins extend this list further.
 - Chain
 - Delta
 - Pairwise indexed format (PIF)
+- [MCScan (Python version)](https://github.com/tanghaibao/jcvi)
 
 ## Integration and embedding
 

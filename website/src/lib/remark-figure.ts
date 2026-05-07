@@ -23,7 +23,7 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       if (
         node.children.length === 1 &&
         node.children[0].type === 'text' &&
-        node.children[0].value.startsWith('import Figure from ')
+        node.children[0].value.startsWith('import ')
       ) {
         parent!.children.splice(index, 1)
         return [SKIP, index]

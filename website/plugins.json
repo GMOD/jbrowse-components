@@ -1,0 +1,152 @@
+{
+  "plugins": [
+    {
+      "name": "MsaView",
+      "authors": ["Colin Diesh"],
+      "description": "multiple sequence alignment browser plugin for JBrowse 2",
+      "location": "https://github.com/GMOD/jbrowse-plugin-msaview",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/msaview-screenshot-fs8.png"
+    },
+    {
+      "name": "GDC",
+      "authors": [
+        "Garrett Stevens",
+        "Colin Diesh",
+        "Rob Buels",
+        "Caroline Bridge"
+      ],
+      "description": "JBrowse 2 plugin for integrating with GDC resources",
+      "location": "https://github.com/GMOD/jbrowse-plugin-gdc",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-gdc/dist/jbrowse-plugin-gdc.umd.production.min.js",
+      "license": "MIT",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/gdc-screenshot-fs8.png"
+    },
+    {
+      "name": "Quantseq",
+      "authors": ["Elliot Hershberg"],
+      "description": "External JB2 plugin implementing a QuantitativeSequence track for displaying base-resolution models.",
+      "location": "https://github.com/GMOD/jbrowse-plugin-quantseq",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-quantseq/dist/jbrowse-plugin-quantseq.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/quantseq-screenshot-fs8.png"
+    },
+    {
+      "name": "GWAS",
+      "authors": ["Colin Diesh"],
+      "description": "Plugin for displaying GWAS results such as manhattan plot renderings",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-gwas",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-gwas/dist/jbrowse-plugin-gwas.umd.production.min.js",
+      "license": "MIT",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/gwas-screenshot-fs8.png"
+    },
+    {
+      "name": "UCSC",
+      "authors": ["Colin Diesh"],
+      "description": "A JBrowse 2 plugin for accessing the UCSC API",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-ucsc-api",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-ucsc/dist/jbrowse-plugin-ucsc.umd.production.min.js",
+      "license": "MIT",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/ucsc-screenshot-fs8.png"
+    },
+    {
+      "name": "Biothings",
+      "authors": ["Colin Diesh"],
+      "description": "Adapts to APIs like mygene.info to get super rich gene annotations",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-biothings-api",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-biothings/dist/jbrowse-plugin-biothings.umd.production.min.js",
+      "license": "MIT",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/biothings-screenshot-fs8.png"
+    },
+    {
+      "name": "Ideogram",
+      "authors": ["Colin Diesh", "Caroline Bridge"],
+      "description": "JBrowse 2 plugin for rendering ideograms",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-ideogram",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-ideogram/dist/jbrowse-plugin-ideogram.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/ideogram-screenshot-fs8.png"
+    },
+    {
+      "name": "CIVIC",
+      "authors": ["Colin Diesh"],
+      "description": "JBrowse 2 plugin for fetching data from the CIVIC clinical interpretation of cancer variants",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-civic-api",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-civic/dist/jbrowseplugincivic.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/civic-screenshot-fs8.png"
+    },
+    {
+      "name": "ICGC",
+      "authors": ["Caroline Bridge"],
+      "description": "JBrowse 2 plugin to integrate resources from the ICGC",
+      "location": "https://github.com/GMOD/jbrowse-plugin-icgc",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-icgc/dist/jbrowse-plugin-icgc.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/icgc-screenshot-fs8.png"
+    },
+    {
+      "name": "Reactome",
+      "authors": ["Caroline Bridge"],
+      "description": "JBrowse 2 plugin to integrate resources from Reactome",
+      "location": "https://github.com/GMOD/jbrowse-plugin-reactome",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-reactome/dist/jbrowse-plugin-reactome.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/reactome-screenshot-fs8.png"
+    },
+    {
+      "name": "MultilevelLinearView",
+      "authors": ["Caroline Bridge"],
+      "description": "JBrowse 2 plugin that adds a linear genome view that can show multiple zoom levels",
+      "location": "https://github.com/GMOD/jbrowse-plugin-multilevel-linear-view",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-multilevel-linear-view2/dist/jbrowse-plugin-multilevel-linear-view2.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/mllv-screenshot-fs8.png"
+    },
+    {
+      "name": "TrackHubRegistry",
+      "authors": ["Colin Diesh"],
+      "description": "JBrowse 2 plugin that adds ability to connect to hubs from the trackhub registry. Note: only for use with v2.3.0 or greater",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-trackhub-registry",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-trackhub-registry/dist/jbrowse-plugin-trackhub-registry.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/trackhub-fs8.png"
+    },
+    {
+      "name": "RefGet",
+      "authors": ["Emilio Righi"],
+      "description": "JBrowse 2 plugin that adds ability to retrieve sequences from refget API compliant servers",
+      "location": "https://github.com/emiliorighi/jbrowse-plugin-refget-api",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-refget-api/dist/jbrowse-plugin-refget-api.umd.production.min.js",
+      "license": "ISC"
+    },
+    {
+      "name": "Linkout",
+      "authors": ["NAL-i5K"],
+      "description": "JBrowse 2 plugin that links out to feature page based on dbxref",
+      "location": "https://github.com/NAL-i5K/jbrowse-plugin-linkout",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-linkout/dist/jbrowse-plugin-linkout.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/linkout-screenshot-fs8.png"
+    },
+    {
+      "name": "MafViewer",
+      "authors": ["Colin Diesh"],
+      "description": "View multiple alignment format (MAF) files as tracks",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-mafviewer",
+      "license": "MIT",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-mafviewer/dist/jbrowse-plugin-mafviewer.umd.production.min.js",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/mafviewer.png"
+    },
+    {
+      "name": "Protein3d",
+      "authors": ["Colin Diesh"],
+      "description": "View 3-D protein structures in JBrowse 2",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-protein3d",
+      "license": "MIT",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/dist/jbrowse-plugin-protein3d.umd.production.min.js",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/protein3d-fs8.png"
+    }
+  ]
+}
