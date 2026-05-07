@@ -1,6 +1,7 @@
 ---
 import { baseUrl } from '../lib/base-url'
 import styles from './BaseLayout.module.css'
+import Search from '../components/Search.astro'
 
 interface Props {
   title?: string
@@ -21,32 +22,43 @@ function isActive(href: string) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:image" content={`${baseUrl}/img/logo.svg`} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
     <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
     />
-    <link rel="stylesheet" href={`${baseUrl}/pagefind/pagefind-ui.css`} />
     <style is:global>
       :root {
         --nav-height: 60px;
         --sidebar-width: 280px;
+        --sidebar-link-padding: 6px 12px;
         --color-accent: hsl(160, 51%, 35%);
         --color-accent-dark: hsl(160, 55%, 26%);
         --color-primary: #1565c0;
         --color-primary-dark: #0d47a1;
         --color-navy: #0d223f;
         --color-teal-bright: #46cbae;
-        --color-border: #e0e0e0;
-        --color-hover-bg: #e8e8e8;
+        --color-border: #dadde1;
         --color-surface: #f5f5f5;
-        --color-sidebar-active-bg: #e0f5f0;
-        --color-sidebar-active-text: #0d6e5a;
-        --color-text: #333;
-        --color-text-muted: #666;
+        --color-footer-bg: #303846;
+        --color-footer-text: #ebedf0;
+        --color-sidebar-text: #606770;
+        --color-sidebar-hover-bg: rgba(0, 0, 0, 0.05);
+        --color-sidebar-active-bg: rgba(0, 0, 0, 0.05);
+        --color-sidebar-active-text: hsl(160, 51%, 35%);
+        --color-text: #1c1e21;
+        --color-text-muted: #606770;
       }
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: 'Roboto', sans-serif; }
+      body { margin: 0; font-family: 'Roboto', sans-serif; color: var(--color-text); display: flex; flex-direction: column; min-height: 100vh; }
       a { color: var(--color-accent); }
       a:hover { color: var(--color-accent-dark); }
     </style>
@@ -70,8 +82,8 @@ function isActive(href: string) {
         <a href={`${baseUrl}/contact/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/contact/`) }]}>Contact</a>
       </div>
 
-      <div id="search" class={styles.navSearch}>
-        <input type="search" placeholder="Search..." class={styles.searchPlaceholder} />
+      <div class={styles.navSearch}>
+        <Search />
       </div>
 
       <div class={styles.navRight}>
@@ -86,7 +98,7 @@ function isActive(href: string) {
       </button>
     </nav>
 
-    <main>
+    <main style="flex:1">
       <slot />
     </main>
 
@@ -96,14 +108,15 @@ function isActive(href: string) {
           <h4>Docs</h4>
           <ul>
             <li><a href={`${baseUrl}/docs/`}>Documentation</a></li>
+            <li><a href={`${baseUrl}/cancer/`}>Cancer resources</a></li>
           </ul>
         </div>
         <div class={styles.footerCol}>
           <h4>Community</h4>
           <ul>
-            <li><a href="https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im">Gitter chat</a></li>
-            <li><a href="https://bsky.app/profile/jbrowse.org">Bluesky</a></li>
-            <li><a href="https://genomic.social/@usejbrowse">Mastodon</a></li>
+            <li><a href="https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im" target="_blank" rel="noopener noreferrer">Gitter chat ↗</a></li>
+            <li><a href="https://bsky.app/profile/jbrowse.org" target="_blank" rel="noopener noreferrer">Bluesky ↗</a></li>
+            <li><a href="https://genomic.social/@usejbrowse" target="_blank" rel="noopener noreferrer">Mastodon ↗</a></li>
           </ul>
         </div>
         <div class={styles.footerCol}>
@@ -111,13 +124,13 @@ function isActive(href: string) {
           <ul>
             <li><a href={`${baseUrl}/blog/`}>Blog</a></li>
             <li><a href={`${baseUrl}/contact/`}>Contact</a></li>
-            <li><a href="https://github.com/GMOD/jbrowse-components">GitHub</a></li>
-            <li><a href="https://jbrowse.org/jbrowse1.html">Looking for JBrowse 1?</a></li>
+            <li><a href="https://github.com/GMOD/jbrowse-components" target="_blank" rel="noopener noreferrer">GitHub ↗</a></li>
+            <li><a href="https://jbrowse.org/jbrowse1.html" target="_blank" rel="noopener noreferrer">Looking for JBrowse 1? ↗</a></li>
           </ul>
         </div>
       </div>
       <div class={styles.footerBottom}>
-        Copyright &copy; {new Date().getFullYear()} The JBrowse Consortium
+        Copyright &copy; 2026 Evolutionary Software Foundation, Inc.
       </div>
     </footer>
 
@@ -127,12 +140,6 @@ function isActive(href: string) {
           const expanded = this.getAttribute('aria-expanded') === 'true'
           this.setAttribute('aria-expanded', String(!expanded))
         })
-        const s = document.createElement('script')
-        s.src = baseUrl + '/pagefind/pagefind-ui.js'
-        s.onload = function () {
-          new PagefindUI({ element: '#search', showSubResults: true })
-        }
-        document.head.appendChild(s)
       })()
     </script>
   </body>

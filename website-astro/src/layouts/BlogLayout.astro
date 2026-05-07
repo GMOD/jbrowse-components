@@ -45,7 +45,7 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
         {
           years.map(year => (
             <li>
-              <details open={year === currentYear || year === years[0]}>
+              <details open={year === currentYear || (!currentSlug && year === years[0]) || undefined}>
                 <summary>{year}</summary>
                 <ul>
                   {byYear.get(year)!.map(post => (
@@ -81,7 +81,6 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
   .blog-sidebar {
     width: var(--sidebar-width);
     flex-shrink: 0;
-    background: var(--color-surface);
     border-right: 1px solid var(--color-border);
     overflow-y: auto;
     padding: 1rem 0;
@@ -101,31 +100,32 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
 
   .blog-sidebar a {
     display: block;
-    padding: 0.3rem 1rem;
-    color: var(--color-text);
+    padding: var(--sidebar-link-padding);
+    color: var(--color-sidebar-text);
     text-decoration: none;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     border-radius: 3px;
     transition: background 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .blog-sidebar a:hover {
-    background: var(--color-hover-bg);
+    background: var(--color-sidebar-hover-bg);
     color: var(--color-navy);
   }
   .blog-sidebar a.active {
     background: var(--color-sidebar-active-bg);
     color: var(--color-sidebar-active-text);
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .blog-sidebar details > summary {
     cursor: pointer;
-    padding: 0.35rem 1rem;
-    font-size: 0.8rem;
+    padding: var(--sidebar-link-padding);
+    font-size: 1rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-text-muted);
+    color: var(--color-text);
     list-style: none;
     user-select: none;
   }
@@ -135,7 +135,7 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
   .blog-sidebar details > summary::before {
     content: '▶ ';
     font-size: 0.65em;
-    opacity: 0.6;
+    opacity: 0.5;
   }
   .blog-sidebar details[open] > summary::before {
     content: '▼ ';
@@ -160,3 +160,7 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
     }
   }
 </style>
+
+<script>
+  document.querySelector('.blog-sidebar [aria-current="page"]')?.scrollIntoView({ block: 'nearest' })
+</script>

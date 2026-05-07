@@ -1,4 +1,5 @@
 ---
+import type { MarkdownHeading } from 'astro'
 import { getCollection } from 'astro:content'
 import { baseUrl } from '../lib/base-url'
 import BaseLayout from './BaseLayout.astro'
@@ -9,12 +10,15 @@ interface Props {
   title: string
   currentSlug: string
   description?: string
+  headings?: MarkdownHeading[]
 }
 
-const { title, currentSlug, description } = Astro.props
+const { title, currentSlug, description, headings = [] } = Astro.props
 
 const allDocs = await getCollection('docs')
 const sidebar = buildSidebar(allDocs, baseUrl)
+
+const tocHeadings = headings.filter(h => h.depth === 2 || h.depth === 3)
 ---
 
 <BaseLayout title={`${title} | JBrowse Docs`} description={description}>
@@ -30,6 +34,18 @@ const sidebar = buildSidebar(allDocs, baseUrl)
       <h1>{title}</h1>
       <slot />
     </article>
+    {tocHeadings.length > 1 && (
+      <aside class="docs-toc" aria-label="On this page">
+        <p class="toc-label">On this page</p>
+        <ul>
+          {tocHeadings.map(h => (
+            <li class={h.depth === 3 ? 'toc-h3' : ''}>
+              <a href={`#${h.slug}`}>{h.text}</a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
   </div>
 </BaseLayout>
 
@@ -42,7 +58,6 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   .docs-sidebar {
     width: var(--sidebar-width);
     flex-shrink: 0;
-    background: var(--color-surface);
     border-right: 1px solid var(--color-border);
     overflow-y: auto;
     padding: 1rem 0;
@@ -62,31 +77,29 @@ const sidebar = buildSidebar(allDocs, baseUrl)
 
   .docs-sidebar :global(a) {
     display: block;
-    padding: 0.3rem 1rem;
-    color: var(--color-text);
+    padding: var(--sidebar-link-padding);
+    color: var(--color-sidebar-text);
     text-decoration: none;
-    font-size: 0.875rem;
+    font-size: 1rem;
     border-radius: 3px;
     transition: background 0.15s;
   }
   .docs-sidebar :global(a:hover) {
-    background: var(--color-hover-bg);
+    background: var(--color-sidebar-hover-bg);
     color: var(--color-navy);
   }
   .docs-sidebar :global(a.active) {
     background: var(--color-sidebar-active-bg);
     color: var(--color-sidebar-active-text);
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .docs-sidebar :global(details > summary) {
     cursor: pointer;
-    padding: 0.35rem 1rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-text-muted);
+    padding: var(--sidebar-link-padding);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-sidebar-text);
     list-style: none;
     user-select: none;
   }
@@ -111,23 +124,42 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   }
 
   .docs-content h1 {
-    font-size: 2rem;
+    font-size: 3rem;
+    font-weight: 700;
     margin-top: 0;
     margin-bottom: 1.5rem;
-    color: var(--color-navy);
-    border-bottom: 2px solid var(--color-border);
-    padding-bottom: 0.75rem;
+    color: var(--color-text);
   }
 
   .docs-content :global(h2) {
-    font-size: 1.5rem;
+    font-size: 2rem;
+    font-weight: 700;
     margin-top: 2.5rem;
-    color: var(--color-navy);
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.4rem;
+    margin-bottom: 1rem;
+    color: var(--color-text);
   }
-  .docs-content :global(h3) { font-size: 1.2rem; margin-top: 1.5rem; color: var(--color-navy); }
-  .docs-content :global(h4) { font-size: 1rem; margin-top: 1.2rem; color: var(--color-text); }
+  .docs-content :global(h3) { font-size: 1.5rem; font-weight: 700; margin-top: 2rem; color: var(--color-text); }
+  .docs-content :global(h4) { font-size: 1.125rem; font-weight: 700; margin-top: 1.5rem; color: var(--color-text); }
+
+  .docs-content :global(h2),
+  .docs-content :global(h3),
+  .docs-content :global(h4) {
+    position: relative;
+  }
+  .docs-content :global(.heading-anchor) {
+    opacity: 0;
+    margin-left: 0.4rem;
+    font-size: 0.8em;
+    font-weight: 400;
+    color: var(--color-accent);
+    text-decoration: none !important;
+    transition: opacity 0.15s;
+  }
+  .docs-content :global(h2:hover .heading-anchor),
+  .docs-content :global(h3:hover .heading-anchor),
+  .docs-content :global(h4:hover .heading-anchor) {
+    opacity: 1;
+  }
 
   .docs-content :global(pre) {
     background: #1e1e2e;
@@ -240,6 +272,56 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     border-left: 4px solid #e53e3e;
   }
   .docs-content :global(.admonition-warning .admonition-title) { color: #e53e3e; }
+
+  /* ── Table of contents ── */
+  .docs-toc {
+    display: none;
+    width: 220px;
+    flex-shrink: 0;
+    padding: 2rem 1rem 2rem 0.5rem;
+    position: sticky;
+    top: var(--nav-height);
+    height: calc(100vh - var(--nav-height));
+    overflow-y: auto;
+  }
+  .toc-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+    margin: 0 0 0.6rem;
+  }
+  .docs-toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .docs-toc li {
+    margin: 0;
+  }
+  .docs-toc a {
+    display: block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    line-height: 1.4;
+  }
+  .docs-toc a:hover {
+    color: var(--color-navy);
+    border-left-color: var(--color-accent);
+    text-decoration: none !important;
+  }
+  .docs-toc .toc-h3 a {
+    padding-left: 1.25rem;
+  }
+
+  @media (min-width: 1280px) {
+    .docs-toc { display: block; }
+  }
 
   @media (max-width: 768px) {
     .docs-layout { flex-direction: column; }

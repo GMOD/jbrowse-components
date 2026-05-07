@@ -12,13 +12,17 @@
 }
 .brand {
   color: white;
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 1rem;
+  font-weight: 700;
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+  margin-right: 1rem;
+}
+.brand:hover {
+  color: var(--color-teal-bright);
 }
 .brand img {
   height: 32px;
@@ -29,7 +33,9 @@
 .navLinks a {
   color: white;
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 4px 12px;
   white-space: nowrap;
   transition: color 0.2s;
 }
@@ -38,7 +44,6 @@
 }
 .navActive {
   color: var(--color-teal-bright) !important;
-  font-weight: 600;
 }
 .newFeature::after {
   content: 'NEW!';
@@ -57,18 +62,6 @@
   --pagefind-ui-background: #fff;
   --pagefind-ui-border: #ccc;
 }
-.searchPlaceholder {
-  width: 100%;
-  padding: 6px 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  font-size: 0.85rem;
-  background: white;
-  color: #111;
-}
-.navSearch:has(:global(.pagefind-ui)) .searchPlaceholder {
-  display: none;
-}
 .navRight {
   margin-left: auto;
   display: flex;
@@ -79,7 +72,7 @@
 .navRight a {
   color: white;
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 1rem;
   white-space: nowrap;
   transition: color 0.2s;
 }
@@ -122,8 +115,8 @@
 
 /* ── Footer ── */
 .footer {
-  background: var(--color-navy);
-  color: #bbb;
+  background: var(--color-footer-bg);
+  color: var(--color-footer-text);
   padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 4vw, 2rem);
   margin-top: 4rem;
   font-size: 0.875rem;
@@ -155,7 +148,7 @@
   gap: 0.4rem;
 }
 .footerCol a {
-  color: #bbb;
+  color: var(--color-footer-text);
   text-decoration: none;
   transition: color 0.2s;
 }
@@ -164,7 +157,7 @@
 }
 .footerBottom {
   text-align: center;
-  color: #888;
+  color: var(--color-footer-text);
   font-size: 0.8rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 1.25rem;

@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { baseUrl } from '../lib/base-url'
+---
+
+<BaseLayout title="Page not found | JBrowse">
+  <div class="not-found">
+    <h1>404</h1>
+    <p>Page not found.</p>
+    <a href={`${baseUrl}/`}>Go to homepage</a>
+    <span> or </span>
+    <a href={`${baseUrl}/docs/`}>Browse the docs</a>
+  </div>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+  }
+  h1 {
+    font-size: 6rem;
+    font-weight: 900;
+    color: var(--color-navy);
+    margin: 0;
+    line-height: 1;
+  }
+  p {
+    font-size: 1.25rem;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+</style>

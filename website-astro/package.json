@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && pagefind --site dist",
     "preview": "astro preview"
   },
   "dependencies": {
@@ -13,10 +13,21 @@
     "@iconify-json/mdi": "^1.2.3",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
+    "@pagefind/default-ui": "^1.5.2",
     "astro": "^5.7.0",
     "astro-icon": "^1.1.5",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "sharp": "^0.33.0"
+    "rehype-raw": "^7.0.0",
+    "rehype-slug": "^6.0.0",
+    "rehype-stringify": "^10.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "sharp": "^0.33.0",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "pagefind": "^1.5.2"
   }
 }
