@@ -43,5 +43,5 @@ The color scale is configurable via the track's configuration — see
 [the Hi-C track config guide](/docs/config_guides/hic_track/) for available
 options.
 
-[Live demo](http://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-xS8Eg67AFS&password=jPzH5)
+[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-xS8Eg67AFS&password=jPzH5)
 — Hi-C contact matrix with gene annotations
