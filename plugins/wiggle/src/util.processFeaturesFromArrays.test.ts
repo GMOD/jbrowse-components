@@ -1,7 +1,7 @@
 import {
+  featuresToRaw,
   isDefaultBicolor,
   makeScoreNormalizer,
-  processFeatures,
   processFeaturesFromArrays,
 } from './util.ts'
 
@@ -13,7 +13,7 @@ const normalizeScore = (
 ) => makeScoreNormalizer(min, max, isLog)(score)
 
 describe('processFeaturesFromArrays', () => {
-  test('produces same output as processFeatures for basic features', () => {
+  test('produces same output as featuresToRaw + processFeaturesFromArrays for basic features', () => {
     const starts = new Int32Array([100, 200, 300])
     const ends = new Int32Array([200, 300, 400])
     const scores = new Float32Array([5, -3, 8])
@@ -47,7 +47,10 @@ describe('processFeaturesFromArrays', () => {
         }
       },
     }))
-    const fromFeatures = processFeatures(features, bicolorPivot)
+    const fromFeatures = processFeaturesFromArrays(
+      featuresToRaw(features),
+      bicolorPivot,
+    )
 
     expect(fromArrays.numFeatures).toBe(fromFeatures.numFeatures)
     expect(Array.from(fromArrays.featurePositions)).toEqual(

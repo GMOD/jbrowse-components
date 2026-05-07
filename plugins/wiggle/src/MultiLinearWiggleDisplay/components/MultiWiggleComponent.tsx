@@ -18,8 +18,8 @@ import {
 } from '../../shared/WiggleStatusOverlays.tsx'
 import { getRowTop, hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
 
-import type { MultiWiggleDataResult } from '../../RenderMultiWiggleDataRPC/types.ts'
 import type { WiggleBackend } from '../../shared/wiggleBackendTypes.ts'
+import type { WiggleDataResult } from '../../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
   ClusterHierarchyNode,
@@ -32,7 +32,7 @@ type LGV = LinearGenomeViewModel
 const COORD0: [number, number] = [0, 0]
 
 export interface MultiWiggleDisplayModel {
-  rpcDataMap: Map<number, MultiWiggleDataResult>
+  rpcDataMap: Map<number, WiggleDataResult>
   sources: { name: string; color?: string; labelColor?: string }[]
   height: number
   domain: [number, number] | undefined

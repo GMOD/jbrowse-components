@@ -1,9 +1,9 @@
-import type { MultiWiggleSourceData } from '../RenderMultiWiggleDataRPC/types.ts'
+import type { WiggleSourceData } from '../util.ts'
 
 // Mirror of getFeatureSlices from renderSvg.ts — kept in sync to test
 // that SVG rendering uses the same color logic as the canvas renderer
 function getFeatureSlices(
-  source: MultiWiggleSourceData,
+  source: WiggleSourceData,
   posColor: string,
   negColor: string,
   isOverlay: boolean,
@@ -45,7 +45,7 @@ function resolveSvgColors(
   return { posColor, negColor }
 }
 
-function makeSource(pos: number, neg: number): MultiWiggleSourceData {
+function makeSource(pos: number, neg: number): WiggleSourceData {
   return {
     name: 'test',
     featurePositions: new Uint32Array(0),

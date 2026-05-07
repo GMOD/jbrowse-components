@@ -1,8 +1,7 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type { MultiWiggleDataResult } from './types.ts'
-import type { SourceInfo } from '../util.ts'
+import type { SourceInfo, WiggleDataResult  } from '../util.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -21,7 +20,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderMultiWiggleData: {
       args: RenderMultiWiggleDataArgs
-      return: MultiWiggleDataResult
+      return: WiggleDataResult
     }
   }
 }

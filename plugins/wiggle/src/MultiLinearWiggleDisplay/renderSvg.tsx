@@ -8,11 +8,11 @@ import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
-import { buildMultiSourceRenderData } from './components/buildMultiSourceRenderData.ts'
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
+import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
@@ -130,7 +130,7 @@ export async function renderSvg(
   const wiggleNode = paintLayer(totalWidth, height, opts, ctx => {
     drawWiggleToCtx(
       ctx,
-      { rpcDataMap, encode: data => buildMultiSourceRenderData(data, props) },
+      { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
       renderBlocks,
       state,
     )

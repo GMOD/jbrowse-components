@@ -55,6 +55,11 @@ export interface SourceInfo {
   color?: string
 }
 
+// Single-source synthetic name for LinearWiggleDisplay's worker output. Multi
+// uses real source names; single just needs a stable label so it fits the
+// shared { sources: [...] } shape.
+export const SINGLE_WIGGLE_SOURCE_NAME = 'default'
+
 // Raw per-feature typed arrays returned by adapters' fast path. Display-side
 // concerns (bicolor pos/neg split) happen in processFeaturesFromArrays at the
 // executor, not here — keeps adapters out of UI policy decisions.
@@ -79,6 +84,16 @@ export interface WiggleFeatureArrays {
   negFeaturePositions: Uint32Array
   negFeatureScores: Float32Array
   negNumFeatures: number
+}
+
+// One source's worth of display-ready arrays plus its source identity.
+export type WiggleSourceData = SourceInfo & WiggleFeatureArrays
+
+// What the wiggle RPC returns. Single-display always has length 1; multi
+// has one entry per visible source. Same shape so single and multi share
+// the GPU build path.
+export interface WiggleDataResult {
+  sources: WiggleSourceData[]
 }
 
 export function processFeaturesFromArrays(
@@ -160,13 +175,6 @@ export function featuresToRaw(
   }
 
   return { starts, ends, scores, minScores, maxScores, count: n }
-}
-
-export function processFeatures(
-  features: { get: (key: string) => unknown }[],
-  bicolorPivot: number,
-): WiggleFeatureArrays {
-  return processFeaturesFromArrays(featuresToRaw(features), bicolorPivot)
 }
 
 export function getEffectiveScores(

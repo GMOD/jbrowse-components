@@ -1,10 +1,16 @@
 import { findHit } from './findHit.ts'
 
-import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
+import type { WiggleSourceData } from '../../util.ts'
 
-function makeData(
-  features: { start: number; end: number; score: number; min?: number; max?: number }[],
-): WiggleDataResult {
+function makeSource(
+  features: {
+    start: number
+    end: number
+    score: number
+    min?: number
+    max?: number
+  }[],
+): WiggleSourceData {
   const n = features.length
   const positions = new Uint32Array(n * 2)
   const scores = new Float32Array(n)
@@ -19,6 +25,7 @@ function makeData(
     maxScores[i] = f.max ?? f.score
   }
   return {
+    name: 'default',
     featurePositions: positions,
     featureScores: scores,
     featureMinScores: minScores,
@@ -35,8 +42,8 @@ function makeData(
 
 describe('findHit', () => {
   test('returns the feature interval at bp', () => {
-    const data = makeData([{ start: 100, end: 500, score: 7 }])
-    const result = findHit(data, 250, 'chr1', 'avg')
+    const source = makeSource([{ start: 100, end: 500, score: 7 }])
+    const result = findHit(source, 250, 'chr1', 'avg')
     expect(result).toEqual({
       refName: 'chr1',
       start: 100,
@@ -46,28 +53,28 @@ describe('findHit', () => {
   })
 
   test('returns undefined when bp falls in a gap before any feature', () => {
-    const data = makeData([{ start: 200, end: 300, score: 5 }])
-    expect(findHit(data, 50, 'chr1', 'avg')).toBeUndefined()
+    const source = makeSource([{ start: 200, end: 300, score: 5 }])
+    expect(findHit(source, 50, 'chr1', 'avg')).toBeUndefined()
   })
 
   test('returns undefined when bp falls in a gap after the last feature', () => {
-    const data = makeData([{ start: 0, end: 100, score: 5 }])
-    expect(findHit(data, 200, 'chr1', 'avg')).toBeUndefined()
+    const source = makeSource([{ start: 0, end: 100, score: 5 }])
+    expect(findHit(source, 200, 'chr1', 'avg')).toBeUndefined()
   })
 
   test('returns undefined when bp falls between two non-adjacent features', () => {
-    const data = makeData([
+    const source = makeSource([
       { start: 0, end: 100, score: 5 },
       { start: 200, end: 300, score: 6 },
     ])
-    expect(findHit(data, 150, 'chr1', 'avg')).toBeUndefined()
+    expect(findHit(source, 150, 'chr1', 'avg')).toBeUndefined()
   })
 
   test('attaches summary fields in non-avg mode when min/max differ from score', () => {
-    const data = makeData([
+    const source = makeSource([
       { start: 0, end: 100, score: 5, min: 1, max: 9 },
     ])
-    const result = findHit(data, 50, 'chr1', 'whiskers')
+    const result = findHit(source, 50, 'chr1', 'whiskers')
     expect(result).toEqual({
       refName: 'chr1',
       start: 0,
@@ -80,10 +87,10 @@ describe('findHit', () => {
   })
 
   test('omits summary fields in avg mode even when min/max differ', () => {
-    const data = makeData([
+    const source = makeSource([
       { start: 0, end: 100, score: 5, min: 1, max: 9 },
     ])
-    const result = findHit(data, 50, 'chr1', 'avg')
+    const result = findHit(source, 50, 'chr1', 'avg')
     expect(result).toEqual({
       refName: 'chr1',
       start: 0,
@@ -93,10 +100,10 @@ describe('findHit', () => {
   })
 
   test('omits summary fields when min/max equal score', () => {
-    const data = makeData([
+    const source = makeSource([
       { start: 0, end: 100, score: 5, min: 5, max: 5 },
     ])
-    const result = findHit(data, 50, 'chr1', 'whiskers')
+    const result = findHit(source, 50, 'chr1', 'whiskers')
     expect(result).toEqual({
       refName: 'chr1',
       start: 0,
@@ -106,18 +113,18 @@ describe('findHit', () => {
   })
 
   test('returns undefined for empty data', () => {
-    const data = makeData([])
-    expect(findHit(data, 50, 'chr1', 'avg')).toBeUndefined()
+    const source = makeSource([])
+    expect(findHit(source, 50, 'chr1', 'avg')).toBeUndefined()
   })
 
   test('picks the correct feature when multiple are present', () => {
-    const data = makeData([
+    const source = makeSource([
       { start: 0, end: 100, score: 1 },
       { start: 100, end: 200, score: 2 },
       { start: 200, end: 300, score: 3 },
     ])
-    expect(findHit(data, 50, 'chr1', 'avg')?.score).toBe(1)
-    expect(findHit(data, 150, 'chr1', 'avg')?.score).toBe(2)
-    expect(findHit(data, 250, 'chr1', 'avg')?.score).toBe(3)
+    expect(findHit(source, 50, 'chr1', 'avg')?.score).toBe(1)
+    expect(findHit(source, 150, 'chr1', 'avg')?.score).toBe(2)
+    expect(findHit(source, 250, 'chr1', 'avg')?.score).toBe(3)
   })
 })

@@ -13,12 +13,8 @@ import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observable } from 'mobx'
 
-import { buildMultiSourceRenderData } from '../MultiLinearWiggleDisplay/components/buildMultiSourceRenderData.ts'
-import {
-  SINGLE_WIGGLE_SOURCE_NAME,
-  type WiggleDataResult,
-} from '../RenderWiggleDataRPC/types.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
+import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
@@ -28,6 +24,7 @@ import {
   makeScaleTypeSubMenu,
 } from '../shared/wiggleMenuItems.ts'
 import {
+  SINGLE_WIGGLE_SOURCE_NAME,
   YSCALEBAR_LABEL_OFFSET,
   computeAutoscaleDomain,
   getNiceDomain,
@@ -36,6 +33,7 @@ import {
 } from '../util.ts'
 
 import type { WiggleBackend } from '../shared/wiggleBackendTypes.ts'
+import type { WiggleDataResult } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -382,7 +380,7 @@ export default function stateModelFactory(
       },
       startGpuBackendLifecycle(backend: WiggleBackend) {
         installPerRegionWiggleLifecycle(self, self.rpcDataMap, backend, data =>
-          buildMultiSourceRenderData(data, self.gpuProps()),
+          buildSourceRenderData(data, self.gpuProps()),
         )
       },
     }))

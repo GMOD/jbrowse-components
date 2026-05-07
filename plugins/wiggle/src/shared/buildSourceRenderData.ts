@@ -1,21 +1,17 @@
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
-import {
-  isOverlayMode,
-  isScatterMode,
-  makeWhiskersSourceData,
-} from '../../shared/wiggleComponentUtils.ts'
-import { getEffectiveScores } from '../../util.ts'
+import { isOverlayMode, isScatterMode, makeWhiskersSourceData } from './wiggleComponentUtils.ts'
+import { getEffectiveScores } from '../util.ts'
 
-import type { MultiWiggleDataResult } from '../../RenderMultiWiggleDataRPC/types.ts'
-import type { SourceRenderData } from '../../shared/wiggleBackendTypes.ts'
+import type { WiggleDataResult } from '../util.ts'
+import type { SourceRenderData } from './wiggleBackendTypes.ts'
 
-// The shape of `model.gpuProps` for MultiLinearWiggleDisplay — the source
-// of truth for "settings that affect the per-instance GPU buffer encoding".
-// buildMultiSourceRenderData consumes this exact type, so TS forces gpuProps
-// and the encoder to stay in sync. The framework reads `self.gpuProps` as
-// getUploadInvalidationToken so a change re-uploads without an RPC roundtrip.
-export interface MultiWiggleGpuProps {
+// The shape of `model.gpuProps` — single source of truth for "settings that
+// affect the per-instance GPU buffer encoding". buildSourceRenderData
+// consumes this exact type, so TS forces gpuProps and the encoder to stay
+// in sync. The framework reads `self.gpuProps` as getUploadInvalidationToken
+// so a change re-uploads without an RPC roundtrip.
+export interface WiggleGpuProps {
   sources: { name: string; color?: string }[]
   posColor: string
   negColor: string
@@ -24,9 +20,9 @@ export interface MultiWiggleGpuProps {
   isDensityMode: boolean
 }
 
-export function buildMultiSourceRenderData(
-  data: MultiWiggleDataResult,
-  gpuProps: MultiWiggleGpuProps,
+export function buildSourceRenderData(
+  data: WiggleDataResult,
+  gpuProps: WiggleGpuProps,
 ): SourceRenderData[] {
   const {
     sources,

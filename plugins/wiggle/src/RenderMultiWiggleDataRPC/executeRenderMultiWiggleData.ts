@@ -4,21 +4,23 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
-import { processFeatures, processFeaturesFromArrays } from '../util.ts'
+import { processFeaturesFromArrays } from '../util.ts'
 
-import type { MultiWiggleDataResult } from './types.ts'
-import type { RawFeatureArrays, SourceInfo } from '../util.ts'
+import type {
+  RawFeatureArrays,
+  SourceInfo,
+  WiggleDataResult,
+} from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-function hasMultiSourceFeatureArrays(
-  adapter: BaseFeatureDataAdapter,
-): adapter is BaseFeatureDataAdapter & {
+// Multi-source wiggle adapters fan out to inner adapters themselves and
+// expose this method. The executor never groups features by source — that
+// would be a third walk over already-typed-array data.
+interface MultiSourceWiggleAdapter extends BaseFeatureDataAdapter {
   getMultiSourceFeatureArrays(
     region: Region,
     opts: {
@@ -28,7 +30,11 @@ function hasMultiSourceFeatureArrays(
       stopToken?: StopToken
     },
   ): Promise<{ source: string; raw: RawFeatureArrays }[]>
-} {
+}
+
+function isMultiSource(
+  adapter: BaseFeatureDataAdapter,
+): adapter is MultiSourceWiggleAdapter {
   return 'getMultiSourceFeatureArrays' in adapter
 }
 
@@ -47,10 +53,19 @@ interface ExecuteParams {
   }
 }
 
+const EMPTY_RAW: RawFeatureArrays = {
+  starts: new Int32Array(0),
+  ends: new Int32Array(0),
+  scores: new Float32Array(0),
+  minScores: undefined,
+  maxScores: undefined,
+  count: 0,
+}
+
 export async function executeRenderMultiWiggleData({
   pluginManager,
   args,
-}: ExecuteParams): Promise<MultiWiggleDataResult> {
+}: ExecuteParams): Promise<WiggleDataResult> {
   const {
     sessionId,
     adapterConfig,
@@ -69,75 +84,42 @@ export async function executeRenderMultiWiggleData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  const sourcesList: SourceInfo[] = sourcesArg?.length
-    ? sourcesArg
-    : await dataAdapter.getSources([region])
-
-  if (hasMultiSourceFeatureArrays(dataAdapter)) {
-    const perSource = await updateStatus(
-      'Loading wiggle data',
-      statusCallback,
-      () =>
-        dataAdapter.getMultiSourceFeatureArrays(region, {
-          bpPerPx,
-          resolution,
-          sources: sourcesArg,
-          stopToken,
-        }),
+  if (!isMultiSource(dataAdapter)) {
+    throw new Error(
+      `${adapterConfig.type as string} must implement getMultiSourceFeatureArrays to be used as a multi-wiggle adapter`,
     )
-    checkStopToken2(stopTokenCheck)
-    const arrayMap = new Map(
-      perSource.map(p => [
-        p.source,
-        processFeaturesFromArrays(p.raw, bicolorPivot),
-      ]),
-    )
-    const orderedSources: SourceInfo[] =
-      sourcesList.length > 0
-        ? sourcesList
-        : perSource.map(({ source }) => ({ name: source }))
-    return {
-      sources: orderedSources.map(({ name, color }) => ({
-        name,
-        color,
-        ...(arrayMap.get(name) ?? processFeatures([], bicolorPivot)),
-      })),
-    }
   }
 
-  const fetchOpts = { bpPerPx, resolution }
-  const featuresArray = await updateStatus(
+  const perSource = await updateStatus(
     'Loading wiggle data',
     statusCallback,
     () =>
-      firstValueFrom(
-        dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
-      ),
+      dataAdapter.getMultiSourceFeatureArrays(region, {
+        bpPerPx,
+        resolution,
+        sources: sourcesArg,
+        stopToken,
+      }),
   )
-
   checkStopToken2(stopTokenCheck)
 
-  const featuresBySource = new Map<string, typeof featuresArray>()
-  for (const feature of featuresArray) {
-    const source = feature.get('source') ?? 'default'
-    const existing = featuresBySource.get(source)
-    if (existing) {
-      existing.push(feature)
-    } else {
-      featuresBySource.set(source, [feature])
-    }
-  }
-
+  const rawBySource = new Map(perSource.map(p => [p.source, p.raw]))
+  const sourcesList: SourceInfo[] = sourcesArg?.length
+    ? sourcesArg
+    : await dataAdapter.getSources([region])
   const orderedSources: SourceInfo[] =
     sourcesList.length > 0
       ? sourcesList
-      : Array.from(featuresBySource.keys(), name => ({ name }))
+      : perSource.map(({ source }) => ({ name: source }))
 
   return {
     sources: orderedSources.map(({ name, color }) => ({
       name,
       color,
-      ...processFeatures(featuresBySource.get(name) ?? [], bicolorPivot),
+      ...processFeaturesFromArrays(
+        rawBySource.get(name) ?? EMPTY_RAW,
+        bicolorPivot,
+      ),
     })),
   }
 }

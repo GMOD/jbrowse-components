@@ -4,12 +4,12 @@ import {
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
-import type { MultiWiggleSourceData } from '../../RenderMultiWiggleDataRPC/types.ts'
+import type { WiggleSourceData } from '../../util.ts'
 
 type FeatureUnderMouse = NonNullable<WiggleDisplayModel['featureUnderMouse']>
 
 export function findHit(
-  source: MultiWiggleSourceData,
+  source: WiggleSourceData,
   bp: number,
   refName: string,
   summaryScoreMode: string,

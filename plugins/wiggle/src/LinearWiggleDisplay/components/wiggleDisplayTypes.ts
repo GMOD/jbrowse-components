@@ -1,9 +1,7 @@
-import type { MultiWiggleGpuProps } from '../../MultiLinearWiggleDisplay/components/buildMultiSourceRenderData.ts'
-import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
+import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
 import type { WiggleBackend } from '../../shared/wiggleBackendTypes.ts'
+import type { WiggleDataResult } from '../../util.ts'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
-
-export type WiggleGpuProps = MultiWiggleGpuProps
 
 export interface WiggleDisplayModel extends WiggleGpuProps {
   rpcDataMap: Map<number, WiggleDataResult>

@@ -1,12 +1,11 @@
 import { findOverlayHit, findRowHit } from './findHit.ts'
 
-import type { MultiWiggleSourceData } from '../../RenderMultiWiggleDataRPC/types.ts'
-import type { WiggleFeatureArrays } from '../../util.ts'
+import type { WiggleFeatureArrays, WiggleSourceData  } from '../../util.ts'
 
 function makeSource(
   name: string,
   features: { start: number; end: number; score: number; min?: number; max?: number }[],
-): MultiWiggleSourceData {
+): WiggleSourceData {
   const n = features.length
   const positions = new Uint32Array(n * 2)
   const scores = new Float32Array(n)

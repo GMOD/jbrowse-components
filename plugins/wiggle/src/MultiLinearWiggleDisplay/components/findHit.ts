@@ -5,9 +5,9 @@ import {
 
 import type { MultiWiggleDisplayModel } from './MultiWiggleComponent.tsx'
 import type {
-  MultiWiggleDataResult,
-  MultiWiggleSourceData,
-} from '../../RenderMultiWiggleDataRPC/types.ts'
+  WiggleDataResult,
+  WiggleSourceData,
+} from '../../util.ts'
 
 type FeatureUnderMouse = NonNullable<
   MultiWiggleDisplayModel['featureUnderMouse']
@@ -30,7 +30,7 @@ function summaryFields(
 // — picking one source's feature interval would be arbitrary across sources
 // with different bin widths.
 export function findOverlayHit(
-  data: MultiWiggleDataResult,
+  data: WiggleDataResult,
   visibleSources: { name: string }[],
   bp: number,
   refName: string,
@@ -71,7 +71,7 @@ export function findOverlayHit(
 
 // Row mode: cursor Y picks one row → one source. Returns its feature interval.
 export function findRowHit(
-  data: MultiWiggleDataResult,
+  data: WiggleDataResult,
   visibleSources: { name: string }[],
   bp: number,
   offsetY: number,
@@ -84,7 +84,7 @@ export function findRowHit(
     return undefined
   }
   const sourceName = visibleSources[rowIdx]!.name
-  const rpcSource: MultiWiggleSourceData | undefined = data.sources.find(
+  const rpcSource: WiggleSourceData | undefined = data.sources.find(
     s => s.name === sourceName,
   )
   if (!rpcSource) {

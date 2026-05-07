@@ -16,22 +16,27 @@ import { waitFor } from '@testing-library/react'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
-import type { WiggleDataResult } from '../RenderWiggleDataRPC/types.ts'
+import type { WiggleDataResult } from '../util.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function makeEmptyWiggleData(): WiggleDataResult {
   return {
-    featurePositions: new Uint32Array(0),
-    featureScores: new Float32Array(0),
-    featureMinScores: new Float32Array(0),
-    featureMaxScores: new Float32Array(0),
-    numFeatures: 0,
-    posFeaturePositions: new Uint32Array(0),
-    posFeatureScores: new Float32Array(0),
-    posNumFeatures: 0,
-    negFeaturePositions: new Uint32Array(0),
-    negFeatureScores: new Float32Array(0),
-    negNumFeatures: 0,
+    sources: [
+      {
+        name: 'default',
+        featurePositions: new Uint32Array(0),
+        featureScores: new Float32Array(0),
+        featureMinScores: new Float32Array(0),
+        featureMaxScores: new Float32Array(0),
+        numFeatures: 0,
+        posFeaturePositions: new Uint32Array(0),
+        posFeatureScores: new Float32Array(0),
+        posNumFeatures: 0,
+        negFeaturePositions: new Uint32Array(0),
+        negFeatureScores: new Float32Array(0),
+        negNumFeatures: 0,
+      },
+    ],
   }
 }
 

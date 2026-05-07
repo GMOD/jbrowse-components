@@ -1,13 +1,13 @@
-import { buildMultiSourceRenderData } from '../../MultiLinearWiggleDisplay/components/buildMultiSourceRenderData.ts'
-import { SINGLE_WIGGLE_SOURCE_NAME } from '../../RenderWiggleDataRPC/types.ts'
+import { buildSourceRenderData } from '../../shared/buildSourceRenderData.ts'
 import {
+  SINGLE_WIGGLE_SOURCE_NAME,
   WIGGLE_COLOR_DEFAULT,
   WIGGLE_POS_COLOR_DEFAULT,
   isDefaultBicolor,
 } from '../../util.ts'
 
-import type { MultiWiggleGpuProps } from '../../MultiLinearWiggleDisplay/components/buildMultiSourceRenderData.ts'
-import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
+import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
+import type { WiggleDataResult } from '../../util.ts'
 
 function makeData(numFeatures = 2, withNeg = false): WiggleDataResult {
   return {
@@ -51,7 +51,7 @@ interface SingleModelLike {
 // the model uses to drive the unified multi build path.
 function singleGpuProps(
   overrides: Partial<SingleModelLike> = {},
-): MultiWiggleGpuProps {
+): WiggleGpuProps {
   const m: SingleModelLike = {
     color: WIGGLE_COLOR_DEFAULT,
     posColor: WIGGLE_POS_COLOR_DEFAULT,
@@ -79,10 +79,10 @@ function singleGpuProps(
   }
 }
 
-describe('LinearWiggleDisplay gpuProps + buildMultiSourceRenderData', () => {
+describe('LinearWiggleDisplay gpuProps + buildSourceRenderData', () => {
   it('uses posColor/negColor when color is default bicolor', () => {
     const data = makeData(2, true)
-    const sources = buildMultiSourceRenderData(
+    const sources = buildSourceRenderData(
       data,
       singleGpuProps({ color: WIGGLE_COLOR_DEFAULT }),
     )
@@ -94,7 +94,7 @@ describe('LinearWiggleDisplay gpuProps + buildMultiSourceRenderData', () => {
 
   it('uses base color when color is custom (non-bicolor)', () => {
     const data = makeData()
-    const sources = buildMultiSourceRenderData(
+    const sources = buildSourceRenderData(
       data,
       singleGpuProps({ color: '#00ff00' }),
     )
@@ -107,11 +107,11 @@ describe('LinearWiggleDisplay gpuProps + buildMultiSourceRenderData', () => {
   it('produces different colors when custom color changes', () => {
     const data = makeData()
 
-    const sources1 = buildMultiSourceRenderData(
+    const sources1 = buildSourceRenderData(
       data,
       singleGpuProps({ color: '#ff0000' }),
     )
-    const sources2 = buildMultiSourceRenderData(
+    const sources2 = buildSourceRenderData(
       data,
       singleGpuProps({ color: '#0000ff' }),
     )
@@ -122,11 +122,11 @@ describe('LinearWiggleDisplay gpuProps + buildMultiSourceRenderData', () => {
   it('produces different colors when posColor changes in bicolor mode', () => {
     const data = makeData()
 
-    const sources1 = buildMultiSourceRenderData(
+    const sources1 = buildSourceRenderData(
       data,
       singleGpuProps({ color: WIGGLE_COLOR_DEFAULT, posColor: '#0068d1' }),
     )
-    const sources2 = buildMultiSourceRenderData(
+    const sources2 = buildSourceRenderData(
       data,
       singleGpuProps({ color: WIGGLE_COLOR_DEFAULT, posColor: '#ff0000' }),
     )
@@ -137,11 +137,11 @@ describe('LinearWiggleDisplay gpuProps + buildMultiSourceRenderData', () => {
   it('produces different colors when negColor changes in bicolor mode', () => {
     const data = makeData(2, true)
 
-    const sources1 = buildMultiSourceRenderData(
+    const sources1 = buildSourceRenderData(
       data,
       singleGpuProps({ color: WIGGLE_COLOR_DEFAULT, negColor: '#e10000' }),
     )
-    const sources2 = buildMultiSourceRenderData(
+    const sources2 = buildSourceRenderData(
       data,
       singleGpuProps({ color: WIGGLE_COLOR_DEFAULT, negColor: '#00ff00' }),
     )
@@ -155,7 +155,7 @@ describe('LinearWiggleDisplay gpuProps + buildMultiSourceRenderData', () => {
 
   it('density mode + bicolor renders single source row', () => {
     const data = makeData()
-    const sources = buildMultiSourceRenderData(
+    const sources = buildSourceRenderData(
       data,
       singleGpuProps({
         color: WIGGLE_COLOR_DEFAULT,
@@ -178,7 +178,7 @@ describe('LinearWiggleDisplay gpuProps + buildMultiSourceRenderData', () => {
     // build uses defaultPosColor — preserving single's prior behavior of using
     // posColor (not the custom solid color) in density mode.
     expect(props.sources[0]!.color).toBeUndefined()
-    const sources = buildMultiSourceRenderData(data, props)
+    const sources = buildSourceRenderData(data, props)
     expect(sources[0]!.color[0]).toBeCloseTo(0)
     expect(sources[0]!.color[2]).toBeGreaterThan(0.5)
   })

@@ -7,9 +7,9 @@ import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
-import { buildMultiSourceRenderData } from '../MultiLinearWiggleDisplay/components/buildMultiSourceRenderData.ts'
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
+import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
 import type {
@@ -71,7 +71,7 @@ export async function renderSvg(
   const wiggleNode = paintLayer(totalWidth, height, opts, ctx => {
     drawWiggleToCtx(
       ctx,
-      { rpcDataMap, encode: data => buildMultiSourceRenderData(data, props) },
+      { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
       renderBlocks,
       state,
     )

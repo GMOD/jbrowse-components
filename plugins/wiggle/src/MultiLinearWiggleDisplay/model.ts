@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 import {
@@ -24,6 +24,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable } from 'mobx'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
+import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import {
@@ -37,11 +38,9 @@ import {
   makeScaleTypeSubMenu,
 } from '../shared/wiggleMenuItems.ts'
 import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
-import { buildMultiSourceRenderData } from './components/buildMultiSourceRenderData.ts'
 
-import type { MultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
 import type { WiggleBackend } from '../shared/wiggleBackendTypes.ts'
-import type { Source, SourceInfo } from '../util.ts'
+import type { Source, SourceInfo, WiggleDataResult  } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -98,7 +97,7 @@ export default function stateModelFactory(
       makeWigglePreProcessSnapshot({ multiWiggle: true }),
     )
     .volatile(() => ({
-      rpcDataMap: observable.map<number, MultiWiggleDataResult>(),
+      rpcDataMap: observable.map<number, WiggleDataResult>(),
       sourcesVolatile: [] as SourceInfo[],
       featureUnderMouse: undefined as
         | {
@@ -319,7 +318,7 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      setRpcData(displayedRegionIndex: number, data: MultiWiggleDataResult) {
+      setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
         self.rpcDataMap.set(displayedRegionIndex, data)
         if (self.sourcesVolatile.length === 0 && data.sources.length > 0) {
           self.sourcesVolatile = data.sources.map(s => ({
@@ -336,7 +335,7 @@ export default function stateModelFactory(
 
       startGpuBackendLifecycle(backend: WiggleBackend) {
         installPerRegionWiggleLifecycle(self, self.rpcDataMap, backend, data =>
-          buildMultiSourceRenderData(data, self.gpuProps()),
+          buildSourceRenderData(data, self.gpuProps()),
         )
       },
 

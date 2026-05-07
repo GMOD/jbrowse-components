@@ -7,11 +7,13 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { SINGLE_WIGGLE_SOURCE_NAME } from './types.ts'
-import { processFeatures, processFeaturesFromArrays } from '../util.ts'
+import {
+  SINGLE_WIGGLE_SOURCE_NAME,
+  featuresToRaw,
+  processFeaturesFromArrays,
+} from '../util.ts'
 
-import type { WiggleDataResult } from './types.ts'
-import type { RawFeatureArrays } from '../util.ts'
+import type { RawFeatureArrays, WiggleDataResult } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
@@ -64,23 +66,20 @@ export async function executeRenderWiggleData({
   ).dataAdapter as BaseFeatureDataAdapter
 
   const fetchOpts = { bpPerPx, resolution }
-  const arrays = hasFeatureArrays(dataAdapter)
-    ? processFeaturesFromArrays(
-        await updateStatus('Loading wiggle data', statusCallback, () =>
-          dataAdapter.getFeatureArrays(region, fetchOpts),
-        ),
-        bicolorPivot,
+  const raw = hasFeatureArrays(dataAdapter)
+    ? await updateStatus('Loading wiggle data', statusCallback, () =>
+        dataAdapter.getFeatureArrays(region, fetchOpts),
       )
-    : processFeatures(
+    : featuresToRaw(
         await updateStatus('Loading wiggle data', statusCallback, () =>
           firstValueFrom(
             dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
           ),
         ),
-        bicolorPivot,
       )
 
   checkStopToken2(stopTokenCheck)
 
+  const arrays = processFeaturesFromArrays(raw, bicolorPivot)
   return { sources: [{ name: SINGLE_WIGGLE_SOURCE_NAME, ...arrays }] }
 }
