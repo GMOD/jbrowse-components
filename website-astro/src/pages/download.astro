@@ -1,12 +1,10 @@
 ---
-import { base } from 'astro:config/client'
+import { baseUrl } from '../lib/base-url'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { Icon } from 'astro-icon/components'
 import btn from '../styles/button.module.css'
 import page from '../styles/page.module.css'
 import config from '../../../website/docusaurus.config.json'
-
-const baseUrl = base.replace(/\/$/, '')
 const { currentVersion } = config.customFields
 const ghRelease = `https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}`
 const desktopBase = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}`

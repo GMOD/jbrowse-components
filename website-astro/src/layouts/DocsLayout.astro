@@ -63,7 +63,7 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   .docs-sidebar :global(a) {
     display: block;
     padding: 0.3rem 1rem;
-    color: #333;
+    color: var(--color-text);
     text-decoration: none;
     font-size: 0.875rem;
     border-radius: 3px;
@@ -114,19 +114,19 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     font-size: 2rem;
     margin-top: 0;
     margin-bottom: 1.5rem;
-    color: #0d223f;
-    border-bottom: 2px solid #e0e0e0;
+    color: var(--color-navy);
+    border-bottom: 2px solid var(--color-border);
     padding-bottom: 0.75rem;
   }
 
   .docs-content :global(h2) {
     font-size: 1.5rem;
     margin-top: 2.5rem;
-    color: #0d223f;
-    border-bottom: 1px solid #e8e8e8;
+    color: var(--color-navy);
+    border-bottom: 1px solid var(--color-border);
     padding-bottom: 0.4rem;
   }
-  .docs-content :global(h3) { font-size: 1.2rem; margin-top: 1.5rem; color: #1a3a6a; }
+  .docs-content :global(h3) { font-size: 1.2rem; margin-top: 1.5rem; color: var(--color-navy); }
   .docs-content :global(h4) { font-size: 1rem; margin-top: 1.2rem; color: #333; }
 
   .docs-content :global(pre) {
@@ -164,7 +164,7 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   .docs-content :global(figcaption) {
     text-align: center;
     font-style: italic;
-    color: #666;
+    color: var(--color-text-muted);
     margin-top: 0.5rem;
     font-size: 0.9rem;
   }
@@ -182,14 +182,14 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     padding: 0.5rem 0.75rem;
     text-align: left;
   }
-  .docs-content :global(th) { background: #f0f4f8; font-weight: 600; }
+  .docs-content :global(th) { background: var(--color-surface); font-weight: 600; }
   .docs-content :global(tr:nth-child(even)) { background: #fafafa; }
   .docs-content :global(blockquote) {
-    border-left: 4px solid #25c2a0;
+    border-left: 4px solid var(--color-accent);
     margin: 1.5rem 0;
     padding: 0.5rem 1.25rem;
     background: #f0faf8;
-    color: #333;
+    color: var(--color-text);
     border-radius: 0 4px 4px 0;
   }
   .docs-content :global(a) {
@@ -214,7 +214,7 @@ const sidebar = buildSidebar(allDocs, baseUrl)
       height: auto;
       position: static;
       border-right: none;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid var(--color-border);
       max-height: 300px;
     }
   }

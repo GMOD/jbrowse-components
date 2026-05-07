@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content'
-import { base } from 'astro:config/client'
+import { baseUrl } from '../lib/base-url'
+import { blogPath } from '../lib/blog-path'
 import BaseLayout from './BaseLayout.astro'
 
 interface Props {
@@ -9,17 +10,10 @@ interface Props {
 }
 
 const { title, currentSlug = '' } = Astro.props
-const baseUrl = base.replace(/\/$/, '')
 
 const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 )
-
-function blogPath(post: (typeof posts)[0]) {
-  const stem = post.filePath!.split('/').pop()!.replace(/\.md$/, '')
-  const m = stem.match(/^(\d{4})-(\d{2})-(\d{2})-(.+)$/)
-  return m ? `${m[1]}/${m[2]}/${m[3]}/${m[4]}` : stem
-}
 
 const byYear = new Map<string, { slug: string; title: string; href: string }[]>()
 for (const post of posts) {
@@ -87,7 +81,7 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
   .blog-sidebar {
     width: 280px;
     flex-shrink: 0;
-    background: #f8f9fa;
+    background: var(--color-surface);
     border-right: 1px solid var(--color-border);
     overflow-y: auto;
     padding: 1rem 0;
@@ -108,7 +102,7 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
   .blog-sidebar a {
     display: block;
     padding: 0.3rem 1rem;
-    color: #333;
+    color: var(--color-text);
     text-decoration: none;
     font-size: 0.875rem;
     border-radius: 3px;
@@ -119,8 +113,8 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
     color: var(--color-navy);
   }
   .blog-sidebar a.active {
-    background: #e0f5f0;
-    color: #0d6e5a;
+    background: var(--color-sidebar-active-bg);
+    color: var(--color-sidebar-active-text);
     font-weight: 600;
   }
 
@@ -131,7 +125,7 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #555;
+    color: var(--color-text-muted);
     list-style: none;
     user-select: none;
   }

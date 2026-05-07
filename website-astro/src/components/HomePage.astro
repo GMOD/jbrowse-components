@@ -1,11 +1,10 @@
 ---
 import { Icon } from 'astro-icon/components'
-import { base as baseConfig } from 'astro:config/client'
+import { baseUrl } from '../lib/base-url'
 import btn from '../styles/button.module.css'
 import OfficeHoursAlert from './OfficeHoursAlert.astro'
 import docusaurusConfig from '../../../website/docusaurus.config.json'
 const currentVersion = docusaurusConfig.customFields.currentVersion as string
-const base = baseConfig.replace(/\/$/, '')
 ---
 
 <OfficeHoursAlert />
@@ -14,14 +13,14 @@ const base = baseConfig.replace(/\/$/, '')
   <!-- Hero row -->
   <div class="hero-row">
     <div class="hero-text">
-      <p class="mui-h3 gutter-bottom">JBrowse</p>
-      <p class="mui-h4 gutter-bottom">The next-generation genome browser</p>
-      <p class="mui-body1">
+      <p class="hero-title">JBrowse</p>
+      <p class="hero-subtitle">The next-generation genome browser</p>
+      <p class="body-text">
         JBrowse is a genome browser that runs on the web, on your desktop, or
         embedded in your app.
       </p>
       <div class="btn-row">
-        <a class:list={[btn.btn, btn.btnPrimary]} href={`${base}/download/`}>
+        <a class:list={[btn.btn, btn.btnPrimary]} href={`${baseUrl}/download/`}>
           <Icon name="mdi:tray-arrow-down" width="20" height="20" />
           Download
         </a>
@@ -34,17 +33,17 @@ const base = baseConfig.replace(/\/$/, '')
         </a>
       </div>
       <div style="text-align:center">
-        <p class="mui-body1">
-          Check out our <a href={`${base}/blog/`}>latest release blogpost</a>, our
-          <a href={`${base}/docs/embedded_components/`}>embedded components</a>,
+        <p class="body-text">
+          Check out our <a href={`${baseUrl}/blog/`}>latest release blogpost</a>, our
+          <a href={`${baseUrl}/docs/embedded_components/`}>embedded components</a>,
           and our
-          <a href={`${base}/download/#jbrowse-cli-tools`}>command line tools</a>.
+          <a href={`${baseUrl}/download/#jbrowse-cli-tools`}>command line tools</a>.
         </p>
       </div>
     </div>
     <div class="hero-image">
       <img
-        src={`${base}/img/screenshot.webp`}
+        src={`${baseUrl}/img/screenshot.webp`}
         width="1362"
         height="731"
         alt="screenshot of jbrowse 2"
@@ -56,7 +55,7 @@ const base = baseConfig.replace(/\/$/, '')
 <div class="outer-box">
   <!-- Features -->
   <div class="section-box">
-    <p class="mui-h4">Features</p>
+    <p class="section-title">Features</p>
     <hr />
     <div class="two-col">
       <div>
@@ -81,7 +80,7 @@ const base = baseConfig.replace(/\/$/, '')
             additional view types, track types, data adapters, and more!
           </li>
           <li>
-            <a href={`${base}/features`}>
+            <a href={`${baseUrl}/features`}>
               See a summary of new features and a comparison to JBrowse 1
             </a>
           </li>
@@ -89,7 +88,7 @@ const base = baseConfig.replace(/\/$/, '')
       </div>
       <div class="features-image">
         <img
-          src={`${base}/img/sv_inspector_importform_loaded.png`}
+          src={`${baseUrl}/img/sv_inspector_importform_loaded.png`}
           width="1377"
           height="614"
           alt="screenshot of jbrowse 2 SV inspector"
@@ -100,14 +99,14 @@ const base = baseConfig.replace(/\/$/, '')
 
   <!-- Citation -->
   <div class="section-box">
-    <p class="mui-h4">Citation</p>
+    <p class="section-title">Citation</p>
     <hr />
-    <p class="mui-body1">
+    <p class="body-text">
       We at the JBrowse Consortium are working to make JBrowse a pluggable,
       open-source computational platform for integrating many kinds of
       biological data from many different places.
     </p>
-    <p class="mui-body1">
+    <p class="body-text">
       Research citations are one of the main metrics the consortium uses to
       demonstrate our relevance and utility when applying for funding to
       continue our work. If you use JBrowse in research that you publish,
@@ -124,9 +123,9 @@ const base = baseConfig.replace(/\/$/, '')
 
   <!-- License -->
   <div class="section-box">
-    <p class="mui-h4">License</p>
+    <p class="section-title">License</p>
     <hr />
-    <p class="mui-body1">
+    <p class="body-text">
       JBrowse is released under the
       <a href="https://www.apache.org/licenses/LICENSE-2.0">
         Apache License, Version 2.0
@@ -136,9 +135,9 @@ const base = baseConfig.replace(/\/$/, '')
 
   <!-- Funding -->
   <div class="section-box">
-    <p class="mui-h4">Funding and Collaboration</p>
+    <p class="section-title">Funding and Collaboration</p>
     <hr />
-    <p class="mui-body1">
+    <p class="body-text">
       JBrowse development has received support from the US National Institutes
       of Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
       Institute for Cancer Research (OICR), and the University of California,
@@ -148,26 +147,29 @@ const base = baseConfig.replace(/\/$/, '')
 </div>
 
 <style>
-  .mui-h3 {
+  .hero-title {
     font-size: clamp(1.75rem, 5vw, 3rem);
     font-weight: 400;
     line-height: 1.167;
-    margin: 0;
+    margin: 0 0 0.35em;
   }
-  .mui-h4 {
+  .hero-subtitle {
+    font-size: clamp(1.4rem, 3.5vw, 2.125rem);
+    font-weight: 400;
+    line-height: 1.235;
+    margin: 0 0 0.35em;
+  }
+  .section-title {
     font-size: clamp(1.4rem, 3.5vw, 2.125rem);
     font-weight: 400;
     line-height: 1.235;
     margin: 0;
   }
-  .mui-body1 {
+  .body-text {
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
     margin: 0;
-  }
-  .gutter-bottom {
-    margin-bottom: 0.35em;
   }
 
   .outer-box {

@@ -1,43 +1,51 @@
 ---
 import { getCollection } from 'astro:content'
-import { base } from 'astro:config/client'
+import { baseUrl } from '../../lib/base-url'
+import { blogPath } from '../../lib/blog-path'
 import BlogLayout from '../../layouts/BlogLayout.astro'
 import blog from '../../styles/blog.module.css'
 
 const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 )
-const baseUrl = base.replace(/\/$/, '')
 
-function blogPath(post: (typeof posts)[0]) {
-  const stem = post.filePath!.split('/').pop()!.replace(/\.md$/, '')
-  const m = stem.match(/^(\d{4})-(\d{2})-(\d{2})-(.+)$/)!
-  return `${m[1]}/${m[2]}/${m[3]}/${m[4]}`
+const byYear = new Map<string, (typeof posts)>()
+for (const post of posts) {
+  const year = post.data.date.getFullYear().toString()
+  if (!byYear.has(year)) {
+    byYear.set(year, [])
+  }
+  byYear.get(year)!.push(post)
 }
+const years = [...byYear.keys()].sort((a, b) => Number(b) - Number(a))
 ---
 
 <BlogLayout title="JBrowse Blog">
   <div class="content">
     <h1>Blog</h1>
     {
-      posts.map(post => (
-        <article>
-          <a href={`${baseUrl}/blog/${blogPath(post)}/`}>{post.data.title}</a>
-          <time datetime={post.data.date.toISOString()}>
-            {post.data.date.toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </time>
-          {post.data.tags && (
-            <div class={blog.tags}>
-              {post.data.tags.map(tag => (
-                <span class={blog.tag}>{tag}</span>
-              ))}
-            </div>
-          )}
-        </article>
+      years.map(year => (
+        <section>
+          <h2>{year}</h2>
+          {byYear.get(year)!.map(post => (
+            <article>
+              <a href={`${baseUrl}/blog/${blogPath(post)}/`}>{post.data.title}</a>
+              <div class="article-meta">
+                <time datetime={post.data.date.toISOString()}>
+                  {post.data.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                </time>
+                {post.data.author && <span class="author">{post.data.author}</span>}
+              </div>
+              {post.data.tags && (
+                <div class={blog.tags}>
+                  {post.data.tags.map(tag => (
+                    <span class={blog.tag}>{tag}</span>
+                  ))}
+                </div>
+              )}
+            </article>
+          ))}
+        </section>
       ))
     }
   </div>
@@ -55,15 +63,23 @@ function blogPath(post: (typeof posts)[0]) {
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 1rem;
   }
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 2rem 0 0.5rem;
+  }
   article {
-    padding: 1.25rem 0;
+    padding: 0.9rem 0;
     border-bottom: 1px solid #f0f0f0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
   }
   article a {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 500;
     color: var(--color-accent);
     text-decoration: none;
@@ -71,8 +87,17 @@ function blogPath(post: (typeof posts)[0]) {
   article a:hover {
     text-decoration: underline;
   }
+  .article-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
   time {
     font-size: 0.875rem;
-    color: #666;
+    color: var(--color-text-muted);
+  }
+  .author {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
   }
 </style>
