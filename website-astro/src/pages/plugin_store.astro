@@ -1,0 +1,210 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import pluginJSON from '../../../website/plugins.json'
+
+const { plugins } = pluginJSON
+---
+
+<BaseLayout title="JBrowse 2 Plugin Store">
+  <div class="content">
+    <h1>JBrowse 2 Plugin Store</h1>
+
+    <div class="top-links">
+      <details class="info-box">
+        <summary>About the plugin store</summary>
+        <div class="info-body">
+          <p>
+            This store contains the current list of white-listed JBrowse 2
+            plugins available for use. Plugins can add functionality that
+            doesn't exist in the core application, such as a new data adapter
+            or a custom track type.
+          </p>
+          <p>
+            The configuration specified for each plugin can be added to the
+            <code>plugins</code> array as a top-level entry. For example:
+          </p>
+          <pre><code>{`{
+  "plugins": [
+    {
+      "name": "Msaview",
+      "url": "https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"
+    }
+  ]
+}`}</code></pre>
+          <p>
+            Plugins can also be added directly inside the application via the
+            File menu.
+          </p>
+        </div>
+      </details>
+
+      <details class="info-box">
+        <summary>Developer information</summary>
+        <div class="info-body">
+          <p>
+            We welcome developers who want to create a new JBrowse 2 plugin.
+            The primary resource for getting started is the
+            <a href="https://github.com/GMOD/jbrowse-plugin-template" target="_blank" rel="noopener">
+              plugin template
+            </a>.
+          </p>
+          <p>
+            If you build a plugin you'd like featured in this store, follow the
+            instructions found
+            <a href="https://github.com/GMOD/jbrowse-plugin-list" target="_blank" rel="noopener">
+              here
+            </a>.
+          </p>
+        </div>
+      </details>
+    </div>
+
+    <div class="plugin-list">
+      {plugins.map(plugin => {
+        const configString = JSON.stringify({ name: plugin.name, url: plugin.url }, null, 2)
+        return (
+          <div class="plugin-card">
+            {plugin.image && (
+              <img
+                class="plugin-image"
+                src={plugin.image}
+                alt={plugin.name}
+                loading="lazy"
+              />
+            )}
+            <div class="plugin-body">
+              <h2>{plugin.name}</h2>
+              <div class="plugin-meta">
+                <span>👤 {plugin.authors.join(', ')}</span>
+                <span>⚖️ {plugin.license === 'NONE' ? 'No license' : plugin.license}</span>
+                <a href={plugin.location} target="_blank" rel="noopener">
+                  GitHub ↗
+                </a>
+              </div>
+              <p>{plugin.description}</p>
+              <details class="config-details">
+                <summary>Show configuration</summary>
+                <pre><code>{configString}</code></pre>
+              </details>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  .top-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  .info-box {
+    flex: 1;
+    min-width: 240px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .info-box summary {
+    background: #3f51b5;
+    color: white;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+    list-style: none;
+  }
+  .info-box summary::-webkit-details-marker {
+    display: none;
+  }
+  .info-box summary::after {
+    content: ' ▾';
+    float: right;
+  }
+  .info-box[open] summary::after {
+    content: ' ▴';
+  }
+  .info-body {
+    padding: 1rem;
+  }
+  .info-body p {
+    margin: 0.5rem 0;
+  }
+  .plugin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .plugin-card {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .plugin-image {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    display: block;
+  }
+  .plugin-body {
+    padding: 1rem 1.25rem;
+  }
+  .plugin-body h2 {
+    margin: 0 0 0.5rem;
+  }
+  .plugin-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+  .plugin-meta a {
+    color: #3f51b5;
+  }
+  .config-details summary {
+    display: inline-block;
+    padding: 0.35rem 0.9rem;
+    background: #3f51b5;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    user-select: none;
+    list-style: none;
+    margin-top: 0.5rem;
+  }
+  .config-details summary::-webkit-details-marker {
+    display: none;
+  }
+  .config-details pre {
+    margin-top: 0.75rem;
+    background: #f5f5f5;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+  }
+  pre {
+    background: #f5f5f5;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+  }
+  @media (max-width: 600px) {
+    .plugin-image {
+      display: none;
+    }
+  }
+</style>

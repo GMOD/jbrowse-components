@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout title="Contact — JBrowse">
+  <div class="markdown-content">
+    <h1>Contact us</h1>
+
+    <h2>Office hours</h2>
+    <aside class="office-hours-alert">
+      <strong>New: JBrowse 2 office hours!</strong>
+      <p>
+        Starting Fall 2023, we are offering 1-on-1 appointments with members of
+        our team via Google Calendar.
+      </p>
+      <a class="schedule-btn" href="https://calendar.app.google/1AYZkNCQNmwdY2R26">
+        Schedule appointment
+      </a>
+    </aside>
+
+    <h2>Forums</h2>
+    <ul>
+      <li>Discussion forum: <a href="https://github.com/GMOD/jbrowse-components/discussions">github.com/GMOD/jbrowse-components/discussions</a></li>
+      <li>Issues and feature requests: <a href="https://github.com/GMOD/jbrowse-components/issues/new/choose">github.com/GMOD/jbrowse-components/issues</a></li>
+      <li>Chat: <a href="https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im">Gitter</a></li>
+      <li>Mailing list: send email to <code>gmod-ajax@lists.sourceforge.net</code></li>
+      <li>Email: <a href="mailto:jbrowse2@berkeley.edu">jbrowse2@berkeley.edu</a></li>
+      <li>Feedback: <a href="https://forms.gle/CRf9Ur9iXu2uuz1o9">Google Form</a></li>
+    </ul>
+
+    <h2>Social media</h2>
+    <ul>
+      <li>Bluesky: <a href="https://bsky.app/profile/jbrowse.org">bsky.app/profile/jbrowse.org</a></li>
+      <li>Mastodon: <a href="https://genomic.social/@usejbrowse">genomic.social/@usejbrowse</a></li>
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .markdown-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+    line-height: 1.6;
+  }
+  .office-hours-alert {
+    background: #e3f2fd;
+    border-left: 4px solid #1976d2;
+    padding: 1rem 1.25rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+  }
+  .office-hours-alert p {
+    margin: 0.5rem 0;
+  }
+  .schedule-btn {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.4rem 1rem;
+    background: #1976d2;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  .schedule-btn:hover {
+    background: #1565c0;
+  }
+</style>

@@ -1,0 +1,44 @@
+---
+import BaseLayout from './BaseLayout.astro'
+import type { MarkdownLayoutProps } from 'astro'
+
+type Props = MarkdownLayoutProps<{ title?: string }>
+const { frontmatter } = Astro.props
+---
+
+<BaseLayout title={frontmatter.title}>
+  <div class="markdown-content">
+    <slot />
+  </div>
+</BaseLayout>
+
+<style>
+  .markdown-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+    line-height: 1.6;
+  }
+  .markdown-content img {
+    max-width: 100%;
+  }
+  .markdown-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+  }
+  .markdown-content th,
+  .markdown-content td {
+    border: 1px solid #ddd;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+  .markdown-content th {
+    background: #f0f0f0;
+  }
+  .markdown-content hr {
+    margin: 2rem 0;
+    border: none;
+    border-top: 1px solid #ddd;
+  }
+</style>

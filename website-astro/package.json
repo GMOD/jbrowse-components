@@ -1,0 +1,21 @@
+{
+  "name": "@jbrowse/website-astro",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.2.0",
+    "@astrojs/starlight": "^0.34.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.0.0",
+    "@mui/material": "^9.0.0",
+    "astro": "^5.7.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "sharp": "^0.33.0"
+  }
+}

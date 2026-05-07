@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+/* Primary teal color: #25c2a0 = hsl(160, 51%, 45%) */
+:root {
+  --sl-font: 'Roboto', sans-serif;
+
+  /* Dark mode accent */
+  --sl-color-accent-low: hsl(160, 51%, 20%);
+  --sl-color-accent: hsl(160, 51%, 45%);
+  --sl-color-accent-high: hsl(160, 51%, 75%);
+
+  /* Dark navy header */
+  --sl-color-bg-nav: #0d223f;
+}
+
+[data-theme='light'] {
+  --sl-color-accent-low: hsl(160, 51%, 88%);
+  --sl-color-accent: hsl(160, 51%, 35%);
+  --sl-color-accent-high: hsl(160, 51%, 20%);
+  --sl-color-bg-nav: #0d223f;
+}
+
+/* Force white text in the dark navy header */
+header.header {
+  --sl-color-white: #ffffff;
+}
+
+header.header a,
+header.header .site-title,
+header.header nav a {
+  color: white;
+}
+
+/* Social icon hover teal tint */
+a.social-icon:hover {
+  opacity: 0.8;
+  filter: invert(62%) sepia(57%) saturate(419%) hue-rotate(117deg) brightness(101%) contrast(87%);
+}
+
+/* "NEW!" badge on navbar items */
+.new-feature::after {
+  content: 'NEW!';
+  font-size: 0.6em;
+  font-weight: bold;
+  color: red;
+  margin-left: 5px;
+  padding: 2px 5px;
+  display: inline-block;
+  vertical-align: super;
+}
