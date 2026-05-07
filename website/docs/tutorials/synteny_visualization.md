@@ -5,17 +5,8 @@ title: Synteny visualization and genome alignment
 
 import Figure from '../figure'
 
-This tutorial walks through using JBrowse 2's dotplot and linear synteny views
-to visualize alignments between two genomes. These views are most useful for
-comparing genome assemblies, identifying large-scale rearrangements, and
-exploring evolutionary relationships between organisms.
-
-The tutorial covers two main workflows: using the dotplot view for an
-interactive overview of chromosome-scale alignments, and using the linear
-synteny view for base-level inspection of aligned regions. Both views operate on
-PAF (Pairwise mApping Format) or similar alignment data, which you can generate
-with tools like [minimap2](https://github.com/lh3/minimap2) or
-[nucmer](http://mummer.sourceforge.net/).
+This tutorial covers the dotplot view (chromosome-scale alignment overview) and
+linear synteny view (base-level inspection) using whole-genome alignment data.
 
 For general background on synteny views and a worked example with tumor and
 normal genome comparison, see the
@@ -27,41 +18,41 @@ This tutorial assumes you already have a JBrowse 2 instance running (see the
 [web quickstart](/docs/quickstart_web) for setup). You will need:
 
 - Two genome assemblies in FASTA format (or use public assemblies)
-- A whole-genome alignment in PAF format
+- A whole-genome alignment (PAF, MUMmer `.delta`, or UCSC `.chain`)
 - The [jbrowse CLI](/docs/cli) to add the alignment to your config
 
-To generate a PAF alignment yourself, install
-[minimap2](https://github.com/lh3/minimap2):
+To generate a PAF alignment, install [minimap2](https://github.com/lh3/minimap2):
 
 ```bash
-# Align two genomes with minimap2
 minimap2 -x asm5 reference.fa query.fa > alignment.paf
 ```
 
-The `-x asm5` preset is appropriate for whole-genome assembly-to-assembly
-comparison. For other comparisons (e.g., long-read to reference), use
-`-x map-ont`, `-x map-pb`, or `-x sr` as appropriate.
+The `-x asm5` preset is for whole-genome assembly comparison. You can also use
+[MUMmer](http://mummer.sourceforge.net/) and convert the `.delta` output to PAF
+with `delta2paf` from
+[paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js), or
+convert UCSC chain files with `chain2paf` from the same toolkit. For small
+files you can load `.delta` or `.chain` directly into JBrowse without
+converting.
 
 ## Loading assemblies and alignments
 
-Before adding an alignment, you must load both genomes as assemblies in JBrowse.
-If you haven't already done so, add them via the CLI:
+Both genomes must be loaded as assemblies before adding the alignment:
 
 ```bash
 jbrowse add-assembly reference.fa --out $OUT --load copy
 jbrowse add-assembly query.fa --out $OUT --load copy
 ```
 
-Then add the PAF alignment as a synteny track. The two assembly names passed to
-`-a` must match the assemblies you loaded above:
+Add the PAF as a synteny track. The assembly names in `-a` must match what you
+passed to `add-assembly`:
 
 ```bash
 jbrowse add-track alignment.paf -a query,reference --out $OUT --load copy
 ```
 
-**Important:** The order of assemblies in `-a query,reference` matters. It
-should match the order in which you ran minimap2:
-`minimap2 reference.fa query.fa` corresponds to `add-track -a query,reference`.
+**Important:** Assembly order in `-a` must match minimap2 argument order:
+`minimap2 reference.fa query.fa` → `add-track -a query,reference`.
 
 ## Dotplot view
 
@@ -71,17 +62,12 @@ off-diagonal if there are rearrangements).
 
 ### Launching the dotplot
 
-From the main JBrowse start screen, click **Dotplot** to open the dotplot import
-form. Select the two assemblies (one for each axis) and pick the synteny track
-to visualize.
+From the main JBrowse start screen, click **Dotplot**, select two assemblies
+(one per axis), and pick the synteny track.
 
 <Figure caption="The dotplot import form. Pick two assemblies (X and Y axes) and select a synteny track." src="/img/sv_synteny/k1.png" />
 
-Click **Open dotplot** to visualize the alignment.
-
 ### Reading the dotplot
-
-In the resulting plot:
 
 - **Diagonal lines** (slope ≈ 1) represent collinear aligned regions.
 - **Off-diagonal lines** indicate rearrangements: inversions, translocations, or
@@ -89,24 +75,19 @@ In the resulting plot:
 - **Scattered points** represent short local alignments or repetitive regions.
 - **Gaps** suggest missing or misaligned sequence.
 
-You can zoom, pan, and click on features to get more information.
-
 <Figure caption="A dotplot showing whole-genome alignment between two species. Diagonal blocks represent collinear regions; off-diagonal blocks indicate rearrangements." src="/img/sv_synteny/k2.png" />
 
 ### Launching a linear synteny view from the dotplot
 
-To inspect a region in detail, click and drag over the area of interest in the
-dotplot, then click **Launch synteny view**. This opens a linear synteny view
-showing the base-level alignment of just that region.
+To inspect a region, click and drag over it in the dotplot, then click
+**Launch synteny view**.
 
 <Figure caption="Selecting a region in the dotplot (left) by clicking and dragging, then launching a synteny view (right) shows the base-level alignment of the selected region." src="/img/sv_synteny/k3.png" />
 
 ## Linear synteny view
 
-The linear synteny view shows two genomic regions aligned side-by-side, with
-lines connecting matching sequence blocks. This view is useful for inspecting
-breakpoints, identifying homologous genes, and understanding the fine structure
-of rearrangements.
+The linear synteny view shows two genomic regions side-by-side with lines
+connecting matching sequence blocks.
 
 ### Launching the linear synteny view
 
@@ -119,29 +100,12 @@ You can launch a linear synteny view in two ways:
 
 ### Configuring the linear synteny view
 
-Once open, you can search for genomic locations in the header bar to zoom into
-different regions, and you can open additional tracks (e.g., gene annotations,
-read alignments) via the track selector.
+Search for genomic locations in the header bar to navigate, and open additional
+tracks (gene annotations, read alignments) via the track selector.
 
 <Figure caption="The linear synteny view showing two genomes aligned side-by-side. Blue lines connect aligned blocks; opening annotations tracks reveals conserved genes across the alignment." src="/img/sv_synteny/k4.png" />
 
-A common workflow is to open gene annotation tracks on both genomes to identify
-conserved syntenic genes across the alignment.
-
 <Figure caption="Gene annotations overlaid on both sides of a linear synteny view, highlighting syntenic (conserved) genes." src="/img/sv_synteny/k5.png" />
-
-## Example: Fruit crop comparison
-
-A practical use case is comparing assemblies of related species, such as grape
-and peach. These organisms diverged millions of years ago but retain substantial
-synteny. By viewing their genomes side-by-side, you can:
-
-- Identify conserved chromosomal regions (synteny blocks).
-- Spot evolutionary rearrangements (inversions, translocations).
-- Find orthologous genes between species.
-
-The same workflows apply to other comparisons: plant strains, bacterial genomes,
-primate species, or tumor vs. normal genomes.
 
 ## Troubleshooting
 
@@ -151,16 +115,28 @@ primate species, or tumor vs. normal genomes.
 | Lines don't appear, or appear scattered randomly | The PAF was generated with wrong parameters     | Try re-running minimap2 with `-x asm5` for assembly comparison                      |
 | Alignments are reversed or flipped               | The PAF was generated in the opposite direction | Try swapping the order of input genomes: `minimap2 query.fa reference.fa`           |
 
+## Using PIF for large genomes
+
+For large whole-genome alignments, convert your PAF to
+[PIF (Pairwise Indexed Format)](/docs/developer_guides/pif_format) so JBrowse
+fetches only the alignments in the current viewport:
+
+```bash
+jbrowse make-pif alignment.paf
+jbrowse add-track alignment.pif.gz -a query,reference --out $OUT --load copy
+```
+
+See the [PIF format guide](/docs/developer_guides/pif_format) for details.
+
 ## Next steps
 
-- **Generate your own alignments** — use minimap2 with appropriate presets for
-  your data type (assemblies, long reads, short reads).
 - **Overlay annotations** — load gene GFF/GTF files on both sides to identify
   conserved genes and orthologs.
-- **Inspect synteny blocks** — use the linear synteny view to dive into
-  rearrangement breakpoints or conserved regions.
 - **Compare multiple organisms** — load several pairwise alignments to build a
   phylogenetic perspective on genome evolution.
+- **Multiway alignment** — for visualizing MAF (Multiple Alignment Format) data
+  across more than two genomes, see
+  [jbrowse-plugin-mafviewer](https://github.com/cmdcolin/jbrowse-plugin-mafviewer).
 
 For more on working with synteny views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
