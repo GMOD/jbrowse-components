@@ -1,3 +1,4 @@
+import { rgb255 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   pileupRowY,
@@ -9,13 +10,10 @@ import type {
 } from '../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-// Shared Canvas2D helper for soft + hard clip bars. Both feature folders pass
-// their region's positions/ys/lengths along with a per-feature color.
-export function drawClipBars(
+function drawClipBars(
   ctx: Ctx2D,
   positions: Uint32Array,
   ys: Uint16Array,
-  lengths: Uint16Array,
   count: number,
   color: string,
   block: DrawBlock,
@@ -36,4 +34,46 @@ export function drawClipBars(
     const y = pileupRowY(yRow, state)
     ctx.fillRect(x - 0.5, y, 1, fH)
   }
+}
+
+export function drawSoftclips(
+  ctx: Ctx2D,
+  region: { softclipPositions: Uint32Array; softclipYs: Uint16Array; numSoftclips: number },
+  block: DrawBlock,
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  drawClipBars(
+    ctx,
+    region.softclipPositions,
+    region.softclipYs,
+    region.numSoftclips,
+    rgb255(state.colors.colorSoftclip),
+    block,
+    bpLength,
+    fullBlockWidth,
+    state,
+  )
+}
+
+export function drawHardclips(
+  ctx: Ctx2D,
+  region: { hardclipPositions: Uint32Array; hardclipYs: Uint16Array; numHardclips: number },
+  block: DrawBlock,
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) {
+  drawClipBars(
+    ctx,
+    region.hardclipPositions,
+    region.hardclipYs,
+    region.numHardclips,
+    rgb255(state.colors.colorHardclip),
+    block,
+    bpLength,
+    fullBlockWidth,
+    state,
+  )
 }

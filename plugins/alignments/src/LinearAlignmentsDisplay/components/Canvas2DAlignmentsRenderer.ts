@@ -7,86 +7,36 @@ import { getChainBounds } from './chainOverlayUtils.ts'
 import {
   bpToScreenX,
   computeBlockHeights,
+  interbaseRangeEnds,
   pileupRowY,
 } from './rendererTypes.ts'
-import {
-  buildArcsFields,
-  emptyArcsFields,
-} from '../../features/arcs/buildRegion.ts'
 import { drawArcs } from '../../features/arcs/drawCanvas.ts'
-import {
-  buildConnectingLinesFields,
-  emptyConnectingLinesFields,
-} from '../../features/connectingLines/buildRegion.ts'
+import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { drawConnectingLines } from '../../features/connectingLines/drawCanvas.ts'
 import {
   buildCoverageFields,
   emptyCoverageFields,
 } from '../../features/coverage/buildRegion.ts'
 import { drawCoverageBars } from '../../features/coverage/drawCanvas.ts'
-import {
-  buildGapFields,
-  emptyGapFields,
-} from '../../features/gap/buildRegion.ts'
 import { drawGaps } from '../../features/gap/drawCanvas.ts'
-import {
-  buildHardclipFields,
-  emptyHardclipFields,
-} from '../../features/hardclip/buildRegion.ts'
-import { drawHardclips } from '../../features/hardclip/drawCanvas.ts'
-import {
-  buildIndicatorFields,
-  emptyIndicatorFields,
-} from '../../features/indicator/buildRegion.ts'
 import { drawIndicatorCanvas } from '../../features/indicator/drawCanvas.ts'
-import {
-  buildInsertionFields,
-  emptyInsertionFields,
-} from '../../features/insertion/buildRegion.ts'
 import { drawInsertions } from '../../features/insertion/drawCanvas.ts'
-import {
-  buildLinkedReadLinesFields,
-  emptyLinkedReadLinesFields,
-} from '../../features/linkedReads/buildRegion.ts'
 import { drawLinkedReadLines } from '../../features/linkedReads/drawCanvas.ts'
-import {
-  buildMismatchFields,
-  emptyMismatchFields,
-} from '../../features/mismatch/buildRegion.ts'
 import { drawMismatches } from '../../features/mismatch/drawCanvas.ts'
-import {
-  buildModCoverageFields,
-  emptyModCoverageFields,
-} from '../../features/modCoverage/buildRegion.ts'
 import { drawModCoverageCanvas } from '../../features/modCoverage/drawCanvas.ts'
-import {
-  buildModificationFields,
-  emptyModificationFields,
-} from '../../features/modification/buildRegion.ts'
 import { drawModifications } from '../../features/modification/drawCanvas.ts'
-import {
-  buildNoncovFields,
-  emptyNoncovFields,
-} from '../../features/noncov/buildRegion.ts'
 import { drawNoncovCanvas } from '../../features/noncov/drawCanvas.ts'
 import {
   buildReadFields,
   emptyReadFields,
 } from '../../features/read/buildRegion.ts'
 import { drawReads } from '../../features/read/drawCanvas.ts'
-import {
-  buildSnpCoverageFields,
-  emptySnpCoverageFields,
-} from '../../features/snpCoverage/buildRegion.ts'
 import { drawSnpSegmentsCanvas } from '../../features/snpCoverage/drawCanvas.ts'
-import {
-  buildSoftclipBaseFields,
-  buildSoftclipFields,
-  emptySoftclipBaseFields,
-  emptySoftclipFields,
-} from '../../features/softclip/buildRegion.ts'
 import { drawSoftclipBases } from '../../features/softclip/drawBases.ts'
-import { drawSoftclips } from '../../features/softclip/drawCanvas.ts'
+import {
+  drawHardclips,
+  drawSoftclips,
+} from '../../shared/drawClipBars.ts'
 
 import type {
   AlignmentsBackend,
@@ -98,57 +48,76 @@ import type {
   RenderState,
 } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
-import type { ArcsRegionFields } from '../../features/arcs/buildRegion.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
-import type { ConnectingLinesRegionFields } from '../../features/connectingLines/buildRegion.ts'
+import type { ConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
 import type { CoverageRegionFields } from '../../features/coverage/buildRegion.ts'
-import type { GapRegionFields } from '../../features/gap/buildRegion.ts'
-import type { HardclipRegionFields } from '../../features/hardclip/buildRegion.ts'
-import type { IndicatorRegionFields } from '../../features/indicator/buildRegion.ts'
-import type { InsertionRegionFields } from '../../features/insertion/buildRegion.ts'
-import type { LinkedReadLinesRegionFields } from '../../features/linkedReads/buildRegion.ts'
-import type { MismatchRegionFields } from '../../features/mismatch/buildRegion.ts'
-import type { ModCoverageRegionFields } from '../../features/modCoverage/buildRegion.ts'
-import type { ModificationRegionFields } from '../../features/modification/buildRegion.ts'
-import type { NoncovRegionFields } from '../../features/noncov/buildRegion.ts'
+import type { GapUploadData } from '../../features/gap/types.ts'
+import type { LinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
+import type { MismatchUploadData } from '../../features/mismatch/types.ts'
+import type { ModificationUploadData } from '../../features/modification/types.ts'
 import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
-import type { SnpCoverageRegionFields } from '../../features/snpCoverage/buildRegion.ts'
-import type {
-  SoftclipBaseRegionFields,
-  SoftclipRegionFields,
-} from '../../features/softclip/buildRegion.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export interface Canvas2DRegionData
   extends
     ReadRegionFields,
-    ArcsRegionFields,
-    ConnectingLinesRegionFields,
+    ArcsUploadData,
+    ConnectingLinesUploadData,
     CoverageRegionFields,
-    GapRegionFields,
-    HardclipRegionFields,
-    IndicatorRegionFields,
-    InsertionRegionFields,
-    LinkedReadLinesRegionFields,
-    MismatchRegionFields,
-    ModCoverageRegionFields,
-    ModificationRegionFields,
-    NoncovRegionFields,
-    SnpCoverageRegionFields,
-    SoftclipBaseRegionFields,
-    SoftclipRegionFields {}
+    GapUploadData,
+    LinkedReadLinesUploadData,
+    MismatchUploadData,
+    ModificationUploadData {
+  // interbase arrays sliced from merged worker buffer
+  insertionPositions: Uint32Array
+  insertionYs: Uint16Array
+  insertionLengths: Uint16Array
+  insertionFrequencies: Uint8Array
+  numInsertions: number
+  softclipPositions: Uint32Array
+  softclipYs: Uint16Array
+  numSoftclips: number
+  hardclipPositions: Uint32Array
+  hardclipYs: Uint16Array
+  numHardclips: number
+  softclipBasePositions: Uint32Array
+  softclipBaseYs: Uint16Array
+  softclipBaseBases: Uint8Array
+  snpPackedBuffer: ArrayBuffer
+  modCovPackedBuffer: ArrayBuffer
+  noncovPackedBuffer: ArrayBuffer
+  noncovMaxCount: number
+  indicatorPackedBuffer: ArrayBuffer
+}
 
-// Per-feature builders own the slicing of the merged interbase array (the
-// worker lays it out as (insertions, softclips, hardclips); each feature
-// folder slices its own subrange via `subarray`).
+// Builds all CIGAR-derived canvas fields. The merged interbase array is
+// partitioned as [insertions | softclips | hardclips] by the worker.
 function buildCigarFields(data: CigarUploadData) {
+  const { insEnd, scEnd, hcEnd } = interbaseRangeEnds(data)
   return {
-    ...buildGapFields(data),
-    ...buildMismatchFields(data),
-    ...buildInsertionFields(data),
-    ...buildSoftclipFields(data),
-    ...buildHardclipFields(data),
-    ...buildSoftclipBaseFields(data),
+    // gap positions store [start, end] pairs
+    gapPositions: data.gapPositions,
+    gapYs: data.gapYs,
+    gapTypes: data.gapTypes,
+    gapFrequencies: data.gapFrequencies,
+    mismatchPositions: data.mismatchPositions,
+    mismatchYs: data.mismatchYs,
+    mismatchBases: data.mismatchBases,
+    mismatchFrequencies: data.mismatchFrequencies,
+    insertionPositions: data.interbasePositions.subarray(0, insEnd),
+    insertionYs: data.interbaseYs.subarray(0, insEnd),
+    insertionLengths: data.interbaseLengths.subarray(0, insEnd),
+    insertionFrequencies: data.interbaseFrequencies.subarray(0, insEnd),
+    numInsertions: data.numInsertions,
+    softclipPositions: data.interbasePositions.subarray(insEnd, scEnd),
+    softclipYs: data.interbaseYs.subarray(insEnd, scEnd),
+    numSoftclips: data.numSoftclips,
+    hardclipPositions: data.interbasePositions.subarray(scEnd, hcEnd),
+    hardclipYs: data.interbaseYs.subarray(scEnd, hcEnd),
+    numHardclips: data.numHardclips,
+    softclipBasePositions: data.softclipBasePositions,
+    softclipBaseYs: data.softclipBaseYs,
+    softclipBaseBases: data.softclipBaseBases,
   }
 }
 
@@ -157,31 +126,55 @@ function buildCoverageAreaFields(
 ) {
   return {
     ...buildCoverageFields(data),
-    ...buildSnpCoverageFields(data),
-    ...buildModCoverageFields(data),
-    ...buildNoncovFields(data),
-    ...buildIndicatorFields(data),
+    snpPackedBuffer: data.snpPackedBuffer,
+    modCovPackedBuffer: data.modCovPackedBuffer,
+    noncovPackedBuffer: data.noncovPackedBuffer,
+    noncovMaxCount: data.noncovMaxCount,
+    indicatorPackedBuffer: data.indicatorPackedBuffer,
   }
 }
 
 function emptyPileupFields(): Canvas2DRegionData {
   return {
     ...emptyReadFields(),
-    ...emptyGapFields(),
-    ...emptyMismatchFields(),
-    ...emptyInsertionFields(),
-    ...emptySoftclipFields(),
-    ...emptyHardclipFields(),
-    ...emptySoftclipBaseFields(),
-    ...emptyModificationFields(),
+    gapPositions: new Uint32Array(0),
+    gapYs: new Uint16Array(0),
+    gapTypes: new Uint8Array(0),
+    gapFrequencies: new Uint8Array(0),
+    mismatchPositions: new Uint32Array(0),
+    mismatchYs: new Uint16Array(0),
+    mismatchBases: new Uint8Array(0),
+    mismatchFrequencies: new Uint8Array(0),
+    insertionPositions: new Uint32Array(0),
+    insertionYs: new Uint16Array(0),
+    insertionLengths: new Uint16Array(0),
+    insertionFrequencies: new Uint8Array(0),
+    numInsertions: 0,
+    softclipPositions: new Uint32Array(0),
+    softclipYs: new Uint16Array(0),
+    numSoftclips: 0,
+    hardclipPositions: new Uint32Array(0),
+    hardclipYs: new Uint16Array(0),
+    numHardclips: 0,
+    softclipBasePositions: new Uint32Array(0),
+    softclipBaseYs: new Uint16Array(0),
+    softclipBaseBases: new Uint8Array(0),
+    modificationPositions: new Uint32Array(0),
+    modificationYs: new Uint16Array(0),
+    modificationColors: new Uint32Array(0),
     ...emptyCoverageFields(),
-    ...emptySnpCoverageFields(),
-    ...emptyNoncovFields(),
-    ...emptyIndicatorFields(),
-    ...emptyModCoverageFields(),
-    ...emptyArcsFields(),
-    ...emptyConnectingLinesFields(),
-    ...emptyLinkedReadLinesFields(),
+    snpPackedBuffer: new ArrayBuffer(0),
+    modCovPackedBuffer: new ArrayBuffer(0),
+    noncovPackedBuffer: new ArrayBuffer(0),
+    noncovMaxCount: 0,
+    indicatorPackedBuffer: new ArrayBuffer(0),
+    ...emptyArcsUploadData(),
+    connectingLinePositions: new Uint32Array(0),
+    connectingLineYs: new Uint16Array(0),
+    linkedReadLinePositions: new Uint32Array(0),
+    linkedReadLineYs: new Uint16Array(0),
+    linkedReadLineColorTypes: new Uint8Array(0),
+    numLinkedReadLines: 0,
   }
 }
 
@@ -192,18 +185,24 @@ function buildPileupRegion(
   return {
     ...buildReadFields(data),
     ...buildCigarFields(data),
-    ...buildModificationFields(data),
+    modificationPositions: data.modificationPositions,
+    modificationYs: data.modificationYs,
+    modificationColors: data.modificationColors,
     ...buildCoverageAreaFields(data),
-    ...buildConnectingLinesFields(data),
-    ...buildLinkedReadLinesFields(data),
-    ...buildArcsFields(arcs),
+    connectingLinePositions: data.connectingLinePositions,
+    connectingLineYs: data.connectingLineYs,
+    linkedReadLinePositions: data.linkedReadLinePositions,
+    linkedReadLineYs: data.linkedReadLineYs,
+    linkedReadLineColorTypes: data.linkedReadLineColorTypes,
+    numLinkedReadLines: data.numLinkedReadLines,
+    ...(arcs ?? emptyArcsUploadData()),
   }
 }
 
 function buildArcsOnlyRegion(arcs: ArcsUploadData): Canvas2DRegionData {
   return {
     ...emptyPileupFields(),
-    ...buildArcsFields(arcs),
+    ...arcs,
   }
 }
 

@@ -7,8 +7,23 @@ export interface ArcsUploadData {
   arcShapeTypes: Uint8Array
   arcYBp: Uint32Array
   numArcs: number
-  linePositions: Uint32Array
-  lineYs: Float32Array
-  lineColorTypes: Uint8Array
-  numLines: number
+  arcLinePositions: Uint32Array
+  arcLineYs: Float32Array
+  arcLineColorTypes: Uint8Array
+  numArcLines: number
+}
+
+export function emptyArcsUploadData(): ArcsUploadData {
+  return {
+    arcX1: new Uint32Array(0),
+    arcX2: new Uint32Array(0),
+    arcColorTypes: new Uint8Array(0),
+    arcShapeTypes: new Uint8Array(0),
+    arcYBp: new Uint32Array(0),
+    numArcs: 0,
+    arcLinePositions: new Uint32Array(0),
+    arcLineYs: new Float32Array(0),
+    arcLineColorTypes: new Uint8Array(0),
+    numArcLines: 0,
+  }
 }

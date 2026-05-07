@@ -44,15 +44,15 @@ export function packArcs(data: ArcsUploadData): ArrayBuffer {
 }
 
 export function packArcLines(data: ArcsUploadData): ArrayBuffer {
-  const n = data.numLines
+  const n = data.numArcLines
   const F = arcLineShader.FIELD_OFFSET_F32
   const s32 = arcLineShader.INSTANCE_STRIDE_F32
   const buf = new ArrayBuffer(n * arcLineShader.INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
-  const pos = data.linePositions
-  const ys = data.lineYs
-  const cts = data.lineColorTypes
+  const pos = data.arcLinePositions
+  const ys = data.arcLineYs
+  const cts = data.arcLineColorTypes
   for (let i = 0; i < n; i++) {
     const o = i * s32
     u32[o + F.position] = pos[i]!

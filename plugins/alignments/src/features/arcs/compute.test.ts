@@ -502,8 +502,8 @@ describe('arcsToRegionResult', () => {
     expect(result.numArcs).toBe(1)
     expect(result.arcX1[0]).toBe(1100)
     expect(result.arcX2[0]).toBe(1500)
-    expect(result.numLines).toBe(1)
-    expect(result.linePositions[0]).toBe(1200)
+    expect(result.numArcLines).toBe(1)
+    expect(result.arcLinePositions[0]).toBe(1200)
   })
 
   test('returns empty arrays when no arcs match region', () => {
@@ -520,15 +520,15 @@ describe('arcsToRegionResult', () => {
 
     expect(result.numArcs).toBe(0)
     expect(result.arcX1.length).toBe(0)
-    expect(result.numLines).toBe(0)
+    expect(result.numArcLines).toBe(0)
   })
 
   test('line Y values span 0 to height', () => {
     const lines = [{ x: { refName: 'chr1', bp: 1500 }, colorType: 0 }]
     const result = arcsToRegionResult([], lines, 'chr1', 300)
 
-    expect(result.numLines).toBe(1)
-    expect(result.lineYs[0]).toBe(0)
-    expect(result.lineYs[1]).toBe(300)
+    expect(result.numArcLines).toBe(1)
+    expect(result.arcLineYs[0]).toBe(0)
+    expect(result.arcLineYs[1]).toBe(300)
   })
 })

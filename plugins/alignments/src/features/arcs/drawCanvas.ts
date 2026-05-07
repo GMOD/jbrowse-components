@@ -7,7 +7,7 @@ import {
   getArcPalette,
 } from '../../shaders/palettes.ts'
 
-import type { ArcsRegionFields } from './buildRegion.ts'
+import type { ArcsUploadData } from './types.ts'
 import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import type { RGBColor } from '../../shaders/colors.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -28,7 +28,7 @@ interface DrawArcsOpts {
 
 // Inner arc rasterizer. yBp is the Y apex in genomic bp — for flat it is the
 // constant line Y, otherwise the curve apex. See ARC_SHAPE_* in compute.ts.
-function drawArcsToCtx(ctx: Ctx2D, data: ArcsRegionFields, opts: DrawArcsOpts) {
+function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   const {
     bpToScreenX,
     arcsYDomainBp,
@@ -89,7 +89,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsRegionFields, opts: DrawArcsOpts) {
 // connector endpoints.
 export function drawArcs(
   ctx: Ctx2D,
-  region: ArcsRegionFields,
+  region: ArcsUploadData,
   block: { bpRangeX: [number, number]; screenStartPx: number },
   bpLength: number,
   fullBlockWidth: number,

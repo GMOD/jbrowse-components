@@ -16,12 +16,12 @@ export function uploadArcs(
       data.numArcs,
     )
   }
-  if (data.numLines > 0) {
+  if (data.numArcLines > 0) {
     hal.uploadBuffer(
       displayedRegionIndex,
       PASS_ARC_LINE,
       packArcLines(data),
-      data.numLines,
+      data.numArcLines,
     )
   }
 }

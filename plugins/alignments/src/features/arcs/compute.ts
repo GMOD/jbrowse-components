@@ -34,10 +34,10 @@ export interface ArcsDataResult {
   // Max `arcYBp` across `arcShapeTypes === ARC_SHAPE_FLAT` entries. Precomputed
   // so the `arcsYDomainBp` view reduces over regions, not over every arc.
   maxFlatArcYBp: number
-  linePositions: Uint32Array
-  lineYs: Float32Array
-  lineColorTypes: Uint8Array
-  numLines: number
+  arcLinePositions: Uint32Array
+  arcLineYs: Float32Array
+  arcLineColorTypes: Uint8Array
+  numArcLines: number
   coverageDepths: Float32Array
   coverageMaxDepth: number
   coverageStartPos: number
@@ -555,18 +555,18 @@ export function arcsToRegionResult(
   }
 
   const regionLines = lines.filter(l => l.x.refName === regionRefName)
-  const linePositions = new Uint32Array(regionLines.length * 2)
-  const lineYs = new Float32Array(regionLines.length * 2)
-  const lineColorTypes = new Uint8Array(regionLines.length * 2)
+  const arcLinePositions = new Uint32Array(regionLines.length * 2)
+  const arcLineYs = new Float32Array(regionLines.length * 2)
+  const arcLineColorTypes = new Uint8Array(regionLines.length * 2)
 
   for (let i = 0; i < regionLines.length; i++) {
     const line = regionLines[i]!
-    linePositions[i * 2] = line.x.bp
-    linePositions[i * 2 + 1] = line.x.bp
-    lineYs[i * 2] = 0
-    lineYs[i * 2 + 1] = height
-    lineColorTypes[i * 2] = line.colorType
-    lineColorTypes[i * 2 + 1] = line.colorType
+    arcLinePositions[i * 2] = line.x.bp
+    arcLinePositions[i * 2 + 1] = line.x.bp
+    arcLineYs[i * 2] = 0
+    arcLineYs[i * 2 + 1] = height
+    arcLineColorTypes[i * 2] = line.colorType
+    arcLineColorTypes[i * 2 + 1] = line.colorType
   }
 
   return {
@@ -577,10 +577,10 @@ export function arcsToRegionResult(
     arcYBp,
     numArcs: regionArcs.length,
     maxFlatArcYBp,
-    linePositions,
-    lineYs,
-    lineColorTypes,
-    numLines: regionLines.length,
+    arcLinePositions,
+    arcLineYs,
+    arcLineColorTypes,
+    numArcLines: regionLines.length,
     coverageDepths: new Float32Array(0),
     coverageMaxDepth: 0,
     coverageStartPos: 0,
