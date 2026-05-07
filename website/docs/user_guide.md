@@ -1,7 +1,7 @@
 ---
 id: user_guide
 toplevel: true
-title: Introduction - User guide
+title: User guides
 ---
 
 ## General usage

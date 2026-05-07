@@ -41,12 +41,9 @@ use `pnpm storybook` instead of `pnpm start`.
 
 ### What is special about JBrowse 2
 
-One thing that makes JBrowse 2 special is that we can create new view types via
-our plugin system, e.g. circular, dotplot, etc. Anything you want can be added
-as a view, and can be shown alongside our other views.
-
-This makes JBrowse 2 more than just a genome browser: it is a platform that can
-be built upon.
+JBrowse 2's plugin system supports custom view types (e.g. circular, dotplot)
+alongside the built-in ones, making it a platform you can build on rather than
+just a genome browser.
 
 ### What are new features in JBrowse 2
 
@@ -57,17 +54,13 @@ features
 
 ### What web server do I need to run JBrowse 2
 
-JBrowse 2 by itself is just a set of JS, CSS, and HTML files that can be
-statically hosted on a web server without any backend services running.
+JBrowse 2 is just static JS/CSS/HTML — no backend required. Deploy by copying
+the folder to your web server (e.g. `/var/www/html/`) or Amazon S3.
 
-Therefore, running JBrowse 2 generally involves just copying the JBrowse 2
-folder to your web server HTML folder (e.g., `/var/www/html/`) or to Amazon S3.
-
-If you use a different platform, such as Django, you may want to put jbrowse-web
-in the static resources folder, but note that data files are not properly served
-by the Django static resources folder: you will want to use a different external
-server. See https://github.com/cmdcolin/django-jbrowse2-nonworking-example for
-notes
+If you use Django, put jbrowse-web in the static resources folder, but serve
+data files from a separate server (Django's static resources folder won't serve
+them correctly). See https://github.com/cmdcolin/django-jbrowse2-nonworking-example
+for notes.
 
 Note that the server that you use should support byte-range requests (e.g. the
 [Range HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range))
@@ -93,25 +86,18 @@ You can also use `jbrowse upgrade /var/www/html/jb2` to get the latest version.
 
 ### How do I install or update the @jbrowse/cli tool
 
-To install the @jbrowse/cli tool, you can use `npm install -g @jbrowse/cli`
+Install with `npm install -g @jbrowse/cli`. Re-running the same command updates it.
 
-Re-running that command will get the latest version of the @jbrowse/cli.
-
-This command will give you a command named `jbrowse` which should automatically
-be in your path if you have a standard installation of nodejs. We recommend
-using nodesource or nvm to get your nodejs for this.
-
-Also note that the @jbrowse/cli tool is just made for preparing your
-config.json, it is **not used to run any server-side code**.
+This adds a `jbrowse` command to your PATH (assuming a standard Node.js
+installation via nodesource or nvm). Note: the CLI only prepares your
+config.json — it **does not run server-side code**.
 
 ### How can I make a header on a jbrowse-web instance
 
-You can edit the index.html that comes with jbrowse-web to have custom contents.
-The jbrowse-web app just looks at the `div` that it renders into, but any
-contents outside that you can edit for custom purposes. If you need more
-advanced embedding, you can consider @jbrowse/react-linear-genome-view2 or
-similar, but the jbrowse-web app is not available as an npm installable package
-yet.
+Edit the index.html that ships with jbrowse-web to add content outside the
+`div` the app renders into. For more advanced embedding, consider
+@jbrowse/react-linear-genome-view2 or similar; jbrowse-web itself is not yet
+available as an npm package.
 
 ### How do I update my instance of jbrowse-web
 
@@ -129,35 +115,28 @@ If you've manually downloaded jbrowse-web, the newest releases can be found
 
 ### How can I setup JBrowse 2 without the CLI tools
 
-The jbrowse CLI tools are basically a convenience, and are not strictly
-required.
+The CLI is a convenience — it's not strictly required.
 
-Simple tasks can be done without it.
-
-For example, for jbrowse create, you can visit the
-[releases page](https://github.com/GMOD/jbrowse-components/releases) and
-download the latest jbrowse-web release tag, and unzip it into your web
-directory.
+For `jbrowse create`, download the latest jbrowse-web zip from the
+[releases page](https://github.com/GMOD/jbrowse-components/releases) and unzip
+it into your web directory.
 
 Checkout our [quickstart web](/docs/quickstart_web) guide for a speedy start to
 using a manually downloaded JBrowse instance.
 
-For other things, like add-assembly and add-track, you can manually edit the
-`config.json`; reviewing the [config docs](/docs/config_guide) and sample
-configs will be valuable.
+For `add-assembly` and `add-track`, manually edit `config.json` — the
+[config docs](/docs/config_guide) and sample configs are useful references.
 
-To configure JBrowse using the admin-server GUI, checkout our
-[tutorial](/docs/quickstart_adminserver).
+To configure JBrowse via the GUI, see the
+[admin server tutorial](/docs/quickstart_adminserver).
 
-Understanding the [config basics](/docs/config_guides/intro) will come in handy
-also because you can manually edit in advanced configs after your tracks are
-loaded; however be careful as corrupt configs can produce hard to understand
-errors, because our config system is strongly typed.
+Understanding [config basics](/docs/config_guides/intro) is helpful for manual
+editing, though note that corrupt configs can produce hard-to-diagnose errors
+since the config system is strongly typed.
 
-Reach out to the team
-[on gitter](https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im) or in the
-[discussions](https://github.com/GMOD/jbrowse-components/discussions) if you
-have any complex configuration issues.
+[Contact us](/contact) or ask in the
+[discussions](https://github.com/GMOD/jbrowse-components/discussions) for
+complex configuration issues.
 
 ### How do I load a track into JBrowse 2
 
@@ -168,20 +147,17 @@ command, e.g.:
 
 This will set up a bigwig track on the hg19 assembly in your config.json.
 
-Make sure to run the command inside your current jbrowse2 folder e.g.
-/var/www/html/jbrowse2 or wherever you are currently setting up a config.json
-(you can have multiple configs).
+Run the command from your jbrowse2 folder (e.g. /var/www/html/jbrowse2), or
+wherever you keep your config.json (you can have multiple configs).
 
-Note that you can also use remote URLs
+You can also use remote URLs:
 
     jbrowse add-track http://yourremote/myfile.bam
 
-The add-track command will do as much as possible to infer from the file
-extension how to configure this track, and automatically infer the index to be
-myfile.bam.bai.
+`add-track` infers the track type from the file extension and the index
+filename (e.g. `myfile.bam.bai`).
 
-As mentioned [above](#how-can-i-setup-jbrowse-2-without-the-cli-tools), you can
-also manually edit your config file, or use the GUI.
+You can also manually edit your config file or use the GUI.
 
 ### How do I customize the color of the features displayed on my track
 
@@ -222,8 +198,8 @@ following steps:
 
 ### Adding color callbacks via the command line
 
-Adding color callbacks via the command line can be a little tricky because the
-coloration property exists within the renderer.
+Adding color callbacks via the CLI is a bit tricky because the coloration
+property lives inside the renderer.
 
 In brief, to add a configuration callback to a track using the CLI, your
 `add-track` is going to look something like this:
@@ -232,10 +208,8 @@ In brief, to add a configuration callback to a track using the CLI, your
 jbrowse add-track somevariants.vcf --load copy --config '{"displays": [{"displayId": "my_BasicDisplay", "type": "LinearBasicDisplay", "renderer": {"color1": "jexl:get(feature, '\''strand'\'') == -1 ? '\''red'\'' : '\''blue'\''" }}]}'
 ```
 
-While adding the track to the `config.json`, you're adding additional
-configurations using the --config option. This additional configuration is a
-"renderer" on the display that your track will be using. In this case, this .vcf
-will be using the `LinearBasicDisplay`.
+The `--config` option adds extra configuration — here, a renderer on the
+display. A .vcf file uses `LinearBasicDisplay`.
 
 ### How do I get (more) categories to filter on in the faceted track selector?
 
@@ -345,30 +319,19 @@ We build on a lot of great open source technology, some main ones include:
 
 ### Should I configure gzip on my web server
 
-Yes! JBrowse 2 may load ~5MB of JS resources (2.5MB for main thread bundle,
-2.5MB for worker bundle). If you have gzip enabled, the amount of data the user
-has to download though is only 1.4MB. We have worked on making bundle size small
-with lazy loading and other methods but adding gzip will help your users.
-
-It will depend on your particular server setup e.g. apache, nginx, AWS
-CloudFront, plain S3 bucket, etc. how this may be done, but it is recommended to
-look into this.
+Yes. JBrowse 2 loads ~5MB of JS resources (~2.5MB each for main and worker
+bundles), but gzip reduces the download to ~1.4MB. How to enable it depends on
+your server (Apache, Nginx, AWS CloudFront, S3, etc.).
 
 ### How does JBrowse know when to display the "Zoom in to see more features" message
 
-The rules that JBrowse uses to determine when to display the "Zoom in to see
-more features" message are called stats estimation rules
+JBrowse uses "stats estimation" rules to decide when to show this message:
 
-The general outline is:
-
-- It doesn't display a zoom in message if zoomed in closer than 20kb
-- It performs byte size estimation for BAM and CRAM type files (you will see a
-  byte size estimation displayed alongside the "Zoom in to see features"
-  message)
-- Other data types that don't use byte size estimation use feature density based
-  calculation
-- Hi-C, BigWig, and sequence adapters are hardcoded to return
-  `{ featureDensity:0 }` to always render
+- No message is shown when zoomed in to <20kb
+- BAM and CRAM files use byte size estimation (shown alongside the message)
+- Other data types use feature density calculation
+- Hi-C, BigWig, and sequence adapters are hardcoded to `{ featureDensity:0 }`
+  and always render
 
 If you need to customize your particular track, you can set config variables on
 the "display" section of your config
@@ -481,50 +444,37 @@ an encoded format.
 
 ### Why can't I copy and paste my URL bar to share it with another user
 
-In JBrowse Web, the current session can become too long to store in the URL bar,
-so instead, we store it in sessionStorage and IndexedDB and only keep the
-session ID in the URL. This is because otherwise URLs can get prohibitively
-long, and break server side navigations, intermediate caches, etc. Therefore, we
-make "sharing a session" a manual step that generates a shortened URL by
-default.
+Sessions can grow too large to fit in a URL, so JBrowse stores the session in
+sessionStorage/IndexedDB and keeps only the session ID in the URL bar. Use the
+Share button to generate a proper shareable link.
 
-Note 1: users of @jbrowse/react-linear-genome-view2 have to re-implement any URL
-query param logic themselves, as this component makes no attempt to access URL
-query params.
+Note 1: @jbrowse/react-linear-genome-view2 makes no attempt to access URL
+query params — that logic must be implemented by the embedding application.
 
-Note 2: You can copy and paste your URL bar into another tab on your own
-computer, and JBrowse will restore the session from sessionStorage (same tab) or
-IndexedDB (new tab). Sessions stored this way are not accessible to other users.
+Note 2: Pasting the URL bar into another tab on the same computer will restore
+the session from sessionStorage (same tab) or IndexedDB (new tab), but those
+sessions are not accessible to other users.
 
 ### How does session sharing with shortened URLs work in JBrowse Web
 
-We have a central database hosted at AWS dynamoDB that stores encrypted session
-snapshots that users create when they use the "Share" button. The "Share" button
-creates a random key on the client side (which becomes the &password= component
-of the share URL), encrypts the session client side, and sends the encrypted
-session without the key to the AWS dynamoDB.
+The Share button generates a random encryption key on the client, encrypts the
+session, and uploads the encrypted blob (without the key) to an AWS DynamoDB
+database.
 
-This process generates a URL with the format:
+This produces a URL of the form:
 
 &session=share-&lt;DYNAMODBID&gt;&password=&lt;DECODEKEY&gt;
 
-The DECODEKEY is never transmitted to the server, but you can copy and paste the
-share URL, the person you shared automatically downloads the DynamoDB entry, and
-decodes it with the DECODEKEY from the URL that you provide
+The DECODEKEY is never transmitted to the server. The recipient downloads the
+DynamoDB entry and decodes it using the key embedded in the URL.
 
-With this system, the contents of the dynamoDB are safe and unable to be read,
-even by JBrowse administrators.
+The DynamoDB contents cannot be decrypted even by JBrowse administrators.
 
 ## Troubleshooting
 
-Doing things like:
-
-- Changing trackIds
-- Deleting tracks
-
-Can make users' saved sessions fail to load. If part of a session is
-inconsistent, currently, the entire session will fail to load. Therefore, make
-decisions to delete or change IDs carefully.
+Changing track IDs or deleting tracks can cause saved sessions to fail to load,
+since any inconsistency causes the entire session to fail. Make these changes
+carefully.
 
 ### What should I do if the Share system isn't working?
 
@@ -540,11 +490,8 @@ config.json file to point at your own server instead of ours.
 
 ### Embedded views versus full JBrowse app
 
-Embedded views are intended to facilitate genome browsing within the context of
-an existing webpage, however if it makes sense for a given use case, one might
-decide to run an instance of JBrowse on one's hosting website instead. Detailed
-below are the core differences between embedded components and the full JBrowse
-app:
+Embedded views are designed for genome browsing within an existing webpage. For
+a standalone browser, run JBrowse Web instead. Key differences:
 
 | Embedded components                                     | JBrowse Web                                                                            |
 | ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -561,8 +508,6 @@ app:
 - change track display options
 - export the view as an SVG
 
-Note that though the embedded components lack certain functionality, they are
-designed for web developers to build a custom system around, so though some of
-these options are not available by default, the ability to design mechanics such
-as sessions and custom track manipulation is present for a developer seeking to
-do these things.
+Embedded components are designed for web developers to build custom systems
+around, so features like sessions and track manipulation can be implemented by
+the embedding application.

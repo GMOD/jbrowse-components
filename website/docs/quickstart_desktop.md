@@ -19,17 +19,13 @@ computer.
 Click <a href={winDL}>here</a> to download the latest Windows installer
 executable.
 
-Double-click the downloaded installer and it will install and open JBrowse. You
-can now open JBrowse like any other program.
+Double-click the installer to install and open JBrowse.
 
 ### Installing on MacOS
 
 Click <a href={macDL}>here</a> to download the latest MacOS release artifact.
 
-When the .dmg file is downloaded, double click, and drag JBrowse 2 into
-'applications'.
-
-You can now open JBrowse 2 like any other application on your Mac.
+Open the .dmg, then drag JBrowse 2 to Applications.
 
 ### Installing on Linux
 
@@ -39,8 +35,7 @@ Start it in one of two ways:
 
 #### In the terminal
 
-Using the AppImage file on Linux, all that is needed is to make the file
-executable which you can do in a terminal
+Make the file executable:
 
 ```sh
 # Make the AppImage file executable, only need to do this once
@@ -51,8 +46,7 @@ chmod  a+x jbrowse-desktop-*-linux.AppImage
 
 #### In your file explorer
 
-This may vary slightly depending on your distribution but should basically
-follow these steps:
+Steps may vary by distribution:
 
 1. Right-click on the AppImage file and select "Properties"
 2. Go to the "Permissions" tab
@@ -62,41 +56,29 @@ You can now double-click the AppImage file to launch JBrowse.
 
 ## JBrowse Desktop start screen
 
-After you have installed and started JBrowse Desktop you will see a start screen
-like this:
+After starting JBrowse Desktop, you'll see a start screen:
 
 <Figure src="/img/desktop-landing.png" caption="Screenshot showing the start screen on JBrowse desktop"/>
 
-**On the left-hand panel,** "Launch new session" can launch a new session using
-either your own custom genome (which you can load using an indexed FASTA or a
-twobit file via `open sequence file`) or a pre-loaded genome via the "Quickstart
-list".
+**Left panel** — "Launch new session": open a custom genome (indexed FASTA or
+2bit via `open sequence file`) or a pre-loaded genome from the "Quickstart list".
 
-**On the right-hand panel** is the "Recently opened sessions". This includes
-sessions that you have explicitly saved, and sessions that were autosaved (i.e.
-ones that you didn't explicitly use "Save as" on). You can re-open your sessions
-by clicking on the session name.
+**Right panel** — "Recently opened sessions": sessions you've explicitly saved
+and autosaved ones. Click a session name to reopen it.
 
 ### Special features on the start screen
 
 #### Converting a saved session into a quickstart entry
 
-If you study a rare species, you might find it useful to customize your
-quickstart panel. You can convert a session in the "Recently opened sessions"
-into an entry that appears in the quickstart list.
-
-**To do this:** Click a checkbox next to a session in the "Recently opened
-sessions" table, and then hit the <PlaylistAddIcon /> icon next to the trash can
-icon. This is helpful if you want to make your own custom organism a template
-for quickstarts in the future.
+To add your own genome to the quickstart list, check the session in "Recently
+opened sessions" and click the <PlaylistAddIcon /> icon next to the trash can.
 
 #### Selecting multiple entries from the quickstart panel
 
-Users can also hit the checkbox for multiple species in the quickstart list, and
-then the sessions are combined which can be helpful for comparative genomics.
+Check multiple species in the quickstart list to open them in a combined
+session, useful for comparative genomics.
 
 ### Next steps
 
-Check out the [user guide](/docs/user_guide) for more info on how to use JBrowse
-Desktop. This covers all the features that are available with screenshots and
-instructions.
+See the [user guides](/docs/user_guide) for guides on track types, views, and
+UI features.

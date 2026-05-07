@@ -14,10 +14,10 @@ Welcome to the JBrowse 2 documentation.
 - [Quick start for JBrowse web](quickstart_web) - a quick start guide to running
   JBrowse 2 in a browser
 
-## User guide
+## User guides
 
-- [User guide](user_guide) - for general usage, guided by screenshots and
-  descriptions
+- [User guides](user_guide) - guides for track types, views, and common UI
+  workflows
 
 ## Configuration
 

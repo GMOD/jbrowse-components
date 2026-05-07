@@ -275,8 +275,7 @@ Also see the [FAQ entries for text searching](/docs/faq#text-searching)
 With an assembly and tracks configured, you're ready to explore your data.
 Useful next steps:
 
-- [User guide](/docs/user_guide) — navigating views, track types, and UI
-  features
+- [User guides](/docs/user_guide) — track types, views, and UI features
 - [Config guide](/docs/config_guide) — advanced track and assembly configuration
 - [JBrowse CLI reference](/docs/cli) — full reference for all CLI commands used
   here
