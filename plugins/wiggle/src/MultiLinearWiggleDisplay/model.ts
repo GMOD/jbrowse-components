@@ -28,6 +28,7 @@ import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import {
+  featureUnderMouseChanged,
   getRowHeight,
   isOverlayMode,
   makeRenderState,
@@ -421,20 +422,15 @@ export default function stateModelFactory(
       },
 
       setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
-        const prev = self.featureUnderMouse
-        if (!feat && !prev) {
-          return
-        }
         if (
-          feat &&
-          feat.start === prev?.start &&
-          feat.end === prev.end &&
-          feat.source === prev.source &&
-          feat.score === prev.score
+          featureUnderMouseChanged(
+            feat,
+            self.featureUnderMouse,
+            (a, b) => a.source === b.source,
+          )
         ) {
-          return
+          self.featureUnderMouse = feat
         }
-        self.featureUnderMouse = feat
       },
 
       selectFeature(feat: NonNullable<typeof self.featureUnderMouse>) {

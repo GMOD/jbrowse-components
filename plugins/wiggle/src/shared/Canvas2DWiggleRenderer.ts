@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
-import { WIGGLE_FUDGE_FACTOR, makeScoreNormalizer } from '../util.ts'
+import { makeDensityRgbStringFn } from './getDensityColor.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -13,6 +13,11 @@ import {
   SCALE_TYPE_LOG,
 } from './wiggleComponentUtils.ts'
 import { computeNumRows } from './wiggleInstanceBuffer.ts'
+import {
+  WIGGLE_FUDGE_FACTOR,
+  WIGGLE_MIN_PX,
+  makeScoreNormalizer,
+} from '../util.ts'
 
 import type {
   SourceRenderData,
@@ -25,14 +30,6 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 interface Canvas2DRegionData {
   sources: SourceRenderData[]
   numRows: number
-}
-
-interface FeatureBounds {
-  x1: number
-  x2: number
-  score: number
-  startBp: number
-  endBp: number
 }
 
 function makeScoreToY(
@@ -48,37 +45,6 @@ function makeScoreToY(
   return (score: number) => (1 - normalize(score)) * rowHeight
 }
 
-function featureAt(
-  source: SourceRenderData,
-  i: number,
-  block: WiggleRenderBlock,
-): FeatureBounds {
-  const startBp = source.featurePositions[i * 2]!
-  const endBp = source.featurePositions[i * 2 + 1]!
-  const [bpStart, bpEnd] = block.bpRangeX
-  return {
-    startBp,
-    endBp,
-    x1: bpToScreenPx(
-      startBp,
-      bpStart,
-      bpEnd,
-      block.screenStartPx,
-      block.screenEndPx,
-      block.reversed,
-    ),
-    x2: bpToScreenPx(
-      endBp,
-      bpStart,
-      bpEnd,
-      block.screenStartPx,
-      block.screenEndPx,
-      block.reversed,
-    ),
-    score: source.featureScores[i]!,
-  }
-}
-
 function drawXYPlot(
   ctx: Ctx2D,
   source: SourceRenderData,
@@ -92,15 +58,35 @@ function drawXYPlot(
   ctx.fillStyle = rgb
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const originY = scoreToY(0) + rowTop
-  for (let i = 0; i < source.numFeatures; i++) {
-    const f = featureAt(source, i, block)
-    const scoreY = scoreToY(f.score) + rowTop
-    const w = Math.max(1.5, f.x2 - f.x1 + WIGGLE_FUDGE_FACTOR)
+  const positions = source.featurePositions
+  const scores = source.featureScores
+  const [bpStart, bpEnd] = block.bpRangeX
+  const { screenStartPx, screenEndPx, reversed } = block
+  const n = source.numFeatures
+  for (let i = 0; i < n; i++) {
+    const x1 = bpToScreenPx(
+      positions[i * 2]!,
+      bpStart,
+      bpEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const x2 = bpToScreenPx(
+      positions[i * 2 + 1]!,
+      bpStart,
+      bpEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const scoreY = scoreToY(scores[i]!) + rowTop
+    const w = Math.max(WIGGLE_MIN_PX, x2 - x1 + WIGGLE_FUDGE_FACTOR)
     const h = originY - scoreY
     if (h >= 0) {
-      ctx.fillRect(f.x1, scoreY, w, h)
+      ctx.fillRect(x1, scoreY, w, h)
     } else {
-      ctx.fillRect(f.x1, originY, w, -h)
+      ctx.fillRect(x1, originY, w, -h)
     }
   }
 }
@@ -117,30 +103,48 @@ function drawDensity(
   g: number,
   b: number,
 ) {
-  const normalize = makeScoreNormalizer(
+  const colorFn = makeDensityRgbStringFn(
     domainY[0],
     domainY[1],
     scaleType === SCALE_TYPE_LOG,
+    r,
+    g,
+    b,
   )
-  const zeroNorm = normalize(0)
-  const maxDist = Math.max(zeroNorm, 1 - zeroNorm)
-  const invMaxDist = maxDist > 0.0001 ? 1 / maxDist : 0
-  const rDelta = r - 255
-  const gDelta = g - 255
-  const bDelta = b - 255
-
-  for (let i = 0; i < source.numFeatures; i++) {
-    const f = featureAt(source, i, block)
-    const w = Math.max(1.5, f.x2 - f.x1 + WIGGLE_FUDGE_FACTOR)
-    const t = Math.abs(normalize(f.score) - zeroNorm) * invMaxDist
-    const cr = (255 + rDelta * t) | 0
-    const cg = (255 + gDelta * t) | 0
-    const cb = (255 + bDelta * t) | 0
-    ctx.fillStyle = `rgb(${cr},${cg},${cb})`
-    ctx.fillRect(f.x1, rowTop, w, rowHeight)
+  const positions = source.featurePositions
+  const scores = source.featureScores
+  const [bpStart, bpEnd] = block.bpRangeX
+  const { screenStartPx, screenEndPx, reversed } = block
+  const n = source.numFeatures
+  for (let i = 0; i < n; i++) {
+    const x1 = bpToScreenPx(
+      positions[i * 2]!,
+      bpStart,
+      bpEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const x2 = bpToScreenPx(
+      positions[i * 2 + 1]!,
+      bpStart,
+      bpEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const w = Math.max(WIGGLE_MIN_PX, x2 - x1 + WIGGLE_FUDGE_FACTOR)
+    ctx.fillStyle = colorFn(scores[i]!)
+    ctx.fillRect(x1, rowTop, w, rowHeight)
   }
 }
 
+// Single connected polyline per contiguous run of features. moveTo only at
+// the start of a new run (first feature, or whenever there's a gap to the
+// previous feature). Inside a run we lineTo through (x1,scoreY)→(x2,scoreY)
+// for each feature; the implicit continuation between iterations draws the
+// vertical step at the junction. Drop-to-zero is just another lineTo when
+// the next feature is non-adjacent.
 function drawLine(
   ctx: Ctx2D,
   source: SourceRenderData,
@@ -151,7 +155,8 @@ function drawLine(
   scaleType: number,
   rgb: string,
 ) {
-  if (source.numFeatures === 0) {
+  const n = source.numFeatures
+  if (n === 0) {
     return
   }
   ctx.strokeStyle = rgb
@@ -159,29 +164,49 @@ function drawLine(
   ctx.beginPath()
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const zeroY = scoreToY(0) + rowTop
+  const positions = source.featurePositions
+  const scores = source.featureScores
+  const [bpStart, bpEnd] = block.bpRangeX
+  const { screenStartPx, screenEndPx, reversed } = block
 
-  let prevY = zeroY
-  let prevEndBp = -1
-  for (let i = 0; i < source.numFeatures; i++) {
-    const f = featureAt(source, i, block)
-    const scoreY = scoreToY(f.score) + rowTop
-    const nextStartBp =
-      i < source.numFeatures - 1 ? source.featurePositions[(i + 1) * 2]! : -1
+  let inRun = false
+  for (let i = 0; i < n; i++) {
+    const startBp = positions[i * 2]!
+    const endBp = positions[i * 2 + 1]!
+    const x1 = bpToScreenPx(
+      startBp,
+      bpStart,
+      bpEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const x2 = bpToScreenPx(
+      endBp,
+      bpStart,
+      bpEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const scoreY = scoreToY(scores[i]!) + rowTop
 
-    const gapBefore = prevEndBp !== f.startBp
-    const gapAfter = nextStartBp !== f.endBp
-
-    ctx.moveTo(f.x1, gapBefore ? zeroY : prevY)
-    ctx.lineTo(f.x1, scoreY)
-    ctx.moveTo(f.x1, scoreY)
-    ctx.lineTo(f.x2, scoreY)
-    if (gapAfter) {
-      ctx.moveTo(f.x2, scoreY)
-      ctx.lineTo(f.x2, zeroY)
+    if (!inRun) {
+      ctx.moveTo(x1, zeroY)
+      ctx.lineTo(x1, scoreY)
+      inRun = true
+    } else {
+      ctx.lineTo(x1, scoreY)
     }
+    ctx.lineTo(x2, scoreY)
 
-    prevY = scoreY
-    prevEndBp = f.endBp
+    const nextStartBp =
+      i < n - 1 ? positions[(i + 1) * 2]! : -1
+    const gapAfter = nextStartBp !== endBp
+    if (gapAfter) {
+      ctx.lineTo(x2, zeroY)
+      inRun = false
+    }
   }
   ctx.stroke()
 }
@@ -198,11 +223,31 @@ function drawScatter(
 ) {
   ctx.fillStyle = rgb
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
-  for (let i = 0; i < source.numFeatures; i++) {
-    const f = featureAt(source, i, block)
-    const scoreY = scoreToY(f.score) + rowTop
-    const w = Math.max(1.5, f.x2 - f.x1)
-    ctx.fillRect(f.x1, scoreY - 1, w, 2)
+  const positions = source.featurePositions
+  const scores = source.featureScores
+  const [bpStart, bpEnd] = block.bpRangeX
+  const { screenStartPx, screenEndPx, reversed } = block
+  const n = source.numFeatures
+  for (let i = 0; i < n; i++) {
+    const x1 = bpToScreenPx(
+      positions[i * 2]!,
+      bpStart,
+      bpEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const x2 = bpToScreenPx(
+      positions[i * 2 + 1]!,
+      bpStart,
+      bpEnd,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const scoreY = scoreToY(scores[i]!) + rowTop
+    const w = Math.max(WIGGLE_MIN_PX, x2 - x1)
+    ctx.fillRect(x1, scoreY - 1, w, 2)
   }
 }
 

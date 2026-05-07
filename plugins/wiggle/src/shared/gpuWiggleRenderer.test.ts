@@ -2,6 +2,7 @@ import { MockHal } from '@jbrowse/core/gpu/hal'
 
 import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
 import {
+  FIELD_OFFSET_F32 as F,
   INSTANCE_STRIDE_F32 as INSTANCE_STRIDE,
   UNIFORM_OFFSET_F32 as U,
 } from './shaders/wiggle.generated.ts'
@@ -60,17 +61,16 @@ describe('GpuWiggleRenderer', () => {
 
     const f32 = new Float32Array(buf!.data)
     const u32 = new Uint32Array(buf!.data)
-    // first instance: start=100, end=200
-    expect(u32[0]).toBe(100)
-    expect(u32[1]).toBe(200)
-    // score=5.0
-    expect(f32[2]).toBeCloseTo(5)
-    // prev_score for first feature = itself
-    expect(f32[3]).toBeCloseTo(5)
-    // color ABGR-packed at slot 4: [1,0,0] normalized → A=255,B=0,G=0,R=255
-    expect(u32[4]).toBe(0xff0000ff)
-    // row_index at slot 5
-    expect(f32[5]).toBe(0)
+    expect(u32[F.startEnd]).toBe(100)
+    expect(u32[F.startEnd + 1]).toBe(200)
+    expect(f32[F.score]).toBeCloseTo(5)
+    // prev_score=0 for first feature (encodes "rise from zero" gap-before)
+    expect(f32[F.prevScore]).toBe(0)
+    // next_score=score for adj-after — sources are [100,200],[200,300]
+    expect(f32[F.nextScore]).toBeCloseTo(5)
+    // color [1,0,0] ABGR-packed → A=255,B=0,G=0,R=255
+    expect(u32[F.color]).toBe(0xff0000ff)
+    expect(f32[F.rowIndex]).toBe(0)
   })
 
   it('deletes region when uploading empty sources', () => {
@@ -300,12 +300,12 @@ describe('GpuWiggleRenderer', () => {
 
     const f32 = new Float32Array(buf!.data)
     const u32 = new Uint32Array(buf!.data)
-    // first source row_index=0 at slot 5
-    expect(f32[5]).toBe(0)
-    // second source starts at offset 2*INSTANCE_STRIDE, row_index=1 at slot 5
-    expect(f32[2 * INSTANCE_STRIDE + 5]).toBe(1)
-    // second source color ABGR at slot 4: [0,1,0] → A=255,B=0,G=255,R=0
-    expect(u32[2 * INSTANCE_STRIDE + 4]).toBe(0xff00ff00)
+    expect(f32[F.rowIndex]).toBe(0)
+    // second source starts after the first source's two instances
+    const src1 = 2 * INSTANCE_STRIDE
+    expect(f32[src1 + F.rowIndex]).toBe(1)
+    // color [0,1,0] ABGR-packed → A=255,B=0,G=255,R=0
+    expect(u32[src1 + F.color]).toBe(0xff00ff00)
   })
 
   it('disposes cleanly', () => {

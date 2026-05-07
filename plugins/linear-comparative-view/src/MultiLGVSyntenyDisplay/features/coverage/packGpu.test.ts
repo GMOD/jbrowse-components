@@ -1,4 +1,9 @@
 import { packCoverageForGpu } from './packGpu.ts'
+import {
+  FIELD_OFFSET_F32 as F,
+  INSTANCE_STRIDE_F32 as STRIDE,
+} from '../../shaders/slang/multiSyntenyCoverage.generated.ts'
+
 
 describe('packCoverageForGpu', () => {
   test('returns empty for zero maxDepth', () => {
@@ -13,11 +18,11 @@ describe('packCoverageForGpu', () => {
     expect(result.binCount).toBe(0)
   })
 
-  test('packs non-zero bins into 12-byte records', () => {
+  test('packs non-zero bins into stride-sized records', () => {
     const depths = new Float32Array([0, 5, 10, 0])
     const result = packCoverageForGpu(depths, 100, 10, 1000)
     expect(result.binCount).toBeGreaterThan(0)
-    expect(result.buffer.byteLength).toBe(result.binCount * 12)
+    expect(result.buffer.byteLength).toBe(result.binCount * STRIDE * 4)
   })
 
   test('positions are absolute genomic coords (uint32)', () => {
@@ -25,7 +30,7 @@ describe('packCoverageForGpu', () => {
     const result = packCoverageForGpu(depths, 1500, 5, 1000)
     expect(result.binCount).toBe(1)
     const u32 = new Uint32Array(result.buffer)
-    expect(u32[0]).toBe(1500)
+    expect(u32[F.position]).toBe(1500)
   })
 
   test('positions exact at 3 Gbp (uint32 storage)', () => {
@@ -35,6 +40,6 @@ describe('packCoverageForGpu', () => {
     const result = packCoverageForGpu(depths, startPos, 5, 1000)
     expect(result.binCount).toBe(1)
     const u32 = new Uint32Array(result.buffer)
-    expect(u32[0]).toBe(startPos)
+    expect(u32[F.position]).toBe(startPos)
   })
 })

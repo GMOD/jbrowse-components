@@ -55,10 +55,8 @@ const ZOOMED_OUT_OPTS: HitTestOptions = {
   featureSpacing: 2,
   rangeY: [0, 1000] as [number, number],
   isChainMode: false,
-  bpPerPx: 100, // > SNP_HIT_MAX_BP_PER_PX = 25
 }
 
-// Sanity: confirm our constant assumption in the tests below
 test('SNP_HIT_MAX_BP_PER_PX is 25', () => {
   expect(SNP_HIT_MAX_BP_PER_PX).toBe(25)
 })
@@ -112,7 +110,6 @@ describe('indicator hit — fires at all zoom levels', () => {
 })
 
 describe('gap hit — zoomed-out pileup', () => {
-  // Gap at [9500, 10500]: length=1000, spans genomicPos=10000, row=0
   it('returns cigar hit for a deletion wider than 1px (length >= bpPerPx)', () => {
     const resolved = makeResolved({
       gapPositions: new Uint32Array([9500, 10500]),
@@ -153,7 +150,7 @@ describe('gap hit — zoomed-out pileup', () => {
     const resolved = makeResolved({
       gapPositions: new Uint32Array([9000, 11000]),
       gapYs: new Uint16Array([0]),
-      gapTypes: new Uint8Array([1]), // skip
+      gapTypes: new Uint8Array([1]),
     })
     const result = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
     expect(result.type).toBe('cigar')
@@ -165,7 +162,6 @@ describe('gap hit — zoomed-out pileup', () => {
 
 describe('priority: coverage area beats pileup at any zoom', () => {
   it('returns coverage hit rather than gap hit when cursor is above coverageHeight', () => {
-    // Gap spans the whole region but cursor is in the coverage area
     const resolved = makeResolved({
       coverageDepths: new Float32Array(200).fill(10),
       coverageStartPos: 9900,
@@ -173,29 +169,30 @@ describe('priority: coverage area beats pileup at any zoom', () => {
       gapYs: new Uint16Array([0]),
       gapTypes: new Uint8Array([0]),
     })
-    // canvasY=30 → coverage area
     const result = performHitTest(100, 30, resolved, ZOOMED_OUT_OPTS)
     expect(result.type).toBe('coverage')
   })
 })
 
-describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
-  const ZOOMED_IN_OPTS: HitTestOptions = {
-    ...ZOOMED_OUT_OPTS,
-    bpPerPx: 1, // well within SNP_HIT_MAX_BP_PER_PX
-  }
+describe('returns none when resolved is undefined', () => {
+  it('returns none immediately', () => {
+    const result = performHitTest(100, 30, undefined, ZOOMED_OUT_OPTS)
+    expect(result.type).toBe('none')
+  })
+})
 
+describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
+  // bpRange=[0,200], blockWidth=200 → bpPerPx=1; canvasX=100 → genomicPos=100
   it('returns cigar hit for a mismatch when zoomed in', () => {
-    // bpRange=[0,200], blockWidth=200 → bpPerPx=1; canvasX=100 → genomicPos=100
     const resolved = {
       ...makeResolved({
         mismatchPositions: new Uint32Array([100]),
         mismatchYs: new Uint16Array([0]),
-        mismatchBases: new Uint8Array([65]), // 'A'
+        mismatchBases: new Uint8Array([65]),
       }),
       bpRange: [0, 200] as [number, number],
     }
-    const result = performHitTest(100, 60, resolved, ZOOMED_IN_OPTS)
+    const result = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
       expect(result.hit.type).toBe('mismatch')

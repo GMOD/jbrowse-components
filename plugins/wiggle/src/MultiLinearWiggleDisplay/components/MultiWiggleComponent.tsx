@@ -7,6 +7,7 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import MultiWiggleTooltip from './Tooltip.tsx'
+import { findOverlayHit, findRowHit } from './findHit.ts'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
@@ -15,17 +16,9 @@ import {
   WiggleErrorBar,
   WiggleLoadingOverlay,
 } from '../../shared/WiggleStatusOverlays.tsx'
-import {
-  findFeatureAtBp,
-  getRowTop,
-  hitTestMouse,
-  isSummaryFeature,
-} from '../../shared/wiggleComponentUtils.ts'
+import { getRowTop, hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
 
-import type {
-  MultiWiggleDataResult,
-  MultiWiggleSourceData,
-} from '../../RenderMultiWiggleDataRPC/types.ts'
+import type { MultiWiggleDataResult } from '../../RenderMultiWiggleDataRPC/types.ts'
 import type { WiggleBackend } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
@@ -134,8 +127,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         setClientMouseCoord([event.clientX, event.clientY])
         setOffsetMouseCoord([offsetX, offsetY])
 
-        const { rowHeight, sources, rpcDataMap, summaryScoreMode, domain } =
-          model
+        const { rowHeight, sources, rpcDataMap, summaryScoreMode } = model
         const hit =
           sources.length === 0
             ? undefined
@@ -145,112 +137,18 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           model.setFeatureUnderMouse(undefined)
         } else {
           const { region, data, bp } = hit
-
-          if (model.isOverlay && domain) {
-            let bestSource: MultiWiggleSourceData | undefined
-            let bestScore = 0
-            let bestDist = Infinity
-            let bestIdx = -1
-            const mouseScore =
-              domain[1] - (offsetY / model.height) * (domain[1] - domain[0])
-            const allSources: NonNullable<
-              MultiWiggleDisplayModel['featureUnderMouse']
-            >['allSources'] = []
-            const visibleSourceNames = new Set(sources.map(s => s.name))
-
-            for (const src of data.sources) {
-              if (visibleSourceNames.has(src.name)) {
-                const i = findFeatureAtBp(
-                  src.featurePositions,
-                  src.numFeatures,
-                  bp,
-                )
-                if (i !== -1) {
-                  const score = src.featureScores[i]!
-                  const minS = src.featureMinScores[i]
-                  const maxS = src.featureMaxScores[i]
-                  const dist = Math.abs(score - mouseScore)
-                  if (dist < bestDist) {
-                    bestDist = dist
-                    bestSource = src
-                    bestScore = score
-                    bestIdx = i
-                  }
-                  allSources.push({
-                    source: src.name,
-                    score,
-                    ...(summaryScoreMode !== 'avg' &&
-                    isSummaryFeature(score, minS, maxS)
-                      ? { summary: true, minScore: minS, maxScore: maxS }
-                      : {}),
-                  })
-                }
-              }
-            }
-
-            if (!bestSource || bestIdx === -1) {
-              model.setFeatureUnderMouse(undefined)
-            } else {
-              const fStart = bestSource.featurePositions[bestIdx * 2]!
-              const fEnd = bestSource.featurePositions[bestIdx * 2 + 1]!
-              const minS = bestSource.featureMinScores[bestIdx]
-              const maxS = bestSource.featureMaxScores[bestIdx]
-
-              model.setFeatureUnderMouse({
-                refName: region.refName,
-                start: fStart,
-                end: fEnd,
-                score: bestScore,
-                source: bestSource.name,
-                ...(summaryScoreMode !== 'avg' &&
-                isSummaryFeature(bestScore, minS, maxS)
-                  ? { summary: true, minScore: minS, maxScore: maxS }
-                  : {}),
-                allSources,
-              })
-            }
-          } else {
-            const rowIdx = Math.floor(offsetY / rowHeight)
-            if (rowIdx < 0 || rowIdx >= sources.length) {
-              model.setFeatureUnderMouse(undefined)
-            } else {
-              const sourceName = sources[rowIdx]!.name
-              const rpcSource = data.sources.find(s => s.name === sourceName)
-              if (!rpcSource) {
-                model.setFeatureUnderMouse(undefined)
-              } else {
-                const { featurePositions, featureScores, numFeatures } =
-                  rpcSource
-                const foundIdx = findFeatureAtBp(
-                  featurePositions,
-                  numFeatures,
-                  bp,
-                )
-
-                if (foundIdx === -1) {
-                  model.setFeatureUnderMouse(undefined)
-                } else {
-                  const fStart = featurePositions[foundIdx * 2]!
-                  const fEnd = featurePositions[foundIdx * 2 + 1]!
-                  const score = featureScores[foundIdx]!
-                  const minScore = rpcSource.featureMinScores[foundIdx]
-                  const maxScore = rpcSource.featureMaxScores[foundIdx]
-
-                  model.setFeatureUnderMouse({
-                    refName: region.refName,
-                    start: fStart,
-                    end: fEnd,
-                    score,
-                    source: sourceName,
-                    ...(summaryScoreMode !== 'avg' &&
-                    isSummaryFeature(score, minScore, maxScore)
-                      ? { summary: true, minScore, maxScore }
-                      : {}),
-                  })
-                }
-              }
-            }
-          }
+          const result = model.isOverlay
+            ? findOverlayHit(data, sources, bp, region.refName, summaryScoreMode)
+            : findRowHit(
+                data,
+                sources,
+                bp,
+                offsetY,
+                rowHeight,
+                region.refName,
+                summaryScoreMode,
+              )
+          model.setFeatureUnderMouse(result)
         }
       }
     },

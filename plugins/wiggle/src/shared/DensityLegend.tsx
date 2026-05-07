@@ -1,14 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 
-function formatScore(n: number) {
-  if (n === 0) {
-    return '0'
-  }
-  if (Math.abs(n) >= 100) {
-    return n.toFixed(0)
-  }
-  return n.toPrecision(3).replace(/\.?0+$/, '')
-}
+import { formatScore } from '../util.ts'
 
 function DensityLegend({
   domain,

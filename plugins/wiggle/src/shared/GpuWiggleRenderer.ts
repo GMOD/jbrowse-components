@@ -128,10 +128,7 @@ export class GpuWiggleRenderer implements WiggleBackend {
   }
 
   dispose() {
-    console.warn('[GpuWiggleRenderer] dispose called, clearing region info')
     this.regionInfo.clear()
-    console.warn('[GpuWiggleRenderer] dispose calling hal.dispose()')
     this.hal.dispose()
-    console.warn('[GpuWiggleRenderer] dispose complete')
   }
 }

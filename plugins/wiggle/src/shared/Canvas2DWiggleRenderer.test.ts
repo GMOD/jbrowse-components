@@ -383,19 +383,13 @@ describe('drawLine path commands', () => {
 
     const moves = ctx.moveTo.mock.calls as [number, number][]
     const lines = ctx.lineTo.mock.calls as [number, number][]
-    expect(moves).toHaveLength(3)
+    // Single connected polyline: anchor at zero, rise, horizontal, drop.
+    expect(moves).toHaveLength(1)
     expect(lines).toHaveLength(3)
 
-    // Rise from zero at x1=0
     expect(moves[0]).toEqual([0, zeroY])
     expect(lines[0]).toEqual([0, score5Y])
-
-    // Horizontal at score height
-    expect(moves[1]).toEqual([0, score5Y])
     expect(lines[1]).toEqual([80, score5Y])
-
-    // Drop to zero at x2=80
-    expect(moves[2]).toEqual([80, score5Y])
     expect(lines[2]).toEqual([80, zeroY])
   })
 
@@ -413,20 +407,22 @@ describe('drawLine path commands', () => {
 
     const moves = ctx.moveTo.mock.calls as [number, number][]
     const lines = ctx.lineTo.mock.calls as [number, number][]
-    // rise, horiz0, transition, horiz1, drop — no drop after feature 0
-    expect(moves).toHaveLength(5)
+    // Single connected polyline since adjacent: one moveTo, five lineTo.
+    expect(moves).toHaveLength(1)
+    expect(lines).toHaveLength(5)
 
     // Rise from zero for first feature
     expect(moves[0]).toEqual([0, zeroY])
     expect(lines[0]).toEqual([0, score5Y])
+    expect(lines[1]).toEqual([80, score5Y])
 
-    // Transition at junction x=80: starts at prevScore Y (not zero — proves adjacency)
-    expect(moves[2]).toEqual([80, score5Y])
+    // Vertical step at junction x=80 from prev scoreY (proves adjacency)
     expect(lines[2]![0]).toBe(80)
     expect(lines[2]![1]).toBeCloseTo(score8Y)
+    expect(lines[3]![0]).toBe(160)
+    expect(lines[3]![1]).toBeCloseTo(score8Y)
 
     // Drop to zero only at end (x=160)
-    expect(moves[4]![0]).toBe(160)
     expect(lines[4]).toEqual([160, zeroY])
   })
 
@@ -445,20 +441,20 @@ describe('drawLine path commands', () => {
 
     const moves = ctx.moveTo.mock.calls as [number, number][]
     const lines = ctx.lineTo.mock.calls as [number, number][]
-    // rise0, horiz0, drop0, rise1, horiz1, drop1
-    expect(moves).toHaveLength(6)
+    // Two disjoint runs: 2 moveTos, each run has rise/horiz/drop = 3 lineTos.
+    expect(moves).toHaveLength(2)
+    expect(lines).toHaveLength(6)
 
-    // Feature 0 drop at x=80
-    expect(moves[2]).toEqual([80, score5Y])
+    // Feature 0: anchor at zero, rise, horizontal, drop
+    expect(moves[0]).toEqual([0, zeroY])
+    expect(lines[0]).toEqual([0, score5Y])
+    expect(lines[1]).toEqual([80, score5Y])
     expect(lines[2]).toEqual([80, zeroY])
 
-    // Feature 1 rise from zero at x=240 (not from prev score — proves gap handling)
-    expect(moves[3]).toEqual([240, zeroY])
+    // Feature 1 rise from zero at x=240 (proves gap handling)
+    expect(moves[1]).toEqual([240, zeroY])
     expect(lines[3]![0]).toBe(240)
     expect(lines[3]![1]).toBeCloseTo(score8Y)
-
-    // Feature 1 drop at x=320
-    expect(moves[5]![0]).toBe(320)
     expect(lines[5]).toEqual([320, zeroY])
   })
 })

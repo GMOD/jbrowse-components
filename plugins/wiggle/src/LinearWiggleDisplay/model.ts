@@ -23,7 +23,10 @@ import { buildSourceRenderData } from './components/buildSourceRenderData.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
-import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
+import {
+  featureUnderMouseChanged,
+  makeRenderState,
+} from '../shared/wiggleComponentUtils.ts'
 import {
   makeAutoscaleTypeSubMenu,
   makeResolutionAndSummarySubMenus,
@@ -346,19 +349,9 @@ export default function stateModelFactory(
       },
 
       setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
-        const prev = self.featureUnderMouse
-        if (!feat && !prev) {
-          return
+        if (featureUnderMouseChanged(feat, self.featureUnderMouse)) {
+          self.featureUnderMouse = feat
         }
-        if (
-          feat &&
-          feat.start === prev?.start &&
-          feat.end === prev.end &&
-          feat.score === prev.score
-        ) {
-          return
-        }
-        self.featureUnderMouse = feat
       },
 
       setAutoscale(val?: string) {
@@ -422,40 +415,21 @@ export default function stateModelFactory(
         return [
           {
             label: 'Rendering type',
-            subMenu: [
-              {
-                label: 'XY plot',
-                type: 'radio',
-                checked: self.renderingType === 'xyplot',
-                onClick: () => {
-                  self.setRenderingType('xyplot')
-                },
+            subMenu: (
+              [
+                ['xyplot', 'XY plot'],
+                ['density', 'Density'],
+                ['line', 'Line'],
+                ['scatter', 'Scatter'],
+              ] as const
+            ).map(([value, label]) => ({
+              label,
+              type: 'radio' as const,
+              checked: self.renderingType === value,
+              onClick: () => {
+                self.setRenderingType(value)
               },
-              {
-                label: 'Density',
-                type: 'radio',
-                checked: self.renderingType === 'density',
-                onClick: () => {
-                  self.setRenderingType('density')
-                },
-              },
-              {
-                label: 'Line',
-                type: 'radio',
-                checked: self.renderingType === 'line',
-                onClick: () => {
-                  self.setRenderingType('line')
-                },
-              },
-              {
-                label: 'Scatter',
-                type: 'radio',
-                checked: self.renderingType === 'scatter',
-                onClick: () => {
-                  self.setRenderingType('scatter')
-                },
-              },
-            ],
+            })),
           },
           ...makeResolutionAndSummarySubMenus(self),
           {

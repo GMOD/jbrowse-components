@@ -1,5 +1,7 @@
 import { measureText } from '@jbrowse/core/util'
 
+import { formatScore } from '../util.ts'
+
 export default function ScoreLegend({
   domain,
   scaleType,
@@ -9,7 +11,7 @@ export default function ScoreLegend({
   scaleType: string
   canvasWidth: number
 }) {
-  const legend = `[${domain[0].toFixed(0)}-${domain[1].toFixed(0)}]${scaleType === 'log' ? ' (log)' : ''}`
+  const legend = `[${formatScore(domain[0])}-${formatScore(domain[1])}]${scaleType === 'log' ? ' (log)' : ''}`
   const len = measureText(legend, 12)
   const xpos = canvasWidth - len - 60
   return (

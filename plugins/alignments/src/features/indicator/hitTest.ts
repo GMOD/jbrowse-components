@@ -1,33 +1,25 @@
-import { INTERBASE_TYPES } from './types.ts'
-
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { IndicatorHitResult, InterbaseType } from './types.ts'
-import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import { INTERBASE_TYPES } from './types.ts'
 
 function getInterbaseTypeName(colorType: number): InterbaseType {
   return INTERBASE_TYPES[(colorType - 1) % 3] ?? 'insertion'
 }
 
 export function hitTestIndicator(
-  canvasX: number,
+  genomicPos: number,
+  bpPerPx: number,
   canvasY: number,
-  resolved: ResolvedBlock | undefined,
+  rpcData: PileupDataResult,
   showCoverage: boolean,
   showInterbaseIndicators: boolean,
 ): IndicatorHitResult | undefined {
-  if (!showCoverage || !showInterbaseIndicators || canvasY > 5 || !resolved) {
+  if (!showCoverage || !showInterbaseIndicators || canvasY > 5) {
     return undefined
   }
 
-  const blockData = resolved.rpcData
-  const { bpRange, blockStartPx, blockWidth, reversed } = resolved
-  const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
-  const frac = (canvasX - blockStartPx) / blockWidth
-  const genomicPos = reversed
-    ? bpRange[1] - frac * (bpRange[1] - bpRange[0])
-    : bpRange[0] + frac * (bpRange[1] - bpRange[0])
   const hitToleranceBp = Math.max(1, bpPerPx * 5)
-
-  const { indicatorPositions, indicatorColorTypes } = blockData
+  const { indicatorPositions, indicatorColorTypes } = rpcData
   const numIndicators = indicatorPositions.length
 
   for (let i = 0; i < numIndicators; i++) {

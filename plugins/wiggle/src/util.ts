@@ -181,3 +181,15 @@ export function getEffectiveScores(
 }
 
 export const WIGGLE_FUDGE_FACTOR = 0.8
+
+export const WIGGLE_MIN_PX = 1.5
+
+export function formatScore(n: number) {
+  if (n === 0) {
+    return '0'
+  }
+  if (Math.abs(n) >= 100) {
+    return n.toFixed(0)
+  }
+  return n.toPrecision(3).replace(/\.?0+$/, '')
+}

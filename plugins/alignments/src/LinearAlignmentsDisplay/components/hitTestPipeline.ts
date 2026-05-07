@@ -48,13 +48,8 @@ export type HitTestResult =
 // too zoomed out to be meaningful.
 export const SNP_HIT_MAX_BP_PER_PX = 25
 
-// Hit test for a chain (linked-read group) using the Flatbush spatial index
-// built during chain layout. Returns the first read in the hit chain.
-function hitTestChain(
-  coords: CigarCoords | undefined,
-  rpcData: PileupDataResult | undefined,
-) {
-  if (!coords || !rpcData?.chainFlatbush || !rpcData.chainFirstReadIndices) {
+function hitTestChain(coords: CigarCoords, rpcData: PileupDataResult) {
+  if (!rpcData.chainFlatbush || !rpcData.chainFirstReadIndices) {
     return undefined
   }
   const { adjustedY, genomicPos, row } = coords
@@ -78,7 +73,6 @@ export interface HitTestOptions {
   featureSpacing: number
   rangeY: [number, number]
   isChainMode: boolean
-  bpPerPx: number
 }
 
 // Priority chain across CIGAR features, top-down:
@@ -121,115 +115,106 @@ export function performHitTest(
     featureSpacing,
     rangeY,
     isChainMode,
-    bpPerPx,
   } = options
 
-  const detailedHitsEnabled = bpPerPx <= SNP_HIT_MAX_BP_PER_PX
+  if (resolved) {
+    // Single site for the canvas-X → genomicPos transform.
+    // reversed is handled here and nowhere else in the hit-test pipeline.
+    const bpSpan = resolved.bpRange[1] - resolved.bpRange[0]
+    const bpPerPx = bpSpan / resolved.blockWidth
+    const frac = (canvasX - resolved.blockStartPx) / resolved.blockWidth
+    const genomicPos = resolved.reversed
+      ? resolved.bpRange[1] - frac * bpSpan
+      : resolved.bpRange[0] + frac * bpSpan
 
-  // Indicator and coverage tooltips work at all zoom levels.
-  // hitTestIndicator fires only in the top-5px indicator strip (zoom-safe).
-  // hitTestCoverage handles zoomed-out bins: returns the bin position and
-  // snaps to any significant SNP/insertion within the bin when bpPerPx > 1.
-  const indicatorHit = hitTestIndicator(
-    canvasX,
-    canvasY,
-    resolved,
-    showCoverage,
-    showInterbaseIndicators,
-  )
-  if (indicatorHit && resolved) {
-    return { type: 'indicator', hit: indicatorHit, resolved }
-  }
+    // Indicator and coverage tooltips work at all zoom levels.
+    // hitTestIndicator fires only in the top-5px indicator strip (zoom-safe).
+    // hitTestCoverage handles zoomed-out bins: returns the bin position and
+    // snaps to any significant SNP/insertion within the bin when bpPerPx > 1.
+    const indicatorHit = hitTestIndicator(
+      genomicPos,
+      bpPerPx,
+      canvasY,
+      resolved.rpcData,
+      showCoverage,
+      showInterbaseIndicators,
+    )
+    if (indicatorHit) {
+      return { type: 'indicator', hit: indicatorHit, resolved }
+    }
 
-  const coverageHit = hitTestCoverage(
-    canvasX,
-    canvasY,
-    resolved,
-    showCoverage,
-    coverageHeight,
-  )
-  if (coverageHit && resolved) {
-    return { type: 'coverage', hit: coverageHit, resolved }
-  }
+    const coverageHit = hitTestCoverage(
+      genomicPos,
+      bpPerPx,
+      canvasY,
+      resolved.rpcData,
+      showCoverage,
+      coverageHeight,
+    )
+    if (coverageHit) {
+      return { type: 'coverage', hit: coverageHit, resolved }
+    }
 
-  const coords = resolved
-    ? canvasToGenomicCoords(
-        canvasX,
-        canvasY,
+    const coords = canvasToGenomicCoords(
+      canvasY,
+      genomicPos,
+      bpPerPx,
+      featureHeightSetting,
+      featureSpacing,
+      topOffset,
+      rangeY,
+    )
+
+    if (bpPerPx <= SNP_HIT_MAX_BP_PER_PX) {
+      // Modification before CIGAR: a modified+mismatched base resolves as a
+      // modification hit, not a mismatch hit. modFlatbush is undefined when
+      // not in modification mode so this is a no-op.
+      const modificationHit = hitTestModification(
         resolved,
+        coords,
         featureHeightSetting,
-        featureSpacing,
-        topOffset,
-        rangeY,
       )
-    : undefined
-
-  if (detailedHitsEnabled) {
-    // Modification before CIGAR: a modified+mismatched base resolves as a
-    // modification hit, not a mismatch hit. modFlatbush is undefined when
-    // not in modification mode so this is a no-op.
-    const modificationHit =
-      resolved && coords
-        ? hitTestModification(resolved, coords, featureHeightSetting)
-        : undefined
-    if (modificationHit && resolved && coords) {
-      return {
-        type: 'modification',
-        hit: modificationHit,
-        featureHit: hitTestFeature(
-          canvasX,
-          canvasY,
+      const cigarHit = hitTestCigarItem(resolved, coords, featureHeightSetting)
+      if (modificationHit) {
+        return {
+          type: 'modification',
+          hit: modificationHit,
+          featureHit: hitTestFeature(resolved, coords, featureHeightSetting),
+          cigarHit,
           resolved,
-          coords,
-          featureHeightSetting,
-        ),
-        cigarHit: hitTestCigarItem(resolved, coords, featureHeightSetting),
-        resolved,
+        }
+      }
+      if (cigarHit) {
+        return {
+          type: 'cigar',
+          hit: cigarHit,
+          featureHit: hitTestFeature(resolved, coords, featureHeightSetting),
+          resolved,
+        }
+      }
+    } else if (
+      coords.adjustedY >= 0 &&
+      coords.yWithinRow <= featureHeightSetting
+    ) {
+      // When zoomed out, surface features that are still visually significant.
+      // Mirror hitTestCigarItem's adjustedY/yWithinRow guards so inter-row
+      // spacing doesn't produce false hits.
+      const largeInsertionHit = hitTestLargeInsertion(resolved, coords)
+      if (largeInsertionHit) {
+        return { type: 'cigar', hit: largeInsertionHit, resolved }
+      }
+      const gapHit = hitTestGap(resolved, coords)
+      if (gapHit && (gapHit.length ?? 0) >= bpPerPx) {
+        return { type: 'cigar', hit: gapHit, resolved }
       }
     }
 
-    const cigarHit =
-      resolved && coords
-        ? hitTestCigarItem(resolved, coords, featureHeightSetting)
-        : undefined
-    if (cigarHit && resolved) {
-      const featureHit = coords
-        ? hitTestFeature(
-            canvasX,
-            canvasY,
-            resolved,
-            coords,
-            featureHeightSetting,
-          )
-        : undefined
-      return { type: 'cigar', hit: cigarHit, featureHit, resolved }
+    const hit = isChainMode
+      ? hitTestChain(coords, resolved.rpcData)
+      : hitTestFeature(resolved, coords, featureHeightSetting)
+    if (hit) {
+      return { type: 'feature', hit, resolved }
     }
-  } else if (
-    resolved &&
-    coords &&
-    coords.adjustedY >= 0 &&
-    coords.yWithinRow <= featureHeightSetting
-  ) {
-    // When zoomed out, surface features that are still visually significant.
-    // Mirror hitTestCigarItem's adjustedY/yWithinRow guards so inter-row
-    // spacing doesn't produce false hits.
-    const largeInsertionHit = hitTestLargeInsertion(resolved, coords)
-    if (largeInsertionHit) {
-      return { type: 'cigar', hit: largeInsertionHit, resolved }
-    }
-    const gapHit = hitTestGap(resolved, coords)
-    if (gapHit && (gapHit.length ?? 0) >= bpPerPx) {
-      return { type: 'cigar', hit: gapHit, resolved }
-    }
-  }
-
-  const hit = isChainMode
-    ? hitTestChain(coords, resolved?.rpcData)
-    : resolved && coords
-      ? hitTestFeature(canvasX, canvasY, resolved, coords, featureHeightSetting)
-      : undefined
-  if (hit && resolved) {
-    return { type: 'feature', hit, resolved }
   }
 
   return { type: 'none' }

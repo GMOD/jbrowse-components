@@ -1,5 +1,5 @@
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { CoverageHitResult } from './types.ts'
-import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 // Find the first significant position in [binStart, binEnd). "Significant"
 // = at least `threshold` fraction of reads at that position, relative to
@@ -31,25 +31,18 @@ function findSignificantInBin(
 }
 
 export function hitTestCoverage(
-  canvasX: number,
+  genomicPos: number,
+  bpPerPx: number,
   canvasY: number,
-  resolved: ResolvedBlock | undefined,
+  rpcData: PileupDataResult,
   showCoverage: boolean,
   coverageHeight: number,
 ): CoverageHitResult | undefined {
-  if (!showCoverage || canvasY > coverageHeight || !resolved) {
+  if (!showCoverage || canvasY > coverageHeight) {
     return undefined
   }
 
-  const blockData = resolved.rpcData
-  const { bpRange, blockStartPx, blockWidth, reversed } = resolved
-  const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
-  const frac = (canvasX - blockStartPx) / blockWidth
-  const genomicPos = reversed
-    ? bpRange[1] - frac * (bpRange[1] - bpRange[0])
-    : bpRange[0] + frac * (bpRange[1] - bpRange[0])
-
-  const { coverageDepths, coverageStartPos } = blockData
+  const { coverageDepths, coverageStartPos } = rpcData
   const binIndex = Math.floor(genomicPos - coverageStartPos)
   if (binIndex < 0 || binIndex >= coverageDepths.length) {
     return undefined
@@ -59,7 +52,7 @@ export function hitTestCoverage(
   if (bpPerPx > 1) {
     const binEnd = binStart + Math.ceil(bpPerPx)
     const snpHit = findSignificantInBin(
-      blockData.mismatchPositions,
+      rpcData.mismatchPositions,
       coverageDepths,
       coverageStartPos,
       binStart,
@@ -70,7 +63,7 @@ export function hitTestCoverage(
       return { type: 'coverage', position: snpHit }
     }
     const noncovHit = findSignificantInBin(
-      blockData.interbasePositions,
+      rpcData.interbasePositions,
       coverageDepths,
       coverageStartPos,
       binStart,

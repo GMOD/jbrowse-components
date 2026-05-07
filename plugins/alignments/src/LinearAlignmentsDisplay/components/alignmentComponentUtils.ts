@@ -3,7 +3,7 @@ import type React from 'react'
 import { toRgb } from '../../shaders/colors.ts'
 import { fillColor } from '../../shared/color.ts'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
+import type { CigarCoords } from '../../shared/hitTestTypes.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { Theme } from '@mui/material'
 
@@ -38,30 +38,16 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
 }
 
 export function canvasToGenomicCoords(
-  canvasX: number,
   canvasY: number,
-  resolved: {
-    rpcData: PileupDataResult
-    bpRange: [number, number]
-    blockStartPx: number
-    blockWidth: number
-    reversed?: boolean
-  },
+  genomicPos: number,
+  bpPerPx: number,
   featureHeight: number,
   featureSpacing: number,
   topOffset: number,
   rangeY: [number, number],
-) {
-  const { bpRange, blockStartPx, blockWidth } = resolved
-  const bpSpan = bpRange[1] - bpRange[0]
-  const bpPerPx = bpSpan / blockWidth
-  const frac = (canvasX - blockStartPx) / blockWidth
-  const genomicPos = resolved.reversed
-    ? bpRange[1] - frac * bpSpan
-    : bpRange[0] + frac * bpSpan
+): CigarCoords {
   const rowHeight = featureHeight + featureSpacing
-  const scrolledY = canvasY + rangeY[0]
-  const adjustedY = scrolledY - topOffset
+  const adjustedY = canvasY + rangeY[0] - topOffset
   const row = Math.floor(adjustedY / rowHeight)
   const yWithinRow = adjustedY - row * rowHeight
   return { bpPerPx, genomicPos, row, adjustedY, yWithinRow }
