@@ -2,7 +2,7 @@
   "name": "@jbrowse/website-astro",
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "rimraf .astro && astro dev",
     "build": "astro build && pagefind --site dist",
     "index": "astro build && pagefind --site dist --output-path public/pagefind",
     "preview": "astro preview"
@@ -28,6 +28,7 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
-    "pagefind": "^1.5.2"
+    "pagefind": "^1.5.2",
+    "rimraf": "^6.1.3"
   }
 }
