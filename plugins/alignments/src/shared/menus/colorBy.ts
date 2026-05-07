@@ -15,15 +15,33 @@ const SetModificationThresholdDialog = lazy(
   () => import('../components/SetModificationThresholdDialog.tsx'),
 )
 
-interface LinearReadDisplayModel {
-  colorBy?: ColorBy
+interface ColorByModel {
+  colorBy: ColorBy
   setColorScheme: (colorBy: ColorBy) => void
 }
 
-interface ModificationsModel extends LinearReadDisplayModel {
+interface ModificationsModel extends ColorByModel {
   modificationsReady: boolean
   visibleModificationTypes: string[]
   modificationThreshold: number
+}
+
+interface ArcsState {
+  arcColorByType: ArcColorByType
+  setColorByType: (type: ArcColorByType) => void
+}
+
+interface ColorOption {
+  label: string
+  type: string
+}
+
+interface ColorByMenuOptions {
+  showLinkedReads?: boolean
+  includeModifications?: boolean
+  includeTagOption?: boolean
+  colorOptions?: ColorOption[]
+  arcsState?: ArcsState
 }
 
 function isModificationsModel(model: unknown): model is ModificationsModel {
@@ -36,165 +54,15 @@ function isModificationsModel(model: unknown): model is ModificationsModel {
   )
 }
 
-interface ModificationsMenuOptions {
-  includeMethylation?: boolean
-}
-
-function getModificationsSubMenu(
-  model: ModificationsModel,
-  options: ModificationsMenuOptions = {},
-) {
-  const { includeMethylation = false } = options
-  const {
-    modificationThreshold,
-    modificationsReady,
-    visibleModificationTypes,
-  } = model
-
-  if (!modificationsReady) {
-    return [
-      {
-        label: 'Loading modifications...',
-        onClick: () => {},
-      },
-    ]
-  } else {
-    return visibleModificationTypes.length
-      ? [
-          {
-            label: `All modifications (>= ${modificationThreshold}% prob)`,
-            type: 'radio' as const,
-            checked:
-              model.colorBy?.type === 'modifications' &&
-              !model.colorBy.modifications?.isolatedModification &&
-              !model.colorBy.modifications?.twoColor,
-            onClick: () => {
-              model.setColorScheme({
-                type: 'modifications',
-                modifications: {
-                  threshold: modificationThreshold,
-                },
-              })
-            },
-          },
-          ...model.visibleModificationTypes.map(key => ({
-            label: `Show only ${modificationData[key]?.name || key} (>= ${modificationThreshold}% prob)`,
-            type: 'radio' as const,
-            checked:
-              model.colorBy?.type === 'modifications' &&
-              model.colorBy.modifications?.isolatedModification === key &&
-              !model.colorBy.modifications.twoColor,
-            onClick: () => {
-              model.setColorScheme({
-                type: 'modifications',
-                modifications: {
-                  isolatedModification: key,
-                  threshold: modificationThreshold,
-                },
-              })
-            },
-          })),
-          { type: 'divider' as const },
-          {
-            label: 'All modifications (<50% prob colored blue)',
-            type: 'radio' as const,
-            checked:
-              model.colorBy?.type === 'modifications' &&
-              !model.colorBy.modifications?.isolatedModification &&
-              !!model.colorBy.modifications?.twoColor,
-            onClick: () => {
-              model.setColorScheme({
-                type: 'modifications',
-                modifications: {
-                  twoColor: true,
-                  threshold: modificationThreshold,
-                },
-              })
-            },
-          },
-          ...model.visibleModificationTypes.map(key => ({
-            label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
-            type: 'radio' as const,
-            checked:
-              model.colorBy?.type === 'modifications' &&
-              model.colorBy.modifications?.isolatedModification === key &&
-              !!model.colorBy.modifications.twoColor,
-            onClick: () => {
-              model.setColorScheme({
-                type: 'modifications',
-                modifications: {
-                  isolatedModification: key,
-                  twoColor: true,
-                  threshold: modificationThreshold,
-                },
-              })
-            },
-          })),
-          ...(includeMethylation
-            ? [
-                { type: 'divider' as const },
-                {
-                  label: 'All read CpGs',
-                  type: 'radio' as const,
-                  checked: model.colorBy?.type === 'methylation',
-                  onClick: () => {
-                    model.setColorScheme({
-                      type: 'methylation',
-                      modifications: {
-                        threshold: modificationThreshold,
-                      },
-                    })
-                  },
-                },
-              ]
-            : []),
-          { type: 'divider' as const },
-          {
-            label: `Adjust threshold (${modificationThreshold}%)`,
-            onClick: () => {
-              getSession(model).queueDialog(handleClose => [
-                SetModificationThresholdDialog,
-                {
-                  model,
-                  handleClose,
-                },
-              ])
-            },
-          },
-        ]
-      : [
-          {
-            label: 'No modifications currently visible',
-            disabled: true,
-            onClick: () => {},
-          },
-        ]
-  }
-}
-
-interface ColorByModel {
-  colorBy: ColorBy
-  setColorScheme: (colorBy: ColorBy) => void
-}
-
-interface ArcsState {
-  arcColorByType: ArcColorByType
-  setColorByType: (type: ArcColorByType) => void
-}
-
-interface ColorByMenuOptions {
-  showLinkedReads?: boolean
-  includeModifications?: boolean
-  includeTagOption?: boolean
-  colorOptions?: { label: string; type: string }[]
-  arcsState?: ArcsState
-}
-
-const defaultColorOptions = [
+const basicColorOptions: ColorOption[] = [
   { label: 'Normal', type: 'normal' },
   { label: 'Strand', type: 'strand' },
   { label: 'Mapping quality', type: 'mappingQuality' },
   { label: 'Base quality', type: 'baseQuality' },
+  { label: 'Per-base quality', type: 'perBaseQuality' },
+]
+
+const pairedEndColorOptions: ColorOption[] = [
   { label: 'Insert size', type: 'insertSize' },
   { label: 'Insert size (gradient)', type: 'insertSizeGradient' },
   { label: 'First of pair strand', type: 'firstOfPairStrand' },
@@ -202,11 +70,108 @@ const defaultColorOptions = [
   { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
 ]
 
-const linkedReadsColorOptions = [
+const linkedReadsColorOptions: ColorOption[] = [
   { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
   { label: 'Insert size', type: 'insertSize' },
   { label: 'Pair orientation', type: 'pairOrientation' },
 ]
+
+const arcColorOptions: { label: string; type: ArcColorByType }[] = [
+  { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
+  { label: 'Insert size', type: 'insertSize' },
+  { label: 'Orientation', type: 'orientation' },
+]
+
+function getModificationsSubMenu(model: ModificationsModel) {
+  const {
+    modificationThreshold,
+    modificationsReady,
+    visibleModificationTypes,
+  } = model
+
+  if (!modificationsReady) {
+    return [{ label: 'Loading modifications...', onClick: () => {} }]
+  } else {
+    if (!visibleModificationTypes.length) {
+      return [
+        {
+          label: 'No modifications currently visible',
+          disabled: true,
+          onClick: () => {},
+        },
+      ]
+    } else {
+      const modRadio = (
+        label: string,
+        isolatedModification: string | undefined,
+        twoColor: boolean,
+      ) => ({
+        label,
+        type: 'radio' as const,
+        checked:
+          model.colorBy.type === 'modifications' &&
+          model.colorBy.modifications?.isolatedModification ===
+            isolatedModification &&
+          !!model.colorBy.modifications?.twoColor === twoColor,
+        onClick: () => {
+          model.setColorScheme({
+            type: 'modifications',
+            modifications: {
+              ...(isolatedModification ? { isolatedModification } : {}),
+              ...(twoColor ? { twoColor: true } : {}),
+              threshold: modificationThreshold,
+            },
+          })
+        },
+      })
+
+      const suffix = (twoColor: boolean) =>
+        twoColor
+          ? '(<50% prob colored blue)'
+          : `(>= ${modificationThreshold}% prob)`
+      const modName = (key: string) => modificationData[key]?.name || key
+
+      const modGroup = (twoColor: boolean) => [
+        modRadio(`All modifications ${suffix(twoColor)}`, undefined, twoColor),
+        ...visibleModificationTypes.map(key =>
+          modRadio(
+            `Show only ${modName(key)} ${suffix(twoColor)}`,
+            key,
+            twoColor,
+          ),
+        ),
+      ]
+
+      return [
+        ...modGroup(false),
+        { type: 'divider' as const },
+        ...modGroup(true),
+        { type: 'divider' as const },
+        {
+          label: 'All read CpGs',
+          type: 'radio' as const,
+          checked: model.colorBy.type === 'methylation',
+          onClick: () => {
+            model.setColorScheme({
+              type: 'methylation',
+              modifications: { threshold: modificationThreshold },
+            })
+          },
+        },
+        { type: 'divider' as const },
+        {
+          label: `Adjust threshold (${modificationThreshold}%)`,
+          onClick: () => {
+            getSession(model).queueDialog(handleClose => [
+              SetModificationThresholdDialog,
+              { model, handleClose },
+            ])
+          },
+        },
+      ]
+    }
+  }
+}
 
 export function getColorByMenuItem(
   model: ColorByModel,
@@ -216,10 +181,11 @@ export function getColorByMenuItem(
     showLinkedReads = false,
     includeModifications = false,
     includeTagOption = false,
+    colorOptions,
     arcsState,
   } = options
 
-  const colorRadio = (label: string, type: string) => ({
+  const colorRadio = ({ label, type }: ColorOption) => ({
     label,
     type: 'radio' as const,
     checked: model.colorBy.type === type,
@@ -228,66 +194,66 @@ export function getColorByMenuItem(
     },
   })
 
+  const headItems = colorOptions
+    ? colorOptions.map(colorRadio)
+    : showLinkedReads
+      ? linkedReadsColorOptions.map(colorRadio)
+      : [
+          ...basicColorOptions.map(colorRadio),
+          {
+            label: 'Paired-end',
+            type: 'subMenu' as const,
+            subMenu: pairedEndColorOptions.map(colorRadio),
+          },
+        ]
+
+  const tagItem = includeTagOption
+    ? [
+        {
+          label: 'Color by tag...',
+          type: 'radio' as const,
+          checked: model.colorBy.type === 'tag',
+          onClick: () => {
+            getSession(model).queueDialog((onClose: () => void) => [
+              ColorByTagDialog,
+              { model, handleClose: onClose },
+            ])
+          },
+        },
+      ]
+    : []
+
+  const arcsItem = arcsState
+    ? [
+        {
+          label: 'Arc color scheme',
+          type: 'subMenu' as const,
+          subMenu: arcColorOptions.map(({ label, type }) => ({
+            label,
+            type: 'radio' as const,
+            checked: arcsState.arcColorByType === type,
+            onClick: () => {
+              arcsState.setColorByType(type)
+            },
+          })),
+        },
+      ]
+    : []
+
   const modificationsItem =
     includeModifications && isModificationsModel(model)
-      ? {
-          label: 'Modifications',
-          type: 'subMenu' as const,
-          subMenu: getModificationsSubMenu(model, {
-            includeMethylation: true,
-          }),
-        }
-      : undefined
-
-  const items =
-    options.colorOptions ??
-    (showLinkedReads ? linkedReadsColorOptions : defaultColorOptions)
-
-  const subMenu = [
-    ...items.map(({ label, type }) => colorRadio(label, type)),
-    ...(includeTagOption
       ? [
           {
-            label: 'Color by tag...',
-            type: 'radio' as const,
-            checked: model.colorBy.type === 'tag',
-            onClick: () => {
-              getSession(model).queueDialog((onClose: () => void) => [
-                ColorByTagDialog,
-                { model, handleClose: onClose },
-              ])
-            },
-          },
-        ]
-      : []),
-    ...(arcsState
-      ? [
-          {
-            label: 'Arc color scheme',
+            label: 'Modifications',
             type: 'subMenu' as const,
-            subMenu: (
-              [
-                ['Insert size and orientation', 'insertSizeAndOrientation'],
-                ['Insert size', 'insertSize'],
-                ['Orientation', 'orientation'],
-              ] as const
-            ).map(([label, type]) => ({
-              label,
-              type: 'radio' as const,
-              checked: arcsState.arcColorByType === type,
-              onClick: () => {
-                arcsState.setColorByType(type)
-              },
-            })),
+            subMenu: getModificationsSubMenu(model),
           },
         ]
-      : []),
-    ...(modificationsItem ? [modificationsItem] : []),
-  ]
+      : []
 
   return {
     label: 'Color by...',
     icon: Palette,
-    subMenu,
+    subMenu: [...headItems, ...tagItem, ...arcsItem, ...modificationsItem],
   }
 }
