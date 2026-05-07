@@ -322,9 +322,10 @@ export default function MultiSampleVariantBaseModelF(
           const { type, id } = self.featureWidgetType
           const track = getContainingTrack(self)
           const view = getContainingView(self)
-          const adapterConfig = getConf(track, 'adapter')
           session.rpcManager
-            .call(getRpcSessionId(self), 'CoreGetMetadata', { adapterConfig })
+            .call(getRpcSessionId(self), 'CoreGetMetadata', {
+              adapterConfig: self.adapterConfig,
+            })
             .then(descriptions => {
               if (isAlive(self)) {
                 session.showWidget(
@@ -962,14 +963,6 @@ export default function MultiSampleVariantBaseModelF(
         return items
       },
     }))
-    .views(self => ({
-      get adapterConfigSnapshot() {
-        return getConf(getContainingTrack(self), 'adapter') as Record<
-          string,
-          unknown
-        >
-      },
-    }))
     .actions(self => ({
       clearDisplaySpecificData() {
         // hasPhased / sampleInfo / featuresVolatile are derived from cellData
@@ -983,7 +976,7 @@ export default function MultiSampleVariantBaseModelF(
           return null
         }
         return {
-          adapterConfig: self.adapterConfigSnapshot,
+          adapterConfig: self.adapterConfig,
           fetchSizeLimit: self.getConfWithOverride<number>('fetchSizeLimit'),
           userByteSizeLimit: self.userByteSizeLimit,
           visibleBp: view.visibleBp,

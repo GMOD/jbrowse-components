@@ -121,7 +121,7 @@ function getSequenceAdapter(session: AbstractSessionModel, region: Region) {
 }
 
 interface FetchFeatureDetailsSelf {
-  adapterConfigSnapshot: Record<string, unknown>
+  adapterConfig: Record<string, unknown>
   loadedRegions: ReadonlyMap<number, Region>
   getFeatureInfoById: (
     id: string,
@@ -133,7 +133,7 @@ async function fetchFeatureDetails(
   featureId: string,
 ) {
   const session = getSession(self)
-  const adapterConfig = self.adapterConfigSnapshot
+  const adapterConfig = self.adapterConfig
   const info = self.getFeatureInfoById(featureId)
   if (!info) {
     return undefined
@@ -273,13 +273,6 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
-        get adapterConfigSnapshot() {
-          return getConf(getContainingTrack(self), 'adapter') as Record<
-            string,
-            unknown
-          >
-        },
-
         get fetchSizeLimit() {
           return (
             self.userByteSizeLimit ??
@@ -1475,7 +1468,7 @@ export default function stateModelFactory(
           getByteEstimateConfig() {
             const view = getContainingView(self) as LGV
             return {
-              adapterConfig: self.adapterConfigSnapshot,
+              adapterConfig: self.adapterConfig,
               fetchSizeLimit:
                 self.getConfWithOverride<number>('fetchSizeLimit'),
               userByteSizeLimit: self.userByteSizeLimit,
@@ -1489,7 +1482,7 @@ export default function stateModelFactory(
             await self.fetchRegions(needed, async (ctx: FetchContext) => {
               const promises = needed.map(({ region, displayedRegionIndex }) =>
                 fetchFeaturesForRegion(
-                  self.adapterConfigSnapshot,
+                  self.adapterConfig,
                   region,
                   displayedRegionIndex,
                   ctx.stopToken,

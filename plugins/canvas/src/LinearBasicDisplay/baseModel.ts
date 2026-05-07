@@ -246,13 +246,6 @@ export default function baseStateModelFactory(
           }
         },
 
-        get adapterConfigSnapshot() {
-          return getConf(getContainingTrack(self), 'adapter') as Record<
-            string,
-            unknown
-          >
-        },
-
         get DisplayMessageComponent() {
           return FeatureComponent
         },
@@ -676,7 +669,7 @@ export default function baseStateModelFactory(
           return fetchCanvasFeatureDetails(
             getSession(self),
             getRpcSessionId(self),
-            self.adapterConfigSnapshot,
+            self.adapterConfig,
             featureId,
             region,
           )
@@ -699,7 +692,7 @@ export default function baseStateModelFactory(
             const parentFeature = await fetchCanvasFeatureDetails(
               getSession(self),
               getRpcSessionId(self),
-              self.adapterConfigSnapshot,
+              self.adapterConfig,
               featureIdToFetch,
               region,
             )
@@ -753,7 +746,7 @@ export default function baseStateModelFactory(
             return null
           }
           return {
-            adapterConfig: self.adapterConfigSnapshot,
+            adapterConfig: self.adapterConfig,
             fetchSizeLimit: 1_000_000,
             userByteSizeLimit: self.userByteSizeLimit,
             visibleBp: view.visibleBp,
@@ -802,7 +795,7 @@ export default function baseStateModelFactory(
             'RenderFeatureData',
             {
               sessionId,
-              adapterConfig: self.adapterConfigSnapshot,
+              adapterConfig: self.adapterConfig,
               sequenceAdapter: self.sequenceAdapter,
               ...self.rpcProps(),
               region,
@@ -1030,7 +1023,7 @@ export default function baseStateModelFactory(
                   const fullFeature = await fetchCanvasFeatureDetails(
                     session,
                     getRpcSessionId(self),
-                    self.adapterConfigSnapshot,
+                    self.adapterConfig,
                     featureId,
                     region,
                   )

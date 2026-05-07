@@ -401,8 +401,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         ) {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           self.fetchRegions(needed, async (ctx: FetchContext) => {
-            const track = getContainingTrack(self)
-            const adapterConfig = getConf(track, 'adapter')
+            const adapterConfig = self.adapterConfig
             const session = getSession(self)
             const sessionId = getRpcSessionId(self)
             const { rpcManager } = session
