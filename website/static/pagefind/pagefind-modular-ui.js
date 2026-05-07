@@ -109,13 +109,11 @@
           t.innerHTML = ''
           let s = 0
           for (; document.querySelector(`#pfmod-input-${s}`); ) s += 1
-          let n = new r('form')
-            .class('pagefind-modular-input-wrapper')
-            .attrs({
-              role: 'search',
-              'aria-label': 'Search this site',
-              action: 'javascript:void(0);',
-            })
+          let n = new r('form').class('pagefind-modular-input-wrapper').attrs({
+            role: 'search',
+            'aria-label': 'Search this site',
+            action: 'javascript:void(0);',
+          })
           ;(new r('label')
             .attrs({ for: `pfmod-input-${s}`, 'data-pfmod-sr-hidden': 'true' })
             .text('Search this site')

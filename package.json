@@ -31,11 +31,16 @@
       "electron",
       "electron-chromedriver",
       "esbuild",
-      "puppeteer"
+      "puppeteer",
+      "sharp",
+      "unrs-resolver"
     ],
     "minimumReleaseAge": "1440",
     "minimumReleaseAgeExclude": [
       "@gmod/*"
+    ],
+    "ignoredBuiltDependencies": [
+      "core-js-pure"
     ]
   },
   "devDependencies": {

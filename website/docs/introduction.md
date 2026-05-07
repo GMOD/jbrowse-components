@@ -34,6 +34,10 @@ Welcome to the JBrowse 2 documentation.
   comparing genome assemblies with dotplot and linear synteny views
 - [Analyzing a phased trio](/docs/tutorials/analyze_trio) - inheritance patterns
   and variant phasing in a trio dataset
+- [Methylation visualization](/docs/tutorials/methylation) - per-read and
+  aggregate methylation display
+- [Multi-sample SV visualization](/docs/tutorials/sv_multisamples) -
+  population-level SVs, trio inspection, and chromosomal inversions
 
 ## Developers
 

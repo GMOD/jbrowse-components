@@ -38,21 +38,22 @@ JBrowse 2 was rebuilt from the ground up, with a primary focus on synteny and
 structural variant visualization that JBrowse 1 could not support, while also
 expanding on many other capabilities. The table below highlights what is new.
 
-| Feature | JBrowse 1 | JBrowse 2 |
-| ------- | :-------: | :-------: |
-| Multiple simultaneous view types | ✗ | ✓ |
-| Circular / dotplot / synteny views | ✗ | ✓ |
-| Structural variant visualization (breakpoint split view, circular arcs) | ✗ | ✓ |
-| Hi-C contact matrix | ✗ | ✓ |
-| Web worker and WASM speed optimizations | ✗ | ✓ |
-| Sort, color, and filter alignments by BAM/CRAM tag | ✗ | ✓ |
-| [Large database of pre-loaded species](https://genomes.jbrowse.org) | ✗ | ✓ |
-| In-app plugin store | ✗ | ✓ |
-| UCSC track hub support [^1] | ✗ | ✓ |
-| SVG export of the current view | ✗ | ✓ |
-| Embeddable as React / NPM components [^2] [^3] | ✗ | ✓ |
+| Feature                                                                 | JBrowse 1 | JBrowse 2 |
+| ----------------------------------------------------------------------- | :-------: | :-------: |
+| Multiple simultaneous view types                                        |     ✗     |     ✓     |
+| Circular / dotplot / synteny views                                      |     ✗     |     ✓     |
+| Structural variant visualization (breakpoint split view, circular arcs) |     ✗     |     ✓     |
+| Hi-C contact matrix                                                     |     ✗     |     ✓     |
+| Web worker and WASM speed optimizations                                 |     ✗     |     ✓     |
+| Sort, color, and filter alignments by BAM/CRAM tag                      |     ✗     |     ✓     |
+| [Large database of pre-loaded species](https://genomes.jbrowse.org)     |     ✗     |     ✓     |
+| In-app plugin store                                                     |     ✗     |     ✓     |
+| UCSC track hub support [^1]                                             |     ✗     |     ✓     |
+| SVG export of the current view                                          |     ✗     |     ✓     |
+| Embeddable as React / NPM components [^2] [^3]                          |     ✗     |     ✓     |
 
-See the [demos](/demos/) and [gallery](/gallery/) for more examples of what JBrowse 2 can do.
+See the [demos](/demos/) and [gallery](/gallery/) for more examples of what
+JBrowse 2 can do.
 
 ## Supported data formats
 
