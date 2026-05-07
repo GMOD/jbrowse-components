@@ -6,17 +6,14 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import WiggleTooltip from './WiggleTooltip.tsx'
+import { findHit } from './findHit.ts'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import {
   WiggleErrorBar,
   WiggleLoadingOverlay,
 } from '../../shared/WiggleStatusOverlays.tsx'
-import {
-  findFeatureAtBp,
-  hitTestMouse,
-  isSummaryFeature,
-} from '../../shared/wiggleComponentUtils.ts'
+import { hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -56,30 +53,10 @@ const WiggleComponent = observer(function WiggleComponent({
 
         const { rpcDataMap, summaryScoreMode } = model
         const hit = hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
-        if (!hit) {
-          model.setFeatureUnderMouse(undefined)
-        } else {
-          const { region, data, bp } = hit
-          const { featurePositions, featureScores, numFeatures } = data
-          const foundIdx = findFeatureAtBp(featurePositions, numFeatures, bp)
-          if (foundIdx === -1) {
-            model.setFeatureUnderMouse(undefined)
-          } else {
-            const score = featureScores[foundIdx]!
-            const minScore = data.featureMinScores[foundIdx]
-            const maxScore = data.featureMaxScores[foundIdx]
-            model.setFeatureUnderMouse({
-              refName: region.refName,
-              start: featurePositions[foundIdx * 2]!,
-              end: featurePositions[foundIdx * 2 + 1]!,
-              score,
-              ...(summaryScoreMode !== 'avg' &&
-              isSummaryFeature(score, minScore, maxScore)
-                ? { summary: true, minScore, maxScore }
-                : {}),
-            })
-          }
-        }
+        const result = hit
+          ? findHit(hit.data, hit.bp, hit.region.refName, summaryScoreMode)
+          : undefined
+        model.setFeatureUnderMouse(result)
       }
     },
     [model, view],
