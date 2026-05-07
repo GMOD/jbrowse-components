@@ -1,8 +1,10 @@
-const fs = require('fs')
+import { createRequire } from 'module'
+import { readFileSync } from 'fs'
 
-const data = JSON.parse(fs.readFileSync('./docusaurus.config.json'))
+const require = createRequire(import.meta.url)
+const data = JSON.parse(readFileSync(new URL('./docusaurus.config.json', import.meta.url)))
 
-module.exports = {
+export default {
   ...data,
 
   future: {
@@ -169,7 +171,6 @@ module.exports = {
         },
         docs: {
           sidebarPath: require.resolve('./sidebars.json'),
-          // Please change this to your repo.
           editUrl:
             'https://github.com/GMOD/jbrowse-components/edit/main/website/',
         },
@@ -177,7 +178,6 @@ module.exports = {
           onUntruncatedBlogPosts: 'ignore',
           onInlineAuthors: 'ignore',
           blogSidebarCount: 'ALL',
-          // Please change this to your repo.
           editUrl:
             'https://github.com/GMOD/jbrowse-components/edit/main/website/blog/',
         },
