@@ -411,6 +411,25 @@ are MST view methods (not getters) so subclasses extend them via the standard
 | Derived region map | Upload callback iterates it in place of raw `rpcDataMap`          | Upload autorun reads it — MobX re-uploads without an RPC roundtrip                              |
 | `renderState`      | `backend.render(state)` per frame                                 | Render callback reads it — re-fires when deps shift                                             |
 
+`rpcProps()` returns **user-controlled settings only**. Structural args
+(`adapterConfig`, `sequenceAdapter`, `region(s)`, `bpPerPx`, `sessionId`,
+`stopToken`) are spread in at the RPC call site, not from `rpcProps()` —
+keeping `rpcProps()` focused on its purpose: cache keys for
+`SettingsInvalidate`. Every display follows the same call shape:
+
+```ts
+rpcManager.call(sessionId, 'RenderXxxData', {
+  sessionId,
+  adapterConfig: self.adapterConfig,  // inherited from BaseDisplayModel
+  regions, bpPerPx,                    // per-call values
+  ...self.rpcProps(),                  // user settings (cache keys)
+  stopToken, statusCallback,
+})
+```
+
+`adapterConfig` is provided by `BaseDisplayModel` (via
+`getConf(this.parentTrack, 'adapter')`) — no display redefines it.
+
 `rpcProps()` is the **only** extension point for the RPC payload. Each display
 defines its own typed shape; subclasses that need to layer on additional
 fields capture `super` and spread:
