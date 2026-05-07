@@ -33,7 +33,7 @@ the blue (inverted) and red (non-inverted) blocks on each linear genome view
 
 Screenshot showing a Hi-C contact matrix rendered in JBrowse using the .hic file
 format (from Juicebox)
-([live link](http://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-xS8Eg67AFS&password=jPzH5))
+([live link](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-xS8Eg67AFS&password=jPzH5))
 
 ---
 
@@ -51,7 +51,7 @@ circular overview of the SVs
 Screenshot showing the ability to "horizontally flip" the linear genome view.
 This feature allows the genome to be read "right to left", or 3' to 5' instead
 of 5' to 3', which can help when looking at anti-sense genes or features
-([live link](http://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-6pkcSXlbFL&password=ER28C))
+([live link](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-6pkcSXlbFL&password=ER28C))
 
 ---
 

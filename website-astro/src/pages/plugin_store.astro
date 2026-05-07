@@ -1,23 +1,25 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { Icon } from 'astro-icon/components'
+import page from '../styles/page.module.css'
+import btn from '../styles/button.module.css'
 import pluginJSON from '../../../website/plugins.json'
 
 const { plugins } = pluginJSON
 ---
 
 <BaseLayout title="JBrowse 2 Plugin Store">
-  <div class="content">
-    <h1>JBrowse 2 Plugin Store</h1>
+  <div class={page.content}>
+    <h1>Plugin Store</h1>
 
-    <div class="top-links">
+    <div class="info-row">
       <details class="info-box">
         <summary>About the plugin store</summary>
         <div class="info-body">
           <p>
             This store contains the current list of white-listed JBrowse 2
-            plugins available for use. Plugins can add functionality that
-            doesn't exist in the core application, such as a new data adapter
-            or a custom track type.
+            plugins. Plugins can add functionality that doesn't exist in the
+            core application, such as a new data adapter or a custom track type.
           </p>
           <p>
             The configuration specified for each plugin can be added to the
@@ -31,10 +33,7 @@ const { plugins } = pluginJSON
     }
   ]
 }`}</code></pre>
-          <p>
-            Plugins can also be added directly inside the application via the
-            File menu.
-          </p>
+          <p>Plugins can also be added directly inside the app via the File menu.</p>
         </div>
       </details>
 
@@ -73,17 +72,31 @@ const { plugins } = pluginJSON
               />
             )}
             <div class="plugin-body">
-              <h2>{plugin.name}</h2>
-              <div class="plugin-meta">
-                <span>👤 {plugin.authors.join(', ')}</span>
-                <span>⚖️ {plugin.license === 'NONE' ? 'No license' : plugin.license}</span>
-                <a href={plugin.location} target="_blank" rel="noopener">
-                  GitHub ↗
+              <div class="plugin-header">
+                <h2>{plugin.name}</h2>
+                <a
+                  class:list={[btn.btn, btn.btnSecondary, btn.btnSmall]}
+                  href={plugin.location}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <Icon name="mdi:github" width="16" height="16" />
+                  GitHub
                 </a>
               </div>
-              <p>{plugin.description}</p>
+              <div class="plugin-meta">
+                <span class="meta-item">
+                  <Icon name="mdi:account" width="14" height="14" />
+                  {plugin.authors.join(', ')}
+                </span>
+                <span class="meta-item">
+                  <Icon name="mdi:scale-balance" width="14" height="14" />
+                  {plugin.license === 'NONE' ? 'No license' : plugin.license}
+                </span>
+              </div>
+              <p class="plugin-description">{plugin.description}</p>
               <details class="config-details">
-                <summary>Show configuration</summary>
+                <summary class="config-toggle">Show configuration</summary>
                 <pre><code>{configString}</code></pre>
               </details>
             </div>
@@ -95,12 +108,16 @@ const { plugins } = pluginJSON
 </BaseLayout>
 
 <style>
-  .content {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem;
+  h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 0.75rem;
   }
-  .top-links {
+
+  /* Info accordion row */
+  .info-row {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
@@ -109,99 +126,147 @@ const { plugins } = pluginJSON
   .info-box {
     flex: 1;
     min-width: 240px;
-    border: 1px solid #ddd;
+    border: 1px solid #e0e0e0;
     border-radius: 6px;
     overflow: hidden;
   }
   .info-box summary {
-    background: #3f51b5;
-    color: white;
-    padding: 0.6rem 1rem;
+    background: #f5f5f5;
+    color: #333;
+    padding: 0.7rem 1rem;
     cursor: pointer;
     user-select: none;
     font-weight: 500;
+    font-size: 0.9rem;
     list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
   }
   .info-box summary::-webkit-details-marker {
     display: none;
   }
   .info-box summary::after {
-    content: ' ▾';
-    float: right;
+    content: '▾';
+    font-size: 0.8em;
+    color: #666;
   }
   .info-box[open] summary::after {
-    content: ' ▴';
+    content: '▴';
   }
   .info-body {
     padding: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
   }
   .info-body p {
+    margin: 0 0 0.5rem;
+  }
+  .info-body pre {
+    background: #f5f5f5;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.82rem;
     margin: 0.5rem 0;
   }
+
+  /* Plugin list */
   .plugin-list {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
   }
   .plugin-card {
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
     overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  .plugin-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
   .plugin-image {
     width: 100%;
-    max-height: 200px;
+    max-height: 180px;
     object-fit: cover;
     display: block;
+    border-bottom: 1px solid #e0e0e0;
   }
   .plugin-body {
     padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
-  .plugin-body h2 {
-    margin: 0 0 0.5rem;
+  .plugin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .plugin-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
   }
   .plugin-meta {
     display: flex;
-    gap: 1rem;
+    gap: 1.25rem;
     flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: #666;
+  }
+  .meta-item {
+    display: flex;
     align-items: center;
+    gap: 4px;
+  }
+  .plugin-description {
+    margin: 0;
     font-size: 0.9rem;
-    color: #555;
-    margin-bottom: 0.75rem;
+    color: #444;
+    line-height: 1.5;
   }
-  .plugin-meta a {
+
+  /* Inline config toggle */
+  .config-details {
+    margin-top: 0.25rem;
+  }
+  .config-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
     color: #3f51b5;
-  }
-  .config-details summary {
-    display: inline-block;
-    padding: 0.35rem 0.9rem;
-    background: #3f51b5;
-    color: white;
-    border-radius: 4px;
     cursor: pointer;
-    font-size: 0.85rem;
     user-select: none;
     list-style: none;
-    margin-top: 0.5rem;
+    padding: 0;
+    border: none;
+    background: none;
   }
-  .config-details summary::-webkit-details-marker {
+  .config-toggle::-webkit-details-marker {
     display: none;
   }
+  .config-toggle::before {
+    content: '▶';
+    font-size: 0.6em;
+    transition: transform 0.15s;
+  }
+  .config-details[open] .config-toggle::before {
+    transform: rotate(90deg);
+  }
   .config-details pre {
-    margin-top: 0.75rem;
+    margin-top: 0.5rem;
     background: #f5f5f5;
-    padding: 1rem;
+    padding: 0.75rem 1rem;
     border-radius: 4px;
     overflow-x: auto;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
   }
-  pre {
-    background: #f5f5f5;
-    padding: 1rem;
-    border-radius: 4px;
-    overflow-x: auto;
-    font-size: 0.85rem;
-  }
+
   @media (max-width: 600px) {
     .plugin-image {
       display: none;

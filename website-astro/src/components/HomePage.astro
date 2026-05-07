@@ -1,0 +1,292 @@
+---
+import { Icon } from 'astro-icon/components'
+import { base as baseConfig } from 'astro:config/client'
+import btn from '../styles/button.module.css'
+import docusaurusConfig from '../../../website/docusaurus.config.json'
+const currentVersion = docusaurusConfig.customFields.currentVersion as string
+const base = baseConfig.replace(/\/$/, '')
+---
+
+<!-- MUI Alert severity="info" -->
+<div class="mui-alert-info" style="margin:10px">
+  <span class="mui-alert-icon" aria-hidden="true">
+    <Icon name="mdi:information" width="22" height="22" />
+  </span>
+  <div class="mui-alert-message">
+    <p class="mui-h6">New: JBrowse 2 office hours!</p>
+    <p class="mui-body1">
+      Starting Fall 2023, we are offering 1-on-1 appointments with members of our team via Google Calendar
+      <a
+        class:list={[btn.btn, btn.btnPrimary, btn.btnSmall]}
+        style="margin:10px"
+        href="https://calendar.app.google/1AYZkNCQNmwdY2R26"
+      >
+        Schedule appointment
+      </a>
+    </p>
+  </div>
+</div>
+
+<div class="outer-box">
+  <!-- Hero row -->
+  <div class="hero-row">
+    <div class="hero-text">
+      <p class="mui-h3 gutter-bottom">JBrowse</p>
+      <p class="mui-h4 gutter-bottom">The next-generation genome browser</p>
+      <p class="mui-body1">
+        JBrowse is a genome browser that runs on the web, on your desktop, or
+        embedded in your app.
+      </p>
+      <div class="btn-row">
+        <a class:list={[btn.btn, btn.btnPrimary]} href={`${base}/download/`}>
+          <Icon name="mdi:tray-arrow-down" width="20" height="20" />
+          Download
+        </a>
+        <a
+          class:list={[btn.btn, btn.btnSecondary]}
+          href={`https://jbrowse.org/code/jb2/${currentVersion}/?session=share-HShsEcnq3i&password=nYzTU`}
+        >
+          <Icon name="mdi:open-in-app" width="20" height="20" />
+          Browse demo
+        </a>
+      </div>
+      <div style="text-align:center">
+        <p class="mui-body1">
+          Check out our <a href={`${base}/blog`}>latest release blogpost</a>, our
+          <a href={`${base}/docs/embedded_components/`}>embedded components</a>,
+          and our
+          <a href={`${base}/download/#jbrowse-cli-tools`}>command line tools</a>.
+        </p>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img
+        src={`${base}/img/screenshot.webp`}
+        width="1362"
+        height="731"
+        alt="screenshot of jbrowse 2"
+      />
+    </div>
+  </div>
+</div>
+
+<div class="outer-box">
+  <!-- Features -->
+  <div class="section-box">
+    <p class="mui-h4">Features</p>
+    <hr />
+    <div class="two-col">
+      <div>
+        <ul>
+          <li>
+            Improved visualization of <b>structural variants</b> and
+            <b>genome synteny</b> with tightly-integrated linear, circular,
+            dotplot, and synteny views
+          </li>
+          <li>
+            In-browser <b>protein 3D structure displays</b> with integrated
+            alignment and phylogenetic tree views. Mouse over a genomic variant
+            to see where it lands on the structure!
+          </li>
+          <li>
+            <b>Support for many common data types</b> including BAM, CRAM,
+            tabix indexed VCF, GFF, BED, BigBed, BigWig, and several
+            specialized formats
+          </li>
+          <li>
+            <b>Powerful extensibility</b> with a plugin ecosystem which can add
+            additional view types, track types, data adapters, and more!
+          </li>
+          <li>
+            <a href={`${base}/features`}>
+              See a summary of new features and a comparison to JBrowse 1
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="features-image">
+        <img
+          src={`${base}/img/sv_inspector_importform_loaded.png`}
+          width="1377"
+          height="614"
+          alt="screenshot of jbrowse 2 SV inspector"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Citation -->
+  <div class="section-box">
+    <p class="mui-h4">Citation</p>
+    <hr />
+    <p class="mui-body1">
+      We at the JBrowse Consortium are working to make JBrowse a pluggable,
+      open-source computational platform for integrating many kinds of
+      biological data from many different places.
+    </p>
+    <p class="mui-body1">
+      Research citations are one of the main metrics the consortium uses to
+      demonstrate our relevance and utility when applying for funding to
+      continue our work. If you use JBrowse in research that you publish,
+      please cite the most recent JBrowse paper:
+    </p>
+    <cite>
+      Diesh <em>et al</em>, 2023. JBrowse 2: a modular genome browser with
+      views of synteny and structural variation. Genome Biology 24:74.
+      <a href="https://doi.org/10.1186/s13059-023-02914-z">
+        https://doi.org/10.1186/s13059-023-02914-z
+      </a>
+    </cite>
+  </div>
+
+  <!-- License -->
+  <div class="section-box">
+    <p class="mui-h4">License</p>
+    <hr />
+    <p class="mui-body1">
+      JBrowse is released under the
+      <a href="https://www.apache.org/licenses/LICENSE-2.0">
+        Apache License, Version 2.0
+      </a>.
+    </p>
+  </div>
+
+  <!-- Funding -->
+  <div class="section-box">
+    <p class="mui-h4">Funding and Collaboration</p>
+    <hr />
+    <p class="mui-body1">
+      JBrowse development has received support from the US National Institutes
+      of Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
+      Institute for Cancer Research (OICR), and the University of California,
+      Berkeley.
+    </p>
+  </div>
+</div>
+
+<style>
+  .mui-h3 {
+    font-size: clamp(1.75rem, 5vw, 3rem);
+    font-weight: 400;
+    line-height: 1.167;
+    margin: 0;
+  }
+  .mui-h4 {
+    font-size: clamp(1.4rem, 3.5vw, 2.125rem);
+    font-weight: 400;
+    line-height: 1.235;
+    margin: 0;
+  }
+  .mui-h6 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.6;
+    margin: 0 0 4px;
+  }
+  .mui-body1 {
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .gutter-bottom {
+    margin-bottom: 0.35em;
+  }
+
+  .mui-alert-info {
+    background-color: rgb(229, 246, 253);
+    color: rgb(1, 67, 97);
+    padding: 6px 16px;
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-start;
+    font-size: 0.875rem;
+    line-height: 1.43;
+  }
+  .mui-alert-icon {
+    color: #0288d1;
+    opacity: 0.9;
+    padding: 7px 0;
+    margin-right: 12px;
+    display: flex;
+    flex-shrink: 0;
+  }
+  .mui-alert-message {
+    padding: 8px 0;
+    min-width: 0;
+  }
+
+  .outer-box {
+    margin: clamp(0.75rem, 4vw, 3rem);
+  }
+
+  .hero-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .hero-image img {
+    border-radius: 8px;
+    border: 4px solid #e0e0e0;
+    height: auto;
+    width: 100%;
+    display: block;
+  }
+
+  .btn-row {
+    display: flex;
+    justify-content: space-evenly;
+    gap: 8px;
+  }
+
+  .section-box {
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .two-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .features-image img {
+    border: 4px solid #e0e0e0;
+    border-radius: 8px;
+    height: auto;
+    width: 100%;
+  }
+
+  @media (min-width: 900px) {
+    .hero-row {
+      flex-direction: row;
+      align-items: center;
+    }
+    .hero-text {
+      flex: 50%;
+    }
+    .hero-image {
+      flex: 50%;
+    }
+    .btn-row {
+      margin: 16px;
+    }
+    .two-col {
+      flex-direction: row;
+    }
+    .two-col > div:first-child {
+      flex: 50%;
+    }
+    .features-image {
+      flex: 50%;
+    }
+  }
+</style>

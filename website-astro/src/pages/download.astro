@@ -1,7 +1,12 @@
 ---
+import { base } from 'astro:config/client'
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { Icon } from 'astro-icon/components'
+import btn from '../styles/button.module.css'
+import page from '../styles/page.module.css'
 import config from '../../../website/docusaurus.config.json'
 
+const baseUrl = base.replace(/\/$/, '')
 const { currentVersion } = config.customFields
 const ghRelease = `https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}`
 const desktopBase = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}`
@@ -10,14 +15,14 @@ const lgvStorybook = `https://jbrowse.org/storybook/lgv/${currentVersion}/?path=
 const cgvStorybook = `https://jbrowse.org/storybook/cgv/${currentVersion}/?path=/story/getting-started--page`
 
 const desktopDownloads = [
-  { os: 'MacOS', suffix: 'mac.dmg', icon: '🍎' },
-  { os: 'Windows', suffix: 'win.exe', icon: '🖥' },
-  { os: 'Linux', suffix: 'linux.AppImage', icon: '🐧' },
+  { os: 'MacOS', suffix: 'mac.dmg', icon: 'mdi:apple' },
+  { os: 'Windows', suffix: 'win.exe', icon: 'mdi:microsoft-windows' },
+  { os: 'Linux', suffix: 'linux.AppImage', icon: 'mdi:linux' },
 ]
 ---
 
 <BaseLayout title="Download JBrowse 2">
-  <div class="content">
+  <div class={page.content}>
     <h1>Download JBrowse 2</h1>
     <p>
       JBrowse 2 is a new browser for today's increasingly complex data. We make
@@ -33,10 +38,10 @@ const desktopDownloads = [
     <div class="download-cards">
       {desktopDownloads.map(({ os, suffix, icon }) => (
         <div class="download-card">
-          <div class="card-icon">{icon}</div>
+          <div class="card-icon"><Icon name={icon} width="40" height="40" /></div>
           <h3>{os}</h3>
           <a
-            class="download-btn"
+            class:list={[btn.btn, btn.btnPrimary, btn.btnSmall]}
             href={`${desktopBase}/jbrowse-desktop-${currentVersion}-${suffix}`}
           >
             Download
@@ -45,7 +50,7 @@ const desktopDownloads = [
       ))}
     </div>
     <p class="caption">
-      Check out our <a href="/jb2/docs/quickstart_desktop/">quick start guide</a>
+      Check out our <a href={`${baseUrl}/docs/quickstart_desktop/`}>quick start guide</a>
       after downloading. Can't find what you're looking for?
       Check <a href={ghRelease}>other platforms</a>.
     </p>
@@ -56,7 +61,7 @@ const desktopDownloads = [
       your own website.
     </p>
     <div class="web-download">
-      <a class="download-btn" href={webZip}>Download JBrowse Web</a>
+      <a class:list={[btn.btn, btn.btnPrimary]} href={webZip}>Download JBrowse Web</a>
     </div>
     <p>
       Consider installing the JBrowse CLI tools (below), which can be used to
@@ -71,7 +76,7 @@ const desktopDownloads = [
     <pre><code>npm install -g @jbrowse/cli</code></pre>
     <p>
       After installing, check out our
-      <a href="/jb2/docs/quickstart_web">quick-start guide</a>.
+      <a href={`${baseUrl}/docs/quickstart_web/`}>quick-start guide</a>.
     </p>
 
     <h2>Static image generator</h2>
@@ -100,7 +105,7 @@ const desktopDownloads = [
       </li>
     </ul>
     <p>
-      More info in the <a href="/jb2/docs/embedded_components">embedded docs</a>,
+      More info in the <a href={`${baseUrl}/docs/embedded_components/`}>embedded docs</a>,
       including examples with create-react-app, vite, next.js, and vanillajs.
     </p>
 
@@ -126,12 +131,6 @@ const desktopDownloads = [
 </BaseLayout>
 
 <style>
-  .content {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem;
-    line-height: 1.6;
-  }
   .download-cards {
     display: flex;
     gap: 1.5rem;
@@ -145,25 +144,16 @@ const desktopDownloads = [
     text-align: center;
     min-width: 160px;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
   }
   .card-icon {
     font-size: 2rem;
-    margin-bottom: 0.5rem;
   }
   .download-card h3 {
-    margin: 0.5rem 0;
-  }
-  .download-btn {
-    display: inline-block;
-    padding: 0.5rem 1.25rem;
-    background: #3f51b5;
-    color: white;
-    border-radius: 4px;
-    text-decoration: none;
-    margin-top: 0.5rem;
-  }
-  .download-btn:hover {
-    background: #303f9f;
+    margin: 0;
   }
   .web-download {
     margin: 1rem 0;

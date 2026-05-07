@@ -1,0 +1,130 @@
+---
+import { getCollection, render } from 'astro:content'
+import { base } from 'astro:config/client'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import blog from '../../styles/blog.module.css'
+import page from '../../styles/page.module.css'
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog')
+  return posts.map(post => {
+    const stem = post.filePath!.split('/').pop()!.replace(/\.md$/, '')
+    const m = stem.match(/^(\d{4})-(\d{2})-(\d{2})-(.+)$/)
+    const slug = m ? `${m[1]}/${m[2]}/${m[3]}/${m[4]}` : stem
+    return { params: { slug }, props: { post } }
+  })
+}
+
+const { post } = Astro.props
+const { Content } = await render(post)
+const baseUrl = base.replace(/\/$/, '')
+---
+
+<BaseLayout title={post.data.title}>
+  <article class={page.contentNarrow}>
+    <header>
+      <h1>{post.data.title}</h1>
+      <div class="meta">
+        <time datetime={post.data.date.toISOString()}>
+          {
+            post.data.date.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })
+          }
+        </time>
+        {
+          post.data.tags && (
+            <div class={blog.tags}>
+              {post.data.tags.map(tag => (
+                <span class={blog.tag}>{tag}</span>
+              ))}
+            </div>
+          )
+        }
+      </div>
+    </header>
+    <div class="content">
+      <Content />
+    </div>
+    <footer>
+      <a href={`${baseUrl}/blog/`}>&larr; Back to blog</a>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 1rem;
+  }
+  h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 0.5rem;
+  }
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  time {
+    font-size: 0.875rem;
+    color: #666;
+  }
+  .content :global(h2) {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 2rem 0 0.75rem;
+  }
+  .content :global(h3) {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 1.5rem 0 0.5rem;
+  }
+  .content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 1rem 0;
+    display: block;
+  }
+  .content :global(pre) {
+    background: #f5f5f5;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
+  .content :global(code) {
+    background: #f5f5f5;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  .content :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+  .content :global(blockquote) {
+    border-left: 4px solid #3f51b5;
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    color: #555;
+  }
+  footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+  }
+  footer a {
+    color: #3f51b5;
+    text-decoration: none;
+  }
+  footer a:hover {
+    text-decoration: underline;
+  }
+</style>

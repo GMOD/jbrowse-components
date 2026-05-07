@@ -1,21 +1,33 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { Icon } from 'astro-icon/components'
+import btn from '../styles/button.module.css'
+import page from '../styles/page.module.css'
 ---
 
 <BaseLayout title="Contact — JBrowse">
-  <div class="markdown-content">
+  <div class={page.content}>
     <h1>Contact us</h1>
 
     <h2>Office hours</h2>
     <aside class="office-hours-alert">
-      <strong>New: JBrowse 2 office hours!</strong>
-      <p>
-        Starting Fall 2023, we are offering 1-on-1 appointments with members of
-        our team via Google Calendar.
-      </p>
-      <a class="schedule-btn" href="https://calendar.app.google/1AYZkNCQNmwdY2R26">
-        Schedule appointment
-      </a>
+      <span class="alert-icon" aria-hidden="true">
+        <Icon name="mdi:information" width="22" height="22" />
+      </span>
+      <div class="alert-body">
+        <strong>New: JBrowse 2 office hours!</strong>
+        <p>
+          Starting Fall 2023, we are offering 1-on-1 appointments with members
+          of our team via Google Calendar.
+        </p>
+        <a
+          class:list={[btn.btn, btn.btnPrimary, btn.btnSmall]}
+          style="margin-top:0.5rem"
+          href="https://calendar.app.google/1AYZkNCQNmwdY2R26"
+        >
+          Schedule appointment
+        </a>
+      </div>
     </aside>
 
     <h2>Forums</h2>
@@ -37,33 +49,41 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 </BaseLayout>
 
 <style>
-  .markdown-content {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem;
-    line-height: 1.6;
+  h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 1.5rem;
+  }
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 1.5rem 0 0.5rem;
   }
   .office-hours-alert {
-    background: #e3f2fd;
-    border-left: 4px solid #1976d2;
-    padding: 1rem 1.25rem;
+    background-color: rgb(229, 246, 253);
+    color: rgb(1, 67, 97);
+    padding: 6px 16px;
     border-radius: 4px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.875rem;
     margin: 1rem 0;
   }
-  .office-hours-alert p {
-    margin: 0.5rem 0;
+  .alert-icon {
+    color: #0288d1;
+    opacity: 0.9;
+    padding: 7px 0;
+    flex-shrink: 0;
+    display: flex;
   }
-  .schedule-btn {
-    display: inline-block;
-    margin-top: 0.5rem;
-    padding: 0.4rem 1rem;
-    background: #1976d2;
-    color: white;
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 0.9rem;
+  .alert-body {
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
-  .schedule-btn:hover {
-    background: #1565c0;
+  .alert-body p {
+    margin: 0;
   }
 </style>
