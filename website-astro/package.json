@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
+    "index": "astro build && pagefind --site dist --output-path public/pagefind",
     "preview": "astro preview"
   },
   "dependencies": {
