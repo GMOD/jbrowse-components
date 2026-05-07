@@ -11,7 +11,6 @@ import type {
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 interface DrawReadsRegion {
-  numReads: number
   readPositions: Uint32Array
   readYs: Uint16Array
   readStrands: Int8Array
@@ -35,7 +34,7 @@ export function drawReads(
 ) {
   const fH = state.featureHeight
 
-  for (let i = 0; i < region.numReads; i++) {
+  for (let i = 0; i < region.readFlags.length; i++) {
     const startBp = region.readPositions[i * 2]!
     const endBp = region.readPositions[i * 2 + 1]!
     const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)

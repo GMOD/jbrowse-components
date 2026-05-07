@@ -466,7 +466,7 @@ function readBoundsForId(
   id: string,
 ): OverlayBounds | undefined {
   const idx = region.readIdToIndex.get(id)
-  if (idx === undefined || idx >= region.numReads) {
+  if (idx === undefined || idx >= region.readFlags.length) {
     return undefined
   }
   return {

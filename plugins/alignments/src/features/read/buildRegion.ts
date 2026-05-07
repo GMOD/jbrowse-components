@@ -19,14 +19,12 @@ export interface ReadRegionFields {
   readStrands: Int8Array
   readTagColors: Uint32Array
   readChainHasSupp: Uint8Array | undefined
-  numReads: number
   insertSizeStats?: { upper: number; lower: number }
 }
 
 export function buildReadFields(data: PileupDataResult): ReadRegionFields {
-  const numReads = data.readIds.length
   return {
-    readIdToIndex: buildReadIdToIndex(data.readIds, numReads),
+    readIdToIndex: buildReadIdToIndex(data.readIds, data.readIds.length),
     readPositions: data.readPositions,
     readYs: data.readYs,
     readFlags: data.readFlags,
@@ -37,7 +35,6 @@ export function buildReadFields(data: PileupDataResult): ReadRegionFields {
     readStrands: data.readStrands,
     readTagColors: data.readTagColors,
     readChainHasSupp: data.readChainHasSupp,
-    numReads,
     insertSizeStats: data.insertSizeStats,
   }
 }
@@ -58,7 +55,6 @@ export function emptyReadFields(): ReadRegionFields {
     readStrands: new Int8Array(0),
     readTagColors: new Uint32Array(0),
     readChainHasSupp: undefined,
-    numReads: 0,
     insertSizeStats: undefined,
   }
 }
