@@ -1,4 +1,4 @@
-import type { Root, Paragraph } from 'mdast'
+import type { Root, Paragraph, Image } from 'mdast'
 import type { Plugin } from 'unified'
 import { visit, SKIP } from 'unist-util-visit'
 
@@ -28,6 +28,14 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
         return [SKIP, index]
       }
     })
+
+    if (base) {
+      visit(tree, 'image', (node: Image) => {
+        if (node.url.startsWith('/')) {
+          node.url = `${base}${node.url}`
+        }
+      })
+    }
 
     visit(tree, 'html', node => {
       const match = figureRe.exec(node.value)

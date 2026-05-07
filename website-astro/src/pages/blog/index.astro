@@ -3,39 +3,39 @@ import { getCollection } from 'astro:content'
 import { baseUrl } from '../../lib/base-url'
 import { blogPath } from '../../lib/blog-path'
 import BlogLayout from '../../layouts/BlogLayout.astro'
+import { renderMarkdown } from '../../lib/markdown.ts'
 import blog from '../../styles/blog.module.css'
 
 const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 )
 
-const byYear = new Map<string, (typeof posts)>()
-for (const post of posts) {
-  const year = post.data.date.getFullYear().toString()
-  if (!byYear.has(year)) {
-    byYear.set(year, [])
-  }
-  byYear.get(year)!.push(post)
-}
-const years = [...byYear.keys()].sort((a, b) => Number(b) - Number(a))
+const renderedPosts = await Promise.all(
+  posts.slice(0, 10).map(async post => {
+    const { html } = await renderMarkdown(post.body ?? '')
+    return { post, html }
+  }),
+)
 ---
 
 <BlogLayout title="JBrowse Blog">
   <div class="content">
-    <h1>Blog</h1>
     {
-      years.map(year => (
-        <section>
-          <h2>{year}</h2>
-          {byYear.get(year)!.map(post => (
-            <article>
+      renderedPosts.map(({ post, html }) => (
+        <article>
+          <header>
+            <h2>
               <a href={`${baseUrl}/blog/${blogPath(post)}/`}>{post.data.title}</a>
-              <div class="article-meta">
-                <time datetime={post.data.date.toISOString()}>
-                  {post.data.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
-                </time>
-                {post.data.author && <span class="author">{post.data.author}</span>}
-              </div>
+            </h2>
+            <div class="article-meta">
+              <time datetime={post.data.date.toISOString()}>
+                {post.data.date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </time>
+              {post.data.author && <span class="author">{post.data.author}</span>}
               {post.data.tags && (
                 <div class={blog.tags}>
                   {post.data.tags.map(tag => (
@@ -43,9 +43,12 @@ const years = [...byYear.keys()].sort((a, b) => Number(b) - Number(a))
                   ))}
                 </div>
               )}
-            </article>
-          ))}
-        </section>
+            </div>
+          </header>
+          <div class="post-body">
+            <Fragment set:html={html} />
+          </div>
+        </article>
       ))
     }
   </div>
@@ -57,41 +60,30 @@ const years = [...byYear.keys()].sort((a, b) => Number(b) - Number(a))
     margin: 0 auto;
     padding: clamp(1.25rem, 3vw, 2.5rem);
   }
-  h1 {
-    font-size: 2rem;
-    font-weight: 400;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 1rem;
-  }
-  h2 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin: 2rem 0 0.5rem;
-  }
   article {
-    padding: 0.9rem 0;
-    border-bottom: 1px solid #f0f0f0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--color-border);
   }
-  article a {
-    font-size: 1.05rem;
+  article header {
+    margin-bottom: 1rem;
+  }
+  article h2 {
+    font-size: 1.5rem;
     font-weight: 500;
+    margin: 0 0 0.4rem;
+  }
+  article h2 a {
     color: var(--color-accent);
     text-decoration: none;
   }
-  article a:hover {
+  article h2 a:hover {
     text-decoration: underline;
   }
   .article-meta {
     display: flex;
     gap: 10px;
     align-items: center;
+    flex-wrap: wrap;
   }
   time {
     font-size: 0.875rem;
@@ -99,6 +91,52 @@ const years = [...byYear.keys()].sort((a, b) => Number(b) - Number(a))
   }
   .author {
     font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+  .post-body {
+    line-height: 1.7;
+    overflow-wrap: break-word;
+  }
+  .post-body :global(h2),
+  .post-body :global(h3),
+  .post-body :global(h4) {
+    font-weight: 500;
+    margin: 1.5rem 0 0.5rem;
+  }
+  .post-body :global(h2) {
+    font-size: 1.25rem;
+  }
+  .post-body :global(h3) {
+    font-size: 1.1rem;
+  }
+  .post-body :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 1rem 0;
+    display: block;
+  }
+  .post-body :global(pre) {
+    background: var(--color-surface);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
+  .post-body :global(code) {
+    background: var(--color-surface);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  .post-body :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+  .post-body :global(blockquote) {
+    border-left: 4px solid var(--color-accent);
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
     color: var(--color-text-muted);
   }
 </style>
