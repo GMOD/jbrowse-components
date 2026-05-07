@@ -18,8 +18,8 @@ interface InterbaseInput {
 }
 
 // Merges insertions + softclips + hardclips into a single typed-array set
-// laid out as (insertions, softclips, hardclips). Per-feature buildRegion
-// fns slice their subrange via `subarray` (no copy). Numeric type codes
+// laid out as (insertions, softclips, hardclips). The renderer slices
+// each subrange via `subarray` (no copy). Numeric type codes
 // (1/2/3) match shader expectations and the indicator pass.
 export function buildInterbaseArrays(
   insertions: InsertionData[],
