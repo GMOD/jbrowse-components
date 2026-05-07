@@ -126,28 +126,30 @@ export function performHitTest(
 
   const detailedHitsEnabled = bpPerPx <= SNP_HIT_MAX_BP_PER_PX
 
-  if (detailedHitsEnabled) {
-    const indicatorHit = hitTestIndicator(
-      canvasX,
-      canvasY,
-      resolved,
-      showCoverage,
-      showInterbaseIndicators,
-    )
-    if (indicatorHit && resolved) {
-      return { type: 'indicator', hit: indicatorHit, resolved }
-    }
+  // Indicator and coverage tooltips work at all zoom levels.
+  // hitTestIndicator fires only in the top-5px indicator strip (zoom-safe).
+  // hitTestCoverage handles zoomed-out bins: returns the bin position and
+  // snaps to any significant SNP/insertion within the bin when bpPerPx > 1.
+  const indicatorHit = hitTestIndicator(
+    canvasX,
+    canvasY,
+    resolved,
+    showCoverage,
+    showInterbaseIndicators,
+  )
+  if (indicatorHit && resolved) {
+    return { type: 'indicator', hit: indicatorHit, resolved }
+  }
 
-    const coverageHit = hitTestCoverage(
-      canvasX,
-      canvasY,
-      resolved,
-      showCoverage,
-      coverageHeight,
-    )
-    if (coverageHit && resolved) {
-      return { type: 'coverage', hit: coverageHit, resolved }
-    }
+  const coverageHit = hitTestCoverage(
+    canvasX,
+    canvasY,
+    resolved,
+    showCoverage,
+    coverageHeight,
+  )
+  if (coverageHit && resolved) {
+    return { type: 'coverage', hit: coverageHit, resolved }
   }
 
   const coords = resolved
@@ -201,6 +203,23 @@ export function performHitTest(
           )
         : undefined
       return { type: 'cigar', hit: cigarHit, featureHit, resolved }
+    }
+  } else if (
+    resolved &&
+    coords &&
+    coords.adjustedY >= 0 &&
+    coords.yWithinRow <= featureHeightSetting
+  ) {
+    // When zoomed out, surface features that are still visually significant.
+    // Mirror hitTestCigarItem's adjustedY/yWithinRow guards so inter-row
+    // spacing doesn't produce false hits.
+    const largeInsertionHit = hitTestLargeInsertion(resolved, coords)
+    if (largeInsertionHit) {
+      return { type: 'cigar', hit: largeInsertionHit, resolved }
+    }
+    const gapHit = hitTestGap(resolved, coords)
+    if (gapHit && (gapHit.length ?? 0) >= bpPerPx) {
+      return { type: 'cigar', hit: gapHit, resolved }
     }
   }
 

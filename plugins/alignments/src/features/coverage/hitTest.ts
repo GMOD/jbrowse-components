@@ -6,7 +6,6 @@ import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 // the local coverage depth. Single pass + small Map keyed by uint32 position.
 function findSignificantInBin(
   positions: Uint32Array,
-  count: number,
   coverageDepths: Float32Array,
   coverageStartPos: number,
   binStart: number,
@@ -14,7 +13,7 @@ function findSignificantInBin(
   threshold: number,
 ) {
   const hitsByPos = new Map<number, number>()
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < positions.length; i++) {
     const pos = positions[i]!
     if (pos >= binStart && pos < binEnd) {
       hitsByPos.set(pos, (hitsByPos.get(pos) ?? 0) + 1)
@@ -61,7 +60,6 @@ export function hitTestCoverage(
     const binEnd = binStart + Math.ceil(bpPerPx)
     const snpHit = findSignificantInBin(
       blockData.mismatchPositions,
-      blockData.mismatchPositions.length,
       coverageDepths,
       coverageStartPos,
       binStart,
@@ -73,7 +71,6 @@ export function hitTestCoverage(
     }
     const noncovHit = findSignificantInBin(
       blockData.interbasePositions,
-      blockData.interbasePositions.length,
       coverageDepths,
       coverageStartPos,
       binStart,
