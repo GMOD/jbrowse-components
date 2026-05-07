@@ -145,8 +145,9 @@ You can undo any action via Tools → Undo/Redo, or with the keyboard shortcuts
 On JBrowse Web, the "Share" button in the main menu bar generates a URL you can
 send to other users.
 
-You **cannot** copy the URL in your address bar and send it to other users, you
-**must** use the "Share" button to share your session.
+The browser's address bar URL does not encode the full session state, so copying
+it will not work for sharing — always use the Share button to get a proper
+shareable link.
 
 :::info Note
 

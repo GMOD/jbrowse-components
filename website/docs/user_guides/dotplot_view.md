@@ -23,16 +23,17 @@ segments; translocations and rearrangements appear as off-diagonal blocks.
 
 <Figure caption="Screenshot of the import form for a dotplot or synteny view. You can select two different assemblies and an additional file can be supplied." src="/img/dotplot_add.png" />
 
-<Figure caption="Screenshot of a dotplot visualization of the grape vs the peach genome." src="/img/dotplot.png" />
+<Figure caption="Dotplot of grape (Y-axis) vs peach (X-axis) genomes. Diagonal streaks are syntenic blocks where the two genomes are collinear. Off-diagonal blocks indicate chromosomal rearrangements; reverse-diagonal segments indicate inversions." src="/img/dotplot.png" />
 
-<Figure caption="Screenshot showing the linear synteny view for the grape vs peach genome." src="/img/linear_synteny.png" />
+<Figure caption="Linear synteny view of the grape vs peach genome generated from the same PAF file as the dotplot. Colored ribbons connect collinear blocks between the two assemblies — red ribbons are forward-strand alignments, blue are inverted. The alignment depth and extent of synteny are clearer at this scale than in the dotplot." src="/img/linear_synteny.png" />
 
 ### Opening a synteny view from a dotplot view
 
-You can open a synteny view from a dotplot view by selecting a region on the
-dotplot and clicking "Open linear synteny view", shown below:
+Click and drag to select a region in the dotplot, then choose **Open linear
+synteny view** from the context menu. This zooms into that region in a new
+linear synteny view with both genomes shown as tracks.
 
-<Figure caption="Screenshot showing the 'click and drag' selection over the dotplot view which prompts you to open up a linear synteny view from the selected region." src="/img/synteny_from_dotplot_view.png" />
+<Figure caption="Top: click-and-drag selection (pink highlight) on the grape vs peach dotplot, with the context menu showing 'Zoom in' and 'Open linear synteny view'. Bottom: the resulting linear synteny view for the selected region (Pp02 vs chr15), with red connection lines linking each syntenic alignment block across the two genome panels." src="/img/synteny_from_dotplot_view.png" />
 
 For a step-by-step walkthrough of loading assemblies, generating a PAF with
 minimap2, and using the dotplot and linear synteny views together, see the

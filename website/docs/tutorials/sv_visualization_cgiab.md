@@ -191,9 +191,11 @@ three complementary approaches: the SV inspector for whole-genome triage, the
 linear genome view for read-level detail at small-to-medium SVs, and the
 dotplot/synteny views for chromosome-scale rearrangements in the assembly.
 
+A [live demo](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json) with all tracks pre-loaded is available to follow along without a local instance.
+
 ### Walkthrough: a chr3–chr13 translocation
 
-Open `http://yourhost.com/jbrowse2/` in a web browser. From the start screen,
+Open `http://yourhost.com/jbrowse2/` or the [live demo](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json) in a web browser. From the start screen,
 launch the SV inspector.
 
 <Figure caption="The start screen with the SV inspector launcher." src="/img/sv_cgiab/translocation_sv_inspector_start.png" />
@@ -222,14 +224,14 @@ the circular overview), see the
 For small to medium SVs, the linear genome view is usually all you need. Use the
 **search** (magnifying glass) button in the SV inspector to find a specific call
 — for example, `SV_85`, a heterozygous deletion that affects two exons of the
-CUZD1 gene.
+CUZD1 gene ([live demo at CUZD1](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"GRCh38_GIABv3","loc":"chr5:97050000-97400000","tracks":["GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf","HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3"]}]})).
 
 <Figure caption="The SV inspector after searching for SV_85 — clicking the row opens a new linear genome view." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
 Opening the gene annotations and the tumor PacBio HiFi reads, switching the
 reads to **compact** mode, and applying **Sort by → Base pair** with the
 deletion centered shows the deletion (View menu → **Show center line** is
-helpful for placing the center line on the breakpoint).
+helpful for aligning the breakpoint precisely under the center of the view).
 
 <Figure caption="After opening the gene annotations and tumor PacBio HiFi reads, displaying reads in compact mode, and sorting by base pair with the deletion in the center. The deletion removes two CUZD1 exons and is heterozygous." src="/img/sv_cgiab/deletion_linear_view.png" />
 
@@ -241,7 +243,7 @@ For background on SV signals in the alignments track, see the
 Loading raw reads across very large regions is impractical, but whole-genome
 coverage stored as a bigWig is fast at any zoom level. From the linear genome
 view start screen, click **Show all regions in assembly** to open every
-chromosome at once.
+chromosome at once ([live demo on chr5 with normal coverage and CNV calls](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"GRCh38_GIABv3","loc":"chr5:1-180915260","tracks":["HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all","GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls"]}]})).
 
 <Figure caption="The linear genome view start screen with the 'Show all regions' button." src="/img/sv_cgiab/cnv_show_all_regions.png" />
 
@@ -269,8 +271,9 @@ more on tumor vs normal coverage comparison.
 
 Showing the tumor assembly side-by-side with the reference often makes complex
 SVs much easier to read than the alignment track alone. Open a dotplot view from
-the start screen, set the de novo assembly as one axis and GRCh38 as the other,
-and pick the matching synteny track.
+the start screen ([live demo: HG008T hap1 vs GRCh38](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"HG008T.hap1"%7D,%7B"assembly":"GRCh38_GIABv3"%7D%5D,"tracks":%5B"HG008T.hap1"%5D%7D%5D%7D)),
+set the de novo assembly as one axis and GRCh38 as the other, and pick the
+matching synteny track.
 
 <Figure caption="The dotplot import form, with the HG008-T hap1 assembly on one axis and GRCh38 on the other." src="/img/sv_cgiab/dotplot_import_form.png" />
 

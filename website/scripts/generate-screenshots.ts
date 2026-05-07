@@ -24,7 +24,7 @@ const DEFAULT_PORT = 3334
 const repoRoot = path.resolve(__dirname, '..', '..')
 const buildPath = path.resolve(repoRoot, 'products', 'jbrowse-web', 'build')
 const testDataRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
-const outDir = path.resolve(__dirname, '..', 'docs', 'img')
+const outDir = path.resolve(__dirname, '..', 'static', 'img')
 const VOLVOX_CONFIG = 'test_data/volvox/config.json'
 const DEFAULT_SETTLE_MS = 2500
 
@@ -34,9 +34,14 @@ function startServer(port: number): Promise<http.Server> {
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
       const url = req.url ?? '/'
-      const publicPath = url.startsWith('/test_data/')
-        ? testDataRoot
-        : buildPath
+      let publicPath: string
+      if (url.startsWith('/test_data/')) {
+        publicPath = testDataRoot
+      } else if (url.startsWith('/extra_test_data/')) {
+        publicPath = repoRoot
+      } else {
+        publicPath = buildPath
+      }
       return handler(req, res, {
         public: publicPath,
         headers: [
@@ -84,11 +89,39 @@ async function setLocation(page: Page, loc: string) {
   await delay(300)
 }
 
+async function scrollTrackListUntilVisible(page: Page, trackId: string) {
+  const selector = `[data-testid="htsTrackLabel-Tracks,${trackId}"]`
+  // The track list is virtualized, so scroll its container until the item renders
+  for (let step = 0; step < 30; step++) {
+    const found = await page.$(selector)
+    if (found) {
+      return found
+    }
+    await page.evaluate((s: number) => {
+      // Find the scrollable track list container (overflowY:auto with scrollable content)
+      const containers = Array.from(document.querySelectorAll<HTMLElement>('*'))
+      const scrollable = containers.find(
+        el =>
+          window.getComputedStyle(el).overflowY === 'auto' &&
+          el.scrollHeight > el.clientHeight + 10,
+      )
+      if (scrollable) {
+        scrollable.scrollTop = s * 150
+      }
+    }, step)
+    await delay(100)
+  }
+  return null
+}
+
 async function openTrack(page: Page, trackId: string) {
-  const label = await page.waitForSelector(
-    `[data-testid="htsTrackLabel-Tracks,${trackId}"]`,
-    { visible: true, timeout: 15000 },
-  )
+  const selector = `[data-testid="htsTrackLabel-Tracks,${trackId}"]`
+  // First check if it's already in the DOM
+  const quick = await page.$(selector)
+  if (!quick) {
+    await scrollTrackListUntilVisible(page, trackId)
+  }
+  const label = await page.waitForSelector(selector, { timeout: 5000 })
   await label?.click()
 }
 
@@ -128,13 +161,22 @@ async function captureUrl(
   spec: ScreenshotSpec & { mode: 'url' },
   port: number,
 ) {
-  await page.goto(`http://localhost:${port}/${spec.url}`, {
-    waitUntil: 'networkidle0',
+  const fullUrl = spec.url.startsWith('http')
+    ? spec.url
+    : `http://localhost:${port}/${spec.url}`
+  await page.goto(fullUrl, {
+    waitUntil: spec.url.startsWith('http') ? 'domcontentloaded' : 'networkidle0',
     timeout: 60000,
   })
 
   if (spec.readyText) {
     await page.waitForSelector(`::-p-text(${spec.readyText})`, {
+      visible: true,
+      timeout: 30000,
+    })
+  }
+  if (spec.readySelector) {
+    await page.waitForSelector(spec.readySelector, {
       visible: true,
       timeout: 30000,
     })
@@ -165,7 +207,6 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
             y: spec.crop.y,
             width: spec.crop.width,
             height: spec.crop.height,
-            scale: 1,
           },
         }
       : {}
@@ -194,10 +235,14 @@ async function main() {
     `Generating ${filteredSpecs.length} screenshot(s)${filter ? ` (filter: ${filter})` : ''}`,
   )
 
+  const needsLocalServer = filteredSpecs.some(
+    s => s.mode !== 'url' || !s.url.startsWith('http'),
+  )
+
   let server: http.Server | undefined
   const port = externalPort ?? DEFAULT_PORT
 
-  if (!externalPort) {
+  if (needsLocalServer && !externalPort) {
     if (!fs.existsSync(buildPath)) {
       console.error(
         `Build not found at ${buildPath}. Run "pnpm build" in products/jbrowse-web first, or pass --port=N to use an existing server.`,
@@ -206,7 +251,7 @@ async function main() {
     }
     server = await startServer(port)
     console.log(`Server on port ${port}`)
-  } else {
+  } else if (externalPort) {
     console.log(`Using server on port ${port}`)
   }
 
@@ -225,8 +270,7 @@ async function main() {
       '--disable-setuid-sandbox',
       '--disable-web-security',
     ],
-    // deviceScaleFactor: 1 for now — service worker caching can interfere with 2x
-    defaultViewport: { width: 1280, height: 800, deviceScaleFactor: 1 },
+    defaultViewport: { width: 1280, height: 800, deviceScaleFactor: 2 },
   }
 
   let passed = 0
@@ -241,7 +285,7 @@ async function main() {
         const page = await browser.newPage()
         page.on('console', msg => {
           if (msg.type() === 'error' && !msg.text().includes('favicon')) {
-            console.error(`    browser: ${msg.text().substring(0, 120)}`)
+            console.error(`    browser: ${msg.text().substring(0, 200)}`)
           }
         })
         await captureSpec(page, spec, port)

@@ -19,7 +19,7 @@ all the calls that were made in a multi-sample VCF. Some VCF files, like the
 1000 genomes VCF, can contain thousands of samples in a single file. This table
 can display the details.
 
-<Figure caption="Screenshot showing the variant feature sidebar with a filtered by genotype (with alternative allele '1'). Users can also filter by sample name or other attributes." src="/img/variant_panel.png" />
+<Figure caption="Feature details panel for an SNV (C→T). The SAMPLES section lists every sample with its genotype (GT) and other per-sample fields. The 'Filter sample (regex)' field at the top of the SAMPLES section accepts a regex; typing '1' keeps only samples with the alt allele (1|0 or 0|1), hiding the many homozygous-reference rows." src="/img/variant_panel.png" />
 
 [Live demo — example showing a deletion in a trio](https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-tzYolAQWOK&password=HGZA4)
 

@@ -14,14 +14,14 @@ the ability to show the data from multiple samples using a custom Variant track
 There are two different display types:
 
 1. "Multi-sample variant display (matrix)"
-2. "Multi-sample variant display (normal)"
+2. "Multi-sample variant display (regular)"
 
-## Normal mode - optimized for showing all types of variants, including structural variants
+## Regular mode - optimized for showing all types of variants, including structural variants
 
-In the normal mode, each variant is drawn at its proper genomic location, and
+In the regular mode, each variant is drawn at its proper genomic location, and
 produces multiple rows for each sample.
 
-Notably, the normal mode is actually capable of showing structural variants, and
+Notably, the regular mode is actually capable of showing structural variants, and
 if there are overlaps, it will draw each one over the other. There is a slight
 transparency, so you can distinguish small overlaps. If there are cases where
 there are too many overlaps, you can add filters to try to hide larger variants,
@@ -45,3 +45,8 @@ and each one would be very thin e.g. 1px in the "Multi-sample variant display
 
 However, with the matrix mode, each variant would occupy e.g.
 your_screen_width/100 which for a 2000px wide screen is a nice 20px
+
+For an end-to-end example using the matrix display with a phased SNP trio, see
+[Analyzing a phased trio](/docs/tutorials/analyze_trio). For structural variant
+analysis using the regular display across a large cohort, see
+[Multi-sample SV visualization with 1000 Genomes](/docs/tutorials/sv_multisamples).

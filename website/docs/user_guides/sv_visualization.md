@@ -21,7 +21,10 @@ alignments features.
 For an end-to-end walkthrough that loads a real cancer dataset (HG008 tumor and
 normal PacBio HiFi reads plus the C-GIAB benchmark SV/CNV call sets) and
 exercises each of the views described below, see
-[Cancer Genome in a Bottle (SVs)](/docs/tutorials/sv_visualization_cgiab).
+[Cancer Genome in a Bottle (SVs)](/docs/tutorials/sv_visualization_cgiab). For
+population-scale SV analysis including multi-sample genotypes, trio inheritance,
+and a large chromosomal inversion, see
+[Multi-sample SV visualization with 1000 Genomes](/docs/tutorials/sv_multisamples).
 
 ## SV signals in the alignments track
 

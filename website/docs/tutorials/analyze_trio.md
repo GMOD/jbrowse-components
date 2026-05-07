@@ -143,6 +143,13 @@ and DAD A2 alleles come from the crossing over of his two copies of his
 chromosomes that he got from his parents, which then recombine into a single
 chromosome in his child
 
+## See also
+
+For structural variant analysis with the 1000 Genomes dataset — multi-sample
+genotypes, trio inheritance of SVs, and a large chromosomal inversion — see the
+[Multi-sample SV visualization with 1000 Genomes](/docs/tutorials/sv_multisamples)
+tutorial.
+
 ## Live demo
 
 [Open this session](https://jbrowse.org/code/jb2/main/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-4gbEzsiqFe&password=Q2O2L)
