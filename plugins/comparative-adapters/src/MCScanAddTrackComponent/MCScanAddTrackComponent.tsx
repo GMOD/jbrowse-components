@@ -18,7 +18,7 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
   useEffect(() => {
     model.setMixinData({
       adapter: {
-        assemblyNamees: [r0, r1],
+        assemblyNames: [r0, r1],
         bed1Location,
         bed2Location,
       },

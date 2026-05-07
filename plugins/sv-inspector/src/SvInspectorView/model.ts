@@ -12,7 +12,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 import type { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
 
-interface SvInspectorViewInit {
+export interface SvInspectorViewInit {
   assembly: string
   uri: string
   fileType?: string

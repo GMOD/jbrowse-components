@@ -26,7 +26,7 @@ function isRelativeUrl(url = '') {
   }
 }
 
-interface IndexingAttr {
+export interface IndexingAttr {
   attributes: string[]
   exclude: string[]
 }
