@@ -327,4 +327,24 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
 
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
+
+  // Guard against the foot-gun in feedback_rpcprops_no_fetch_results: if any
+  // rpcProps field is derived from rpcDataMap (or any other fetch result),
+  // populating it during fetch will change rpcProps, which SettingsInvalidate
+  // watches → clearAllRpcData → infinite loop. A direct shape comparison
+  // before/after fetch catches that the moment a new field is added wrong.
+  it('rpcProps shape is unchanged after a fetch populates rpcDataMap', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
+    const { display } = createDisplay()
+
+    const before = JSON.stringify(display.rpcProps)
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    expect(JSON.stringify(display.rpcProps)).toBe(before)
+  })
 })
