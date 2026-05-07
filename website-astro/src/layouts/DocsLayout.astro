@@ -80,7 +80,7 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     padding: var(--sidebar-link-padding);
     color: var(--color-sidebar-text);
     text-decoration: none;
-    font-size: 1rem;
+    font-size: 0.9rem;
     border-radius: 3px;
     transition: background 0.15s;
   }
@@ -99,8 +99,8 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   .docs-sidebar :global(details > summary) {
     cursor: pointer;
     padding: var(--sidebar-link-padding);
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: 0.9rem;
+    font-weight: 600;
     color: var(--color-sidebar-text);
     list-style: none;
     user-select: none;
@@ -143,10 +143,12 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   }
 
   .docs-content h1 {
-    font-size: 3rem;
+    font-size: 2.25rem;
     font-weight: 700;
     margin-top: 0;
     margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
     color: var(--color-text);
   }
 
