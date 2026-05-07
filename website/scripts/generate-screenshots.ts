@@ -56,7 +56,10 @@ function proxyToPort(
 
 function startServer(port: number, proxyPort?: number): Promise<http.Server> {
   const corsHeaders = [
-    { source: '**/*', headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }] },
+    {
+      source: '**/*',
+      headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }],
+    },
   ]
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
@@ -182,10 +185,7 @@ async function debugDump(page: Page, name: string) {
   console.error(
     `    debug text: ${(bodyText ?? '').replace(/\s+/g, ' ').trim()}`,
   )
-  const debugPath = path.join(
-    outDir,
-    `debug_${name.replace(/\//g, '_')}.png`,
-  )
+  const debugPath = path.join(outDir, `debug_${name.replace(/\//g, '_')}.png`)
   await page
     .screenshot()
     .then(png => fs.writeFileSync(debugPath, png))
@@ -203,7 +203,8 @@ async function captureUrl(
     : `http://localhost:${port}/${spec.url}`
   await page.goto(fullUrl, {
     waitUntil:
-      spec.waitUntil ?? (spec.url.startsWith('http') ? 'domcontentloaded' : 'networkidle0'),
+      spec.waitUntil ??
+      (spec.url.startsWith('http') ? 'domcontentloaded' : 'networkidle0'),
     timeout: 60000,
   })
 
@@ -336,7 +337,10 @@ async function main() {
         const page = await browser.newPage()
         page.on('console', msg => {
           const t = msg.type()
-          if ((t === 'error' || t === 'warning') && !msg.text().includes('favicon')) {
+          if (
+            (t === 'error' || t === 'warning') &&
+            !msg.text().includes('favicon')
+          ) {
             console.error(`    browser[${t}]: ${msg.text().substring(0, 200)}`)
           }
         })

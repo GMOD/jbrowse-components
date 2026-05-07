@@ -1,7 +1,9 @@
 ---
 id: sv_multisamples
 title: Multi-sample SV visualization with 1000 Genomes
-description: Inspect population-level SVs, explore a family trio, and characterize a large chromosomal inversion
+description:
+  Inspect population-level SVs, explore a family trio, and characterize a large
+  chromosomal inversion
 guide_category: Tutorials
 ---
 
@@ -24,9 +26,9 @@ visualization — see the companion
 The [1000 Genomes Project](https://www.internationalgenome.org/) sequenced
 genomes from 2,504 individuals across 26 populations. The 2022 high-coverage
 re-analysis produced a comprehensive SV callset
-([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004))
-that includes deletions, insertions, inversions, and translocations with
-per-sample genotypes across all 2,504 individuals.
+([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004)) that
+includes deletions, insertions, inversions, and translocations with per-sample
+genotypes across all 2,504 individuals.
 
 For this tutorial we use a pre-configured JBrowse instance that already has the
 SV callset and trio BAM tracks loaded. No data download is required.
@@ -75,8 +77,8 @@ To see the genotype pattern across many SVs at once, switch display modes:
 
 This draws one row per sample in the track so you can scan across many variants
 simultaneously and spot which calls are private to a single sample, shared
-within a family, or present at high allele frequency across the cohort.
-See [Multi-sample variant displays](/docs/user_guides/multivariant_track) for
+within a family, or present at high allele frequency across the cohort. See
+[Multi-sample variant displays](/docs/user_guides/multivariant_track) for
 details on the display modes.
 
 ## Inspecting a trio
@@ -92,12 +94,12 @@ and the corresponding read tracks:
 
 <Figure caption="Multi-sample SV view with trio BAM tracks loaded. The top track shows the 1KGP SV callset; the three alignment tracks below are the mother, child, and father. The feature details panel on the right shows the BREAKENDS section (with a link to open the breakpoint split view) and the SAMPLES table listing each sample's GT, depth, and other per-sample fields." src="/img/multi-sv-trio.png" />
 
-| Genotype pattern | Interpretation |
-|---|---|
-| Child 0/1, both parents 0/0 | Candidate de novo SV |
-| Child 0/1, one parent 0/1 | Inherited from that parent |
+| Genotype pattern            | Interpretation                               |
+| --------------------------- | -------------------------------------------- |
+| Child 0/1, both parents 0/0 | Candidate de novo SV                         |
+| Child 0/1, one parent 0/1   | Inherited from that parent                   |
 | Child 1/1, both parents 0/1 | Homozygous — inherited copy from each parent |
-| Child 0/0 | Not present in this individual |
+| Child 0/0                   | Not present in this individual               |
 
 The trio alignment tracks let you verify read-level support for each genotype.
 Look for coverage changes, soft-clipped reads, or orientation anomalies in each
@@ -134,6 +136,7 @@ chr19:41,902,000) and enable pair orientation coloring on a BAM track:
 **Track menu → Pileup settings → Color by... → Pair orientation**
 
 At the breakpoint you will see:
+
 - **Teal (LL)** pairs — both mates mapping to the forward strand — and **dark
   blue (RR)** pairs — both mates mapping to the reverse strand — clustering at
   the junction. These are the hallmark orientation signal of an inversion: reads
@@ -146,7 +149,8 @@ Switch to the Read arc display (**Track menu → Display types → Read arc
 display**) to see the long-range connections spanning the inversion. Arcs with
 LL/RR coloring that span the inverted interval confirm the rearrangement.
 
-See the [SV visualization guide — Inversion section](/docs/user_guides/sv_visualization#inversion)
+See the
+[SV visualization guide — Inversion section](/docs/user_guides/sv_visualization#inversion)
 for diagrams of these orientation patterns.
 
 ### Breakpoint split view
@@ -154,28 +158,33 @@ for diagrams of these orientation patterns.
 Click the inversion bar in the variant track to open feature details. In the
 **BREAKENDS** section, click the split view link. This opens both inversion
 breakpoints side-by-side in synchronized panels, with splines connecting
-supporting reads across both panels and the variant call drawn as a colored
-line with directional feet.
+supporting reads across both panels and the variant call drawn as a colored line
+with directional feet.
 
 For more on navigating the breakpoint split view, see
 [Breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view).
 
 ## Summary
 
-| Step | Tool | What to look for |
-|---|---|---|
-| Population triage | SV inspector table + circular view | SV type counts; inter-chr translocations as chords |
-| Per-sample genotypes | Feature details → SAMPLES | GT 0/0 / 0/1 / 1/1 across all 2,504 samples |
-| Genotype patterns | Multi-sample display (regular) | High-frequency vs private calls; row pattern per sample |
-| Trio inheritance | Trio BAM tracks + SAMPLES table | De novo vs inherited; which parent contributed the alt |
-| Inversion genotyping | Cluster by genotype | Alt-genotype samples grouped into distinct rows |
+| Step                    | Tool                                        | What to look for                                             |
+| ----------------------- | ------------------------------------------- | ------------------------------------------------------------ |
+| Population triage       | SV inspector table + circular view          | SV type counts; inter-chr translocations as chords           |
+| Per-sample genotypes    | Feature details → SAMPLES                   | GT 0/0 / 0/1 / 1/1 across all 2,504 samples                  |
+| Genotype patterns       | Multi-sample display (regular)              | High-frequency vs private calls; row pattern per sample      |
+| Trio inheritance        | Trio BAM tracks + SAMPLES table             | De novo vs inherited; which parent contributed the alt       |
+| Inversion genotyping    | Cluster by genotype                         | Alt-genotype samples grouped into distinct rows              |
 | Inversion read evidence | Pair orientation coloring; Read arc display | LL/RR pairs at breakpoints; long arcs spanning the inversion |
-| Breakpoint detail | Breakpoint split view | Splines + variant call across both junctions |
+| Breakpoint detail       | Breakpoint split view                       | Splines + variant call across both junctions                 |
 
 ## See also
 
-- [SV visualization guide](/docs/user_guides/sv_visualization) — reference for all SV display types and SV-type read signatures
-- [SV inspector guide](/docs/user_guides/sv_inspector_view) — loading data into the SV inspector
-- [Multi-sample variant displays](/docs/user_guides/multivariant_track) — regular and matrix display mode details
-- [Analyzing a phased trio](/docs/tutorials/analyze_trio) — SNP-level trio phasing and IBD block analysis
-- [Cancer Genome in a Bottle (SVs)](/docs/tutorials/sv_visualization_cgiab) — end-to-end SV workflow with a cancer dataset
+- [SV visualization guide](/docs/user_guides/sv_visualization) — reference for
+  all SV display types and SV-type read signatures
+- [SV inspector guide](/docs/user_guides/sv_inspector_view) — loading data into
+  the SV inspector
+- [Multi-sample variant displays](/docs/user_guides/multivariant_track) —
+  regular and matrix display mode details
+- [Analyzing a phased trio](/docs/tutorials/analyze_trio) — SNP-level trio
+  phasing and IBD block analysis
+- [Cancer Genome in a Bottle (SVs)](/docs/tutorials/sv_visualization_cgiab) —
+  end-to-end SV workflow with a cancer dataset

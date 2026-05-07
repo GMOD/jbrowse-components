@@ -54,8 +54,8 @@ The file is sorted, bgzipped, and indexed with:
 tabix -s1 -b3 -e4 -0
 ```
 
-Column 1 is the sequence name (with `t`/`q` prefix), columns 3–4 are the
-0-based start and end coordinates.
+Column 1 is the sequence name (with `t`/`q` prefix), columns 3–4 are the 0-based
+start and end coordinates.
 
 ## Creating PIF files
 
@@ -82,8 +82,8 @@ jbrowse add-assembly query.fa --out $OUT --load copy
 jbrowse add-track alignment.pif.gz -a query,reference --out $OUT --load copy
 ```
 
-`jbrowse add-track` detects the `.pif.gz` extension and automatically
-configures the `PairwiseIndexedPAFAdapter`.
+`jbrowse add-track` detects the `.pif.gz` extension and automatically configures
+the `PairwiseIndexedPAFAdapter`.
 
 ## JBrowse configuration
 
@@ -109,13 +109,13 @@ Use `"indexType": "CSI"` if you created the index with `--csi`.
 
 ## Comparison with PAFAdapter
 
-| | PAFAdapter | PairwiseIndexedPAFAdapter |
-|---|---|---|
-| Input file | `.paf` (plain text) | `.pif.gz` (bgzipped) |
-| Index required | No | Yes (`.tbi` or `.csi`) |
-| Data loading | Entire file on open | Only visible region |
-| Large genomes | Slow / memory-heavy | Efficient |
-| Bidirectional query | No | Yes |
+|                     | PAFAdapter          | PairwiseIndexedPAFAdapter |
+| ------------------- | ------------------- | ------------------------- |
+| Input file          | `.paf` (plain text) | `.pif.gz` (bgzipped)      |
+| Index required      | No                  | Yes (`.tbi` or `.csi`)    |
+| Data loading        | Entire file on open | Only visible region       |
+| Large genomes       | Slow / memory-heavy | Efficient                 |
+| Bidirectional query | No                  | Yes                       |
 
 PAFAdapter is simpler to set up and fine for small alignments. For large
 whole-genome comparisons PIF is strongly preferred.

@@ -104,7 +104,8 @@ reads carry an XS tag, arcs reflect the strand of the alignment.
 
 :::info Note
 
-Disable via the track menu (vertical "..." next to track label) → SNPCoverage settings → uncheck "Draw arcs".
+Disable via the track menu (vertical "..." next to track label) → SNPCoverage
+settings → uncheck "Draw arcs".
 
 :::
 
@@ -123,7 +124,8 @@ prominent in long-read data, which can span larger insertions.
 
 :::info Note
 
-Disable via the track menu (vertical "..." next to track label) → SNPCoverage settings → uncheck "Draw insertion/clipping indicators" and "Draw
+Disable via the track menu (vertical "..." next to track label) → SNPCoverage
+settings → uncheck "Draw insertion/clipping indicators" and "Draw
 insertion/clipping counts".
 
 :::

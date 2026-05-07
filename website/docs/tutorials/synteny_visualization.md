@@ -21,7 +21,8 @@ This tutorial assumes you already have a JBrowse 2 instance running (see the
 - A whole-genome alignment (PAF, MUMmer `.delta`, or UCSC `.chain`)
 - The [jbrowse CLI](/docs/cli) to add the alignment to your config
 
-To generate a PAF alignment, install [minimap2](https://github.com/lh3/minimap2):
+To generate a PAF alignment, install
+[minimap2](https://github.com/lh3/minimap2):
 
 ```bash
 minimap2 -x asm5 reference.fa query.fa > alignment.paf
@@ -31,9 +32,8 @@ The `-x asm5` preset is for whole-genome assembly comparison. You can also use
 [MUMmer](http://mummer.sourceforge.net/) and convert the `.delta` output to PAF
 with `delta2paf` from
 [paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js), or
-convert UCSC chain files with `chain2paf` from the same toolkit. For small
-files you can load `.delta` or `.chain` directly into JBrowse without
-converting.
+convert UCSC chain files with `chain2paf` from the same toolkit. For small files
+you can load `.delta` or `.chain` directly into JBrowse without converting.
 
 ## Loading assemblies and alignments
 
@@ -79,8 +79,8 @@ From the main JBrowse start screen, click **Dotplot**, select two assemblies
 
 ### Launching a linear synteny view from the dotplot
 
-To inspect a region, click and drag over it in the dotplot, then click
-**Launch synteny view**.
+To inspect a region, click and drag over it in the dotplot, then click **Launch
+synteny view**.
 
 <Figure caption="Selecting a region in the dotplot (left) by clicking and dragging, then launching a synteny view (right) shows the base-level alignment of the selected region." src="/img/sv_synteny/k3.png" />
 

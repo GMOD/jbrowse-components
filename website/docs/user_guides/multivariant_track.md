@@ -21,12 +21,12 @@ There are two different display types:
 In the regular mode, each variant is drawn at its proper genomic location, and
 produces multiple rows for each sample.
 
-Notably, the regular mode is actually capable of showing structural variants, and
-if there are overlaps, it will draw each one over the other. There is a slight
-transparency, so you can distinguish small overlaps. If there are cases where
-there are too many overlaps, you can add filters to try to hide larger variants,
-or filter specific variants by name, using jexl via the "Edit filters" track
-menu item
+Notably, the regular mode is actually capable of showing structural variants,
+and if there are overlaps, it will draw each one over the other. There is a
+slight transparency, so you can distinguish small overlaps. If there are cases
+where there are too many overlaps, you can add filters to try to hide larger
+variants, or filter specific variants by name, using jexl via the "Edit filters"
+track menu item
 
 ## Matrix mode - optimized for showing patterns of diversity, focused on small variants and SNPs
 
