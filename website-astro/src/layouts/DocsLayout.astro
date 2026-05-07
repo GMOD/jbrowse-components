@@ -40,7 +40,7 @@ const sidebar = buildSidebar(allDocs, baseUrl)
 <script>
   const sidebar = document.querySelector('.docs-sidebar')
   const active = sidebar?.querySelector('a[aria-current="page"]')
-  if (active) {
+  if (active && sidebar) {
     let el: HTMLElement | null = active.parentElement
     while (el && el !== sidebar) {
       if (el.tagName === 'DETAILS') {
@@ -48,8 +48,9 @@ const sidebar = buildSidebar(allDocs, baseUrl)
       }
       el = el.parentElement
     }
+    const offset = (active as HTMLElement).getBoundingClientRect().top - sidebar.getBoundingClientRect().top
+    sidebar.scrollTop += offset - sidebar.clientHeight / 2
   }
-  sidebar?.querySelector('a[aria-current="page"]')?.scrollIntoView({ block: 'nearest' })
 
   document.getElementById('sidebar-toggle')?.addEventListener('click', function () {
     const expanded = this.getAttribute('aria-expanded') === 'true'
@@ -197,8 +198,8 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   }
 
   .docs-content :global(pre) {
-    background: #1e1e2e;
-    color: #cdd6f4;
+    background: var(--color-code-bg);
+    color: var(--color-code-text);
     padding: 1rem 1.25rem;
     border-radius: 6px;
     overflow-x: auto;
@@ -207,11 +208,11 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     margin: 1rem 0;
   }
   .docs-content :global(code:not(pre code)) {
-    background: #f0f0f0;
+    background: var(--color-inline-code-bg);
     padding: 0.15em 0.4em;
     border-radius: 3px;
     font-size: 0.875em;
-    color: #c7254e;
+    color: var(--color-inline-code-text);
   }
   .docs-content :global(img) {
     max-width: 100%;
@@ -255,7 +256,7 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     border-left: 4px solid var(--color-accent);
     margin: 1.5rem 0;
     padding: 0.5rem 1.25rem;
-    background: #f0faf8;
+    background: var(--color-blockquote-bg);
     color: var(--color-text);
     border-radius: 0 4px 4px 0;
   }
@@ -264,6 +265,7 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     text-decoration: none;
   }
   .docs-content :global(a:hover) {
+    color: var(--color-accent-dark);
     text-decoration: underline;
   }
   .docs-content :global(ul),
