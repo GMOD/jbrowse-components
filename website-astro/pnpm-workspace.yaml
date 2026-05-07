@@ -1,4 +1,0 @@
-packages: []
-allowBuilds:
-  sharp: true
-  esbuild: true

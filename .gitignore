@@ -24,5 +24,5 @@ lerna-debug.log
 test_data/soa4
 *.tgz
 debug-storybook.log
-website-astro/.astro/
+website/.astro/
 
