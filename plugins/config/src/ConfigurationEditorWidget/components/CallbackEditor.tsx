@@ -78,7 +78,7 @@ const CallbackEditor = observer(function CallbackEditor({
         <TextField
           multiline
           className={classes.callbackEditor}
-          value={code.startsWith('jexl:') ? code.slice('jexl:'.length) : code}
+          value={code}
           onChange={event => {
             const value = event.target.value
             setCode(value)
