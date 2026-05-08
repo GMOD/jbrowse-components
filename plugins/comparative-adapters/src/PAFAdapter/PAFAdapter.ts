@@ -4,6 +4,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { flipCigar, parsePAFLine, swapIndelCigar } from '../util.ts'
 import { getWeightedMeans } from './util.ts'

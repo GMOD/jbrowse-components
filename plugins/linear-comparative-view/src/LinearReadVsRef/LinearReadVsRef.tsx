@@ -25,6 +25,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+
 import type { Feature } from '@jbrowse/core/util'
 
 interface ReducedFeature {

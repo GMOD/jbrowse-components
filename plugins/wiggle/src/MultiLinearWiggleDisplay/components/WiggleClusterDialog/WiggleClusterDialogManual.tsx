@@ -43,8 +43,7 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
   const [samplesPerPixel, setSamplesPerPixel] = useState('1')
 
   const view = getContainingView(model) as LinearGenomeViewModel
-  const shouldFetch =
-    view.initialized && !!model.sourcesWithoutLayout?.length
+  const shouldFetch = view.initialized && !!model.sourcesWithoutLayout?.length
   const {
     data: ret,
     error,
@@ -62,7 +61,7 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
         sessionId,
         adapterConfig,
         bpPerPx: bpPerPx / +samplesPerPixel,
-      }) as Promise<Record<string, number[]>>
+      })
     },
   )
 

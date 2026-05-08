@@ -403,7 +403,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             mateRefName: r.tname,
             mateStart: r.tstart,
             mateEnd: r.tend,
-            syriType: extra.sy !== undefined ? (extra.sy as SyriType) : undefined,
+            syriType:
+              extra.sy !== undefined ? (extra.sy as SyriType) : undefined,
             identity: (+extra.numMatches! || 0) / (+extra.blockLen! || 1),
             featureId: `${fileOffset}`,
             segmentId: (extra.sg as string) || undefined,

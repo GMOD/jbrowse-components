@@ -15,8 +15,8 @@ import type { DotplotGetFeaturesAndPositionsArgs } from './DotplotGetFeaturesAnd
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
-import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
 const RPC_DEBOUNCE_MS = 1000
 
@@ -97,6 +97,14 @@ export function doAfterAttach(
           return
         }
         const { drawCigar, hview, vview } = view
+        console.log(
+          '[dotplot geometry] rpcData feature count:',
+          rpcData.p11Hi.length,
+          'hview.bpPerPx:',
+          hview.bpPerPx,
+          'vview.bpPerPx:',
+          vview.bpPerPx,
+        )
         const segments = buildLineSegments(
           rpcData,
           createDotplotColorFunction(colorBy, alpha, rpcData),
@@ -105,6 +113,7 @@ export function doAfterAttach(
           hview.bpPerPx,
           vview.bpPerPx,
         )
+        console.log('[dotplot geometry] segments.count:', segments.count)
         self.setGeometry({
           x1Hi: segments.x1Hi,
           x1Lo: segments.x1Lo,

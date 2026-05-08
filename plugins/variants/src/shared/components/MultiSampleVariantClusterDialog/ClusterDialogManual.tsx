@@ -64,18 +64,14 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
         adapterConfig,
       } = model
       const sessionId = getRpcSessionId(model)
-      return rpcManager.call(
+      return rpcManager.call(sessionId, 'MultiSampleVariantGetGenotypeMatrix', {
+        regions: view.dynamicBlocks.contentBlocks,
+        sources: sourcesWithoutLayout ?? [],
+        minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
+        lengthCutoffFilter,
         sessionId,
-        'MultiSampleVariantGetGenotypeMatrix',
-        {
-          regions: view.dynamicBlocks.contentBlocks,
-          sources: sourcesWithoutLayout ?? [],
-          minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
-          lengthCutoffFilter,
-          sessionId,
-          adapterConfig,
-        },
-      ) as Promise<Record<string, any>>
+        adapterConfig,
+      }) as Promise<Record<string, any>>
     },
   )
 

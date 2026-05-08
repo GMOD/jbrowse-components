@@ -518,6 +518,13 @@ test('quality scores are passed through to mismatch entries', () => {
   const cigarMismatches = cigarToMismatches2(ops, seq, undefined, qual)
   const result = mdToMismatches2('5A4', ops, cigarMismatches, seq, qual)
   expect(result).toEqual([
-    { start: 5, type: 'mismatch', base: 'T', altbase: 'A', length: 1, qual: 25 },
+    {
+      start: 5,
+      type: 'mismatch',
+      base: 'T',
+      altbase: 'A',
+      length: 1,
+      qual: 25,
+    },
   ])
 })

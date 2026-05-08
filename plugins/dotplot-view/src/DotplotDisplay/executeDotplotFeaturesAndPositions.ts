@@ -1,20 +1,17 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rpcResult } from '@jbrowse/core/util/librpc'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
-import {
-  buildBpRegionIndex,
-  bpToCumBpAndPad,
-} from '@jbrowse/synteny-core'
 
 import { splitHiLo } from './hiLoUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
 export interface DotplotFeaturesAndPositionsResult {
   p11Hi: Float32Array
@@ -173,9 +170,7 @@ export async function executeDotplotFeaturesAndPositions({
     mappingQualsArray[validCount] =
       (f.get('mappingQual') as number | undefined) ?? -1
     refNames.push(rawRefName)
-    parsedCigars.push(
-      parseCigar2((f.get('CIGAR') as string | undefined) ?? ''),
-    )
+    parsedCigars.push(parseCigar2((f.get('CIGAR') as string | undefined) ?? ''))
     validCount++
   }
 

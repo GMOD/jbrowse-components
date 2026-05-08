@@ -15,11 +15,7 @@ import type {
   types,
 } from '@jbrowse/mobx-state-tree'
 
-export {
-  b64PadSuffix,
-  fromUrlSafeB64,
-  toUrlSafeB64,
-} from '@jbrowse/core/util'
+export { b64PadSuffix, fromUrlSafeB64, toUrlSafeB64 } from '@jbrowse/core/util'
 
 type MSTArray = Instance<ReturnType<typeof types.array>>
 type MSTMap = Instance<ReturnType<typeof types.map>>

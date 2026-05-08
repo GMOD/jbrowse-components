@@ -418,10 +418,14 @@ export function buildSyntenyGeometry({
       rev1,
       rev2,
       (resolvedOp, segBp1Start, segBp1End, segBp2Start, segBp2End) => {
-        const topMin = Math.min(segBp1Start, segBp1End) * bpPerPxInv0 + padTop - viewOff0
-        const topMax = Math.max(segBp1Start, segBp1End) * bpPerPxInv0 + padTop - viewOff0
-        const botMin = Math.min(segBp2Start, segBp2End) * bpPerPxInv1 + padBottom - viewOff1
-        const botMax = Math.max(segBp2Start, segBp2End) * bpPerPxInv1 + padBottom - viewOff1
+        const topMin =
+          Math.min(segBp1Start, segBp1End) * bpPerPxInv0 + padTop - viewOff0
+        const topMax =
+          Math.max(segBp1Start, segBp1End) * bpPerPxInv0 + padTop - viewOff0
+        const botMin =
+          Math.min(segBp2Start, segBp2End) * bpPerPxInv1 + padBottom - viewOff1
+        const botMax =
+          Math.max(segBp2Start, segBp2End) * bpPerPxInv1 + padBottom - viewOff1
         const offScreen =
           (topMax < emitLeft || topMin > emitRight) &&
           (botMax < emitLeft || botMin > emitRight)
@@ -443,10 +447,29 @@ export function buildSyntenyGeometry({
           } else {
             kind = KIND_CIGAR_MATCH
           }
-          addInstance(segBp1Start, segBp1End, segBp2End, segBp2Start, kind, i, qtl, padTop, padBottom)
+          addInstance(
+            segBp1Start,
+            segBp1End,
+            segBp2End,
+            segBp2Start,
+            kind,
+            i,
+            qtl,
+            padTop,
+            padBottom,
+          )
 
           if (drawLocationMarkers && !(drawCIGARMatchesOnly && isIndel)) {
-            addLocationMarkers(segBp1Start, segBp1End, segBp2End, segBp2Start, i, qtl, padTop, padBottom)
+            addLocationMarkers(
+              segBp1Start,
+              segBp1End,
+              segBp2End,
+              segBp2Start,
+              i,
+              qtl,
+              padTop,
+              padBottom,
+            )
           }
         }
       },

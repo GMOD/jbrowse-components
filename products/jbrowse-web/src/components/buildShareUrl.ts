@@ -22,7 +22,9 @@ export async function buildShortShareUrl(
   return { url: locationUrl.href, sessionParam, passwordParam }
 }
 
-export async function buildLongShareUrl(snap: unknown): Promise<ShareUrlResult> {
+export async function buildLongShareUrl(
+  snap: unknown,
+): Promise<ShareUrlResult> {
   const sess = await toUrlSafeB64(JSON.stringify(snap))
   const sessionParam = `encoded-${sess}`
   const locationUrl = new URL(window.location.href)

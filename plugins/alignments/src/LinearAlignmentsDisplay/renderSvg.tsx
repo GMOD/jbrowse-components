@@ -141,6 +141,7 @@ export async function renderSvg(
       pileupTopOffset: coverageDisplayHeight,
       rangeY: [0, displayHeight],
       viewportH: pileupViewportHeight,
+      pairedArcsDown: model.pairedArcsDown,
     })
     pileupBezierNode = (
       <g style={{ pointerEvents: 'none' }}>

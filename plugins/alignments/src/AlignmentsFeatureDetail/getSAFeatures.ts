@@ -50,13 +50,7 @@ export async function getSAFeatures({
     throw new Error('assembly not found')
   }
 
-  const suppAlns = featurizeSA(
-    SA,
-    feature.uniqueId as string,
-    origStrand,
-    readName,
-    true,
-  )
+  const suppAlns = featurizeSA(SA, feature.uniqueId, origStrand, readName, true)
 
   const feat = {
     ...feature,

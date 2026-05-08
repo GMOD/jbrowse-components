@@ -157,7 +157,8 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       getUniqueTags({
         self: model,
         tag: debouncedTag,
-        blocks: (getContainingView(model) as LinearGenomeViewModel).staticBlocks,
+        blocks: (getContainingView(model) as LinearGenomeViewModel)
+          .staticBlocks,
       }),
   )
 

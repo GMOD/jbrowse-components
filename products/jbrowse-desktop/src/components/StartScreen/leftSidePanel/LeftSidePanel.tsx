@@ -28,13 +28,12 @@ const useStyles = makeStyles()(theme => ({
 async function fetchData(sel: { shortName: string; jbrowseConfig: string }[]) {
   return Promise.all(
     sel.map(async r => {
-      const ret = (await fetchjson(r.jbrowseConfig)) as JBrowseConfig
+      const ret = await fetchjson(r.jbrowseConfig)
       addRelativeUris(
-        // @ts-expect-error
         ret as Record<string, unknown>,
         new URL(r.jbrowseConfig),
       )
-      return ret
+      return ret as JBrowseConfig
     }),
   )
 }
@@ -81,8 +80,9 @@ export default function LauncherPanel({
     }
   }
 
-  const launchFromConfig = (sel: { shortName: string; jbrowseConfig: string }[]) =>
-    launchSession(() => fetchData(sel))
+  const launchFromConfig = (
+    sel: { shortName: string; jbrowseConfig: string }[],
+  ) => launchSession(() => fetchData(sel))
 
   const launchFromSnap = (snap: JBrowseConfig) =>
     launchSession(async () => [snap])

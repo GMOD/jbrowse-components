@@ -1,11 +1,9 @@
 import calculateBlocks from '@jbrowse/core/util/calculateStaticBlocks'
-import {
-  buildBpRegionIndex,
-  bpToCumBpAndPad,
-} from '@jbrowse/synteny-core'
-import type { BpRegionIndex } from '@jbrowse/synteny-core'
+import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
 
 import { bpToPx } from './executeSyntenyFeaturesAndPositions.ts'
+
+import type { BpRegionIndex } from '@jbrowse/synteny-core'
 
 // Adapters so existing test assertions keep working with the new cumBp API.
 function buildBpToPxIndex(self: Parameters<typeof bpToPx>[0]['self']) {

@@ -37,7 +37,6 @@ interface Cursor {
   colors: Uint32Array
 }
 
-
 export function buildLineSegments(
   data: DotplotRpcData,
   colorFn: DotplotColorFn,

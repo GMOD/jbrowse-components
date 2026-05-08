@@ -110,7 +110,9 @@ function RecentSessionsList({
       field: 'lastModified',
       headerName: 'Last modified',
       width: widths.lastModified,
-      renderCell: ({ row }: GridRenderCellParams) => <DateSinceLastUsed row={row} />,
+      renderCell: ({ row }: GridRenderCellParams) => (
+        <DateSinceLastUsed row={row} />
+      ),
     },
   ]
 

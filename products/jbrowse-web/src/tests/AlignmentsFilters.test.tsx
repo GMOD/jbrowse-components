@@ -34,13 +34,13 @@ async function testFilterTrack(trackId: string, tag: string, value: string) {
 
 test('filter by HP tag cram', async () => {
   const { view } = await createView()
-  view.setNewView(0.465, 85055)
+  view.setNewView(0.8, 49437)
   await testFilterTrack('volvox_cram', 'HP', '1')
 }, 50000)
 
 test('filter by HP tag bam', async () => {
   const { view } = await createView()
-  view.setNewView(0.465, 85055)
+  view.setNewView(0.8, 49437)
   await testFilterTrack('volvox_bam', 'HP', '1')
 }, 50000)
 

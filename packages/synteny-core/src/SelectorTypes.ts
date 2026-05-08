@@ -1,4 +1,5 @@
 import type React from 'react'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util/types'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'

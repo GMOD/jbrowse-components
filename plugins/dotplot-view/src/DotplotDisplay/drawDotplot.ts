@@ -31,15 +31,39 @@ export function drawDotplotInstances(
     colors,
     instanceCount,
   } = geometry
+  console.log(
+    '[drawDotplotInstances] instanceCount',
+    instanceCount,
+    'viewBpH',
+    viewBpH,
+    'viewBpV',
+    viewBpV,
+    'bpPerPxHInv',
+    bpPerPxHInv,
+    'bpPerPxVInv',
+    bpPerPxVInv,
+    'viewHeight',
+    viewHeight,
+  )
+  if (instanceCount > 0) {
+    console.log(
+      '[drawDotplotInstances] first segment x1Hi',
+      x1Hi[0],
+      'x1Lo',
+      x1Lo[0],
+      'y1Hi',
+      y1Hi[0],
+      'y1Lo',
+      y1Lo[0],
+    )
+  }
   for (let i = 0; i < instanceCount; i++) {
     const sx1 = (x1Hi[i]! + x1Lo[i]! - viewBpH) * bpPerPxHInv + padHs[i]!
     const sy1 =
-      viewHeight -
-      ((y1Hi[i]! + y1Lo[i]! - viewBpV) * bpPerPxVInv + padVs[i]!)
+      viewHeight - ((y1Hi[i]! + y1Lo[i]! - viewBpV) * bpPerPxVInv + padVs[i]!)
     const sx2 = (x2Hi[i]! + x2Lo[i]! - viewBpH) * bpPerPxHInv + padHs[i]!
     const sy2 =
-      viewHeight -
-      ((y2Hi[i]! + y2Lo[i]! - viewBpV) * bpPerPxVInv + padVs[i]!)
+      viewHeight - ((y2Hi[i]! + y2Lo[i]! - viewBpV) * bpPerPxVInv + padVs[i]!)
     ctx.strokeStyle = unpackColorToCSS(colors[i]!)
     ctx.beginPath()
     ctx.moveTo(sx1, sy1)

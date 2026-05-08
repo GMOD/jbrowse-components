@@ -54,8 +54,9 @@ function RecentSessionCard({
   const { data: screenshot } = useFetch(
     ['loadThumbnail', path],
     async () =>
-      ((await ipcRenderer.invoke('loadThumbnail', path)) as string | undefined) ??
-      defaultSessionScreenshot,
+      ((await ipcRenderer.invoke('loadThumbnail', path)) as
+        | string
+        | undefined) ?? defaultSessionScreenshot,
     {
       onError: e => {
         console.error(e)

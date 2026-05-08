@@ -1,9 +1,5 @@
 import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
-import {
-  getSession,
-  isSessionWithShareURL,
-  useFetch,
-} from '@jbrowse/core/util'
+import { getSession, isSessionWithShareURL, useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -54,26 +50,23 @@ const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
     data: url = '',
     error,
     isLoading: loading,
-  } = useFetch(
-    ['shareBookmarks', getSnapshot(bookmarksToShare)],
-    async () => {
-      if (!isSessionWithShareURL(session)) {
-        throw new Error('No shareURL configured')
-      }
-      const snap = getSnapshot(bookmarksToShare)
-      const locationUrl = new URL(window.location.href)
-      const result = await shareSessionToDynamo(
-        snap,
-        session.shareURL,
-        locationUrl.href,
-      )
-      const params = new URLSearchParams(locationUrl.search)
-      params.set('bookmarks', `share-${result.json.sessionId}`)
-      params.set('password', result.password)
-      locationUrl.search = params.toString()
-      return locationUrl.href
-    },
-  )
+  } = useFetch(['shareBookmarks', getSnapshot(bookmarksToShare)], async () => {
+    if (!isSessionWithShareURL(session)) {
+      throw new Error('No shareURL configured')
+    }
+    const snap = getSnapshot(bookmarksToShare)
+    const locationUrl = new URL(window.location.href)
+    const result = await shareSessionToDynamo(
+      snap,
+      session.shareURL,
+      locationUrl.href,
+    )
+    const params = new URLSearchParams(locationUrl.search)
+    params.set('bookmarks', `share-${result.json.sessionId}`)
+    params.set('password', result.password)
+    locationUrl.search = params.toString()
+    return locationUrl.href
+  })
   return (
     <Dialog open onClose={onClose} title="Share bookmarks">
       <DialogContent className={classes.content}>

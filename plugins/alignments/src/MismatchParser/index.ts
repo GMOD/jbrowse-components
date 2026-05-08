@@ -1,5 +1,3 @@
-import { cigarToMismatches2 } from './cigarToMismatches2.ts'
-import { mdToMismatches2 } from './mdToMismatches2.ts'
 import {
   CIGAR_D,
   CIGAR_H,
@@ -7,6 +5,9 @@ import {
   CIGAR_N,
   CIGAR_S,
 } from '@jbrowse/alignments-core'
+
+import { cigarToMismatches2 } from './cigarToMismatches2.ts'
+import { mdToMismatches2 } from './mdToMismatches2.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

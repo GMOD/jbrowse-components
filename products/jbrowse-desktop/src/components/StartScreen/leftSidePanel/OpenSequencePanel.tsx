@@ -54,10 +54,12 @@ export default function OpenSequencePanel({
 
       {sequenceDialogOpen ? (
         <OpenSequenceDialog
-          onClose={(conf: unknown) => {
+          onClose={async (conf?: unknown) => {
             if (conf) {
               launchFromSnap({
                 assemblies: conf as JBrowseConfig['assemblies'],
+                tracks: [],
+                internetAccounts: [],
                 defaultSession: {
                   name: `New Session ${new Date().toLocaleString('en-US')}`,
                 },

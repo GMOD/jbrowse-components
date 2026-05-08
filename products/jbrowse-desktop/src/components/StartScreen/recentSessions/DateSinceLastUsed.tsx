@@ -18,7 +18,9 @@ export default function DateSinceLastUsed({
   const { classes } = useStyles()
   const content = <div className={classes.cell}>{lastModified}</div>
   return showDateTooltip && updated !== undefined ? (
-    <Tooltip title={new Date(updated).toLocaleString('en-US')}>{content}</Tooltip>
+    <Tooltip title={new Date(updated).toLocaleString('en-US')}>
+      {content}
+    </Tooltip>
   ) : (
     content
   )

@@ -5,13 +5,12 @@ import {
   ErrorMessage,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
-import { useLocalStorage } from '@jbrowse/core/util'
+import { useFetch, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreIcon from '@mui/icons-material/MoreHoriz'
 import { IconButton, Link, Typography } from '@mui/material'
-import { useFetch } from '@jbrowse/core/util'
 
 import { useInnerDims } from '../availableGenomes/util.ts'
 import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'
@@ -76,7 +75,9 @@ export default function QuickstartPanel({
 
       {isVisible ? (
         <div className={classes.panel}>
-          {listError && !quickstarts ? <ErrorMessage error={listError} /> : null}
+          {listError && !quickstarts ? (
+            <ErrorMessage error={listError} />
+          ) : null}
 
           {quickstarts !== undefined ? (
             quickstarts.length ? (
@@ -101,9 +102,24 @@ export default function QuickstartPanel({
                           <CascadingMenuButton
                             style={{ padding: 0 }}
                             menuItems={[
-                              { label: 'Launch', onClick: () => launch([name]) },
-                              { label: 'Delete', onClick: () => setDeleteDialogOpen(name) },
-                              { label: 'Rename', onClick: () => setRenameDialogOpen(name) },
+                              {
+                                label: 'Launch',
+                                onClick: () => {
+                                  launch([name])
+                                },
+                              },
+                              {
+                                label: 'Delete',
+                                onClick: () => {
+                                  setDeleteDialogOpen(name)
+                                },
+                              },
+                              {
+                                label: 'Rename',
+                                onClick: () => {
+                                  setRenameDialogOpen(name)
+                                },
+                              },
                             ]}
                           >
                             <MoreIcon />

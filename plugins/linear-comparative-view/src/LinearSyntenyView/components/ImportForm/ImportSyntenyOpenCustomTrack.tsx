@@ -28,7 +28,9 @@ const LinearImportSyntenyOpenCustomTrack = observer(
         extensionPoint="LinearSyntenyView-SyntenyFileFormats"
         baseFormats={defaultSyntenyFileFormats}
         pluginManager={pluginManager}
-        onSetTrack={(row, val) => model.setImportFormSyntenyTrack(row, val)}
+        onSetTrack={(row, val) => {
+          model.setImportFormSyntenyTrack(row, val)
+        }}
       />
     )
   },

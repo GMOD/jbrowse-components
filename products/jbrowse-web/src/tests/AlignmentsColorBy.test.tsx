@@ -22,7 +22,7 @@ const opts = [{}, delay]
 test('color by tag', async () => {
   const user = userEvent.setup()
   const { view } = await createView()
-  view.setNewView(0.465, 85055)
+  view.setNewView(0.8, 49437)
   await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Color by...'))

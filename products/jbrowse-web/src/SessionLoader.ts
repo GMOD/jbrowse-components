@@ -433,7 +433,7 @@ const SessionLoader = types
       const config = structuredClone(self.configSnapshot!)
       addRelativeUris(config, configUri)
       self.setConfigSnapshot(config)
-      await this.fetchPlugins(config)
+      await this.fetchPlugins(config as { plugins?: PluginDefinition[] })
     },
     /**
      * #action

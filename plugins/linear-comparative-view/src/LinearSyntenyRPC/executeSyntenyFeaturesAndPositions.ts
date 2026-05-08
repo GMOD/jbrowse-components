@@ -6,10 +6,7 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
-import {
-  buildBpRegionIndex,
-  bpToCumBpAndPad,
-} from '@jbrowse/synteny-core'
+import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -236,10 +233,14 @@ export async function executeSyntenyFeaturesAndPositions({
     // Convert cumBp to screen px for the check.
     const bpPerPxInv1 = 1 / v1.bpPerPx
     const bpPerPxInv2 = 1 / v2.bpPerPx
-    const topMinX = Math.min(p11.cumBp, p12.cumBp) * bpPerPxInv1 + p11.padPx - v1Offset
-    const topMaxX = Math.max(p11.cumBp, p12.cumBp) * bpPerPxInv1 + p11.padPx - v1Offset
-    const botMinX = Math.min(p21.cumBp, p22.cumBp) * bpPerPxInv2 + p21.padPx - v2Offset
-    const botMaxX = Math.max(p21.cumBp, p22.cumBp) * bpPerPxInv2 + p21.padPx - v2Offset
+    const topMinX =
+      Math.min(p11.cumBp, p12.cumBp) * bpPerPxInv1 + p11.padPx - v1Offset
+    const topMaxX =
+      Math.max(p11.cumBp, p12.cumBp) * bpPerPxInv1 + p11.padPx - v1Offset
+    const botMinX =
+      Math.min(p21.cumBp, p22.cumBp) * bpPerPxInv2 + p21.padPx - v2Offset
+    const botMaxX =
+      Math.max(p21.cumBp, p22.cumBp) * bpPerPxInv2 + p21.padPx - v2Offset
 
     const topOffScreen =
       topMaxX < offScreenLeftBound || topMinX > offScreenRightBound

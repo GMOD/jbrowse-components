@@ -430,9 +430,7 @@ describe('SessionLoader', () => {
     })
 
     it('sets configError and skips session loading when config fetch fails', async () => {
-      const { openLocation } = jest.requireMock('@jbrowse/core/util/io') as {
-        openLocation: jest.Mock
-      }
+      const { openLocation } = jest.requireMock('@jbrowse/core/util/io')
       openLocation.mockReturnValueOnce({
         readFile: jest.fn().mockRejectedValue(new Error('Network error')),
       })

@@ -2,11 +2,11 @@ import { useState } from 'react'
 
 import { ErrorBanner, FileSelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { getFileName } from '@jbrowse/core/util/tracks'
 import { Alert, Box, Button, Chip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { doSubmit } from './doSubmit.tsx'
-import { getFileName } from '@jbrowse/core/util/tracks'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'

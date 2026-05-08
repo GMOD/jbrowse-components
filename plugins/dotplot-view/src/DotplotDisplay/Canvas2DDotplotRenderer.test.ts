@@ -1,6 +1,9 @@
 import { Canvas2DDotplotRenderer } from './Canvas2DDotplotRenderer.ts'
 
-import type { DotplotGeometryData, DotplotRenderState } from './dotplotBackendTypes.ts'
+import type {
+  DotplotGeometryData,
+  DotplotRenderState,
+} from './dotplotBackendTypes.ts'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 
@@ -39,11 +42,16 @@ function makeGeometry(count: number): DotplotGeometryData {
     y2Hi[i] = i * 10 + 5
   }
   return {
-    x1Hi, x1Lo: zeros.slice(),
-    y1Hi, y1Lo: zeros.slice(),
-    x2Hi, x2Lo: zeros.slice(),
-    y2Hi, y2Lo: zeros.slice(),
-    padHs: zeros.slice(), padVs: zeros.slice(),
+    x1Hi,
+    x1Lo: zeros.slice(),
+    y1Hi,
+    y1Lo: zeros.slice(),
+    x2Hi,
+    x2Lo: zeros.slice(),
+    y2Hi,
+    y2Lo: zeros.slice(),
+    padHs: zeros.slice(),
+    padVs: zeros.slice(),
     colors: new Uint32Array(count).fill(0xff0000ff),
     instanceCount: count,
   }
@@ -51,8 +59,12 @@ function makeGeometry(count: number): DotplotGeometryData {
 
 // Default render state: viewBp=0, bpPerPxInv=1, no offset.
 const DEFAULT_STATE: DotplotRenderState = {
-  viewBpHHi: 0, viewBpHLo: 0, bpPerPxHInv: 1,
-  viewBpVHi: 0, viewBpVLo: 0, bpPerPxVInv: 1,
+  viewBpHHi: 0,
+  viewBpHLo: 0,
+  bpPerPxHInv: 1,
+  viewBpVHi: 0,
+  viewBpVLo: 0,
+  bpPerPxVInv: 1,
   lineWidth: 2,
   displayKeys: [0],
 }
@@ -93,20 +105,29 @@ describe('Canvas2DDotplotRenderer', () => {
     // With bpPerPxHInv=2 and viewBpH=5: sx1 = (100 - 5) * 2 = 190.
     // With bpPerPxVInv=3 and viewBpV=20/3: sy1 = 600 - (200 - 20/3) * 3 = 600 - 580 = 20.
     renderer.uploadGeometry(0, {
-      x1Hi: new Float32Array([100]), x1Lo: new Float32Array([0]),
-      y1Hi: new Float32Array([200]), y1Lo: new Float32Array([0]),
-      x2Hi: new Float32Array([150]), x2Lo: new Float32Array([0]),
-      y2Hi: new Float32Array([250]), y2Lo: new Float32Array([0]),
-      padHs: new Float32Array([0]), padVs: new Float32Array([0]),
+      x1Hi: new Float32Array([100]),
+      x1Lo: new Float32Array([0]),
+      y1Hi: new Float32Array([200]),
+      y1Lo: new Float32Array([0]),
+      x2Hi: new Float32Array([150]),
+      x2Lo: new Float32Array([0]),
+      y2Hi: new Float32Array([250]),
+      y2Lo: new Float32Array([0]),
+      padHs: new Float32Array([0]),
+      padVs: new Float32Array([0]),
       colors: new Uint32Array([0xff0000ff]),
       instanceCount: 1,
     })
 
-    const viewBpH = 5       // = offsetX / scaleX = 10 / 2
-    const viewBpV = 20 / 3  // = offsetY / scaleY = 20 / 3
+    const viewBpH = 5 // = offsetX / scaleX = 10 / 2
+    const viewBpV = 20 / 3 // = offsetY / scaleY = 20 / 3
     renderer.render({
-      viewBpHHi: 0, viewBpHLo: viewBpH, bpPerPxHInv: 2,
-      viewBpVHi: 0, viewBpVLo: viewBpV, bpPerPxVInv: 3,
+      viewBpHHi: 0,
+      viewBpHLo: viewBpH,
+      bpPerPxHInv: 2,
+      viewBpVHi: 0,
+      viewBpVLo: viewBpV,
+      bpPerPxVInv: 3,
       lineWidth: 1,
       displayKeys: [0],
     })
@@ -121,11 +142,16 @@ describe('Canvas2DDotplotRenderer', () => {
 
     const zeros = new Float32Array([0])
     renderer.uploadGeometry(0, {
-      x1Hi: zeros.slice(), x1Lo: zeros.slice(),
-      y1Hi: zeros.slice(), y1Lo: zeros.slice(),
-      x2Hi: new Float32Array([1]), x2Lo: zeros.slice(),
-      y2Hi: new Float32Array([1]), y2Lo: zeros.slice(),
-      padHs: zeros.slice(), padVs: zeros.slice(),
+      x1Hi: zeros.slice(),
+      x1Lo: zeros.slice(),
+      y1Hi: zeros.slice(),
+      y1Lo: zeros.slice(),
+      x2Hi: new Float32Array([1]),
+      x2Lo: zeros.slice(),
+      y2Hi: new Float32Array([1]),
+      y2Lo: zeros.slice(),
+      padHs: zeros.slice(),
+      padVs: zeros.slice(),
       colors: new Uint32Array([0xccbf4080]),
       instanceCount: 1,
     })

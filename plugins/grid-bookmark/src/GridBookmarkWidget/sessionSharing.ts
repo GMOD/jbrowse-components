@@ -1,4 +1,1 @@
-export {
-  readSessionFromDynamo,
-  shareSessionToDynamo,
-} from '@jbrowse/core/util'
+export { readSessionFromDynamo, shareSessionToDynamo } from '@jbrowse/core/util'

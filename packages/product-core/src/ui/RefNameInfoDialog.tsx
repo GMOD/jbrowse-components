@@ -65,10 +65,13 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
           async assemblyName =>
             [
               assemblyName,
-              (await rpcManager.call(trackId, 'CoreGetRefNames', {
-                adapterConfig: readConf<Record<string, unknown>>(config, 'adapter'),
+              await rpcManager.call(trackId, 'CoreGetRefNames', {
+                adapterConfig: readConf<Record<string, unknown>>(
+                  config,
+                  'adapter',
+                ),
                 regions: [{ assemblyName }],
-              })) as string[],
+              }),
             ] as const,
         ),
       ),

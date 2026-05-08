@@ -61,7 +61,12 @@ const SwapAssemblies = observer(function SwapAssemblies({
           </div>
           <div>{text2}</div>
         </div>
-        <Button variant="contained" onClick={() => { setSwap(!swap) }}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setSwap(!swap)
+          }}
+        >
           Swap?
         </Button>
       </div>

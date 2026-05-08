@@ -1699,7 +1699,11 @@ describe('diagonalizeRegions', () => {
       },
     ]
 
-    const result = await diagonalizeRegions(alignments, refRegions, queryRegions)
+    const result = await diagonalizeRegions(
+      alignments,
+      refRegions,
+      queryRegions,
+    )
     const names = result.newRegions.map(r => r.refName)
 
     // chrA (x-axis midpoint ~40k) must come before chrB (x-axis midpoint ~160k)
@@ -1735,7 +1739,11 @@ describe('diagonalizeRegions', () => {
       },
     ]
 
-    const result = await diagonalizeRegions(alignments, refRegions, queryRegions)
+    const result = await diagonalizeRegions(
+      alignments,
+      refRegions,
+      queryRegions,
+    )
     const fwd = result.newRegions.find(r => r.refName === 'fwd')
     const rev = result.newRegions.find(r => r.refName === 'rev')
 
@@ -1763,7 +1771,11 @@ describe('diagonalizeRegions', () => {
       },
     ]
 
-    const result = await diagonalizeRegions(alignments, refRegions, queryRegions)
+    const result = await diagonalizeRegions(
+      alignments,
+      refRegions,
+      queryRegions,
+    )
     const names = result.newRegions.map(r => r.refName)
 
     expect(names.indexOf('aligned')).toBeLessThan(names.indexOf('unaligned'))

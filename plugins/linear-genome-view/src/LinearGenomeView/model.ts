@@ -1155,13 +1155,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.minOffset,
           self.totalBp / bpPerPx + self.getInterRegionPaddingPx(bpPerPx) - 10,
         )
-        return calculateDynamicBlocks({ ...snapWithLayout, bpPerPx, offsetPx })
-          .contentBlocks.map(region => ({
-            assemblyName: region.assemblyName,
-            refName: region.refName,
-            start: Math.floor(region.start),
-            end: Math.ceil(region.end),
-          }))
+        return calculateDynamicBlocks({
+          ...snapWithLayout,
+          bpPerPx,
+          offsetPx,
+        }).contentBlocks.map(region => ({
+          assemblyName: region.assemblyName,
+          refName: region.refName,
+          start: Math.floor(region.start),
+          end: Math.ceil(region.end),
+        }))
       },
 
       /**

@@ -1,4 +1,5 @@
 import { buildLineSegments } from './drawDotplotWebGL.ts'
+
 import type { DotplotRpcData } from './types.ts'
 
 function splitHiLo(cumBp: number): [number, number] {

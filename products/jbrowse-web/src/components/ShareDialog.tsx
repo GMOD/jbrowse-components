@@ -49,12 +49,10 @@ const ShareDialog = observer(function ShareDialog({
     error,
     isLoading: loading,
     mutate,
-  } = useFetch(
-    ['shareUrl', currentSetting],
-    () =>
-      currentSetting === 'short'
-        ? buildShortShareUrl(snap, shareURL)
-        : buildLongShareUrl(snap),
+  } = useFetch(['shareUrl', currentSetting], () =>
+    currentSetting === 'short'
+      ? buildShortShareUrl(snap, shareURL)
+      : buildLongShareUrl(snap),
   )
 
   const url = data?.url ?? ''

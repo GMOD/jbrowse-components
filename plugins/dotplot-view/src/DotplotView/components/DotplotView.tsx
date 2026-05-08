@@ -99,6 +99,7 @@ const RenderedComponent = observer(function RenderedComponent({
   model: DotplotViewModel
 }) {
   const { classes } = useStyles()
+  console.log('[RenderedComponent] render, tracks:', model.tracks.length, 'canvasDrawn:', model.canvasDrawn)
   return (
     <div className={classes.overlay}>
       <DotplotCanvas model={model} />
@@ -256,6 +257,8 @@ const DotplotView = observer(function DotplotView({
   model: DotplotViewModel
 }) {
   const { initialized, showLoading, error, loadingMessage } = model
+
+  console.log('[DotplotView] render: initialized', initialized, 'showLoading', showLoading, 'error', !!error)
 
   if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />

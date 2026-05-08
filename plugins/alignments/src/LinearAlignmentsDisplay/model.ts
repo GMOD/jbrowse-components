@@ -116,7 +116,7 @@ function getSequenceAdapter(session: AbstractSessionModel, region: Region) {
   if (!sequenceAdapterConfig) {
     return undefined
   }
-  return getSnapshot(sequenceAdapterConfig) as Record<string, unknown>
+  return getSnapshot(sequenceAdapterConfig) as Record<string, unknown> | undefined
 }
 
 interface FetchFeatureDetailsSelf {
@@ -1271,7 +1271,7 @@ export default function stateModelFactory(
             },
             render: b => {
               const state = self.renderState
-              if (!state) {
+              if (!state || self.laidOutPileupMap.size === 0) {
                 return false
               }
               return b.renderBlocks(self.renderBlocks, state)
@@ -1297,12 +1297,14 @@ export default function stateModelFactory(
         }
         return {
           async selectFeatureById(featureId: string) {
-            await fetchAndDo(featureId, feat => self.selectFeature(feat))
+            await fetchAndDo(featureId, feat => {
+              self.selectFeature(feat)
+            })
           },
           async setContextMenuFeatureById(featureId: string) {
-            await fetchAndDo(featureId, feat =>
-              self.setContextMenuFeature(feat),
-            )
+            await fetchAndDo(featureId, feat => {
+              self.setContextMenuFeature(feat)
+            })
           },
         }
       })

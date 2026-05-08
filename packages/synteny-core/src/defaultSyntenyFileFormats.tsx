@@ -53,7 +53,10 @@ function makeSimpleFormat(
         swap={swap}
         setFileLocation={loc => {
           setFileLocation(loc)
-          onAdapterChange({ name: resolvedName(loc), adapter: buildAdapter(loc, swap) })
+          onAdapterChange({
+            name: resolvedName(loc),
+            adapter: buildAdapter(loc, swap),
+          })
         }}
         setSwap={sw => {
           setSwap(sw)
@@ -203,7 +206,11 @@ export const defaultSyntenyFileFormats: SyntenyFileFormatOption[] = [
   makeSimpleFormat('.delta', 'DeltaAdapter', 'deltaLocation'),
   makeSimpleFormat('.out', 'MashMapAdapter', 'outLocation'),
   makeSimpleFormat('.chain', 'ChainAdapter', 'chainLocation'),
-  makeAnchorsFormat('.anchors', 'MCScanAnchorsAdapter', 'mcscanAnchorsLocation'),
+  makeAnchorsFormat(
+    '.anchors',
+    'MCScanAnchorsAdapter',
+    'mcscanAnchorsLocation',
+  ),
   makeAnchorsFormat(
     '.anchors.simple',
     'MCScanSimpleAnchorsAdapter',

@@ -20,8 +20,12 @@ export interface BpRegionIndex {
 }
 
 export function buildBpRegionIndex(self: BpIndexViewSnap): BpRegionIndex {
-  const { interRegionPaddingWidth, bpPerPx, displayedRegions, minimumBlockWidth } =
-    self
+  const {
+    interRegionPaddingWidth,
+    bpPerPx,
+    displayedRegions,
+    minimumBlockWidth,
+  } = self
   const entries = new Map<string, RegionIndexEntry[]>()
   let bpSoFar = 0
   let paddingPx = 0
@@ -68,7 +72,8 @@ export function bpToCumBpAndPad(
     if (
       coord >= r.start &&
       coord <= r.end &&
-      (displayedRegionIndex === undefined || displayedRegionIndex === entry.index)
+      (displayedRegionIndex === undefined ||
+        displayedRegionIndex === entry.index)
     ) {
       const bpOffset = r.reversed ? r.end - coord : coord - r.start
       return { cumBp: entry.bpBefore + bpOffset, padPx: entry.paddingPxBefore }

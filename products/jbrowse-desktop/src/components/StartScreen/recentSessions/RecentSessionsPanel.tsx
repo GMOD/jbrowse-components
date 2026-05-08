@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { useLocalStorage } from '@jbrowse/core/util'
+import { useFetch, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ListIcon from '@mui/icons-material/List'
@@ -14,7 +14,6 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { useFetch } from '@jbrowse/core/util'
 
 import Checkbox2 from '../Checkbox2.tsx'
 import RecentSessionsCards from './RecentSessionsCards.tsx'

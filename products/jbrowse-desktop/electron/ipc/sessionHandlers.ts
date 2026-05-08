@@ -93,10 +93,7 @@ export function registerSessionHandlers(
     'createInitialAutosaveFile',
     async (_event: unknown, snap: SessionSnap) => {
       const rows = await readRecentSessions(paths.recentSessionsPath)
-      const autosavePath = path.join(
-        paths.autosaveDir,
-        `${Date.now()}.json`,
-      )
+      const autosavePath = path.join(paths.autosaveDir, `${Date.now()}.json`)
       const entry: RecentSession = {
         path: autosavePath,
         updated: Date.now(),
