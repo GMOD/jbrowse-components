@@ -23,11 +23,8 @@ export default class SerializableFilterChain {
       .map(f => f.trim())
       .filter(f => !!f)
       .map(inputFilter => {
-        if (typeof inputFilter === 'string') {
-          const expr = stringToJexlExpression(inputFilter, jexl)
-          return { expr, string: inputFilter }
-        }
-        throw new Error(`invalid inputFilter string "${inputFilter}"`)
+        const expr = stringToJexlExpression(inputFilter, jexl)
+        return { expr, string: inputFilter }
       })
   }
 

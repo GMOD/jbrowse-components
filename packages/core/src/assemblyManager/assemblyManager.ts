@@ -1,5 +1,5 @@
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
-import { reaction } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import assemblyFactory from './assembly.ts'
 import { readConfObject } from '../configuration/index.ts'
@@ -204,22 +204,24 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          reaction(
-            () => self.assemblyList,
-            assemblyConfs => {
-              for (const asm of self.assemblies) {
-                if (!asm.configuration) {
-                  this.removeAssembly(asm)
+          autorun(
+            () => {
+              const assemblyConfs = self.assemblyList
+              untracked(() => {
+                for (const asm of self.assemblies) {
+                  if (!asm.configuration) {
+                    this.removeAssembly(asm)
+                  }
                 }
-              }
-              for (const conf of assemblyConfs) {
-                const name = readConfObject(conf, 'name')
-                if (!self.assemblies.some(a => a.name === name)) {
-                  this.addAssembly(conf)
+                for (const conf of assemblyConfs) {
+                  const name = readConfObject(conf, 'name')
+                  if (!self.assemblies.some(a => a.name === name)) {
+                    this.addAssembly(conf)
+                  }
                 }
-              }
+              })
             },
-            { fireImmediately: true, name: 'assemblyManagerAfterAttach' },
+            { name: 'assemblyManagerAfterAttach' },
           ),
         )
       },
