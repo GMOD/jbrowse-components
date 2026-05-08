@@ -10,7 +10,7 @@ export function removeAttr(obj: Record<string, unknown>, attr: string) {
   for (const prop in obj) {
     if (prop === attr) {
       delete obj[prop]
-    } else if (typeof obj[prop] === 'object') {
+    } else if (obj[prop] !== null && typeof obj[prop] === 'object') {
       removeAttr(obj[prop] as Record<string, unknown>, attr)
     }
   }
@@ -26,18 +26,19 @@ export function readConf(
   slotPath?: string | string[],
 ) {
   if (isStateTreeNode(config)) {
-    return slotPath
-      ? readConfObject(config, slotPath as any)
-      : getSnapshot(config)
+    if (!slotPath) {
+      return getSnapshot(config)
+    }
+    const path = typeof slotPath === 'string' ? [slotPath] : slotPath
+    return readConfObject(config, path)
   }
-  // Plain object - access directly
   if (!slotPath) {
     return config
   }
   const keys = typeof slotPath === 'string' ? [slotPath] : slotPath
-  let result: any = config
+  let result: unknown = config
   for (const key of keys) {
-    result = result?.[key]
+    result = (result as Record<string, unknown>)?.[key]
   }
   if (typeof result === 'string' && result.startsWith('jexl:')) {
     return stringToJexlExpression(result).eval({})

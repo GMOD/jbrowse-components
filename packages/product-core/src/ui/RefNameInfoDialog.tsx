@@ -90,8 +90,8 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
           <>
             <Button
               variant="contained"
-              onClick={() => {
-                copy(formatRefNames(refNames, false))
+              onClick={async () => {
+                await copy(formatRefNames(refNames, false))
                 setCopied(true)
                 setTimeout(() => {
                   setCopied(false)

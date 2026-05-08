@@ -16,11 +16,17 @@ import { generateDisplayableConfig, readConf } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
+type AboutPanelComponent = React.ComponentType<{
+  config: AnyConfigurationModel | Record<string, unknown>
+}>
+
 const useStyles = makeStyles()({
   content: {
     minWidth: 800,
   },
 })
+
+const hideFields = ['displays', 'baseUri', 'refNames', 'formatAbout']
 
 const AboutDialogContents = observer(function AboutDialogContents({
   config,
@@ -49,9 +55,7 @@ const AboutDialogContents = observer(function AboutDialogContents({
     'Core-extraAboutPanel',
     null,
     { session, config },
-  ) as { name: string; Component: React.FC<any> } | null
-  const hideFields = ['displays', 'baseUri', 'refNames', 'formatAbout']
-
+  ) as { name: string; Component: AboutPanelComponent } | null
   return (
     <div className={classes.content}>
       <BaseCard title="Configuration">

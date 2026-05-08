@@ -34,9 +34,9 @@ function HeaderButtons({ conf, setShowRefNames }: HeaderButtonsProps) {
       </Button>
       <Button
         variant="contained"
-        onClick={() => {
+        onClick={async () => {
           const snap = removeAttr(JSON.parse(JSON.stringify(conf)), 'baseUri')
-          copy(JSON.stringify(snap, null, 2))
+          await copy(JSON.stringify(snap, null, 2))
           setCopied(true)
           setTimeout(() => {
             setCopied(false)
