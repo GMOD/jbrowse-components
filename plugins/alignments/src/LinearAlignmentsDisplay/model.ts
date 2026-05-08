@@ -339,11 +339,7 @@ export default function stateModelFactory(
           return self.getConfWithOverride<number>('maxHeight')
         },
 
-        /**
-         * Chain index map: readName → array of feature indices
-         * Used in linkedRead mode for chain-level highlighting
-         * Cached as a MST getter so it only recomputes when rpcDataMap changes
-         */
+        // chainIdx → readIds[]. Used in linkedRead mode for chain-level highlighting.
         get chainIdMap() {
           const map = new Map<number, string[]>()
           if (self.showLinkedReads) {
@@ -1451,9 +1447,9 @@ export default function stateModelFactory(
                 self.setSimplexModifications(r.result.simplexModifications)
                 newDataMap.set(r.displayedRegionIndex, r.result)
               }
-              // Layout (pileup or chain) is derived by the
-              // `laidOutPileupMap` getter from `rpcDataMap`. Just commit
-              // raw results here.
+              // Two loops are intentional: all updateColorTagMap calls must
+              // complete before any setRpcData fires, so colorTagMap is fully
+              // populated when the first render reads it.
               for (const [displayedRegionIndex, data] of newDataMap) {
                 self.setRpcData(displayedRegionIndex, data)
               }
