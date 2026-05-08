@@ -13,7 +13,11 @@ const useStyles = makeStyles()(theme => ({
   // avoid parent styles getting into this div
   // https://css-tricks.com/almanac/properties/a/all/
   avoidParentStyle: {
-    all: 'initial',
+    display: 'contents',
+  },
+  wrapper: {
+    width: '100%',
+    height: '100%',
   },
   viewContainer: {
     width: '100%',
@@ -59,9 +63,11 @@ const ViewContainerWrapper = observer(function ViewContainerWrapper({
   const { classes } = useStyles()
   return (
     <div className={classes.avoidParentStyle}>
-      <ScopedCssBaseline>
-        <ViewContainer view={view}>{children}</ViewContainer>
-      </ScopedCssBaseline>
+      <div className={classes.wrapper}>
+        <ScopedCssBaseline>
+          <ViewContainer view={view}>{children}</ViewContainer>
+        </ScopedCssBaseline>
+      </div>
     </div>
   )
 })

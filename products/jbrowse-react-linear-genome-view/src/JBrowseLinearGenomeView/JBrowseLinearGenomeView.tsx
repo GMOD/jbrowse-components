@@ -50,15 +50,14 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   const minimized = drawerSession.minimized || false
   const visibleWidget = drawerSession.visibleWidget
   const drawerViewHeight = viewState.drawerViewHeight
+  const drawerVisible = visibleWidget && !minimized
 
+  const drawerCol = drawerVisible ? `${drawerWidth}px` : undefined
+  const viewCol = '1fr'
   const gridColumns =
     drawerPosition === 'left'
-      ? minimized
-        ? `0px 1fr`
-        : `${drawerWidth}px 1fr`
-      : minimized
-        ? `1fr 0px`
-        : `1fr ${drawerWidth}px`
+      ? [drawerCol, viewCol].filter(Boolean).join(' ')
+      : [viewCol, drawerCol].filter(Boolean).join(' ')
 
   return (
     <ThemeProvider theme={theme}>
