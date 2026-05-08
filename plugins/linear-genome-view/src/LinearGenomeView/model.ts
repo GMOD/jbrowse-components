@@ -17,8 +17,12 @@ import {
   springAnimate,
   sum,
 } from '@jbrowse/core/util'
-import { bpToPx, moveTo, pxToBp } from '@jbrowse/core/util/Base1DUtils'
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import {
+  bpToPx,
+  computeMoveToLayout,
+  moveTo,
+  pxToBp,
+} from '@jbrowse/core/util/Base1DUtils'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import {
@@ -1129,21 +1133,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @returns array of Region[]
        */
       getSelectedRegions(leftOffset?: BpOffset, rightOffset?: BpOffset) {
+        if (!leftOffset || !rightOffset) {
+          return []
+        }
         const snap = getSnapshot(self)
-        const simView = Base1DView.create({
+        const snapWithLayout = {
           ...snap,
+          width: self.width,
           interRegionPaddingWidth: self.interRegionPaddingWidth,
-        })
-
-        simView.setVolatileWidth(self.width)
-        simView.moveTo(leftOffset, rightOffset)
-
-        return simView.dynamicBlocks.contentBlocks.map(region => ({
-          assemblyName: region.assemblyName,
-          refName: region.refName,
-          start: Math.floor(region.start),
-          end: Math.ceil(region.end),
-        }))
+          minimumBlockWidth: self.minimumBlockWidth,
+        }
+        const { bpPerPx, offsetPx } = computeMoveToLayout(
+          snapWithLayout,
+          leftOffset,
+          rightOffset,
+        )
+        return calculateDynamicBlocks({ ...snapWithLayout, bpPerPx, offsetPx })
+          .contentBlocks.map(region => ({
+            assemblyName: region.assemblyName,
+            refName: region.refName,
+            start: Math.floor(region.start),
+            end: Math.ceil(region.end),
+          }))
       },
 
       /**

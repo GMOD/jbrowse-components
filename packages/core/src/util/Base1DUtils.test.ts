@@ -1,4 +1,5 @@
-import { bpToPx, pxToBp } from './Base1DUtils.ts'
+import { bpToPx, computeMoveToLayout, moveTo, pxToBp } from './Base1DUtils.ts'
+import calculateDynamicBlocks from './calculateDynamicBlocks.ts'
 import calculateBlocks from './calculateStaticBlocks.ts'
 
 function makeSnap(
@@ -313,5 +314,125 @@ describe('elided region handling', () => {
     expect(r1!.offsetPx).toBe(0)
     expect(r2!.offsetPx).toBe(1)
     expect(r3!.offsetPx).toBe(3)
+  })
+})
+
+describe('computeMoveToLayout', () => {
+  const region = (refName: string, len: number) => ({
+    assemblyName: 'test',
+    refName,
+    start: 0,
+    end: len,
+  })
+
+  function makeLayout(regions: ReturnType<typeof region>[]) {
+    return {
+      displayedRegions: regions,
+      bpPerPx: 1,
+      width: 800,
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
+      offsetPx: 0,
+    }
+  }
+
+  it('zooms to fit a sub-region of a single chromosome', () => {
+    const snap = makeLayout([region('chr1', 10_000)])
+    // select bp 1000–3000 (2000bp) on a 800px view
+    const { bpPerPx, offsetPx } = computeMoveToLayout(
+      snap,
+      { index: 0, offset: 1000 },
+      { index: 0, offset: 3000 },
+    )
+    expect(bpPerPx).toBeCloseTo(2000 / 800)
+    // 1000bp in at newBpPerPx
+    expect(offsetPx).toBe(Math.round(1000 / bpPerPx))
+  })
+
+  it('produces content blocks covering the selected region', () => {
+    const snap = makeLayout([region('chr1', 10_000)])
+    const { bpPerPx, offsetPx } = computeMoveToLayout(
+      snap,
+      { index: 0, offset: 500 },
+      { index: 0, offset: 2500 },
+    )
+    const blocks = calculateDynamicBlocks({ ...snap, bpPerPx, offsetPx })
+    const content = blocks.contentBlocks
+    expect(content.length).toBe(1)
+    expect(content[0]!.start).toBeCloseTo(500, 0)
+    expect(content[0]!.end).toBeCloseTo(2500, 0)
+  })
+
+  it('spans multiple chromosomes and includes inter-region padding', () => {
+    const snap = makeLayout([region('chr1', 1000), region('chr2', 1000)])
+    // select all of chr1 (index 0, offset 0) to all of chr2 (index 1, offset 1000)
+    const { bpPerPx, offsetPx } = computeMoveToLayout(
+      snap,
+      { index: 0, offset: 0 },
+      { index: 1, offset: 1000 },
+    )
+    // 2000bp total across 800 - 2 padding = 798px
+    expect(bpPerPx).toBeCloseTo(2000 / 798)
+    const blocks = calculateDynamicBlocks({ ...snap, bpPerPx, offsetPx })
+    const content = blocks.contentBlocks
+    expect(content.length).toBe(2)
+    expect(content[0]!.refName).toBe('chr1')
+    expect(content[1]!.refName).toBe('chr2')
+  })
+
+  it('start at chr2 leaves chr1 out of content blocks', () => {
+    const snap = makeLayout([region('chr1', 1000), region('chr2', 1000)])
+    const { bpPerPx, offsetPx } = computeMoveToLayout(
+      snap,
+      { index: 1, offset: 0 },
+      { index: 1, offset: 500 },
+    )
+    const blocks = calculateDynamicBlocks({ ...snap, bpPerPx, offsetPx })
+    const refs = blocks.contentBlocks.map(b => b.refName)
+    expect(refs).not.toContain('chr1')
+    expect(refs).toContain('chr2')
+  })
+})
+
+describe('moveTo with clamped bpPerPx (extraBp path)', () => {
+  // Simulate a view where zoomTo clamps bpPerPx to a max value, forcing moveTo
+  // to center the selection with extraBp rather than fitting it precisely.
+  it('centers the selection when zoomTo cannot zoom in far enough', () => {
+    const displayedRegions = [
+      { assemblyName: 'test', refName: 'chr1', start: 0, end: 10_000 },
+    ]
+    const minBpPerPx = 5 // floor: can't zoom in past 5bp/px
+
+    let currentBpPerPx = 1
+    let currentOffsetPx = 0
+
+    const fakeView = {
+      displayedRegions,
+      bpPerPx: currentBpPerPx,
+      width: 800,
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
+      zoomTo(bp: number) {
+        currentBpPerPx = Math.max(bp, minBpPerPx)
+        return currentBpPerPx
+      },
+      scrollTo(px: number) {
+        currentOffsetPx = px
+      },
+    }
+
+    // Select a 100bp window; unclamped that needs 100/800 = 0.125 bp/px,
+    // but floor is 5bp/px so extraBp kicks in to center it.
+    moveTo(fakeView, { index: 0, offset: 4000 }, { index: 0, offset: 4100 })
+
+    expect(currentBpPerPx).toBe(minBpPerPx)
+    // At 5bp/px the view covers 800*5=4000bp. The 100bp selection should be
+    // centered, so scrollPos ≈ start - (4000-100)/2 / 5
+    const viewBp = 800 * minBpPerPx
+    const expectedCenter = 4050 // midpoint of 4000..4100
+    const expectedOffsetPx = Math.round(
+      (expectedCenter - viewBp / 2) / minBpPerPx,
+    )
+    expect(currentOffsetPx).toBe(expectedOffsetPx)
   })
 })
