@@ -18,7 +18,6 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import {
-  addDisposer,
   getSnapshot,
   isAlive,
   types,
@@ -66,6 +65,7 @@ import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
+import type { ArcsDataResult } from '../features/arcs/compute.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type {
@@ -483,12 +483,12 @@ export default function stateModelFactory(
           return max
         },
 
-        // Arcs derived from rpcDataMap. MobX caches this; recomputes when
-        // rpcDataMap, loadedRegions, arcColorByType, drawInter, drawLongRange,
-        // showArcs, or height change.
-        get arcsRpcDataMap() {
+        // Derived from rpcDataMap + loadedRegions. MobX caches this; recomputes
+        // when rpcDataMap, loadedRegions, arcColorByType, drawInter,
+        // drawLongRange, showArcs, or height change.
+        get arcsRpcDataMap(): Map<number, ArcsDataResult> {
           if (!self.showArcs || self.rpcDataMap.size === 0) {
-            return new Map<number, ReturnType<typeof arcsToRegionResult>>()
+            return new Map()
           }
           const allRegionInfos = [...self.loadedRegions.entries()].map(
             ([displayedRegionIndex, r]) => ({
@@ -498,9 +498,6 @@ export default function stateModelFactory(
               displayedRegionIndex,
             }),
           )
-          if (allRegionInfos.length === 0) {
-            return new Map<number, ReturnType<typeof arcsToRegionResult>>()
-          }
           const { arcs, lines } = computeArcsFromPileupData(
             self.rpcDataMap,
             allRegionInfos,
@@ -510,7 +507,7 @@ export default function stateModelFactory(
               drawLongRange: self.drawLongRange,
             },
           )
-          const out = new Map<number, ReturnType<typeof arcsToRegionResult>>()
+          const out = new Map<number, ArcsDataResult>()
           for (const ri of allRegionInfos) {
             if (self.rpcDataMap.has(ri.displayedRegionIndex)) {
               out.set(
