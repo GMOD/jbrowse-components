@@ -73,27 +73,7 @@ export function doAfterAttach(
           if (thisStopToken !== currentStopToken || !isAlive(self)) {
             return
           }
-          const rpcData: DotplotRpcData = {
-            p11Hi: result.p11BpHi,
-            p11Lo: result.p11BpLo,
-            p12Hi: result.p12BpHi,
-            p12Lo: result.p12BpLo,
-            p21Hi: result.p21BpHi,
-            p21Lo: result.p21BpLo,
-            p22Hi: result.p22BpHi,
-            p22Lo: result.p22BpLo,
-            padHs: result.padHs,
-            padVs: result.padVs,
-            strands: result.strands,
-            starts: result.starts,
-            ends: result.ends,
-            parsedCigars: result.parsedCigars,
-            identities: result.identities,
-            meanScores: result.meanScores,
-            mappingQuals: result.mappingQuals,
-            refNames: result.refNames,
-          }
-          self.setRpcData(rpcData)
+          self.setRpcData(result as DotplotRpcData)
         } catch (e) {
           if (
             thisStopToken === currentStopToken &&

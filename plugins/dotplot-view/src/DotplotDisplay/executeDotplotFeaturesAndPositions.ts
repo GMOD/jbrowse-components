@@ -8,6 +8,8 @@ import {
   bpToCumBpAndPad,
 } from '@jbrowse/synteny-core'
 
+import { splitHiLo } from './hiLoUtils.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
@@ -15,14 +17,14 @@ import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface DotplotFeaturesAndPositionsResult {
-  p11BpHi: Float32Array
-  p11BpLo: Float32Array
-  p12BpHi: Float32Array
-  p12BpLo: Float32Array
-  p21BpHi: Float32Array
-  p21BpLo: Float32Array
-  p22BpHi: Float32Array
-  p22BpLo: Float32Array
+  p11Hi: Float32Array
+  p11Lo: Float32Array
+  p12Hi: Float32Array
+  p12Lo: Float32Array
+  p21Hi: Float32Array
+  p21Lo: Float32Array
+  p22Hi: Float32Array
+  p22Lo: Float32Array
   padHs: Float32Array
   padVs: Float32Array
   strands: Int8Array
@@ -33,18 +35,6 @@ export interface DotplotFeaturesAndPositionsResult {
   mappingQuals: Float32Array
   refNames: string[]
   parsedCigars: number[][]
-}
-
-function splitHiLo(
-  cumBp: number,
-  hiArr: Float32Array,
-  loArr: Float32Array,
-  idx: number,
-) {
-  const iv = Math.floor(cumBp)
-  const lo = iv - Math.floor(iv / 4096) * 4096
-  hiArr[idx] = iv - lo
-  loArr[idx] = lo + (cumBp - iv)
 }
 
 export async function executeDotplotFeaturesAndPositions({
@@ -107,14 +97,14 @@ export async function executeDotplotFeaturesAndPositions({
   const vIndex = buildBpRegionIndex(vViewSnap)
 
   const count = features.length
-  const p11HiArray = new Float32Array(count)
-  const p11LoArray = new Float32Array(count)
-  const p12HiArray = new Float32Array(count)
-  const p12LoArray = new Float32Array(count)
-  const p21HiArray = new Float32Array(count)
-  const p21LoArray = new Float32Array(count)
-  const p22HiArray = new Float32Array(count)
-  const p22LoArray = new Float32Array(count)
+  const p11Hi = new Float32Array(count)
+  const p11Lo = new Float32Array(count)
+  const p12Hi = new Float32Array(count)
+  const p12Lo = new Float32Array(count)
+  const p21Hi = new Float32Array(count)
+  const p21Lo = new Float32Array(count)
+  const p22Hi = new Float32Array(count)
+  const p22Lo = new Float32Array(count)
   const padHsArray = new Float32Array(count)
   const padVsArray = new Float32Array(count)
   const strandsArray = new Int8Array(count)
@@ -166,10 +156,10 @@ export async function executeDotplotFeaturesAndPositions({
       continue
     }
 
-    splitHiLo(p11.cumBp, p11HiArray, p11LoArray, validCount)
-    splitHiLo(p12.cumBp, p12HiArray, p12LoArray, validCount)
-    splitHiLo(p21.cumBp, p21HiArray, p21LoArray, validCount)
-    splitHiLo(p22.cumBp, p22HiArray, p22LoArray, validCount)
+    splitHiLo(p11Hi, p11Lo, validCount, p11.cumBp)
+    splitHiLo(p12Hi, p12Lo, validCount, p12.cumBp)
+    splitHiLo(p21Hi, p21Lo, validCount, p21.cumBp)
+    splitHiLo(p22Hi, p22Lo, validCount, p22.cumBp)
     padHsArray[validCount] = p11.padPx
     padVsArray[validCount] = p21.padPx
 
@@ -190,14 +180,14 @@ export async function executeDotplotFeaturesAndPositions({
   }
 
   const result: DotplotFeaturesAndPositionsResult = {
-    p11BpHi: p11HiArray.subarray(0, validCount),
-    p11BpLo: p11LoArray.subarray(0, validCount),
-    p12BpHi: p12HiArray.subarray(0, validCount),
-    p12BpLo: p12LoArray.subarray(0, validCount),
-    p21BpHi: p21HiArray.subarray(0, validCount),
-    p21BpLo: p21LoArray.subarray(0, validCount),
-    p22BpHi: p22HiArray.subarray(0, validCount),
-    p22BpLo: p22LoArray.subarray(0, validCount),
+    p11Hi: p11Hi.subarray(0, validCount),
+    p11Lo: p11Lo.subarray(0, validCount),
+    p12Hi: p12Hi.subarray(0, validCount),
+    p12Lo: p12Lo.subarray(0, validCount),
+    p21Hi: p21Hi.subarray(0, validCount),
+    p21Lo: p21Lo.subarray(0, validCount),
+    p22Hi: p22Hi.subarray(0, validCount),
+    p22Lo: p22Lo.subarray(0, validCount),
     padHs: padHsArray.subarray(0, validCount),
     padVs: padVsArray.subarray(0, validCount),
     strands: strandsArray.subarray(0, validCount),
@@ -211,14 +201,14 @@ export async function executeDotplotFeaturesAndPositions({
   }
 
   return rpcResult(result, [
-    p11HiArray.buffer,
-    p11LoArray.buffer,
-    p12HiArray.buffer,
-    p12LoArray.buffer,
-    p21HiArray.buffer,
-    p21LoArray.buffer,
-    p22HiArray.buffer,
-    p22LoArray.buffer,
+    p11Hi.buffer,
+    p11Lo.buffer,
+    p12Hi.buffer,
+    p12Lo.buffer,
+    p21Hi.buffer,
+    p21Lo.buffer,
+    p22Hi.buffer,
+    p22Lo.buffer,
     padHsArray.buffer,
     padVsArray.buffer,
     strandsArray.buffer,
