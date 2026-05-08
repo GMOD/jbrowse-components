@@ -1150,14 +1150,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         // mirror Base1DView.scrollTo clamping: raw offsetPx can be far outside
         // the valid range when both offsets are oob on the same side
-        const totalBp = snapWithLayout.displayedRegions.reduce(
-          (acc, r) => acc + r.end - r.start,
-          0,
-        )
         const offsetPx = clamp(
           rawOffsetPx,
           self.minOffset,
-          totalBp / bpPerPx - 10,
+          self.totalBp / bpPerPx + self.getInterRegionPaddingPx(bpPerPx) - 10,
         )
         return calculateDynamicBlocks({ ...snapWithLayout, bpPerPx, offsetPx })
           .contentBlocks.map(region => ({
