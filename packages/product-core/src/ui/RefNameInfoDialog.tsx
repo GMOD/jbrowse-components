@@ -26,6 +26,22 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+function formatRefNames(
+  data: readonly (readonly [string, string[]])[],
+  truncate: boolean,
+) {
+  return data
+    .flatMap(([assemblyName, names]) => [
+      `--- ${assemblyName} ---`,
+      ...(truncate ? names.slice(0, MAX_REF_NAMES) : names),
+      truncate && names.length > MAX_REF_NAMES
+        ? `\nToo many refNames to show in browser for ${assemblyName}, use "Copy ref names" button to copy to clipboard`
+        : '',
+    ])
+    .filter(s => s !== '')
+    .join('\n')
+}
+
 const RefNameInfoDialog = observer(function RefNameInfoDialog({
   config,
   session,
@@ -42,7 +58,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   const assemblyNames = readConf(config, 'assemblyNames') as string[]
 
   const { data: refNames, error } = useFetch(
-    ['CoreGetRefNames', trackId, assemblyNames.join(',')],
+    ['CoreGetRefNames', trackId, JSON.stringify(assemblyNames)],
     () =>
       Promise.all(
         [...new Set(assemblyNames)].map(
@@ -57,19 +73,6 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
         ),
       ),
   )
-
-  const result = (refNames ?? [])
-    .flatMap(([assemblyName, names]) => {
-      return [
-        `--- ${assemblyName} ---`,
-        ...names.slice(0, MAX_REF_NAMES),
-        names.length > MAX_REF_NAMES
-          ? `\nToo many refNames to show in browser for ${assemblyName}, use "Copy ref names" button to copy to clipboard`
-          : '',
-      ]
-    })
-    .filter(f => !!f)
-    .join('\n')
 
   return (
     <Dialog
@@ -87,16 +90,8 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
           <>
             <Button
               variant="contained"
-              onClick={async () => {
-                await copy(
-                  refNames
-                    .flatMap(([assemblyName, names]) => [
-                      `--- ${assemblyName} ---`,
-                      ...names,
-                    ])
-                    .filter(f => !!f)
-                    .join('\n'),
-                )
+              onClick={() => {
+                copy(formatRefNames(refNames, false))
                 setCopied(true)
                 setTimeout(() => {
                   setCopied(false)
@@ -106,7 +101,9 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
               {copied ? 'Copied to clipboard!' : 'Copy ref names'}
             </Button>
 
-            <pre className={classes.refNames}>{result}</pre>
+            <pre className={classes.refNames}>
+              {formatRefNames(refNames, true)}
+            </pre>
           </>
         )}
       </DialogContent>

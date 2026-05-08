@@ -1,10 +1,29 @@
 import calculateBlocks from '@jbrowse/core/util/calculateStaticBlocks'
-
 import {
-  bpToPx,
-  bpToPxFromIndex,
-  buildBpToPxIndex,
-} from './executeSyntenyFeaturesAndPositions.ts'
+  buildBpRegionIndex,
+  bpToCumBpAndPad,
+} from '@jbrowse/synteny-core'
+import type { BpRegionIndex } from '@jbrowse/synteny-core'
+
+import { bpToPx } from './executeSyntenyFeaturesAndPositions.ts'
+
+// Adapters so existing test assertions keep working with the new cumBp API.
+function buildBpToPxIndex(self: Parameters<typeof bpToPx>[0]['self']) {
+  return buildBpRegionIndex(self)
+}
+
+function bpToPxFromIndex(
+  idx: BpRegionIndex,
+  refName: string,
+  coord: number,
+  displayedRegionIndex?: number,
+) {
+  const r = bpToCumBpAndPad(idx, refName, coord, displayedRegionIndex)
+  if (!r) {
+    return undefined
+  }
+  return { offsetPx: r.cumBp / idx.bpPerPx + r.padPx, paddingPx: r.padPx }
+}
 
 function makeViewSnap(
   regions: {

@@ -40,6 +40,23 @@ public float yPxToClipY(float yPx, float canvasHeight) {
   return 1.0 - (yPx / canvasHeight) * 2.0;
 }
 
+// Reconstructs the screen-x position for one corner stored as cumBp hi/lo.
+// With viewBp = offsetPx * bpPerPx (padded-bp at canvas-left), the formula
+// (cumBp - viewBp)/bpPerPx + pad equals cumBp/bpPerPx + pad - offsetPx,
+// which is the LGV render position. The max(-inf) barrier prevents the
+// compiler from combining hi/lo terms before the multiply.
+// Used by synteny (syntenyTypes.slang) and dotplot (dotplot.slang).
+public float hpCornerScreenX(
+  float bpHi, float bpLo,
+  float originHi, float originLo,
+  float bpPerPxInv, float pad, float hpZero,
+) {
+  float inf = 1.0 / hpZero;
+  float hi = max(bpHi - originHi, -inf);
+  float lo = max(bpLo - originLo, -inf);
+  return dot(float2(hi, lo), float2(bpPerPxInv, bpPerPxInv)) + pad;
+}
+
 // Two-triangle fan: returns the (x,y) ∈ {0,1}² corner for vid 0..5.
 // vid%6: 0→(0,0)  1→(1,0)  2→(0,1)  3→(0,1)  4→(1,0)  5→(1,1)
 public float2 quadLocal(uint vid) {

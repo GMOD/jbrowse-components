@@ -391,26 +391,28 @@ export default function stateModelFactory(pm: PluginManager) {
           }
           const { hview, vview } = self
           const displays = this.dotplotDisplays
-          const trackScales = []
+          const displayKeys: number[] = []
           for (let idx = 0, l = displays.length; idx < l; idx++) {
-            const { geometry } = displays[idx]!
-            if (!geometry) {
-              continue
+            if (displays[idx]!.geometry) {
+              displayKeys.push(idx)
             }
-            trackScales.push({
-              displayKey: idx,
-              scaleX: geometry.bpPerPxH / hview.bpPerPx,
-              scaleY: geometry.bpPerPxV / vview.bpPerPx,
-            })
           }
-          if (trackScales.length === 0) {
+          if (displayKeys.length === 0) {
             return undefined
           }
+          const viewBpH = hview.offsetPx * hview.bpPerPx
+          const viewBpV = vview.offsetPx * vview.bpPerPx
+          const viewBpHHi = Math.floor(viewBpH / 4096) * 4096
+          const viewBpVHi = Math.floor(viewBpV / 4096) * 4096
           return {
-            offsetX: hview.offsetPx,
-            offsetY: vview.offsetPx,
+            viewBpHHi,
+            viewBpHLo: viewBpH - viewBpHHi,
+            bpPerPxHInv: 1 / hview.bpPerPx,
+            viewBpVHi,
+            viewBpVLo: viewBpV - viewBpVHi,
+            bpPerPxVInv: 1 / vview.bpPerPx,
             lineWidth: displays[0]!.lineWidth,
-            trackScales,
+            displayKeys,
           }
         },
       }))

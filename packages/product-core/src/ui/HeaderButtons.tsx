@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
+import copy from 'copy-to-clipboard'
 
 import { removeAttr } from './util.ts'
 
@@ -33,10 +34,9 @@ function HeaderButtons({ conf, setShowRefNames }: HeaderButtonsProps) {
       </Button>
       <Button
         variant="contained"
-        onClick={async () => {
-          const { default: copy } = await import('copy-to-clipboard')
+        onClick={() => {
           const snap = removeAttr(JSON.parse(JSON.stringify(conf)), 'baseUri')
-          await copy(JSON.stringify(snap, null, 2))
+          copy(JSON.stringify(snap, null, 2))
           setCopied(true)
           setTimeout(() => {
             setCopied(false)

@@ -44,7 +44,18 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
   }
 
   render(state: DotplotRenderState) {
-    const { offsetX, offsetY, lineWidth, trackScales } = state
+    const {
+      viewBpHHi,
+      viewBpHLo,
+      bpPerPxHInv,
+      viewBpVHi,
+      viewBpVLo,
+      bpPerPxVInv,
+      lineWidth,
+      displayKeys,
+    } = state
+    const viewBpH = viewBpHHi + viewBpHLo
+    const viewBpV = viewBpVHi + viewBpVLo
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
     const ctx = this.ctx
 
@@ -53,16 +64,16 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
     ctx.lineWidth = lineWidth
     ctx.lineCap = 'round'
 
-    for (const { displayKey, scaleX, scaleY } of trackScales) {
+    for (const displayKey of displayKeys) {
       const geometry = this.geometries.get(displayKey)
       if (!geometry || geometry.instanceCount === 0) {
         continue
       }
       drawDotplotInstances(ctx, geometry, {
-        scaleX,
-        scaleY,
-        offsetX,
-        offsetY,
+        viewBpH,
+        bpPerPxHInv,
+        viewBpV,
+        bpPerPxVInv,
         viewHeight: this.height,
       })
     }

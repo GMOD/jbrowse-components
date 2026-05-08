@@ -39,33 +39,38 @@ export function visitCigarOps(
 }
 
 /**
- * Walks pre-parsed CIGAR ops and fires a callback for each pixel-level-resolved
- * segment. Small indels (< 1 px) are merged into surrounding context; tiny M
- * segments (both cursors advance < 1 px) are accumulated before emitting.
- * Used by the synteny trapezoid renderer (on-screen GPU path and Canvas2D/SVG
- * export) so both stay in sync without manual duplication.
+ * Walks pre-parsed (packed int) CIGAR ops in bp-space and fires a callback
+ * for each rendered segment. Small indels (len < bpPerPx) are merged into
+ * surrounding context; tiny M segments (both accumulators advance < bpPerPx)
+ * are accumulated before emitting.
+ *
+ * Used by synteny and dotplot GPU renderers so both stay in sync.
+ * Re-exported via @jbrowse/synteny-core for consistent import paths.
+ *
+ * Callback receives bp-space segment boundaries (cumBp, no inter-region
+ * padding). Callers convert to screen positions with hp-math.
  */
 export function visitCigarRenderedSegments(
   cigar: number[],
-  startCx1: number,
-  startCx2: number,
-  bpPerPxInv0: number,
-  bpPerPxInv1: number,
+  startBp1: number,
+  startBp2: number,
+  bpPerPx0: number,
+  bpPerPx1: number,
   rev1: number,
   rev2: number,
   callback: (
     op: number,
-    px1: number,
-    cx1: number,
-    px2: number,
-    cx2: number,
+    segBp1Start: number,
+    segBp1End: number,
+    segBp2Start: number,
+    segBp2End: number,
   ) => void,
 ): void {
   let continuingFlag = false
-  let px1 = 0
-  let px2 = 0
-  let cx1 = startCx1
-  let cx2 = startCx2
+  let segBp1Start = startBp1
+  let segBp2Start = startBp2
+  let bp1 = startBp1
+  let bp2 = startBp2
 
   for (let j = 0; j < cigar.length; j++) {
     const packed = cigar[j]!
@@ -73,37 +78,40 @@ export function visitCigarRenderedSegments(
     const op = packed & 0xf
 
     if (!continuingFlag) {
-      px1 = cx1
-      px2 = cx2
+      segBp1Start = bp1
+      segBp2Start = bp2
     }
 
-    const d1 = len * bpPerPxInv0
-    const d2 = len * bpPerPxInv1
-
     if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
-      cx1 += d1 * rev1
-      cx2 += d2 * rev2
+      bp1 += len * rev1
+      bp2 += len * rev2
     } else if (op === CIGAR_D || op === CIGAR_N) {
-      cx1 += d1 * rev1
+      bp1 += len * rev1
     } else if (op === CIGAR_I) {
-      cx2 += d2 * rev2
+      bp2 += len * rev2
     }
 
     if (op === CIGAR_D || op === CIGAR_N || op === CIGAR_I) {
-      const relevantPx = op === CIGAR_I ? d2 : d1
-      if (relevantPx < 1) {
+      const relevantBpPerPx = op === CIGAR_I ? bpPerPx1 : bpPerPx0
+      if (len < relevantBpPerPx) {
         continuingFlag = true
         continue
       }
     }
 
     const isNotLast = j < cigar.length - 1
-    if (Math.abs(cx1 - px1) <= 1 && Math.abs(cx2 - px2) <= 1 && isNotLast) {
+    if (
+      Math.abs(bp1 - segBp1Start) <= bpPerPx0 &&
+      Math.abs(bp2 - segBp2Start) <= bpPerPx1 &&
+      isNotLast
+    ) {
       continuingFlag = true
     } else {
-      const resolvedOp = d1 > 1 || d2 > 1 ? op : CIGAR_M
+      const span1 = Math.abs(bp1 - segBp1Start)
+      const span2 = Math.abs(bp2 - segBp2Start)
+      const resolvedOp = span1 > bpPerPx0 || span2 > bpPerPx1 ? op : CIGAR_M
       continuingFlag = false
-      callback(resolvedOp, px1, cx1, px2, cx2)
+      callback(resolvedOp, segBp1Start, bp1, segBp2Start, bp2)
     }
   }
 }

@@ -178,8 +178,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       // Determine pair index for multi-pair PIF files
       let pairIdx = ''
       if (pairCount !== undefined && pairs) {
-        // Find which pair index corresponds to our assembly pair
-        const assemblyNames = this.getAssemblyNames()
         for (const [idx, [a, b]] of pairs) {
           if (assemblyNames.includes(a) && assemblyNames.includes(b)) {
             pairIdx = String(idx)
@@ -285,7 +283,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               const mateName = r.tname
               const mateStart = r.tstart
               const mateEnd = r.tend
-              const CIGAR = extra.cg
+              const CIGAR = cg
 
               observer.next(
                 new SyntenyFeature({
@@ -406,8 +404,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             mateRefName: r.tname,
             mateStart: r.tstart,
             mateEnd: r.tend,
-            // eslint-disable-next-line unicorn/prefer-logical-operator-over-ternary
-            syriType: extra.sy ? (extra.sy as SyriType) : undefined,
+            syriType: extra.sy !== undefined ? (extra.sy as SyriType) : undefined,
             identity: (+extra.numMatches! || 0) / (+extra.blockLen! || 1),
             featureId: `${fileOffset}`,
             segmentId: (extra.sg as string) || undefined,

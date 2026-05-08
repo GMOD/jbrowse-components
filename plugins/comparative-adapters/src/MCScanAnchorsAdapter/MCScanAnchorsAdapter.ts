@@ -79,16 +79,11 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  getAssemblyNames() {
-    const assemblyNames = this.getConf('assemblyNames') as string[]
-    return assemblyNames
-  }
-
   async getRefNames(opts: BaseOptionsWithRegions = {}) {
     const r1 = opts.regions?.[0]?.assemblyName
-    const { feats } = await this.setup(opts)
+    const { feats, assemblyNames } = await this.setup(opts)
 
-    const idx = r1 === undefined ? -1 : this.getAssemblyNames().indexOf(r1)
+    const idx = r1 === undefined ? -1 : assemblyNames.indexOf(r1)
     if (idx !== -1) {
       const set = new Set<string>()
       for (const feat of feats) {

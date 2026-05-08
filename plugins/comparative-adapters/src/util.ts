@@ -29,10 +29,6 @@ export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
   return fetchAndMaybeUnzipText(file, opts)
 }
 
-export function zip(a: number[], b: number[]) {
-  return a.map((e, i) => [e, b[i]] as [number, number])
-}
-
 export function parsePAFLine(line: string) {
   const parts = line.split('\t')
   const extra: Record<string, string | number> = {

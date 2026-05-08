@@ -1,5 +1,7 @@
 import { Canvas2DDotplotRenderer } from './Canvas2DDotplotRenderer.ts'
 
+import type { DotplotGeometryData, DotplotRenderState } from './dotplotBackendTypes.ts'
+
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 
 function createMockCanvas() {
@@ -23,53 +25,45 @@ function createMockCanvas() {
   return { canvas, ctx, strokeCalls }
 }
 
-function makeGeometry(count: number) {
-  const x1s = new Float32Array(count)
-  const y1s = new Float32Array(count)
-  const x2s = new Float32Array(count)
-  const y2s = new Float32Array(count)
-  // red, full alpha: R=0xFF in bits 0-7, A=0xFF in bits 24-31
-  const colors = new Uint32Array(count).fill(0xff0000ff)
+// Build geometry with cumBp values (bpPerPx=1 → cumBp = pixel offset for simple cases).
+function makeGeometry(count: number): DotplotGeometryData {
+  const zeros = new Float32Array(count).fill(0)
+  const x1Hi = new Float32Array(count)
+  const y1Hi = new Float32Array(count)
+  const x2Hi = new Float32Array(count)
+  const y2Hi = new Float32Array(count)
   for (let i = 0; i < count; i++) {
-    x1s[i] = i * 10
-    y1s[i] = i * 10
-    x2s[i] = i * 10 + 5
-    y2s[i] = i * 10 + 5
+    x1Hi[i] = i * 10
+    y1Hi[i] = i * 10
+    x2Hi[i] = i * 10 + 5
+    y2Hi[i] = i * 10 + 5
   }
   return {
-    x1s,
-    y1s,
-    x2s,
-    y2s,
-    colors,
+    x1Hi, x1Lo: zeros.slice(),
+    y1Hi, y1Lo: zeros.slice(),
+    x2Hi, x2Lo: zeros.slice(),
+    y2Hi, y2Lo: zeros.slice(),
+    padHs: zeros.slice(), padVs: zeros.slice(),
+    colors: new Uint32Array(count).fill(0xff0000ff),
     instanceCount: count,
-    bpPerPxH: 1,
-    bpPerPxV: 1,
   }
 }
 
-const SCALE_1 = [{ displayKey: 0, scaleX: 1, scaleY: 1 }] as const
+// Default render state: viewBp=0, bpPerPxInv=1, no offset.
+const DEFAULT_STATE: DotplotRenderState = {
+  viewBpHHi: 0, viewBpHLo: 0, bpPerPxHInv: 1,
+  viewBpVHi: 0, viewBpVLo: 0, bpPerPxVInv: 1,
+  lineWidth: 2,
+  displayKeys: [0],
+}
 
 describe('Canvas2DDotplotRenderer', () => {
-  function renderState(
-    offsetX: number,
-    offsetY: number,
-    lineWidth: number,
-    trackScales: readonly {
-      displayKey: number
-      scaleX: number
-      scaleY: number
-    }[],
-  ) {
-    return { offsetX, offsetY, lineWidth, trackScales }
-  }
-
   test('renders lines for uploaded geometry', () => {
     const { canvas, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
     renderer.uploadGeometry(0, makeGeometry(3))
-    renderer.render(renderState(0, 0, 2, SCALE_1))
+    renderer.render(DEFAULT_STATE)
     expect(strokeCalls.length).toBe(3)
   })
 
@@ -78,7 +72,7 @@ describe('Canvas2DDotplotRenderer', () => {
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
     renderer.uploadGeometry(0, makeGeometry(0))
-    renderer.render(renderState(0, 0, 2, SCALE_1))
+    renderer.render(DEFAULT_STATE)
     expect(strokeCalls.length).toBe(0)
   })
 
@@ -86,33 +80,36 @@ describe('Canvas2DDotplotRenderer', () => {
     const { canvas, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.render(renderState(0, 0, 2, SCALE_1))
+    renderer.render(DEFAULT_STATE)
     expect(strokeCalls.length).toBe(0)
   })
 
-  test('applies scale and offset to coordinates', () => {
+  test('applies view bp and bpPerPxInv to coordinates', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
 
+    // Store cumBp=100 for x1 and cumBp=200 for y1.
+    // With bpPerPxHInv=2 and viewBpH=5: sx1 = (100 - 5) * 2 = 190.
+    // With bpPerPxVInv=3 and viewBpV=20/3: sy1 = 600 - (200 - 20/3) * 3 = 600 - 580 = 20.
     renderer.uploadGeometry(0, {
-      x1s: new Float32Array([100]),
-      y1s: new Float32Array([200]),
-      x2s: new Float32Array([150]),
-      y2s: new Float32Array([250]),
+      x1Hi: new Float32Array([100]), x1Lo: new Float32Array([0]),
+      y1Hi: new Float32Array([200]), y1Lo: new Float32Array([0]),
+      x2Hi: new Float32Array([150]), x2Lo: new Float32Array([0]),
+      y2Hi: new Float32Array([250]), y2Lo: new Float32Array([0]),
+      padHs: new Float32Array([0]), padVs: new Float32Array([0]),
       colors: new Uint32Array([0xff0000ff]),
       instanceCount: 1,
-      bpPerPxH: 1,
-      bpPerPxV: 1,
     })
 
-    const scaleX = 2
-    const scaleY = 3
-    const offsetX = 10
-    const offsetY = 20
-    renderer.render(
-      renderState(offsetX, offsetY, 1, [{ displayKey: 0, scaleX, scaleY }]),
-    )
+    const viewBpH = 5       // = offsetX / scaleX = 10 / 2
+    const viewBpV = 20 / 3  // = offsetY / scaleY = 20 / 3
+    renderer.render({
+      viewBpHHi: 0, viewBpHLo: viewBpH, bpPerPxHInv: 2,
+      viewBpVHi: 0, viewBpVLo: viewBpV, bpPerPxVInv: 3,
+      lineWidth: 1,
+      displayKeys: [0],
+    })
 
     expect(ctx.moveTo).toHaveBeenCalledWith(190, 20)
   })
@@ -122,18 +119,18 @@ describe('Canvas2DDotplotRenderer', () => {
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
 
+    const zeros = new Float32Array([0])
     renderer.uploadGeometry(0, {
-      x1s: new Float32Array([0]),
-      y1s: new Float32Array([0]),
-      x2s: new Float32Array([1]),
-      y2s: new Float32Array([1]),
+      x1Hi: zeros.slice(), x1Lo: zeros.slice(),
+      y1Hi: zeros.slice(), y1Lo: zeros.slice(),
+      x2Hi: new Float32Array([1]), x2Lo: zeros.slice(),
+      y2Hi: new Float32Array([1]), y2Lo: zeros.slice(),
+      padHs: zeros.slice(), padVs: zeros.slice(),
       colors: new Uint32Array([0xccbf4080]),
       instanceCount: 1,
-      bpPerPxH: 1,
-      bpPerPxV: 1,
     })
 
-    renderer.render(renderState(0, 0, 1, SCALE_1))
+    renderer.render(DEFAULT_STATE)
     expect(ctx.strokeStyle).toMatch(/^rgba\(128,64,191,0\.8/)
   })
 
@@ -143,12 +140,10 @@ describe('Canvas2DDotplotRenderer', () => {
     renderer.resize(800, 600)
     renderer.uploadGeometry(0, makeGeometry(2))
     renderer.uploadGeometry(1, makeGeometry(3))
-    renderer.render(
-      renderState(0, 0, 2, [
-        { displayKey: 0, scaleX: 1, scaleY: 1 },
-        { displayKey: 1, scaleX: 1, scaleY: 1 },
-      ]),
-    )
+    renderer.render({
+      ...DEFAULT_STATE,
+      displayKeys: [0, 1],
+    })
     expect(strokeCalls.length).toBe(5)
   })
 
@@ -159,12 +154,10 @@ describe('Canvas2DDotplotRenderer', () => {
     renderer.uploadGeometry(0, makeGeometry(2))
     renderer.uploadGeometry(1, makeGeometry(3))
     renderer.deleteGeometry(0)
-    renderer.render(
-      renderState(0, 0, 2, [
-        { displayKey: 0, scaleX: 1, scaleY: 1 },
-        { displayKey: 1, scaleX: 1, scaleY: 1 },
-      ]),
-    )
+    renderer.render({
+      ...DEFAULT_STATE,
+      displayKeys: [0, 1],
+    })
     expect(strokeCalls.length).toBe(3)
   })
 
@@ -191,7 +184,7 @@ describe('Canvas2DDotplotRenderer', () => {
     renderer.resize(800, 600)
     renderer.uploadGeometry(0, makeGeometry(2))
     renderer.dispose()
-    renderer.render(renderState(0, 0, 1, SCALE_1))
+    renderer.render(DEFAULT_STATE)
     expect(strokeCalls.length).toBe(0)
   })
 })

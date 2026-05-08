@@ -54,22 +54,7 @@ public struct Corners {
   public float x1, x2, x3, x4;
 };
 
-// hp-math screen-x for one corner. With `viewBp = offsetPx * bpPerPx`
-// (padded-bp), `(cumBp - viewBp)/bpPerPx + pad = cumBp/bpPerPx + pad -
-// offsetPx = featurePx_padded - offsetPx`, which is the LGV's render
-// position. The `max(..., -inf)` pattern (lifted from hpmath.slang)
-// prevents the compiler from combining the hi/lo terms before the multiply,
-// which is what preserves the extra mantissa bits.
-float hpCornerScreenX(
-  float bpHi, float bpLo,
-  float originHi, float originLo,
-  float bpPerPxInv, float pad, float hpZero,
-) {
-  float inf = 1.0 / hpZero;
-  float hi = max(bpHi - originHi, -inf);
-  float lo = max(bpLo - originLo, -inf);
-  return dot(float2(hi, lo), float2(bpPerPxInv, bpPerPxInv)) + pad;
-}
+// hpCornerScreenX is now in hpmath.slang (imported above).
 
 public Corners computeCorners(Instance inst, Uniforms u) {
   Corners c;

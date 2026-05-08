@@ -2,20 +2,24 @@ import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface DotplotRpcData {
-  p11s: Float64Array
-  p12s: Float64Array
-  p21s: Float64Array
-  p22s: Float64Array
+  p11Hi: Float32Array
+  p11Lo: Float32Array
+  p12Hi: Float32Array
+  p12Lo: Float32Array
+  p21Hi: Float32Array
+  p21Lo: Float32Array
+  p22Hi: Float32Array
+  p22Lo: Float32Array
+  padHs: Float32Array
+  padVs: Float32Array
   strands: Int8Array
   starts: Uint32Array
   ends: Uint32Array
-  parsedCigars: string[][]
+  parsedCigars: number[][]
   identities: Float32Array
   meanScores: Float32Array
   mappingQuals: Float32Array
   refNames: string[]
-  bpPerPxH: number
-  bpPerPxV: number
 }
 
 export interface DotplotRenderModel extends IAnyStateTreeNode {

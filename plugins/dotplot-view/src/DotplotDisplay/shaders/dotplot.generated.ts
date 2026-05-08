@@ -3,99 +3,141 @@
 
 import type { GlAttributeLayout } from '@jbrowse/core/gpu/hal'
 
-export const WGSL_SOURCE = "struct Uniforms_std140_0\n{\n    @align(16) resolution_0 : vec2<f32>,\n    @align(8) offsetX_0 : f32,\n    @align(4) offsetY_0 : f32,\n    @align(16) lineWidth_0 : f32,\n    @align(4) scaleX_0 : f32,\n    @align(8) scaleY_0 : f32,\n};\n\n@binding(1) @group(0) var<uniform> u_0 : Uniforms_std140_0;\nfn unpackRGBA_0( c_0 : u32) -> vec4<f32>\n{\n    return vec4<f32>(f32((((c_0 >> (u32(0)))) & (u32(255)))), f32((((c_0 >> (u32(8)))) & (u32(255)))), f32((((c_0 >> (u32(16)))) & (u32(255)))), f32((((c_0 >> (u32(24)))) & (u32(255))))) / vec4<f32>(255.0f);\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n    @location(1) edge_0 : f32,\n};\n\nstruct vertexInput_0\n{\n    @location(0) x1_0 : f32,\n    @location(1) y1_0 : f32,\n    @location(2) x2_0 : f32,\n    @location(3) y2_0 : f32,\n    @location(4) color_1 : u32,\n};\n\n@vertex\nfn vs_main( _S1 : vertexInput_0, @builtin(vertex_index) vid_0 : u32) -> VsOut_0\n{\n    var v_0 : u32 = vid_0 % u32(6);\n    var _S2 : bool;\n    if(v_0 == u32(2))\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(3);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(5);\n    }\n    var t_0 : f32;\n    if(_S2)\n    {\n        t_0 = 1.0f;\n    }\n    else\n    {\n        t_0 = 0.0f;\n    }\n    if(v_0 == u32(1))\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(4);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(5);\n    }\n    var side_0 : f32;\n    if(_S2)\n    {\n        side_0 = 1.0f;\n    }\n    else\n    {\n        side_0 = -1.0f;\n    }\n    var sx1_0 : f32 = _S1.x1_0 * u_0.scaleX_0 - u_0.offsetX_0;\n    var sy1_0 : f32 = u_0.resolution_0.y - (_S1.y1_0 * u_0.scaleY_0 - u_0.offsetY_0);\n    var sx2_0 : f32 = _S1.x2_0 * u_0.scaleX_0 - u_0.offsetX_0;\n    var sy2_0 : f32 = u_0.resolution_0.y - (_S1.y2_0 * u_0.scaleY_0 - u_0.offsetY_0);\n    var x_0 : f32 = mix(sx1_0, sx2_0, t_0);\n    var y_0 : f32 = mix(sy1_0, sy2_0, t_0);\n    var dx_0 : f32 = sx2_0 - sx1_0;\n    var dy_0 : f32 = sy2_0 - sy1_0;\n    var len_0 : f32 = sqrt(dx_0 * dx_0 + dy_0 * dy_0);\n    var normal_0 : vec2<f32>;\n    if(len_0 > 0.00100000004749745f)\n    {\n        normal_0 = vec2<f32>(- dy_0, dx_0) / vec2<f32>(len_0);\n    }\n    else\n    {\n        normal_0 = vec2<f32>(0.0f, 1.0f);\n    }\n    var clipSpace_0 : vec2<f32> = (vec2<f32>(x_0, y_0) + normal_0 * vec2<f32>(side_0) * vec2<f32>(u_0.lineWidth_0) * vec2<f32>(0.5f)) / u_0.resolution_0 * vec2<f32>(2.0f) - vec2<f32>(1.0f);\n    var o_0 : VsOut_0;\n    o_0.position_0 = vec4<f32>(clipSpace_0.x, - clipSpace_0.y, 0.0f, 1.0f);\n    o_0.color_0 = unpackRGBA_0(_S1.color_1);\n    o_0.edge_0 = side_0;\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_2 : vec4<f32>,\n    @location(1) edge_1 : f32,\n};\n\n@fragment\nfn fs_main( _S3 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0\n{\n    var aa_0 : f32 = (fwidth((_S3.edge_1)));\n    var finalAlpha_0 : f32 = _S3.color_2.w * (1.0f - smoothstep(0.5f - aa_0 * 0.5f, 0.5f + aa_0, abs(_S3.edge_1)));\n    var _S4 : pixelOutput_0 = pixelOutput_0( vec4<f32>(_S3.color_2.xyz * vec3<f32>(finalAlpha_0), finalAlpha_0) );\n    return _S4;\n}\n\n"
+export const WGSL_SOURCE = "struct Uniforms_std140_0\n{\n    @align(16) resolution_0 : vec2<f32>,\n    @align(8) lineWidth_0 : f32,\n    @align(4) viewBpHHi_0 : f32,\n    @align(16) viewBpHLo_0 : f32,\n    @align(4) bpPerPxHInv_0 : f32,\n    @align(8) viewBpVHi_0 : f32,\n    @align(4) viewBpVLo_0 : f32,\n    @align(16) bpPerPxVInv_0 : f32,\n    @align(4) hpZero_0 : f32,\n};\n\n@binding(1) @group(0) var<uniform> u_0 : Uniforms_std140_0;\nfn hpCornerScreenX_0( bpHi_0 : f32,  bpLo_0 : f32,  originHi_0 : f32,  originLo_0 : f32,  bpPerPxInv_0 : f32,  pad_0 : f32,  hpZero_1 : f32) -> f32\n{\n    var _S1 : f32 = - (1.0f / hpZero_1);\n    return dot(vec2<f32>(max(bpHi_0 - originHi_0, _S1), max(bpLo_0 - originLo_0, _S1)), vec2<f32>(bpPerPxInv_0, bpPerPxInv_0)) + pad_0;\n}\n\nfn unpackRGBA_0( c_0 : u32) -> vec4<f32>\n{\n    return vec4<f32>(f32((((c_0 >> (u32(0)))) & (u32(255)))), f32((((c_0 >> (u32(8)))) & (u32(255)))), f32((((c_0 >> (u32(16)))) & (u32(255)))), f32((((c_0 >> (u32(24)))) & (u32(255))))) / vec4<f32>(255.0f);\n}\n\nstruct VsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n    @location(1) edge_0 : f32,\n};\n\nstruct vertexInput_0\n{\n    @location(0) x1Hi_0 : f32,\n    @location(1) x1Lo_0 : f32,\n    @location(2) y1Hi_0 : f32,\n    @location(3) y1Lo_0 : f32,\n    @location(4) x2Hi_0 : f32,\n    @location(5) x2Lo_0 : f32,\n    @location(6) y2Hi_0 : f32,\n    @location(7) y2Lo_0 : f32,\n    @location(8) padH_0 : f32,\n    @location(9) padV_0 : f32,\n    @location(10) color_1 : u32,\n};\n\n@vertex\nfn vs_main( _S2 : vertexInput_0, @builtin(vertex_index) vid_0 : u32) -> VsOut_0\n{\n    var v_0 : u32 = vid_0 % u32(6);\n    var _S3 : bool;\n    if(v_0 == u32(2))\n    {\n        _S3 = true;\n    }\n    else\n    {\n        _S3 = v_0 == u32(3);\n    }\n    if(_S3)\n    {\n        _S3 = true;\n    }\n    else\n    {\n        _S3 = v_0 == u32(5);\n    }\n    var t_0 : f32;\n    if(_S3)\n    {\n        t_0 = 1.0f;\n    }\n    else\n    {\n        t_0 = 0.0f;\n    }\n    if(v_0 == u32(1))\n    {\n        _S3 = true;\n    }\n    else\n    {\n        _S3 = v_0 == u32(4);\n    }\n    if(_S3)\n    {\n        _S3 = true;\n    }\n    else\n    {\n        _S3 = v_0 == u32(5);\n    }\n    var side_0 : f32;\n    if(_S3)\n    {\n        side_0 = 1.0f;\n    }\n    else\n    {\n        side_0 = -1.0f;\n    }\n    var sx1_0 : f32 = hpCornerScreenX_0(_S2.x1Hi_0, _S2.x1Lo_0, u_0.viewBpHHi_0, u_0.viewBpHLo_0, u_0.bpPerPxHInv_0, _S2.padH_0, u_0.hpZero_0);\n    var sy1_0 : f32 = u_0.resolution_0.y - hpCornerScreenX_0(_S2.y1Hi_0, _S2.y1Lo_0, u_0.viewBpVHi_0, u_0.viewBpVLo_0, u_0.bpPerPxVInv_0, _S2.padV_0, u_0.hpZero_0);\n    var sx2_0 : f32 = hpCornerScreenX_0(_S2.x2Hi_0, _S2.x2Lo_0, u_0.viewBpHHi_0, u_0.viewBpHLo_0, u_0.bpPerPxHInv_0, _S2.padH_0, u_0.hpZero_0);\n    var sy2_0 : f32 = u_0.resolution_0.y - hpCornerScreenX_0(_S2.y2Hi_0, _S2.y2Lo_0, u_0.viewBpVHi_0, u_0.viewBpVLo_0, u_0.bpPerPxVInv_0, _S2.padV_0, u_0.hpZero_0);\n    var x_0 : f32 = mix(sx1_0, sx2_0, t_0);\n    var y_0 : f32 = mix(sy1_0, sy2_0, t_0);\n    var dx_0 : f32 = sx2_0 - sx1_0;\n    var dy_0 : f32 = sy2_0 - sy1_0;\n    var len_0 : f32 = sqrt(dx_0 * dx_0 + dy_0 * dy_0);\n    var normal_0 : vec2<f32>;\n    if(len_0 > 0.00100000004749745f)\n    {\n        normal_0 = vec2<f32>(- dy_0, dx_0) / vec2<f32>(len_0);\n    }\n    else\n    {\n        normal_0 = vec2<f32>(0.0f, 1.0f);\n    }\n    var clipSpace_0 : vec2<f32> = (vec2<f32>(x_0, y_0) + normal_0 * vec2<f32>(side_0) * vec2<f32>(u_0.lineWidth_0) * vec2<f32>(0.5f)) / u_0.resolution_0 * vec2<f32>(2.0f) - vec2<f32>(1.0f);\n    var o_0 : VsOut_0;\n    o_0.position_0 = vec4<f32>(clipSpace_0.x, - clipSpace_0.y, 0.0f, 1.0f);\n    o_0.color_0 = unpackRGBA_0(_S2.color_1);\n    o_0.edge_0 = side_0;\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_2 : vec4<f32>,\n    @location(1) edge_1 : f32,\n};\n\n@fragment\nfn fs_main( _S4 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0\n{\n    var aa_0 : f32 = (fwidth((_S4.edge_1)));\n    var finalAlpha_0 : f32 = _S4.color_2.w * (1.0f - smoothstep(0.5f - aa_0 * 0.5f, 0.5f + aa_0, abs(_S4.edge_1)));\n    var _S5 : pixelOutput_0 = pixelOutput_0( vec4<f32>(_S4.color_2.xyz * vec3<f32>(finalAlpha_0), finalAlpha_0) );\n    return _S5;\n}\n\n"
 
-export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 23 0\nstruct Uniforms_0\n{\n    vec2 resolution_0;\n    float offsetX_0;\n    float offsetY_0;\n    float lineWidth_0;\n    float scaleX_0;\n    float scaleY_0;\n};\n\n\n#line 31\nlayout(std140) uniform Uniforms\n{\n    vec2 resolution_0;\n    float offsetX_0;\n    float offsetY_0;\n    float lineWidth_0;\n    float scaleX_0;\n    float scaleY_0;\n}u_0;\n\n#line 7 1\nvec4 unpackRGBA_0(uint c_0)\n{\n\n#line 8\n    return vec4(float((c_0 >> 0U) & 255U), float((c_0 >> 8U) & 255U), float((c_0 >> 16U) & 255U), float((c_0 >> 24U) & 255U)) / 255.0;\n}\n\n\n#line 8\nout vec4 v_color;\n\n\n#line 8\nout float v_edge;\n\n\n#line 8\nlayout(location = 0)\nin float a_x1;\n\n\n#line 8\nlayout(location = 1)\nin float a_y1;\n\n\n#line 8\nlayout(location = 2)\nin float a_x2;\n\n\n#line 8\nlayout(location = 3)\nin float a_y2;\n\n\n#line 8\nlayout(location = 4)\nin uint a_color;\n\n\n#line 33 0\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n    float edge_0;\n};\n\nvoid main()\n{\n\n#line 41\n    uint v_0 = uint(gl_VertexID) % 6U;\n\n#line 41\n    bool _S1;\n\n#line 49\n    if(v_0 == 2U)\n    {\n\n#line 49\n        _S1 = true;\n\n#line 49\n    }\n    else\n    {\n\n#line 49\n        _S1 = v_0 == 3U;\n\n#line 49\n    }\n\n#line 49\n    if(_S1)\n    {\n\n#line 49\n        _S1 = true;\n\n#line 49\n    }\n    else\n    {\n\n#line 49\n        _S1 = v_0 == 5U;\n\n#line 49\n    }\n\n#line 49\n    float t_0;\n\n#line 49\n    if(_S1)\n    {\n\n#line 49\n        t_0 = 1.0;\n\n#line 49\n    }\n    else\n    {\n\n#line 49\n        t_0 = 0.0;\n\n#line 49\n    }\n    if(v_0 == 1U)\n    {\n\n#line 50\n        _S1 = true;\n\n#line 50\n    }\n    else\n    {\n\n#line 50\n        _S1 = v_0 == 4U;\n\n#line 50\n    }\n\n#line 50\n    if(_S1)\n    {\n\n#line 50\n        _S1 = true;\n\n#line 50\n    }\n    else\n    {\n\n#line 50\n        _S1 = v_0 == 5U;\n\n#line 50\n    }\n\n#line 50\n    float side_0;\n\n#line 50\n    if(_S1)\n    {\n\n#line 50\n        side_0 = 1.0;\n\n#line 50\n    }\n    else\n    {\n\n#line 50\n        side_0 = -1.0;\n\n#line 50\n    }\n\n    float sx1_0 = a_x1 * u_0.scaleX_0 - u_0.offsetX_0;\n    float sy1_0 = u_0.resolution_0.y - (a_y1 * u_0.scaleY_0 - u_0.offsetY_0);\n    float sx2_0 = a_x2 * u_0.scaleX_0 - u_0.offsetX_0;\n    float sy2_0 = u_0.resolution_0.y - (a_y2 * u_0.scaleY_0 - u_0.offsetY_0);\n\n    float x_0 = mix(sx1_0, sx2_0, t_0);\n    float y_0 = mix(sy1_0, sy2_0, t_0);\n\n    float dx_0 = sx2_0 - sx1_0;\n    float dy_0 = sy2_0 - sy1_0;\n    float len_0 = sqrt(dx_0 * dx_0 + dy_0 * dy_0);\n\n#line 62\n    vec2 normal_0;\n\n    if(len_0 > 0.00100000004749745)\n    {\n\n#line 64\n        normal_0 = vec2(- dy_0, dx_0) / len_0;\n\n#line 64\n    }\n    else\n    {\n\n#line 64\n        normal_0 = vec2(0.0, 1.0);\n\n#line 64\n    }\n\n#line 71\n    vec2 clipSpace_0 = (vec2(x_0, y_0) + normal_0 * side_0 * u_0.lineWidth_0 * 0.5) / u_0.resolution_0 * 2.0 - 1.0;\n\n    VsOut_0 o_0;\n    o_0.position_0 = vec4(clipSpace_0.x, - clipSpace_0.y, 0.0, 1.0);\n    o_0.color_0 = unpackRGBA_0(a_color);\n    o_0.edge_0 = side_0;\n    VsOut_0 _S2 = o_0;\n\n#line 77\n    gl_Position = o_0.position_0;\n\n#line 77\n    v_color = _S2.color_0;\n\n#line 77\n    v_edge = _S2.edge_0;\n\n#line 77\n    return;\n}\n\n"
+export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 32 0\nstruct Uniforms_0\n{\n    vec2 resolution_0;\n    float lineWidth_0;\n    float viewBpHHi_0;\n    float viewBpHLo_0;\n    float bpPerPxHInv_0;\n    float viewBpVHi_0;\n    float viewBpVLo_0;\n    float bpPerPxVInv_0;\n    float hpZero_0;\n};\n\n\n#line 43\nlayout(std140) uniform Uniforms\n{\n    vec2 resolution_0;\n    float lineWidth_0;\n    float viewBpHHi_0;\n    float viewBpHLo_0;\n    float bpPerPxHInv_0;\n    float viewBpVHi_0;\n    float viewBpVLo_0;\n    float bpPerPxVInv_0;\n    float hpZero_0;\n}u_0;\n\n#line 49 1\nfloat hpCornerScreenX_0(float bpHi_0, float bpLo_0, float originHi_0, float originLo_0, float bpPerPxInv_0, float pad_0, float hpZero_1)\n{\n\n#line 55\n    float _S1 = - (1.0 / hpZero_1);\n\n    return dot(vec2(max(bpHi_0 - originHi_0, _S1), max(bpLo_0 - originLo_0, _S1)), vec2(bpPerPxInv_0, bpPerPxInv_0)) + pad_0;\n}\n\n\n#line 7 2\nvec4 unpackRGBA_0(uint c_0)\n{\n\n#line 8\n    return vec4(float((c_0 >> 0U) & 255U), float((c_0 >> 8U) & 255U), float((c_0 >> 16U) & 255U), float((c_0 >> 24U) & 255U)) / 255.0;\n}\n\n\n#line 8\nout vec4 v_color;\n\n\n#line 8\nout float v_edge;\n\n\n#line 8\nlayout(location = 0)\nin float a_x1Hi;\n\n\n#line 8\nlayout(location = 1)\nin float a_x1Lo;\n\n\n#line 8\nlayout(location = 2)\nin float a_y1Hi;\n\n\n#line 8\nlayout(location = 3)\nin float a_y1Lo;\n\n\n#line 8\nlayout(location = 4)\nin float a_x2Hi;\n\n\n#line 8\nlayout(location = 5)\nin float a_x2Lo;\n\n\n#line 8\nlayout(location = 6)\nin float a_y2Hi;\n\n\n#line 8\nlayout(location = 7)\nin float a_y2Lo;\n\n\n#line 8\nlayout(location = 8)\nin float a_padH;\n\n\n#line 8\nlayout(location = 9)\nin float a_padV;\n\n\n#line 8\nlayout(location = 10)\nin uint a_color;\n\n\n#line 45 0\nstruct VsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n    float edge_0;\n};\n\nvoid main()\n{\n\n#line 53\n    uint v_0 = uint(gl_VertexID) % 6U;\n\n#line 53\n    bool _S2;\n\n\n\n    if(v_0 == 2U)\n    {\n\n#line 57\n        _S2 = true;\n\n#line 57\n    }\n    else\n    {\n\n#line 57\n        _S2 = v_0 == 3U;\n\n#line 57\n    }\n\n#line 57\n    if(_S2)\n    {\n\n#line 57\n        _S2 = true;\n\n#line 57\n    }\n    else\n    {\n\n#line 57\n        _S2 = v_0 == 5U;\n\n#line 57\n    }\n\n#line 57\n    float t_0;\n\n#line 57\n    if(_S2)\n    {\n\n#line 57\n        t_0 = 1.0;\n\n#line 57\n    }\n    else\n    {\n\n#line 57\n        t_0 = 0.0;\n\n#line 57\n    }\n    if(v_0 == 1U)\n    {\n\n#line 58\n        _S2 = true;\n\n#line 58\n    }\n    else\n    {\n\n#line 58\n        _S2 = v_0 == 4U;\n\n#line 58\n    }\n\n#line 58\n    if(_S2)\n    {\n\n#line 58\n        _S2 = true;\n\n#line 58\n    }\n    else\n    {\n\n#line 58\n        _S2 = v_0 == 5U;\n\n#line 58\n    }\n\n#line 58\n    float side_0;\n\n#line 58\n    if(_S2)\n    {\n\n#line 58\n        side_0 = 1.0;\n\n#line 58\n    }\n    else\n    {\n\n#line 58\n        side_0 = -1.0;\n\n#line 58\n    }\n\n    float sx1_0 = hpCornerScreenX_0(a_x1Hi, a_x1Lo, u_0.viewBpHHi_0, u_0.viewBpHLo_0, u_0.bpPerPxHInv_0, a_padH, u_0.hpZero_0);\n    float sy1_0 = u_0.resolution_0.y - hpCornerScreenX_0(a_y1Hi, a_y1Lo, u_0.viewBpVHi_0, u_0.viewBpVLo_0, u_0.bpPerPxVInv_0, a_padV, u_0.hpZero_0);\n    float sx2_0 = hpCornerScreenX_0(a_x2Hi, a_x2Lo, u_0.viewBpHHi_0, u_0.viewBpHLo_0, u_0.bpPerPxHInv_0, a_padH, u_0.hpZero_0);\n    float sy2_0 = u_0.resolution_0.y - hpCornerScreenX_0(a_y2Hi, a_y2Lo, u_0.viewBpVHi_0, u_0.viewBpVLo_0, u_0.bpPerPxVInv_0, a_padV, u_0.hpZero_0);\n\n    float x_0 = mix(sx1_0, sx2_0, t_0);\n    float y_0 = mix(sy1_0, sy2_0, t_0);\n\n    float dx_0 = sx2_0 - sx1_0;\n    float dy_0 = sy2_0 - sy1_0;\n    float len_0 = sqrt(dx_0 * dx_0 + dy_0 * dy_0);\n\n#line 70\n    vec2 normal_0;\n\n    if(len_0 > 0.00100000004749745)\n    {\n\n#line 72\n        normal_0 = vec2(- dy_0, dx_0) / len_0;\n\n#line 72\n    }\n    else\n    {\n\n#line 72\n        normal_0 = vec2(0.0, 1.0);\n\n#line 72\n    }\n\n#line 79\n    vec2 clipSpace_0 = (vec2(x_0, y_0) + normal_0 * side_0 * u_0.lineWidth_0 * 0.5) / u_0.resolution_0 * 2.0 - 1.0;\n\n    VsOut_0 o_0;\n    o_0.position_0 = vec4(clipSpace_0.x, - clipSpace_0.y, 0.0, 1.0);\n    o_0.color_0 = unpackRGBA_0(a_color);\n    o_0.edge_0 = side_0;\n    VsOut_0 _S3 = o_0;\n\n#line 85\n    gl_Position = o_0.position_0;\n\n#line 85\n    v_color = _S3.color_0;\n\n#line 85\n    v_edge = _S3.edge_0;\n\n#line 85\n    return;\n}\n\n"
 
-export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 993\nin float v_edge;\n\n\n#line 81 1\nvoid main()\n{\n    float aa_0 = (fwidth((v_edge)));\n\n    float finalAlpha_0 = v_color.w * (1.0 - smoothstep(0.5 - aa_0 * 0.5, 0.5 + aa_0, abs(v_edge)));\n\n#line 85\n    entryPointParam_fs_main_0 = vec4(v_color.xyz * finalAlpha_0, finalAlpha_0);\n\n#line 85\n    return;\n}\n\n"
+export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 993\nin float v_edge;\n\n\n#line 89 1\nvoid main()\n{\n    float aa_0 = (fwidth((v_edge)));\n\n    float finalAlpha_0 = v_color.w * (1.0 - smoothstep(0.5 - aa_0 * 0.5, 0.5 + aa_0, abs(v_edge)));\n\n#line 93\n    entryPointParam_fs_main_0 = vec4(v_color.xyz * finalAlpha_0, finalAlpha_0);\n\n#line 93\n    return;\n}\n\n"
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 32
-export const UNIFORMS_SIZE_F32 = 8
+export const UNIFORMS_SIZE_BYTES = 48
+export const UNIFORMS_SIZE_F32 = 12
 
 // Byte offsets (into an ArrayBuffer / DataView).
 export const UNIFORM_OFFSET_BYTES = {
   resolution: 0,
-  offsetX: 8,
-  offsetY: 12,
-  lineWidth: 16,
-  scaleX: 20,
-  scaleY: 24,
+  lineWidth: 8,
+  viewBpHHi: 12,
+  viewBpHLo: 16,
+  bpPerPxHInv: 20,
+  viewBpVHi: 24,
+  viewBpVLo: 28,
+  bpPerPxVInv: 32,
+  hpZero: 36,
 } as const
 
 // Indices into a Float32Array / Uint32Array view.
 export const UNIFORM_OFFSET_F32 = {
   resolution: 0,
-  offsetX: 2,
-  offsetY: 3,
-  lineWidth: 4,
-  scaleX: 5,
-  scaleY: 6,
+  lineWidth: 2,
+  viewBpHHi: 3,
+  viewBpHLo: 4,
+  bpPerPxHInv: 5,
+  viewBpVHi: 6,
+  viewBpVLo: 7,
+  bpPerPxVInv: 8,
+  hpZero: 9,
 } as const
 
 
 export interface Uniforms {
   resolution: [number, number]
-  offsetX: number
-  offsetY: number
   lineWidth: number
-  scaleX: number
-  scaleY: number
+  viewBpHHi: number
+  viewBpHLo: number
+  bpPerPxHInv: number
+  viewBpVHi: number
+  viewBpVLo: number
+  bpPerPxVInv: number
+  hpZero: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   const f32 = new Float32Array(buf)
   f32[0] = uniforms.resolution[0]
   f32[1] = uniforms.resolution[1]
-  f32[2] = uniforms.offsetX
-  f32[3] = uniforms.offsetY
-  f32[4] = uniforms.lineWidth
-  f32[5] = uniforms.scaleX
-  f32[6] = uniforms.scaleY
+  f32[2] = uniforms.lineWidth
+  f32[3] = uniforms.viewBpHHi
+  f32[4] = uniforms.viewBpHLo
+  f32[5] = uniforms.bpPerPxHInv
+  f32[6] = uniforms.viewBpVHi
+  f32[7] = uniforms.viewBpVLo
+  f32[8] = uniforms.bpPerPxVInv
+  f32[9] = uniforms.hpZero
 }
 
-export const INSTANCE_STRIDE_BYTES = 20
-export const INSTANCE_STRIDE_F32 = 5
+export const INSTANCE_STRIDE_BYTES = 44
+export const INSTANCE_STRIDE_F32 = 11
 
 export const FIELD_OFFSET_BYTES = {
-  x1: 0,
-  y1: 4,
-  x2: 8,
-  y2: 12,
-  color: 16,
+  x1Hi: 0,
+  x1Lo: 4,
+  y1Hi: 8,
+  y1Lo: 12,
+  x2Hi: 16,
+  x2Lo: 20,
+  y2Hi: 24,
+  y2Lo: 28,
+  padH: 32,
+  padV: 36,
+  color: 40,
 } as const
 
 export const FIELD_OFFSET_F32 = {
-  x1: 0,
-  y1: 1,
-  x2: 2,
-  y2: 3,
-  color: 4,
+  x1Hi: 0,
+  x1Lo: 1,
+  y1Hi: 2,
+  y1Lo: 3,
+  x2Hi: 4,
+  x2Lo: 5,
+  y2Hi: 6,
+  y2Lo: 7,
+  padH: 8,
+  padV: 9,
+  color: 10,
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
-  { name: 'a_x1', components: 1, type: 'float', offsetBytes: 0, integer: false },
-  { name: 'a_y1', components: 1, type: 'float', offsetBytes: 4, integer: false },
-  { name: 'a_x2', components: 1, type: 'float', offsetBytes: 8, integer: false },
-  { name: 'a_y2', components: 1, type: 'float', offsetBytes: 12, integer: false },
-  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
+  { name: 'a_x1Hi', components: 1, type: 'float', offsetBytes: 0, integer: false },
+  { name: 'a_x1Lo', components: 1, type: 'float', offsetBytes: 4, integer: false },
+  { name: 'a_y1Hi', components: 1, type: 'float', offsetBytes: 8, integer: false },
+  { name: 'a_y1Lo', components: 1, type: 'float', offsetBytes: 12, integer: false },
+  { name: 'a_x2Hi', components: 1, type: 'float', offsetBytes: 16, integer: false },
+  { name: 'a_x2Lo', components: 1, type: 'float', offsetBytes: 20, integer: false },
+  { name: 'a_y2Hi', components: 1, type: 'float', offsetBytes: 24, integer: false },
+  { name: 'a_y2Lo', components: 1, type: 'float', offsetBytes: 28, integer: false },
+  { name: 'a_padH', components: 1, type: 'float', offsetBytes: 32, integer: false },
+  { name: 'a_padV', components: 1, type: 'float', offsetBytes: 36, integer: false },
+  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 40, integer: true },
 ]
 
 export interface DotplotInstance {
-  x1: number
-  y1: number
-  x2: number
-  y2: number
+  x1Hi: number
+  x1Lo: number
+  y1Hi: number
+  y1Lo: number
+  x2Hi: number
+  x2Lo: number
+  y2Hi: number
+  y2Lo: number
+  padH: number
+  padV: number
   color: number
 }
 
 export function writeDotplotInstance(buf: ArrayBuffer, instanceIndex: number, inst: DotplotInstance) {
-  const base = instanceIndex * 20
+  const base = instanceIndex * 44
   const dv = new DataView(buf)
-  dv.setFloat32(base + 0, inst.x1, true)
-  dv.setFloat32(base + 4, inst.y1, true)
-  dv.setFloat32(base + 8, inst.x2, true)
-  dv.setFloat32(base + 12, inst.y2, true)
-  dv.setUint32(base + 16, inst.color, true)
+  dv.setFloat32(base + 0, inst.x1Hi, true)
+  dv.setFloat32(base + 4, inst.x1Lo, true)
+  dv.setFloat32(base + 8, inst.y1Hi, true)
+  dv.setFloat32(base + 12, inst.y1Lo, true)
+  dv.setFloat32(base + 16, inst.x2Hi, true)
+  dv.setFloat32(base + 20, inst.x2Lo, true)
+  dv.setFloat32(base + 24, inst.y2Hi, true)
+  dv.setFloat32(base + 28, inst.y2Lo, true)
+  dv.setFloat32(base + 32, inst.padH, true)
+  dv.setFloat32(base + 36, inst.padV, true)
+  dv.setUint32(base + 40, inst.color, true)
 }

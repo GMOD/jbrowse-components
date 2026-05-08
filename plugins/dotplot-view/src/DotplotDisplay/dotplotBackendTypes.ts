@@ -1,26 +1,27 @@
-export interface TrackScale {
-  displayKey: number
-  scaleX: number
-  scaleY: number
-}
-
 export interface DotplotGeometryData {
-  x1s: Float32Array
-  y1s: Float32Array
-  x2s: Float32Array
-  y2s: Float32Array
+  x1Hi: Float32Array
+  x1Lo: Float32Array
+  y1Hi: Float32Array
+  y1Lo: Float32Array
+  x2Hi: Float32Array
+  x2Lo: Float32Array
+  y2Hi: Float32Array
+  y2Lo: Float32Array
+  padHs: Float32Array
+  padVs: Float32Array
   colors: Uint32Array
   instanceCount: number
-  // bpPerPx the buffer was built at; render-time scale = bpPerPx / view.bpPerPx
-  bpPerPxH: number
-  bpPerPxV: number
 }
 
 export interface DotplotRenderState {
-  offsetX: number
-  offsetY: number
+  viewBpHHi: number
+  viewBpHLo: number
+  bpPerPxHInv: number
+  viewBpVHi: number
+  viewBpVLo: number
+  bpPerPxVInv: number
   lineWidth: number
-  trackScales: readonly TrackScale[]
+  displayKeys: readonly number[]
 }
 
 export interface DotplotBackend {

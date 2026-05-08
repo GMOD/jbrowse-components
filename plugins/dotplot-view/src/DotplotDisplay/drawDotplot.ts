@@ -4,10 +4,10 @@ import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export interface DotplotDrawParams {
-  scaleX: number
-  scaleY: number
-  offsetX: number
-  offsetY: number
+  viewBpH: number
+  bpPerPxHInv: number
+  viewBpV: number
+  bpPerPxVInv: number
   viewHeight: number
 }
 
@@ -16,13 +16,30 @@ export function drawDotplotInstances(
   geometry: DotplotGeometryData,
   params: DotplotDrawParams,
 ) {
-  const { scaleX, scaleY, offsetX, offsetY, viewHeight } = params
-  const { x1s, y1s, x2s, y2s, colors, instanceCount } = geometry
+  const { viewBpH, bpPerPxHInv, viewBpV, bpPerPxVInv, viewHeight } = params
+  const {
+    x1Hi,
+    x1Lo,
+    y1Hi,
+    y1Lo,
+    x2Hi,
+    x2Lo,
+    y2Hi,
+    y2Lo,
+    padHs,
+    padVs,
+    colors,
+    instanceCount,
+  } = geometry
   for (let i = 0; i < instanceCount; i++) {
-    const sx1 = x1s[i]! * scaleX - offsetX
-    const sy1 = viewHeight - (y1s[i]! * scaleY - offsetY)
-    const sx2 = x2s[i]! * scaleX - offsetX
-    const sy2 = viewHeight - (y2s[i]! * scaleY - offsetY)
+    const sx1 = (x1Hi[i]! + x1Lo[i]! - viewBpH) * bpPerPxHInv + padHs[i]!
+    const sy1 =
+      viewHeight -
+      ((y1Hi[i]! + y1Lo[i]! - viewBpV) * bpPerPxVInv + padVs[i]!)
+    const sx2 = (x2Hi[i]! + x2Lo[i]! - viewBpH) * bpPerPxHInv + padHs[i]!
+    const sy2 =
+      viewHeight -
+      ((y2Hi[i]! + y2Lo[i]! - viewBpV) * bpPerPxVInv + padVs[i]!)
     ctx.strokeStyle = unpackColorToCSS(colors[i]!)
     ctx.beginPath()
     ctx.moveTo(sx1, sy1)

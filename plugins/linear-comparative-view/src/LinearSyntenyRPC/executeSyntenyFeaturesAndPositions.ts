@@ -6,6 +6,10 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import {
+  buildBpRegionIndex,
+  bpToCumBpAndPad,
+} from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -32,10 +36,6 @@ export interface SyntenyRpcResult extends SyntenyFeatureData {
   instanceData: SyntenyGeometry
 }
 
-// Returns genomic-only pixel offset (no inter-region padding baked in) plus
-// the cumulative padding pixels before the target region. Padding is counted
-// only between non-elided regions, matching calculateStaticBlocks. Uses float
-// precision (no Math.round) since the shader uses HP float subtraction.
 export function bpToPx({
   self,
   refName,
@@ -80,86 +80,6 @@ export function bpToPx({
     return {
       offsetPx: bpSoFar / bpPerPx + paddingPx,
       paddingPx,
-    }
-  }
-  return undefined
-}
-
-interface RegionIndexEntry {
-  index: number
-  region: Region
-  bpBefore: number
-  paddingPxBefore: number
-}
-
-export interface BpToPxIndex {
-  entries: Map<string, RegionIndexEntry[]>
-  bpPerPx: number
-}
-
-// SYNC: parallel impl in executeDotplotFeaturesAndPositions.ts in dotplot-view;
-// that version returns a scalar offsetPx (no region index needed)
-export function buildBpToPxIndex(self: SyntenyViewSnap): BpToPxIndex {
-  const {
-    interRegionPaddingWidth,
-    bpPerPx,
-    displayedRegions,
-    minimumBlockWidth,
-  } = self
-  const entries = new Map<string, RegionIndexEntry[]>()
-  let bpSoFar = 0
-  let paddingPx = 0
-
-  for (let i = 0, l = displayedRegions.length; i < l; i++) {
-    const r = displayedRegions[i]!
-    const len = r.end - r.start
-    const entry: RegionIndexEntry = {
-      index: i,
-      region: r,
-      bpBefore: bpSoFar,
-      paddingPxBefore: paddingPx,
-    }
-    let list = entries.get(r.refName)
-    if (!list) {
-      list = []
-      entries.set(r.refName, list)
-    }
-    list.push(entry)
-
-    bpSoFar += len
-    const regionWidthPx = len / bpPerPx
-    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
-      paddingPx += interRegionPaddingWidth
-    }
-  }
-  return { entries, bpPerPx }
-}
-
-export function bpToPxFromIndex(
-  idx: BpToPxIndex,
-  refName: string,
-  coord: number,
-  displayedRegionIndex?: number,
-) {
-  const list = idx.entries.get(refName)
-  if (!list) {
-    return undefined
-  }
-  for (const entry of list) {
-    const r = entry.region
-    if (
-      coord >= r.start &&
-      coord <= r.end &&
-      (displayedRegionIndex !== undefined
-        ? displayedRegionIndex === entry.index
-        : true)
-    ) {
-      const bpOffset = r.reversed ? r.end - coord : coord - r.start
-      const cumBp = entry.bpBefore + bpOffset
-      return {
-        offsetPx: cumBp / idx.bpPerPx + entry.paddingPxBefore,
-        paddingPx: entry.paddingPxBefore,
-      }
     }
   }
   return undefined
@@ -230,25 +150,25 @@ export async function executeSyntenyFeaturesAndPositions({
       )
     : features
 
-  const v1Index = buildBpToPxIndex(v1)
-  const v2Index = buildBpToPxIndex(v2)
+  const v1Index = buildBpRegionIndex(v1)
+  const v2Index = buildBpRegionIndex(v2)
 
   const count = processedFeatures.length
+  // cumBp (bpBefore + bpOffset, no padding) fits in Float64 — max 3Gbp.
   const p11Array = new Float64Array(count)
   const p12Array = new Float64Array(count)
   const p21Array = new Float64Array(count)
   const p22Array = new Float64Array(count)
   const strandsArray = new Int8Array(count)
-  // bp coordinates fit in uint32 (max 4.3 Gbp covers human/mouse/most genomes).
-  // Pixel offsets (p11..p22, padTop, padBottom) stay Float64 because they
-  // accumulate across regions × 1/bpPerPx and routinely exceed 2^32.
+  // bp coordinates fit in uint32 (max 4.3 Gbp).
   const startsArray = new Uint32Array(count)
   const endsArray = new Uint32Array(count)
   const mateStartsArray = new Uint32Array(count)
   const mateEndsArray = new Uint32Array(count)
   const identitiesArray = new Float32Array(count)
-  const padTopArray = new Float64Array(count)
-  const padBottomArray = new Float64Array(count)
+  // padPx (CSS pixels, ≤ a few thousand) — Float32 is more than adequate.
+  const padTopArray = new Float32Array(count)
+  const padBottomArray = new Float32Array(count)
 
   const featureIds: string[] = []
   const names: string[] = []
@@ -286,10 +206,8 @@ export async function executeSyntenyFeaturesAndPositions({
       assemblyName: string
     }
     // Whole-genome PAF at low zoom: most features are on refNames not in the
-    // displayed regions of one or both views. Skip them before any bpToPx
-    // arithmetic / object allocation. bpToPxFromIndex would also return
-    // undefined here, but only after a Map.get + result-object construction
-    // per call (4 per feature).
+    // displayed regions of one or both views. Skip before any bpToCumBpAndPad
+    // arithmetic / object allocation.
     if (!v1RefNames.has(refName) || !v2RefNames.has(mate.refName)) {
       continue
     }
@@ -300,10 +218,10 @@ export async function executeSyntenyFeaturesAndPositions({
     const f1s = strand === -1 ? end : start
     const f1e = strand === -1 ? start : end
 
-    const p11 = bpToPxFromIndex(v1Index, refName, f1s)
-    const p12 = bpToPxFromIndex(v1Index, refName, f1e)
-    const p21 = bpToPxFromIndex(v2Index, mate.refName, mate.start)
-    const p22 = bpToPxFromIndex(v2Index, mate.refName, mate.end)
+    const p11 = bpToCumBpAndPad(v1Index, refName, f1s)
+    const p12 = bpToCumBpAndPad(v1Index, refName, f1e)
+    const p21 = bpToCumBpAndPad(v2Index, mate.refName, mate.start)
+    const p22 = bpToCumBpAndPad(v2Index, mate.refName, mate.end)
 
     if (
       p11 === undefined ||
@@ -315,11 +233,13 @@ export async function executeSyntenyFeaturesAndPositions({
     }
 
     // Cull features where BOTH view projections are entirely off-screen.
-    // A feature is visible if its top OR bottom edge overlaps the viewport.
-    const topMinX = Math.min(p11.offsetPx, p12.offsetPx) - v1Offset
-    const topMaxX = Math.max(p11.offsetPx, p12.offsetPx) - v1Offset
-    const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2Offset
-    const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2Offset
+    // Convert cumBp to screen px for the check.
+    const bpPerPxInv1 = 1 / v1.bpPerPx
+    const bpPerPxInv2 = 1 / v2.bpPerPx
+    const topMinX = Math.min(p11.cumBp, p12.cumBp) * bpPerPxInv1 + p11.padPx - v1Offset
+    const topMaxX = Math.max(p11.cumBp, p12.cumBp) * bpPerPxInv1 + p11.padPx - v1Offset
+    const botMinX = Math.min(p21.cumBp, p22.cumBp) * bpPerPxInv2 + p21.padPx - v2Offset
+    const botMaxX = Math.max(p21.cumBp, p22.cumBp) * bpPerPxInv2 + p21.padPx - v2Offset
 
     const topOffScreen =
       topMaxX < offScreenLeftBound || topMinX > offScreenRightBound
@@ -330,12 +250,12 @@ export async function executeSyntenyFeaturesAndPositions({
       continue
     }
 
-    p11Array[validCount] = p11.offsetPx
-    p12Array[validCount] = p12.offsetPx
-    p21Array[validCount] = p21.offsetPx
-    p22Array[validCount] = p22.offsetPx
-    padTopArray[validCount] = p11.paddingPx
-    padBottomArray[validCount] = p21.paddingPx
+    p11Array[validCount] = p11.cumBp
+    p12Array[validCount] = p12.cumBp
+    p21Array[validCount] = p21.cumBp
+    p22Array[validCount] = p22.cumBp
+    padTopArray[validCount] = p11.padPx
+    padBottomArray[validCount] = p21.padPx
     strandsArray[validCount] = strand
     startsArray[validCount] = start
     endsArray[validCount] = end
@@ -358,13 +278,13 @@ export async function executeSyntenyFeaturesAndPositions({
     validCount++
   }
 
-  // Pixel-space positions / pad arrays are intermediate buffers consumed only
-  // by buildSyntenyGeometry below. They never leave the worker — the main
-  // thread reads bp-space hi/lo pairs out of `instanceData`.
-  const p11_offsetPx = p11Array.subarray(0, validCount)
-  const p12_offsetPx = p12Array.subarray(0, validCount)
-  const p21_offsetPx = p21Array.subarray(0, validCount)
-  const p22_offsetPx = p22Array.subarray(0, validCount)
+  // cumBp + padPx arrays are intermediate buffers consumed only by
+  // buildSyntenyGeometry below. They never leave the worker — the main thread
+  // reads bp-space hi/lo pairs out of `instanceData`.
+  const p11_cumBp = p11Array.subarray(0, validCount)
+  const p12_cumBp = p12Array.subarray(0, validCount)
+  const p21_cumBp = p21Array.subarray(0, validCount)
+  const p22_cumBp = p22Array.subarray(0, validCount)
   const padTop = padTopArray.subarray(0, validCount)
   const padBottom = padBottomArray.subarray(0, validCount)
 
@@ -394,10 +314,10 @@ export async function executeSyntenyFeaturesAndPositions({
     statusCallback,
     () =>
       buildSyntenyGeometry({
-        p11_offsetPx,
-        p12_offsetPx,
-        p21_offsetPx,
-        p22_offsetPx,
+        p11_cumBp,
+        p12_cumBp,
+        p21_cumBp,
+        p22_cumBp,
         padTop,
         padBottom,
         strands: featureData.strands,

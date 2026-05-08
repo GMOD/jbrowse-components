@@ -21,13 +21,15 @@ function buildOne(opts: {
   padBottom?: number
 }) {
   const { topPx, botPx, bpPerPx0, bpPerPx1, padTop = 0, padBottom = 0 } = opts
+  const topCumBp = (topPx - padTop) * bpPerPx0
+  const botCumBp = (botPx - padBottom) * bpPerPx1
   return buildSyntenyGeometry({
-    p11_offsetPx: new Float64Array([topPx]),
-    p12_offsetPx: new Float64Array([topPx + 100 / bpPerPx0]),
-    p21_offsetPx: new Float64Array([botPx]),
-    p22_offsetPx: new Float64Array([botPx + 100 / bpPerPx1]),
-    padTop: new Float64Array([padTop]),
-    padBottom: new Float64Array([padBottom]),
+    p11_cumBp: new Float64Array([topCumBp]),
+    p12_cumBp: new Float64Array([topCumBp + 100]),
+    p21_cumBp: new Float64Array([botCumBp]),
+    p22_cumBp: new Float64Array([botCumBp + 100]),
+    padTop: new Float32Array([padTop]),
+    padBottom: new Float32Array([padBottom]),
     strands: new Int8Array([1]),
     names: [''],
     parsedCigars: [[]],

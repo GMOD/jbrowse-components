@@ -18,11 +18,13 @@ export async function renderSvg(model: DotplotRenderModel) {
 
   const ctx = new SvgCanvas()
   ctx.lineWidth = 2
+  const viewBpH = hview.offsetPx * hview.bpPerPx
+  const viewBpV = vview.offsetPx * vview.bpPerPx
   drawDotplotInstances(ctx, geometry, {
-    scaleX: geometry.bpPerPxH / hview.bpPerPx,
-    scaleY: geometry.bpPerPxV / vview.bpPerPx,
-    offsetX: hview.offsetPx,
-    offsetY: vview.offsetPx,
+    viewBpH,
+    bpPerPxHInv: 1 / hview.bpPerPx,
+    viewBpV,
+    bpPerPxVInv: 1 / vview.bpPerPx,
     viewHeight,
   })
 

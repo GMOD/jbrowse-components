@@ -53,10 +53,16 @@ export class GpuDotplotRenderer implements DotplotBackend {
 
     for (let i = 0; i < n; i++) {
       const off = i * INSTANCE_STRIDE_F32
-      f[off + F.x1] = data.x1s[i]!
-      f[off + F.y1] = data.y1s[i]!
-      f[off + F.x2] = data.x2s[i]!
-      f[off + F.y2] = data.y2s[i]!
+      f[off + F.x1Hi] = data.x1Hi[i]!
+      f[off + F.x1Lo] = data.x1Lo[i]!
+      f[off + F.y1Hi] = data.y1Hi[i]!
+      f[off + F.y1Lo] = data.y1Lo[i]!
+      f[off + F.x2Hi] = data.x2Hi[i]!
+      f[off + F.x2Lo] = data.x2Lo[i]!
+      f[off + F.y2Hi] = data.y2Hi[i]!
+      f[off + F.y2Lo] = data.y2Lo[i]!
+      f[off + F.padH] = data.padHs[i]!
+      f[off + F.padV] = data.padVs[i]!
       u[off + F.color] = data.colors[i]!
     }
 
@@ -68,21 +74,31 @@ export class GpuDotplotRenderer implements DotplotBackend {
   }
 
   render(state: DotplotRenderState) {
-    const { offsetX, offsetY, lineWidth, trackScales } = state
+    const {
+      viewBpHHi,
+      viewBpHLo,
+      bpPerPxHInv,
+      viewBpVHi,
+      viewBpVLo,
+      bpPerPxVInv,
+      lineWidth,
+      displayKeys,
+    } = state
     this.hal.beginFrame(0, 0, 0, 0)
-
-    for (const { displayKey, scaleX, scaleY } of trackScales) {
-      this.uniformF32[U.resolution] = this.width
-      this.uniformF32[U.resolution + 1] = this.height
-      this.uniformF32[U.offsetX] = offsetX
-      this.uniformF32[U.offsetY] = offsetY
-      this.uniformF32[U.lineWidth] = lineWidth
-      this.uniformF32[U.scaleX] = scaleX
-      this.uniformF32[U.scaleY] = scaleY
-      this.hal.writeUniforms(this.uniformData)
+    this.uniformF32[U.resolution] = this.width
+    this.uniformF32[U.resolution + 1] = this.height
+    this.uniformF32[U.lineWidth] = lineWidth
+    this.uniformF32[U.viewBpHHi] = viewBpHHi
+    this.uniformF32[U.viewBpHLo] = viewBpHLo
+    this.uniformF32[U.bpPerPxHInv] = bpPerPxHInv
+    this.uniformF32[U.viewBpVHi] = viewBpVHi
+    this.uniformF32[U.viewBpVLo] = viewBpVLo
+    this.uniformF32[U.bpPerPxVInv] = bpPerPxVInv
+    this.uniformF32[U.hpZero] = 0
+    this.hal.writeUniforms(this.uniformData)
+    for (const displayKey of displayKeys) {
       this.hal.drawPass(PASS_LINE, displayKey)
     }
-
     this.hal.endFrame()
   }
 
