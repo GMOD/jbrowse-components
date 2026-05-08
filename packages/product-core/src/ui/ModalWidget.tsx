@@ -6,7 +6,7 @@ import { getEnv } from '@jbrowse/mobx-state-tree'
 import { AppBar, Paper, Toolbar, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util/types'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   paper: {
@@ -18,10 +18,7 @@ const ModalWidget = observer(function ModalWidget({
   session,
   onClose,
 }: {
-  session: AbstractSessionModel & {
-    visibleWidget?: { type: string; [key: string]: unknown }
-    hideAllWidgets(): void
-  }
+  session: SessionWithWidgets
   onClose?: () => void
 }) {
   const { classes } = useStyles()
