@@ -5,13 +5,13 @@ import { ShadowDOMOneLinearGenomeView } from './JBrowseLinearGenomeView.stories'
 
 # ShadowDOM and custom-element usage
 
-`@jbrowse/react-linear-genome-view2` can be mounted inside a Shadow DOM
-— useful when embedding into a host page that has its own conflicting
-global styles, or when packaging the view as a custom element.
+`@jbrowse/react-linear-genome-view2` can be mounted inside a Shadow DOM — useful
+when embedding into a host page that has its own conflicting global styles, or
+when packaging the view as a custom element.
 
-The component itself doesn't require any special configuration; the
-example below shows it rendered inside a shadow root via React's portal
-mechanism. Styles created inside the shadow root (Material-UI's emotion
-output) stay scoped to the root, and styles outside it cannot leak in.
+The component itself doesn't require any special configuration; the example
+below shows it rendered inside a shadow root via React's portal mechanism.
+Styles created inside the shadow root (Material-UI's emotion output) stay scoped
+to the root, and styles outside it cannot leak in.
 
 <Story of={ShadowDOMOneLinearGenomeView} />

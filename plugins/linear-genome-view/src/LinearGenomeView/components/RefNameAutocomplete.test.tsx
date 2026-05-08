@@ -270,6 +270,58 @@ describe('RefNameAutocomplete', () => {
     }, patience)
   })
 
+  it('snaps the input back to value on blur after typing without selecting', async () => {
+    const user = userEvent.setup()
+    const { session } = setup()
+
+    render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        value="ctgA:1-100"
+        fetchResults={async () => []}
+      />,
+    )
+
+    const input = screen.getByPlaceholderText('Search for location')
+    await user.click(input)
+    await user.clear(input)
+    await user.type(input, 'foo')
+    expect(input.value).toBe('foo')
+    await user.tab()
+    await waitFor(() => {
+      expect(input.value).toBe('ctgA:1-100')
+    }, patience)
+  })
+
+  it('snaps the input back to value after selecting a result', async () => {
+    const user = userEvent.setup()
+    const { session } = setup()
+    const fetchResults = jest.fn(async () => [
+      new BaseResult({ label: 'ctgB:1..200' }),
+    ])
+
+    render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        value="ctgA:1-100"
+        fetchResults={fetchResults}
+      />,
+    )
+
+    const input = screen.getByPlaceholderText('Search for location')
+    await user.click(input)
+    await user.clear(input)
+    await user.type(input, 'ctg')
+    await waitFor(() => screen.getByText('ctgB:1..200'), patience)
+    await user.click(screen.getByText('ctgB:1..200'))
+
+    await waitFor(() => {
+      expect(input.value).toBe('ctgA:1-100')
+    }, patience)
+  })
+
   it('shows chromosome names when value is a locstring (regression: chromosomes were filtered out)', async () => {
     const user = userEvent.setup()
     const { session } = setupWithChromosome()

@@ -5,18 +5,17 @@ import { DefaultSession } from './JBrowseLinearGenomeView.stories'
 
 # Default sessions
 
-A *session* is JBrowse's runtime representation of "what's open" — which
-views, which tracks, which display settings. Passing `defaultSession` to
+A _session_ is JBrowse's runtime representation of "what's open" — which views,
+which tracks, which display settings. Passing `defaultSession` to
 `createViewState` restores that state on first paint.
 
-For most use cases — landing on a locus with a couple of tracks open —
-prefer the [`init` field](?path=/docs/initialization--docs), which is
-declarative and easier to author by hand. Reach for `defaultSession`
-when you need finer control over per-track display settings, or when
-you're round-tripping a session exported from JBrowse Web.
+For most use cases — landing on a locus with a couple of tracks open — prefer
+the [`init` field](?path=/docs/initialization--docs), which is declarative and
+easier to author by hand. Reach for `defaultSession` when you need finer control
+over per-track display settings, or when you're round-tripping a session
+exported from JBrowse Web.
 
-The example below opens a long-reads alignments track via
-`defaultSession`:
+The example below opens a long-reads alignments track via `defaultSession`:
 
 <Story of={DefaultSession} />
 
@@ -35,8 +34,8 @@ const defaultSession = {
 }
 ```
 
-Each entry in `tracks` references a track configuration plus the
-display(s) you want active:
+Each entry in `tracks` references a track configuration plus the display(s) you
+want active:
 
 ```js
 {
@@ -52,16 +51,16 @@ display(s) you want active:
 }
 ```
 
-The `configuration` strings are the `trackId` (or `displayId`) of the
-matching entry in `tracks` / its `displays` array.
+The `configuration` strings are the `trackId` (or `displayId`) of the matching
+entry in `tracks` / its `displays` array.
 
 ## Exporting from JBrowse Web
 
 The fastest way to get a working `defaultSession` is to build the view
 graphically in the main JBrowse Web app and export it:
 
-1. In JBrowse Web, open a single linear genome view with the tracks and
-   settings you want.
+1. In JBrowse Web, open a single linear genome view with the tracks and settings
+   you want.
 2. **File → Export session** to download a `session.json`.
 3. Drop the file into your app and pull out the view:
 

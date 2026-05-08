@@ -5,14 +5,14 @@ import { WithInternetAccounts } from './JBrowseLinearGenomeView.stories'
 
 # Internet accounts
 
-*Internet accounts* are JBrowse's mechanism for accessing authenticated
-resources or otherwise overriding `fetch` behavior on a per-track basis.
-They were added to `@jbrowse/react-linear-genome-view2` in v2.2.1.
+_Internet accounts_ are JBrowse's mechanism for accessing authenticated
+resources or otherwise overriding `fetch` behavior on a per-track basis. They
+were added to `@jbrowse/react-linear-genome-view2` in v2.2.1.
 
-The most common use case is supplying a bearer token for protected
-files (Google Drive, S3 with signed URLs, internal endpoints behind
-auth). Track configs reference an account by `internetAccountId`, and
-the matching account decorates outgoing requests.
+The most common use case is supplying a bearer token for protected files (Google
+Drive, S3 with signed URLs, internal endpoints behind auth). Track configs
+reference an account by `internetAccountId`, and the matching account decorates
+outgoing requests.
 
 ## Configuration
 
@@ -33,26 +33,23 @@ const state = createViewState({
 })
 ```
 
-Any track with `internetAccountId: 'manualGoogleEntry'` on its file
-locations will route through this account, which prompts the user for
-a token and adds an `Authorization: Bearer <token>` header to each
-request.
+Any track with `internetAccountId: 'manualGoogleEntry'` on its file locations
+will route through this account, which prompts the user for a token and adds an
+`Authorization: Bearer <token>` header to each request.
 
 <Story of={WithInternetAccounts} />
 
 ## OAuth and embedded mode
 
-`DropboxOAuthInternetAccount` and `GoogleDriveOAuthInternetAccount` are
-**not supported** in the embedded LGV — they require the app-level
-control over redirects and popups that only the full JBrowse Web app
-provides. If you need OAuth in an embedded context, run the auth flow
-in your host app and pass the resulting token to
-`ExternalTokenInternetAccount`.
+`DropboxOAuthInternetAccount` and `GoogleDriveOAuthInternetAccount` are **not
+supported** in the embedded LGV — they require the app-level control over
+redirects and popups that only the full JBrowse Web app provides. If you need
+OAuth in an embedded context, run the auth flow in your host app and pass the
+resulting token to `ExternalTokenInternetAccount`.
 
 ## Beyond authentication
 
-Although the name suggests external services, internet accounts are a
-general way to override `fetch`. A custom account type can rewrite
-URLs, add caching layers, or proxy requests through your own backend —
-useful any time a particular track needs different network behavior
-than the rest.
+Although the name suggests external services, internet accounts are a general
+way to override `fetch`. A custom account type can rewrite URLs, add caching
+layers, or proxy requests through your own backend — useful any time a
+particular track needs different network behavior than the rest.

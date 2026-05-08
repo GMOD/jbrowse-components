@@ -5,25 +5,23 @@ import { NextstrainExample } from './JBrowseLinearGenomeView.stories'
 
 # Nextstrain SARS-CoV-2 demo
 
-A demo of the embedded LGV browsing the SARS-CoV-2 genome in a style
-similar to [Nextstrain](https://nextstrain.org) — gene coloring matches
-their published palette, and an "Entropy score" track shows per-base
-sequence diversity.
+A demo of the embedded LGV browsing the SARS-CoV-2 genome in a style similar to
+[Nextstrain](https://nextstrain.org) — gene coloring matches their published
+palette, and an "Entropy score" track shows per-base sequence diversity.
 
 <Story of={NextstrainExample} />
 
 ## What's interesting here
 
-This demo uses `FromConfigAdapter` for both the sequence and the
-feature tracks: the data is supplied inline as JSON rather than fetched
-from BAM/BigWig/GFF3 files. That makes it convenient for embedding
-on-the-fly analyses, generated reports, or small reference datasets —
-no flat files to host.
+This demo uses `FromConfigAdapter` for both the sequence and the feature tracks:
+the data is supplied inline as JSON rather than fetched from BAM/BigWig/GFF3
+files. That makes it convenient for embedding on-the-fly analyses, generated
+reports, or small reference datasets — no flat files to host.
 
 The full config is a single
 [JSON file](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/public/nextstrain_covid.json)
-(largish, since it inlines the SARS-CoV-2 sequence and entropy
-scores). Summarized below:
+(largish, since it inlines the SARS-CoV-2 sequence and entropy scores).
+Summarized below:
 
 ```json
 {

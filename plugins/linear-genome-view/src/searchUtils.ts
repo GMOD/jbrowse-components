@@ -10,6 +10,31 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { TextSearchManager } from '@jbrowse/core/util'
 
+// shared dispatch used by SearchBox.onSelect and the LGV ImportForm submit:
+// route a chosen result to a direct nav, a multi-result dialog, or a generic
+// locstring/refname resolution
+export async function navigateToSelectedOption({
+  option,
+  model,
+  assemblyName,
+}: {
+  option: BaseResult
+  model: LinearGenomeViewModel
+  assemblyName: string
+}) {
+  if (option.hasLocation()) {
+    await navToOption({ option, model, assemblyName })
+  } else if (option.results?.length) {
+    model.setSearchResults(option.results, option.getLabel(), assemblyName)
+  } else {
+    await handleSelectedRegion({
+      input: option.getLabel(),
+      assemblyName,
+      model,
+    })
+  }
+}
+
 export async function navToOption({
   option,
   model,

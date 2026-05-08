@@ -8,18 +8,18 @@ import {
 
 # Multiple views
 
-One of the things `react-app2` gives you that the standalone LGV
-component does not is a **session that can hold any number of views of
-any type**, side by side. Sessions can mix `LinearGenomeView`,
-`LinearSyntenyView`, `CircularView`, and others; users can create new
-views from the menu, and you can create them programmatically.
+One of the things `react-app2` gives you that the standalone LGV component does
+not is a **session that can hold any number of views of any type**, side by
+side. Sessions can mix `LinearGenomeView`, `LinearSyntenyView`, `CircularView`,
+and others; users can create new views from the menu, and you can create them
+programmatically.
 
 ## Synteny: two assemblies in one session
 
-`LinearSyntenyView` shows two linear genome views with a connecting
-ribbon for synteny features (PAF, MUMMER, etc.). The `defaultSession`
-below creates a synteny view between two assemblies on first paint —
-no menu navigation required.
+`LinearSyntenyView` shows two linear genome views with a connecting ribbon for
+synteny features (PAF, MUMMER, etc.). The `defaultSession` below creates a
+synteny view between two assemblies on first paint — no menu navigation
+required.
 
 <Story of={SyntenyExample} />
 
@@ -36,19 +36,18 @@ The `init` field on the synteny view is the key part:
 }
 ```
 
-It declares the two member assemblies and the synteny track that ties
-them together — much terser than hand-building two `LinearGenomeView`
-snapshots plus a synteny view snapshot.
+It declares the two member assemblies and the synteny track that ties them
+together — much terser than hand-building two `LinearGenomeView` snapshots plus
+a synteny view snapshot.
 
 ## Launching a view programmatically
 
-For views that should appear in response to runtime conditions (a
-button click, a search hit, a backend event), use the `LaunchView-*`
-extension points instead of baking the view into `defaultSession`.
-The example below boots an empty session and then launches a
-`LinearGenomeView` after mount.
+For views that should appear in response to runtime conditions (a button click,
+a search hit, a backend event), use the `LaunchView-*` extension points instead
+of baking the view into `defaultSession`. The example below boots an empty
+session and then launches a `LinearGenomeView` after mount.
 
 <Story of={WithLaunchLinearGenomeView} />
 
-This is the same machinery the import wizard uses internally, so
-anything the user can launch from the UI you can launch from code.
+This is the same machinery the import wizard uses internally, so anything the
+user can launch from the UI you can launch from code.

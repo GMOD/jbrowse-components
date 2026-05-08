@@ -257,10 +257,7 @@ const DrawerWidget = observer(function DrawerWidget({
 
   return (
     <Paper className={classes.paper} elevation={16} square>
-      <DrawerHeader
-        session={session}
-        setToolbarHeight={setToolbarHeight}
-      />
+      <DrawerHeader session={session} setToolbarHeight={setToolbarHeight} />
       <Suspense fallback={<LoadingEllipses />}>
         <ErrorBoundary
           FallbackComponent={({ error }) => <ErrorBanner error={error} />}

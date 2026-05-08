@@ -1,8 +1,5 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks'
-import {
-  BasicExample,
-  HumanDemo,
-} from './JBrowseReactApp.stories'
+import { BasicExample, HumanDemo } from './JBrowseReactApp.stories'
 
 <Meta title="Getting Started" />
 
@@ -10,40 +7,36 @@ import {
 
 This is the [Storybook](https://storybook.js.org/) for
 [`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2),
-which embeds the **full JBrowse 2 application** — menu bar, view
-manager, drawer widgets, and all view types — inside any React
-component tree.
+which embeds the **full JBrowse 2 application** — menu bar, view manager, drawer
+widgets, and all view types — inside any React component tree.
 
 ## App vs Linear Genome View — which to use?
 
-JBrowse ships two embeddable React components. They serve different use
-cases:
+JBrowse ships two embeddable React components. They serve different use cases:
 
-- **`@jbrowse/react-app2`** is the whole app. You get every view type
-  (linear, circular, dotplot, synteny, spreadsheet), the global menu
-  bar, drag-to-resize panels, the import wizard, and a full session
-  model with tabs. Pick this when you're building a *genome browser*
-  that happens to live in your page.
+- **`@jbrowse/react-app2`** is the whole app. You get every view type (linear,
+  circular, dotplot, synteny, spreadsheet), the global menu bar, drag-to-resize
+  panels, the import wizard, and a full session model with tabs. Pick this when
+  you're building a _genome browser_ that happens to live in your page.
 - **[`@jbrowse/react-linear-genome-view2`](?path=/docs/getting-started--docs)**
-  is just the linear track view, no app chrome. Pick this when you
-  want a *track viewer* embedded inside a larger application that
-  owns the layout, navigation, and surrounding UI.
+  is just the linear track view, no app chrome. Pick this when you want a _track
+  viewer_ embedded inside a larger application that owns the layout, navigation,
+  and surrounding UI.
 
-If you're not sure, start with the LGV component — it's lighter weight
-and easier to integrate. Move to react-app when you need the
-app-level features.
+If you're not sure, start with the LGV component — it's lighter weight and
+easier to integrate. Move to react-app when you need the app-level features.
 
 ## A minimal embed
 
 <Story of={BasicExample} />
 
-Open and rearrange tracks, switch views, or click the **code** button
-in the bottom right to see the source.
+Open and rearrange tracks, switch views, or click the **code** button in the
+bottom right to see the source.
 
 ## Configuration shape
 
-`react-app2` accepts the same configuration format as JBrowse Web —
-this is what makes round-tripping configs between the two trivial:
+`react-app2` accepts the same configuration format as JBrowse Web — this is what
+makes round-tripping configs between the two trivial:
 
 ```js
 const state = createViewState({
@@ -65,18 +58,16 @@ const state = createViewState({
 })
 ```
 
-Unlike JBrowse Web, the embedded component does **not** automatically
-fetch a `config.json` based on URL parameters. If you want that
-behavior, do the fetch yourself and pass the result to
-`createViewState` — see
+Unlike JBrowse Web, the embedded component does **not** automatically fetch a
+`config.json` based on URL parameters. If you want that behavior, do the fetch
+yourself and pass the result to `createViewState` — see
 [Importing config.json](?path=/docs/importing-config-json-files--docs).
 
 ## A real human genome example
 
-GRCh38 with NCBI RefSeq genes, repeats, a CRAM exome alignment, 1000
-Genomes variants, and phyloP conservation. The `defaultSession` opens
-the alignment and conservation tracks in a `LinearGenomeView` at a
-specific locus:
+GRCh38 with NCBI RefSeq genes, repeats, a CRAM exome alignment, 1000 Genomes
+variants, and phyloP conservation. The `defaultSession` opens the alignment and
+conservation tracks in a `LinearGenomeView` at a specific locus:
 
 <Story of={HumanDemo} />
 
@@ -85,10 +76,10 @@ specific locus:
 - [Importing config.json](?path=/docs/importing-config-json-files--docs) —
   static-import vs runtime-fetch
 - [Theming](?path=/docs/theming--docs) — palettes and dark mode
-- [Multiple views and synteny](?path=/docs/multiple-views--docs) —
-  programmatic view creation, synteny layouts
-- [Web worker RPC](?path=/docs/using-webworker-rpc--docs) — moving
-  work off the main thread
+- [Multiple views and synteny](?path=/docs/multiple-views--docs) — programmatic
+  view creation, synteny layouts
+- [Web worker RPC](?path=/docs/using-webworker-rpc--docs) — moving work off the
+  main thread
 - [Source for every storybook example](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-app/stories)
 - Integration recipes for create-react-app, Vite, and Next.js —
   [jbrowse.org/jb2/docs/embedded_components](https://jbrowse.org/jb2/docs/embedded_components/)

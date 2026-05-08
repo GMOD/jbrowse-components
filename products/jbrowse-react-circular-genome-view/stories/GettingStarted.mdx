@@ -1,9 +1,5 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks'
-import {
-  Volvox,
-  ShowTrack,
-  Human,
-} from './JBrowseCircularGenomeView.stories'
+import { Volvox, ShowTrack, Human } from './JBrowseCircularGenomeView.stories'
 
 <Meta title="Getting Started" />
 
@@ -11,28 +7,27 @@ import {
 
 This is the [Storybook](https://storybook.js.org/) for
 [`@jbrowse/react-circular-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2),
-a React component that embeds an interactive **circular** genome view
-in any React application — useful for showing structural variants,
-chromosome-scale rearrangements, or whole-genome summaries.
+a React component that embeds an interactive **circular** genome view in any
+React application — useful for showing structural variants, chromosome-scale
+rearrangements, or whole-genome summaries.
 
 If you need a linear track-by-track view instead, see
 [`@jbrowse/react-linear-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2).
 
 ## A minimal embed
 
-The component needs an assembly and a list of track configs. Below is
-the bundled volvox test assembly:
+The component needs an assembly and a list of track configs. Below is the
+bundled volvox test assembly:
 
 <Story of={Volvox} />
 
-You can pan and zoom around the circle and click the **code** button
-in the bottom right to see the source.
+You can pan and zoom around the circle and click the **code** button in the
+bottom right to see the source.
 
 ## Configuration shape
 
-The CGV component reuses the JBrowse config format, with one
-difference: it takes a single `assembly` rather than an
-`assemblies` array.
+The CGV component reuses the JBrowse config format, with one difference: it
+takes a single `assembly` rather than an `assemblies` array.
 
 ```js
 const state = createViewState({
@@ -48,27 +43,26 @@ const state = createViewState({
 })
 ```
 
-The component can be configured inline (JS objects in your source) or
-from a standalone JSON file —
+The component can be configured inline (JS objects in your source) or from a
+standalone JSON file —
 [example](https://github.com/GMOD/jbrowse-components/blob/HEAD/products/jbrowse-react-circular-genome-view/docs/example.md).
 
 ## Opening tracks programmatically
 
-`createViewState` returns an object with a `showTrack(trackId)` method.
-Calling it after construction is often simpler than crafting a
-`defaultSession`.
+`createViewState` returns an object with a `showTrack(trackId)` method. Calling
+it after construction is often simpler than crafting a `defaultSession`.
 
 <Story of={ShowTrack} />
 
 ## Real human genome example
 
-A complete hg19 example with structural-variant calls from a PacBio
-VCF, opened on first paint:
+A complete hg19 example with structural-variant calls from a PacBio VCF, opened
+on first paint:
 
 <Story of={Human} />
 
-Circular views shine for SV-style data because chromosome-spanning
-breakends become visible chord-style across the circle.
+Circular views shine for SV-style data because chromosome-spanning breakends
+become visible chord-style across the circle.
 
 ## More
 

@@ -8,45 +8,12 @@ import { getSession } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import {
-  fetchResults,
-  handleSelectedRegion,
-  navToOption,
-} from '../../searchUtils.ts'
+import { fetchResults, navigateToSelectedOption } from '../../searchUtils.ts'
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 
 const defaultStyle = { margin: SPACING }
 
 import type { LinearGenomeViewModel } from '../model.ts'
-import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-
-async function onSelect({
-  option,
-  model,
-  assemblyName,
-}: {
-  option: BaseResult
-  model: LinearGenomeViewModel
-  assemblyName: string
-}) {
-  const { assemblyManager } = getSession(model)
-  const assembly = assemblyManager.get(assemblyName)
-  if (option.hasLocation()) {
-    await navToOption({
-      option,
-      model,
-      assemblyName,
-    })
-  } else if (option.results?.length) {
-    model.setSearchResults(option.results, option.getLabel(), assemblyName)
-  } else if (assembly) {
-    await handleSelectedRegion({
-      input: option.getLabel(),
-      assemblyName,
-      model,
-    })
-  }
-}
 
 const SearchBox = observer(function SearchBox({
   model,
@@ -73,7 +40,7 @@ const SearchBox = observer(function SearchBox({
     <RefNameAutocomplete
       onSelect={async option => {
         try {
-          await onSelect({ model, assemblyName, option })
+          await navigateToSelectedOption({ model, assemblyName, option })
         } catch (e) {
           console.error(e)
           session.notify(`${e}`, 'warning')

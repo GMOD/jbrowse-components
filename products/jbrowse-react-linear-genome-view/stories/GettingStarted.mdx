@@ -15,24 +15,23 @@ This is the [Storybook](https://storybook.js.org/) for the
 [JBrowse 2 React Linear Genome View](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2),
 which embeds an interactive genome browser in any React application.
 
-Each story below is fully interactive — open tracks, pan and zoom as you
-would in your own app, and click the **code** button at the bottom right
-to see the source.
+Each story below is fully interactive — open tracks, pan and zoom as you would
+in your own app, and click the **code** button at the bottom right to see the
+source.
 
 ## A minimal embed
 
-The smallest useful embed needs an assembly, a list of track configs, and
-a starting location.
+The smallest useful embed needs an assembly, a list of track configs, and a
+starting location.
 
 <Story of={OneLinearGenomeView} />
 
 ## Initialization with `init`
 
-Most apps need more than the default landing — a specific locus, a
-particular set of tracks open, and a real assembly. The `init` field on
-`defaultSession.view` is a *simplified* way to express that: you supply
-trackIds, a locstring, and an assembly name, and JBrowse fills in the
-rest.
+Most apps need more than the default landing — a specific locus, a particular
+set of tracks open, and a real assembly. The `init` field on
+`defaultSession.view` is a _simplified_ way to express that: you supply
+trackIds, a locstring, and an assembly name, and JBrowse fills in the rest.
 
 ```js
 defaultSession: {
@@ -48,33 +47,32 @@ defaultSession: {
 }
 ```
 
-This is much terser than a full `defaultSession.view.tracks` snapshot,
-which spells out track types, display types, and configuration IDs at
-every level. Reach for the full snapshot only when round-tripping a
-session you exported from JBrowse Web — see
-[Initialization](?path=/docs/initialization--docs) for the side-by-side
-comparison.
+This is much terser than a full `defaultSession.view.tracks` snapshot, which
+spells out track types, display types, and configuration IDs at every level.
+Reach for the full snapshot only when round-tripping a session you exported from
+JBrowse Web — see [Initialization](?path=/docs/initialization--docs) for the
+side-by-side comparison.
 
 <Story of={WithInit} />
 
 ## Configuration shape
 
 The component reuses the same
-[configuration](https://jbrowse.org/jb2/docs/config_guide) format as
-JBrowse Web, with two differences:
+[configuration](https://jbrowse.org/jb2/docs/config_guide) format as JBrowse
+Web, with two differences:
 
-**Single assembly**, not an array. JBrowse Web takes `assemblies: [...]`;
-the embedded LGV takes one `assembly: {...}`.
+**Single assembly**, not an array. JBrowse Web takes `assemblies: [...]`; the
+embedded LGV takes one `assembly: {...}`.
 
-**Inline JS or external JSON**. The config can be a plain JS object built
-in your app, or loaded from a standalone JSON file —
+**Inline JS or external JSON**. The config can be a plain JS object built in
+your app, or loaded from a standalone JSON file —
 [example](https://github.com/GMOD/jbrowse-components/blob/HEAD/products/jbrowse-react-linear-genome-view/docs/example.md).
 
 ## Navigating to a location
 
-`createViewState` accepts either a locstring (`'10:29,838,737..29,838,819'`)
-or a location object — useful when you have `refName`/`start`/`end`
-already in hand and don't want to format and reparse a string.
+`createViewState` accepts either a locstring (`'10:29,838,737..29,838,819'`) or
+a location object — useful when you have `refName`/`start`/`end` already in hand
+and don't want to format and reparse a string.
 
 ```js
 const state = createViewState({
@@ -89,9 +87,9 @@ const state = createViewState({
 
 ## Locking down the track list
 
-By default users can add tracks via the UI. Set `disableAddTracks: true`
-to hide that affordance. Note that this also disables on-the-fly track
-creation features like sequence-search tracks and multi-wiggle tracks.
+By default users can add tracks via the UI. Set `disableAddTracks: true` to hide
+that affordance. Note that this also disables on-the-fly track creation features
+like sequence-search tracks and multi-wiggle tracks.
 
 ```js
 const state = createViewState({
@@ -106,16 +104,15 @@ const state = createViewState({
 
 ## Opening tracks programmatically
 
-`createViewState` returns an object with a `showTrack(trackId)` method.
-Calling it after construction is often simpler than crafting a
-`defaultSession` by hand.
+`createViewState` returns an object with a `showTrack(trackId)` method. Calling
+it after construction is often simpler than crafting a `defaultSession` by hand.
 
 <Story of={WithShowTrack} />
 
 ## More
 
-- [Default sessions](?path=/docs/default-sessions--docs) — sharing or
-  exporting a saved session from JBrowse Web
+- [Default sessions](?path=/docs/default-sessions--docs) — sharing or exporting
+  a saved session from JBrowse Web
 - [Source for every storybook example](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-linear-genome-view/stories)
 - Integration recipes for create-react-app, Vite, and Next.js —
   [jbrowse.org/jb2/docs/embedded_components](https://jbrowse.org/jb2/docs/embedded_components/)

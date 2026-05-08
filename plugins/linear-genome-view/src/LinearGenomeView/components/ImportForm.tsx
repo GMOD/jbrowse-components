@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
   AssemblySelector,
   ErrorBanner,
@@ -17,14 +18,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import {
-  fetchResults,
-  handleSelectedRegion,
-  navToOption,
-} from '../../searchUtils.ts'
+import { fetchResults, navigateToSelectedOption } from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -72,25 +68,11 @@ const LinearGenomeViewImportForm = observer(
                 model.setError(undefined)
                 if (value) {
                   try {
-                    if (option?.hasLocation()) {
-                      await navToOption({
-                        option,
-                        model,
-                        assemblyName: selectedAsm,
-                      })
-                    } else if (option?.results?.length) {
-                      model.setSearchResults(
-                        option.results,
-                        option.getLabel(),
-                        selectedAsm,
-                      )
-                    } else if (assembly) {
-                      await handleSelectedRegion({
-                        input: value,
-                        assemblyName: selectedAsm,
-                        model,
-                      })
-                    }
+                    await navigateToSelectedOption({
+                      option: option ?? new BaseResult({ label: value }),
+                      model,
+                      assemblyName: selectedAsm,
+                    })
                   } catch (e) {
                     console.error(e)
                     session.notify(`${e}`, 'warning')

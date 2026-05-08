@@ -9,28 +9,27 @@ import {
 # External navigation
 
 `createViewState` returns an object whose `.session.view` is the live
-`LinearGenomeViewModel`. Components outside the view tree can read it,
-mutate it, and call its actions — which is how you wire up "jump to
-this gene" buttons, search-result lists, or programmatic tours.
+`LinearGenomeViewModel`. Components outside the view tree can read it, mutate
+it, and call its actions — which is how you wire up "jump to this gene" buttons,
+search-result lists, or programmatic tours.
 
-The two actions you'll reach for most often are `navToLocString` and
-`navTo`.
+The two actions you'll reach for most often are `navToLocString` and `navTo`.
 
 ## `navToLocString` (string locations)
 
-Takes a JBrowse-style locstring like `ctgA:1-5,000` or `chr1:1m-2m`.
-Easiest to drive from a `<select>` or a static list of bookmarks.
+Takes a JBrowse-style locstring like `ctgA:1-5,000` or `chr1:1m-2m`. Easiest to
+drive from a `<select>` or a static list of bookmarks.
 
 <Story of={ExternalNavigateLocstring} />
 
 ## `navTo` (object locations)
 
 Takes `{ refName, start, end, assemblyName }` directly. Skip the string
-formatting and parsing round-trip when you already have numeric
-coordinates — e.g. when bridging from a backend search service.
+formatting and parsing round-trip when you already have numeric coordinates —
+e.g. when bridging from a backend search service.
 
 <Story of={ExternalNavigateObject} />
 
-Both actions are async and resolve once the new region has been loaded;
-errors (refName not found, range invalid) propagate as rejections that
-you can surface in a banner.
+Both actions are async and resolve once the new region has been loaded; errors
+(refName not found, range invalid) propagate as rejections that you can surface
+in a banner.

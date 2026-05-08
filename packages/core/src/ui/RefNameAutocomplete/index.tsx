@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 
 import { Autocomplete, TextField } from '@mui/material'
@@ -8,6 +8,11 @@ import BaseResult, { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
 import { measureText, useDebounce, useFetch } from '../../util/index.ts'
 
 import type { AbstractSessionModel } from '../../util/index.ts'
+
+// matches the rendered font-size of the TextField
+const INPUT_FONT_SIZE = 14
+// reserve room for the search/help icons and input padding
+const ADORNMENT_RESERVE_PX = 100
 
 interface Option {
   group?: string
@@ -90,24 +95,25 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   const debouncedSearch = useDebounce(currentSearch, 50)
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
-  const fetchResultsRef = useRef(fetchResults)
-  fetchResultsRef.current = fetchResults
-
   const shouldSearch = !!assemblyName && debouncedSearch !== ''
   const { data: searchOptions, isLoading } = useFetch(
     shouldSearch ? ['refNameSearch', assemblyName, debouncedSearch] : null,
-    async () =>
-      getDeduplicatedResult(await fetchResultsRef.current(debouncedSearch)),
+    async () => getDeduplicatedResult(await fetchResults(debouncedSearch)),
     {
       onError: e => {
-        console.error(e)
         session.notifyError(`${e}`, e)
       },
     },
   )
-  const loaded = !isLoading
 
   const inputBoxVal = value ?? ''
+  const width = Math.min(
+    Math.max(
+      measureText(inputBoxVal, INPUT_FONT_SIZE) + ADORNMENT_RESERVE_PX,
+      minWidth,
+    ),
+    maxWidth,
+  )
   const regionOptions: Option[] = useMemo(
     () =>
       assembly?.regions?.map(region => ({
@@ -130,21 +136,18 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       freeSolo
       includeInputInList
       selectOnFocus
-      style={{
-        ...style,
-        width: Math.min(
-          Math.max(measureText(inputBoxVal, 14) + 100, minWidth),
-          maxWidth,
-        ),
-      }}
+      clearOnBlur
+      style={{ ...style, width }}
       value={inputBoxVal}
-      loading={!loaded}
+      loading={isLoading}
       inputValue={inputValue}
       onInputChange={(_event, newInputValue, reason) => {
-        setInputValue(newInputValue)
         if (reason === 'input') {
+          setInputValue(newInputValue)
           onChange?.(newInputValue)
           setCurrentSearch(newInputValue)
+        } else {
+          setInputValue(inputBoxVal)
         }
       }}
       loadingText="loading results"
@@ -152,24 +155,19 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
         setCurrentSearch('')
       }}
       onChange={(_event, selectedOption) => {
-        if (!selectedOption || !assemblyName) {
-          return
+        if (selectedOption && assemblyName) {
+          onSelect?.(
+            typeof selectedOption === 'string'
+              ? new BaseResult({ label: selectedOption })
+              : selectedOption.result,
+          )
         }
-        onSelect?.(
-          typeof selectedOption === 'string'
-            ? new BaseResult({ label: selectedOption })
-            : selectedOption.result,
-        )
-        setInputValue(inputBoxVal)
       }}
       options={searchOptions?.length ? searchOptions : regionOptions}
       getOptionDisabled={option => option.group === 'limitOption'}
       filterOptions={opts => getFiltered(opts, currentSearch)}
       renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
         <TextField
-          onBlur={() => {
-            setInputValue(inputBoxVal)
-          }}
           {...restParams}
           variant="outlined"
           size="small"

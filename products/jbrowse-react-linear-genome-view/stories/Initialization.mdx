@@ -1,22 +1,19 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks'
-import {
-  HumanExomeExample,
-  WithInit,
-} from './JBrowseLinearGenomeView.stories'
+import { HumanExomeExample, WithInit } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Initialization" />
 
 # Initialization
 
-The `init` field under `defaultSession.view` is a *simplified* way to
-specify a default session. It lets you write a few short fields —
-which assembly, where to land, which tracks to open — instead of the
-verbose snapshot format that `defaultSession.view.tracks` requires.
+The `init` field under `defaultSession.view` is a _simplified_ way to specify a
+default session. It lets you write a few short fields — which assembly, where to
+land, which tracks to open — instead of the verbose snapshot format that
+`defaultSession.view.tracks` requires.
 
 ## `init` vs full `defaultSession`
 
-Both forms below open the same RefSeq genes track at the same locus on
-GRCh38. Compare the verbosity:
+Both forms below open the same RefSeq genes track at the same locus on GRCh38.
+Compare the verbosity:
 
 ### With `init` (simple)
 
@@ -34,9 +31,8 @@ defaultSession: {
 }
 ```
 
-You name the trackIds you want open. JBrowse resolves them after the
-assembly loads, picks sensible default displays, and applies the
-location.
+You name the trackIds you want open. JBrowse resolves them after the assembly
+loads, picks sensible default displays, and applies the location.
 
 ### Equivalent full snapshot
 
@@ -72,15 +68,15 @@ defaultSession: {
 }
 ```
 
-You provide IDs at every level — track configuration, display type,
-display configuration — and you compute (or guess at) `bpPerPx` and
-`offsetPx` for the location instead of giving a locstring.
+You provide IDs at every level — track configuration, display type, display
+configuration — and you compute (or guess at) `bpPerPx` and `offsetPx` for the
+location instead of giving a locstring.
 
-The verbose form exists for a reason: it's exactly what gets serialized
-when you save or export a session, so it can round-trip arbitrary view
-state. Reach for it only when you are loading a session you previously
-exported (see [Default Sessions](?path=/docs/default-sessions--docs)).
-For everything else, use `init`.
+The verbose form exists for a reason: it's exactly what gets serialized when you
+save or export a session, so it can round-trip arbitrary view state. Reach for
+it only when you are loading a session you previously exported (see
+[Default Sessions](?path=/docs/default-sessions--docs)). For everything else,
+use `init`.
 
 ## The `init` shape
 
@@ -97,29 +93,29 @@ Sibling fields on `defaultSession.view` configure the view itself —
 
 ## GRCh38 with a real RefSeq track
 
-A complete example using a remote BgzipFasta sequence adapter, GRCh38
-ref-name aliases, cytobands, and a tabix-indexed RefSeq gene track —
-all wired up through `init`:
+A complete example using a remote BgzipFasta sequence adapter, GRCh38 ref-name
+aliases, cytobands, and a tabix-indexed RefSeq gene track — all wired up through
+`init`:
 
 <Story of={WithInit} />
 
 ## Loading alignments via `showTrack`
 
-When tracks need to open in response to runtime conditions (a button
-click, a search hit, a parent component prop) rather than at first
-mount, prefer the imperative `viewState.session.view.showTrack(trackId)`
-method. The example below adds a CRAM exome alignments track on top of
-GRCh38, opened via `showTrack` after `createViewState` returns:
+When tracks need to open in response to runtime conditions (a button click, a
+search hit, a parent component prop) rather than at first mount, prefer the
+imperative `viewState.session.view.showTrack(trackId)` method. The example below
+adds a CRAM exome alignments track on top of GRCh38, opened via `showTrack`
+after `createViewState` returns:
 
 <Story of={HumanExomeExample} />
 
-CRAM tracks (and BAM files without MD tags) require a `sequenceAdapter`
-block on the track config so the worker can decode reads against the
-reference — see the source for the exact shape.
+CRAM tracks (and BAM files without MD tags) require a `sequenceAdapter` block on
+the track config so the worker can decode reads against the reference — see the
+source for the exact shape.
 
 ## Which to choose
 
 - **`init`** — first paint, declarative, just trackIds. Default.
 - **`showTrack`** — runtime, imperative, composes with React state.
-- **Full `defaultSession` snapshot** — only when round-tripping an
-  exported session.
+- **Full `defaultSession` snapshot** — only when round-tripping an exported
+  session.

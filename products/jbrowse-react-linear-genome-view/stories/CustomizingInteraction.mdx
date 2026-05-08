@@ -8,25 +8,23 @@ import {
 
 # Customizing interaction
 
-The embedded view is interactive by default — wheel zoom, click-drag
-pan, all the usual gestures. Two adjustments come up often when
-embedding:
+The embedded view is interactive by default — wheel zoom, click-drag pan, all
+the usual gestures. Two adjustments come up often when embedding:
 
 ## Disabling zoom and side-scroll
 
-For dashboard or report layouts where the page (not the view) should
-own scroll and zoom, a small plugin can override the view model's
-relevant actions to no-ops. The example wraps a default `LinearGenomeView`
-with overridden `horizontalScroll` and `zoomTo` actions.
+For dashboard or report layouts where the page (not the view) should own scroll
+and zoom, a small plugin can override the view model's relevant actions to
+no-ops. The example wraps a default `LinearGenomeView` with overridden
+`horizontalScroll` and `zoomTo` actions.
 
 <Story of={WithDisableZoomAndSideScroll} />
 
 ## Composing with parent styles
 
-The embedded view inherits CSS from its host. There's no shadow-DOM
-isolation in this rendering path (see
-[ShadowDOM](?path=/docs/shadowdom-custom-element--docs) if you need
-that), so wrapping the component in a styled container composes
+The embedded view inherits CSS from its host. There's no shadow-DOM isolation in
+this rendering path (see [ShadowDOM](?path=/docs/shadowdom-custom-element--docs)
+if you need that), so wrapping the component in a styled container composes
 normally — borders, margins, backgrounds all work.
 
 <Story of={WithOutsideStyling} />
