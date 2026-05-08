@@ -14,7 +14,7 @@ const useStyles = makeStyles()({
   // avoid parent styles getting into this div
   // https://css-tricks.com/almanac/properties/a/all/
   avoidParentStyle: {
-    display: 'contents',
+    all: 'initial',
   },
 })
 
