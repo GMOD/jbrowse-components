@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-import { ErrorBanner, FileSelector } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 import {
   FormControlLabel,
   Grid,
@@ -11,16 +11,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getAdapter } from './getAdapter.ts'
-import {
-  AnchorsSelector,
-  PifGzSelector,
-  StandardFormatSelector,
-} from './selectors/index.ts'
-import { basename, extName, getName, stripGz } from './util.ts'
+import { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
-import type { FileLocation } from '@jbrowse/core/util/types'
+import type { SyntenyFileFormatOption } from './selectors/SelectorTypes.ts'
 
 const ImportSyntenyOpenCustomTrack = observer(
   function ImportSyntenyOpenCustomTrack({
@@ -34,74 +28,18 @@ const ImportSyntenyOpenCustomTrack = observer(
     assembly2: string
     selectedRow: number
   }) {
-    const [swap, setSwap] = useState(false)
-    const [bed2Location, setBed2Location] = useState<FileLocation>()
-    const [bed1Location, setBed1Location] = useState<FileLocation>()
-    const [fileLocation, setFileLocation] = useState<FileLocation>()
-    const [indexFileLocation, setIndexFileLocation] = useState<FileLocation>()
-    const [value, setValue] = useState('')
-    const fileName = getName(fileLocation)
+    const { pluginManager } = getEnv(model)
+    const [radioOption, setRadioOption] = useState('')
 
-    const radioOption = value || (fileName ? extName(stripGz(fileName)) : '')
+    const formats = pluginManager.evaluateExtensionPoint(
+      'LinearSyntenyView-SyntenyFileFormats',
+      defaultSyntenyFileFormats,
+    ) as SyntenyFileFormatOption[]
 
-    let error: unknown
-    if (fileLocation) {
-      try {
-        getAdapter({
-          radioOption,
-          assembly1: swap ? assembly2 : assembly1,
-          assembly2: swap ? assembly1 : assembly2,
-          fileLocation,
-          indexFileLocation,
-          bed1Location,
-          bed2Location,
-        })
-      } catch (e) {
-        error = e
-      }
-    }
+    const selectedFormat = formats.find(f => f.extension === radioOption)
 
-    useEffect(() => {
-      if (fileLocation && !error) {
-        const fn = fileName ? basename(fileName) : 'MyTrack'
-        const trackId = `${fn}-${Date.now()}-sessionTrack`
-        const adapter = getAdapter({
-          radioOption,
-          assembly1: swap ? assembly2 : assembly1,
-          assembly2: swap ? assembly1 : assembly2,
-          fileLocation,
-          indexFileLocation,
-          bed1Location,
-          bed2Location,
-        })
-        model.setImportFormSyntenyTrack(selectedRow, {
-          type: 'userOpened',
-          value: {
-            trackId,
-            name: fn,
-            assemblyNames: [assembly2, assembly1],
-            type: 'SyntenyTrack',
-            adapter,
-          },
-        })
-      }
-    }, [
-      error,
-      swap,
-      model,
-      selectedRow,
-      fileName,
-      assembly1,
-      assembly2,
-      bed1Location,
-      bed2Location,
-      fileLocation,
-      indexFileLocation,
-      radioOption,
-    ])
     return (
       <Paper style={{ padding: 12 }}>
-        {error ? <ErrorBanner error={error} /> : null}
         <Typography style={{ textAlign: 'center' }}>
           Add a .paf (minimap2), .delta (Mummer), .chain (UCSC liftover),
           .anchors or .anchors.simple (MCScan), or .pif.gz (jbrowse CLI
@@ -110,78 +48,47 @@ const ImportSyntenyOpenCustomTrack = observer(
         <RadioGroup
           value={radioOption}
           onChange={event => {
-            setValue(event.target.value)
+            setRadioOption(event.target.value)
+            model.setImportFormSyntenyTrack(selectedRow, { type: 'none' })
           }}
         >
           <Grid container sx={{ justifyContent: 'center' }}>
-            {[
-              '.paf',
-              '.delta',
-              '.out',
-              '.chain',
-              '.anchors',
-              '.anchors.simple',
-              '.pif.gz',
-            ].map(extension => (
+            {formats.map(f => (
               <FormControlLabel
-                key={extension}
-                value={extension}
+                key={f.extension}
+                value={f.extension}
                 control={<Radio />}
-                label={extension}
+                label={f.extension}
               />
             ))}
           </Grid>
         </RadioGroup>
-        <Grid container sx={{ justifyContent: 'center' }}>
-          {radioOption === '.paf' ||
-          radioOption === '.out' ||
-          radioOption === '.delta' ||
-          radioOption === '.chain' ? (
-            <StandardFormatSelector
+        {selectedFormat ? (
+          <Grid container sx={{ justifyContent: 'center' }}>
+            <selectedFormat.Component
+              key={radioOption}
               assembly1={assembly1}
               assembly2={assembly2}
-              swap={swap}
-              setSwap={setSwap}
-              fileLocation={fileLocation}
-              setFileLocation={setFileLocation}
-              radioOption={radioOption}
+              onAdapterChange={result => {
+                if (result) {
+                  const trackId = `${result.name}-${Date.now()}-sessionTrack`
+                  model.setImportFormSyntenyTrack(selectedRow, {
+                    type: 'userOpened',
+                    value: {
+                      trackId,
+                      name: result.name,
+                      assemblyNames: [assembly2, assembly1],
+                      type: 'SyntenyTrack',
+                      adapter: result.adapter,
+                    },
+                  })
+                } else {
+                  model.setImportFormSyntenyTrack(selectedRow, { type: 'none' })
+                }
+              }}
             />
-          ) : radioOption === '.pif.gz' ? (
-            <PifGzSelector
-              assembly1={assembly1}
-              assembly2={assembly2}
-              swap={swap}
-              setSwap={setSwap}
-              fileLocation={fileLocation}
-              setFileLocation={setFileLocation}
-              indexFileLocation={indexFileLocation}
-              setIndexFileLocation={setIndexFileLocation}
-              radioOption={radioOption}
-            />
-          ) : radioOption === '.anchors' ||
-            radioOption === '.anchors.simple' ? (
-            <AnchorsSelector
-              assembly1={assembly1}
-              assembly2={assembly2}
-              swap={swap}
-              setSwap={setSwap}
-              fileLocation={fileLocation}
-              setFileLocation={setFileLocation}
-              bed1Location={bed1Location}
-              setBed1Location={setBed1Location}
-              bed2Location={bed2Location}
-              setBed2Location={setBed2Location}
-              radioOption={radioOption}
-            />
-          ) : (
-            <FileSelector
-              name={value ? `${value} location` : ''}
-              description=""
-              location={fileLocation}
-              setLocation={setFileLocation}
-            />
-          )}
-        </Grid>
+          </Grid>
+        ) : null}
       </Paper>
     )
   },

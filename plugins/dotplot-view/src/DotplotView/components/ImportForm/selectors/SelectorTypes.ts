@@ -1,13 +1,13 @@
 import type React from 'react'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-export const helpStrings = {
+export const helpStrings: Record<string, string> = {
   '.paf': 'minimap2 target.fa query.fa',
   '.pif.gz': 'minimap2 target.fa query.fa',
   '.out': 'mashmap target.fa query.fa',
   '.delta': 'mummer target.fa query.fa',
   '.chain': 'e.g. queryToTarget.chain',
-} as const
+}
 
 export interface SelectorProps {
   assembly1: string

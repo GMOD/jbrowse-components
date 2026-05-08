@@ -5,7 +5,7 @@ import SwapAssemblies from './SwapAssemblies.tsx'
 
 import type { SelectorProps } from './SelectorTypes.ts'
 
-const AnchorsFileSelector = observer(function AnchorsFileSelector({
+const AnchorsSelector = observer(function AnchorsSelector({
   assembly1,
   assembly2,
   swap,
@@ -62,4 +62,4 @@ const AnchorsFileSelector = observer(function AnchorsFileSelector({
   )
 })
 
-export default AnchorsFileSelector
+export default AnchorsSelector

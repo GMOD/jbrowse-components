@@ -48,11 +48,7 @@ const SwapAssemblies = observer(function SwapAssemblies({
         Verify or click swap
         <Tooltip
           title={
-            helpContent || (
-              <code>
-                {helpStrings[radioOption as keyof typeof helpStrings]}
-              </code>
-            )
+            helpContent || <code>{helpStrings[radioOption]}</code>
           }
         >
           <HelpIcon />

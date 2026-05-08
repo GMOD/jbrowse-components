@@ -5,7 +5,7 @@ import SwapAssemblies from './SwapAssemblies.tsx'
 
 import type { SelectorProps } from './SelectorTypes.ts'
 
-const SyntenyFileSelector = observer(function SyntenyFileSelector({
+const StandardFormatSelector = observer(function StandardFormatSelector({
   assembly1,
   assembly2,
   swap,
@@ -36,4 +36,4 @@ const SyntenyFileSelector = observer(function SyntenyFileSelector({
   )
 })
 
-export default SyntenyFileSelector
+export default StandardFormatSelector

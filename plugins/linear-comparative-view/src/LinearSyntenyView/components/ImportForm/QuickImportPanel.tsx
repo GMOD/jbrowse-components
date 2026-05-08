@@ -6,9 +6,7 @@ import { Alert, Box, Button, Chip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { doSubmit } from './doSubmit.tsx'
-import { getName } from '@jbrowse/synteny-core'
-
-import { stripGz } from './util.ts'
+import { getFileName } from '@jbrowse/core/util/tracks'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -58,8 +56,8 @@ const QuickImportPanel = observer(function QuickImportPanel({
   const [detectedConfig, setDetectedConfig] = useState<DetectedConfig>()
   const session = getSession(model)
 
-  const fileName = getName(fileLocation)
-  const format = fileName ? detectFormatFromName(stripGz(fileName)) : ''
+  const fileName = fileLocation ? getFileName(fileLocation) : ''
+  const format = fileName ? detectFormatFromName(fileName) : ''
   const isPif = format === 'Multi-tier PIF'
 
   const handleLaunch = async () => {

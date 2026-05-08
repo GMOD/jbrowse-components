@@ -721,6 +721,14 @@ pluginManager.addToExtensionPoint(
 )
 ```
 
+### LinearSyntenyView-SyntenyFileFormats
+
+type: synchronous
+
+Same as `DotplotView-SyntenyFileFormats` but for the LinearSyntenyView import
+form. Includes `selectedRow` context in props but the `Component` interface is
+identical — the parent handles `selectedRow` internally.
+
 ### LinearSyntenyView-ImportFormSyntenyOptions
 
 type: synchronous

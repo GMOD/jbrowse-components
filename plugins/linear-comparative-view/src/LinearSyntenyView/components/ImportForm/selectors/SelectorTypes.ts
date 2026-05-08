@@ -6,14 +6,14 @@ export interface SelectorProps {
   assembly2: string
   swap: boolean
   setSwap: (swap: boolean) => void
-  fileLocation: FileLocation | undefined
-  setFileLocation: (location: FileLocation | undefined) => void
-  indexFileLocation?: FileLocation | undefined
-  setIndexFileLocation?: (location: FileLocation | undefined) => void
-  bed1Location?: FileLocation | undefined
-  setBed1Location?: (location: FileLocation | undefined) => void
-  bed2Location?: FileLocation | undefined
-  setBed2Location?: (location: FileLocation | undefined) => void
+  fileLocation?: FileLocation
+  setFileLocation: (location: FileLocation) => void
+  indexFileLocation?: FileLocation
+  setIndexFileLocation?: (location: FileLocation) => void
+  bed1Location?: FileLocation
+  setBed1Location?: (location: FileLocation) => void
+  bed2Location?: FileLocation
+  setBed2Location?: (location: FileLocation) => void
   radioOption: string
 }
 
