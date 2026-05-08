@@ -51,7 +51,7 @@ export function useQueryParam(key: string) {
   return [value ?? undefined, setValue] as const
 }
 
-export function deleteQueryParams(keys: string[]) {
+export function deleteQueryParams(keys: readonly string[]) {
   const params = getSearchParams()
   for (const key of keys) {
     params.delete(key)

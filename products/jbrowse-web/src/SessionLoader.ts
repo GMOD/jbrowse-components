@@ -1,9 +1,8 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
 import { createElementId } from '@jbrowse/core/util/types/mst'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { openDB } from 'idb'
-import { autorun } from 'mobx'
 
 import { readSessionFromDynamo } from './sessionSharing.ts'
 import {
@@ -380,16 +379,58 @@ const SessionLoader = types
     },
     /**
      * #action
+     */
+    async loadSessionByType() {
+      try {
+        const {
+          isLocalSession,
+          isEncodedSession,
+          isSpecSession,
+          isSharedSession,
+          isJsonSession,
+          isJb1StyleSession,
+          isHubSession,
+          sessionSnapshot,
+        } = self
+        if (sessionSnapshot) {
+          await this.loadSessionPluginsIfNeeded(sessionSnapshot)
+        } else if (isSharedSession) {
+          await this.fetchSharedSession()
+        } else if (isSpecSession) {
+          this.decodeSessionSpec()
+        } else if (isJb1StyleSession) {
+          this.decodeJb1StyleSession()
+        } else if (isEncodedSession) {
+          await this.decodeEncodedUrlSession()
+        } else if (isJsonSession) {
+          await this.decodeJsonUrlSession()
+        } else if (isLocalSession) {
+          await this.fetchLocalSession()
+        } else if (isHubSession) {
+          // later in priority: a local session in the URL takes precedence over
+          // a hub spec since hub is left in URL even when a local session exists
+          this.decodeHubSpec()
+          self.setBlankSession(true)
+        } else if (self.sessionQuery) {
+          throw new Error(
+            `Unrecognized URL session format: "${self.sessionQuery}"`,
+          )
+        } else {
+          self.setBlankSession(true)
+        }
+      } catch (e) {
+        console.error(e)
+        self.setSessionError(e)
+      }
+    },
+    /**
+     * #action
      * Called when configSnapshot already exists (e.g., from HMR or plugin reload)
      */
     async setUpConfig() {
       const configPath = self.resolvedConfigPath
       const configUri = new URL(configPath, window.location.href)
-      // configSnapshot is guaranteed to exist when this method is called
-      const config = structuredClone(self.configSnapshot) as Record<
-        string,
-        unknown
-      >
+      const config = structuredClone(self.configSnapshot!)
       addRelativeUris(config, configUri)
       self.setConfigSnapshot(config)
       await this.fetchPlugins(config)
@@ -552,65 +593,10 @@ const SessionLoader = types
      * #aftercreate
      */
     afterCreate() {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      ;(async () => {
+      void (async () => {
         try {
           await (self.configSnapshot ? this.setUpConfig() : this.fetchConfig())
-
-          addDisposer(
-            self,
-            autorun(async () => {
-              try {
-                const {
-                  isLocalSession,
-                  isEncodedSession,
-                  isSpecSession,
-                  isSharedSession,
-                  isJsonSession,
-                  isJb1StyleSession,
-                  isHubSession,
-                  sessionSnapshot,
-                  configSnapshot,
-                } = self
-                if (!configSnapshot) {
-                  return
-                }
-
-                if (sessionSnapshot) {
-                  await this.loadSessionPluginsIfNeeded(sessionSnapshot)
-                } else if (isSharedSession) {
-                  await this.fetchSharedSession()
-                } else if (isSpecSession) {
-                  this.decodeSessionSpec()
-                } else if (isJb1StyleSession) {
-                  this.decodeJb1StyleSession()
-                } else if (isEncodedSession) {
-                  await this.decodeEncodedUrlSession()
-                } else if (isJsonSession) {
-                  await this.decodeJsonUrlSession()
-                } else if (isLocalSession) {
-                  await this.fetchLocalSession()
-                } else if (isHubSession) {
-                  // this is later in the list: prioritize local session over
-                  // "hub spec" since hub is left in URL even when there may be
-                  // a local session
-                  this.decodeHubSpec()
-                  self.setBlankSession(true)
-                } else if (self.sessionQuery) {
-                  // if there was a sessionQuery and we don't recognize it
-                  throw new Error(
-                    `Unrecognized URL session format: "${self.sessionQuery}"`,
-                  )
-                } else {
-                  // placeholder for session loaded, but none found
-                  self.setBlankSession(true)
-                }
-              } catch (e) {
-                console.error(e)
-                self.setSessionError(e)
-              }
-            }),
-          )
+          await this.loadSessionByType()
         } catch (e) {
           console.error(e)
           self.setConfigError(e)

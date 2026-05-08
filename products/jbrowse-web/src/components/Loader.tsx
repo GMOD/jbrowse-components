@@ -29,6 +29,33 @@ setGpuOverride(
   new URLSearchParams(window.location.search).get('renderer') ?? null,
 )
 
+const isJest = typeof jest !== 'undefined'
+
+function createReloadedLoader(
+  loader: SessionLoaderModel,
+  configSnapshot: Record<string, unknown>,
+  sessionSnapshot: Record<string, unknown>,
+) {
+  return SessionLoader.create({
+    configPath: loader.configPath,
+    sessionQuery: loader.sessionQuery,
+    password: loader.password,
+    adminKey: loader.adminKey,
+    loc: loader.loc,
+    assembly: loader.assembly,
+    tracks: loader.tracks,
+    sessionTracks: loader.sessionTracks,
+    tracklist: loader.tracklist,
+    highlight: loader.highlight,
+    nav: loader.nav,
+    hubURL: loader.hubURL,
+    sessionName: loader.sessionName,
+    initialTimestamp: Date.now(),
+    configSnapshot,
+    sessionSnapshot,
+  })
+}
+
 const SessionTriaged = lazy(() => import('./SessionTriaged.tsx'))
 const LoaderErrorBanner = lazy(() => import('./LoaderErrorBanner.tsx'))
 
@@ -50,9 +77,8 @@ export function Loader({
 }: {
   initialTimestamp?: number
 }) {
-  const [initialTimestamp] = useState(() => initialTimestampProp ?? Date.now())
-
   const [loader] = useState(() => {
+    const initialTimestamp = initialTimestampProp ?? Date.now()
     const {
       config,
       session,
@@ -82,7 +108,7 @@ export function Loader({
       'hubURL',
       'sessionName',
     ])
-
+    deleteQueryParams(paramsToDelete)
     return SessionLoader.create({
       configPath: config,
       sessionQuery: session,
@@ -100,10 +126,6 @@ export function Loader({
       initialTimestamp,
     })
   })
-
-  useEffect(() => {
-    deleteQueryParams([...paramsToDelete])
-  }, [])
 
   return <Renderer loader={loader} />
 }
@@ -127,25 +149,7 @@ const Renderer = observer(function Renderer({
       configSnapshot: Record<string, unknown>,
       sessionSnapshot: Record<string, unknown>,
     ) => {
-      const newLoader = SessionLoader.create({
-        configPath: loader.configPath,
-        sessionQuery: loader.sessionQuery,
-        password: loader.password,
-        adminKey: loader.adminKey,
-        loc: loader.loc,
-        assembly: loader.assembly,
-        tracks: loader.tracks,
-        sessionTracks: loader.sessionTracks,
-        tracklist: loader.tracklist,
-        highlight: loader.highlight,
-        nav: loader.nav,
-        hubURL: loader.hubURL,
-        sessionName: loader.sessionName,
-        initialTimestamp: Date.now(),
-        configSnapshot,
-        sessionSnapshot,
-      })
-      setLoader(newLoader)
+      setLoader(createReloadedLoader(loader, configSnapshot, sessionSnapshot))
       setPluginManager(undefined)
     },
     [loader],
@@ -154,8 +158,6 @@ const Renderer = observer(function Renderer({
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
-    // Skip destroy in Jest since it interferes with test cleanup
-    const isJest = typeof jest !== 'undefined'
     let pm: PluginManager | undefined
     if (ready) {
       try {
