@@ -507,10 +507,11 @@ const LDDisplayContent = observer(function LDDisplayContent({
     )
   }
 
-  // SYNC: keep in lockstep with plugins/hic ReactComponent.tsx — both
-  // rotated-triangle contact maps shift the canvas wrapper right when the
-  // user scrolls left of genome start so the triangle apex aligns with the
-  // genome content rather than the viewport left edge.
+  // Both LD and Hi-C are rotated-triangle contact maps with a single global
+  // RPC result. plugins/hic now folds this gap into `viewOffsetX` inside the
+  // renderer (the CSS-wrapper approach jittered during smooth pan). Migrating
+  // LD the same way is the obvious follow-up; for now the wrapper-div trick
+  // is preserved here.
   const left = Math.max(0, -view.offsetPx)
   return (
     <div style={{ position: 'relative', width, height, left }}>

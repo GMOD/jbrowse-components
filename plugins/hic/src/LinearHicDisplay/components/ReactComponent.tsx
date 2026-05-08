@@ -98,13 +98,6 @@ const HicCanvas = observer(function HicCanvas({
 }) {
   const view = getContainingView(model) as LGV
   const width = view.totalWidthPx
-  // SYNC: keep in lockstep with LDDisplayComponent.tsx
-  // (`const left = Math.max(0, -view.offsetPx)` + wrapper-div left). LD and
-  // Hi-C are both rotated-triangle contact maps with a single global RPC
-  // result; they share the same offsetPx-aware positioning trick. If we ever
-  // refactor a `packages/contact-map-core` for shared concepts (rotation,
-  // viewport offset, hover hit-test inversion), this is one of them.
-  const wrapperLeft = Math.max(0, -view.offsetPx)
   const {
     height,
     rpcData,
@@ -129,8 +122,13 @@ const HicCanvas = observer(function HicCanvas({
 
   const { canvasRef, error, retry } = useGpuModelLifecycle(HicRenderer, model)
 
-  const { scale: viewScale, translateX: viewOffsetX } =
-    model.viewportTransform(view)
+  // SYNC with model.renderState: viewOffsetX folds in the negative-offsetPx
+  // gap (the canvas is full-viewport-width at left:0; we draw the apex at
+  // canvas-x = gap so it lines up with the genome content start when the
+  // user has scrolled left of the first region). Hover hit-test inverts the
+  // same transform, so it reads the same combined value.
+  const { scale: viewScale, translateX } = model.viewportTransform(view)
+  const viewOffsetX = translateX + Math.max(0, -view.offsetPx)
 
   const onMouseMove = (event: React.MouseEvent) => {
     if (
@@ -198,7 +196,6 @@ const HicCanvas = observer(function HicCanvas({
         width,
         height,
         overflow: 'hidden',
-        left: wrapperLeft,
       }}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}

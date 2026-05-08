@@ -203,6 +203,11 @@ export default function stateModelFactory(
           return undefined
         }
         const { scale, translateX } = self.viewportTransform(view)
+        // Fold in the gap shift so the apex lands at the genome content
+        // start when scrolled left of the first region. Canvas spans the
+        // full viewport at left:0 — the rendering itself absorbs the shift,
+        // not a CSS wrapper (CSS approach jittered during smooth pan).
+        const gap = Math.max(0, -view.offsetPx)
         return {
           binWidth: data.binWidth,
           yScalar: self.yScalar,
@@ -211,7 +216,7 @@ export default function stateModelFactory(
           colorMaxScore: self.colorMaxScore,
           useLogScale: self.useLogScale,
           viewScale: scale,
-          viewOffsetX: translateX,
+          viewOffsetX: translateX + gap,
         }
       },
 
