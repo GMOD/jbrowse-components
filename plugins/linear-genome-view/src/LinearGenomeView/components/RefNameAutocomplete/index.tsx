@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import BaseResult, {
   RefSequenceResult,
@@ -48,7 +48,9 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
 
-  // this callback runs an async search. the typescript code claims that
+  const fetchResultsRef = useRef(fetchResults)
+  fetchResultsRef.current = fetchResults
+
   useEffect(() => {
     const isCurrent = { cancelled: false }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -59,7 +61,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
         }
 
         setLoaded(false)
-        const results = await fetchResults(debouncedSearch)
+        const results = await fetchResultsRef.current(debouncedSearch)
 
         if (!isCurrent.cancelled) {
           setSearchOptions(getDeduplicatedResult(results))
@@ -79,7 +81,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
     return () => {
       isCurrent.cancelled = true
     }
-  }, [assemblyName, fetchResults, debouncedSearch, session])
+  }, [assemblyName, debouncedSearch, session])
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
   const regions = assembly?.regions

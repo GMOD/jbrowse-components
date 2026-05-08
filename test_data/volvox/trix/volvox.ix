@@ -65,6 +65,18 @@ finger ["ctgA%3A15396..16159"|"gff3tabix_genes"|"m03"|"zinc%20finger"],1
 fingerprinted ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],1 ["ctgB%3A1000..2000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],2
 form ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.1"|"EDEN.1"|"Eden%20splice%20form%201"],1 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.2"|"EDEN.2"|"Eden%20splice%20form%202"],2 ["ctgA%3A1300..9000"|"gff3tabix_genes"|"EDEN.3"|"EDEN.3"|"Eden%20splice%20form%203"],3
 gene ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple4"|"Gene%20with%20no%20subfeatures"],1
+gene001 ["ctgA%3A1050..9000"|"gff3_mouseover_attr"|"KINASE1"|"GENE001"],1
+gene001.1 ["ctgA%3A1050..9000"|"gff3_mouseover_attr"|"KINASE1.1"|"GENE001.1"],1
+gene001.2 ["ctgA%3A1050..9000"|"gff3_mouseover_attr"|"KINASE1.2"|"GENE001.2"],1
+gene002 ["ctgA%3A10000..15000"|"gff3_mouseover_attr"|"RECEPTOR"|"GENE002"],1
+gene002.1 ["ctgA%3A10000..15000"|"gff3_mouseover_attr"|"RECEPTOR.1"|"GENE002.1"],1
+gene003 ["ctgA%3A20000..22000"|"gff3_mouseover_attr"|"TRANSPORTER"|"GENE003"],1
+gene003.1 ["ctgA%3A20000..22000"|"gff3_mouseover_attr"|"TRANSPORTER.1"|"GENE003.1"],1
+gene004 ["ctgA%3A25000..30000"|"gff3_mouseover_attr"|"REGULATOR"|"GENE004"],1
+gene004.1 ["ctgA%3A25000..30000"|"gff3_mouseover_attr"|"REGULATOR.1"|"GENE004.1"],1
+gene004.2 ["ctgA%3A25000..29000"|"gff3_mouseover_attr"|"REGULATOR.2"|"GENE004.2"],1
+gene005 ["ctgA%3A35000..36000"|"gff3_mouseover_attr"|"UNSTRANDED"|"GENE005"],1
+gene005.1 ["ctgA%3A35000..36000"|"gff3_mouseover_attr"|"UNSTRANDED.1"|"GENE005.1"],1
 gene1 ["ctgA%3A1201..1500"|"single_exon_gene"|"gene1"],1
 gene2 ["ctgA%3A1201..3902"|"single_exon_gene"|"gene2"],1
 gene3 ["ctgA%3A2201..2500"|"single_exon_gene"|"gene3"],1
@@ -82,6 +94,9 @@ inv136 ["ctgA%3A19848..30074"|"volvox.inv.vcf"|"inv136"],1
 inv9000 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv9000"],1
 is ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],2 ["ctgA%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],3 ["ctgB%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],4 ["ctgB%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],5
 kinase ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN"|"EDEN"|"protein%20kinase"],1 ["ctgA%3A11911..15561"|"gff3tabix_genes"|"m11"|"kinase"],2 ["ctgA%3A14731..17239"|"gff3tabix_genes"|"m14"|"kinase"],3 ["ctgA%3A21748..25612"|"gff3tabix_genes"|"m12"|"kinase"],4 ["ctgA%3A46012..48851"|"gff3tabix_genes"|"m09"|"kinase"],5
+kinase1 ["ctgA%3A1050..9000"|"gff3_mouseover_attr"|"KINASE1"|"GENE001"],1
+kinase1.1 ["ctgA%3A1050..9000"|"gff3_mouseover_attr"|"KINASE1.1"|"GENE001.1"],1
+kinase1.2 ["ctgA%3A1050..9000"|"gff3_mouseover_attr"|"KINASE1.2"|"GENE001.2"],1
 length ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
 loop ["ctgA%3A13801..14007"|"gff3tabix_genes"|"m05"|"helix%20loop%20helix"],1
 m01 ["ctgA%3A48253..48366"|"gff3tabix_genes"|"m01"|"WD40"],1
@@ -116,6 +131,11 @@ protein ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN"|"EDEN"|"protein%20kinase"]
 protein:hga ["ctgA%3A1200..1900"|"gff3tabix_genes"|"Protein%3AHGA"],1
 protein:hgb ["ctgA%3A1800..2900"|"gff3tabix_genes"|"Protein%3AHGB"],1
 reads ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],1 ["ctgB%3A1000..2000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],2
+receptor ["ctgA%3A10000..15000"|"gff3_mouseover_attr"|"RECEPTOR"|"GENE002"],1
+receptor.1 ["ctgA%3A10000..15000"|"gff3_mouseover_attr"|"RECEPTOR.1"|"GENE002.1"],1
+regulator ["ctgA%3A25000..30000"|"gff3_mouseover_attr"|"REGULATOR"|"GENE004"],1
+regulator.1 ["ctgA%3A25000..30000"|"gff3_mouseover_attr"|"REGULATOR.1"|"GENE004.1"],1
+regulator.2 ["ctgA%3A25000..29000"|"gff3_mouseover_attr"|"REGULATOR.2"|"GENE004.2"],1
 remark:hga ["ctgA%3A1000..2000"|"gff3tabix_genes"|"Remark%3Ahga"],1
 repeat ["ctgA%3A30578..31748"|"gff3tabix_genes"|"m06"|"SUSHI%20repeat"],1
 rna-apple3 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],1
@@ -215,6 +235,10 @@ sv_inv_005 ["ctgA%3A39000..41500"|"volvox%20multi-sample%20sv"|"sv_inv_005"],1
 that ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
 the ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
 this ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],2 ["ctgA%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],3 ["ctgB%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],4 ["ctgB%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],5
+transporter ["ctgA%3A20000..22000"|"gff3_mouseover_attr"|"TRANSPORTER"|"GENE003"],1
+transporter.1 ["ctgA%3A20000..22000"|"gff3_mouseover_attr"|"TRANSPORTER.1"|"GENE003.1"],1
+unstranded ["ctgA%3A35000..36000"|"gff3_mouseover_attr"|"UNSTRANDED"|"GENE005"],1
+unstranded.1 ["ctgA%3A35000..36000"|"gff3_mouseover_attr"|"UNSTRANDED.1"|"GENE005.1"],1
 utrs ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],1 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],2
 wd40 ["ctgA%3A48253..48366"|"gff3tabix_genes"|"m01"|"WD40"],1
 with ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],2 ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple4"|"Gene%20with%20no%20subfeatures"],3 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],4 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],5 ["ctgB%3A1000..2000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],6
