@@ -1,6 +1,11 @@
-import useSWR, { type SWRConfiguration, type SWRResponse } from 'swr'
+import useSWR from 'swr'
 
-import type { Key, Fetcher } from 'swr'
+import type {
+  Fetcher,
+  Key,
+  SWRConfiguration,
+  SWRResponse,
+} from 'swr'
 
 // Wrap useSWR with the project default of no automatic refetching.
 // Most JBrowse data sources are stable for the lifetime of the dialog or
