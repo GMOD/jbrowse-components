@@ -33,10 +33,13 @@ function byOrderKey(a: RawEntry, b: RawEntry) {
     : 0
 }
 
+type FilterOption = 'refseq' | 'genbank' | 'designatedReference'
+type TypeOption = 'mainGenomes' | string
+
 function applyFilter(
   rows: RawEntry[],
-  filterOption: string,
-  typeOption: string,
+  filterOption: FilterOption,
+  typeOption: TypeOption,
 ): RawEntry[] {
   let filtered = rows
   if (typeOption !== 'mainGenomes') {
@@ -60,13 +63,13 @@ export function useGenomesData({
   url,
 }: {
   searchQuery: string
-  filterOption: string
-  typeOption: string
+  filterOption: FilterOption
+  typeOption: TypeOption
   showOnlyFavs: boolean
   favorites: Fav[]
   url?: string
-}) {
-  const { data, error } = useFetch<RawData>(url, (u) => fetchJson(u) as Promise<RawData>)
+}): { data: RawEntry[]; error: unknown } {
+  const { data, error } = useFetch<RawData>(url, (u: string) => fetchJson(u) as Promise<RawData>)
 
   const rows = data
     ? applyFilter(normalizeEntries(data), filterOption, typeOption).sort(
