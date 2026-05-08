@@ -1,3 +1,5 @@
+import { parseCigar2 } from '../../MismatchParser/index.ts'
+
 import { extractPerBaseQuality } from './extract.ts'
 
 import type { PerBaseQualityEntry } from './types.ts'
@@ -8,6 +10,7 @@ function makeFeature(opts: {
   cigar: string
   qual: Uint8Array
 }): Feature {
+  const numericCigar = new Uint32Array(parseCigar2(opts.cigar))
   return {
     id: () => 'f',
     get(field: string) {
@@ -16,6 +19,8 @@ function makeFeature(opts: {
           return opts.start
         case 'CIGAR':
           return opts.cigar
+        case 'NUMERIC_CIGAR':
+          return numericCigar
         case 'NUMERIC_QUAL':
           return opts.qual
         default:

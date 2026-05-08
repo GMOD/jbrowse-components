@@ -33,6 +33,10 @@ export function drawReads(
   state: RenderState,
 ) {
   const fH = state.featureHeight
+  const colorOpts = {
+    renderingMode: state.renderingMode,
+    flipStrandLongReadChains: state.flipStrandLongReadChains,
+  }
 
   for (let i = 0; i < region.readFlags.length; i++) {
     const startBp = region.readPositions[i * 2]!
@@ -42,10 +46,13 @@ export function drawReads(
     const y = pileupRowY(region.readYs[i]!, state)
     const w = Math.max(1, x2 - x1)
 
-    ctx.fillStyle = getReadColor(i, region, state.colorScheme, state.colors, {
-      renderingMode: state.renderingMode,
-      flipStrandLongReadChains: state.flipStrandLongReadChains,
-    })
+    ctx.fillStyle = getReadColor(
+      i,
+      region,
+      state.colorScheme,
+      state.colors,
+      colorOpts,
+    )
     ctx.fillRect(x1, y, w, fH)
 
     if (state.showOutline && w > 2) {

@@ -1,4 +1,3 @@
-import { parseCigar2 } from '../../MismatchParser/index.ts'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -23,10 +22,11 @@ export function extractPerBaseQuality(
   out: PerBaseQualityEntry[],
 ) {
   const scores = feature.get('NUMERIC_QUAL') as Uint8Array | undefined
-  const cigarString = feature.get('CIGAR') as string | undefined
-  if (scores && scores.length > 0 && cigarString) {
+  const cigarOps = feature.get('NUMERIC_CIGAR') as
+    | ArrayLike<number>
+    | undefined
+  if (scores && scores.length > 0 && cigarOps && cigarOps.length > 0) {
     const start = feature.get('start')
-    const cigarOps = parseCigar2(cigarString)
     let soffset = 0
     let roffset = 0
     for (let i = 0, l = cigarOps.length; i < l; i++) {

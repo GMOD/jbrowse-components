@@ -1,6 +1,12 @@
-import { revcom } from '@jbrowse/core/util'
-
 import { parseModHeader } from './consts.ts'
+
+const COMPLEMENT_CODE: Record<number, number> = {
+  65: 84, // A->T
+  84: 65, // T->A
+  67: 71, // C->G
+  71: 67, // G->C
+  78: 78, // N->N
+}
 
 /**
  * Parse MM tag to extract modification positions on the read sequence.
@@ -12,8 +18,8 @@ import { parseModHeader } from './consts.ts'
  * @returns Array of modification objects with positions
  */
 export function getModPositions(mm: string, fseq: string, fstrand: number) {
-  const seq = fstrand === -1 ? revcom(fseq) : fseq
-  const seqLength = seq.length
+  const seqLength = fseq.length
+  const isRev = fstrand === -1
   const mods = mm.split(';')
   const result: {
     type: string
@@ -48,22 +54,31 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
       const splitLength = split.length
       let currPos = 0
 
+      // Avoid revcom(fseq) by reading fseq from the back and complementing the
+      // expected char-code on reverse strand.
+      const baseCode = base.charCodeAt(0)
+      const targetCode = isRev ? (COMPLEMENT_CODE[baseCode] ?? baseCode) : baseCode
+      const isN = base === 'N'
+
       // For reverse strand, pre-allocate array and fill backwards to avoid reverse()
       // This is worthwhile because we avoid an O(n) reverse() operation
-      const positions = fstrand === -1 ? new Array(splitLength - 1) : []
-      let writeIndex = fstrand === -1 ? splitLength - 2 : 0
+      const positions = isRev ? new Array(splitLength - 1) : []
+      let writeIndex = isRev ? splitLength - 2 : 0
 
       for (let i = 1; i < splitLength; i++) {
         let delta = +split[i]!
         do {
-          if (base === 'N' || base === seq[currPos]) {
+          const seqCode = isRev
+            ? fseq.charCodeAt(seqLength - 1 - currPos)
+            : fseq.charCodeAt(currPos)
+          if (isN || seqCode === targetCode) {
             delta--
           }
           currPos++
         } while (delta >= 0 && currPos < seqLength)
 
         // Calculate and store position
-        if (fstrand === -1) {
+        if (isRev) {
           const pos = seqLength - currPos
           if (pos >= 0) {
             // avoid negative-number-positions in array, seen in #4629 cause
@@ -81,8 +96,7 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
 
       // For reverse strand, slice off any unfilled slots at the beginning
       // (happens when some positions were negative and skipped)
-      const validPositions =
-        fstrand === -1 ? positions.slice(writeIndex + 1) : positions
+      const validPositions = isRev ? positions.slice(writeIndex + 1) : positions
 
       result.push({
         type,
