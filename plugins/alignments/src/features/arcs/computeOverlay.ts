@@ -118,14 +118,14 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
   const readScreenY = (e: ReadEntry) =>
     e.data.readYs[e.readIdx]! * rowH + pileupTopOffset - rangeY0 + readCenterDy
 
-  const { readsByName, hasPaired } = groupReadsByName(laidOutPileupMap)
+  const readsByName = groupReadsByName(laidOutPileupMap)
   const result: PileupArc[] = []
 
   for (const [, entries] of readsByName) {
     if (entries.length < 2) {
       continue
     }
-    const filtered = filterEntries(entries, hasPaired)
+    const filtered = filterEntries(entries)
     if (filtered.length < 2) {
       continue
     }
@@ -135,7 +135,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       }
       const e1 = filtered[j]!
       const e2 = filtered[j + 1]!
-      const c = classifyPair(e1, e2, hasPaired)
+      const c = classifyPair(e1, e2)
       const sameRegion = e1.displayedRegionIndex === e2.displayedRegionIndex
       // GPU + Canvas2D pipelines own normal-orientation within-region lines.
       if (c.isNormal && sameRegion) {

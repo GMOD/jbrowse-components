@@ -25,11 +25,6 @@ export interface ReadEntry {
   data: PileupDataResult
 }
 
-export interface GroupedReads {
-  readsByName: Map<string, ReadEntry[]>
-  hasPaired: boolean
-}
-
 // Genomic connection endpoint for a linked-read line.
 // For paired reads: the 3' end of each read (strand-dependent).
 // For split reads: always the inner junction edge (end for e1, start for e2),
@@ -82,15 +77,11 @@ export function splitColorType(p1Strand: number, p2Strand: number) {
 // straight-line emitter and the bezier-curve emitter.
 export function groupReadsByName(
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
-): GroupedReads {
+): Map<string, ReadEntry[]> {
   const readsByName = new Map<string, ReadEntry[]>()
-  let hasPaired = false
   for (const [idx, data] of laidOutPileupMap) {
-    const { readIds, readFlags, readNames } = data
+    const { readIds, readNames } = data
     for (let i = 0; i < readIds.length; i++) {
-      if (!hasPaired && readFlags[i]! & SAM_FLAG_PAIRED) {
-        hasPaired = true
-      }
       const name = readNames[i]!
       let list = readsByName.get(name)
       if (!list) {
@@ -104,15 +95,31 @@ export function groupReadsByName(
       })
     }
   }
-  return { readsByName, hasPaired }
+  return readsByName
 }
 
-export function filterEntries(entries: ReadEntry[], hasPaired: boolean) {
+// Filter entries per-read rather than per-dataset so paired short reads and
+// split long reads can coexist in the same view:
+//   - Always exclude secondary alignments.
+//   - For paired reads: also exclude supplementary and unmapped-mate entries
+//     (chimeric/unmapped short reads that would create spurious connections).
+//   - For non-paired (long-read) entries: supplementary alignments are kept —
+//     they are the connection targets.
+export function filterEntries(entries: ReadEntry[]) {
   return entries.filter(e => {
     const f = e.data.readFlags[e.readIdx]!
-    return hasPaired
-      ? !(f & SAM_FLAG_SUPPLEMENTARY) && !(f & SAM_FLAG_MATE_UNMAPPED)
-      : !(f & SAM_FLAG_SECONDARY)
+    if (f & SAM_FLAG_SECONDARY) {
+      return false
+    }
+    if (f & SAM_FLAG_PAIRED) {
+      if (f & SAM_FLAG_SUPPLEMENTARY) {
+        return false
+      }
+      if (f & SAM_FLAG_MATE_UNMAPPED) {
+        return false
+      }
+    }
+    return true
   })
 }
 
@@ -123,13 +130,17 @@ export interface ClassifiedPair {
   p2Strand: number
   isNormal: boolean
   colorType: number
+  hasPaired: boolean
 }
 
-export function classifyPair(
-  e1: ReadEntry,
-  e2: ReadEntry,
-  hasPaired: boolean,
-): ClassifiedPair {
+// Classify a pair of read entries, determining per-pair whether to use
+// paired-read or split-read semantics based on the SAM flags of each entry.
+// This allows paired short reads and split long reads to coexist in the same
+// view without a global hasPaired flag that would suppress one or the other.
+export function classifyPair(e1: ReadEntry, e2: ReadEntry): ClassifiedPair {
+  const f1 = e1.data.readFlags[e1.readIdx]!
+  const f2 = e2.data.readFlags[e2.readIdx]!
+  const hasPaired = !!(f1 & SAM_FLAG_PAIRED) && !!(f2 & SAM_FLAG_PAIRED)
   const s1 = e1.data.readStrands[e1.readIdx]!
   const s2 = e2.data.readStrands[e2.readIdx]!
   const bp1 = connectionBp(
@@ -154,7 +165,7 @@ export function classifyPair(
   const colorType = hasPaired
     ? pairedColorType(orientNum)
     : splitColorType(s1, p2Strand)
-  return { bp1, bp2, s1, p2Strand, isNormal, colorType }
+  return { bp1, bp2, s1, p2Strand, isNormal, colorType, hasPaired }
 }
 
 export interface LinkedReadLines {
@@ -175,7 +186,7 @@ export interface LinkedReadLines {
 export function computeLinkedReadLinesByRegion(
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
 ): Map<number, LinkedReadLines> {
-  const { readsByName, hasPaired } = groupReadsByName(laidOutPileupMap)
+  const readsByName = groupReadsByName(laidOutPileupMap)
 
   // Collect raw records first by region, then materialize typed arrays.
   const acc = new Map<
@@ -191,7 +202,7 @@ export function computeLinkedReadLinesByRegion(
     if (entries.length < 2) {
       continue
     }
-    const filtered = filterEntries(entries, hasPaired)
+    const filtered = filterEntries(entries)
     if (filtered.length < 2) {
       continue
     }
@@ -201,7 +212,7 @@ export function computeLinkedReadLinesByRegion(
       if (e1.displayedRegionIndex !== e2.displayedRegionIndex) {
         continue
       }
-      const c = classifyPair(e1, e2, hasPaired)
+      const c = classifyPair(e1, e2)
       if (!c.isNormal) {
         continue
       }
