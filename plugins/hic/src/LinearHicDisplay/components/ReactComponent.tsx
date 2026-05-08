@@ -80,7 +80,7 @@ function screenToUnrotated(
   return { x, y }
 }
 
-function ResolutionControl({
+const ResolutionControl = observer(function ResolutionControl({
   model,
 }: {
   model: LinearHicDisplayModel
@@ -110,6 +110,7 @@ function ResolutionControl({
         }}
         disabled={!canGoFiner}
         title="Finer"
+        type="button"
         style={{
           padding: '2px 4px',
           fontSize: 10,
@@ -131,6 +132,7 @@ function ResolutionControl({
         }}
         disabled={!canGoCoarser}
         title="Coarser"
+        type="button"
         style={{
           padding: '2px 4px',
           fontSize: 10,
@@ -145,7 +147,7 @@ function ResolutionControl({
       </button>
     </div>
   )
-}
+})
 
 const HicCanvas = observer(function HicCanvas({
   model,
