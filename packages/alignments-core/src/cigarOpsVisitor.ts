@@ -51,7 +51,7 @@ export function visitCigarOps(
  * padding). Callers convert to screen positions with hp-math.
  */
 export function visitCigarRenderedSegments(
-  cigar: number[],
+  cigar: ArrayLike<number>,
   startBp1: number,
   startBp2: number,
   bpPerPx0: number,

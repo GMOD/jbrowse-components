@@ -44,6 +44,32 @@ export function parseCigar2(s = '') {
   return ret
 }
 
+// Same encoding as parseCigar2 but writes into a packed Uint32Array — matches
+// the NUMERIC_CIGAR format that BAM/CRAM adapters emit, so consumers can use a
+// single typed-array code path. Two-pass: count ops, then alloc and fill.
+export function parseCigar2Typed(s = '') {
+  let opCount = 0
+  for (let i = 0, l = s.length; i < l; i++) {
+    const code = s.charCodeAt(i)
+    if (code < 48 || code > 57) {
+      opCount++
+    }
+  }
+  const out = new Uint32Array(opCount)
+  let currLen = 0
+  let j = 0
+  for (let i = 0, l = s.length; i < l; i++) {
+    const code = s.charCodeAt(i)
+    if (code >= 48 && code <= 57) {
+      currLen = currLen * 10 + (code - 48)
+    } else {
+      out[j++] = (currLen << 4) | CIGAR_CODE_TO_INDEX[code]!
+      currLen = 0
+    }
+  }
+  return out
+}
+
 export function getMismatches(
   cigar?: string,
   md?: string,

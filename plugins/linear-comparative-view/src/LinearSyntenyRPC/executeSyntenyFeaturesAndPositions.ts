@@ -5,7 +5,7 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import { parseCigar2Typed } from '@jbrowse/plugin-alignments'
 import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -173,7 +173,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const assemblyNames: string[] = []
   const mateRefNames: string[] = []
   const mateAssemblyNames: string[] = []
-  const parsedCigars: number[][] = []
+  const parsedCigars: Uint32Array[] = []
   // Always collect syriType; main-thread colorBy='syri' reads this directly
   // so the RPC doesn't refetch on a color-scheme change. Undefined entries
   // fall back to main-thread computeSyriTypes when the scheme is active.
@@ -273,7 +273,9 @@ export async function executeSyntenyFeaturesAndPositions({
     assemblyNames.push((f.get('assemblyName') as string | undefined) ?? '')
     mateRefNames.push(mate.refName)
     mateAssemblyNames.push(mate.assemblyName)
-    parsedCigars.push(parseCigar2((f.get('CIGAR') as string | undefined) ?? ''))
+    parsedCigars.push(
+      parseCigar2Typed((f.get('CIGAR') as string | undefined) ?? ''),
+    )
     precomputedSyriTypes.push(f.get('syriType') as string | undefined)
 
     validCount++

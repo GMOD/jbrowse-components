@@ -12,24 +12,6 @@ import {
   KIND_MARKER,
 } from './syntenyColors.ts'
 
-function growF32(old: Float32Array, count: number, newCapacity: number) {
-  const arr = new Float32Array(newCapacity)
-  arr.set(old.subarray(0, count))
-  return arr
-}
-
-function growU32(old: Uint32Array, count: number, newCapacity: number) {
-  const arr = new Uint32Array(newCapacity)
-  arr.set(old.subarray(0, count))
-  return arr
-}
-
-function growU8(old: Uint8Array, count: number, newCapacity: number) {
-  const arr = new Uint8Array(newCapacity)
-  arr.set(old.subarray(0, count))
-  return arr
-}
-
 // Worker-side geometry. `colors` is injected by the main thread (computedColors
 // in the display model) and is the only field SyntenyInstanceData adds. Keeps
 // the worker output independent of colorBy and lets colorBy changes re-upload
@@ -95,7 +77,7 @@ export function buildSyntenyGeometry({
   padBottom: Float32Array
   strands: Int8Array
   names: string[]
-  parsedCigars: number[][]
+  parsedCigars: ArrayLike<number>[]
   starts: Uint32Array
   ends: Uint32Array
   drawCIGAR: boolean
@@ -128,19 +110,23 @@ export function buildSyntenyGeometry({
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
   const minCigarPxWidth = 4
-  const maxBpPerPxInv = Math.max(bpPerPxInv0, bpPerPxInv1)
 
   const qtls = new Float32Array(featureCount)
+  // Per-feature: did we decide to draw CIGAR detail? When true, pass 1 emits
+  // KIND_BASE_HIDDEN (alpha-zero fill, but edge pass still draws the outline)
+  // and pass 2 runs the visitor. When false, pass 1 emits KIND_BASE and pass
+  // 2 skips the feature.
   const willDrawCigarArr = new Uint8Array(featureCount)
-  // Precomputed in pre-pass to avoid recomputing during CIGAR emission. Stored
-  // as Uint32 because CIGAR op lengths are < 2^28 in practice.
-  const maxIndelLens = new Uint32Array(featureCount)
 
-  // Single pre-pass: fill qtls, willDrawCigar, maxIndelLen, and accumulate
-  // capacity estimate. Each feature contributes at minimum 1 instance; CIGAR
-  // features below the indel-pixel threshold short-circuit to 1 KIND_BASE so
-  // we don't budget their full op count there.
-  let estimate = 0
+  // Single pre-pass: fill qtls, willDrawCigar, and accumulate the exact
+  // upper-bound capacity. visitCigarRenderedSegments emits a segment only
+  // when bp1 OR bp2 has advanced > 1 px from the segment start, so
+  // per-feature visitor emissions are bounded by widthPx0 + widthPx1
+  // regardless of CIGAR length. Markers from addLocationMarkers are
+  // bounded by (widthPx0 + widthPx1) / 10 (markers spaced >= 20 px apart
+  // along each axis, summed across both axes). These bounds are strict, so
+  // a single allocation matches actual usage — no growable buffers.
+  let capacity = 0
   for (let i = 0; i < featureCount; i++) {
     const name = names[i]!
     qtls[i] =
@@ -149,84 +135,42 @@ export function buildSyntenyGeometry({
         : Math.abs(ends[i]! - starts[i]!)
 
     const cigar = parsedCigars[i]!
-    let willDrawCigar = false
-    let willDrawDetailedCigar = false
-    if (cigar.length > 0 && drawCIGAR) {
-      const featureWidth = Math.max(
-        Math.abs(p12_cumBp[i]! - p11_cumBp[i]!) * bpPerPxInv0,
-        Math.abs(p22_cumBp[i]! - p21_cumBp[i]!) * bpPerPxInv1,
-      )
-      if (featureWidth >= minCigarPxWidth) {
-        willDrawCigar = true
-        let maxIndelLen = 0
-        for (const packed of cigar) {
-          const len = packed >>> 4
-          const op = packed & 0xf
-          if (op === CIGAR_D || op === CIGAR_N || op === CIGAR_I) {
-            if (len > maxIndelLen) {
-              maxIndelLen = len
-            }
-          }
-        }
-        maxIndelLens[i] = maxIndelLen
-        willDrawDetailedCigar = maxIndelLen * maxBpPerPxInv >= 1
-      }
+    const widthPx0 = Math.abs(p12_cumBp[i]! - p11_cumBp[i]!) * bpPerPxInv0
+    const widthPx1 = Math.abs(p22_cumBp[i]! - p21_cumBp[i]!) * bpPerPxInv1
+    let cigarBudget = 0
+    if (
+      cigar.length > 0 &&
+      drawCIGAR &&
+      Math.max(widthPx0, widthPx1) >= minCigarPxWidth
+    ) {
+      willDrawCigarArr[i] = 1
+      cigarBudget = Math.min(cigar.length, Math.ceil(widthPx0 + widthPx1) + 4)
     }
-    willDrawCigarArr[i] = willDrawCigar ? 1 : 0
-
-    // 1 base in pass 1; pass 2 emits N cigar ops if detailed, else 1 KIND_BASE.
-    estimate +=
-      1 + (willDrawDetailedCigar ? cigar.length : willDrawCigar ? 1 : 0)
+    const markerBudget = drawLocationMarkers
+      ? Math.ceil((widthPx0 + widthPx1) / 10) + 4
+      : 0
+    capacity += 1 + cigarBudget + markerBudget
   }
-
-  // Pre-allocate buffers with estimated capacity. Location markers grow the
-  // buffer dynamically since the actual count depends on per-feature widths
-  // (skipped for features < 30px) — overshooting here would cost more than
-  // the amortized doubling cost of `ensureCapacity`.
-  let capacity = drawLocationMarkers ? estimate * 2 : estimate
 
   // Write cumBp hi/lo Float32 pairs directly at emit time. The shader
   // reconstructs screen pixel via `(cumBpHi + cumBpLo) / bpPerPx + pad` using
   // hp-math, so the worker never needs to materialize Float64 padded-pixel
   // staging arrays — converting and splitting happens inline in `addInstance`.
-  // Lower peak memory + one fewer round of large-buffer allocation vs. the
-  // prior pxArrayToBpHiLo sweep.
-  let bp1HiArr = new Float32Array(capacity)
-  let bp1LoArr = new Float32Array(capacity)
-  let bp2HiArr = new Float32Array(capacity)
-  let bp2LoArr = new Float32Array(capacity)
-  let bp3HiArr = new Float32Array(capacity)
-  let bp3LoArr = new Float32Array(capacity)
-  let bp4HiArr = new Float32Array(capacity)
-  let bp4LoArr = new Float32Array(capacity)
-  let kindsArr = new Uint8Array(capacity)
-  let featIdxArr = new Uint32Array(capacity)
-  let queryTotalLengthArr = new Float32Array(capacity)
-  let padTopsArr = new Float32Array(capacity)
-  let padBottomsArr = new Float32Array(capacity)
+  const bp1HiArr = new Float32Array(capacity)
+  const bp1LoArr = new Float32Array(capacity)
+  const bp2HiArr = new Float32Array(capacity)
+  const bp2LoArr = new Float32Array(capacity)
+  const bp3HiArr = new Float32Array(capacity)
+  const bp3LoArr = new Float32Array(capacity)
+  const bp4HiArr = new Float32Array(capacity)
+  const bp4LoArr = new Float32Array(capacity)
+  const kindsArr = new Uint8Array(capacity)
+  const featIdxArr = new Uint32Array(capacity)
+  const queryTotalLengthArr = new Float32Array(capacity)
+  const padTopsArr = new Float32Array(capacity)
+  const padBottomsArr = new Float32Array(capacity)
 
   let idx = 0
-
-  function ensureCapacity(needed: number) {
-    if (idx + needed <= capacity) {
-      return
-    }
-    const newCapacity = Math.max(capacity * 2, idx + needed)
-    bp1HiArr = growF32(bp1HiArr, idx, newCapacity)
-    bp1LoArr = growF32(bp1LoArr, idx, newCapacity)
-    bp2HiArr = growF32(bp2HiArr, idx, newCapacity)
-    bp2LoArr = growF32(bp2LoArr, idx, newCapacity)
-    bp3HiArr = growF32(bp3HiArr, idx, newCapacity)
-    bp3LoArr = growF32(bp3LoArr, idx, newCapacity)
-    bp4HiArr = growF32(bp4HiArr, idx, newCapacity)
-    bp4LoArr = growF32(bp4LoArr, idx, newCapacity)
-    kindsArr = growU8(kindsArr, idx, newCapacity)
-    featIdxArr = growU32(featIdxArr, idx, newCapacity)
-    queryTotalLengthArr = growF32(queryTotalLengthArr, idx, newCapacity)
-    padTopsArr = growF32(padTopsArr, idx, newCapacity)
-    padBottomsArr = growF32(padBottomsArr, idx, newCapacity)
-    capacity = newCapacity
-  }
 
   // All four corner values are cumBp (bpBefore + bpOffset, no padding).
   // padTop / padBottom are the per-feature inter-region CSS pixel gaps,
@@ -242,7 +186,6 @@ export function buildSyntenyGeometry({
     padTop: number,
     padBottom: number,
   ) {
-    ensureCapacity(1)
     const iv1 = Math.floor(cumBp1)
     const lo1 = iv1 - Math.floor(iv1 / 4096) * 4096
     bp1HiArr[idx] = iv1 - lo1
@@ -295,8 +238,6 @@ export function buildSyntenyGeometry({
       2,
       Math.floor(averageWidth / targetPixelSpacing) + 1,
     )
-
-    ensureCapacity(numMarkers)
 
     for (let step = 0; step < numMarkers; step++) {
       const t = step / (numMarkers - 1)
@@ -381,7 +322,9 @@ export function buildSyntenyGeometry({
 
   const nonCigarInstanceCount = idx
 
-  // Second loop: CIGAR instances (using cached parsed CIGARs).
+  // Second loop: CIGAR instances (using cached parsed CIGARs). The visitor
+  // merges sub-pixel ops, so features with no >= 1 px indels collapse to a
+  // single KIND_CIGAR_MATCH quad — no separate fast path needed.
   for (let i = 0; i < featureCount; i++) {
     if (!willDrawCigarArr[i]) {
       continue
@@ -400,14 +343,6 @@ export function buildSyntenyGeometry({
     const k2 = strand === -1 ? x11 : x12
     const rev1 = k1 < k2 ? 1 : -1
     const rev2 = (x21 < x22 ? 1 : -1) * strand
-
-    if (maxIndelLens[i]! * maxBpPerPxInv < 1) {
-      addInstance(x11, x12, x22, x21, KIND_BASE, i, qtl, padTop, padBottom)
-      if (drawLocationMarkers) {
-        addLocationMarkers(x11, x12, x22, x21, i, qtl, padTop, padBottom)
-      }
-      continue
-    }
 
     visitCigarRenderedSegments(
       cigar,
