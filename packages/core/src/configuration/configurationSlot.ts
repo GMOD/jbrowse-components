@@ -197,6 +197,10 @@ export default function ConfigSlot(
     })
     .volatile(() => ({
       contextVariable,
+      // editor-mode override: 'callback' or 'value' once the user has
+      // explicitly toggled or started typing. undefined means "follow
+      // isCallback" (i.e. derive from the value's prefix on first read).
+      editorModeOverride: undefined as 'callback' | 'value' | undefined,
     }))
     .views(self => ({
       get isCallback() {
@@ -204,12 +208,15 @@ export default function ConfigSlot(
       },
     }))
     .views(self => ({
+      get editorIsCallback() {
+        return self.editorModeOverride === undefined
+          ? self.isCallback
+          : self.editorModeOverride === 'callback'
+      },
       get expr() {
-        return self.isCallback
-          ? stringToJexlExpression(
-              String(self.value),
-              getEnv(self).pluginManager.jexl,
-            )
+        const code = String(self.value)
+        return self.isCallback && code.length > 'jexl:'.length
+          ? stringToJexlExpression(code, getEnv(self).pluginManager.jexl)
           : {
               eval: (_arg?: unknown) => self.value,
             }
@@ -254,12 +261,19 @@ export default function ConfigSlot(
     })
     .actions(self => ({
       set(newVal: unknown) {
+        // pin the editor mode on first user input so that typing a "jexl:"
+        // prefix into a value field doesn't auto-swap to the callback editor
+        if (self.editorModeOverride === undefined) {
+          self.editorModeOverride = self.isCallback ? 'callback' : 'value'
+        }
         self.value = newVal
       },
       reset() {
         self.value = defaultValue
+        self.editorModeOverride = undefined
       },
       convertToCallback() {
+        self.editorModeOverride = 'callback'
         if (self.isCallback) {
           return
         }
@@ -267,6 +281,7 @@ export default function ConfigSlot(
         self.value = `jexl:${self.valueJSON ?? "''"}`
       },
       convertToValue() {
+        self.editorModeOverride = 'value'
         if (!self.isCallback) {
           return
         }

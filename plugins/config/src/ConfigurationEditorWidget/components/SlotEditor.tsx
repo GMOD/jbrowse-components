@@ -187,36 +187,40 @@ const SlotEditor = observer(function SlotEditor({
 }) {
   const { classes } = useSlotEditorStyles()
   const { type } = slot
-  let ValueComponent = slot.isCallback
-    ? CallbackEditor
-    : // @ts-expect-error
-      valueComponents[type]
-  if (!ValueComponent) {
+  const TypedComponent = (
+    valueComponents as Record<string, React.ComponentType<any>>
+  )[type]
+  if (!slot.editorIsCallback && !TypedComponent) {
     console.warn(`no slot editor defined for ${type}, editing as string`)
-    ValueComponent = StringEditor
   }
-  if (!(type in valueComponents)) {
-    console.warn(`SlotEditor needs to implement ${type}`)
-  }
+  const ValueComponent: React.ComponentType<any> = slot.editorIsCallback
+    ? CallbackEditor
+    : TypedComponent ?? StringEditor
   return (
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>
         <ValueComponent slot={slot} slotSchema={slotSchema} />
       </div>
-      <div className={classes.slotModeSwitch}>
-        {slot.contextVariable.length ? (
+      {slot.contextVariable.length ? (
+        <div className={classes.slotModeSwitch}>
           <IconButton
             onClick={() =>
-              slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
+              slot.editorIsCallback
+                ? slot.convertToValue()
+                : slot.convertToCallback()
             }
             title={`convert to ${
-              slot.isCallback ? 'regular value' : 'callback'
+              slot.editorIsCallback ? 'regular value' : 'callback'
             }`}
           >
-            {slot.isCallback ? <SvgCheckbox /> : <RadioButtonUncheckedIcon />}
+            {slot.editorIsCallback ? (
+              <SvgCheckbox />
+            ) : (
+              <RadioButtonUncheckedIcon />
+            )}
           </IconButton>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </Paper>
   )
 })

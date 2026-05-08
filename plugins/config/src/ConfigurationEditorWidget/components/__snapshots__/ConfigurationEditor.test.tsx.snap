@@ -66,7 +66,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1fjtzvx"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -101,16 +101,13 @@ exports[`renders all the different types of built-in slots 1`] = `
                     </div>
                   </div>
                 </div>
-                <div
-                  class="css-1sxld2r"
-                />
               </div>
               <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1fjtzvx"
                 >
                   <div
                     class="MuiBox-root css-k008qs"
@@ -198,16 +195,13 @@ exports[`renders all the different types of built-in slots 1`] = `
                     fileLocationTest
                   </p>
                 </div>
-                <div
-                  class="css-1sxld2r"
-                />
               </div>
               <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1fjtzvx"
                 >
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated css-41lcur-MuiFormLabel-root-MuiInputLabel-root"
@@ -312,16 +306,13 @@ exports[`renders all the different types of built-in slots 1`] = `
                     stringArrayTest
                   </p>
                 </div>
-                <div
-                  class="css-1sxld2r"
-                />
               </div>
               <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1fjtzvx"
                 >
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated css-41lcur-MuiFormLabel-root-MuiInputLabel-root"
@@ -530,16 +521,13 @@ exports[`renders all the different types of built-in slots 1`] = `
                     stringArrayMapTest
                   </p>
                 </div>
-                <div
-                  class="css-1sxld2r"
-                />
               </div>
               <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1fjtzvx"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -574,16 +562,13 @@ exports[`renders all the different types of built-in slots 1`] = `
                     </div>
                   </div>
                 </div>
-                <div
-                  class="css-1sxld2r"
-                />
               </div>
               <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1fjtzvx"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -618,22 +603,20 @@ exports[`renders all the different types of built-in slots 1`] = `
                     </div>
                   </div>
                 </div>
-                <div
-                  class="css-1sxld2r"
-                />
               </div>
               <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1fjtzvx"
                 >
                   <div
-                    style="display: flex;"
+                    style="display: flex; align-items: flex-start; gap: 4px;"
                   >
                     <div
-                      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
+                      class="MuiFormControl-root MuiFormControl-marginDense MuiTextField-root css-jqmkbu-MuiFormControl-root-MuiTextField-root"
+                      style="flex: 1 1 0%; min-width: 0;"
                     >
                       <label
                         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
@@ -644,7 +627,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                         colorTest
                       </label>
                       <div
-                        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-17skhn2-MuiInputBase-root-MuiInput-root"
+                        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall css-1hj5hjn-MuiInputBase-root-MuiInput-root"
                       >
                         <input
                           aria-describedby="_r_m_-helper-text"
@@ -676,16 +659,13 @@ exports[`renders all the different types of built-in slots 1`] = `
                     </div>
                   </div>
                 </div>
-                <div
-                  class="css-1sxld2r"
-                />
               </div>
               <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1fjtzvx"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense css-ylkp5u-MuiFormControl-root"
@@ -727,9 +707,6 @@ exports[`renders all the different types of built-in slots 1`] = `
                     </p>
                   </div>
                 </div>
-                <div
-                  class="css-1sxld2r"
-                />
               </div>
             </div>
           </div>
@@ -807,7 +784,7 @@ exports[`renders with just the required model elements 1`] = `
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1fjtzvx"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -840,9 +817,6 @@ exports[`renders with just the required model elements 1`] = `
                     </div>
                   </div>
                 </div>
-                <div
-                  class="css-1sxld2r"
-                />
               </div>
             </div>
           </div>

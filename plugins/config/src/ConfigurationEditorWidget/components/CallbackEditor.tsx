@@ -46,7 +46,7 @@ function validateAndSetCode(
     slot.set(jexlCode)
     setCodeError(undefined)
   } catch (e) {
-    console.error({ e })
+    console.error(e)
     setCodeError(e)
   }
 }
@@ -77,7 +77,7 @@ const CallbackEditor = observer(function CallbackEditor({
         <TextField
           multiline
           className={classes.callbackEditor}
-          value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
+          value={code.startsWith('jexl:') ? code.slice('jexl:'.length) : code}
           onChange={event => {
             const value = event.target.value
             setCode(value)
