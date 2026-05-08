@@ -536,11 +536,11 @@ export default function sharedModelFactory(
         await self.runFetch(async ctx => {
           const { rpcManager } = getSession(self)
           const sessionId = getRpcSessionId(self)
-          const stats = (await rpcManager.call(
+          const stats = await rpcManager.call(
             sessionId,
             'CoreGetFeatureDensityStats',
             { regions: [...regions], adapterConfig },
-          )) as { bytes?: number; fetchSizeLimit?: number }
+          )
           if (ctx.isStale()) {
             return
           }
