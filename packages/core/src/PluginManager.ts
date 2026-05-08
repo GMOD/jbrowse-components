@@ -238,6 +238,17 @@ export default class PluginManager {
     return this.getPlugin(name) !== undefined
   }
 
+  removePlugin(pluginName: string) {
+    const plugin = this.getPlugin(pluginName)
+    if (!plugin) {
+      throw new Error(`Plugin '${pluginName}' not found`)
+    }
+    plugin.uninstall?.(this)
+    this.plugins = this.plugins.filter(p => p.name !== pluginName)
+    delete this.pluginMetadata[pluginName]
+    return this
+  }
+
   createPluggableElements() {
     // run the creation callbacks for each element type in order.
     // see elementCreationSchedule above for the creation order

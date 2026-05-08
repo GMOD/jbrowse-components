@@ -16,6 +16,8 @@ export default abstract class Plugin {
 
   configure(_pluginManager: PluginManager): void {}
 
+  uninstall(_pluginManager: PluginManager): void {}
+
   // this is put into configuration.YourPluginName.configSlot
   configurationSchema?: AnyConfigurationSchemaType
 
