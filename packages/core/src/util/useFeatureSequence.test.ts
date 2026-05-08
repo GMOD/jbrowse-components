@@ -45,15 +45,6 @@ test('returns nothing when assemblyName is absent', () => {
   expect(result.current.error).toBeUndefined()
 })
 
-test('returns nothing when shouldFetch is false', () => {
-  const { result } = renderHook(() =>
-    useFeatureSequence({ ...baseArgs, shouldFetch: false }),
-  )
-  expect(result.current.sequence).toBeUndefined()
-  expect(result.current.loading).toBe(false)
-  expect(result.current.error).toBeUndefined()
-})
-
 test('fetches and returns seq/upstream/downstream', async () => {
   mockFetchSeq
     .mockResolvedValueOnce('ACGT')

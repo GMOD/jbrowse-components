@@ -1,4 +1,4 @@
-import { fetchSequence } from './fetchSequence.ts'
+import { fetchSeq } from '../../../util/fetchSeq.ts'
 import { max, min } from '../../../util/index.ts'
 
 import type { AbstractSessionModel, Feature } from '../../../util/index.ts'
@@ -204,11 +204,13 @@ export async function stringifyGBK({
     `UNK ${date}`,
   ].join('')
   const l2 = 'FEATURES             Location/Qualifiers'
-  const contig =
-    (await fetchSequence({
-      session,
-      region: { assemblyName, start: minPos, end: maxPos, refName },
-    })) ?? ''
+  const contig = await fetchSeq({
+    session,
+    assemblyName,
+    start: minPos,
+    end: maxPos,
+    refName,
+  })
   const lines = features.map(feat =>
     formatFeatWithSubfeatures({ feature: feat, minPos }),
   )

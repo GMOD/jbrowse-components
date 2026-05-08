@@ -1,18 +1,14 @@
-import { fetchSequence } from './fetchSequence.ts'
+import { fetchSeq } from '../../../util/fetchSeq.ts'
 import { formatFeatWithSubfeatures, stringifyGBK } from './genbank.ts'
 import SimpleFeature from '../../../util/simpleFeature.ts'
 
 import type { AbstractSessionModel } from '../../../util/index.ts'
 
-// Mock the fetchSequence function from its new module
-jest.mock('./fetchSequence', () => {
-  return {
-    fetchSequence: jest.fn(async ({ region }) => {
-      const { start, end } = region
-      return 'A'.repeat(end - start)
-    }),
-  }
-})
+jest.mock('../../../util/fetchSeq.ts', () => ({
+  fetchSeq: jest.fn(async ({ start, end }: { start: number; end: number }) =>
+    'A'.repeat(end - start),
+  ),
+}))
 
 // Helper function to create a feature, ensuring a unique ID is set
 // for the SimpleFeature instance while using data.id for GenBank attributes.
@@ -23,26 +19,11 @@ function createFeature(data: Record<string, any>): SimpleFeature {
   return new SimpleFeature({ id: `${data.id}-unique`, data })
 }
 
-// Mock session object - simplified as fetchSequence is fully mocked
-const mockSession = {
-  name: 'testSession',
-  id: 'testSessionId',
-  rpcManager: {} as any,
-  assemblyManager: {
-    get: jest.fn(() => ({
-      getCanonicalRefName: jest.fn(refName => refName),
-    })),
-  } as any,
-} as AbstractSessionModel
+const mockSession = {} as AbstractSessionModel
 
 describe('GenBank export', () => {
-  // No need for fetchSequenceSpy or before/after hooks for spying anymore
-  // The mock is global for the module
-
   beforeEach(() => {
-    // Clear mock calls before each test
-    // Need to get the mocked fetchSequence to clear it
-    ;(fetchSequence as jest.Mock).mockClear()
+    jest.mocked(fetchSeq).mockClear()
   })
 
   it('can export a simple feature', async () => {
@@ -62,7 +43,7 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    expect(fetchSequence).toHaveBeenCalledTimes(1)
+    expect(fetchSeq).toHaveBeenCalledTimes(1)
   })
 
   it('can export a feature with subfeatures (mRNA, CDS, exon)', async () => {
@@ -113,7 +94,7 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    expect(fetchSequence).toHaveBeenCalledTimes(1)
+    expect(fetchSeq).toHaveBeenCalledTimes(1)
   })
 
   it('handles multiple top-level features', async () => {
@@ -137,7 +118,7 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    expect(fetchSequence).toHaveBeenCalledTimes(1)
+    expect(fetchSeq).toHaveBeenCalledTimes(1)
   })
 
   it('returns empty string for no features', async () => {
@@ -147,7 +128,7 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toBe('')
-    expect(fetchSequence).not.toHaveBeenCalled()
+    expect(fetchSeq).not.toHaveBeenCalled()
   })
 
   it('handles features on negative strand', async () => {
@@ -183,7 +164,7 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    expect(fetchSequence).toHaveBeenCalledTimes(1)
+    expect(fetchSeq).toHaveBeenCalledTimes(1)
   })
 
   it('handles custom attributes', async () => {
@@ -206,20 +187,20 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    expect(fetchSequence).toHaveBeenCalledTimes(1)
+    expect(fetchSeq).toHaveBeenCalledTimes(1)
   })
 
   it('formats ORIGIN section with proper line breaks for long sequences', async () => {
-    ;(fetchSequence as jest.Mock).mockImplementationOnce(async ({ region }) => {
-      const { start, end } = region
-      // Return a sequence with different bases to verify formatting
-      const bases = 'ACGT'
-      let seq = ''
-      for (let i = 0; i < end - start; i++) {
-        seq += bases[i % 4]
-      }
-      return seq
-    })
+    jest
+      .mocked(fetchSeq)
+      .mockImplementationOnce(async ({ start, end }: { start: number; end: number }) => {
+        const bases = 'ACGT'
+        let seq = ''
+        for (let i = 0; i < end - start; i++) {
+          seq += bases[i % 4]!
+        }
+        return seq
+      })
 
     const f = createFeature({
       id: 'gene7',

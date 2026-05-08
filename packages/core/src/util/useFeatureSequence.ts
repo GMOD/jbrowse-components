@@ -13,7 +13,6 @@ export function useFeatureSequence({
   upDownBp,
   forceLoad,
   assemblyName,
-  shouldFetch = true,
 }: {
   assemblyName: string | undefined
   session?: AbstractSessionModel
@@ -22,10 +21,9 @@ export function useFeatureSequence({
   refName: string
   upDownBp: number
   forceLoad: boolean
-  shouldFetch?: boolean
 }) {
   const guard =
-    session && shouldFetch && assemblyName ? { session, assemblyName } : null
+    session && assemblyName ? { session, assemblyName } : null
 
   const { data: sequence, error, isLoading: loading } = useFetch(
     guard
