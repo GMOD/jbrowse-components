@@ -599,8 +599,8 @@ importers:
   packages/tree-sidebar:
     dependencies:
       '@gmod/hclust':
-        specifier: ^3.0.11
-        version: 3.0.11
+        specifier: ^3.0.12
+        version: 3.0.12
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
@@ -810,8 +810,8 @@ importers:
         specifier: ^2.2.1
         version: 2.2.1
       '@gmod/tabix':
-        specifier: ^3.3.3
-        version: 3.3.3
+        specifier: ^3.3.4
+        version: 3.3.4
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -930,8 +930,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.3.3
-        version: 3.3.3
+        specifier: ^3.3.4
+        version: 3.3.4
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1114,8 +1114,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/tabix':
-        specifier: ^3.3.3
-        version: 3.3.3
+        specifier: ^3.3.4
+        version: 3.3.4
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1648,11 +1648,11 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/hclust':
-        specifier: ^3.0.11
-        version: 3.0.11
+        specifier: ^3.0.12
+        version: 3.0.12
       '@gmod/tabix':
-        specifier: ^3.3.3
-        version: 3.3.3
+        specifier: ^3.3.4
+        version: 3.3.4
       '@gmod/vcf':
         specifier: ^7.0.3
         version: 7.0.3
@@ -1720,8 +1720,8 @@ importers:
         specifier: ^9.0.9
         version: 9.0.9
       '@gmod/hclust':
-        specifier: ^3.0.11
-        version: 3.0.11
+        specifier: ^3.0.12
+        version: 3.0.12
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -3650,8 +3650,8 @@ packages:
     resolution: {integrity: sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==}
     engines: {node: '>=15'}
 
-  '@gmod/hclust@3.0.11':
-    resolution: {integrity: sha512-6m0l6dGK+jF9ZVfvjpROQiocACyGNdDcv0K49eIpmgll8IhG5IiLeeWnr8ObFTKEnNb0JZhbh8vCJSsp+P+ejQ==}
+  '@gmod/hclust@3.0.12':
+    resolution: {integrity: sha512-rkmEYjy+8cRg2fv7Ukli3oE7pGV/B5CqtzcrEB8YLk+UQ2R2DCSfH+dXWPqRKcpa3hVI2rHr+tcJ7tfrfoCsHA==}
 
   '@gmod/indexedfasta@5.0.5':
     resolution: {integrity: sha512-CB0WqY/+VbrvmHWv0v5uql2ZFfAEMqFu+XARTxePiMWJncqtJwK5C+vWzPkUN626OQO9FrK7KjLN7FFuzt8XUQ==}
@@ -3659,8 +3659,8 @@ packages:
   '@gmod/nclist@3.0.7':
     resolution: {integrity: sha512-dNFcB4i/1nzv2uYOooyqCWG/9uGwiHZ+DDT2KrvcMT+ZZEGcogMfE23fXbskFuqpOM6jKb8wTKAAYYFiNCP+CQ==}
 
-  '@gmod/tabix@3.3.3':
-    resolution: {integrity: sha512-jiq5tZEp7pi7U70wNBMv8Q2J0hLZ3knXJktJNwaVb6eYcQQUv0J4HCx7stadWrDvd2LZQEfJORx3nEmI8wvssw==}
+  '@gmod/tabix@3.3.4':
+    resolution: {integrity: sha512-gtsWSDV3UhF8YJH4rHseRux9JyALq/pVkt4d8saHqASE+vKURLgMXg3Iu7kZkSV8Zr3slIQEQM5PKQhjq5AMgg==}
 
   '@gmod/trix@3.0.12':
     resolution: {integrity: sha512-lDeMVkGqmPJVqW1T07lAap9LtL/dyiT85vx5Z+O5JxRD250GfdPFIoTp/twjhodP4QjjP2yCLpTsn7iFDsPHfg==}
@@ -10500,7 +10500,7 @@ snapshots:
 
   '@gmod/faidx@2.0.0': {}
 
-  '@gmod/hclust@3.0.11': {}
+  '@gmod/hclust@3.0.12': {}
 
   '@gmod/indexedfasta@5.0.5':
     dependencies:
@@ -10514,7 +10514,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       '@jridgewell/resolve-uri': 3.1.2
 
-  '@gmod/tabix@3.3.3':
+  '@gmod/tabix@3.3.4':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@gmod/bgzf-filehandle': 6.0.19

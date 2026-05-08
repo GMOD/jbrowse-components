@@ -71,7 +71,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
         lengthCutoffFilter,
         sessionId,
         adapterConfig,
-      }) as Promise<Record<string, Int8Array>>
+      })
     },
   )
 
