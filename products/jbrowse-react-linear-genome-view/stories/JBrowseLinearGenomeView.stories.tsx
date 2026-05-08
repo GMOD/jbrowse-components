@@ -1,8 +1,6 @@
 export {
   DefaultSession,
   DisableAddTrack,
-  ExternalNavigateLocstring,
-  ExternalNavigateObject,
   HorizontallyFlippedViaButton,
   HorizontallyFlippedViaDisplayedRegions,
   HorizontallyFlippedViaLocstring,

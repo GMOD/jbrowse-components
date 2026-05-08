@@ -97,6 +97,7 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
         const fileName = getFileName(file)
         const obj = {
           type: adapterName,
+          fastaLocation: file,
           faiLocation: makeIndex(file, '.fai'),
           gziLocation: makeIndex(file, '.gzi'),
         }

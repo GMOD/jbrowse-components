@@ -4,7 +4,6 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
@@ -14,7 +13,7 @@ function parseSmallFasta(text: string) {
       .split('>')
       .filter(t => /\S/.test(t))
       .map(entryText => {
-        const [defLine, ...seqLines] = entryText.split('\n')
+        const [defLine, ...seqLines] = entryText.split(/\r?\n/)
         const [id, ...description] = defLine!.split(' ')
         const sequence = seqLines.join('').replace(/\s/g, '')
         return [
@@ -33,13 +32,13 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
     fasta: ReturnType<typeof parseSmallFasta>
   }>
 
-  public async getRefNames(opts?: BaseOptions) {
-    const { fasta } = await this.setup(opts)
+  public async getRefNames() {
+    const { fasta } = await this.setup()
     return [...fasta.keys()]
   }
 
-  public async getRegions(opts?: BaseOptions) {
-    const { fasta } = await this.setup(opts)
+  public async getRegions() {
+    const { fasta } = await this.setup()
     return [...fasta.entries()].map(([refName, data]) => ({
       refName,
       start: 0,
@@ -47,7 +46,7 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
     }))
   }
 
-  public async setupPre(_opts?: BaseOptions) {
+  public async setupPre() {
     const res = parseSmallFasta(
       await openLocation(
         this.getConf('fastaLocation'),
@@ -71,18 +70,18 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
       : openLocation(loc, this.pluginManager).readFile('utf8')
   }
 
-  public async setup(opts?: BaseOptions) {
-    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
+  public async setup() {
+    this.setupP ??= this.setupPre().catch((e: unknown) => {
       this.setupP = undefined
       throw e
     })
     return this.setupP
   }
 
-  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
+  public getFeatures(region: NoAssemblyRegion) {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
-      const { fasta } = await this.setup(opts)
+      const { fasta } = await this.setup()
       const entry = fasta.get(refName)
       if (entry) {
         observer.next(

@@ -1,7 +1,5 @@
 export * from './DefaultSession.tsx'
 export * from './DisableAddTrack.tsx'
-export * from './ExternalNavigateLocstring.tsx'
-export * from './ExternalNavigateObject.tsx'
 export * from './HorizontallyFlipped.tsx'
 export * from './HumanExomeExample.tsx'
 export * from './NextstrainExample.tsx'

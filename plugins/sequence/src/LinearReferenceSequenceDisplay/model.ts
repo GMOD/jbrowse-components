@@ -5,14 +5,17 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
-  isAbortException,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import {
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Region } from '@jbrowse/core/util'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -20,14 +23,10 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
+const ZOOMED_OUT_BP_PER_PX = 10
+
 export interface SequenceRegionData {
   seq: string
-  start: number
-  end: number
-}
-
-interface LoadedBounds {
-  refName: string
   start: number
   end: number
 }
@@ -43,12 +42,13 @@ export interface LinearReferenceSequenceDisplayModel {
   rowHeight: number
   sequenceHeight: number
   showLoading: boolean
-  reload: () => void
+  zoomedOut: boolean
+  clearAllRpcData: () => void
 }
 
 /**
  * #stateModel LinearReferenceSequenceDisplay
- * base model `BaseDisplay` + `TrackHeightMixin`
+ * base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
  */
 export function modelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -56,6 +56,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       'LinearReferenceSequenceDisplay',
       BaseDisplay,
       TrackHeightMixin(),
+      MultiRegionDisplayMixin(),
       types.model({
         /**
          * #property
@@ -81,7 +82,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       sequenceData: new Map<number, SequenceRegionData>(),
-      loadedBounds: new Map<number, LoadedBounds>(),
       computedHeight: 50,
     }))
     .views(self => ({
@@ -116,6 +116,14 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * the view is too zoomed out to show individual bases
+       */
+      get zoomedOut() {
+        const view = getContainingView(self) as LGV
+        return view.bpPerPx > ZOOMED_OUT_BP_PER_PX
+      },
       get numRows() {
         const { showTranslationActual, showReverseActual, showForwardActual } =
           self
@@ -138,7 +146,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         return this.numRows * 15
       },
       get showLoading() {
-        return self.sequenceData.size === 0
+        return self.sequenceData.size === 0 || self.isLoading
       },
       /**
        * #getter
@@ -149,19 +157,18 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         return self.heightPreConfig ?? self.computedHeight
       },
       get rowHeight() {
-        return this.numRows > 0 ? this.height / this.numRows : 15
+        return this.numRows > 0 ? this.height / this.numRows : 0
       },
     }))
     .actions(self => ({
       setComputedHeight(h: number) {
         self.computedHeight = h
       },
-      setSequenceData(
-        data: Map<number, SequenceRegionData>,
-        bounds: Map<number, LoadedBounds>,
-      ) {
-        self.sequenceData = data
-        self.loadedBounds = bounds
+      setSequenceRegion(idx: number, data: SequenceRegionData) {
+        self.sequenceData = new Map(self.sequenceData).set(idx, data)
+      },
+      clearDisplaySpecificData() {
+        self.sequenceData = new Map()
       },
       /**
        * #action
@@ -185,114 +192,56 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         self.heightPreConfig = undefined
       },
     }))
-    .actions(self => {
-      let fetchGeneration = 0
-
-      return {
-        afterAttach() {
-          addDisposer(
-            self,
-            autorun(
-              function sequenceHeightAutorun() {
-                const view = getContainingView(self) as LGV
-                if (!view.initialized || view.bpPerPx > 10) {
-                  self.setComputedHeight(50)
-                } else {
-                  self.setComputedHeight(self.sequenceHeight)
-                }
-              },
-              { name: 'SequenceHeight' },
-            ),
-          )
-
-          addDisposer(
-            self,
-            autorun(
-              function sequenceFetchAutorun() {
-                const view = getContainingView(self) as LGV
-                if (!view.initialized || view.bpPerPx > 10) {
-                  return
-                }
-
-                const visible = view.visibleRegions
-                let needFetch = false
-                for (const vr of visible) {
-                  const bounds = self.loadedBounds.get(vr.displayedRegionIndex)
-                  if (
-                    bounds?.refName !== vr.refName ||
-                    Math.floor(vr.start) < bounds.start ||
-                    Math.ceil(vr.end) > bounds.end
-                  ) {
-                    needFetch = true
-                    break
-                  }
-                }
-                if (!needFetch) {
-                  return
-                }
-
-                const regions = view.bufferedVisibleRegions
-                const adapterConfig = self.adapterConfig
-                const sessionId = getRpcSessionId(self)
-                const myGeneration = ++fetchGeneration
-
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                ;(async () => {
-                  try {
-                    const { rpcManager } = getSession(self)
-                    const data = new Map<number, SequenceRegionData>()
-                    const bounds = new Map<number, LoadedBounds>()
-
-                    for (const { region, displayedRegionIndex } of regions) {
-                      if (fetchGeneration !== myGeneration) {
-                        return
-                      }
-                      const rawFeatures = await rpcManager.call(
-                        sessionId,
-                        'CoreGetFeatures',
-                        {
-                          regions: [region],
-                          adapterConfig,
-                        },
-                      )
-                      const features = dedupe(rawFeatures, f => f.id())
-
-                      for (const f of features) {
-                        const seq = f.get('seq') as string | undefined
-                        if (seq) {
-                          data.set(displayedRegionIndex, {
-                            seq,
-                            start: f.get('start'),
-                            end: f.get('end'),
-                          })
-                          bounds.set(displayedRegionIndex, {
-                            refName: region.refName,
-                            start: f.get('start'),
-                            end: f.get('end'),
-                          })
-                        }
-                      }
-                    }
-
-                    if (fetchGeneration === myGeneration && isAlive(self)) {
-                      self.setSequenceData(data, bounds)
-                    }
-                  } catch (e) {
-                    if (!isAbortException(e) && isAlive(self)) {
-                      self.setError(e)
-                    }
-                  }
-                })()
-              },
-              {
-                name: `${self.type} ${self.id} sequence loading`,
-                delay: 300,
-              },
-            ),
-          )
-        },
-      }
-    })
+    .actions(self => ({
+      async fetchNeeded(
+        needed: { region: Region; displayedRegionIndex: number }[],
+      ) {
+        if (self.zoomedOut) {
+          return
+        }
+        await self.fetchRegions(needed, async ctx => {
+          const { rpcManager } = getSession(self)
+          const sessionId = getRpcSessionId(self)
+          const adapterConfig = self.adapterConfig
+          for (const { region, displayedRegionIndex } of needed) {
+            const features = await rpcManager.call(
+              sessionId,
+              'CoreGetFeatures',
+              { regions: [region], adapterConfig, stopToken: ctx.stopToken },
+            )
+            if (ctx.isStale()) {
+              return
+            }
+            for (const f of dedupe(features, f => f.id())) {
+              const seq = f.get('seq') as string | undefined
+              if (seq) {
+                self.setSequenceRegion(displayedRegionIndex, {
+                  seq,
+                  start: f.get('start'),
+                  end: f.get('end'),
+                })
+              }
+            }
+          }
+        })
+      },
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(
+            function sequenceHeightAutorun() {
+              const view = getContainingView(self) as LGV
+              if (!view.initialized || self.zoomedOut) {
+                self.setComputedHeight(50)
+              } else {
+                self.setComputedHeight(self.sequenceHeight)
+              }
+            },
+            { name: 'SequenceHeight' },
+          ),
+        )
+      },
+    }))
     .views(self => ({
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
