@@ -39,6 +39,10 @@ export async function run(args?: string[]) {
       short: 't',
       description: 'Type of track, by default inferred from track file',
     },
+    adapterType: {
+      type: 'string',
+      description: 'Adapter type, by default inferred from track file',
+    },
     name: {
       type: 'string',
       short: 'n',
@@ -164,6 +168,7 @@ export async function run(args?: string[]) {
     indexFile: index,
     bed1,
     bed2,
+    adapterType,
   } = flags
 
   const targetConfigPath = await resolveConfigPath(target, out)
@@ -180,6 +185,7 @@ export async function run(args?: string[]) {
     index: index ? mapLoc(index) : undefined,
     bed1: bed1 ? mapLoc(bed1) : undefined,
     bed2: bed2 ? mapLoc(bed2) : undefined,
+    adapterType,
   })
 
   adapter = addSyntenyAssemblyNames(adapter, flags.assemblyNames)

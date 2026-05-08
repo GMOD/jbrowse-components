@@ -16,6 +16,7 @@ const simpleBam = path.join(base, 'simple.bam')
 const simpleBai = path.join(base, 'simple.bai')
 const simpleGff = path.join(base, 'volvox.sort.gff3')
 const simpleBed = path.join(base, 'volvox.bed')
+const simpleBedGz = path.join(base, 'volvox.bed.gz')
 const simpleBedpe = path.join(base, 'volvox.bedpe')
 const simplePaf = path.join(base, 'volvox_inv_indels.paf')
 const simplePafGz = path.join(base, 'volvox_inv_indels.paf.gz')
@@ -620,5 +621,38 @@ test('adds bgzip fasta track', async () => {
     expect(exists(ctxDir(ctx, 'simple.fasta.gz.fai'))).toBeTruthy()
     expect(exists(ctxDir(ctx, 'simple.fasta.gz.gzi'))).toBeTruthy()
     expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('uses default BedTabixAdapter for bed.gz file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const { error } = await runCommand(['add-track', simpleBedGz, '--load', 'copy'])
+    if (error) {
+      throw error
+    }
+    const conf = readConf(ctx)
+    const track = conf.tracks?.[0]
+    expect(track?.adapter?.type).toBe('BedTabixAdapter')
+  })
+})
+
+test('can override adapter type with --adapterType BedAdapter', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const { error } = await runCommand([
+      'add-track',
+      simpleBedGz,
+      '--load',
+      'copy',
+      '--adapterType',
+      'BedAdapter',
+    ])
+    if (error) {
+      throw error
+    }
+    const track = readConf(ctx).tracks[0]
+    expect(track.adapter.type).toBe('BedAdapter')
+    expect(track.adapter.bedLocation).toBeDefined()
   })
 })

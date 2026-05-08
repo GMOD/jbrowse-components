@@ -190,6 +190,19 @@ const formats: { regex: RegExp; spec: AdapterSpec }[] = [
   },
 ]
 
+const adapterTypeToSpec: Record<
+  string,
+  { kind: AdapterSpec['kind']; locField?: string }
+> = {}
+for (const { spec } of formats) {
+  if (spec.kind === 'single' || spec.kind === 'tabix' || spec.kind === 'anchors') {
+    adapterTypeToSpec[spec.adapterType] = {
+      kind: spec.kind,
+      locField: spec.locField,
+    }
+  }
+}
+
 function indexType(index: string | undefined, fallback: 'BAI' | 'TBI'): string {
   return index?.toUpperCase().endsWith('CSI') ? 'CSI' : fallback
 }
@@ -328,14 +341,83 @@ export function guessAdapter({
   index,
   bed1,
   bed2,
+  adapterType,
 }: {
   location: string
   protocol: string
   index?: string
   bed1?: string
   bed2?: string
+  adapterType?: string
 }): Adapter {
   const makeLocation = makeLocationProtocol(protocol)
+
+  if (adapterType) {
+    const adapterSpec = adapterTypeToSpec[adapterType]
+    if (adapterSpec) {
+      const { kind, locField } = adapterSpec
+      if (kind === 'single' && locField) {
+        return { type: adapterType, [locField]: makeLocation(location) }
+      } else if (kind === 'tabix' && locField) {
+        return {
+          type: adapterType,
+          [locField]: makeLocation(location),
+          index: {
+            location: makeLocation(index || `${location}.tbi`),
+            indexType: indexType(index, 'TBI'),
+          },
+        }
+      } else if (kind === 'anchors' && locField) {
+        return {
+          type: adapterType,
+          [locField]: makeLocation(location),
+          bed1Location: bed1 ? makeLocation(bed1) : undefined,
+          bed2Location: bed2 ? makeLocation(bed2) : undefined,
+        }
+      }
+    }
+
+    for (const { regex, spec } of formats) {
+      if (regex.test(location)) {
+        if (spec.kind === 'bam') {
+          return {
+            type: adapterType,
+            bamLocation: makeLocation(location),
+            index: {
+              location: makeLocation(index || `${location}.bai`),
+              indexType: indexType(index, 'BAI'),
+            },
+          }
+        } else if (spec.kind === 'cram') {
+          return {
+            type: adapterType,
+            cramLocation: makeLocation(location),
+            craiLocation: makeLocation(`${location}.crai`),
+          }
+        } else if (spec.kind === 'indexed-fasta') {
+          return {
+            type: adapterType,
+            fastaLocation: makeLocation(location),
+            faiLocation: makeLocation(index || `${location}.fai`),
+          }
+        } else if (spec.kind === 'bgzip-fasta') {
+          return {
+            type: adapterType,
+            fastaLocation: makeLocation(location),
+            faiLocation: makeLocation(`${location}.fai`),
+            gziLocation: makeLocation(`${location}.gzi`),
+          }
+        } else if (spec.kind === 'nclist') {
+          return { type: adapterType, rootUrlTemplate: makeLocation(location) }
+        } else if (spec.kind === 'sparql') {
+          return { type: adapterType, endpoint: location }
+        }
+        return { type: adapterType }
+      }
+    }
+    return { type: adapterType }
+  }
+
   for (const { regex, spec } of formats) {
     if (regex.test(location)) {
       return specToAdapter(spec, location, index, bed1, bed2, makeLocation)
