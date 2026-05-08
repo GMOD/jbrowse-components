@@ -321,14 +321,15 @@ export function formatFeatureTooltip(
         name: string
         start: number
         end: number
-        strand: string
+        strand: number
         refName: string
       }
     | undefined,
 ) {
   const info = getFeatureInfoById(featureId)
   if (info) {
-    return `${info.name || info.id} ${info.refName}:${info.start.toLocaleString()}-${info.end.toLocaleString()} (${info.strand})`
+    const strand = info.strand === -1 ? '-' : '+'
+    return `${info.name || info.id} ${info.refName}:${info.start.toLocaleString()}-${info.end.toLocaleString()} (${strand})`
   }
   return undefined
 }

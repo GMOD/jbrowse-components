@@ -711,7 +711,7 @@ export default function stateModelFactory(
             end,
             flags,
             mapq: rpcData.readMapqs[idx],
-            strand: flags !== undefined && flags & 16 ? '-' : '+',
+            strand: flags !== undefined && flags & 16 ? -1 : 1,
             refName:
               view.displayedRegions[displayedRegionIndex]?.refName ?? 'unknown',
           }
@@ -849,10 +849,7 @@ export default function stateModelFactory(
             start: info.start,
             end: info.end,
             refName: info.refName,
-            // Bake the string→numeric strand coercion + score/MAPQ aliasing
-            // into construction so consumers can `.get(key)` without a
-            // bespoke adapter.
-            strand: info.strand === '-' ? -1 : 1,
+            strand: info.strand,
             flags: info.flags,
             score: info.mapq,
             MAPQ: info.mapq,
