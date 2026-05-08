@@ -1,7 +1,7 @@
 ---
 id: user_guide
 toplevel: true
-title: Introduction - User guide
+title: User guides
 ---
 
 ## General usage
@@ -40,6 +40,8 @@ title: Introduction - User guide
 
 - [Bookmark widget](/docs/user_guides/bookmark_widget) - Saving and sharing
   genomic locations
+- [Connections](/docs/user_guides/connections) - UCSC track hubs and JBrowse 1
+  data directories
 - [Plugin store](/docs/user_guides/plugin_store) - Installing community plugins
 
 ## Tutorials
@@ -48,5 +50,9 @@ title: Introduction - User guide
   patterns and variant phasing in a trio dataset
 - [Cancer Genome in a Bottle (SVs)](/docs/tutorials/sv_visualization_cgiab) -
   Load and inspect structural variants from real cancer sequencing data
+- [Methylation visualization](/docs/tutorials/methylation) - Per-read and
+  aggregate methylation display using MM-tagged BAM/CRAM files
+- [Multi-sample SV visualization](/docs/tutorials/sv_multisamples) -
+  Population-level SVs, trio inspection, and chromosomal inversions
 - [Synteny and genome alignment](/docs/tutorials/synteny_visualization) -
   Compare genome assemblies using dotplot and linear synteny views

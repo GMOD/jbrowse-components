@@ -1,0 +1,168 @@
+---
+import { baseUrl } from '../lib/base-url'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { Icon } from 'astro-icon/components'
+import btn from '../styles/button.module.css'
+import page from '../styles/page.module.css'
+import { currentVersion } from '../config.ts'
+const ghRelease = `https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}`
+const desktopBase = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}`
+const webZip = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}/jbrowse-web-${currentVersion}.zip`
+const lgvStorybook = `https://jbrowse.org/storybook/lgv/${currentVersion}/?path=/story/getting-started--page`
+const cgvStorybook = `https://jbrowse.org/storybook/cgv/${currentVersion}/?path=/story/getting-started--page`
+
+const desktopDownloads = [
+  { os: 'MacOS', suffix: 'mac.dmg', icon: 'mdi:apple' },
+  { os: 'Windows', suffix: 'win.exe', icon: 'mdi:microsoft-windows' },
+  { os: 'Linux', suffix: 'linux.AppImage', icon: 'mdi:linux' },
+]
+---
+
+<BaseLayout title="Download JBrowse 2">
+  <div class={page.content}>
+    <h1>Download JBrowse 2</h1>
+    <p>
+      JBrowse 2 is a new browser for today's increasingly complex data. We make
+      several different products for use in different scenarios, choose the one
+      below that best fits your needs.
+    </p>
+
+    <h2>JBrowse Desktop</h2>
+    <p>
+      A standalone app that runs on your own computer that can view data from
+      many sources.
+    </p>
+    <div class="download-cards">
+      {desktopDownloads.map(({ os, suffix, icon }) => (
+        <div class="download-card">
+          <div class="card-icon"><Icon name={icon} width="40" height="40" /></div>
+          <h3>{os}</h3>
+          <a
+            class:list={[btn.btn, btn.btnPrimary, btn.btnSmall]}
+            href={`${desktopBase}/jbrowse-desktop-${currentVersion}-${suffix}`}
+          >
+            Download
+          </a>
+        </div>
+      ))}
+    </div>
+    <p class="caption">
+      Check out our <a href={`${baseUrl}/docs/quickstart_desktop/`}>quick start guide</a>
+      after downloading. Can't find what you're looking for?
+      Check <a href={ghRelease}>other platforms</a>.
+    </p>
+
+    <h2>JBrowse Web</h2>
+    <p>
+      Run a full-featured genome browser with many types of built-in views on
+      your own website.
+    </p>
+    <div class="web-download">
+      <a class:list={[btn.btn, btn.btnPrimary]} href={webZip}>Download JBrowse Web</a>
+    </div>
+    <p>
+      Consider installing the JBrowse CLI tools (below), which can be used to
+      create and manage JBrowse Web instances from the command line.
+    </p>
+
+    <h2 id="jbrowse-cli-tools">JBrowse CLI tools</h2>
+    <p>
+      The JBrowse CLI helps administrators add genome assemblies, tracks, and
+      more to their config files.
+    </p>
+    <pre><code>npm install -g @jbrowse/cli</code></pre>
+    <p>
+      After installing, check out our
+      <a href={`${baseUrl}/docs/quickstart_web/`}>quick-start guide</a>.
+    </p>
+
+    <h2>Static image generator</h2>
+    <ul>
+      <li>
+        <a href="https://www.npmjs.com/package/@jbrowse/img">@jbrowse/img</a>
+        — generate images of JBrowse 2 statically on the command line
+      </li>
+    </ul>
+
+    <h2>Embedded components</h2>
+    <ul>
+      <li>
+        <a href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view">
+          @jbrowse/react-linear-genome-view
+        </a>
+        — linear genome browser React component on NPM
+        (<a href={lgvStorybook}>storybook docs</a>)
+      </li>
+      <li>
+        <a href="https://www.npmjs.com/package/@jbrowse/react-circular-genome-view">
+          @jbrowse/react-circular-genome-view
+        </a>
+        — circular genome browser React component on NPM
+        (<a href={cgvStorybook}>storybook docs</a>)
+      </li>
+    </ul>
+    <p>
+      More info in the <a href={`${baseUrl}/docs/embedded_components/`}>embedded docs</a>,
+      including examples with create-react-app, vite, next.js, and vanillajs.
+    </p>
+
+    <h2>Jupyter Notebooks Extension</h2>
+    <ul>
+      <li><a href="https://gmod.github.io/jbrowse-jupyter/docs/html/index.html">Documentation</a></li>
+      <li><a href="https://github.com/GMOD/jbrowse-jupyter">Source code</a></li>
+    </ul>
+
+    <h2>Dash — Python</h2>
+    <ul>
+      <li><a href="https://github.com/GMOD/dash_jbrowse">GMOD/dash_jbrowse</a></li>
+    </ul>
+
+    <h2>R/Shiny widget</h2>
+    <ul>
+      <li>
+        <a href="https://gmod.github.io/JBrowseR/">JBrowseR</a>
+        — R package on CRAN
+      </li>
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .download-cards {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin: 1.5rem 0;
+  }
+  .download-card {
+    background: var(--color-inline-code-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    min-width: 160px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .card-icon {
+    font-size: 2rem;
+  }
+  .download-card h3 {
+    margin: 0;
+  }
+  .web-download {
+    margin: 1rem 0;
+  }
+  .caption {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+  pre {
+    background: var(--color-surface);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+  }
+</style>

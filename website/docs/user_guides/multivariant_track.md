@@ -5,8 +5,6 @@ description: Population-level variant views
 guide_category: Track types
 ---
 
-import Figure from '../figure'
-
 VCF files frequently contain information on multiple samples. JBrowse 2 added
 the ability to show the data from multiple samples using a custom Variant track
 "display type"

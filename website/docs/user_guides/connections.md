@@ -5,8 +5,6 @@ description: UCSC track hubs and JBrowse 1 data directories
 guide_category: General usage
 ---
 
-import Figure from '../figure'
-
 A **connection** is a reusable pointer to an external track hub or data
 directory. Once opened, JBrowse fetches the hub's track list automatically and
 adds those tracks to the track selector — no manual configuration of each track

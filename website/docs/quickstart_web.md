@@ -4,10 +4,6 @@ title: JBrowse web setup using the CLI
 toplevel: true
 ---
 
-import Figure from './figure'
-
-import config from '../docusaurus.config.json'
-
 ## Prerequisites
 
 - Node.js 18+. Note: we recommend not using `apt` to install Node.js, it often
@@ -31,13 +27,13 @@ The JBrowse CLI can perform many tasks to help you manage JBrowse 2, such as:
 
 To globally install the JBrowse CLI, run
 
-```sh-session
+```bash
 npm install -g @jbrowse/cli
 ```
 
 Test the installation with:
 
-```sh-session
+```bash
 jbrowse --version
 ```
 
@@ -48,7 +44,7 @@ the [npx](https://nodejs.dev/learn/the-npx-nodejs-package-runner) command, which
 is included with Node.js, to run JBrowse CLI without installing it. Simply
 replace `jbrowse` with `npx @jbrowse/cli` in any command, e.g.
 
-```sh-session
+```bash
 npx @jbrowse/cli --version
 ```
 
@@ -56,7 +52,7 @@ npx @jbrowse/cli --version
 
 Alternatively, download a single-file bundle:
 
-```sh-session
+```bash
 wget https://unpkg.com/@jbrowse/cli/bundle/index.js -O jbrowse
 chmod +x jbrowse
 ./jbrowse --help
@@ -66,7 +62,7 @@ chmod +x jbrowse
 
 In the directory where you would like to download JBrowse 2, run
 
-```sh-session
+```bash
 jbrowse create jbrowse2
 ```
 
@@ -102,7 +98,7 @@ Typically you place the folder in a web server's static directory (e.g.
 
 To quickly verify the download locally, run a development server:
 
-```sh-session
+```bash
 cd jbrowse2/
 npx serve .
 # or
@@ -276,8 +272,7 @@ Also see the [FAQ entries for text searching](/docs/faq#text-searching)
 With an assembly and tracks configured, you're ready to explore your data.
 Useful next steps:
 
-- [User guide](/docs/user_guide) — navigating views, track types, and UI
-  features
+- [User guides](/docs/user_guide) — track types, views, and UI features
 - [Config guide](/docs/config_guide) — advanced track and assembly configuration
 - [JBrowse CLI reference](/docs/cli) — full reference for all CLI commands used
   here

@@ -1,0 +1,232 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { Icon } from 'astro-icon/components'
+import page from '../styles/page.module.css'
+import btn from '../styles/button.module.css'
+import pluginJSON from '../../../website/plugins.json'
+
+const { plugins } = pluginJSON
+---
+
+<BaseLayout title="JBrowse 2 Plugin Store">
+  <div class={page.content}>
+    <h1>Plugin Store</h1>
+
+    <div class="info-row">
+      <div class="info-box">
+        <div class="info-box-title">About the plugin store</div>
+        <div class="info-body">
+          <p>
+            This store contains the current list of white-listed JBrowse 2
+            plugins. Plugins can add functionality that doesn't exist in the
+            core application, such as a new data adapter or a custom track type.
+          </p>
+          <p>
+            The configuration specified for each plugin can be added to the
+            <code>plugins</code> array as a top-level entry. For example:
+          </p>
+          <pre><code>{`{
+  "plugins": [
+    {
+      "name": "Msaview",
+      "url": "https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"
+    }
+  ]
+}`}</code></pre>
+          <p>Plugins can also be added directly inside the app via the File menu.</p>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-title">Developer information</div>
+        <div class="info-body">
+          <p>
+            We welcome developers who want to create a new JBrowse 2 plugin.
+            The primary resource for getting started is the
+            <a href="https://github.com/GMOD/jbrowse-plugin-template" target="_blank" rel="noopener">
+              plugin template
+            </a>.
+          </p>
+          <p>
+            If you build a plugin you'd like featured in this store, follow the
+            instructions found
+            <a href="https://github.com/GMOD/jbrowse-plugin-list" target="_blank" rel="noopener">
+              here
+            </a>.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="plugin-list">
+      {plugins.map(plugin => {
+        const configString = JSON.stringify({ name: plugin.name, url: plugin.url }, null, 2)
+        return (
+          <div class="plugin-card">
+            {plugin.image && (
+              <img
+                class="plugin-image"
+                src={plugin.image}
+                alt={plugin.name}
+                loading="lazy"
+              />
+            )}
+            <div class="plugin-body">
+              <div class="plugin-header">
+                <h2>{plugin.name}</h2>
+                <a
+                  class:list={[btn.btn, btn.btnSecondary, btn.btnSmall]}
+                  href={plugin.location}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <Icon name="mdi:github" width="16" height="16" />
+                  GitHub
+                </a>
+              </div>
+              <div class="plugin-meta">
+                <span class="meta-item">
+                  <Icon name="mdi:account" width="14" height="14" />
+                  {plugin.authors.join(', ')}
+                </span>
+                <span class="meta-item">
+                  <Icon name="mdi:scale-balance" width="14" height="14" />
+                  {plugin.license === 'NONE' ? 'No license' : plugin.license}
+                </span>
+              </div>
+              <p class="plugin-description">{plugin.description}</p>
+              <div class="config-section">
+                <div class="config-label">Configuration</div>
+                <pre><code>{configString}</code></pre>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+  }
+
+  .info-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  .info-box {
+    flex: 1;
+    min-width: 240px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .info-box-title {
+    background: var(--color-surface);
+    color: var(--color-text);
+    padding: 0.7rem 1rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .info-body {
+    padding: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .info-body p {
+    margin: 0 0 0.5rem;
+  }
+  .info-body pre {
+    background: var(--color-surface);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    margin: 0.5rem 0;
+  }
+
+  .plugin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .plugin-card {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  .plugin-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  .plugin-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .plugin-body {
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .plugin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .plugin-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .plugin-meta {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+  }
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .plugin-description {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-text);
+    line-height: 1.5;
+  }
+
+  .config-label {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+  }
+  .config-section pre {
+    background: var(--color-surface);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: 600px) {
+    .plugin-image {
+      display: none;
+    }
+  }
+</style>

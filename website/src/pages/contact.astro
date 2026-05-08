@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import page from '../styles/page.module.css'
+---
+
+<BaseLayout title="Contact — JBrowse">
+  <div class={page.content}>
+    <h1>Contact us</h1>
+
+    <h2>Forums</h2>
+    <ul>
+      <li>Discussion forum: <a href="https://github.com/GMOD/jbrowse-components/discussions">github.com/GMOD/jbrowse-components/discussions</a></li>
+      <li>Issues and feature requests: <a href="https://github.com/GMOD/jbrowse-components/issues/new/choose">github.com/GMOD/jbrowse-components/issues</a></li>
+      <li>Chat: <a href="https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im">Gitter</a></li>
+      <li>Mailing list: send email to <code>gmod-ajax@lists.sourceforge.net</code></li>
+      <li>Email: <a href="mailto:jbrowse2@berkeley.edu">jbrowse2@berkeley.edu</a></li>
+      <li>Feedback: <a href="https://forms.gle/CRf9Ur9iXu2uuz1o9">Google Form</a></li>
+    </ul>
+
+    <h2>Social media</h2>
+    <ul>
+      <li>Bluesky: <a href="https://bsky.app/profile/jbrowse.org">bsky.app/profile/jbrowse.org</a></li>
+      <li>Mastodon: <a href="https://genomic.social/@usejbrowse">genomic.social/@usejbrowse</a></li>
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 1.5rem;
+  }
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 1.5rem 0 0.5rem;
+  }
+</style>

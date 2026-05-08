@@ -13,6 +13,7 @@ import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
 import { ElementId } from '../../util/types/mst.ts'
 
 import type PluginManager from '../../PluginManager.ts'
+import type { FileTypeExporter } from './saveTrackFileTypes/types.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -233,7 +234,7 @@ export function createBaseTrackModel(
       /**
        * #method
        */
-      saveTrackFileFormatOptions() {
+      saveTrackFileFormatOptions(): Record<string, FileTypeExporter> {
         return {
           gff3: {
             name: 'GFF3',

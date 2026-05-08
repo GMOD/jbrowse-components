@@ -3,21 +3,14 @@ id: config_model
 title: Configuration model basics
 ---
 
-import Figure from '../figure'
-
-This guide will introduce some critical concepts to understanding the
-configuration model. The configuration model is used to structure the features
-and data available in a given JBrowse session, and each new pluggable element
-you create will need its own configuration schema.
+The configuration model structures the data and features available in a JBrowse
+session. Each pluggable element you create needs its own configuration schema.
 
 ### Configuration slot types
 
-Our configuration system is "typed" to facilitate graphical editing of the
-configuration.
-
-Each "configuration schema" has a list of "configuration slots".
-
-Each "configuration slot" has a name, description, a type, and a value.
+The configuration system is typed to support graphical editing. Each
+configuration schema has a list of slots, each with a name, description, type,
+and value.
 
 Here is a mostly comprehensive list of config types:
 
@@ -98,19 +91,13 @@ readConfObject(track.configuration, 'maxHeight')
 
 ### Using config callbacks
 
-Config callbacks allow you to have a dynamic color based on some function logic
-you provide. All config slots can actually become config callback. The arguments
-that are given to the callback are listed by the 'contextVariable' but must be
-provided by the calling code (the code reading the config slot). To pass
-arguments to the a callback we say
+Any config slot can be a callback. The `contextVariable` field lists what
+arguments the callback expects — these must be provided by the calling code. To
+pass arguments:
 
 ```js
 readConfObject(config, 'color', { feature })
 ```
-
-That implies the color configuration callback will be passed a feature, so the
-config callback can be a complex function determining the color to use based on
-various feature attributes.
 
 ### Example of a config callback
 
@@ -163,14 +150,11 @@ You can also
 [write your own jexl function](/docs/developer_guides/pluggable_elements) and
 call it in the same way in the configuration.
 
-:::info Note
+:::info
 
-It can be extremely useful to utilize a custom jexl function in the default
-configuration for a pluggable element type, as you can observe in
-[one of the examples above](#example-config-with-multiple-slot-types), the
-default value of the `color` slot of the renderer is a jexl function. If you
-configure your plugin with a custom jexl function, you can use that function as
-a default value in your various pluggable elements.
+Custom jexl functions can be used as default slot values in your pluggable
+elements — see the `color` slot in the
+[example above](#example-config-with-multiple-slot-types).
 
 :::
 

@@ -5,8 +5,6 @@ description: Interpreting SV signals across display types
 guide_category: Views
 ---
 
-import Figure from '../figure'
-
 JBrowse 2 has several complementary views for exploring structural variants
 (SVs). SV calls are loaded as [variant tracks](/docs/user_guides/variant_track)
 (VCF/BCF); reads as [alignments tracks](/docs/user_guides/alignments_track)

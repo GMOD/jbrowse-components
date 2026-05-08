@@ -1,0 +1,12 @@
+.tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.tag {
+  background: color-mix(in srgb, var(--color-accent) 12%, white);
+  color: var(--color-accent-dark);
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+}

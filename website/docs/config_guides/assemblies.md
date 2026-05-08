@@ -3,11 +3,8 @@ id: assemblies
 title: Configuring assemblies
 ---
 
-An assembly configuration includes the "name" of your assembly, any "aliases"
-that might be associated with that assembly e.g. GRCh37 is sometimes seen as an
-alias for hg19, and then a "sequence" configuration containing a reference
-sequence track config. This provides a special "track" that is outside the
-normal track config.
+An assembly configuration has a `name`, optional `aliases` (e.g. GRCh37/hg19),
+and a `sequence` containing a reference sequence track config.
 
 Here is a complete config.json file containing only the hg19 assembly:
 
@@ -66,57 +63,26 @@ Each assembly contains:
 
 ### Configuring reference name aliasing
 
-Reference name aliasing is a process to make chromosomes that are named slightly
-differently but which refer to the same thing render properly.
-
-The refNameAliases in the above config provides this functionality:
-
-```json
-"refNameAliases": {
-  "adapter": {
-    "type": "RefNameAliasAdapter",
-    "location": {
-      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt",
-      "locationType": "UriLocation"
-    }
-  }
-}
-```
-
-The alias file is tab-delimited: the first column should be the names in your
-FASTA sequence, and the remaining columns are aliases. UCSC
-[chromAlias files](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt)
-match this format exactly and can be used directly.
-
-For example, a manually created alias file for hg19 looks like:
+Reference name aliasing maps chromosomes named differently across files to the
+same sequence (e.g. `chr1` ↔ `1`). The `refNameAliases` field in the config
+above enables this using a tab-separated alias file where each row lists all
+names for one sequence. By default the first column is treated as the primary
+name (matching your FASTA), and the remaining columns are aliases:
 
 ```
 1	chr1
 2	chr2
-3	chr3
-4	chr4
-5	chr5
-6	chr6
-7	chr7
-8	chr8
-9	chr9
-10	chr10
-11	chr11
-12	chr12
-13	chr13
-14	chr14
-15	chr15
-16	chr16
-17	chr17
-18	chr18
-19	chr19
-20	chr20
-21	chr21
-22	chr22
-X	chrX
-Y	chrY
+...
 M	chrM	MT
 ```
+
+UCSC
+[chromAlias files](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt)
+match this format. For NCBI assemblies, use `NcbiSequenceReportAliasAdapter`
+with an NCBI `sequence_report.tsv` instead.
+
+See [RefName aliasing](/docs/developer_guides/refname_aliasing) for full details
+on adapter options and configuration.
 
 ### Adding an assembly with the CLI
 

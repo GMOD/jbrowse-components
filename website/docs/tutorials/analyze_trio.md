@@ -6,8 +6,6 @@ date: 2025-03-25
 guide_category: Tutorials
 ---
 
-import Figure from '../figure'
-
 ## Introduction
 
 In some scenarios, it can be useful to gather genome sequencing data from both

@@ -1,6 +1,4 @@
-import config from '../docusaurus.config.json'
-
-const ver = `${config.customFields.currentVersion}`
+import { currentVersion as ver } from '../src/config.ts'
 
 const baseURL = `https://github.com/GMOD/jbrowse-components/releases/download`
 

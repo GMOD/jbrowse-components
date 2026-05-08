@@ -4,13 +4,11 @@ title: Embedded components
 toplevel: true
 ---
 
-Our embedded components allow you to embed JBrowse components on your webpage
+JBrowse's embedded components let you add genome browsing to any webpage.
 
-You can see a tutorial for setting up the embedded components here
-https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/
-
-See also our FAQ entry on embedded components
-http://jbrowse.org/jb2/docs/faq/#embedded-views-versus-full-jbrowse-app
+See the [embedding tutorial](/docs/tutorials/embed_linear_genome_view) and the
+[FAQ entry on embedded vs. full JBrowse](/docs/faq#embedded-views-versus-full-jbrowse-app)
+for background.
 
 ## Choosing the right package
 
@@ -22,16 +20,15 @@ http://jbrowse.org/jb2/docs/faq/#embedded-views-versus-full-jbrowse-app
 
 ## @jbrowse/react-app2
 
-This component embodies the entire jbrowse-web application as a NPM installable
-react component
+This package bundles the entire jbrowse-web application as an npm-installable
+React component.
 
 - [@jbrowse/react-app2](https://www.npmjs.com/package/@jbrowse/react-app2)
   jbrowse app component on NPM
 - [Storybook](https://jbrowse.org/storybook/app/main/) - docs for the app
   component
 
-Here is a table of different usages of the `@jbrowse/react-app2` using different
-bundlers
+Bundler examples for `@jbrowse/react-app2`:
 
 | Bundler   | Demo                                            | Source code                                                             | Note                                                                                                                     |
 | --------- | ----------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -42,16 +39,14 @@ bundlers
 
 ## @jbrowse/react-linear-genome-view2
 
-This NPM package consists of a single linear genome view that is usable as a
-React component
+A single linear genome view as an npm-installable React component.
 
 - [@jbrowse/react-linear-genome-view2](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2)
   linear genome view React component on NPM
 - [Storybook](https://jbrowse.org/storybook/lgv/main/) - docs for the linear
   genome view React component
 
-Here is a table of different usages of the `@jbrowse/react-linear-genome-view2`
-using different bundlers
+Bundler examples for `@jbrowse/react-linear-genome-view2`:
 
 | Bundler    | Demo                                            | Source code                                                                            | Note                                                                                                                                                                                      |
 | ---------- | ----------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -62,15 +57,14 @@ using different bundlers
 
 ## @jbrowse/react-circular-genome-view2
 
-This component consists of a single JBrowse 2 circular view.
+A single JBrowse 2 circular view as an npm-installable React component.
 
 - [@jbrowse/react-circular-genome-view2](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2)
   circular genome view React component on NPM
 - [Storybook](https://jbrowse.org/storybook/cgv/main/) - docs for the circular
   genome view React component
 
-Here is a table of different usages of the
-`@jbrowse/react-circular-genome-view2` using different bundlers
+Bundler examples for `@jbrowse/react-circular-genome-view2`:
 
 | Syntax     | Demo                                            | Source code                                                                              | Note                                                                                         |
 | ---------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |

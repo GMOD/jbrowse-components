@@ -1,13 +1,11 @@
 ---
 id: sv_multisamples
-title: Multi-sample SV visualization with 1000 Genomes
+title: Multi-sample SV visualization w/ 1kG
 description:
   Inspect population-level SVs, explore a family trio, and characterize a large
   chromosomal inversion
 guide_category: Tutorials
 ---
-
-import Figure from '../figure'
 
 This tutorial explores structural variants (SVs) from the 1000 Genomes Project
 using JBrowse's multi-sample visualization tools. We cover three connected

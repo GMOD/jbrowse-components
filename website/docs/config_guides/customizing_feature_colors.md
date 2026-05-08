@@ -30,8 +30,7 @@ export default class MyPlugin {
 }
 ```
 
-Then put `myplugin.js` in the same folder as your config file, and then you can
-use the custom `jexl` function in your config callbacks as follows:
+Put `myplugin.js` in the same folder as your config file and reference it:
 
 ```json
 {
@@ -68,21 +67,17 @@ use the custom `jexl` function in your config callbacks as follows:
 }
 ```
 
-The feature in the callback is a "SimpleFeature" type object, and you can call
-`feature.get('start')`, `feature.get('end')`, `feature.get('refName')`, or
-`feature.get('other_attribute')` for e.g. maybe a field in a GFF3 column 9
+The feature is a `SimpleFeature` — use `feature.get('start')`,
+`feature.get('refName')`, `feature.get('other_attribute')`, etc.
 
-See our [no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
-more info on setting up a simple plugin for doing these customizations.
+See the [no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
+a full walkthrough.
 
-#### Footnote 1
+:::note
 
-`myplugin.js` does not have to use the jbrowse-plugin-template if it is small
-and self-contained like this, and does not import other modules. If you import
-other modules from your plugin, then it can be worth it to use the
-jbrowse-plugin-template.
+`myplugin.js` doesn't need the jbrowse-plugin-template if it's self-contained
+and has no external imports. If it does import other modules, use the template.
+For embedded components, see the
+[storybook example](https://jbrowse.org/storybook/lgv/main/?path=/story/using-plugins--page).
 
-#### Footnote 2
-
-If you are using embedded, there are also other methods of including plugins,
-see https://jbrowse.org/storybook/lgv/main/?path=/story/using-plugins--page
+:::

@@ -4,18 +4,13 @@ title: Writing a plugin using jbrowse-plugin-template
 toplevel: true
 ---
 
-import Figure from '../figure'
+Plugins add new pluggable elements (views, tracks, adapters, etc.) and can
+modify application behavior by watching state. See the
+[pluggable elements](/docs/developer_guides/pluggable_elements) page for the
+full list of element types.
 
-JBrowse 2 plugins can be used to add new pluggable elements (views, tracks,
-adapters, etc.), and to modify behavior of the application by adding code that
-watches the application's state.
-
-For the full list of what kinds of pluggable element types plugins can add, see
-the [pluggable elements](/docs/developer_guides/pluggable_elements) page.
-
-The following tutorial will walk you through establishing your developer
-environment, spinning up a plugin, and running a local JBrowse instance with
-your custom plugin functionality.
+This tutorial walks through setting up a plugin and running a local JBrowse
+instance with it.
 
 ## Prerequisites
 
@@ -26,14 +21,21 @@ your custom plugin functionality.
 
 First we're going to install and set up the project for development.
 
-## Use git to clone the plugin template
+## Choose a plugin template
 
-The easiest way to start developing your plugin for JBrowse 2 is to use the
-[plugin template](https://github.com/GMOD/jbrowse-plugin-template). There is
-also a lightweight alternative based on esbuild:
-[jbrowse-plugin-esbuild-template](https://github.com/GMOD/jbrowse-plugin-esbuild-template).
+Two official templates are available:
 
-To clone the plugin template project, on the command line run:
+| Template                                                                                   | Bundler | Package manager | Testing                |
+| ------------------------------------------------------------------------------------------ | ------- | --------------- | ---------------------- |
+| [jbrowse-plugin-template](https://github.com/GMOD/jbrowse-plugin-template)                 | rollup  | yarn/npm        | Jest                   |
+| [jbrowse-plugin-esbuild-template](https://github.com/GMOD/jbrowse-plugin-esbuild-template) | esbuild | pnpm            | vitest + Puppeteer E2E |
+
+The esbuild template has faster builds and includes end-to-end tests against
+JBrowse nightly builds. The rollup template is older and more widely referenced
+in existing examples. This tutorial uses the rollup template; the esbuild
+template follows the same plugin structure.
+
+Clone the rollup template:
 
 ```bash
 # change jbrowse-plugin-my-project to whatever you wish
@@ -43,7 +45,7 @@ cd jbrowse-plugin-my-project
 
 ## Initialize the project
 
-To initialize your project run,
+Run:
 
 ```bash
 yarn init
@@ -70,7 +72,7 @@ yarn # or npm i
 
 ## Setup JBrowse 2
 
-Finally, we're going to run:
+Run:
 
 ```bash
 yarn setup
@@ -97,8 +99,7 @@ $ cross-var serve --listen $npm_package_config_browse_port .jbrowse
 We still need to run the plugin though; we need **both to be running** to test
 our plugin.
 
-Open a new tab in your terminal and navigate again to your plugin project, then
-we're going to run our plugin:
+In a new terminal tab, start the plugin:
 
 ```bash
 cd jbrowse-plugin-my-project
@@ -394,20 +395,8 @@ to your `jbrowse_config.json` file (i.e. after the "plugins" field):
 }
 ```
 
-Take some time to dissect what's being added here:
-
-- we're adding the assembly GRCh38
-- it can be referenced either by its name (hg38) or its aliases (GRCh38)
-- it has a sequence, which has a BgzipFastaAdapter from which the reference
-  sequence is derived
-- these FASTA's are hosted on jbrowse.org, referenced as a UriLocation
-- there is also a refNameAliases text file being used to derive the reference
-  names of the assembly
-
-We're now going to add a track that will make use of our jexl function. As
-mentioned previously, you _could_ add your jexl function programmatically to all
-tracks of this type, but for now we're just adding it to our assembly _for this
-specific track_.
+Now add a track that uses the jexl function. You could add it programmatically
+to all tracks of this type, but here we configure it on a specific track:
 
 ```json
   "tracks": [
@@ -436,17 +425,8 @@ specific track_.
   ]
 ```
 
-Take some time to dissect what's being added here:
-
-- this is a track that will appear in our track list when we run JBrowse against
-  this assembly
-- it's a VariantTrack called "demo_vcf"
-- it derives its data from a given UriLocation, the file is a `.vcf` file using
-  the VcfAdapter
-- it declares its display, the `ChordVariantDisplay`, and specifies its
-  `onChordClick` callback function
-- the specified `onChordClick` callback function is that which we defined in our
-  plugin class, the jexl function
+The key part is `onChordClick` on the `ChordVariantDisplay`, which calls the
+jexl function we registered in the plugin.
 
 <Figure src="/img/plugin-dev-tutorial-track-added.png" caption="A screenshot of what it will look like when you add a track to your configuration; that is, it will be available in the add track menu when you open a view." />
 
@@ -492,45 +472,22 @@ to work properly.
 
 :::
 
-## Next steps
+## Publish your plugin
 
-We have a complete and tested plugin, so now we're ready to publish it to NPM
-and request that it be added to the plugin store.
-
-Sometimes you might write a plugin that is specific to you or your
-organization's needs, but you also might want to share it with the greater
-community. That's where the [plugin store](/plugin_store) shows off its
-strengths.
-
-As a plugin developer, you can publish your plugin to NPM, and then request that
-your plugin be added to the plugin store. After your plugin is successfully
-whitelisted, you will see it within the JBrowse app's plugin store widget and
-you and others can freely install the plugin into their JBrowse session. Any
-further publications you make to the plugin via NPM will automatically be
-updated for the plugin available through the plugin store.
-
-The following document will describe how to accomplish this.
+Once the plugin is ready, publish it to NPM and submit it to the plugin store so
+others can install it from within JBrowse. Future NPM releases are picked up
+automatically by the store.
 
 ## Publish your plugin to NPM
 
-The following will guide you through publishing with
-[NPM](https://www.npmjs.com/). You'll need an NPM account and token to do this,
-so please set that up first through the NPM site.
-
-If you'd prefer not to publish to NPM, you can host your plugin files elsewhere,
-just ensure the link is accessible publicly.
-
-When your plugin is in a publishable state, and you have NPM credentials, you
-can run the following within your plugin's root directory (where `package.json`
-is found):
+You'll need an NPM account. If you'd prefer not to use NPM, host the plugin
+files publicly elsewhere. From the plugin's root directory:
 
 ```bash
 yarn publish
 ```
 
-Set the version to whatever you'd like, enter your credentials, and then
-complete the publication process. Once you can see your package on NPM, move on
-to the next step.
+Once the package appears on NPM, proceed to the next step.
 
 ## Request your plugin be added to the plugin store
 
@@ -609,22 +566,9 @@ should show in the editor, and you can create your PR.
 
 ## Next steps
 
-The JBrowse development team will review your plugin to ensure that it is
-functional, then when it is merged in the plugin will be available on the plugin
-store.
+The JBrowse team will review your PR and merge it when the plugin is functional.
 
-In this tutorial, we set up a development environment for JBrowse 2 and added a
-custom pluggable element to a plugin.
-
-We also published the plugin to NPM and requested that it be added to the
-JBrowse plugin store, so others can access our plugin.
-
-To learn more about the various pluggable elements available in JBrowse (and
-thus more that you can do with plugins!) checkout our
-[developer guide documentation](/docs/developer_guide).
-
-If you have further questions about plugin development, or development with
-JBrowse in general, stop by the JBrowse team
-[gitter channel](https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im), or
-start a discussion on the
-[jbrowse-components discussions forum](https://github.com/GMOD/jbrowse-components/discussions).
+For more on pluggable element types, see the
+[developer guide](/docs/developer_guide). For questions, use the
+[Gitter channel](https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im) or
+[GitHub discussions](https://github.com/GMOD/jbrowse-components/discussions).

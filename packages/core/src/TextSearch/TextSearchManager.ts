@@ -134,7 +134,7 @@ export default class TextSearchManager {
   }
 
   /**
-   * Returns array of revelevant and sorted results. Note: renamed to
+   * Returns array of relevant and sorted results. Note: renamed to
    * sortResults2 to accommodate new format
    *
    * @param results - array of results from all text search adapters

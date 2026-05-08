@@ -3,8 +3,6 @@ id: customizing_feature_details
 title: Customizing feature details with callbacks and plugins
 ---
 
-import Figure from '../figure'
-
 Every track has a configuration slot called `formatDetails`.
 
 Here is an example track with a formatter:
@@ -34,12 +32,9 @@ Here is an example track with a formatter:
 
 <Figure src="/img/customized_feature_details.png" caption="Example screenshot showing customized feature detail panel with links"/>
 
-This feature formatter changes the `"name"` field in the feature detail panel to
-have a link to a Google search for that feature's name. This can be used to link
-to gene pages for example as well.
-
-In addition, this example also adds a custom field called `"newfield"` and
-removes e.g. `"type"` from being displayed.
+This formatter links the `name` field to a Google search — useful for linking to
+gene pages. It also adds a custom `newfield` and removes `type` from the
+display.
 
 The schema for `formatDetails` is:
 
@@ -47,12 +42,8 @@ The schema for `formatDetails` is:
 - `subfeatures` - customizes the subfeatures, recursively up to `depth`
 - `depth` - depth to customize the subfeatures to, default 1
 
-The general way this is done is by making a jexl callback either or both of
-`feature` and `subfeatures` (if you want both feature and subfeatures, you can
-copy the same thing to both config slots).
-
-The callback returns an object where the keys of the object are what you want to
-replace.
+Use a jexl callback for `feature`, `subfeatures`, or both. The callback returns
+an object with the fields to replace.
 
 In the example above we return an object with:
 
@@ -233,20 +224,13 @@ And then in your config.json
 }
 ```
 
-#### Footnote 1 - the feature details are serialized to plain JSON objects
+:::note
 
-Note that the feature for feature detail panels is different from that in the
-color callback: it is a plain JS object. So instead of `feature.get('start')`,
-you can say just `feature.start`. The reason it is different for the feature
-details callbacks (compared with e.g. the color callbacks) is that the feature
-is serialized into the session.
+The feature in `formatDetails` callbacks is a plain JS object (not a
+`SimpleFeature`), so use `feature.start` instead of `feature.get('start')`. This
+is because the feature detail panel reads from the serialized session. Alignment
+features are not fully serialized for performance reasons, which is why color
+callbacks use `feature.get(...)` while detail callbacks use `feature.*`
+directly.
 
-#### Footnote 2 - why are feature details plain JSON objects when other usages aren't?
-
-You might also ask why aren't all features serialized or plain JSON objects
-normally? Well, some feature types like alignment track features benefit from
-only being partially serialized e.g. getting only a couple attributes via
-`feature.get('attribute')` (completely converting them to a raw JSON expression
-is expensive). It is a little confusing, but that is why in the feature details,
-you can access the plain JS object e.g. `feature.start` while in color callbacks
-you use e.g. `feature.get('start')`.
+:::

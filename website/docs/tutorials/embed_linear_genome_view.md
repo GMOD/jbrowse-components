@@ -4,8 +4,6 @@ title: Embedding JBrowse
 description: Embed the linear genome view component in a custom web page
 ---
 
-import Figure from '../figure'
-
 ## Welcome!
 
 This tutorial will show you how to get a JBrowse 2 linear genome view embedded
@@ -398,6 +396,7 @@ customizing it, and more. Here is some further reading
   https://jbrowse.org/demos/app-vanillajs (also has storybook docs
   https://jbrowse.org/storybook/app/main/)
 
-- As mentioned earlier, the embedded components If you haven't checked it out,
-  the "jbrowse-web" quickstart guide here is our main suggestion for deployment
-  https://jbrowse.org/jb2/docs/quickstart_web/
+- As mentioned earlier, the embedded components are not a full app deployment
+  (no shareable session URLs, no track hub connections, no admin panel). If you
+  haven't checked it out, the "jbrowse-web" quickstart guide is our main
+  suggestion for a full deployment https://jbrowse.org/jb2/docs/quickstart_web/

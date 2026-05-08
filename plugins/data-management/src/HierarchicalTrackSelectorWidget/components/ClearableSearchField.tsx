@@ -25,7 +25,6 @@ export default function ClearableSearchField({
 
   useEffect(() => {
     if (value === '') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalValue('')
     }
   }, [value])

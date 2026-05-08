@@ -5,8 +5,6 @@ description: Navigation, searching, opening files, and common UI controls
 guide_category: General usage
 ---
 
-import Figure from '../figure'
-
 ### Linear genome view
 
 To open a linear genome view (LGV), use the menu bar: `Add` →

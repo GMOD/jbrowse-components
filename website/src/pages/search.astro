@@ -1,0 +1,201 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import page from '../styles/page.module.css'
+import styles from '../styles/search.module.css'
+import { baseUrl } from '../lib/base-url'
+
+const q = Astro.url.searchParams.get('q') ?? ''
+---
+
+<BaseLayout title="Search — JBrowse">
+  <div class={page.content}>
+    <h1 class={styles.heading}>Search</h1>
+    <div class={styles.inputWrap}>
+      <input
+        id="search-input"
+        type="search"
+        value={q}
+        placeholder="Search docs..."
+        autocomplete="off"
+        autofocus
+        class={styles.input}
+      />
+      <span class={styles.count} id="search-count"></span>
+    </div>
+    <div class={styles.filters}>
+      <label class={styles.filterLabel}>
+        <input type="checkbox" id="filter-user" checked /> User guides
+      </label>
+      <label class={styles.filterLabel}>
+        <input type="checkbox" id="filter-config" checked /> Config guides
+      </label>
+      <label class={styles.filterLabel}>
+        <input type="checkbox" id="filter-developer" checked /> Developer guides
+      </label>
+      <label class={styles.filterLabel}>
+        <input type="checkbox" id="filter-autogen" checked /> API reference (auto-generated)
+      </label>
+    </div>
+    <ul id="search-results" class={styles.results}></ul>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ baseUrl }}>
+  const input = document.getElementById('search-input')
+  const countEl = document.getElementById('search-count')
+  const resultsList = document.getElementById('search-results')
+  const filterUser = document.getElementById('filter-user')
+  const filterConfig = document.getElementById('filter-config')
+  const filterDeveloper = document.getElementById('filter-developer')
+  const filterAutogen = document.getElementById('filter-autogen')
+
+  let pagefind
+  let debounce
+  let lastResults = []
+
+  const CATEGORY_PRIORITY = { user: 0, config: 1, developer: 2, autogen: 3, other: 4 }
+
+  function getCategory(url) {
+    const path = new URL(url, location.href).pathname
+    const match = path.match(/\/docs\/(.*)/)
+    if (!match) return 'other'
+    const slug = match[1].replace(/\/$/, '')
+
+    if (
+      slug === 'user_guide' ||
+      slug.startsWith('user_guides/') ||
+      (slug.startsWith('tutorials/') && !slug.startsWith('tutorials/embed'))
+    ) {
+      return 'user'
+    }
+    if (slug === 'config_guide' || slug.startsWith('config_guides/')) {
+      return 'config'
+    }
+    if (
+      slug === 'developer_guide' ||
+      slug.startsWith('developer_guides/') ||
+      slug.startsWith('tutorials/embed') ||
+      slug === 'embedded_components' ||
+      slug === 'jbrowse_jupyter' ||
+      slug === 'jbrowser' ||
+      slug === 'quickstart_adminserver'
+    ) {
+      return 'developer'
+    }
+    if (slug.startsWith('config/') || slug.startsWith('models/')) {
+      return 'autogen'
+    }
+    return 'other'
+  }
+
+  function renderResults() {
+    const enabled = new Set()
+    if (filterUser.checked) enabled.add('user')
+    if (filterConfig.checked) enabled.add('config')
+    if (filterDeveloper.checked) enabled.add('developer')
+    if (filterAutogen.checked) enabled.add('autogen')
+    enabled.add('other')
+
+    const visible = lastResults.filter(item => enabled.has(item.category))
+    countEl.textContent = `${visible.length} result${visible.length === 1 ? '' : 's'}`
+    resultsList.innerHTML = visible
+      .map(item => {
+        const path = new URL(item.url, location.href).pathname
+        return `<li class="search-result">
+          <a href="${item.url}">
+            <div class="search-title">${item.meta?.title ?? path}</div>
+            <div class="search-path">${path}</div>
+            <div class="search-excerpt">${item.excerpt}</div>
+          </a>
+        </li>`
+      })
+      .join('')
+  }
+
+  async function getPagefind() {
+    if (!pagefind) {
+      pagefind = await import(`${baseUrl}/pagefind/pagefind.js`)
+    }
+    return pagefind
+  }
+
+  function syncUrl(q) {
+    const url = new URL(location.href)
+    if (q) {
+      url.searchParams.set('q', q)
+    } else {
+      url.searchParams.delete('q')
+    }
+    history.replaceState({}, '', url)
+  }
+
+  async function runSearch(query) {
+    syncUrl(query)
+    if (!query.trim()) {
+      lastResults = []
+      resultsList.innerHTML = ''
+      countEl.textContent = ''
+      return
+    }
+    const pf = await getPagefind()
+    const { results: found } = await pf.search(query)
+    const items = await Promise.all(found.slice(0, 40).map(r => r.data()))
+    lastResults = items
+      .map(item => ({ ...item, category: getCategory(item.url) }))
+      .sort((a, b) => CATEGORY_PRIORITY[a.category] - CATEGORY_PRIORITY[b.category])
+    renderResults()
+  }
+
+  for (const checkbox of [filterUser, filterConfig, filterDeveloper, filterAutogen]) {
+    checkbox.addEventListener('change', renderResults)
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(debounce)
+    debounce = setTimeout(() => runSearch(input.value), 200)
+  })
+
+  if (input.value) {
+    runSearch(input.value)
+  }
+</script>
+
+<style is:global>
+  .search-result a {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .search-result a:hover .search-title {
+    text-decoration: underline;
+  }
+  .search-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-text);
+    margin-bottom: 2px;
+  }
+  .search-path {
+    font-size: 0.78rem;
+    color: var(--color-accent);
+    margin-bottom: 6px;
+  }
+  .search-excerpt {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .search-excerpt mark {
+    background: var(--color-highlight-bg);
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 600;
+  }
+</style>

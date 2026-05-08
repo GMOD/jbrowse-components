@@ -3,8 +3,6 @@ id: track_selector
 title: Hierarchical track selector
 ---
 
-import Figure from '../figure'
-
 In v2.6.3 several options were added for configuring the hierarchical track
 selector.
 

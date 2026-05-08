@@ -5,8 +5,6 @@ description: Linear alignment of two genomes
 guide_category: Views
 ---
 
-import Figure from '../figure'
-
 ### Opening a linear synteny view
 
 1. Navigate on the header bar `Add` → `Linear synteny view`

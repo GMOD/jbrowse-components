@@ -5,8 +5,6 @@ description: Structural variant spreadsheet and circular view
 guide_category: Views
 ---
 
-import Figure from '../figure'
-
 The SV inspector is a combined variant table and whole-genome circular view for
 triaging structural variant calls.
 
@@ -30,8 +28,7 @@ The following formats are supported:
 
 ### Sources of data for SV inspector
 
-The SV inspector currently is designed for viewing `<TRA>` and breakend type
-entries.
+The SV inspector is designed for viewing `<TRA>` and breakend type entries.
 
 Compatible variant callers:
 
@@ -46,17 +43,13 @@ Long read based
 - pbsv
 - Sniffles
 
-### Example SV inspector workflow
+### Example workflow
 
-As an example, load this file of translocation events called from the SKBR3
-breast cancer cell line
-([published data](https://schatz-lab.org/publications/SKBR3/)).
-
-### Example VCF for use in the SV inspector
-
-https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf
-
-Copy this URL and paste it into the import form and select hg19:
+As an example, load this
+[VCF of translocation events](https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf)
+called from the SKBR3 breast cancer cell line
+([published data](https://schatz-lab.org/publications/SKBR3/)). Paste the URL
+into the import form and select hg19:
 
 <Figure caption="The SV inspector with the import form and URL pasted." src="/img/sv_inspector_importform_after.png" />
 
@@ -78,11 +71,9 @@ to open the breakpoint split view for that variant.
 
 <Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)." src="/img/breakpoint_split_view.png" />
 
-:::info Loading alignment tracks
+### Loading alignment tracks
 
-The breakpoint split view opens with no tracks loaded. After it opens, use the
-track selector (the tracks button in the view header) to add your alignment
-track(s) — the read arcs and splines connecting supporting reads will then
-appear automatically.
-
-:::
+The breakpoint split view opens with empty top and bottom views. Add alignment
+tracks to both views using their track selectors (the tracks button in each view
+header). Read arcs and splines connecting supporting reads then appear
+automatically.

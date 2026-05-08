@@ -3,12 +3,9 @@ id: plugins
 title: Configuring plugins
 ---
 
-import Figure from '../figure'
-
-In jbrowse-web and jbrowse-desktop, plugins can be added using the config.json.
-Note that with our embedded components, you will likely use a different method
-than described in this article: see
-https://jbrowse.org/storybook/lgv/main/?path=/story/using-plugins--page
+In jbrowse-web and jbrowse-desktop, plugins are added via `config.json`.
+Embedded components use a different approach — see the
+[storybook example](https://jbrowse.org/storybook/lgv/main/?path=/story/using-plugins--page).
 
 External plugins can be added to the config.json file like so:
 
@@ -72,9 +69,8 @@ jbrowse-plugin-template outputs CJS-specific code for desktop.
 
 ### Plugin store
 
-We recommend developers that create plugins add their plugins to our plugin
-store: https://github.com/GMOD/jbrowse-plugin-list you can create a PR to add
-your plugin there.
+Plugin authors can submit their plugin via PR to
+[jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list).
 
 You can verify the plugin is installed properly by checking the Plugin Store:
 

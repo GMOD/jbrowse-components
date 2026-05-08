@@ -3,8 +3,6 @@ id: quickstart_adminserver
 title: Admin server GUI (experimental)
 ---
 
-import Figure from './figure'
-
 :::caution
 
 The admin server GUI is not actively tested and may not reflect the current
@@ -13,10 +11,8 @@ state of the application. For a more reliable setup, use the
 
 :::
 
-In order to display your data, JBrowse 2 needs to know about the reference
-genome for your organism of interest and needs to have tracks created that
-reference your data sources. This guide will show you how to set those up using
-JBrowse 2's graphical configuration editing.
+This guide covers configuring JBrowse 2 — adding assemblies and tracks — through
+the graphical admin interface.
 
 ## Pre-requisites
 
@@ -28,9 +24,8 @@ This tutorial requires the following software
 
 ## Starting JBrowse 2 admin server
 
-The JBrowse CLI contains a tool called `admin-server`. This will act as a web
-server for JBrowse 2 and will write any changes made in JBrowse 2 to a config
-file.
+The JBrowse CLI includes an `admin-server` tool that serves JBrowse 2 locally
+and writes any configuration changes back to a config file.
 
 :::warning
 
@@ -46,10 +41,9 @@ lets you:
 - Add tracks and edit tracks
 - Add and edit connections
 
-All of these changes will be written by the server to the JBrowse config file
-(usually `config.json`) located in the JBrowse instance. This is something that
-can only be done while the `admin-server` is running, which again, is **only
-meant to be temporary!**
+All changes are written to the JBrowse config file (usually `config.json`). This
+only works while the `admin-server` is running — it is **not meant for
+production use**.
 
 To start the `admin-server`, navigate into your JBrowse 2 directory and run:
 

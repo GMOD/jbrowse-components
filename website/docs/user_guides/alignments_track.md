@@ -5,8 +5,6 @@ description: BAM/CRAM pileup and coverage displays
 guide_category: Track types
 ---
 
-import Figure from '../figure'
-
 The alignments track combines a pileup and a coverage visualization.
 
 ### Pileup visualization

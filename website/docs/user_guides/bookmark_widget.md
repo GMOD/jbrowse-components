@@ -5,8 +5,6 @@ description: Saving and sharing genomic locations
 guide_category: Other features
 ---
 
-import Figure from '../figure'
-
 The bookmark widget stores genomic regions for easy navigation. Each bookmark is
 a single region (chromosome, start, end); clicking one navigates a linear genome
 view to it.

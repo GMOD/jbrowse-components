@@ -4,29 +4,23 @@ title: URL query parameter API
 toplevel: true
 ---
 
-import Figure from './figure'
-
-JBrowse Web features the ability to automatically provide URL parameters to
-setup a session
+JBrowse Web supports URL parameters for initializing a session.
 
 :::info note
 
-Note: that the embedded components like @jbrowse/react-linear-genome-view2 make
-no assumptions on how URL parameters are used, so would have to be implemented
-by the consumer of the library
+Embedded components like @jbrowse/react-linear-genome-view2 make no assumptions
+about URL parameters — that logic must be implemented by the consuming
+application.
 
 :::
 
 ## Linear genome view (simple)
 
-We provide a simplified URL format specifically designed for launching a single
-linear genome view
-
-Example
+A simplified URL format for launching a single linear genome view:
 
 `http://host/jbrowse2/?config=test_data/config.json&loc=chr1:6000-7000&assembly=hg19&tracks=gene_track,vcf_track`
 
-Here is a list of the allowed query parameters in jbrowse-web
+Allowed query parameters:
 
 ### ?config=
 
@@ -208,10 +202,9 @@ Expanded JSON of the contents of the URL
 }
 ```
 
-As you can see, you can supply an array of views (so you can open multiple views
-at once) and can specify the loc, tracks, assembly, and view type, or other view
-specific parameters (different view types may accept different params, e.g.
-dotplot has two assemblies)
+The `views` array accepts multiple views opened simultaneously. Each can specify
+`loc`, `tracks`, `assembly`, and view type. Different view types accept
+different params — dotplot, for example, takes two assemblies.
 
 You can also use `&sessionName=` with session specs to set a custom session
 name:
@@ -304,8 +297,6 @@ Expanded JSON:
 
 ### Circular view
 
-Here is an example of a JSON session spec for a Circular View
-
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "CircularView","tracks":["volvox_sv_test"]}]}
 ```
@@ -329,8 +320,7 @@ Expanded
 
 ### Dotplot view
 
-Here is an example of a JSON session spec for a dotplot view (self-vs-self
-alignment)
+Example (self-vs-self alignment):
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"volvox"%7D,%7B"assembly":"volvox"%7D%5D,"tracks":%5B"volvox_fake_synteny"%5D%7D%5D%7D
@@ -365,8 +355,6 @@ overview
 
 ### Spreadsheet view
 
-Here is an example of a JSON session spec for a Spreadsheet View
-
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B%22views%22:%5B%7B%22type%22:%22SpreadsheetView%22,%20%22uri%22:%22test_data/volvox/volvox.filtered.vcf.gz%22,%22assembly%22:%22volvox%22%7D%5D%7D
 ```
@@ -389,8 +377,6 @@ Expanded
 
 ### SV inspector
 
-Here is an example of a JSON session spec for a SV Inspector View
-
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B"views":%5B%7B"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"%7D%5D%7D
 ```
@@ -412,8 +398,6 @@ Expanded
 ```
 
 ### Linear synteny view
-
-Here is an example of a JSON session spec for a linear synteny view
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]}
@@ -445,8 +429,6 @@ Expanded, again showing a self-self alignment is allowed
 ```
 
 ### Breakpoint split view
-
-Here is an example of a JSON session spec for a breakpoint split view
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"BreakpointSplitView","views":[{"loc":"ctgA:1-5000","assembly":"volvox","tracks":["volvox_cram"]},{"loc":"ctgB:1-5000","assembly":"volvox","tracks":["volvox_cram"]}]}]}
@@ -483,9 +465,6 @@ the breakpoint split view. Each view can have its own location, assembly, and
 tracks.
 
 ### Linear synteny view (multi-way)
-
-Here is an example of a JSON session spec for a linear synteny view, but with
-more than two views
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":[["volvox_ins.paf"],["volvox_del.paf"]],"views":[{"loc":"ctgA:1-50000","assembly":"volvox_ins"},{"loc":"ctgA:1000-50000","assembly":"volvox"},{"loc":"ctgA:1000-44000","assembly":"volvox_del"}]}]}
@@ -712,4 +691,4 @@ link" that you can give to other users
 https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
 
 See
-[this FAQ entry for more info about how shared sessions work](/docs/faq/#how-does-the-session-sharing-work-with-shortened-urls-work-in-jbrowse-web)
+[this FAQ entry for more info about how shared sessions work](/docs/faq/#how-does-session-sharing-with-shortened-urls-work-in-jbrowse-web)

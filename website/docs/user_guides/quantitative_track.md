@@ -5,8 +5,6 @@ description: BigWig/BedGraph signal tracks
 guide_category: Track types
 ---
 
-import Figure from '../figure'
-
 BigWig and BedGraph files store genome-wide quantitative signals — read depth,
 ChIP-seq enrichment, conservation scores, and more. JBrowse renders them as
 continuous tracks with several visual styles.
