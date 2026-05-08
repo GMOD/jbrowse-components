@@ -27,7 +27,7 @@ import { getProgressDisplayStr } from '@jbrowse/core/util'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-function generate_record(
+function generateRecord(
   qname: string,
   qstart: number,
   qend: number,
@@ -58,14 +58,14 @@ function generate_record(
 export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   const { statusCallback = () => {} } = opts ?? {}
   const decoder = new TextDecoder('utf8')
-  const records: ReturnType<typeof generate_record>[] = []
+  const records: ReturnType<typeof generateRecord>[] = []
 
   let t_name = ''
   let t_start = 0
   let t_end = 0
   let q_name = ''
 
-  let q_size
+  let q_size = 0
   let q_strand = ''
   let q_start = 0
   let q_end = 0
@@ -101,7 +101,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
         if (l_vec[0] === 'chain') {
           if (cigarParts.length) {
             records.push(
-              generate_record(
+              generateRecord(
                 q_name,
                 q_start,
                 q_end,
@@ -179,7 +179,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
 
   if (cigarParts.length) {
     records.push(
-      generate_record(
+      generateRecord(
         q_name,
         q_start,
         q_end,

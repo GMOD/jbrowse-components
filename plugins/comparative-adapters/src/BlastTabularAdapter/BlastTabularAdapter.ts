@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { doesIntersect2, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -197,31 +196,25 @@ function createBlastLineParser(columns: string) {
 }
 
 export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
-  private data: Promise<BlastRecord[]> | undefined
+  private setupP?: Promise<BlastRecord[]>
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  getData(opts?: BaseOptions): Promise<BlastRecord[]> {
-    this.data ??= this.setup(opts).catch((e: unknown) => {
-      this.data = undefined
+  async setup(opts?: BaseOptions) {
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
+      this.setupP = undefined
       throw e
     })
-    return this.data
+    return this.setupP
   }
 
-  async setup(opts?: BaseOptions): Promise<BlastRecord[]> {
-    const columns: string = readConfObject(this.config, 'columns')
-    const lines: NonNullable<
-      ReturnType<ReturnType<typeof createBlastLineParser>>
-    >[] = []
-
+  async setupPre(opts?: BaseOptions): Promise<BlastRecord[]> {
+    const columns = this.getConf('columns') as string
+    const lines: BlastRecord[] = []
     const cb = createBlastLineParser(columns)
     parseLineByLine(
       await fetchAndMaybeUnzip(
-        openLocation(
-          readConfObject(this.config, 'blastTableLocation'),
-          this.pluginManager,
-        ),
+        openLocation(this.getConf('blastTableLocation'), this.pluginManager),
         opts,
       ),
       line => {
@@ -255,7 +248,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
 
   async getRefNames(opts: BaseOptionsWithRegions = {}) {
     const r1 = opts.regions?.[0]?.assemblyName
-    const feats = await this.getData(opts)
+    const feats = await this.setup(opts)
 
     const idx = r1 === undefined ? -1 : this.getAssemblyNames().indexOf(r1)
     if (idx !== -1) {
@@ -270,11 +263,9 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const blastRecords = await this.getData(opts)
+      const blastRecords = await this.setup(opts)
       const [queryAssembly, targetAssembly] = this.getAssemblyNames()
 
-      // The index of the assembly name in the query list corresponds to the
-      // adapter in the subadapters list
       const {
         refName: queryRefName,
         assemblyName: queryAssemblyName,
@@ -286,77 +277,75 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
         queryAssemblyName !== queryAssembly
       ) {
         console.warn(`${queryAssemblyName} not found in this adapter`)
-        observer.complete()
-        return
-      }
+      } else {
+        for (let i = 0; i < blastRecords.length; i++) {
+          const r = blastRecords[i]!
+          let start: number
+          let end: number
+          let refName: string
+          let assemblyName: string | undefined
+          let mateStart: number
+          let mateEnd: number
+          let mateRefName: string
+          let mateAssemblyName: string | undefined
 
-      for (let i = 0; i < blastRecords.length; i++) {
-        const r = blastRecords[i]!
-        let start: number
-        let end: number
-        let refName: string
-        let assemblyName: string | undefined
-        let mateStart: number
-        let mateEnd: number
-        let mateRefName: string
-        let mateAssemblyName: string | undefined
-
-        const { qseqid, sseqid, qstart, qend, sstart, send, ...rest } = r
-        if (queryAssemblyName === queryAssembly) {
-          start = qstart
-          end = qend
-          refName = qseqid
-          assemblyName = queryAssembly
-          mateStart = sstart
-          mateEnd = send
-          mateRefName = sseqid
-          mateAssemblyName = targetAssembly
-        } else {
-          start = sstart
-          end = send
-          refName = sseqid
-          assemblyName = targetAssembly
-          mateStart = qstart
-          mateEnd = qend
-          mateRefName = qseqid
-          mateAssemblyName = queryAssembly
-        }
-        let strand = 1
-        let mateStrand = 1
-        if (start > end) {
-          ;[start, end] = [end, start]
-          strand = -1
-        }
-        if (mateStart > mateEnd) {
-          ;[mateStart, mateEnd] = [mateEnd, mateStart]
-          mateStrand = -1
-        }
-        // Convert from BLAST 1-based to JBrowse 0-based coordinates
-        start -= 1
-        mateStart -= 1
-        if (
-          refName === queryRefName &&
-          doesIntersect2(queryStart, queryEnd, start, end)
-        ) {
-          observer.next(
-            new SyntenyFeature({
-              uniqueId: i + queryAssemblyName,
-              assemblyName,
-              start,
-              end,
-              type: 'match',
-              refName,
-              strand: strand * mateStrand,
-              syntenyId: i,
-              ...rest,
-              mate: {
-                start: mateStart,
-                end: mateEnd,
-                refName: mateRefName,
-                assemblyName: mateAssemblyName,
-              },
-            }),
-          )
+          const { qseqid, sseqid, qstart, qend, sstart, send, ...rest } = r
+          if (queryAssemblyName === queryAssembly) {
+            start = qstart
+            end = qend
+            refName = qseqid
+            assemblyName = queryAssembly
+            mateStart = sstart
+            mateEnd = send
+            mateRefName = sseqid
+            mateAssemblyName = targetAssembly
+          } else {
+            start = sstart
+            end = send
+            refName = sseqid
+            assemblyName = targetAssembly
+            mateStart = qstart
+            mateEnd = qend
+            mateRefName = qseqid
+            mateAssemblyName = queryAssembly
+          }
+          let strand = 1
+          let mateStrand = 1
+          if (start > end) {
+            ;[start, end] = [end, start]
+            strand = -1
+          }
+          if (mateStart > mateEnd) {
+            ;[mateStart, mateEnd] = [mateEnd, mateStart]
+            mateStrand = -1
+          }
+          // Convert from BLAST 1-based to JBrowse 0-based coordinates
+          start -= 1
+          mateStart -= 1
+          if (
+            refName === queryRefName &&
+            doesIntersect2(queryStart, queryEnd, start, end)
+          ) {
+            observer.next(
+              new SyntenyFeature({
+                uniqueId: i + queryAssemblyName,
+                assemblyName,
+                start,
+                end,
+                type: 'match',
+                refName,
+                strand: strand * mateStrand,
+                syntenyId: i,
+                ...rest,
+                mate: {
+                  start: mateStart,
+                  end: mateEnd,
+                  refName: mateRefName,
+                  assemblyName: mateAssemblyName,
+                },
+              }),
+            )
+          }
         }
       }
 
