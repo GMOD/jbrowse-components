@@ -1,5 +1,22 @@
 import type React from 'react'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util/types'
+import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
+
+type Conf = SnapshotIn<AnyConfigurationModel>
+
+export type ImportFormSyntenyTrack =
+  | { type: 'preConfigured'; value: string }
+  | { type: 'userOpened'; value: Conf }
+  | { type: 'none' }
+
+export const helpStrings: Record<string, string> = {
+  '.paf': 'minimap2 target.fa query.fa',
+  '.pif.gz': 'minimap2 target.fa query.fa',
+  '.out': 'mashmap target.fa query.fa',
+  '.delta': 'mummer target.fa query.fa',
+  '.chain': 'e.g. queryToTarget.chain',
+}
 
 export interface SelectorProps {
   assembly1: string
@@ -15,14 +32,6 @@ export interface SelectorProps {
   bed2Location?: FileLocation
   setBed2Location?: (location: FileLocation) => void
   radioOption: string
-}
-
-export const helpStrings: Record<string, string> = {
-  '.paf': 'minimap2 target.fa query.fa',
-  '.pif.gz': 'minimap2 target.fa query.fa',
-  '.out': 'mashmap target.fa query.fa',
-  '.delta': 'mummer target.fa query.fa',
-  '.chain': 'e.g. queryToTarget.chain',
 }
 
 export interface SyntenyFileFormatOption {

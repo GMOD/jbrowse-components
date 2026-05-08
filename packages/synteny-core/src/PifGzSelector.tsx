@@ -5,9 +5,6 @@ import SwapAssemblies from './SwapAssemblies.tsx'
 
 import type { SelectorProps } from './SelectorTypes.ts'
 
-/**
- * Component for selecting PIF.GZ format files and their indexes
- */
 const PifGzSelector = observer(function PifGzSelector({
   assembly1,
   assembly2,
@@ -23,7 +20,7 @@ const PifGzSelector = observer(function PifGzSelector({
     <div>
       <div style={{ margin: 20 }}>
         Open the {radioOption} and .pif.gz and index file (.pif.gz.tbi or
-        .pif.gz.csi) files for created by `jbrowse make-pif`
+        .pif.gz.csi) files created by `jbrowse make-pif`
       </div>
       <div style={{ maxWidth: 400, margin: '0 auto' }}>
         <FileSelector
@@ -34,7 +31,7 @@ const PifGzSelector = observer(function PifGzSelector({
           setLocation={setFileLocation}
         />
         <FileSelector
-          name={`${radioOption} index location`}
+          name={`${radioOption} index location (.tbi or .csi)`}
           inline
           description=""
           location={indexFileLocation}

@@ -3,13 +3,11 @@ import { useState } from 'react'
 import { getFileName } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
 
-import {
-  AnchorsSelector,
-  PifGzSelector,
-  StandardFormatSelector,
-} from './selectors/index.ts'
+import AnchorsSelector from './AnchorsSelector.tsx'
+import PifGzSelector from './PifGzSelector.tsx'
+import StandardFormatSelector from './StandardFormatSelector.tsx'
 
-import type { SyntenyFileFormatOption } from './selectors/SelectorTypes.ts'
+import type { SyntenyFileFormatOption } from './SelectorTypes.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 type OnAdapterChange = (

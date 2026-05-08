@@ -11,7 +11,7 @@ export interface SwapAssembliesProps {
   assembly1: string
   assembly2: string
   swap: boolean
-  setSwap: (arg: boolean) => void
+  setSwap: (swap: boolean) => void
   radioOption: string
   helpContent?: ReactNode
   text1: string
@@ -46,11 +46,7 @@ const SwapAssemblies = observer(function SwapAssemblies({
     <div>
       <div>
         Verify or click swap
-        <Tooltip
-          title={
-            helpContent || <code>{helpStrings[radioOption]}</code>
-          }
-        >
+        <Tooltip title={helpContent || <code>{helpStrings[radioOption]}</code>}>
           <HelpIcon />
         </Tooltip>
       </div>
@@ -65,12 +61,7 @@ const SwapAssemblies = observer(function SwapAssemblies({
           </div>
           <div>{text2}</div>
         </div>
-        <Button
-          variant="contained"
-          onClick={() => {
-            setSwap(!swap)
-          }}
-        >
+        <Button variant="contained" onClick={() => { setSwap(!swap) }}>
           Swap?
         </Button>
       </div>

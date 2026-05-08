@@ -1,14 +1,6 @@
 import type React from 'react'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
-
-export type Conf = SnapshotIn<AnyConfigurationModel>
-
-export type ImportFormSyntenyTrack =
-  | { type: 'preConfigured'; value: string }
-  | { type: 'userOpened'; value: Conf }
-  | { type: 'none' }
+export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 
 export interface LinearSyntenyViewInit {
   views: {
