@@ -8,6 +8,9 @@ import {
   useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import AddIcon from '@mui/icons-material/Add'
+import RemoveIcon from '@mui/icons-material/Remove'
+import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import HicColorLegend from './HicColorLegend.tsx'
@@ -78,6 +81,57 @@ function screenToUnrotated(
   const x = (screenX - scaledY) / SQRT2
   const y = (screenX + scaledY) / SQRT2
   return { x, y }
+}
+
+function ResolutionControl({
+  model,
+}: {
+  model: LinearHicDisplayModel
+}) {
+  const { resolution, availableResolutions } = model
+  const canGoFiner = availableResolutions?.some(r => r < resolution) ?? false
+  const canGoCoarser = availableResolutions?.some(r => r > resolution) ?? false
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        display: 'flex',
+        gap: 4,
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        padding: '4px 8px',
+        borderRadius: 4,
+        fontSize: 12,
+      }}
+    >
+      <IconButton
+        size="small"
+        onClick={() => {
+          model.zoomResolutionFiner()
+        }}
+        disabled={!canGoFiner}
+        title="Finer resolution (smaller bins)"
+      >
+        <AddIcon fontSize="small" />
+      </IconButton>
+      <span style={{ minWidth: 40, textAlign: 'center' }}>
+        {resolution.toLocaleString()}bp
+      </span>
+      <IconButton
+        size="small"
+        onClick={() => {
+          model.zoomResolutionCoarser()
+        }}
+        disabled={!canGoCoarser}
+        title="Coarser resolution (larger bins)"
+      >
+        <RemoveIcon fontSize="small" />
+      </IconButton>
+    </div>
+  )
 }
 
 const HicCanvas = observer(function HicCanvas({
@@ -197,6 +251,7 @@ const HicCanvas = observer(function HicCanvas({
           left: 0,
         }}
       />
+      <ResolutionControl model={model} />
       {hoveredItem && localMousePos ? (
         <Crosshairs
           x={localMousePos.x}

@@ -83,7 +83,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getHeader(opts?: BaseOptions) {
-    const { chromosomes, ...rest } = await this.setup(opts)
+    const { chromosomes, resolutions, ...rest } = await this.setup(opts)
     const norms = await this.hic.getNormalizationOptions()
 
     await this.hic.hicFile.init()
@@ -93,7 +93,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       return idx1 !== idx2
     })
 
-    return { ...rest, norms, hasInterChromosomalData }
+    return { ...rest, norms, resolutions, hasInterChromosomalData }
   }
 
   async getRefNames(opts?: BaseOptions) {

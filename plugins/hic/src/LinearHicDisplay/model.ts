@@ -70,6 +70,10 @@ export default function stateModelFactory(
        * #volatile
        */
       availableNormalizations: undefined as string[] | undefined,
+      /**
+       * #volatile
+       */
+      availableResolutions: undefined as number[] | undefined,
     }))
     .preProcessSnapshot((snap: any) => {
       if (!snap) {
@@ -252,6 +256,34 @@ export default function stateModelFactory(
        */
       setShowLegend(arg: boolean) {
         self.setOverride('showLegend', arg)
+      },
+      /**
+       * #action
+       */
+      setAvailableResolutions(f: number[]) {
+        self.availableResolutions = f
+      },
+      /**
+       * #action
+       */
+      zoomResolutionCoarser() {
+        if (self.availableResolutions?.length) {
+          const idx = self.availableResolutions.indexOf(self.resolution)
+          if (idx !== -1 && idx < self.availableResolutions.length - 1) {
+            self.resolution = self.availableResolutions[idx + 1]!
+          }
+        }
+      },
+      /**
+       * #action
+       */
+      zoomResolutionFiner() {
+        if (self.availableResolutions?.length) {
+          const idx = self.availableResolutions.indexOf(self.resolution)
+          if (idx !== -1 && idx > 0) {
+            self.resolution = self.availableResolutions[idx - 1]!
+          }
+        }
       },
     }))
     .views(self => {

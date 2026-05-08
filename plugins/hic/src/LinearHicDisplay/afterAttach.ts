@@ -15,6 +15,7 @@ interface HicModel {
   rpcProps(): Record<string, unknown>
   adapterConfig: Record<string, unknown>
   setAvailableNormalizations(norms: string[]): void
+  setAvailableResolutions(resolutions: number[]): void
   performHicFetch(): void
 }
 
@@ -24,11 +25,20 @@ export function doAfterAttach(self: HicModel) {
     try {
       const { rpcManager } = getSession(self)
       const rpcSessionId = getRpcSessionId(self)
-      const { norms } = (await rpcManager.call(rpcSessionId, 'CoreGetInfo', {
-        adapterConfig: self.adapterConfig,
-      })) as { norms?: string[] }
-      if (isAlive(self) && norms) {
-        self.setAvailableNormalizations(norms)
+      const { norms, resolutions } = (await rpcManager.call(
+        rpcSessionId,
+        'CoreGetInfo',
+        {
+          adapterConfig: self.adapterConfig,
+        },
+      )) as { norms?: string[]; resolutions?: number[] }
+      if (isAlive(self)) {
+        if (norms) {
+          self.setAvailableNormalizations(norms)
+        }
+        if (resolutions) {
+          self.setAvailableResolutions(resolutions)
+        }
       }
     } catch (e) {
       console.error(e)
