@@ -14,7 +14,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import useSWR from 'swr'
+import { useFetch } from '@jbrowse/core/util'
 
 import Checkbox2 from '../Checkbox2.tsx'
 import RecentSessionsCards from './RecentSessionsCards.tsx'
@@ -78,7 +78,7 @@ export default function RecentSessionPanel({
     [] as string[],
   )
 
-  const { data: sessions = [], mutate: mutateSessions } = useSWR(
+  const { data: sessions = [], mutate: mutateSessions } = useFetch(
     ['listSessions', showAutosaves],
     () =>
       ipcRenderer.invoke('listSessions', showAutosaves) as Promise<

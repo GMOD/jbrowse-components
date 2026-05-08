@@ -89,8 +89,7 @@
     "mobx-react": "^9.2.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "sanitize-filename": "^1.6.4",
-    "swr": "^2.4.1"
+    "sanitize-filename": "^1.6.4"
   },
   "devDependencies": {
     "@electron/notarize": "^3.1.1",

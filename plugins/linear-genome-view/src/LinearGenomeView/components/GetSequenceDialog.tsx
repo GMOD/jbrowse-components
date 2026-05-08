@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
-import { complement, reverse, toLocale } from '@jbrowse/core/util'
+import { complement, reverse, toLocale, useFetch } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -21,7 +21,7 @@ import { observer } from 'mobx-react'
 import { fetchSequence } from './fetchSequence.ts'
 
 import type { BpOffset } from '../types.ts'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -45,38 +45,31 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const [error, setError] = useState<unknown>()
-  const [sequenceChunks, setSequenceChunks] = useState<Feature[]>()
   const [rev, setReverse] = useState(false)
   const [copied, setCopied] = useState(false)
   const [comp, setComplement] = useState(false)
   const { leftOffset, rightOffset } = model
-  const loading = sequenceChunks === undefined
 
-  useEffect(() => {
-    const controller = new AbortController()
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        // random note: the current selected region can't be a computed because
-        // it uses action on base1dview even though it's on the ephemeral
-        // base1dview
-        const selection = model.getSelectedRegions(leftOffset, rightOffset)
-        if (selection.length === 0) {
-          throw new Error('Selected region is out of bounds')
-        }
-        setSequenceChunks(await fetchSequence(model, selection))
-      } catch (e) {
-        console.error(e)
-        setError(e)
+  const { data: sequenceChunks, error } = useFetch(
+    [
+      'fetchSequence',
+      leftOffset?.refName,
+      leftOffset?.coord,
+      rightOffset?.refName,
+      rightOffset?.coord,
+    ],
+    async () => {
+      // random note: the current selected region can't be a computed because
+      // it uses action on base1dview even though it's on the ephemeral
+      // base1dview
+      const selection = model.getSelectedRegions(leftOffset, rightOffset)
+      if (selection.length === 0) {
+        throw new Error('Selected region is out of bounds')
       }
-    })()
-
-    return () => {
-      controller.abort()
-    }
-  }, [model, leftOffset, rightOffset])
+      return fetchSequence(model, selection)
+    },
+  )
+  const loading = sequenceChunks === undefined && !error
 
   const sequence = sequenceChunks
     ? formatSeqFasta(

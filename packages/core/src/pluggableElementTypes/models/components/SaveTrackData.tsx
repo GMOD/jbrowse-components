@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
@@ -22,7 +22,7 @@ import { observer } from 'mobx-react'
 
 import { fetchTrackData } from './fetchTrackData.ts'
 import { Dialog, ErrorBanner } from '../../../ui/index.ts'
-import { getContainingView, saveAs } from '../../../util/index.ts'
+import { getContainingView, saveAs, useFetch } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
@@ -77,10 +77,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
 }) {
   const { classes } = useStyles()
   const options = useMemo(() => model.saveTrackFileFormatOptions(), [model])
-  const [error, setError] = useState<unknown>()
   const [type, setType] = useState(Object.keys(options)[0])
-  const [result, setResult] = useState({ str: '', usedAdapterExport: false })
-  const [loading, setLoading] = useState(false)
   const [helpText, setHelpText] = useState<string>()
   const [copied, setCopied] = useState(false)
   const copyTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -91,40 +88,26 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   }
   const { visibleRegions, coarseVisibleLocStrings: regionStr } = view
 
-  useEffect(() => {
-    const ctl = { cancelled: false }
-
-    async function load() {
-      try {
-        setError(undefined)
-        setLoading(true)
-        if (!visibleRegions?.length || !type) {
-          return
-        }
-        const data = await fetchTrackData(model, visibleRegions, type, options)
-        if (ctl.cancelled) {
-          return
-        }
-        setResult(data)
-      } catch (e) {
-        if (!ctl.cancelled) {
-          setError(e)
-          console.error(e)
-        }
-      } finally {
-        if (!ctl.cancelled) {
-          setLoading(false)
-        }
-      }
-    }
-
-    void load()
-    return () => {
-      ctl.cancelled = true
-    }
-  }, [type, visibleRegions, options, model])
-
-  const { str, usedAdapterExport } = result
+  const shouldFetch = !!visibleRegions?.length && !!type
+  const {
+    data: result,
+    error,
+    isLoading: loading,
+  } = useFetch(
+    shouldFetch
+      ? [
+          'fetchTrackData',
+          model,
+          type,
+          visibleRegions.map(r => `${r.refName}:${r.start}-${r.end}`).join(','),
+        ]
+      : null,
+    () => fetchTrackData(model, visibleRegions!, type!, options),
+  )
+  const { str, usedAdapterExport } = result ?? {
+    str: '',
+    usedAdapterExport: false,
+  }
 
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Save track data">

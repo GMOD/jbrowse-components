@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import useSWR from 'swr'
+import { useFetch } from '@jbrowse/core/util'
 
 import { fetchjson } from '../util.tsx'
 
@@ -26,7 +26,7 @@ export function useGenomesData({
   favorites: Fav[]
   url?: string
 }) {
-  const { data, error: dataError } = useSWR(url, () =>
+  const { data, error: dataError } = useFetch(url, () =>
     url
       ? (fetchjson(url) as Promise<
           RawEntry[] | { ucscGenomes: Record<string, RawEntry> }

@@ -1,14 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
-  isAbortException,
+  useFetch,
   useLocalStorage,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   DialogActions,
@@ -36,9 +35,6 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
   children: React.ReactNode
 }) {
   const [paste, setPaste] = useState('')
-  const [ret, setRet] = useState<Record<string, number[]>>()
-  const [error, setError] = useState<unknown>()
-  const [loading, setLoading] = useState(false)
   const [showAdvanced, setShowAdvanced] = useLocalStorage(
     'cluster-showAdvanced',
     false,
@@ -46,47 +42,29 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
   const [clusterMethod, setClusterMethod] = useState('single')
   const [samplesPerPixel, setSamplesPerPixel] = useState('1')
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        setError(undefined)
-        setRet(undefined)
-        setLoading(true)
-        const view = getContainingView(model) as LinearGenomeViewModel
-        if (!view.initialized) {
-          return
-        }
-        const { dynamicBlocks, bpPerPx } = view
-        const { rpcManager } = getSession(model)
-        const { sourcesWithoutLayout, adapterConfig } = model
-        if (!sourcesWithoutLayout?.length) {
-          return
-        }
-        const sessionId = getRpcSessionId(model)
-        const ret = await rpcManager.call(
-          sessionId,
-          'MultiWiggleGetScoreMatrix',
-          {
-            regions: dynamicBlocks.contentBlocks,
-            sources: sourcesWithoutLayout,
-            sessionId,
-            adapterConfig,
-            bpPerPx: bpPerPx / +samplesPerPixel,
-          },
-        )
-
-        setRet(ret)
-      } catch (e) {
-        if (!isAbortException(e) && isAlive(model)) {
-          console.error(e)
-          setError(e)
-        }
-      } finally {
-        setLoading(false)
-      }
-    })()
-  }, [model, samplesPerPixel])
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const shouldFetch =
+    view.initialized && !!model.sourcesWithoutLayout?.length
+  const {
+    data: ret,
+    error,
+    isLoading: loading,
+  } = useFetch(
+    shouldFetch ? ['scoreMatrix', model, samplesPerPixel] : null,
+    async () => {
+      const { dynamicBlocks, bpPerPx } = view
+      const { rpcManager } = getSession(model)
+      const { sourcesWithoutLayout, adapterConfig } = model
+      const sessionId = getRpcSessionId(model)
+      return rpcManager.call(sessionId, 'MultiWiggleGetScoreMatrix', {
+        regions: dynamicBlocks.contentBlocks,
+        sources: sourcesWithoutLayout!,
+        sessionId,
+        adapterConfig,
+        bpPerPx: bpPerPx / +samplesPerPixel,
+      }) as Promise<Record<string, number[]>>
+    },
+  )
 
   const results = ret
     ? String.raw`inputMatrix<-matrix(c(${Object.values(ret)

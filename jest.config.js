@@ -79,7 +79,10 @@ export default {
         '<rootDir>/products/jbrowse-cli/src/commands/make-gfa-tabix/gfa-to-tabix.test.ts',
       ],
       testEnvironment: 'jsdom',
-      setupFilesAfterEnv: ['<rootDir>/config/jest/fetchMockAfterEnv.js'],
+      setupFilesAfterEnv: [
+        '<rootDir>/config/jest/fetchMockAfterEnv.js',
+        '<rootDir>/config/jest/swrCache.js',
+      ],
       ...baseConfig,
     },
   ],

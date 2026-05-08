@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 
 import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import BaseResult, { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
-import { measureText, useDebounce } from '../../util/index.ts'
+import { measureText, useDebounce, useFetch } from '../../util/index.ts'
 
 import type { AbstractSessionModel } from '../../util/index.ts'
 
@@ -33,7 +33,7 @@ function getFiltered(options: Option[], inputValue: string) {
   ]
 }
 
-function getDeduplicatedResult(results: BaseResult[]) {
+function getDeduplicatedResult(results: BaseResult[]): Option[] {
   const m: Record<string, BaseResult[]> = {}
   for (const result of results) {
     const key = result.getDisplayString()
@@ -82,50 +82,27 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   inputStyle?: CSSProperties
 }) {
   const { assemblyManager } = session
-  const [loaded, setLoaded] = useState(true)
   const [currentSearch, setCurrentSearch] = useState('')
   const [inputValue, setInputValue] = useState('')
-  const [searchOptions, setSearchOptions] = useState<Option[]>()
   const debouncedSearch = useDebounce(currentSearch, 50)
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
   const fetchResultsRef = useRef(fetchResults)
   fetchResultsRef.current = fetchResults
 
-  // Adjust sync state during render rather than in an effect
-  if (debouncedSearch === '' && (searchOptions !== undefined || !loaded)) {
-    setSearchOptions(undefined)
-    setLoaded(true)
-  }
-
-  useEffect(() => {
-    if (!assemblyName || debouncedSearch === '') {
-      return
-    }
-    const guard = { alive: true }
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        setLoaded(false)
-        const results = await fetchResultsRef.current(debouncedSearch)
-        if (guard.alive) {
-          setSearchOptions(getDeduplicatedResult(results))
-        }
-      } catch (e) {
+  const shouldSearch = !!assemblyName && debouncedSearch !== ''
+  const { data: searchOptions, isLoading } = useFetch(
+    shouldSearch ? ['refNameSearch', assemblyName, debouncedSearch] : null,
+    async () =>
+      getDeduplicatedResult(await fetchResultsRef.current(debouncedSearch)),
+    {
+      onError: e => {
         console.error(e)
-        if (guard.alive) {
-          session.notifyError(`${e}`, e)
-        }
-      } finally {
-        if (guard.alive) {
-          setLoaded(true)
-        }
-      }
-    })()
-    return () => {
-      guard.alive = false
-    }
-  }, [assemblyName, debouncedSearch, session])
+        session.notifyError(`${e}`, e)
+      },
+    },
+  )
+  const loaded = !isLoading
 
   const inputBoxVal = value ?? ''
   const regionOptions: Option[] = useMemo(
@@ -169,9 +146,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       }}
       loadingText="loading results"
       onClose={() => {
-        setLoaded(true)
         setCurrentSearch('')
-        setSearchOptions(undefined)
       }}
       onChange={(_event, selectedOption) => {
         if (!selectedOption || !assemblyName) {

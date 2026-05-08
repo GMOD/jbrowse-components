@@ -193,7 +193,8 @@
     "mobx-react": "^9.2.1",
     "react-draggable": "^4.5.0",
     "rxjs": "^7.8.2",
-    "source-map-js": "^1.2.1"
+    "source-map-js": "^1.2.1",
+    "swr": "^2.3.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

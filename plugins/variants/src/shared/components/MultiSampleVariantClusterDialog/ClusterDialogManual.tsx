@@ -1,15 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
-  isAbortException,
+  useFetch,
   useLocalStorage,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   DialogActions,
@@ -43,58 +42,42 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
 }) {
   const { classes } = useStyles()
   const [paste, setPaste] = useState('')
-  const [ret, setRet] = useState<Record<string, any>>()
-  const [error, setError] = useState<unknown>()
-  const [loading, setLoading] = useState(false)
   const [showAdvanced, setShowAdvanced] = useLocalStorage(
     'cluster-showAdvanced',
     false,
   )
   const [clusterMethod, setClusterMethod] = useState('single')
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        setError(undefined)
-        setRet(undefined)
-        setLoading(true)
-        const view = getContainingView(model) as LinearGenomeViewModel
-        if (!view.initialized) {
-          return
-        }
-        const { rpcManager } = getSession(model)
-        const {
-          sourcesWithoutLayout,
-          minorAlleleFrequencyFilter,
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const {
+    data: ret,
+    error,
+    isLoading: loading,
+  } = useFetch(
+    view.initialized ? ['genotypeMatrix', model] : null,
+    async () => {
+      const { rpcManager } = getSession(model)
+      const {
+        sourcesWithoutLayout,
+        minorAlleleFrequencyFilter,
+        lengthCutoffFilter,
+        adapterConfig,
+      } = model
+      const sessionId = getRpcSessionId(model)
+      return rpcManager.call(
+        sessionId,
+        'MultiSampleVariantGetGenotypeMatrix',
+        {
+          regions: view.dynamicBlocks.contentBlocks,
+          sources: sourcesWithoutLayout ?? [],
+          minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
           lengthCutoffFilter,
-          adapterConfig,
-        } = model
-        const sessionId = getRpcSessionId(model)
-        const ret = await rpcManager.call(
           sessionId,
-          'MultiSampleVariantGetGenotypeMatrix',
-          {
-            regions: view.dynamicBlocks.contentBlocks,
-            sources: sourcesWithoutLayout ?? [],
-            minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
-            lengthCutoffFilter,
-            sessionId,
-            adapterConfig,
-          },
-        )
-
-        setRet(ret)
-      } catch (e) {
-        if (!isAbortException(e) && isAlive(model)) {
-          console.error(e)
-          setError(e)
-        }
-      } finally {
-        setLoading(false)
-      }
-    })()
-  }, [model])
+          adapterConfig,
+        },
+      ) as Promise<Record<string, any>>
+    },
+  )
 
   const results = ret
     ? String.raw`inputMatrix<-matrix(c(${Object.values(ret)

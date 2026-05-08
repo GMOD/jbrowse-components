@@ -296,6 +296,9 @@ importers:
       style-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.106.2)
+      swr:
+        specifier: ^2.4.1
+        version: 2.4.1(react@19.2.5)
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
@@ -455,6 +458,9 @@ importers:
       source-map-js:
         specifier: ^1.2.1
         version: 1.2.1
+      swr:
+        specifier: ^2.3.0
+        version: 2.4.1(react@19.2.5)
 
   packages/embedded-core:
     dependencies:
@@ -706,9 +712,6 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
-      swr:
-        specifier: ^2.3.0
-        version: 2.4.1(react@19.2.5)
 
   plugins/arc:
     dependencies:
@@ -1026,6 +1029,9 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
+      '@jbrowse/synteny-core':
+        specifier: workspace:^
+        version: link:../../packages/synteny-core
       '@mui/icons-material':
         specifier: ^9.0.0
         version: 9.0.0(@mui/material@9.0.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/react@19.2.14)(react@19.2.5)
@@ -1308,6 +1314,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@jbrowse/synteny-core':
+        specifier: workspace:^
+        version: link:../../packages/synteny-core
       '@jbrowse/tree-sidebar':
         specifier: workspace:^
         version: link:../../packages/tree-sidebar
@@ -1932,9 +1941,6 @@ importers:
       sanitize-filename:
         specifier: ^1.6.4
         version: 1.6.4
-      swr:
-        specifier: ^2.4.1
-        version: 2.4.1(react@19.2.5)
     devDependencies:
       '@electron/notarize':
         specifier: ^3.1.1

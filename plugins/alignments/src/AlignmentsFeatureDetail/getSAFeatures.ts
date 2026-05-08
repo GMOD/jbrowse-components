@@ -4,10 +4,9 @@ import {
   featurizeSA,
   getClip,
   getLengthSansClipping,
-  getTag,
 } from '../MismatchParser/index.ts'
 
-import type { Feature } from '@jbrowse/core/util'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface ReducedFeature {
@@ -33,13 +32,14 @@ export async function getSAFeatures({
   feature,
 }: {
   view: LinearGenomeViewModel
-  feature: Feature
+  feature: SimpleFeatureSerialized
 }) {
   const { assemblyManager } = getSession(view)
-  const cigar = feature.get('CIGAR') as string
-  const origStrand = feature.get('strand')!
-  const SA = (getTag(feature, 'SA') as string | undefined) ?? ''
-  const readName = feature.get('name')!
+  const cigar = feature.CIGAR as string
+  const origStrand = feature.strand as number
+  const SA = ((feature.tags as Record<string, unknown> | undefined)?.SA ??
+    '') as string
+  const readName = feature.name as string
   const clipLengthAtStartOfRead = getClip(cigar, 1)
 
   // get the canonical refname for the read because if the read.get('refName')
@@ -50,10 +50,16 @@ export async function getSAFeatures({
     throw new Error('assembly not found')
   }
 
-  const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName, true)
+  const suppAlns = featurizeSA(
+    SA,
+    feature.uniqueId as string,
+    origStrand,
+    readName,
+    true,
+  )
 
   const feat = {
-    ...feature.toJSON(),
+    ...feature,
     clipLengthAtStartOfRead,
     strand: 1,
     mate: {

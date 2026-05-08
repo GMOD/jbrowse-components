@@ -1,9 +1,10 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
 import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
 import {
   type AbstractSessionModel,
   localStorageGetItem,
+  useFetch,
 } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
@@ -19,10 +20,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { shareSessionToDynamo } from '../sessionSharing.ts'
-import { setQueryParams } from '../useQueryParam.ts'
-import { toUrlSafeB64 } from '../util.ts'
 import ShareDialogLinkField from './ShareDialogLinkField.tsx'
+import { buildLongShareUrl, buildShortShareUrl } from './buildShareUrl.ts'
+import { setQueryParams } from '../useQueryParam.ts'
 
 const SettingsDialog = lazy(() => import('./ShareSettingsDialog.tsx'))
 
@@ -35,61 +35,29 @@ const ShareDialog = observer(function ShareDialog({
   handleClose: () => void
   session: AbstractSessionModel & { shareURL: string }
 }) {
-  const [sessionParam, setSessionParam] = useState('')
-  const [passwordParam, setPasswordParam] = useState('')
-  const [shortUrl, setShortUrl] = useState('')
-  const [longUrl, setLongUrl] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<unknown>()
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
 
-  const url = session.shareURL
+  const shareURL = session.shareURL
   const currentSetting =
     localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'
   // Capture snapshot once when dialog opens — we don't want to re-upload every
   // time the session mutates while the dialog is open
   const [snap] = useState(() => getSnapshot(session))
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      // !error allows retry when the error banner's onReset clears error state
-      if (!error) {
-        try {
-          if (currentSetting === 'short') {
-            setLoading(true)
-            const locationUrl = new URL(window.location.href)
-            const result = await shareSessionToDynamo(
-              snap,
-              url,
-              locationUrl.href,
-            )
-            const params = new URLSearchParams(locationUrl.search)
-            params.set('session', `share-${result.json.sessionId}`)
-            params.set('password', result.password)
-            locationUrl.search = params.toString()
-            setShortUrl(locationUrl.href)
-            setSessionParam(`share-${result.json.sessionId}`)
-            setPasswordParam(result.password)
-          } else {
-            const sess = await toUrlSafeB64(JSON.stringify(snap))
-            const locationUrl = new URL(window.location.href)
-            const params = new URLSearchParams(locationUrl.search)
-            params.set('session', `encoded-${sess}`)
-            setSessionParam(`encoded-${sess}`)
-            locationUrl.search = params.toString()
-            setLongUrl(locationUrl.toString())
-          }
-        } catch (e) {
-          console.error(e)
-          setError(e)
-        } finally {
-          setLoading(false)
-        }
-      }
-    })()
-  }, [currentSetting, error, url, snap])
+  const {
+    data,
+    error,
+    isLoading: loading,
+    mutate,
+  } = useFetch(
+    ['shareUrl', currentSetting],
+    () =>
+      currentSetting === 'short'
+        ? buildShortShareUrl(snap, shareURL)
+        : buildLongShareUrl(snap),
+  )
 
+  const url = data?.url ?? ''
   const disabled = loading || !!error
   return (
     <>
@@ -111,21 +79,18 @@ const ShareDialog = observer(function ShareDialog({
             </IconButton>
           </DialogContentText>
 
-          {currentSetting === 'short' ? (
-            error ? (
-              <ErrorBanner
-                error={error}
-                onReset={() => {
-                  setError(undefined)
-                }}
-              />
-            ) : loading ? (
-              <Typography>Generating short URL...</Typography>
-            ) : (
-              <ShareDialogLinkField url={shortUrl} />
-            )
+          {error ? (
+            <ErrorBanner
+              error={error}
+              onReset={() => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                mutate()
+              }}
+            />
+          ) : loading ? (
+            <Typography>Generating short URL...</Typography>
           ) : (
-            <ShareDialogLinkField url={longUrl} />
+            <ShareDialogLinkField url={url} />
           )}
         </DialogContent>
         <DialogActions>
@@ -135,8 +100,8 @@ const ShareDialog = observer(function ShareDialog({
             onClick={event => {
               event.preventDefault()
               setQueryParams({
-                password: passwordParam,
-                session: sessionParam,
+                password: data?.passwordParam ?? '',
+                session: data?.sessionParam ?? '',
               })
               alert('Now press Ctrl+D (PC) or Cmd+D (Mac)')
             }}
@@ -149,7 +114,7 @@ const ShareDialog = observer(function ShareDialog({
             disabled={disabled}
             onClick={async () => {
               const { default: copy } = await import('copy-to-clipboard')
-              await copy(shortUrl || longUrl)
+              await copy(url)
               session.notify('Copied to clipboard', 'success')
             }}
           >

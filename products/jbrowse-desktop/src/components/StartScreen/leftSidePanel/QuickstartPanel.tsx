@@ -11,7 +11,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreIcon from '@mui/icons-material/MoreHoriz'
 import { IconButton, Link, Typography } from '@mui/material'
-import useSWR from 'swr'
+import { useFetch } from '@jbrowse/core/util'
 
 import { useInnerDims } from '../availableGenomes/util.ts'
 import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'
@@ -50,7 +50,7 @@ export default function QuickstartPanel({
   )
   const { height: innerHeight } = useInnerDims()
 
-  const { data: quickstarts, error: listError } = useSWR(
+  const { data: quickstarts, error: listError } = useFetch(
     'listQuickstarts',
     () => ipcRenderer.invoke('listQuickstarts') as Promise<string[]>,
     {

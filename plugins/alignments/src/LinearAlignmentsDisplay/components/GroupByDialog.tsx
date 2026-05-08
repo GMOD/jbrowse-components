@@ -7,6 +7,7 @@ import {
   getContainingView,
   getSession,
   useDebounce,
+  useFetch,
 } from '@jbrowse/core/util'
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import {
@@ -18,7 +19,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import useSWR from 'swr'
 
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util.ts'
@@ -151,7 +151,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     data: tagSet,
     error,
     isLoading: loading,
-  } = useSWR(
+  } = useFetch(
     shouldFetch ? ['getUniqueTags', model, debouncedTag] : null,
     () =>
       getUniqueTags({

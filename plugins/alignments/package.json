@@ -47,8 +47,7 @@
     "generic-filehandle2": "^2.1.7",
     "mobx": "6.15.0",
     "mobx-react": "^9.2.1",
-    "rxjs": "^7.8.2",
-    "swr": "^2.3.0"
+    "rxjs": "^7.8.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0"

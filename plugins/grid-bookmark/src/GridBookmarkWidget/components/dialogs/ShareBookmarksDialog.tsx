@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
-
 import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
-import { getSession, isSessionWithShareURL } from '@jbrowse/core/util'
+import {
+  getSession,
+  isSessionWithShareURL,
+  useFetch,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -40,9 +42,6 @@ const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
   model: GridBookmarkModel
 }) {
   const { classes } = useStyles()
-  const [url, setUrl] = useState('')
-  const [error, setError] = useState<unknown>()
-  const [loading, setLoading] = useState(true)
   const session = getSession(model)
   const { selectedBookmarks } = model
   const shareAll = selectedBookmarks.length === 0
@@ -51,34 +50,30 @@ const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
       ? model.allBookmarksModel
       : model.sharedBookmarksModel
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        if (!isSessionWithShareURL(session)) {
-          throw new Error('No shareURL configured')
-        }
-        setLoading(true)
-        const snap = getSnapshot(bookmarksToShare)
-        const locationUrl = new URL(window.location.href)
-        const result = await shareSessionToDynamo(
-          snap,
-          session.shareURL,
-          locationUrl.href,
-        )
-        const params = new URLSearchParams(locationUrl.search)
-        params.set('bookmarks', `share-${result.json.sessionId}`)
-        params.set('password', result.password)
-        locationUrl.search = params.toString()
-        setUrl(locationUrl.href)
-        setLoading(false)
-      } catch (e) {
-        setError(e)
-      } finally {
-        setLoading(false)
+  const {
+    data: url = '',
+    error,
+    isLoading: loading,
+  } = useFetch(
+    ['shareBookmarks', getSnapshot(bookmarksToShare)],
+    async () => {
+      if (!isSessionWithShareURL(session)) {
+        throw new Error('No shareURL configured')
       }
-    })()
-  }, [bookmarksToShare, session])
+      const snap = getSnapshot(bookmarksToShare)
+      const locationUrl = new URL(window.location.href)
+      const result = await shareSessionToDynamo(
+        snap,
+        session.shareURL,
+        locationUrl.href,
+      )
+      const params = new URLSearchParams(locationUrl.search)
+      params.set('bookmarks', `share-${result.json.sessionId}`)
+      params.set('password', result.password)
+      locationUrl.search = params.toString()
+      return locationUrl.href
+    },
+  )
   return (
     <Dialog open onClose={onClose} title="Share bookmarks">
       <DialogContent className={classes.content}>

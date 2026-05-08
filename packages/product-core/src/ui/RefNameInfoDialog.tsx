@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import { useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogContent } from '@mui/material'
 import copy from 'copy-to-clipboard'
@@ -35,37 +36,27 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   onClose: () => void
 }) {
   const { classes } = useStyles()
-  const [error, setError] = useState<unknown>()
-  const [refNames, setRefNames] =
-    useState<readonly (readonly [string, string[]])[]>()
   const [copied, setCopied] = useState(false)
   const { rpcManager } = session
   const trackId = readConf(config, 'trackId') as string
   const assemblyNames = readConf(config, 'assemblyNames') as string[]
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        const map = await Promise.all(
-          [...new Set(assemblyNames)].map(async assemblyName => {
-            const adapterConfig = readConf(config, 'adapter')
-            return [
+  const { data: refNames, error } = useFetch(
+    ['CoreGetRefNames', trackId, assemblyNames.join(',')],
+    () =>
+      Promise.all(
+        [...new Set(assemblyNames)].map(
+          async assemblyName =>
+            [
               assemblyName,
-              await rpcManager.call(trackId, 'CoreGetRefNames', {
-                adapterConfig,
+              (await rpcManager.call(trackId, 'CoreGetRefNames', {
+                adapterConfig: readConf(config, 'adapter'),
                 regions: [{ assemblyName }],
-              }),
-            ] as const
-          }),
-        )
-        setRefNames(map)
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      }
-    })()
-  }, [config, rpcManager, trackId, assemblyNames])
+              })) as string[],
+            ] as const,
+        ),
+      ),
+  )
 
   const result = (refNames ?? [])
     .flatMap(([assemblyName, names]) => {

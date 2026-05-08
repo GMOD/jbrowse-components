@@ -1,10 +1,14 @@
 import { lazy } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
-import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  getSession,
+  toLocale,
+  useFetch,
+} from '@jbrowse/core/util'
 import { getAssemblyName } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
-import useSWR from 'swr'
 
 import { getSAFeatures } from './getSAFeatures.ts'
 
@@ -24,9 +28,9 @@ export default function LaunchBreakpointSplitViewPanel({
   feature: SimpleFeatureSerialized
 }) {
   const { view } = model
-  const { data: res, error } = useSWR(
+  const { data: res, error } = useFetch(
     ['getSAFeatures', feature.uniqueId],
-    () => getSAFeatures({ view, feature: new SimpleFeature(feature) }),
+    () => getSAFeatures({ view, feature }),
   )
 
   const ret: [ReducedFeature, ReducedFeature][] = []
