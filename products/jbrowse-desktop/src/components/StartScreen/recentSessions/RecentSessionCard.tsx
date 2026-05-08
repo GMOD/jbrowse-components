@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
+import { useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -48,25 +49,19 @@ function RecentSessionCard({
   const { classes } = useStyles()
   const [hovered, setHovered] = useState(false)
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
-  const [screenshot, setScreenshot] = useState<string>()
   const { name, path } = sessionData
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        const data = await ipcRenderer.invoke('loadThumbnail', path)
-        if (data) {
-          setScreenshot(data)
-        } else {
-          setScreenshot(defaultSessionScreenshot)
-        }
-      } catch (e) {
+  const { data: screenshot } = useFetch(
+    ['loadThumbnail', path],
+    async () =>
+      ((await ipcRenderer.invoke('loadThumbnail', path)) as string | undefined) ??
+      defaultSessionScreenshot,
+    {
+      onError: e => {
         console.error(e)
-        setScreenshot(defaultSessionScreenshot)
-      }
-    })()
-  }, [path])
+      },
+    },
+  )
 
   return (
     <>

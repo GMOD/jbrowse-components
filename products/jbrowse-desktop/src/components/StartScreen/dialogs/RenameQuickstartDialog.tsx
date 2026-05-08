@@ -13,7 +13,9 @@ const RenameQuickstartDialog = ({
   quickstartToRename?: string
   onClose: (arg0: boolean) => void
 }) => {
-  const [newQuickstartName, setNewQuickstartName] = useState('')
+  const [newQuickstartName, setNewQuickstartName] = useState(
+    quickstartToRename ?? '',
+  )
   const [error, setError] = useState<unknown>()
 
   return (
@@ -50,7 +52,7 @@ const RenameQuickstartDialog = ({
       ) : null}
       <Input
         autoFocus
-        defaultValue={quickstartToRename}
+        value={newQuickstartName}
         onChange={event => {
           setNewQuickstartName(event.target.value)
         }}

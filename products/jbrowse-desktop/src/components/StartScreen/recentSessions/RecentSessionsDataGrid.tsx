@@ -66,11 +66,10 @@ function RecentSessionsList({
     })
   }, [sessions, now])
 
-  const widths = useMemo(() => {
-    const arr = ['name', 'path', 'lastModified']
-    return {
-      ...Object.fromEntries(
-        arr.map(e => [
+  const widths = useMemo(
+    () =>
+      Object.fromEntries(
+        ['name', 'path', 'lastModified'].map(e => [
           e,
           e === 'path'
             ? 200
@@ -80,8 +79,8 @@ function RecentSessionsList({
               ) + 40,
         ]),
       ),
-    }
-  }, [rows])
+    [rows],
+  )
 
   const favs = useMemo(() => new Set(favorites), [favorites])
 

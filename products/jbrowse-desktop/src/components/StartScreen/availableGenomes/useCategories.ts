@@ -1,6 +1,4 @@
-import { useFetch } from '@jbrowse/core/util'
-
-import { fetchJson as fetchjson } from '@jbrowse/core/util'
+import { fetchJson as fetchjson, useFetch } from '@jbrowse/core/util'
 
 export default function useCategories() {
   const { data, error, isLoading } = useFetch('categories', () =>

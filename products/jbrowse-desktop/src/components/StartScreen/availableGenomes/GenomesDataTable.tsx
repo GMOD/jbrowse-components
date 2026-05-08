@@ -108,7 +108,7 @@ export default function GenomesDataTable({
   launch: LaunchCallback
 }) {
   'use no memo'
-  const [selected, setSelected] = useState(new Set())
+  const [selected, setSelected] = useState(new Set<string>())
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
   const [filterOption, setFilterOption] = useState('all')
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)
@@ -225,18 +225,16 @@ export default function GenomesDataTable({
             variant="contained"
             disabled={selected.size === 0}
             onClick={() => {
-              if (selected.size > 0) {
-                const selectedRows = [...selected]
-                  .map(id => data.find(row => row.id === id))
-                  .filter(notEmpty)
-                  .map(r => ({
-                    jbrowseConfig: r.jbrowseConfig,
-                    shortName: r.accession,
-                  }))
+              const selectedRows = [...selected]
+                .map(id => data.find(row => row.id === id))
+                .filter(notEmpty)
+                .map(r => ({
+                  jbrowseConfig: r.jbrowseConfig,
+                  shortName: r.accession,
+                }))
 
-                launch(selectedRows)
-                onClose()
-              }
+              launch(selectedRows)
+              onClose()
             }}
           >
             Go

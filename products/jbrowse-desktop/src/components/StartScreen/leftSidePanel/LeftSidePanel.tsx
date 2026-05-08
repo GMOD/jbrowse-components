@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
-import { useLocalStorage } from '@jbrowse/core/util'
+import { fetchJson as fetchjson, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import deepmerge from 'deepmerge'
 
@@ -9,7 +9,6 @@ import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
 import OpenSequencePanel from './OpenSequencePanel.tsx'
 import QuickstartPanel from './QuickstartPanel.tsx'
 import defaultFavs from '../defaultFavs.ts'
-import { fetchJson as fetchjson } from '@jbrowse/core/util'
 import { addRelativeUris, loadPluginManager } from '../util.tsx'
 
 import type { Fav, JBrowseConfig } from '../types.ts'
@@ -90,6 +89,16 @@ export default function LauncherPanel({
     }
   }
 
+  const launchFromConfig = (sel: { shortName: string; jbrowseConfig: string }[]) =>
+    structuredCb(async () => {
+      await initializeSession(await fetchData(sel))
+    })
+
+  const launchFromSnap = (snap: JBrowseConfig) =>
+    structuredCb(async () => {
+      await initializeSession([snap])
+    })
+
   return (
     <div className={classes.form}>
       {error ? <ErrorBanner error={error} /> : null}
@@ -98,23 +107,15 @@ export default function LauncherPanel({
       ) : (
         <>
           <OpenSequencePanel
-            setPluginManager={setPluginManager}
             favorites={favorites}
             setFavorites={setFavorites}
-            launch={sel =>
-              structuredCb(async () => {
-                await initializeSession(await fetchData(sel))
-              })
-            }
+            launch={launchFromConfig}
+            launchFromSnap={launchFromSnap}
           />
           <FavoriteGenomesPanel
             favorites={favorites}
             setFavorites={setFavorites}
-            launch={sel =>
-              structuredCb(async () => {
-                await initializeSession(await fetchData(sel))
-              })
-            }
+            launch={launchFromConfig}
           />
           <QuickstartPanel
             launch={sel =>

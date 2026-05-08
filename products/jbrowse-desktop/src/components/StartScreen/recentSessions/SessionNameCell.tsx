@@ -52,19 +52,13 @@ function SessionNameCell({
     toggleFavorite(row.path)
   }
 
-  const sessionData = {
-    path: row.path,
-    name: row.name,
-    updated: row.updated,
-  }
-
   const handleRename = () => {
-    setSessionToRename(sessionData)
+    setSessionToRename(row)
   }
 
   const handleAddToQuickstartList = async () => {
     if (addToQuickstartList) {
-      await addToQuickstartList(sessionData)
+      await addToQuickstartList(row)
     }
   }
   const handleLinkClick = async (event: React.MouseEvent) => {

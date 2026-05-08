@@ -95,7 +95,7 @@ export function registerSessionHandlers(
       const rows = await readRecentSessions(paths.recentSessionsPath)
       const autosavePath = path.join(
         paths.autosaveDir,
-        `${encodeURIComponent(Date.now())}.json`,
+        `${Date.now()}.json`,
       )
       const entry: RecentSession = {
         path: autosavePath,

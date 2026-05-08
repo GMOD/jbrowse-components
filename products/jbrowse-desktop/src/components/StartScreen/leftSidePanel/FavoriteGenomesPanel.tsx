@@ -94,14 +94,12 @@ export default function FavoriteGenomesPanel({
                       }
 
                       const handleMinimalLaunch = () => {
-                        if (jbrowseMinimalConfig) {
-                          launch([
-                            {
-                              shortName,
-                              jbrowseConfig: jbrowseMinimalConfig,
-                            },
-                          ])
-                        }
+                        launch([
+                          {
+                            shortName,
+                            jbrowseConfig: jbrowseMinimalConfig!,
+                          },
+                        ])
                       }
 
                       const handleRemove = () => {

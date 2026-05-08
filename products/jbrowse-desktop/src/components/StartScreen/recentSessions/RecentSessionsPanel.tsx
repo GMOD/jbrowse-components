@@ -112,8 +112,7 @@ export default function RecentSessionPanel({
           sessionToRename={sessionToRename}
           onClose={() => {
             setSessionToRename(undefined)
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            mutateSessions()
+            void mutateSessions()
           }}
         />
       ) : null}
@@ -123,8 +122,7 @@ export default function RecentSessionPanel({
           sessionsToDelete={sessionsToDelete}
           onClose={() => {
             setSessionsToDelete(undefined)
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            mutateSessions()
+            void mutateSessions()
           }}
         />
       ) : null}
@@ -190,7 +188,7 @@ export default function RecentSessionPanel({
         />
 
         <div className={classes.verticalCenter}>
-          <Button variant="contained" component="label" onClick={() => {}}>
+          <Button variant="contained" component="label">
             Open saved session (.jbrowse) file
             <input
               type="file"

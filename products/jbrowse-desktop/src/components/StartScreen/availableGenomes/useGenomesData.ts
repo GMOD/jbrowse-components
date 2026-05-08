@@ -1,8 +1,6 @@
 import { useMemo } from 'react'
 
-import { useFetch } from '@jbrowse/core/util'
-
-import { fetchJson as fetchjson } from '@jbrowse/core/util'
+import { fetchJson as fetchjson, useFetch } from '@jbrowse/core/util'
 
 import type { Entry } from './getColumnDefinitions.tsx'
 import type { Fav } from '../types.ts'

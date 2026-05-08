@@ -8,7 +8,7 @@ import { getDeletedMarkerPath, getQuickstartPath } from '../paths.ts'
 
 import type { AppPaths } from '../paths.ts'
 
-const { readFile, copyFile, readdir } = fs.promises
+const { readFile, copyFile, readdir, unlink, writeFile } = fs.promises
 const ENCODING = 'utf8'
 
 async function readQuickstart(quickstartPath: string): Promise<unknown> {
@@ -43,12 +43,12 @@ export function registerQuickstartHandlers(paths: AppPaths) {
     const quickstartPath = getQuickstartPath(paths, name)
     const deletedMarkerPath = getDeletedMarkerPath(paths, name)
 
-    await fs.promises.unlink(quickstartPath)
+    await unlink(quickstartPath)
 
     // Add a gravestone '.deleted' file when we delete a session, so that if it
     // comes from the https://jbrowse.org/genomes/sessions.json, we don't
     // recreate it
-    await fs.promises.writeFile(deletedMarkerPath, '', ENCODING)
+    await writeFile(deletedMarkerPath, '', ENCODING)
   })
 
   ipcMain.handle(

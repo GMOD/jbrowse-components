@@ -12,7 +12,9 @@ const RenameSessionDialog = ({
   sessionToRename?: { path: string; name: string }
   onClose: (arg0: boolean) => void
 }) => {
-  const [newSessionName, setNewSessionName] = useState('')
+  const [newSessionName, setNewSessionName] = useState(
+    sessionToRename?.name ?? '',
+  )
   const [error, setError] = useState<unknown>()
 
   return (
@@ -41,7 +43,7 @@ const RenameSessionDialog = ({
       </DialogContentText>
       <Input
         autoFocus
-        defaultValue={sessionToRename?.name}
+        value={newSessionName}
         onChange={event => {
           setNewSessionName(event.target.value)
         }}
