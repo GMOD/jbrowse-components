@@ -19,14 +19,12 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
-type LGV = LinearGenomeViewModel
-
 export async function renderSvg(
   model: LinearAlignmentsDisplayModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const theme = createJBrowseTheme(opts?.theme)
-  const view = getContainingView(model) as LGV
+  const view = getContainingView(model) as LinearGenomeViewModel
   await when(
     () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
   )

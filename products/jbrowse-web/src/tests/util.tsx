@@ -60,18 +60,24 @@ export function setup() {
 }
 
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
-  const flat = document.createElement('canvas')
-  flat.width = canvas.width
-  flat.height = canvas.height
-  const ctx = flat.getContext('2d')!
-  ctx.fillStyle = '#ffffff'
-  ctx.fillRect(0, 0, flat.width, flat.height)
-  ctx.drawImage(canvas, 0, 0)
-  // eslint-disable-next-line no-restricted-globals
-  return Buffer.from(
-    flat.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
-    'base64',
-  )
+  const { width, height } = canvas
+  const src = canvas.getContext('2d')!.getImageData(0, 0, width, height)
+  const flat = createCanvas(width, height)
+  const flatCtx = flat.getContext('2d')
+  flatCtx.fillStyle = '#ffffff'
+  flatCtx.fillRect(0, 0, width, height)
+  const dst = flatCtx.getImageData(0, 0, width, height)
+  const s = src.data
+  const d = dst.data
+  for (let i = 0; i < s.length; i += 4) {
+    const a = s[i + 3]! / 255
+    d[i] = Math.round(s[i]! * a + 255 * (1 - a))
+    d[i + 1] = Math.round(s[i + 1]! * a + 255 * (1 - a))
+    d[i + 2] = Math.round(s[i + 2]! * a + 255 * (1 - a))
+    d[i + 3] = 255
+  }
+  flatCtx.putImageData(dst, 0, 0)
+  return flat.toBuffer()
 }
 
 export function expectCanvasMatch(
@@ -138,7 +144,7 @@ export function doBeforeEach(
 }
 interface Results2 extends Results {
   autocomplete: HTMLElement
-  input: HTMLElement
+  input: HTMLInputElement
   getInputValue: () => string
 }
 export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
@@ -146,7 +152,6 @@ export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
   const { view, findByTestId, getByPlaceholderText, findByPlaceholderText } =
     args
 
-  // clear view takes us to the import form
   view.clearView()
 
   const autocomplete = await findByTestId(
@@ -160,8 +165,6 @@ export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
     { timeout: 10000 },
   )) as HTMLInputElement
 
-  // this will be the input that is obtained after opening the LGV from the
-  // import form
   const getInputValue = () =>
     (getByPlaceholderText('Search for location') as HTMLInputElement).value
 

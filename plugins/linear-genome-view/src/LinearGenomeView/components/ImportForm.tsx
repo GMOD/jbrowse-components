@@ -54,20 +54,13 @@ const LinearGenomeViewImportForm = observer(
       ? assembly?.error
       : 'No configured assemblies'
     const displayError = assemblyError || error
-    // userValue is null until the user types or selects something,
-    // at which point it overrides the default first-region value
     const [userValue, setUserValue] = useState<string | null>(null)
     const regions = assembly?.regions
     const assemblyLoaded = !!regions
     const r0 = regions?.[0]?.refName ?? ''
     const value = userValue ?? r0
     const searchScope = model.searchScope(selectedAsm)
-    const setValue = (v: string) => {
-      setUserValue(v)
-    }
 
-    // implementation notes:
-    // having this wrapped in a form allows intuitive use of enter key to submit
     return (
       <div className={classes.container}>
         {displayError ? <ErrorBanner error={displayError} /> : null}
@@ -78,12 +71,8 @@ const LinearGenomeViewImportForm = observer(
                 event.preventDefault()
                 model.setError(undefined)
                 if (value) {
-                  // has it's own error handling
                   try {
-                    if (
-                      option?.getDisplayString() === value &&
-                      option.hasLocation()
-                    ) {
+                    if (option?.hasLocation()) {
                       await navToOption({
                         option,
                         model,
@@ -145,8 +134,14 @@ const LinearGenomeViewImportForm = observer(
                         assemblyName={selectedAsm}
                         value={value}
                         minWidth={270}
-                        onChange={setValue}
-                        onSelect={setOption}
+                        onChange={v => {
+                          setUserValue(v)
+                          setOption(undefined)
+                        }}
+                        onSelect={opt => {
+                          setOption(opt)
+                          setUserValue(opt.getDisplayString())
+                        }}
                         helperText="Enter sequence name, feature name, or location"
                       />
                     </FormControl>

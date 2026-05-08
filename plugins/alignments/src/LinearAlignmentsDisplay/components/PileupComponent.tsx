@@ -418,9 +418,7 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
         width: 50,
       }}
     >
-      <g transform="translate(0, 0)">
-        <YScaleBar ticks={insertSizeTicks} orientation="right" />
-      </g>
+      <YScaleBar ticks={insertSizeTicks} orientation="right" />
     </svg>
   )
 })
