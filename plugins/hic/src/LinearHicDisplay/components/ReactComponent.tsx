@@ -90,39 +90,20 @@ const ResolutionControl = observer(function ResolutionControl({
   const canGoCoarser = availableResolutions?.some(r => r > resolution) ?? false
 
   const handleFiner = () => {
-    console.warn('[HiC Debug] Finer button clicked', {
-      resolution,
-      availableResolutions,
-      canGoFiner,
-    })
     try {
       model.zoomResolutionFiner()
-      console.warn('[HiC Debug] After zoomResolutionFiner, resolution:', model.resolution)
     } catch (e) {
-      console.error('[HiC Debug] Error in zoomResolutionFiner:', e)
+      console.error('Error adjusting HiC resolution:', e)
     }
   }
 
   const handleCoarser = () => {
-    console.warn('[HiC Debug] Coarser button clicked', {
-      resolution,
-      availableResolutions,
-      canGoCoarser,
-    })
     try {
       model.zoomResolutionCoarser()
-      console.warn('[HiC Debug] After zoomResolutionCoarser, resolution:', model.resolution)
     } catch (e) {
-      console.error('[HiC Debug] Error in zoomResolutionCoarser:', e)
+      console.error('Error adjusting HiC resolution:', e)
     }
   }
-
-  console.warn('[HiC Debug] ResolutionControl render', {
-    resolution,
-    availableResolutions,
-    canGoFiner,
-    canGoCoarser,
-  })
 
   return (
     <div
