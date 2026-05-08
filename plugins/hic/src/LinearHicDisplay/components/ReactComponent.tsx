@@ -85,21 +85,31 @@ const ResolutionControl = observer(function ResolutionControl({
 }: {
   model: LinearHicDisplayModel
 }) {
+  const t0 = performance.now()
   const { resolution, availableResolutions } = model
   const canGoFiner = availableResolutions?.some(r => r < resolution) ?? false
   const canGoCoarser = availableResolutions?.some(r => r > resolution) ?? false
+  console.warn('[HiC Perf] ResolutionControl render time:', (performance.now() - t0).toFixed(2), 'ms, resolution:', resolution)
 
   const handleFiner = () => {
+    const t0 = performance.now()
+    console.warn('[HiC Perf] Finer button clicked, current resolution:', resolution)
     try {
       model.zoomResolutionFiner()
+      const t1 = performance.now()
+      console.warn(`[HiC Perf] zoomResolutionFiner done (${(t1 - t0).toFixed(1)}ms), new resolution:`, model.resolution)
     } catch (e) {
       console.error('Error adjusting HiC resolution:', e)
     }
   }
 
   const handleCoarser = () => {
+    const t0 = performance.now()
+    console.warn('[HiC Perf] Coarser button clicked, current resolution:', resolution)
     try {
       model.zoomResolutionCoarser()
+      const t1 = performance.now()
+      console.warn(`[HiC Perf] zoomResolutionCoarser done (${(t1 - t0).toFixed(1)}ms), new resolution:`, model.resolution)
     } catch (e) {
       console.error('Error adjusting HiC resolution:', e)
     }

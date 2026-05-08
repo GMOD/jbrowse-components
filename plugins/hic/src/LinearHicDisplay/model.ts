@@ -267,10 +267,16 @@ export default function stateModelFactory(
        * #action
        */
       zoomResolutionCoarser() {
+        const t0 = performance.now()
+        console.warn('[HiC Perf] zoomResolutionCoarser action start')
         if (self.availableResolutions?.length) {
           const idx = self.availableResolutions.indexOf(self.resolution)
+          console.warn('[HiC Perf] Found index:', idx, 'at', (performance.now() - t0).toFixed(1), 'ms')
           if (idx !== -1 && idx < self.availableResolutions.length - 1) {
-            self.resolution = self.availableResolutions[idx + 1]!
+            const newRes = self.availableResolutions[idx + 1]!
+            console.warn('[HiC Perf] Setting resolution to:', newRes, 'at', (performance.now() - t0).toFixed(1), 'ms')
+            self.resolution = newRes
+            console.warn('[HiC Perf] Resolution set, time:', (performance.now() - t0).toFixed(1), 'ms')
           }
         }
       },
@@ -278,10 +284,16 @@ export default function stateModelFactory(
        * #action
        */
       zoomResolutionFiner() {
+        const t0 = performance.now()
+        console.warn('[HiC Perf] zoomResolutionFiner action start')
         if (self.availableResolutions?.length) {
           const idx = self.availableResolutions.indexOf(self.resolution)
+          console.warn('[HiC Perf] Found index:', idx, 'at', (performance.now() - t0).toFixed(1), 'ms')
           if (idx !== -1 && idx > 0) {
-            self.resolution = self.availableResolutions[idx - 1]!
+            const newRes = self.availableResolutions[idx - 1]!
+            console.warn('[HiC Perf] Setting resolution to:', newRes, 'at', (performance.now() - t0).toFixed(1), 'ms')
+            self.resolution = newRes
+            console.warn('[HiC Perf] Resolution set, time:', (performance.now() - t0).toFixed(1), 'ms')
           }
         }
       },
