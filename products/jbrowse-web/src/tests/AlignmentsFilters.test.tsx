@@ -45,7 +45,7 @@ test('filter by HP tag bam', async () => {
 }, 50000)
 
 // snapshot not working but appears to work in browser
-xtest('filter by RG tag cram (special case tag))', async () => {
+xtest('filter by RG tag cram (special case tag)', async () => {
   const { container, view } = await createView()
   await view.navToLocString('ctgA:1000..2000')
   await testFilterTrack('volvox_cram', 'RG', '6')

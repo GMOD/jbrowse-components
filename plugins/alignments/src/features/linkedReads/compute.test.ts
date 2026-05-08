@@ -249,10 +249,12 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [1],
       ys: [0],
     })
-    const result = computeLinkedReadLinesByRegion(new Map([
+    const result = computeLinkedReadLinesByRegion(
+      new Map([
         [0, data0],
         [1, data1],
-      ]))
+      ]),
+    )
     expect(result.size).toBe(0)
   })
 

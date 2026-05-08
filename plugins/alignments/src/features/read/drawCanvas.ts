@@ -46,10 +46,6 @@ export function drawReads(
       renderingMode: state.renderingMode,
       flipStrandLongReadChains: state.flipStrandLongReadChains,
     })
-    // Check if this read covers the known mismatch position (x≈397)
-    if (x1 <= 397 && x2 >= 397 && y >= 45 && y <= 53) {
-      console.warn(`[DEBUG drawReads OVER MISMATCH] x1=${x1.toFixed(1)} x2=${x2.toFixed(1)} y=${y.toFixed(1)} fillStyle=${ctx.fillStyle}`, new Error().stack?.split('\n').slice(1, 4).join(' | '))
-    }
     ctx.fillRect(x1, y, w, fH)
 
     if (state.showOutline && w > 2) {

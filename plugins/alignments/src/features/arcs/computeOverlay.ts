@@ -6,8 +6,8 @@ import {
   groupReadsByName,
 } from '../linkedReads/compute.ts'
 
-import type { ReadEntry } from '../linkedReads/compute.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { ReadEntry } from '../linkedReads/compute.ts'
 
 // Curve count is bounded by SV count; normal-pair lines moved to the GPU
 // straight-line pass so this cap only protects against pathological data.
@@ -52,8 +52,19 @@ interface BezierOpts {
   arcsDown: boolean
 }
 
-function bezierPath({ sx1, sy1, sx2, sy2, s1, p2Strand, peakH, arcsDown }: BezierOpts) {
-  const apexY = arcsDown ? Math.max(sy1, sy2) + peakH : Math.min(sy1, sy2) - peakH
+function bezierPath({
+  sx1,
+  sy1,
+  sx2,
+  sy2,
+  s1,
+  p2Strand,
+  peakH,
+  arcsDown,
+}: BezierOpts) {
+  const apexY = arcsDown
+    ? Math.max(sy1, sy2) + peakH
+    : Math.min(sy1, sy2) - peakH
   const tangentDx = Math.max(
     MIN_TANGENT_PX,
     Math.abs(sx2 - sx1) * TANGENT_FACTOR,
@@ -145,13 +156,24 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       const sy1 = readScreenY(e1)
       const sy2 = readScreenY(e2)
 
-      if (!arcIsVisible(sy1, sy2, peakH, c.isNormal, pairedArcsDown, viewportH)) {
+      if (
+        !arcIsVisible(sy1, sy2, peakH, c.isNormal, pairedArcsDown, viewportH)
+      ) {
         continue
       }
 
       const d = c.isNormal
         ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
-        : bezierPath({ sx1, sy1, sx2, sy2, s1: c.s1, p2Strand: c.p2Strand, peakH, arcsDown: pairedArcsDown })
+        : bezierPath({
+            sx1,
+            sy1,
+            sx2,
+            sy2,
+            s1: c.s1,
+            p2Strand: c.p2Strand,
+            peakH,
+            arcsDown: pairedArcsDown,
+          })
       const stroke = rgb255(linkedReadColorPalette[c.colorType % paletteLen]!)
 
       result.push({

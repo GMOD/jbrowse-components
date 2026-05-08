@@ -255,10 +255,6 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   }
 
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
-    console.warn(
-      `[DEBUG renderBlocks] showMismatches=${state.showMismatches} regions=${this.regions.size} blocks=${blocks.length}`,
-      new Error().stack?.split('\n').slice(1, 3).join(' | '),
-    )
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     return drawAlignmentBlocks(this.ctx, this.regions, blocks, state)
   }
@@ -296,7 +292,6 @@ export function drawAlignmentBlocks(
 
   for (const block of blocks) {
     const region = regions.get(block.displayedRegionIndex)
-    console.warn(`[DEBUG block loop] idx=${block.displayedRegionIndex} hasRegion=${!!region} screenStart=${block.screenStartPx} screenEnd=${block.screenEndPx}`)
     if (!region) {
       continue
     }

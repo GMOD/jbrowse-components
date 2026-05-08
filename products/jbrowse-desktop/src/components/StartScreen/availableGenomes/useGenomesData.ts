@@ -41,9 +41,9 @@ function applyFilter(
   let filtered = rows
   if (typeOption !== 'mainGenomes') {
     if (filterOption === 'refseq') {
-      filtered = rows.filter(r => r.ncbiName?.startsWith('GCF_'))
+      filtered = rows.filter(r => r.ncbiName.startsWith('GCF_'))
     } else if (filterOption === 'genbank') {
-      filtered = rows.filter(r => r.ncbiName?.startsWith('GCA_'))
+      filtered = rows.filter(r => r.ncbiName.startsWith('GCA_'))
     } else if (filterOption === 'designatedReference') {
       filtered = rows.filter(r => r.ncbiRefSeqCategory === 'reference genome')
     }
@@ -66,7 +66,7 @@ export function useGenomesData({
   favorites: Fav[]
   url?: string
 }) {
-  const { data, error } = useFetch(url, () => fetchJson(url!) as Promise<RawData>)
+  const { data, error } = useFetch<RawData>(url, () => fetchJson(url!))
 
   const rows = data
     ? applyFilter(normalizeEntries(data), filterOption, typeOption).sort(

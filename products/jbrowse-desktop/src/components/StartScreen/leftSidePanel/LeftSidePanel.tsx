@@ -29,10 +29,7 @@ async function fetchData(sel: { shortName: string; jbrowseConfig: string }[]) {
   return Promise.all(
     sel.map(async r => {
       const ret = await fetchjson(r.jbrowseConfig)
-      addRelativeUris(
-        ret as Record<string, unknown>,
-        new URL(r.jbrowseConfig),
-      )
+      addRelativeUris(ret as Record<string, unknown>, new URL(r.jbrowseConfig))
       return ret as JBrowseConfig
     }),
   )

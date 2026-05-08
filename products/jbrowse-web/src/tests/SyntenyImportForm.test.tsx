@@ -1,8 +1,7 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
-
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
+
 setup()
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -21,7 +20,7 @@ console.warn = jest.fn()
 
 test('three level', async () => {
   const { session, queryAllByTestId } = await createView()
-  ;(session as AbstractSessionModel).addView('LinearSyntenyView', {
+  session.addView('LinearSyntenyView', {
     init: {
       views: [
         { assembly: 'volvox_del' },
@@ -31,14 +30,11 @@ test('three level', async () => {
       tracks: [['volvox_del.paf'], ['volvox_ins.paf']],
     },
   })
-  const canvases = await waitFor(
-    () => {
-      const found = queryAllByTestId('synteny_canvas_done')
-      expect(found).toHaveLength(2)
-      return found
-    },
-    delay,
-  )
+  const canvases = await waitFor(() => {
+    const found = queryAllByTestId('synteny_canvas_done')
+    expect(found).toHaveLength(2)
+    return found
+  }, delay)
   expectCanvasMatch(canvases[0]!)
   expectCanvasMatch(canvases[1]!)
 }, 40000)
