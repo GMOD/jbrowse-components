@@ -153,7 +153,24 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     } = opts
 
     const metadata = await this.setup(opts)
-    const res = await this.getResolution(bpPerPx / (resolution ?? 1), opts)
+    // `resolution` is now a discrete binsize from metadata.resolutions
+    // (set by the model dropdown / zoomResolutionFiner-Coarser). If the
+    // caller passed one of the file's real binsizes, use it directly. Else
+    // fall back to auto-pick based on bpPerPx (legacy behaviour).
+    const res =
+      resolution !== undefined && metadata.resolutions.includes(resolution)
+        ? resolution
+        : await this.getResolution(bpPerPx, opts)
+    console.warn(
+      '[HiC Adapter] getMultiRegionContactRecords: requested resolution=',
+      resolution,
+      'bpPerPx=',
+      bpPerPx,
+      'available=',
+      metadata.resolutions,
+      '-> using res=',
+      res,
+    )
 
     // Build a chromosome → hic-file index map. hic-straw transposes queries
     // when idx(chr1) > idx(chr2), returning bin1/bin2 in the swapped order.

@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -10,14 +9,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-const HicTrackConfigFactory = (pluginManager: PluginManager) => {
+const HicTrackConfigFactory = () => {
   return ConfigurationSchema(
     'LinearHicDisplay',
     {
-      /**
-       * #slot
-       */
-      renderer: pluginManager.getRendererType('HicRenderer')!.configSchema,
       /**
        * #slot
        */

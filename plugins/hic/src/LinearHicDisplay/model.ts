@@ -18,15 +18,14 @@ import {
 import { generateColorRamp } from './components/HicRenderer.ts'
 
 import type {
+  HicContactItem,
   HicDataResult,
-  HicFlatbushItem,
 } from '../RenderHicDataRPC/types.ts'
 import type { HicBackend } from './components/hicBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
-  LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -55,7 +54,13 @@ export default function stateModelFactory(
       types.model({
         type: types.literal('LinearHicDisplay'),
         configuration: ConfigurationReference(configSchema),
-        resolution: types.optional(types.number, 1),
+        /**
+         * #property
+         * User-selected binsize (one of the file's available resolutions).
+         * Undefined means "auto" — pick a binsize from `availableResolutions`
+         * based on the current view's bpPerPx on every fetch.
+         */
+        resolution: types.maybe(types.number),
         useLogScale: false,
         activeNormalization: 'KR',
         mode: 'triangular',
@@ -79,6 +84,15 @@ export default function stateModelFactory(
       if (!snap) {
         return snap
       }
+      // The old `resolution` field was a multiplier (default 1) on
+      // auto-selected binsize. The new `resolution` is a discrete binsize
+      // from the file (5000, 10000, …). Anything < 1000 in old snapshots
+      // is almost certainly a stale multiplier — drop it so the model
+      // falls back to auto-mode.
+      if (snap.resolution !== undefined && snap.resolution < 1000) {
+        const { resolution: _drop, ...withoutRes } = snap
+        snap = withoutRes
+      }
       const { colorScheme, showLegend, ...rest } = snap
       if (colorScheme === undefined && showLegend === undefined) {
         return rest
@@ -99,17 +113,50 @@ export default function stateModelFactory(
       get showLegend(): boolean | undefined {
         return self.getOverride<boolean>('showLegend')
       },
-      get rendererTypeName() {
-        return 'HicRenderer'
-      },
-      get flatbush() {
-        return self.rpcData?.flatbush
-      },
-      get flatbushItems(): HicFlatbushItem[] {
+      get items(): HicContactItem[] {
         return self.rpcData?.items ?? []
+      },
+      get hoverLookup(): Record<string, number> | undefined {
+        return self.rpcData?.lookup
+      },
+      get regionPixelStarts(): number[] | undefined {
+        return self.rpcData?.regionPixelStarts
+      },
+      get regionCombinedOffsets(): number[] | undefined {
+        return self.rpcData?.regionCombinedOffsets
+      },
+      get binWidth(): number | undefined {
+        return self.rpcData?.binWidth
       },
       get colorMaxScore() {
         return self.rpcData?.colorMaxScore ?? 0
+      },
+      /**
+       * #getter
+       * The actual binsize to fetch at — user override if set, else
+       * auto-picked (largest available binsize ≤ 2*bpPerPx).
+       */
+      get effectiveResolution(): number | undefined {
+        const avail = self.availableResolutions
+        if (!avail?.length) {
+          return undefined
+        }
+        const userSet = self.resolution
+        if (userSet !== undefined && avail.includes(userSet)) {
+          return userSet
+        }
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const bpPerPx = Math.max(1, view.bpPerPx)
+        // avail is sorted ascending (smallest binsize first); pick the
+        // largest binsize ≤ 2*bpPerPx, falling back to the smallest if
+        // none qualify (very zoomed in).
+        let chosen = avail[0]!
+        for (const r of avail) {
+          if (r <= 2 * bpPerPx) {
+            chosen = r
+          }
+        }
+        return chosen
       },
       get yScalar() {
         const view = getContainingView(self) as LinearGenomeViewModel
@@ -125,7 +172,7 @@ export default function stateModelFactory(
       // `self.rpcProps()` once, so any change refires it.
       rpcProps() {
         return {
-          resolution: self.resolution,
+          resolution: self.effectiveResolution,
           normalization: self.activeNormalization,
         }
       },
@@ -156,24 +203,8 @@ export default function stateModelFactory(
 
       /**
        * #method
-       * Returns legend items for the Hi-C color scale
-       */
-      legendItems(): LegendItem[] {
-        const colorScheme = self.colorScheme ?? 'juicebox'
-        const displayMax = Math.round(self.colorMaxScore)
-        const minLabel = self.useLogScale ? '1' : '0'
-        const maxLabel = `${displayMax.toLocaleString()}${self.useLogScale ? ' (log)' : ''}`
-
-        return [
-          {
-            label: `${minLabel} - ${maxLabel} (${colorScheme})`,
-          },
-        ]
-      },
-
-      /**
-       * #method
-       * Returns the width needed for the SVG legend if showLegend is enabled.
+       * Width of the SVG legend (consumed by SVGLinearGenomeView). Returns 0
+       * when no legend will be drawn so the export framework can omit space.
        */
       svgLegendWidth(): number {
         return self.showLegend && self.colorMaxScore > 0 ? 140 : 0
@@ -218,7 +249,7 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setResolution(n: number) {
+      setResolution(n: number | undefined) {
         self.resolution = n
       },
       /**
@@ -261,41 +292,48 @@ export default function stateModelFactory(
        * #action
        */
       setAvailableResolutions(f: number[]) {
-        self.availableResolutions = f
+        // Sort ascending (smallest binsize first) so index-based stepping is
+        // consistent regardless of the order returned by hic-straw. This
+        // makes "Finer" = idx-1 = smaller binsize and "Coarser" = idx+1 =
+        // larger binsize.
+        self.availableResolutions = [...f].sort((a, b) => a - b)
       },
       /**
        * #action
        */
       zoomResolutionCoarser() {
-        const t0 = performance.now()
-        console.warn('[HiC Perf] zoomResolutionCoarser action start')
-        if (self.availableResolutions?.length) {
-          const idx = self.availableResolutions.indexOf(self.resolution)
-          console.warn('[HiC Perf] Found index:', idx, 'at', (performance.now() - t0).toFixed(1), 'ms')
-          if (idx !== -1 && idx < self.availableResolutions.length - 1) {
-            const newRes = self.availableResolutions[idx + 1]!
-            console.warn('[HiC Perf] Setting resolution to:', newRes, 'at', (performance.now() - t0).toFixed(1), 'ms')
-            self.resolution = newRes
-            console.warn('[HiC Perf] Resolution set, time:', (performance.now() - t0).toFixed(1), 'ms')
-          }
+        // Step relative to whatever's currently effective so the first
+        // click does what the user expects even when in auto-mode.
+        const avail = self.availableResolutions
+        if (!avail?.length) {
+          return
+        }
+        const cur = self.effectiveResolution ?? avail[0]!
+        const idx = avail.indexOf(cur)
+        if (idx !== -1 && idx < avail.length - 1) {
+          self.resolution = avail[idx + 1]
         }
       },
       /**
        * #action
        */
       zoomResolutionFiner() {
-        const t0 = performance.now()
-        console.warn('[HiC Perf] zoomResolutionFiner action start')
-        if (self.availableResolutions?.length) {
-          const idx = self.availableResolutions.indexOf(self.resolution)
-          console.warn('[HiC Perf] Found index:', idx, 'at', (performance.now() - t0).toFixed(1), 'ms')
-          if (idx !== -1 && idx > 0) {
-            const newRes = self.availableResolutions[idx - 1]!
-            console.warn('[HiC Perf] Setting resolution to:', newRes, 'at', (performance.now() - t0).toFixed(1), 'ms')
-            self.resolution = newRes
-            console.warn('[HiC Perf] Resolution set, time:', (performance.now() - t0).toFixed(1), 'ms')
-          }
+        const avail = self.availableResolutions
+        if (!avail?.length) {
+          return
         }
+        const cur = self.effectiveResolution ?? avail[0]!
+        const idx = avail.indexOf(cur)
+        if (idx !== -1 && idx > 0) {
+          self.resolution = avail[idx - 1]
+        }
+      },
+      /**
+       * #action
+       * Clear the user override so resolution auto-tracks bpPerPx again.
+       */
+      resetResolutionToAuto() {
+        self.resolution = undefined
       },
     }))
     .views(self => {
@@ -397,6 +435,14 @@ export default function stateModelFactory(
                   label: 'Coarser resolution',
                   onClick: () => {
                     self.zoomResolutionCoarser()
+                  },
+                },
+                {
+                  label: 'Auto (track zoom)',
+                  type: 'checkbox',
+                  checked: self.resolution === undefined,
+                  onClick: () => {
+                    self.resetResolutionToAuto()
                   },
                 },
               ],

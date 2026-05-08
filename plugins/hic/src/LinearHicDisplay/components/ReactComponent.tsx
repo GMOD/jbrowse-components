@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
@@ -7,13 +7,12 @@ import {
   reducePrecision,
   useGpuModelLifecycle,
 } from '@jbrowse/core/util'
-import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
-import HicColorLegend from './HicColorLegend.tsx'
+import HicOverlayPanel from './HicOverlayPanel.tsx'
 import { HicRenderer } from './HicRenderer.ts'
 
-import type { HicFlatbushItem } from '../../RenderHicDataRPC/types.ts'
+import type { HicContactItem } from '../../RenderHicDataRPC/types.ts'
 import type { LinearHicDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -26,7 +25,7 @@ function HicTooltip({
   x,
   y,
 }: {
-  item: HicFlatbushItem
+  item: HicContactItem
   x: number
   y: number
 }) {
@@ -73,103 +72,24 @@ function screenToUnrotated(
   screenX: number,
   screenY: number,
   yScalar: number,
-): { x: number; y: number } {
+) {
   const scaledY = screenY / yScalar
   const x = (screenX - scaledY) / SQRT2
   const y = (screenX + scaledY) / SQRT2
   return { x, y }
 }
 
-const ResolutionControl = observer(function ResolutionControl({
-  model,
-}: {
-  model: LinearHicDisplayModel
-}) {
-  const t0 = performance.now()
-  const { resolution, availableResolutions } = model
-  const canGoFiner = availableResolutions?.some(r => r < resolution) ?? false
-  const canGoCoarser = availableResolutions?.some(r => r > resolution) ?? false
-  console.warn('[HiC Perf] ResolutionControl render time:', (performance.now() - t0).toFixed(2), 'ms, resolution:', resolution)
-
-  const handleFiner = () => {
-    const t0 = performance.now()
-    console.warn('[HiC Perf] Finer button clicked, current resolution:', resolution)
-    try {
-      model.zoomResolutionFiner()
-      const t1 = performance.now()
-      console.warn(`[HiC Perf] zoomResolutionFiner done (${(t1 - t0).toFixed(1)}ms), new resolution:`, model.resolution)
-    } catch (e) {
-      console.error('Error adjusting HiC resolution:', e)
+// Walk the cumulative pixel-start array (length regions+1) to find which
+// region a coord falls into. Linear scan — region count is small (typically
+// 1-5).
+function findRegionIdx(coord: number, pixelStarts: number[]) {
+  for (let i = pixelStarts.length - 2; i >= 0; i--) {
+    if (coord >= pixelStarts[i]!) {
+      return i
     }
   }
-
-  const handleCoarser = () => {
-    const t0 = performance.now()
-    console.warn('[HiC Perf] Coarser button clicked, current resolution:', resolution)
-    try {
-      model.zoomResolutionCoarser()
-      const t1 = performance.now()
-      console.warn(`[HiC Perf] zoomResolutionCoarser done (${(t1 - t0).toFixed(1)}ms), new resolution:`, model.resolution)
-    } catch (e) {
-      console.error('Error adjusting HiC resolution:', e)
-    }
-  }
-
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 4,
-        right: 4,
-        display: 'flex',
-        gap: 2,
-        alignItems: 'center',
-        fontSize: 11,
-        backgroundColor: 'rgba(255, 255, 255, 0.85)',
-        padding: '2px 4px',
-        borderRadius: 2,
-      }}
-    >
-      <button
-        onClick={handleFiner}
-        disabled={!canGoFiner}
-        title="Finer"
-        type="button"
-        style={{
-          padding: '2px 4px',
-          fontSize: 10,
-          cursor: canGoFiner ? 'pointer' : 'default',
-          opacity: canGoFiner ? 1 : 0.5,
-          border: '1px solid #ccc',
-          background: '#fff',
-          borderRadius: 2,
-        }}
-      >
-        +
-      </button>
-      <span style={{ minWidth: 30, textAlign: 'center', fontSize: 10 }}>
-        {(resolution / 1000).toFixed(0)}k
-      </span>
-      <button
-        onClick={handleCoarser}
-        disabled={!canGoCoarser}
-        title="Coarser"
-        type="button"
-        style={{
-          padding: '2px 4px',
-          fontSize: 10,
-          cursor: canGoCoarser ? 'pointer' : 'default',
-          opacity: canGoCoarser ? 1 : 0.5,
-          border: '1px solid #ccc',
-          background: '#fff',
-          borderRadius: 2,
-        }}
-      >
-        −
-      </button>
-    </div>
-  )
-})
+  return 0
+}
 
 const HicCanvas = observer(function HicCanvas({
   model,
@@ -181,17 +101,16 @@ const HicCanvas = observer(function HicCanvas({
   const {
     height,
     rpcData,
-    flatbush,
-    flatbushItems,
+    items,
+    hoverLookup,
+    regionPixelStarts,
+    regionCombinedOffsets,
+    binWidth,
     yScalar,
-    showLegend,
-    colorMaxScore,
-    colorScheme,
-    useLogScale,
   } = model
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const [hoveredItem, setHoveredItem] = useState<HicFlatbushItem>()
+  const [hoveredItem, setHoveredItem] = useState<HicContactItem>()
   const [mousePosition, setMousePosition] = useState<{
     x: number
     y: number
@@ -201,23 +120,20 @@ const HicCanvas = observer(function HicCanvas({
     y: number
   }>()
 
-  // Model owns the upload/render autorun — see startGpuBackendLifecycle on
-  // the LinearHicDisplay model. The rpcData and colorScheme uploads are
-  // identity-diffed independently so a colorScheme change doesn't re-upload
-  // the contact matrix.
   const { canvasRef, error, retry } = useGpuModelLifecycle(HicRenderer, model)
 
-  // View transform for hit-test math — mirrors renderState on the model.
   const { scale: viewScale, translateX: viewOffsetX } =
     model.viewportTransform(view)
 
-  const flatbushIndex = useMemo(
-    () => (flatbush ? Flatbush.from(flatbush) : null),
-    [flatbush],
-  )
-
   const onMouseMove = (event: React.MouseEvent) => {
-    if (!containerRef.current || !flatbushIndex || !flatbushItems.length) {
+    if (
+      !containerRef.current ||
+      !hoverLookup ||
+      !regionPixelStarts ||
+      !regionCombinedOffsets ||
+      binWidth === undefined ||
+      !items.length
+    ) {
       setHoveredItem(undefined)
       setMousePosition(undefined)
       return
@@ -230,20 +146,21 @@ const HicCanvas = observer(function HicCanvas({
     setMousePosition({ x: event.clientX, y: event.clientY })
     setLocalMousePos({ x: mouseX, y: mouseY })
 
-    // Reverse the shader transform to get data-space screen coordinates
     const dataScreenX = (mouseX - viewOffsetX) / viewScale
     const dataScreenY = mouseY / viewScale
-
     const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar)
 
-    const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
-
-    if (results.length > 0) {
-      const item = flatbushItems[results[0]!]
-      setHoveredItem(item)
-    } else {
-      setHoveredItem(undefined)
-    }
+    // x,y are in unrotated pixel coords. Each contact rect is at
+    //   ((bin1 + regionCombinedOffsets[r1]) * binWidth,
+    //    (bin2 + regionCombinedOffsets[r2]) * binWidth)
+    // and is binWidth × binWidth in size. Find the region pair from
+    // regionPixelStarts, then invert the position formula.
+    const r1 = findRegionIdx(x, regionPixelStarts)
+    const r2 = findRegionIdx(y, regionPixelStarts)
+    const bin1 = Math.floor(x / binWidth - regionCombinedOffsets[r1]!)
+    const bin2 = Math.floor(y / binWidth - regionCombinedOffsets[r2]!)
+    const idx = hoverLookup[`${r1}|${r2}|${bin1}|${bin2}`]
+    setHoveredItem(idx !== undefined ? items[idx] : undefined)
   }
 
   const onMouseLeave = () => {
@@ -288,7 +205,7 @@ const HicCanvas = observer(function HicCanvas({
           left: 0,
         }}
       />
-      <ResolutionControl model={model} />
+      <HicOverlayPanel model={model} />
       {hoveredItem && localMousePos ? (
         <Crosshairs
           x={localMousePos.x}
@@ -298,19 +215,11 @@ const HicCanvas = observer(function HicCanvas({
           height={height}
         />
       ) : null}
-
       {hoveredItem && mousePosition ? (
         <HicTooltip
           item={hoveredItem}
           x={mousePosition.x}
           y={mousePosition.y}
-        />
-      ) : null}
-      {showLegend && colorMaxScore > 0 ? (
-        <HicColorLegend
-          maxScore={colorMaxScore}
-          colorScheme={colorScheme}
-          useLogScale={useLogScale}
         />
       ) : null}
     </div>

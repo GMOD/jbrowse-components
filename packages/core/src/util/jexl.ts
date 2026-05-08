@@ -1,5 +1,8 @@
 import { Jexl } from '@jbrowse/jexl'
 
+import { colord } from './colord.ts'
+
+import type { Colord } from './colord.ts'
 import type { Feature } from './simpleFeature.ts'
 
 export default function JexlF(/* config?: any*/) {
@@ -81,6 +84,15 @@ export default function JexlF(/* config?: any*/) {
     const tags = feature.get('tags')
     return tags ? tags[s] : feature.get(s)
   })
+
+  // color helpers
+  j.addFunction('alpha', (color: Colord, n: number) => color.alpha(n))
+  j.addFunction('hsl', (color: Colord) => colord(color.toHsl()))
+  j.addFunction('colorString', (color: Colord) => color.toHex())
+  j.addFunction(
+    'interpolate',
+    (count: number, scale: (n: number) => string) => scale(count),
+  )
 
   j.addBinaryOp('&', 15, (a: number, b: number) => a & b)
 

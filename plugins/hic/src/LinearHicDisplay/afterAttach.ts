@@ -12,13 +12,11 @@ type LGV = LinearGenomeViewModel
 
 interface HicModel {
   isMinimized: boolean
-  resolution: number
-  availableResolutions: number[] | undefined
+  effectiveResolution: number | undefined
   rpcProps(): Record<string, unknown>
   adapterConfig: Record<string, unknown>
   setAvailableNormalizations(norms: string[]): void
   setAvailableResolutions(resolutions: number[]): void
-  setResolution(res: number): void
   performHicFetch(): void
 }
 
@@ -41,21 +39,8 @@ export function doAfterAttach(self: HicModel) {
         }
         if (resolutions) {
           self.setAvailableResolutions(resolutions)
-          if (!resolutions.includes(self.resolution)) {
-            const view = getContainingView(self) as LGV
-            const bpPerPx = Math.max(1, view.bpPerPx)
-            const resolutionRequest = bpPerPx
-
-            let chosenRes = resolutions[resolutions.length - 1]!
-            for (let i = resolutions.length - 1; i >= 0; i -= 1) {
-              const r = resolutions[i]!
-              if (r <= 2 * resolutionRequest) {
-                chosenRes = r
-              }
-            }
-            console.warn('[HiC] Setting initial resolution based on zoom: bpPerPx=', bpPerPx, '-> resolution=', chosenRes)
-            self.setResolution(chosenRes)
-          }
+          // No initial-resolution selection here — `effectiveResolution`
+          // auto-derives from bpPerPx whenever `self.resolution` is unset.
         }
       }
     } catch (e) {
@@ -80,8 +65,9 @@ export function doAfterAttach(self: HicModel) {
         if (!view.dynamicBlocks.contentBlocks.length) {
           return
         }
-        if (!self.availableResolutions?.includes(self.resolution)) {
-          console.warn('[HiC] Skipping fetch: resolution', self.resolution, 'not in availableResolutions', self.availableResolutions)
+        // effectiveResolution is undefined until availableResolutions
+        // arrives from CoreGetInfo — skip until then.
+        if (self.effectiveResolution === undefined) {
           return
         }
 

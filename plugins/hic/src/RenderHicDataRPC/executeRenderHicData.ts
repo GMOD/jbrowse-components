@@ -1,12 +1,11 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import Flatbush from '@jbrowse/core/util/flatbush'
 
 import {
   calcRegionCombinedOffsets,
   computePercentile,
 } from '../regionOffsets.ts'
 
-import type { HicDataResult, HicFlatbushItem } from './types.ts'
+import type { HicContactItem, HicDataResult } from './types.ts'
 import type HicAdapter from '../HicAdapter/HicAdapter.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
@@ -18,6 +17,16 @@ interface RenderHicDataArgs {
   bpPerPx: number
   resolution: number
   normalization: string
+}
+
+function calcRegionPixelStarts(regions: Region[], bpPerPx: number) {
+  const out = [0]
+  let cum = 0
+  for (const region of regions) {
+    cum += (region.end - region.start) / bpPerPx
+    out.push(cum)
+  }
+  return out
 }
 
 export async function executeRenderHicData({
@@ -52,19 +61,19 @@ export async function executeRenderHicData({
 
   const w = res / (bpPerPx * Math.SQRT2)
   const regionCombinedOffsets = calcRegionCombinedOffsets(regions, bpPerPx, res)
+  const regionPixelStarts = calcRegionPixelStarts(regions, bpPerPx)
 
   if (!features.length) {
-    const emptyFlatbush = new Flatbush(1)
-    emptyFlatbush.add(0, 0, 0, 0)
-    emptyFlatbush.finish()
     return {
       positions: new Float32Array(0),
       counts: new Float32Array(0),
       numContacts: 0,
       colorMaxScore: 0,
       binWidth: w,
-      flatbush: emptyFlatbush.data,
       items: [],
+      lookup: {},
+      regionPixelStarts,
+      regionCombinedOffsets,
     }
   }
 
@@ -72,11 +81,11 @@ export async function executeRenderHicData({
 
   const positions = new Float32Array(features.length * 2)
   const countValues = new Float32Array(features.length)
-  const items: HicFlatbushItem[] = []
-  const flatbush = new Flatbush(Math.max(features.length, 1))
+  const items: HicContactItem[] = []
+  const lookup: Record<string, number> = {}
 
-  for (const [i, feature] of features.entries()) {
-    const { bin1, bin2, counts, region1Idx, region2Idx } = feature
+  for (let i = 0; i < features.length; i++) {
+    const { bin1, bin2, counts, region1Idx, region2Idx } = features[i]!
 
     const x = (bin1 + regionCombinedOffsets[region1Idx]!) * w
     const y = (bin2 + regionCombinedOffsets[region2Idx]!) * w
@@ -85,11 +94,9 @@ export async function executeRenderHicData({
     positions[i * 2 + 1] = y
     countValues[i] = counts
 
-    flatbush.add(x, y, x + w, y + w)
     items.push({ bin1, bin2, counts, region1Idx, region2Idx })
+    lookup[`${region1Idx}|${region2Idx}|${bin1}|${bin2}`] = i
   }
-
-  flatbush.finish()
 
   return {
     positions,
@@ -97,7 +104,9 @@ export async function executeRenderHicData({
     numContacts: features.length,
     colorMaxScore,
     binWidth: w,
-    flatbush: flatbush.data,
     items,
+    lookup,
+    regionPixelStarts,
+    regionCombinedOffsets,
   }
 }
