@@ -50,5 +50,3 @@ export {
   ReactComponent as LinearWiggleDisplayReactComponent,
   modelFactory as linearWiggleDisplayModelFactory,
 } from './LinearWiggleDisplay/index.ts'
-
-export { default as SetMinMaxDialog } from './shared/SetMinMaxDialog.tsx'

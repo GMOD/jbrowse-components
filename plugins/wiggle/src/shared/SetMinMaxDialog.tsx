@@ -47,13 +47,11 @@ export default function SetMinMaxDialog(props: {
       {!ok ? (
         <Typography color="error">Max must be greater than min</Typography>
       ) : null}
-
       {!logOk ? (
         <Typography color="error">
           Min score should be greater than 0 for log scale
         </Typography>
       ) : null}
-
       <TextField
         value={min}
         onChange={event => {

@@ -15,9 +15,8 @@ export const LINKED_READ_COLOR_PAIR_LR = 1
 export const LINKED_READ_COLOR_PAIR_RL = 2
 export const LINKED_READ_COLOR_PAIR_RR = 3
 export const LINKED_READ_COLOR_PAIR_LL = 4
-export const LINKED_READ_COLOR_SPLIT_RF = 5
-export const LINKED_READ_COLOR_SPLIT_FR = 6
-export const LINKED_READ_COLOR_SPLIT_SAME = 7
+export const LINKED_READ_COLOR_SPLIT_NORMAL = 5
+export const LINKED_READ_COLOR_SPLIT_INV = 6
 
 export interface ReadEntry {
   displayedRegionIndex: number
@@ -63,14 +62,12 @@ export function pairedColorType(orientNum: number) {
     : LINKED_READ_COLOR_PAIR_UNKNOWN
 }
 
+// Same actual strand (p1Strand === -p2Strand, since p2Strand = -s2) → simple
+// deletion. Different actual strands → inversion.
 export function splitColorType(p1Strand: number, p2Strand: number) {
-  if (p1Strand === -1 && p2Strand === 1) {
-    return LINKED_READ_COLOR_SPLIT_RF
-  }
-  if (p1Strand === 1 && p2Strand === -1) {
-    return LINKED_READ_COLOR_SPLIT_FR
-  }
-  return LINKED_READ_COLOR_SPLIT_SAME
+  return p1Strand === -p2Strand
+    ? LINKED_READ_COLOR_SPLIT_NORMAL
+    : LINKED_READ_COLOR_SPLIT_INV
 }
 
 // Group reads across all displayed regions by readName. Used by both the

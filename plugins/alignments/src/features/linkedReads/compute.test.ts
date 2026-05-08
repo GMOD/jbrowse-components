@@ -3,9 +3,8 @@ import {
   LINKED_READ_COLOR_PAIR_LL,
   LINKED_READ_COLOR_PAIR_RL,
   LINKED_READ_COLOR_PAIR_RR,
-  LINKED_READ_COLOR_SPLIT_FR,
-  LINKED_READ_COLOR_SPLIT_RF,
-  LINKED_READ_COLOR_SPLIT_SAME,
+  LINKED_READ_COLOR_SPLIT_NORMAL,
+  LINKED_READ_COLOR_SPLIT_INV,
   classifyPair,
   computeLinkedReadLinesByRegion,
   connectionBp,
@@ -169,11 +168,10 @@ describe('classifyPair — paired reads', () => {
 
 describe('classifyPair — split long reads', () => {
   // p2Strand is negated for split reads in classifyPair. So:
-  //   SPLIT_FR (normal):  s1=1,  s2=1  → p2Strand=-1 → splitColorType(1,-1)=FR
-  //   SPLIT_RF (normal):  s1=-1, s2=-1 → p2Strand=1  → splitColorType(-1,1)=RF
-  //   SPLIT_SAME (inversion): different actual strands → p2Strand same sign as s1
+  //   same actual strand (s1===s2): p1Strand === -p2Strand → SPLIT_NORMAL
+  //   different actual strands:     p1Strand === p2Strand  → SPLIT_INV
 
-  it('FR (both fwd in BAM) → SPLIT_FR, normal, inner junction endpoints, hasPaired=false', () => {
+  it('both fwd in BAM → SPLIT_NORMAL, inner junction endpoints, hasPaired=false', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -187,13 +185,13 @@ describe('classifyPair — split long reads', () => {
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1))
     expect(c.hasPaired).toBe(false)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_FR)
+    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
     expect(c.isNormal).toBe(true)
     expect(c.bp1).toBe(200) // right edge of left alignment
     expect(c.bp2).toBe(300) // left edge of right alignment
   })
 
-  it('RF (both rev in BAM) → SPLIT_RF, normal, inner junction endpoints', () => {
+  it('both rev in BAM → SPLIT_NORMAL, inner junction endpoints', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -207,13 +205,13 @@ describe('classifyPair — split long reads', () => {
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1))
     expect(c.hasPaired).toBe(false)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_RF)
+    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
     expect(c.isNormal).toBe(true)
     expect(c.bp1).toBe(200) // right edge, not 3-prime/start
     expect(c.bp2).toBe(300) // left edge, not 3-prime/end
   })
 
-  it('fwd+rev inversion → SPLIT_SAME, not normal', () => {
+  it('fwd+rev inversion → SPLIT_INV, not normal', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -227,11 +225,11 @@ describe('classifyPair — split long reads', () => {
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1))
     expect(c.hasPaired).toBe(false)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_SAME)
+    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_INV)
     expect(c.isNormal).toBe(false)
   })
 
-  it('rev+fwd inversion → SPLIT_SAME, not normal', () => {
+  it('rev+fwd inversion → SPLIT_INV, not normal', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -245,7 +243,7 @@ describe('classifyPair — split long reads', () => {
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1))
     expect(c.hasPaired).toBe(false)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_SAME)
+    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_INV)
     expect(c.isNormal).toBe(false)
   })
 
@@ -277,7 +275,11 @@ describe('filterEntries', () => {
       names: ['r', 'r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY, SAM_FLAG_SECONDARY],
       strands: [1, 1, 1],
-      positions: [[100, 200], [300, 400], [500, 600]],
+      positions: [
+        [100, 200],
+        [300, 400],
+        [500, 600],
+      ],
       orientations: [0, 0, 0],
       ys: [0, 1, 2],
     })
@@ -293,7 +295,11 @@ describe('filterEntries', () => {
       names: ['r', 'r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY, SAM_FLAG_SECONDARY],
       strands: [1, 1, 1],
-      positions: [[100, 200], [300, 400], [500, 600]],
+      positions: [
+        [100, 200],
+        [300, 400],
+        [500, 600],
+      ],
       orientations: [0, 0, 0],
       ys: [0, 1, 2],
     })
@@ -313,7 +319,11 @@ describe('filterEntries', () => {
         SAM_FLAG_PAIRED | SAM_FLAG_MATE_UNMAPPED,
       ],
       strands: [1, 1, 1],
-      positions: [[100, 200], [300, 400], [500, 600]],
+      positions: [
+        [100, 200],
+        [300, 400],
+        [500, 600],
+      ],
       orientations: [1, 1, 1],
       ys: [0, 1, 2],
     })
@@ -342,7 +352,12 @@ describe('groupReadsByName', () => {
       orientations: [1],
       ys: [0],
     })
-    const readsByName = groupReadsByName(new Map([[0, data0], [1, data1]]))
+    const readsByName = groupReadsByName(
+      new Map([
+        [0, data0],
+        [1, data1],
+      ]),
+    )
     expect(readsByName.get('r1')).toHaveLength(2)
   })
 })
@@ -401,7 +416,7 @@ describe('computeLinkedReadLinesByRegion', () => {
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLines).toBe(1)
-    expect(lines.colorTypes[0]).toBe(LINKED_READ_COLOR_SPLIT_FR)
+    expect(lines.colorTypes[0]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
     expect(lines.positions[0]).toBe(200) // right edge of left alignment
     expect(lines.positions[1]).toBe(300) // left edge of right alignment
     expect(lines.ys[0]).toBe(0)
@@ -424,7 +439,7 @@ describe('computeLinkedReadLinesByRegion', () => {
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLines).toBe(1)
-    expect(lines.colorTypes[0]).toBe(LINKED_READ_COLOR_SPLIT_RF)
+    expect(lines.colorTypes[0]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
     expect(lines.positions[0]).toBe(200)
     expect(lines.positions[1]).toBe(300)
   })
@@ -448,7 +463,7 @@ describe('computeLinkedReadLinesByRegion', () => {
     expect(lines.positions[1]).toBe(300)
   })
 
-  it('excludes split inversions (SPLIT_SAME) — bezier overlay handles them', () => {
+  it('excludes split inversions (SPLIT_INV) — bezier overlay handles them', () => {
     const data = makeData({
       names: ['r1', 'r1'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -506,7 +521,12 @@ describe('computeLinkedReadLinesByRegion', () => {
   it('handles multiple read pairs in the same region', () => {
     const data = makeData({
       names: ['r1', 'r1', 'r2', 'r2'],
-      flags: [SAM_FLAG_PAIRED, SAM_FLAG_PAIRED, SAM_FLAG_PAIRED, SAM_FLAG_PAIRED],
+      flags: [
+        SAM_FLAG_PAIRED,
+        SAM_FLAG_PAIRED,
+        SAM_FLAG_PAIRED,
+        SAM_FLAG_PAIRED,
+      ],
       strands: [1, -1, 1, -1],
       positions: [
         [100, 200],
@@ -529,10 +549,10 @@ describe('computeLinkedReadLinesByRegion', () => {
     const data = makeData({
       names: ['short', 'short', 'long', 'long'],
       flags: [
-        SAM_FLAG_PAIRED,          // short read mate 1
-        SAM_FLAG_PAIRED,          // short read mate 2
-        0,                        // long read primary
-        SAM_FLAG_SUPPLEMENTARY,   // long read supplementary
+        SAM_FLAG_PAIRED, // short read mate 1
+        SAM_FLAG_PAIRED, // short read mate 2
+        0, // long read primary
+        SAM_FLAG_SUPPLEMENTARY, // long read supplementary
       ],
       strands: [1, -1, 1, 1],
       positions: [
@@ -549,6 +569,6 @@ describe('computeLinkedReadLinesByRegion', () => {
     // Both pairs emit lines: the LR paired reads and the FR split reads
     expect(lines.numLines).toBe(2)
     expect(lines.colorTypes[0]).toBe(LINKED_READ_COLOR_PAIR_LR)
-    expect(lines.colorTypes[1]).toBe(LINKED_READ_COLOR_SPLIT_FR)
+    expect(lines.colorTypes[1]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
   })
 })

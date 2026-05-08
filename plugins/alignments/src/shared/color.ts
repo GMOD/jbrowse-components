@@ -19,7 +19,7 @@ export const fillColor = {
   color_unknown: 'grey',
   // Long-read split alignment orientation colors
   color_longread_rev_fwd: 'navy',
-  color_longread_same: 'orange',
+  color_longread_inv: '#3a3a9d',
   // Supplementary/split alignment color (light orange)
   color_supplementary: '#f0b878',
   // Samplot-style SV palette (FR→DEL-normal, RF→DUP, FF/RR→INV, interchrom→BND)

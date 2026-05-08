@@ -418,11 +418,7 @@ export function computeArcsFromPileupData(
         const end2 = e2.data.readPositions[e2.readIdx * 2 + 1]!
         // Unpaired: end1→start2 = genomic gap, giving narrow inversion bp arcs.
         const p1 = hasPaired ? (s1 === -1 ? start1 : end1) : end1
-        const p2 = hasPaired
-          ? s2 === -1
-            ? start2
-            : end2
-          : start2
+        const p2 = hasPaired ? (s2 === -1 ? start2 : end2) : start2
         pendingArcs.push({
           p1Ref: e1.refName,
           p1Bp: p1,
