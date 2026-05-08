@@ -5,6 +5,7 @@ const baseConfig = {
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
     '^@jbrowse/text-indexing-core$':
       '<rootDir>/packages/text-indexing-core/src/index.ts',
+    '^swr$': '<rootDir>/packages/__mocks__/swr.ts',
   },
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.cjs',
@@ -79,10 +80,7 @@ export default {
         '<rootDir>/products/jbrowse-cli/src/commands/make-gfa-tabix/gfa-to-tabix.test.ts',
       ],
       testEnvironment: 'jsdom',
-      setupFilesAfterEnv: [
-        '<rootDir>/config/jest/fetchMockAfterEnv.js',
-        '<rootDir>/config/jest/swrCache.js',
-      ],
+      setupFilesAfterEnv: ['<rootDir>/config/jest/fetchMockAfterEnv.js'],
       ...baseConfig,
     },
   ],
