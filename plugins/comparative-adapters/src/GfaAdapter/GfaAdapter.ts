@@ -6,10 +6,7 @@ import { parseGfaPathName } from '../GfaTabixAdapter/gfaTabixUtils.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
 import type { MultiPairFeature } from '../MultiPairFeature.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 import type { FileLocation, Region } from '@jbrowse/core/util/types'
 
@@ -158,14 +155,6 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
 
   private gfaPromise?: Promise<ParsedGfa>
 
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-  }
-
   private async getGfa() {
     this.gfaPromise ??= (async () => {
       const loc = this.getConf('gfaLocation') as FileLocation
@@ -264,11 +253,7 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
     const allSegIds = new Set<string>()
     const pathSpans = new Map<string, { segId: string; orient: string }[]>()
 
-    const allRefSegIds = new Set(
-      gfa.paths
-        .find(p => p.genome === assemblyName && p.refName === refName)
-        ?.segments.map(s => s.segId),
-    )
+    const allRefSegIds = new Set(refPath.segments.map(s => s.segId))
 
     for (const path of gfa.paths) {
       let firstShared = -1
@@ -438,12 +423,13 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
       }
 
       if (features.length > 0) {
-        if (!genomeRows.has(otherPath.genome)) {
-          genomeRows.set(otherPath.genome, [])
+        let arr = genomeRows.get(otherPath.genome)
+        if (!arr) {
+          arr = []
+          genomeRows.set(otherPath.genome, arr)
         }
-        const existing = genomeRows.get(otherPath.genome)!
         for (const f of features) {
-          existing.push(f)
+          arr.push(f)
         }
       }
     }

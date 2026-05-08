@@ -39,25 +39,14 @@ export function readHeaderField(header: string, key: string) {
 }
 
 export function parseSizesField(sizesField: string) {
-  const entries: {
-    panSn: string
-    refName: string
-    genome: string
-    length: number
-  }[] = []
+  const entries: { refName: string; genome: string; length: number }[] = []
   for (const entry of sizesField.split(',')) {
     const colonIdx = entry.lastIndexOf(':')
     if (colonIdx === -1) {
       continue
     }
-    const panSn = entry.slice(0, colonIdx)
-    const { genome, refName } = parseGfaPathName(panSn)
-    entries.push({
-      panSn,
-      refName,
-      genome,
-      length: +entry.slice(colonIdx + 1),
-    })
+    const { genome, refName } = parseGfaPathName(entry.slice(0, colonIdx))
+    entries.push({ refName, genome, length: +entry.slice(colonIdx + 1) })
   }
   return entries
 }

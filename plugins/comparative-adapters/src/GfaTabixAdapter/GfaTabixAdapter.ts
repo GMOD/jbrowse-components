@@ -477,9 +477,13 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
+    // Collect reference pos lines and ordinals in one pass; cache lines to
+    // reuse for path-walk building (avoids a second tabix query for same range)
+    const refPosLines: string[] = []
     const refOrdinals = new Set<number>()
     await this.posFile.getLines(tabixRefName, start, end, {
       lineCallback: (line: string) => {
+        refPosLines.push(line)
         parseOrdinalRanges(line, refOrdinals)
       },
     })
@@ -527,10 +531,16 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
         }
       }
     }
+
+    // Cache hap pos lines while collecting their ordinals (avoids second pass queries)
+    const hapPosLines = new Map<string, string[]>()
     for (const [hapChrom, { minStart, maxEnd }] of hapChromSpan) {
       if (posRefNames.has(hapChrom)) {
+        const lines: string[] = []
+        hapPosLines.set(hapChrom, lines)
         await this.posFile.getLines(hapChrom, minStart, maxEnd, {
           lineCallback: (line: string) => {
+            lines.push(line)
             parseOrdinalRanges(line, allOrdinals)
           },
         })
@@ -591,45 +601,29 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
     }
 
     const pathWalks = new Map<string, number[]>()
-    await this.posFile.getLines(tabixRefName, start, end, {
-      lineCallback: (line: string) => {
-        const tab = line.indexOf('\t')
-        const pathName = line.slice(0, tab)
-        const ords = new Set<number>()
-        parseOrdinalRanges(line, ords)
-        let walk = pathWalks.get(pathName)
-        if (!walk) {
-          walk = []
-          pathWalks.set(pathName, walk)
+    const accumulatePosLine = (line: string) => {
+      const tab = line.indexOf('\t')
+      const pathName = line.slice(0, tab)
+      const ords = new Set<number>()
+      parseOrdinalRanges(line, ords)
+      let walk = pathWalks.get(pathName)
+      if (!walk) {
+        walk = []
+        pathWalks.set(pathName, walk)
+      }
+      for (const ord of [...ords].sort((a, b) => a - b)) {
+        if (allOrdinals.has(ord)) {
+          walk.push(ord)
         }
-        for (const ord of [...ords].sort((a, b) => a - b)) {
-          if (allOrdinals.has(ord)) {
-            walk.push(ord)
-          }
-        }
-      },
-    })
+      }
+    }
 
-    for (const [hapChrom, { minStart, maxEnd }] of hapChromSpan) {
-      if (posRefNames.has(hapChrom)) {
-        await this.posFile.getLines(hapChrom, minStart, maxEnd, {
-          lineCallback: (line: string) => {
-            const tab = line.indexOf('\t')
-            const pathName = line.slice(0, tab)
-            const ords = new Set<number>()
-            parseOrdinalRanges(line, ords)
-            let walk = pathWalks.get(pathName)
-            if (!walk) {
-              walk = []
-              pathWalks.set(pathName, walk)
-            }
-            for (const ord of [...ords].sort((a, b) => a - b)) {
-              if (allOrdinals.has(ord)) {
-                walk.push(ord)
-              }
-            }
-          },
-        })
+    for (const line of refPosLines) {
+      accumulatePosLine(line)
+    }
+    for (const hapLines of hapPosLines.values()) {
+      for (const line of hapLines) {
+        accumulatePosLine(line)
       }
     }
 
