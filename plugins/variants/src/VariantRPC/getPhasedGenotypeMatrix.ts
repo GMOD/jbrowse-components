@@ -46,14 +46,24 @@ export async function getPhasedGenotypeMatrix({
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
   const rows: Record<string, number[]> = {}
-
-  for (const { name } of sources) {
-    const info = sampleInfo[name]
-    const ploidy = info?.maxPloidy ?? 2
-    for (let hp = 0; hp < ploidy; hp++) {
-      rows[`${name} HP${hp}`] = []
+  // Hoist per-source key resolution, max ploidy, and per-haplotype row-name
+  // strings out of the feature loop — all are constant per source.
+  const resolved = sources.map(s => {
+    const maxPloidy = sampleInfo[s.name]?.maxPloidy ?? 2
+    const rowNames: string[] = []
+    for (let hp = 0; hp < maxPloidy; hp++) {
+      const rowName = `${s.name} HP${hp}`
+      rowNames.push(rowName)
+      rows[rowName] = []
     }
-  }
+    return {
+      name: s.name,
+      key: s.sampleName ?? s.name,
+      maxPloidy,
+      rowNames,
+      rawIdx: -1,
+    }
+  })
 
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
@@ -67,6 +77,12 @@ export async function getPhasedGenotypeMatrix({
   })
 
   const raw = detectRawMode(mafs)
+  if (raw) {
+    for (const r of resolved) {
+      const idx = raw.sampleIndexMap.get(r.key)
+      r.rawIdx = idx ?? -1
+    }
+  }
   for (const { feature } of mafs) {
     const callGt = getRawCallGenotype(feature)
     if (callGt && raw) {
@@ -74,39 +90,34 @@ export async function getPhasedGenotypeMatrix({
         | Uint8Array
         | undefined
       const gtPloidy = feature.get('ploidy') as number
-      for (const { name, sampleName } of sources) {
-        const si = raw.sampleIndexMap.get(sampleName ?? name)
-        const info = sampleInfo[name]
-        const maxPloidy = info?.maxPloidy ?? 2
-        const phased = si !== undefined && callGtPhased?.[si]
+      for (const r of resolved) {
+        const si = r.rawIdx
+        const phased = si !== -1 && callGtPhased?.[si]
         if (!phased) {
-          for (let hp = 0; hp < maxPloidy; hp++) {
-            rows[`${name} HP${hp}`]!.push(-1)
+          for (let hp = 0; hp < r.maxPloidy; hp++) {
+            rows[r.rowNames[hp]!]!.push(-1)
           }
         } else {
-          for (let hp = 0; hp < maxPloidy; hp++) {
+          for (let hp = 0; hp < r.maxPloidy; hp++) {
             const a = hp < gtPloidy ? callGt[si * gtPloidy + hp]! : -1
-            rows[`${name} HP${hp}`]!.push(a === -1 || a === -2 ? -1 : a)
+            rows[r.rowNames[hp]!]!.push(a === -1 || a === -2 ? -1 : a)
           }
         }
       }
     } else {
       const genotypes = feature.get('genotypes') as Record<string, string>
-      for (const { name, sampleName } of sources) {
-        const val = genotypes[sampleName ?? name]!
-        const info = sampleInfo[name]
-        const ploidy = info?.maxPloidy ?? 2
-        const isPhased = val.includes('|')
-        if (isPhased) {
+      for (const r of resolved) {
+        const val = genotypes[r.key]!
+        if (val.includes('|')) {
           const alleles = val.split('|')
-          for (let hp = 0; hp < ploidy; hp++) {
+          for (let hp = 0; hp < r.maxPloidy; hp++) {
             const allele = alleles[hp]
             const value = allele === '.' || allele === undefined ? -1 : +allele
-            rows[`${name} HP${hp}`]!.push(value)
+            rows[r.rowNames[hp]!]!.push(value)
           }
         } else {
-          for (let hp = 0; hp < ploidy; hp++) {
-            rows[`${name} HP${hp}`]!.push(-1)
+          for (let hp = 0; hp < r.maxPloidy; hp++) {
+            rows[r.rowNames[hp]!]!.push(-1)
           }
         }
       }
