@@ -5,9 +5,14 @@ title: Drawer Widgets in Embedded Components
 
 ## Overview
 
-Drawer widgets provide a flexible UI pattern for displaying supplementary panels in the embedded `@jbrowse/react-linear-genome-view` component. Instead of modal dialogs, widgets can be displayed as resizable side panels (drawers) that integrate seamlessly with the genome view.
+Drawer widgets provide a flexible UI pattern for displaying supplementary panels
+in the embedded `@jbrowse/react-linear-genome-view` component. Instead of modal
+dialogs, widgets can be displayed as resizable side panels (drawers) that
+integrate seamlessly with the genome view.
 
-This feature is particularly useful for deployments with sufficient screen real estate where a persistent side panel improves the user experience compared to modal dialogs.
+This feature is particularly useful for deployments with sufficient screen real
+estate where a persistent side panel improves the user experience compared to
+modal dialogs.
 
 ## Feature Capabilities
 
@@ -23,10 +28,14 @@ Drawer widgets support:
 
 ### Automatic Track Selector
 
-The most common use case is showing a hierarchical track selector panel. Use the `init` field with `tracklist: true`:
+The most common use case is showing a hierarchical track selector panel. Use the
+`init` field with `tracklist: true`:
 
 ```javascript
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import {
+  createViewState,
+  JBrowseLinearGenomeView,
+} from '@jbrowse/react-linear-genome-view2'
 
 const state = createViewState({
   assembly: assemblyConfig,
@@ -39,7 +48,7 @@ const state = createViewState({
       type: 'LinearGenomeView',
       init: {
         assembly: 'hg38', // Required: assembly name
-        tracklist: true,  // Shows track selector in drawer
+        tracklist: true, // Shows track selector in drawer
       },
     },
   },
@@ -82,12 +91,12 @@ The `init` field accepts the following options:
 
 ```typescript
 interface InitState {
-  assembly: string           // Required: assembly name
-  tracklist?: boolean        // Show hierarchical track selector (default: false)
-  loc?: string              // Initial location (e.g., 'chr1:1000..2000')
-  tracks?: TrackInit[]      // Tracks to display
-  nav?: boolean             // Show navigation header (default: true)
-  highlight?: string[]      // Genomic regions to highlight
+  assembly: string // Required: assembly name
+  tracklist?: boolean // Show hierarchical track selector (default: false)
+  loc?: string // Initial location (e.g., 'chr1:1000..2000')
+  tracks?: TrackInit[] // Tracks to display
+  nav?: boolean // Show navigation header (default: true)
+  highlight?: string[] // Genomic regions to highlight
 }
 ```
 
@@ -100,11 +109,11 @@ Control drawer appearance through session properties:
 state.session.drawerWidth = 500
 
 // Drawer position (default: 'right')
-state.session.setDrawerPosition('left')  // or 'right'
+state.session.setDrawerPosition('left') // or 'right'
 
 // Drawer visibility
-state.session.minimized = false  // Show drawer
-state.session.minimized = true   // Hide drawer
+state.session.minimized = false // Show drawer
+state.session.minimized = true // Hide drawer
 ```
 
 ## Session Storage
@@ -113,8 +122,8 @@ Drawer position is automatically persisted to localStorage:
 
 ```javascript
 // These values are saved and restored across page reloads
-state.session.drawerPosition  // Persisted
-state.session.drawerWidth      // Restored on next load
+state.session.drawerPosition // Persisted
+state.session.drawerWidth // Restored on next load
 ```
 
 ## Responsive Behavior
@@ -140,11 +149,9 @@ To display a custom widget in the drawer:
 
 ```javascript
 // Assuming you've registered a custom widget type
-const myWidget = state.session.addWidget(
-  'MyCustomWidget',
-  'myWidgetId',
-  { /* initial state */ },
-)
+const myWidget = state.session.addWidget('MyCustomWidget', 'myWidgetId', {
+  /* initial state */
+})
 
 // Make it visible in the drawer
 state.session.showWidget(myWidget)
@@ -168,6 +175,7 @@ Drawer widgets work in all modern browsers supporting:
 
 ## Storybook Example
 
-View the `WithDrawerWidget` example in the JBrowse Storybook to see drawer widgets in action:
+View the `WithDrawerWidget` example in the JBrowse Storybook to see drawer
+widgets in action:
 
 https://jbrowse.org/storybook/lgv/main/?path=/story/source-code-for-examples--with-drawer-widget

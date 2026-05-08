@@ -256,6 +256,7 @@ const DrawerWidget = observer(function DrawerWidget({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(session)
   const [toolbarHeight, setToolbarHeight] = useState(0)
+  const [popoutModal, setPopoutModal] = useState(false)
 
   const widgetType = visibleWidget
     ? pluginManager.getWidgetType(visibleWidget.type)
@@ -274,7 +275,7 @@ const DrawerWidget = observer(function DrawerWidget({
     <Paper className={classes.paper} elevation={16} square>
       <DrawerHeader
         onPopoutDrawer={() => {
-          // no-op for now, drawer is always in-drawer
+          setPopoutModal(true)
         }}
         session={session}
         setToolbarHeight={setToolbarHeight}

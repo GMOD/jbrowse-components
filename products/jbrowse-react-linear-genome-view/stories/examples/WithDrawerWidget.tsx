@@ -52,8 +52,8 @@ export const WithDrawerWidget = () => {
           drawer header to switch between left/right positions
         </li>
         <li>
-          <strong>Minimize</strong> — click the minimize button (−) to hide
-          the drawer
+          <strong>Minimize</strong> — click the minimize button (−) to hide the
+          drawer
         </li>
         <li>
           <strong>Close</strong> — click the close button (✕) to close the
