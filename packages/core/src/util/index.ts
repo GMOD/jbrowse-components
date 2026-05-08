@@ -42,10 +42,7 @@ import type {
 } from './types/index.ts'
 import type { Region as MUIRegion } from './types/mst.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
-import type {
-  IAnyStateTreeNode,
-  Instance,
-} from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 export * from './types/index.ts'
@@ -833,7 +830,6 @@ export async function bytesForRegions(
       ),
   )
 }
-
 
 // Supported adapter types by text indexer ensure that this matches the method
 // found in @jbrowse/text-indexing/util

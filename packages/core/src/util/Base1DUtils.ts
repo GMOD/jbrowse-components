@@ -6,7 +6,7 @@ export interface BpOffset {
   end?: number
 }
 
-type RegionSnap = {
+interface RegionSnap {
   start: number
   end: number
   refName: string
@@ -14,7 +14,7 @@ type RegionSnap = {
   assemblyName: string
 }
 
-type MoveSnap = {
+interface MoveSnap {
   displayedRegions: { start: number; end: number }[]
   bpPerPx: number
   width: number
@@ -22,7 +22,7 @@ type MoveSnap = {
   interRegionPaddingWidth: number
 }
 
-type ViewLayout = {
+interface ViewLayout {
   displayedRegions: RegionSnap[]
   bpPerPx: number
   offsetPx: number
@@ -74,7 +74,13 @@ function lengthBetween(
 }
 
 function computeTargetBpPerPx(self: MoveSnap, start: BpOffset, end: BpOffset) {
-  const { width, interRegionPaddingWidth, displayedRegions, bpPerPx, minimumBlockWidth } = self
+  const {
+    width,
+    interRegionPaddingWidth,
+    displayedRegions,
+    bpPerPx,
+    minimumBlockWidth,
+  } = self
   const len = lengthBetween(displayedRegions, start, end)
   let numBlocksWideEnough = 0
   for (let i = start.index; i < end.index; i++) {
@@ -92,7 +98,10 @@ function computeScrollPos(
   bpPerPx: number,
   extraBp: number,
 ) {
-  return Math.round((cumulativeBp(self, start.index, start.offset, bpPerPx) - extraBp) / bpPerPx)
+  return Math.round(
+    (cumulativeBp(self, start.index, start.offset, bpPerPx) - extraBp) /
+      bpPerPx,
+  )
 }
 
 export function moveTo(
@@ -148,7 +157,13 @@ export function pxToBp(
   end: number
   reversed?: boolean
 } {
-  const { bpPerPx, offsetPx, displayedRegions, interRegionPaddingWidth, minimumBlockWidth } = self
+  const {
+    bpPerPx,
+    offsetPx,
+    displayedRegions,
+    interRegionPaddingWidth,
+    minimumBlockWidth,
+  } = self
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
     const r = displayedRegions[0]!
@@ -163,13 +178,25 @@ export function pxToBp(
     const len = r.end - r.start
     const offset = bp - bpSoFar
     if (offset >= 0 && offset < len) {
-      return { ...r, oob: false, offset, coord: regionCoord(r, offset), index: i }
+      return {
+        ...r,
+        oob: false,
+        offset,
+        coord: regionCoord(r, offset),
+        index: i,
+      }
     }
     if (len / bpPerPx >= minimumBlockWidth && i < l - 1) {
       const paddingStart = bpSoFar + len
       if (bp >= paddingStart && bp < paddingStart + paddingBp) {
         const nextR = displayedRegions[i + 1]!
-        return { ...nextR, oob: false, offset: 0, coord: regionCoord(nextR, 0), index: i + 1 }
+        return {
+          ...nextR,
+          oob: false,
+          offset: 0,
+          coord: regionCoord(nextR, 0),
+          index: i + 1,
+        }
       }
       bpSoFar += len + paddingBp
     } else {
@@ -182,7 +209,13 @@ export function pxToBp(
     throw new Error('pxToBp called with empty displayedRegions')
   }
   const offset = bp - bpSoFar + r.end - r.start
-  return { ...r, oob: true, offset, coord: regionCoord(r, offset), index: displayedRegions.length - 1 }
+  return {
+    ...r,
+    oob: true,
+    offset,
+    coord: regionCoord(r, offset),
+    index: displayedRegions.length - 1,
+  }
 }
 
 export function bpToPx({
@@ -209,7 +242,9 @@ export function bpToPx({
       const regionOffset = r.reversed ? r.end - coord : coord - r.start
       return {
         index: i,
-        offsetPx: Math.round(cumulativeBp(self, i, regionOffset, bpPerPx) / bpPerPx),
+        offsetPx: Math.round(
+          cumulativeBp(self, i, regionOffset, bpPerPx) / bpPerPx,
+        ),
       }
     }
   }

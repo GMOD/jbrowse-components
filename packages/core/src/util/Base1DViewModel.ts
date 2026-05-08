@@ -246,7 +246,7 @@ const Base1DView = types
         coord,
         displayedRegionIndex,
       })
-      if (centerPx) {
+      if (centerPx !== undefined) {
         this.scrollTo(Math.round(centerPx - self.width / 2))
       }
     },

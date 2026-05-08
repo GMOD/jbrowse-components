@@ -30,8 +30,14 @@ export async function createGpuHal(
   }
 
   try {
-    return new WebGL2Hal(canvas, passes, uniformByteSize)
+    const hal = new WebGL2Hal(canvas, passes, uniformByteSize)
+    console.warn('[DEBUG createHal] WebGL2Hal created successfully')
+    return hal
   } catch (e) {
+    console.warn(
+      '[DEBUG createHal] WebGL2Hal threw, using Canvas2D:',
+      String(e),
+    )
     console.warn('[GPU] WebGL2 unavailable, falling back to Canvas2D:', e)
     return null
   }

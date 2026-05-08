@@ -1,5 +1,5 @@
-import { fetchSeq } from '../../../util/fetchSeq.ts'
 import { formatFeatWithSubfeatures, stringifyGBK } from './genbank.ts'
+import { fetchSeq } from '../../../util/fetchSeq.ts'
 import SimpleFeature from '../../../util/simpleFeature.ts'
 
 import type { AbstractSessionModel } from '../../../util/index.ts'

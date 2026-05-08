@@ -58,11 +58,25 @@ export function GpuBackendLifecycleSlotMixin() {
         }
       },
       resetCanvasDrawn() {
+        console.warn(
+          '[DEBUG GpuBackend] resetCanvasDrawn called, was:',
+          self.canvasDrawn,
+          '\n' +
+            (new Error().stack
+              ?.split('\n')
+              .filter(s => !s.includes('node_modules') && !s.includes('Error'))
+              .slice(0, 8)
+              .join('\n') ?? ''),
+        )
         if (self.canvasDrawn) {
           self.canvasDrawn = false
         }
       },
       stopGpuBackendLifecycle() {
+        console.log(
+          '[GpuBackendLifecycle] stopGpuBackendLifecycle called canvasDrawn was:',
+          self.canvasDrawn,
+        )
         self.currentGpuBackend = undefined
         self.canvasDrawn = false
       },
@@ -72,6 +86,10 @@ export function GpuBackendLifecycleSlotMixin() {
     }))
     .actions(self => ({
       installGpuDisplay<B>(backend: B, cbs: InstallGpuDisplayCallbacks<B>) {
+        console.log(
+          '[GpuBackendLifecycle] installGpuDisplay called, gpuAutorunsInstalled:',
+          self.gpuAutorunsInstalled,
+        )
         self.currentGpuBackend = backend
         if (self.gpuAutorunsInstalled) {
           return

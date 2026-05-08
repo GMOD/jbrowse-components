@@ -209,9 +209,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [1, 1],
       ys: [0, 0],
     })
-    const result = computeLinkedReadLinesByRegion({
-      laidOutPileupMap: new Map([[0, data]]),
-    })
+    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLines).toBe(1)
@@ -230,9 +228,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [3, 3],
       ys: [0, 0],
     })
-    const result = computeLinkedReadLinesByRegion({
-      laidOutPileupMap: new Map([[0, data]]),
-    })
+    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
     expect(result.size).toBe(0)
   })
 
@@ -253,12 +249,10 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [1],
       ys: [0],
     })
-    const result = computeLinkedReadLinesByRegion({
-      laidOutPileupMap: new Map([
+    const result = computeLinkedReadLinesByRegion(new Map([
         [0, data0],
         [1, data1],
-      ]),
-    })
+      ]))
     expect(result.size).toBe(0)
   })
 
@@ -274,9 +268,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [0, 0],
       ys: [0, 1],
     })
-    const result = computeLinkedReadLinesByRegion({
-      laidOutPileupMap: new Map([[0, data]]),
-    })
+    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLines).toBe(1)
@@ -295,9 +287,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [0],
       ys: [0],
     })
-    const result = computeLinkedReadLinesByRegion({
-      laidOutPileupMap: new Map([[0, data]]),
-    })
+    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
     expect(result.size).toBe(0)
   })
 
@@ -315,9 +305,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [1, 1],
       ys: [0, 0],
     })
-    const result = computeLinkedReadLinesByRegion({
-      laidOutPileupMap: new Map([[0, data]]),
-    })
+    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
     const lines = result.get(0)!
     expect(lines.positions[0]).toBe(200) // fwd 3-prime
     expect(lines.positions[1]).toBe(300) // rev 3-prime

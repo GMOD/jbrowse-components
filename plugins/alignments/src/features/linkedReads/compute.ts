@@ -75,16 +75,14 @@ export function splitColorType(p1Strand: number, p2Strand: number) {
   return LINKED_READ_COLOR_SPLIT_SAME
 }
 
-interface GroupOpts {
-  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
-}
-
 // Group reads across all displayed regions by readName. Used by both the
 // straight-line emitter and the bezier-curve emitter.
-export function groupReadsByName(opts: GroupOpts): GroupedReads {
+export function groupReadsByName(
+  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
+): GroupedReads {
   const readsByName = new Map<string, ReadEntry[]>()
   let hasPaired = false
-  for (const [idx, data] of opts.laidOutPileupMap) {
+  for (const [idx, data] of laidOutPileupMap) {
     const { readIds, readFlags, readNames } = data
     for (let i = 0; i < readIds.length; i++) {
       if (!hasPaired && readFlags[i]! & SAM_FLAG_PAIRED) {
@@ -107,33 +105,19 @@ export function groupReadsByName(opts: GroupOpts): GroupedReads {
 }
 
 export function filterEntries(entries: ReadEntry[], hasPaired: boolean) {
-  if (hasPaired) {
-    const out: ReadEntry[] = []
-    for (const e of entries) {
-      const f = e.data.readFlags[e.readIdx]!
-      if (!(f & SAM_FLAG_SUPPLEMENTARY) && !(f & SAM_FLAG_MATE_UNMAPPED)) {
-        out.push(e)
-      }
-    }
-    return out
-  }
-  const out: ReadEntry[] = []
-  for (const e of entries) {
-    if (!(e.data.readFlags[e.readIdx]! & SAM_FLAG_SECONDARY)) {
-      out.push(e)
-    }
-  }
-  return out
+  return entries.filter(e => {
+    const f = e.data.readFlags[e.readIdx]!
+    return hasPaired
+      ? !(f & SAM_FLAG_SUPPLEMENTARY) && !(f & SAM_FLAG_MATE_UNMAPPED)
+      : !(f & SAM_FLAG_SECONDARY)
+  })
 }
 
 export interface ClassifiedPair {
-  e1: ReadEntry
-  e2: ReadEntry
   bp1: number
   bp2: number
   s1: number
   p2Strand: number
-  orientNum: number
   isNormal: boolean
   colorType: number
 }
@@ -167,11 +151,7 @@ export function classifyPair(
   const colorType = hasPaired
     ? pairedColorType(orientNum)
     : splitColorType(s1, p2Strand)
-  return { e1, e2, bp1, bp2, s1, p2Strand, orientNum, isNormal, colorType }
-}
-
-interface LinesOpts {
-  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
+  return { bp1, bp2, s1, p2Strand, isNormal, colorType }
 }
 
 export interface LinkedReadLines {
@@ -190,9 +170,9 @@ export interface LinkedReadLines {
 // Output positions are absolute genomic uint32 (worker contract); per-endpoint
 // Y is needed because mates can sit on different rows when sorting is on.
 export function computeLinkedReadLinesByRegion(
-  opts: LinesOpts,
+  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
 ): Map<number, LinkedReadLines> {
-  const { readsByName, hasPaired } = groupReadsByName(opts)
+  const { readsByName, hasPaired } = groupReadsByName(laidOutPileupMap)
 
   // Collect raw records first by region, then materialize typed arrays.
   const acc = new Map<

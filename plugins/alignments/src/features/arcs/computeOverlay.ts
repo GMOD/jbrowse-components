@@ -29,23 +29,30 @@ function arcIsVisible(
   sy2: number,
   peakH: number,
   isNormal: boolean,
+  arcsDown: boolean,
   viewportH: number,
 ) {
-  const arcTop = Math.min(sy1, sy2) - (isNormal ? 0 : peakH)
-  const arcBottom = Math.max(sy1, sy2)
+  const minY = Math.min(sy1, sy2)
+  const maxY = Math.max(sy1, sy2)
+  const extra = isNormal ? 0 : peakH
+  const arcTop = arcsDown ? minY : minY - extra
+  const arcBottom = arcsDown ? maxY + extra : maxY
   return arcTop < viewportH && arcBottom > 0
 }
 
-function bezierPath(
-  sx1: number,
-  sy1: number,
-  sx2: number,
-  sy2: number,
-  s1: number,
-  p2Strand: number,
-  peakH: number,
-) {
-  const apexY = Math.min(sy1, sy2) - peakH
+interface BezierOpts {
+  sx1: number
+  sy1: number
+  sx2: number
+  sy2: number
+  s1: number
+  p2Strand: number
+  peakH: number
+  arcsDown: boolean
+}
+
+function bezierPath({ sx1, sy1, sx2, sy2, s1, p2Strand, peakH, arcsDown }: BezierOpts) {
+  const apexY = arcsDown ? Math.max(sy1, sy2) + peakH : Math.min(sy1, sy2) - peakH
   const tangentDx = Math.max(
     MIN_TANGENT_PX,
     Math.abs(sx2 - sx1) * TANGENT_FACTOR,
@@ -71,6 +78,7 @@ interface Opts {
   pileupTopOffset: number
   rangeY: [number, number]
   viewportH: number
+  pairedArcsDown: boolean
 }
 
 // Bezier curves for aberrant pairs, plus straight `M..L..` paths for
@@ -87,14 +95,16 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     pileupTopOffset,
     rangeY,
     viewportH,
+    pairedArcsDown,
   } = opts
 
   const rowH = featureHeight + featureSpacing
   const rangeY0 = rangeY[0]
   const peakH = rowH * PEAK_ROW_FACTOR
   const readCenterDy = featureHeight / 2
+  const paletteLen = linkedReadColorPalette.length
 
-  const { readsByName, hasPaired } = groupReadsByName({ laidOutPileupMap })
+  const { readsByName, hasPaired } = groupReadsByName(laidOutPileupMap)
   const result: PileupArc[] = []
 
   for (const [, entries] of readsByName) {
@@ -140,22 +150,20 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
         rangeY0 +
         readCenterDy
 
-      if (!arcIsVisible(sy1, sy2, peakH, c.isNormal, viewportH)) {
+      if (!arcIsVisible(sy1, sy2, peakH, c.isNormal, pairedArcsDown, viewportH)) {
         continue
       }
 
       const d = c.isNormal
         ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
-        : bezierPath(sx1, sy1, sx2, sy2, c.s1, c.p2Strand, peakH)
-      const stroke = rgb255(
-        linkedReadColorPalette[c.colorType] ?? linkedReadColorPalette[0]!,
-      )
+        : bezierPath({ sx1, sy1, sx2, sy2, s1: c.s1, p2Strand: c.p2Strand, peakH, arcsDown: pairedArcsDown })
+      const stroke = rgb255(linkedReadColorPalette[c.colorType % paletteLen]!)
 
       result.push({
         d,
         stroke,
-        id1: e1.data.readIds[e1.readIdx] ?? '',
-        id2: e2.data.readIds[e2.readIdx] ?? '',
+        id1: e1.data.readIds[e1.readIdx]!,
+        id2: e2.data.readIds[e2.readIdx]!,
       })
     }
   }

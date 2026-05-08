@@ -22,12 +22,23 @@ export function useFeatureSequence({
   upDownBp: number
   forceLoad: boolean
 }) {
-  const guard =
-    session && assemblyName ? { session, assemblyName } : null
+  const guard = session && assemblyName ? { session, assemblyName } : null
 
-  const { data: sequence, error, isLoading: loading } = useFetch(
+  const {
+    data: sequence,
+    error,
+    isLoading: loading,
+  } = useFetch(
     guard
-      ? ['featureSequence', guard.assemblyName, refName, start, end, upDownBp, +forceLoad]
+      ? [
+          'featureSequence',
+          guard.assemblyName,
+          refName,
+          start,
+          end,
+          upDownBp,
+          +forceLoad,
+        ]
       : null,
     guard
       ? async () => {
@@ -40,9 +51,27 @@ export function useFeatureSequence({
           const b = start - upDownBp
           const e = end + upDownBp
           const [seq, upstream, downstream] = await Promise.all([
-            fetchSeq({ start, end, refName, assemblyName: asmName, session: s }),
-            fetchSeq({ start: Math.max(0, b), end: start, refName, assemblyName: asmName, session: s }),
-            fetchSeq({ start: end, end: e, refName, assemblyName: asmName, session: s }),
+            fetchSeq({
+              start,
+              end,
+              refName,
+              assemblyName: asmName,
+              session: s,
+            }),
+            fetchSeq({
+              start: Math.max(0, b),
+              end: start,
+              refName,
+              assemblyName: asmName,
+              session: s,
+            }),
+            fetchSeq({
+              start: end,
+              end: e,
+              refName,
+              assemblyName: asmName,
+              session: s,
+            }),
           ] as const)
           return { seq, upstream, downstream }
         }

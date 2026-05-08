@@ -41,6 +41,7 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
     coverageDisplayHeight: pileupTopOffset,
     currentRangeY: rangeY,
     pileupViewportHeight: viewportH,
+    pairedArcsDown,
     height,
   } = model
   const { initialized, offsetPx, displayedRegions, width } = view
@@ -61,6 +62,7 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
     pileupTopOffset,
     rangeY,
     viewportH,
+    pairedArcsDown,
   })
 
   if (!arcs.length) {

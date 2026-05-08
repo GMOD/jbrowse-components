@@ -56,6 +56,10 @@ export function useGpuRenderer<R extends { dispose(): void }>(
   const rendererRef = useRef<R | null>(null)
 
   const canvasRef = useCallback((node: HTMLCanvasElement | null) => {
+    console.log(
+      '[useGpuRenderer] canvasRef called with',
+      node ? `canvas ${node.width}x${node.height}` : 'null',
+    )
     setCanvas(node)
   }, [])
 

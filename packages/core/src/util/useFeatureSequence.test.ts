@@ -53,7 +53,9 @@ test('fetches and returns seq/upstream/downstream', async () => {
 
   const { result } = renderHook(() => useFeatureSequence(baseArgs))
 
-  await waitFor(() => expect(result.current.sequence).toBeDefined())
+  await waitFor(() => {
+    expect(result.current.sequence).toBeDefined()
+  })
 
   expect(result.current.sequence).toEqual({
     seq: 'ACGT',
@@ -68,7 +70,9 @@ test('returns error object (not thrown) when region exceeds BPLIMIT without forc
     useFeatureSequence({ ...baseArgs, start: 0, end: 21_000_000 }),
   )
 
-  await waitFor(() => expect(result.current.sequence).toBeDefined())
+  await waitFor(() => {
+    expect(result.current.sequence).toBeDefined()
+  })
 
   expect(result.current.sequence).toMatchObject({
     error: expect.stringContaining('force load'),
@@ -83,12 +87,23 @@ test('fetches when region exceeds BPLIMIT but forceLoad is true', async () => {
     .mockResolvedValueOnce('')
 
   const { result } = renderHook(() =>
-    useFeatureSequence({ ...baseArgs, start: 0, end: 21_000_000, forceLoad: true }),
+    useFeatureSequence({
+      ...baseArgs,
+      start: 0,
+      end: 21_000_000,
+      forceLoad: true,
+    }),
   )
 
-  await waitFor(() => expect(result.current.sequence).toBeDefined())
+  await waitFor(() => {
+    expect(result.current.sequence).toBeDefined()
+  })
 
-  expect(result.current.sequence).toEqual({ seq: 'SEQ', upstream: '', downstream: '' })
+  expect(result.current.sequence).toEqual({
+    seq: 'SEQ',
+    upstream: '',
+    downstream: '',
+  })
   expect(mockFetchSeq).toHaveBeenCalledTimes(3)
 })
 
@@ -102,7 +117,9 @@ test('upDownBp expands upstream/downstream fetch regions', async () => {
     useFeatureSequence({ ...baseArgs, start: 100, end: 200, upDownBp: 50 }),
   )
 
-  await waitFor(() => expect(result.current.sequence).toBeDefined())
+  await waitFor(() => {
+    expect(result.current.sequence).toBeDefined()
+  })
 
   expect(mockFetchSeq).toHaveBeenCalledWith(
     expect.objectContaining({ start: 100, end: 200 }),
@@ -113,7 +130,11 @@ test('upDownBp expands upstream/downstream fetch regions', async () => {
   expect(mockFetchSeq).toHaveBeenCalledWith(
     expect.objectContaining({ start: 200, end: 250 }),
   )
-  expect(result.current.sequence).toEqual({ seq: 'SEQ', upstream: 'UP', downstream: 'DOWN' })
+  expect(result.current.sequence).toEqual({
+    seq: 'SEQ',
+    upstream: 'UP',
+    downstream: 'DOWN',
+  })
 })
 
 test('upstream start is clamped to 0', async () => {
@@ -121,7 +142,9 @@ test('upstream start is clamped to 0', async () => {
     useFeatureSequence({ ...baseArgs, start: 10, end: 20, upDownBp: 50 }),
   )
 
-  await waitFor(() => expect(result.current.sequence).toBeDefined())
+  await waitFor(() => {
+    expect(result.current.sequence).toBeDefined()
+  })
 
   expect(mockFetchSeq).toHaveBeenCalledWith(
     expect.objectContaining({ start: 0, end: 10 }),

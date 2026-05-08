@@ -200,9 +200,7 @@ function cloneWithChainLayout(
 function attachLinkedReadLines(
   laidOutMap: Map<number, PileupDataResult>,
 ): Map<number, PileupDataResult> {
-  const linesByIdx = computeLinkedReadLinesByRegion({
-    laidOutPileupMap: laidOutMap,
-  })
+  const linesByIdx = computeLinkedReadLinesByRegion(laidOutMap)
   if (linesByIdx.size === 0) {
     return laidOutMap
   }

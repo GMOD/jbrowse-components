@@ -31,7 +31,6 @@ export default function calculateDynamicBlocks(
     throw new Error('view has no width, cannot calculate displayed blocks')
   }
 
-  // Pre-calculate inverse to avoid repeated divisions
   const invBpPerPx = 1 / bpPerPx
   const blocks = new BlockSet()
   let displayedRegionLeftPx = 0
@@ -42,19 +41,15 @@ export default function calculateDynamicBlocks(
     displayedRegionIndex < displayedRegions.length;
     displayedRegionIndex++
   ) {
-    const region = displayedRegions[displayedRegionIndex]
     const {
       assemblyName,
       refName,
       start: regionStart,
       end: regionEnd,
       reversed,
-    } = region!
+    } = displayedRegions[displayedRegionIndex]!
     const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
     const displayedRegionRightPx = displayedRegionLeftPx + regionWidthPx
-    const rightEndVisible =
-      windowRightPx >= displayedRegionRightPx &&
-      windowLeftPx < displayedRegionRightPx
     const [leftPx, rightPx] = intersection2(
       windowLeftPx,
       windowRightPx,
@@ -62,7 +57,6 @@ export default function calculateDynamicBlocks(
       displayedRegionRightPx,
     )
     if (leftPx !== undefined && rightPx !== undefined) {
-      // this displayed region overlaps the view, so make a record for it
       // Pixel comparisons avoid the bpPerPx round-trip float drift that can
       // make end !== regionEnd even when the full region is in view.
       const isLeftEndOfDisplayedRegion = leftPx <= displayedRegionLeftPx
@@ -132,7 +126,6 @@ export default function calculateDynamicBlocks(
               offsetPx: blockOffsetPx + widthPx,
             }),
           )
-          displayedRegionLeftPx += interRegionPaddingWidth
         }
 
         if (
@@ -153,7 +146,6 @@ export default function calculateDynamicBlocks(
     }
     if (
       padding &&
-      !rightEndVisible &&
       regionWidthPx >= minimumBlockWidth &&
       displayedRegionIndex < displayedRegions.length - 1
     ) {
