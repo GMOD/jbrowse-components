@@ -59,7 +59,7 @@ export function getSources({
         return [{ ...merged, sampleName }]
       }
       // expand sample to haplotypes
-      const ploidy = sampleInfo?.[row.name]?.maxPloidy
+      const ploidy = sampleInfo?.[sampleName]?.maxPloidy
       if (ploidy) {
         return makeHaplotypeSources(merged, ploidy)
       }

@@ -94,13 +94,13 @@ const AllLines = observer(function AllLines({
   const assembly = assemblyManager.get(assemblyNames[0]!)
   const b0 = dynamicBlocks.totalWidthPxWithoutBorders
   const n = featuresVolatile?.length ?? 0
-  const w = b0 / (n || 1)
   const offsetAdj = Math.max(offsetPx, 0)
 
   const pathD = useMemo(() => {
     if (!assembly || n === 0 || !featuresVolatile) {
       return ''
     }
+    const w = b0 / n
     const tickHeight = 6
     const parts: string[] = []
     for (let i = 0; i < n; i++) {
@@ -112,7 +112,7 @@ const AllLines = observer(function AllLines({
       )
     }
     return parts.join('')
-  }, [assembly, n, featuresVolatile, view, offsetAdj, w, lineZoneHeight])
+  }, [assembly, n, featuresVolatile, view, offsetAdj, b0, lineZoneHeight])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent<SVGElement>) => {
@@ -130,6 +130,7 @@ const AllLines = observer(function AllLines({
       const rect = svg.getBoundingClientRect()
       const px = event.clientX - rect.left
       const py = event.clientY - rect.top
+      const w = b0 / n
       let minDist = 10
       let found = -1
       let foundGx = 0
@@ -165,7 +166,7 @@ const AllLines = observer(function AllLines({
       featuresVolatile,
       view,
       offsetAdj,
-      w,
+      b0,
       lineZoneHeight,
       onHover,
     ],
@@ -213,12 +214,17 @@ const HighlightedLine = observer(function HighlightedLine({
   const assembly = assemblyManager.get(assemblyNames[0]!)
   const b0 = dynamicBlocks.totalWidthPxWithoutBorders
   const n = featuresVolatile?.length ?? 0
-  const w = b0 / (n || 1)
+
+  if (!assembly || !featuresVolatile || n === 0) {
+    return null
+  }
+
+  const w = b0 / n
   const left = Math.max(0, -offsetPx)
   const svgX = crosshairX - left
   const idx = Math.floor(svgX / w)
 
-  if (!assembly || !featuresVolatile || idx < 0 || idx >= n) {
+  if (idx < 0 || idx >= n) {
     return null
   }
 
@@ -266,12 +272,12 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     const b0 = (getContainingView(model) as LinearGenomeViewModel).dynamicBlocks
       .totalWidthPxWithoutBorders
     const n = featuresVolatile?.length ?? 0
-    const w = b0 / (n || 1)
 
     if (!featuresVolatile || n === 0) {
       return null
     }
 
+    const w = b0 / n
     const hMx = hovered ? hovered.idx * w + w / 2 : 0
 
     return (

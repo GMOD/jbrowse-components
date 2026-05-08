@@ -991,7 +991,7 @@ export default function MultiSampleVariantBaseModelF(
       async fetchNeeded(
         _needed: { region: Region; displayedRegionIndex: number }[],
       ) {
-        if (self.isMinimized || !self.rpcProps().sources) {
+        if (self.isMinimized || !self.sourcesBase) {
           return
         }
         const allBuffered = (getContainingView(self) as LinearGenomeViewModel)

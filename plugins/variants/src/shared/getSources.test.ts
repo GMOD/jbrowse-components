@@ -202,6 +202,24 @@ describe('getSources', () => {
     expect(result[2]).toMatchObject({ name: 'HG002', color: 'green' })
   })
 
+  // Regression: ploidy lookup previously used row.name instead of sampleName,
+  // so layout rows whose display name differed from the VCF sample name (the
+  // key sampleInfo is built with) silently produced zero haplotype rows.
+  test('phased mode looks up ploidy via sampleName, not row.name', () => {
+    const layout = [{ name: 'displayLabel', sampleName: 'HG001' }]
+
+    const result = getSources({
+      sources: baseSources,
+      layout,
+      renderingMode: 'phased',
+      sampleInfo,
+    })
+
+    expect(result).toHaveLength(2)
+    expect(result.map(r => r.HP)).toEqual([0, 1])
+    expect(result.map(r => r.sampleName)).toEqual(['HG001', 'HG001'])
+  })
+
   test('layout colors are preserved in phased mode with haplotype layout', () => {
     const haplotypeLayout = [
       { name: 'HG002 HP0', sampleName: 'HG002', HP: 0, color: 'green' },
