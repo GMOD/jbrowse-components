@@ -418,12 +418,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
   "internetAccounts": [],
   "plugins": [
     {
-      "name": "UMDLocPlugin",
-      "umdLoc": {
-        "uri": "umd_plugin.js",
-      },
-    },
-    {
       "name": "UMDUrlPlugin",
       "umdUrl": "umd_plugin.js",
     },
@@ -476,8 +470,17 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.dup.renamed.vcf.gz.tbi",
+          },
+        },
         "type": "VcfTabixAdapter",
-        "uri": "volvox.dup.renamed.vcf.gz",
+        "vcfGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.dup.renamed.vcf.gz",
+        },
       },
       "assemblyNames": [
         "volvox",
@@ -3266,6 +3269,73 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "name": "volvox/volvox_del GFA (MultiLGV)",
       "trackId": "volvox_del_gfa_multi",
+      "type": "MultiSyntenyTrack",
+    },
+    {
+      "adapter": {
+        "assemblyNameMap": {
+          "ref#0": "volvox",
+        },
+        "edgesIndex": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox_pangenome_50.edges.spatial.bed.gz.tbi",
+          },
+        },
+        "edgesLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.edges.spatial.bed.gz",
+        },
+        "posIndex": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox_pangenome_50.pos.bed.gz.tbi",
+          },
+        },
+        "posLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.pos.bed.gz",
+        },
+        "seqlensLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.seglens.bin",
+        },
+        "syntenyCoarseIndex": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox_pangenome_50.synteny.coarse.bed.gz.tbi",
+          },
+        },
+        "syntenyCoarseLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.synteny.coarse.bed.gz",
+        },
+        "syntenyIndex": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox_pangenome_50.synteny.bed.gz.tbi",
+          },
+        },
+        "syntenyLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.synteny.bed.gz",
+        },
+        "type": "GfaTabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_pangenome_50_gfa_tabix-MultiLGVSyntenyDisplay",
+          "type": "MultiLGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox pangenome 50 (GfaTabix)",
+      "trackId": "volvox_pangenome_50_gfa_tabix",
       "type": "MultiSyntenyTrack",
     },
   ],
