@@ -34,6 +34,14 @@ test(
 )
 
 test(
+  'long-read arc display, full view',
+  async () => {
+    await testArc('ctgA:1..46,392', 'volvox-simple-inv.bam')
+  },
+  timeout,
+)
+
+test(
   'long-read arc display, out of view pairing',
   async () => {
     await testArc('ctgA:478..6,191', 'volvox-long-reads-sv-cram')

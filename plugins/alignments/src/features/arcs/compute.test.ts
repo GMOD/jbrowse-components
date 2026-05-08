@@ -445,7 +445,7 @@ describe('computeArcsFromPileupData', () => {
     expect(run(4).arcs[0]!.colorType).toBe(2)
   })
 
-  test('samplot SA-tag arcs fall back to strand-pair classification', () => {
+  test('samplot SA-tag arcs: opposite strands → INV, same strand → DEL', () => {
     const mkSplit = (primaryStrand: number, saStrand: '+' | '-') =>
       makePileupData({
         regionStart: 1000,
@@ -465,16 +465,16 @@ describe('computeArcsFromPileupData', () => {
       drawInter: false,
       drawLongRange: true,
     }
-    // Same strand (+/+) → INV
+    // Same strand (+/+) → DEL/normal (not an inversion junction)
     expect(
       computeArcsFromPileupData(new Map([[0, mkSplit(1, '+')]]), regions, opts)
         .arcs[0]!.colorType,
-    ).toBe(2)
-    // Opposite strand (+/-) → DEL/normal fallback
+    ).toBe(0)
+    // Opposite strand (+/-) → INV (fwd→rev breakpoint)
     expect(
       computeArcsFromPileupData(new Map([[0, mkSplit(1, '-')]]), regions, opts)
         .arcs[0]!.colorType,
-    ).toBe(0)
+    ).toBe(2)
   })
 })
 

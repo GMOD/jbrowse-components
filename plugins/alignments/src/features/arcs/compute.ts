@@ -93,8 +93,8 @@ function getSamplotColorIndex(
     return 0
   }
   // Strand-only fallback for split reads / SA-tag arcs (no pair orientation).
-  // Same-strand → INV; opposite strand → DEL (normal FR shape); unknown → DEL.
-  if (p1Strand !== 0 && p2Strand !== 0 && p1Strand === p2Strand) {
+  // Opposite strand (fwd→rev or rev→fwd) = inversion junction; same = DEL.
+  if (p1Strand !== 0 && p2Strand !== 0 && p1Strand !== p2Strand) {
     return 2
   }
   return 0
@@ -378,8 +378,10 @@ export function computeArcsFromPileupData(
           for (let j = 0; j < allAlns.length - 1; j++) {
             const a1 = allAlns[j]!
             const a2 = allAlns[j + 1]!
-            const p1 = a1.strand === -1 ? a1.start : a1.end
-            const p2 = a2.strand === -1 ? a2.end : a2.start
+            // a1.end→a2.start = genomic gap between blocks; fwd→rev and rev→fwd
+            // junctions produce narrow arcs clustered at each inversion breakpoint.
+            const p1 = a1.end
+            const p2 = a2.start
             pendingArcs.push({
               p1Ref: a1.refName,
               p1Bp: p1,
@@ -414,14 +416,13 @@ export function computeArcsFromPileupData(
         const end1 = e1.data.readPositions[e1.readIdx * 2 + 1]!
         const start2 = e2.data.readPositions[e2.readIdx * 2]!
         const end2 = e2.data.readPositions[e2.readIdx * 2 + 1]!
-        const p1 = s1 === -1 ? start1 : end1
+        // Unpaired: end1→start2 = genomic gap, giving narrow inversion bp arcs.
+        const p1 = hasPaired ? (s1 === -1 ? start1 : end1) : end1
         const p2 = hasPaired
           ? s2 === -1
             ? start2
             : end2
-          : s2 === -1
-            ? end2
-            : start2
+          : start2
         pendingArcs.push({
           p1Ref: e1.refName,
           p1Bp: p1,
@@ -514,7 +515,7 @@ export function computeArcsFromPileupData(
 
     arcs.push({
       p1: { refName: p1Ref, bp: p1Bp },
-      p2: { refName: p1Ref, bp: p2Bp },
+      p2: { refName: p2Ref, bp: p2Bp },
       colorType,
       shapeType,
       yBp,
@@ -530,9 +531,7 @@ export function arcsToRegionResult(
   regionRefName: string,
   height: number,
 ): ArcsDataResult {
-  const regionArcs = arcs.filter(
-    a => a.p1.refName === regionRefName && a.p2.refName === regionRefName,
-  )
+  const regionArcs = arcs.filter(a => a.p1.refName === regionRefName)
   const arcX1 = new Uint32Array(regionArcs.length)
   const arcX2 = new Uint32Array(regionArcs.length)
   const arcColorTypes = new Uint8Array(regionArcs.length)
