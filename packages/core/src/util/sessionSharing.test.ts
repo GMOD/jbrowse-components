@@ -1,4 +1,4 @@
-jest.mock('@jbrowse/core/util', () => ({
+jest.mock('./crypto.ts', () => ({
   aesDecrypt: jest.fn().mockResolvedValue('decrypted-session-data'),
   aesEncrypt: jest.fn().mockResolvedValue('encrypted-data'),
 }))
