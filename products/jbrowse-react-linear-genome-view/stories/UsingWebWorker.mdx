@@ -27,8 +27,8 @@ own URL correctly. See
 and the [official guide](https://webpack.js.org/guides/web-workers/).
 
 **Other bundlers** — the worker is constructed via
-`new Worker(new URL(...), { type: 'module' })`, which Vite, Parcel 2,
-and esbuild all handle natively. Older bundlers may not.
+`new Worker(new URL(...), { type: 'module' })`, which Vite handles
+natively. Older bundlers may not.
 
 The web worker is not enabled by default precisely because of these
 bundler requirements, but we recommend turning it on whenever your

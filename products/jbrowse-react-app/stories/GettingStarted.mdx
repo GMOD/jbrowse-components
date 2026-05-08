@@ -1,64 +1,94 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks'
-import { BasicExample } from './JBrowseReactApp.stories'
+import {
+  BasicExample,
+  HumanDemo,
+} from './JBrowseReactApp.stories'
 
 <Meta title="Getting Started" />
 
-# Welcome!
+# Welcome
 
-This site contains the [Storybook](https://storybook.js.org/) docs for the
-[JBrowse 2 React App Component](https://www.npmjs.com/package/@jbrowse/react-app2).
-The component makes it possible to embed the full JBrowse 2 application (with
-all the bells and whistles) in any React application.
+This is the [Storybook](https://storybook.js.org/) for
+[`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2),
+which embeds the **full JBrowse 2 application** — menu bar, view
+manager, drawer widgets, and all view types — inside any React
+component tree.
 
-## Using the docs
+## App vs Linear Genome View — which to use?
 
-This is an example of using the @jbrowse/react-app2 as a component:
+JBrowse ships two embeddable React components. They serve different use
+cases:
+
+- **`@jbrowse/react-app2`** is the whole app. You get every view type
+  (linear, circular, dotplot, synteny, spreadsheet), the global menu
+  bar, drag-to-resize panels, the import wizard, and a full session
+  model with tabs. Pick this when you're building a *genome browser*
+  that happens to live in your page.
+- **[`@jbrowse/react-linear-genome-view2`](?path=/docs/getting-started--docs)**
+  is just the linear track view, no app chrome. Pick this when you
+  want a *track viewer* embedded inside a larger application that
+  owns the layout, navigation, and surrounding UI.
+
+If you're not sure, start with the LGV component — it's lighter weight
+and easier to integrate. Move to react-app when you need the
+app-level features.
+
+## A minimal embed
 
 <Story of={BasicExample} />
 
-You can test out the various features of the component, and open tracks and
-interact with it as you would in your app. You can also click on the code button
-on the bottom right to see what the code looks like for the component being
-viewed.
+Open and rearrange tracks, switch views, or click the **code** button
+in the bottom right to see the source.
 
-## An overview of the @jbrowse/react-app2 API
+## Configuration shape
 
-The @jbrowse/react-app2 component (or "app component") relies on the same
-[configuration](https://jbrowse.org/jb2/docs/config_guide) as the main JB2 app
+`react-app2` accepts the same configuration format as JBrowse Web —
+this is what makes round-tripping configs between the two trivial:
 
-The createViewState constructor accepts a config object just like a config.json
-that you would pass to @jbrowse/web. It is not programmed to fetch the
-config.json so you can fetch the config.json manually if you want to fetch it
-from a file
-
-Config structure:
-
-```json
-{
-  "configuration": {
-    /* global configs here */
+```js
+const state = createViewState({
+  config: {
+    configuration: {
+      /* global app config (theme, RPC driver, etc.) */
+    },
+    assemblies: [
+      /* one or more assemblies — multiple is supported here,
+         unlike the LGV component which takes a single assembly */
+    ],
+    tracks: [
+      /* track configs, each scoped to one or more assemblies */
+    ],
+    defaultSession: {
+      /* optional starting session — views, opened tracks, layout */
+    },
   },
-  "assemblies": [
-    /* list of assembly configurations, e.g. the genomes being viewed */
-  ],
-  "tracks": [
-    /* array of tracks being loaded, contain reference to which assembl(y/ies)
-    they belong to */
-  ],
-  "defaultSession": {
-    /* optional default session */
-  }
-}
+})
 ```
 
-## Additional resources
+Unlike JBrowse Web, the embedded component does **not** automatically
+fetch a `config.json` based on URL parameters. If you want that
+behavior, do the fetch yourself and pass the result to
+`createViewState` — see
+[Importing config.json](?path=/docs/importing-config-json-files--docs).
 
-This overview is intended as a launching point for initial use of the
-@jbrowse/react-app2 component. Make sure to check out the rest of the stories to
-get a better feel for what is possible with the component.
+## A real human genome example
 
-Here are a few more resources that may help:
+GRCh38 with NCBI RefSeq genes, repeats, a CRAM exome alignment, 1000
+Genomes variants, and phyloP conservation. The `defaultSession` opens
+the alignment and conservation tracks in a `LinearGenomeView` at a
+specific locus:
 
-- [Source code for all the storybook examples](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-app/stories)
-- Examples of using @jbrowse/react-app2 in create-react-app, vite, and next.js
-  [https://jbrowse.org/jb2/docs/embedded_components/](https://jbrowse.org/jb2/docs/embedded_components/)
+<Story of={HumanDemo} />
+
+## More
+
+- [Importing config.json](?path=/docs/importing-config-json-files--docs) —
+  static-import vs runtime-fetch
+- [Theming](?path=/docs/theming--docs) — palettes and dark mode
+- [Multiple views and synteny](?path=/docs/multiple-views--docs) —
+  programmatic view creation, synteny layouts
+- [Web worker RPC](?path=/docs/using-webworker-rpc--docs) — moving
+  work off the main thread
+- [Source for every storybook example](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-app/stories)
+- Integration recipes for create-react-app, Vite, and Next.js —
+  [jbrowse.org/jb2/docs/embedded_components](https://jbrowse.org/jb2/docs/embedded_components/)

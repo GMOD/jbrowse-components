@@ -1,0 +1,41 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { DarkTheme } from './JBrowseReactApp.stories'
+
+<Meta title="Theming" />
+
+# Theming
+
+The embedded app accepts a Material-UI-style theme on the
+`configuration` block of the config you pass to `createViewState`.
+JBrowse defines four named palette colors — `primary`, `secondary`,
+`tertiary`, and `quaternary` — that drive most of the chrome
+(toolbars, buttons, highlights). DNA-base colors are configurable
+separately.
+
+```js
+createViewState({
+  config: {
+    configuration: {
+      theme: {
+        palette: {
+          mode: 'dark',
+          primary: { main: '#311b92' },
+          secondary: { main: '#0097a7' },
+        },
+      },
+    },
+    /* assemblies, tracks, ... */
+  },
+})
+```
+
+See the
+[theming guide](https://jbrowse.org/jb2/docs/config_guides/theme/) for
+the full set of options (including DNA base colors).
+
+## Dark mode
+
+Setting `palette.mode: 'dark'` flips the app to a dark palette. JBrowse
+has been tuned to look reasonable under both light and dark themes:
+
+<Story of={DarkTheme} />
