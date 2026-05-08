@@ -38,6 +38,9 @@ export function doAfterAttach(self: HicModel) {
         }
         if (resolutions) {
           self.setAvailableResolutions(resolutions)
+          if (!resolutions.includes(self.resolution)) {
+            self.setResolution(resolutions[resolutions.length - 1]!)
+          }
         }
       }
     } catch (e) {
