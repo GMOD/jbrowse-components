@@ -43,7 +43,7 @@
     "@mui/material": "^9.0.1",
     "@mui/x-data-grid": "9.0.4",
     "copy-to-clipboard": "^4.0.2",
-    "mobx": "6.15.3",
+    "mobx": "^6.15.3",
     "mobx-react": "^9.2.1"
   },
   "peerDependencies": {
