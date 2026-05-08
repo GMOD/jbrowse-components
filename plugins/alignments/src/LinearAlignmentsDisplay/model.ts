@@ -116,8 +116,7 @@ function getSequenceAdapter(session: AbstractSessionModel, region: Region) {
   if (!sequenceAdapterConfig) {
     return undefined
   }
-  const snap: unknown = getSnapshot(sequenceAdapterConfig)
-  return snap as Record<string, unknown>
+  return getSnapshot(sequenceAdapterConfig) as Record<string, unknown>
 }
 
 interface FetchFeatureDetailsSelf {

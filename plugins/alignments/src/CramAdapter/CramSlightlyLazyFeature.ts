@@ -83,7 +83,7 @@ export default class CramSlightlyLazyFeature implements Feature {
 
     return this.record.mate &&
       (this.record.mate.sequenceId !== this.record.sequenceId ||
-        this.start <= this.record.mate.alignmentStart - 1)
+        this.start < this.record.mate.alignmentStart)
       ? selfStrand + selfNum + mateStrand + mateNum
       : mateStrand + mateNum + selfStrand + selfNum
   }
@@ -111,7 +111,10 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get next_pos() {
-    return this.record.mate?.alignmentStart
+    if (this.record.mate) {
+      return this.record.mate.alignmentStart - 1
+    }
+    return undefined
   }
 
   get tags() {

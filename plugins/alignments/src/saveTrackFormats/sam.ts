@@ -32,6 +32,7 @@ export function stringifySAM({
 
   for (const feature of features) {
     const start = feature.get('start')
+    const nextPos = feature.get('next_pos')
     // TODO: optional tags not yet output
     lines.push(
       [
@@ -42,7 +43,7 @@ export function stringifySAM({
         feature.get('mapq') ?? '255',
         feature.get('CIGAR') || '*',
         feature.get('next_ref') || '*',
-        feature.get('next_pos') ?? '0',
+        typeof nextPos === 'number' ? String(nextPos + 1) : '0',
         feature.get('template_len') ?? '0',
         feature.get('seq') || '*',
         qualToPhred(feature.get('qual')),
