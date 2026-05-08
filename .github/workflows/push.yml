@@ -346,7 +346,7 @@ jobs:
           cd website/
           pnpm build
           mkdir testing
-          mv build testing/jb2
+          mv dist testing/jb2
       - name: Check website links
         uses: untitaker/hyperlink@fb5bb9c5011a3d143a54b4b30aedc30ec5bc0f89 # 0.2.0
         with:

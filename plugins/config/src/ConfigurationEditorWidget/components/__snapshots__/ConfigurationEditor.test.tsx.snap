@@ -298,7 +298,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                       </div>
                     </li>
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
                       style="margin: 4px;"
                       tabindex="0"
                       type="button"
@@ -458,7 +458,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                           </div>
                         </li>
                         <button
-                          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
+                          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
                           style="margin: 4px;"
                           tabindex="0"
                           type="button"
@@ -1028,7 +1028,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                     class="MuiList-root css-54zhjy-MuiList-root"
                   >
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
                       style="margin: 4px;"
                       tabindex="0"
                       type="button"

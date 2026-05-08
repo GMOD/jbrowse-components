@@ -1188,7 +1188,7 @@ exports[`renders with the available plugins 1`] = `
                   class="MuiCardActions-root MuiCardActions-spacing css-1q4nm6f-MuiCardActions-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-f3z1u4-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
