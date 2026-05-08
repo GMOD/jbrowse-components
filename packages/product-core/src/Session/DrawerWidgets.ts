@@ -16,6 +16,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 const minDrawerWidth = 128
+const minMainWidth = 150
 
 /**
  * #stateModel DrawerWidgetSessionMixin
@@ -80,15 +81,9 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       updateDrawerWidth(drawerWidth: number) {
-        if (drawerWidth === self.drawerWidth) {
-          return self.drawerWidth
-        }
-        let newDrawerWidth = drawerWidth
-        if (newDrawerWidth < minDrawerWidth) {
-          newDrawerWidth = minDrawerWidth
-        }
-        self.drawerWidth = newDrawerWidth
-        return newDrawerWidth
+        const max = window.innerWidth - minMainWidth
+        self.drawerWidth = Math.min(Math.max(drawerWidth, minDrawerWidth), max)
+        return self.drawerWidth
       },
 
       /**

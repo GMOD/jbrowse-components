@@ -55,8 +55,8 @@ const App = observer(function App(props: Props) {
   const { minimized, visibleWidget, drawerWidth, drawerPosition } = session
   const drawerVisible = visibleWidget && !minimized
   const d = drawerVisible ? `[drawer] ${drawerWidth}px` : undefined
-  const grid =
-    drawerPosition === 'right' ? ['[main] 1fr', d] : [d, '[main] 1fr']
+  const main = '[main] minmax(0, 1fr)'
+  const grid = drawerPosition === 'right' ? [main, d] : [d, main]
 
   return (
     <div
