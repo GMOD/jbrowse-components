@@ -1,0 +1,60 @@
+---
+id: lgv_drawer_widgets
+title: Drawer Widgets
+---
+
+## Overview
+
+Display widgets in resizable side panels instead of modal dialogs.
+
+## Track Selector Drawer
+
+Show hierarchical track browser in a drawer:
+
+```javascript
+const state = createViewState({
+  assembly,
+  tracks,
+  defaultSession: {
+    name: 'Session',
+    view: {
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'volvox',
+        tracklist: true,
+      },
+    },
+  },
+})
+```
+
+**Example:** `WithDrawerWidget`
+
+## Drawer Controls
+
+Users can:
+- **Resize** — drag left edge to adjust width
+- **Reposition** — switch left/right via menu button
+- **Minimize** — hide drawer with minimize button
+- **Close** — close widget with close button
+
+## Programmatic Control
+
+```javascript
+// Set drawer width
+state.session.drawerWidth = 500
+
+// Change position
+state.session.setDrawerPosition('left')
+
+// Minimize/show
+state.session.minimizeWidgetDrawer()
+state.session.showWidgetDrawer()
+
+// Close widget
+state.session.hideWidget(widget)
+```
+
+## Persistent State
+
+Drawer position is saved to localStorage and restored on page reload.

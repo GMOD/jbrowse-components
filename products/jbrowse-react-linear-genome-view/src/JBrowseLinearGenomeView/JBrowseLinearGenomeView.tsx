@@ -3,13 +3,13 @@ import { Suspense, lazy } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
-import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
 import { ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { SessionWithDrawerWidgets } from '@jbrowse/product-core'
 import type { ViewModel } from '../createModel/createModel.ts'
+import type { SessionWithDrawerWidgets } from '@jbrowse/product-core'
 
 const DrawerWidget = lazy(() =>
   import('@jbrowse/product-core').then(m => ({
@@ -17,7 +17,7 @@ const DrawerWidget = lazy(() =>
   })),
 )
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   root: {
     display: 'grid',
     height: '100%',
@@ -26,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
   container: {
     overflow: 'hidden',
   },
-}))
+})
 
 const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   viewState,

@@ -243,6 +243,7 @@ export default class PluginManager {
     if (!plugin) {
       throw new Error(`Plugin '${pluginName}' not found`)
     }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     plugin.uninstall?.(this)
     this.plugins = this.plugins.filter(p => p.name !== pluginName)
     delete this.pluginMetadata[pluginName]

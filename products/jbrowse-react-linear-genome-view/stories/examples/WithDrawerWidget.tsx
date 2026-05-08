@@ -1,3 +1,12 @@
+/**
+ * Drawer Widget Example
+ *
+ * Shows a hierarchical track selector in a resizable drawer panel (instead of modal).
+ * Use init: { tracklist: true } to enable the track selector drawer.
+ *
+ * Features: resizable, repositionable (left/right), minimizable, closeable.
+ */
+
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 

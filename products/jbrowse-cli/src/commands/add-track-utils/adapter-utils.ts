@@ -195,7 +195,11 @@ const adapterTypeToSpec: Record<
   { kind: AdapterSpec['kind']; locField?: string }
 > = {}
 for (const { spec } of formats) {
-  if (spec.kind === 'single' || spec.kind === 'tabix' || spec.kind === 'anchors') {
+  if (
+    spec.kind === 'single' ||
+    spec.kind === 'tabix' ||
+    spec.kind === 'anchors'
+  ) {
     adapterTypeToSpec[spec.adapterType] = {
       kind: spec.kind,
       locField: spec.locField,

@@ -1,0 +1,38 @@
+---
+id: lgv_basic_setup
+title: Basic Setup
+---
+
+## Simple Linear Genome View
+
+The most basic way to embed a genome viewer in your application.
+
+### Example: OneLinearGenomeView
+
+```javascript
+import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+const { assembly, tracks } = getVolvoxConfig()
+
+const state = createViewState({
+  assembly,
+  tracks,
+  location: 'ctgA:1105..1221',  // 1-based coordinates
+})
+
+export function App() {
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+```
+
+### Key Features
+- Displays genome with tracks
+- Navigate to specific locations
+- Listen to state changes with `onChange` callback
+- All views share one assembly and track configuration
+
+**Storybook:** [OneLinearGenomeView](https://jbrowse.org/storybook/lgv/main/?path=/story/source-code-for-examples--one-linear-genome-view)
+
+## Related Examples
+- **WithTwoLinearGenomeViews** — Multiple independent views
+- **WithErrorHandler** — Error boundary wrapper

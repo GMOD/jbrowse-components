@@ -219,9 +219,6 @@ const DrawerHeader = observer(function DrawerHeader({
   const { classes } = useStyles()
   const { visibleWidget } = session
   const { pluginManager } = getEnv(session)
-  const widgetType = visibleWidget
-    ? pluginManager.getWidgetType(visibleWidget.type)
-    : undefined
 
   return (
     <AppBar

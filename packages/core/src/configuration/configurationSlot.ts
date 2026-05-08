@@ -263,9 +263,7 @@ export default function ConfigSlot(
       set(newVal: unknown) {
         // pin the editor mode on first user input so that typing a "jexl:"
         // prefix into a value field doesn't auto-swap to the callback editor
-        if (self.editorModeOverride === undefined) {
-          self.editorModeOverride = self.isCallback ? 'callback' : 'value'
-        }
+        self.editorModeOverride ??= self.isCallback ? 'callback' : 'value'
         self.value = newVal
       },
       reset() {

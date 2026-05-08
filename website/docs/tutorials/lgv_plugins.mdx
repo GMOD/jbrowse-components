@@ -1,0 +1,63 @@
+---
+id: lgv_plugins
+title: Plugins and Extensions
+---
+
+## Loading Plugins
+
+Load plugins at initialization:
+
+```javascript
+import { createViewState, loadPlugins } from '@jbrowse/react-linear-genome-view2'
+
+const plugins = await loadPlugins([
+  '@jbrowse/plugin-gff3',
+  'my-custom-plugin',
+])
+
+const state = createViewState({
+  assembly,
+  tracks,
+  plugins,
+})
+```
+
+**Example:** `WithInlinePlugins`
+
+## External Plugins
+
+Load plugins from URLs:
+
+```javascript
+const plugins = await loadPlugins([
+  {
+    url: 'https://example.com/my-plugin.umd.js',
+    name: 'MyPlugin',
+  },
+])
+
+const state = createViewState({
+  assembly,
+  tracks,
+  plugins,
+})
+```
+
+**Example:** `WithExternalPlugin`
+
+## Web Workers
+
+Improve rendering performance using web workers:
+
+```javascript
+const makeWorkerInstance = () =>
+  new Worker(new URL('./worker.ts', import.meta.url))
+
+const state = createViewState({
+  assembly,
+  tracks,
+  makeWorkerInstance,
+})
+```
+
+**Example:** `WithWebWorker`

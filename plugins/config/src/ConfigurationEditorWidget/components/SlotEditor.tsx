@@ -195,7 +195,7 @@ const SlotEditor = observer(function SlotEditor({
   }
   const ValueComponent: React.ComponentType<any> = slot.editorIsCallback
     ? CallbackEditor
-    : TypedComponent ?? StringEditor
+    : (TypedComponent ?? StringEditor)
   return (
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>

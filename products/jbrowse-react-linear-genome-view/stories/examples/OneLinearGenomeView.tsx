@@ -1,7 +1,12 @@
 /* eslint-disable no-console */
 
-// in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
+/**
+ * Basic Linear Genome View
+ *
+ * The simplest example showing a genome view with tracks and initial location.
+ * Shows how to: set up assembly, load tracks, navigate to a region, monitor changes.
+ */
+
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 

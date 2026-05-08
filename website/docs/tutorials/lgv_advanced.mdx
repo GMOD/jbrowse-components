@@ -1,0 +1,122 @@
+---
+id: lgv_advanced
+title: Advanced Features
+---
+
+## Text Search
+
+### Aggregate Text Search
+
+Search across all tracks:
+
+```javascript
+const state = createViewState({
+  assembly,
+  tracks,
+  aggregateTextSearchAdapters: [
+    {
+      type: 'TrixTextSearchAdapter',
+      textSearchAdapterId: 'whole_genome',
+      ix: { uri: 'search-index.ix' },
+    },
+  ],
+})
+```
+
+**Example:** `WithAggregateTextSearching`
+
+### Per-Track Search
+
+Individual tracks with search support:
+
+**Example:** `WithPerTrackTextSearching`
+
+## Internet Accounts
+
+Configure external authentication:
+
+```javascript
+const state = createViewState({
+  assembly,
+  tracks,
+  internetAccounts: [
+    {
+      type: 'ExternallyConfiguredAccount',
+      accountId: 'my-account',
+      // ... configuration
+    },
+  ],
+})
+```
+
+**Example:** `WithInternetAccounts`
+
+## Error Handling
+
+Wrap view with error boundary:
+
+```javascript
+import { ErrorBanner } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
+
+const ViewWithErrorHandling = observer(({ state }) => {
+  const error = state.session.view.error
+  if (error) return <ErrorBanner error={error} />
+  return <JBrowseLinearGenomeView viewState={state} />
+})
+```
+
+**Example:** `WithErrorHandler`
+
+## UI Customization
+
+### Disable Zoom and Scroll
+
+```javascript
+defaultSession: {
+  name: 'Locked View',
+  view: {
+    type: 'LinearGenomeView',
+    disableZoom: true,
+    disableSideScroll: true,
+  },
+}
+```
+
+**Example:** `WithDisableZoomAndSideScroll`
+
+### Shadow DOM Isolation
+
+Encapsulate styles using Shadow DOM:
+
+```javascript
+const shadowRoot = document.getElementById('viewer')
+  .attachShadow({ mode: 'open' })
+
+ReactDOM.render(
+  <JBrowseLinearGenomeView viewState={state} />,
+  shadowRoot
+)
+```
+
+**Example:** `ShadowDOMOneLinearGenomeView`
+
+## React 18 Features
+
+Full React 18 compatibility:
+
+**Example:** `WithReact18`
+
+## Change Monitoring
+
+Listen to view state changes:
+
+```javascript
+const state = createViewState({
+  assembly,
+  tracks,
+  onChange: (patch, reversePatch) => {
+    console.log('State changed:', patch)
+  },
+})
+```

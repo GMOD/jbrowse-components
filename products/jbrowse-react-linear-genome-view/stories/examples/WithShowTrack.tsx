@@ -1,5 +1,10 @@
-// in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
+/**
+ * Show Specific Track
+ *
+ * Demonstrates how to programmatically show a track after the view initializes.
+ * Uses the showTrack() method to display a specific track by trackId.
+ */
+
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 

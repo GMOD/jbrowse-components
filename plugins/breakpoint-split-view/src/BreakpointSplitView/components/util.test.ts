@@ -304,7 +304,15 @@ describe('getBadlyPairedAlignments', () => {
   })
 
   test('excludes single reads (need at least 2 with same name)', () => {
-    const read1 = fakeAlignment('read6', 'read6', 'chr1', 100, 150, PAIRED, 'F1F2')
+    const read1 = fakeAlignment(
+      'read6',
+      'read6',
+      'chr1',
+      100,
+      150,
+      PAIRED,
+      'F1F2',
+    )
     const result = getBadlyPairedAlignments(mapOf(read1))
     expect(result).toHaveLength(0)
   })
@@ -452,7 +460,9 @@ describe('getBadlyPairedAlignments', () => {
       PAIRED,
       'F1F2',
     )
-    const result = getBadlyPairedAlignments(mapOf(read1A, read2A, read1B, read2B))
+    const result = getBadlyPairedAlignments(
+      mapOf(read1A, read2A, read1B, read2B),
+    )
     expect(result).toHaveLength(2)
   })
 

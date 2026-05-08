@@ -627,7 +627,12 @@ test('adds bgzip fasta track', async () => {
 test('uses default BedTabixAdapter for bed.gz file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    const { error } = await runCommand(['add-track', simpleBedGz, '--load', 'copy'])
+    const { error } = await runCommand([
+      'add-track',
+      simpleBedGz,
+      '--load',
+      'copy',
+    ])
     if (error) {
       throw error
     }
