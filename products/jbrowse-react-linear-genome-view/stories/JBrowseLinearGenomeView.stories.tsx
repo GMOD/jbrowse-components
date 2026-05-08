@@ -15,6 +15,7 @@ export {
   WithCustomTheme,
   WithDarkTheme,
   WithDisableZoomAndSideScroll,
+  WithDrawerWidget,
   WithErrorHandler,
   WithExternalPlugin,
   WithInit,
