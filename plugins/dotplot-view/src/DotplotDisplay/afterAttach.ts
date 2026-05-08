@@ -13,7 +13,6 @@ import { buildLineSegments } from './drawDotplotWebGL.ts'
 
 import type { DotplotGetFeaturesAndPositionsArgs } from './DotplotGetFeaturesAndPositions.ts'
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
-import type { DotplotRpcData } from './types.ts'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
@@ -73,7 +72,7 @@ export function doAfterAttach(
           if (thisStopToken !== currentStopToken || !isAlive(self)) {
             return
           }
-          self.setRpcData(result as DotplotRpcData)
+          self.setRpcData(result)
         } catch (e) {
           if (
             thisStopToken === currentStopToken &&
