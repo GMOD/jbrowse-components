@@ -617,10 +617,10 @@ importers:
         specifier: ^9.2.1
         version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
-        specifier: '>=18'
+        specifier: '>=18.0.0'
         version: 19.2.6
       react-dom:
-        specifier: '>=18'
+        specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
 
   packages/web-core:
@@ -849,10 +849,10 @@ importers:
         specifier: ^9.2.1
         version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
-        specifier: '>=16.8.4'
+        specifier: '>=18.0.0'
         version: 19.2.6
       react-dom:
-        specifier: '>=16.8.4'
+        specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
 
   plugins/canvas:
@@ -2029,9 +2029,6 @@ importers:
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.14)(react@19.2.6)
-      '@emotion/styled':
-        specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6)
       '@jbrowse/app-core':
         specifier: workspace:^
         version: link:../../packages/app-core
@@ -2164,9 +2161,6 @@ importers:
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.14)(react@19.2.6)
-      '@emotion/styled':
-        specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6)
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2218,18 +2212,12 @@ importers:
 
   products/jbrowse-react-linear-genome-view:
     dependencies:
-      '@babel/runtime':
-        specifier: ^7.29.2
-        version: 7.29.2
       '@emotion/cache':
         specifier: ^11.14.0
         version: 11.14.0
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.14)(react@19.2.6)
-      '@emotion/styled':
-        specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6)
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

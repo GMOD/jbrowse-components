@@ -68,3 +68,9 @@ multiple files.** MST's `.views()`/`.actions()` chaining makes type inference
 harder to get right across file boundaries. Small self-contained pieces of logic
 (mixins, pure utility functions) can be extracted, but the main model chain
 should stay in one file.
+
+## @jbrowse/mobx-state-tree fork
+
+`@jbrowse/mobx-state-tree` is our internal fork of mobx-state-tree with nearly
+100% API and behavior compatibility — just refactored for ESM. Treat it like
+upstream MST for coding purposes; the fork handles compatibility under the hood.

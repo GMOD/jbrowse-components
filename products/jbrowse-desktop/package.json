@@ -2,7 +2,7 @@
   "name": "@jbrowse/desktop",
   "version": "4.2.1",
   "type": "module",
-  "description": "JBrowse desktop application specialized to inspect structural variants",
+  "description": "JBrowse desktop application",
   "license": "Apache-2.0",
   "homepage": "./",
   "author": "JBrowse Team",
