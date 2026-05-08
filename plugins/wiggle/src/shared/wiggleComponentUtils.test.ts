@@ -97,20 +97,26 @@ describe('makeWhiskersSourceData', () => {
   const maxScores = new Float32Array([9, 12])
   const color: [number, number, number] = [0.2, 0.4, 0.8]
 
+  const summaryData = {
+    featurePositions: positions,
+    featureScores: scores,
+    featureMinScores: minScores,
+    featureMaxScores: maxScores,
+    numFeatures: 2,
+    hasSummaryScores: true,
+  }
+
+  const noSummaryData = {
+    featurePositions: positions,
+    featureScores: scores,
+    featureMinScores: scores,
+    featureMaxScores: scores,
+    numFeatures: 2,
+    hasSummaryScores: false,
+  }
+
   test('returns 3 layers (max, avg, min) when summary data present', () => {
-    const result = makeWhiskersSourceData(
-      {
-        featurePositions: positions,
-        featureScores: scores,
-        featureMinScores: minScores,
-        featureMaxScores: maxScores,
-        numFeatures: 2,
-      },
-      color,
-      false,
-      false,
-      3,
-    )
+    const result = makeWhiskersSourceData(summaryData, color, false, false, 3)
     expect(result).toHaveLength(3)
     expect(result[0]!.featureScores).toBe(maxScores)
     expect(result[1]!.featureScores).toBe(scores)
@@ -119,72 +125,24 @@ describe('makeWhiskersSourceData', () => {
   })
 
   test('returns single layer when no summary variation', () => {
-    const result = makeWhiskersSourceData(
-      {
-        featurePositions: positions,
-        featureScores: scores,
-        featureMinScores: scores,
-        featureMaxScores: scores,
-        numFeatures: 2,
-      },
-      color,
-      false,
-      false,
-      0,
-    )
+    const result = makeWhiskersSourceData(noSummaryData, color, false, false, 0)
     expect(result).toHaveLength(1)
   })
 
   test('returns single layer in density mode', () => {
-    const result = makeWhiskersSourceData(
-      {
-        featurePositions: positions,
-        featureScores: scores,
-        featureMinScores: minScores,
-        featureMaxScores: maxScores,
-        numFeatures: 2,
-      },
-      color,
-      true,
-      false,
-      0,
-    )
+    const result = makeWhiskersSourceData(summaryData, color, true, false, 0)
     expect(result).toHaveLength(1)
   })
 
   test('reverses order in scatter mode', () => {
-    const result = makeWhiskersSourceData(
-      {
-        featurePositions: positions,
-        featureScores: scores,
-        featureMinScores: minScores,
-        featureMaxScores: maxScores,
-        numFeatures: 2,
-      },
-      color,
-      false,
-      true,
-      0,
-    )
+    const result = makeWhiskersSourceData(summaryData, color, false, true, 0)
     expect(result).toHaveLength(3)
     expect(result[0]!.featureScores).toBe(minScores)
     expect(result[2]!.featureScores).toBe(maxScores)
   })
 
   test('all layers share the same rowIndex', () => {
-    const result = makeWhiskersSourceData(
-      {
-        featurePositions: positions,
-        featureScores: scores,
-        featureMinScores: minScores,
-        featureMaxScores: maxScores,
-        numFeatures: 2,
-      },
-      color,
-      false,
-      false,
-      5,
-    )
+    const result = makeWhiskersSourceData(summaryData, color, false, false, 5)
     for (const layer of result) {
       expect(layer.rowIndex).toBe(5)
     }

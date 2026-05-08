@@ -33,6 +33,7 @@ function makeData(numFeatures = 2, withNeg = false): WiggleDataResult {
           ? new Float32Array([-3])
           : new Float32Array(0),
         negNumFeatures: withNeg ? 1 : 0,
+        hasSummaryScores: false,
       },
     ],
   }

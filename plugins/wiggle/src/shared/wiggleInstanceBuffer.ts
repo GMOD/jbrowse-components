@@ -31,10 +31,8 @@ export function interleaveInstances(
       const score = scores[i]!
       const currStart = positions[pi]!
       const currEnd = positions[pi + 1]!
-      const prevEnd = positions[pi - 1]
-      const nextStart = positions[pi + 2]
-      const prevAdj = prevEnd === currStart
-      const nextAdj = nextStart === currEnd
+      const prevAdj = i > 0 && positions[pi - 1] === currStart
+      const nextAdj = i < n - 1 && positions[pi + 2] === currEnd
       u32[off + FIELD_OFFSET_F32.startEnd] = currStart
       u32[off + FIELD_OFFSET_F32.startEnd + 1] = currEnd
       f32[off + FIELD_OFFSET_F32.score] = score

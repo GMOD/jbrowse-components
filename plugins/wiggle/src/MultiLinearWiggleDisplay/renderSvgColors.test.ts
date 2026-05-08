@@ -53,6 +53,7 @@ function makeSource(pos: number, neg: number): WiggleSourceData {
     featureMinScores: new Float32Array(0),
     featureMaxScores: new Float32Array(0),
     numFeatures: 0,
+    hasSummaryScores: false,
     posFeaturePositions: new Uint32Array(pos * 2),
     posFeatureScores: new Float32Array(pos),
     posNumFeatures: pos,

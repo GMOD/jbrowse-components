@@ -71,18 +71,6 @@ export function renderingTypeToInt(type: string): WiggleRenderingType {
   return result
 }
 
-function hasSummaryFeatures(data: FeatureArrays) {
-  for (let i = 0; i < data.numFeatures; i++) {
-    if (
-      data.featureMinScores[i] !== data.featureScores[i] ||
-      data.featureMaxScores[i] !== data.featureScores[i]
-    ) {
-      return true
-    }
-  }
-  return false
-}
-
 export function makeWhiskersSourceData(
   data: FeatureArrays,
   color: [number, number, number],
@@ -99,7 +87,7 @@ export function makeWhiskersSourceData(
       rowIndex,
     },
   ]
-  if (isDensityMode || !hasSummaryFeatures(data)) {
+  if (isDensityMode || !data.hasSummaryScores) {
     return singleSource
   }
   const sources = [

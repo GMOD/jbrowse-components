@@ -249,11 +249,11 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // something, but it is static for this particular multi-wiggle adapter type
   async getSources(_regions: Region[]) {
     const adapters = await this.getAdapters()
-    return adapters.map(({ type, bigWigLocation, dataAdapter, ...rest }) => {
-      return {
+    return adapters.map(
+      ({ type: _t, bigWigLocation: _bw, dataAdapter: _da, ...rest }) => ({
         ...rest,
         name: rest.source,
-      }
-    })
+      }),
+    )
   }
 }

@@ -55,6 +55,7 @@ function makeFeatureArrays(scores: number[]) {
     featureMinScores: new Float32Array(scores),
     featureMaxScores: new Float32Array(scores),
     numFeatures: n,
+    hasSummaryScores: false,
   }
 }
 
@@ -185,6 +186,7 @@ describe('computeAutoscaleDomain', () => {
       featureMinScores: new Float32Array([1, 3]),
       featureMaxScores: new Float32Array([10, 15]),
       numFeatures: 2,
+      hasSummaryScores: true,
     }
     const entries = [{ data, visStart: 0, visEnd: 200 }]
     const result = computeAutoscaleDomain(

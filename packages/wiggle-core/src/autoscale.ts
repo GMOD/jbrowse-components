@@ -4,6 +4,7 @@ export interface FeatureArrays {
   featureMinScores: Float32Array
   featureMaxScores: Float32Array
   numFeatures: number
+  hasSummaryScores: boolean
 }
 
 export interface Dataset {

@@ -35,6 +35,7 @@ function makeEmptyWiggleData(): WiggleDataResult {
         negFeaturePositions: new Uint32Array(0),
         negFeatureScores: new Float32Array(0),
         negNumFeatures: 0,
+        hasSummaryScores: false,
       },
     ],
   }

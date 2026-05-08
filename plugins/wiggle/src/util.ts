@@ -78,6 +78,7 @@ export interface WiggleFeatureArrays {
   featureMinScores: Float32Array
   featureMaxScores: Float32Array
   numFeatures: number
+  hasSummaryScores: boolean
   posFeaturePositions: Uint32Array
   posFeatureScores: Float32Array
   posNumFeatures: number
@@ -111,6 +112,7 @@ export function processFeaturesFromArrays(
   const negFeatureScoresBuf = new Float32Array(count)
   let posCount = 0
   let negCount = 0
+  let hasSummaryScores = false
 
   for (let i = 0; i < count; i++) {
     const score = scores[i]!
@@ -119,8 +121,13 @@ export function processFeaturesFromArrays(
     featurePositions[i * 2] = startPos
     featurePositions[i * 2 + 1] = endPos
     featureScores[i] = score
-    featureMinScores[i] = minScores ? (minScores[i] ?? score) : score
-    featureMaxScores[i] = maxScores ? (maxScores[i] ?? score) : score
+    const minScore = minScores ? (minScores[i] ?? score) : score
+    const maxScore = maxScores ? (maxScores[i] ?? score) : score
+    featureMinScores[i] = minScore
+    featureMaxScores[i] = maxScore
+    if (minScore !== score || maxScore !== score) {
+      hasSummaryScores = true
+    }
 
     if (score >= bicolorPivot) {
       posFeaturePositionsBuf[posCount * 2] = startPos
@@ -141,6 +148,7 @@ export function processFeaturesFromArrays(
     featureMinScores,
     featureMaxScores,
     numFeatures: count,
+    hasSummaryScores,
     posFeaturePositions: posFeaturePositionsBuf.subarray(0, posCount * 2),
     posFeatureScores: posFeatureScoresBuf.subarray(0, posCount),
     posNumFeatures: posCount,

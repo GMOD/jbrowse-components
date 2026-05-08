@@ -14,9 +14,6 @@ import RenderWiggleDataRPCF from './RenderWiggleDataRPC/index.ts'
 import {
   MultiWiggleClusterScoreMatrix,
   MultiWiggleGetScoreMatrix,
-  MultiWiggleGetSources,
-  WiggleGetGlobalQuantitativeStats,
-  WiggleGetMultiRegionQuantitativeStats,
 } from './WiggleRPC/rpcMethods.ts'
 import * as utils from './util.ts'
 
@@ -38,9 +35,6 @@ export default class WigglePlugin extends Plugin {
     RenderWiggleDataRPCF(pm)
     RenderMultiWiggleDataRPCF(pm)
 
-    pm.addRpcMethod(() => new WiggleGetGlobalQuantitativeStats(pm))
-    pm.addRpcMethod(() => new WiggleGetMultiRegionQuantitativeStats(pm))
-    pm.addRpcMethod(() => new MultiWiggleGetSources(pm))
     pm.addRpcMethod(() => new MultiWiggleGetScoreMatrix(pm))
     pm.addRpcMethod(() => new MultiWiggleClusterScoreMatrix(pm))
   }
