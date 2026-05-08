@@ -47,6 +47,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   const drawerWidth = drawerSession.drawerWidth || 384
   const minimized = drawerSession.minimized || false
   const visibleWidget = drawerSession.visibleWidget
+  const drawerViewHeight = viewState.drawerViewHeight
 
   const gridColumns =
     drawerPosition === 'left'
@@ -61,7 +62,11 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
     <ThemeProvider theme={theme}>
       <div
         className={classes.root}
-        style={{ gridTemplateColumns: gridColumns }}
+        style={
+          visibleWidget
+            ? { gridTemplateColumns: gridColumns, height: drawerViewHeight }
+            : { gridTemplateColumns: gridColumns }
+        }
       >
         {drawerPosition === 'left' && visibleWidget ? (
           <Suspense fallback={null}>

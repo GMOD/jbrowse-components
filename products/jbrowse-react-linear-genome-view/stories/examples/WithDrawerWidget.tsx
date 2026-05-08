@@ -18,6 +18,7 @@ export const WithDrawerWidget = () => {
     assembly,
     tracks,
     location: 'ctgA:1105..1221',
+    drawerViewHeight: '100vh',
     defaultSession: {
       name: 'Drawer Widget Example',
       view: {

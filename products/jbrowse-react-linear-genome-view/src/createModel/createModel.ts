@@ -51,6 +51,10 @@ export default function createModel(
       /**
        * #property
        */
+      drawerViewHeight: types.optional(types.string, '100vh'),
+      /**
+       * #property
+       */
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),

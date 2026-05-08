@@ -37,6 +37,7 @@ interface ViewStateOptions {
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
+  drawerViewHeight?: string
 }
 
 export default function createViewState(opts: ViewStateOptions) {
@@ -53,6 +54,7 @@ export default function createViewState(opts: ViewStateOptions) {
     disableAddTracks = false,
     makeWorkerInstance,
     defaultSession,
+    drawerViewHeight = '100vh',
   } = opts
   const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   const stateTree = model.create(
@@ -65,6 +67,7 @@ export default function createViewState(opts: ViewStateOptions) {
         aggregateTextSearchAdapters,
       },
       disableAddTracks,
+      drawerViewHeight,
       session: defaultSession ?? {
         name: 'this session',
         view: {

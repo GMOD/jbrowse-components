@@ -10,7 +10,6 @@ import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
-import LaunchIcon from '@mui/icons-material/Launch'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import {
@@ -210,15 +209,11 @@ const DrawerControls = observer(function DrawerControls({
 const DrawerHeader = observer(function DrawerHeader({
   session,
   setToolbarHeight,
-  onPopoutDrawer,
 }: {
   session: SessionWithDrawerWidgets
   setToolbarHeight: (arg: number) => void
-  onPopoutDrawer: () => void
 }) {
   const { classes } = useStyles()
-  const { visibleWidget } = session
-  const { pluginManager } = getEnv(session)
 
   return (
     <AppBar
@@ -230,16 +225,6 @@ const DrawerHeader = observer(function DrawerHeader({
     >
       <Toolbar disableGutters>
         <DrawerWidgetSelector session={session} />
-        <Tooltip title="Open drawer in dialog">
-          <IconButton
-            color="inherit"
-            onClick={() => {
-              onPopoutDrawer()
-            }}
-          >
-            <LaunchIcon />
-          </IconButton>
-        </Tooltip>
         <div className={classes.spacer} />
         <DrawerControls session={session} />
       </Toolbar>
@@ -256,7 +241,6 @@ const DrawerWidget = observer(function DrawerWidget({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(session)
   const [toolbarHeight, setToolbarHeight] = useState(0)
-  const [popoutModal, setPopoutModal] = useState(false)
 
   const widgetType = visibleWidget
     ? pluginManager.getWidgetType(visibleWidget.type)
@@ -274,9 +258,6 @@ const DrawerWidget = observer(function DrawerWidget({
   return (
     <Paper className={classes.paper} elevation={16} square>
       <DrawerHeader
-        onPopoutDrawer={() => {
-          setPopoutModal(true)
-        }}
         session={session}
         setToolbarHeight={setToolbarHeight}
       />
