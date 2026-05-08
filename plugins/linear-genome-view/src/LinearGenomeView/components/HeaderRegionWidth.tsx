@@ -8,7 +8,6 @@ const useStyles = makeStyles()({
   bp: {
     display: 'flex',
     alignItems: 'center',
-    marginLeft: 5,
     cursor: 'pointer',
   },
 })
@@ -20,8 +19,8 @@ const HeaderRegionWidth = observer(function HeaderRegionWidth({
 }) {
   const { classes } = useStyles()
   return (
-    <Typography variant="body2" color="text.secondary" className={classes.bp}>
-      {model.coarseTotalBpDisplayStr}
+    <Typography variant="body2" color="textSecondary" className={classes.bp}>
+      {model.effectiveTotalBpDisplayStr}
     </Typography>
   )
 })
