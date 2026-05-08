@@ -1,5 +1,7 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
 setup()
 
@@ -16,6 +18,30 @@ afterEach(() => {
 
 // onAction listener warning
 console.warn = jest.fn()
+
+test('three level', async () => {
+  const { session, queryAllByTestId } = await createView()
+  ;(session as AbstractSessionModel).addView('LinearSyntenyView', {
+    init: {
+      views: [
+        { assembly: 'volvox_del' },
+        { assembly: 'volvox' },
+        { assembly: 'volvox_ins' },
+      ],
+      tracks: [['volvox_del.paf'], ['volvox_ins.paf']],
+    },
+  })
+  const canvases = await waitFor(
+    () => {
+      const found = queryAllByTestId('synteny_canvas_done')
+      expect(found).toHaveLength(2)
+      return found
+    },
+    delay,
+  )
+  expectCanvasMatch(canvases[0]!)
+  expectCanvasMatch(canvases[1]!)
+}, 40000)
 
 test('open tracklist file', async () => {
   const { session, findByTestId, findByRole, findAllByTestId, findByText } =
