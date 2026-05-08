@@ -5,15 +5,15 @@ import type { HicRenderState } from './hicBackendTypes.ts'
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 
 function createMockCanvas() {
-  const pathOps: string[] = []
   const ctx = {
     setTransform: jest.fn(),
     clearRect: jest.fn(),
-    beginPath: jest.fn(() => pathOps.push('beginPath')),
-    moveTo: jest.fn(),
-    lineTo: jest.fn(),
-    closePath: jest.fn(() => pathOps.push('closePath')),
-    fill: jest.fn(() => pathOps.push('fill')),
+    save: jest.fn(),
+    restore: jest.fn(),
+    translate: jest.fn(),
+    scale: jest.fn(),
+    rotate: jest.fn(),
+    fillRect: jest.fn(),
     fillStyle: '',
   }
   const canvas = {
@@ -21,7 +21,7 @@ function createMockCanvas() {
     height: 0,
     getContext: jest.fn(() => ctx),
   } as unknown as HTMLCanvasElement
-  return { canvas, ctx, pathOps }
+  return { canvas, ctx }
 }
 
 function makeColorRamp() {
@@ -50,8 +50,8 @@ function makeRenderState(overrides?: Partial<HicRenderState>): HicRenderState {
 }
 
 describe('Canvas2DHicRenderer', () => {
-  test('renders diamonds for uploaded contacts', () => {
-    const { canvas, pathOps } = createMockCanvas()
+  test('renders fillRects for uploaded contacts', () => {
+    const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
 
     renderer.uploadData({
@@ -63,23 +63,42 @@ describe('Canvas2DHicRenderer', () => {
 
     renderer.render(makeRenderState())
 
-    expect(pathOps).toContain('beginPath')
-    expect(pathOps).toContain('closePath')
-    expect(pathOps).toContain('fill')
+    expect(ctx.fillRect).toHaveBeenCalledTimes(1)
+    expect(ctx.fillRect).toHaveBeenCalledWith(10, 20, 10, 10)
+  })
+
+  test('applies viewport transform via ctx stack', () => {
+    const { canvas, ctx } = createMockCanvas()
+    const renderer = new Canvas2DHicRenderer(canvas)
+
+    renderer.uploadData({
+      positions: new Float32Array([0, 0]),
+      counts: new Float32Array([50]),
+      numContacts: 1,
+    })
+    renderer.uploadColorRamp(makeColorRamp())
+
+    renderer.render(makeRenderState({ viewScale: 2, viewOffsetX: 100, yScalar: 0.5 }))
+
+    expect(ctx.save).toHaveBeenCalled()
+    expect(ctx.translate).toHaveBeenCalledWith(100, 0)
+    expect(ctx.scale).toHaveBeenCalledWith(2, 1)
+    expect(ctx.rotate).toHaveBeenCalledWith(-Math.PI / 4)
+    expect(ctx.restore).toHaveBeenCalled()
   })
 
   test('does nothing with empty data', () => {
-    const { canvas, pathOps, ctx } = createMockCanvas()
+    const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
 
     renderer.render(makeRenderState())
 
-    expect(pathOps.length).toBe(0)
+    expect(ctx.fillRect).not.toHaveBeenCalled()
     expect(ctx.clearRect).toHaveBeenCalled()
   })
 
   test('does nothing without color ramp', () => {
-    const { canvas, pathOps } = createMockCanvas()
+    const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
 
     renderer.uploadData({
@@ -90,15 +109,15 @@ describe('Canvas2DHicRenderer', () => {
 
     renderer.render(makeRenderState())
 
-    expect(pathOps.length).toBe(0)
+    expect(ctx.fillRect).not.toHaveBeenCalled()
   })
 
   test('skips cells with near-zero alpha', () => {
-    const { canvas, pathOps } = createMockCanvas()
+    const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
 
     const ramp = makeColorRamp()
-    ramp[3] = 0 // first entry alpha = 0
+    ramp[3] = 0
 
     renderer.uploadData({
       positions: new Float32Array([0, 0]),
@@ -109,11 +128,11 @@ describe('Canvas2DHicRenderer', () => {
 
     renderer.render(makeRenderState())
 
-    expect(pathOps).not.toContain('fill')
+    expect(ctx.fillRect).not.toHaveBeenCalled()
   })
 
   test('renders multiple contacts', () => {
-    const { canvas, pathOps } = createMockCanvas()
+    const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
 
     renderer.uploadData({
@@ -125,8 +144,7 @@ describe('Canvas2DHicRenderer', () => {
 
     renderer.render(makeRenderState())
 
-    const fillCount = pathOps.filter(op => op === 'fill').length
-    expect(fillCount).toBe(3)
+    expect(ctx.fillRect).toHaveBeenCalledTimes(3)
   })
 
   test('useLogScale affects color mapping', () => {
@@ -156,7 +174,7 @@ describe('Canvas2DHicRenderer', () => {
   })
 
   test('dispose clears data', () => {
-    const { canvas, pathOps } = createMockCanvas()
+    const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
 
     renderer.uploadData({
@@ -168,6 +186,6 @@ describe('Canvas2DHicRenderer', () => {
     renderer.dispose()
 
     renderer.render(makeRenderState())
-    expect(pathOps).not.toContain('fill')
+    expect(ctx.fillRect).not.toHaveBeenCalled()
   })
 })

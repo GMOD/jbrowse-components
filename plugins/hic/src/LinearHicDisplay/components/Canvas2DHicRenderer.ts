@@ -9,8 +9,6 @@ import { lookupColorRamp, mapHicCount } from './colorRamp.ts'
 import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-const SQRT_HALF = Math.SQRT1_2
-
 export interface HicData {
   positions: Float32Array
   counts: Float32Array
@@ -18,10 +16,11 @@ export interface HicData {
 }
 
 /**
- * Pure draw entry point. Paints the hic contact-matrix diamonds into any
- * 2D-canvas-like context using inline rotation/scaling math (rather than
- * ctx.transform stack), so the same path works for on-screen rendering and
- * SVG export.
+ * Pure draw entry point. Paints the hic contact-matrix as axis-aligned
+ * fillRects in pre-rotation space, then rotates the whole layer by -45° via
+ * ctx.transform stack. Adjacent rects share grid-aligned edges and tile
+ * seamlessly — the path-based diamond approach left thin AA seams between
+ * neighboring bins.
  */
 export function drawHicBlocks(
   ctx: Ctx2D,
@@ -42,10 +41,12 @@ export function drawHicBlocks(
     return
   }
 
-  const s = SQRT_HALF * viewScale
-  const hw = binWidth * s
-  const hh = binWidth * s * yScalar
   const fillStyleLut = makeRampFillStyleLut(colorRamp)
+
+  ctx.save()
+  ctx.translate(viewOffsetX, 0)
+  ctx.scale(viewScale, viewScale * yScalar)
+  ctx.rotate(-Math.PI / 4)
 
   for (let i = 0; i < numContacts; i++) {
     const px = positions[i * 2]!
@@ -54,26 +55,15 @@ export function drawHicBlocks(
 
     const t = mapHicCount(count, colorMaxScore, useLogScale)
     const { a } = lookupColorRamp(colorRamp, t)
-
     if (a < 0.01) {
       continue
     }
 
-    // Rotate square corners by -45° and apply viewport transform inline.
-    // The four corners of the square [px,py]→[px+bw,py+bw] map to a diamond:
-    //   top=(base,rBase), right, bottom, left — rotated 45° in screen space.
-    const base = (px + py) * s + viewOffsetX
-    const rBase = (-px + py) * s * yScalar
-
-    ctx.beginPath()
-    ctx.moveTo(base, rBase)
-    ctx.lineTo(base + hw, rBase - hh)
-    ctx.lineTo(base + 2 * hw, rBase)
-    ctx.lineTo(base + hw, rBase + hh)
-    ctx.closePath()
     ctx.fillStyle = fillStyleLut(t)
-    ctx.fill()
+    ctx.fillRect(px, py, binWidth, binWidth)
   }
+
+  ctx.restore()
 }
 
 export class Canvas2DHicRenderer implements HicBackend {

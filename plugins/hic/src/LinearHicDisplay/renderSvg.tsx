@@ -20,12 +20,12 @@ export async function renderSvg(
 ) {
   const view = getContainingView(self) as LGV
   await when(() => self.rpcData != null || !!self.error || self.regionTooLarge)
-  const { rpcData, useLogScale, colorScheme, showLegend, yScalar } = self
+  const { rpcData, useLogScale, colorScheme, showLegend, yScalar, colorMaxScore } = self
   if (!rpcData || rpcData.numContacts === 0) {
     return null
   }
 
-  const { positions, counts, numContacts, colorMaxScore, binWidth } = rpcData
+  const { positions, counts, numContacts, binWidth } = rpcData
   const height = opts.overrideHeight ?? self.height
   const visibleWidth = view.width
   const ramp = generateColorRamp(colorScheme)

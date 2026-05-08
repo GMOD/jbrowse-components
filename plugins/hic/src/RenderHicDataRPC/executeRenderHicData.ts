@@ -68,7 +68,8 @@ export async function executeRenderHicData({
       positions: new Float32Array(0),
       counts: new Float32Array(0),
       numContacts: 0,
-      colorMaxScore: 0,
+      maxScore: 0,
+      percentile95: 0,
       binWidth: w,
       items: [],
       lookup: {},
@@ -77,7 +78,13 @@ export async function executeRenderHicData({
     }
   }
 
-  const colorMaxScore = computePercentile(features, 95)
+  let maxScore = 0
+  for (const f of features) {
+    if (f.counts > maxScore) {
+      maxScore = f.counts
+    }
+  }
+  const percentile95 = computePercentile(features, 95)
 
   const positions = new Float32Array(features.length * 2)
   const countValues = new Float32Array(features.length)
@@ -102,7 +109,8 @@ export async function executeRenderHicData({
     positions,
     counts: countValues,
     numContacts: features.length,
-    colorMaxScore,
+    maxScore,
+    percentile95,
     binWidth: w,
     items,
     lookup,

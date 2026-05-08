@@ -62,6 +62,13 @@ export default function stateModelFactory(
          */
         resolution: types.maybe(types.number),
         useLogScale: false,
+        /**
+         * #property
+         * Color saturation point: false → maxScore/20 (linear) or maxScore
+         * (log), matches legacy behavior. true → 95th percentile of counts;
+         * lower saturation point so off-diagonal contacts read more strongly.
+         */
+        useColorPercentile: false,
         activeNormalization: 'KR',
         mode: 'triangular',
       }),
@@ -129,7 +136,14 @@ export default function stateModelFactory(
         return self.rpcData?.binWidth
       },
       get colorMaxScore() {
-        return self.rpcData?.colorMaxScore ?? 0
+        const data = self.rpcData
+        if (!data) {
+          return 0
+        }
+        if (self.useColorPercentile) {
+          return data.percentile95
+        }
+        return self.useLogScale ? data.maxScore : data.maxScore / 20
       },
       /**
        * #getter
@@ -194,7 +208,7 @@ export default function stateModelFactory(
           yScalar: self.yScalar,
           canvasWidth: view.totalWidthPx,
           canvasHeight: self.height,
-          colorMaxScore: data.colorMaxScore,
+          colorMaxScore: self.colorMaxScore,
           useLogScale: self.useLogScale,
           viewScale: scale,
           viewOffsetX: translateX,
@@ -257,6 +271,12 @@ export default function stateModelFactory(
        */
       setUseLogScale(f: boolean) {
         self.useLogScale = f
+      },
+      /**
+       * #action
+       */
+      setUseColorPercentile(f: boolean) {
+        self.useColorPercentile = f
       },
       /**
        * #action
@@ -351,6 +371,14 @@ export default function stateModelFactory(
               checked: self.useLogScale,
               onClick: () => {
                 self.setUseLogScale(!self.useLogScale)
+              },
+            },
+            {
+              label: 'Use 95th percentile color scale',
+              type: 'checkbox',
+              checked: self.useColorPercentile,
+              onClick: () => {
+                self.setUseColorPercentile(!self.useColorPercentile)
               },
             },
             {

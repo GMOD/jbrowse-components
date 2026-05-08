@@ -10,7 +10,8 @@ export interface HicDataResult {
   positions: Float32Array
   counts: Float32Array
   numContacts: number
-  colorMaxScore: number
+  maxScore: number
+  percentile95: number
   binWidth: number
   items: HicContactItem[]
   /**
