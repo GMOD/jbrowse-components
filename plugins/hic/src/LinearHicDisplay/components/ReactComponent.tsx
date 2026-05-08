@@ -8,9 +8,6 @@ import {
   useGpuModelLifecycle,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import AddIcon from '@mui/icons-material/Add'
-import RemoveIcon from '@mui/icons-material/Remove'
-import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import HicColorLegend from './HicColorLegend.tsx'
@@ -96,40 +93,56 @@ function ResolutionControl({
     <div
       style={{
         position: 'absolute',
-        top: 8,
-        right: 8,
+        top: 4,
+        right: 4,
         display: 'flex',
-        gap: 4,
+        gap: 2,
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        padding: '4px 8px',
-        borderRadius: 4,
-        fontSize: 12,
+        fontSize: 11,
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        padding: '2px 4px',
+        borderRadius: 2,
       }}
     >
-      <IconButton
-        size="small"
+      <button
         onClick={() => {
           model.zoomResolutionFiner()
         }}
         disabled={!canGoFiner}
-        title="Finer resolution (smaller bins)"
+        title="Finer"
+        style={{
+          padding: '2px 4px',
+          fontSize: 10,
+          cursor: canGoFiner ? 'pointer' : 'default',
+          opacity: canGoFiner ? 1 : 0.5,
+          border: '1px solid #ccc',
+          background: '#fff',
+          borderRadius: 2,
+        }}
       >
-        <AddIcon fontSize="small" />
-      </IconButton>
-      <span style={{ minWidth: 40, textAlign: 'center' }}>
-        {resolution.toLocaleString()}bp
+        +
+      </button>
+      <span style={{ minWidth: 30, textAlign: 'center', fontSize: 10 }}>
+        {(resolution / 1000).toFixed(0)}k
       </span>
-      <IconButton
-        size="small"
+      <button
         onClick={() => {
           model.zoomResolutionCoarser()
         }}
         disabled={!canGoCoarser}
-        title="Coarser resolution (larger bins)"
+        title="Coarser"
+        style={{
+          padding: '2px 4px',
+          fontSize: 10,
+          cursor: canGoCoarser ? 'pointer' : 'default',
+          opacity: canGoCoarser ? 1 : 0.5,
+          border: '1px solid #ccc',
+          background: '#fff',
+          borderRadius: 2,
+        }}
       >
-        <RemoveIcon fontSize="small" />
-      </IconButton>
+        −
+      </button>
     </div>
   )
 }
