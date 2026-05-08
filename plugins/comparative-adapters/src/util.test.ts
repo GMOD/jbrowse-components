@@ -1,7 +1,5 @@
 import { flipCigar } from './util.ts'
 
 test('flip cigar', () => {
-  expect(flipCigar(['3', 'M', '5', 'D', '5', 'M', '5', 'I', '6', 'M'])).toEqual(
-    ['6', 'M', '5', 'D', '5', 'M', '5', 'I', '3', 'M'],
-  )
+  expect(flipCigar('3M5D5M5I6M')).toEqual('6M5D5M5I3M')
 })

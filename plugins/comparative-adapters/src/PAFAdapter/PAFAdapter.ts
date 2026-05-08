@@ -4,8 +4,6 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { parseCigar } from '@jbrowse/plugin-alignments'
-
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { flipCigar, parsePAFLine, swapIndelCigar } from '../util.ts'
 import { getWeightedMeans } from './util.ts'
@@ -137,7 +135,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           let CIGAR = cg
           if (cg) {
             if (flip && strand === -1) {
-              CIGAR = flipCigar(parseCigar(cg)).join('')
+              CIGAR = flipCigar(cg)
             } else if (flip) {
               CIGAR = swapIndelCigar(cg)
             }

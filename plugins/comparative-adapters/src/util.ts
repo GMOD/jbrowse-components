@@ -55,20 +55,25 @@ export function parsePAFLine(line: string) {
   }
 }
 
-export function flipCigar(cigar: string[]) {
-  const arr = []
-  for (let i = cigar.length - 2; i >= 0; i -= 2) {
-    arr.push(cigar[i])
-    const op = cigar[i + 1]
-    if (op === 'D') {
-      arr.push('I')
-    } else if (op === 'I') {
-      arr.push('D')
+export function flipCigar(cigar: string) {
+  const ops: [number, string][] = []
+  let len = 0
+  for (let i = 0; i < cigar.length; i++) {
+    const c = cigar[i]!
+    if (c >= '0' && c <= '9') {
+      len = len * 10 + (c.charCodeAt(0) - 48)
     } else {
-      arr.push(op)
+      ops.push([len, c])
+      len = 0
     }
   }
-  return arr
+  let result = ''
+  for (let i = ops.length - 1; i >= 0; i--) {
+    const [l, op] = ops[i]!
+    result += l
+    result += op === 'D' ? 'I' : op === 'I' ? 'D' : op
+  }
+  return result
 }
 
 export function swapIndelCigar(cigar: string) {

@@ -1,26 +1,32 @@
-import { parseCigar } from '@jbrowse/plugin-alignments'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_X,
+} from '@jbrowse/alignments-core'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 type LSV = LinearSyntenyViewModel
 
-function findPosInCigar(cigar: string[], startX: number) {
+function findPosInCigar(cigar: number[], startX: number) {
   let featX = 0
   let mateX = 0
-  for (let i = 0; i < cigar.length; i++) {
-    const len = +cigar[i]!
-    const op = cigar[i + 1]!
-    const min = Math.min(len, startX - featX)
-
+  for (const packed of cigar) {
     if (featX >= startX) {
       break
     }
-    if (op === 'I') {
+    const len = packed >>> 4
+    const opIdx = packed & 0xf
+    const min = Math.min(len, startX - featX)
+    if (opIdx === CIGAR_I) {
       mateX += len
-    } else if (op === 'D') {
+    } else if (opIdx === CIGAR_D) {
       featX += min
-    } else if (op === 'M' || op === '=' || op === 'X') {
+    } else if (opIdx === CIGAR_M || opIdx === CIGAR_EQ || opIdx === CIGAR_X) {
       mateX += min
       featX += min
     }
@@ -70,7 +76,7 @@ export async function navToSynteny({
   if (region && cigar) {
     const regStart = region.start
     const regEnd = region.end
-    const p = parseCigar(cigar)
+    const p = parseCigar2(cigar)
     const [fStartX, mStartX] = findPosInCigar(p, regStart - featStart)
     const [fEndX, mEndX] = findPosInCigar(p, regEnd - featStart)
 

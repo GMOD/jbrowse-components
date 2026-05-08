@@ -1,5 +1,20 @@
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
-import { getMismatches, parseCigar2, parseCigar } from './index.ts'
+import { getMismatches, parseCigar2 } from './index.ts'
+
+function parseCigar(s = '') {
+  let currLen = ''
+  const ret: string[] = []
+  for (let i = 0, l = s.length; i < l; i++) {
+    const c = s[i]!
+    if (c >= '0' && c <= '9') {
+      currLen = currLen + c
+    } else {
+      ret.push(currLen, c)
+      currLen = ''
+    }
+  }
+  return ret
+}
 import { mdToMismatches2 } from './mdToMismatches2.ts'
 
 import type { Mismatch } from '../shared/types.ts'

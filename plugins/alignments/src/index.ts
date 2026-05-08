@@ -54,7 +54,6 @@ export {
   getMismatches,
   getTag,
   parseCigar2,
-  parseCigar,
 } from './MismatchParser/index.ts'
 export { computeCoverage } from './features/coverage/compute.ts'
 export type { CoverageFeature } from './features/coverage/compute.ts'

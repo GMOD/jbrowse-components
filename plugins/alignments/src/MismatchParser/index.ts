@@ -1,25 +1,17 @@
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
 import { mdToMismatches2 } from './mdToMismatches2.ts'
+import {
+  CIGAR_D,
+  CIGAR_H,
+  CIGAR_I,
+  CIGAR_N,
+  CIGAR_S,
+} from '@jbrowse/alignments-core'
 
 import type { Feature } from '@jbrowse/core/util'
 
 const startClip = new RegExp(/(\d+)[SH]$/)
 const endClip = new RegExp(/^(\d+)([SH])/)
-
-export function parseCigar(s = '') {
-  let currLen = ''
-  const ret = []
-  for (let i = 0, l = s.length; i < l; i++) {
-    const c = s[i]!
-    if (c >= '0' && c <= '9') {
-      currLen = currLen + c
-    } else {
-      ret.push(currLen, c)
-      currLen = ''
-    }
-  }
-  return ret
-}
 
 // CIGAR operation char codes to indices (from BAM spec)
 const CIGAR_CODE_TO_INDEX: Record<number, number> = {
@@ -34,8 +26,7 @@ const CIGAR_CODE_TO_INDEX: Record<number, number> = {
   88: 8, // X
 }
 
-// Parses CIGAR string to packed Uint32Array format
-// Returns Uint32Array where each value is (length << 4) | opIndex
+// Parses CIGAR string to packed number array where each value is (length << 4) | opIndex
 export function parseCigar2(s = '') {
   let currLen = 0
   const ret: number[] = []
@@ -68,39 +59,41 @@ export function getMismatches(
 }
 
 export function getLengthOnRef(cigar: string) {
-  const cigarOps = parseCigar(cigar)
+  const cigarOps = parseCigar2(cigar)
   let lengthOnRef = 0
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]!
-    const op = cigarOps[i + 1]
-    if (op !== 'H' && op !== 'S' && op !== 'I') {
-      lengthOnRef += len
+  for (const op of cigarOps) {
+    const opIdx = op & 0xf
+    if (opIdx !== CIGAR_H && opIdx !== CIGAR_S && opIdx !== CIGAR_I) {
+      lengthOnRef += op >>> 4
     }
   }
   return lengthOnRef
 }
 
 export function getLength(cigar: string) {
-  const cigarOps = parseCigar(cigar)
+  const cigarOps = parseCigar2(cigar)
   let length = 0
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]!
-    const op = cigarOps[i + 1]
-    if (op !== 'D' && op !== 'N') {
-      length += len
+  for (const op of cigarOps) {
+    const opIdx = op & 0xf
+    if (opIdx !== CIGAR_D && opIdx !== CIGAR_N) {
+      length += op >>> 4
     }
   }
   return length
 }
 
 export function getLengthSansClipping(cigar: string) {
-  const cigarOps = parseCigar(cigar)
+  const cigarOps = parseCigar2(cigar)
   let length = 0
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]!
-    const op = cigarOps[i + 1]
-    if (op !== 'H' && op !== 'S' && op !== 'D' && op !== 'N') {
-      length += len
+  for (const op of cigarOps) {
+    const opIdx = op & 0xf
+    if (
+      opIdx !== CIGAR_H &&
+      opIdx !== CIGAR_S &&
+      opIdx !== CIGAR_D &&
+      opIdx !== CIGAR_N
+    ) {
+      length += op >>> 4
     }
   }
   return length
