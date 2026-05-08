@@ -9,7 +9,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MultiSampleVariantGetGenotypeMatrix: {
       args: GetGenotypeMatrixArgs
-      return: Record<string, number[]>
+      return: Record<string, Int8Array>
     }
   }
 }

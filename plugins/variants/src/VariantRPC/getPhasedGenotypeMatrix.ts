@@ -45,27 +45,15 @@ export async function getPhasedGenotypeMatrix({
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
-  const rows: Record<string, number[]> = {}
-  // Hoist per-source key resolution, max ploidy, and per-haplotype row-name
-  // strings out of the feature loop — all are constant per source. Also keep
-  // direct rowArrays references parallel to per-haplotype slots so the inner
-  // loop can push without a dict lookup per cell.
-  const resolved = sources.map(s => {
-    const maxPloidy = sampleInfo[s.name]?.maxPloidy ?? 2
-    const rowArrays: number[][] = []
-    for (let hp = 0; hp < maxPloidy; hp++) {
-      const arr: number[] = []
-      rows[`${s.name} HP${hp}`] = arr
-      rowArrays.push(arr)
-    }
-    return {
-      name: s.name,
-      key: s.sampleName ?? s.name,
-      maxPloidy,
-      rowArrays,
-      rawIdx: -1,
-    }
-  })
+  // Hoist per-source key resolution and max ploidy out of the feature loop.
+  // Build per-source resolved entries first; row buffers are pre-sized to
+  // mafs.length once mafs is fetched.
+  const resolved = sources.map(s => ({
+    name: s.name,
+    key: s.sampleName ?? s.name,
+    maxPloidy: sampleInfo[s.name]?.maxPloidy ?? 2,
+    rawIdx: -1,
+  }))
 
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
@@ -78,6 +66,21 @@ export async function getPhasedGenotypeMatrix({
     ),
   })
 
+  // Pre-size each haplotype row to mafs.length and assign by feature index.
+  // Int16 is wide enough for VCF allele indices including pathological
+  // multi-allelic sites, well past Int8's 127-allele cap.
+  const numFeatures = mafs.length
+  const rows: Record<string, Int16Array> = {}
+  const rowArraysBySrc: Int16Array[][] = resolved.map(r => {
+    const arrs: Int16Array[] = []
+    for (let hp = 0; hp < r.maxPloidy; hp++) {
+      const arr = new Int16Array(numFeatures)
+      rows[`${r.name} HP${hp}`] = arr
+      arrs.push(arr)
+    }
+    return arrs
+  })
+
   const raw = detectRawMode(mafs)
   if (raw) {
     for (const r of resolved) {
@@ -85,43 +88,46 @@ export async function getPhasedGenotypeMatrix({
       r.rawIdx = idx ?? -1
     }
   }
-  for (const { feature } of mafs) {
+  for (let f = 0; f < numFeatures; f++) {
+    const feature = mafs[f]!.feature
     const callGt = getRawCallGenotype(feature)
     if (callGt && raw) {
       const callGtPhased = feature.get('callGenotypePhased') as
         | Uint8Array
         | undefined
       const gtPloidy = feature.get('ploidy') as number
-      for (const r of resolved) {
+      for (let k = 0; k < resolved.length; k++) {
+        const r = resolved[k]!
         const si = r.rawIdx
         const phased = si !== -1 && callGtPhased?.[si]
-        const arrs = r.rowArrays
+        const arrs = rowArraysBySrc[k]!
         if (!phased) {
           for (let hp = 0; hp < r.maxPloidy; hp++) {
-            arrs[hp]!.push(-1)
+            arrs[hp]![f] = -1
           }
         } else {
           for (let hp = 0; hp < r.maxPloidy; hp++) {
             const a = hp < gtPloidy ? callGt[si * gtPloidy + hp]! : -1
-            arrs[hp]!.push(a === -1 || a === -2 ? -1 : a)
+            arrs[hp]![f] = a === -1 || a === -2 ? -1 : a
           }
         }
       }
     } else {
       const genotypes = feature.get('genotypes') as Record<string, string>
-      for (const r of resolved) {
+      for (let k = 0; k < resolved.length; k++) {
+        const r = resolved[k]!
         const val = genotypes[r.key]!
-        const arrs = r.rowArrays
+        const arrs = rowArraysBySrc[k]!
         if (val.includes('|')) {
           const alleles = val.split('|')
           for (let hp = 0; hp < r.maxPloidy; hp++) {
             const allele = alleles[hp]
             const value = allele === '.' || allele === undefined ? -1 : +allele
-            arrs[hp]!.push(value)
+            arrs[hp]![f] = value
           }
         } else {
           for (let hp = 0; hp < r.maxPloidy; hp++) {
-            arrs[hp]!.push(-1)
+            arrs[hp]![f] = -1
           }
         }
       }

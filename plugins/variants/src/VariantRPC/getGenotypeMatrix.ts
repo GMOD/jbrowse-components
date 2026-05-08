@@ -57,24 +57,14 @@ export async function getGenotypeMatrix({
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
-  const rows: Record<string, number[]> = {}
   // Hoist sample-key resolution out of the per-feature loop. Per (source ×
   // feature) the previous code recomputed `sampleName ?? name` and (in the
   // raw branch) `sampleIndexMap.get(...)`; both are constant per source.
-  // rowArrays parallels `resolved` so the inner per-feature loop pushes to
-  // a direct reference instead of doing a string-keyed dict lookup per cell.
-  // `rows` is only used for the final return shape (consumed by hclust).
   const resolved = sources.map(s => ({
     name: s.name,
     key: s.sampleName ?? s.name,
     rawIdx: -1,
   }))
-  const rowArrays: number[][] = []
-  for (const r of resolved) {
-    const arr: number[] = []
-    rows[r.name] = arr
-    rowArrays.push(arr)
-  }
 
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
@@ -86,6 +76,20 @@ export async function getGenotypeMatrix({
       ),
     ),
   })
+
+  // Pre-size each row to mafs.length and assign by feature index — eliminates
+  // dynamic-growth reallocs vs push, and Int8 fits dosage values {-1,0,1,2}
+  // exactly. rowArrays parallels `resolved` so the inner loop writes to a
+  // direct reference rather than a string-keyed Record lookup per cell.
+  const numFeatures = mafs.length
+  const rows: Record<string, Int8Array> = {}
+  const rowArrays: Int8Array[] = []
+  for (const r of resolved) {
+    const arr = new Int8Array(numFeatures)
+    rows[r.name] = arr
+    rowArrays.push(arr)
+  }
+
   const raw = detectRawMode(mafs)
   if (raw) {
     for (const r of resolved) {
@@ -117,17 +121,17 @@ export async function getGenotypeMatrix({
     return idx
   })
 
-  for (const { feature } of mafs) {
+  for (let f = 0; f < numFeatures; f++) {
+    const feature = mafs[f]!.feature
     const callGt = getRawCallGenotype(feature)
     if (callGt && raw) {
       const ploidy = feature.get('ploidy') as number
       for (let k = 0; k < resolved.length; k++) {
         const r = resolved[k]!
-        rowArrays[k]!.push(
+        rowArrays[k]![f] =
           r.rawIdx !== -1
             ? encodeGenotypeFromRaw(callGt, r.rawIdx, ploidy)
-            : -1,
-        )
+            : -1
       }
     } else if (hasProcessGenotypes(feature) && samplesLen > 0) {
       let i = 0
@@ -139,12 +143,12 @@ export async function getGenotypeMatrix({
       })
       for (let k = 0; k < rowArrays.length; k++) {
         const idx = resolvedSampleIdx[k]!
-        rowArrays[k]!.push(idx === -1 ? -1 : dosages[idx]!)
+        rowArrays[k]![f] = idx === -1 ? -1 : dosages[idx]!
       }
     } else {
       const genotypes = feature.get('genotypes') as Record<string, string>
       for (let k = 0; k < resolved.length; k++) {
-        rowArrays[k]!.push(classifyGenotypeDosage(genotypes[resolved[k]!.key]!))
+        rowArrays[k]![f] = classifyGenotypeDosage(genotypes[resolved[k]!.key]!)
       }
     }
     checkStopToken2(stopTokenCheck)

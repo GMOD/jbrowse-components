@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^2.0.3",
-    "@gmod/hclust": "^3.0.11",
+    "@gmod/hclust": "^3.0.12",
     "@gmod/tabix": "^3.3.3",
     "@gmod/vcf": "^7.0.3",
     "@jbrowse/core": "workspace:^",
