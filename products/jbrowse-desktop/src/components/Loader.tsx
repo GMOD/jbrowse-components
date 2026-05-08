@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorMessage, createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -17,6 +16,36 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 setGpuOverride(
   new URLSearchParams(window.location.search).get('renderer') ?? null,
 )
+
+// Loads a plugin manager from a URL-provided config path. Cancels stale results
+// if config changes while a previous load is still in flight.
+function useConfigLoad(
+  config: string | undefined,
+  onLoad: (pm: PluginManager) => void,
+  onError: (e: unknown) => void,
+) {
+  useEffect(() => {
+    let active = true
+    if (config) {
+      void (async () => {
+        try {
+          const pm = await loadPluginManager(config)
+          if (active) {
+            onLoad(pm)
+          }
+        } catch (e) {
+          if (active) {
+            console.error(e)
+            onError(e)
+          }
+        }
+      })()
+    }
+    return () => {
+      active = false
+    }
+  }, [config, onLoad, onError])
+}
 
 const Loader = observer(function Loader() {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
@@ -37,19 +66,8 @@ const Loader = observer(function Loader() {
     [setConfig],
   )
 
-  useEffect(() => {
-    if (config) {
-      async function load() {
-        try {
-          handleSetPluginManager(await loadPluginManager(config))
-        } catch (e) {
-          console.error(e)
-          setError(e)
-        }
-      }
-      void load()
-    }
-  }, [config, handleSetPluginManager])
+  useConfigLoad(config, handleSetPluginManager, setError)
+
   return (
     <ThemeProvider
       theme={createJBrowseTheme(
