@@ -33,8 +33,8 @@ function byOrderKey(a: RawEntry, b: RawEntry) {
     : 0
 }
 
-type FilterOption = 'refseq' | 'genbank' | 'designatedReference'
-type TypeOption = 'mainGenomes' | string
+export type FilterOption = 'all' | 'refseq' | 'genbank' | 'designatedReference'
+type TypeOption = string
 
 function applyFilter(
   rows: RawEntry[],

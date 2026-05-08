@@ -21,6 +21,7 @@ import useCategories from './useCategories.ts'
 
 import type { Entry, GenomeColumn } from './getColumnDefinitions.tsx'
 import type { Fav, LaunchCallback } from '../types.ts'
+import type { FilterOption } from './useGenomesData.ts'
 
 const useStyles = makeStyles()(theme => {
   const borderColor =
@@ -110,7 +111,7 @@ export default function GenomesDataTable({
   'use no memo'
   const [selected, setSelected] = useState(new Set<string>())
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
-  const [filterOption, setFilterOption] = useState('all')
+  const [filterOption, setFilterOption] = useState<FilterOption>('all')
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)
   const [multipleSelection, setMultipleSelection] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
