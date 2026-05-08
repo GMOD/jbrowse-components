@@ -206,6 +206,34 @@
           }
         }
       }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "basicauth_bigwig_public",
+      "name": "BasicAuth BigWig (public)",
+      "category": ["Authentication"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "locationType": "UriLocation",
+          "uri": "http://localhost:3040/data/public/volvox.bw"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "basicauth_bigwig_private",
+      "name": "BasicAuth BigWig (private)",
+      "category": ["Authentication"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "locationType": "UriLocation",
+          "uri": "http://localhost:3040/data/private/volvox.bw"
+        }
+      }
     }
   ],
 

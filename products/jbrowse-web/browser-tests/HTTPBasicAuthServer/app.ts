@@ -11,6 +11,14 @@ const port = 3040
 
 app.use(cors())
 
+const dataPath = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  'test_data',
+  'volvox',
+)
+
 app.use(
   '/data',
   expressBasicAuth({
@@ -18,15 +26,27 @@ app.use(
       admin: 'password',
     },
   }),
-  express.static(
-    path.join(
-      path.dirname(fileURLToPath(import.meta.url)),
-      '..',
-      '..',
-      'test_data',
-      'volvox',
-    ),
-  ),
+  express.static(dataPath),
+)
+
+app.use(
+  '/data/public',
+  expressBasicAuth({
+    users: {
+      alice: 'public123',
+    },
+  }),
+  express.static(dataPath),
+)
+
+app.use(
+  '/data/private',
+  expressBasicAuth({
+    users: {
+      bob: 'private456',
+    },
+  }),
+  express.static(dataPath),
 )
 
 console.log('HTTP BasicAuth Server listening on port', port)

@@ -39,6 +39,18 @@ const webWorkerAuth: TestSuite = {
         await waitForDisplay(page, 'basicauth_bigwig')
       },
     },
+    {
+      name: 'handles multiple BasicAuth credentials on same domain',
+      fn: async page => {
+        await clearStorageAndNavigate(page, 'test_data/volvox/config_auth.json')
+        await openTrack(page, 'basicauth_bigwig_public')
+        await handleBasicAuthLogin(page, 'alice', 'public123')
+        await waitForDisplay(page, 'basicauth_bigwig_public')
+        await openTrack(page, 'basicauth_bigwig_private')
+        await handleBasicAuthLogin(page, 'bob', 'private456')
+        await waitForDisplay(page, 'basicauth_bigwig_private')
+      },
+    },
   ],
 }
 

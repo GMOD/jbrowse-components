@@ -57,7 +57,11 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         let hostUri: string | undefined
 
         try {
-          hostUri = new URL(url).origin
+          const urlObj = new URL(url)
+          const pathname = urlObj.pathname
+          const lastSlash = pathname.lastIndexOf('/')
+          const dirPath = lastSlash >= 0 ? pathname.substring(0, lastSlash + 1) : '/'
+          hostUri = `${urlObj.origin}${dirPath}`
         } catch (e) {
           // ignore
         }

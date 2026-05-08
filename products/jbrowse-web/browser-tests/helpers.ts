@@ -156,7 +156,11 @@ export async function handleOAuthLogin(browser: Browser) {
   await delay(2000)
 }
 
-export async function handleBasicAuthLogin(page: Page) {
+export async function handleBasicAuthLogin(
+  page: Page,
+  username = 'admin',
+  password = 'password',
+) {
   const dialog = await findByTestId(page, 'login-httpbasic', 10000)
   if (!dialog) {
     throw new Error('BasicAuth login dialog not found')
@@ -172,8 +176,8 @@ export async function handleBasicAuthLogin(page: Page) {
     'login-httpbasic-password',
     10000,
   )
-  await usernameInput?.type('admin')
-  await passwordInput?.type('password')
+  await usernameInput?.type(username)
+  await passwordInput?.type(password)
 
   const submitBtn = await findByText(page, 'Submit', 10000)
   await submitBtn?.click()
