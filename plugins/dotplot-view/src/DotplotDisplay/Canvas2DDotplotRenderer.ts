@@ -28,15 +28,6 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
     if (this.width === width && this.height === height) {
       return
     }
-    console.log(
-      '[Canvas2D resize] old:',
-      this.width,
-      this.height,
-      '→ new:',
-      width,
-      height,
-      new Error().stack?.split('\n').slice(1, 4).join(' | '),
-    )
     this.width = width
     this.height = height
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
@@ -67,19 +58,6 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
     const viewBpV = viewBpVHi + viewBpVLo
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
     const ctx = this.ctx
-
-    console.log(
-      '[Canvas2D render] canvas.width',
-      this.canvas.width,
-      'canvas.height',
-      this.canvas.height,
-      'this.width',
-      this.width,
-      'this.height',
-      this.height,
-      'dpr',
-      dpr,
-    )
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, this.width, this.height)
     ctx.lineWidth = lineWidth
@@ -98,13 +76,6 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
         viewHeight: this.height,
       })
     }
-    const dataUrl = this.canvas.toDataURL()
-    console.log(
-      '[Canvas2D render] toDataURL length after draw:',
-      dataUrl.length,
-      'starts with:',
-      dataUrl.slice(0, 30),
-    )
   }
 
   dispose() {
