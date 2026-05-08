@@ -267,10 +267,17 @@ export default function stateModelFactory(
        * #action
        */
       zoomResolutionCoarser() {
+        console.warn('[HiC Debug] zoomResolutionCoarser called', {
+          availableResolutions: self.availableResolutions,
+          currentResolution: self.resolution,
+        })
         if (self.availableResolutions?.length) {
           const idx = self.availableResolutions.indexOf(self.resolution)
+          console.warn('[HiC Debug] Found index:', idx)
           if (idx !== -1 && idx < self.availableResolutions.length - 1) {
-            self.resolution = self.availableResolutions[idx + 1]!
+            const newRes = self.availableResolutions[idx + 1]!
+            console.warn('[HiC Debug] Setting resolution from', self.resolution, 'to', newRes)
+            self.resolution = newRes
           }
         }
       },
@@ -278,10 +285,17 @@ export default function stateModelFactory(
        * #action
        */
       zoomResolutionFiner() {
+        console.warn('[HiC Debug] zoomResolutionFiner called', {
+          availableResolutions: self.availableResolutions,
+          currentResolution: self.resolution,
+        })
         if (self.availableResolutions?.length) {
           const idx = self.availableResolutions.indexOf(self.resolution)
+          console.warn('[HiC Debug] Found index:', idx)
           if (idx !== -1 && idx > 0) {
-            self.resolution = self.availableResolutions[idx - 1]!
+            const newRes = self.availableResolutions[idx - 1]!
+            console.warn('[HiC Debug] Setting resolution from', self.resolution, 'to', newRes)
+            self.resolution = newRes
           }
         }
       },

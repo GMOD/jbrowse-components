@@ -89,6 +89,41 @@ const ResolutionControl = observer(function ResolutionControl({
   const canGoFiner = availableResolutions?.some(r => r < resolution) ?? false
   const canGoCoarser = availableResolutions?.some(r => r > resolution) ?? false
 
+  const handleFiner = () => {
+    console.warn('[HiC Debug] Finer button clicked', {
+      resolution,
+      availableResolutions,
+      canGoFiner,
+    })
+    try {
+      model.zoomResolutionFiner()
+      console.warn('[HiC Debug] After zoomResolutionFiner, resolution:', model.resolution)
+    } catch (e) {
+      console.error('[HiC Debug] Error in zoomResolutionFiner:', e)
+    }
+  }
+
+  const handleCoarser = () => {
+    console.warn('[HiC Debug] Coarser button clicked', {
+      resolution,
+      availableResolutions,
+      canGoCoarser,
+    })
+    try {
+      model.zoomResolutionCoarser()
+      console.warn('[HiC Debug] After zoomResolutionCoarser, resolution:', model.resolution)
+    } catch (e) {
+      console.error('[HiC Debug] Error in zoomResolutionCoarser:', e)
+    }
+  }
+
+  console.warn('[HiC Debug] ResolutionControl render', {
+    resolution,
+    availableResolutions,
+    canGoFiner,
+    canGoCoarser,
+  })
+
   return (
     <div
       style={{
@@ -105,9 +140,7 @@ const ResolutionControl = observer(function ResolutionControl({
       }}
     >
       <button
-        onClick={() => {
-          model.zoomResolutionFiner()
-        }}
+        onClick={handleFiner}
         disabled={!canGoFiner}
         title="Finer"
         type="button"
@@ -127,9 +160,7 @@ const ResolutionControl = observer(function ResolutionControl({
         {(resolution / 1000).toFixed(0)}k
       </span>
       <button
-        onClick={() => {
-          model.zoomResolutionCoarser()
-        }}
+        onClick={handleCoarser}
         disabled={!canGoCoarser}
         title="Coarser"
         type="button"
