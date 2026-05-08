@@ -9,13 +9,12 @@ const NumberEditor = observer(function NumberEditor({
 }: {
   slot: {
     name?: string
-    value: string
+    value: number
     description?: string
     set: (val: number) => void
-    reset?: () => void
   }
 }) {
-  const [val, setVal] = useState(slot.value)
+  const [val, setVal] = useState(String(slot.value))
   return (
     <ConfigurationTextField
       label={slot.name}
@@ -26,9 +25,7 @@ const NumberEditor = observer(function NumberEditor({
         const v = evt.target.value
         setVal(v)
         const num = Number.parseFloat(v)
-        if (Number.isNaN(num)) {
-          slot.reset?.()
-        } else {
+        if (!Number.isNaN(num)) {
           slot.set(num)
         }
       }}
