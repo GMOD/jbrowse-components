@@ -507,6 +507,10 @@ const LDDisplayContent = observer(function LDDisplayContent({
     )
   }
 
+  // SYNC: keep in lockstep with plugins/hic ReactComponent.tsx — both
+  // rotated-triangle contact maps shift the canvas wrapper right when the
+  // user scrolls left of genome start so the triangle apex aligns with the
+  // genome content rather than the viewport left edge.
   const left = Math.max(0, -view.offsetPx)
   return (
     <div style={{ position: 'relative', width, height, left }}>
