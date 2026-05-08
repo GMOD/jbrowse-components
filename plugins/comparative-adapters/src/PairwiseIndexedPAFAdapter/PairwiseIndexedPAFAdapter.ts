@@ -216,13 +216,12 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         const summaryRefs = await this.getSummaryRefNames()
         if (!summaryRefs.has(prefix + query.refName)) {
           if (useStructural) {
-            // Try summary tier
-            prefix = `s${letter}`
+            prefix = `s${letter}${pairIdx}`
             if (!summaryRefs.has(prefix + query.refName)) {
-              prefix = letter
+              prefix = `${letter}${pairIdx}`
             }
           } else {
-            prefix = letter
+            prefix = `${letter}${pairIdx}`
           }
         }
       }

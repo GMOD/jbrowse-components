@@ -155,7 +155,10 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setup() {
-    this.setupP ??= this.setupPre()
+    this.setupP ??= this.setupPre().catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
@@ -523,12 +526,8 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       if (!existing) {
         hapChromSpan.set(hapChrom, { minStart: hapStart, maxEnd: hapEnd })
       } else {
-        if (hapStart < existing.minStart) {
-          existing.minStart = hapStart
-        }
-        if (hapEnd > existing.maxEnd) {
-          existing.maxEnd = hapEnd
-        }
+        existing.minStart = Math.min(existing.minStart, hapStart)
+        existing.maxEnd = Math.max(existing.maxEnd, hapEnd)
       }
     }
 
