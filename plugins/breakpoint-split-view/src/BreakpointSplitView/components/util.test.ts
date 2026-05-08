@@ -1,5 +1,6 @@
 import {
   classifyVariantFeatures,
+  getBadlyPairedAlignments,
   getMatchedBreakendFeatures,
   getMatchedTranslocationFeatures,
 } from './util.ts'
@@ -140,5 +141,361 @@ describe('classifyVariantFeatures', () => {
 
   test('empty defaults to breakend', () => {
     expect(classifyVariantFeatures(new Map())).toBe('breakend')
+  })
+})
+
+describe('getBadlyPairedAlignments', () => {
+  function fakeAlignment(
+    id: string,
+    name: string,
+    refName: string,
+    start: number,
+    end: number,
+    flags: number,
+    pairOrientation?: string,
+  ) {
+    return {
+      id: () => id,
+      get: (k: string) => {
+        switch (k) {
+          case 'name':
+            return name
+          case 'refName':
+            return refName
+          case 'start':
+            return start
+          case 'end':
+            return end
+          case 'flags':
+            return flags
+          case 'pair_orientation':
+            return pairOrientation
+          default:
+            return undefined
+        }
+      },
+    } as unknown as Feature
+  }
+
+  // SAM flags: 0x02 = properly paired, 0x04 = unmapped, 0x01 = paired
+  const PAIRED = 0x01
+  const PROPERLY_PAIRED = 0x02
+  const UNMAPPED = 0x04
+
+  test('includes unproperly paired reads (no proper pair flag)', () => {
+    const read1 = fakeAlignment(
+      'read1/1',
+      'read1',
+      'chr1',
+      100,
+      150,
+      PAIRED,
+      'F1R2',
+    )
+    const read2 = fakeAlignment(
+      'read1/2',
+      'read1',
+      'chr1',
+      200,
+      250,
+      PAIRED,
+      'F1R2',
+    )
+    const result = getBadlyPairedAlignments(mapOf(read1, read2))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toContain(read1)
+    expect(result[0]).toContain(read2)
+  })
+
+  test('includes properly paired reads with mis-oriented pair orientation (F1F2)', () => {
+    const read1 = fakeAlignment(
+      'read2/1',
+      'read2',
+      'chr1',
+      100,
+      150,
+      PAIRED | PROPERLY_PAIRED,
+      'F1F2',
+    )
+    const read2 = fakeAlignment(
+      'read2/2',
+      'read2',
+      'chr1',
+      200,
+      250,
+      PAIRED | PROPERLY_PAIRED,
+      'F1F2',
+    )
+    const result = getBadlyPairedAlignments(mapOf(read1, read2))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toContain(read1)
+    expect(result[0]).toContain(read2)
+  })
+
+  test('includes properly paired reads with mis-oriented pair orientation (R1R2)', () => {
+    const read1 = fakeAlignment(
+      'read3/1',
+      'read3',
+      'chr1',
+      100,
+      150,
+      PAIRED | PROPERLY_PAIRED,
+      'R1R2',
+    )
+    const read2 = fakeAlignment(
+      'read3/2',
+      'read3',
+      'chr1',
+      200,
+      250,
+      PAIRED | PROPERLY_PAIRED,
+      'R1R2',
+    )
+    const result = getBadlyPairedAlignments(mapOf(read1, read2))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toContain(read1)
+    expect(result[0]).toContain(read2)
+  })
+
+  test('excludes properly paired reads with proper orientation (F1R2)', () => {
+    const read1 = fakeAlignment(
+      'read4/1',
+      'read4',
+      'chr1',
+      100,
+      150,
+      PAIRED | PROPERLY_PAIRED,
+      'F1R2',
+    )
+    const read2 = fakeAlignment(
+      'read4/2',
+      'read4',
+      'chr1',
+      200,
+      250,
+      PAIRED | PROPERLY_PAIRED,
+      'F1R2',
+    )
+    const result = getBadlyPairedAlignments(mapOf(read1, read2))
+    expect(result).toHaveLength(0)
+  })
+
+  test('excludes unmapped reads', () => {
+    const read1 = fakeAlignment(
+      'read5/1',
+      'read5',
+      'chr1',
+      100,
+      150,
+      PAIRED | UNMAPPED,
+      'F1F2',
+    )
+    const read2 = fakeAlignment(
+      'read5/2',
+      'read5',
+      'chr1',
+      200,
+      250,
+      PAIRED | UNMAPPED,
+      'F1F2',
+    )
+    const result = getBadlyPairedAlignments(mapOf(read1, read2))
+    expect(result).toHaveLength(0)
+  })
+
+  test('excludes single reads (need at least 2 with same name)', () => {
+    const read1 = fakeAlignment('read6', 'read6', 'chr1', 100, 150, PAIRED, 'F1F2')
+    const result = getBadlyPairedAlignments(mapOf(read1))
+    expect(result).toHaveLength(0)
+  })
+
+  test('handles F2F1 mis-orientation (equivalent to F1F2)', () => {
+    const read1 = fakeAlignment(
+      'read7/1',
+      'read7',
+      'chr1',
+      100,
+      150,
+      PAIRED | PROPERLY_PAIRED,
+      'F2F1',
+    )
+    const read2 = fakeAlignment(
+      'read7/2',
+      'read7',
+      'chr1',
+      200,
+      250,
+      PAIRED | PROPERLY_PAIRED,
+      'F2F1',
+    )
+    const result = getBadlyPairedAlignments(mapOf(read1, read2))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toContain(read1)
+    expect(result[0]).toContain(read2)
+  })
+
+  test('handles R2R1 mis-orientation (equivalent to R1R2)', () => {
+    const read1 = fakeAlignment(
+      'read8/1',
+      'read8',
+      'chr1',
+      100,
+      150,
+      PAIRED | PROPERLY_PAIRED,
+      'R2R1',
+    )
+    const read2 = fakeAlignment(
+      'read8/2',
+      'read8',
+      'chr1',
+      200,
+      250,
+      PAIRED | PROPERLY_PAIRED,
+      'R2R1',
+    )
+    const result = getBadlyPairedAlignments(mapOf(read1, read2))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toContain(read1)
+    expect(result[0]).toContain(read2)
+  })
+
+  test('handles undefined pair_orientation (treats as properly paired)', () => {
+    const read1 = fakeAlignment(
+      'read9/1',
+      'read9',
+      'chr1',
+      100,
+      150,
+      PAIRED | PROPERLY_PAIRED,
+      undefined,
+    )
+    const read2 = fakeAlignment(
+      'read9/2',
+      'read9',
+      'chr1',
+      200,
+      250,
+      PAIRED | PROPERLY_PAIRED,
+      undefined,
+    )
+    const result = getBadlyPairedAlignments(mapOf(read1, read2))
+    expect(result).toHaveLength(0)
+  })
+
+  test('filters out duplicates at same location', () => {
+    const read1 = fakeAlignment(
+      'read10/1',
+      'read10',
+      'chr1',
+      100,
+      150,
+      PAIRED,
+      'F1F2',
+    )
+    const read1Dup = fakeAlignment(
+      'read10/1-dup',
+      'read10',
+      'chr1',
+      100,
+      150,
+      PAIRED,
+      'F1F2',
+    )
+    const read2 = fakeAlignment(
+      'read10/2',
+      'read10',
+      'chr1',
+      200,
+      250,
+      PAIRED,
+      'F1F2',
+    )
+    const result = getBadlyPairedAlignments(mapOf(read1, read1Dup, read2))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toHaveLength(2)
+  })
+
+  test('separates different read pairs by name', () => {
+    const read1A = fakeAlignment(
+      'read11a/1',
+      'read11a',
+      'chr1',
+      100,
+      150,
+      PAIRED,
+      'F1F2',
+    )
+    const read2A = fakeAlignment(
+      'read11a/2',
+      'read11a',
+      'chr1',
+      200,
+      250,
+      PAIRED,
+      'F1F2',
+    )
+    const read1B = fakeAlignment(
+      'read11b/1',
+      'read11b',
+      'chr1',
+      300,
+      350,
+      PAIRED,
+      'F1F2',
+    )
+    const read2B = fakeAlignment(
+      'read11b/2',
+      'read11b',
+      'chr1',
+      400,
+      450,
+      PAIRED,
+      'F1F2',
+    )
+    const result = getBadlyPairedAlignments(mapOf(read1A, read2A, read1B, read2B))
+    expect(result).toHaveLength(2)
+  })
+
+  test('combines unproperly paired and mis-oriented in same query', () => {
+    const improperly = fakeAlignment(
+      'read12/1',
+      'read12',
+      'chr1',
+      100,
+      150,
+      PAIRED,
+      'F1R2',
+    )
+    const improperlyMate = fakeAlignment(
+      'read12/2',
+      'read12',
+      'chr1',
+      200,
+      250,
+      PAIRED,
+      'F1R2',
+    )
+    const misoriented = fakeAlignment(
+      'read13/1',
+      'read13',
+      'chr1',
+      300,
+      350,
+      PAIRED | PROPERLY_PAIRED,
+      'F1F2',
+    )
+    const misorientedMate = fakeAlignment(
+      'read13/2',
+      'read13',
+      'chr1',
+      400,
+      450,
+      PAIRED | PROPERLY_PAIRED,
+      'F1F2',
+    )
+    const result = getBadlyPairedAlignments(
+      mapOf(improperly, improperlyMate, misoriented, misorientedMate),
+    )
+    expect(result).toHaveLength(2)
   })
 })
