@@ -1,4 +1,5 @@
 import {
+  fetchJson,
   getEnv,
   isSessionWithSessionPlugins,
   useFetch,
@@ -11,20 +12,12 @@ import type {
 } from '@jbrowse/core/util/types'
 
 export function useFetchPlugins() {
-  const { data: plugins, error } = useFetch(
-    'jbrowse-plugin-store',
-    async () => {
-      const res = await fetch('https://jbrowse.org/plugin-store/plugins.json')
-      if (!res.ok) {
-        throw new Error(
-          `HTTP ${res.status} fetching plugins: ${await res.text()}`,
-        )
-      }
-      const json = (await res.json()) as { plugins: JBrowsePlugin[] }
-      return json.plugins
-    },
+  const { data, error } = useFetch('jbrowse-plugin-store', () =>
+    fetchJson<{ plugins: JBrowsePlugin[] }>(
+      'https://jbrowse.org/plugin-store/plugins.json',
+    ),
   )
-  return { plugins, error }
+  return { plugins: data?.plugins, error }
 }
 
 export function isSessionPlugin(

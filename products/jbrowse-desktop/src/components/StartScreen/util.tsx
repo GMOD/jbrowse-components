@@ -114,14 +114,6 @@ export async function createPluginManager(
   return pluginManager
 }
 
-export async function fetchjson(url: string) {
-  const res = await fetch(url, { cache: 'no-cache' })
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} fetching ${url}`)
-  }
-  return res.json() as Promise<unknown>
-}
-
 export function addRelativeUris(
   config: Record<string, unknown> | null,
   base: URL,
