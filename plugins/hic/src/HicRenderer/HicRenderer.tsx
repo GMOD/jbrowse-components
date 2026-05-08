@@ -41,10 +41,10 @@ export default class HicRenderer extends ServerSideRendererType {
       totalWidthBp += region.end - region.start
     }
     const width = totalWidthBp / bpPerPx
-    const hyp = width / 2
-    const height = displayHeight ?? hyp
+    const defaultHeight = width / 2
+    const height = displayHeight ?? defaultHeight
     const features = await this.getFeatures(renderProps)
-    const yScalar = height / Math.max(height, hyp)
+    const yScalar = height / Math.max(height, defaultHeight)
 
     const { makeImageData } = await import('./makeImageData.ts')
 

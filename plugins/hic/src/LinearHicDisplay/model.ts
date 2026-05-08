@@ -109,9 +109,9 @@ export default function stateModelFactory(
       },
       get yScalar() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        const hyp = view.totalWidthPx / 2
-        const h = self.height
-        return self.mode === 'adjust' ? h / Math.max(h, hyp) : 1
+        const defaultHeight = view.totalWidthPx / 2
+        const height = self.height
+        return self.mode === 'adjust' ? height / Math.max(height, defaultHeight) : 1
       },
     }))
     .views(self => ({

@@ -54,6 +54,7 @@ interface HicParser {
     binsize: number,
   ) => Promise<ContactRecord[]>
   getMetaData: () => Promise<HicMetadata>
+  getNormalizationOptions: () => Promise<string[]>
   hicFile: {
     init: () => Promise<void>
     masterIndex: Record<string, { start: number; size: number }>
@@ -83,7 +84,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
 
   public async getHeader(opts?: BaseOptions) {
     const { chromosomes, ...rest } = await this.setup(opts)
-    // @ts-expect-error
     const norms = await this.hic.getNormalizationOptions()
 
     await this.hic.hicFile.init()
