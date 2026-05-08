@@ -30,10 +30,11 @@ export interface GroupedReads {
   hasPaired: boolean
 }
 
-// Strand-aware genomic connection endpoint.
-// For paired reads: the 3' end of each read.
-// For split reads: the second alignment connects at the inverted end
-// (the junction is the 5' of the supplementary segment).
+// Genomic connection endpoint for a linked-read line.
+// For paired reads: the 3' end of each read (strand-dependent).
+// For split reads: always the inner junction edge (end for e1, start for e2),
+// regardless of strand — the gap is between the right edge of the left
+// alignment and the left edge of the right alignment on the reference.
 export function connectionBp(
   hasPaired: boolean,
   strand: number,
@@ -41,21 +42,23 @@ export function connectionBp(
   end: number,
   isSecond: boolean,
 ) {
-  if (!isSecond || hasPaired) {
-    return strand === -1 ? start : end
+  if (!hasPaired) {
+    return isSecond ? start : end
   }
-  return strand === -1 ? end : start
+  return strand === -1 ? start : end
 }
 
-// Normal LR pairs (orient 0/1) and FR split reads get a straight line;
+// Normal LR pairs (orient 0/1) and same-strand split reads get a straight line;
 // aberrant orientations get a bezier curve to stand out visually.
+// For split reads, p2Strand = -s2, so s1 === -p2Strand means both segments
+// are on the same strand (simple deletion whether forward or reverse).
 export function isNormalOrientation(
   hasPaired: boolean,
   orientNum: number,
   s1: number,
   p2Strand: number,
 ) {
-  return hasPaired ? orientNum <= 1 : s1 === 1 && p2Strand === -1
+  return hasPaired ? orientNum <= 1 : s1 === -p2Strand
 }
 
 export function pairedColorType(orientNum: number) {
@@ -143,8 +146,8 @@ export function classifyPair(
     e2.data.readPositions[e2.readIdx * 2 + 1]!,
     true,
   )
-  // p2Strand is negated for split reads because the endpoint selection
-  // convention is inverted for supplementary alignments.
+  // p2Strand is negated for split reads so that s1 === -p2Strand detects
+  // same-strand pairs (simple deletions) in isNormalOrientation.
   const p2Strand = hasPaired ? s2 : -s2
   const orientNum = e1.data.readPairOrientations[e1.readIdx] ?? 0
   const isNormal = isNormalOrientation(hasPaired, orientNum, s1, p2Strand)

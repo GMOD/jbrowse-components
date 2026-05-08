@@ -55,9 +55,9 @@ export const linkedReadColorPalette: RGBColor[] = [
   rgb(fillColor.color_pair_rl), // 2 RL
   rgb(fillColor.color_pair_rr), // 3 RR
   rgb(fillColor.color_pair_ll), // 4 LL
-  rgb(fillColor.color_longread_rev_fwd), // 5 split RF
-  rgb(fillColor.color_longread_fwd_rev), // 6 split FR
-  rgb(fillColor.color_longread_same), // 7 split same
+  rgb(fillColor.color_pair_lr), // 5 split RF (reverse-strand deletion, normal)
+  rgb(fillColor.color_pair_lr), // 6 split FR (forward-strand deletion, normal)
+  rgb(fillColor.color_longread_same), // 7 split same-strand (inversion)
 ]
 
 export function getArcPalette(

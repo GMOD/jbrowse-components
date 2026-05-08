@@ -60,16 +60,14 @@ describe('connectionBp', () => {
     expect(connectionBp(true, -1, 100, 200, false)).toBe(100)
   })
 
-  it('split second forward: inverted → start', () => {
-    expect(connectionBp(false, 1, 100, 200, true)).toBe(100)
-  })
-
-  it('split second reverse: inverted → end', () => {
-    expect(connectionBp(false, -1, 100, 200, true)).toBe(200)
-  })
-
-  it('split first forward: 3-prime end', () => {
+  it('split first: always right (end) regardless of strand', () => {
     expect(connectionBp(false, 1, 100, 200, false)).toBe(200)
+    expect(connectionBp(false, -1, 100, 200, false)).toBe(200)
+  })
+
+  it('split second: always left (start) regardless of strand', () => {
+    expect(connectionBp(false, 1, 100, 200, true)).toBe(100)
+    expect(connectionBp(false, -1, 100, 200, true)).toBe(100)
   })
 })
 
@@ -94,8 +92,8 @@ describe('isNormalOrientation', () => {
     expect(isNormalOrientation(false, 0, 1, -1)).toBe(true)
   })
 
-  it('split RF (s1=-1, p2Strand=1) → not normal', () => {
-    expect(isNormalOrientation(false, 0, -1, 1)).toBe(false)
+  it('split RF (s1=-1, p2Strand=1) → normal (reverse-strand deletion)', () => {
+    expect(isNormalOrientation(false, 0, -1, 1)).toBe(true)
   })
 
   it('split same-strand → not normal', () => {
@@ -161,7 +159,7 @@ describe('classifyPair color types', () => {
     expect(c.isNormal).toBe(true)
   })
 
-  it('split RF (both rev in BAM) → SPLIT_RF, not normal', () => {
+  it('split RF (both rev in BAM) → SPLIT_RF, normal (reverse-strand deletion)', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -175,7 +173,7 @@ describe('classifyPair color types', () => {
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
     expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_RF)
-    expect(c.isNormal).toBe(false)
+    expect(c.isNormal).toBe(true)
   })
 
   it('split same-strand (fwd primary, rev supp) → SPLIT_SAME, not normal', () => {
