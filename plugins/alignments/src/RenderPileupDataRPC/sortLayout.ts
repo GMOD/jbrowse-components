@@ -10,14 +10,26 @@ import {
 import type { PileupDataResult } from './types'
 import type { SortedBy } from '../shared/types.ts'
 
-// ASCII code for '*' used to represent deletions in base pair sort
-const DELETION_CHAR = 42
+const DELETION_CHAR = 42 // '*'
 
-/**
- * Build softclip expansions per read index from the interbase typed arrays.
- * Returns a Map<readIndex, {start, end}> representing the expanded genomic
- * extent of each read's soft-clipped bases, or undefined if none.
- */
+function sortByMapWithUnknownsLast(
+  arr: number[],
+  map: Map<number, number>,
+  desc: boolean,
+) {
+  arr.sort((a, b) => {
+    const aVal = map.get(a) ?? 0
+    const bVal = map.get(b) ?? 0
+    if (aVal !== 0 && bVal === 0) {
+      return -1
+    }
+    if (aVal === 0 && bVal !== 0) {
+      return 1
+    }
+    return desc ? bVal - aVal : aVal - bVal
+  })
+}
+
 function buildSoftclipExpansions(data: PileupDataResult) {
   const expansions = new Map<number, { start: number; end: number }>()
   for (let i = 0; i < data.interbasePositions.length; i++) {
@@ -107,17 +119,7 @@ function sortOverlappingByIndex(
         }
       }
     }
-    overlapping.sort((a, b) => {
-      const aBase = baseAtPos.get(a) ?? 0
-      const bBase = baseAtPos.get(b) ?? 0
-      if (aBase !== 0 && bBase === 0) {
-        return -1
-      }
-      if (aBase === 0 && bBase !== 0) {
-        return 1
-      }
-      return aBase - bBase
-    })
+    sortByMapWithUnknownsLast(overlapping, baseAtPos, false)
   } else if (
     type === 'insertion' ||
     type === 'softclip' ||
@@ -143,17 +145,7 @@ function sortOverlappingByIndex(
         }
       }
     }
-    overlapping.sort((a, b) => {
-      const aLen = lengthAtPos.get(a) ?? 0
-      const bLen = lengthAtPos.get(b) ?? 0
-      if (aLen !== 0 && bLen === 0) {
-        return -1
-      }
-      if (aLen === 0 && bLen !== 0) {
-        return 1
-      }
-      return bLen - aLen
-    })
+    sortByMapWithUnknownsLast(overlapping, lengthAtPos, true)
   } else if (type === 'position') {
     overlapping.sort((a, b) => readPositions[a * 2]! - readPositions[b * 2]!)
   } else if (type === 'strand') {

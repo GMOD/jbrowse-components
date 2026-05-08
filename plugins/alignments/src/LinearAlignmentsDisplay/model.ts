@@ -298,9 +298,6 @@ export default function stateModelFactory(
           return AlignmentsComponent
         },
 
-        /**
-         * Custom tooltip that prioritizes mouseoverExtraInformation for CIGAR items
-         */
         get TooltipComponent() {
           return AlignmentsTooltip
         },
@@ -337,7 +334,6 @@ export default function stateModelFactory(
           return self.getConfWithOverride<number>('maxHeight')
         },
 
-        // chainIdx → readIds[]. Used in linkedRead mode for chain-level highlighting.
         get chainIdMap() {
           const map = new Map<number, string[]>()
           if (self.showLinkedReads) {
@@ -404,7 +400,6 @@ export default function stateModelFactory(
           return this.coverageScaleType === 'log'
         },
 
-        // Coverage stats across visible content blocks. MobX-cached.
         get coverageStats() {
           if (!self.showCoverage) {
             return undefined
@@ -419,7 +414,6 @@ export default function stateModelFactory(
           )
         },
 
-        // [min, max] domain for the coverage Y axis.
         get coverageDomain(): [number, number] | undefined {
           return this.coverageStats
             ? getNiceDomain({
@@ -448,18 +442,6 @@ export default function stateModelFactory(
           return getReadDisplayLegendItems(self.getOverride<ColorBy>('colorBy'))
         },
 
-        /**
-         * Pileup data with per-read Y rows applied from main-thread layout.
-         *
-         * Pileup or chain-mode layout derived from raw `rpcDataMap`.
-         * Entries are shallow clones of the raw data with freshly
-         * allocated `readYs/gapYs/mismatchYs/interbaseYs/modificationYs/
-         * softclipBaseYs` (and, in chain mode, `connectingLinePositions`,
-         * `connectingLineYs`, `chainFlatbush`) and the layout `maxY`.
-         *
-         * MobX caches this so layout recomputes only when `rpcDataMap`,
-         * `sortedBy`, `showSoftClipping`, or `renderingMode` change.
-         */
         get laidOutPileupMap() {
           if (this.renderingMode !== 'pileup') {
             return buildLaidOutChainMap(self.rpcDataMap, this.renderingMode)
@@ -471,8 +453,6 @@ export default function stateModelFactory(
           })
         },
 
-        // Max pileup row across all laid-out regions. Drives
-        // totalPileupHeight → scroll range.
         get maxY() {
           let max = 0
           for (const data of this.laidOutPileupMap.values()) {
@@ -483,9 +463,6 @@ export default function stateModelFactory(
           return max
         },
 
-        // Derived from rpcDataMap + loadedRegions. MobX caches this; recomputes
-        // when rpcDataMap, loadedRegions, arcColorByType, drawInter,
-        // drawLongRange, showArcs, or height change.
         get arcsRpcDataMap(): Map<number, ArcsDataResult> {
           if (!self.showArcs || self.rpcDataMap.size === 0) {
             return new Map()
@@ -519,7 +496,6 @@ export default function stateModelFactory(
           return out
         },
       }))
-      // Views derived from colorBy, featureHeightSetting, featureSpacing above.
       .views(self => ({
         get modificationThreshold() {
           return self.colorBy.modifications?.threshold ?? 10
@@ -577,10 +553,6 @@ export default function stateModelFactory(
           return self.maxY * (self.featureHeightSetting + self.featureSpacing)
         },
 
-        /**
-         * Cached O(1) index: featureId → {displayedRegionIndex, idx}.
-         * Recomputed by MobX only when rpcDataMap changes.
-         */
         get readIdIndexMap() {
           const map = new Map<
             string,
@@ -602,11 +574,6 @@ export default function stateModelFactory(
           return self.lineWidthSetting ?? 1
         },
 
-        /**
-         * Find a feature by ID in rpcDataMap, returning the displayedRegionIndex,
-         * index, and rpcData entry. Shared by searchFeatureByID and
-         * getFeatureInfoById.
-         */
         findFeatureInRpcData(featureId: string) {
           const entry = self.readIdIndexMap.get(featureId)
           if (!entry) {
@@ -641,10 +608,6 @@ export default function stateModelFactory(
           return self.currentRangeY[0]
         },
 
-        /**
-         * Total pixel height consumed by coverage and arc sections above the
-         * pileup reads. Used as the Y offset for pileup rendering.
-         */
         get coverageDisplayHeight() {
           return (
             (self.showCoverage ? self.coverageHeight : 0) +
@@ -655,7 +618,6 @@ export default function stateModelFactory(
           )
         },
       }))
-      // Layout views — depend on coverageDisplayHeight above via self.
       .views(self => ({
         get pileupViewportHeight() {
           return Math.max(0, self.height - self.coverageDisplayHeight)
@@ -709,10 +671,6 @@ export default function stateModelFactory(
           })
         },
 
-        /**
-         * Return a LayoutRecord [left, top, right, bottom] for
-         * BreakpointSplitView overlay compatibility.
-         */
         searchFeatureByID(
           featureId: string,
         ): [number, number, number, number] | undefined {
@@ -751,7 +709,6 @@ export default function stateModelFactory(
           }
         },
       }))
-      // scrollableHeight depends on pileupViewportHeight above.
       .views(self => ({
         get scrollableHeight() {
           return Math.max(0, self.totalPileupHeight - self.pileupViewportHeight)
@@ -827,11 +784,7 @@ export default function stateModelFactory(
           }
         },
 
-        // Samplot-only: autoscale the Y axis to the largest visible |tlen|
-        // so arc Y positions are stable across genomic zoom. undefined in
-        // arc/bezier mode — the renderer falls back to a zoom-dependent
-        // default. Floored at 1000bp to avoid a near-zero division when the
-        // data set happens to only contain concordant pairs.
+        // Floored at 1000bp to avoid near-zero division when all pairs are concordant.
         get arcsYDomainBp(): number | undefined {
           if (self.arcColorByType !== 'samplot') {
             return undefined
@@ -845,9 +798,6 @@ export default function stateModelFactory(
           return Math.max(1000, maxBp)
         },
 
-        // Samplot insert-size Y axis, in display coordinate space — consumed
-        // by the right-side YScaleBar in PileupComponent. `undefined` outside
-        // samplot so the scalebar simply doesn't render.
         get insertSizeTicks(): YScaleTicks | undefined {
           const domain = this.arcsYDomainBp
           if (!self.showArcs || domain === undefined) {
@@ -921,16 +871,14 @@ export default function stateModelFactory(
           setError(error?: unknown) {
             superSetError(error)
             if (error) {
-              self.featureIdUnderMouse = undefined
-              self.mouseoverExtraInformation = undefined
+              clearHoverState()
             }
           },
 
           setRegionTooLarge(val: boolean, reason?: string) {
             superSetRegionTooLarge(val, reason)
             if (val) {
-              self.featureIdUnderMouse = undefined
-              self.mouseoverExtraInformation = undefined
+              clearHoverState()
             }
           },
 
@@ -1118,10 +1066,7 @@ export default function stateModelFactory(
             self.currentRangeY = [0, 0]
           },
 
-          /**
-           * #action
-           * Called by "Compact all tracks" in LGV/BreakpointSplitView/LinearComparativeView menus via duck-typing
-           */
+          // duck-typed by LGV/BreakpointSplitView/LinearComparativeView "Compact all tracks"
           setCompactness(level: 'normal' | 'compact' | 'super-compact') {
             if (level === 'compact') {
               self.setOverride('featureHeight', 3)
@@ -1388,10 +1333,6 @@ export default function stateModelFactory(
         }
 
         return {
-          fetchFeatures(region: Region, displayedRegionIndex = 0) {
-            self.fetchNeeded([{ region, displayedRegionIndex }])
-          },
-
           getByteEstimateConfig() {
             const view = getContainingView(self) as LGV
             return {
@@ -1736,8 +1677,6 @@ export default function stateModelFactory(
       }))
       .actions(self => ({
         reload() {
-          // clearAllRpcData clears error and bumps fetchGeneration to retrigger
-          // the fetch autorun.
           self.clearAllRpcData()
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
