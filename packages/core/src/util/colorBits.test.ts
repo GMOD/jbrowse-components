@@ -86,6 +86,17 @@ describe('colorBits helpers', () => {
       expect(getRed(parseCssColor('RED'))).toBe(255)
       expect(getRed(parseCssColor('Red'))).toBe(255)
     })
+
+    test('undefined / null / empty returns magenta sentinel without throwing', () => {
+      // user jexl callbacks that return undefined would otherwise crash the
+      // worker on `undefined.trim()` (see #4181 follow-up)
+      const c1 = parseCssColor(undefined)
+      expect(getRed(c1)).toBe(255)
+      expect(getGreen(c1)).toBe(0)
+      expect(getBlue(c1)).toBe(255)
+      expect(getRed(parseCssColor(null))).toBe(255)
+      expect(getRed(parseCssColor(''))).toBe(255)
+    })
   })
 
   describe('cssColorToNormalizedRgb', () => {

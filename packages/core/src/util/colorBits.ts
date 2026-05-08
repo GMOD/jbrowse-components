@@ -28,7 +28,17 @@ export {
 } from './color-bits/index.ts'
 export type { Color } from './color-bits/index.ts'
 
-export function parseCssColor(color: string) {
+// Magenta sentinel for invalid input. User-written jexl color callbacks can
+// legitimately return undefined (e.g. when a feature lacks the field they
+// reference); crashing the worker on `undefined.trim()` was the failure mode.
+// Returning magenta makes the bad slot visually obvious without breaking the
+// rest of the render.
+const INVALID_COLOR = newColor(255, 0, 255, 255)
+
+export function parseCssColor(color: string | undefined | null) {
+  if (typeof color !== 'string' || color.length === 0) {
+    return INVALID_COLOR
+  }
   const str = color.trim().toLowerCase()
   if (str === 'transparent') {
     return newColor(0, 0, 0, 0)
