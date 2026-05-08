@@ -29,7 +29,7 @@ export function useFeatureSequence({
 
   const { data: sequence, error, isLoading: loading } = useFetch(
     guard
-      ? ['featureSequence', guard.assemblyName, refName, start, end, upDownBp, forceLoad]
+      ? ['featureSequence', guard.assemblyName, refName, start, end, upDownBp, +forceLoad]
       : null,
     guard
       ? async () => {
