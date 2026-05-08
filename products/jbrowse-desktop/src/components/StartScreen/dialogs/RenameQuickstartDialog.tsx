@@ -11,7 +11,7 @@ const RenameQuickstartDialog = ({
 }: {
   quickstartNames: string[]
   quickstartToRename?: string
-  onClose: (arg0: boolean) => void
+  onClose: () => void
 }) => {
   const [newQuickstartName, setNewQuickstartName] = useState(
     quickstartToRename ?? '',
@@ -22,9 +22,7 @@ const RenameQuickstartDialog = ({
     <ConfirmDialog
       open
       title="Rename quickstart"
-      onCancel={() => {
-        onClose(false)
-      }}
+      onCancel={onClose}
       onSubmit={async () => {
         try {
           if (quickstartNames.includes(newQuickstartName)) {
@@ -35,7 +33,7 @@ const RenameQuickstartDialog = ({
             quickstartToRename,
             newQuickstartName,
           )
-          onClose(true)
+          onClose()
         } catch (e) {
           console.error(e)
           setError(e)

@@ -9,20 +9,18 @@ const DeleteSessionDialog = ({
   onClose,
 }: {
   quickstartToDelete: string
-  onClose: (arg0: boolean) => void
+  onClose: () => void
 }) => {
   const [error, setError] = useState<unknown>()
   return (
     <ConfirmDialog
       open
       title={`Delete "${quickstartToDelete}"?`}
-      onCancel={() => {
-        onClose(false)
-      }}
+      onCancel={onClose}
       onSubmit={async () => {
         try {
           await ipcRenderer.invoke('deleteQuickstart', quickstartToDelete)
-          onClose(true)
+          onClose()
         } catch (e) {
           console.error(e)
           setError(e)

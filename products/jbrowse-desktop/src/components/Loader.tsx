@@ -38,9 +38,8 @@ const Loader = observer(function Loader() {
   )
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      if (config) {
+    if (config) {
+      async function load() {
         try {
           handleSetPluginManager(await loadPluginManager(config))
         } catch (e) {
@@ -48,7 +47,8 @@ const Loader = observer(function Loader() {
           setError(e)
         }
       }
-    })()
+      void load()
+    }
   }, [config, handleSetPluginManager])
   return (
     <ThemeProvider

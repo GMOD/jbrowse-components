@@ -92,15 +92,13 @@ export function getColumnDefinitions({
 
           const handleMinimalLaunch = (event: React.MouseEvent) => {
             event.preventDefault()
-            if (row.jbrowseMinimalConfig) {
-              launch([
-                {
-                  jbrowseConfig: row.jbrowseMinimalConfig,
-                  shortName: row.id,
-                },
-              ])
-              onClose()
-            }
+            launch([
+              {
+                jbrowseConfig: row.jbrowseMinimalConfig!,
+                shortName: row.id,
+              },
+            ])
+            onClose()
           }
           return (
             <div>
@@ -174,15 +172,13 @@ export function getColumnDefinitions({
 
           const handleMinimalLaunch = (event: React.MouseEvent) => {
             event.preventDefault()
-            if (row.jbrowseMinimalConfig) {
-              launch([
-                {
-                  jbrowseConfig: row.jbrowseMinimalConfig,
-                  shortName: row.accession,
-                },
-              ])
-              onClose()
-            }
+            launch([
+              {
+                jbrowseConfig: row.jbrowseMinimalConfig!,
+                shortName: row.accession,
+              },
+            ])
+            onClose()
           }
 
           return (

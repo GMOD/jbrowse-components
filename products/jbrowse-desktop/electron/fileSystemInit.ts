@@ -18,14 +18,8 @@ export async function ensureDirectoriesExist(paths: AppPaths) {
     paths.autosaveDir,
     paths.jbrowseDocDir,
   ]
-
   await Promise.all(
-    directories.map(dir =>
-      fs.promises.mkdir(dir, { recursive: true }).catch((error: unknown) => {
-        console.error(`Failed to create directory ${dir}:`, error)
-        throw error
-      }),
-    ),
+    directories.map(dir => fs.promises.mkdir(dir, { recursive: true })),
   )
 }
 
@@ -33,16 +27,16 @@ export async function ensureDirectoriesExist(paths: AppPaths) {
  * Initializes the recent sessions file if it doesn't exist
  */
 export async function initializeRecentSessionsFile(paths: AppPaths) {
-  try {
-    await fs.promises.access(paths.recentSessionsPath)
-  } catch {
-    // File doesn't exist, create it
-    await fs.promises.writeFile(
-      paths.recentSessionsPath,
-      stringify([]),
-      ENCODING,
-    )
-  }
+  await fs.promises
+    .writeFile(paths.recentSessionsPath, stringify([]), {
+      flag: 'wx',
+      encoding: ENCODING,
+    })
+    .catch((e: NodeJS.ErrnoException) => {
+      if (e.code !== 'EEXIST') {
+        throw e
+      }
+    })
 }
 
 /**

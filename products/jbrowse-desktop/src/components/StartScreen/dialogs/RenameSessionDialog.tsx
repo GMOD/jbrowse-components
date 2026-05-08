@@ -10,7 +10,7 @@ const RenameSessionDialog = ({
   onClose,
 }: {
   sessionToRename?: { path: string; name: string }
-  onClose: (arg0: boolean) => void
+  onClose: () => void
 }) => {
   const [newSessionName, setNewSessionName] = useState(
     sessionToRename?.name ?? '',
@@ -20,9 +20,7 @@ const RenameSessionDialog = ({
   return (
     <ConfirmDialog
       open
-      onCancel={() => {
-        onClose(false)
-      }}
+      onCancel={onClose}
       onSubmit={async () => {
         try {
           await ipcRenderer.invoke(
@@ -30,7 +28,7 @@ const RenameSessionDialog = ({
             sessionToRename?.path,
             newSessionName,
           )
-          onClose(true)
+          onClose()
         } catch (e) {
           console.error(e)
           setError(e)

@@ -8,7 +8,7 @@ const DeleteSessionDialog = ({
   setError,
 }: {
   sessionsToDelete: { path: string }[]
-  onClose: (arg0: boolean) => void
+  onClose: () => void
   setError: (e: unknown) => void
 }) => {
   return (
@@ -21,15 +21,13 @@ const DeleteSessionDialog = ({
             'deleteSessions',
             sessionsToDelete.map(s => s.path),
           )
-          onClose(true)
+          onClose()
         } catch (e) {
           console.error(e)
           setError(e)
         }
       }}
-      onCancel={() => {
-        onClose(false)
-      }}
+      onCancel={onClose}
     >
       <DialogContentText>This action cannot be undone</DialogContentText>
     </ConfirmDialog>
