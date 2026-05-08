@@ -6,6 +6,7 @@ import {
   groupReadsByName,
 } from '../linkedReads/compute.ts'
 
+import type { ReadEntry } from '../linkedReads/compute.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 // Curve count is bounded by SV count; normal-pair lines moved to the GPU
@@ -98,11 +99,13 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     pairedArcsDown,
   } = opts
 
+  const [rangeY0] = rangeY
   const rowH = featureHeight + featureSpacing
-  const rangeY0 = rangeY[0]
   const peakH = rowH * PEAK_ROW_FACTOR
   const readCenterDy = featureHeight / 2
   const paletteLen = linkedReadColorPalette.length
+  const readScreenY = (e: ReadEntry) =>
+    e.data.readYs[e.readIdx]! * rowH + pileupTopOffset - rangeY0 + readCenterDy
 
   const { readsByName, hasPaired } = groupReadsByName(laidOutPileupMap)
   const result: PileupArc[] = []
@@ -139,16 +142,8 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
         continue
       }
 
-      const sy1 =
-        e1.data.readYs[e1.readIdx]! * rowH +
-        pileupTopOffset -
-        rangeY0 +
-        readCenterDy
-      const sy2 =
-        e2.data.readYs[e2.readIdx]! * rowH +
-        pileupTopOffset -
-        rangeY0 +
-        readCenterDy
+      const sy1 = readScreenY(e1)
+      const sy2 = readScreenY(e2)
 
       if (!arcIsVisible(sy1, sy2, peakH, c.isNormal, pairedArcsDown, viewportH)) {
         continue
