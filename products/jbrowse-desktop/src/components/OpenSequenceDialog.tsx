@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   Dialog,
-  ErrorBanner,
+  ErrorMessage,
   FileSelector,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
@@ -302,10 +302,9 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   return (
     <Dialog
       open
-      onClose={() => {
+      onClose={async () => {
         if (!loading) {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          onClose()
+          await onClose()
         }
       }}
       title="Open genome(s)"
@@ -333,7 +332,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
           <LoadingEllipses className={classes.message} message={loading} />
         ) : null}
 
-        {error ? <ErrorBanner error={error} /> : null}
+        {error ? <ErrorMessage error={error} /> : null}
 
         <Paper className={classes.paper}>
           <TextField
@@ -419,9 +418,8 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
           Add another assembly
         </Button>
         <Button
-          onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            onClose()
+          onClick={async () => {
+            await onClose()
           }}
           color="secondary"
           variant="contained"

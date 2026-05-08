@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import ErrorBanner from '@jbrowse/core/ui/ErrorBanner'
+import { ErrorMessage } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -59,7 +59,7 @@ const Loader = observer(function Loader() {
       )}
     >
       <CssBaseline />
-      {error ? <ErrorBanner error={error} /> : null}
+      {error ? <ErrorMessage error={error} /> : null}
       {pluginManager?.rootModel?.session ? (
         <JBrowse pluginManager={pluginManager} />
       ) : !config || error ? (

@@ -123,7 +123,6 @@ export default function RecentSessionPanel({
       ) : null}
       {sessionsToDelete ? (
         <DeleteSessionDialog
-          setError={setError}
           sessionsToDelete={sessionsToDelete}
           onClose={() => {
             setSessionsToDelete(undefined)

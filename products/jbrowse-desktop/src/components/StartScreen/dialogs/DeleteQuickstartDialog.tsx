@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
+import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
-import { DialogContentText, Typography } from '@mui/material'
+import { DialogContentText } from '@mui/material'
 const { ipcRenderer } = window.require('electron')
 
 const DeleteSessionDialog = ({
@@ -28,7 +29,7 @@ const DeleteSessionDialog = ({
       }}
     >
       <DialogContentText>This action cannot be undone</DialogContentText>
-      {error ? <Typography color="error">{`${error}`}</Typography> : null}
+      {error ? <ErrorMessage error={error} /> : null}
     </ConfirmDialog>
   )
 }

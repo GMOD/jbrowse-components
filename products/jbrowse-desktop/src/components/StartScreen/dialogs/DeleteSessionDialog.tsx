@@ -1,3 +1,6 @@
+import { useState } from 'react'
+
+import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { DialogContentText } from '@mui/material'
 const { ipcRenderer } = window.require('electron')
@@ -5,12 +8,11 @@ const { ipcRenderer } = window.require('electron')
 const DeleteSessionDialog = ({
   sessionsToDelete,
   onClose,
-  setError,
 }: {
   sessionsToDelete: { path: string }[]
   onClose: () => void
-  setError: (e: unknown) => void
 }) => {
+  const [error, setError] = useState<unknown>()
   return (
     <ConfirmDialog
       open
@@ -30,6 +32,7 @@ const DeleteSessionDialog = ({
       onCancel={onClose}
     >
       <DialogContentText>This action cannot be undone</DialogContentText>
+      {error ? <ErrorMessage error={error} /> : null}
     </ConfirmDialog>
   )
 }

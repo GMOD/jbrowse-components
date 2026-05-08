@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { fetchJson as fetchjson, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import deepmerge from 'deepmerge'
@@ -89,7 +89,7 @@ export default function LauncherPanel({
 
   return (
     <div className={classes.form}>
-      {error ? <ErrorBanner error={error} /> : null}
+      {error ? <ErrorMessage error={error} /> : null}
       {loading ? (
         <LoadingEllipses variant="h6" message={loading} />
       ) : (

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ConfirmDialog, ErrorBanner } from '@jbrowse/core/ui'
+import { ConfirmDialog, ErrorMessage } from '@jbrowse/core/ui'
 import { DialogContentText, Input } from '@mui/material'
 const { ipcRenderer } = window.require('electron')
 
@@ -55,7 +55,7 @@ const RenameQuickstartDialog = ({
           setNewQuickstartName(event.target.value)
         }}
       />
-      {error ? <ErrorBanner error={error} /> : null}
+      {error ? <ErrorMessage error={error} /> : null}
     </ConfirmDialog>
   )
 }
