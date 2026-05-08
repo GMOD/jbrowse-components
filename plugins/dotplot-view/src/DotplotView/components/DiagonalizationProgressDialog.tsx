@@ -171,6 +171,10 @@ const DiagonalizationProgressDialog = observer(
         maxWidth="lg"
       >
         <DialogContent style={{ minWidth: 400 }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Reorders the vertical axis to match the horizontal. Uses all
+            alignments across the currently displayed chromosomes.
+          </Typography>
           {message ? <Typography>{message}</Typography> : null}
           {error ? <ErrorBanner error={error} /> : null}
           {isRunning ? (

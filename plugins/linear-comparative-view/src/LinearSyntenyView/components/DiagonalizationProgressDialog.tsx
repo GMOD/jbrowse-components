@@ -132,8 +132,13 @@ const DiagonalizationProgressDialog = observer(
     }, [model, handleClose])
 
     return (
-      <Dialog open title="Diagonalizing" onClose={handleClose}>
+      <Dialog open title="Re-order chromosomes" onClose={handleClose}>
         <DialogContent style={{ minWidth: 400 }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Reorders the bottom assembly to match the top. Uses alignment data
+            currently loaded in the view — zoom out to show whole chromosomes
+            for best results.
+          </Typography>
           <Typography
             variant="body1"
             gutterBottom

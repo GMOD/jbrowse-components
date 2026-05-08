@@ -1667,4 +1667,105 @@ describe('diagonalizeRegions', () => {
       expect(region.reversed).toBe(false)
     }
   })
+
+  test('position-based ordering: two query chroms both matching same ref chrom ordered by alignment position', async () => {
+    // chrA and chrB both map to ref_chr1 but at different positions.
+    // They must be sorted by weighted mean x-axis position within ref_chr1.
+    const refRegions: Region[] = [
+      { refName: 'ref_chr1', start: 0, end: 200000, assemblyName: 'ref' },
+    ]
+    const queryRegions: Region[] = [
+      { refName: 'chrB', start: 0, end: 100000, assemblyName: 'query' },
+      { refName: 'chrA', start: 0, end: 100000, assemblyName: 'query' },
+    ]
+    const alignments: AlignmentData[] = [
+      {
+        queryRefName: 'ref_chr1',
+        refRefName: 'chrA',
+        queryStart: 0,
+        queryEnd: 80000,
+        refStart: 0,
+        refEnd: 80000,
+        strand: 1,
+      },
+      {
+        queryRefName: 'ref_chr1',
+        refRefName: 'chrB',
+        queryStart: 120000,
+        queryEnd: 200000,
+        refStart: 0,
+        refEnd: 80000,
+        strand: 1,
+      },
+    ]
+
+    const result = await diagonalizeRegions(alignments, refRegions, queryRegions)
+    const names = result.newRegions.map(r => r.refName)
+
+    // chrA (x-axis midpoint ~40k) must come before chrB (x-axis midpoint ~160k)
+    expect(names.indexOf('chrA')).toBeLessThan(names.indexOf('chrB'))
+  })
+
+  test('strand reversal: chromosome with predominantly minus-strand alignments is reversed', async () => {
+    const refRegions: Region[] = [
+      { refName: 'ref1', start: 0, end: 100000, assemblyName: 'ref' },
+    ]
+    const queryRegions: Region[] = [
+      { refName: 'fwd', start: 0, end: 100000, assemblyName: 'query' },
+      { refName: 'rev', start: 0, end: 100000, assemblyName: 'query' },
+    ]
+    const alignments: AlignmentData[] = [
+      {
+        queryRefName: 'ref1',
+        refRefName: 'fwd',
+        queryStart: 0,
+        queryEnd: 80000,
+        refStart: 0,
+        refEnd: 80000,
+        strand: 1,
+      },
+      {
+        queryRefName: 'ref1',
+        refRefName: 'rev',
+        queryStart: 0,
+        queryEnd: 80000,
+        refStart: 0,
+        refEnd: 80000,
+        strand: -1,
+      },
+    ]
+
+    const result = await diagonalizeRegions(alignments, refRegions, queryRegions)
+    const fwd = result.newRegions.find(r => r.refName === 'fwd')
+    const rev = result.newRegions.find(r => r.refName === 'rev')
+
+    expect(fwd?.reversed).toBe(false)
+    expect(rev?.reversed).toBe(true)
+  })
+
+  test('unaligned chromosomes appended after aligned ones', async () => {
+    const refRegions: Region[] = [
+      { refName: 'ref1', start: 0, end: 100000, assemblyName: 'ref' },
+    ]
+    const queryRegions: Region[] = [
+      { refName: 'unaligned', start: 0, end: 50000, assemblyName: 'query' },
+      { refName: 'aligned', start: 0, end: 50000, assemblyName: 'query' },
+    ]
+    const alignments: AlignmentData[] = [
+      {
+        queryRefName: 'ref1',
+        refRefName: 'aligned',
+        queryStart: 0,
+        queryEnd: 40000,
+        refStart: 0,
+        refEnd: 40000,
+        strand: 1,
+      },
+    ]
+
+    const result = await diagonalizeRegions(alignments, refRegions, queryRegions)
+    const names = result.newRegions.map(r => r.refName)
+
+    expect(names.indexOf('aligned')).toBeLessThan(names.indexOf('unaligned'))
+  })
 })

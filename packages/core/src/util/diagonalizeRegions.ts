@@ -50,7 +50,9 @@ export async function diagonalizeRegions(
   >()
 
   for (const aln of alignments) {
-    const alnLength = Math.abs(aln.refEnd - aln.refStart)
+    // Use x-axis (query) length throughout: consistent weighting for x-axis
+    // position and base-count, matching the original jmonlong R implementation
+    const alnLength = Math.abs(aln.queryEnd - aln.queryStart)
 
     if (!queryGroups.has(aln.refRefName)) {
       queryGroups.set(aln.refRefName, new Map())
@@ -133,7 +135,7 @@ export async function diagonalizeRegions(
     const region = regionsByName.get(refName)
     if (region) {
       newQueryRegions.push({ ...region, reversed: shouldReverse })
-      if (shouldReverse !== region.reversed) {
+      if (shouldReverse !== (region.reversed ?? false)) {
         regionsReversed++
       }
     }
