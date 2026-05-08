@@ -19,7 +19,7 @@ export default function RecentSessionsCards({
   setSessionToRename: (arg: RecentSessionData) => void
   setPluginManager: (pm: PluginManager) => void
   sessions: RecentSessionData[]
-  addToQuickstartList: (arg: RecentSessionData) => void
+  addToQuickstartList: (arg: RecentSessionData) => Promise<void>
 }) {
   return (
     <Grid container spacing={4}>

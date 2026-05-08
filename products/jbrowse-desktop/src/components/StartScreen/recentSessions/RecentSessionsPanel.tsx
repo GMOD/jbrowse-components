@@ -93,9 +93,14 @@ export default function RecentSessionPanel({
   )
 
   async function addToQuickstartList(arg: RecentSessionData[]) {
-    await Promise.all(
-      arg.map(s => ipcRenderer.invoke('addToQuickstartList', s.path, s.name)),
-    )
+    try {
+      await Promise.all(
+        arg.map(s => ipcRenderer.invoke('addToQuickstartList', s.path, s.name)),
+      )
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    }
   }
 
   const favs = new Set(favorites)
@@ -112,7 +117,7 @@ export default function RecentSessionPanel({
           sessionToRename={sessionToRename}
           onClose={() => {
             setSessionToRename(undefined)
-            void mutateSessions()
+            mutateSessions().catch(() => {})
           }}
         />
       ) : null}
@@ -122,7 +127,7 @@ export default function RecentSessionPanel({
           sessionsToDelete={sessionsToDelete}
           onClose={() => {
             setSessionsToDelete(undefined)
-            void mutateSessions()
+            mutateSessions().catch(() => {})
           }}
         />
       ) : null}
@@ -160,12 +165,7 @@ export default function RecentSessionPanel({
               title="Add sessions to quickstart list"
               disabled={!selectedSessions?.length}
               onClick={async () => {
-                try {
-                  await addToQuickstartList(selectedSessions ?? [])
-                } catch (e) {
-                  setError(e)
-                  console.error(e)
-                }
+                await addToQuickstartList(selectedSessions ?? [])
               }}
             >
               <PlaylistAddIcon />
@@ -217,7 +217,7 @@ export default function RecentSessionPanel({
 
       {sortedSessions.length > 0 && displayMode === 'grid' ? (
         <RecentSessionsCards
-          addToQuickstartList={entry => addToQuickstartList([entry])}
+          addToQuickstartList={async entry => addToQuickstartList([entry])}
           setPluginManager={setPluginManager}
           sessions={filteredSessions}
           setError={setError}

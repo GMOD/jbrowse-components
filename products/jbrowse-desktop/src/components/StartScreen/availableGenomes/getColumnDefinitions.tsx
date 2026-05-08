@@ -84,14 +84,12 @@ export function getColumnDefinitions({
           const isFavorite = favs.has(row.id)
           const websiteUrl = `https://genomes.jbrowse.org/ucsc/${row.id}/`
 
-          const handleLaunch = (event: React.MouseEvent) => {
-            event.preventDefault()
+          const handleLaunch = () => {
             launch([{ jbrowseConfig: row.jbrowseConfig, shortName: row.id }])
             onClose()
           }
 
-          const handleMinimalLaunch = (event: React.MouseEvent) => {
-            event.preventDefault()
+          const handleMinimalLaunch = () => {
             launch([
               {
                 jbrowseConfig: row.jbrowseMinimalConfig!,
@@ -103,7 +101,13 @@ export function getColumnDefinitions({
           return (
             <div>
               {row.name} (
-              <Link href="#" onClick={handleLaunch}>
+              <Link
+                href="#"
+                onClick={e => {
+                  e.preventDefault()
+                  handleLaunch()
+                }}
+              >
                 launch
               </Link>
               )
@@ -159,8 +163,7 @@ export function getColumnDefinitions({
           const isFavorite = favs.has(row.id)
           const websiteUrl = `https://genomes.jbrowse.org/accession/${row.accession}/`
 
-          const handleLaunch = (event: React.MouseEvent) => {
-            event.preventDefault()
+          const handleLaunch = () => {
             launch([
               {
                 jbrowseConfig: row.jbrowseConfig,
@@ -170,8 +173,7 @@ export function getColumnDefinitions({
             onClose()
           }
 
-          const handleMinimalLaunch = (event: React.MouseEvent) => {
-            event.preventDefault()
+          const handleMinimalLaunch = () => {
             launch([
               {
                 jbrowseConfig: row.jbrowseMinimalConfig!,
@@ -184,7 +186,13 @@ export function getColumnDefinitions({
           return (
             <div>
               {row.commonName} (
-              <Link href="#" onClick={handleLaunch}>
+              <Link
+                href="#"
+                onClick={e => {
+                  e.preventDefault()
+                  handleLaunch()
+                }}
+              >
                 launch
               </Link>
               )
@@ -192,7 +200,13 @@ export function getColumnDefinitions({
                 <>
                   {' '}
                   (
-                  <Link href="#" onClick={handleMinimalLaunch}>
+                  <Link
+                    href="#"
+                    onClick={e => {
+                      e.preventDefault()
+                      handleMinimalLaunch()
+                    }}
+                  >
                     minimal
                   </Link>
                   )

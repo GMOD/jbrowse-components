@@ -44,7 +44,7 @@ function RecentSessionCard({
   onClick: (arg: RecentSessionData) => void
   onDelete: (arg: RecentSessionData) => void
   onRename: (arg: RecentSessionData) => void
-  onAddToQuickstartList: (arg: RecentSessionData) => void
+  onAddToQuickstartList: (arg: RecentSessionData) => Promise<void>
 }) {
   const { classes } = useStyles()
   const [hovered, setHovered] = useState(false)
@@ -146,8 +146,8 @@ function RecentSessionCard({
           <Typography variant="inherit">Delete</Typography>
         </MenuItem>
         <MenuItem
-          onClick={() => {
-            onAddToQuickstartList(sessionData)
+          onClick={async () => {
+            await onAddToQuickstartList(sessionData)
             setMenuAnchorEl(null)
           }}
         >
