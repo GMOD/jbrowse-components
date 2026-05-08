@@ -1,3 +1,4 @@
+import type React from 'react'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export const helpStrings = {
@@ -9,10 +10,10 @@ export const helpStrings = {
 } as const
 
 export interface SelectorProps {
-  assembly1?: string
-  assembly2?: string
-  swap?: boolean
-  setSwap?: (arg: boolean) => void
+  assembly1: string
+  assembly2: string
+  swap: boolean
+  setSwap: (arg: boolean) => void
   fileLocation?: FileLocation
   setFileLocation: (arg: FileLocation) => void
   indexFileLocation?: FileLocation
@@ -22,4 +23,13 @@ export interface SelectorProps {
   bed2Location?: FileLocation
   setBed2Location?: (arg: FileLocation) => void
   radioOption: string
+}
+
+export interface SyntenyFileFormatOption {
+  extension: string
+  Component: React.FC<{
+    assembly1: string
+    assembly2: string
+    onAdapterChange: (r: { adapter: object; name: string } | undefined) => void
+  }>
 }

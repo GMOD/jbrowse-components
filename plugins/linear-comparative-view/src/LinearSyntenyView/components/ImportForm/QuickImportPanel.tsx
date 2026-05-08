@@ -6,7 +6,9 @@ import { Alert, Box, Button, Chip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { doSubmit } from './doSubmit.tsx'
-import { getName, stripGz } from './util.ts'
+import { getName } from '@jbrowse/synteny-core'
+
+import { stripGz } from './util.ts'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'

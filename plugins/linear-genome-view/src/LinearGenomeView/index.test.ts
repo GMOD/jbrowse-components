@@ -781,7 +781,7 @@ describe('get sequence for selected displayed regions', () => {
     expect(singleRegion[0]!.start).toEqual(0)
     expect(singleRegion[0]!.end).toEqual(800)
   })
-  it('handles when start or end offsets are out of bounds of displayed regions', () => {
+  it('handles when both offsets are before the start of all regions', () => {
     model.setOffsets(
       {
         refName: 'ctgA',
@@ -806,12 +806,29 @@ describe('get sequence for selected displayed regions', () => {
         index: 0,
       },
     )
-    const outOfBounds = model.getSelectedRegions(
-      model.leftOffset,
-      model.rightOffset,
-    )
+    const result = model.getSelectedRegions(model.leftOffset, model.rightOffset)
+    expect(result.length).toEqual(1)
+    expect(result[0]!.refName).toEqual('ctgA')
+    expect(result[0]!.start).toEqual(0)
+  })
 
-    expect(outOfBounds.length).toEqual(1)
+  it('handles when both offsets are past the end of all regions', () => {
+    const oobAfter = {
+      refName: 'ctgB',
+      start: 0,
+      end: 6079,
+      reversed: false as const,
+      assemblyName: 'volvox',
+      oob: true,
+      index: 1,
+    }
+    const result = model.getSelectedRegions(
+      { ...oobAfter, offset: 7000, coord: 7001 },
+      { ...oobAfter, offset: 8000, coord: 8001 },
+    )
+    expect(result.length).toEqual(1)
+    expect(result[0]!.refName).toEqual('ctgB')
+    expect(result[0]!.end).toEqual(6079)
   })
 
   it('selects multiple regions with a region in between', () => {

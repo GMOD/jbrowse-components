@@ -672,6 +672,55 @@ pluginManager.addToExtensionPoint(
 )
 ```
 
+### DotplotView-SyntenyFileFormats
+
+type: synchronous
+
+- `args` - `SyntenyFileFormatOption[]` - array of file format options for the
+  "New track" panel in the dotplot import form
+
+Allows plugins to add support for new synteny file formats in the DotplotView
+import form. The built-in formats (`.paf`, `.delta`, `.out`, `.chain`,
+`.anchors`, `.anchors.simple`, `.pif.gz`) are the initial value; each callback
+appends to or replaces entries.
+
+Each option should have the following structure:
+
+```typescript
+interface SyntenyFileFormatOption {
+  extension: string // label and radio button value, e.g. '.maf'
+  Component: React.FC<{
+    assembly1: string
+    assembly2: string
+    onAdapterChange: (r: { adapter: object; name: string } | undefined) => void
+  }>
+}
+```
+
+`onAdapterChange` should be called with the built adapter config whenever the
+user's file selection is complete, or `undefined` when the selection is cleared.
+
+Example: adding a custom `.maf` format
+
+```typescript
+pluginManager.addToExtensionPoint(
+  'DotplotView-SyntenyFileFormats',
+  (formats: SyntenyFileFormatOption[]) => [
+    ...formats,
+    {
+      extension: '.maf',
+      Component: ({ assembly1, assembly2, onAdapterChange }) => (
+        <MafFileSelector
+          assembly1={assembly1}
+          assembly2={assembly2}
+          onAdapterChange={onAdapterChange}
+        />
+      ),
+    },
+  ],
+)
+```
+
 ### LinearSyntenyView-ImportFormSyntenyOptions
 
 type: synchronous

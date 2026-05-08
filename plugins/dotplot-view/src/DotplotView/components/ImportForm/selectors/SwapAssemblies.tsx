@@ -8,10 +8,10 @@ import { observer } from 'mobx-react'
 import { helpStrings } from './SelectorTypes.ts'
 
 export interface SwapAssembliesProps {
-  assembly1?: string
-  assembly2?: string
-  swap?: boolean
-  setSwap?: (arg: boolean) => void
+  assembly1: string
+  assembly2: string
+  swap: boolean
+  setSwap: (arg: boolean) => void
   radioOption: string
   helpContent?: ReactNode
   text1: string
@@ -72,9 +72,7 @@ const SwapAssemblies = observer(function SwapAssemblies({
         <Button
           variant="contained"
           onClick={() => {
-            if (setSwap) {
-              setSwap(!swap)
-            }
+            setSwap(!swap)
           }}
         >
           Swap?

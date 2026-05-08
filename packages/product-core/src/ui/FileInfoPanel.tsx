@@ -18,13 +18,13 @@ export default function FileInfoPanel({
   session: AbstractSessionModel
 }) {
   const { rpcManager } = session
-  const trackId = readConf(config, 'trackId') as string
+  const trackId = readConf<string>(config, 'trackId')
 
   const { data: info, error } = useFetch(
     ['CoreGetInfo', trackId],
     async () =>
       (await rpcManager.call(trackId, 'CoreGetInfo', {
-        adapterConfig: readConf(config, 'adapter'),
+        adapterConfig: readConf<Record<string, unknown>>(config, 'adapter'),
       })) as FileInfo,
   )
 
@@ -32,6 +32,7 @@ export default function FileInfoPanel({
     typeof info === 'string'
       ? {
           header: `<pre>${info
+            .replaceAll('&', '&amp;')
             .replaceAll('<', '&lt;')
             .replaceAll('>', '&gt;')}</pre>`,
         }

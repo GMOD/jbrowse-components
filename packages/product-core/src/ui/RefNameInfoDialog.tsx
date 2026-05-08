@@ -54,8 +54,8 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   const { classes } = useStyles()
   const [copied, setCopied] = useState(false)
   const { rpcManager } = session
-  const trackId = readConf(config, 'trackId') as string
-  const assemblyNames = readConf(config, 'assemblyNames') as string[]
+  const trackId = readConf<string>(config, 'trackId')
+  const assemblyNames = readConf<string[]>(config, 'assemblyNames')
 
   const { data: refNames, error } = useFetch(
     ['CoreGetRefNames', trackId, JSON.stringify(assemblyNames)],
@@ -66,7 +66,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
             [
               assemblyName,
               (await rpcManager.call(trackId, 'CoreGetRefNames', {
-                adapterConfig: readConf(config, 'adapter'),
+                adapterConfig: readConf<Record<string, unknown>>(config, 'adapter'),
                 regions: [{ assemblyName }],
               })) as string[],
             ] as const,

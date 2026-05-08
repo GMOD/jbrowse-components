@@ -26,7 +26,7 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
     | Uint8Array
     | number[]
     | undefined
-  let avgBaseQuality = 30
+  let avgBaseQuality = 0
   if (qualArray && qualArray.length > 0) {
     let sum = 0
     for (const q of qualArray) {
@@ -43,7 +43,8 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
     // SAM spec: MAPQ 255 indicates mapping quality is unavailable
     mapq: feature.get('score') ?? 255,
     avgBaseQuality,
-    insertSize: Math.abs(feature.get('template_length') ?? 400),
+    // SAM spec: TLEN 0 means insert size is unset (e.g. unpaired reads)
+    insertSize: Math.abs(feature.get('template_length') ?? 0),
     pairOrientation: pairOrientationToNum(feature.get('pair_orientation')),
     strand: strand === -1 ? -1 : strand === 1 ? 1 : 0,
   }

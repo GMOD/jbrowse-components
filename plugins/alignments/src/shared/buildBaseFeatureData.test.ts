@@ -35,7 +35,7 @@ describe('buildBaseFeatureData', () => {
     expect(data.avgBaseQuality).toBe(30)
   })
 
-  test('defaults avgBaseQuality to 30 when NUMERIC_QUAL is undefined', () => {
+  test('defaults avgBaseQuality to 0 when NUMERIC_QUAL is undefined', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r3',
       refName: 'ctgA',
@@ -47,10 +47,10 @@ describe('buildBaseFeatureData', () => {
       score: 60,
     })
     const data = buildBaseFeatureData(feature)
-    expect(data.avgBaseQuality).toBe(30)
+    expect(data.avgBaseQuality).toBe(0)
   })
 
-  test('defaults avgBaseQuality to 30 when NUMERIC_QUAL is empty', () => {
+  test('defaults avgBaseQuality to 0 when NUMERIC_QUAL is empty', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r4',
       refName: 'ctgA',
@@ -63,7 +63,19 @@ describe('buildBaseFeatureData', () => {
       NUMERIC_QUAL: new Uint8Array(0),
     })
     const data = buildBaseFeatureData(feature)
-    expect(data.avgBaseQuality).toBe(30)
+    expect(data.avgBaseQuality).toBe(0)
+  })
+
+  test('defaults insertSize to 0 (SAM unset) when template_length missing', () => {
+    const feature = new SimpleFeature({
+      uniqueId: 'r-tlen-missing',
+      refName: 'ctgA',
+      start: 0,
+      end: 10,
+      strand: 1,
+      flags: 0,
+    })
+    expect(buildBaseFeatureData(feature).insertSize).toBe(0)
   })
 
   test('handles high quality scores', () => {
