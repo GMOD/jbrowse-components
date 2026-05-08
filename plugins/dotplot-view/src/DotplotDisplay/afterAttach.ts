@@ -6,7 +6,6 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { parseCigar } from '@jbrowse/plugin-alignments'
 import { autorun } from 'mobx'
 
 import { createDotplotColorFunction } from './dotplotWebGLColors.ts'
@@ -17,20 +16,17 @@ import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { DotplotRpcData } from './types.ts'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
-import type { ViewSnap } from '@jbrowse/core/util'
+import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const RPC_DEBOUNCE_MS = 1000
 
-function makeViewSnap(view: Dotplot1DViewModel): ViewSnap {
+function makeViewSnap(view: Dotplot1DViewModel): BpIndexViewSnap {
   return {
     bpPerPx: view.bpPerPx,
-    offsetPx: view.offsetPx,
     displayedRegions: view.displayedRegions,
-    staticBlocks: { contentBlocks: [], blocks: [] },
     interRegionPaddingWidth: view.interRegionPaddingWidth,
     minimumBlockWidth: view.minimumBlockWidth,
-    width: view.width,
   }
 }
 
@@ -77,26 +73,25 @@ export function doAfterAttach(
           if (thisStopToken !== currentStopToken || !isAlive(self)) {
             return
           }
-          const cigars = result.cigars
-          const parsedCigars = new Array<string[]>(cigars.length)
-          for (let i = 0; i < cigars.length; i++) {
-            parsedCigars[i] = cigars[i] ? parseCigar(cigars[i]) : []
-          }
           const rpcData: DotplotRpcData = {
-            parsedCigars,
-            p11s: result.p11_offsetPx,
-            p12s: result.p12_offsetPx,
-            p21s: result.p21_offsetPx,
-            p22s: result.p22_offsetPx,
+            p11Hi: result.p11BpHi,
+            p11Lo: result.p11BpLo,
+            p12Hi: result.p12BpHi,
+            p12Lo: result.p12BpLo,
+            p21Hi: result.p21BpHi,
+            p21Lo: result.p21BpLo,
+            p22Hi: result.p22BpHi,
+            p22Lo: result.p22BpLo,
+            padHs: result.padHs,
+            padVs: result.padVs,
             strands: result.strands,
             starts: result.starts,
             ends: result.ends,
+            parsedCigars: result.parsedCigars,
             identities: result.identities,
             meanScores: result.meanScores,
             mappingQuals: result.mappingQuals,
             refNames: result.refNames,
-            bpPerPxH: result.bpPerPxH,
-            bpPerPxV: result.bpPerPxV,
           }
           self.setRpcData(rpcData)
         } catch (e) {
@@ -122,22 +117,28 @@ export function doAfterAttach(
         if (!rpcData) {
           return
         }
-        const { drawCigar } = view
+        const { drawCigar, hview, vview } = view
         const segments = buildLineSegments(
           rpcData,
           createDotplotColorFunction(colorBy, alpha, rpcData),
           drawCigar,
           minAlignmentLength,
+          hview.bpPerPx,
+          vview.bpPerPx,
         )
         self.setGeometry({
-          x1s: segments.x1s,
-          y1s: segments.y1s,
-          x2s: segments.x2s,
-          y2s: segments.y2s,
+          x1Hi: segments.x1Hi,
+          x1Lo: segments.x1Lo,
+          y1Hi: segments.y1Hi,
+          y1Lo: segments.y1Lo,
+          x2Hi: segments.x2Hi,
+          x2Lo: segments.x2Lo,
+          y2Hi: segments.y2Hi,
+          y2Lo: segments.y2Lo,
+          padHs: segments.padHs,
+          padVs: segments.padVs,
           colors: segments.colors,
           instanceCount: segments.count,
-          bpPerPxH: rpcData.bpPerPxH,
-          bpPerPxV: rpcData.bpPerPxV,
         })
       },
       { name: 'DotplotGeometryRecompute' },

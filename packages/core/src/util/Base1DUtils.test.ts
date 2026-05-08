@@ -13,26 +13,13 @@ function makeSnap(
 ) {
   const bpPerPx = opts.bpPerPx ?? 1
   const offsetPx = opts.offsetPx ?? 0
-  const displayedRegions = regions.map(r => ({
-    assemblyName: 'test',
-    ...r,
-  }))
-  const staticBlocks = calculateBlocks({
-    bpPerPx,
-    width: 800,
-    offsetPx,
-    displayedRegions,
-    minimumBlockWidth: 3,
-    interRegionPaddingWidth: 2,
-  })
   return {
     bpPerPx,
     offsetPx,
-    displayedRegions,
+    displayedRegions: regions.map(r => ({ assemblyName: 'test', ...r })),
     minimumBlockWidth: 3,
     interRegionPaddingWidth: 2,
     width: 800,
-    staticBlocks,
   }
 }
 
@@ -96,7 +83,8 @@ describe('bpToPx', () => {
     const result = bpToPx({ self, refName: 'chr5', coord: 0 })
     expect(result).toBeDefined()
 
-    const chr5Blocks = self.staticBlocks.contentBlocks.filter(
+    const staticBlocks = calculateBlocks(self)
+    const chr5Blocks = staticBlocks.contentBlocks.filter(
       b => b.refName === 'chr5',
     )
     expect(chr5Blocks.length).toBeGreaterThan(0)

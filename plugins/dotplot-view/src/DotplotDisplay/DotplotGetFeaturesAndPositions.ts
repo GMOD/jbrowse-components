@@ -1,15 +1,16 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
 import type { DotplotFeaturesAndPositionsResult } from './executeDotplotFeaturesAndPositions.ts'
-import type { Region, ViewSnap } from '@jbrowse/core/util'
+import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
+import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface DotplotGetFeaturesAndPositionsArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   regions: Region[]
-  hViewSnap: ViewSnap
-  vViewSnap: ViewSnap
+  hViewSnap: BpIndexViewSnap
+  vViewSnap: BpIndexViewSnap
   stopToken?: StopToken
 }
 

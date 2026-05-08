@@ -1,9 +1,8 @@
 import {
-  bpToPxFromIndex,
-  buildBpToPxIndex,
-} from './executeDotplotFeaturesAndPositions.ts'
-
-import type { ViewSnap } from '@jbrowse/core/util'
+  buildBpRegionIndex,
+  bpToCumBpAndPad,
+} from '@jbrowse/synteny-core'
+import type { BpIndexViewSnap, BpRegionIndex } from '@jbrowse/synteny-core'
 
 function makeViewSnap(
   regions: {
@@ -13,19 +12,33 @@ function makeViewSnap(
     reversed?: boolean
   }[],
   bpPerPx = 1,
-): ViewSnap {
+): BpIndexViewSnap {
   return {
     bpPerPx,
-    offsetPx: 0,
     displayedRegions: regions.map(r => ({ assemblyName: 'test', ...r })),
     interRegionPaddingWidth: 2,
     minimumBlockWidth: 3,
-    width: 800,
-    staticBlocks: { contentBlocks: [], blocks: [] },
   }
 }
 
-describe('buildBpToPxIndex / bpToPxFromIndex', () => {
+// Local adapters so existing test assertions keep working with the cumBp API.
+function buildBpToPxIndex(self: BpIndexViewSnap) {
+  return buildBpRegionIndex(self)
+}
+
+function bpToPxFromIndex(
+  idx: BpRegionIndex,
+  refName: string,
+  coord: number,
+) {
+  const r = bpToCumBpAndPad(idx, refName, coord)
+  if (!r) {
+    return undefined
+  }
+  return r.cumBp / idx.bpPerPx + r.padPx
+}
+
+describe('buildBpRegionIndex / bpToCumBpAndPad (via adapter)', () => {
   it('returns correct pixel offset for first region', () => {
     const idx = buildBpToPxIndex(
       makeViewSnap([
@@ -130,8 +143,6 @@ describe('buildBpToPxIndex / bpToPxFromIndex', () => {
 })
 
 describe('strand swap', () => {
-  // strand=-1 swaps f1s/f1e so the drawn segment crosses (negative slope).
-  // This tests the ternary fix: f1s = strand === -1 ? end : start
   function computeEndpoints(
     strand: number,
     start: number,

@@ -2,90 +2,29 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import {
+  buildBpRegionIndex,
+  bpToCumBpAndPad,
+} from '@jbrowse/synteny-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region, ViewSnap } from '@jbrowse/core/util'
+import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
+import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-interface RegionIndexEntry {
-  region: { refName: string; start: number; end: number; reversed?: boolean }
-  bpBefore: number
-  paddingBpBefore: number
-}
-
-export interface BpToPxIndex {
-  entries: Map<string, RegionIndexEntry[]>
-  bpPerPx: number
-}
-
-// SYNC: parallel impl in executeSyntenyFeaturesAndPositions.ts in linear-comparative-view;
-// that version returns {index, offsetPx, paddingPx} for region disambiguation
-export function buildBpToPxIndex(self: ViewSnap): BpToPxIndex {
-  const {
-    interRegionPaddingWidth,
-    bpPerPx,
-    displayedRegions,
-    minimumBlockWidth,
-  } = self
-  const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
-  const entries = new Map<string, RegionIndexEntry[]>()
-  let bpSoFar = 0
-  let paddingBp = 0
-
-  for (let i = 0, l = displayedRegions.length; i < l; i++) {
-    const r = displayedRegions[i]!
-    const len = r.end - r.start
-    const entry: RegionIndexEntry = {
-      region: r,
-      bpBefore: bpSoFar,
-      paddingBpBefore: paddingBp,
-    }
-    let list = entries.get(r.refName)
-    if (!list) {
-      list = []
-      entries.set(r.refName, list)
-    }
-    list.push(entry)
-
-    bpSoFar += len
-    const regionWidthPx = len / bpPerPx
-    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
-      paddingBp += interRegionPaddingBp
-    }
-  }
-  return { entries, bpPerPx }
-}
-
-export function bpToPxFromIndex(
-  idx: BpToPxIndex,
-  refName: string,
-  coord: number,
-) {
-  const list = idx.entries.get(refName)
-  if (!list) {
-    return undefined
-  }
-  for (const entry of list) {
-    const r = entry.region
-    if (coord >= r.start && coord <= r.end) {
-      const bpOffset = r.reversed ? r.end - coord : coord - r.start
-      return (entry.bpBefore + bpOffset + entry.paddingBpBefore) / idx.bpPerPx
-    }
-  }
-  return undefined
-}
-
-// Pixel offsets stored as Float64: needed because Float32's 24-bit mantissa
-// loses integer precision above ~16M, and at low bpPerPx on large genomes a
-// pixel offset can approach the raw 3Gbp range. Float64 is exact for any
-// value we'd ever see, and avoids the sub-pixel rounding that Uint32 would
-// require.
 export interface DotplotFeaturesAndPositionsResult {
-  p11_offsetPx: Float64Array
-  p12_offsetPx: Float64Array
-  p21_offsetPx: Float64Array
-  p22_offsetPx: Float64Array
+  p11BpHi: Float32Array
+  p11BpLo: Float32Array
+  p12BpHi: Float32Array
+  p12BpLo: Float32Array
+  p21BpHi: Float32Array
+  p21BpLo: Float32Array
+  p22BpHi: Float32Array
+  p22BpLo: Float32Array
+  padHs: Float32Array
+  padVs: Float32Array
   strands: Int8Array
   starts: Uint32Array
   ends: Uint32Array
@@ -93,9 +32,19 @@ export interface DotplotFeaturesAndPositionsResult {
   meanScores: Float32Array
   mappingQuals: Float32Array
   refNames: string[]
-  cigars: string[]
-  bpPerPxH: number
-  bpPerPxV: number
+  parsedCigars: number[][]
+}
+
+function splitHiLo(
+  cumBp: number,
+  hiArr: Float32Array,
+  loArr: Float32Array,
+  idx: number,
+) {
+  const iv = Math.floor(cumBp)
+  const lo = iv - Math.floor(iv / 4096) * 4096
+  hiArr[idx] = iv - lo
+  loArr[idx] = lo + (cumBp - iv)
 }
 
 export async function executeDotplotFeaturesAndPositions({
@@ -111,8 +60,8 @@ export async function executeDotplotFeaturesAndPositions({
   sessionId: string
   adapterConfig: Record<string, unknown>
   regions: Region[]
-  hViewSnap: ViewSnap
-  vViewSnap: ViewSnap
+  hViewSnap: BpIndexViewSnap
+  vViewSnap: BpIndexViewSnap
   stopToken?: StopToken
 }) {
   const dataAdapter = (
@@ -153,14 +102,21 @@ export async function executeDotplotFeaturesAndPositions({
     return a
   }
 
-  const hIndex = buildBpToPxIndex(hViewSnap)
-  const vIndex = buildBpToPxIndex(vViewSnap)
+  // SYNC: parallel impl in packages/synteny-core/src/bpRegionIndex.ts
+  const hIndex = buildBpRegionIndex(hViewSnap)
+  const vIndex = buildBpRegionIndex(vViewSnap)
 
   const count = features.length
-  const p11Array = new Float64Array(count)
-  const p12Array = new Float64Array(count)
-  const p21Array = new Float64Array(count)
-  const p22Array = new Float64Array(count)
+  const p11HiArray = new Float32Array(count)
+  const p11LoArray = new Float32Array(count)
+  const p12HiArray = new Float32Array(count)
+  const p12LoArray = new Float32Array(count)
+  const p21HiArray = new Float32Array(count)
+  const p21LoArray = new Float32Array(count)
+  const p22HiArray = new Float32Array(count)
+  const p22LoArray = new Float32Array(count)
+  const padHsArray = new Float32Array(count)
+  const padVsArray = new Float32Array(count)
   const strandsArray = new Int8Array(count)
   const startsArray = new Uint32Array(count)
   const endsArray = new Uint32Array(count)
@@ -168,7 +124,7 @@ export async function executeDotplotFeaturesAndPositions({
   const meanScoresArray = new Float32Array(count)
   const mappingQualsArray = new Float32Array(count)
   const refNames: string[] = []
-  const cigars: string[] = []
+  const parsedCigars: number[][] = []
 
   let validCount = 0
   for (const f of features) {
@@ -196,10 +152,10 @@ export async function executeDotplotFeaturesAndPositions({
     const f1s = strand === -1 ? end : start
     const f1e = strand === -1 ? start : end
 
-    const p11 = bpToPxFromIndex(hIndex, refName, f1s)
-    const p12 = bpToPxFromIndex(hIndex, refName, f1e)
-    const p21 = bpToPxFromIndex(vIndex, mateRefName, mate.start)
-    const p22 = bpToPxFromIndex(vIndex, mateRefName, mate.end)
+    const p11 = bpToCumBpAndPad(hIndex, refName, f1s)
+    const p12 = bpToCumBpAndPad(hIndex, refName, f1e)
+    const p21 = bpToCumBpAndPad(vIndex, mateRefName, mate.start)
+    const p22 = bpToCumBpAndPad(vIndex, mateRefName, mate.end)
 
     if (
       p11 === undefined ||
@@ -210,10 +166,13 @@ export async function executeDotplotFeaturesAndPositions({
       continue
     }
 
-    p11Array[validCount] = p11
-    p12Array[validCount] = p12
-    p21Array[validCount] = p21
-    p22Array[validCount] = p22
+    splitHiLo(p11.cumBp, p11HiArray, p11LoArray, validCount)
+    splitHiLo(p12.cumBp, p12HiArray, p12LoArray, validCount)
+    splitHiLo(p21.cumBp, p21HiArray, p21LoArray, validCount)
+    splitHiLo(p22.cumBp, p22HiArray, p22LoArray, validCount)
+    padHsArray[validCount] = p11.padPx
+    padVsArray[validCount] = p21.padPx
+
     strandsArray[validCount] = strand
     startsArray[validCount] = start
     endsArray[validCount] = end
@@ -224,15 +183,23 @@ export async function executeDotplotFeaturesAndPositions({
     mappingQualsArray[validCount] =
       (f.get('mappingQual') as number | undefined) ?? -1
     refNames.push(rawRefName)
-    cigars.push((f.get('CIGAR') as string | undefined) ?? '')
+    parsedCigars.push(
+      parseCigar2((f.get('CIGAR') as string | undefined) ?? ''),
+    )
     validCount++
   }
 
   const result: DotplotFeaturesAndPositionsResult = {
-    p11_offsetPx: p11Array.subarray(0, validCount),
-    p12_offsetPx: p12Array.subarray(0, validCount),
-    p21_offsetPx: p21Array.subarray(0, validCount),
-    p22_offsetPx: p22Array.subarray(0, validCount),
+    p11BpHi: p11HiArray.subarray(0, validCount),
+    p11BpLo: p11LoArray.subarray(0, validCount),
+    p12BpHi: p12HiArray.subarray(0, validCount),
+    p12BpLo: p12LoArray.subarray(0, validCount),
+    p21BpHi: p21HiArray.subarray(0, validCount),
+    p21BpLo: p21LoArray.subarray(0, validCount),
+    p22BpHi: p22HiArray.subarray(0, validCount),
+    p22BpLo: p22LoArray.subarray(0, validCount),
+    padHs: padHsArray.subarray(0, validCount),
+    padVs: padVsArray.subarray(0, validCount),
     strands: strandsArray.subarray(0, validCount),
     starts: startsArray.subarray(0, validCount),
     ends: endsArray.subarray(0, validCount),
@@ -240,16 +207,20 @@ export async function executeDotplotFeaturesAndPositions({
     meanScores: meanScoresArray.subarray(0, validCount),
     mappingQuals: mappingQualsArray.subarray(0, validCount),
     refNames,
-    cigars,
-    bpPerPxH: hViewSnap.bpPerPx,
-    bpPerPxV: vViewSnap.bpPerPx,
+    parsedCigars,
   }
 
   return rpcResult(result, [
-    p11Array.buffer,
-    p12Array.buffer,
-    p21Array.buffer,
-    p22Array.buffer,
+    p11HiArray.buffer,
+    p11LoArray.buffer,
+    p12HiArray.buffer,
+    p12LoArray.buffer,
+    p21HiArray.buffer,
+    p21LoArray.buffer,
+    p22HiArray.buffer,
+    p22LoArray.buffer,
+    padHsArray.buffer,
+    padVsArray.buffer,
     strandsArray.buffer,
     startsArray.buffer,
     endsArray.buffer,
