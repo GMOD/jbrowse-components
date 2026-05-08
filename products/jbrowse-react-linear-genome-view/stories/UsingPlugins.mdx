@@ -8,60 +8,54 @@ import {
 
 # Using plugins
 
-## Notice: Using plugins with webworkers enabled
+JBrowse plugins extend the embedded view with new track types,
+adapters, renderers, view types, and menu items. They are passed to
+`createViewState` as the `plugins` option and integrated into the
+view's plugin manager at startup.
 
-If you are using webworkers, you have to add your plugin to both the main thread
-and the webworker
+## Inline plugins
 
-Example PR
-https://github.com/GMOD/jbrowse-react-linear-genome-view-cra5-demo/pull/1/files
-
-## Plugins defined in your code
-
-This example loads a plugin that is defined in your own source code. The plugin
-adds an extra action from clicking and dragging a region with the mouse that
-console.log's the region that was selected
+The simplest pattern: define a `Plugin` subclass in your own source and
+pass it directly. The example below registers a plugin that adds a
+"console.log the selected region" action to the rubber-band menu.
 
 <Story of={WithInlinePlugins} />
 
-## Plugins loaded from external URL
+## Plugins from external URLs
 
-This example loads a plugin from an external URL
+Plugins can also be loaded at runtime from a URL, which is the model
+JBrowse Web uses for community-published plugins. The host app fetches
+the plugin bundle and JBrowse registers it on the fly.
 
 <Story of={WithExternalPlugin} />
 
-## Plugins loaded from NPM
+## NPM-installed plugins
 
-This example is similar to defining an inline plugin. This is not a live example
-as we are not actually installing `jbrowse-plugin-gwas` into our monorepo, but
-you can do this in your own code
+Plugins published to NPM look like inline plugins from your app's
+perspective — `import` and pass the class. The snippet below isn't run
+in storybook (we don't ship `jbrowse-plugin-gwas` as a workspace
+dependency), but it is the pattern you would use:
 
-```
-
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import PluginManager from '@jbrowse/core/PluginManager'
-import Plugin from '@jbrowse/core/Plugin'
+```js
 import GWASPlugin from 'jbrowse-plugin-gwas'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
-import { getVolvoxConfig } from './util'
+import {
+  createViewState,
+  JBrowseLinearGenomeView,
+} from '@jbrowse/react-linear-genome-view2'
 
-
-
-export const Example = () => {
-  const { assembly, tracks } = getVolvoxConfig()
-  const state = createViewState({
-    assembly,
-    plugins: [GWASPlugin],
-    tracks,
-    location: 'ctgA:1105..1221',
-  })
-
-  return (
-    <div>
-      <JBrowseLinearGenomeView viewState={state} />
-    </div>
-  )
-}
-
-
+const state = createViewState({
+  assembly,
+  tracks,
+  plugins: [GWASPlugin],
+  location: 'ctgA:1105..1221',
+})
 ```
+
+## Plugins with web workers
+
+If you've enabled the [Web Worker RPC](?path=/docs/web-worker-rpc--docs),
+plugins must be registered in **both** the main thread and the worker
+— otherwise the worker won't know about plugin-defined adapters or
+renderers. See
+[this PR](https://github.com/GMOD/jbrowse-react-linear-genome-view-cra5-demo/pull/1/files)
+for a working create-react-app example.

@@ -8,60 +8,66 @@ import {
 
 # Text searching
 
-## Aggregate search index
+JBrowse can resolve gene symbols and other feature names typed into the
+location box, jumping the view to matching features. This requires a
+prebuilt search index (a `trix` file generated from the track's GFF or
+VCF data).
 
-An aggregate search index contains info for multiple tracks. This can be
-configured by passing the "aggregateTextSearchAdapters" (which would normally
-just be a single entry but could be multiple)
+There are two flavors:
+
+- **Aggregate index** — covers multiple tracks in a single index. Best
+  when you want one global search across all annotation.
+- **Per-track index** — one index per track, opened only when that
+  track is loaded. Best when tracks are added/removed dynamically.
+
+## Aggregate
+
+Pass `aggregateTextSearchAdapters` to `createViewState`. Most apps need
+only a single entry, but multiple are supported.
 
 <Story of={WithAggregateTextSearching} />
 
-## Per-track search index
+## Per-track
 
-Per-track search indexes contain information for a single track.
+Per-track indexes attach to the track config rather than the top-level
+view config:
 
 <Story of={WithPerTrackTextSearching} />
 
-# Preparing indexes
+## Building indexes
 
-In embedded mode, preparing search indexes is a little more awkward because the
-`jbrowse test-index` command normally looks for a config.json but embedded use
-cases don't generally use the config.json. Therefore, you can supply the --file
-argument to the `jbrowse text-index` command
+In embedded mode you usually don't have a `config.json`, so use the
+`--file` form of `jbrowse text-index`:
 
-### Preparing aggregate search indexes
-
-If you use the `jbrowse text-index` command with the --files argument, you can
-create an aggregate index. E.g.
+### Aggregate
 
 ```sh
-jbrowse text-index --file file1.gff.gz --fileId trackid_of_file1 --file file2.vcf.gz --fileId track_id_of_file2
+jbrowse text-index \
+  --file file1.gff.gz --fileId trackid_of_file1 \
+  --file file2.vcf.gz --fileId trackid_of_file2
 ```
 
-This will output a directory "trix" with aggregate.ix, aggregate.ixx, and
-aggregate_meta.json which you can put into your embedded jbrowse config. The
-`--file` argument is helpful since you may not have an actual config. The
-argument to --fileId should ideally match the trackId you use at runtime.
-Supplying the correct trackId to --fileId will allow the track to automatically
-be opened when a user selects a search result
+This produces a `trix/` directory containing `aggregate.ix`,
+`aggregate.ixx`, and `aggregate_meta.json`. Reference it from
+`aggregateTextSearchAdapters` in your `createViewState` call.
 
-### Preparing per-track search indexes
+### Per-track
 
-Similar to the aggregate use case above, you can use `jbrowse-text-index` with
-the --files argument, but if it is just a single file supplied e.g.
+Same command, single file:
 
-```
-jbrowse text-index --file myfile.gff3.gz --fileId track_id_of_myfile
+```sh
+jbrowse text-index --file myfile.gff3.gz --fileId trackid_of_myfile
 ```
 
-then it will create a myfile.gff3.gz.ix, myfile.gff3.gz.ixx and
-myfile.gff3.gz_meta.json. The --file argument is helpful since you may not have
-an actual config, and the --fileId is used to match the trackId you use for the
-file at runtime
+Produces `myfile.gff3.gz.ix`, `myfile.gff3.gz.ixx`, and
+`myfile.gff3.gz_meta.json` next to the input.
 
-### Using a config file
+The `--fileId` should match the `trackId` you'll use at runtime —
+that's how a search hit knows which track to open.
 
-You can also use jbrowse text-index on a config.json file that is used for e.g.
-jbrowse-web in the embedded application, just copy the portions of the relevant
-config e.g. the `aggregateTextSearchAdapters` section into the arguments to
-`createViewState`
+### Using an existing config
+
+If you already maintain a `config.json` for a JBrowse Web instance, you
+can run `jbrowse text-index` against it directly and copy the resulting
+`aggregateTextSearchAdapters` block into your embedded `createViewState`
+call.

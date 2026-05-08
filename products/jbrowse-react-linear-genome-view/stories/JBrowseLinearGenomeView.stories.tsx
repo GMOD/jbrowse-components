@@ -26,7 +26,6 @@ export {
   WithObserveVisibleRegions,
   WithOutsideStyling,
   WithPerTrackTextSearching,
-  WithReact18,
   WithShowTrack,
   WithTwoLinearGenomeViews,
   WithWebWorker,

@@ -3,26 +3,27 @@ import { NextstrainExample } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Nextstrain SARS-CoV-2 demo" />
 
-## Nextstrain SARS-CoV-2 example
+# Nextstrain SARS-CoV-2 demo
 
-We created this demo to help show how a instance can be used to browse the
-SARS-CoV-2 genome similar to [Nextstrain](https://nextstrain.org). It uses a
-color config to color gene's similar to the Nextstrain website, and also
-displays "Entropy score" to show diversity
+A demo of the embedded LGV browsing the SARS-CoV-2 genome in a style
+similar to [Nextstrain](https://nextstrain.org) — gene coloring matches
+their published palette, and an "Entropy score" track shows per-base
+sequence diversity.
 
 <Story of={NextstrainExample} />
 
-### Source
+## What's interesting here
 
-This config makes use of the `FromConfigAdapter` where we supply the feature
-data to the system through JSON rather than from flatfiles like GFF3 and BigWig.
-The FromConfigAdapter can be useful to display on-the-fly analyses from your
-code or to avoid having to write data to the disk e.g. generate a BigWig/GFF3.
+This demo uses `FromConfigAdapter` for both the sequence and the
+feature tracks: the data is supplied inline as JSON rather than fetched
+from BAM/BigWig/GFF3 files. That makes it convenient for embedding
+on-the-fly analyses, generated reports, or small reference datasets —
+no flat files to host.
 
-See
-[here](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/public/nextstrain_covid.json)
-for the example config, summarized below here too. Note that the link is a
-large-ish JSON file because of the usage of `FromConfigAdapter`
+The full config is a single
+[JSON file](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/public/nextstrain_covid.json)
+(largish, since it inlines the SARS-CoV-2 sequence and entropy
+scores). Summarized below:
 
 ```json
 {
