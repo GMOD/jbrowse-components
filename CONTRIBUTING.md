@@ -16,9 +16,7 @@ pnpm start
 ## Setup & Prerequisites
 
 - **Package Manager**: [pnpm](https://pnpm.io/)
-- **Windows**: Use `git clone -c core.symlinks=true` (setting up symlinks on
-  windowws is awkward this way, sorry. requires admin/Developer Mode on
-  windows).
+- **Windows**: Use `git clone -c core.symlinks=true`
 - **Native Deps**: `node-canvas` (tests) requires system libs:
   - **macOS**: `brew install pkg-config cairo pango libpng jpeg giflib librsvg`
   - **Ubuntu**:
