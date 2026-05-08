@@ -2,6 +2,8 @@ import { promises as fsPromises } from 'fs'
 
 import parseJSON from 'json-parse-better-errors'
 
+import fetch from './cliFetch.ts'
+
 interface GithubRelease {
   tag_name: string
   prerelease: boolean

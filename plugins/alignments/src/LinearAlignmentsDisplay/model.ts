@@ -113,7 +113,7 @@ function getSequenceAdapter(
   if (!sequenceAdapterConfig) {
     return undefined
   }
-  return getSnapshot(sequenceAdapterConfig) as Record<string, unknown>
+  return getSnapshot(sequenceAdapterConfig)
 }
 
 interface FetchFeatureDetailsSelf {
@@ -1480,8 +1480,12 @@ export default function stateModelFactory(
                   ...arcDirectionSubMenu(
                     self.showArcs,
                     self.pairedArcsDown,
-                    v => self.setShowArcs(v),
-                    v => self.setPairedArcsDown(v),
+                    v => {
+                      self.setShowArcs(v)
+                    },
+                    v => {
+                      self.setPairedArcsDown(v)
+                    },
                   ),
                   { type: 'divider' as const },
                   {
@@ -1504,8 +1508,12 @@ export default function stateModelFactory(
                 subMenu: arcDirectionSubMenu(
                   self.showSashimiArcs,
                   self.sashimiArcsDown,
-                  v => self.setShowSashimiArcs(v),
-                  v => self.setSashimiArcsDown(v),
+                  v => {
+                    self.setShowSashimiArcs(v)
+                  },
+                  v => {
+                    self.setSashimiArcsDown(v)
+                  },
                 ),
               },
             ],

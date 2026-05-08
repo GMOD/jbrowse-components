@@ -29,11 +29,9 @@ export async function testLinkedReadsDisplay({
   } else {
     await user.click(await findByText('Read connections...'))
     await user.click(await findByText('Linked reads'))
-    if (displayMode === 'bezier') {
-      await user.click(await findByText('Bezier'))
-    } else {
-      await user.click(await findByText('Normal'))
-    }
+    await (displayMode === 'bezier'
+      ? user.click(await findByText('Bezier'))
+      : user.click(await findByText('Normal')))
   }
 
   const display = await findByTestId('pileup-display-done', ...opts)
