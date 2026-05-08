@@ -392,13 +392,13 @@ export default function stateModelFactory(
                 {
                   label: 'Finer resolution',
                   onClick: () => {
-                    self.setResolution(self.resolution * 2)
+                    self.zoomResolutionFiner()
                   },
                 },
                 {
                   label: 'Coarser resolution',
                   onClick: () => {
-                    self.setResolution(self.resolution / 2)
+                    self.zoomResolutionCoarser()
                   },
                 },
               ],
