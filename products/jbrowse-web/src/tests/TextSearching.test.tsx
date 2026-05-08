@@ -130,7 +130,7 @@ test('search matches description for feature in two places', async () => {
   const options = await within(listbox).findAllByRole('option', ...opts)
 
   // Find the b101.2 option and click it
-  const b101_2_option = options.find(opt => opt.textContent?.includes('b101.2'))
+  const b101_2_option = options.find(opt => opt.textContent.includes('b101.2'))
   if (b101_2_option) {
     fireEvent.click(b101_2_option)
   }

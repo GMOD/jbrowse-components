@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2026-05-08T20:30:46.332Z",
+  "dateCreated": "2026-05-08T20:55:39.184Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -185,18 +185,6 @@
         "type": "Gff3Adapter",
         "gffLocation": {
           "uri": "multipart.gff",
-          "locationType": "UriLocation"
-        }
-      }
-    },
-    {
-      "trackId": "gff3_mouseover_attr",
-      "attributesIndexed": ["Name", "ID", "Note"],
-      "excludedTypes": ["CDS", "exon"],
-      "adapterConf": {
-        "type": "Gff3Adapter",
-        "gffLocation": {
-          "uri": "volvox_mouseover.sorted.gff3",
           "locationType": "UriLocation"
         }
       }
