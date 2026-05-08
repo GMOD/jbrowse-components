@@ -7,7 +7,7 @@ import { userEvent } from '@testing-library/user-event'
 
 import { createView, doBeforeEach, hts, setup } from './util.tsx'
 
-jest.mock('', () => {
+jest.mock('@jbrowse/core/util/FileSaver', () => {
   return {
     ...jest.requireActual('@jbrowse/core/util/FileSaver'),
     saveAs: jest.fn(),

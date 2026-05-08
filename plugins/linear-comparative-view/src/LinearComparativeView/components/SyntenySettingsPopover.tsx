@@ -8,7 +8,6 @@ import {
   IconButton,
   Popover,
   Slider,
-  Switch,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -45,10 +44,9 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
-  const { autoAlpha, alpha, minAlignmentLength, effectiveAlpha } = model
+  const { alpha, minAlignmentLength } = model
 
-  // Opacity: cubic scaling for more granularity near 0
-  const sliderValue = Math.cbrt(autoAlpha ? effectiveAlpha : alpha)
+  const sliderValue = Math.cbrt(alpha)
 
   // Min length: log2 scaling. null = not dragging, derive from model.
   const [minLengthDragValue, setMinLengthDragValue] = useState<number | null>(
@@ -80,17 +78,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
             <Typography variant="body2" className={classes.label}>
               Opacity:
             </Typography>
-            <Tooltip title="Auto-scale opacity based on feature count">
-              <Switch
-                size="small"
-                checked={autoAlpha}
-                onChange={(_, checked) => {
-                  model.setAutoAlpha(checked)
-                }}
-              />
-            </Tooltip>
             <Slider
-              disabled={autoAlpha}
               value={sliderValue}
               onChange={(_, value) => {
                 const v = typeof value === 'number' ? value : value[0]
@@ -102,9 +90,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
               valueLabelDisplay="auto"
               size="small"
               slots={{ valueLabel: SliderTooltip }}
-              valueLabelFormat={(v: number) =>
-                (autoAlpha ? effectiveAlpha : v ** 3).toFixed(3)
-              }
+              valueLabelFormat={(v: number) => (v ** 3).toFixed(3)}
             />
           </div>
           <div className={classes.row}>

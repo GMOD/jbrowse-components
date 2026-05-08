@@ -99,15 +99,17 @@ export default class GridBookmarkPlugin extends Plugin {
                */
               bookmarkCurrentRegion() {
                 if (self.id === getSession(self).focusedViewId) {
-                  const selectedRegions = self.getSelectedRegions(
-                    undefined,
-                    undefined,
-                  )
+                  const blocks = self.dynamicBlocks.contentBlocks
                   const bookmarkWidget = self.activateBookmarkWidget()
-                  if (!selectedRegions.length) {
+                  if (!blocks.length) {
                     throw new Error('no region selected')
                   } else {
-                    bookmarkWidget.addBookmark(selectedRegions[0]!)
+                    const block = blocks[0]!
+                    bookmarkWidget.addBookmark({
+                      ...block,
+                      start: Math.floor(block.start),
+                      end: Math.ceil(block.end),
+                    })
                   }
                 }
               },

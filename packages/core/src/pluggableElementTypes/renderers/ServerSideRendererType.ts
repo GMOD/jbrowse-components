@@ -161,11 +161,7 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const results = await rpcManager.call(
-      args.sessionId,
-      'CoreRender',
-      args,
-    )
+    const results = await rpcManager.call(args.sessionId, 'CoreRender', args)
 
     if (isCanvasRecordedSvgExport(results)) {
       const { reactElement, ...rest } = results

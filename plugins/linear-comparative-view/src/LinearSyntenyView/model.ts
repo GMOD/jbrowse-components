@@ -72,10 +72,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        autoAlpha: types.optional(types.boolean, true),
-        /**
-         * #property
-         */
         minAlignmentLength: types.optional(types.number, 0),
         /**
          * #property
@@ -112,24 +108,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get numFeats() {
-        let n = 0
-        for (const level of self.levels) {
-          n += (level as unknown as { numFeats: number }).numFeats
-        }
-        return n
-      },
-      /**
-       * #getter
-       * When autoAlpha is on, scales opacity down as total feature count grows.
-       * Formula keeps ~500 feats at 0.2 (the manual default).
-       */
       get effectiveAlpha() {
-        if (!self.autoAlpha) {
-          return self.alpha
-        }
-        const n = this.numFeats
-        return n > 0 ? Math.min(0.8, Math.max(0.05, 100 / n)) : 0.8
+        return self.alpha
       },
       /**
        * #getter
@@ -220,12 +200,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setAlpha(arg: number) {
         self.alpha = arg
-      },
-      /**
-       * #action
-       */
-      setAutoAlpha(arg: boolean) {
-        self.autoAlpha = arg
       },
       /**
        * #action

@@ -31,24 +31,42 @@ type ViewLayout = {
   interRegionPaddingWidth: number
 }
 
+// total bp from the start of displayedRegions through regionIndex + regionOffset,
+// counting inter-region padding as bp
+function cumulativeBp(
+  self: MoveSnap,
+  regionIndex: number,
+  regionOffset: number,
+  bpPerPx: number,
+) {
+  const { displayedRegions, minimumBlockWidth, interRegionPaddingWidth } = self
+  const paddingBp = interRegionPaddingWidth * bpPerPx
+  let bpSoFar = regionOffset
+  for (let i = 0; i < regionIndex; i++) {
+    const r = displayedRegions[i]!
+    const len = r.end - r.start
+    bpSoFar += len
+    if (len / bpPerPx >= minimumBlockWidth && i < displayedRegions.length - 1) {
+      bpSoFar += paddingBp
+    }
+  }
+  return bpSoFar
+}
+
 function lengthBetween(
-  self: { displayedRegions: { start: number; end: number }[] },
+  displayedRegions: { start: number; end: number }[],
   start: BpOffset,
   end: BpOffset,
 ) {
   let bpSoFar = 0
-  const { displayedRegions } = self
   if (start.index === end.index) {
-    bpSoFar += end.offset - start.offset
+    bpSoFar = end.offset - start.offset
   } else {
     const s = displayedRegions[start.index]!
-    bpSoFar += s.end - s.start - start.offset
-    if (end.index - start.index >= 2) {
-      for (let i = start.index + 1, l = end.index; i < l; i++) {
-        const region = displayedRegions[i]!
-        const len = region.end - region.start
-        bpSoFar += len
-      }
+    bpSoFar = s.end - s.start - start.offset
+    for (let i = start.index + 1; i < end.index; i++) {
+      const r = displayedRegions[i]!
+      bpSoFar += r.end - r.start
     }
     bpSoFar += end.offset
   }
@@ -57,9 +75,9 @@ function lengthBetween(
 
 function computeTargetBpPerPx(self: MoveSnap, start: BpOffset, end: BpOffset) {
   const { width, interRegionPaddingWidth, displayedRegions, bpPerPx, minimumBlockWidth } = self
-  const len = lengthBetween(self, start, end)
+  const len = lengthBetween(displayedRegions, start, end)
   let numBlocksWideEnough = 0
-  for (let i = start.index, l = end.index; i < l; i++) {
+  for (let i = start.index; i < end.index; i++) {
     const r = displayedRegions[i]!
     if ((r.end - r.start) / bpPerPx >= minimumBlockWidth) {
       numBlocksWideEnough++
@@ -74,21 +92,7 @@ function computeScrollPos(
   bpPerPx: number,
   extraBp: number,
 ) {
-  const { displayedRegions, minimumBlockWidth, interRegionPaddingWidth } = self
-  let bpToStart = -extraBp
-  let paddingPx = 0
-  for (let i = 0, l = displayedRegions.length; i < l; i++) {
-    const region = displayedRegions[i]!
-    if (start.index === i) {
-      bpToStart += start.offset
-      break
-    }
-    bpToStart += region.end - region.start
-    if ((region.end - region.start) / bpPerPx >= minimumBlockWidth && i < l - 1) {
-      paddingPx += interRegionPaddingWidth
-    }
-  }
-  return Math.round(bpToStart / bpPerPx + paddingPx)
+  return Math.round((cumulativeBp(self, start.index, start.offset, bpPerPx) - extraBp) / bpPerPx)
 }
 
 export function moveTo(
@@ -125,7 +129,7 @@ export function computeMoveToLayout(
   return { bpPerPx, offsetPx: computeScrollPos(self, start, bpPerPx, 0) }
 }
 
-function coord(r: RegionSnap, bp: number) {
+function regionCoord(r: RegionSnap, bp: number) {
   return Math.floor(r.reversed ? r.end - bp : r.start + bp) + 1
 }
 
@@ -144,60 +148,41 @@ export function pxToBp(
   end: number
   reversed?: boolean
 } {
-  let bpSoFar = 0
-  const {
-    bpPerPx,
-    offsetPx,
-    displayedRegions,
-    interRegionPaddingWidth,
-    minimumBlockWidth,
-  } = self
+  const { bpPerPx, offsetPx, displayedRegions, interRegionPaddingWidth, minimumBlockWidth } = self
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
     const r = displayedRegions[0]!
-    return { ...r, oob: true, coord: coord(r, bp), offset: bp, index: 0 }
+    return { ...r, oob: true, coord: regionCoord(r, bp), offset: bp, index: 0 }
   }
 
-  const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
+  const paddingBp = interRegionPaddingWidth * bpPerPx
+  let bpSoFar = 0
 
   for (let i = 0, l = displayedRegions.length; i < l; i++) {
     const r = displayedRegions[i]!
     const len = r.end - r.start
     const offset = bp - bpSoFar
-    if (len + bpSoFar > bp && bpSoFar <= bp) {
-      return { ...r, oob: false, offset, coord: coord(r, offset), index: i }
+    if (offset >= 0 && offset < len) {
+      return { ...r, oob: false, offset, coord: regionCoord(r, offset), index: i }
     }
-
-    const regionWidthPx = len / bpPerPx
-    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
+    if (len / bpPerPx >= minimumBlockWidth && i < l - 1) {
       const paddingStart = bpSoFar + len
-      const paddingEnd = paddingStart + interRegionPaddingBp
-      if (bp >= paddingStart && bp < paddingEnd) {
+      if (bp >= paddingStart && bp < paddingStart + paddingBp) {
         const nextR = displayedRegions[i + 1]!
-        return { ...nextR, oob: false, offset: 0, coord: coord(nextR, 0), index: i + 1 }
+        return { ...nextR, oob: false, offset: 0, coord: regionCoord(nextR, 0), index: i + 1 }
       }
-      bpSoFar += len + interRegionPaddingBp
+      bpSoFar += len + paddingBp
     } else {
       bpSoFar += len
     }
   }
 
-  if (bp >= bpSoFar && displayedRegions.length > 0) {
-    const r = displayedRegions.at(-1)!
-    const offset = bp - bpSoFar + r.end - r.start
-    return { ...r, oob: true, offset, coord: coord(r, offset), index: displayedRegions.length - 1 }
+  const r = displayedRegions.at(-1)
+  if (!r) {
+    throw new Error('pxToBp called with empty displayedRegions')
   }
-  return {
-    coord: 0,
-    index: 0,
-    refName: '',
-    oob: true,
-    assemblyName: '',
-    offset: 0,
-    start: 0,
-    end: 0,
-    reversed: false,
-  }
+  const offset = bp - bpSoFar + r.end - r.start
+  return { ...r, oob: true, offset, coord: regionCoord(r, offset), index: displayedRegions.length - 1 }
 }
 
 export function bpToPx({
@@ -211,43 +196,22 @@ export function bpToPx({
   displayedRegionIndex?: number
   self: ViewLayout
 }) {
-  let bpSoFar = 0
+  const { bpPerPx, displayedRegions } = self
 
-  const {
-    interRegionPaddingWidth,
-    bpPerPx,
-    displayedRegions,
-    minimumBlockWidth,
-  } = self
-  const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
-
-  let i = 0
-  for (let l = displayedRegions.length; i < l; i++) {
+  for (let i = 0, l = displayedRegions.length; i < l; i++) {
     const r = displayedRegions[i]!
-    const len = r.end - r.start
     if (
       refName === r.refName &&
       coord >= r.start &&
       coord <= r.end &&
-      (displayedRegionIndex !== undefined ? displayedRegionIndex === i : true)
+      (displayedRegionIndex === undefined || displayedRegionIndex === i)
     ) {
-      bpSoFar += r.reversed ? r.end - coord : coord - r.start
-      break
-    }
-
-    bpSoFar += len
-    const regionWidthPx = len / bpPerPx
-    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
-      bpSoFar += interRegionPaddingBp
+      const regionOffset = r.reversed ? r.end - coord : coord - r.start
+      return {
+        index: i,
+        offsetPx: Math.round(cumulativeBp(self, i, regionOffset, bpPerPx) / bpPerPx),
+      }
     }
   }
-  const found = displayedRegions[i]
-  if (found) {
-    return {
-      index: i,
-      offsetPx: Math.round(bpSoFar / bpPerPx),
-    }
-  }
-
   return undefined
 }

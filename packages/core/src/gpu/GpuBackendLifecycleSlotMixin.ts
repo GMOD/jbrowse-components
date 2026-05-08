@@ -63,9 +63,6 @@ export function GpuBackendLifecycleSlotMixin() {
         }
       },
       stopGpuBackendLifecycle() {
-        console.error(
-          '[GpuBackendLifecycleSlot] stopGpuBackendLifecycle() called',
-        )
         self.currentGpuBackend = undefined
         self.canvasDrawn = false
       },

@@ -193,14 +193,16 @@ describe('GenBank export', () => {
   it('formats ORIGIN section with proper line breaks for long sequences', async () => {
     jest
       .mocked(fetchSeq)
-      .mockImplementationOnce(async ({ start, end }: { start: number; end: number }) => {
-        const bases = 'ACGT'
-        let seq = ''
-        for (let i = 0; i < end - start; i++) {
-          seq += bases[i % 4]!
-        }
-        return seq
-      })
+      .mockImplementationOnce(
+        async ({ start, end }: { start: number; end: number }) => {
+          const bases = 'ACGT'
+          let seq = ''
+          for (let i = 0; i < end - start; i++) {
+            seq += bases[i % 4]!
+          }
+          return seq
+        },
+      )
 
     const f = createFeature({
       id: 'gene7',

@@ -47,6 +47,7 @@ test('open local paf', async () => {
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
 
   fireEvent.click(await findByText('New track'))
+  fireEvent.click(await findByText('.paf'))
 
   fireEvent.change(await findByTestId('urlInput'), {
     target: {

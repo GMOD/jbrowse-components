@@ -29,7 +29,11 @@ console.error = (...args) => {
 
 console.warn = (...args) => {
   const r = String(args)
-  if (r.includes('The `anchorEl` prop provided to the component is invalid')) {
+  if (
+    r.includes('The `anchorEl` prop provided to the component is invalid') ||
+    r.includes('[GPU] WebGPU initialization failed') ||
+    r.includes('[GPU] WebGL2 unavailable, falling back to Canvas2D')
+  ) {
     return undefined
   }
 
