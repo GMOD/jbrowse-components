@@ -12,6 +12,8 @@ type LGV = LinearGenomeViewModel
 
 interface HicModel {
   isMinimized: boolean
+  resolution: number
+  availableResolutions: number[] | undefined
   rpcProps(): Record<string, unknown>
   adapterConfig: Record<string, unknown>
   setAvailableNormalizations(norms: string[]): void
@@ -63,6 +65,10 @@ export function doAfterAttach(self: HicModel) {
           return
         }
         if (!view.dynamicBlocks.contentBlocks.length) {
+          return
+        }
+        if (!self.availableResolutions?.includes(self.resolution)) {
+          console.warn('[HiC] Skipping fetch: resolution', self.resolution, 'not in availableResolutions', self.availableResolutions)
           return
         }
 
