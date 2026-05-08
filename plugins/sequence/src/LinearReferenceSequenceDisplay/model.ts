@@ -7,14 +7,15 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun } from 'mobx'
+import { observable } from 'mobx'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Region } from '@jbrowse/core/util'
 import type {
   ExportSvgDisplayOptions,
@@ -33,7 +34,8 @@ export interface SequenceRegionData {
 
 export interface LinearReferenceSequenceDisplayModel {
   height: number
-  sequenceData: Map<number, SequenceRegionData>
+  sequenceData: ReadonlyMap<number, SequenceRegionData>
+  renderBlocks: RenderBlock[]
   error: unknown
   showForwardActual: boolean
   showReverseActual: boolean
@@ -81,8 +83,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
-      sequenceData: new Map<number, SequenceRegionData>(),
-      computedHeight: 50,
+      sequenceData: observable.map<number, SequenceRegionData>(),
     }))
     .views(self => ({
       /**
@@ -150,25 +151,30 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * collapses to 50px when zoomed out (no sequence visible) or before
+       * the view initializes; otherwise sized to fit the visible rows.
+       */
+      get computedHeight() {
+        return this.zoomedOut ? 50 : this.sequenceHeight
+      },
+      /**
+       * #getter
        * override TrackHeightMixin height: use manual resize if set,
-       * otherwise use autorun-computed height
+       * otherwise the zoom-aware computed height.
        */
       get height() {
-        return self.heightPreConfig ?? self.computedHeight
+        return self.heightPreConfig ?? this.computedHeight
       },
       get rowHeight() {
         return this.numRows > 0 ? this.height / this.numRows : 0
       },
     }))
     .actions(self => ({
-      setComputedHeight(h: number) {
-        self.computedHeight = h
-      },
       setSequenceRegion(idx: number, data: SequenceRegionData) {
-        self.sequenceData = new Map(self.sequenceData).set(idx, data)
+        self.sequenceData.set(idx, data)
       },
       clearDisplaySpecificData() {
-        self.sequenceData = new Map()
+        self.sequenceData.clear()
       },
       /**
        * #action
@@ -224,22 +230,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             }
           }
         })
-      },
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function sequenceHeightAutorun() {
-              const view = getContainingView(self) as LGV
-              if (!view.initialized || self.zoomedOut) {
-                self.setComputedHeight(50)
-              } else {
-                self.setComputedHeight(self.sequenceHeight)
-              }
-            },
-            { name: 'SequenceHeight' },
-          ),
-        )
       },
     }))
     .views(self => ({

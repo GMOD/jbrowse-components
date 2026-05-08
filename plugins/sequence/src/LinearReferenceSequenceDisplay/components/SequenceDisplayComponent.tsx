@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 
+import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 import { ErrorBar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { Alert, useTheme } from '@mui/material'
@@ -7,7 +8,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import LoadingOverlay from './LoadingOverlay.tsx'
-import { buildTextColors, drawSequenceToCtx } from './drawSequence.ts'
+import { buildTextColors, drawSequenceBlocks } from './drawSequence.ts'
 import { buildColorPalette } from './sequenceGeometry.ts'
 
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
@@ -42,20 +43,12 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
 
       const cssWidth = view.trackWidthPx
       const cssHeight = model.height
-      const dpr = devicePixelRatio || 1
-      const bufW = Math.round(cssWidth * dpr)
-      const bufH = Math.round(cssHeight * dpr)
-      if (canvas.width !== bufW || canvas.height !== bufH) {
-        canvas.width = bufW
-        canvas.height = bufH
-      }
-
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      prepareCanvas(canvas, ctx, cssWidth, cssHeight)
       ctx.fillStyle = '#fff'
       ctx.fillRect(0, 0, cssWidth, cssHeight)
 
-      drawSequenceToCtx(ctx, view, {
-        sequenceData: model.sequenceData,
+      drawSequenceBlocks(ctx, model.sequenceData, model.renderBlocks, {
+        bpPerPx: view.bpPerPx,
         showForward: model.showForwardActual,
         showReverse: model.showReverseActual,
         showTranslation: model.showTranslationActual,
@@ -63,6 +56,8 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
         rowHeight: model.rowHeight,
         palette,
         textColors,
+        canvasWidth: cssWidth,
+        canvasHeight: cssHeight,
       })
     })
   }, [model, view, palette, textColors])

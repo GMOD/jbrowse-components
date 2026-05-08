@@ -1,12 +1,16 @@
+import {
+  bpToScreenPx,
+  clipBlockForCanvas,
+} from '@jbrowse/core/gpu/canvas2dUtils'
 import { codonTable, complement, revcom } from '@jbrowse/core/util'
 
 import { frameShiftBounds, startsSet, stopsSet } from './sequenceGeometry.ts'
 
 import type { ColorPalette } from './sequenceGeometry.ts'
 import type { SequenceRegionData } from '../model.ts'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Frame } from '@jbrowse/core/util'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
 
 type RGB = readonly [number, number, number]
@@ -44,45 +48,54 @@ function rgbStyle([r, g, b]: RGB) {
   return `rgb(${r},${g},${b})`
 }
 
-function frameRows(
-  showTranslation: boolean,
-  showForward: boolean,
-  showReverse: boolean,
-  reversed: boolean,
-) {
-  const forwardFrames: Frame[] =
-    showTranslation && showForward ? [3, 2, 1] : []
-  const reverseFrames: Frame[] =
-    showTranslation && showReverse ? [-1, -2, -3] : []
-  return reversed
-    ? { topFrames: reverseFrames.toReversed(), bottomFrames: forwardFrames.toReversed() }
-    : { topFrames: forwardFrames, bottomFrames: reverseFrames }
+interface BlockGeometry {
+  block: RenderBlock
+  bpPerPx: number
+}
+
+function bpRangeToScreen(g: BlockGeometry, absBp: number, bpWidth: number) {
+  const { block } = g
+  const [bpStart, bpEnd] = block.bpRangeX
+  const x1 = bpToScreenPx(
+    absBp,
+    bpStart,
+    bpEnd,
+    block.screenStartPx,
+    block.screenEndPx,
+    block.reversed,
+  )
+  const x2 = bpToScreenPx(
+    absBp + bpWidth,
+    bpStart,
+    bpEnd,
+    block.screenStartPx,
+    block.screenEndPx,
+    block.reversed,
+  )
+  return x1 < x2 ? { x: x1, w: x2 - x1 } : { x: x2, w: x1 - x2 }
 }
 
 function drawBaseRow(
   ctx: Ctx2D,
+  g: BlockGeometry,
   seq: string,
   seqStart: number,
   y: number,
   rowHeight: number,
-  bpPerPx: number,
-  offsetPx: number,
   showBorders: boolean,
   sequenceType: string,
   palette: ColorPalette,
   textColors: TextColors,
-  visStartBp: number,
-  visEndBp: number,
 ) {
-  const w = 1 / bpPerPx
-  const iStart = Math.max(0, Math.floor(visStartBp - seqStart))
-  const iEnd = Math.min(seq.length, Math.ceil(visEndBp - seqStart))
+  const [bpStart, bpEnd] = g.block.bpRangeX
+  const iStart = Math.max(0, Math.floor(bpStart - seqStart))
+  const iEnd = Math.min(seq.length, Math.ceil(bpEnd - seqStart))
 
   for (let i = iStart; i < iEnd; i++) {
     const letter = seq[i]!
     const upper = letter.toUpperCase()
     const rgb = palette.baseColors.get(upper) ?? FALLBACK_RGB
-    const x = (seqStart + i) / bpPerPx - offsetPx
+    const { x, w } = bpRangeToScreen(g, seqStart + i, 1)
 
     ctx.fillStyle = rgbStyle(rgb)
     ctx.fillRect(x, y, w, rowHeight)
@@ -100,63 +113,50 @@ function drawBaseRow(
 
 function drawTranslationRow(
   ctx: Ctx2D,
+  g: BlockGeometry,
   seq: string,
   seqStart: number,
   frame: Frame,
   y: number,
   rowHeight: number,
-  bpPerPx: number,
-  offsetPx: number,
   reversed: boolean,
   showBorders: boolean,
   palette: ColorPalette,
   textColors: TextColors,
-  visStartBp: number,
-  visEndBp: number,
 ) {
   const bgColor = palette.frameColors.get(frame) ?? FALLBACK_RGB
   const bgStyle = rgbStyle(bgColor)
   const { frameShift, sliceEnd } = frameShiftBounds(seq, seqStart, frame)
-
-  const codonWidth = 3 / bpPerPx
-
-  const clipStart = Math.max(0, Math.floor(visStartBp - seqStart) - 3)
-  const clipEnd = Math.min(seq.length, Math.ceil(visEndBp - seqStart) + 3)
-  const rawStart = Math.max(frameShift, clipStart)
-  const codonAlignedStart = rawStart - ((rawStart - frameShift) % 3)
+  const [bpStart, bpEnd] = g.block.bpRangeX
 
   if (showBorders) {
     if (frameShift > 0) {
       ctx.fillStyle = bgStyle
-      ctx.fillRect(
-        seqStart / bpPerPx - offsetPx,
-        y,
-        frameShift / bpPerPx,
-        rowHeight,
-      )
+      const { x, w } = bpRangeToScreen(g, seqStart, frameShift)
+      ctx.fillRect(x, y, w, rowHeight)
     }
     const trailing = seq.length - sliceEnd
     if (trailing > 0) {
       ctx.fillStyle = bgStyle
-      ctx.fillRect(
-        (seqStart + sliceEnd) / bpPerPx - offsetPx,
-        y,
-        trailing / bpPerPx,
-        rowHeight,
-      )
+      const { x, w } = bpRangeToScreen(g, seqStart + sliceEnd, trailing)
+      ctx.fillRect(x, y, w, rowHeight)
     }
   } else {
-    const x0 = seqStart / bpPerPx - offsetPx
-    const x1 = (seqStart + seq.length) / bpPerPx - offsetPx
     ctx.fillStyle = bgStyle
-    ctx.fillRect(x0, y, x1 - x0, rowHeight)
+    const { x, w } = bpRangeToScreen(g, seqStart, seq.length)
+    ctx.fillRect(x, y, w, rowHeight)
   }
+
+  const clipStart = Math.max(0, Math.floor(bpStart - seqStart) - 3)
+  const clipEnd = Math.min(seq.length, Math.ceil(bpEnd - seqStart) + 3)
+  const rawStart = Math.max(frameShift, clipStart)
+  const codonAlignedStart = rawStart - ((rawStart - frameShift) % 3)
 
   for (let i = codonAlignedStart; i < Math.min(sliceEnd, clipEnd); i += 3) {
     const codon = seq.slice(i, i + 3)
     const normalizedCodon = reversed ? revcom(codon) : codon
     const upperCodon = normalizedCodon.toUpperCase()
-    const x = (seqStart + i) / bpPerPx - offsetPx
+    const { x, w } = bpRangeToScreen(g, seqStart + i, 3)
 
     const isStart = startsSet.has(upperCodon)
     const isStop = stopsSet.has(upperCodon)
@@ -168,14 +168,14 @@ function drawTranslationRow(
           ? palette.stopColor
           : bgColor
       ctx.fillStyle = rgbStyle(color)
-      ctx.fillRect(x, y, codonWidth, rowHeight)
-      ctx.strokeRect(x, y, codonWidth, rowHeight)
+      ctx.fillRect(x, y, w, rowHeight)
+      ctx.strokeRect(x, y, w, rowHeight)
     } else if (isStart) {
       ctx.fillStyle = rgbStyle(palette.startColor)
-      ctx.fillRect(x, y, codonWidth, rowHeight)
+      ctx.fillRect(x, y, w, rowHeight)
     } else if (isStop) {
       ctx.fillStyle = rgbStyle(palette.stopColor)
-      ctx.fillRect(x, y, codonWidth, rowHeight)
+      ctx.fillRect(x, y, w, rowHeight)
     }
 
     if (showBorders) {
@@ -185,13 +185,13 @@ function drawTranslationRow(
         : isStop
           ? textColors.stopContrast
           : '#000'
-      ctx.fillText(letter, x + codonWidth / 2, y + rowHeight / 2)
+      ctx.fillText(letter, x + w / 2, y + rowHeight / 2)
     }
   }
 }
 
 export interface DrawSequenceState {
-  sequenceData: Map<number, SequenceRegionData>
+  bpPerPx: number
   showForward: boolean
   showReverse: boolean
   showTranslation: boolean
@@ -199,15 +199,18 @@ export interface DrawSequenceState {
   rowHeight: number
   palette: ColorPalette
   textColors: TextColors
+  canvasWidth: number
+  canvasHeight: number
 }
 
-export function drawSequenceToCtx(
+export function drawSequenceBlocks(
   ctx: Ctx2D,
-  view: LinearGenomeViewModel,
+  sequenceData: ReadonlyMap<number, SequenceRegionData>,
+  blocks: RenderBlock[],
   state: DrawSequenceState,
 ) {
   const {
-    sequenceData,
+    bpPerPx,
     showForward,
     showReverse,
     showTranslation,
@@ -215,11 +218,10 @@ export function drawSequenceToCtx(
     rowHeight,
     palette,
     textColors,
+    canvasWidth,
+    canvasHeight,
   } = state
-  const { bpPerPx, offsetPx, trackWidthPx } = view
   const showBorders = 1 / bpPerPx >= 12
-  const visStartBp = offsetPx * bpPerPx
-  const visEndBp = (offsetPx + trackWidthPx) * bpPerPx
 
   if (showBorders) {
     ctx.font = `${Math.min(rowHeight - 2, 14)}px sans-serif`
@@ -229,33 +231,46 @@ export function drawSequenceToCtx(
     ctx.lineWidth = 1
   }
 
-  for (const [regionNum, data] of sequenceData) {
-    const reversed = view.displayedRegions[regionNum]?.reversed ?? false
-    const { topFrames, bottomFrames } = frameRows(
-      showTranslation,
-      showForward,
-      showReverse,
-      reversed,
-    )
+  const forwardFrames: Frame[] =
+    showTranslation && showForward ? [3, 2, 1] : []
+  const reverseFrames: Frame[] =
+    showTranslation && showReverse ? [-1, -2, -3] : []
 
+  for (const block of blocks) {
+    const data = sequenceData.get(block.displayedRegionIndex)
+    if (!data) {
+      continue
+    }
+    const clip = clipBlockForCanvas(block, canvasWidth)
+    if (!clip) {
+      continue
+    }
+    const { reversed } = block
+    const [topFrames, bottomFrames] = reversed
+      ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
+      : [forwardFrames, reverseFrames]
+
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
+    ctx.clip()
+
+    const g: BlockGeometry = { block, bpPerPx }
     let currentY = 0
 
     for (const frame of topFrames) {
       drawTranslationRow(
         ctx,
+        g,
         data.seq,
         data.start,
         frame,
         currentY,
         rowHeight,
-        bpPerPx,
-        offsetPx,
         reversed,
         showBorders,
         palette,
         textColors,
-        visStartBp,
-        visEndBp,
       )
       currentY += rowHeight
     }
@@ -264,18 +279,15 @@ export function drawSequenceToCtx(
       const fwdSeq = reversed ? complement(data.seq) : data.seq
       drawBaseRow(
         ctx,
+        g,
         fwdSeq,
         data.start,
         currentY,
         rowHeight,
-        bpPerPx,
-        offsetPx,
         showBorders,
         sequenceType,
         palette,
         textColors,
-        visStartBp,
-        visEndBp,
       )
       currentY += rowHeight
     }
@@ -284,18 +296,15 @@ export function drawSequenceToCtx(
       const revSeq = reversed ? data.seq : complement(data.seq)
       drawBaseRow(
         ctx,
+        g,
         revSeq,
         data.start,
         currentY,
         rowHeight,
-        bpPerPx,
-        offsetPx,
         showBorders,
         sequenceType,
         palette,
         textColors,
-        visStartBp,
-        visEndBp,
       )
       currentY += rowHeight
     }
@@ -303,21 +312,20 @@ export function drawSequenceToCtx(
     for (const frame of bottomFrames) {
       drawTranslationRow(
         ctx,
+        g,
         data.seq,
         data.start,
         frame,
         currentY,
         rowHeight,
-        bpPerPx,
-        offsetPx,
         !reversed,
         showBorders,
         palette,
         textColors,
-        visStartBp,
-        visEndBp,
       )
       currentY += rowHeight
     }
+
+    ctx.restore()
   }
 }

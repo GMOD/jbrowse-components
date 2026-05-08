@@ -2,10 +2,11 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
-import { buildTextColors, drawSequenceToCtx } from './components/drawSequence.ts'
+import { buildTextColors, drawSequenceBlocks } from './components/drawSequence.ts'
 import { buildColorPalette } from './components/sequenceGeometry.ts'
 
 import type { SequenceRegionData } from './model.ts'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -16,7 +17,8 @@ type LGV = LinearGenomeViewModel
 interface SequenceDisplayModel {
   id: string
   height: number
-  sequenceData: Map<number, SequenceRegionData>
+  sequenceData: ReadonlyMap<number, SequenceRegionData>
+  renderBlocks: RenderBlock[]
   showForwardActual: boolean
   showReverseActual: boolean
   showTranslationActual: boolean
@@ -41,8 +43,8 @@ export async function renderSvg(
   const textColors = buildTextColors(palette, theme)
 
   const ctx = new SvgCanvas()
-  drawSequenceToCtx(ctx, view, {
-    sequenceData,
+  drawSequenceBlocks(ctx, sequenceData, model.renderBlocks, {
+    bpPerPx: view.bpPerPx,
     showForward: model.showForwardActual,
     showReverse: model.showReverseActual,
     showTranslation: model.showTranslationActual,
@@ -50,6 +52,8 @@ export async function renderSvg(
     rowHeight: model.rowHeight,
     palette,
     textColors,
+    canvasWidth: view.trackWidthPx,
+    canvasHeight: model.height,
   })
 
   const clipId = `sequence-clip-${model.id}`
