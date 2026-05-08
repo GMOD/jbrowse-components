@@ -345,8 +345,9 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
 
     // First coverage bin at position 10005: x = (10005-10000)/20 * 200 = 50
     expect(covRects[0]!.x).toBeCloseTo(50, 0)
-    // Bin width = 1bp = 200/20 = 10px
-    expect(covRects[0]!.w).toBeCloseTo(10, 0)
+    // Bin width = 1bp = 200/20 = 10px, plus ALIGNMENTS_FUDGE_FACTOR (0.8)
+    // applied by drawCoverageBins to close subpixel gaps between bars
+    expect(covRects[0]!.w).toBeCloseTo(10.8, 1)
     // Coverage bins should have the coverage color
     expect(covRects[0]!.fill).toBe('rgb(51,102,204)')
 
