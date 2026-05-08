@@ -130,12 +130,9 @@ export default class PlinkLDAdapter extends BaseAdapter {
   ): Promise<PlinkLDRecord[]> {
     const { refName, start, end } = query
     const { records } = await this.configure(opts)
-
-    const filtered = records.filter(
+    return records.filter(
       r => r.chrA === refName && r.bpA >= start && r.bpA <= end,
     )
-
-    return filtered
   }
 
   /**
@@ -148,19 +145,9 @@ export default class PlinkLDAdapter extends BaseAdapter {
   ): Promise<PlinkLDRecord[]> {
     const { refName, start, end } = query
     const records = await this.getLDRecords(query, opts)
-
-    // Filter for pairs where both SNPs are in the region
-    const filtered = records.filter(
-      r =>
-        r.chrB === refName &&
-        r.bpB >= start &&
-        r.bpB <= end &&
-        r.chrA === refName &&
-        r.bpA >= start &&
-        r.bpA <= end,
+    return records.filter(
+      r => r.chrB === refName && r.bpB >= start && r.bpB <= end,
     )
-
-    return filtered
   }
 
   private parseLine(line: string, header: PlinkLDHeader): PlinkLDRecord | null {

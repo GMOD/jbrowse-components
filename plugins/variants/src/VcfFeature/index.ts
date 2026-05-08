@@ -71,6 +71,14 @@ export default class VCFFeature implements Feature {
     this._id = args.id
   }
 
+  get(field: 'ALT'): string[] | undefined
+  get(field: 'REF'): string | undefined
+  get(field: 'FILTER'): string | string[] | undefined
+  get(field: 'QUAL'): number | undefined
+  get(field: 'INFO'): Record<string, unknown>
+  get(field: 'genotypes'): Record<string, string>
+  get(field: 'samples'): ReturnType<Variant['SAMPLES']>
+  get(field: string): any
   get(field: string): any {
     return field === 'samples'
       ? this.variant.SAMPLES()

@@ -39,7 +39,7 @@ export function getSOTermAndDescription(
   ref: string,
   alt: string[] | undefined,
   parser: VCF,
-): string[] {
+): [string, string] {
   if (!alt || alt.length === 0) {
     return ['remark', 'no alternative alleles']
   }
@@ -98,7 +98,10 @@ function findSOTerm(alt: string, parser: VCF): string | undefined {
     : undefined
 }
 
-export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
+export function getSOAndDescFromAltDefs(
+  alt: string,
+  parser: VCF,
+): [] | [string, string] {
   if (!alt.startsWith('<')) {
     return []
   }
