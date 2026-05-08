@@ -82,7 +82,7 @@ exports[`renders 1`] = `
                         aria-describedby="_r_1_-helper-text"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                        aria-labelledby="_r_1_-label _r_1_"
+                        aria-labelledby="_r_1_-label"
                         class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-18jp67o-MuiNativeSelect-root-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                         id="_r_1_"
                         role="combobox"
@@ -153,7 +153,7 @@ exports[`renders 1`] = `
                   class="css-19idom"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-bcqx18-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-bcqx18-MuiButtonBase-root-MuiButton-root"
                     disabled=""
                     tabindex="-1"
                     type="button"
@@ -161,7 +161,7 @@ exports[`renders 1`] = `
                     Back
                   </button>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary css-a7w8l0-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary css-a7w8l0-MuiButtonBase-root-MuiButton-root"
                     data-testid="addConnectionNext"
                     tabindex="0"
                     type="button"

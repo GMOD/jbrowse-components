@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2026-01-23T07:54:59.865Z",
+  "dateCreated": "2026-05-08T14:59:25.920Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -25,7 +25,16 @@
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
-        "uri": "volvox.dup.renamed.vcf.gz"
+        "vcfGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.dup.renamed.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.dup.renamed.vcf.gz.tbi"
+          }
+        }
       }
     },
     {
