@@ -192,6 +192,34 @@ export default function stateModelFactory(
       },
 
       /**
+       * #getter
+       * Combined { scale, viewOffsetX } that places data-x=0 (the apex of
+       * the rotated triangle = first visible block's start at fetch time)
+       * at its correct canvas-x in the current viewport. Survives
+       * stale-zoom and stale-pan by deriving from lastDrawnOffsetPx /
+       * lastDrawnBpPerPx — read by both the GPU render path and the
+       * mouse hit-test so they stay in sync.
+       *
+       * Apex was rendered at canvas-x = max(0, -lastDrawnOffsetPx) at
+       * fetch time. That maps to genome-pixel position
+       *   apexGenomePx = max(0, lastDrawnOffsetPx)   (in fetch px units)
+       * Convert to current px and offset by current view:
+       *   viewOffsetX = apexGenomePx * scale - view.offsetPx
+       */
+      get renderTransform() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const last = self.lastDrawnOffsetPx ?? view.offsetPx
+        const lastBpPerPx = self.lastDrawnBpPerPx ?? view.bpPerPx
+        const scale = lastBpPerPx / view.bpPerPx
+        const apexGenomePx = Math.max(0, last)
+        return {
+          scale,
+          viewOffsetX: apexGenomePx * scale - view.offsetPx,
+        }
+      },
+    }))
+    .views(self => ({
+      /**
        * #method
        * Computed per-frame render state for the GPU backend. Read by the
        * autorun lifecycle on every change to any tracked observable.
@@ -202,12 +230,7 @@ export default function stateModelFactory(
         if (!data) {
           return undefined
         }
-        const { scale, translateX } = self.viewportTransform(view)
-        // Fold in the gap shift so the apex lands at the genome content
-        // start when scrolled left of the first region. Canvas spans the
-        // full viewport at left:0 — the rendering itself absorbs the shift,
-        // not a CSS wrapper (CSS approach jittered during smooth pan).
-        const gap = Math.max(0, -view.offsetPx)
+        const { scale, viewOffsetX } = self.renderTransform
         return {
           binWidth: data.binWidth,
           yScalar: self.yScalar,
@@ -216,7 +239,7 @@ export default function stateModelFactory(
           colorMaxScore: self.colorMaxScore,
           useLogScale: self.useLogScale,
           viewScale: scale,
-          viewOffsetX: translateX + gap,
+          viewOffsetX,
         }
       },
 

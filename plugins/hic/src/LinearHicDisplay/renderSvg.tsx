@@ -31,10 +31,9 @@ export async function renderSvg(
   const ramp = generateColorRamp(colorScheme)
   const clipId = `clip-${self.id}-svg`
 
-  // SYNC with ReactComponent.tsx wrapper-div left: when scrolled left of
-  // genome start (offsetPx negative), shift the SVG drawing right by
-  // -offsetPx so the apex aligns with genome content, not the viewport edge.
-  const viewOffsetX = Math.max(0, -view.offsetPx)
+  // Reuse the model's renderTransform so SVG export aligns identically to
+  // the on-screen render (handles scrolled-left-of-genome and stale zoom).
+  const { scale: viewScale, viewOffsetX } = self.renderTransform
   const matrixEl = paintLayer(visibleWidth, height, opts, ctx => {
     drawHicBlocks(ctx, { positions, counts, numContacts }, ramp, {
       binWidth,
@@ -43,7 +42,7 @@ export async function renderSvg(
       canvasHeight: height,
       colorMaxScore,
       useLogScale,
-      viewScale: 1,
+      viewScale,
       viewOffsetX,
     })
   })

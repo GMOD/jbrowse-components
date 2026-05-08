@@ -122,13 +122,10 @@ const HicCanvas = observer(function HicCanvas({
 
   const { canvasRef, error, retry } = useGpuModelLifecycle(HicRenderer, model)
 
-  // SYNC with model.renderState: viewOffsetX folds in the negative-offsetPx
-  // gap (the canvas is full-viewport-width at left:0; we draw the apex at
-  // canvas-x = gap so it lines up with the genome content start when the
-  // user has scrolled left of the first region). Hover hit-test inverts the
-  // same transform, so it reads the same combined value.
-  const { scale: viewScale, translateX } = model.viewportTransform(view)
-  const viewOffsetX = translateX + Math.max(0, -view.offsetPx)
+  // Hover hit-test inverts the same transform the renderer used, so it
+  // reads the model's renderTransform getter (single source of truth shared
+  // with renderState).
+  const { scale: viewScale, viewOffsetX } = model.renderTransform
 
   const onMouseMove = (event: React.MouseEvent) => {
     if (
