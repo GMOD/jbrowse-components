@@ -69,7 +69,7 @@ export function useGenomesData({
   favorites: Fav[]
   url?: string
 }): { data: RawEntry[]; error: unknown } {
-  const { data, error } = useFetch<RawData>(url, (u: string) => fetchJson(u) as Promise<RawData>)
+  const { data, error } = useFetch<RawData>(url, (u: string) => fetchJson<RawData>(u))
 
   const rows = data
     ? applyFilter(normalizeEntries(data), filterOption, typeOption).sort(
