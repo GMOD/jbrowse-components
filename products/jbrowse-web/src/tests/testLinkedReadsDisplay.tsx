@@ -10,7 +10,7 @@ export async function testLinkedReadsDisplay({
 }: {
   loc: string
   track: string
-  displayMode: 'arc' | 'cloud' | 'stack'
+  displayMode: 'arc' | 'cloud' | 'bezier' | 'stack'
   canvasId?: string
   timeout?: number
 }) {
@@ -27,11 +27,15 @@ export async function testLinkedReadsDisplay({
     await user.click(await findByText('Paired arcs'))
     await user.click(await findByText('Pointing down'))
   } else {
-    // cloud and stack modes use linked reads
     await user.click(await findByText('Show...'))
     await user.click(
       await findByText('Show paired/supplementary reads as linked'),
     )
+    if (displayMode === 'bezier') {
+      await user.click(await findByTestId('track_menu_icon', ...opts))
+      await user.click(await findByText('Show...'))
+      await user.click(await findByText('Show linked reads as bezier arcs'))
+    }
   }
 
   const display = await findByTestId('pileup-display-done', ...opts)

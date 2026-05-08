@@ -60,9 +60,16 @@ export function setup() {
 }
 
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
+  const flat = document.createElement('canvas')
+  flat.width = canvas.width
+  flat.height = canvas.height
+  const ctx = flat.getContext('2d')!
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, flat.width, flat.height)
+  ctx.drawImage(canvas, 0, 0)
   // eslint-disable-next-line no-restricted-globals
   return Buffer.from(
-    canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
+    flat.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
     'base64',
   )
 }
