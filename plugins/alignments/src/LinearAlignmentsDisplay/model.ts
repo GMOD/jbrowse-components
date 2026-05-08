@@ -132,7 +132,6 @@ async function fetchFeatureDetails(
   featureId: string,
 ) {
   const session = getSession(self)
-  const adapterConfig = self.adapterConfig
   const info = self.getFeatureInfoById(featureId)
   if (!info) {
     return undefined
@@ -154,7 +153,13 @@ async function fetchFeatureDetails(
   const { feature } = await session.rpcManager.call(
     sessionId,
     'GetPileupFeatureDetails',
-    { sessionId, adapterConfig, sequenceAdapter, regions: [region], featureId },
+    {
+      sessionId,
+      adapterConfig: self.adapterConfig,
+      sequenceAdapter,
+      regions: [region],
+      featureId,
+    },
   )
   if (!feature) {
     return undefined
@@ -263,20 +268,12 @@ export default function stateModelFactory(
         overCigarItem: false,
         colorPalette: null as ColorPalette | null,
       }))
-      .views(() => ({
+      .views(self => ({
         get featureWidgetType() {
           return {
             type: 'AlignmentsFeatureWidget',
             id: 'alignmentFeature',
           }
-        },
-      }))
-      .views(self => ({
-        get fetchSizeLimit() {
-          return (
-            self.userByteSizeLimit ??
-            self.getConfWithOverride<number>('fetchSizeLimit')
-          )
         },
 
         get selectedFeatureId() {
@@ -299,9 +296,6 @@ export default function stateModelFactory(
           return self.showLinkedReads && !self.showLinkedReadsAsBeziers
         },
 
-        /**
-         * Use custom component instead of block-based rendering
-         */
         get DisplayMessageComponent() {
           return AlignmentsComponent
         },
@@ -313,9 +307,6 @@ export default function stateModelFactory(
           return AlignmentsTooltip
         },
 
-        /**
-         * Get list of visible modification types
-         */
         get visibleModificationTypes() {
           return [...self.visibleModifications.keys()]
         },
@@ -660,10 +651,8 @@ export default function stateModelFactory(
           if (!view.initialized) {
             return []
           }
-          const contentBlocks = view.dynamicBlocks.contentBlocks
-          const bpPerPx = view.bpPerPx
           const blocks = []
-          for (const block of contentBlocks) {
+          for (const block of view.dynamicBlocks.contentBlocks) {
             if (block.displayedRegionIndex === undefined) {
               continue
             }
@@ -674,7 +663,7 @@ export default function stateModelFactory(
                 blockStart: block.start,
                 blockEnd: block.end,
                 blockScreenOffsetPx: block.offsetPx - view.offsetPx,
-                bpPerPx,
+                bpPerPx: view.bpPerPx,
                 reversed: block.reversed ?? false,
               })
             }
@@ -707,11 +696,8 @@ export default function stateModelFactory(
             return undefined
           }
           const rowHeight = self.featureHeightSetting + self.featureSpacing
-          const left = start
-          const right = end
           const top = yRow * rowHeight
-          const bottom = top + self.featureHeightSetting
-          return [left, top, right, bottom]
+          return [start, top, end, top + self.featureHeightSetting]
         },
 
         getFeatureInfoById(featureId: string) {
@@ -886,6 +872,24 @@ export default function stateModelFactory(
             self.currentRangeY = rangeY
           }
         }
+        function addModification(modType: string) {
+          if (!self.visibleModifications.has(modType)) {
+            self.visibleModifications.set(modType, {
+              type: modType,
+              base: '',
+              strand: '',
+              color: getColorForModification(modType),
+            })
+          }
+        }
+        function clearHoverState() {
+          self.featureIdUnderMouse = undefined
+          self.mouseoverExtraInformation = undefined
+          self.overCigarItem = false
+          if (self.highlightedChainIds.length > 0) {
+            self.highlightedChainIds = []
+          }
+        }
         return {
           setError(error?: unknown) {
             superSetError(error)
@@ -910,14 +914,7 @@ export default function stateModelFactory(
             if (data) {
               self.rpcDataMap.set(displayedRegionIndex, data)
               for (const modType of data.detectedModifications) {
-                if (!self.visibleModifications.has(modType)) {
-                  self.visibleModifications.set(modType, {
-                    type: modType,
-                    base: '',
-                    strand: '',
-                    color: getColorForModification(modType),
-                  })
-                }
+                addModification(modType)
               }
             } else {
               self.rpcDataMap.delete(displayedRegionIndex)
@@ -956,12 +953,7 @@ export default function stateModelFactory(
           },
 
           clearMouseoverState() {
-            self.featureIdUnderMouse = undefined
-            self.mouseoverExtraInformation = undefined
-            self.overCigarItem = false
-            if (self.highlightedChainIds.length > 0) {
-              self.highlightedChainIds = []
-            }
+            clearHoverState()
           },
 
           clearSelection() {
@@ -1174,12 +1166,6 @@ export default function stateModelFactory(
             self.showMismatches = show
           },
 
-          // Pileup and arcs are independent upload streams tracked within a
-          // single autorun — each with its own identity-diff cache. Arcs
-          // share the pileup backend's per-region slots, so only the pileup
-          // stream prunes. `AlignmentsRenderState` includes color scheme,
-          // scrollTop, hover highlights, etc.; the util's split autoruns
-          // mean hover-only changes skip the upload cache walk.
           setShowYScalebar(show: boolean) {
             self.showYScalebar = show
           },
@@ -1206,12 +1192,7 @@ export default function stateModelFactory(
 
           setShowLinkedReads(flag: boolean) {
             self.showLinkedReads = flag
-            self.featureIdUnderMouse = undefined
-            self.mouseoverExtraInformation = undefined
-            self.overCigarItem = false
-            if (self.highlightedChainIds.length > 0) {
-              self.highlightedChainIds = []
-            }
+            clearHoverState()
             if (flag) {
               self.clearOverride('showOutline')
               self.setOverride('colorBy', { type: 'insertSizeAndOrientation' })
@@ -1223,14 +1204,7 @@ export default function stateModelFactory(
 
           updateVisibleModifications(uniqueModifications: string[]) {
             for (const modType of uniqueModifications) {
-              if (!self.visibleModifications.has(modType)) {
-                self.visibleModifications.set(modType, {
-                  type: modType,
-                  base: '',
-                  strand: '',
-                  color: getColorForModification(modType),
-                })
-              }
+              addModification(modType)
             }
           },
 
@@ -1312,84 +1286,55 @@ export default function stateModelFactory(
           })
         },
       }))
-      .actions(self => ({
-        async selectFeatureById(featureId: string) {
-          const session = getSession(self)
-          try {
-            const feat = await fetchFeatureDetails(self, featureId)
-            if (isAlive(self) && feat) {
-              self.selectFeature(feat)
-            }
-          } catch (e) {
-            console.error(e)
-            session.notifyError(`${e}`, e)
-          }
-        },
-
-        async setContextMenuFeatureById(featureId: string) {
-          const session = getSession(self)
-          try {
-            const feat = await fetchFeatureDetails(self, featureId)
-            if (isAlive(self) && feat) {
-              self.setContextMenuFeature(feat)
-            }
-          } catch (e) {
-            console.error(e)
-            session.notifyError(`${e}`, e)
-          }
-        },
-      }))
       .actions(self => {
-        async function fetchPileupData(
-          adapterConfig: Record<string, unknown>,
-          sequenceAdapter: Record<string, unknown> | undefined,
-          region: Region,
-          stopToken: StopToken,
+        async function fetchAndDo(
+          featureId: string,
+          onFeat: (feat: SimpleFeature) => void,
         ) {
-          const sessionId = getRpcSessionId(self)
-          return getSession(self).rpcManager.call(
-            sessionId,
-            'RenderPileupData',
-            {
-              sessionId,
-              adapterConfig,
-              sequenceAdapter,
-              regions: [region],
-              ...self.rpcProps(),
-              stopToken,
-              statusCallback: (msg: string) => {
-                if (isAlive(self)) {
-                  self.setStatusMessage(msg)
-                }
-              },
-            },
-          )
+          const session = getSession(self)
+          try {
+            const feat = await fetchFeatureDetails(self, featureId)
+            if (isAlive(self) && feat) {
+              onFeat(feat)
+            }
+          } catch (e) {
+            console.error(e)
+            session.notifyError(`${e}`, e)
+          }
         }
-
-        async function fetchChainData(
+        return {
+          async selectFeatureById(featureId: string) {
+            await fetchAndDo(featureId, feat => self.selectFeature(feat))
+          },
+          async setContextMenuFeatureById(featureId: string) {
+            await fetchAndDo(featureId, feat =>
+              self.setContextMenuFeature(feat),
+            )
+          },
+        }
+      })
+      .actions(self => {
+        async function fetchAlignmentData(
           adapterConfig: Record<string, unknown>,
           sequenceAdapter: Record<string, unknown> | undefined,
           region: Region,
           stopToken: StopToken,
+          method: 'RenderPileupData' | 'RenderChainData',
         ) {
           const sessionId = getRpcSessionId(self)
-          return getSession(self).rpcManager.call(
+          return getSession(self).rpcManager.call(sessionId, method, {
             sessionId,
-            'RenderChainData',
-            {
-              sessionId,
-              adapterConfig,
-              sequenceAdapter,
-              regions: [region],
-              ...self.rpcProps(),
-              stopToken,
-              statusCallback: (msg: string) => {
-                if (isAlive(self)) {
-                  self.setStatusMessage(msg)
-                }
-              },
+            adapterConfig,
+            sequenceAdapter,
+            regions: [region],
+            ...self.rpcProps(),
+            stopToken,
+            statusCallback: (msg: string) => {
+              if (isAlive(self)) {
+                self.setStatusMessage(msg)
+              }
             },
-          )
+          })
         }
 
         async function fetchFeaturesForRegion(
@@ -1401,25 +1346,17 @@ export default function stateModelFactory(
           const session = getSession(self)
           const sequenceAdapter = getSequenceAdapter(session, region)
 
-          const result = await (self.renderingMode !== 'pileup'
-            ? fetchChainData(adapterConfig, sequenceAdapter, region, stopToken)
-            : fetchPileupData(
-                adapterConfig,
-                sequenceAdapter,
-                region,
-                stopToken,
-              ))
+          const result = await fetchAlignmentData(
+            adapterConfig,
+            sequenceAdapter,
+            region,
+            stopToken,
+            self.renderingMode !== 'pileup'
+              ? 'RenderChainData'
+              : 'RenderPileupData',
+          )
 
-          return {
-            displayedRegionIndex,
-            result,
-            region: {
-              refName: region.refName,
-              start: region.start,
-              end: region.end,
-              assemblyName: region.assemblyName,
-            },
-          }
+          return { displayedRegionIndex, result }
         }
 
         function computeAndSetArcs(
@@ -1470,7 +1407,7 @@ export default function stateModelFactory(
         const superAfterAttach = self.afterAttach
 
         return {
-          async fetchFeatures(region: Region, displayedRegionIndex = 0) {
+          fetchFeatures(region: Region, displayedRegionIndex = 0) {
             self.fetchNeeded([{ region, displayedRegionIndex }])
           },
 
@@ -1504,13 +1441,13 @@ export default function stateModelFactory(
 
               const newDataMap = new Map<number, PileupDataResult>()
               let newTagColorsAdded = false
+              self.setModificationsReady(true)
               for (const r of results) {
                 if (r.result.newTagValues) {
                   if (self.updateColorTagMap(r.result.newTagValues)) {
                     newTagColorsAdded = true
                   }
                 }
-                self.setModificationsReady(true)
                 self.setSimplexModifications(r.result.simplexModifications)
                 newDataMap.set(r.displayedRegionIndex, r.result)
               }
