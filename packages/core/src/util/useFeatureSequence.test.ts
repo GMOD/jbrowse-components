@@ -1,12 +1,11 @@
 import { renderHook, waitFor } from '@testing-library/react'
 
+import { fetchSeq } from './fetchSeq.ts'
 import { useFeatureSequence } from './useFeatureSequence.ts'
 
 jest.mock('./fetchSeq.ts', () => ({
   fetchSeq: jest.fn(),
 }))
-
-import { fetchSeq } from './fetchSeq.ts'
 
 const mockFetchSeq = jest.mocked(fetchSeq)
 

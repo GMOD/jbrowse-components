@@ -97,14 +97,6 @@ export function doAfterAttach(
           return
         }
         const { drawCigar, hview, vview } = view
-        console.log(
-          '[dotplot geometry] rpcData feature count:',
-          rpcData.p11Hi.length,
-          'hview.bpPerPx:',
-          hview.bpPerPx,
-          'vview.bpPerPx:',
-          vview.bpPerPx,
-        )
         const segments = buildLineSegments(
           rpcData,
           createDotplotColorFunction(colorBy, alpha, rpcData),
@@ -113,7 +105,6 @@ export function doAfterAttach(
           hview.bpPerPx,
           vview.bpPerPx,
         )
-        console.log('[dotplot geometry] segments.count:', segments.count)
         self.setGeometry({
           x1Hi: segments.x1Hi,
           x1Lo: segments.x1Lo,

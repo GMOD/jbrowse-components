@@ -34,7 +34,7 @@ export function readConf<T = unknown>(
   const keys = typeof slotPath === 'string' ? [slotPath] : slotPath
   let result: unknown = config
   for (const key of keys) {
-    result = (result as Record<string, unknown>)?.[key]
+    result = (result as Record<string, unknown> | undefined)?.[key]
   }
   if (typeof result === 'string' && result.startsWith('jexl:')) {
     return stringToJexlExpression(result).eval({}) as T

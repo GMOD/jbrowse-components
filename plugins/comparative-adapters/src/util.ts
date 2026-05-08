@@ -58,7 +58,7 @@ export function parsePAFLine(line: string) {
 export function flipCigar(cigar: string) {
   const ops: [number, string][] = []
   let len = 0
-  for (let i = 0; i < cigar.length; i++) {
+  for (let i = 0, l = cigar.length; i < l; i++) {
     const c = cigar[i]!
     if (c >= '0' && c <= '9') {
       len = len * 10 + (c.charCodeAt(0) - 48)

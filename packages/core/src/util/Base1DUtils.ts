@@ -58,19 +58,18 @@ function lengthBetween(
   start: BpOffset,
   end: BpOffset,
 ) {
-  let bpSoFar = 0
   if (start.index === end.index) {
-    bpSoFar = end.offset - start.offset
+    return end.offset - start.offset
   } else {
     const s = displayedRegions[start.index]!
-    bpSoFar = s.end - s.start - start.offset
+    let bpSoFar = s.end - s.start - start.offset
     for (let i = start.index + 1; i < end.index; i++) {
       const r = displayedRegions[i]!
       bpSoFar += r.end - r.start
     }
     bpSoFar += end.offset
+    return bpSoFar
   }
-  return bpSoFar
 }
 
 function computeTargetBpPerPx(self: MoveSnap, start: BpOffset, end: BpOffset) {

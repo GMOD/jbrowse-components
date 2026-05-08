@@ -428,12 +428,6 @@ export default function stateModelFactory(pm: PluginManager) {
             upload: b => {
               const currentKeys = new Set<number>()
               for (const [key, data] of self.geometryByTrackIndex) {
-                console.log(
-                  '[dotplot upload] key',
-                  key,
-                  'instanceCount',
-                  data.instanceCount,
-                )
                 b.uploadGeometry(key, data)
                 currentKeys.add(key)
               }
@@ -450,19 +444,8 @@ export default function stateModelFactory(pm: PluginManager) {
             render: b => {
               const state = self.dotplotRenderState
               if (!state) {
-                console.log(
-                  '[dotplot render] dotplotRenderState is undefined, skipping render',
-                )
                 return false
               }
-              console.log(
-                '[dotplot render] viewWidth',
-                self.viewWidth,
-                'viewHeight',
-                self.viewHeight,
-                'displayKeys',
-                JSON.stringify(state.displayKeys),
-              )
               b.resize(self.viewWidth, self.viewHeight)
               b.render(state)
               return true

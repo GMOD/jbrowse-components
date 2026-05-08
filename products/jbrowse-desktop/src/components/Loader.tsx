@@ -25,16 +25,18 @@ function useConfigLoad(
   onError: (e: unknown) => void,
 ) {
   useEffect(() => {
-    let active = true
+    let cancelled = false
     if (config) {
       void (async () => {
         try {
           const pm = await loadPluginManager(config)
-          if (active) {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (!cancelled) {
             onLoad(pm)
           }
         } catch (e) {
-          if (active) {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (!cancelled) {
             console.error(e)
             onError(e)
           }
@@ -42,7 +44,7 @@ function useConfigLoad(
       })()
     }
     return () => {
-      active = false
+      cancelled = true
     }
   }, [config, onLoad, onError])
 }
