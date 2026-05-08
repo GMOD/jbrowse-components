@@ -86,50 +86,31 @@ export default function QuickstartPanel({
               >
                 <table>
                   <tbody>
-                    {quickstarts.map(name => {
-                      const handleLaunch = () => {
-                        launch([name])
-                      }
-
-                      return (
-                        <tr key={name}>
-                          <td>
-                            <Link
-                              href="#"
-                              onClick={event => {
-                                event.preventDefault()
-                                handleLaunch()
-                              }}
-                            >
-                              {name}
-                            </Link>{' '}
-                            <CascadingMenuButton
-                              style={{ padding: 0 }}
-                              menuItems={[
-                                {
-                                  label: 'Launch',
-                                  onClick: handleLaunch,
-                                },
-                                {
-                                  label: 'Delete',
-                                  onClick: () => {
-                                    setDeleteDialogOpen(name)
-                                  },
-                                },
-                                {
-                                  label: 'Rename',
-                                  onClick: () => {
-                                    setRenameDialogOpen(name)
-                                  },
-                                },
-                              ]}
-                            >
-                              <MoreIcon />
-                            </CascadingMenuButton>
-                          </td>
-                        </tr>
-                      )
-                    })}
+                    {quickstarts.map(name => (
+                      <tr key={name}>
+                        <td>
+                          <Link
+                            href="#"
+                            onClick={e => {
+                              e.preventDefault()
+                              launch([name])
+                            }}
+                          >
+                            {name}
+                          </Link>{' '}
+                          <CascadingMenuButton
+                            style={{ padding: 0 }}
+                            menuItems={[
+                              { label: 'Launch', onClick: () => launch([name]) },
+                              { label: 'Delete', onClick: () => setDeleteDialogOpen(name) },
+                              { label: 'Rename', onClick: () => setRenameDialogOpen(name) },
+                            ]}
+                          >
+                            <MoreIcon />
+                          </CascadingMenuButton>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

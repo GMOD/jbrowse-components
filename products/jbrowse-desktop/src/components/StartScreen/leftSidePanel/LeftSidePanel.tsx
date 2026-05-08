@@ -59,9 +59,10 @@ export default function LauncherPanel({
     defaultFavs,
   )
 
-  async function initializeSession(entries: JBrowseConfig[]) {
+  async function launchSession(getEntries: () => Promise<JBrowseConfig[]>) {
     try {
-      setLoading('Creating session')
+      setLoading('Loading session')
+      const entries = await getEntries()
       setPluginManager(
         await loadPluginManager(
           await ipcRenderer.invoke('createInitialAutosaveFile', {
@@ -75,29 +76,16 @@ export default function LauncherPanel({
     } catch (e) {
       console.error(e)
       setError(e)
-    }
-  }
-
-  async function structuredCb(cb: () => Promise<void>) {
-    try {
-      setLoading('Launching')
-      await cb()
-    } catch (e) {
-      setError(e)
     } finally {
       setLoading('')
     }
   }
 
   const launchFromConfig = (sel: { shortName: string; jbrowseConfig: string }[]) =>
-    structuredCb(async () => {
-      await initializeSession(await fetchData(sel))
-    })
+    launchSession(() => fetchData(sel))
 
   const launchFromSnap = (snap: JBrowseConfig) =>
-    structuredCb(async () => {
-      await initializeSession([snap])
-    })
+    launchSession(async () => [snap])
 
   return (
     <div className={classes.form}>
@@ -118,11 +106,7 @@ export default function LauncherPanel({
             launch={launchFromConfig}
           />
           <QuickstartPanel
-            launch={sel =>
-              structuredCb(async () => {
-                await initializeSession(await getQuickstarts(sel))
-              })
-            }
+            launch={sel => launchSession(() => getQuickstarts(sel))}
           />
         </>
       )}
