@@ -4,6 +4,7 @@ import {
   featurizeSA,
   getClip,
   getLengthSansClipping,
+  getTag,
 } from '../MismatchParser/index.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -37,7 +38,7 @@ export async function getSAFeatures({
   const { assemblyManager } = getSession(view)
   const cigar = feature.get('CIGAR') as string
   const origStrand = feature.get('strand')!
-  const SA = (feature.get('tags')?.SA as string) || ''
+  const SA = (getTag(feature, 'SA') as string | undefined) ?? ''
   const readName = feature.get('name')!
   const clipLengthAtStartOfRead = getClip(cigar, 1)
 

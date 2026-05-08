@@ -113,7 +113,7 @@ export function getClip(cigar: string, strand: number) {
 }
 
 export function getTag(feature: Feature, tag: string) {
-  return feature.get('tags')[tag]
+  return feature.get('tags')?.[tag]
 }
 
 // produces a list of "feature-like" object from parsing supplementary

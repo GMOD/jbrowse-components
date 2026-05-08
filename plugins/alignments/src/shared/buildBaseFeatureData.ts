@@ -40,7 +40,8 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
     start: feature.get('start'),
     end: feature.get('end'),
     flags: feature.get('flags') ?? 0,
-    mapq: feature.get('score') ?? feature.get('qual') ?? 60,
+    // SAM spec: MAPQ 255 indicates mapping quality is unavailable
+    mapq: feature.get('score') ?? 255,
     avgBaseQuality,
     insertSize: Math.abs(feature.get('template_length') ?? 400),
     pairOrientation: pairOrientationToNum(feature.get('pair_orientation')),

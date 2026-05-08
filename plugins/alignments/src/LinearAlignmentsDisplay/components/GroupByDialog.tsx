@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import {
@@ -18,6 +18,7 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+import useSWR from 'swr'
 
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util.ts'
@@ -138,39 +139,27 @@ const GroupByDialog = observer(function GroupByDialog(props: {
 }) {
   const { model, handleClose } = props
   const [tag, setGroupByTag] = useState('')
-  const [tagSet, setGroupByTagSet] = useState<string[]>()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<unknown>()
+  const [type, setType] = useState('')
 
   const validTag = TAG_REGEX.exec(tag)
   const isInvalid = tag.length === 2 && !validTag
   const debouncedTag = useDebounce(tag, 1000)
-  const [type, setType] = useState('')
+  const isValidTag = TAG_REGEX.test(debouncedTag)
+  const shouldFetch = type === 'tag' && isValidTag
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      const isValidTag = TAG_REGEX.test(debouncedTag)
-      if (type === 'tag' && isValidTag) {
-        try {
-          setError(undefined)
-          setLoading(true)
-          const vals = await getUniqueTags({
-            self: model,
-            tag: debouncedTag,
-            blocks: (getContainingView(model) as LinearGenomeViewModel)
-              .staticBlocks,
-          })
-          setGroupByTagSet(vals)
-        } catch (e) {
-          console.error(e)
-          setError(e)
-        } finally {
-          setLoading(false)
-        }
-      }
-    })()
-  }, [model, type, debouncedTag])
+  const {
+    data: tagSet,
+    error,
+    isLoading: loading,
+  } = useSWR(
+    shouldFetch ? ['getUniqueTags', model, debouncedTag] : null,
+    () =>
+      getUniqueTags({
+        self: model,
+        tag: debouncedTag,
+        blocks: (getContainingView(model) as LinearGenomeViewModel).staticBlocks,
+      }),
+  )
 
   return (
     <Dialog open onClose={handleClose} title="Group by">
@@ -183,13 +172,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           fullWidth
           value={type}
           onChange={event => {
-            const val = event.target.value
-            setType(val)
-            if (val !== 'tag') {
-              setGroupByTagSet(undefined)
-              setError(undefined)
-              setLoading(false)
-            }
+            setType(event.target.value)
           }}
           label="Group by..."
           select

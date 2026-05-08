@@ -130,6 +130,44 @@ describe('buildBaseFeatureData', () => {
     expect(data.avgBaseQuality).toBe(30)
   })
 
+  test('mapq comes from feature score', () => {
+    const feature = new SimpleFeature({
+      uniqueId: 'r-mapq',
+      refName: 'ctgA',
+      start: 0,
+      end: 10,
+      strand: 1,
+      flags: 0,
+      score: 37,
+    })
+    expect(buildBaseFeatureData(feature).mapq).toBe(37)
+  })
+
+  test('mapq defaults to 255 (SAM unavailable) when score is undefined', () => {
+    const feature = new SimpleFeature({
+      uniqueId: 'r-mapq-missing',
+      refName: 'ctgA',
+      start: 0,
+      end: 10,
+      strand: 1,
+      flags: 0,
+    })
+    expect(buildBaseFeatureData(feature).mapq).toBe(255)
+  })
+
+  test('mapq does not fall back to per-base qual field', () => {
+    const feature = new SimpleFeature({
+      uniqueId: 'r-mapq-no-qual-fallback',
+      refName: 'ctgA',
+      start: 0,
+      end: 10,
+      strand: 1,
+      flags: 0,
+      qual: '30 30 30',
+    })
+    expect(buildBaseFeatureData(feature).mapq).toBe(255)
+  })
+
   test('preserves all other FeatureData fields', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r9',

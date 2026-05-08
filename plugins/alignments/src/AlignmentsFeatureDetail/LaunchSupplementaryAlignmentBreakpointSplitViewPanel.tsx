@@ -1,9 +1,10 @@
-import { lazy, useEffect, useState } from 'react'
+import { lazy } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import { getAssemblyName } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
+import useSWR from 'swr'
 
 import { getSAFeatures } from './getSAFeatures.ts'
 
@@ -23,23 +24,10 @@ export default function LaunchBreakpointSplitViewPanel({
   feature: SimpleFeatureSerialized
 }) {
   const { view } = model
-  const [res, setRes] = useState<ReducedFeature[]>()
-  const [error, setError] = useState<unknown>()
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        const feats = await getSAFeatures({
-          view,
-          feature: new SimpleFeature(feature),
-        })
-        setRes(feats)
-      } catch (e) {
-        setError(e)
-        console.error(e)
-      }
-    })()
-  }, [feature, view])
+  const { data: res, error } = useSWR(
+    ['getSAFeatures', feature.uniqueId],
+    () => getSAFeatures({ view, feature: new SimpleFeature(feature) }),
+  )
 
   const ret: [ReducedFeature, ReducedFeature][] = []
   if (res) {

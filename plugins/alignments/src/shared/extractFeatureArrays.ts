@@ -72,7 +72,8 @@ export function extractFeatureArrays<T extends FeatureData>(
 
     nextPositions.push(feature.get('next_pos') ?? 0)
     nextRefs.push(feature.get('next_ref') ?? '')
-    suppAlignments.push(feature.get('tags')?.SA ?? feature.get('SA') ?? '')
+    const tags = feature.get('tags')
+    suppAlignments.push(tags?.SA ?? feature.get('SA') ?? '')
 
     if (isTagColorMode) {
       tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
