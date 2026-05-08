@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
-
 import { fetchSeq } from './fetchSeq.ts'
+import { useFetch } from './useFetch.ts'
 
 import type { AbstractSessionModel } from './index.ts'
 
@@ -25,70 +24,42 @@ export function useFeatureSequence({
   forceLoad: boolean
   shouldFetch?: boolean
 }) {
-  const [sequence, setSequence] = useState<
-    | {
-        seq: string
-        upstream: string
-        downstream: string
-      }
-    | { error: string }
-  >()
-  const [error, setError] = useState<unknown>()
-  const [loading, setLoading] = useState(false)
-
   const active = !!(session && shouldFetch && assemblyName)
 
-  useEffect(() => {
-    if (!session || !shouldFetch || !assemblyName) {
-      return
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        setLoading(true)
-        setError(undefined)
-
-        if (!forceLoad && end - start > BPLIMIT) {
-          setSequence({
-            error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
-          })
-          return
+  const { data: sequence, error, isLoading: loading } = useFetch(
+    active
+      ? [
+          'featureSequence',
+          assemblyName,
+          refName,
+          start,
+          end,
+          upDownBp,
+          forceLoad,
+        ]
+      : null,
+    async () => {
+      if (!forceLoad && end - start > BPLIMIT) {
+        return {
+          error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
         }
-
-        const b = start - upDownBp
-        const e = end + upDownBp
-
-        const [seq, upstream, downstream] = await Promise.all([
-          fetchSeq({ start, end, refName, assemblyName, session }),
-          fetchSeq({
-            start: Math.max(0, b),
-            end: start,
-            refName,
-            assemblyName,
-            session,
-          }),
-          fetchSeq({ start: end, end: e, refName, assemblyName, session }),
-        ] as const)
-
-        setSequence({ seq, upstream, downstream })
-      } catch (e) {
-        setError(e)
-        setSequence(undefined)
-      } finally {
-        setLoading(false)
       }
-    })()
-  }, [
-    session,
-    shouldFetch,
-    start,
-    end,
-    refName,
-    assemblyName,
-    upDownBp,
-    forceLoad,
-  ])
+      const b = start - upDownBp
+      const e = end + upDownBp
+      const [seq, upstream, downstream] = await Promise.all([
+        fetchSeq({ start, end, refName, assemblyName: assemblyName!, session: session! }),
+        fetchSeq({
+          start: Math.max(0, b),
+          end: start,
+          refName,
+          assemblyName: assemblyName!,
+          session: session!,
+        }),
+        fetchSeq({ start: end, end: e, refName, assemblyName: assemblyName!, session: session! }),
+      ] as const)
+      return { seq, upstream, downstream }
+    },
+  )
 
   return {
     sequence: active ? sequence : undefined,
