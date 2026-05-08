@@ -47,20 +47,22 @@ export async function getPhasedGenotypeMatrix({
 
   const rows: Record<string, number[]> = {}
   // Hoist per-source key resolution, max ploidy, and per-haplotype row-name
-  // strings out of the feature loop — all are constant per source.
+  // strings out of the feature loop — all are constant per source. Also keep
+  // direct rowArrays references parallel to per-haplotype slots so the inner
+  // loop can push without a dict lookup per cell.
   const resolved = sources.map(s => {
     const maxPloidy = sampleInfo[s.name]?.maxPloidy ?? 2
-    const rowNames: string[] = []
+    const rowArrays: number[][] = []
     for (let hp = 0; hp < maxPloidy; hp++) {
-      const rowName = `${s.name} HP${hp}`
-      rowNames.push(rowName)
-      rows[rowName] = []
+      const arr: number[] = []
+      rows[`${s.name} HP${hp}`] = arr
+      rowArrays.push(arr)
     }
     return {
       name: s.name,
       key: s.sampleName ?? s.name,
       maxPloidy,
-      rowNames,
+      rowArrays,
       rawIdx: -1,
     }
   })
@@ -93,14 +95,15 @@ export async function getPhasedGenotypeMatrix({
       for (const r of resolved) {
         const si = r.rawIdx
         const phased = si !== -1 && callGtPhased?.[si]
+        const arrs = r.rowArrays
         if (!phased) {
           for (let hp = 0; hp < r.maxPloidy; hp++) {
-            rows[r.rowNames[hp]!]!.push(-1)
+            arrs[hp]!.push(-1)
           }
         } else {
           for (let hp = 0; hp < r.maxPloidy; hp++) {
             const a = hp < gtPloidy ? callGt[si * gtPloidy + hp]! : -1
-            rows[r.rowNames[hp]!]!.push(a === -1 || a === -2 ? -1 : a)
+            arrs[hp]!.push(a === -1 || a === -2 ? -1 : a)
           }
         }
       }
@@ -108,16 +111,17 @@ export async function getPhasedGenotypeMatrix({
       const genotypes = feature.get('genotypes') as Record<string, string>
       for (const r of resolved) {
         const val = genotypes[r.key]!
+        const arrs = r.rowArrays
         if (val.includes('|')) {
           const alleles = val.split('|')
           for (let hp = 0; hp < r.maxPloidy; hp++) {
             const allele = alleles[hp]
             const value = allele === '.' || allele === undefined ? -1 : +allele
-            rows[r.rowNames[hp]!]!.push(value)
+            arrs[hp]!.push(value)
           }
         } else {
           for (let hp = 0; hp < r.maxPloidy; hp++) {
-            rows[r.rowNames[hp]!]!.push(-1)
+            arrs[hp]!.push(-1)
           }
         }
       }

@@ -61,13 +61,19 @@ export async function getGenotypeMatrix({
   // Hoist sample-key resolution out of the per-feature loop. Per (source ×
   // feature) the previous code recomputed `sampleName ?? name` and (in the
   // raw branch) `sampleIndexMap.get(...)`; both are constant per source.
+  // rowArrays parallels `resolved` so the inner per-feature loop pushes to
+  // a direct reference instead of doing a string-keyed dict lookup per cell.
+  // `rows` is only used for the final return shape (consumed by hclust).
   const resolved = sources.map(s => ({
     name: s.name,
     key: s.sampleName ?? s.name,
     rawIdx: -1,
   }))
+  const rowArrays: number[][] = []
   for (const r of resolved) {
-    rows[r.name] = []
+    const arr: number[] = []
+    rows[r.name] = arr
+    rowArrays.push(arr)
   }
 
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
@@ -115,8 +121,9 @@ export async function getGenotypeMatrix({
     const callGt = getRawCallGenotype(feature)
     if (callGt && raw) {
       const ploidy = feature.get('ploidy') as number
-      for (const r of resolved) {
-        rows[r.name]!.push(
+      for (let k = 0; k < resolved.length; k++) {
+        const r = resolved[k]!
+        rowArrays[k]!.push(
           r.rawIdx !== -1
             ? encodeGenotypeFromRaw(callGt, r.rawIdx, ploidy)
             : -1,
@@ -130,14 +137,14 @@ export async function getGenotypeMatrix({
         }
         i++
       })
-      for (let k = 0; k < resolved.length; k++) {
+      for (let k = 0; k < rowArrays.length; k++) {
         const idx = resolvedSampleIdx[k]!
-        rows[resolved[k]!.name]!.push(idx === -1 ? -1 : dosages[idx]!)
+        rowArrays[k]!.push(idx === -1 ? -1 : dosages[idx]!)
       }
     } else {
       const genotypes = feature.get('genotypes') as Record<string, string>
-      for (const r of resolved) {
-        rows[r.name]!.push(classifyGenotypeDosage(genotypes[r.key]!))
+      for (let k = 0; k < resolved.length; k++) {
+        rowArrays[k]!.push(classifyGenotypeDosage(genotypes[resolved[k]!.key]!))
       }
     }
     checkStopToken2(stopTokenCheck)
