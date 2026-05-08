@@ -33,7 +33,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import { autorun, observable } from 'mobx'
+import { observable } from 'mobx'
 
 import { buildLaidOutChainMap } from './computeChainLayout.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
@@ -66,7 +66,6 @@ import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
-import type { ArcsDataResult } from '../features/arcs/compute.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type {
@@ -253,7 +252,6 @@ export default function stateModelFactory(
         contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
         contextMenuRefName: undefined as string | undefined,
         rpcDataMap: observable.map<number, PileupDataResult>(),
-        arcsRpcDataMap: observable.map<number, ArcsDataResult>(),
         currentRangeY: [0, 600] as [number, number],
         highlightedChainIds: [] as string[],
         selectedChainIds: [] as string[],
@@ -483,6 +481,45 @@ export default function stateModelFactory(
             }
           }
           return max
+        },
+
+        // Arcs derived from rpcDataMap. MobX caches this; recomputes when
+        // rpcDataMap, loadedRegions, arcColorByType, drawInter, drawLongRange,
+        // showArcs, or height change.
+        get arcsRpcDataMap() {
+          if (!self.showArcs || self.rpcDataMap.size === 0) {
+            return new Map<number, ReturnType<typeof arcsToRegionResult>>()
+          }
+          const allRegionInfos = [...self.loadedRegions.entries()].map(
+            ([displayedRegionIndex, r]) => ({
+              refName: r.refName,
+              start: r.start,
+              end: r.end,
+              displayedRegionIndex,
+            }),
+          )
+          if (allRegionInfos.length === 0) {
+            return new Map<number, ReturnType<typeof arcsToRegionResult>>()
+          }
+          const { arcs, lines } = computeArcsFromPileupData(
+            self.rpcDataMap,
+            allRegionInfos,
+            {
+              colorByType: self.arcColorByType,
+              drawInter: self.drawInter,
+              drawLongRange: self.drawLongRange,
+            },
+          )
+          const out = new Map<number, ReturnType<typeof arcsToRegionResult>>()
+          for (const ri of allRegionInfos) {
+            if (self.rpcDataMap.has(ri.displayedRegionIndex)) {
+              out.set(
+                ri.displayedRegionIndex,
+                arcsToRegionResult(arcs, lines, ri.refName, self.height),
+              )
+            }
+          }
+          return out
         },
       }))
       // Views derived from colorBy, featureHeightSetting, featureSpacing above.
@@ -734,10 +771,10 @@ export default function stateModelFactory(
         // Fields that invalidate the fetched pileup/chain data. Worker-
         // bound (filterBy, colorBy, …) plus the one main-thread decision
         // field that selects between pileup and chain RPC
-        // (showLinkedReads). Arc-only fields live on arcsState and
-        // drive the arcs autorun below without refetching pileup. All
-        // non-tag sort changes are handled main-thread by the
-        // laidOutPileupMap getter.
+        // (showLinkedReads). Arc-only fields (arcColorByType, drawInter,
+        // drawLongRange) are NOT here — they are tracked by the
+        // arcsRpcDataMap computed getter and do not require a refetch.
+        // Non-tag sort changes are handled main-thread by laidOutPileupMap.
         rpcProps() {
           return {
             filterBy: self.filterBy,
@@ -916,7 +953,6 @@ export default function stateModelFactory(
 
           clearDisplaySpecificData() {
             self.rpcDataMap.clear()
-            self.arcsRpcDataMap.clear()
             self.currentRangeY = [0, 0]
             self.setRegionTooLarge(false)
           },
@@ -1354,53 +1390,6 @@ export default function stateModelFactory(
           return { displayedRegionIndex, result }
         }
 
-        function computeAndSetArcs(
-          regions: { region: Region; displayedRegionIndex: number }[],
-        ) {
-          const allRegionInfos: {
-            refName: string
-            start: number
-            end: number
-            displayedRegionIndex: number
-          }[] = []
-          const addedDisplayedRegionIndices = new Set<number>()
-          for (const [displayedRegionIndex, loaded] of self.loadedRegions) {
-            allRegionInfos.push({
-              refName: loaded.refName,
-              start: loaded.start,
-              end: loaded.end,
-              displayedRegionIndex,
-            })
-            addedDisplayedRegionIndices.add(displayedRegionIndex)
-          }
-          for (const { region, displayedRegionIndex } of regions) {
-            if (!addedDisplayedRegionIndices.has(displayedRegionIndex)) {
-              allRegionInfos.push({ ...region, displayedRegionIndex })
-            }
-          }
-          const { arcs, lines } = computeArcsFromPileupData(
-            self.rpcDataMap,
-            allRegionInfos,
-            {
-              colorByType: self.arcColorByType,
-              drawInter: self.drawInter,
-              drawLongRange: self.drawLongRange,
-            },
-          )
-          for (const ri of allRegionInfos) {
-            const data = self.rpcDataMap.get(ri.displayedRegionIndex)
-            if (!data) {
-              continue
-            }
-            self.arcsRpcDataMap.set(
-              ri.displayedRegionIndex,
-              arcsToRegionResult(arcs, lines, ri.refName, self.height),
-            )
-          }
-        }
-
-        const superAfterAttach = self.afterAttach
-
         return {
           fetchFeatures(region: Region, displayedRegionIndex = 0) {
             self.fetchNeeded([{ region, displayedRegionIndex }])
@@ -1452,47 +1441,12 @@ export default function stateModelFactory(
               for (const [displayedRegionIndex, data] of newDataMap) {
                 self.setRpcData(displayedRegionIndex, data)
               }
-              if (self.showArcs) {
-                computeAndSetArcs(needed)
-              }
               if (newTagColorsAdded && self.colorBy.type === 'tag') {
                 self.invalidateLoadedRegions()
               }
             })
           },
 
-          afterAttach() {
-            superAfterAttach()
-
-            // Recompute arcs when any arc-affecting setting changes (no
-            // RPC refetch needed — arcs are derived from existing pileup
-            // data). `computeAndSetArcs` reads arcColorByType /
-            // drawInter / drawLongRange internally, so those deps are
-            // tracked transitively — no manual `void` pokes needed.
-            // `delay: 50` batches rapid fires from per-region setRpcData
-            // calls during a single fetch into one recompute.
-            addDisposer(
-              self,
-              autorun(
-                () => {
-                  if (!self.showArcs || self.rpcDataMap.size === 0) {
-                    return
-                  }
-                  const view = getContainingView(self) as LGV
-                  computeAndSetArcs(
-                    view.visibleRegions.map(vr => ({
-                      region: vr,
-                      displayedRegionIndex: vr.displayedRegionIndex,
-                    })),
-                  )
-                },
-                {
-                  name: 'LinearAlignmentsDisplay:recomputeArcs',
-                  delay: 50,
-                },
-              ),
-            )
-          },
         }
       })
       .views(self => ({
