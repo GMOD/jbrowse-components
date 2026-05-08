@@ -84,12 +84,12 @@ const IntegerEditor = observer(function IntegerEditor({
 }: {
   slot: {
     name: string
-    value: string
+    value: number
     description: string
     set: (num: number) => void
   }
 }) {
-  const [val, setVal] = useState(slot.value)
+  const [val, setVal] = useState(String(slot.value))
   return (
     <ConfigurationTextField
       label={slot.name}
