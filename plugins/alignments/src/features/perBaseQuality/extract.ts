@@ -22,9 +22,7 @@ export function extractPerBaseQuality(
   out: PerBaseQualityEntry[],
 ) {
   const scores = feature.get('NUMERIC_QUAL') as Uint8Array | undefined
-  const cigarOps = feature.get('NUMERIC_CIGAR') as
-    | ArrayLike<number>
-    | undefined
+  const cigarOps = feature.get('NUMERIC_CIGAR') as ArrayLike<number> | undefined
   if (scores && scores.length > 0 && cigarOps && cigarOps.length > 0) {
     const start = feature.get('start')
     let soffset = 0

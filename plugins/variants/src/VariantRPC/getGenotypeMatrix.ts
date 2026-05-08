@@ -129,9 +129,7 @@ export async function getGenotypeMatrix({
       for (let k = 0; k < resolved.length; k++) {
         const r = resolved[k]!
         rowArrays[k]![f] =
-          r.rawIdx !== -1
-            ? encodeGenotypeFromRaw(callGt, r.rawIdx, ploidy)
-            : -1
+          r.rawIdx !== -1 ? encodeGenotypeFromRaw(callGt, r.rawIdx, ploidy) : -1
       }
     } else if (hasProcessGenotypes(feature) && samplesLen > 0) {
       let i = 0

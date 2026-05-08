@@ -1,6 +1,5 @@
-import { parseCigar2 } from '../../MismatchParser/index.ts'
-
 import { extractPerBaseQuality } from './extract.ts'
+import { parseCigar2 } from '../../MismatchParser/index.ts'
 
 import type { PerBaseQualityEntry } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'

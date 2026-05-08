@@ -65,32 +65,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
     opts?: BaseOptions,
   ) {
     const { vcf } = await this.configure(opts)
-
-    const index = (vcf as any).index as
-      | {
-          blocksForRange: (
-            refName: string,
-            start: number,
-            end: number,
-            opts?: { signal?: AbortSignal },
-          ) => Promise<{ fetchedSize: () => number }[]>
-        }
-      | undefined
-    if (!index) {
-      return super.getMultiRegionFeatureDensityStats(regions, opts)
-    }
-    let bytes = 0
-    for (const region of regions) {
-      const chunks = await index.blocksForRange(
-        region.refName,
-        region.start,
-        region.end,
-        opts,
-      )
-      for (const chunk of chunks) {
-        bytes += chunk.fetchedSize()
-      }
-    }
+    const bytes = await vcf.bytesForRegions(regions, opts)
     return { bytes, fetchSizeLimit: 1_000_000 }
   }
 

@@ -57,7 +57,9 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
       // Avoid revcom(fseq) by reading fseq from the back and complementing the
       // expected char-code on reverse strand.
       const baseCode = base.charCodeAt(0)
-      const targetCode = isRev ? (COMPLEMENT_CODE[baseCode] ?? baseCode) : baseCode
+      const targetCode = isRev
+        ? (COMPLEMENT_CODE[baseCode] ?? baseCode)
+        : baseCode
       const isN = base === 'N'
 
       // For reverse strand, pre-allocate array and fill backwards to avoid reverse()
