@@ -181,10 +181,34 @@ export function computeLayout(
 
   const readYs = new Uint16Array(numReads)
   const rows: number[][] = []
-  for (let i = 0; i < numReads; i++) {
-    const { start, end } = readExtent(data, i, expansions)
-    readYs[i] = placeRect(rows, start, end)
+
+  // When soft-clipping is on, sort by layout left edge (which includes soft-clip
+  // expansion) instead of genomic position. The placeRect algorithm requires
+  // left-to-right ordering for row hints to work correctly.
+  if (showSoftClipping) {
+    const readIndices: number[] = []
+    for (let i = 0; i < numReads; i++) {
+      readIndices.push(i)
+    }
+    readIndices.sort((a, b) => {
+      const aStart = readExtent(data, a, expansions).start
+      const bStart = readExtent(data, b, expansions).start
+      // Tiebreaker: genomic start position
+      return aStart !== bStart
+        ? aStart - bStart
+        : (data.readPositions[a * 2] ?? 0) - (data.readPositions[b * 2] ?? 0)
+    })
+    for (const i of readIndices) {
+      const { start, end } = readExtent(data, i, expansions)
+      readYs[i] = placeRect(rows, start, end)
+    }
+  } else {
+    for (let i = 0; i < numReads; i++) {
+      const { start, end } = readExtent(data, i, expansions)
+      readYs[i] = placeRect(rows, start, end)
+    }
   }
+
   return { readYs, maxY: rows.length }
 }
 
