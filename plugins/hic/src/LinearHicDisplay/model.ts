@@ -13,6 +13,7 @@ import {
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
+  computeRenderTransform,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { generateColorRamp } from './components/HicRenderer.ts'
@@ -161,7 +162,9 @@ export default function stateModelFactory(
         const view = getContainingView(self) as LinearGenomeViewModel
         const defaultHeight = view.totalWidthPx / 2
         const height = self.height
-        return self.mode === 'adjust' ? height / Math.max(height, defaultHeight) : 1
+        return self.mode === 'adjust'
+          ? height / Math.max(height, defaultHeight)
+          : 1
       },
     }))
     .views(self => ({
@@ -178,29 +181,18 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Combined { scale, viewOffsetX } that places data-x=0 (the apex of
-       * the rotated triangle = first visible block's start at fetch time)
-       * at its correct canvas-x in the current viewport. Survives
-       * stale-zoom and stale-pan by deriving from lastDrawnOffsetPx /
-       * lastDrawnBpPerPx — read by both the GPU render path and the
-       * mouse hit-test so they stay in sync.
-       *
-       * Apex was rendered at canvas-x = max(0, -lastDrawnOffsetPx) at
-       * fetch time. That maps to genome-pixel position
-       *   apexGenomePx = max(0, lastDrawnOffsetPx)   (in fetch px units)
-       * Convert to current px and offset by current view:
-       *   viewOffsetX = apexGenomePx * scale - view.offsetPx
+       * Forward transform { scale, viewOffsetX } shared by GPU render,
+       * mouse hit-test, and SVG export. See `computeRenderTransform` for
+       * the math.
        */
       get renderTransform() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        const last = self.lastDrawnOffsetPx ?? view.offsetPx
-        const lastBpPerPx = self.lastDrawnBpPerPx ?? view.bpPerPx
-        const scale = lastBpPerPx / view.bpPerPx
-        const apexGenomePx = Math.max(0, last)
-        return {
-          scale,
-          viewOffsetX: apexGenomePx * scale - view.offsetPx,
-        }
+        return computeRenderTransform({
+          lastDrawnOffsetPx: self.lastDrawnOffsetPx,
+          lastDrawnBpPerPx: self.lastDrawnBpPerPx,
+          viewOffsetPx: view.offsetPx,
+          viewBpPerPx: view.bpPerPx,
+        })
       },
     }))
     .views(self => ({
@@ -239,8 +231,12 @@ export default function stateModelFactory(
             break
           }
         }
-        const bin1 = Math.floor(ux / data.binWidth - data.regionCombinedOffsets[r1]!)
-        const bin2 = Math.floor(uy / data.binWidth - data.regionCombinedOffsets[r2]!)
+        const bin1 = Math.floor(
+          ux / data.binWidth - data.regionCombinedOffsets[r1]!,
+        )
+        const bin2 = Math.floor(
+          uy / data.binWidth - data.regionCombinedOffsets[r2]!,
+        )
         const idx = data.lookup[`${r1}|${r2}|${bin1}|${bin2}`]
         return idx !== undefined ? data.items[idx] : undefined
       },

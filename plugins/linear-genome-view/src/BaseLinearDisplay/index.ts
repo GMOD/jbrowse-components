@@ -42,6 +42,11 @@ export {
   type StaleViewportRescaleMixinType,
   default as StaleViewportRescaleMixin,
 } from './models/StaleViewportRescaleMixin.ts'
+export {
+  type RenderTransform,
+  type RenderTransformInputs,
+  computeRenderTransform,
+} from './models/renderTransform.ts'
 export type { FeatureLabelData } from './components/util.ts'
 export { drawCanvasImageData } from './util.ts'
 export { getDisplayStr } from './models/util.ts'

@@ -2,7 +2,10 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
-import { buildTextColors, drawSequenceBlocks } from './components/drawSequence.ts'
+import {
+  buildTextColors,
+  drawSequenceBlocks,
+} from './components/drawSequence.ts'
 import { buildColorPalette } from './components/sequenceGeometry.ts'
 
 import type { SequenceRegionData } from './model.ts'

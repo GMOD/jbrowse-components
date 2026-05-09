@@ -78,7 +78,9 @@ describe('Canvas2DHicRenderer', () => {
     })
     renderer.uploadColorRamp(makeColorRamp())
 
-    renderer.render(makeRenderState({ viewScale: 2, viewOffsetX: 100, yScalar: 0.5 }))
+    renderer.render(
+      makeRenderState({ viewScale: 2, viewOffsetX: 100, yScalar: 0.5 }),
+    )
 
     expect(ctx.save).toHaveBeenCalled()
     expect(ctx.translate).toHaveBeenCalledWith(100, 0)

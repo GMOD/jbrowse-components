@@ -20,7 +20,14 @@ export async function renderSvg(
 ) {
   const view = getContainingView(self) as LGV
   await when(() => self.rpcData != null || !!self.error || self.regionTooLarge)
-  const { rpcData, useLogScale, colorScheme, showLegend, yScalar, colorMaxScore } = self
+  const {
+    rpcData,
+    useLogScale,
+    colorScheme,
+    showLegend,
+    yScalar,
+    colorMaxScore,
+  } = self
   if (!rpcData || rpcData.numContacts === 0) {
     return null
   }

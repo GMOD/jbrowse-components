@@ -104,6 +104,7 @@ export {
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
   calculateSvgLegendWidth,
+  computeRenderTransform,
   createSubfeatureLabelMetadata,
   drawCanvasImageData,
   getDisplayStr,
@@ -114,6 +115,8 @@ export type {
   FetchContext,
   GlobalDataDisplayMixinType,
   MultiRegionDisplayMixinType,
+  RenderTransform,
+  RenderTransformInputs,
   StaleViewportRescaleMixinType,
 } from './BaseLinearDisplay/index.ts'
 export {

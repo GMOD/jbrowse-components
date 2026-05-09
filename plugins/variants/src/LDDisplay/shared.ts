@@ -14,6 +14,7 @@ import {
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
+  computeRenderTransform,
   getDisplayStr,
   migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -22,7 +23,7 @@ import { generateLDColorRamp } from './components/LDRenderer.ts'
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
-import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
+import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
 import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { LDBackend } from './components/ldBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -32,6 +33,20 @@ import type {
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+
+function upperBoundFloat32(arr: Float32Array, val: number) {
+  let lo = 0
+  let hi = arr.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (arr[mid]! <= val) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  return lo
+}
 
 /**
  * #stateModel SharedLDModel
@@ -266,29 +281,18 @@ export default function sharedModelFactory(
        */
       /**
        * #getter
-       * Combined { scale, viewOffsetX } that places the apex of the LD
-       * triangle at its correct viewport canvas-x. Survives stale-zoom and
-       * stale-pan by deriving from lastDrawnOffsetPx / lastDrawnBpPerPx.
-       * Read by the GPU render path, the mouse hit-test, and the
-       * matrix→genomic-position lines so they stay in sync.
-       *
-       * Apex was rendered at canvas-x = max(0, -lastDrawnOffsetPx) at fetch
-       * time → genome-pixel position max(0, lastDrawnOffsetPx) (in fetch px
-       * units). Convert to current px and offset by current view:
-       *   viewOffsetX = apexGenomePx * scale - view.offsetPx
-       *
-       * SYNC with plugins/hic LinearHicDisplay/model.ts `renderTransform`.
+       * Forward transform { scale, viewOffsetX } shared by GPU render,
+       * mouse hit-test, and the matrix→genomic-position SVG lines. See
+       * `computeRenderTransform` for the math.
        */
       get renderTransform() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        const last = self.lastDrawnOffsetPx ?? view.offsetPx
-        const lastBpPerPx = self.lastDrawnBpPerPx ?? view.bpPerPx
-        const scale = lastBpPerPx / view.bpPerPx
-        const apexGenomePx = Math.max(0, last)
-        return {
-          scale,
-          viewOffsetX: apexGenomePx * scale - view.offsetPx,
-        }
+        return computeRenderTransform({
+          lastDrawnOffsetPx: self.lastDrawnOffsetPx,
+          lastDrawnBpPerPx: self.lastDrawnBpPerPx,
+          viewOffsetPx: view.offsetPx,
+          viewBpPerPx: view.bpPerPx,
+        })
       },
       get renderState() {
         const view = getContainingView(self) as LinearGenomeViewModel
@@ -311,6 +315,70 @@ export default function sharedModelFactory(
           viewOffsetX,
           uniformW: data.uniformW,
         }
+      },
+
+      /**
+       * #getter
+       * Pixel height of the SVG zone above the canvas (variant labels +
+       * lines, or recombination scale). The hit-test subtracts this from
+       * mouseY before reversing the render transform.
+       */
+      get effectiveLineZoneHeight() {
+        if (self.useGenomicPositions) {
+          return self.showRecombination ? self.recombinationZoneHeight : 0
+        }
+        return self.lineZoneHeight
+      },
+
+      /**
+       * #method
+       * Inverse of `renderTransform` for the LD matrix: takes mouse coords
+       * (canvas-relative) and returns the LD cell under the cursor, or
+       * undefined. Mirrors plugins/hic's `hitTest` so both contact maps
+       * keep the forward and inverse transforms paired on the model.
+       */
+      hitTest(mouseX: number, mouseY: number): LDFlatbushItem | undefined {
+        const data = self.rpcData
+        if (!data) {
+          return undefined
+        }
+        if (mouseY < this.effectiveLineZoneHeight) {
+          return undefined
+        }
+        const { scale, viewOffsetX } = this.renderTransform
+        const dataX = (mouseX - viewOffsetX) / scale
+        const dataY = (mouseY - this.effectiveLineZoneHeight) / scale
+        // Reverse the rendering's `scale(1, yScalar) · rotate(-π/4)` then
+        // pick the cell. yScalar squashes Y, so divide it out before
+        // un-rotating.
+        const scaledY = dataY / data.yScalar
+        const x = (dataX - scaledY) / Math.SQRT2
+        const y = (dataX + scaledY) / Math.SQRT2
+        const { boundaries, ldValues } = data
+        const n = boundaries.length - 1
+        let hitI = -1
+        let hitJ = -1
+        if (self.useGenomicPositions) {
+          hitJ = upperBoundFloat32(boundaries, x) - 1
+          hitI = upperBoundFloat32(boundaries, y) - 1
+        } else {
+          const w = self.cellWidth
+          if (w > 0) {
+            hitJ = Math.floor(x / w)
+            hitI = Math.floor(y / w)
+          }
+        }
+        if (hitI > hitJ && hitI > 0 && hitJ >= 0 && hitI < n) {
+          const ldIdx = (hitI * (hitI - 1)) / 2 + hitJ
+          return {
+            i: hitI,
+            j: hitJ,
+            ldValue: ldValues[ldIdx]!,
+            snp1: self.snps[hitI]!,
+            snp2: self.snps[hitJ]!,
+          }
+        }
+        return undefined
       },
     }))
     .actions(self => ({

@@ -89,9 +89,8 @@ export default function JexlF(/* config?: any*/) {
   j.addFunction('alpha', (color: Colord, n: number) => color.alpha(n))
   j.addFunction('hsl', (color: Colord) => colord(color.toHsl()))
   j.addFunction('colorString', (color: Colord) => color.toHex())
-  j.addFunction(
-    'interpolate',
-    (count: number, scale: (n: number) => string) => scale(count),
+  j.addFunction('interpolate', (count: number, scale: (n: number) => string) =>
+    scale(count),
   )
 
   j.addBinaryOp('&', 15, (a: number, b: number) => a & b)

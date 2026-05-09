@@ -181,31 +181,6 @@ function Crosshairs({
   )
 }
 
-function upperBound(arr: Float32Array, val: number) {
-  let lo = 0
-  let hi = arr.length
-  while (lo < hi) {
-    const mid = (lo + hi) >>> 1
-    if (arr[mid]! <= val) {
-      lo = mid + 1
-    } else {
-      hi = mid
-    }
-  }
-  return lo
-}
-
-function screenToUnrotated(
-  screenX: number,
-  screenY: number,
-  yScalar: number,
-): { x: number; y: number } {
-  const scaledY = screenY / yScalar
-  const x = (screenX - scaledY) / SQRT2
-  const y = (screenX + scaledY) / SQRT2
-  return { x, y }
-}
-
 function RecombinationOverlay({
   model,
   width,
@@ -267,20 +242,14 @@ const LDCanvas = observer(function LDCanvas({
     fitToHeight,
     ldCanvasHeight,
     useGenomicPositions,
-    showRecombination,
-    recombinationZoneHeight,
     snps,
     signedLD,
     isLoading,
+    effectiveLineZoneHeight,
   } = model
 
   const triangleHeight = width / 2
   const canvasOnlyHeight = fitToHeight ? ldCanvasHeight : triangleHeight
-  const effectiveLineZoneHeight = useGenomicPositions
-    ? showRecombination
-      ? recombinationZoneHeight
-      : 0
-    : lineZoneHeight
   const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -303,9 +272,6 @@ const LDCanvas = observer(function LDCanvas({
       ? (hoveredItem.snp1.start - region.start) / bpPerPx
       : undefined
 
-  // Forward + inverse transform are derived from the same renderTransform
-  // getter (gap-aware, stale-zoom-safe). See plugins/hic for the matching
-  // pattern — both contact maps share the same coordinate model.
   const { scale: viewScale, viewOffsetX } = model.renderTransform
 
   useEffect(() => {
@@ -328,58 +294,16 @@ const LDCanvas = observer(function LDCanvas({
 
   const onMouseMove = (event: React.MouseEvent) => {
     const container = containerRef.current
-    const data = model.rpcData
-    if (!container || !data || isLoading) {
+    if (!container || isLoading) {
       setHoveredItem(undefined)
       setMousePosition(undefined)
       return
     }
-
     const rect = container.getBoundingClientRect()
-    const mouseX = event.clientX - rect.left
-    const mouseY = event.clientY - rect.top
-
     setMousePosition({ x: event.clientX, y: event.clientY })
-
-    if (mouseY < effectiveLineZoneHeight) {
-      setHoveredItem(undefined)
-      return
-    }
-
-    // Reverse the viewport transform, then un-rotate to get data-space coords
-    const dataScreenX = (mouseX - viewOffsetX) / viewScale
-    const dataScreenY = (mouseY - effectiveLineZoneHeight) / viewScale
-
-    const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar)
-
-    const { boundaries, ldValues } = data
-    const n = boundaries.length - 1
-
-    let hitI = -1
-    let hitJ = -1
-    if (useGenomicPositions) {
-      hitJ = upperBound(boundaries, x) - 1
-      hitI = upperBound(boundaries, y) - 1
-    } else {
-      const w = cellWidth
-      if (w > 0) {
-        hitJ = Math.floor(x / w)
-        hitI = Math.floor(y / w)
-      }
-    }
-
-    if (hitI > hitJ && hitI > 0 && hitJ >= 0 && hitI < n) {
-      const ldIdx = (hitI * (hitI - 1)) / 2 + hitJ
-      setHoveredItem({
-        i: hitI,
-        j: hitJ,
-        ldValue: ldValues[ldIdx]!,
-        snp1: snps[hitI]!,
-        snp2: snps[hitJ]!,
-      })
-    } else {
-      setHoveredItem(undefined)
-    }
+    setHoveredItem(
+      model.hitTest(event.clientX - rect.left, event.clientY - rect.top),
+    )
   }
 
   const onMouseLeave = () => {

@@ -231,8 +231,7 @@ export function drawSequenceBlocks(
     ctx.lineWidth = 1
   }
 
-  const forwardFrames: Frame[] =
-    showTranslation && showForward ? [3, 2, 1] : []
+  const forwardFrames: Frame[] = showTranslation && showForward ? [3, 2, 1] : []
   const reverseFrames: Frame[] =
     showTranslation && showReverse ? [-1, -2, -3] : []
 
