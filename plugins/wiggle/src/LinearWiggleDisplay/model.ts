@@ -169,10 +169,12 @@ export default function stateModelFactory(
         if (!domain) {
           return undefined
         }
+        const yTop = YSCALEBAR_LABEL_OFFSET
+        const yBottom = height - YSCALEBAR_LABEL_OFFSET - 1
         const scale = getScale({
           scaleType: self.scaleType,
           domain,
-          range: [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET],
+          range: [yBottom, yTop],
           inverted: false,
         })
         const minimalTicks = self.getConfWithOverride<boolean>('minimalTicks')
@@ -180,8 +182,8 @@ export default function stateModelFactory(
           height < 100 || minimalTicks ? (domain as number[]) : scale.ticks(4)
         return {
           ticks: values.map(v => ({ value: v, y: scale(v) })),
-          yTop: YSCALEBAR_LABEL_OFFSET,
-          yBottom: height - YSCALEBAR_LABEL_OFFSET,
+          yTop,
+          yBottom,
         }
       },
 
@@ -196,7 +198,7 @@ export default function stateModelFactory(
           self.scaleType,
           self.renderingType,
           view.trackWidthPx,
-          self.height,
+          self.height - 2 * YSCALEBAR_LABEL_OFFSET,
         )
       },
 

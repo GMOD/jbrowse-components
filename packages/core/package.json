@@ -97,7 +97,9 @@
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
+    "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
     "./ui/theme": "./src/ui/theme.ts",
+    "./ui/useGraphicsCapabilities": "./src/ui/useGraphicsCapabilities.ts",
     "./util": "./src/util/index.ts",
     "./util/aborting": "./src/util/aborting.ts",
     "./util/analytics": "./src/util/analytics.ts",
@@ -179,7 +181,7 @@
     "@mui/material": "^9.0.1",
     "@mui/system": "^9.0.1",
     "@mui/types": "^9.0.0",
-    "@mui/x-data-grid": "^9.0.4",
+    "@mui/x-data-grid": "^9.1.0",
     "base64-js": "^1.5.1",
     "canvas-sequencer-ts": "^3.1.3",
     "copy-to-clipboard": "^4.0.2",
@@ -196,7 +198,7 @@
     "react-draggable": "^4.5.0",
     "rxjs": "^7.8.2",
     "source-map-js": "^1.2.1",
-    "swr": "^2.3.0"
+    "swr": "^2.4.1"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -513,9 +515,17 @@
         "types": "./esm/ui/SnackbarModel.d.ts",
         "import": "./esm/ui/SnackbarModel.js"
       },
+      "./ui/getGraphicsCapabilities": {
+        "types": "./esm/ui/getGraphicsCapabilities.d.ts",
+        "import": "./esm/ui/getGraphicsCapabilities.js"
+      },
       "./ui/theme": {
         "types": "./esm/ui/theme.d.ts",
         "import": "./esm/ui/theme.js"
+      },
+      "./ui/useGraphicsCapabilities": {
+        "types": "./esm/ui/useGraphicsCapabilities.d.ts",
+        "import": "./esm/ui/useGraphicsCapabilities.js"
       },
       "./util": {
         "types": "./esm/util/index.d.ts",
@@ -953,6 +963,9 @@
         ],
         "ui/theme": [
           "esm/ui/theme.d.ts"
+        ],
+        "ui/useGraphicsCapabilities": [
+          "esm/ui/useGraphicsCapabilities.d.ts"
         ],
         "util": [
           "esm/util/index.d.ts"

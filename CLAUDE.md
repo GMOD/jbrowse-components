@@ -69,8 +69,19 @@ harder to get right across file boundaries. Small self-contained pieces of logic
 (mixins, pure utility functions) can be extracted, but the main model chain
 should stay in one file.
 
-## @jbrowse/mobx-state-tree fork
+## Other notes
 
-`@jbrowse/mobx-state-tree` is our internal fork of mobx-state-tree with nearly
-100% API and behavior compatibility — just refactored for ESM. Treat it like
-upstream MST for coding purposes; the fork handles compatibility under the hood.
+- `@jbrowse/mobx-state-tree` is our internal fork of mobx-state-tree with nearly
+  100% API and behavior compatibility — just refactored for ESM. Treat it like
+  upstream MST for coding purposes; the fork handles compatibility under the
+  hood.
+
+- When accessing mobx-state-tree models inside should consider autorun inside
+  useEffect instead of extensive dependency array listing of observable entries
+
+- Use npx tsgo instead of npx tsc for type checking
+
+- Do not use mobx reactions, use autorun instead: autorun implicitly tracks all
+  dependencies. reactions presumes we are 'smarter' than this autotracking
+  system which is generally false. Anything that truly doesnt need tracking can
+  use the mobx `untracked` function

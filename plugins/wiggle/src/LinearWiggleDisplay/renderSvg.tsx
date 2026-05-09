@@ -4,7 +4,7 @@ import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { YScaleBar } from '@jbrowse/wiggle-core'
+import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
@@ -63,19 +63,24 @@ export async function renderSvg(
   const props = model.gpuProps()
   const totalWidth = view.totalWidthPx
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
+  const drawHeight = height - 2 * YSCALEBAR_LABEL_OFFSET
   const state = {
     ...renderState,
     canvasWidth: totalWidth,
-    canvasHeight: height,
+    canvasHeight: drawHeight,
   }
-  const wiggleNode = paintLayer(totalWidth, height, opts, ctx => {
-    drawWiggleToCtx(
-      ctx,
-      { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
-      renderBlocks,
-      state,
-    )
-  })
+  const wiggleNode = (
+    <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
+      {paintLayer(totalWidth, drawHeight, opts, ctx => {
+        drawWiggleToCtx(
+          ctx,
+          { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
+          renderBlocks,
+          state,
+        )
+      })}
+    </g>
+  )
 
   if (opts?.rasterizeLayers) {
     return (

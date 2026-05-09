@@ -1,8 +1,19 @@
 import { ExternalLink } from '@jbrowse/core/ui'
+import {
+  availableRenderers,
+  preferredRenderer,
+} from '@jbrowse/core/ui/getGraphicsCapabilities'
+import { useGraphicsCapabilities } from '@jbrowse/core/ui/useGraphicsCapabilities'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
-import { Typography } from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -16,9 +27,11 @@ const useStyles = makeStyles()(theme => ({
   subtitle: {
     margin: theme.spacing(1),
   },
-  pluginList: {
-    margin: theme.spacing(1),
-    marginTop: theme.spacing(5),
+  accordions: {
+    marginTop: theme.spacing(3),
+  },
+  icon: {
+    color: theme.palette.tertiary.contrastText || '#fff',
   },
 }))
 
@@ -31,6 +44,7 @@ const AboutWidget = observer(function AboutWidget({
   const { version } = getSession(model)
   const { pluginManager } = getEnv(model)
   const { plugins } = pluginManager as PluginManager
+  const graphicsCapabilities = useGraphicsCapabilities()
   const corePlugins = new Set(
     plugins
       .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)
@@ -51,39 +65,76 @@ const AboutWidget = observer(function AboutWidget({
       </Typography>
       <br />
       <Typography align="center">
-        © 2019-2022 The Evolutionary Software Foundation
+        © 2019-2026 The Evolutionary Software Foundation
       </Typography>
-      <div className={classes.pluginList}>
-        <Typography>External plugins loaded</Typography>
-        <ul>
-          {plugins
-            .filter(plugin => !corePlugins.has(plugin.name))
-            .map(plugin => {
-              const { url, name, version = '' } = plugin
-              const text = `${name} ${version || ''}`
-              return (
-                <li key={plugin.name}>
-                  {plugin.url ? (
-                    <ExternalLink href={url}>{text}</ExternalLink>
-                  ) : (
-                    <Typography>{text}</Typography>
-                  )}
+
+      <div className={classes.accordions}>
+        {graphicsCapabilities ? (
+          <Accordion defaultExpanded>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon className={classes.icon} />}
+            >
+              <Typography>
+                Graphics:{' '}
+                <strong>{preferredRenderer(graphicsCapabilities)}</strong>
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <ul>
+                <li>
+                  Available:{' '}
+                  {availableRenderers(graphicsCapabilities).join(', ')}
                 </li>
-              )
-            })}
-        </ul>
-        <Typography>Core plugins loaded</Typography>
-        <ul>
-          {plugins
-            .filter(plugin => corePlugins.has(plugin.name))
-            .map(plugin => (
-              <li key={plugin.name}>
-                <Typography>
-                  {plugin.name} {plugin.version || ''}
-                </Typography>
-              </li>
-            ))}
-        </ul>
+              </ul>
+            </AccordionDetails>
+          </Accordion>
+        ) : null}
+
+        <Accordion defaultExpanded>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon className={classes.icon} />}
+          >
+            <Typography>External plugins loaded</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <ul>
+              {plugins
+                .filter(plugin => !corePlugins.has(plugin.name))
+                .map(plugin => {
+                  const { url, name, version = '' } = plugin
+                  const text = `${name} ${version || ''}`
+                  return (
+                    <li key={plugin.name}>
+                      {plugin.url ? (
+                        <ExternalLink href={url}>{text}</ExternalLink>
+                      ) : (
+                        <span>{text}</span>
+                      )}
+                    </li>
+                  )
+                })}
+            </ul>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion defaultExpanded>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon className={classes.icon} />}
+          >
+            <Typography>Core plugins loaded</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <ul>
+              {plugins
+                .filter(plugin => corePlugins.has(plugin.name))
+                .map(plugin => (
+                  <li key={plugin.name}>
+                    {plugin.name} {plugin.version || ''}
+                  </li>
+                ))}
+            </ul>
+          </AccordionDetails>
+        </Accordion>
       </div>
     </div>
   )

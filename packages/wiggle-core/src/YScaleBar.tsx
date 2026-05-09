@@ -22,19 +22,19 @@ const YScaleBar = observer(function YScaleBar({
   const tickLength = 6
   return (
     <g
-      fill="none"
       fontSize={10}
       fontFamily="sans-serif"
       textAnchor={isLeft ? 'end' : 'start'}
+      stroke={fg}
       strokeWidth={1}
     >
       <path
-        stroke={fg}
-        d={`M${k * tickLength},${yTop}H0.5V${yBottom}H${k * tickLength}`}
+        fill="none"
+        d={`M${k * tickLength} ${yTop + 0.5}H0.5V${yBottom + 0.5}H${k * tickLength}`}
       />
       {items.map(({ value, y, label }) => (
         <g key={value} transform={`translate(0,${y})`}>
-          <line stroke={fg} x2={k * tickLength} y1={0.5} y2={0.5} />
+          <line x2={k * tickLength} y1={0.5} y2={0.5} />
           <text
             stroke={bg}
             strokeWidth={2.5}

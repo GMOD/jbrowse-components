@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
-import { YScaleBar } from '@jbrowse/wiggle-core'
+import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import WiggleTooltip from './WiggleTooltip.tsx'
@@ -96,18 +96,16 @@ const WiggleComponent = observer(function WiggleComponent({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <div>
-        <canvas
-          ref={canvasRef}
-          style={{
-            width,
-            height,
-            position: 'absolute',
-            left: 0,
-            top: 0,
-          }}
-        />
-      </div>
+      <canvas
+        ref={canvasRef}
+        style={{
+          width,
+          height: height - 2 * YSCALEBAR_LABEL_OFFSET,
+          position: 'absolute',
+          left: 0,
+          top: YSCALEBAR_LABEL_OFFSET,
+        }}
+      />
       {model.isDensityMode && model.domain ? (
         <svg
           style={{
@@ -133,10 +131,10 @@ const WiggleComponent = observer(function WiggleComponent({
             left: scalebarLeft || 50,
             pointerEvents: 'none',
             height,
-            width: 50,
+            width: 70,
           }}
         >
-          <YScaleBar ticks={model.ticks} orientation="left" />
+          <YScaleBar ticks={model.ticks} orientation="right" />
         </svg>
       ) : null}
       {model.displayCrossHatches && model.ticks ? (

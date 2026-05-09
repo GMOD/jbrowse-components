@@ -13,6 +13,11 @@ import { SourceMapConsumer } from 'source-map-js'
 
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
+import {
+  availableRenderers,
+  preferredRenderer,
+} from './getGraphicsCapabilities.ts'
+import { useGraphicsCapabilities } from './useGraphicsCapabilities.ts'
 
 async function myfetchtext(uri: string) {
   const res = await fetch(uri)
@@ -99,6 +104,7 @@ export default function ErrorMessageStackTraceDialog({
   const [mappedStackTrace, setMappedStackTrace] = useState<string>()
   const [secondaryError, setSecondaryError] = useState<unknown>()
   const [clicked, setClicked] = useState(false)
+  const graphicsCapabilities = useGraphicsCapabilities()
   const errorText = error ? `${error}` : ''
   const stackTrace = stripMessage(getStackTrace(error), errorText)
 
@@ -122,6 +128,10 @@ export default function ErrorMessageStackTraceDialog({
     }
   }, [stackTrace])
 
+  const graphicsInfo = graphicsCapabilities
+    ? `Graphics: ${preferredRenderer(graphicsCapabilities)} (${availableRenderers(graphicsCapabilities).join(', ')})`
+    : ''
+
   // @ts-expect-error
   const version = window.JBrowseSession?.version
   const errorBoxText = [
@@ -133,6 +143,7 @@ export default function ErrorMessageStackTraceDialog({
       : errorText,
     mappedStackTrace || 'No stack trace available',
     version ? `JBrowse ${version}` : '',
+    graphicsInfo,
   ]
     .filter(Boolean)
     .join('\n')
