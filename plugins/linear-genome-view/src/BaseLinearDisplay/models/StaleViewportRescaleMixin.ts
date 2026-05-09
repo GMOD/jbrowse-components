@@ -2,14 +2,16 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * Records the viewport state (`offsetPx`, `bpPerPx`) at which the canvas
- * was last fully drawn. Consumers use `viewportTransform(view)` to compute
- * the CSS transform that keeps the stale canvas aligned with the live
- * viewport while a fresh fetch is in flight — pan-during-fetch slides the
- * old pixels rather than blanking, zoom-during-fetch scales them.
+ * was last fully drawn. Consumers (HiC, LD — single-global-RPC-result
+ * displays) build a `renderTransform` getter on top of these fields to
+ * keep stale pixels aligned with the live viewport during pan-during-fetch
+ * and zoom-during-fetch.
  *
- * Composed by displays that hold a single global RPC result (HiC, LD)
- * rather than per-region buffers, since per-region displays handle this
- * via the GPU shader's per-region uniforms.
+ * The transform's formula is display-specific because it depends on what
+ * data-x = 0 represents in the worker output — see `plugins/hic` and
+ * `plugins/variants/LDDisplay` for the canonical
+ *   `viewOffsetX = max(0, lastDrawnOffsetPx) * scale - view.offsetPx`
+ * pattern (handles negative offsetPx when scrolled left of genome start).
  */
 export default function StaleViewportRescaleMixin() {
   return types
@@ -22,21 +24,6 @@ export default function StaleViewportRescaleMixin() {
       setLastDrawnViewport(offsetPx: number, bpPerPx: number) {
         self.lastDrawnOffsetPx = offsetPx
         self.lastDrawnBpPerPx = bpPerPx
-      },
-    }))
-    .views(self => ({
-      viewportTransform(view: { bpPerPx: number; offsetPx: number }) {
-        if (
-          self.lastDrawnBpPerPx === undefined ||
-          self.lastDrawnOffsetPx === undefined
-        ) {
-          return { scale: 1, translateX: 0 }
-        }
-        const scale = self.lastDrawnBpPerPx / view.bpPerPx
-        return {
-          scale,
-          translateX: self.lastDrawnOffsetPx * scale - view.offsetPx,
-        }
       },
     }))
 }

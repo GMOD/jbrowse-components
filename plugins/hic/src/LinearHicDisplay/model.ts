@@ -120,21 +120,6 @@ export default function stateModelFactory(
       get showLegend(): boolean | undefined {
         return self.getOverride<boolean>('showLegend')
       },
-      get items(): HicContactItem[] {
-        return self.rpcData?.items ?? []
-      },
-      get hoverLookup(): Record<string, number> | undefined {
-        return self.rpcData?.lookup
-      },
-      get regionPixelStarts(): number[] | undefined {
-        return self.rpcData?.regionPixelStarts
-      },
-      get regionCombinedOffsets(): number[] | undefined {
-        return self.rpcData?.regionCombinedOffsets
-      },
-      get binWidth(): number | undefined {
-        return self.rpcData?.binWidth
-      },
       get colorMaxScore() {
         const data = self.rpcData
         if (!data) {
@@ -216,6 +201,48 @@ export default function stateModelFactory(
           scale,
           viewOffsetX: apexGenomePx * scale - view.offsetPx,
         }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Inverse of the render transform: takes mouse coords (canvas-relative)
+       * and returns the contact bin under the cursor, or undefined. The
+       * forward transform lives in `renderTransform`; this is its inverse so
+       * hit-testing always matches what was drawn.
+       */
+      hitTest(mouseX: number, mouseY: number): HicContactItem | undefined {
+        const data = self.rpcData
+        if (!data || data.items.length === 0) {
+          return undefined
+        }
+        const { scale, viewOffsetX } = self.renderTransform
+        // Reverse viewport transform, then un-rotate to data-space.
+        const dataX = (mouseX - viewOffsetX) / scale
+        const dataY = mouseY / scale / self.yScalar
+        const ux = (dataX - dataY) / Math.SQRT2
+        const uy = (dataX + dataY) / Math.SQRT2
+        // Locate region pair via the cumulative pixel-start array, then
+        // invert positions[i] = (bin + regionCombinedOffsets[r]) * binWidth.
+        const starts = data.regionPixelStarts
+        let r1 = 0
+        let r2 = 0
+        for (let i = starts.length - 2; i >= 0; i--) {
+          if (ux >= starts[i]!) {
+            r1 = i
+            break
+          }
+        }
+        for (let i = starts.length - 2; i >= 0; i--) {
+          if (uy >= starts[i]!) {
+            r2 = i
+            break
+          }
+        }
+        const bin1 = Math.floor(ux / data.binWidth - data.regionCombinedOffsets[r1]!)
+        const bin2 = Math.floor(uy / data.binWidth - data.regionCombinedOffsets[r2]!)
+        const idx = data.lookup[`${r1}|${r2}|${bin1}|${bin2}`]
+        return idx !== undefined ? data.items[idx] : undefined
       },
     }))
     .views(self => ({

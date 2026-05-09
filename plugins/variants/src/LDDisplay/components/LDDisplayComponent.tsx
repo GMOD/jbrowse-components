@@ -303,9 +303,10 @@ const LDCanvas = observer(function LDCanvas({
       ? (hoveredItem.snp1.start - region.start) / bpPerPx
       : undefined
 
-  // Compute view transform for smooth zoom/scroll
-  const { scale: viewScale, translateX: viewOffsetX } =
-    model.viewportTransform(view)
+  // Forward + inverse transform are derived from the same renderTransform
+  // getter (gap-aware, stale-zoom-safe). See plugins/hic for the matching
+  // pattern — both contact maps share the same coordinate model.
+  const { scale: viewScale, viewOffsetX } = model.renderTransform
 
   useEffect(() => {
     if (
@@ -313,10 +314,9 @@ const LDCanvas = observer(function LDCanvas({
       genomicX2 !== undefined &&
       model.showVerticalGuides
     ) {
-      const left = Math.max(0, -view.offsetPx)
       view.setVolatileGuides([
-        { xPos: genomicX1 + viewOffsetX + left },
-        { xPos: genomicX2 + viewOffsetX + left },
+        { xPos: genomicX1 + viewOffsetX },
+        { xPos: genomicX2 + viewOffsetX },
       ])
     } else {
       view.setVolatileGuides([])
@@ -507,14 +507,10 @@ const LDDisplayContent = observer(function LDDisplayContent({
     )
   }
 
-  // Both LD and Hi-C are rotated-triangle contact maps with a single global
-  // RPC result. plugins/hic now folds this gap into `viewOffsetX` inside the
-  // renderer (the CSS-wrapper approach jittered during smooth pan). Migrating
-  // LD the same way is the obvious follow-up; for now the wrapper-div trick
-  // is preserved here.
-  const left = Math.max(0, -view.offsetPx)
+  // Gap shift is now folded into viewOffsetX inside the renderer (matches
+  // plugins/hic). Wrapper div stays at left:0 — full viewport width.
   return (
-    <div style={{ position: 'relative', width, height, left }}>
+    <div style={{ position: 'relative', width, height }}>
       {showLDTriangle ? <LDCanvas model={model} /> : null}
     </div>
   )

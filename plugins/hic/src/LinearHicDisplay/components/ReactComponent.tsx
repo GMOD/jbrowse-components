@@ -18,8 +18,6 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-const SQRT2 = Math.SQRT2
-
 function HicTooltip({
   item,
   x,
@@ -68,29 +66,6 @@ function Crosshairs({
   )
 }
 
-function screenToUnrotated(
-  screenX: number,
-  screenY: number,
-  yScalar: number,
-) {
-  const scaledY = screenY / yScalar
-  const x = (screenX - scaledY) / SQRT2
-  const y = (screenX + scaledY) / SQRT2
-  return { x, y }
-}
-
-// Walk the cumulative pixel-start array (length regions+1) to find which
-// region a coord falls into. Linear scan — region count is small (typically
-// 1-5).
-function findRegionIdx(coord: number, pixelStarts: number[]) {
-  for (let i = pixelStarts.length - 2; i >= 0; i--) {
-    if (coord >= pixelStarts[i]!) {
-      return i
-    }
-  }
-  return 0
-}
-
 const HicCanvas = observer(function HicCanvas({
   model,
 }: {
@@ -98,16 +73,7 @@ const HicCanvas = observer(function HicCanvas({
 }) {
   const view = getContainingView(model) as LGV
   const width = view.totalWidthPx
-  const {
-    height,
-    rpcData,
-    items,
-    hoverLookup,
-    regionPixelStarts,
-    regionCombinedOffsets,
-    binWidth,
-    yScalar,
-  } = model
+  const { height, rpcData, yScalar } = model
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<HicContactItem>()
@@ -122,47 +88,16 @@ const HicCanvas = observer(function HicCanvas({
 
   const { canvasRef, error, retry } = useGpuModelLifecycle(HicRenderer, model)
 
-  // Hover hit-test inverts the same transform the renderer used, so it
-  // reads the model's renderTransform getter (single source of truth shared
-  // with renderState).
-  const { scale: viewScale, viewOffsetX } = model.renderTransform
-
   const onMouseMove = (event: React.MouseEvent) => {
-    if (
-      !containerRef.current ||
-      !hoverLookup ||
-      !regionPixelStarts ||
-      !regionCombinedOffsets ||
-      binWidth === undefined ||
-      !items.length
-    ) {
-      setHoveredItem(undefined)
-      setMousePosition(undefined)
+    if (!containerRef.current) {
       return
     }
-
     const rect = containerRef.current.getBoundingClientRect()
     const mouseX = event.clientX - rect.left
     const mouseY = event.clientY - rect.top
-
     setMousePosition({ x: event.clientX, y: event.clientY })
     setLocalMousePos({ x: mouseX, y: mouseY })
-
-    const dataScreenX = (mouseX - viewOffsetX) / viewScale
-    const dataScreenY = mouseY / viewScale
-    const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar)
-
-    // x,y are in unrotated pixel coords. Each contact rect is at
-    //   ((bin1 + regionCombinedOffsets[r1]) * binWidth,
-    //    (bin2 + regionCombinedOffsets[r2]) * binWidth)
-    // and is binWidth × binWidth in size. Find the region pair from
-    // regionPixelStarts, then invert the position formula.
-    const r1 = findRegionIdx(x, regionPixelStarts)
-    const r2 = findRegionIdx(y, regionPixelStarts)
-    const bin1 = Math.floor(x / binWidth - regionCombinedOffsets[r1]!)
-    const bin2 = Math.floor(y / binWidth - regionCombinedOffsets[r2]!)
-    const idx = hoverLookup[`${r1}|${r2}|${bin1}|${bin2}`]
-    setHoveredItem(idx !== undefined ? items[idx] : undefined)
+    setHoveredItem(model.hitTest(mouseX, mouseY))
   }
 
   const onMouseLeave = () => {

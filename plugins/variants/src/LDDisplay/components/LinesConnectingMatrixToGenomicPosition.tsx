@@ -25,24 +25,19 @@ const useStyles = makeStyles()({
   },
 })
 
+// SNP position in viewport-canvas-x: bpToPx returns the absolute genome
+// pixel, subtract view.offsetPx to get viewport-relative.
 function getGenomicX(
   view: LinearGenomeViewModel,
   assembly: { getCanonicalRefName2: (refName: string) => string },
   snp: { refName: string; start: number },
-  offsetAdj: number,
 ) {
-  return (
-    (view.bpToPx({
+  const abs =
+    view.bpToPx({
       refName: assembly.getCanonicalRefName2(snp.refName),
       coord: snp.start,
-    })?.offsetPx ?? 0) - offsetAdj
-  )
-}
-
-function getViewTransform(model: SharedLDModel, view: LinearGenomeViewModel) {
-  const { scale: viewScale, translateX: viewOffsetX } =
-    model.viewportTransform(view)
-  return { viewScale, viewOffsetX }
+    })?.offsetPx ?? 0
+  return abs - view.offsetPx
 }
 
 function getMatrixX(
@@ -72,12 +67,11 @@ const AllLines = observer(function AllLines({
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
   const { lineZoneHeight, snps, tickHeight } = model
-  const { offsetPx, assemblyNames, dynamicBlocks } = view
+  const { assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
   const blockWidth = dynamicBlocks.totalWidthPxWithoutBorders
   const n = snps.length
-  const offsetAdj = Math.max(0, offsetPx)
-  const { viewScale, viewOffsetX } = getViewTransform(model, view)
+  const { scale: viewScale, viewOffsetX } = model.renderTransform
 
   const pathD = useMemo(() => {
     if (!assembly || n === 0) {
@@ -85,7 +79,7 @@ const AllLines = observer(function AllLines({
     }
     const parts: string[] = []
     for (let i = 0; i < n; i++) {
-      const gx = getGenomicX(view, assembly, snps[i]!, offsetAdj)
+      const gx = getGenomicX(view, assembly, snps[i]!)
       const mx = getMatrixX(i, blockWidth, n, viewScale, viewOffsetX)
       parts.push(
         `M${mx} ${lineZoneHeight}L${gx} ${tickHeight}`,
@@ -98,7 +92,6 @@ const AllLines = observer(function AllLines({
     n,
     snps,
     view,
-    offsetAdj,
     blockWidth,
     lineZoneHeight,
     tickHeight,
@@ -126,7 +119,7 @@ const AllLines = observer(function AllLines({
       let found = -1
       let foundGx = 0
       for (let i = 0; i < n; i++) {
-        const gx = getGenomicX(view, assembly, snps[i]!, offsetAdj)
+        const gx = getGenomicX(view, assembly, snps[i]!)
         const mx = getMatrixX(i, blockWidth, n, viewScale, viewOffsetX)
         const d1 = pointToSegmentDist(
           px,
@@ -155,7 +148,6 @@ const AllLines = observer(function AllLines({
       n,
       snps,
       view,
-      offsetAdj,
       blockWidth,
       viewScale,
       viewOffsetX,
@@ -215,7 +207,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
       return null
     }
 
-    const { viewScale, viewOffsetX } = getViewTransform(model, view)
+    const { scale: viewScale, viewOffsetX } = model.renderTransform
     const hMx = hovered
       ? getMatrixX(hovered.idx, blockWidth, n, viewScale, viewOffsetX)
       : 0

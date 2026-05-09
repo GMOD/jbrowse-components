@@ -264,20 +264,39 @@ export default function sharedModelFactory(
        * autorun — every change to any tracked observable (view.bpPerPx,
        * view.offsetPx, model.fitToHeight, rpcData contents, …) re-fires it.
        */
+      /**
+       * #getter
+       * Combined { scale, viewOffsetX } that places the apex of the LD
+       * triangle at its correct viewport canvas-x. Survives stale-zoom and
+       * stale-pan by deriving from lastDrawnOffsetPx / lastDrawnBpPerPx.
+       * Read by the GPU render path, the mouse hit-test, and the
+       * matrix→genomic-position lines so they stay in sync.
+       *
+       * Apex was rendered at canvas-x = max(0, -lastDrawnOffsetPx) at fetch
+       * time → genome-pixel position max(0, lastDrawnOffsetPx) (in fetch px
+       * units). Convert to current px and offset by current view:
+       *   viewOffsetX = apexGenomePx * scale - view.offsetPx
+       *
+       * SYNC with plugins/hic LinearHicDisplay/model.ts `renderTransform`.
+       */
+      get renderTransform() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const last = self.lastDrawnOffsetPx ?? view.offsetPx
+        const lastBpPerPx = self.lastDrawnBpPerPx ?? view.bpPerPx
+        const scale = lastBpPerPx / view.bpPerPx
+        const apexGenomePx = Math.max(0, last)
+        return {
+          scale,
+          viewOffsetX: apexGenomePx * scale - view.offsetPx,
+        }
+      },
       get renderState() {
         const view = getContainingView(self) as LinearGenomeViewModel
         const data = self.rpcData
         if (!data) {
           return undefined
         }
-        const scale =
-          self.lastDrawnBpPerPx !== undefined
-            ? self.lastDrawnBpPerPx / view.bpPerPx
-            : 1
-        const offsetX =
-          self.lastDrawnOffsetPx !== undefined
-            ? self.lastDrawnOffsetPx * scale - view.offsetPx
-            : 0
+        const { scale, viewOffsetX } = this.renderTransform
         const canvasWidth = Math.round(
           view.dynamicBlocks.totalWidthPxWithoutBorders,
         )
@@ -289,7 +308,7 @@ export default function sharedModelFactory(
             : canvasWidth / 2,
           signedLD: data.signedLD,
           viewScale: scale,
-          viewOffsetX: offsetX,
+          viewOffsetX,
           uniformW: data.uniformW,
         }
       },
