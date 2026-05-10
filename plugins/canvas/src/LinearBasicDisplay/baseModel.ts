@@ -710,8 +710,7 @@ export default function baseStateModelFactory(
           const featureIdToFetch = subfeatureInfo
             ? subfeatureInfo.parentFeatureId
             : featureInfo.featureId
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
+          void (async () => {
             const parentFeature = await fetchCanvasFeatureDetails(
               getSession(self),
               getRpcSessionId(self),
@@ -767,8 +766,7 @@ export default function baseStateModelFactory(
       }))
       .actions(self => ({
         selectFullFeature(featureId: string, displayedRegionIndex: number) {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
+          void (async () => {
             const feature = await self.fetchFullFeature(
               featureId,
               displayedRegionIndex,
@@ -886,8 +884,7 @@ export default function baseStateModelFactory(
                 view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
               ),
             )
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            self.fetchRegions(needed, async (ctx: FetchContext) => {
+            void self.fetchRegions(needed, async (ctx: FetchContext) => {
               const promises = needed.map(({ region, displayedRegionIndex }) =>
                 fetchFeaturesForRegion(
                   region,
@@ -999,7 +996,6 @@ export default function baseStateModelFactory(
             item: { featureId, startBp, endBp },
             displayedRegionIndex,
           } = info
-          const region = self.loadedRegions.get(displayedRegionIndex)
           return [
             {
               label: 'Open feature details',
@@ -1012,6 +1008,7 @@ export default function baseStateModelFactory(
               label: 'Zoom to feature',
               icon: CenterFocusStrongIcon,
               onClick: () => {
+                const region = self.loadedRegions.get(displayedRegionIndex)
                 if (region) {
                   const view = getContainingView(self) as LGV
                   view.navTo({
@@ -1026,18 +1023,11 @@ export default function baseStateModelFactory(
               label: 'Copy info to clipboard',
               icon: ContentCopyIcon,
               onClick: () => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                ;(async () => {
-                  if (!region) {
-                    return
-                  }
+                void (async () => {
                   const session = getSession(self)
-                  const fullFeature = await fetchCanvasFeatureDetails(
-                    session,
-                    getRpcSessionId(self),
-                    self.adapterConfig,
+                  const fullFeature = await self.fetchFullFeature(
                     featureId,
-                    region,
+                    displayedRegionIndex,
                   )
                   if (!fullFeature) {
                     return
