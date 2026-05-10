@@ -305,7 +305,7 @@ upload: b => {
 }
 ```
 
-Key MobX fact (verified in mobx@6.15.0 source): `ObservableMap.get(existingKey)`
+Key MobX fact: `ObservableMap.get(existingKey)`
 tracks `hasMap_.get(key)` (per-key existence atom), not `keysAtom_`. Adding a
 new key fires `keysAtom_` (waking the key-manager only) and that new key's
 `hasMap_` entry. Existing per-key autoruns are **not** re-fired. Net result:

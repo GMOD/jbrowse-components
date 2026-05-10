@@ -43,45 +43,38 @@ shader-uniform writes is a bug.
 ## Large file generation (tools/gfa-to-tabix)
 
 The `/tmp` partition is small (16 GB, often >50% full). Set `TMPDIR=~/tmpdir`
-before any `gfa-to-tabix` run that writes intermediate files (vg snarls writes
-to TMPDIR). Clean stale `/tmp/hprc-*`, `/tmp/volvox*`, etc. before long runs.
+before any `gfa-to-tabix` run. Clean stale `/tmp/hprc-*`, `/tmp/volvox*`, etc.
+before long runs.
 
 ## rpcProps vs gpuProps — what stays in the worker
 
-The upload autorun (`installGpuDisplay`) fires for **every** `rpcDataMap` change
-and re-runs `buildSourceRenderData` / `buildMultiSourceRenderData` for **all**
-cached regions. Moving an expensive per-feature computation from the worker into
-that path multiplies the cost by the number of cached regions and fires it on
-every region arrival, not just on settings changes.
+`installGpuDisplay` fires for **every** `rpcDataMap` change and re-runs
+`buildSourceRenderData` / `buildMultiSourceRenderData` for all cached regions.
+Moving expensive per-feature computation into that path multiplies cost by the
+number of cached regions.
 
-**Rule:** Only move worker computation into `gpuProps` (main-thread re-encode)
-when the setting changes frequently (e.g., color, scale type) **and** the
-per-feature work is cheap or can be expressed as a shader uniform. For settings
-that rarely change but feed expensive per-feature loops (e.g., `bicolorPivot`),
-keep them in `rpcProps` and accept the occasional refetch. See
+Only move worker computation into `gpuProps` when the setting changes frequently
+(e.g., color, scale type) **and** the per-feature work is cheap or expressible
+as a shader uniform. For settings that rarely change but feed expensive loops
+(e.g., `bicolorPivot`), keep in `rpcProps`. See
 `agent-docs/architecture-decision-records/adr-016-bicolorpivot-stays-in-worker.md`.
 
 ## MST model files
 
 **Do not split large model files (e.g. `LinearGenomeView/model.ts`) across
-multiple files.** MST's `.views()`/`.actions()` chaining makes type inference
-harder to get right across file boundaries. Small self-contained pieces of logic
-(mixins, pure utility functions) can be extracted, but the main model chain
-should stay in one file.
+multiple files.** Type inference across `.views()`/`.actions()` chains is harder
+to get right across file boundaries. Small self-contained logic (mixins, pure
+utilities) can be extracted, but the main model chain should stay in one file.
 
 ## Other notes
 
-- `@jbrowse/mobx-state-tree` is our internal fork of mobx-state-tree with nearly
-  100% API and behavior compatibility — just refactored for ESM. Treat it like
-  upstream MST for coding purposes; the fork handles compatibility under the
-  hood.
+- `@jbrowse/mobx-state-tree` is our internal ESM fork of MST with near-identical
+  API; treat it like upstream MST.
 
-- When accessing mobx-state-tree models inside should consider autorun inside
-  useEffect instead of extensive dependency array listing of observable entries
+- In React components, use `autorun` inside `useEffect` to track MST observables
+  rather than listing them in the dependency array.
 
-- Use npx tsgo instead of npx tsc for type checking
+- Use `npx tsgo` instead of `npx tsc` for type checking.
 
-- Do not use mobx reactions, use autorun instead: autorun implicitly tracks all
-  dependencies. reactions presumes we are 'smarter' than this autotracking
-  system which is generally false. Anything that truly doesnt need tracking can
-  use the mobx `untracked` function
+- Use `autorun` instead of `reaction`: autorun implicitly tracks all
+  dependencies. For truly untracked code, use the mobx `untracked` function.
