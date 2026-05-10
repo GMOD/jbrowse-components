@@ -59,7 +59,10 @@ export function getWeightedMeans(ret: PAFRecord[]) {
   const scoreMap: Record<string, { valueSum: number; weightSum: number }> = {}
   for (const entry of ret) {
     const key = `${entry.qname}-${entry.tname}`
-    const qual = entry.extra.mappingQual ?? 1
+    // MAPQ 255 is the PAF spec sentinel for "not computed" — treat as missing,
+    // not as a high-quality signal (which would massively upweight such records).
+    const mapq = entry.extra.mappingQual
+    const qual = mapq !== undefined && mapq !== 255 ? mapq : 1
     const len = entry.extra.blockLen ?? 1
     const existing = scoreMap[key]
     if (existing) {
@@ -86,7 +89,9 @@ export function getWeightedMeans(ret: PAFRecord[]) {
   for (const entry of ret) {
     const key = `${entry.qname}-${entry.tname}`
     const score = meanScoreMap[key]!
-    entry.extra.meanScore = range > 0 ? (score - min) / range : 1
+    // When all pairs have identical quality (range === 0), use 0.5 rather than
+    // 1 so the encoding reads as "neutral" instead of "maximum quality."
+    entry.extra.meanScore = range > 0 ? (score - min) / range : 0.5
   }
 
   return ret

@@ -123,3 +123,7 @@ within the same BigWig tier no longer refetch.
 mapping is stable and deterministic. If zoom level is ambiguous at boundary
 bpPerPx values, strict equality is still safer.
 
+
+## Audit plugins/canvas data flow
+
+two bugs and doc gap identified
