@@ -416,13 +416,14 @@ export default function baseStateModelFactory(
           return self.densityTooLarge ? 'Too many features' : ''
         },
       }))
-      // Laid-out data derived from the raw per-region fetch results. Mobx
+      // Laid-out data derived from the raw per-region fetch results. MobX
       // caches this — it only recomputes when any tracked input changes (raw
-      // data, bpPerPx, label visibility). Every consumer (hit test, GPU
-      // upload, React render) reads this getter and sees the same cached map
-      // until an input moves. Returns empty when too-large so the GPU upload
-      // autorun has nothing to push — banner UI hides the canvas, this
-      // prevents any stale flash.
+      // data, coarseBpPerPx, label visibility). coarseBpPerPx is debounced
+      // 500ms so Y-row packing doesn't recompute on every animation frame
+      // during smooth zoom. Every consumer (hit test, GPU upload, React
+      // render) reads this getter and sees the same cached map until an
+      // input moves. Returns empty when too-large so the GPU upload autorun
+      // has nothing to push — banner UI hides the canvas, preventing stale flash.
       .views(self => ({
         get laidOutDataMap(): Map<number, FeatureDataResult> {
           if (self.regionTooLarge) {
@@ -545,6 +546,13 @@ export default function baseStateModelFactory(
           for (const key of self.densityStatsPerRegion.keys()) {
             if (!visibleDisplayedRegionIndices.has(key)) {
               self.densityStatsPerRegion.delete(key)
+            }
+          }
+          // Keep loadedRegions in sync with rpcDataMap so isCacheValid never
+          // sees boundsValid=true with missing rpcData (blank-region on pan-back).
+          for (const key of self.loadedRegions.keys()) {
+            if (!visibleDisplayedRegionIndices.has(key)) {
+              self.loadedRegions.delete(key)
             }
           }
         },
@@ -723,30 +731,19 @@ export default function baseStateModelFactory(
           })()
         },
 
-        // Worker output positions and heights are genomic and config-driven
-        // (no continuous bpPerPx dependence). The only `bpPerPx`-driven
-        // worker decision that affects output is whether the amino-acid
-        // overlay was fetched (gated by `shouldRenderPeptideBackground`).
-        // Refetch only when crossing that discrete threshold — never on
-        // continuous zoom drift.
+        // The only bpPerPx-dependent worker decision is the amino-acid overlay
+        // (gated by shouldRenderPeptideBackground). Refetch when crossing that
+        // discrete threshold; otherwise the cached data stays valid.
         //
-        // For too-large regions (loadedRegions set, but no rpcData because
-        // the worker bailed on density), treat the cache as valid while the
-        // density × bpPerPx still trips the threshold; refetch when it no
-        // longer does so the banner can clear.
+        // Missing rpcData (regionData === undefined) means the region was
+        // pruned off-screen or not yet fetched — always refetch. The
+        // FetchVisibleRegions autorun gates on regionTooLarge before calling
+        // this, so the density-blocking case is handled there, not here.
         isCacheValid(displayedRegionIndex: number) {
           const view = getContainingView(self) as LGV
           const regionData = self.rpcDataMap.get(displayedRegionIndex)
           if (regionData === undefined) {
-            const ds = self.densityStatsPerRegion.get(displayedRegionIndex)
-            if (!ds) {
-              return true
-            }
-            const max = self.maxFeatureDensity
-            if (max === undefined) {
-              return false
-            }
-            return screenDensity(ds, view.bpPerPx) > max
+            return false
           }
           return (
             shouldRenderPeptideBackground(view.bpPerPx) ===
@@ -922,8 +919,8 @@ export default function baseStateModelFactory(
 
             // Auto-height: snap height to fit the laid-out content. maxY
             // derives from laidOutDataMap, which derives from raw fetch data +
-            // bpPerPx + label visibility — so zoom and label toggles both
-            // flow through here without any extra plumbing.
+            // coarseBpPerPx (debounced 500ms) + label visibility — so zoom
+            // and label toggles both flow through here without extra plumbing.
             addDisposer(
               self,
               autorun(

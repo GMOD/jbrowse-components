@@ -449,6 +449,48 @@ describe('FetchVisibleRegions autorun', () => {
     })
   })
 
+  it('re-fetches a region pruned off-screen when it scrolls back into view', async () => {
+    // Regression: pruneRpcDataMapToVisible used to leave loadedRegions set
+    // while clearing rpcDataMap. The FetchVisibleRegions autorun would then
+    // see boundsValid=true + isCacheValid=true → skip fetch → blank region.
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
+
+    const { display, view } = createDisplay()
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+      expect(display.rpcDataMap.size).toBe(1)
+    })
+
+    const callsAfterLoad = mockRpcCall.mock.calls.length
+
+    // Simulate the region scrolling far off-screen: fetchNeeded calls this
+    // before fetching newly visible regions, pruning anything outside the
+    // buffered viewport. Pass an empty set → prune everything.
+    display.pruneRpcDataMapToVisible(new Set([]))
+
+    expect(display.rpcDataMap.size).toBe(0)
+    // With the fix, loadedRegions is also pruned so boundsValid=false on
+    // the next autorun evaluation, guaranteeing a refetch.
+    expect(display.loadedRegions.size).toBe(0)
+
+    // Zoom to trigger a visibleRegions change, which fires FetchVisibleRegions.
+    view.zoomTo(view.bpPerPx * 1.1)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+      expect(display.rpcDataMap.size).toBe(1)
+    })
+
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsAfterLoad)
+  })
+
   it('clearAllRpcData resets state and triggers a new fetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 

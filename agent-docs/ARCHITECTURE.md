@@ -54,8 +54,11 @@ expressed through the `regionTooLarge` getter so consumers
   - `regionTooLarge = bytesEstimateTooLarge || densityTooLarge`.
   - `laidOutDataMap` returns empty when `regionTooLarge` is true, so the GPU
     upload pushes nothing — no stale-feature flash through the banner.
-  - `isCacheValid` keeps too-large regions cached while the threshold still
-    trips at the current zoom; flips invalid (forces refetch) when it doesn't.
+  - `FetchVisibleRegions` gates on `regionTooLarge` before calling
+    `isCacheValid`, so density-blocked regions are held back by the gate
+    rather than inside `isCacheValid`. When density drops (zoom in or force
+    load), `regionTooLarge` flips false, the gate opens, and `isCacheValid`
+    returns `false` (no rpcData) → refetch fires and the banner clears.
   - A canvas-level autorun on `view.displayedRegions` clears
     `densityStatsPerRegion`/`featureDensityStats` on chromosome navigation
     (`displayedRegionIndex` gets reused, so stale entries would otherwise gate
@@ -483,8 +486,13 @@ exceptions for zoom-dependent *content* (not coords):
   (`view.bpPerPx === loadedBpPerPx`) — any zoom change refetches all visible
   regions together. See `architecture-decision-records/adr-008-wiggle-strict-bpperpx-equality.md`.
 - **Canvas**: the amino-acid overlay is the only `bpPerPx`-dependent worker
-  decision. `isCacheValid` refetches only when the viewport crosses
-  `shouldRenderPeptideBackground`'s discrete threshold.
+  decision. `isCacheValid` returns `false` (refetch) when `rpcDataMap` has no
+  entry for the region (pruned off-screen or never loaded), and otherwise
+  refetches only when the viewport crosses `shouldRenderPeptideBackground`'s
+  discrete threshold. Density-blocked regions are held back by the
+  `regionTooLarge` gate in `FetchVisibleRegions`, not inside `isCacheValid`.
+  `laidOutDataMap` uses `coarseBpPerPx` (debounced 500ms) so Y-row packing
+  doesn't recompute on every animation frame during smooth zoom.
 
 All other plugins leave the default `() => true`.
 
