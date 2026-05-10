@@ -92,7 +92,7 @@ export async function executeRenderFeatureData({
 
   const regionStart = Math.floor(region.start)
   const regionWidth = Math.ceil(region.end - region.start)
-  const bpPerPx = requestedBpPerPx || 1
+  const bpPerPx = requestedBpPerPx
 
   const features = new Map<string, Feature>()
   for (const f of featuresArray) {

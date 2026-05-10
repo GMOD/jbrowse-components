@@ -104,6 +104,34 @@ const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 
 const DESCRIPTION_DENSITY_THRESHOLD = 0.2
 
+// Features-per-pixel for a single region given its raw count, the region's
+// genomic span, and the current bpPerPx. Used by the derived regionTooLarge
+// banner and by force-load to sample observed density.
+function screenDensity(
+  ds: { featureCount: number; regionWidthBp: number },
+  bpPerPx: number,
+) {
+  return (ds.featureCount / ds.regionWidthBp) * bpPerPx
+}
+
+// First-wins index from per-region arrays. Spanning features can appear in
+// multiple regions; we keep the first occurrence so consumers (hover lookup,
+// selection, label resolution) get a single, stable item per featureId.
+function indexById<T extends { featureId: string }>(
+  laidOutDataMap: ReadonlyMap<number, FeatureDataResult>,
+  pick: (data: FeatureDataResult) => readonly T[],
+) {
+  const map = new Map<string, T>()
+  for (const data of laidOutDataMap.values()) {
+    for (const item of pick(data)) {
+      if (!map.has(item.featureId)) {
+        map.set(item.featureId, item)
+      }
+    }
+  }
+  return map
+}
+
 // Shared GPU-accelerated feature display base for canvas-rendered tracks.
 // Handles fetching, layout, the "Show labels" / "Show descriptions" UI, and
 // the fetch-invalidation autorun. Subclasses layer schema-specific properties
@@ -202,41 +230,6 @@ export default function baseStateModelFactory(
         heightBeforeExpand: undefined as number | undefined,
       }))
       .views(self => ({
-        // Laid-out data derived from the raw per-region fetch results. Mobx
-        // caches this — it only recomputes when any tracked input changes (raw
-        // data, bpPerPx, label visibility). Every consumer (hit test, GPU
-        // upload, React render) reads this getter and sees the same cached map
-        // until an input moves.
-        get laidOutDataMap(): Map<number, FeatureDataResult> {
-          const view = getContainingView(self) as LGV
-          if (!view.initialized || self.rpcDataMap.size === 0) {
-            return new Map()
-          }
-          return computeLaidOutData(self.rpcDataMap, {
-            bpPerPx: view.coarseBpPerPx,
-            regionKeys: this.regionKeys,
-            showLabels: this.showLabels,
-            showDescriptions: this.effectiveShowDescriptions,
-            reversedRegions: this.reversedRegions,
-          })
-        },
-
-        get maxY() {
-          let max = 0
-          for (const data of this.laidOutDataMap.values()) {
-            for (const item of data.flatbushItems) {
-              if (item.bottomPx > max) {
-                max = item.bottomPx
-              }
-            }
-          }
-          return max
-        },
-
-        get hasOverflow() {
-          return this.maxY > self.height
-        },
-
         get renderState() {
           const view = getContainingView(self) as LGV
           return {
@@ -295,40 +288,6 @@ export default function baseStateModelFactory(
           return undefined
         },
 
-        get featureIdIndex() {
-          const map = new Map<string, FlatbushItem>()
-          for (const data of this.laidOutDataMap.values()) {
-            for (const f of data.flatbushItems) {
-              if (!map.has(f.featureId)) {
-                map.set(f.featureId, f)
-              }
-            }
-          }
-          return map
-        },
-
-        get subfeatureIdIndex() {
-          const map = new Map<string, SubfeatureInfo>()
-          for (const data of this.laidOutDataMap.values()) {
-            for (const s of data.subfeatureInfos) {
-              if (!map.has(s.featureId)) {
-                map.set(s.featureId, s)
-              }
-            }
-          }
-          return map
-        },
-
-        get hoveredFeature() {
-          const id = self.featureIdUnderMouse
-          return id ? (this.featureIdIndex.get(id) ?? null) : null
-        },
-
-        get hoveredSubfeature() {
-          const id = self.subfeatureIdUnderMouse
-          return id ? (this.subfeatureIdIndex.get(id) ?? null) : null
-        },
-
         get maxFeatureDensity() {
           // Skip density gating when the user has already force-loaded via byte estimate
           if (self.userByteSizeLimit !== undefined) {
@@ -380,29 +339,11 @@ export default function baseStateModelFactory(
           return set
         },
 
-        getFeatureById(featureId: string) {
-          return this.featureIdIndex.get(featureId)
-        },
-
-        searchFeatureByID(id: string) {
-          const item = this.getFeatureById(id)
-          if (!item) {
-            return undefined
-          }
-          return [item.startBp, item.topPx, item.endBp, item.bottomPx] as const
-        },
-
         get featureWidgetType() {
           return {
             type: 'BaseFeatureWidget',
             id: 'baseFeature',
           }
-        },
-      }))
-      .views(self => ({
-        async renderSvg(opts?: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self, opts)
         },
       }))
       .views(self => ({
@@ -429,7 +370,7 @@ export default function baseStateModelFactory(
       // Derived regionTooLarge: a pure function of cached stats × current
       // bpPerPx + visible regions. No imperative clear-and-reset, so small
       // zoom/pan moves don't flicker the banner. Shadows RegionTooLargeMixin's
-      // imperative getter and the earlier laidOutDataMap.
+      // imperative getter.
       .views(self => ({
         get bytesEstimateTooLarge() {
           const view = getContainingView(self) as LGV
@@ -455,10 +396,7 @@ export default function baseStateModelFactory(
           const view = getContainingView(self) as LGV
           for (const r of view.visibleRegions) {
             const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
-            if (
-              ds &&
-              (ds.featureCount / ds.regionWidthBp) * view.bpPerPx > max
-            ) {
+            if (ds && screenDensity(ds, view.bpPerPx) > max) {
               return true
             }
           }
@@ -478,8 +416,13 @@ export default function baseStateModelFactory(
           return self.densityTooLarge ? 'Too many features' : ''
         },
       }))
-      // Empty layout when too-large so the GPU upload autorun has nothing
-      // to push — banner UI hides the canvas, this prevents any stale flash.
+      // Laid-out data derived from the raw per-region fetch results. Mobx
+      // caches this — it only recomputes when any tracked input changes (raw
+      // data, bpPerPx, label visibility). Every consumer (hit test, GPU
+      // upload, React render) reads this getter and sees the same cached map
+      // until an input moves. Returns empty when too-large so the GPU upload
+      // autorun has nothing to push — banner UI hides the canvas, this
+      // prevents any stale flash.
       .views(self => ({
         get laidOutDataMap(): Map<number, FeatureDataResult> {
           if (self.regionTooLarge) {
@@ -496,6 +439,59 @@ export default function baseStateModelFactory(
             showDescriptions: self.effectiveShowDescriptions,
             reversedRegions: self.reversedRegions,
           })
+        },
+      }))
+      .views(self => ({
+        get maxY() {
+          let max = 0
+          for (const data of self.laidOutDataMap.values()) {
+            for (const item of data.flatbushItems) {
+              if (item.bottomPx > max) {
+                max = item.bottomPx
+              }
+            }
+          }
+          return max
+        },
+
+        get hasOverflow() {
+          return this.maxY > self.height
+        },
+
+        get featureIdIndex() {
+          return indexById(self.laidOutDataMap, d => d.flatbushItems)
+        },
+
+        get subfeatureIdIndex() {
+          return indexById(self.laidOutDataMap, d => d.subfeatureInfos)
+        },
+
+        get hoveredFeature() {
+          const id = self.featureIdUnderMouse
+          return id ? (this.featureIdIndex.get(id) ?? null) : null
+        },
+
+        get hoveredSubfeature() {
+          const id = self.subfeatureIdUnderMouse
+          return id ? (this.subfeatureIdIndex.get(id) ?? null) : null
+        },
+
+        getFeatureById(featureId: string) {
+          return this.featureIdIndex.get(featureId)
+        },
+
+        searchFeatureByID(id: string) {
+          const item = this.getFeatureById(id)
+          if (!item) {
+            return undefined
+          }
+          return [item.startBp, item.topPx, item.endBp, item.bottomPx] as const
+        },
+      }))
+      .views(self => ({
+        async renderSvg(opts?: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self, opts)
         },
       }))
       .actions(self => ({
@@ -580,7 +576,26 @@ export default function baseStateModelFactory(
           if (stats?.bytes) {
             self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
           } else if (self.maxFeatureDensity !== undefined) {
-            self.userFeatureDensityLimit = Math.ceil(self.maxFeatureDensity * 3)
+            // Push the gate past the highest observed density across visible
+            // regions, not past the current `maxFeatureDensity`. The latter
+            // already includes any prior force-load, so basing on it
+            // multiplied force-load attempts exponentially.
+            const view = getContainingView(self) as LGV
+            let observedMax = 0
+            for (const r of view.visibleRegions) {
+              const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
+              if (ds) {
+                const d = screenDensity(ds, view.bpPerPx)
+                if (d > observedMax) {
+                  observedMax = d
+                }
+              }
+            }
+            const baseline =
+              observedMax > 0
+                ? observedMax
+                : (getConf(self, 'maxFeatureScreenDensity') as number)
+            self.userFeatureDensityLimit = Math.ceil(baseline * 1.5)
           }
           // Derived regionTooLarge recomputes once the limit changes — no
           // imperative flag to clear.
@@ -731,7 +746,7 @@ export default function baseStateModelFactory(
             if (max === undefined) {
               return false
             }
-            return (ds.featureCount / ds.regionWidthBp) * view.bpPerPx > max
+            return screenDensity(ds, view.bpPerPx) > max
           }
           return (
             shouldRenderPeptideBackground(view.bpPerPx) ===
