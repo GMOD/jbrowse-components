@@ -127,3 +127,16 @@ bpPerPx values, strict equality is still safer.
 ## Audit plugins/canvas data flow
 
 two bugs and doc gap identified
+
+## The synteny import form
+
+
+Not working/overcomplicated ui now
+
+
+## Synteny canavs export
+
+- Use normal bezier drawing in svg export/canvas
+- Try to improve beziers a bit in webgl/webgpu
+- Significantly more pixel artifacts in webgl/webgpu when zoomed out
+- Unclear how to reproduce: was side scrolling a lgv, synteny view was not updating, and gene glyphs were gone. maybe from lost context

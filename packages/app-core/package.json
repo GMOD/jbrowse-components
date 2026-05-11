@@ -37,8 +37,8 @@
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "dockview-core": "^6.0.5",
-    "dockview-react": "^6.0.5",
+    "dockview-core": "^6.0.7",
+    "dockview-react": "^6.0.7",
     "mobx": "^6.15.3",
     "mobx-react": "^9.2.1"
   },
