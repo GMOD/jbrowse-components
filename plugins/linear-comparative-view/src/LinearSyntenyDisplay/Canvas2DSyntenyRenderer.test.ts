@@ -18,6 +18,19 @@ function createMockCanvas() {
     lineTo: jest.fn((x: number, y: number) =>
       pathOps.push(`lineTo(${x.toFixed(1)},${y.toFixed(1)})`),
     ),
+    bezierCurveTo: jest.fn(
+      (
+        cp1x: number,
+        cp1y: number,
+        cp2x: number,
+        cp2y: number,
+        x: number,
+        y: number,
+      ) =>
+        pathOps.push(
+          `bezierCurveTo(${cp1x.toFixed(1)},${cp1y.toFixed(1)},${cp2x.toFixed(1)},${cp2y.toFixed(1)},${x.toFixed(1)},${y.toFixed(1)})`,
+        ),
+    ),
     closePath: jest.fn(() => pathOps.push('closePath')),
     fill: jest.fn(() => pathOps.push('fill')),
     stroke: jest.fn(),
@@ -137,7 +150,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(pathOps.filter(op => op === 'closePath')).toHaveLength(1)
   })
 
-  test('render draws curved features with multiple segments', () => {
+  test('render draws curved features with native cubic beziers', () => {
     const { canvas, pathOps } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
@@ -146,8 +159,12 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.uploadGeometry(0, makeInstanceData(1))
     renderer.render(makeState([[0, makeParams({ drawCurves: true })]]))
 
-    const lineToCount = pathOps.filter(op => op.startsWith('lineTo')).length
-    expect(lineToCount).toBeGreaterThan(4)
+    // Two bezier strokes per ribbon (one per curved edge), exactly equivalent
+    // to the 16-segment hermite tessellation (see buildFeaturePath).
+    const bezierCount = pathOps.filter(op =>
+      op.startsWith('bezierCurveTo'),
+    ).length
+    expect(bezierCount).toBe(2)
   })
 
   test('filters out features below minAlignmentLength', () => {
@@ -381,7 +398,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.uploadGeometry(0, makeInstanceData(1))
     renderer.render(makeState([[0, makeParams({ drawCurves: true })]]))
     expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 0 })
-    expect(ctx.lineTo.mock.calls.length).toBeGreaterThan(4)
+    expect(ctx.bezierCurveTo.mock.calls.length).toBeGreaterThan(0)
   })
 
   test('pick returns undefined after dispose', () => {

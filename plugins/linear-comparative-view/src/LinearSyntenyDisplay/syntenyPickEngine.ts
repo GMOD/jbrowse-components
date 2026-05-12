@@ -1,21 +1,11 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { BEZIER_SEGMENTS } from './shaders/syntenyTypes.generated.ts'
-
 import type {
   SyntenyPickResult,
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-
-function hermiteY(t: number, height: number) {
-  return height * (1.5 * t * (1 - t) + t * t * t)
-}
-
-function smoothstep(t: number) {
-  return t * t * (3 - 2 * t)
-}
 
 // Subset of CanvasRenderingContext2D the draw + pick paths need. SvgCanvas
 // (packages/core/src/util/SvgCanvas.ts) satisfies this for SVG export.
@@ -35,6 +25,14 @@ export interface CanvasLike {
   closePath(): void
   moveTo(x: number, y: number): void
   lineTo(x: number, y: number): void
+  bezierCurveTo(
+    cp1x: number,
+    cp1y: number,
+    cp2x: number,
+    cp2y: number,
+    x: number,
+    y: number,
+  ): void
   fill(): void
   stroke(): void
 }
@@ -43,6 +41,14 @@ export interface PickCanvasLike extends CanvasLike {
   isPointInPath(x: number, y: number): boolean
 }
 
+// SYNC: matches hermiteEdges in syntenyTypes.slang exactly. The smoothstep
+// X-blend and the `1.5 t (1-t) + t³` Y curve together form the cubic Bezier
+// from (sx?, 0) to (sx?, height) with both control points at midheight on
+// each anchor's x. Algebra:
+//   (1-t)²(1+2t) = 1 - smoothstep(t)
+//   (h/2)·3t(1-t) + t³·h = h·[1.5t(1-t) + t³]
+// so the tessellation loop is replaceable by a single bezierCurveTo per edge
+// with zero loss of fidelity (and perfect browser AA at the curve).
 export function buildFeaturePath(
   ctx: CanvasLike,
   sx1: number,
@@ -54,17 +60,11 @@ export function buildFeaturePath(
 ) {
   ctx.beginPath()
   if (isCurve) {
+    const halfH = height * 0.5
     ctx.moveTo(sx1, 0)
-    for (let s = 1; s <= BEZIER_SEGMENTS; s++) {
-      const t = s / BEZIER_SEGMENTS
-      const st = smoothstep(t)
-      ctx.lineTo(sx1 + (sx4 - sx1) * st, hermiteY(t, height))
-    }
-    for (let s = BEZIER_SEGMENTS; s >= 0; s--) {
-      const t = s / BEZIER_SEGMENTS
-      const st = smoothstep(t)
-      ctx.lineTo(sx2 + (sx3 - sx2) * st, hermiteY(t, height))
-    }
+    ctx.bezierCurveTo(sx1, halfH, sx4, halfH, sx4, height)
+    ctx.lineTo(sx3, height)
+    ctx.bezierCurveTo(sx3, halfH, sx2, halfH, sx2, 0)
   } else {
     ctx.moveTo(sx1, 0)
     ctx.lineTo(sx4, height)

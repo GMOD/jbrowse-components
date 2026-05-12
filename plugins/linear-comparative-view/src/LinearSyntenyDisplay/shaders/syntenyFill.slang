@@ -42,23 +42,43 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     return o;
   }
 
+  // SYNC: matches widenCorners() in syntenyPickEngine.ts. Per-corner (not
+  // per-t) widening: a tip with sx1≈sx2 gets a minW-wide top, a tip with
+  // sx3≈sx4 gets a minW-wide bottom. Doing this per-t (the previous
+  // implementation) caused a kink where narrow segments widened independently
+  // of wider ones, producing visible polygon-outline artifacts at tips.
+  float centerDx = (c.x3 + c.x4 - c.x1 - c.x2) * 0.5;
+  float edgeLen  = length(float2(centerDx, u.height));
+  float slope    = abs(centerDx) / max(u.height, 1.0);
+  float minW     = min(1.0 + max(0.0, slope - 1.0) * 0.25, 3.0);
+  float topW     = abs(c.x1 - c.x2);
+  float botW     = abs(c.x4 - c.x3);
+  if (topW < minW) {
+    float mid  = (c.x1 + c.x2) * 0.5;
+    float half = c.x1 < c.x2 ? minW * 0.5 : -minW * 0.5;
+    c.x1 = mid - half;
+    c.x2 = mid + half;
+  }
+  if (botW < minW) {
+    float mid  = (c.x3 + c.x4) * 0.5;
+    float half = c.x3 < c.x4 ? minW * 0.5 : -minW * 0.5;
+    c.x3 = mid - half;
+    c.x4 = mid + half;
+  }
+
+  // Line-mode decision is global to the instance (per-corner widest perp
+  // width), not per-t. Previously the per-t check flipped mode mid-ribbon at
+  // the tip, producing a discontinuous fill→line transition.
+  float maxW = max(topW, botW);
+  float perpWidth = maxW * u.height / max(edgeLen, 1.0);
+
   float t, side;
   computeFillSegmentT(vid, c, t, side);
   float3 e = hermiteEdges(c, t, u);
   float edge0 = e.x, edge1 = e.y, y = e.z;
 
-  float centerDx = (c.x3 + c.x4 - c.x1 - c.x2) * 0.5;
-  float edgeLen  = length(float2(centerDx, u.height));
-
-  // Perpendicular width = horizontal_width × cos(edge_angle) = w × height / edgeLen.
-  float w        = abs(edge0 - edge1);
-  float perpWidth = w * u.height / max(edgeLen, 1.0);
-
   if (perpWidth < LINE_PERP_THRESHOLD) {
     // Line mode: collapse to centerline and expand ±1px along the edge normal.
-    // The fragment clips to halfW=0.5 with SDF AA, matching how syntenyEdge
-    // draws its click outline — Canvas2D path fill gives equivalent quality
-    // for thin ribbons via its built-in coverage AA.
     float centerX = (edge0 + edge1) * 0.5;
     float2 tangent = edgeTangent(centerDx, t, u);
     float tangentLen = length(tangent);
@@ -74,17 +94,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     return o;
   }
 
-  // Fill mode: standard ribbon geometry.
-  // SYNC: matches widenCorners() in syntenyPickEngine.ts. Both must stay in
-  // step so Canvas2D/SVG pick outlines and GPU fills look identical.
-  float slope = abs(centerDx) / max(u.height, 1.0);
-  float minW  = min(1.0 + max(0.0, slope - 1.0) * 0.25, 3.0);
-  if (w < minW) {
-    float mid  = (edge0 + edge1) * 0.5;
-    float half = edge0 < edge1 ? -minW * 0.5 : minW * 0.5;
-    edge0 = mid + half;
-    edge1 = mid - half;
-  }
+  // Fill mode: standard ribbon geometry. Corners already widened above, so
+  // the interpolated edges are correct without per-t widening.
   float edgeX = side > 0.5 ? edge1 : edge0;
   float2 clipSpace = float2(edgeX, y) / u.resolution * 2.0 - 1.0;
   o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
