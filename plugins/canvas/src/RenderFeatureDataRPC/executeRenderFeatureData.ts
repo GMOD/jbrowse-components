@@ -75,7 +75,7 @@ export async function executeRenderFeatureData({
 
   if (showOnlyGenes) {
     featuresArray = featuresArray.filter(f =>
-      ['gene', 'mRNA', 'transcript', 'CDS'].includes(f.get('type')!),
+      ['gene', 'mRNA', 'transcript', 'CDS'].includes(f.get('type') ?? ''),
     )
   }
 
@@ -92,7 +92,6 @@ export async function executeRenderFeatureData({
 
   const regionStart = Math.floor(region.start)
   const regionWidth = Math.ceil(region.end - region.start)
-  const bpPerPx = requestedBpPerPx
 
   const features = new Map<string, Feature>()
   for (const f of featuresArray) {
@@ -122,7 +121,7 @@ export async function executeRenderFeatureData({
   checkStopToken2(stopTokenCheck)
 
   let peptideDataMap: Map<string, PeptideData> | undefined
-  if (colorByCDS && sequenceAdapter && shouldRenderPeptideBackground(bpPerPx)) {
+  if (colorByCDS && sequenceAdapter && shouldRenderPeptideBackground(requestedBpPerPx)) {
     peptideDataMap = await updateStatus(
       'Fetching peptide data',
       statusCallback,
@@ -158,36 +157,7 @@ export async function executeRenderFeatureData({
 
   checkStopToken2(stopTokenCheck)
 
-  const result: FeatureDataResult = {
-    rectPositions: packed.rectPositions,
-    rectYs: packed.rectYs,
-    rectHeights: packed.rectHeights,
-    rectColors: packed.rectColors,
-    outlineColor: packed.outlineColor,
-
-    linePositions: packed.linePositions,
-    lineYs: packed.lineYs,
-    lineColors: packed.lineColors,
-    lineDirections: packed.lineDirections,
-
-    arrowXs: packed.arrowXs,
-    arrowYs: packed.arrowYs,
-    arrowDirections: packed.arrowDirections,
-    arrowColors: packed.arrowColors,
-
-    flatbushItems: packed.flatbushItems,
-    subfeatureInfos: packed.subfeatureInfos,
-
-    rectFeatureIndices: packed.rectFeatureIndices,
-    lineFeatureIndices: packed.lineFeatureIndices,
-    arrowFeatureIndices: packed.arrowFeatureIndices,
-
-    floatingLabelsData: packed.floatingLabelsData,
-
-    aminoAcidOverlay: packed.aminoAcidOverlay,
-
-    featureCount: features.size,
-  }
+  const result: FeatureDataResult = { ...packed, featureCount: features.size }
 
   const transferables = [
     result.rectPositions.buffer,
@@ -207,5 +177,9 @@ export async function executeRenderFeatureData({
     result.arrowFeatureIndices.buffer,
   ] as ArrayBuffer[]
 
+  // rpcResult wraps value + transferables for the RPC framework, which
+  // unwraps it before returning to the caller. The function signature
+  // reflects the unwrapped type; the cast is necessary here.
+   
   return rpcResult(result, transferables) as any
 }

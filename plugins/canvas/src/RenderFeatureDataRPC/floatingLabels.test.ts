@@ -92,15 +92,9 @@ describe('floatingLabels', () => {
       tooltip: 'Gene: BRCA1',
     }
 
-    it('returns undefined when displayLabel is empty', () => {
-      expect(
-        createTranscriptFloatingLabel({ ...baseArgs, displayLabel: '' }),
-      ).toBeUndefined()
-    })
-
     it('includes parentFeatureId in the result', () => {
       const result = createTranscriptFloatingLabel(baseArgs)
-      expect(result!.parentFeatureId).toBe('parent-gene-123')
+      expect(result.parentFeatureId).toBe('parent-gene-123')
     })
 
     it('sets isOverlay to false for "below" mode', () => {
@@ -108,8 +102,8 @@ describe('floatingLabels', () => {
         ...baseArgs,
         subfeatureLabels: 'below',
       })
-      expect(result!.subfeatureLabel.isOverlay).toBe(false)
-      expect(result!.subfeatureLabel.relativeY).toBe(0)
+      expect(result.subfeatureLabel.isOverlay).toBe(false)
+      expect(result.subfeatureLabel.relativeY).toBe(0)
     })
 
     it('sets isOverlay to true for "overlay" mode', () => {
@@ -118,8 +112,8 @@ describe('floatingLabels', () => {
         subfeatureLabels: 'overlay',
         featureHeight: 20,
       })
-      expect(result!.subfeatureLabel.isOverlay).toBe(true)
-      expect(result!.subfeatureLabel.relativeY).toBe(-20)
+      expect(result.subfeatureLabel.isOverlay).toBe(true)
+      expect(result.subfeatureLabel.relativeY).toBe(-20)
     })
 
     it('truncates long labels', () => {
@@ -128,8 +122,8 @@ describe('floatingLabels', () => {
         ...baseArgs,
         displayLabel: longLabel,
       })
-      expect(result!.subfeatureLabel.text.length).toBeLessThan(longLabel.length)
-      expect(result!.subfeatureLabel.text).toContain('…')
+      expect(result.subfeatureLabel.text.length).toBeLessThan(longLabel.length)
+      expect(result.subfeatureLabel.text).toContain('…')
     })
   })
 })

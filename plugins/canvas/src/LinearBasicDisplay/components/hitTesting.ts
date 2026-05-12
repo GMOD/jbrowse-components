@@ -183,47 +183,45 @@ export function performMultiRegionHitDetection(
   labels: LabelVisibility,
 ): HitResult {
   for (const vr of visibleRegions) {
-    if (mouseXPx < vr.screenStartPx || mouseXPx > vr.screenEndPx) {
-      continue
-    }
-    const data = laidOutDataMap.get(vr.displayedRegionIndex)
-    if (!data) {
-      continue
-    }
-    let cache = cacheMap.get(vr.displayedRegionIndex)
-    if (!cache) {
-      cache = {
-        featureIndex: null,
-        subfeatureIndex: null,
-        cachedItems: null,
-        cachedSubInfos: null,
-      }
-      cacheMap.set(vr.displayedRegionIndex, cache)
-    }
+    if (mouseXPx >= vr.screenStartPx && mouseXPx <= vr.screenEndPx) {
+      const data = laidOutDataMap.get(vr.displayedRegionIndex)
+      if (data) {
+        let cache = cacheMap.get(vr.displayedRegionIndex)
+        if (!cache) {
+          cache = {
+            featureIndex: null,
+            subfeatureIndex: null,
+            cachedItems: null,
+            cachedSubInfos: null,
+          }
+          cacheMap.set(vr.displayedRegionIndex, cache)
+        }
 
-    const blockWidth = vr.screenEndPx - vr.screenStartPx
-    const bpPerPx = (vr.end - vr.start) / blockWidth
-    const reversed = vr.reversed ?? false
-    const frac = (mouseXPx - vr.screenStartPx) / blockWidth
-    const bpPos = reversed
-      ? vr.end - frac * (vr.end - vr.start)
-      : vr.start + frac * (vr.end - vr.start)
+        const blockWidth = vr.screenEndPx - vr.screenStartPx
+        const bpPerPx = (vr.end - vr.start) / blockWidth
+        const reversed = vr.reversed ?? false
+        const frac = (mouseXPx - vr.screenStartPx) / blockWidth
+        const bpPos = reversed
+          ? vr.end - frac * (vr.end - vr.start)
+          : vr.start + frac * (vr.end - vr.start)
 
-    const { feature, subfeature } = performHitDetection(
-      cache,
-      data,
-      bpPerPx,
-      reversed,
-      bpPos,
-      yPos,
-      labels,
-    )
+        const { feature, subfeature } = performHitDetection(
+          cache,
+          data,
+          bpPerPx,
+          reversed,
+          bpPos,
+          yPos,
+          labels,
+        )
 
-    if (feature) {
-      return {
-        feature,
-        subfeature,
-        displayedRegionIndex: vr.displayedRegionIndex,
+        if (feature) {
+          return {
+            feature,
+            subfeature,
+            displayedRegionIndex: vr.displayedRegionIndex,
+          }
+        }
       }
     }
   }

@@ -110,7 +110,7 @@ export interface AminoAcidOverlayItem {
 
 interface HitItemBase {
   featureId: string
-  type: string
+  type: string | undefined
   startBp: number
   endBp: number
   topPx: number

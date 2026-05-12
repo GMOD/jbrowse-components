@@ -18,37 +18,36 @@ export function createFeatureFloatingLabels({
 }: {
   feature: Feature
   config: DisplayConfig
-  name: string
-  description: string
+  name: string | undefined
+  description: string | undefined
 }) {
-  const name = truncateLabel(rawName)
-  const description = truncateLabel(rawDescription)
+  const name = truncateLabel(rawName ?? '')
+  const description = truncateLabel(rawDescription ?? '')
 
   const shouldShowLabel = /\S/.test(name)
   const shouldShowDescription = /\S/.test(description)
 
-  let nameLabel: LabelItem | undefined
-  let descriptionLabel: LabelItem | undefined
-  let currentY = 0
+  const fontSize = shouldShowLabel
+    ? readConfigValue<number>(config, ['labels', 'fontSize'], feature)
+    : 0
 
-  if (shouldShowLabel) {
-    nameLabel = {
-      text: name,
-      relativeY: currentY,
-      color: FEATURE_NAME_COLOR,
-      textWidth: measureText(name, LABEL_FONT_SIZE),
-    }
-    currentY += readConfigValue<number>(config, ['labels', 'fontSize'], feature)
-  }
+  const nameLabel: LabelItem | undefined = shouldShowLabel
+    ? {
+        text: name,
+        relativeY: 0,
+        color: FEATURE_NAME_COLOR,
+        textWidth: measureText(name, LABEL_FONT_SIZE),
+      }
+    : undefined
 
-  if (shouldShowDescription) {
-    descriptionLabel = {
-      text: description,
-      relativeY: currentY,
-      color: FEATURE_DESCRIPTION_COLOR,
-      textWidth: measureText(description, LABEL_FONT_SIZE),
-    }
-  }
+  const descriptionLabel: LabelItem | undefined = shouldShowDescription
+    ? {
+        text: description,
+        relativeY: fontSize,
+        color: FEATURE_DESCRIPTION_COLOR,
+        textWidth: measureText(description, LABEL_FONT_SIZE),
+      }
+    : undefined
 
   return { nameLabel, descriptionLabel }
 }
@@ -66,10 +65,6 @@ export function createTranscriptFloatingLabel({
   parentFeatureId: string
   tooltip: string
 }) {
-  if (!displayLabel) {
-    return undefined
-  }
-
   const truncatedName = truncateLabel(displayLabel)
 
   const isOverlay = subfeatureLabels === 'overlay'

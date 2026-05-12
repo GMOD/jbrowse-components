@@ -5,12 +5,14 @@ import type { DisplayConfig } from './renderConfig.ts'
 import type { FeatureLayout } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-export function getFeatureName(feature: Feature) {
-  return String(feature.get('name') || feature.get('id') || '')
+export function getFeatureName(feature: Feature): string | undefined {
+  // || intentional: empty-string name should fall back to id
+  const v = feature.get('name') || feature.get('id')
+  return v || undefined
 }
 
-export function getFeatureDescription(feature: Feature) {
-  return String(feature.get('note') || feature.get('description') || '')
+export function getFeatureDescription(feature: Feature): string | undefined {
+  return feature.get('note') ?? feature.get('description')
 }
 
 export function applyLabelDimensions(
@@ -24,45 +26,30 @@ export function applyLabelDimensions(
 ): void {
   const { feature, config, isNested, isTranscriptChild } = args
   const { subfeatureLabels } = config
-
   const showSubfeatureLabels = subfeatureLabels !== 'none'
-  const shouldCalculateLabels =
+
+  if (
     isLabelAllowed(config) &&
     (!isNested || (isTranscriptChild && showSubfeatureLabels))
+  ) {
+    const name = isTranscriptChild
+      ? truncateLabel(getFeatureName(feature) ?? '')
+      : truncateLabel(readConfigValue(config, ['labels', 'name'], feature))
+    const description = truncateLabel(
+      readConfigValue(config, ['labels', 'description'], feature),
+    )
+    const labelCount =
+      (/\S/.test(name) ? 1 : 0) +
+      (/\S/.test(description) && !isTranscriptChild ? 1 : 0)
 
-  if (!shouldCalculateLabels) {
-    return
-  }
-
-  const effectiveShowDescriptions = !isTranscriptChild
-
-  const name = isTranscriptChild
-    ? truncateLabel(getFeatureName(feature))
-    : truncateLabel(readConfigValue(config, ['labels', 'name'], feature))
-  const shouldShowName = /\S/.test(name)
-
-  const description = truncateLabel(
-    readConfigValue(config, ['labels', 'description'], feature),
-  )
-  const shouldShowDescription =
-    /\S/.test(description) && effectiveShowDescriptions
-
-  const actualFontHeight = readConfigValue<number>(
-    config,
-    ['labels', 'fontSize'],
-    feature,
-  )
-
-  let extraHeightPx = 0
-  if (shouldShowName) {
-    extraHeightPx += actualFontHeight
-  }
-  if (shouldShowDescription) {
-    extraHeightPx += actualFontHeight
-  }
-
-  const isOverlayMode = isTranscriptChild && subfeatureLabels === 'overlay'
-  if (!isOverlayMode) {
-    layout.totalLayoutHeight = layout.height + extraHeightPx
+    const isOverlayMode = isTranscriptChild && subfeatureLabels === 'overlay'
+    if (!isOverlayMode && labelCount > 0) {
+      const fontSize = readConfigValue<number>(
+        config,
+        ['labels', 'fontSize'],
+        feature,
+      )
+      layout.totalLayoutHeight = layout.height + labelCount * fontSize
+    }
   }
 }

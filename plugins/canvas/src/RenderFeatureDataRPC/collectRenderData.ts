@@ -98,7 +98,6 @@ function emitIntronLines(
   transcriptTopPx: number,
   strokeUint: number,
   flatbushIdx: number,
-  ctx: RenderContext,
   lines: LineData[],
 ) {
   const feature = transcript.feature
@@ -109,44 +108,29 @@ function emitIntronLines(
   const children = transcript.children
 
   if (children.length === 0) {
-    lines.push({
-      start,
-      end,
-      y: lineY,
-      color: strokeUint,
-      direction: strand,
-      flatbushIdx,
-    })
-    return
-  }
-
-  let prevEnd = start
-  for (const child of children) {
-    const childStart = child.feature.get('start')
-    const childEnd = child.feature.get('end')
-    if (childStart > prevEnd) {
-      lines.push({
-        start: prevEnd,
-        end: childStart,
-        y: lineY,
-        color: strokeUint,
-        direction: strand,
-        flatbushIdx,
-      })
+    lines.push({ start, end, y: lineY, color: strokeUint, direction: strand, flatbushIdx })
+  } else {
+    let prevEnd = start
+    for (const child of children) {
+      const childStart = child.feature.get('start')
+      const childEnd = child.feature.get('end')
+      if (childStart > prevEnd) {
+        lines.push({
+          start: prevEnd,
+          end: childStart,
+          y: lineY,
+          color: strokeUint,
+          direction: strand,
+          flatbushIdx,
+        })
+      }
+      if (childEnd > prevEnd) {
+        prevEnd = childEnd
+      }
     }
-    if (childEnd > prevEnd) {
-      prevEnd = childEnd
+    if (prevEnd < end) {
+      lines.push({ start: prevEnd, end, y: lineY, color: strokeUint, direction: strand, flatbushIdx })
     }
-  }
-  if (prevEnd < end) {
-    lines.push({
-      start: prevEnd,
-      end,
-      y: lineY,
-      color: strokeUint,
-      direction: strand,
-      flatbushIdx,
-    })
   }
 }
 
@@ -186,35 +170,34 @@ function emitCodonRects(
   }
 }
 
-function emitChildRect(
-  childLayout: FeatureLayout,
-  ctx: RenderContext,
-  flatbushIdx: number,
-  rects: RectData[],
-) {
-  const childFeature = childLayout.feature
-  const childStart = childFeature.get('start')
-  const childEnd = childFeature.get('end')
-
-  const childColor = getBoxColor({
-    feature: childFeature,
+function boxColor(feature: Feature, ctx: RenderContext) {
+  return getBoxColor({
+    feature,
     config: ctx.config,
     colorByCDS: ctx.colorByCDS,
     theme: ctx.theme,
   })
+}
 
-  const [childTopPx, childHeight] = applyUTRSizing(
-    childLayout.y,
-    childLayout.height,
-    isUTR(childFeature),
-  )
+function strokeColor(feature: Feature, ctx: RenderContext) {
+  return getStrokeColor({ feature, config: ctx.config, theme: ctx.theme })
+}
 
+function pushBoxRect(
+  feature: Feature,
+  baseTopPx: number,
+  baseHeight: number,
+  flatbushIdx: number,
+  ctx: RenderContext,
+  rects: RectData[],
+) {
+  const [y, height] = applyUTRSizing(baseTopPx, baseHeight, isUTR(feature))
   rects.push({
-    start: childStart,
-    end: childEnd,
-    y: childTopPx,
-    height: childHeight,
-    color: colorToUint32(childColor),
+    start: feature.get('start'),
+    end: feature.get('end'),
+    y,
+    height,
+    color: colorToUint32(boxColor(feature, ctx)),
     flatbushIdx,
   })
 }
@@ -243,49 +226,29 @@ function emitExonRects(
     const childIsUTR = isUTR(childFeature)
     const childType = childFeature.get('type')
 
-    const childColor = getBoxColor({
-      feature: childFeature,
-      config: ctx.config,
-      colorByCDS: ctx.colorByCDS,
-      theme: ctx.theme,
-    })
+    const aminoAcids =
+      childType === 'CDS' && g2p && protein && !childIsUTR
+        ? aggregateAminos(protein, g2p, childStart, childEnd, transcriptStrand)
+        : undefined
 
-    const [childTopPx, childHeight] = applyUTRSizing(
-      transcriptTopPx,
-      transcript.height,
-      childIsUTR,
-    )
-
-    if (childType === 'CDS' && g2p && protein && !childIsUTR) {
-      const aminoAcids = aggregateAminos(
-        protein,
-        g2p,
-        childStart,
-        childEnd,
-        transcriptStrand,
+    if (aminoAcids?.length) {
+      const [childTopPx, childHeight] = applyUTRSizing(
+        transcriptTopPx,
+        transcript.height,
+        childIsUTR,
       )
-      if (aminoAcids.length > 0) {
-        emitCodonRects(
-          aminoAcids,
-          childColor,
-          childTopPx,
-          childHeight,
-          flatbushIdx,
-          collector.rects,
-          collector.aminoAcidOverlay,
-        )
-        continue
-      }
+      emitCodonRects(
+        aminoAcids,
+        boxColor(childFeature, ctx),
+        childTopPx,
+        childHeight,
+        flatbushIdx,
+        collector.rects,
+        collector.aminoAcidOverlay,
+      )
+    } else {
+      pushBoxRect(childFeature, transcriptTopPx, transcript.height, flatbushIdx, ctx, collector.rects)
     }
-
-    collector.rects.push({
-      start: childStart,
-      end: childEnd,
-      y: childTopPx,
-      height: childHeight,
-      color: colorToUint32(childColor),
-      flatbushIdx,
-    })
   }
 }
 
@@ -299,21 +262,9 @@ function processTranscriptLayout(
 ) {
   const transcriptFeature = transcript.feature
   const transcriptStrand = transcriptFeature.get('strand') ?? 0
-  const strokeColor = getStrokeColor({
-    feature: transcriptFeature,
-    config: ctx.config,
-    theme: ctx.theme,
-  })
-  const strokeUint = colorToUint32(strokeColor)
+  const strokeUint = colorToUint32(strokeColor(transcriptFeature, ctx))
 
-  emitIntronLines(
-    transcript,
-    transcriptTopPx,
-    strokeUint,
-    flatbushIdx,
-    ctx,
-    collector.lines,
-  )
+  emitIntronLines(transcript, transcriptTopPx, strokeUint, flatbushIdx, collector.lines)
 
   emitExonRects(transcript, transcriptTopPx, ctx, flatbushIdx, collector)
 
@@ -330,8 +281,9 @@ function processTranscriptLayout(
   if (transcriptName) {
     tooltipParts.push(`Transcript: ${transcriptName}`)
   }
+  const transcriptType = transcriptFeature.get('type')
   tooltipParts.push(
-    `${transcriptFeature.get('type') || 'transcript'}: ${transcriptStart.toLocaleString()}-${transcriptEnd.toLocaleString()}`,
+    `${transcriptType ? `${transcriptType}: ` : ''}${transcriptStart.toLocaleString()}-${transcriptEnd.toLocaleString()}`,
   )
   const tooltip = tooltipParts.join('\n')
 
@@ -339,12 +291,12 @@ function processTranscriptLayout(
     kind: 'subfeature',
     featureId: transcriptFeature.id(),
     parentFeatureId: parentFeature.id(),
-    type: transcriptFeature.get('type') || 'transcript',
+    type: transcriptType,
     startBp: transcriptStart,
     endBp: transcriptEnd,
     topPx: transcriptTopPx,
     bottomPx: transcriptTopPx + transcript.totalLayoutHeight,
-    displayLabel: transcriptName || 'transcript',
+    displayLabel: transcriptName,
     tooltip,
   })
 
@@ -361,16 +313,14 @@ function processTranscriptLayout(
       parentFeatureId: parentFeature.id(),
       tooltip,
     })
-    if (result) {
-      collector.floatingLabelsData[transcriptFeature.id()] = {
-        featureId: transcriptFeature.id(),
-        minX: transcriptStart,
-        maxX: transcriptEnd,
-        topY: transcriptTopPx,
-        featureHeight: transcript.height,
-        parentFeatureId: result.parentFeatureId,
-        subfeatureLabel: result.subfeatureLabel,
-      }
+    collector.floatingLabelsData[transcriptFeature.id()] = {
+      featureId: transcriptFeature.id(),
+      minX: transcriptStart,
+      maxX: transcriptEnd,
+      topY: transcriptTopPx,
+      featureHeight: transcript.height,
+      parentFeatureId: result.parentFeatureId,
+      subfeatureLabel: result.subfeatureLabel,
     }
   }
 
@@ -417,10 +367,10 @@ function processFeatureRecord(
     }
   }
 
-  const featureType = feature.get('type') || 'feature'
+  const featureType = feature.get('type')
   const tooltip = name
     ? `${name}${description ? ` - ${description}` : ''}`
-    : `${featureType}: ${featureStart.toLocaleString()}-${featureEnd.toLocaleString()}`
+    : `${featureType ? `${featureType}: ` : ''}${featureStart.toLocaleString()}-${featureEnd.toLocaleString()}`
 
   collector.flatbushItems.push({
     kind: 'feature',
@@ -432,7 +382,7 @@ function processFeatureRecord(
     bottomPx: layout.height,
     featureHeightPx: layout.height,
     tooltip,
-    name: name || undefined,
+    name,
     strand: strand !== 0 ? strand : undefined,
   })
   const flatbushIdx = collector.flatbushItems.length - 1
@@ -467,7 +417,7 @@ function processSubfeaturesLayout(
         collector,
       )
     } else {
-      emitChildRect(childLayout, ctx, flatbushIdx, collector.rects)
+      pushBoxRect(childLayout.feature, childLayout.y, childLayout.height, flatbushIdx, ctx, collector.rects)
     }
   }
 }
@@ -479,44 +429,17 @@ function processDefaultLayout(
   collector: Collector,
 ) {
   const { feature } = layout
-  const featureStart = feature.get('start')
-  const featureEnd = feature.get('end')
   const strand = feature.get('strand') ?? 0
 
-  const fillColor = getBoxColor({
-    feature,
-    config: ctx.config,
-    colorByCDS: ctx.colorByCDS,
-    theme: ctx.theme,
-  })
-
-  const [rectTopPx, rectHeight] = applyUTRSizing(
-    0,
-    layout.height,
-    isUTR(feature),
-  )
-
-  collector.rects.push({
-    start: featureStart,
-    end: featureEnd,
-    y: rectTopPx,
-    height: rectHeight,
-    color: colorToUint32(fillColor),
-    flatbushIdx,
-  })
+  pushBoxRect(feature, 0, layout.height, flatbushIdx, ctx, collector.rects)
 
   if (!feature.parent?.() && strand !== 0) {
-    const strokeColor = getStrokeColor({
-      feature,
-      config: ctx.config,
-      theme: ctx.theme,
-    })
-    const arrowX = strand === 1 ? featureEnd : featureStart
+    const arrowX = strand === 1 ? feature.get('end') : feature.get('start')
     collector.arrows.push({
       x: arrowX,
       y: layout.height / 2,
       direction: strand,
-      color: colorToUint32(strokeColor),
+      color: colorToUint32(strokeColor(feature, ctx)),
       flatbushIdx,
     })
   }

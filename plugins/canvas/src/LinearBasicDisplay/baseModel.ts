@@ -279,13 +279,8 @@ export default function baseStateModelFactory(
         },
 
         get selectedFeatureId() {
-          if (isAlive(self)) {
-            const { selection } = getSession(self)
-            if (isFeature(selection)) {
-              return selection.id()
-            }
-          }
-          return undefined
+          const selection = isAlive(self) ? getSession(self).selection : undefined
+          return isFeature(selection) ? selection.id() : undefined
         },
 
         get maxFeatureDensity() {
