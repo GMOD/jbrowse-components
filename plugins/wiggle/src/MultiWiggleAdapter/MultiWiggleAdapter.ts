@@ -102,11 +102,6 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
       }))
     }
 
-    // There was confusion about whether source or name was required, and
-    // effort to remove one or the other was thwarted. Adapters like
-    // BigWigAdapter, even in the BigWigAdapter configSchema.ts, use a 'source'
-    // field though, while the word 'name' still allowed in the config too. To
-    // solve, we made name===source
     return Promise.all(
       subConfs.map(async (conf: AdapterConfig) => {
         const dataAdapter = (await getSubAdapter(conf))
@@ -149,15 +144,18 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     }
   }
 
+  private async getFilteredAdapters(sources?: { name: string }[]) {
+    const adapters = await this.getAdapters()
+    if (!sources?.length) {
+      return adapters
+    }
+    const sourceNames = new Set(sources.map(s => s.name))
+    return adapters.filter(adp => sourceNames.has(adp.source))
+  }
+
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      let adapters = await this.getAdapters()
-
-      // Filter adapters if sources filter is provided (e.g., from subtree filter)
-      if (opts.sources?.length) {
-        const sourceNames = new Set(opts.sources.map(s => s.name))
-        adapters = adapters.filter(adp => sourceNames.has(adp.source))
-      }
+      const adapters = await this.getFilteredAdapters(opts.sources)
 
       merge(
         ...adapters.map(adp => {
@@ -184,11 +182,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     region: Region,
     opts: WiggleOptions = {},
   ): Promise<{ source: string; raw: RawFeatureArrays }[]> {
-    let adapters = await this.getAdapters()
-    if (opts.sources?.length) {
-      const sourceNames = new Set(opts.sources.map(s => s.name))
-      adapters = adapters.filter(adp => sourceNames.has(adp.source))
-    }
+    const adapters = await this.getFilteredAdapters(opts.sources)
     return Promise.all(
       adapters.map(async adp => {
         const { source, dataAdapter } = adp
