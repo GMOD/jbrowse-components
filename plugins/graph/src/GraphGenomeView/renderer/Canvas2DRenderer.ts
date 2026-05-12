@@ -7,6 +7,7 @@ import * as graphShader from './shaders/graph.generated.ts'
 import { SUB_BATCH_KEYS } from './types.ts'
 
 import type {
+  EdgeCurveBatch,
   RenderBatch,
   Renderer,
   SubBatch,
@@ -28,6 +29,10 @@ export class Canvas2DRenderer implements Renderer {
     nodes: null,
     arrows: null,
   }
+  // Native bezier path for the edge sub-batch — bypasses the tessellated
+  // triangle mesh in `subBatches.edges` for crisp curves and a single
+  // ctx.stroke() per edge.
+  private edgeCurves: EdgeCurveBatch[] = []
 
   constructor(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d')
@@ -49,6 +54,7 @@ export class Canvas2DRenderer implements Renderer {
     for (const key of SUB_BATCH_KEYS) {
       this.subBatches[key] = batch[key].indices.length > 0 ? batch[key] : null
     }
+    this.edgeCurves = batch.edgeCurves
   }
 
   updateSubBatchColors(
@@ -83,8 +89,48 @@ export class Canvas2DRenderer implements Renderer {
     )
     ctx.fillRect(0, 0, width, height)
 
-    for (const key of SUB_BATCH_KEYS) {
-      this.renderSubBatch(this.subBatches[key])
+    this.renderEdgeCurves()
+    this.renderSubBatch(this.subBatches.nodes)
+    this.renderSubBatch(this.subBatches.arrows)
+  }
+
+  // Project a world-space point through the current transform.
+  private px(x: number, y: number): [number, number] {
+    const t = this.transform!
+    return [x * t.scaleX + t.translateX, y * t.scaleY + t.translateY]
+  }
+
+  private renderEdgeCurves() {
+    if (!this.transform || this.edgeCurves.length === 0) {
+      return
+    }
+    const ctx = this.ctx
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+
+    let lastColor = -1
+    for (let i = 0; i < this.edgeCurves.length; i++) {
+      const e = this.edgeCurves[i]!
+      if (e.color !== lastColor) {
+        ctx.strokeStyle = abgrToCssRgba(e.color)
+        lastColor = e.color
+      }
+      // thickness is the half-width in backing-store pixels (mesh path
+      // expands by `normal * thickness` after `position * scaleX`, with no
+      // extra dpr scaling). Stroke is the full width.
+      ctx.lineWidth = e.thickness * 2
+      ctx.beginPath()
+      const first = e.curves[0]!
+      const [sx, sy] = this.px(first.x0, first.y0)
+      ctx.moveTo(sx, sy)
+      for (let j = 0; j < e.curves.length; j++) {
+        const c = e.curves[j]!
+        const [cx0, cy0] = this.px(c.cx0, c.cy0)
+        const [cx1, cy1] = this.px(c.cx1, c.cy1)
+        const [x1, y1] = this.px(c.x1, c.y1)
+        ctx.bezierCurveTo(cx0, cy0, cx1, cy1, x1, y1)
+      }
+      ctx.stroke()
     }
   }
 
@@ -146,5 +192,6 @@ export class Canvas2DRenderer implements Renderer {
 
   destroy() {
     this.subBatches = { edges: null, nodes: null, arrows: null }
+    this.edgeCurves = []
   }
 }

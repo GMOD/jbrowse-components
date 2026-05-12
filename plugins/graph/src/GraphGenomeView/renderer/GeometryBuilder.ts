@@ -14,7 +14,12 @@ import {
 } from './shaders/graph.generated.ts'
 
 import type { ColorScheme, Graph, GraphNode, NodeSegment } from '../types.ts'
-import type { RenderBatch, SubBatch, VertexRange } from './types.ts'
+import type {
+  EdgeCurveBatch,
+  RenderBatch,
+  SubBatch,
+  VertexRange,
+} from './types.ts'
 import type { BezierCurve } from '../util/geometry.ts'
 
 // Colors flow through the geometry builder as ABGR-in-u32 (see colorBits.ts).
@@ -571,6 +576,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
   const nodeVertexRanges = new Map<string, VertexRange>()
   const edgeVertexRanges = new Map<number, VertexRange>()
   const arrowVertexRanges = new Map<number, VertexRange>()
+  const edgeCurves: EdgeCurveBatch[] = []
 
   const colorRange = computeColorSchemeRange(graph)
 
@@ -626,7 +632,15 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
         return
       }
 
-      const allPoints = tessellateBezierCurves(curves, 0.5)
+      edgeCurves.push({ curves, thickness: edgeThickness, color })
+
+      // Adaptive flatness: tessellation is in world units, but `scale` maps
+      // world → screen, so this keeps the chord error roughly constant in
+      // screen pixels. Smaller flatness when zoomed in (no visible polygon
+      // corners); larger when zoomed out (fewer overlapping triangles in the
+      // pixel cluster that produces the moiré/artifact pattern).
+      const flatness = Math.max(0.05, 0.15 / Math.max(0.1, scale))
+      const allPoints = tessellateBezierCurves(curves, flatness)
       edgeMesh.addPolyline(allPoints, edgeThickness, color)
 
       const arrowThreshold = linearLayout ? 1 : 0.1
@@ -709,6 +723,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
     nodeVertexRanges,
     edgeVertexRanges,
     arrowVertexRanges,
+    edgeCurves,
   }
 }
 

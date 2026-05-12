@@ -1,9 +1,20 @@
+import type { BezierCurve } from '../util/geometry.ts'
+
 export type SubBatchKey = 'edges' | 'nodes' | 'arrows'
 export const SUB_BATCH_KEYS: readonly SubBatchKey[] = [
   'edges',
   'nodes',
   'arrows',
 ]
+
+// Raw bezier data for an edge — used by Canvas2DRenderer to draw native bezier
+// strokes instead of rasterising the tessellated triangle mesh. GPU backends
+// keep using the tessellated `edges` sub-batch for now.
+export interface EdgeCurveBatch {
+  curves: BezierCurve[]
+  thickness: number
+  color: number
+}
 
 // Interleaved per-vertex buffer laid out to match graph.generated.ts
 // (stride = INSTANCE_STRIDE_BYTES, fields at FIELD_OFFSET_*). `vertexData`
@@ -28,6 +39,9 @@ export type RenderBatch = Record<SubBatchKey, SubBatch> & {
   nodeVertexRanges: Map<string, VertexRange>
   edgeVertexRanges: Map<number, VertexRange>
   arrowVertexRanges: Map<number, VertexRange>
+  // Parallel curve data per edge sub-stroke. Canvas2DRenderer iterates this
+  // for native bezier rendering; GPU backends ignore it.
+  edgeCurves: EdgeCurveBatch[]
 }
 
 export interface TransformUniform {
