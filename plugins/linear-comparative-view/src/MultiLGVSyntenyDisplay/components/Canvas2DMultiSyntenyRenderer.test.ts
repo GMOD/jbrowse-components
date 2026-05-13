@@ -130,6 +130,7 @@ function makeState(
     palette,
     displayedGenomes: ['genomeA'],
     labelW: 0,
+    labelXOffset: 0,
     ...overrides,
   }
 }

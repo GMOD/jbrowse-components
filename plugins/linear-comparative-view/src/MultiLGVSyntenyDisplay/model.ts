@@ -19,8 +19,14 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import {
+  TreeSidebarMixin,
+  clusterLayout,
+  setupTreeDrawingAutorun,
+} from '@jbrowse/tree-sidebar'
 import BarChartIcon from '@mui/icons-material/BarChart'
 import BubbleChartIcon from '@mui/icons-material/BubbleChart'
+import CategoryIcon from '@mui/icons-material/Category'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import TimelineIcon from '@mui/icons-material/Timeline'
@@ -32,7 +38,7 @@ import {
   mergeGenomeRows,
 } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import { legendItems as legendItemsMap } from './shared/colorUtils.ts'
-import { LABEL_WIDTH } from './shared/types.ts'
+import { DEFAULT_ROW_HEIGHT, LABEL_WIDTH } from './shared/types.ts'
 
 import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { MultiSyntenyBackend } from './components/rendererTypes.ts'
@@ -44,8 +50,17 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { TreeSource } from '@jbrowse/tree-sidebar'
 
 type LGV = LinearGenomeViewModel
+
+// TreeSource extended with a display-name override. Persisted in `layout` and
+// rendered in place of the underlying genome name when set. Adapter-fetched
+// genome names stay canonical (used for keying rpcDataMap and the cluster RPC);
+// `label` is purely display-side.
+export interface SyntenySource extends TreeSource {
+  label?: string
+}
 
 const colorByOptions = ['strand', 'syri', 'identity'] as const
 
@@ -101,10 +116,6 @@ async function launchSubgraphView(
     adapterConfig,
     region,
     sessionId,
-    // Cap path emission to avoid stalls on multi-megabase regions; matches
-    // GraphGenomeView.loadFromTabixSubgraph default. See backlog item 2 in
-    // agent-docs/GRAPH_PLAN.md.
-    opts: { maxPathsEmitted: 50000 },
   })
   if (!gfaText) {
     session.notify(
@@ -132,6 +143,10 @@ const LaunchPairwiseSyntenyDialog = lazy(
 const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
+const ClusterIdentityDialog = lazy(
+  () => import('./components/ClusterIdentityDialog.tsx'),
+)
+const SetColorsDialog = lazy(() => import('./components/SetColorsDialog.tsx'))
 
 // Follows the canonical GPU display architecture (see
 // agent-docs/ARCHITECTURE.md): compose MultiRegionDisplayMixin,
@@ -147,17 +162,19 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      TreeSidebarMixin<SyntenySource>(),
       types.model({
         type: types.literal('MultiLGVSyntenyDisplay'),
         configuration: ConfigurationReference(schema),
         colorBy: types.optional(types.string, 'strand'),
         selectedGenomes: types.optional(types.array(types.string), []),
-        rowHeightSetting: types.optional(types.number, 0),
-        rowSpacing: types.optional(types.boolean, true),
+        rowHeightSetting: types.optional(types.number, DEFAULT_ROW_HEIGHT),
+        rowSpacing: types.optional(types.boolean, false),
         snpBpPerPxThreshold: types.optional(types.number, 100),
         showCoverage: types.optional(types.boolean, true),
         coverageHeight: types.optional(types.number, 45),
         resolution: types.optional(types.number, 1),
+        showTree: types.optional(types.boolean, true),
       }),
     )
     .volatile(() => ({
@@ -189,7 +206,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
         return self.allGenomeNames
       },
-      get displayedGenomes() {
+      get baseGenomeNames() {
         const ref = this.referenceGenomeName
         const names =
           self.selectedGenomes.length > 0
@@ -199,6 +216,28 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           return names.filter(n => n !== ref)
         }
         return names
+      },
+      // Layout-aware ordering: when the clustering layout has the same set of
+      // names as the current selection, use it; otherwise fall back to the
+      // base order. Filtering out genomes via setSelectedGenomes clears the
+      // layout, so an inconsistent layout shouldn't normally be reached.
+      // subtreeFilter (set by right-clicking a tree node) further narrows to
+      // a subtree's leaves while preserving the layout order.
+      get displayedGenomes() {
+        const base = this.baseGenomeNames
+        let ordered = base
+        if (self.layout.length === base.length && base.length > 0) {
+          const baseSet = new Set(base)
+          const layoutNames = self.layout.map(s => s.name)
+          if (layoutNames.every(n => baseSet.has(n))) {
+            ordered = layoutNames
+          }
+        }
+        if (self.subtreeFilter?.length) {
+          const filterSet = new Set(self.subtreeFilter)
+          return ordered.filter(n => filterSet.has(n))
+        }
+        return ordered
       },
       get genomeRows() {
         return mergeGenomeRows(self.rpcDataMap)
@@ -283,6 +322,43 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
       },
 
+      // Tree sidebar derived state — TreeSidebar/treeDrawingAutorun read
+      // sources, hierarchy, totalHeight, and lineZoneHeight off the model.
+      // Per-row layout overrides (color, label) merge in from self.layout when
+      // present; rows without an entry get a bare {name}.
+      get sources(): SyntenySource[] {
+        const displayed = this.displayedGenomes
+        if (self.layout.length === 0) {
+          return displayed.map(name => ({ name }))
+        }
+        const byName = new Map(self.layout.map(s => [s.name, s]))
+        return displayed.map(name => {
+          const override = byName.get(name)
+          return override ? { ...override } : { name }
+        })
+      },
+      get totalHeight() {
+        return this.rowHeight * this.displayedGenomes.length
+      },
+      // Coverage strip sits above the row area; the tree drawing starts below
+      // it so the two don't overlap.
+      get lineZoneHeight() {
+        return this.syntenyCoverageHeight
+      },
+      get hierarchy() {
+        const r = self.root
+        if (!r || this.displayedGenomes.length === 0) {
+          return undefined
+        }
+        return clusterLayout(r, this.totalHeight, self.treeAreaWidth)
+      },
+
+      // Tree sidebar is visually active when the user has clustering results
+      // and a populated hierarchy; renderers consult this so the label strip
+      // (and SVG export tree drawing) shifts right by treeAreaWidth.
+      get treeSidebarActive() {
+        return self.showTree && this.hierarchy !== undefined
+      },
       // Per-frame render state. Returns undefined to skip render until
       // the palette + view are ready.
       get syntenyRenderState() {
@@ -300,6 +376,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           palette,
           displayedGenomes: this.displayedGenomes,
           labelW: this.rowHeight >= 12 ? LABEL_WIDTH : 0,
+          labelXOffset: this.treeSidebarActive ? self.treeAreaWidth : 0,
         }
       },
     }))
@@ -345,6 +422,18 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       setSelectedGenomes(genomes: string[]) {
         self.selectedGenomes.replace(genomes)
+        // Layout/tree/subtree filter are tied to the previous selection set —
+        // once the selection changes, the existing ordering and any tree-node
+        // subtree filter are no longer meaningful.
+        self.clearLayout()
+        self.setSubtreeFilter(undefined)
+      },
+      setShowTree(val: boolean) {
+        self.showTree = val
+      },
+      setLayoutAndClusterTree(layout: SyntenySource[], tree?: string) {
+        self.layout = layout
+        self.clusterTree = tree
       },
       setResolution(r: number) {
         self.resolution = r
@@ -710,6 +799,40 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               ])
             },
           },
+          {
+            label: 'Cluster genomes by identity...',
+            icon: CategoryIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                ClusterIdentityDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+          },
+          {
+            label: `Show tree${!self.clusterTree ? ' (run clustering first)' : ''}`,
+            type: 'checkbox' as const,
+            checked: self.showTree,
+            disabled: !self.clusterTree,
+            onClick: () => {
+              self.setShowTree(!self.showTree)
+            },
+          },
+          {
+            label: 'Edit colors/arrangement...',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SetColorsDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+          },
           ...(launchSubMenu.length > 0
             ? [
                 {
@@ -721,6 +844,33 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         ]
       },
     }))
+    .actions(self => ({
+      afterAttach() {
+        setupTreeDrawingAutorun(self)
+      },
+    }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        layout,
+        clusterTree,
+        treeAreaWidth,
+        subtreeFilter,
+        showTree,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(layout.length ? { layout } : {}),
+        ...(clusterTree !== undefined ? { clusterTree } : {}),
+        ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
+        ...(subtreeFilter?.length ? { subtreeFilter } : {}),
+        ...(showTree ? {} : { showTree }),
+      } as typeof snap
+    })
 }
 
 export type MultiLGVSyntenyDisplayModel = ReturnType<

@@ -4,6 +4,7 @@ import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { SvgTreePath } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
@@ -55,7 +56,7 @@ export async function renderSvg(
     )
   })
 
-  const { coverageTicks } = model
+  const { coverageTicks, treeSidebarActive, hierarchy, lineZoneHeight } = model
 
   return (
     <>
@@ -66,6 +67,11 @@ export async function renderSvg(
       >
         {syntenyNode}
       </SvgClipRect>
+      {treeSidebarActive && hierarchy ? (
+        <g transform={`translate(0,${lineZoneHeight})`}>
+          <SvgTreePath hierarchy={hierarchy} />
+        </g>
+      ) : null}
       {model.showCoverage && coverageTicks ? (
         <g transform={`translate(${Math.max(-view.offsetPx, 0)})`}>
           <YScaleBar ticks={coverageTicks} orientation="left" />

@@ -15,6 +15,10 @@ export interface MultiSyntenyRenderState {
   palette: SyntenyColorPalette
   displayedGenomes: string[]
   labelW: number
+  // Horizontal offset applied before drawing the label strip. Used to leave
+  // room for the tree sidebar in Canvas2D / SVG export paths; the GPU path
+  // draws labels via React and ignores this.
+  labelXOffset: number
 }
 
 // Settings consumed during main-thread GPU buffer encoding (the

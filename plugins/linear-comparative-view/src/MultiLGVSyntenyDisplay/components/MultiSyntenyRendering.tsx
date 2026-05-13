@@ -15,6 +15,7 @@ import {
 } from '@jbrowse/core/util'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import { CoverageTooltipContents } from '@jbrowse/plugin-alignments'
+import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { Tooltip, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -230,17 +231,19 @@ function FeatureHighlightOverlay({
 }
 
 function GenomeNameOverlay({
-  displayedGenomes,
+  sources,
   rowHeight,
   labelW,
   height,
   yOffset = 0,
+  xOffset = 0,
 }: {
-  displayedGenomes: string[]
+  sources: { name: string; color?: string; label?: string }[]
   rowHeight: number
   labelW: number
   height: number
   yOffset?: number
+  xOffset?: number
 }) {
   if (labelW === 0) {
     return null
@@ -254,23 +257,23 @@ function GenomeNameOverlay({
       style={{
         position: 'absolute',
         top: yOffset,
-        left: 0,
+        left: xOffset,
         width: labelW,
         height,
         pointerEvents: 'none',
         overflow: 'hidden',
       }}
     >
-      {displayedGenomes.map((name, i) => (
+      {sources.map((source, i) => (
         <div
-          key={name}
+          key={source.name}
           style={{
             position: 'absolute',
             top: i * rowHeight,
             left: 0,
             width: labelW,
             height: rowHeight,
-            background: i % 2 === 0 ? '#f8f8f8' : '#ededed',
+            background: source.color ?? (i % 2 === 0 ? '#f8f8f8' : '#ededed'),
             display: 'flex',
             alignItems: 'center',
             paddingLeft: 4,
@@ -281,7 +284,7 @@ function GenomeNameOverlay({
             boxSizing: 'border-box',
           }}
         >
-          {truncateGenomeName(name)}
+          {truncateGenomeName(source.label ?? source.name)}
         </div>
       ))}
     </div>
@@ -348,15 +351,21 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const {
     genomeRows,
     displayedGenomes,
+    sources,
     rowHeight,
     rowSpacing,
     height,
     syntenyCoverageHeight,
     showSnps,
     coverageTicks,
+    treeSidebarActive,
+    treeAreaWidth,
   } = model
   const { width, bpPerPx, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
+  // Tree sidebar takes up the leftmost strip when clustering has been run
+  // and the user has it enabled; everything else shifts right by this width.
+  const treeOffset = treeSidebarActive ? treeAreaWidth : 0
 
   const tooltipOpen =
     tooltipState !== null &&
@@ -402,12 +411,12 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         e.clientX - rect.left,
         y,
         rowHeight,
-        labelW,
+        labelW + treeOffset,
         view,
         spatialIndex,
       )
     },
-    [rowHeight, labelW, view, spatialIndex, syntenyCoverageHeight],
+    [rowHeight, labelW, treeOffset, view, spatialIndex, syntenyCoverageHeight],
   )
 
   const doCoverageHitTest = useCallback(
@@ -579,12 +588,14 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
             <YScaleBar ticks={coverageTicks} orientation="left" />
           </svg>
         ) : null}
+        <TreeSidebar model={model} />
         <GenomeNameOverlay
-          displayedGenomes={displayedGenomes}
+          sources={sources}
           rowHeight={rowHeight}
           labelW={labelW}
           height={height - syntenyCoverageHeight}
           yOffset={syntenyCoverageHeight}
+          xOffset={treeOffset}
         />
         <VisibleLabelsOverlay
           labels={labels}

@@ -9,6 +9,7 @@ import LinearReadVsRefMenuItemF from './LinearReadVsRef/index.ts'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay/index.ts'
 import { GetSubgraph } from './LinearSyntenyRPC/GetSubgraph.ts'
 import { GetSyntenyBlocks } from './LinearSyntenyRPC/GetSyntenyBlocks.ts'
+import { MultiLGVSyntenyClusterIdentityMatrix } from './LinearSyntenyRPC/MultiLGVSyntenyClusterIdentityMatrix.ts'
 import { MultiPairGetFeatures } from './LinearSyntenyRPC/MultiPairGetFeatures.ts'
 import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFeaturesAndPositions.ts'
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
@@ -45,6 +46,9 @@ export default class LinearComparativeViewPlugin extends Plugin {
     pluginManager.addRpcMethod(() => new MultiPairGetFeatures(pluginManager))
     pluginManager.addRpcMethod(() => new GetSubgraph(pluginManager))
     pluginManager.addRpcMethod(() => new GetSyntenyBlocks(pluginManager))
+    pluginManager.addRpcMethod(
+      () => new MultiLGVSyntenyClusterIdentityMatrix(pluginManager),
+    )
   }
 
   configure(pluginManager: PluginManager) {

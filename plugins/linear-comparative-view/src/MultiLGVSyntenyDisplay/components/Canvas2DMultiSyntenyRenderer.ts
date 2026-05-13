@@ -77,7 +77,10 @@ function drawGenomeLabels(
   labelW: number,
   rowHeight: number,
   height: number,
+  xOffset: number,
 ) {
+  ctx.save()
+  ctx.translate(xOffset, 0)
   ctx.fillStyle = BG_COLOR_HEX
   ctx.fillRect(0, coverageHeight, labelW, height)
   drawRowBackgrounds(
@@ -104,6 +107,7 @@ function drawGenomeLabels(
     rowHeight,
     labelW,
   )
+  ctx.restore()
 }
 
 /**
@@ -188,6 +192,7 @@ export function drawSyntenyBlocks(
     palette,
     displayedGenomes,
     labelW,
+    labelXOffset,
   } = state
 
   ctx.fillStyle = BG_COLOR_HEX
@@ -274,6 +279,7 @@ export function drawSyntenyBlocks(
       labelW,
       rowHeight,
       canvasHeight - coverageHeight,
+      labelXOffset,
     )
   }
 
