@@ -555,6 +555,10 @@ export default function MultiSampleVariantBaseModelF(
             )
           : undefined
       },
+      // Row-height model is mirrored in
+      // plugins/linear-comparative-view/src/MultiLGVSyntenyDisplay/model.ts —
+      // keep `rowHeightMode`, `autoRowHeight`, `rowHeight`, and the
+      // proportional `resizeHeight` in sync across both.
       /**
        * #getter
        * Available height for rows (total height minus lineZoneHeight)

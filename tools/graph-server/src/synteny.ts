@@ -286,6 +286,52 @@ function parseWWalk(walk: string, segLens: Map<number, number>): NodeSeg[] {
   return out
 }
 
+// Detect whether a query path is a reverse-complemented contig relative to
+// the reference. Mirrors the gfa-to-tabix Rust tool's normalization: if >99%
+// of shared bp are in the opposite orientation to the reference, the contig
+// was assembled from the other strand and needs to be flipped before synteny
+// block computation so it doesn't produce false strand=-1 alignments.
+function isReversedContig(
+  q: ParsedPath,
+  refIndex: Map<number, NodeSeg[]>,
+): boolean {
+  let sharedBp = 0
+  let oppositeBp = 0
+  for (const qseg of q.segs) {
+    const refSegs = refIndex.get(qseg.ord)
+    if (!refSegs) {
+      continue
+    }
+    for (const refseg of refSegs) {
+      const bp = refseg.endInPath - refseg.startInPath
+      sharedBp += bp
+      if (refseg.orient !== qseg.orient) {
+        oppositeBp += bp
+      }
+    }
+  }
+  return sharedBp > 0 && oppositeBp * 100 >= sharedBp * 99
+}
+
+// Flip a reverse-complemented path to forward orientation. Iterates segs in
+// reverse order and flips each orientation, reassigning path coordinates so
+// they increase monotonically from 0. After flipping, shared nodes appear in
+// the same orientation as the reference path, producing strand=1 blocks.
+function flipPath(p: ParsedPath): ParsedPath {
+  const totalLen = p.segs.length > 0 ? p.segs[p.segs.length - 1]!.endInPath : 0
+  const flippedSegs: NodeSeg[] = []
+  for (let i = p.segs.length - 1; i >= 0; i--) {
+    const seg = p.segs[i]!
+    flippedSegs.push({
+      ord: seg.ord,
+      orient: seg.orient === 1 ? -1 : 1,
+      startInPath: totalLen - seg.endInPath,
+      endInPath: totalLen - seg.startInPath,
+    })
+  }
+  return { ...p, segs: flippedSegs }
+}
+
 // Compute synteny blocks between a designated ref path and every other path.
 // Algorithm: build node→[ref-position] index from the ref path; for each query
 // path, walk its segs and where the same node ord appears in ref, emit a
@@ -323,8 +369,9 @@ export function computeSyntenyBlocks({
     if (q === ref) {
       continue
     }
+    const qEffective = isReversedContig(q, refIndex) ? flipPath(q) : q
     const raw: SyntenyBlock[] = []
-    for (const qseg of q.segs) {
+    for (const qseg of qEffective.segs) {
       const matches = refIndex.get(qseg.ord)
       if (!matches) {
         continue
@@ -332,13 +379,13 @@ export function computeSyntenyBlocks({
       for (const refseg of matches) {
         const sameOrient = refseg.orient === qseg.orient ? 1 : -1
         raw.push({
-          queryGenome: q.genome,
+          queryGenome: qEffective.genome,
           origRefName: refName,
           start: ref.baseOffset + refseg.startInPath,
           end: ref.baseOffset + refseg.endInPath,
-          mateStart: q.baseOffset + qseg.startInPath,
-          mateEnd: q.baseOffset + qseg.endInPath,
-          mateRefName: q.refName,
+          mateStart: qEffective.baseOffset + qseg.startInPath,
+          mateEnd: qEffective.baseOffset + qseg.endInPath,
+          mateRefName: qEffective.refName,
           strand: sameOrient,
           identity: 1,
           featureId: '',
@@ -348,7 +395,7 @@ export function computeSyntenyBlocks({
     raw.sort((a, b) => a.start - b.start || a.mateStart - b.mateStart)
     const merged = mergeColinear(raw)
     const annotated = segSeqs
-      ? collapseRunsWithBubbleCs(merged, ref, q, segSeqs)
+      ? collapseRunsWithBubbleCs(merged, ref, qEffective, segSeqs)
       : merged
     for (const block of annotated) {
       block.featureId = String(featureId++)

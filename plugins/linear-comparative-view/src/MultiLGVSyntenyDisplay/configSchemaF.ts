@@ -6,7 +6,15 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 function configSchemaF(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'MultiLGVSyntenyDisplay',
-    {},
+    {
+      /**
+       * #slot
+       */
+      height: {
+        type: 'number',
+        defaultValue: 250,
+      },
+    },
     {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,

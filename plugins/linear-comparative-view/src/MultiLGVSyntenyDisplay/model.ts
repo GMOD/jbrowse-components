@@ -38,7 +38,7 @@ import {
   mergeGenomeRows,
 } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import { legendItems as legendItemsMap } from './shared/colorUtils.ts'
-import { DEFAULT_ROW_HEIGHT, LABEL_WIDTH } from './shared/types.ts'
+import { LABEL_WIDTH } from './shared/types.ts'
 
 import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { MultiSyntenyBackend } from './components/rendererTypes.ts'
@@ -168,7 +168,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         configuration: ConfigurationReference(schema),
         colorBy: types.optional(types.string, 'strand'),
         selectedGenomes: types.optional(types.array(types.string), []),
-        rowHeightSetting: types.optional(types.number, DEFAULT_ROW_HEIGHT),
+        rowHeightMode: types.optional(types.number, 0),
         rowSpacing: types.optional(types.boolean, false),
         snpBpPerPxThreshold: types.optional(types.number, 100),
         showCoverage: types.optional(types.boolean, true),
@@ -245,21 +245,23 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       get syntenyCoverageHeight() {
         return self.showCoverage ? self.coverageHeight : 0
       },
-      get syntenyAreaHeight() {
+      // Row-height model mirrors plugins/variants/.../MultiSampleVariantBaseModel.
+      // rowHeightMode === 0 means fit-to-display; nonzero is a fixed pixel
+      // height. Snap-to-auto on the precision boundary keeps proportional
+      // resizes from leaving manual mode at exactly the auto value.
+      get availableHeight() {
         return self.height - this.syntenyCoverageHeight
       },
       get autoRowHeight() {
-        const n = this.displayedGenomes.length
-        if (n === 0) {
-          return this.syntenyAreaHeight
-        }
-        return this.syntenyAreaHeight / n
+        return this.availableHeight / Math.max(1, this.displayedGenomes.length)
       },
       get rowHeight() {
-        if (self.rowHeightSetting === 0) {
+        if (self.rowHeightMode === 0) {
           return this.autoRowHeight
         }
-        return self.rowHeightSetting
+        return Math.abs(self.rowHeightMode - this.autoRowHeight) < 0.01
+          ? this.autoRowHeight
+          : self.rowHeightMode
       },
       get showSnps() {
         if (self.snpBpPerPxThreshold <= 0) {
@@ -392,10 +394,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         self.colorBy = value
       },
       setRowHeight(h: number) {
-        self.rowHeightSetting = h
+        self.rowHeightMode = h
       },
       setFitToHeight() {
-        self.rowHeightSetting = 0
+        self.rowHeightMode = 0
       },
       setRowSpacing(val: boolean) {
         self.rowSpacing = val
@@ -405,9 +407,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         const minHeight = self.syntenyCoverageHeight + 20
         const newHeight = Math.max(self.height + distance, minHeight)
         self.heightPreConfig = newHeight
-        if (self.rowHeightSetting > 0) {
-          self.rowHeightSetting =
-            self.rowHeightSetting * (newHeight / oldHeight)
+        if (self.rowHeightMode > 0) {
+          self.rowHeightMode =
+            self.rowHeightMode * (newHeight / oldHeight)
         }
         return newHeight - oldHeight
       },
@@ -747,9 +749,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               {
                 label: 'Fit to display height',
                 type: 'checkbox' as const,
-                checked: self.rowHeightSetting === 0,
+                checked: self.rowHeightMode === 0,
                 onClick: () => {
-                  if (self.rowHeightSetting === 0) {
+                  if (self.rowHeightMode === 0) {
                     self.setRowHeight(self.rowHeight)
                   } else {
                     self.setFitToHeight()

@@ -83,12 +83,39 @@ P	alt#0#chr1:1000-1010	1+,2+,3+	*
   assert.equal(b.mateEnd, 1010)
 })
 
-test('reverse-strand block flips strand to -1', () => {
+test('partial inversion (one node reversed) emits strand=-1 for that node', () => {
+  // ref: 1+,2+,3+,4+  — nodes 1,3,4 large (4bp each), node 2 small (2bp)
+  // alt: 1+,2-,3+,4+  — only node 2 is inverted (2bp out of 14bp shared → <99%)
+  // node 2 block should be strand=-1; all others strand=+1.
+  const flipGfa = `H	VN:Z:1.1
+S	1	AAAA
+S	2	GG
+S	3	AAAA
+S	4	AAAA
+P	ref#0#chr1:0-14	1+,2+,3+,4+	*
+P	alt#0#chr1:0-14	1+,2-,3+,4+	*
+`
+  const { paths } = parseExtractedGfa(flipGfa)
+  const blocks = computeSyntenyBlocks({
+    refName: 'chr1',
+    refGenome: 'ref#0',
+    paths,
+  })
+  const revBlocks = blocks.filter(b => b.strand === -1)
+  assert.ok(revBlocks.length >= 1, 'expected at least one strand=-1 block')
+  for (const b of revBlocks) {
+    assert.equal(b.end - b.start, 2, 'only the 2bp node should be strand=-1')
+  }
+})
+
+test('fully-reversed contig is normalized to strand=1', () => {
+  // All shared segments have opposite orientation → >99% opposite → flip.
+  // After flip the path is treated as forward, producing strand=1 blocks.
   const flipGfa = `H	VN:Z:1.1
 S	1	AAAA
 S	2	GG
 P	ref#0#chr1:0-6	1+,2+	*
-P	alt#0#chr1:0-6	1-,2-	*
+P	alt#0#chr1:0-6	2-,1-	*
 `
   const { paths } = parseExtractedGfa(flipGfa)
   const blocks = computeSyntenyBlocks({
@@ -98,7 +125,7 @@ P	alt#0#chr1:0-6	1-,2-	*
   })
   assert.ok(blocks.length >= 1)
   for (const b of blocks) {
-    assert.equal(b.strand, -1)
+    assert.equal(b.strand, 1, 'reversed contig should be normalized to strand=1')
   }
 })
 
@@ -158,13 +185,11 @@ P	alt#0#chr1:0-12	1+,4+,3+	*
   assert.equal(run.cs, ':4:1+aa:1:4')
 })
 
-test('reverse-strand chain emits ref-forward cs with revcomped alt', () => {
+test('reversed contig with bubble chain: normalized to strand=1, cs still correct', () => {
   // Ref forward: AAAA GG TTTT at chr1:0-10.
-  // Alt walks ref in reverse with a bubble: 3-, 4-, 1- — the alt anchors are
-  // the same nodes (1 and 3) but traversed reverse, so the resulting blocks
-  // are both strand=-1. Node 4 (CT) replaces node 2 (GG); when the alt
-  // segment is revcomp'd to align with ref forward it becomes "AG" → "CT"
-  // mapped to ref "GG" gives "*gc*gt".
+  // Alt walks all shared nodes in opposite orient (100% opposite → reversed
+  // contig normalization). After flipping, anchors are strand=1 and the
+  // bubble alt sequence is "CT" (node 4 orient+); buildCs("GG","CT")="*gc*gt".
   const revGfa = `H	VN:Z:1.1
 S	1	AAAA
 S	2	GG
@@ -180,9 +205,9 @@ P	alt#0#chr1:0-10	3-,4-,1-	*
     paths,
     segSeqs,
   })
-  assert.equal(blocks.length, 1, 'expected one collapsed reverse-strand run')
+  assert.equal(blocks.length, 1, 'expected one collapsed run')
   const run = blocks[0]!
-  assert.equal(run.strand, -1)
+  assert.equal(run.strand, 1)
   assert.equal(run.start, 0)
   assert.equal(run.end, 10)
   assert.equal(run.mateStart, 0)
@@ -190,13 +215,11 @@ P	alt#0#chr1:0-10	3-,4-,1-	*
   assert.equal(run.cs, ':4*gc*gt:4')
 })
 
-test('reverse-strand chain encodes an indel bubble correctly', () => {
-  // Same shape as the SNP reverse-strand case, but node 4 has a 4bp
-  // insertion vs ref node 2 (GG). Forward alt seq at bp[4,10): node 4
-  // traversed reverse = revcomp("AACCGG") = "CCGGTT". Revcomp'd back to
-  // align with ref forward → "AACCGG". buildCs("GG", "AACCGG") consumes
-  // the whole 2bp ref as a common suffix → "+aacc:2", and the run wraps
-  // it in the 4bp colinear matches on either side: ":4+aacc:2:4".
+test('reversed contig with indel bubble: normalized to strand=1, cs still correct', () => {
+  // Same shape as the SNP reversed-contig case, but node 4 has a 4bp
+  // insertion vs ref node 2 (GG). After normalization the path is strand=1;
+  // node 4 is read orient+ as "AACCGG". buildCs("GG","AACCGG") → "+aacc:2".
+  // Run cs: ":4+aacc:2:4".
   const revIns = `H	VN:Z:1.1
 S	1	AAAA
 S	2	GG
@@ -214,7 +237,7 @@ P	alt#0#chr1:0-14	3-,4-,1-	*
   })
   assert.equal(blocks.length, 1)
   const run = blocks[0]!
-  assert.equal(run.strand, -1)
+  assert.equal(run.strand, 1)
   assert.equal(run.cs, ':4+aacc:2:4')
 })
 
