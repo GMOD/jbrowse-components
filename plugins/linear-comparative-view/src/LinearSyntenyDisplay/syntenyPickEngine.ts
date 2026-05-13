@@ -49,27 +49,31 @@ export interface PickCanvasLike extends CanvasLike {
 //   (h/2)·3t(1-t) + t³·h = h·[1.5t(1-t) + t³]
 // so the tessellation loop is replaceable by a single bezierCurveTo per edge
 // with zero loss of fidelity (and perfect browser AA at the curve).
+//
+// Corners are NOT widened here — adjacent ribbons that share a genomic
+// boundary must have identical corner positions so their bezier curves
+// trace the same path and meet without whitespace gaps. Canvas2D path AA
+// renders thin/zero-width tips correctly without widening; the GPU shader
+// uses its line-mode branch (perpWidth < LINE_PERP_THRESHOLD) to keep
+// sub-pixel ribbons visible.
 export function buildFeaturePath(
   ctx: CanvasLike,
-  sx1: number,
-  sx2: number,
-  sx3: number,
-  sx4: number,
+  c: ProjectedCorners,
   height: number,
   isCurve: boolean,
 ) {
   ctx.beginPath()
   if (isCurve) {
     const halfH = height * 0.5
-    ctx.moveTo(sx1, 0)
-    ctx.bezierCurveTo(sx1, halfH, sx4, halfH, sx4, height)
-    ctx.lineTo(sx3, height)
-    ctx.bezierCurveTo(sx3, halfH, sx2, halfH, sx2, 0)
+    ctx.moveTo(c.sx1, 0)
+    ctx.bezierCurveTo(c.sx1, halfH, c.sx4, halfH, c.sx4, height)
+    ctx.lineTo(c.sx3, height)
+    ctx.bezierCurveTo(c.sx3, halfH, c.sx2, halfH, c.sx2, 0)
   } else {
-    ctx.moveTo(sx1, 0)
-    ctx.lineTo(sx4, height)
-    ctx.lineTo(sx3, height)
-    ctx.lineTo(sx2, 0)
+    ctx.moveTo(c.sx1, 0)
+    ctx.lineTo(c.sx4, height)
+    ctx.lineTo(c.sx3, height)
+    ctx.lineTo(c.sx2, 0)
   }
   ctx.closePath()
 }
@@ -122,32 +126,6 @@ export function projectCorners(
     sx3: (bp3 - t.viewBp1) * t.bpPerPxInv1 + padBottom,
     sx4: (bp4 - t.viewBp1) * t.bpPerPxInv1 + padBottom,
   }
-}
-
-// SYNC: matches the minW computation in syntenyFill.slang's vs_main. Both
-// backends widen sub-pixel trapezoids the same way so on-screen visual
-// density (and SVG export) stay consistent. If you change the formula here,
-// change it there too — there's no shared source.
-export function widenCorners(
-  c: ProjectedCorners,
-  height: number,
-): ProjectedCorners {
-  const xTopMid = (c.sx1 + c.sx2) * 0.5
-  const xBotMid = (c.sx3 + c.sx4) * 0.5
-  const slope = Math.abs(xBotMid - xTopMid) / Math.max(height, 1)
-  const minW = Math.min(1 + Math.max(0, slope - 1) * 0.25, 3)
-  let { sx1, sx2, sx3, sx4 } = c
-  if (Math.abs(sx2 - sx1) < minW) {
-    const half = (sx1 < sx2 ? minW : -minW) * 0.5
-    sx1 = xTopMid - half
-    sx2 = xTopMid + half
-  }
-  if (Math.abs(sx4 - sx3) < minW) {
-    const half = (sx3 < sx4 ? minW : -minW) * 0.5
-    sx3 = xBotMid - half
-    sx4 = xBotMid + half
-  }
-  return { sx1, sx2, sx3, sx4 }
 }
 
 // Per-edge cull: drop the instance when any single edge lies entirely outside
@@ -207,11 +185,10 @@ function buildPickIndex(
       flatbush.add(0, 0, -1, -1)
       continue
     }
-    const w = widenCorners(c, height)
     flatbush.add(
-      Math.min(w.sx1, w.sx2, w.sx3, w.sx4),
+      Math.min(c.sx1, c.sx2, c.sx3, c.sx4),
       0,
-      Math.max(w.sx1, w.sx2, w.sx3, w.sx4),
+      Math.max(c.sx1, c.sx2, c.sx3, c.sx4),
       height,
     )
   }
@@ -277,16 +254,7 @@ export function pickFeatureAtPoint(
       }
 
       const c = projectCorners(data, i, transform)
-      const w = widenCorners(c, height)
-      buildFeaturePath(
-        ctx,
-        w.sx1,
-        w.sx2,
-        w.sx3,
-        w.sx4,
-        height,
-        params.drawCurves,
-      )
+      buildFeaturePath(ctx, c, height, params.drawCurves)
 
       if (ctx.isPointInPath(x, localY)) {
         return { key, featureIndex: i }

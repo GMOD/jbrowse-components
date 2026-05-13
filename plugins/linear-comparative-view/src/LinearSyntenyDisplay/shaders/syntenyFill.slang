@@ -1,31 +1,36 @@
-// Linear-synteny fill pass. Each instance is a parallelogram (or Hermite-
-// curve quad) between two assemblies; tessellation + Hermite math lives in
-// syntenyTypes.slang (shared with syntenyPicking.slang).
+// Linear-synteny fill pass — per-fragment bezier evaluation.
+//
+// Each instance emits one bounding quad (6 verts). The fragment shader
+// recovers the bezier parameter `t` for its screen-y position by inverting
+// the monotonic cubic y(t) = h·(1.5t(1-t) + t³) via 3 Newton iterations
+// (cubic convergence — ~10⁻⁹ accuracy from t₀ = y/h). It then evaluates the
+// two edge x-curves at that t and computes analytic per-pixel coverage with
+// smoothstep AA, giving mathematically perfect curves at any zoom (no
+// tessellation chunkiness, no segment-count tradeoff). 96 → 6 verts/instance.
+//
+// References:
+//   developer.nvidia.com/gpugems/gpugems3 chapter 25 (Loop-Blinn)
+//   vladjuckov.github.io/beziers-sdf/ (per-fragment SDF approach)
 //! targets: wgsl, glsl
 
 import colorPack;
 import syntenyTypes;
 
 
-// SYNC: 16 must equal BEZIER_SEGMENTS in syntenyTypes.slang (not resolved via
-// codegen — cross-module import resolution in build-shaders.ts adds complexity
-// disproportionate to the benefit)
-public static const uint VERTS_PER_INSTANCE = 16u * 6u;
+public static const uint VERTS_PER_INSTANCE = 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
-
-// Ribbons thinner than this in screen-perpendicular pixels switch to line mode:
-// collapse to centerline + expand ±1px along normal + SDF AA in fragment.
-// Canvas2D gets equivalent quality from its built-in path AA.
-static const float LINE_PERP_THRESHOLD = 2.0;
 
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
   nointerpolation float featureId : COLOR1;
-  // lineMode: 0 = fill, 1 = line. lineDist is the signed perp dist from
-  // centerline (±1px); fragment uses it for SDF AA only in line mode.
-  float                 lineDist : COLOR2;
-  nointerpolation float lineMode : COLOR3;
+  // Per-instance bezier corner positions (CSS-pixel screen X for view 0/1).
+  // (x1, x2) belong to the top view; (x3, x4) to the bottom.
+  nointerpolation float4 corners : COLOR2;
+  // Local position within the instance: localPos.x = screen X (CSS px),
+  // localPos.y = vertical offset from yTop in CSS px, in [0, height]
+  // (slightly extended by AA padding at the boundaries).
+  float2 localPos : COLOR3;
 };
 
 [shader("vertex")]
@@ -33,77 +38,84 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   o.color = unpackRGBA(inst.color);
   o.featureId = inst.featureId;
-  o.lineDist  = 0.0;
-  o.lineMode = 0.0;
+  o.corners = float4(0.0);
+  o.localPos = float2(0.0);
 
   Corners c = computeCorners(inst, u);
   if (isCulled(c, inst.queryTotalLength, u)) {
     o.position = float4(0.0);
     return o;
   }
+  o.corners = float4(c.x1, c.x2, c.x3, c.x4);
 
-  // SYNC: matches widenCorners() in syntenyPickEngine.ts. Per-corner (not
-  // per-t) widening: a tip with sx1≈sx2 gets a minW-wide top, a tip with
-  // sx3≈sx4 gets a minW-wide bottom. Doing this per-t (the previous
-  // implementation) caused a kink where narrow segments widened independently
-  // of wider ones, producing visible polygon-outline artifacts at tips.
-  float centerDx = (c.x3 + c.x4 - c.x1 - c.x2) * 0.5;
-  float edgeLen  = length(float2(centerDx, u.height));
-  float slope    = abs(centerDx) / max(u.height, 1.0);
-  float minW     = min(1.0 + max(0.0, slope - 1.0) * 0.25, 3.0);
-  float topW     = abs(c.x1 - c.x2);
-  float botW     = abs(c.x4 - c.x3);
-  if (topW < minW) {
-    float mid  = (c.x1 + c.x2) * 0.5;
-    float half = c.x1 < c.x2 ? minW * 0.5 : -minW * 0.5;
-    c.x1 = mid - half;
-    c.x2 = mid + half;
+  // Tight bounding quad in instance-local coordinates. Expanded ±1px on all
+  // sides so the smoothstep AA in the fragment shader has room to fade.
+  float xMin = min(min(c.x1, c.x2), min(c.x3, c.x4)) - 1.0;
+  float xMax = max(max(c.x1, c.x2), max(c.x3, c.x4)) + 1.0;
+  float yMin = -1.0;
+  float yMax = u.height + 1.0;
+
+  // 6 verts → 2 triangles: (TL, TR, BL) (BL, TR, BR).
+  float2 q;
+  switch (vid) {
+    case 0u: { q = float2(xMin, yMin); break; }
+    case 1u: { q = float2(xMax, yMin); break; }
+    case 2u: { q = float2(xMin, yMax); break; }
+    case 3u: { q = float2(xMin, yMax); break; }
+    case 4u: { q = float2(xMax, yMin); break; }
+    case 5u: { q = float2(xMax, yMax); break; }
+    default: { q = float2(0.0); break; }
   }
-  if (botW < minW) {
-    float mid  = (c.x3 + c.x4) * 0.5;
-    float half = c.x3 < c.x4 ? minW * 0.5 : -minW * 0.5;
-    c.x3 = mid - half;
-    c.x4 = mid + half;
-  }
-
-  // Line-mode decision is global to the instance (per-corner widest perp
-  // width), not per-t. Previously the per-t check flipped mode mid-ribbon at
-  // the tip, producing a discontinuous fill→line transition.
-  float maxW = max(topW, botW);
-  float perpWidth = maxW * u.height / max(edgeLen, 1.0);
-
-  float t, side;
-  computeFillSegmentT(vid, c, t, side);
-  float3 e = hermiteEdges(c, t, u);
-  float edge0 = e.x, edge1 = e.y, y = e.z;
-
-  if (perpWidth < LINE_PERP_THRESHOLD) {
-    // Line mode: collapse to centerline and expand ±1px along the edge normal.
-    float centerX = (edge0 + edge1) * 0.5;
-    float2 tangent = edgeTangent(centerDx, t, u);
-    float tangentLen = length(tangent);
-    float2 normal = tangentLen > 0.001
-      ? float2(-tangent.y, tangent.x) / tangentLen
-      : float2(0.0, 1.0);
-    float lineSide = side > 0.5 ? 1.0 : -1.0;
-    float2 pos = float2(centerX, y) + normal * lineSide;
-    o.lineDist  = lineSide;
-    o.lineMode = 1.0;
-    float2 clipSpace = pos / u.resolution * 2.0 - 1.0;
-    o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
-    return o;
-  }
-
-  // Fill mode: standard ribbon geometry. Corners already widened above, so
-  // the interpolated edges are correct without per-t widening.
-  float edgeX = side > 0.5 ? edge1 : edge0;
-  float2 clipSpace = float2(edgeX, y) / u.resolution * 2.0 - 1.0;
+  o.localPos = q;
+  float2 screen = float2(q.x, u.yTop + q.y);
+  float2 clipSpace = screen / u.resolution * 2.0 - 1.0;
   o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
   return o;
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
+  float yLocal = fragIn.localPos.y;
+  float h = max(u.height, 1.0);
+  float yFrac = clamp(yLocal / h, 0.0, 1.0);
+
+  // Curve mode: invert y(t) = h·(t³ − 1.5t² + 1.5t) for t via Newton.
+  // f(t) is strictly monotonic on [0,1] (f'(t) = 3t² − 3t + 1.5 ≥ 0.375),
+  // so 3 iterations from t₀ = yFrac converge to sub-ULP accuracy.
+  // Linear mode: y(t) = h·t, so t = yFrac directly.
+  float t = yFrac;
+  if (u.isCurve > 0.5) {
+    for (int i = 0; i < 3; i++) {
+      float ft  = t * (1.5 + t * (t - 1.5)) - yFrac;  // t³ − 1.5t² + 1.5t − yFrac
+      float fpt = 1.5 + t * (3.0 * t - 3.0);          // 3t² − 3t + 1.5
+      t = t - ft / fpt;
+    }
+    t = clamp(t, 0.0, 1.0);
+  }
+  // X-blend along the curve: smoothstep cubic in curve mode, linear otherwise.
+  float s = u.isCurve > 0.5 ? (t * t * (3.0 - 2.0 * t)) : t;
+
+  // Two edge x's at this t. Min/max handles forward and crossed/inverted
+  // (bowtie) ribbons uniformly.
+  float edge0 = lerp(fragIn.corners.x, fragIn.corners.w, s);  // c.x1 → c.x4
+  float edge1 = lerp(fragIn.corners.y, fragIn.corners.z, s);  // c.x2 → c.x3
+  float xL = min(edge0, edge1);
+  float xR = max(edge0, edge1);
+
+  float x  = fragIn.localPos.x;
+  float ax = max(fwidth(x), 1e-4) * 0.5;
+  float ay = max(fwidth(yLocal), 1e-4) * 0.5;
+  // Horizontal coverage: smoothstep into the ribbon from the left edge and
+  // back out at the right. For a sub-pixel-wide ribbon the two smoothsteps
+  // overlap and the product yields coverage proportional to the true width
+  // (energy-conserving — matches Canvas2D path AA).
+  float cx = smoothstep(xL - ax, xL + ax, x) - smoothstep(xR - ax, xR + ax, x);
+  // Vertical coverage: fade at top/bottom track edges.
+  float cy = smoothstep(-ay, ay, yLocal)
+           - smoothstep(h - ay, h + ay, yLocal);
+  float coverage = cx * cy;
+  if (coverage <= 0.0) { discard; }
+
   float3 rgb = fragIn.color.rgb;
   // SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
   // Canvas2DSyntenyRenderer.ts's hover branch so the highlight looks
@@ -112,10 +124,5 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float baseAlpha = fragIn.color.a * u.alpha;
   rgb *= isHovered ? 0.7 : 1.0;
   float finalAlpha = isHovered ? min(baseAlpha * 5.0, 0.35) : baseAlpha;
-  if (fragIn.lineMode > 0.0) {
-    float d  = abs(fragIn.lineDist);
-    float aa = fwidth(fragIn.lineDist);
-    finalAlpha *= 1.0 - smoothstep(0.5 - aa * 0.5, 0.5 + aa, d);
-  }
-  return float4(rgb, finalAlpha);
+  return float4(rgb, finalAlpha * coverage);
 }

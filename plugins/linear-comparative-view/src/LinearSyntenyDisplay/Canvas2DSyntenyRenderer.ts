@@ -7,7 +7,6 @@ import {
   isEdgeCulled,
   pickFeatureAtPoint,
   projectCorners,
-  widenCorners,
 } from './syntenyPickEngine.ts'
 
 import type {
@@ -83,8 +82,7 @@ function drawInstances(
     }
 
     ctx.fillStyle = fillStyle
-    const w = widenCorners(c, height)
-    buildFeaturePath(ctx, w.sx1, w.sx2, w.sx3, w.sx4, height, drawCurves)
+    buildFeaturePath(ctx, c, height, drawCurves)
     ctx.fill()
 
     if (isClicked) {
