@@ -923,24 +923,31 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       zoomTo(bpPerPx: number, offset = self.width / 2, centerAtOffset = false) {
         const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
-        if (newBpPerPx === self.bpPerPx) {
-          return newBpPerPx
-        }
         const oldBpPerPx = self.bpPerPx
-
         if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
-          console.warn('zoomTo bpPerPx rounding error')
           return oldBpPerPx
         }
-        self.bpPerPx = newBpPerPx
 
-        // tweak the offset so that the center of the view remains at the same
-        // coordinate
-        const newOffsetPx = Math.round(
-          ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
-            (centerAtOffset ? self.width / 2 : offset),
+        // Anchor on the cursor's genomic coord (padding-aware via pxToBp /
+        // bpToPx). The naive (offsetPx + cursor_x) * bpPerPx is not stable
+        // across zoom because inter-region padding contributes
+        // paddingWidth * bpPerPx of virtual-bp that scales with bpPerPx.
+        // bpToPx returns undefined when the cursor is over empty space (oob
+        // or in a padding gutter at a reversed-region boundary) — falls back
+        // to the legacy virtual-px formula.
+        const anchor = pxToBp(self, offset)
+        self.bpPerPx = newBpPerPx
+        const anchorPx = bpToPx({
+          refName: anchor.refName,
+          coord: anchor.coord,
+          displayedRegionIndex: anchor.index,
+          self,
+        })?.offsetPx
+        const targetPx =
+          anchorPx ?? ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx
+        this.scrollTo(
+          Math.round(targetPx - (centerAtOffset ? self.width / 2 : offset)),
         )
-        this.scrollTo(newOffsetPx)
         return newBpPerPx
       },
 
