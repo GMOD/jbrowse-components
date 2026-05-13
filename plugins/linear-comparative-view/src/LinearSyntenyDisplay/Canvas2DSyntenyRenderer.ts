@@ -81,14 +81,36 @@ function drawInstances(
       fillStyleCache.set(packed, fillStyle)
     }
 
-    ctx.fillStyle = fillStyle
-    buildFeaturePath(ctx, c, height, drawCurves)
-    ctx.fill()
-
-    if (isClicked) {
-      ctx.strokeStyle = 'rgba(0,0,0,0.4)'
+    // SYNC: matches origin/main drawRef.ts thin-feature handling and the
+    // minimum-half-width clamp in syntenyFill.slang. Features whose top and
+    // bottom screen widths are both ≤ 1px are drawn as a 1px stroke down
+    // the centerline at full alpha; fill alone gives partial-coverage AA
+    // that renders sub-pixel ribbons too faintly.
+    const l1 = Math.abs(c.sx2 - c.sx1)
+    const l2 = Math.abs(c.sx4 - c.sx3)
+    if (l1 <= 1 && l2 <= 1) {
+      ctx.strokeStyle = fillStyle
       ctx.lineWidth = 1
+      ctx.beginPath()
+      const topX = (c.sx1 + c.sx2) * 0.5
+      const botX = (c.sx3 + c.sx4) * 0.5
+      ctx.moveTo(topX, 0)
+      if (drawCurves) {
+        const halfH = height * 0.5
+        ctx.bezierCurveTo(topX, halfH, botX, halfH, botX, height)
+      } else {
+        ctx.lineTo(botX, height)
+      }
       ctx.stroke()
+    } else {
+      ctx.fillStyle = fillStyle
+      buildFeaturePath(ctx, c, height, drawCurves)
+      ctx.fill()
+      if (isClicked) {
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)'
+        ctx.lineWidth = 1
+        ctx.stroke()
+      }
     }
   }
 }

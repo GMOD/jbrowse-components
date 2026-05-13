@@ -75,7 +75,10 @@ const TrackMode = observer(function TrackMode({
         const adapterType = readConfObject(track, ['adapter', 'type']) as
           | string
           | undefined
-        if (adapterType !== 'GfaTabixAdapter') {
+        if (
+          adapterType !== 'GfaTabixAdapter' &&
+          adapterType !== 'GfaServerAdapter'
+        ) {
           return false
         }
         const trackAssemblies = readConfObject(track, 'assemblyNames') as
@@ -157,7 +160,7 @@ const TrackMode = observer(function TrackMode({
             setError(undefined)
             try {
               if (!selectedTrack) {
-                throw new Error('Pick a GfaTabix track')
+                throw new Error('Pick a GFA track')
               }
               const region = await resolveLocString({
                 input: loc,

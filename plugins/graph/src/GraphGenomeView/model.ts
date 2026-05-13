@@ -438,7 +438,6 @@ export default function stateModelFactory() {
           end: number
         },
         opts: {
-          maxPathsEmitted?: number
           context?: number
           bpPerPx?: number
         } = {},
@@ -457,18 +456,11 @@ export default function stateModelFactory() {
           const session = getSession(self)
           const { rpcManager } = session
           const sessionId = 'graph' // getRpcSessionId(self) no rpcSessionId getter
-          // Default cap: at HPRC chr20 scale, 1 Mbp emits ~219k subwalks
-          // and 5 Mbp ~434k. Past ~50k the browser geometry rebuild stalls
-          // and the user gains no detail; truncate emission with a comment.
-          const subgraphOpts = {
-            maxPathsEmitted: opts.maxPathsEmitted ?? 50000,
-            context: opts.context,
-          }
           const gfaText = (yield rpcManager.call(sessionId, 'GetSubgraph', {
             adapterConfig,
             region,
             sessionId,
-            opts: subgraphOpts,
+            opts: { context: opts.context },
           })) as string
           if (!gfaText) {
             throw new Error(
@@ -518,7 +510,6 @@ export default function stateModelFactory() {
             end: number
           },
           opts: {
-            maxPathsEmitted?: number
             context?: number
             bpPerPx?: number
             trackId?: string

@@ -497,27 +497,30 @@ fn emit_path_rows(
     };
 
     // Phase 3: emit pos.bed.gz rows.
-    // If the walk needs flipping, reverse the offset direction and
-    // invert all orient values.
+    // If the walk needs flipping, iterate steps in reverse so emitted offsets
+    // accumulate monotonically along the rev-complemented walk direction.
+    // Downstream synteny/tiling code assumes step_out.offset is monotonically
+    // increasing; the prior approach (forward iteration with descending
+    // offsets) broke align_pair's hap_contiguous check and produced bubble
+    // rows with hap_end < hap_start.
     let total_len: u64 = walk_steps.iter().map(|s| s.seg_len).sum();
     let mut offset: u64 = 0;
     let mut chunk_start: u64 = 0;
     let mut chunk_ords: Vec<u64> = Vec::new();
     let mut steps: usize = 0;
 
-    for step in &walk_steps {
-        // need_flip handles whole-contig rev-comp normalization.
-        let emit_offset = if need_flip {
-            total_len - offset - step.seg_len
-        } else {
-            offset
-        };
+    let step_iter: Box<dyn Iterator<Item = &WalkStep>> = if need_flip {
+        Box::new(walk_steps.iter().rev())
+    } else {
+        Box::new(walk_steps.iter())
+    };
 
+    for step in step_iter {
         let effective_is_plus = if need_flip { !step.is_plus } else { step.is_plus };
-        ord_walk_out.push((emit_offset, step.ord));
+        ord_walk_out.push((offset, step.ord));
         step_out.push(StepInfo {
             ord: step.ord,
-            offset: emit_offset,
+            offset,
             seg_len: step.seg_len,
             is_plus: effective_is_plus,
         });
@@ -529,15 +532,8 @@ fn emit_path_rows(
             chunk_ords.sort_unstable();
             chunk_ords.dedup();
             let ords_str = encode_ordinal_ranges(&chunk_ords);
-            if need_flip {
-                let flip_start = total_len - offset;
-                let flip_end = total_len - chunk_start;
-                writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, flip_start, flip_end, ords_str)
-                    .unwrap();
-            } else {
-                writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, chunk_start, offset, ords_str)
-                    .unwrap();
-            }
+            writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, chunk_start, offset, ords_str)
+                .unwrap();
             chunk_start = offset;
             chunk_ords.clear();
             steps = 0;
@@ -548,15 +544,8 @@ fn emit_path_rows(
         chunk_ords.sort_unstable();
         chunk_ords.dedup();
         let ords_str = encode_ordinal_ranges(&chunk_ords);
-        if need_flip {
-            let flip_start = total_len - offset;
-            let flip_end = total_len - chunk_start;
-            writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, flip_start, flip_end, ords_str)
-                .unwrap();
-        } else {
-            writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, chunk_start, offset, ords_str)
-                .unwrap();
-        }
+        writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, chunk_start, offset, ords_str)
+            .unwrap();
     }
 
     if need_flip {
@@ -2590,6 +2579,62 @@ P\tHG00438#1#JAHBCB010000023.1\ts0+,s1+,s2+\t*\n\
         assert!(hap_chroms.contains("HG00438#1#JAHBCB010000023.1"),
             "cross-chrom hap with shared ordinals must appear; got {:?}", hap_chroms);
         assert_eq!(hap_chroms.len(), 2, "exactly two query paths");
+    }
+
+    // Regression: when grooming flips a rev-complemented hap contig, every
+    // emitted synteny row must satisfy hap_end >= hap_start. Pre-fix, the
+    // bubble emitter pulled hap offsets from descending step_out and produced
+    // rows with hap_end < hap_start (e.g. JAGYVH010000048.1 9 0 in the
+    // chr20 build).
+    #[test]
+    fn flipped_contig_hap_bounds_valid() {
+        let gfa = "H\tVN:Z:1.0\n\
+                   S\ts1\t*\tLN:i:100\n\
+                   S\ts2\t*\tLN:i:150\n\
+                   S\ts3\t*\tLN:i:100\n\
+                   S\ts_alt\t*\tLN:i:50\n\
+                   P\tGRCh38#0#chr1\ts1+,s2+,s3+\t*\n\
+                   P\tHG002#1#chr1\ts3-,s_alt-,s1-\t*\n";
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        assert!(!rows.is_empty(), "expected at least one row");
+        for r in &rows {
+            let cols: Vec<&str> = r.split('\t').collect();
+            let hap_start: u64 = cols[4].parse().unwrap();
+            let hap_end: u64 = cols[5].parse().unwrap();
+            assert!(
+                hap_end >= hap_start,
+                "hap_end({}) < hap_start({}) in row: {}",
+                hap_end, hap_start, r,
+            );
+        }
+    }
+
+    // Regression: a hap path that is entirely rev-complement of the reference
+    // (every shared segment in opposite orient) should be groomed and emit a
+    // single co-linear run, not one row per segment. Pre-fix, hap_contiguous
+    // failed on descending offsets and runs never extended.
+    #[test]
+    fn flipped_contig_merges_into_one_run() {
+        let gfa = "H\tVN:Z:1.0\n\
+                   S\ts1\t*\tLN:i:100\n\
+                   S\ts2\t*\tLN:i:150\n\
+                   S\ts3\t*\tLN:i:100\n\
+                   P\tGRCh38#0#chr1\ts1+,s2+,s3+\t*\n\
+                   P\tHG002#1#chr1\ts3-,s2-,s1-\t*\n";
+        let rows = run_synteny_on_gfa(gfa, "GRCh38#0");
+        assert_eq!(
+            rows.len(),
+            1,
+            "fully rev-complement contig should emit one merged row; got {}: {:#?}",
+            rows.len(),
+            rows,
+        );
+        let cols: Vec<&str> = rows[0].split('\t').collect();
+        assert_eq!(cols[1], "0");
+        assert_eq!(cols[2], "350");
+        let hap_start: u64 = cols[4].parse().unwrap();
+        let hap_end: u64 = cols[5].parse().unwrap();
+        assert_eq!(hap_end - hap_start, 350);
     }
 
     #[test]

@@ -4,6 +4,7 @@ packages:
   - 'plugins/*'
   - 'tools/gfa-to-tabix'
   - 'tools/graph-truth-extractor'
+  - 'tools/graph-server'
 blockExoticSubdeps: true
 allowBuilds:
   canvas: true

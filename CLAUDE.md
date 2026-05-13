@@ -78,3 +78,6 @@ utilities) can be extracted, but the main model chain should stay in one file.
 
 - Use `autorun` instead of `reaction`: autorun implicitly tracks all
   dependencies. For truly untracked code, use the mobx `untracked` function.
+
+- Avoid running the entire test suite it is very slow, just run
+  `pnpm test <directory of interest>` in general

@@ -55,6 +55,12 @@ palette, shared Canvas2D ⇄ SVG rasterizer). Remaining:
 
 - Canvas: right-side padding excessive? Subpixel drawing crowded at dense zoom?
 
+## Restore GPU rendering for synteny
+
+Temporarily disabled in `LinearSyntenyDisplay/SyntenyRenderer.ts` — GPU path
+wasn't quite right (thin lines appeared very pixelated). Needs to be restored
+at some point.
+
 
 ## Remove graph stuff from this branch including jbrowse-cli related changes
 
@@ -140,3 +146,8 @@ Not working/overcomplicated ui now
 - Try to improve beziers a bit in webgl/webgpu
 - Significantly more pixel artifacts in webgl/webgpu when zoomed out
 - Unclear how to reproduce: was side scrolling a lgv, synteny view was not updating, and gene glyphs were gone. maybe from lost context
+
+## Synteny
+
+
+- Scroll zoom changing at varying rates

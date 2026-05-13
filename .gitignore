@@ -35,3 +35,8 @@ test_data/chr20_region*.bed.gz.tbi
 test_data/chr20_region.seglens.bin
 test_data/chr20_region.gfa.truth-cache/
 test_data/trich2/
+test_data/hprc/*.bed.gz
+test_data/hprc/*.bed.gz.tbi
+test_data/hprc/*.seglens.bin
+test_data/hprc/*.assembly_map.json
+test_data/volvox/*.og

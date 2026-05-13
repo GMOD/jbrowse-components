@@ -127,6 +127,52 @@ co-located `.vg` file if present, otherwise falls back to the GFA.
 
 ---
 
+## Graph-server backend perf (2026-05-13)
+
+End-to-end timings against HPRC chr20 (`~/chr20-test/chr20.gfa` for odgi;
+`~/chr20.vg` → `~/chr20.vg.xg` for vg). Measured via
+`pnpm exec node --experimental-strip-types tools/graph-server/test/perf-chr20.ts`.
+
+### Per-call extract cost (cold, no in-memory cache)
+
+| Region | odgi (`extract` + `view -g`) | vg (`find` + `view -g`) | vg vs odgi |
+|---|---|---|---|
+| 1 bp   | 6.4 s     | 0.7 s   | **9× faster** |
+| 10 kb  | 8.5 s     | 0.9 s   | **9× faster** |
+| 100 kb | 9.3 s     | 2.9 s   | **3× faster** |
+| 1 Mb   | 9.2 s     | 25.8 s  | 3× slower |
+
+`view -g` is ~20 ms on either backend — pure GFA serialisation. The split:
+
+- **odgi**: ~6 s fixed cost (full `.og` deserialise on every invocation;
+  it's a one-shot binary), ~3 s variable.
+- **vg**: ~constant per-call cost up to ~100 kb (`.xg` is mmap-backed
+  succinct); >1 Mb scales linearly with haplotype-walk pull.
+
+### Setup (path enumeration)
+
+| Backend | Fresh boot | Warm boot (paths sidecar) |
+|---|---|---|
+| odgi (chr20) | ~30 s (`odgi paths -Ll`) | ~100 ms |
+| vg (chr20)   | ~37 s (`vg paths -E`)    | ~100 ms |
+
+Warm boot reads `<index>.paths.json` sidecar written on first setup;
+invalidated automatically when the index's `(size, mtime)` changes.
+
+### LRU cache hit
+
+~3 ms either backend (in-process Map LRU of extracted GFA, default 64
+entries).
+
+### Recommendation
+
+Use `backend: 'vg'` for any dataset where typical queries are ≤ 100 kbp
+(GraphGenomeView Bandage mode, per-tile MultiLGV synteny). The > 1 Mbp
+regime where vg loses belongs to the static-file coarsened tier (see
+GRAPH_COARSE_SYSTEM.md), not the runtime server.
+
+---
+
 ## Performance
 
 **Surgical node dragging in `plugins/graph`.** Currently, moving a single node

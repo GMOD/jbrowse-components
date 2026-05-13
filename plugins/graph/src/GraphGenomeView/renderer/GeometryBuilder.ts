@@ -600,6 +600,14 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
     }
   }
 
+  // Adaptive flatness: tessellation is in world units, but `scale` maps
+  // world → screen, so this keeps the chord error roughly constant in
+  // screen pixels. Smaller flatness when zoomed in (no visible polygon
+  // corners); larger when zoomed out (fewer overlapping triangles in the
+  // pixel cluster that produces the moiré/artifact pattern).
+  const flatness = Math.max(0.05, 0.15 / Math.max(0.1, scale))
+  const showArrows = scale > (linearLayout ? 1 : 0.1)
+
   for (let ei = 0; ei < graph.edges.length; ei++) {
     const edge = graph.edges[ei]!
     const fromSegments = nodePositions[edge.from]
@@ -634,17 +642,10 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
 
       edgeCurves.push({ curves, thickness: edgeThickness, color })
 
-      // Adaptive flatness: tessellation is in world units, but `scale` maps
-      // world → screen, so this keeps the chord error roughly constant in
-      // screen pixels. Smaller flatness when zoomed in (no visible polygon
-      // corners); larger when zoomed out (fewer overlapping triangles in the
-      // pixel cluster that produces the moiré/artifact pattern).
-      const flatness = Math.max(0.05, 0.15 / Math.max(0.1, scale))
       const allPoints = tessellateBezierCurves(curves, flatness)
       edgeMesh.addPolyline(allPoints, edgeThickness, color)
 
-      const arrowThreshold = linearLayout ? 1 : 0.1
-      if (scale > arrowThreshold) {
+      if (showArrows) {
         const lastPt = allPoints[allPoints.length - 1]!
         const prevPt = allPoints[allPoints.length - 2]!
         arrowMesh.addArrowhead(

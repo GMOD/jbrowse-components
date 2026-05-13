@@ -26,51 +26,42 @@ function getOrCreateCell<T>(
   return cell
 }
 
-export class SpatialIndex {
-  private cellSize: number
-  private cells = new Map<number, Map<number, CellEntry[]>>()
-
-  constructor(nodePositions: Record<string, NodeSegment[]>, cellSize = 50) {
-    this.cellSize = cellSize
-    for (const [nodeId, segments] of Object.entries(nodePositions)) {
-      for (let i = 0; i < segments.length - 1; i++) {
-        const seg = segments[i]!
-        const next = segments[i + 1]!
-
-        const minX = Math.min(seg.x, next.x)
-        const maxX = Math.max(seg.x, next.x)
-        const minY = Math.min(seg.y, next.y)
-        const maxY = Math.max(seg.y, next.y)
-
-        const x0 = Math.floor(minX / cellSize)
-        const x1 = Math.floor(maxX / cellSize)
-        const y0 = Math.floor(minY / cellSize)
-        const y1 = Math.floor(maxY / cellSize)
-
-        const entry: CellEntry = { nodeId, segmentIdx: i }
-        for (let cx = x0; cx <= x1; cx++) {
-          for (let cy = y0; cy <= y1; cy++) {
-            getOrCreateCell(this.cells, cx, cy).push(entry)
-          }
-        }
-      }
+function addToGrid<T>(
+  cells: Map<number, Map<number, T[]>>,
+  cellSize: number,
+  minX: number,
+  minY: number,
+  maxX: number,
+  maxY: number,
+  entry: T,
+) {
+  const cx0 = Math.floor(minX / cellSize)
+  const cx1 = Math.floor(maxX / cellSize)
+  const cy0 = Math.floor(minY / cellSize)
+  const cy1 = Math.floor(maxY / cellSize)
+  for (let cx = cx0; cx <= cx1; cx++) {
+    for (let cy = cy0; cy <= cy1; cy++) {
+      getOrCreateCell(cells, cx, cy).push(entry)
     }
   }
+}
 
-  query(x: number, y: number, radius: number) {
-    const cx0 = Math.floor((x - radius) / this.cellSize)
-    const cx1 = Math.floor((x + radius) / this.cellSize)
-    const cy0 = Math.floor((y - radius) / this.cellSize)
-    const cy1 = Math.floor((y + radius) / this.cellSize)
-
-    const results: CellEntry[] = []
-    const seen = new Set<CellEntry>()
-
-    for (let cx = cx0; cx <= cx1; cx++) {
-      const row = this.cells.get(cx)
-      if (!row) {
-        continue
-      }
+function queryGrid<T>(
+  cells: Map<number, Map<number, T[]>>,
+  cellSize: number,
+  x: number,
+  y: number,
+  radius: number,
+): T[] {
+  const cx0 = Math.floor((x - radius) / cellSize)
+  const cx1 = Math.floor((x + radius) / cellSize)
+  const cy0 = Math.floor((y - radius) / cellSize)
+  const cy1 = Math.floor((y + radius) / cellSize)
+  const results: T[] = []
+  const seen = new Set<T>()
+  for (let cx = cx0; cx <= cx1; cx++) {
+    const row = cells.get(cx)
+    if (row) {
       for (let cy = cy0; cy <= cy1; cy++) {
         const cell = row.get(cy)
         if (cell) {
@@ -83,7 +74,36 @@ export class SpatialIndex {
         }
       }
     }
-    return results
+  }
+  return results
+}
+
+export class SpatialIndex {
+  private cellSize: number
+  private cells = new Map<number, Map<number, CellEntry[]>>()
+
+  constructor(nodePositions: Record<string, NodeSegment[]>, cellSize = 50) {
+    this.cellSize = cellSize
+    for (const [nodeId, segments] of Object.entries(nodePositions)) {
+      for (let i = 0; i < segments.length - 1; i++) {
+        const seg = segments[i]!
+        const next = segments[i + 1]!
+
+        addToGrid(
+          this.cells,
+          cellSize,
+          Math.min(seg.x, next.x),
+          Math.min(seg.y, next.y),
+          Math.max(seg.x, next.x),
+          Math.max(seg.y, next.y),
+          { nodeId, segmentIdx: i },
+        )
+      }
+    }
+  }
+
+  query(x: number, y: number, radius: number) {
+    return queryGrid(this.cells, this.cellSize, x, y, radius)
   }
 }
 
@@ -142,15 +162,7 @@ export class EdgeSpatialIndex {
         maxY += padding
       }
 
-      const cx0 = Math.floor(minX / cellSize)
-      const cx1 = Math.floor(maxX / cellSize)
-      const cy0 = Math.floor(minY / cellSize)
-      const cy1 = Math.floor(maxY / cellSize)
-      for (let cx = cx0; cx <= cx1; cx++) {
-        for (let cy = cy0; cy <= cy1; cy++) {
-          getOrCreateCell(this.cells, cx, cy).push(ei)
-        }
-      }
+      addToGrid(this.cells, cellSize, minX, minY, maxX, maxY, ei)
     }
   }
 
@@ -159,31 +171,6 @@ export class EdgeSpatialIndex {
   }
 
   query(x: number, y: number, radius: number) {
-    const cx0 = Math.floor((x - radius) / this.cellSize)
-    const cx1 = Math.floor((x + radius) / this.cellSize)
-    const cy0 = Math.floor((y - radius) / this.cellSize)
-    const cy1 = Math.floor((y + radius) / this.cellSize)
-
-    const results: number[] = []
-    const seen = new Set<number>()
-
-    for (let cx = cx0; cx <= cx1; cx++) {
-      const row = this.cells.get(cx)
-      if (!row) {
-        continue
-      }
-      for (let cy = cy0; cy <= cy1; cy++) {
-        const cell = row.get(cy)
-        if (cell) {
-          for (const ei of cell) {
-            if (!seen.has(ei)) {
-              seen.add(ei)
-              results.push(ei)
-            }
-          }
-        }
-      }
-    }
-    return results
+    return queryGrid(this.cells, this.cellSize, x, y, radius)
   }
 }

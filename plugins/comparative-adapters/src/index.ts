@@ -5,6 +5,7 @@ import ChainAdapterF from './ChainAdapter/index.ts'
 import ComparativeAddTrackComponentF from './ComparativeAddTrackComponent/index.tsx'
 import DeltaAdapterF from './DeltaAdapter/index.ts'
 import GfaAdapterF from './GfaAdapter/index.ts'
+import GfaServerAdapterF from './GfaServerAdapter/index.ts'
 import GfaTabixAdapterF from './GfaTabixAdapter/index.ts'
 import GuessAdapterF from './GuessAdapter/index.ts'
 import MCScanAddTrackComponentF from './MCScanAddTrackComponent/index.tsx'
@@ -41,6 +42,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     BlastTabularAdapter(pluginManager)
     GfaAdapterF(pluginManager)
     GfaTabixAdapterF(pluginManager)
+    GfaServerAdapterF(pluginManager)
 
     ComparativeAddTrackComponentF(pluginManager)
     MCScanAddTrackComponentF(pluginManager)

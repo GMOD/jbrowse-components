@@ -1,0 +1,9 @@
+{
+  "datasets": [
+    {
+      "id": "chr20",
+      "graph": "/home/cdiesh/chr20.vg",
+      "backend": "vg"
+    }
+  ]
+}

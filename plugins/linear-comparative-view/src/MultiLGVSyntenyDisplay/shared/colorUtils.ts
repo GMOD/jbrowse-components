@@ -3,7 +3,7 @@ import { syriColors } from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 function getStrandColor(feat: MultiPairFeature) {
-  return feat.strand === -1 ? '#6899e0' : '#c8c8c8'
+  return feat.strand === -1 ? '#b4ccf0' : '#c8c8c8'
 }
 
 function getSyriColor(feat: MultiPairFeature) {
@@ -40,7 +40,7 @@ export function getFeatureColor(feat: MultiPairFeature, colorBy: string) {
 export const legendItems: Record<string, { label: string; color: string }[]> = {
   strand: [
     { label: 'Forward (+)', color: '#c8c8c8' },
-    { label: 'Reverse (inversion)', color: '#6899e0' },
+    { label: 'Reverse (inversion)', color: '#b4ccf0' },
   ],
   syri: Object.entries(syriColors).map(([label, color]) => ({
     label,

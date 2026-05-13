@@ -4,7 +4,6 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import type { Region } from '@jbrowse/core/util'
 
 interface SubgraphOpts {
-  maxPathsEmitted?: number
   context?: number
 }
 
