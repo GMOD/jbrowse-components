@@ -186,12 +186,6 @@ export function linearSyntenyViewHelperModelFactory(
           }
         }
         if (perTrack.size === 0) {
-          console.warn(
-            '[syntenyRenderState] undefined: displays:',
-            self.linearSyntenyDisplays.length,
-            'perTrack size:',
-            perTrack.size,
-          )
           return undefined
         }
         return {
@@ -231,10 +225,6 @@ export function linearSyntenyViewHelperModelFactory(
               // context loss or Suspense), the new backend has no geometry —
               // clear the cache to force a full re-upload.
               if (b !== prevUploadBackend) {
-                console.warn(
-                  '[SyntenyUpload] backend changed, clearing lastUploaded cache for full re-upload',
-                  { prev: !!prevUploadBackend, next: !!b },
-                )
                 lastUploaded.clear()
                 prevUploadBackend = b
               }
