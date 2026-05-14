@@ -84,6 +84,48 @@ export function hslToRgb(
   return [r + m, g + m, b + m]
 }
 
+// Evenly-spaced RGB gradient stops (0-255 per channel).
+const DEPTH_GRADIENT = [
+  [68, 1, 84],
+  [59, 82, 139],
+  [33, 145, 140],
+  [94, 201, 98],
+  [253, 231, 37],
+] as const
+
+const NODE_LENGTH_GRADIENT = [
+  [220, 50, 50],
+  [50, 120, 220],
+] as const
+
+// Sample a piecewise-linear RGB gradient; t is clamped to [0,1].
+function sampleGradient(
+  stops: readonly (readonly [number, number, number])[],
+  t: number,
+) {
+  const pos = Math.max(0, Math.min(1, t)) * (stops.length - 1)
+  const i = Math.min(stops.length - 2, Math.floor(pos))
+  const f = pos - i
+  const a = stops[i]!
+  const b = stops[i + 1]!
+  return packAbgr(
+    Math.round(a[0] + (b[0] - a[0]) * f),
+    Math.round(a[1] + (b[1] - a[1]) * f),
+    Math.round(a[2] + (b[2] - a[2]) * f),
+    255,
+  )
+}
+
+// Deterministic color from a string (djb2-style hash → HSL hue).
+function hashColor(str: string, alpha: number) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const [r, g, b] = hslToRgb(Math.abs(hash % 360), 0.7, 0.5)
+  return packNorm(r, g, b, alpha)
+}
+
 export interface ColorSchemeRange {
   minDepth: number
   maxDepth: number
@@ -127,66 +169,25 @@ export function getNodeColor(
   range: ColorSchemeRange,
 ) {
   switch (colorScheme) {
-    case 'uniform':
-      return packAbgr(52, 152, 219, 255)
+    case 'random':
+      return hashColor(node.id, 1)
 
-    case 'random': {
-      let hash = 0
-      for (let i = 0; i < node.id.length; i++) {
-        hash = node.id.charCodeAt(i) + ((hash << 5) - hash)
-      }
-      const hue = Math.abs(hash % 360)
-      const [r, g, b] = hslToRgb(hue, 0.7, 0.5)
-      return packNorm(r, g, b, 1)
-    }
-
-    case 'depth': {
-      const normalizedDepth =
+    case 'depth':
+      return sampleGradient(
+        DEPTH_GRADIENT,
         range.maxDepth > range.minDepth
           ? (node.depth - range.minDepth) / (range.maxDepth - range.minDepth)
-          : 0.5
-      const t = Math.max(0, Math.min(1, normalizedDepth))
-      let r: number
-      let g: number
-      let b: number
-      if (t < 0.25) {
-        const s = t / 0.25
-        r = 68 + (59 - 68) * s
-        g = 1 + (82 - 1) * s
-        b = 84 + (139 - 84) * s
-      } else if (t < 0.5) {
-        const s = (t - 0.25) / 0.25
-        r = 59 + (33 - 59) * s
-        g = 82 + (145 - 82) * s
-        b = 139 + (140 - 139) * s
-      } else if (t < 0.75) {
-        const s = (t - 0.5) / 0.25
-        r = 33 + (94 - 33) * s
-        g = 145 + (201 - 145) * s
-        b = 140 + (98 - 140) * s
-      } else {
-        const s = (t - 0.75) / 0.25
-        r = 94 + (253 - 94) * s
-        g = 201 + (231 - 201) * s
-        b = 98 + (37 - 98) * s
-      }
-      return packAbgr(Math.round(r), Math.round(g), Math.round(b), 255)
-    }
+          : 0.5,
+      )
 
-    case 'node-length': {
-      const normalized =
+    case 'node-length':
+      return sampleGradient(
+        NODE_LENGTH_GRADIENT,
         range.maxLength > range.minLength
           ? (node.length - range.minLength) /
-            (range.maxLength - range.minLength)
-          : 0.5
-      const t = Math.max(0, Math.min(1, normalized))
-      return packAbgr(
-        Math.round(220 + (50 - 220) * t),
-        Math.round(50 + (120 - 50) * t),
-        Math.round(50 + (220 - 50) * t),
-        255,
+              (range.maxLength - range.minLength)
+          : 0.5,
       )
-    }
 
     case 'grey':
       return packAbgr(160, 160, 160, 255)
@@ -590,13 +591,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
   const pathColors = new Map<string, number>()
   if (graph.paths) {
     for (const path of graph.paths) {
-      let hash = 0
-      for (let i = 0; i < path.name.length; i++) {
-        hash = path.name.charCodeAt(i) + ((hash << 5) - hash)
-      }
-      const hue = Math.abs(hash % 360)
-      const [r, g, b] = hslToRgb(hue, 0.7, 0.5)
-      pathColors.set(path.name, packNorm(r, g, b, 0.85))
+      pathColors.set(path.name, hashColor(path.name, 0.85))
     }
   }
 
