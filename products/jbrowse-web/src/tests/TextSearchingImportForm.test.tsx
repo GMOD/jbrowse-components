@@ -40,10 +40,11 @@ test(
 test(
   'dialog with multiple results, searching seg02',
   async () => {
-    const { autocomplete, input, findByText } = await getInput()
+    const { input, findByText, findByRole } = await getInput()
 
     fireEvent.change(input, { target: { value: 'seg02' } })
-    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    // wait for trix search results to load, then click the combined result
+    fireEvent.click(within(await findByRole('listbox', ...opts)).getByText('seg02'))
     fireEvent.click(await findByText('Open'))
     await findByText('Search results', ...opts)
   },
