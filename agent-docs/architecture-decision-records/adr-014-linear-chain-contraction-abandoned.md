@@ -7,9 +7,9 @@ Superseded (decision recorded; original design retired)
 ## Context
 
 The graph coarse tier needs to reduce ~1.86M segments (HPRC chr20) to a number
-renderable interactively (gate: < 50k super-nodes). The initial design
-(`GRAPH_COARSE_DESIGN.md` original plan) chose **linear-chain contraction**
-(`odgi unchop`) as the coarsening primitive because:
+renderable interactively (gate: < 50k super-nodes). The initial design chose
+**linear-chain contraction** (`odgi unchop`) as the coarsening primitive
+because:
 
 - It is lossless: concatenating constituent sequences reconstructs the original.
 - Three independent peer-reviewed implementations exist as validation oracles:
@@ -73,4 +73,8 @@ snarl-structured coarsening with tabix range-query packaging."
   deferred to v2 — the tile method has no natural identity value per tile.
 - BandageNG and the three-oracle concordance discipline are not used in v1.
 - For v2 multi-assembly support, the snarl method is required (tiles are
-  reference-biased; see `GRAPH_COARSE_MULTIASSEMBLY.md`).
+  reference-biased).
+
+**Fully superseded by adr-026** (2026-05-14): the entire graph coarsening
+system — tile and snarl methods included — was removed. `odgi untangle` blocks
+are resolution-independent, so there is no coarse tier at all.

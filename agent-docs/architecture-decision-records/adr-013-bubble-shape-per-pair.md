@@ -2,12 +2,14 @@
 
 ## Status
 
-Accepted
+Superseded by adr-025 (2026-05-14). The `bubbles.bed.gz` index this ADR
+describes no longer exists — per-base detail is now a standard `vg deconstruct`
+VCF track. Kept as the historical record of why per-genome-pair (shape C)
+storage was rejected, should a future overlay revisit the question.
 
 ## Context
 
-The bubbles index (`prefix.bubbles.bed.gz`, see
-`agent-docs/GRAPH_INDEX_FORMAT.md` "Bubbles index") supplies per-base
+The bubbles index (`prefix.bubbles.bed.gz`) supplied per-base
 edits used by the synteny display when zoomed in. Each VCF site
 ("bubble") in the source `vg deconstruct` output has:
 
@@ -104,13 +106,8 @@ rows is the right way to go.
 
 ## Cross-references
 
-- `plugins/comparative-adapters/src/GfaTabixAdapter/bubbleOverlay.ts`
-  — `BubbleSite`, `findBubblePair`, `fetchBubbleSites`,
-  `parseBubbleLine`.
-- `agent-docs/GRAPH_INDEX_FORMAT.md` "Bubbles index" — the BED row
-  schema this ADR justifies.
-- `agent-docs/GRAPH_ARCHITECTURE.md` "Why a runtime overlay, not
-  preprocessing?" — companion explanation framed for the runtime
-  reader.
-- `tools/gfa-to-tabix/src/main.rs:generate_bubbles_from_vcf` — the
-  preprocessor side that emits this shape.
+- `agent-docs/architecture-decision-records/adr-025-vg-deconstruct-vcf-replaces-bubbles.md`
+  — the decision that retired the `bubbles.bed.gz` index this ADR describes.
+
+(The code this ADR cited — `bubbleOverlay.ts`, the `GRAPH_INDEX_FORMAT.md`
+bubbles schema, `generate_bubbles_from_vcf` — was removed with the index.)

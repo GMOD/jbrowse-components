@@ -40,7 +40,7 @@ that have been artificially chopped to a fixed node length, where long
 haplotype-invariant stretches remain chainable). HPRC MC graphs were not
 chopped; their short nodes reflect natural variation density.
 
-### Next steps (per GRAPH_COARSE_DESIGN.md gate-failure clause)
+### Next steps (per the graph-coarsening gate-failure clause)
 
 Linear-chain contraction is not a viable coarsening primitive for HPRC MC
 pangenomes. Candidate alternatives:
@@ -95,7 +95,6 @@ in two consecutive tiles (30891–41996 and 41996–50001). The volvox reference
 revisits these segments, likely at an inverted repeat. The per-step disjointness
 invariant holds (each step is in exactly one tile); per-ordinal uniqueness does
 not hold for re-entering paths. This is a documented property, not a bug.
-See `GRAPH_COARSE_SYSTEM.md` for details.
 
 ### Snarl approach (--graph-coarse-method snarl)
 
@@ -167,9 +166,9 @@ entries).
 ### Recommendation
 
 Use `backend: 'vg'` for any dataset where typical queries are ≤ 100 kbp
-(GraphGenomeView Bandage mode, per-tile MultiLGV synteny). The > 1 Mbp
-regime where vg loses belongs to the static-file coarsened tier (see
-GRAPH_COARSE_SYSTEM.md), not the runtime server.
+(GraphGenomeView subgraph extraction). The > 1 Mbp regime where vg loses is
+not a runtime-server concern under the current design — whole-genome synteny
+is the precomputed `odgi untangle` PAF (see GRAPH_PLAN.md, adr-024).
 
 ---
 
@@ -278,3 +277,77 @@ On fully-traversed chromosomes, the strong "all paths agree" property
 does hold and is verified by
 `tools/graph-truth-extractor/test-path-symmetry.sh` on chrM (44
 paths, fp `3d0e925d0f33b04a`).
+
+---
+
+## `odgi untangle` linearization benchmark (2026-05-14)
+
+Measured against HPRC chr20 (`~/chr20-test/chr20.gfa.og`, 919 paths, 90
+haplotypes). This is the benchmark that justified replacing the GfaTabix
+`synteny_build` pipeline with whole-graph `odgi untangle` (adr-024).
+
+### Whole-graph untangle vs. `synteny_build`
+
+| Metric | `synteny_build` (old) | `odgi untangle` (new) |
+|---|---|---|
+| Wall time | ~1 h | **1 m 39 s** |
+| Peak RSS | 7.9 GB | **2.1 GB** |
+| Output size | 167–890 MB | **11 MB** (24,376 blocks, `-j 0.5 -m 1000`) |
+| Crashes | — | 0 / 4 runs |
+
+`synteny_build` was O(ref paths × hap paths) over per-step ordinal joins;
+untangle reads block-level synteny straight out of the graph. The whole-graph
+precompute is cheap enough that the static-file model is clearly viable.
+
+### Output recipes
+
+| Run | Blocks | Size | Median block | Notes |
+|---|---|---|---|---|
+| `-j 0.5 -m 1000` | 24,376 | 11 MB | 10.6 kb | clean — zero degenerate blocks |
+| raw (no filter) | ~69,000 | — | — | ~21 % degenerate `id:f:0` 1bp→huge-span artifacts |
+
+`-j 0.5 -m 1000` is the *clean-output* recipe, treated as the *upper* end of
+filtering — the static file bakes more permissive values (`-j` low, `-m` low/0)
+and filters/merges up at runtime. The `jc:f:` jaccard tag is carried into the
+PAF so the runtime adapter can filter further.
+
+### `-n` (n-best) is noise — use `-n 1`
+
+Secondary mappings (`nb:i:2`) have **mean jaccard ~0.02 everywhere** — 0 % above
+0.5, and identical inside and outside chr20 segdup regions. n-best > 1 produces
+only noise; do not build a multiple-mappings visualization from untangle
+secondaries.
+
+### Segdups are handled by primary mappings
+
+On chr20's large segdup pair (~25.75 M ↔ ~26.01 M), **89 / 90 haplotypes**
+thread through both copies as consecutive high-jaccard `nb:i:1` blocks. Copy
+number shows as primary blocks at multiple reference x-positions; one row per
+sample renders it natively. The only genuine renderer special case is
+overlapping blocks within a single row (a copy-number gain). chr20 is
+segdup-poor (4 large intra-chr segdups) — re-check on chr1 or chr16 before final
+commitment.
+
+### Region-untangle latency and the segfault
+
+Region-based untangle (`vg find → odgi build → odgi sort → odgi untangle`) is
+viable. Note `odgi extract → odgi untangle` **segfaults** — `odgi extract` emits
+unsorted node IDs and `odgi untangle` segfaults on unsorted input; inserting
+`odgi sort` between them fixes it. It is an odgi bug, not a fundamental limit.
+
+| Extract step | Latency |
+|---|---|
+| `odgi extract` | 8 s/call (full `.og` deserialize — one-shot binary) |
+| `vg find` @ 10 kb | 0.7 s |
+| `vg find` @ 100 kb | 0.9 s |
+| `vg find` @ 1 Mb | 20 s |
+
+### Known caveats
+
+- untangle output is **unaudited** for correctness — the old `synteny_build`
+  had a (weak) audit harness; untangle replaces it untested. A check against
+  `vg deconstruct` or the source alignment is owed before publication.
+- The vendored odgi build is unstable (broken `unchop`/`view`, segfaults on
+  unsorted graphs). A version-pinned, known-good odgi is required.
+- untangle determinism under 16 threads is unverified — matters for a
+  reproducible published pipeline.

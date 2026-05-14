@@ -136,11 +136,79 @@ users. Decide after a direct static-vs-service comparison in the browser.
 
 - Correctness check of untangle output vs. `vg deconstruct` / source alignment.
 - Re-run the segdup multi-mapping check on chr1 or chr16.
-- Wire `AllVsAllPAFAdapter` (PR #4985) into an *indexed* tabix-PAF adapter so
-  MultiLGVSyntenyDisplay consumes `synteny.paf.gz` directly.
-- Confirm `vg find` / `graph-server` path for GraphGenomeView; remove large mode.
+- ~~Wire an *indexed* tabix-PAF adapter so MultiLGVSyntenyDisplay consumes
+  `synteny.paf.gz` directly.~~ **Done** — `TabixPAFAdapter`
+  (`plugins/comparative-adapters/src/TabixPAFAdapter`). Reads a standard PAF
+  sorted on the target columns, bgzipped, `tabix -0 -s6 -b8 -e9`. No `.pif`
+  transform, no tiers — a plain range query on the reference. Query lines are
+  grouped into synteny rows by their PanSN `sample#hap` prefix and fed to
+  `getMultiPairFeatures`. Identity comes from the `id:f:` tag (or
+  matches/blockLen); `jaccardFilter` drops blocks below a `jc:f:` floor at
+  runtime. Registered in `multiPairTypes`/`syntenyTypes`; the adapter guesser
+  recognises a `.paf.gz` shipped with a tabix index. (Named `TabixPAFAdapter`,
+  not `AllVsAllPAFAdapter` — untangle output is haplotypes-vs-one-reference,
+  not pairwise all-vs-all; `make-pif --all-vs-all` from PR #4985 remains the
+  separate path that produces `.pif.gz` for `PairwiseIndexedPAFAdapter`.)
+- Confirm `vg find` / `graph-server` path for GraphGenomeView. ~~Remove large
+  mode.~~ **Done (adr-027)** — `GraphGenomeView` has one mode: `GetSubgraph` →
+  OGDF layout → graph render. `loadFromTabixLarge`, `LargeModeSyntenyCanvas`,
+  the `syntenyBlocks`/`largeModeRegion` model fields, and the `GetSyntenyBlocks`
+  call from the graph view are gone; past `MAX_GRAPH_REGION_BP` (100 kb)
+  `doSubgraphLoad` shows a "zoom in to view graph" message instead of
+  degrading. The `GfaTabixAdapter` *graph* coarse path went with it —
+  `getCoarseSubgraph`, `coarseSubgraphReader.ts`, the `graphCoarse*` config
+  slots, the `regionSize > 100k` branch in `getSubgraph`. (The `GetSyntenyBlocks`
+  RPC method is left registered — still used by the pairwise synteny views.
+  The `syntenyCoarse*` tier and `tools/gfa-to-tabix`'s `--graph-coarse-*` are
+  adr-026's separate removal, not yet done.)
 - Static-vs-service browser comparison; pick the delivery model.
 - Version-pin odgi + vg; verify untangle thread-determinism.
+
+### `TabixPAFAdapter` preprocessing requirement
+
+The browse path must work at full-genome scale, so the adapter cannot scan the
+PAF to enumerate query genomes. The genome list is read from a single
+`#genomes=` comment line the preprocessing prepends before bgzip:
+
+```
+odgi paths -L <ref>.og | <derive sample#hap, unique>  →  "#genomes=HG00438#1,HG00438#2,..."
+( echo "#genomes=..."; odgi untangle ... | sort -k6,6 -k8,8n ) | bgzip > <ref>.synteny.paf.gz
+tabix -0 -s6 -b8 -e9 <ref>.synteny.paf.gz
+```
+
+`#` lines are skipped by tabix and returned by `getHeader()`. A file with no
+header still works if the track config sets `assemblyNames` explicitly.
+
+### chr20 proof-of-concept (verified 2026-05-14)
+
+The full pipeline runs end-to-end on the HPRC chr20 graph:
+
+```
+chr20.gfa.og (919 paths, 90 genomes, 1.86 M nodes)
+  → odgi untangle -r GRCh38#0#chr20:0-64444167 -j 0.1 -m 1000 -n 1 -p   (~1 m 40 s)
+  → strip trailing tab | sort -k6,6 -k8,8n | prepend #genomes= | bgzip   (580 KB)
+  → tabix -0 -s6 -b8 -e9
+  → TabixPAFAdapter  (jaccardFilter: 0.5 in the track config — files baked
+                      permissive at -j 0.1, filtered up at runtime)
+```
+
+Result: 26,862 blocks for the whole chromosome; a `chr20:1-500,000` view
+returns ~2,400 blocks and renders ~89 haplotype rows in `MultiLGVSyntenyDisplay`
+in the browser. Coverage:
+
+- `plugins/comparative-adapters/src/TabixPAFAdapter/TabixPAFAdapter.test.ts`
+  — committed unit tests over a volvox fixture
+  (`test_data/volvox/volvox.untangle.paf.gz`) whose target names mirror real
+  odgi shape: plain `volvox#0#ctgA` and subwalk-suffixed `volvox#0#ctgB:0-6079`,
+  `id:f:` as a percentage, `jc:f:`/`sc:f:`/`nb:i:` tags.
+- `products/jbrowse-web/browser-tests/suites/multi-lgv-tabix-paf.ts` — CI
+  browser test on the volvox fixture.
+- `products/jbrowse-web/browser-tests/suites/hprc-pangenome.ts` — the chr20
+  PoC, `requiresRemote` (config `test_data/hprc/config_hprc_chr20_untangle.json`,
+  data is the gitignored `test_data/hprc/*.synteny.paf.gz`).
+- `products/jbrowse-web/browser-tests/suites/graph-genome-tabix.ts` — the
+  large-mode removal: the over-cap region now asserts the "zoom in to view
+  graph" message instead of a rectangle canvas.
 
 ## What was removed (see ADRs)
 
@@ -153,8 +221,9 @@ users. Decide after a direct static-vs-service comparison in the browser.
 
 ## See also
 
-- `GRAPH_ARCHITECTURE.md` — end-to-end pipeline of the new design.
 - `GRAPH_PERF.md` — untangle benchmark, segfault and segdup investigations.
 - `GRAPH_SERVER_PLAN.md` — graph-server's role under the new design.
+- `architecture-decision-records/adr-024..027` — rationale for what was
+  removed; the retired GfaTabix static-index docs were deleted, the ADRs are
+  the record of that design.
 - `GRAPH_AUDIT.md` — read-only archive of the retired GfaTabix Phase 0 audit.
-- `architecture-decision-records/adr-024..027` — removal rationale.

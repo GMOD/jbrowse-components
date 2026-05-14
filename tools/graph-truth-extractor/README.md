@@ -14,7 +14,7 @@ a single TypeScript interface:
 - **`naive`** — pure-Node BFS from path-walked seed segments. Used as a tertiary
   oracle and as the fallback when none of the external tools is on PATH.
 
-See `agent-docs/NEW_GRAPH_PLAN.md` for the active plan and
+See `agent-docs/GRAPH_PLAN.md` for the active plan and
 `agent-docs/GRAPH_AUDIT.md` for Phase 0 findings on volvox + HPRC chrM fixtures.
 
 ## Quick Start
@@ -157,8 +157,7 @@ canonicalization step (odgi is still useful as a third independent oracle).
 
 ## See also
 
-- `agent-docs/NEW_GRAPH_PLAN.md` — Active pangenome browser planning
+- `agent-docs/GRAPH_PLAN.md` — Active pangenome browser planning
 - `agent-docs/GRAPH_AUDIT.md` — Phase 0 findings from this harness
-- `agent-docs/GRAPH_INDEX_FORMAT.md` — File-format spec for preprocessor outputs
 - `agent-docs/TEST_INFRASTRUCTURE.md` — GetSubgraph validation section
 - `plugins/comparative-adapters/scripts/dump-subgraph.ts` — "ours" side wrapper

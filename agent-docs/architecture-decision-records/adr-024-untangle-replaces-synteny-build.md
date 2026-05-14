@@ -86,8 +86,12 @@ untangle run per reference path.
   moves to a `vg deconstruct` VCF track (adr-025).
 - untangle output is currently **unaudited** for correctness — a check
   against `vg deconstruct` or the source alignment is owed before publication.
-- The `AllVsAllPAFAdapter` stub (PR #4985) becomes the basis for an *indexed*
-  tabix-PAF adapter that consumes `synteny.paf.gz`.
+- `MultiLGVSyntenyDisplay` consumes `synteny.paf.gz` through a new
+  `TabixPAFAdapter` (`plugins/comparative-adapters/src/TabixPAFAdapter`): a
+  plain tabix range query on a target-sorted, bgzipped PAF — no `.pif`
+  transform, no tiers. It is *not* the `AllVsAllPAFAdapter` stub (PR #4985):
+  untangle output is haplotypes-vs-one-reference, not pairwise all-vs-all, so
+  `make-pif --all-vs-all` → `PairwiseIndexedPAFAdapter` stays a separate path.
 - Region-based untangle (`vg find → odgi build → odgi sort → odgi untangle`)
   remains a viable *service*-model alternative; see `GRAPH_PLAN.md` "static
   vs service".

@@ -220,7 +220,8 @@ same canonical structural fingerprint when queried at their
 because chrM offsets differ across paths (CHM13:15992 bp vs GRCh38:
 16569 bp); the equivalent-ranges mapping resolves that.
 
-See `GRAPH_COARSE_SYSTEM.md` "Next steps" for the chr20 C3 measurement plan.
+(The chr20 C3 measurement plan referenced here lived in the retired graph
+coarsening docs — see adr-026.)
 
 ### chr20 finding (2026-04-30)
 
@@ -322,7 +323,6 @@ multi-resolution coarsening, Phase 5 CI) is additive scope.
 ## See also
 
 - `agent-docs/GRAPH_PLAN.md` — phased plan and claims this audit measures.
-- `agent-docs/GRAPH_INDEX_FORMAT.md` — file-format spec.
 - `agent-docs/GRAPH_PERF.md` — Phase 8 inputs.
 - `tools/graph-truth-extractor/README.md` — oracle backend
   installation pins and known disagreements.
