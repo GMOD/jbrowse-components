@@ -33,16 +33,6 @@ function makeAdapter() {
           locationType: 'LocalPathLocation',
         },
       },
-      syntenyCoarseLocation: {
-        localPath: `${FIXTURES}.synteny.coarse.bed.gz`,
-        locationType: 'LocalPathLocation',
-      },
-      syntenyCoarseIndex: {
-        location: {
-          localPath: `${FIXTURES}.synteny.coarse.bed.gz.tbi`,
-          locationType: 'LocalPathLocation',
-        },
-      },
     }),
   )
 }
@@ -95,22 +85,6 @@ test('adapter_returns_features', async () => {
     total += features.length
   }
   expect(total).toBeGreaterThan(0)
-})
-
-test('adapter_coarse_fewer_rows', async () => {
-  const adapter = makeAdapter()
-  const fine = await adapter.getMultiPairFeatures(region, { bpPerPx: 1 })
-  const coarse = await adapter.getMultiPairFeatures(region, { bpPerPx: 2000 })
-
-  let fineTotal = 0
-  for (const [, features] of fine.genomeRows) {
-    fineTotal += features.length
-  }
-  let coarseTotal = 0
-  for (const [, features] of coarse.genomeRows) {
-    coarseTotal += features.length
-  }
-  expect(coarseTotal).toBeLessThanOrEqual(fineTotal)
 })
 
 test('getSources returns haplotype names', async () => {

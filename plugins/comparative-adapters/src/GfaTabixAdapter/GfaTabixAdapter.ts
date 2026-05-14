@@ -7,7 +7,6 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { annotateFeaturesWithBubbleCs } from './bubbleOverlay.ts'
 import {
   hasFileLocation,
   openTabixIfConfigured,
@@ -33,8 +32,6 @@ interface SetupResult {
   chromSizes: Map<string, { refName: string; length: number }[]>
   posRefNames: Set<string>
   syntenyRefNames: Set<string>
-  bubblesRefNames?: Set<string>
-  bubblesGenomeNames?: string[]
 }
 
 function parseOrdinalRanges(line: string, out: Set<number>) {
@@ -63,8 +60,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
 
   private readonly posFile: TabixIndexedFile
   private readonly syntenyFile: TabixIndexedFile
-  private readonly syntenyCoarseFile?: TabixIndexedFile
-  private readonly bubblesFile?: TabixIndexedFile
   private readonly edgesFile?: TabixIndexedFile
   private readonly seqlensHandle?: GenericFilehandle
   private readonly assemblyNameMap: Record<string, string>
@@ -101,20 +96,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       this.getConf(['syntenyIndex', 'location']) as FileLocation,
       pm,
     )!
-
-    this.syntenyCoarseFile = openTabixIfConfigured(
-      this.getConf('syntenyCoarseLocation') as FileLocation | undefined,
-      this.getConf(['syntenyCoarseIndex', 'location']) as
-        | FileLocation
-        | undefined,
-      pm,
-    )
-
-    this.bubblesFile = openTabixIfConfigured(
-      this.getConf('bubblesLocation') as FileLocation | undefined,
-      this.getConf(['bubblesIndex', 'location']) as FileLocation | undefined,
-      pm,
-    )
 
     this.edgesFile = openTabixIfConfigured(
       this.getConf('edgesLocation') as FileLocation | undefined,
@@ -161,23 +142,11 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       await this.syntenyFile.getReferenceSequenceNames(),
     )
 
-    let bubblesRefNames: Set<string> | undefined
-    let bubblesGenomeNames: string[] | undefined
-    if (this.bubblesFile) {
-      const bHeader = await this.bubblesFile.getHeader()
-      bubblesRefNames = new Set(
-        await this.bubblesFile.getReferenceSequenceNames(),
-      )
-      bubblesGenomeNames = readHeaderField(bHeader, 'genomes')?.split(',')
-    }
-
     return {
       genomes,
       chromSizes,
       posRefNames,
       syntenyRefNames,
-      bubblesRefNames,
-      bubblesGenomeNames,
     }
   }
 
@@ -274,17 +243,10 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
 
   async getMultiPairFeatures(
     query: Region,
-    opts: { bpPerPx?: number; stopToken?: StopToken } = {},
+    opts: { stopToken?: StopToken } = {},
   ) {
     checkStopToken(opts.stopToken)
-    const { syntenyRefNames, bubblesRefNames, bubblesGenomeNames } =
-      await this.setup()
-
-    const { bpPerPx = 1 } = opts
-    const tabixFile =
-      bpPerPx > 1000 && this.syntenyCoarseFile
-        ? this.syntenyCoarseFile
-        : this.syntenyFile
+    const { syntenyRefNames } = await this.setup()
 
     const tabixRefName = this.resolveTabixRefName(
       syntenyRefNames,
@@ -299,7 +261,7 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
     const checker = createStopTokenChecker(opts.stopToken)
     let rowIdx = 0
 
-    await tabixFile.getLines(tabixRefName, query.start, query.end, {
+    await this.syntenyFile.getLines(tabixRefName, query.start, query.end, {
       lineCallback: (line: string) => {
         checkStopToken2(checker)
         const cols = line.split('\t')
@@ -345,30 +307,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
         arr.push(feat)
       },
     })
-
-    if (
-      this.bubblesFile &&
-      bpPerPx < 50 &&
-      bubblesRefNames &&
-      bubblesGenomeNames
-    ) {
-      const tabixBubbleRefName = this.resolveTabixRefName(
-        bubblesRefNames,
-        query.assemblyName,
-        query.refName,
-      )
-      if (tabixBubbleRefName) {
-        await annotateFeaturesWithBubbleCs({
-          genomeRows,
-          query,
-          bubblesFile: this.bubblesFile,
-          bubblesGenomeNames,
-          tabixRefName: tabixBubbleRefName,
-          reverseAssemblyNameMap: this.reverseAssemblyNameMap,
-          stopToken: opts.stopToken,
-        })
-      }
-    }
 
     return { genomeRows }
   }

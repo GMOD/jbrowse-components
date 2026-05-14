@@ -68,10 +68,11 @@ unless noted.
   → `text/plain` GFA. `context` is `odgi extract -c` / `vg find -c` (node steps;
   default `1`).
 - `POST /datasets/:id/synteny` body `{refName, start, end, genome?, context?}` →
-  `{features: [{queryGenome, mateRefName, start, end, mateStart, mateEnd, strand, identity, cs?, ...}]}`.
+  `{features: [{queryGenome, mateRefName, start, end, mateStart, mateEnd, strand, identity, ...}]}`.
   Features are derived by walking shared nodes between the ref path and every
-  other path in the extracted subgraph; adjacent co-linear runs are merged and
-  bubble spans get a `cs` mismatch string for SNP/indel rendering.
+  other path in the extracted subgraph; adjacent co-linear runs are merged.
+  Per-base SNP/indel detail is delivered separately via a standard VCF track
+  (adr-025), not threaded into the synteny features.
 
 ## PanSN parsing
 

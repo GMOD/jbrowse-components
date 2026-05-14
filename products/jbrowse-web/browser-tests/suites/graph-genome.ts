@@ -36,11 +36,7 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateAndAddGraphView(page)
 
-        const exampleBtn = await findByText(
-          page,
-          'Load 4-node example',
-          10000,
-        )
+        const exampleBtn = await findByText(page, 'Load 4-node example', 10000)
         await exampleBtn?.click()
 
         // Wait for the layout + render to complete

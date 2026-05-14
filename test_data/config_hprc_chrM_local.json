@@ -27,7 +27,7 @@
     {
       "type": "MultiSyntenyTrack",
       "trackId": "hprc_chrM_gfa_synteny_local",
-      "name": "HPRC chrM pangenome synteny (local, with bubbles)",
+      "name": "HPRC chrM pangenome synteny (local)",
       "category": ["Synteny"],
       "adapter": {
         "type": "GfaTabixAdapter",
@@ -48,16 +48,6 @@
         "segmentsIdxLocation": {
           "uri": "gfa-tabix-output/hprc-v1.1-mc-grch38-chrM.segments.idx",
           "locationType": "UriLocation"
-        },
-        "bubblesLocation": {
-          "uri": "gfa-tabix-output/hprc-v1.1-mc-grch38-chrM.bubbles.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "bubblesIndex": {
-          "location": {
-            "uri": "gfa-tabix-output/hprc-v1.1-mc-grch38-chrM.bubbles.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
         }
       },
       "assemblyNames": [

@@ -225,12 +225,11 @@ api.post('/datasets/:id/synteny', async (req, res, next) => {
       ctx,
     )
     const t1 = Date.now()
-    const { paths, segSeqs } = parseExtractedGfa(gfa)
+    const { paths } = parseExtractedGfa(gfa)
     const features = computeSyntenyBlocks({
       refName: resolved.refName,
       refGenome: resolved.genome,
       paths,
-      segSeqs,
     })
     const t2 = Date.now()
     console.log(

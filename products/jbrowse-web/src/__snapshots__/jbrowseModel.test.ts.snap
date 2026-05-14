@@ -3300,16 +3300,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox_pangenome_50.seglens.bin",
         },
-        "syntenyCoarseIndex": {
-          "location": {
-            "locationType": "UriLocation",
-            "uri": "volvox_pangenome_50.synteny.coarse.bed.gz.tbi",
-          },
-        },
-        "syntenyCoarseLocation": {
-          "locationType": "UriLocation",
-          "uri": "volvox_pangenome_50.synteny.coarse.bed.gz",
-        },
         "syntenyIndex": {
           "location": {
             "locationType": "UriLocation",
@@ -3336,6 +3326,36 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "name": "volvox pangenome 50 (GfaTabix)",
       "trackId": "volvox_pangenome_50_gfa_tabix",
+      "type": "MultiSyntenyTrack",
+    },
+    {
+      "adapter": {
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.untangle.paf.gz.tbi",
+          },
+        },
+        "pafGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.untangle.paf.gz",
+        },
+        "type": "TabixPAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_untangle_tabix_paf-MultiLGVSyntenyDisplay",
+          "type": "MultiLGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox untangle (TabixPAF)",
+      "trackId": "volvox_untangle_tabix_paf",
       "type": "MultiSyntenyTrack",
     },
   ],

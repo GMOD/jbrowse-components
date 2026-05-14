@@ -57,12 +57,22 @@ frame.
 
 ## Consequences
 
-- Removed from `tools/gfa-to-tabix`: `--graph-coarse-method`,
-  `--graph-coarse-min-sv-bp`, the tile and snarl coarseners, the tile-pyramid
-  emitter, and the `prefix.graph.coarse.bed.gz` / `prefix.tiles.*` outputs.
+- Removed from `tools/gfa-to-tabix`: `--graph-coarse`, `--graph-coarse-method`,
+  `--graph-coarse-min-sv-bp`, `--graph-coarse-tile-size`,
+  `--graph-coarse-assemblies`; the tile and snarl coarseners
+  (`compute_tile_rows`, `graph_coarse_build_tiles`, `compute_snarl_coarse_rows`,
+  `graph_coarse_build_snarls`, `emit_graph_coarse_assembly_map`); the
+  `merge_coarse` synteny-tier helper and its `prefix.synteny.coarse.bed.gz`
+  emission inside `synteny_build`; the tile-pyramid emitter; and the
+  `prefix.graph.coarse.bed.gz` / `prefix.tiles.*` /
+  `prefix.synteny.coarse.bed.gz` outputs.
 - Removed from the runtime: `coarseSubgraphReader.ts`, `gfaCoarsener.ts`,
-  `getCoarseSubgraph`, the `graphCoarseLocation` config slot, `largeMode.test.ts`,
-  and the `regionSize > 100,000` coarse-routing branch in `getSubgraph`.
+  `getCoarseSubgraph`, the `graphCoarseLocation` config slot,
+  `largeMode.test.ts`, the `regionSize > 100,000` coarse-routing branch in
+  `getSubgraph`, and the `GfaTabixAdapter` synteny-coarse path
+  (`syntenyCoarseFile` field, the `bpPerPx > 1000 ? coarse : main` branch in
+  `getMultiPairFeatures`, the `syntenyCoarseLocation` / `syntenyCoarseIndex`
+  config slots).
 - `vg snarls` is no longer a build-time dependency *for coarsening*. `vg` is
   still pinned — `vg deconstruct` needs it (adr-025), `vg find` needs it
   (adr-027).

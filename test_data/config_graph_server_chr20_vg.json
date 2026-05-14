@@ -55,26 +55,6 @@
             "locationType": "UriLocation"
           }
         },
-        "syntenyCoarseLocation": {
-          "uri": "hprc/hprc-v1.1-mc-grch38-chr20.synteny.coarse.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "syntenyCoarseIndex": {
-          "location": {
-            "uri": "hprc/hprc-v1.1-mc-grch38-chr20.synteny.coarse.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        },
-        "bubblesLocation": {
-          "uri": "hprc/hprc-v1.1-mc-grch38-chr20.bubbles.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "bubblesIndex": {
-          "location": {
-            "uri": "hprc/hprc-v1.1-mc-grch38-chr20.bubbles.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        },
         "edgesLocation": {
           "uri": "hprc/hprc-v1.1-mc-grch38-chr20.edges.spatial.bed.gz",
           "locationType": "UriLocation"

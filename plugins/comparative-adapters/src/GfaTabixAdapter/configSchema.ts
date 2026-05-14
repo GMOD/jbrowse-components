@@ -70,38 +70,6 @@ const GfaTabixAdapter = ConfigurationSchema(
         },
       },
     }),
-    syntenyCoarseLocation: {
-      type: 'fileLocation',
-      description:
-        'Location of synteny.coarse.bed.gz (merged blocks for bpPerPx > 1000)',
-      defaultValue: { uri: '', locationType: 'UriLocation' },
-    },
-    syntenyCoarseIndex: ConfigurationSchema('SyntenyCoarseTabixIndex', {
-      location: {
-        type: 'fileLocation',
-        defaultValue: { uri: '', locationType: 'UriLocation' },
-      },
-    }),
-    /**
-     * #slot
-     */
-    bubblesLocation: {
-      type: 'fileLocation',
-      description: 'Location of bubbles.bed.gz (per-snarl CS for bpPerPx < 50)',
-      defaultValue: { uri: '', locationType: 'UriLocation' },
-    },
-    /**
-     * #slot
-     */
-    bubblesIndex: ConfigurationSchema('BubblesTabixIndex', {
-      /**
-       * #slot bubblesIndex.location
-       */
-      location: {
-        type: 'fileLocation',
-        defaultValue: { uri: '', locationType: 'UriLocation' },
-      },
-    }),
     edgesLocation: {
       type: 'fileLocation',
       description:
@@ -153,26 +121,6 @@ const GfaTabixAdapter = ConfigurationSchema(
           syntenyIndex: {
             location: {
               uri: `${snap.prefix}.synteny.bed.gz.tbi`,
-              baseUri: snap.baseUri,
-            },
-          },
-          syntenyCoarseLocation: {
-            uri: `${snap.prefix}.synteny.coarse.bed.gz`,
-            baseUri: snap.baseUri,
-          },
-          syntenyCoarseIndex: {
-            location: {
-              uri: `${snap.prefix}.synteny.coarse.bed.gz.tbi`,
-              baseUri: snap.baseUri,
-            },
-          },
-          bubblesLocation: {
-            uri: `${snap.prefix}.bubbles.bed.gz`,
-            baseUri: snap.baseUri,
-          },
-          bubblesIndex: {
-            location: {
-              uri: `${snap.prefix}.bubbles.bed.gz.tbi`,
               baseUri: snap.baseUri,
             },
           },

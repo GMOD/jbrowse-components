@@ -56,14 +56,32 @@ at zoom is a possible later enhancement, not part of this decision.
 
 ## Consequences
 
-- `bubbles.bed.gz` / `bubbles.rev.bed.gz` outputs and
-  `generate_bubbles_from_vcf` are removed from `tools/gfa-to-tabix`.
-- `plugins/comparative-adapters/src/GfaTabixAdapter/bubbleOverlay.ts` is
-  removed — `BubbleSite`, `findBubblePair`, `fetchBubbleSites`,
-  `parseBubbleLine`, `annotateFeaturesWithBubbleCs`, `flipCs`.
-- The X-CIGAR contract is gone. adr-024 already removed `segmentFeatureBuilder.ts`
-  (the producing side); this removes the consuming side. The
-  `buildCsFromCigarAndSites` tests that guarded the contract are removed with it.
+- Removed from `tools/gfa-to-tabix`: the `--bubbles` flag,
+  `generate_bubbles_from_vcf`, `rewrite_vcf_strip_pansn` / `strip_pansn_contig`,
+  the `encode_bubble_cs` / `encode_indel` / `compute_binary_cs_from_bytes` /
+  `compute_identity_from_binary_cs` / `binary_cs_to_text` /
+  `pack_bases` / `unpack_bases` / `base_to_2bit` / `write_varint` /
+  `read_varint_slice` helpers, the `BCS_*` opcode constants, the
+  `bubbles_bed` / `bubbles_tbi` emission in `write_jbrowse_config`, and the
+  `test-bubbles.sh` test script.
+- Removed from the runtime: `bubbleOverlay.ts`
+  (`BubbleSite`, `findBubblePair`, `fetchBubbleSites`, `parseBubbleLine`,
+  `annotateFeaturesWithBubbleCs`, `flipCs`) and its two unit-test files; the
+  `bubblesFile` field, `bubblesRefNames` / `bubblesGenomeNames` setup result,
+  and the `bpPerPx < 50` overlay branch in `GfaTabixAdapter.getMultiPairFeatures`;
+  the `bubblesLocation` / `bubblesIndex` config slots (with their
+  preProcessSnapshot mapping); the `bubbles.bed.gz` URLs in
+  `test_data/config_*.json`.
+- Removed from `tools/graph-server`: the bubble-CS chaining
+  (`collapseRunsWithBubbleCs`, `finalizeRun`, `countCsMatches`, `buildCs`,
+  `csFromSameLength`, `orientedSeq`, `concatOrientedSeq`, `complement`,
+  `revcomp`) and the `segSeqs` / `cs?` fields they fed; the
+  `test/compare-vs-tabix.ts` server-vs-tabix oracle and `test/debug-snp.ts`
+  probe.
+- The X-CIGAR contract is gone. adr-024 already removed
+  `segmentFeatureBuilder.ts` (the producing side); this removes the consuming
+  side. The `buildCsFromCigarAndSites` tests that guarded the contract are
+  removed with it.
 - **adr-013 is moot.** Its per-allele-pair vs. per-allele vs. per-genome-pair
   storage analysis described a file that no longer exists. It is kept as a
   historical record of why per-genome-pair storage was rejected, should a

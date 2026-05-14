@@ -47,7 +47,7 @@ JBrowse track.
 
 - **Per-base SNP/indel detail** is the separate `variants.vcf.gz` VCF track
   (standard JBrowse variant track). Not overlaid on the synteny display in v1;
-  overlay is a later enhancement (adr-025).
+  see "Per-base variant integration" below for the design space.
 - **Copy number / paralogy** needs no special data: a duplicated reference
   region appears at two reference x-positions and the haplotype's row simply
   has a block at each. The only renderer case is a copy-number *gain*
@@ -128,6 +128,112 @@ A reasonable hybrid: ship the permissive static file as the default, and let
 `graph-server` regenerate a custom-parameter untangle on demand for power
 users. Decide after a direct static-vs-service comparison in the browser.
 
+## Per-base variant integration (target architecture)
+
+adr-025 closed by saying overlay-at-zoom is a possible later enhancement, and
+the user wants the v2 to deliver "as much detail as possible." The target end
+state — derived backwards from the user experience, not forwards from the v1
+code — is **one track, one display, continuous zoom-driven detail**.
+
+### End-state UX
+
+A single `MultiLGVSyntenyDisplay` row per haplotype. Identity-colored synteny
+blocks at any zoom; per-base SNP/indel markers that fade in continuously as
+each variant position reaches ≥~1 px wide — same pattern as how alignments
+tracks render reads as blocks with base-level mismatches at zoom-in. No tier,
+no mode switch, no second track for the user to align by hand.
+
+### Architecture
+
+Two adapters, both owned by the display config (not reached across the
+session):
+
+```json
+{
+  "type": "MultiSyntenyTrack",
+  "adapter": { "type": "TabixPAFAdapter", "pafGzLocation": "..." },
+  "displays": [
+    {
+      "type": "MultiLGVSyntenyDisplay",
+      "variantsAdapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": "...variants.vcf.gz",
+        "index": { ... }
+      },
+      "sampleNameMap": { "HG002.1": "HG002#1" }
+    }
+  ]
+}
+```
+
+- **Synteny adapter** stays on the track, unchanged.
+- **Variants adapter** is a config slot on the display — the display owns it
+  as a dependency, the same way `LinearAlignmentsDisplay` sub-displays own
+  their per-display configs. *Not* a `variantOverlayTrackId` borrow from a
+  sibling track.
+- **`sampleNameMap`** sits at the one place the PanSN-↔-VCF-GT-header join
+  happens. Explicit, consumer-side, fails loudly when a sample is unmatched
+  (`vg deconstruct` and `bcftools merge` write sample headers inconsistently).
+- **Optional.** Omit `variantsAdapter` and the display behaves exactly like
+  v1. Adding it doesn't change the synteny code path, it adds a second pass.
+
+### Data flow
+
+Worker:
+1. `getMultiPairFeatures` returns synteny blocks from the PAF as today.
+2. If `variantsAdapter` is configured, the same RPC call additionally fetches
+   VCF features for the region and emits a `Map<sample, VariantTick[]>`
+   keyed by the post-`sampleNameMap` PanSN name.
+3. Worker returns both in one `rpcDataMap`, so the main thread gets a
+   consolidated payload (same pattern as the existing synteny RPC).
+
+Main thread:
+1. Render synteny blocks per row (unchanged).
+2. For each row, look up that row's `queryGenome` in the variant tick map and
+   draw markers at variant positions where the sample carries alt. SNPs as
+   colored ticks, indels as wedges sized by length.
+3. Visibility is bpPerPx-continuous via the alignments pattern — no mode
+   switch.
+
+### Why this is the right shape, not a step toward it
+
+The four-ADR simplification arc (024–027) was about removing legacy
+abstractions and reaching the natural design. Stopping at "two row-locked
+tracks the user must assemble themselves" because it requires no new code
+isn't reaching the natural design; it's offloading the integration onto the
+user. The display is the right integration point because it's where the join
+becomes visible.
+
+The three concerns that defeated a naïve overlay design (`bpPerPx` mode,
+sample-name brittleness, cross-track coupling) all dissolve under this
+architecture:
+
+- **No mode.** Continuous render-time density, same as the alignments tracks
+  that already exist. Users don't learn a new behavior.
+- **Sample-name join is explicit and local.** `sampleNameMap` config slot,
+  unmatched samples logged. The X-CIGAR failure mode was producer-side and
+  implicit; this is consumer-side and explicit.
+- **No cross-track reach.** The variants adapter is declared as part of the
+  display config. Self-contained track, session-snapshot-safe.
+
+### Known unresolved questions (for a follow-up ADR)
+
+- **Reference-allele-only positions.** VCF semantics: no record at a variant
+  site means "ref allele." Should the display show ticks for *every*
+  variant site (gray for ref-match) or only alt-carrying positions? Affects
+  both renderer cost and visual readability.
+- **Indel glyph at varying zooms.** A 500 bp deletion vs. a 1 bp SNP need
+  different glyphs at the same screen density. Probably resolved by length
+  thresholds, but real design work.
+- **VCF coverage vs. variant absence.** A block colored `id:0.97` with no
+  ticks could mean "no variants in VCF for these samples" or "VCF doesn't
+  cover this region." Block-level "VCF coverage exists for this region"
+  rendering would disambiguate.
+- **Server-backed path.** `GfaServerAdapter` is a parallel synteny adapter
+  for graph-server. If the display takes a `variantsAdapter` independent of
+  the synteny adapter, the server path gets variant overlay for free —
+  worth verifying.
+
 ## Known limitations
 
 - **untangle output is unaudited.** The old `synteny_build` had a (weak) audit
@@ -149,31 +255,7 @@ users. Decide after a direct static-vs-service comparison in the browser.
 
 - Correctness check of untangle output vs. `vg deconstruct` / source alignment.
 - Re-run the segdup multi-mapping check on chr1 or chr16.
-- ~~Wire an *indexed* tabix-PAF adapter so MultiLGVSyntenyDisplay consumes
-  `synteny.paf.gz` directly.~~ **Done** — `TabixPAFAdapter`
-  (`plugins/comparative-adapters/src/TabixPAFAdapter`). Reads a standard PAF
-  sorted on the target columns, bgzipped, `tabix -0 -s6 -b8 -e9`. No `.pif`
-  transform, no tiers — a plain range query on the reference. Query lines are
-  grouped into synteny rows by their PanSN `sample#hap` prefix and fed to
-  `getMultiPairFeatures`. Identity comes from the `id:f:` tag (or
-  matches/blockLen); `jaccardFilter` drops blocks below a `jc:f:` floor at
-  runtime. Registered in `multiPairTypes`/`syntenyTypes`; the adapter guesser
-  recognises a `.paf.gz` shipped with a tabix index. (Named `TabixPAFAdapter`,
-  not `AllVsAllPAFAdapter` — untangle output is haplotypes-vs-one-reference,
-  not pairwise all-vs-all; `make-pif --all-vs-all` from PR #4985 remains the
-  separate path that produces `.pif.gz` for `PairwiseIndexedPAFAdapter`.)
-- Confirm `vg find` / `graph-server` path for GraphGenomeView. ~~Remove large
-  mode.~~ **Done (adr-027)** — `GraphGenomeView` has one mode: `GetSubgraph` →
-  OGDF layout → graph render. `loadFromTabixLarge`, `LargeModeSyntenyCanvas`,
-  the `syntenyBlocks`/`largeModeRegion` model fields, and the `GetSyntenyBlocks`
-  call from the graph view are gone; past `MAX_GRAPH_REGION_BP` (100 kb)
-  `doSubgraphLoad` shows a "zoom in to view graph" message instead of
-  degrading. The `GfaTabixAdapter` *graph* coarse path went with it —
-  `getCoarseSubgraph`, `coarseSubgraphReader.ts`, the `graphCoarse*` config
-  slots, the `regionSize > 100k` branch in `getSubgraph`. (The `GetSyntenyBlocks`
-  RPC method is left registered — still used by the pairwise synteny views.
-  The `syntenyCoarse*` tier and `tools/gfa-to-tabix`'s `--graph-coarse-*` are
-  adr-026's separate removal, not yet done.)
+- Confirm `vg find` / `graph-server` path for GraphGenomeView.
 - Static-vs-service browser comparison; pick the delivery model.
 - Version-pin odgi + vg; verify untangle thread-determinism.
 

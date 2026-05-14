@@ -2644,16 +2644,6 @@
             "locationType": "UriLocation"
           }
         },
-        "syntenyCoarseLocation": {
-          "uri": "volvox_pangenome_50.synteny.coarse.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "syntenyCoarseIndex": {
-          "location": {
-            "uri": "volvox_pangenome_50.synteny.coarse.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        },
         "edgesLocation": {
           "uri": "volvox_pangenome_50.edges.spatial.bed.gz",
           "locationType": "UriLocation"

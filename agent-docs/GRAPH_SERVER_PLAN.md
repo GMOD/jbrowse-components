@@ -7,6 +7,13 @@ The two paths are kept parallel so the server can serve as the ground-truth
 oracle for the static-file output and as the prototyping vehicle for new
 features before they get encoded into the preprocessor.
 
+> **adr-025 supersedes this plan's bubble-CS work.** The per-base SNP/indel
+> overlay that earlier phases drove into the synteny features has been retired
+> in favour of a standard `vg deconstruct` VCF track. Sections below that
+> describe `bubbles.bed.gz`, `bubbleOverlay.ts`, server-side CS chaining, or
+> the server-vs-tabix oracle script are historical record only — the code
+> they describe is gone.
+
 ---
 
 ## Status (2026-05-13)
@@ -19,12 +26,9 @@ features before they get encoded into the preprocessor.
 | `GfaServerAdapter` (multi-pair + getSubgraph) | done |
 | Volvox manual smoke + chr20 perf bench | done |
 | Puppeteer e2e (`suites/graph-server.ts`) | done, gated `requiresRemote: true` |
-| Bubble CS derivation from S-line sequences | done at server, correct at HTTP level |
-| Forward-strand bubble cs chaining | done |
-| Reverse-strand bubble cs chaining | done (unit tests; HPRC verification pending) |
-| Server ↔ tabix oracle (volvox, position-level diff) | done — SNPs match, indels diverge in indel-anchor positions |
+| Bubble CS derivation (forward + reverse strand chaining) | removed (adr-025) |
+| Server ↔ tabix oracle (`compare-vs-tabix.ts`) | removed (adr-025) |
 | Multi-LGV synteny block rendering (server-fed) | works |
-| Multi-LGV per-SNP top-stripe coloring (server-fed) | works (was a stale-snapshot artifact) |
 | Graph view (Bandage layout) at SV region | works |
 | `backend: 'vg'` opt-in (vg find + xg index) | done — ~10× faster cold extract on HPRC chr20 |
 | `parsePanSN` 4-part haplotype names (vg fragmented assemblies) | done — `sample#hap#contig#fragment` aggregates to `sample#hap` |

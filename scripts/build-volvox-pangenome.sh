@@ -1,13 +1,12 @@
 #!/bin/bash
-# Builds the volvox 50-sample pangenome test data using pggb + vg deconstruct.
+# Builds the volvox 50-sample pangenome test data using pggb.
 #
 # Pipeline:
 #   1. Generate 50 mutated FASTA assemblies from volvox ctgA
 #   2. Run pggb (via singularity) to build a pangenome graph
-#   3. Run vg deconstruct to produce a VCF
-#   4. Run gfa-to-tabix --bubbles to produce all indexed files
+#   3. Run gfa-to-tabix to produce indexed files
 #
-# Prerequisites: singularity, vg, bgzip, tabix, samtools, node (v20+)
+# Prerequisites: singularity, vg, samtools, node (v20+)
 #
 # Usage:
 #   bash scripts/build-volvox-pangenome.sh
@@ -78,39 +77,11 @@ echo "  pggb GFA: $PGGB_GFA"
 # Copy GFA to output
 cp "$PGGB_GFA" "$OUT_DIR/$PREFIX.gfa"
 
-# Step 3: vg deconstruct
+# Step 3: gfa-to-tabix
 echo ""
-echo "── Step 3: Running vg deconstruct ──"
+echo "── Step 3: Running gfa-to-tabix ──"
 
-VG_FILE="$WORK_DIR/graph.vg"
-VCF_FILE="$WORK_DIR/variants.vcf"
-
-vg convert -g "$OUT_DIR/$PREFIX.gfa" -p > "$VG_FILE"
-
-# Find the reference path prefix (should be ref#0 or similar)
-REF_PREFIX="$(vg paths -L -x "$VG_FILE" | grep "^ref" | head -1 | cut -d'#' -f1-2)"
-if [ -z "$REF_PREFIX" ]; then
-  REF_PREFIX="$(vg paths -L -x "$VG_FILE" | head -1 | cut -d'#' -f1-2)"
-  echo "  No 'ref' path found, using first path prefix: $REF_PREFIX"
-fi
-echo "  Reference prefix: $REF_PREFIX"
-
-vg deconstruct -P "$REF_PREFIX" -a "$VG_FILE" > "$VCF_FILE"
-
-VARIANT_COUNT="$(grep -cv '^#' "$VCF_FILE" || echo 0)"
-echo "  VCF: $VARIANT_COUNT variant records"
-
-bgzip -c "$VCF_FILE" > "$WORK_DIR/variants.vcf.gz"
-tabix -p vcf "$WORK_DIR/variants.vcf.gz"
-
-# Step 4: gfa-to-tabix --bubbles
-echo ""
-echo "── Step 4: Running gfa-to-tabix --bubbles ──"
-
-"$RUST_BINARY" \
-  "$OUT_DIR/$PREFIX.gfa" \
-  "$OUT_DIR/$PREFIX" \
-  --bubbles "$WORK_DIR/variants.vcf.gz"
+"$RUST_BINARY" "$OUT_DIR/$PREFIX.gfa" "$OUT_DIR/$PREFIX"
 
 echo ""
 echo "=== Done ==="

@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# Idempotently re-indexes the fixtures Phase 0 needs.
+# Idempotently re-indexes the GfaTabix fixtures used by browser tests.
 #
 # - test_data/volvox/volvox_pangenome_50.*       : primary CI fixture (small).
-# - test_data/volvox/volvox_indel_pangenome.*    : SV fixture; re-indexed with
-#   --bubbles when the deconstruct VCF can be generated.
+# - test_data/volvox/volvox_indel_pangenome.*    : SV fixture.
 # - test/data/synteny-demo/hprc/hprc-v1.1-mc-grch38-chrM.* : 44-haplotype
 #   realistic case. Source .vg downloaded if missing.
 #
@@ -25,67 +24,29 @@ have() {
   command -v "$1" >/dev/null 2>&1
 }
 
+reindex_if_missing() {
+  local prefix="$1"
+  local gfa="$2"
+  for f in "$prefix.pos.bed.gz" "$prefix.synteny.bed.gz" \
+           "$prefix.edges.spatial.bed.gz"; do
+    if [[ ! -f "$f" ]]; then
+      echo "[$(basename "$prefix")] missing index files, re-indexing"
+      "$BIN" "$gfa" "$prefix"
+      return
+    fi
+  done
+  echo "[$(basename "$prefix")] indexes present, skipping"
+}
+
 # ---- volvox_pangenome_50 ----
 
 vol50_prefix="$REPO_ROOT/test_data/volvox/volvox_pangenome_50"
-vol50_gfa="$vol50_prefix.gfa"
-
-reindex_vol50=false
-for f in "$vol50_prefix.pos.bed.gz" "$vol50_prefix.synteny.bed.gz" \
-         "$vol50_prefix.edges.spatial.bed.gz"; do
-  if [[ ! -f "$f" ]]; then
-    reindex_vol50=true
-    break
-  fi
-done
-if $reindex_vol50; then
-  echo "[volvox_pangenome_50] missing index files, re-indexing"
-  if have vg && have bgzip && have tabix; then
-    tmp_vcf="$(mktemp -t vol50_decon.XXXXXX.vcf.gz)"
-    vg convert -g "$vol50_gfa" -p \
-      | vg deconstruct -P ref -a - \
-      | bgzip -c > "$tmp_vcf"
-    tabix -p vcf "$tmp_vcf"
-    "$BIN" --bubbles "$tmp_vcf" "$vol50_gfa" "$vol50_prefix"
-    rm -f "$tmp_vcf" "$tmp_vcf.tbi"
-  else
-    echo "  (vg/bgzip/tabix missing — building without bubbles)"
-    "$BIN" "$vol50_gfa" "$vol50_prefix"
-  fi
-else
-  echo "[volvox_pangenome_50] indexes present, skipping"
-fi
+reindex_if_missing "$vol50_prefix" "$vol50_prefix.gfa"
 
 # ---- volvox_indel_pangenome ----
 
 vol_indel_prefix="$REPO_ROOT/test_data/volvox/volvox_indel_pangenome"
-vol_indel_gfa="$vol_indel_prefix.gfa"
-
-reindex_indel=false
-for f in "$vol_indel_prefix.pos.bed.gz" "$vol_indel_prefix.synteny.bed.gz" \
-         "$vol_indel_prefix.edges.spatial.bed.gz"; do
-  if [[ ! -f "$f" ]]; then
-    reindex_indel=true
-    break
-  fi
-done
-if $reindex_indel; then
-  echo "[volvox_indel_pangenome] missing index files, re-indexing"
-  if have vg && have bgzip && have tabix; then
-    tmp_vcf="$(mktemp -t indel_decon.XXXXXX.vcf.gz)"
-    vg convert -g "$vol_indel_gfa" -p \
-      | vg deconstruct -P ref -a - \
-      | bgzip -c > "$tmp_vcf"
-    tabix -p vcf "$tmp_vcf"
-    "$BIN" --bubbles "$tmp_vcf" "$vol_indel_gfa" "$vol_indel_prefix"
-    rm -f "$tmp_vcf" "$tmp_vcf.tbi"
-  else
-    echo "  (vg missing — building without bubbles)"
-    "$BIN" "$vol_indel_gfa" "$vol_indel_prefix"
-  fi
-else
-  echo "[volvox_indel_pangenome] indexes present, skipping"
-fi
+reindex_if_missing "$vol_indel_prefix" "$vol_indel_prefix.gfa"
 
 # ---- HPRC chrM: download .vg, convert to GFA, re-index ----
 
@@ -111,29 +72,8 @@ if [[ -f "$hprc_chrm_vg" ]] && [[ ! -f "$hprc_chrm_gfa" ]]; then
     mv "$hprc_chrm_gfa.tmp" "$hprc_chrm_gfa"
   fi
 fi
-
-reindex_hprc=false
-for f in "$hprc_chrm_prefix.pos.bed.gz" "$hprc_chrm_prefix.synteny.bed.gz" \
-         "$hprc_chrm_prefix.edges.spatial.bed.gz"; do
-  if [[ ! -f "$f" ]]; then
-    reindex_hprc=true
-    break
-  fi
-done
-if [[ -f "$hprc_chrm_gfa" ]] && $reindex_hprc; then
-  echo "[hprc-chrM] re-indexing"
-  if have vg && have bgzip && have tabix; then
-    tmp_vcf="$(mktemp -t hprc_chrM_decon.XXXXXX.vcf.gz)"
-    vg deconstruct -P GRCh38 -a "$hprc_chrm_vg" 2>/dev/null \
-      | bgzip -c > "$tmp_vcf"
-    tabix -p vcf "$tmp_vcf" 2>/dev/null || true
-    "$BIN" --bubbles "$tmp_vcf" "$hprc_chrm_gfa" "$hprc_chrm_prefix"
-    rm -f "$tmp_vcf" "$tmp_vcf.tbi"
-  else
-    "$BIN" "$hprc_chrm_gfa" "$hprc_chrm_prefix"
-  fi
-elif [[ -f "$hprc_chrm_gfa" ]]; then
-  echo "[hprc-chrM] indexes present, skipping"
+if [[ -f "$hprc_chrm_gfa" ]]; then
+  reindex_if_missing "$hprc_chrm_prefix" "$hprc_chrm_gfa"
 else
   echo "[hprc-chrM] source GFA unavailable, skipping"
 fi
@@ -142,7 +82,7 @@ echo ""
 echo "Fixture status:"
 for prefix in "$vol50_prefix" "$vol_indel_prefix" "$hprc_chrm_prefix"; do
   echo "  $prefix:"
-  for ext in pos.bed.gz synteny.bed.gz synteny.coarse.bed.gz edges.spatial.bed.gz bubbles.bed.gz; do
+  for ext in pos.bed.gz synteny.bed.gz edges.spatial.bed.gz; do
     if [[ -f "$prefix.$ext" ]]; then
       printf "    %-30s %s\n" "$ext" "$(stat -c %s "$prefix.$ext") bytes"
     else
