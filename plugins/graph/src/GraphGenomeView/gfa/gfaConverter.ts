@@ -1,50 +1,54 @@
 import type { Graph, GraphEdge, GraphNode, GraphPath } from '../types.ts'
-import type { GFAGraph } from './gfaParser.ts'
+import type { GFAGraph, GFANode } from '@jbrowse/graph-core'
 
 function parseCigarOverlap(cigar: string) {
-  if (!cigar || cigar === '*') {
-    return 0
+  let sum = 0
+  for (const m of cigar.matchAll(/(\d+)M/g)) {
+    sum += +m[1]!
   }
+  return sum
+}
 
-  const matches = cigar.match(/(\d+)M/g)
-  if (!matches) {
-    return 0
+// Strand-specific node IDs (`<id>+` / `<id>-`) referenced by any link, path,
+// or walk. Path segments are already in `<id><strand>` form.
+function collectUsedStrands(gfaGraph: GFAGraph) {
+  const used = new Set<string>()
+  for (const link of gfaGraph.links) {
+    used.add(`${link.source}${link.strand1 || '+'}`)
+    used.add(`${link.target}${link.strand2 || '+'}`)
   }
+  for (const gfaPath of gfaGraph.paths) {
+    for (const segment of gfaPath.path.split(',')) {
+      used.add(segment)
+    }
+  }
+  for (const walk of gfaGraph.walks) {
+    for (const seg of walk.segments) {
+      used.add(`${seg.id}${seg.strand}`)
+    }
+  }
+  return used
+}
 
-  return matches.reduce((sum, match) => {
-    const num = parseInt(match.slice(0, -1))
-    return sum + num
-  }, 0)
+function makeNode(
+  gfaNode: GFANode,
+  strand: '+' | '-',
+  depth: number,
+): GraphNode {
+  return {
+    id: `${gfaNode.id}${strand}`,
+    name: gfaNode.id,
+    length: gfaNode.length,
+    depth,
+  }
 }
 
 export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
   const nodes: GraphNode[] = []
   const edges: GraphEdge[] = []
 
-  // Collect all strand-specific node IDs referenced by links and paths
-  const usedStrands = new Set<string>()
-  for (const link of gfaGraph.links) {
-    const sourceStrand = link.strand1 || '+'
-    const targetStrand = link.strand2 || '+'
-    usedStrands.add(`${link.source}${sourceStrand}`)
-    usedStrands.add(`${link.target}${targetStrand}`)
-  }
-
-  for (const gfaPath of gfaGraph.paths) {
-    for (const segment of gfaPath.path.split(',')) {
-      const strand = segment.slice(-1)
-      const nodeName = segment.slice(0, -1)
-      usedStrands.add(`${nodeName}${strand}`)
-    }
-  }
-
-  for (const walk of gfaGraph.walks) {
-    for (const seg of walk.segments) {
-      usedStrands.add(`${seg.id}${seg.strand}`)
-    }
-  }
-
-  // If no links or paths, create forward-strand nodes for all segments
+  const usedStrands = collectUsedStrands(gfaGraph)
+  // With no links/paths/walks, fall back to forward-strand nodes for all segments
   const hasReferences = usedStrands.size > 0
 
   for (const gfaNode of gfaGraph.nodes) {
@@ -53,32 +57,19 @@ export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
     const depth = typeof dp === 'number' && dp > 0 ? dp : 1
 
     if (!hasReferences || usedStrands.has(`${gfaNode.id}+`)) {
-      nodes.push({
-        id: `${gfaNode.id}+`,
-        name: gfaNode.id,
-        length: gfaNode.length,
-        depth,
-      })
+      nodes.push(makeNode(gfaNode, '+', depth))
     }
-
     if (usedStrands.has(`${gfaNode.id}-`)) {
-      nodes.push({
-        id: `${gfaNode.id}-`,
-        name: gfaNode.id,
-        length: gfaNode.length,
-        depth,
-      })
+      nodes.push(makeNode(gfaNode, '-', depth))
     }
   }
 
   for (const link of gfaGraph.links) {
-    const overlap = parseCigarOverlap(link.cigar)
-    const sourceStrand = link.strand1 || '+'
-    const targetStrand = link.strand2 || '+'
-    const from = `${link.source}${sourceStrand}`
-    const to = `${link.target}${targetStrand}`
-
-    edges.push({ from, to, overlap })
+    edges.push({
+      from: `${link.source}${link.strand1 || '+'}`,
+      to: `${link.target}${link.strand2 || '+'}`,
+      overlap: parseCigarOverlap(link.cigar),
+    })
   }
 
   const paths: GraphPath[] = []
@@ -97,24 +88,14 @@ export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
   }
 
   for (const gfaPath of gfaGraph.paths) {
-    const pathSegments = gfaPath.path.split(',')
-    const nodeIds: string[] = []
-
-    for (const segment of pathSegments) {
-      const strand = segment.slice(-1)
-      const nodeName = segment.slice(0, -1)
-      nodeIds.push(`${nodeName}${strand}`)
-    }
-
+    // path segments are already in `<id><strand>` form
+    const nodeIds = gfaPath.path.split(',')
     paths.push({ name: gfaPath.name, nodeIds } satisfies GraphPath)
     recordPathEdges(nodeIds, gfaPath.name)
   }
 
   for (const walk of gfaGraph.walks) {
-    const nodeIds: string[] = []
-    for (const seg of walk.segments) {
-      nodeIds.push(`${seg.id}${seg.strand}`)
-    }
+    const nodeIds = walk.segments.map(seg => `${seg.id}${seg.strand}`)
     const name = `${walk.sample}#${walk.haplotype}`
     paths.push({
       name,

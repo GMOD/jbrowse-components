@@ -95,11 +95,7 @@ function getSpatialIndex(
   nodePositions: Record<string, NodeSegment[]>,
   version: number,
 ) {
-  if (
-    !nodeCache ||
-    nodeCache.positions !== nodePositions ||
-    nodeCache.version !== version
-  ) {
+  if (nodeCache?.positions !== nodePositions || nodeCache.version !== version) {
     nodeCache = {
       positions: nodePositions,
       version,
@@ -128,8 +124,7 @@ function getEdgeSpatialIndex(
   version: number,
 ) {
   if (
-    !edgeCache ||
-    edgeCache.positions !== nodePositions ||
+    edgeCache?.positions !== nodePositions ||
     edgeCache.graph !== graph ||
     edgeCache.drawPaths !== drawPaths ||
     edgeCache.scale !== scale ||

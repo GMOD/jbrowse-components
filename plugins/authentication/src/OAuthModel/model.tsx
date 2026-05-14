@@ -218,10 +218,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           resolve: (token: string) => void,
           reject: (error: Error) => void,
         ) {
-          listener = event => {
-            this.finishOAuthWindow(event, resolve, reject).catch((e: unknown) => {
+          listener = async event => {
+            try {
+              const token = await this.finishOAuthWindow(event)
+              if (token !== undefined) {
+                resolve(token)
+              }
+            } catch (e: unknown) {
               reject(e instanceof Error ? e : new Error(String(e)))
-            })
+            }
           }
           window.addEventListener('message', listener)
         },
@@ -233,19 +238,16 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         },
         /**
          * #action
+         * Returns the token if the event completes the flow, undefined if the
+         * event name doesn't match. Throws on any OAuth error.
          */
-        async finishOAuthWindow(
-          event: MessageEvent,
-          resolve: (token: string) => void,
-          reject: (error: Error) => void,
-        ) {
+        async finishOAuthWindow(event: MessageEvent) {
           if (
             event.data.name !== `JBrowseAuthWindow-${self.internetAccountId}`
           ) {
-            return
+            return undefined
           }
-          // Remove listener before any branching so it's guaranteed to run
-          // exactly once — every exit path below either resolves or rejects.
+          // Remove listener before any branching so it fires exactly once.
           this.deleteMessageChannel()
           const redirectUriWithInfo = event.data.redirectUri
           const fixedQueryString = redirectUriWithInfo.replace('#', '?')
@@ -254,51 +256,42 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const urlParams = new URLSearchParams(queryStringSearch)
           const expectedState = self.state()
           if (expectedState && urlParams.get('state') !== expectedState) {
-            reject(new Error('OAuth state mismatch — possible CSRF attack'))
-            return
+            throw new Error('OAuth state mismatch — possible CSRF attack')
           }
           if (urlParams.has('access_token')) {
             const token = urlParams.get('access_token')
             if (!token) {
-              reject(new Error('Error with token endpoint'))
-              return
+              throw new Error('Error with token endpoint')
             }
             self.storeToken(token)
-            resolve(token)
-            return
+            return token
           }
           if (urlParams.has('code')) {
             const code = urlParams.get('code')
             if (!code) {
-              reject(new Error('Error with authorization endpoint'))
-              return
+              throw new Error('Error with authorization endpoint')
             }
             const token = await self.exchangeAuthorizationForAccessToken(
               code,
               redirectUrl.origin + redirectUrl.pathname,
             )
             self.storeToken(token)
-            resolve(token)
-            return
+            return token
           }
           if (redirectUriWithInfo.includes('access_denied')) {
-            reject(new Error('OAuth flow was cancelled'))
-            return
+            throw new Error('OAuth flow was cancelled')
           }
           if (redirectUriWithInfo.includes('error')) {
-            reject(new Error(`OAuth flow error: ${queryStringSearch}`))
-            return
+            throw new Error(`OAuth flow error: ${queryStringSearch}`)
           }
+          return undefined
         },
         /**
          * #action
          * opens external OAuth flow, popup for web and new browser window for
          * desktop
          */
-        async useEndpointForAuthorization(
-          resolve: (token: string) => void,
-          reject: (error: Error) => void,
-        ) {
+        async useEndpointForAuthorization(resolve: (token: string) => void) {
           const redirectUri = isElectron
             ? 'http://localhost/auth'
             : window.location.origin + window.location.pathname
@@ -341,11 +334,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             const eventFromDesktop = new MessageEvent('message', {
               data: { name: eventName, redirectUri },
             })
-            this.finishOAuthWindow(eventFromDesktop, resolve, reject).catch(
-              (e: unknown) => {
-                reject(e instanceof Error ? e : new Error(String(e)))
-              },
-            )
+            const token = await this.finishOAuthWindow(eventFromDesktop)
+            if (token !== undefined) {
+              resolve(token)
+            }
           } else {
             window.open(url, eventName, 'width=500,height=600,left=0,top=0')
           }
@@ -375,11 +367,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           if (doUserFlow) {
             this.addMessageChannel(resolve, reject)
-            this.useEndpointForAuthorization(resolve, reject).catch(
-              (e: unknown) => {
-                reject(e instanceof Error ? e : new Error(String(e)))
-              },
-            )
+            try {
+              await this.useEndpointForAuthorization(resolve)
+            } catch (e: unknown) {
+              reject(e instanceof Error ? e : new Error(String(e)))
+            }
           }
         },
         /**
