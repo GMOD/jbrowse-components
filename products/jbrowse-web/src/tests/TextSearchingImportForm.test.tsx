@@ -9,7 +9,7 @@ beforeEach(() => {
 })
 
 const timeout = 50_000
-const delay = { timeout: timeout }
+const delay = { timeout }
 const opts = [{}, delay]
 
 async function getInput() {
@@ -69,11 +69,10 @@ test(
 test(
   'lower case refname, searching: contigb',
   async () => {
-    const { getInputValue, autocomplete, input, findByText } = await getInput()
+    const { getInputValue, findByRole, input, findByText } = await getInput()
 
     fireEvent.change(input, { target: { value: 'contigb' } })
-    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-    fireEvent.keyDown(autocomplete, { key: 'Enter' })
+    fireEvent.click(within(await findByRole('listbox', ...opts)).getByText(/ctgB/))
 
     fireEvent.click(await findByText('Open'))
 

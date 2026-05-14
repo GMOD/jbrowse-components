@@ -121,19 +121,8 @@ test('description of gene, searching: kinase', async () => {
 test('search matches description for feature in two places', async () => {
   const { input, findByRole } = await doSetup()
 
-  fireEvent.mouseDown(input)
-  const listbox = await findByRole('listbox', ...opts)
-
   fireEvent.change(input, { target: { value: 'fingerprint' } })
-
-  // Wait for the listbox to show results
-  const options = await within(listbox).findAllByRole('option', ...opts)
-
-  // Find the b101.2 option and click it
-  const b101_2_option = options.find(opt => opt.textContent.includes('b101.2'))
-  if (b101_2_option) {
-    fireEvent.click(b101_2_option)
-  }
+  fireEvent.click(within(await findByRole('listbox', ...opts)).getByText(/b101.2/))
 }, 40_000)
 
 test('failed search resets input to visible location', async () => {
