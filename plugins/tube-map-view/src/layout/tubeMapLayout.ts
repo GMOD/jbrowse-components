@@ -77,13 +77,21 @@ export function computeTubeMapLayout(
   })
 
   const tracks: TubeMapTrack[] = inputTracks.map(t => {
-    const seq = t.segments.map(s => {
+    const unknown: string[] = []
+    const seq: number[] = []
+    for (const s of t.segments) {
       const idx = nodeByName.get(s.name)
       if (idx === undefined) {
-        return 0
+        unknown.push(s.name)
+      } else {
+        seq.push(s.isForward ? idx : -(idx + 1))
       }
-      return s.isForward ? idx : -(idx + 1)
-    })
+    }
+    if (unknown.length > 0) {
+      console.warn(
+        `[TubeMapLayout] track "${t.name}" references unknown node(s): ${unknown.join(', ')} — skipped`,
+      )
+    }
     return {
       id: t.id,
       name: t.name,

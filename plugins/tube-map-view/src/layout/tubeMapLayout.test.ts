@@ -139,6 +139,34 @@ describe('computeTubeMapLayout', () => {
     // first segment should be at node 1
     expect(refTrack.path[0]!.node).toBe(0)
   })
+
+  test('unknown segment names are skipped with a warning', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const layout = computeTubeMapLayout(
+      [
+        { name: '1', sequenceLength: 4 },
+        { name: '2', sequenceLength: 4 },
+      ],
+      [
+        {
+          id: 'ref',
+          name: 'ref',
+          segments: [
+            { name: '1', isForward: true },
+            { name: 'BOGUS', isForward: true },
+            { name: '2', isForward: true },
+          ],
+          type: 'haplotype',
+          indexOfFirstBase: 0,
+        },
+      ],
+    )
+
+    expect(layout.nodes).toHaveLength(2)
+    expect(layout.tracks[0]!.sequence).toHaveLength(2)
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('BOGUS'))
+    warnSpy.mockRestore()
+  })
 })
 
 describe('layoutGFA', () => {

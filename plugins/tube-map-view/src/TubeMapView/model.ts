@@ -216,6 +216,9 @@ export default function stateModelFactory() {
           if (track) {
             const adapterConfig = readConfObject(track, 'adapter')
             yield* doSubgraphLoad(adapterConfig, self.loadedRegion, {})
+          } else {
+            self.error = `Track '${self.loadedTrackId}' no longer exists in this session — reload the track to view this graph`
+            self.isLoading = false
           }
         }),
       }

@@ -249,17 +249,15 @@ const FileMode = observer(function FileMode({
     }
   }
 
-  function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (file) {
-      file
-        .text()
-        .then(text => {
-          model.loadGFA(text, file.name)
-        })
-        .catch((err: unknown) => {
-          model.setError(err)
-        })
+      try {
+        const text = await file.text()
+        model.loadGFA(text, file.name)
+      } catch (err) {
+        model.setError(err)
+      }
     }
   }
 
@@ -325,6 +323,7 @@ const ImportForm = observer(function ImportForm({
       <div className={classes.header}>
         <Typography variant="h6">Load a GFA graph</Typography>
         <ToggleButtonGroup
+          data-testid="import-mode-toggle"
           value={mode}
           exclusive
           size="small"

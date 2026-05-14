@@ -1,3 +1,4 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -5,24 +6,29 @@ import { CANVAS_HEIGHT } from '../model.ts'
 
 import type { TubeMapViewModel } from '../model.ts'
 
+const useStyles = makeStyles()({
+  toolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '4px 8px',
+    borderBottom: '1px solid #ddd',
+    background: '#fafafa',
+  },
+  graphName: { fontWeight: 500 },
+  spacer: { flex: 1 },
+})
+
 const TubeMapToolbar = observer(function TubeMapToolbar({
   model,
 }: {
   model: TubeMapViewModel
 }) {
+  const { classes } = useStyles()
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '4px 8px',
-        borderBottom: '1px solid #ddd',
-        background: '#fafafa',
-      }}
-    >
+    <div className={classes.toolbar}>
       {model.graphName ? (
-        <Typography variant="body2" style={{ fontWeight: 500 }}>
+        <Typography variant="body2" className={classes.graphName}>
           {model.graphName}
         </Typography>
       ) : null}
@@ -56,7 +62,7 @@ const TubeMapToolbar = observer(function TubeMapToolbar({
       >
         -
       </Button>
-      <div style={{ flex: 1 }} />
+      <div className={classes.spacer} />
       <Button
         size="small"
         onClick={() => {

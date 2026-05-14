@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { CANVAS_HEIGHT } from '../model.ts'
@@ -24,6 +25,48 @@ const TRACK_COLORS = [
 function getTrackColor(idx: number) {
   return TRACK_COLORS[idx % TRACK_COLORS.length]
 }
+
+const useStyles = makeStyles()({
+  container: {
+    overflow: 'hidden',
+    height: CANVAS_HEIGHT,
+    background: '#fff',
+    position: 'relative',
+  },
+  // cursor: grab normally; :active gives grabbing without needing JS state
+  svg: {
+    cursor: 'grab',
+    '&:active': { cursor: 'grabbing' },
+  },
+  legend: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    background: 'rgba(255,255,255,0.92)',
+    border: '1px solid #ccc',
+    borderRadius: 4,
+    padding: '6px 10px',
+    fontSize: 12,
+    zIndex: 10,
+    maxHeight: 200,
+    overflowY: 'auto',
+  },
+  legendEntry: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '2px 0',
+    cursor: 'pointer',
+  },
+  legendEntryDimmed: { opacity: 0.4 },
+  legendEntryHighlighted: { fontWeight: 600 },
+  legendSwatch: {
+    width: 14,
+    height: 4,
+    borderRadius: 2,
+    flexShrink: 0,
+  },
+})
 
 const NODE_RADIUS = 4
 
@@ -211,34 +254,19 @@ function TrackLegend({
   hoveredTrack: number | null
   onHoverTrack: (idx: number | null) => void
 }) {
+  const { classes, cx } = useStyles()
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        background: 'rgba(255,255,255,0.92)',
-        border: '1px solid #ccc',
-        borderRadius: 4,
-        padding: '6px 10px',
-        fontSize: 12,
-        zIndex: 10,
-        maxHeight: 200,
-        overflowY: 'auto',
-      }}
-    >
+    <div className={classes.legend}>
       {layout.tracks.map((track, idx) => (
         <div
           key={track.id}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '2px 0',
-            opacity: hoveredTrack !== null && hoveredTrack !== idx ? 0.4 : 1,
-            cursor: 'pointer',
-            fontWeight: hoveredTrack === idx ? 600 : 400,
-          }}
+          className={cx(
+            classes.legendEntry,
+            hoveredTrack !== null &&
+              hoveredTrack !== idx &&
+              classes.legendEntryDimmed,
+            hoveredTrack === idx && classes.legendEntryHighlighted,
+          )}
           onMouseEnter={() => {
             onHoverTrack(idx)
           }}
@@ -247,13 +275,8 @@ function TrackLegend({
           }}
         >
           <div
-            style={{
-              width: 14,
-              height: 4,
-              borderRadius: 2,
-              background: getTrackColor(idx),
-              flexShrink: 0,
-            }}
+            className={classes.legendSwatch}
+            style={{ background: getTrackColor(idx) }}
           />
           <span>{track.name}</span>
         </div>
@@ -281,6 +304,7 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
 }: {
   model: TubeMapViewModel
 }) {
+  const { classes } = useStyles()
   const svgRef = useRef<SVGSVGElement>(null)
   const isPanning = useRef(false)
   const lastPos = useRef({ x: 0, y: 0 })
@@ -331,14 +355,7 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
   }
 
   return (
-    <div
-      style={{
-        overflow: 'hidden',
-        height: CANVAS_HEIGHT,
-        background: '#fff',
-        position: 'relative',
-      }}
-    >
+    <div className={classes.container}>
       <TrackLegend
         layout={layout}
         hoveredTrack={model.hoveredTrack}
@@ -348,6 +365,7 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
       />
       <svg
         ref={svgRef}
+        className={classes.svg}
         width={model.width}
         height={CANVAS_HEIGHT}
         onWheel={handleWheel}
@@ -355,7 +373,6 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        style={{ cursor: isPanning.current ? 'grabbing' : 'grab' }}
       >
         <g
           transform={`translate(${model.translateX},${model.translateY}) scale(${model.scale})`}

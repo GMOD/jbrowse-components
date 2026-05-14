@@ -10,11 +10,26 @@ async function navigateAndAddTubeMapView(page: Page) {
   )
   await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
 
-  // Add > Tube map view
   await (await findByText(page, 'Add'))?.click()
   await delay(300)
   await (await findByText(page, 'Tube map view'))?.click()
   await delay(500)
+}
+
+async function loadExampleAndWait(page: Page) {
+  await (await findByText(page, 'Load 15-node example', 10000))?.click()
+  await page.waitForFunction(
+    () => {
+      const svgs = document.querySelectorAll('svg')
+      for (const svg of svgs) {
+        if (svg.querySelectorAll('rect').length >= 15) {
+          return true
+        }
+      }
+      return false
+    },
+    { timeout: 10000, polling: 200 },
+  )
 }
 
 const suite: TestSuite = {
@@ -25,57 +40,27 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateAndAddTubeMapView(page)
         await findByText(page, 'Load a GFA graph', 10000)
-        await findByText(page, 'From file', 5000)
-        await findByText(page, 'From URL', 5000)
-        await findByText(
-          page,
-          'Load example (tiny pangenome, 15 nodes, 2 haplotypes)',
-          5000,
-        )
+        await findByText(page, 'Track', 5000)
+        await findByText(page, 'File / URL', 5000)
+        await findByText(page, 'Load 15-node example', 5000)
       },
     },
     {
       name: 'load example GFA and render tube map',
       fn: async page => {
         await navigateAndAddTubeMapView(page)
+        await loadExampleAndWait(page)
 
-        const exampleBtn = await findByText(
-          page,
-          'Load example (tiny pangenome, 15 nodes, 2 haplotypes)',
-          10000,
-        )
-        await exampleBtn?.click()
+        await findByText(page, '15 nodes', 5000)
+        await findByText(page, '2 tracks', 5000)
 
-        // Wait for layout to complete and SVG to appear
-        await page.waitForSelector('svg', { timeout: 10000 })
-
-        // Verify toolbar stats rendered
-        await findByText(page, '15 nodes', 10000)
-        await findByText(page, '2 tracks', 10000)
-
-        // Wait for SVG content to render (nodes + paths)
+        // Example paths are named 'x' and 'y'
         await page.waitForFunction(
           () => {
-            const svgs = document.querySelectorAll('svg')
-            for (const svg of svgs) {
-              if (svg.querySelectorAll('rect').length >= 15) {
-                return true
-              }
-            }
-            return false
-          },
-          { timeout: 10000, polling: 200 },
-        )
-
-        // Verify track legend shows both haplotype names
-        // Verify the legend is present by checking for track name text
-        // The example GFA has paths named 'x' and 'y'
-        await page.waitForFunction(
-          () => {
-            const divs = document.querySelectorAll('span')
+            const spans = document.querySelectorAll('span')
             let foundX = false
             let foundY = false
-            for (const d of divs) {
+            for (const d of spans) {
               if (d.textContent === 'x') {
                 foundX = true
               }
@@ -96,31 +81,9 @@ const suite: TestSuite = {
       name: 'node hover highlights',
       fn: async page => {
         await navigateAndAddTubeMapView(page)
-
-        const exampleBtn = await findByText(
-          page,
-          'Load example (tiny pangenome, 15 nodes, 2 haplotypes)',
-          10000,
-        )
-        await exampleBtn?.click()
-
-        // Wait for nodes to render
-        await page.waitForFunction(
-          () => {
-            const svgs = document.querySelectorAll('svg')
-            for (const svg of svgs) {
-              if (svg.querySelectorAll('rect').length >= 15) {
-                return true
-              }
-            }
-            return false
-          },
-          { timeout: 10000, polling: 200 },
-        )
-
+        await loadExampleAndWait(page)
         await delay(500)
 
-        // Find a node rect and hover over it
         const rects = await page.$$('svg rect')
         if (rects.length > 0) {
           const box = await rects[0]!.boundingBox()
@@ -137,31 +100,9 @@ const suite: TestSuite = {
       name: 'legend hover highlights track',
       fn: async page => {
         await navigateAndAddTubeMapView(page)
-
-        const exampleBtn = await findByText(
-          page,
-          'Load example (tiny pangenome, 15 nodes, 2 haplotypes)',
-          10000,
-        )
-        await exampleBtn?.click()
-
-        await page.waitForFunction(
-          () => {
-            const svgs = document.querySelectorAll('svg')
-            for (const svg of svgs) {
-              if (svg.querySelectorAll('rect').length >= 15) {
-                return true
-              }
-            }
-            return false
-          },
-          { timeout: 10000, polling: 200 },
-        )
-
+        await loadExampleAndWait(page)
         await delay(300)
 
-        // Hover the first legend entry to highlight that track
-        // Find the legend container and hover the first entry
         const legendEntry = await page.evaluateHandle(() => {
           const spans = document.querySelectorAll('span')
           for (const s of spans) {
@@ -184,35 +125,24 @@ const suite: TestSuite = {
       },
     },
     {
+      name: 'clear button returns to import form',
+      fn: async page => {
+        await navigateAndAddTubeMapView(page)
+        await loadExampleAndWait(page)
+
+        await (await findByText(page, 'Clear', 5000))?.click()
+
+        await findByText(page, 'Load a GFA graph', 5000)
+      },
+    },
+    {
       name: 'zoom to fit works',
       fn: async page => {
         await navigateAndAddTubeMapView(page)
-
-        const exampleBtn = await findByText(
-          page,
-          'Load example (tiny pangenome, 15 nodes, 2 haplotypes)',
-          10000,
-        )
-        await exampleBtn?.click()
-
-        await page.waitForFunction(
-          () => {
-            const svgs = document.querySelectorAll('svg')
-            for (const svg of svgs) {
-              if (svg.querySelectorAll('rect').length >= 15) {
-                return true
-              }
-            }
-            return false
-          },
-          { timeout: 10000, polling: 200 },
-        )
-
+        await loadExampleAndWait(page)
         await delay(300)
 
-        // Click zoom to fit
-        const zoomBtn = await findByText(page, 'Zoom to fit', 5000)
-        await zoomBtn?.click()
+        await (await findByText(page, 'Zoom to fit', 5000))?.click()
         await delay(500)
 
         await snapshot(page, 'tube-map-zoom-to-fit', 0.15)
