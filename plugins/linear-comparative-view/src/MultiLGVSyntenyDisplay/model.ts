@@ -361,6 +361,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       get treeSidebarActive() {
         return self.showTree && this.hierarchy !== undefined
       },
+      get labelW() {
+        return this.rowHeight >= 4 ? LABEL_WIDTH : 0
+      },
       // Per-frame render state. Returns undefined to skip render until
       // the palette + view are ready.
       get syntenyRenderState() {
@@ -377,7 +380,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           coverageHeight: this.syntenyCoverageHeight,
           palette,
           displayedGenomes: this.displayedGenomes,
-          labelW: this.rowHeight >= 12 ? LABEL_WIDTH : 0,
+          labelW: this.labelW,
           labelXOffset: this.treeSidebarActive ? self.treeAreaWidth : 0,
         }
       },

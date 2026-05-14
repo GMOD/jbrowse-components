@@ -25,9 +25,10 @@ import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
 import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTestPipeline.ts'
 import {
+  BG_COLOR_HEX,
   LABEL_FONT_MAX,
-  LABEL_WIDTH,
-  truncateGenomeName,
+  LABEL_TEXT,
+  ROW_BG_ALT,
 } from '../shared/types.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
@@ -248,10 +249,7 @@ function GenomeNameOverlay({
   if (labelW === 0) {
     return null
   }
-  const fontSize = Math.min(rowHeight - 4, LABEL_FONT_MAX)
-  if (fontSize < 4) {
-    return null
-  }
+  const fontSize = Math.min(rowHeight, LABEL_FONT_MAX)
   return (
     <div
       style={{
@@ -273,18 +271,20 @@ function GenomeNameOverlay({
             left: 0,
             width: labelW,
             height: rowHeight,
-            background: source.color ?? (i % 2 === 0 ? '#f8f8f8' : '#ededed'),
+            background: source.color ?? (i % 2 === 0 ? ROW_BG_ALT : BG_COLOR_HEX),
             display: 'flex',
             alignItems: 'center',
             paddingLeft: 4,
             fontSize,
             fontFamily: 'sans-serif',
-            color: '#333',
+            color: LABEL_TEXT,
             whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
             boxSizing: 'border-box',
           }}
         >
-          {truncateGenomeName(source.label ?? source.name)}
+          {source.label ?? source.name}
         </div>
       ))}
     </div>
@@ -353,6 +353,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     displayedGenomes,
     sources,
     rowHeight,
+    labelW,
     rowSpacing,
     height,
     syntenyCoverageHeight,
@@ -362,7 +363,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     treeAreaWidth,
   } = model
   const { width, bpPerPx, offsetPx } = view
-  const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
   // Tree sidebar takes up the leftmost strip when clustering has been run
   // and the user has it enabled; everything else shifts right by this width.
   const treeOffset = treeSidebarActive ? treeAreaWidth : 0

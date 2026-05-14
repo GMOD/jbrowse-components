@@ -91,7 +91,7 @@ function drawGenomeLabels(
     labelW,
   )
 
-  const fontSize = Math.min(rowHeight - 4, LABEL_FONT_MAX)
+  const fontSize = Math.min(rowHeight, LABEL_FONT_MAX)
   ctx.fillStyle = LABEL_TEXT
   ctx.font = `${fontSize}px sans-serif`
   ctx.textBaseline = 'middle'
