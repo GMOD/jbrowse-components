@@ -42,19 +42,13 @@ export default function webpackBuilder(): webpack.Configuration {
   }
 
   return {
-    target: ['browserslist'],
     stats: 'errors-warnings',
     mode: isEnvProduction ? 'production' : 'development',
     bail: isEnvProduction,
-    devtool: isEnvProduction
-      ? shouldUseSourceMap
-        ? 'source-map'
-        : false
-      : ('eval' as const),
+    devtool: isEnvProduction ? (shouldUseSourceMap ? 'source-map' : false) : undefined,
     entry: appIndexJs,
     output: {
       path: appBuild,
-      pathinfo: isEnvDevelopment,
       filename: isEnvProduction
         ? 'static/js/[name].[contenthash:8].js'
         : 'static/js/bundle.js',
@@ -70,13 +64,15 @@ export default function webpackBuilder(): webpack.Configuration {
     module: {
       strictExportPresence: true,
       rules: [
-        shouldUseSourceMap
-          ? {
-              enforce: 'pre' as const,
-              test: /\.(js|mjs|jsx|ts|tsx|css)$/,
-              loader: 'source-map-loader',
-            }
-          : false,
+        ...(shouldUseSourceMap && isEnvProduction
+          ? [
+              {
+                enforce: 'pre' as const,
+                test: /\.(js|mjs|jsx|ts|tsx|css)$/,
+                loader: 'source-map-loader',
+              },
+            ]
+          : []),
         {
           oneOf: [
             {
@@ -96,9 +92,7 @@ export default function webpackBuilder(): webpack.Configuration {
               exclude: /\.module\.css$/,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
+                sourceMap: isEnvDevelopment || shouldUseSourceMap,
                 modules: { mode: 'icss' },
               }),
               sideEffects: true,
@@ -107,9 +101,7 @@ export default function webpackBuilder(): webpack.Configuration {
               test: /\.module\.css$/,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
+                sourceMap: isEnvDevelopment || shouldUseSourceMap,
                 modules: { mode: 'local' },
               }),
             },
@@ -119,7 +111,7 @@ export default function webpackBuilder(): webpack.Configuration {
             },
           ],
         },
-      ].filter(Boolean) as webpack.RuleSetRule[],
+      ],
     },
     plugins: [
       new HtmlWebpackPlugin({
@@ -142,21 +134,22 @@ export default function webpackBuilder(): webpack.Configuration {
             }
           : {}),
       }),
-      isEnvProduction &&
-        new InlineChunkHtmlPlugin(
-          HtmlWebpackPlugin as unknown as InlineChunkHtmlPlugin['htmlWebpackPlugin'],
-          [/runtime-.+[.]js/],
-        ),
-      isEnvProduction &&
-        new MiniCssExtractPlugin({
-          filename: 'static/css/[name].[contenthash:8].css',
-          chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
-        }),
-    ].filter(Boolean),
+      ...(isEnvProduction
+        ? [
+            new InlineChunkHtmlPlugin(
+              HtmlWebpackPlugin as unknown as InlineChunkHtmlPlugin['htmlWebpackPlugin'],
+              [/runtime-.+[.]js/],
+            ),
+            new MiniCssExtractPlugin({
+              filename: 'static/css/[name].[contenthash:8].css',
+              chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
+            }),
+          ]
+        : []),
+    ],
     performance: false,
     optimization: {
       minimize: isEnvProduction && shouldMinimize,
-      ...(shouldMinimize ? {} : { minimizer: [] }),
     },
   }
 }
