@@ -6,7 +6,7 @@ import {
   SHAPE_TRI_LEFT,
   SHAPE_TRI_RIGHT,
 } from './variantShape.ts'
-import { REFERENCE_COLOR } from '../../shared/constants.ts'
+import { BLACK_ABGR, REFERENCE_COLOR } from '../../shared/constants.ts'
 import {
   getAlleleColor,
   getColorAlleleCount,
@@ -78,8 +78,6 @@ function getInsertionRenderEnd(
   }
   return start + maxLen
 }
-
-const BLACK_ABGR = 0xff000000
 
 export function computeVariantCells({
   mafs,
@@ -187,7 +185,68 @@ export function computeVariantCells({
 
     const callGt = getRawCallGenotype(feature)
     if (renderingMode === 'phased') {
-      if (callGt && sampleIndices) {
+      // PS (phase-set) coloring requires per-sample FORMAT data, which is
+      // only carried by the heavier `samples` field — neither the raw
+      // callGenotype Int8Array nor the flat `genotypes` map preserves it.
+      // PS in FORMAT is uncommon, so the slower samples path runs only when
+      // a feature actually declares PS. Mirrors the matrix display's PS
+      // branch so phased coloring is consistent across both displays.
+      const hasPhaseSet = feature.get('FORMAT')?.includes('PS')
+      if (hasPhaseSet) {
+        const samp = feature.get('samples') as Record<
+          string,
+          Record<string, string[]>
+        >
+        for (let j = 0; j < numSources; j++) {
+          const { name, HP, sampleName } = sources[j]!
+          const s = samp[sampleName]
+          if (s) {
+            const genotype = s.GT?.[0]
+            if (genotype) {
+              const isPhasedGt = genotype.includes('|')
+              if (isPhasedGt) {
+                const PS = s.PS?.[0]
+                const alleles =
+                  genotype.length === 3
+                    ? [genotype[0]!, genotype[2]!]
+                    : genotype.split('|')
+                const c = getPhasedColor(
+                  alleles,
+                  HP!,
+                  mostFrequentAlt,
+                  PS,
+                  drawRef,
+                )
+                if (c) {
+                  addCell(
+                    start,
+                    end,
+                    renderEnd,
+                    j,
+                    getCachedABGR(c),
+                    shape,
+                    c === REFERENCE_COLOR,
+                    featureIdx,
+                  )
+                  renderedGenotypes[name] = genotype
+                }
+              } else {
+                addCell(
+                  start,
+                  end,
+                  renderEnd,
+                  j,
+                  BLACK_ABGR,
+                  shape,
+                  false,
+                  featureIdx,
+                )
+                renderedGenotypes[name] = genotype
+              }
+            }
+          }
+        }
+      } else if (callGt && sampleIndices) {
         const callGtPhased = feature.get('callGenotypePhased') as
           | Uint8Array
           | undefined

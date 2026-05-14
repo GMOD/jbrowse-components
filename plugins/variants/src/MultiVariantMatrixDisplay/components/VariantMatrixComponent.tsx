@@ -11,6 +11,7 @@ import { observer } from 'mobx-react'
 
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
+import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
@@ -152,7 +153,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           top: 0,
           visibility: model.regionTooLarge ? 'hidden' : undefined,
           backgroundColor:
-            model.referenceDrawingMode === 'skip' ? '#ccc' : undefined,
+            model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
         }}
         onMouseMove={e => {
           const rect = e.currentTarget.getBoundingClientRect()

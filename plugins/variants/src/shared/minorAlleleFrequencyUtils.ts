@@ -263,7 +263,6 @@ function getMostFrequentAlt(alleleCounts: Record<string, number>) {
 export interface MAFFilteredFeature {
   feature: Feature
   mostFrequentAlt: string
-  alleleCounts: Record<string, number>
 }
 
 export function getFeaturesThatPassMinorAlleleFrequencyFilter({
@@ -308,7 +307,7 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
         calculateMinorAlleleFrequency(alleleCounts) >=
           minorAlleleFrequencyFilter
       ) {
-        results.push({ feature, mostFrequentAlt, alleleCounts })
+        results.push({ feature, mostFrequentAlt })
       }
     }
     checkStopToken2(stopTokenCheck)

@@ -16,6 +16,7 @@ import {
   VariantErrorBar,
   VariantLoadingOverlay,
 } from '../../shared/components/VariantStatusOverlays.tsx'
+import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
@@ -234,7 +235,7 @@ const VariantComponent = observer(function VariantComponent({
       const genomicEnd = regionCellData.flatbushGenomicEnds[bestIdx]!
       const info = regionCellData.featureGenotypeMap[featureId]!
       const genotype = info.genotypes[sourceName]!
-      const source = model.sources?.find(s => s.name === sourceName)
+      const source = model.sourceMap?.[sourceName]
       return {
         genotype,
         alleles: makeSimpleAltString(genotype, info.ref, info.alt),
@@ -300,7 +301,7 @@ const VariantComponent = observer(function VariantComponent({
           top: 0,
           visibility: model.regionTooLarge ? 'hidden' : undefined,
           backgroundColor:
-            model.referenceDrawingMode === 'skip' ? '#ccc' : undefined,
+            model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
         }}
         onMouseMove={e => {
           const rect = e.currentTarget.getBoundingClientRect()

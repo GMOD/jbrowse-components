@@ -1,4 +1,4 @@
-import { REFERENCE_COLOR } from '../../shared/constants.ts'
+import { BLACK_ABGR, REFERENCE_COLOR } from '../../shared/constants.ts'
 import {
   getAlleleColor,
   getColorAlleleCount,
@@ -15,8 +15,6 @@ import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { ProcessedSource } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-const BLACK_ABGR = 0xff000000
 
 interface FeatureData {
   alt: string[]

@@ -203,10 +203,6 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #volatile
        */
-      featureUnderMouseVolatile: undefined as Feature | undefined,
-      /**
-       * #volatile
-       */
       contextMenuFeature: undefined as Feature | undefined,
       /**
        * #volatile

@@ -7,6 +7,7 @@ export interface VariantDisplayModelBase {
   totalHeight: number
   nrow: number
   sources: { name: string; sampleName?: string }[] | undefined
+  sourceMap: Record<string, { name: string; sampleName?: string }> | undefined
   featuresVolatile:
     | { id(): string; toJSON(): Record<string, unknown> }[]
     | undefined
