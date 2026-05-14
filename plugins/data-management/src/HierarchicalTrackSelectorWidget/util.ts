@@ -6,14 +6,8 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
-  // shortcut case is that arrays are single entries, and are equal
-  // long case is that we use a set
-  if (a1[0] === a2[0]) {
-    return true
-  } else {
-    const s1 = new Set(a1)
-    return a2.some(a => s1.has(a))
-  }
+  const s = new Set(a1)
+  return a2.some(a => s.has(a))
 }
 
 export function hasAllOverlap<T>(a1: T[] = [], a2: T[] = []) {
@@ -27,28 +21,10 @@ export function matches(
   session: AbstractSessionModel,
 ) {
   const categories = (readConfObject(conf, 'category') || []) as string[]
-  const queryLower = query.toLowerCase()
+  const queryLower = query.trim().toLowerCase()
   return (
     getTrackName(conf, session).toLowerCase().includes(queryLower) ||
     categories.some(c => c.toLowerCase().includes(queryLower))
-  )
-}
-
-export function matchesMetadata(query: string, conf: AnyConfigurationModel) {
-  const queryLower = query.toLowerCase()
-  const description = (readConfObject(conf, 'description') || '') as string
-  const metadata = (readConfObject(conf, 'metadata') || {}) as Record<
-    string,
-    unknown
-  >
-  return (
-    description.toLowerCase().includes(queryLower) ||
-    Object.values(metadata).some(
-      v =>
-        v !== null &&
-        v !== undefined &&
-        `${v}`.toLowerCase().includes(queryLower),
-    )
   )
 }
 
