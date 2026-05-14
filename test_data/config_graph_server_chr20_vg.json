@@ -28,9 +28,7 @@
       "type": "MultiSyntenyTrack",
       "trackId": "hprc_chr20_gfatabix",
       "name": "HPRC chr20 pangenome (GfaTabix, static index)",
-      "category": [
-        "Synteny"
-      ],
+      "category": ["Synteny"],
       "adapter": {
         "type": "GfaTabixAdapter",
         "assemblyNameMap": {
@@ -203,9 +201,7 @@
       "type": "MultiSyntenyTrack",
       "trackId": "hprc_chr20_graph_server_vg",
       "name": "HPRC chr20 pangenome (graph-server, vg backend)",
-      "category": [
-        "Synteny"
-      ],
+      "category": ["Synteny"],
       "adapter": {
         "type": "GfaServerAdapter",
         "serverUrl": "http://localhost:5100",
@@ -313,10 +309,7 @@
         "init": {
           "loc": "chr20:1000000-1010000",
           "assembly": "GRCh38",
-          "tracks": [
-            "hprc_chr20_gfatabix",
-            "hprc_chr20_graph_server_vg"
-          ]
+          "tracks": ["hprc_chr20_gfatabix", "hprc_chr20_graph_server_vg"]
         }
       }
     ]

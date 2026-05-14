@@ -22,10 +22,10 @@ export async function convertWLinesToPLines(input: string, output: string) {
     if (line.length === 0) {
       continue
     }
-    if (line[0] !== 'W') {
+    if (!line.startsWith('W')) {
       outStream.write(line)
       outStream.write('\n')
-      if (line[0] === 'P') {
+      if (line.startsWith('P')) {
         pCount++
       } else {
         other++
@@ -38,7 +38,7 @@ export async function convertWLinesToPLines(input: string, output: string) {
     let cursor = 0
     for (let i = 0; i < 6; i++) {
       const t = line.indexOf('\t', cursor)
-      if (t < 0) {
+      if (t === -1) {
         break
       }
       parts.push(line.slice(cursor, t))

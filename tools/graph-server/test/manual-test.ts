@@ -17,15 +17,15 @@ const DATASETS = path.join(HERE, 'datasets.volvox.json')
 const SERVER = path.join(HERE, '../src/server.ts')
 
 async function main() {
-  const proc = spawn(
-    'node',
-    ['--experimental-strip-types', SERVER],
-    {
-      env: { ...process.env, PORT: String(PORT), GRAPH_SERVER_DATASETS: DATASETS },
-      cwd: REPO,
-      stdio: ['ignore', 'pipe', 'pipe'],
+  const proc = spawn('node', ['--experimental-strip-types', SERVER], {
+    env: {
+      ...process.env,
+      PORT: String(PORT),
+      GRAPH_SERVER_DATASETS: DATASETS,
     },
-  )
+    cwd: REPO,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
   proc.stdout.on('data', d => process.stdout.write(`[server] ${d}`))
   proc.stderr.on('data', d => process.stderr.write(`[server-err] ${d}`))
 
@@ -55,9 +55,7 @@ async function main() {
     console.log('\n[client] health:', JSON.stringify(health, null, 2))
 
     const t0 = Date.now()
-    const setup = await (
-      await fetch(`${base}/datasets/volvox/setup`)
-    ).json()
+    const setup = await (await fetch(`${base}/datasets/volvox/setup`)).json()
     console.log(
       `[client] setup: ${setup.paths.length} paths, ${setup.assemblies.length} assemblies (${Date.now() - t0}ms)`,
     )

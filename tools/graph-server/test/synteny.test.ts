@@ -125,7 +125,11 @@ P	alt#0#chr1:0-6	2-,1-	*
   })
   assert.ok(blocks.length >= 1)
   for (const b of blocks) {
-    assert.equal(b.strand, 1, 'reversed contig should be normalized to strand=1')
+    assert.equal(
+      b.strand,
+      1,
+      'reversed contig should be normalized to strand=1',
+    )
   }
 })
 

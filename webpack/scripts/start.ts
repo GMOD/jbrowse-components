@@ -26,7 +26,8 @@ if (browserslist.loadConfig({ path: process.cwd() }) == null) {
 const HOST = process.env.HOST || '0.0.0.0'
 
 export default function startWebpack(config: webpack.Configuration) {
-  const appName = JSON.parse(fs.readFileSync('package.json', 'utf8')).name as string
+  const appName = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+    .name as string
   const wsProtocol = process.env.HTTPS === 'true' ? 'wss' : 'ws'
   const compiler = createCompiler({ config })
 

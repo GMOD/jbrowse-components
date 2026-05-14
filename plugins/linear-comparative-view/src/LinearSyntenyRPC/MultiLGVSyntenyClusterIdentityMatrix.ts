@@ -21,17 +21,13 @@ export class MultiLGVSyntenyClusterIdentityMatrix extends RpcMethodType {
     return args
   }
 
-  async execute(
-    args: ClusterIdentityMatrixArgs,
-    rpcDriverClassName: string,
-  ) {
+  async execute(args: ClusterIdentityMatrixArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
     )
-    const { executeClusterIdentityMatrix } = await import(
-      './executeClusterIdentityMatrix.ts'
-    )
+    const { executeClusterIdentityMatrix } =
+      await import('./executeClusterIdentityMatrix.ts')
     return executeClusterIdentityMatrix({
       pluginManager: this.pluginManager,
       args: deserializedArgs,

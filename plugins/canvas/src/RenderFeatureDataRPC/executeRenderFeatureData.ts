@@ -121,7 +121,11 @@ export async function executeRenderFeatureData({
   checkStopToken2(stopTokenCheck)
 
   let peptideDataMap: Map<string, PeptideData> | undefined
-  if (colorByCDS && sequenceAdapter && shouldRenderPeptideBackground(requestedBpPerPx)) {
+  if (
+    colorByCDS &&
+    sequenceAdapter &&
+    shouldRenderPeptideBackground(requestedBpPerPx)
+  ) {
     peptideDataMap = await updateStatus(
       'Fetching peptide data',
       statusCallback,
@@ -180,6 +184,6 @@ export async function executeRenderFeatureData({
   // rpcResult wraps value + transferables for the RPC framework, which
   // unwraps it before returning to the caller. The function signature
   // reflects the unwrapped type; the cast is necessary here.
-   
+
   return rpcResult(result, transferables) as any
 }

@@ -149,35 +149,58 @@ function initialize() {
 describe.each([
   { name: 'unflipped', reversed: false },
   { name: 'flipped', reversed: true },
-])('zoomTo anchors on cursor bp in multi-region view ($name)', ({ reversed }) => {
-  it('preserves bp under cursor across zoom steps', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const model = Session.create({ configuration: {} }).setView(
-      LinearGenomeModel.create({
-        id: `testMultiZoom-${reversed}`,
-        type: 'LinearGenomeView',
-        tracks: [{ name: 'foo', type: 'BasicTrack' }],
-      }),
-    )
-    model.setWidth(800)
-    model.setDisplayedRegions([
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1e6, reversed },
-      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1e6, reversed },
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1e6, reversed },
-    ])
-    model.setNewView(500, 1000)
+])(
+  'zoomTo anchors on cursor bp in multi-region view ($name)',
+  ({ reversed }) => {
+    it('preserves bp under cursor across zoom steps', () => {
+      const { Session, LinearGenomeModel } = initialize()
+      const model = Session.create({ configuration: {} }).setView(
+        LinearGenomeModel.create({
+          id: `testMultiZoom-${reversed}`,
+          type: 'LinearGenomeView',
+          tracks: [{ name: 'foo', type: 'BasicTrack' }],
+        }),
+      )
+      model.setWidth(800)
+      model.setDisplayedRegions([
+        {
+          assemblyName: 'volvox',
+          refName: 'ctgA',
+          start: 0,
+          end: 1e6,
+          reversed,
+        },
+        {
+          assemblyName: 'volvox',
+          refName: 'ctgB',
+          start: 0,
+          end: 1e6,
+          reversed,
+        },
+        {
+          assemblyName: 'volvox',
+          refName: 'ctgA',
+          start: 0,
+          end: 1e6,
+          reversed,
+        },
+      ])
+      model.setNewView(500, 1000)
 
-    const before = model.pxToBp(600)
-    expect(before.oob).toBe(false)
-    for (const d of [-0.05, -0.05, -0.05, -0.05]) {
-      model.zoomTo(model.bpPerPx / (1 - d), 600)
-    }
-    const after = model.pxToBp(600)
-    expect(after.refName).toEqual(before.refName)
-    expect(after.index).toEqual(before.index)
-    expect(Math.abs(after.coord - before.coord)).toBeLessThan(2 * model.bpPerPx)
-  })
-})
+      const before = model.pxToBp(600)
+      expect(before.oob).toBe(false)
+      for (const d of [-0.05, -0.05, -0.05, -0.05]) {
+        model.zoomTo(model.bpPerPx / (1 - d), 600)
+      }
+      const after = model.pxToBp(600)
+      expect(after.refName).toEqual(before.refName)
+      expect(after.index).toEqual(before.index)
+      expect(Math.abs(after.coord - before.coord)).toBeLessThan(
+        2 * model.bpPerPx,
+      )
+    })
+  },
+)
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const { Session, LinearGenomeModel } = initialize()

@@ -212,7 +212,8 @@ export function parsePanSN(name: string, length = 0) {
   let stripped = name
   let subwalkStart = 0
   let subwalkEnd = length
-  const m = RE_PATH_SUBWALK_COLON.exec(name) ?? RE_PATH_SUBWALK_BRACKET.exec(name)
+  const m =
+    RE_PATH_SUBWALK_COLON.exec(name) ?? RE_PATH_SUBWALK_BRACKET.exec(name)
   if (m) {
     stripped = name.slice(0, m.index)
     subwalkStart = Number(m[1])

@@ -21,7 +21,8 @@ export function matchesLower(
   conf: AnyConfigurationModel,
   session: AbstractSessionModel,
 ) {
-  const categories = (readConfObject(conf, 'category') as string[] | undefined) ?? []
+  const categories =
+    (readConfObject(conf, 'category') as string[] | undefined) ?? []
   return (
     getTrackName(conf, session).toLowerCase().includes(queryLower) ||
     categories.some(c => c.toLowerCase().includes(queryLower))

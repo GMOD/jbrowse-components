@@ -36,7 +36,10 @@ export default function SetColorDialogRowPalettizer({
             const ret = Object.fromEntries(
               [...map.entries()]
                 .sort((a, b) => a[1] - b[1])
-                .map((entry, idx) => [entry[0], set1[idx] || randomColor(entry[0])]),
+                .map((entry, idx) => [
+                  entry[0],
+                  set1[idx] || randomColor(entry[0]),
+                ]),
             )
 
             setCurrLayout(

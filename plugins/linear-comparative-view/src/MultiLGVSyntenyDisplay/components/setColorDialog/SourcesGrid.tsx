@@ -178,7 +178,7 @@ function SourcesGrid({
           processRowUpdate={(newRow, oldRow) => {
             const elt = rows.find(f => f.name === oldRow.name)
             if (elt) {
-              const label = (newRow.label) ?? ''
+              const label = newRow.label ?? ''
               elt.label = label === '' ? undefined : label
             }
             onChange([...rows])

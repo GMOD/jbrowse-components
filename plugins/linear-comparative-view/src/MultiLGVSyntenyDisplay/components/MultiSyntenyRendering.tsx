@@ -271,7 +271,8 @@ function GenomeNameOverlay({
             left: 0,
             width: labelW,
             height: rowHeight,
-            background: source.color ?? (i % 2 === 0 ? ROW_BG_ALT : BG_COLOR_HEX),
+            background:
+              source.color ?? (i % 2 === 0 ? ROW_BG_ALT : BG_COLOR_HEX),
             display: 'flex',
             alignItems: 'center',
             paddingLeft: 4,

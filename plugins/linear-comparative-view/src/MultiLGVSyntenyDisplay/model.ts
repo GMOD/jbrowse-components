@@ -411,8 +411,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         const newHeight = Math.max(self.height + distance, minHeight)
         self.heightPreConfig = newHeight
         if (self.rowHeightMode > 0) {
-          self.rowHeightMode =
-            self.rowHeightMode * (newHeight / oldHeight)
+          self.rowHeightMode = self.rowHeightMode * (newHeight / oldHeight)
         }
         return newHeight - oldHeight
       },

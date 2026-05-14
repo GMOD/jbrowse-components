@@ -202,23 +202,38 @@ function computeSNPCoverage(
       continue
     }
     const idx = entry.position - startPos
-    const totalDepth =
-      idx >= 0 && idx < depths.length ? (depths[idx] ?? 0) : 0
+    const totalDepth = idx >= 0 && idx < depths.length ? (depths[idx] ?? 0) : 0
     if (totalDepth === 0) {
       droppedDueToZeroDepth++
       continue
     }
     if (entry.a > 0) {
-      segments.push({ position: entry.position, colorType: 1, height: entry.a / totalDepth })
+      segments.push({
+        position: entry.position,
+        colorType: 1,
+        height: entry.a / totalDepth,
+      })
     }
     if (entry.c > 0) {
-      segments.push({ position: entry.position, colorType: 2, height: entry.c / totalDepth })
+      segments.push({
+        position: entry.position,
+        colorType: 2,
+        height: entry.c / totalDepth,
+      })
     }
     if (entry.g > 0) {
-      segments.push({ position: entry.position, colorType: 3, height: entry.g / totalDepth })
+      segments.push({
+        position: entry.position,
+        colorType: 3,
+        height: entry.g / totalDepth,
+      })
     }
     if (entry.t > 0) {
-      segments.push({ position: entry.position, colorType: 4, height: entry.t / totalDepth })
+      segments.push({
+        position: entry.position,
+        colorType: 4,
+        height: entry.t / totalDepth,
+      })
     }
   }
   const filtered = segments.filter(s => s.position >= regionStart)

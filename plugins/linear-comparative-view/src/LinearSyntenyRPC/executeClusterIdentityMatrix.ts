@@ -108,7 +108,8 @@ export async function executeClusterIdentityMatrix({
         for (let b = startBin; b <= endBin; b++) {
           const binStartBp = regionStart + b * bpPerBin
           const binEndBp = binStartBp + bpPerBin
-          const overlap = Math.min(fEnd, binEndBp) - Math.max(fStart, binStartBp)
+          const overlap =
+            Math.min(fEnd, binEndBp) - Math.max(fStart, binStartBp)
           if (overlap > 0) {
             row[binOffset + b]! += identity * overlap
             w[binOffset + b]! += overlap

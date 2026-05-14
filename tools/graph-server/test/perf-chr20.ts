@@ -40,15 +40,15 @@ async function timed<T>(label: string, fn: () => Promise<T>) {
 }
 
 async function main() {
-  const proc = spawn(
-    'node',
-    ['--experimental-strip-types', SERVER],
-    {
-      env: { ...process.env, PORT: String(PORT), GRAPH_SERVER_DATASETS: DATASETS },
-      cwd: REPO,
-      stdio: ['ignore', 'pipe', 'pipe'],
+  const proc = spawn('node', ['--experimental-strip-types', SERVER], {
+    env: {
+      ...process.env,
+      PORT: String(PORT),
+      GRAPH_SERVER_DATASETS: DATASETS,
     },
-  )
+    cwd: REPO,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
   let serverOutput = ''
   proc.stdout.on('data', d => {
     serverOutput += d
@@ -93,9 +93,7 @@ async function main() {
     // Prefer GRCh38 as ref if present (canonical HPRC pangenome anchor);
     // otherwise fall back to any chr20-bearing path.
     const refPath =
-      setupResult.value.paths.find(p =>
-        /^GRCh38#0#chr20/i.test(p.name),
-      ) ??
+      setupResult.value.paths.find(p => /^GRCh38#0#chr20/i.test(p.name)) ??
       setupResult.value.paths.find(p => /chr20/i.test(p.name))
     if (!refPath) {
       throw new Error(

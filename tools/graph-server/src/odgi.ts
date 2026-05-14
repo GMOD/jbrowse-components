@@ -32,10 +32,10 @@ export function runProcess(
     })
     const chunks: Buffer[] = []
     let stderr = ''
-    proc.stdout!.on('data', (d: Buffer) => {
+    proc.stdout.on('data', (d: Buffer) => {
       chunks.push(d)
     })
-    proc.stderr!.on('data', (d: Buffer) => {
+    proc.stderr.on('data', (d: Buffer) => {
       stderr += d.toString('utf8')
     })
     proc.on('error', err => {
@@ -54,9 +54,9 @@ export function runProcess(
       }
     })
     if (input) {
-      proc.stdin!.end(input)
+      proc.stdin.end(input)
     } else {
-      proc.stdin!.end()
+      proc.stdin.end()
     }
   })
 }
@@ -130,26 +130,14 @@ export async function ensureOg(graphFile: string, odgiBin: string) {
   throw new Error(`Unsupported graph file: ${graphFile}`)
 }
 
-async function buildOgFrom(
-  sourceGfa: string,
-  ogPath: string,
-  odgiBin: string,
-) {
+async function buildOgFrom(sourceGfa: string, ogPath: string, odgiBin: string) {
   const tmp = `${ogPath}.tmp`
   // -O optimizes (compacts node ID space — required by odgi extract);
   // -s topologically sorts so subgraphs cover contiguous ID ranges.
   // Skipping these makes extract fail with "node IDs are not compacted".
   console.log(`[graph-server] odgi build -g ${sourceGfa} -O -s -o ${ogPath}`)
   const t0 = Date.now()
-  await runProcess(odgiBin, [
-    'build',
-    '-g',
-    sourceGfa,
-    '-O',
-    '-s',
-    '-o',
-    tmp,
-  ])
+  await runProcess(odgiBin, ['build', '-g', sourceGfa, '-O', '-s', '-o', tmp])
   fs.renameSync(tmp, ogPath)
   console.log(`[graph-server] built ${ogPath} in ${Date.now() - t0}ms`)
   return ogPath

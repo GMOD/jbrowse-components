@@ -108,7 +108,14 @@ function emitIntronLines(
   const children = transcript.children
 
   if (children.length === 0) {
-    lines.push({ start, end, y: lineY, color: strokeUint, direction: strand, flatbushIdx })
+    lines.push({
+      start,
+      end,
+      y: lineY,
+      color: strokeUint,
+      direction: strand,
+      flatbushIdx,
+    })
   } else {
     let prevEnd = start
     for (const child of children) {
@@ -129,7 +136,14 @@ function emitIntronLines(
       }
     }
     if (prevEnd < end) {
-      lines.push({ start: prevEnd, end, y: lineY, color: strokeUint, direction: strand, flatbushIdx })
+      lines.push({
+        start: prevEnd,
+        end,
+        y: lineY,
+        color: strokeUint,
+        direction: strand,
+        flatbushIdx,
+      })
     }
   }
 }
@@ -247,7 +261,14 @@ function emitExonRects(
         collector.aminoAcidOverlay,
       )
     } else {
-      pushBoxRect(childFeature, transcriptTopPx, transcript.height, flatbushIdx, ctx, collector.rects)
+      pushBoxRect(
+        childFeature,
+        transcriptTopPx,
+        transcript.height,
+        flatbushIdx,
+        ctx,
+        collector.rects,
+      )
     }
   }
 }
@@ -264,7 +285,13 @@ function processTranscriptLayout(
   const transcriptStrand = transcriptFeature.get('strand') ?? 0
   const strokeUint = colorToUint32(strokeColor(transcriptFeature, ctx))
 
-  emitIntronLines(transcript, transcriptTopPx, strokeUint, flatbushIdx, collector.lines)
+  emitIntronLines(
+    transcript,
+    transcriptTopPx,
+    strokeUint,
+    flatbushIdx,
+    collector.lines,
+  )
 
   emitExonRects(transcript, transcriptTopPx, ctx, flatbushIdx, collector)
 
@@ -417,7 +444,14 @@ function processSubfeaturesLayout(
         collector,
       )
     } else {
-      pushBoxRect(childLayout.feature, childLayout.y, childLayout.height, flatbushIdx, ctx, collector.rects)
+      pushBoxRect(
+        childLayout.feature,
+        childLayout.y,
+        childLayout.height,
+        flatbushIdx,
+        ctx,
+        collector.rects,
+      )
     }
   }
 }

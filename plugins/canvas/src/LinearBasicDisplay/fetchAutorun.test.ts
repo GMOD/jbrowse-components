@@ -471,7 +471,7 @@ describe('FetchVisibleRegions autorun', () => {
     // Simulate the region scrolling far off-screen: fetchNeeded calls this
     // before fetching newly visible regions, pruning anything outside the
     // buffered viewport. Pass an empty set → prune everything.
-    display.pruneRpcDataMapToVisible(new Set([]))
+    display.pruneRpcDataMapToVisible(new Set())
 
     expect(display.rpcDataMap.size).toBe(0)
     // With the fix, loadedRegions is also pruned so boundsValid=false on

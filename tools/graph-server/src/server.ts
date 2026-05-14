@@ -14,7 +14,9 @@ import type { NextFunction, Request, Response } from 'express'
 // ~15s/call with 16 threads); a cache hit lets repeat pans/zooms / display-
 // setting changes / Multi-LGV refreshes finish in single-digit ms. Plain JS
 // Map preserves insertion order, so re-set-after-delete gives LRU semantics.
-const EXTRACT_CACHE_MAX = Number(process.env.GRAPH_SERVER_EXTRACT_CACHE_MAX ?? 64)
+const EXTRACT_CACHE_MAX = Number(
+  process.env.GRAPH_SERVER_EXTRACT_CACHE_MAX ?? 64,
+)
 const extractCache = new Map<string, string>()
 
 function cacheGet(key: string): string | undefined {

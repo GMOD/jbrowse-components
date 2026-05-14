@@ -44,7 +44,11 @@ export default function webpackBuilder(): webpack.Configuration {
     stats: 'errors-warnings',
     mode: isEnvProduction ? 'production' : 'development',
     bail: isEnvProduction,
-    devtool: isEnvProduction ? (shouldUseSourceMap ? 'source-map' : false) : undefined,
+    devtool: isEnvProduction
+      ? shouldUseSourceMap
+        ? 'source-map'
+        : false
+      : undefined,
     entry: appIndexJs,
     output: {
       path: appBuild,

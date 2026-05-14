@@ -65,9 +65,9 @@ export default function SetColorDialogBulkEditPanel({
     <>
       <DialogContent>
         <Typography>
-          Paste CSV or TSV. First line is a header. If a column called "name"
-          is present, it uses that to connect to IDs in the table, otherwise
-          it uses the first column.
+          Paste CSV or TSV. First line is a header. If a column called "name" is
+          present, it uses that to connect to IDs in the table, otherwise it
+          uses the first column.
         </Typography>
 
         {error ? <ErrorBanner error={error} /> : null}

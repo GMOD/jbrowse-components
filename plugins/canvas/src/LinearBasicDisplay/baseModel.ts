@@ -279,7 +279,9 @@ export default function baseStateModelFactory(
         },
 
         get selectedFeatureId() {
-          const selection = isAlive(self) ? getSession(self).selection : undefined
+          const selection = isAlive(self)
+            ? getSession(self).selection
+            : undefined
           return isFeature(selection) ? selection.id() : undefined
         },
 

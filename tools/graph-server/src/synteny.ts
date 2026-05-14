@@ -239,7 +239,10 @@ function concatOrientedSeq(
   return out
 }
 
-function parsePSteps(stepsRaw: string, segLens: Map<number, number>): NodeSeg[] {
+function parsePSteps(
+  stepsRaw: string,
+  segLens: Map<number, number>,
+): NodeSeg[] {
   const out: NodeSeg[] = []
   let cursor = 0
   for (const tok of stepsRaw.split(',')) {
@@ -522,7 +525,13 @@ function countCsMatches(cs: string): number {
       i += 3
     } else if (ch === '+' || ch === '-') {
       i++
-      while (i < cs.length && cs[i] !== ':' && cs[i] !== '*' && cs[i] !== '+' && cs[i] !== '-') {
+      while (
+        i < cs.length &&
+        cs[i] !== ':' &&
+        cs[i] !== '*' &&
+        cs[i] !== '+' &&
+        cs[i] !== '-'
+      ) {
         i++
       }
     } else {
@@ -546,7 +555,12 @@ function mergeColinear(blocks: SyntenyBlock[]): SyntenyBlock[] {
       cur.strand === 1
         ? prev.mateEnd === cur.mateStart
         : prev.mateStart === cur.mateEnd
-    if (sameStrand && refContig && matContig && prev.queryGenome === cur.queryGenome) {
+    if (
+      sameStrand &&
+      refContig &&
+      matContig &&
+      prev.queryGenome === cur.queryGenome
+    ) {
       prev.end = cur.end
       if (cur.strand === 1) {
         prev.mateEnd = cur.mateEnd

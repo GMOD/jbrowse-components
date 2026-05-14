@@ -8,7 +8,9 @@ import { matchesLower } from './util.ts'
 import type { MinimalModel, TreeNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-type NodeWithChildren = { children: TreeNode[] }
+interface NodeWithChildren {
+  children: TreeNode[]
+}
 
 export function generateHierarchy({
   model,

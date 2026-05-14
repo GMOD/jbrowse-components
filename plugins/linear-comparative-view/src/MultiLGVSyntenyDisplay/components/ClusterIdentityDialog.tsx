@@ -10,12 +10,7 @@ import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { buildClusteredLayout } from '@jbrowse/tree-sidebar'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  Typography,
-} from '@mui/material'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -62,8 +57,8 @@ const ClusterIdentityDialog = observer(function ClusterIdentityDialog({
     >
       <DialogContent>
         <Typography style={{ marginBottom: 20 }}>
-          Clusters the visible genomes by mean alignment identity in bins
-          across the current view, using hierarchical clustering.
+          Clusters the visible genomes by mean alignment identity in bins across
+          the current view, using hierarchical clustering.
         </Typography>
         {loading ? (
           <div style={{ padding: 20 }}>

@@ -26,7 +26,10 @@ const HierarchicalTrackSelectorHeader = observer(
   }) {
     const { classes } = useStyles()
     return (
-      <div className={classes.toolbar} data-testid="hierarchical_track_selector">
+      <div
+        className={classes.toolbar}
+        data-testid="hierarchical_track_selector"
+      >
         <HamburgerMenu model={model} />
         <ShoppingCart model={model} />
         <ClearableSearchField

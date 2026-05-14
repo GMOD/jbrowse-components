@@ -39,8 +39,12 @@ export function sortConfs(
     // sort up to three sub-category levels, harder to code it to go deeper
     // than this and likely rarely used
     keyed.sort((a, b) => {
-      if (a[2] !== b[2]) return a[2].localeCompare(b[2])
-      if (a[3] !== b[3]) return a[3].localeCompare(b[3])
+      if (a[2] !== b[2]) {
+        return a[2].localeCompare(b[2])
+      }
+      if (a[3] !== b[3]) {
+        return a[3].localeCompare(b[3])
+      }
       return a[4].localeCompare(b[4])
     })
   }

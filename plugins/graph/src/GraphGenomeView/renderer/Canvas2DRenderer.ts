@@ -67,7 +67,7 @@ export class Canvas2DRenderer implements Renderer {
       return
     }
     const dst = batch.vertexDataU32
-    for (let i = 0; i < colors.length; i++) {
+    for (let i = 0, l = colors.length; i < l; i++) {
       dst[(vertexStart + i) * STRIDE_F32 + COLOR_F32] = colors[i]!
     }
   }
