@@ -33,22 +33,46 @@ export async function findByText(
   text: string | RegExp,
   timeout = 30000,
 ) {
-  const searchText = typeof text === 'string' ? text : text.source
-  // ::-p-text() is unreliable in Firefox BiDi with per-browser restarts.
-  // Fall back to DOM-based text search if the Puppeteer selector fails.
-  try {
-    return await page.waitForSelector(`::-p-text(${searchText})`, {
-      timeout: Math.min(timeout, 3000),
-    })
-  } catch {
-    await page.waitForFunction(
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      (t: string) => document.body?.textContent?.includes(t) ?? false,
-      { timeout },
-      searchText,
-    )
-    return null
+  if (typeof text === 'string') {
+    // ::-p-text() is unreliable in Firefox BiDi with per-browser restarts.
+    // Fall back to DOM-based text search if the Puppeteer selector fails.
+    try {
+      return await page.waitForSelector(`::-p-text(${text})`, {
+        timeout: Math.min(timeout, 3000),
+      })
+    } catch {
+      await page.waitForFunction(
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        (t: string) => document.body?.textContent?.includes(t) ?? false,
+        { timeout },
+        text,
+      )
+      return null
+    }
   }
+  // ::-p-text() can't do regex — it matches the source string literally, so
+  // anchors (`^identity$`) and escapes never hit. Walk the DOM instead and
+  // return a handle to the deepest element whose trimmed text matches.
+  const handle = await page.waitForFunction(
+    (source: string, flags: string) => {
+      const re = new RegExp(source, flags)
+      const walk = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_ELEMENT,
+      )
+      let match: Node | null = null
+      for (let node = walk.nextNode(); node; node = walk.nextNode()) {
+        if (re.test((node.textContent ?? '').trim())) {
+          match = node
+        }
+      }
+      return match
+    },
+    { timeout },
+    text.source,
+    text.flags,
+  )
+  return handle.asElement()
 }
 
 export async function waitForLoadingToComplete(page: Page, timeout = 30000) {
@@ -132,7 +156,7 @@ export async function waitForCanvas(
 // blank or single-color fill. The snapshot system treats blank captures as
 // passes (auto-creates goldens, skips blank WebGL frames), so this is the
 // explicit "the display shows real data" gate. Counts distinct quantized
-// colors and the fraction of pixels differing from the top-left background.
+// colors and the fraction of pixels that aren't the dominant background.
 export async function assertCanvasHasContent(
   page: Page,
   selector: string,
@@ -154,35 +178,33 @@ export async function assertCanvasHasContent(
   // @ts-expect-error pngjs accepts a Uint8Array at runtime
   const { data, width, height } = PNG.sync.read(buf)
   const total = width * height
-  const colors = new Set<number>()
-  const bgR = data[0]!
-  const bgG = data[1]!
-  const bgB = data[2]!
-  let nonBg = 0
+  // Histogram of colors quantized to 4 bits/channel so antialiasing noise
+  // isn't counted as a distinct color. The background is the most common
+  // bucket (these displays are mostly empty canvas with sparse features) —
+  // more robust than sampling a corner pixel that may land on real content.
+  const histogram = new Map<number, number>()
   for (let i = 0; i < data.length; i += 4) {
-    const r = data[i]!
-    const g = data[i + 1]!
-    const b = data[i + 2]!
-    // quantize to 4 bits/channel so antialiasing noise isn't counted as color
-    colors.add(((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4))
-    if (
-      Math.abs(r - bgR) > 12 ||
-      Math.abs(g - bgG) > 12 ||
-      Math.abs(b - bgB) > 12
-    ) {
-      nonBg++
+    const key =
+      ((data[i]! >> 4) << 8) | ((data[i + 1]! >> 4) << 4) | (data[i + 2]! >> 4)
+    histogram.set(key, (histogram.get(key) ?? 0) + 1)
+  }
+  let bgCount = 0
+  for (const count of histogram.values()) {
+    if (count > bgCount) {
+      bgCount = count
     }
   }
-  const nonBgFraction = nonBg / total
-  if (colors.size < minDistinctColors || nonBgFraction < minNonBgFraction) {
+  const distinctColors = histogram.size
+  const nonBgFraction = (total - bgCount) / total
+  if (distinctColors < minDistinctColors || nonBgFraction < minNonBgFraction) {
     throw new Error(
       `assertCanvasHasContent: ${selector} looks blank — ` +
-        `${colors.size} distinct colors (need ${minDistinctColors}), ` +
+        `${distinctColors} distinct colors (need ${minDistinctColors}), ` +
         `${(nonBgFraction * 100).toFixed(3)}% non-background pixels ` +
         `(need ${(minNonBgFraction * 100).toFixed(3)}%)`,
     )
   }
-  return { distinctColors: colors.size, nonBgFraction }
+  return { distinctColors, nonBgFraction }
 }
 
 export async function clearStorageAndNavigate(

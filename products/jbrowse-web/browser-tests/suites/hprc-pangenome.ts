@@ -80,14 +80,19 @@ const suite: TestSuite = {
       },
     },
     {
-      // chr20 proof-of-concept: 90-haplotype HPRC pangenome served from a
-      // single bgzipped, tabix-indexed `odgi untangle` PAF via
-      // TabixPAFAdapter (no .pif transform, no tiers), paired with the
-      // separate `vg deconstruct` VCF track for per-base SNP/indel detail —
-      // the GRAPH_PLAN "v1" scheme. Data is the gitignored symlink in
-      // test_data/hprc/; regenerate with the recipe in
-      // agent-docs/GRAPH_PLAN.md.
-      name: 'HPRC chr20 90-haplotype untangle PAF + per-base VCF multi-LGV',
+      // chr20 proof-of-concept: HPRC pangenome served from a single bgzipped,
+      // tabix-indexed `odgi untangle` PAF via TabixPAFAdapter (no .pif
+      // transform, no tiers — the 580 KB PAF is committed under
+      // test_data/hprc/), paired with the separate `vg deconstruct` VCF track
+      // for per-base SNP/indel detail — the GRAPH_PLAN "v1" scheme.
+      //
+      // Viewed at a ~20 kb window: wide enough that the untangle synteny shows
+      // many haplotype rows, tight enough that the per-base VCF stays under
+      // `maxFeatureScreenDensity` and renders instead of showing the "too many
+      // features" banner. (chr20:1-500000 panoramas the synteny but the VCF is
+      // correctly region-too-large there — see multi-lgv-pangenome-vcf.ts for
+      // the same wide-vs-zoomed split on local data.)
+      name: 'HPRC chr20 untangle PAF + per-base VCF multi-LGV',
       fn: async page => {
         await navigateWithSessionSpec(
           page,
@@ -96,7 +101,7 @@ const suite: TestSuite = {
               {
                 type: 'LinearGenomeView',
                 assembly: 'GRCh38#0',
-                loc: 'chr20:1-500000',
+                loc: 'chr20:100000-120000',
                 tracks: [
                   {
                     trackId: 'hprc_chr20_untangle_paf',
@@ -113,7 +118,7 @@ const suite: TestSuite = {
         await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(3000)
-        // 90 haplotype rows of identity-colored blocks must actually render
+        // untangle synteny haplotype rows must actually render
         await assertCanvasHasContent(
           page,
           '[data-testid="multi_synteny_canvas_done"]',
@@ -132,7 +137,7 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'HPRC chr20 90-haplotype untangle PAF + per-base VCF full page',
+      name: 'HPRC chr20 untangle PAF + per-base VCF full page',
       fn: async page => {
         await navigateWithSessionSpec(
           page,
@@ -141,7 +146,7 @@ const suite: TestSuite = {
               {
                 type: 'LinearGenomeView',
                 assembly: 'GRCh38#0',
-                loc: 'chr20:1-500000',
+                loc: 'chr20:100000-120000',
                 tracks: [
                   {
                     trackId: 'hprc_chr20_untangle_paf',

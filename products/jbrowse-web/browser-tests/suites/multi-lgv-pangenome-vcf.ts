@@ -28,6 +28,16 @@ const syntenyCanvas = '[data-testid="multi_synteny_canvas_done"]'
 const vcfCanvas =
   '[data-testid^="display-volvox_pangenome_50_vcf"][data-testid$="-done"] canvas'
 
+// the untangle-PAF synteny track + the per-base vg-deconstruct VCF track,
+// both on volvox ctgA so they render row-aligned in one LGV
+const tracks = [
+  {
+    trackId: 'volvox_untangle_tabix_paf',
+    displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
+  },
+  'volvox_pangenome_50_vcf',
+]
+
 const suite: TestSuite = {
   name: 'MultiLGV pangenome + per-base VCF (local chr20 stand-in)',
   tests: [
@@ -40,13 +50,7 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-3000',
-              tracks: [
-                {
-                  trackId: 'volvox_untangle_tabix_paf',
-                  displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
-                },
-                'volvox_pangenome_50_vcf',
-              ],
+              tracks,
             },
           ],
         })
@@ -86,13 +90,7 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:130-260',
-              tracks: [
-                {
-                  trackId: 'volvox_untangle_tabix_paf',
-                  displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
-                },
-                'volvox_pangenome_50_vcf',
-              ],
+              tracks,
             },
           ],
         })

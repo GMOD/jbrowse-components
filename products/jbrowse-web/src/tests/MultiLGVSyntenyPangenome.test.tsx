@@ -66,5 +66,6 @@ test('MultiLGVSyntenyDisplay + per-base VCF render together (TabixPAFAdapter)', 
   // MultiLGVSyntenyDisplay uses its own component (multi_synteny_canvas_done),
   // so the only `display-*-done` element here is the VCF track.
   const vcfDisplays = await findAllByTestId(/^display-.*-done$/, ...opts)
+  expect(vcfDisplays).toHaveLength(1)
   expectCanvasMatch(findCanvasIn(vcfDisplays[0]!))
 }, 90000)

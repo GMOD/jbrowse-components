@@ -26,7 +26,12 @@ const updateSnapshots =
 const runAuthTests = args.includes('--auth')
 const filterArg = args.find(a => a.startsWith('--filter='))
 const filter = filterArg ? filterArg.split('=')[1]!.toLowerCase() : ''
-const includeRemote = args.includes('--include-remote')
+// --smoke is the full local smoke test: runs every suite, including the
+// requiresRemote ones (chr20/chrM pangenome, grape/peach + hs1/mm39 synteny,
+// graph-server). The chr20 untangle PAF is committed, the rest fetch their
+// data straight from S3/UCSC at runtime — so it works on any machine online.
+const smoke = args.includes('--smoke')
+const includeRemote = args.includes('--include-remote') || smoke
 const backendArg = args.find(a => a.startsWith('--backend='))
 const backendValue = backendArg ? backendArg.split('=')[1]! : undefined
 const skipWebGPU = args.includes('--skip-webgpu')
@@ -454,6 +459,9 @@ async function main() {
       }
       if (filter) {
         console.log(`(filtering by: ${filter})`)
+      }
+      if (smoke) {
+        console.log('(smoke test: running all suites including remote)')
       }
       console.log(`(backend: ${backend ?? 'default'})`)
 

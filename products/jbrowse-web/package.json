@@ -17,6 +17,7 @@
     "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
     "prepack": "pnpm build",
     "test:browser": "node browser-tests/runner.ts",
+    "test:browser:smoke": "pnpm build && node browser-tests/runner.ts --smoke",
     "test:browser:headed": "node browser-tests/runner.ts --headed",
     "test:browser:update": "node browser-tests/runner.ts --update-snapshots",
     "test:browser:webgl": "node browser-tests/runner.ts --backend=webgl",

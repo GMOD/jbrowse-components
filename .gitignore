@@ -41,4 +41,7 @@ test_data/hprc/*.seglens.bin
 test_data/hprc/*.assembly_map.json
 test_data/hprc/*.paf.gz
 test_data/hprc/*.paf.gz.tbi
+# committed (580KB) so the chr20 pangenome smoke test runs without remote data
+!test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz
+!test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz.tbi
 test_data/volvox/*.og

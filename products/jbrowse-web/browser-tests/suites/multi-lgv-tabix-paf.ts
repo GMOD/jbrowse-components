@@ -1,4 +1,6 @@
+/* eslint-disable no-console */
 import {
+  assertCanvasHasContent,
   delay,
   findByTestId,
   findByText,
@@ -38,6 +40,11 @@ const suite: TestSuite = {
         await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
+        // gate against a blank render — canvasSnapshot treats blank as a pass
+        await assertCanvasHasContent(
+          page,
+          '[data-testid="multi_synteny_canvas_done"]',
+        )
         await canvasSnapshot(
           page,
           'multi-lgv-tabix-paf-volvox-canvas',
