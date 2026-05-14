@@ -83,7 +83,7 @@ export class DatasetRegistry {
     }
     let p = this.setupCache.get(id)
     if (!p) {
-      p = this.buildSetup(entry).catch(err => {
+      p = this.buildSetup(entry).catch((err: unknown) => {
         this.setupCache.delete(id)
         throw err
       })

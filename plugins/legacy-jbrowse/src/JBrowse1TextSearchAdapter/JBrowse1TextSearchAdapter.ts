@@ -75,7 +75,7 @@ export default class JBrowse1TextSearchAdapter
               new BaseResult({
                 label: typeof result === 'object' ? result.name : result,
                 matchedAttribute: 'name',
-                matchedObject: { result: result },
+                matchedObject: { result },
               }),
           )),
       ...results.exact.map(result => {

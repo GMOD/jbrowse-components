@@ -119,7 +119,7 @@ async function main() {
   }
 }
 
-main().catch(e => {
+main().catch((e: unknown) => {
   console.error('[client] FAIL', e)
   process.exit(1)
 })

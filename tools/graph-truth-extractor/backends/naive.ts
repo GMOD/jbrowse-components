@@ -167,8 +167,8 @@ export async function naiveBackend(
   return {
     gfa,
     segmentCount: segCount,
-    edgeCount: edgeCount,
-    pathCount: pathCount,
+    edgeCount,
+    pathCount,
     elapsedMs,
     backendVersion: 'naive/v1',
     notes: `naive BFS context=${ctx}, ${seeds.length} seeds, ${keep.size} kept`,

@@ -97,8 +97,8 @@ export async function odgiBackend(req: ExtractRequest): Promise<ExtractResult> {
   return {
     gfa,
     segmentCount: segCount,
-    edgeCount: edgeCount,
-    pathCount: pathCount,
+    edgeCount,
+    pathCount,
     elapsedMs,
     backendVersion: await getOdgiVersion(odgiBin),
     notes: `odgi extract -r ${region} -c ${ctx}`,

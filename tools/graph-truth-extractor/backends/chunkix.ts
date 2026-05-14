@@ -125,8 +125,8 @@ export async function chunkixBackend(
     return {
       gfa,
       segmentCount: segCount,
-      edgeCount: edgeCount,
-      pathCount: pathCount,
+      edgeCount,
+      pathCount,
       elapsedMs,
       backendVersion: await getChunkixVersion(stmDir),
       notes: `chunkix.py -r ${region} prefix=${prefix}`,

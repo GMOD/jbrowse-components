@@ -135,8 +135,8 @@ export async function vgFindBackend(
   return {
     gfa,
     segmentCount: segCount,
-    edgeCount: edgeCount,
-    pathCount: pathCount,
+    edgeCount,
+    pathCount,
     elapsedMs,
     backendVersion: await getVgVersion(),
     notes: `vg find -p ${region} -c ${ctx} -x ${xgPath}`,

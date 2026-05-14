@@ -1,6 +1,6 @@
 function parseTag(tag: string, tags: Record<string, string | number>) {
   const [name, type, val] = tag.split(':')
-  if (type === 'i') {
+  if (type === 'i' || type === 'f') {
     tags[name!] = +val!
   } else if (type === 'Z') {
     tags[name!] = val!

@@ -106,7 +106,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     process.exit(1)
   }
   const t0 = Date.now()
-  convertWLinesToPLines(input, output).then(stats => {
+  void convertWLinesToPLines(input, output).then(stats => {
     console.log(
       `[wToP] converted ${stats.wCount} W → P, ${stats.pCount} P preserved, ${stats.other} other lines, ${Date.now() - t0}ms`,
     )

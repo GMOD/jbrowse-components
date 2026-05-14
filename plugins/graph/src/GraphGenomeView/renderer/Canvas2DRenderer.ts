@@ -123,7 +123,7 @@ export class Canvas2DRenderer implements Renderer {
       const first = e.curves[0]!
       const [sx, sy] = this.px(first.x0, first.y0)
       ctx.moveTo(sx, sy)
-      for (let j = 0; j < e.curves.length; j++) {
+      for (let j = 0, l = e.curves.length; j < l; j++) {
         const c = e.curves[j]!
         const [cx0, cy0] = this.px(c.cx0, c.cy0)
         const [cx1, cy1] = this.px(c.cx1, c.cy1)

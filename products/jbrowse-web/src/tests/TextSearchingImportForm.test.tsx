@@ -9,7 +9,7 @@ beforeEach(() => {
 })
 
 const timeout = 50_000
-const delay = { timeout: timeout }
+const delay = { timeout }
 const opts = [{}, delay]
 
 async function getInput() {

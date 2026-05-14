@@ -219,9 +219,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           reject: (error: Error) => void,
         ) {
           listener = event => {
-            // this should probably get better handling, but ignored for now
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.finishOAuthWindow(event, resolve, reject)
+            this.finishOAuthWindow(event, resolve, reject).catch((e: unknown) => {
+              reject(e instanceof Error ? e : new Error(String(e)))
+            })
           }
           window.addEventListener('message', listener)
         },
@@ -348,11 +348,13 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             })
 
             const eventFromDesktop = new MessageEvent('message', {
-              data: { name: eventName, redirectUri: redirectUri },
+              data: { name: eventName, redirectUri },
             })
-            // may want to improve handling
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.finishOAuthWindow(eventFromDesktop, resolve, reject)
+            this.finishOAuthWindow(eventFromDesktop, resolve, reject).catch(
+              (e: unknown) => {
+                reject(e instanceof Error ? e : new Error(String(e)))
+              },
+            )
           } else {
             window.open(url, eventName, 'width=500,height=600,left=0,top=0')
           }
@@ -382,9 +384,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           if (doUserFlow) {
             this.addMessageChannel(resolve, reject)
-            // may want to improve handling
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.useEndpointForAuthorization(resolve, reject)
+            this.useEndpointForAuthorization(resolve, reject).catch(
+              (e: unknown) => {
+                reject(e instanceof Error ? e : new Error(String(e)))
+              },
+            )
           }
         },
         /**

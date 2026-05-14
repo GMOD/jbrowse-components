@@ -6,7 +6,6 @@
 // and prints snpCount/maxDepth/color distribution. Inlines the relevant
 // functions to avoid pulling tsx-bearing packages into the strip-types loader.
 
-/* eslint-disable no-console */
 
 import { spawn } from 'child_process'
 import path from 'path'
@@ -432,7 +431,7 @@ async function main() {
   }
 }
 
-main().catch(e => {
+main().catch((e: unknown) => {
   console.error('FAIL', e)
   process.exit(1)
 })

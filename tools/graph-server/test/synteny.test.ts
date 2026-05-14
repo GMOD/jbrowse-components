@@ -5,7 +5,6 @@
 // Run with: pnpm exec node --test --experimental-strip-types
 //   tools/graph-server/test/synteny.test.ts
 
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 

@@ -17,7 +17,6 @@
 //   pnpm exec node --experimental-strip-types tools/graph-server/test/compare-vs-tabix.ts
 // Optional env: PORT, ORACLE_REGIONS_JSON (override REGIONS), ORACLE_VERBOSE=1,
 //               ORACLE_MAX_REPORT (cap reported divergences per region, default 5)
-/* eslint-disable no-console */
 
 import { spawn, spawnSync } from 'child_process'
 import path from 'path'
@@ -460,7 +459,7 @@ async function main() {
   }
 }
 
-main().catch(e => {
+main().catch((e: unknown) => {
   console.error('[oracle] FAIL', e)
   process.exit(1)
 })

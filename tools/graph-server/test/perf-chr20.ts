@@ -174,7 +174,7 @@ async function main() {
   }
 }
 
-main().catch(e => {
+main().catch((e: unknown) => {
   console.error('[perf] FAIL', e)
   process.exit(1)
 })

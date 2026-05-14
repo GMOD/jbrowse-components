@@ -150,6 +150,8 @@ export default defineConfig(
       ],
       'tss-unused-classes/unused-classes': 'warn',
       curly: 'error',
+      'object-shorthand': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
       semi: ['error', 'never'],
       'spaced-comment': [
         'error',
@@ -296,6 +298,8 @@ export default defineConfig(
       'products/jbrowse-desktop/sign.cjs',
       'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',
+      'tools/graph-server/**/*',
+      'tools/graph-truth-extractor/**/*',
     ],
     languageOptions: {
       globals: {
@@ -305,6 +309,7 @@ export default defineConfig(
     rules: {
       'no-restricted-globals': 'off',
       '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
       'no-console': 'off',
     },
   },

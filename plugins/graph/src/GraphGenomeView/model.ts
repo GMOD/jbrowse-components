@@ -64,26 +64,9 @@ function computeViewportBounds(model: {
   }
 }
 
-function restoreVertexColors<K extends string | number>(
-  renderer: GraphRenderer,
-  target: SubBatchKey,
-  ranges: Map<K, VertexRange> | undefined,
-  baseColors: Uint32Array | undefined,
-  key: K | null,
-) {
-  if (key !== null && ranges && baseColors) {
-    const range = ranges.get(key)
-    if (range) {
-      renderer.updateSubBatchColors(
-        target,
-        extractColorSlice(baseColors, range),
-        range.start,
-      )
-    }
-  }
-}
-
-function brightenVertexColors<K extends string | number>(
+// Recolor one node/edge/arrow's vertices. factor === 1 restores the base
+// colors (cheap subarray view); a larger factor brightens for hover/select.
+function applyHighlight<K extends string | number>(
   renderer: GraphRenderer,
   target: SubBatchKey,
   ranges: Map<K, VertexRange> | undefined,
@@ -94,11 +77,11 @@ function brightenVertexColors<K extends string | number>(
   if (key !== null && ranges && baseColors) {
     const range = ranges.get(key)
     if (range) {
-      renderer.updateSubBatchColors(
-        target,
-        brightenColors(baseColors, range, factor),
-        range.start,
-      )
+      const colors =
+        factor === 1
+          ? extractColorSlice(baseColors, range)
+          : brightenColors(baseColors, range, factor)
+      renderer.updateSubBatchColors(target, colors, range.start)
     }
   }
 }
@@ -158,6 +141,9 @@ export default function stateModelFactory() {
       viewportDirtyTimer: undefined as
         | ReturnType<typeof setTimeout>
         | undefined,
+      // Bandage scale options from the last load, reused by recomputeLayout
+      // so a quality/linear-layout toggle keeps the pangenome-tuned scaling.
+      bandageScaleOpts: undefined as BandageScaleOpts | undefined,
     }))
     .views(self => ({
       get nodeById() {
@@ -306,6 +292,7 @@ export default function stateModelFactory() {
       clearGraph() {
         self.graph = undefined
         self.layoutResult = undefined
+        self.bandageScaleOpts = undefined
         self.error = undefined
         self.isLoading = false
         self.statusMessage = ''
@@ -369,6 +356,7 @@ export default function stateModelFactory() {
         const gfaGraph = parseGFA(text)
         const graph = convertGFAToGraph(gfaGraph, name)
         self.graph = graph
+        self.bandageScaleOpts = scaleOpts
         self.setStatusMessage('Computing layout')
         const { result } = (yield callLayout(graph, scaleOpts)) as {
           result: LayoutResult
@@ -503,7 +491,7 @@ export default function stateModelFactory() {
           self.setStatusMessage('Computing layout')
 
           try {
-            const { result } = yield callLayout(graph)
+            const { result } = yield callLayout(graph, self.bandageScaleOpts)
             if (self.graph === graph) {
               self.layoutResult = result
             }
@@ -561,71 +549,48 @@ export default function stateModelFactory() {
               const hoveredEdge = self.hoveredEdge
               const selectedNode = self.selectedNode
               if (b) {
-                restoreVertexColors(
-                  b,
-                  'nodes',
-                  self.nodeVertexRanges,
-                  self.baseNodeColors,
-                  prevHoveredNode,
-                )
-                if (prevSelectedNode !== prevHoveredNode) {
-                  restoreVertexColors(
+                const node = (key: string | null, factor: number) => {
+                  applyHighlight(
                     b,
                     'nodes',
                     self.nodeVertexRanges,
                     self.baseNodeColors,
-                    prevSelectedNode,
+                    key,
+                    factor,
                   )
                 }
-                restoreVertexColors(
-                  b,
-                  'edges',
-                  self.edgeVertexRanges,
-                  self.baseEdgeColors,
-                  prevHoveredEdge,
-                )
-                restoreVertexColors(
-                  b,
-                  'arrows',
-                  self.arrowVertexRanges,
-                  self.baseArrowColors,
-                  prevHoveredEdge,
-                )
+                const edge = (key: number | null, factor: number) => {
+                  applyHighlight(
+                    b,
+                    'edges',
+                    self.edgeVertexRanges,
+                    self.baseEdgeColors,
+                    key,
+                    factor,
+                  )
+                  applyHighlight(
+                    b,
+                    'arrows',
+                    self.arrowVertexRanges,
+                    self.baseArrowColors,
+                    key,
+                    factor,
+                  )
+                }
 
-                brightenVertexColors(
-                  b,
-                  'nodes',
-                  self.nodeVertexRanges,
-                  self.baseNodeColors,
-                  selectedNode,
-                  SELECT_BRIGHTEN,
-                )
-                if (hoveredNode !== selectedNode) {
-                  brightenVertexColors(
-                    b,
-                    'nodes',
-                    self.nodeVertexRanges,
-                    self.baseNodeColors,
-                    hoveredNode,
-                    HOVER_BRIGHTEN,
-                  )
+                // restore the previous frame's highlights to base colors
+                node(prevHoveredNode, 1)
+                if (prevSelectedNode !== prevHoveredNode) {
+                  node(prevSelectedNode, 1)
                 }
-                brightenVertexColors(
-                  b,
-                  'edges',
-                  self.edgeVertexRanges,
-                  self.baseEdgeColors,
-                  hoveredEdge,
-                  HOVER_BRIGHTEN,
-                )
-                brightenVertexColors(
-                  b,
-                  'arrows',
-                  self.arrowVertexRanges,
-                  self.baseArrowColors,
-                  hoveredEdge,
-                  HOVER_BRIGHTEN,
-                )
+                edge(prevHoveredEdge, 1)
+
+                // brighten the current selection, then hover on top of it
+                node(selectedNode, SELECT_BRIGHTEN)
+                if (hoveredNode !== selectedNode) {
+                  node(hoveredNode, HOVER_BRIGHTEN)
+                }
+                edge(hoveredEdge, HOVER_BRIGHTEN)
 
                 prevHoveredNode = hoveredNode
                 prevHoveredEdge = hoveredEdge
@@ -656,7 +621,11 @@ export default function stateModelFactory() {
                 contigThickness: self.contigThickness,
                 connectorThickness: self.connectorThickness,
                 drawPaths: self.drawPaths,
-                scale: self.scale,
+                // scale is untracked so a zoom doesn't eagerly rebuild
+                // geometry — the debounced viewportDirty bump drives the
+                // scale-dependent rebuild (flatness, arrow visibility,
+                // viewport culling), same as pan.
+                scale: untracked(() => self.scale),
                 linearLayout: self.linearLayout,
                 viewportBounds: untracked(() => computeViewportBounds(self)),
               })
