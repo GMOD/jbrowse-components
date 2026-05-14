@@ -80,7 +80,7 @@ const suite: TestSuite = {
       name: 'launching a graph view from a TabixPAFAdapter track warns gracefully',
       fn: async page => {
         const errors: string[] = []
-        page.on('pageerror', e => errors.push(e.message))
+        page.on('pageerror', (e: unknown) => errors.push(String(e)))
 
         await navigateWithSessionSpec(page, {
           views: [
