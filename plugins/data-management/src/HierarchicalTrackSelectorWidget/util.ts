@@ -6,11 +6,8 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
-  if (a1[0] !== undefined && a1[0] === a2[0]) {
-    return true
-  }
-  const s1 = new Set(a1)
-  return a2.some(a => s1.has(a))
+  const s = new Set(a1)
+  return a2.some(a => s.has(a))
 }
 
 export function hasAllOverlap<T>(a1: T[] = [], a2: T[] = []) {
@@ -18,34 +15,16 @@ export function hasAllOverlap<T>(a1: T[] = [], a2: T[] = []) {
   return a2.every(a => s1.has(a))
 }
 
-export function matches(
-  query: string,
+// queryLower must be pre-lowercased by caller to avoid redundant per-track work
+export function matchesLower(
+  queryLower: string,
   conf: AnyConfigurationModel,
   session: AbstractSessionModel,
 ) {
-  const categories = (readConfObject(conf, 'category') ?? []) as string[]
-  const queryLower = query.toLowerCase()
+  const categories = (readConfObject(conf, 'category') as string[] | undefined) ?? []
   return (
     getTrackName(conf, session).toLowerCase().includes(queryLower) ||
     categories.some(c => c.toLowerCase().includes(queryLower))
-  )
-}
-
-export function matchesMetadata(query: string, conf: AnyConfigurationModel) {
-  const queryLower = query.toLowerCase()
-  const description = (readConfObject(conf, 'description') ?? '') as string
-  const metadata = (readConfObject(conf, 'metadata') ?? {}) as Record<
-    string,
-    unknown
-  >
-  return (
-    description.toLowerCase().includes(queryLower) ||
-    Object.values(metadata).some(
-      v =>
-        v !== null &&
-        v !== undefined &&
-        `${v}`.toLowerCase().includes(queryLower),
-    )
   )
 }
 
@@ -95,10 +74,18 @@ export function findTopLevelCategories(obj: Node[]) {
 }
 
 export function getAllTrackNodes(subtree?: TreeNode): TreeTrackNode[] {
-  if (subtree?.type === 'category') {
-    return subtree.children.flatMap(t =>
-      t.type === 'category' ? getAllTrackNodes(t) : [t],
-    )
+  const result: TreeTrackNode[] = []
+  function collect(node: TreeNode) {
+    for (const child of node.children) {
+      if (child.type === 'track') {
+        result.push(child)
+      } else {
+        collect(child)
+      }
+    }
   }
-  return []
+  if (subtree?.type === 'category') {
+    collect(subtree)
+  }
+  return result
 }

@@ -276,7 +276,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           const currentIds = new Set(selection.map(s => `${s.trackId}`))
           const toAdd = filteredRows
             .filter(r => !currentIds.has(r.id))
-            .map(r => model.allTrackConfigurationTrackIdSet.get(r.id))
+            .map(r => model.allTrackConfigurationMap.get(r.id))
             .filter(notEmpty)
           model.setSelection([...selection, ...toAdd])
         }
@@ -297,7 +297,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
         if (selectedIds.has(rowId)) {
           model.setSelection(selection.filter(s => `${s.trackId}` !== rowId))
         } else {
-          const conf = model.allTrackConfigurationTrackIdSet.get(rowId)
+          const conf = model.allTrackConfigurationMap.get(rowId)
           if (conf) {
             model.setSelection([...selection, conf])
           }

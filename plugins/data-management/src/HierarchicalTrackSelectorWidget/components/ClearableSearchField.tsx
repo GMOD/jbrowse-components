@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 
 import ClearIcon from '@mui/icons-material/Clear'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
@@ -19,12 +19,11 @@ export default function ClearableSearchField({
   const [localValue, setLocalValue] = useState(value)
   const [, startTransition] = useTransition()
 
-  useEffect(() => {
-    if (value === '') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLocalValue('')
-    }
-  }, [value])
+  // Sync back when the model clears the filter externally (during render,
+  // not in an effect, to avoid the extra render cycle)
+  if (value === '' && localValue !== '') {
+    setLocalValue('')
+  }
 
   return (
     <TextField

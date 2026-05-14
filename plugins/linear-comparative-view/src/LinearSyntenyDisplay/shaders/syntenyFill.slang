@@ -47,6 +47,11 @@ struct VsOut {
   // localPos.y = vertical offset from yTop in CSS px (≈[0, height], slightly
   // extended at the first/last segments for AA fade).
   float2 localPos : COLOR3;
+  // 1.0 if this instance is a CIGAR tile (shares slanted edges with sibling
+  // CIGAR instances of the same feature, so perpendicular smoothstep AA
+  // double-fades the seam and bleeds bg through); 0.0 for whole-feature BASE
+  // instances whose perpendicular edges are silhouette and need full AA.
+  nointerpolation float isCigar : COLOR4;
 };
 
 // Evaluate the centerline / edges at parameter t. `s` is the X-blend (cubic
@@ -69,6 +74,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.featureId = inst.featureId;
   o.corners = float4(0.0);
   o.localPos = float2(0.0);
+  // KIND_BASE=0, KIND_BASE_HIDDEN=1, KIND_MARKER=2, KIND_CIGAR_*=3..7. Anything
+  // >= 3 is a CIGAR tile that needs hard-cut perpendicular coverage.
+  o.isCigar = inst.kind >= 3.0 ? 1.0 : 0.0;
 
   Corners c = computeCorners(inst, u);
   if (isCulled(c, inst.queryTotalLength, u)) {
@@ -99,6 +107,14 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // The bezier's centerline x'(t) reaches 1.5× the linear chord at t=0.5
   // while y'(t) drops to 0.75×, so local dx/dy peaks at 2× the chord slope —
   // use that as the conservative perpFactor for the whole instance.
+  //
+  // CIGAR tiles skip the AA-fade and stroke-widening pad terms — their polygon
+  // edges must coincide exactly with the ribbon edges so that adjacent CIGAR
+  // polygons (sharing a slanted seam between e.g. M and I) have the rasterizer
+  // partition MSAA samples between them via the top-left rule. Any pad on the
+  // perpendicular axis would overlap with the sibling's polygon and reintroduce
+  // the smoothstep double-fade bleed. bulgeX is still included for curve mode
+  // so the bezier-bulge fragments are inside the polygon and don't get clipped.
   float h = max(u.height, 1.0);
   float linearSlope = abs((c.x3 + c.x4 - c.x1 - c.x2) * 0.5) / h;
   float maxSlope = u.isCurve > 0.5 ? linearSlope * 2.0 : linearSlope;
@@ -174,13 +190,28 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // For thin features (origin/main's `l1 ≤ 1 && l2 ≤ 1` stroke branch),
   // clamp halfPerpW to 0.5 so the rendered perpendicular width is at least
   // 1 px regardless of true feature size.
+  //
+  // CIGAR tiles use a hard step (no smoothstep AA). Adjacent CIGAR instances
+  // (M and I, M and D, …) of the same feature share their slanted perpendicular
+  // edges exactly. Smoothstep at the seam double-fades both ribbons to ~0.5
+  // coverage, and standard alpha blending leaves ~25% white bg visible. Hard
+  // step means each pixel falls inside exactly one CIGAR tile (rasterizer
+  // top-left rule) and adjacent tiles tile cleanly with no bleed. Top/bottom
+  // feature edges still smooth via `cy` below. Outer left/right CIGAR
+  // silhouettes are MSAA-only (4× on WebGPU). Not as smooth as canvas2d's
+  // path AA, but no bleed.
   float x = fragIn.localPos.x;
   float perpDist = (x - xC) / perpFactor;
   float halfPerpW = max((xR - xL) / (2.0 * perpFactor), 0.5);
-  float aaPerp = max(fwidth(perpDist), 1e-4);
-  float cx = 1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
-                              halfPerpW + aaPerp * 0.5,
-                              abs(perpDist));
+  float cx;
+  if (fragIn.isCigar > 0.5) {
+    cx = abs(perpDist) <= halfPerpW ? 1.0 : 0.0;
+  } else {
+    float aaPerp = max(fwidth(perpDist), 1e-4);
+    cx = 1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
+                          halfPerpW + aaPerp * 0.5,
+                          abs(perpDist));
+  }
   // Vertical AA at top/bottom of the track.
   float ay = max(fwidth(yLocal), 1e-4) * 0.5;
   float cy = smoothstep(-ay, ay, yLocal)

@@ -17,6 +17,7 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     bp4Hi,
     bp4Lo,
     colors,
+    kinds,
     instanceFeatureIdx,
     queryTotalLengths,
     padTops,
@@ -42,6 +43,7 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     f[off + FIELD_OFFSET_F32.queryTotalLength] = queryTotalLengths[i]!
     f[off + FIELD_OFFSET_F32.padTop] = padTops[i]!
     f[off + FIELD_OFFSET_F32.padBottom] = padBottoms[i]!
+    f[off + FIELD_OFFSET_F32.kind] = kinds[i]!
   }
   return buf
 }

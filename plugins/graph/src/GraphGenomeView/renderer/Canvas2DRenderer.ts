@@ -109,7 +109,7 @@ export class Canvas2DRenderer implements Renderer {
     ctx.lineJoin = 'round'
 
     let lastColor = -1
-    for (let i = 0; i < this.edgeCurves.length; i++) {
+    for (let i = 0, edgesLen = this.edgeCurves.length; i < edgesLen; i++) {
       const e = this.edgeCurves[i]!
       if (e.color !== lastColor) {
         ctx.strokeStyle = abgrToCssRgba(e.color)
@@ -143,7 +143,7 @@ export class Canvas2DRenderer implements Renderer {
     const { vertexData, vertexDataU32, indices } = batch
 
     let lastColor = -1
-    for (let i = 0; i < indices.length; i += 3) {
+    for (let i = 0, indicesLen = indices.length; i < indicesLen; i += 3) {
       const i0 = indices[i]!
       const i1 = indices[i + 1]!
       const i2 = indices[i + 2]!

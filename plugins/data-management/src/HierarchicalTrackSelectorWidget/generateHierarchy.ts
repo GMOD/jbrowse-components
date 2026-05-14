@@ -3,31 +3,34 @@ import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
 import { sortConfs } from './sortUtils.ts'
-import { matches } from './util.ts'
+import { matchesLower } from './util.ts'
 
 import type { MinimalModel, TreeNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { MenuItem } from '@jbrowse/core/ui'
+
+type NodeWithChildren = { children: TreeNode[] }
 
 export function generateHierarchy({
   model,
   trackConfs,
   extra,
   noCategories,
-  menuItems,
 }: {
   model: MinimalModel
   noCategories?: boolean
-  menuItems?: MenuItem[]
   trackConfs: AnyConfigurationModel[]
   extra?: string
 }): TreeNode[] {
-  const hierarchy = { children: [] as TreeNode[] } as TreeNode
+  const root: NodeWithChildren = { children: [] }
   const { filterText, activeSortTrackNames, activeSortCategories } = model
   const session = getSession(model)
-  const confs = trackConfs.filter(conf => matches(filterText, conf, session))
-  const leafCounts = new Map<TreeNode, number>()
-  const categoryMaps = new Map<TreeNode, Map<string, TreeNode>>()
+
+  const queryLower = filterText.trim().toLowerCase()
+  const confs = queryLower
+    ? trackConfs.filter(conf => matchesLower(queryLower, conf, session))
+    : trackConfs
+
+  const categoryMaps = new Map<NodeWithChildren, Map<string, TreeNode>>()
 
   for (const conf of sortConfs(
     confs,
@@ -35,18 +38,19 @@ export function generateHierarchy({
     activeSortCategories,
   )) {
     const isSessionTrack = conf.trackId.endsWith('sessionTrack')
-    const baseCategories = readConfObject(conf, 'category') ?? []
+    const baseCategories =
+      (readConfObject(conf, 'category') as string[] | undefined) ?? []
     const categories = isSessionTrack
       ? [' Session tracks', ...baseCategories]
       : baseCategories
 
-    let currLevel = hierarchy
+    let currLevel: NodeWithChildren = root
     let nestingLevel = 0
 
     if (!noCategories) {
       let categoryPath = ''
-      for (const [i, category_] of categories.entries()) {
-        const category = category_!
+      for (let i = 0; i < categories.length; i++) {
+        const category = categories[i]!
         categoryPath = categoryPath ? `${categoryPath},${category}` : category
 
         let categoryMap = categoryMaps.get(currLevel)
@@ -63,9 +67,8 @@ export function generateHierarchy({
             name: category,
             id,
             nestingLevel: i + 1,
-            menuItems,
             type: 'category' as const,
-          } as TreeNode
+          }
           currLevel.children.push(existing)
           categoryMap.set(category, existing)
         }
@@ -74,19 +77,20 @@ export function generateHierarchy({
       }
     }
 
-    const leafCount = leafCounts.get(currLevel) ?? 0
-    currLevel.children.splice(leafCount, 0, {
+    // push order is fine — sortedChildren() in flattenedItems re-groups
+    // tracks before categories during virtual-scroll flattening
+    currLevel.children.push({
       id: extra ? `${extra},${conf.trackId}` : conf.trackId,
       trackId: conf.trackId,
       name: getTrackName(conf, session),
-      description: readConfObject(conf, 'description') ?? '',
+      description:
+        (readConfObject(conf, 'description') as string | undefined) ?? '',
       conf,
       children: [],
       nestingLevel: nestingLevel + 1,
       type: 'track' as const,
     })
-    leafCounts.set(currLevel, leafCount + 1)
   }
 
-  return hierarchy.children
+  return root.children
 }

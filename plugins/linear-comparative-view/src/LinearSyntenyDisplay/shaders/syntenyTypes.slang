@@ -23,6 +23,12 @@ public struct Instance {
   public float queryTotalLength  : ATTR10;
   public float padTop            : ATTR11;
   public float padBottom         : ATTR12;
+  // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyColors.ts).
+  // Used by syntenyFill's fragment shader to decide whether perpendicular AA
+  // should be smooth (BASE — outer feature silhouette) or hard-cut (CIGAR —
+  // tiles a feature, so smoothstep at shared edges with sibling CIGAR
+  // instances bleeds background through the seam under standard alpha blend).
+  public float kind              : ATTR13;
 };
 
 // Per-view hp-math origin (`viewBp = offsetPx * bpPerPx`, hi/lo split) +

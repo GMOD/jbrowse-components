@@ -13,6 +13,9 @@ import RecentlyUsedTracks from './RecentlyUsedTracks.tsx'
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
 const useStyles = makeStyles()(theme => ({
+  toolbar: {
+    display: 'flex',
+  },
   searchBox: {
     margin: theme.spacing(2),
   },
@@ -36,19 +39,19 @@ const HierarchicalTrackSelectorHeader = observer(
     }, [height, setHeaderHeight])
 
     return (
-      <div ref={ref} data-testid="hierarchical_track_selector">
-        <div style={{ display: 'flex' }}>
-          <HamburgerMenu model={model} />
-          <ShoppingCart model={model} />
-          <ClearableSearchField
-            className={classes.searchBox}
-            label="Filter tracks"
-            value={model.filterText}
-            onChange={model.setFilterText}
-          />
-          <RecentlyUsedTracks model={model} />
-          <FavoriteTracks model={model} />
-        </div>
+      <div ref={ref} className={classes.toolbar} data-testid="hierarchical_track_selector">
+        <HamburgerMenu model={model} />
+        <ShoppingCart model={model} />
+        <ClearableSearchField
+          className={classes.searchBox}
+          label="Filter tracks"
+          value={model.filterText}
+          onChange={v => {
+            model.setFilterText(v)
+          }}
+        />
+        <RecentlyUsedTracks model={model} />
+        <FavoriteTracks model={model} />
       </div>
     )
   },

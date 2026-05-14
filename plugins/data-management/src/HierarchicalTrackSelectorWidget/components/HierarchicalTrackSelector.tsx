@@ -9,28 +9,17 @@ import HierarchicalTree from './tree/HierarchicalTree.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
-// Don't use autosizer in jest and instead hardcode a height, otherwise fails
-// jest tests
 const AutoSizedHierarchicalTree = ({
   model,
   offset,
 }: {
   model: HierarchicalTrackSelectorModel
   offset: number
-}) => {
-  return typeof jest === 'undefined' ? (
-    <AutoSizer disableWidth>
-      {args => (
-        <HierarchicalTree
-          height={Math.max(0, args.height - offset)}
-          model={model}
-        />
-      )}
-    </AutoSizer>
-  ) : (
-    <HierarchicalTree height={9000} model={model} />
-  )
-}
+}) => (
+  <AutoSizer disableWidth>
+    {args => <HierarchicalTree height={args.height - offset} model={model} />}
+  </AutoSizer>
+)
 
 const Wrapper = ({
   overrideDimensions,
@@ -38,13 +27,13 @@ const Wrapper = ({
 }: {
   overrideDimensions?: { width: number; height: number }
   children: React.ReactNode
-}) => {
-  return overrideDimensions ? (
+}) =>
+  overrideDimensions ? (
     <div style={{ ...overrideDimensions }}>{children}</div>
   ) : (
     children
   )
-}
+
 const HierarchicalTrackSelectorContainer = observer(
   function HierarchicalTrackSelectorContainer({
     model,

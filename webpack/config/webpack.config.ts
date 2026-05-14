@@ -11,7 +11,6 @@ import {
   appSrc,
   moduleFileExtensions,
 } from './paths.ts'
-import InlineChunkHtmlPlugin from '../InlineChunkHtmlPlugin.ts'
 
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
@@ -140,10 +139,6 @@ export default function webpackBuilder(): webpack.Configuration {
       }),
       ...(isEnvProduction
         ? [
-            new InlineChunkHtmlPlugin(
-              HtmlWebpackPlugin as unknown as InlineChunkHtmlPlugin['htmlWebpackPlugin'],
-              [/runtime-.+[.]js/],
-            ),
             new MiniCssExtractPlugin({
               filename: 'static/css/[name].[contenthash:8].css',
               chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',

@@ -255,8 +255,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       addToFavorites(trackId: string) {
-        self.favoritesCounter += 1
-        self.favorites = [...self.favorites, trackId]
+        if (!self.favoritesSet.has(trackId)) {
+          self.favoritesCounter += 1
+          self.favorites = [...self.favorites, trackId]
+        }
       },
       /**
        * #action
@@ -269,6 +271,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       clearFavorites() {
         self.favorites = []
+        self.favoritesCounter = 0
       },
 
       /**
@@ -315,6 +318,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       clearRecentlyUsed() {
         self.recentlyUsed = []
+        self.recentlyUsedCounter = 0
       },
       /**
        * #action
@@ -457,7 +461,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get allTrackConfigurationTrackIdSet() {
+      get allTrackConfigurationMap() {
         return new Map(this.allTrackConfigurations.map(t => [t.trackId, t]))
       },
     }))
@@ -468,8 +472,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get favoriteTracks() {
         return self.favorites
-          .filter(t => self.allTrackConfigurationTrackIdSet.has(t))
-          .map(t => self.allTrackConfigurationTrackIdSet.get(t)!)
+          .filter(t => self.allTrackConfigurationMap.has(t))
+          .map(t => self.allTrackConfigurationMap.get(t)!)
       },
 
       /**
@@ -478,8 +482,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get recentlyUsedTracks() {
         return self.recentlyUsed
-          .filter(t => self.allTrackConfigurationTrackIdSet.has(t))
-          .map(t => self.allTrackConfigurationTrackIdSet.get(t)!)
+          .filter(t => self.allTrackConfigurationMap.has(t))
+          .map(t => self.allTrackConfigurationMap.get(t)!)
       },
     }))
     .views(self => ({
@@ -493,13 +497,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             group: 'Tracks',
             tracks: self.configAndSessionTrackConfigurations,
             noCategories: false,
-            menuItems: [],
           },
           ...connectionInstances.flatMap(c => ({
             group: getConf(c, 'name'),
             tracks: filterTracks(c.tracks, self),
             noCategories: false,
-            menuItems: [],
           })),
         ]
       },
@@ -517,7 +519,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             name: s.group,
             id: s.group,
             type: 'category' as const,
-            menuItems: s.menuItems,
             nestingLevel: 0,
             children: generateHierarchy({
               model: self,

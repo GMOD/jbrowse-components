@@ -228,20 +228,16 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
               {
                 label: 'Show all',
                 onClick: () => {
-                  for (const child of item.children) {
-                    if (child.type === 'track') {
-                      model.view.showTrack(child.trackId)
-                    }
+                  for (const child of getAllTrackNodes(item)) {
+                    model.view.showTrack(child.trackId)
                   }
                 },
               },
               {
                 label: 'Hide all',
                 onClick: () => {
-                  for (const child of item.children) {
-                    if (child.type === 'track') {
-                      model.view.hideTrack(child.trackId)
-                    }
+                  for (const child of getAllTrackNodes(item)) {
+                    model.view.hideTrack(child.trackId)
                   }
                 },
               },
