@@ -2,11 +2,11 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { parseGFA } from '@jbrowse/graph-core'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
 import { convertGFAToGraph } from './gfa/gfaConverter.ts'
-import { parseGFA } from './gfa/gfaParser.ts'
 import {
   brightenColors,
   buildGeometry,

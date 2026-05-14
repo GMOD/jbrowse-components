@@ -495,6 +495,8 @@ importers:
         specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
 
+  packages/graph-core: {}
+
   packages/product-core:
     dependencies:
       '@jbrowse/core':
@@ -1137,6 +1139,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/graph-core':
+        specifier: workspace:^
+        version: link:../../packages/graph-core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.6.0
         version: 5.6.0(mobx@6.15.3)
@@ -1626,6 +1631,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/graph-core':
+        specifier: workspace:^
+        version: link:../../packages/graph-core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.6.0
         version: 5.6.0(mobx@6.15.3)

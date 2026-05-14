@@ -1,10 +1,22 @@
+// Minimal GFA (Graphical Fragment Assembly) text parser shared by the graph
+// pangenome plugins (GraphGenomeView, TubeMapView). Handles GFA1/GFA2 segment,
+// link, edge, path and walk records plus header tags.
+
 function parseTag(tag: string, tags: Record<string, string | number>) {
   const [name, type, val] = tag.split(':')
-  if (type === 'i') {
+  if (type === 'i' || type === 'f') {
     tags[name!] = +val!
   } else if (type === 'Z') {
     tags[name!] = val!
   }
+}
+
+function parseTags(fields: string[]) {
+  const tags: Record<string, string | number> = {}
+  for (const field of fields) {
+    parseTag(field, tags)
+  }
+  return tags
 }
 
 export interface GFANode {
@@ -86,12 +98,8 @@ export function parseGFA(file: string) {
 
   for (const line of file.split('\n')) {
     if (line.startsWith('H')) {
-      const headerLine: Record<string, string | number> = {}
       const [, ...rest] = line.split('\t')
-      for (const tag of rest) {
-        parseTag(tag, headerLine)
-      }
-      graph.header.push(headerLine)
+      graph.header.push(parseTags(rest))
     } else if (line.startsWith('S')) {
       const [, name, ...rest] = line.split('\t')
       let len: number
@@ -108,11 +116,8 @@ export function parseGFA(file: string) {
         len = seq.length
         tagfields = rest.slice(1)
       }
-      const tags: Record<string, string | number> = {}
-      for (const tagfield of tagfields) {
-        parseTag(tagfield, tags)
-      }
-      if (gfa1 && tags.LN) {
+      const tags = parseTags(tagfields)
+      if (gfa1 && 'LN' in tags) {
         len = +tags.LN
       }
       graph.nodes.push({ id: name!, length: len, sequence: seq, tags })
@@ -122,41 +127,28 @@ export function parseGFA(file: string) {
       const target1 = target!.slice(0, -1)
       const strand1 = source!.at(-1)
       const strand2 = target!.at(-1)
-      const tags: Record<string, string | number> = {}
-      for (const element of rest) {
-        parseTag(element, tags)
-      }
-
       graph.links.push({
         source: source1,
         target: target1,
         strand1,
         strand2,
         cigar: cigar!,
-        tags,
+        tags: parseTags(rest),
       })
     } else if (line.startsWith('L')) {
       const [, source, strand1, target, strand2, cigar, ...rest] =
         line.split('\t')
-      const tags: Record<string, string | number> = {}
-      for (const element of rest) {
-        parseTag(element, tags)
-      }
       graph.links.push({
         source: source!,
         target: target!,
         strand1,
         strand2,
         cigar: cigar!,
-        tags,
+        tags: parseTags(rest),
       })
     } else if (line.startsWith('W')) {
       const [, sample, hap, contig, start, end, body, ...rest] =
         line.split('\t')
-      const tags: Record<string, string | number> = {}
-      for (const element of rest) {
-        parseTag(element, tags)
-      }
       graph.walks.push({
         sample: sample!,
         haplotype: +hap!,
@@ -164,11 +156,10 @@ export function parseGFA(file: string) {
         start: start === '*' ? -1 : +start!,
         end: end === '*' ? -1 : +end!,
         segments: parseWalkBody(body!),
-        tags,
+        tags: parseTags(rest),
       })
     } else if (line.startsWith('P')) {
       const [, name, path, ...rest] = line.split('\t')
-
       graph.paths.push({ name: name!, path: path!, rest })
     }
   }

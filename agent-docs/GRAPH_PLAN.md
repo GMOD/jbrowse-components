@@ -30,8 +30,8 @@ HPRC .gbz
   ├─ vg deconstruct -P <ref>                        → bgzip | tabix
   │     → <ref>.variants.vcf.gz (+ .tbi)            ── standard VCF track (per-base detail)
   │
-  └─ (graph view) vg find -x .xg -p region -c ctx   → GFA → OGDF layout
-        ── feeds GraphGenomeView on demand
+  └─ (graph view) vg find -x .xg -p region -c ctx   → GFA
+        ── feeds GraphGenomeView (OGDF) or TubeMapView on demand
 ```
 
 Everything the *browse* experience reads is a static, tabix-indexed file —
@@ -53,12 +53,25 @@ JBrowse track.
   has a block at each. The only renderer case is a copy-number *gain*
   (overlapping blocks within one row) — a draw-time concern, not a data one.
 
-### GraphGenomeView — one mode
+### Graph views — two complementary renderers
 
-`vg find -p region -c context` → GFA → OGDF WASM layout → render. Sub-second
-for regions ≤ 100 kb. Past a size cap it says "zoom in to view graph" — there
-is no "large mode" fallback (adr-027). This is the odgi `extract_selected_loci`
-workflow.
+`vg find -p region -c context` → GFA → render. Sub-second for regions ≤ 100 kb;
+past a size cap both views say "zoom in to view graph" — there is no "large
+mode" fallback (adr-027). This is the odgi `extract_selected_loci` workflow.
+
+The same `GetSubgraph` GFA feeds two interchangeable renderers, both launchable
+from `MultiLGVSyntenyDisplay`'s feature/track menus (`SUBGRAPH_VIEW_TYPES`) and
+standalone via their import forms (file/URL or a `GfaTabixAdapter` track + locus):
+
+- **GraphGenomeView** — Bandage-style 2-D layout (OGDF FMMM force-directed,
+  computed in a worker via the `GraphComputeLayout` RPC). Best for tangled
+  topology; imposes no left-to-right order.
+- **TubeMapView** — SequenceTubeMap-style linearized lane layout; each
+  haplotype path is an explicit ribbon threading shared nodes. Best for reading
+  "which haplotype goes where". The lane layout is a few main-thread array
+  passes — no worker.
+
+GFA parsing is shared between the two via `@jbrowse/graph-core` (`parseGFA`).
 
 ## Preprocessing recipe
 

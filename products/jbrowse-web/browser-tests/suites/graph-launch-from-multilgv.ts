@@ -240,6 +240,56 @@ const suite: TestSuite = {
         await snapshot(page, 'tube-map-launched-from-multilgv', 0.2)
       },
     },
+    {
+      name: 'launch TubeMapView via import-form Track mode',
+      fn: async page => {
+        await openMultiLgvWithPangenomeTrack(page)
+
+        // Add → Tube map view — the import form opens in Track mode, the same
+        // GfaTabixAdapter getSubgraph path GraphGenomeView's import form uses.
+        await (await findByText(page, 'Add'))?.click()
+        await delay(300)
+        await (await findByText(page, 'Tube map view'))?.click()
+        await delay(500)
+
+        await findByText(page, 'Load a GFA graph', 10000)
+
+        const trackSelectTrigger = await page.waitForSelector(
+          '[data-testid="gfa-track-field"] .MuiSelect-select',
+          { timeout: 10000 },
+        )
+        await trackSelectTrigger?.click()
+        await delay(400)
+        const trackOption = await page.waitForSelector('[role="option"]', {
+          timeout: 5000,
+        })
+        await trackOption?.click()
+        await delay(300)
+
+        const locInput = await page.waitForSelector(
+          '[data-testid="gfa-loc-field"] input',
+          { timeout: 5000 },
+        )
+        await locInput?.click()
+        await locInput?.type('ctgA:1-1000', { delay: 40 })
+        await locInput?.press('Escape')
+        await delay(300)
+
+        const openBtn = await page.waitForSelector(
+          '[data-testid="gfa-open-btn"]',
+          { timeout: 5000 },
+        )
+        await openBtn?.click()
+
+        await page.waitForSelector('svg', { timeout: 30000 })
+        await page.waitForFunction(
+          () => /\d+ nodes, \d+ tracks/.test(document.body.textContent || ''),
+          { timeout: 30000, polling: 500 },
+        )
+        await delay(1000)
+        await snapshot(page, 'tube-map-launched-from-import-form', 0.2)
+      },
+    },
   ],
 }
 

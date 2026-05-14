@@ -101,6 +101,11 @@ const SUBGRAPH_VIEW_TYPES = [
   { type: 'TubeMapView' as const, label: 'Tube map', icon: TimelineIcon },
 ]
 
+// Shared with GraphGenomeView/TubeMapView (adr-027): `vg find` subgraph
+// extraction is sub-second up to ~100 kb. Past this both graph views decline,
+// so guard the launch here rather than fetch a subgraph that won't render.
+const MAX_SUBGRAPH_REGION_BP = 100_000
+
 function regionLabel(region: { refName: string; start: number; end: number }) {
   return `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
 }
@@ -112,6 +117,14 @@ async function launchSubgraphView(
   region: { refName: string; assemblyName: string; start: number; end: number },
   viewType: 'GraphGenomeView' | 'TubeMapView',
 ) {
+  const regionSize = region.end - region.start
+  if (regionSize > MAX_SUBGRAPH_REGION_BP) {
+    session.notify(
+      `Region too large (${Math.round(regionSize / 1000)} kb) — zoom in to open a graph view (max ${MAX_SUBGRAPH_REGION_BP / 1000} kb)`,
+      'warning',
+    )
+    return
+  }
   const gfaText = await session.rpcManager.call(sessionId, 'GetSubgraph', {
     adapterConfig,
     region,
