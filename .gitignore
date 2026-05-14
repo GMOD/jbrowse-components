@@ -39,4 +39,6 @@ test_data/hprc/*.bed.gz
 test_data/hprc/*.bed.gz.tbi
 test_data/hprc/*.seglens.bin
 test_data/hprc/*.assembly_map.json
+test_data/hprc/*.paf.gz
+test_data/hprc/*.paf.gz.tbi
 test_data/volvox/*.og

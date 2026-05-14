@@ -109,25 +109,17 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'GraphGenomeView large mode: synteny overview renders',
+      name: 'GraphGenomeView declines regions over the size cap (adr-027)',
       fn: async page => {
         await openGraphGenomeView(page)
         await findByText(page, 'Load a GFA graph', 10000)
 
-        // Region > 100 kbp triggers large mode (LargeModeSyntenyCanvas)
+        // Region > 100 kbp is past the hard size cap. There is one mode only
+        // (adr-027) — no large-mode fallback — so the view shows a "zoom in to
+        // view graph" message rather than a degraded rectangle rendering.
         await loadRegionInImportForm(page, 'ctgA:1-200000')
 
-        await page.waitForSelector('[data-testid="graph-large-mode-canvas"]', {
-          timeout: 60000,
-        })
-        await delay(1500)
-
-        await canvasSnapshot(
-          page,
-          'graph-genome-tabix-large-canvas',
-          '[data-testid="graph-large-mode-canvas"]',
-          0.2,
-        )
+        await findByText(page, /zoom in to view graph/, 30000)
       },
     },
   ],
