@@ -25,9 +25,10 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateAndAddGraphView(page)
         await findByText(page, 'Load a GFA graph', 10000)
-        await findByText(page, 'From file', 5000)
-        await findByText(page, 'From URL', 5000)
-        await findByText(page, 'Load example graph', 5000)
+        // ImportForm has a Track / File-URL toggle plus an example button.
+        await findByText(page, 'Track', 5000)
+        await findByText(page, 'File / URL', 5000)
+        await findByText(page, 'Load 4-node example', 5000)
       },
     },
     {
@@ -35,7 +36,11 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateAndAddGraphView(page)
 
-        const exampleBtn = await findByText(page, 'Load example graph', 10000)
+        const exampleBtn = await findByText(
+          page,
+          'Load 4-node example',
+          10000,
+        )
         await exampleBtn?.click()
 
         // Wait for the layout + render to complete
