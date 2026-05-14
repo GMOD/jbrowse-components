@@ -205,10 +205,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       },
     }))
     .actions(self => {
-      let listener: (event: MessageEvent) => undefined
+      let listener: (event: MessageEvent) => void
       // Shared across concurrent validateToken calls so parallel 401s all wait
       // on the same refresh request rather than each triggering a separate one.
-      let exchangedTokenPromise: Promise<string> | undefined = undefined
+      let exchangedTokenPromise: Promise<string> | undefined
       return {
         /**
          * #action
@@ -273,22 +273,13 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               reject(new Error('Error with authorization endpoint'))
               return
             }
-            try {
-              const token = await self.exchangeAuthorizationForAccessToken(
-                code,
-                redirectUrl.origin + redirectUrl.pathname,
-              )
-              self.storeToken(token)
-              resolve(token)
-              return
-            } catch (e) {
-              if (e instanceof Error) {
-                reject(e)
-              } else {
-                reject(new Error(String(e)))
-              }
-              return
-            }
+            const token = await self.exchangeAuthorizationForAccessToken(
+              code,
+              redirectUrl.origin + redirectUrl.pathname,
+            )
+            self.storeToken(token)
+            resolve(token)
+            return
           }
           if (redirectUriWithInfo.includes('access_denied')) {
             reject(new Error('OAuth flow was cancelled'))
