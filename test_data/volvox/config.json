@@ -2675,6 +2675,32 @@
           "displayId": "volvox_pangenome_50_gfa_tabix-MultiLGVSyntenyDisplay"
         }
       ]
+    },
+    {
+      "type": "MultiSyntenyTrack",
+      "trackId": "volvox_untangle_tabix_paf",
+      "name": "volvox untangle (TabixPAF)",
+      "category": ["Synteny"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "TabixPAFAdapter",
+        "pafGzLocation": {
+          "uri": "volvox.untangle.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.untangle.paf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "MultiLGVSyntenyDisplay",
+          "displayId": "volvox_untangle_tabix_paf-MultiLGVSyntenyDisplay"
+        }
+      ]
     }
   ],
   "plugins": [

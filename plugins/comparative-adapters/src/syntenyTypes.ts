@@ -7,6 +7,7 @@ export const syntenyTypes = [
   'MCScanAnchorsAdapter',
   'MCScanSimpleAnchorsAdapter',
   'PairwiseIndexedPAFAdapter',
+  'TabixPAFAdapter',
   'GfaTabixAdapter',
   'GfaAdapter',
   'GfaServerAdapter',
@@ -19,10 +20,12 @@ export const pairwiseTypes = [
   'MashMapAdapter',
   'BlastTabularAdapter',
   'PairwiseIndexedPAFAdapter',
+  'TabixPAFAdapter',
 ]
 
 export const multiPairTypes = [
   'PairwiseIndexedPAFAdapter',
+  'TabixPAFAdapter',
   'GfaTabixAdapter',
   'GfaAdapter',
   'GfaServerAdapter',

@@ -14,6 +14,7 @@ import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
 import MashMapAdapterF from './MashMapAdapter/index.ts'
 import PAFAdapterF from './PAFAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
+import TabixPAFAdapterF from './TabixPAFAdapter/index.ts'
 
 export { computeSyriTypes } from './syriUtils.ts'
 export { csToCigar, flipCs } from './csUtils.ts'
@@ -34,6 +35,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     PAFAdapterF(pluginManager)
     PairwiseIndexedPAFAdapterF(pluginManager)
+    TabixPAFAdapterF(pluginManager)
     DeltaAdapterF(pluginManager)
     ChainAdapterF(pluginManager)
     MCScanAnchorsAdapterF(pluginManager)

@@ -55,6 +55,51 @@ export function parsePAFLine(line: string) {
   }
 }
 
+// Path-name suffix that encodes a subwalk range. odgi uses colon
+// (`sample#0#chr20:100864-26386516`); vg uses brackets
+// (`sample#chr20[100864-26386516]`).
+const RE_PATH_SUBWALK_COLON = /:(-?\d+)-(-?\d+)$/
+const RE_PATH_SUBWALK_BRACKET = /\[(-?\d+)-(-?\d+)\]$/
+
+/**
+ * Parse a PanSN path name into its genome and refName parts. PanSN is
+ * `sample#hap#contig` → genome=`sample#hap`, refName=`contig`. A four-part
+ * `sample#hap#contig#fragment` (vg fragmented assemblies) drops the trailing
+ * fragment so it still aggregates to `sample#hap`. Two-part `sample#contig`
+ * → genome=`sample`. Bare names map genome=refName=name. Subwalk suffixes
+ * (`...:start-end` / `...[start-end]`) are stripped and returned separately.
+ */
+export function parsePanSN(name: string, length = 0) {
+  let stripped = name
+  let subwalkStart = 0
+  let subwalkEnd = length
+  const m =
+    RE_PATH_SUBWALK_COLON.exec(name) ?? RE_PATH_SUBWALK_BRACKET.exec(name)
+  if (m) {
+    stripped = name.slice(0, m.index)
+    subwalkStart = Number(m[1])
+    subwalkEnd = Number(m[2])
+  }
+  const parts = stripped.split('#')
+  if (parts.length >= 3) {
+    return {
+      genome: `${parts[0]!}#${parts[1]!}`,
+      refName: parts[2]!,
+      subwalkStart,
+      subwalkEnd,
+    }
+  }
+  if (parts.length === 2) {
+    return {
+      genome: parts[0]!,
+      refName: parts[1]!,
+      subwalkStart,
+      subwalkEnd,
+    }
+  }
+  return { genome: stripped, refName: stripped, subwalkStart, subwalkEnd }
+}
+
 export function flipCigar(cigar: string) {
   const ops: [number, string][] = []
   let len = 0
