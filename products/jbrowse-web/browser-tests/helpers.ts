@@ -1,3 +1,5 @@
+import { PNG } from 'pngjs'
+
 import { snapshotConfig } from './snapshot.ts'
 
 import type { Browser, Page } from 'puppeteer'
@@ -124,6 +126,63 @@ export async function waitForCanvas(
   timeout = 60000,
 ) {
   await page.waitForSelector(`[data-testid="${testIdOrRegex}"]`, { timeout })
+}
+
+// Asserts a rendered element actually drew something interesting — not a
+// blank or single-color fill. The snapshot system treats blank captures as
+// passes (auto-creates goldens, skips blank WebGL frames), so this is the
+// explicit "the display shows real data" gate. Counts distinct quantized
+// colors and the fraction of pixels differing from the top-left background.
+export async function assertCanvasHasContent(
+  page: Page,
+  selector: string,
+  {
+    minDistinctColors = 8,
+    minNonBgFraction = 0.005,
+    timeout = 60000,
+  }: {
+    minDistinctColors?: number
+    minNonBgFraction?: number
+    timeout?: number
+  } = {},
+) {
+  const el = await page.waitForSelector(selector, { timeout })
+  if (!el) {
+    throw new Error(`assertCanvasHasContent: element not found: ${selector}`)
+  }
+  const buf = await el.screenshot({ type: 'png' })
+  // @ts-expect-error pngjs accepts a Uint8Array at runtime
+  const { data, width, height } = PNG.sync.read(buf)
+  const total = width * height
+  const colors = new Set<number>()
+  const bgR = data[0]!
+  const bgG = data[1]!
+  const bgB = data[2]!
+  let nonBg = 0
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i]!
+    const g = data[i + 1]!
+    const b = data[i + 2]!
+    // quantize to 4 bits/channel so antialiasing noise isn't counted as color
+    colors.add(((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4))
+    if (
+      Math.abs(r - bgR) > 12 ||
+      Math.abs(g - bgG) > 12 ||
+      Math.abs(b - bgB) > 12
+    ) {
+      nonBg++
+    }
+  }
+  const nonBgFraction = nonBg / total
+  if (colors.size < minDistinctColors || nonBgFraction < minNonBgFraction) {
+    throw new Error(
+      `assertCanvasHasContent: ${selector} looks blank — ` +
+        `${colors.size} distinct colors (need ${minDistinctColors}), ` +
+        `${(nonBgFraction * 100).toFixed(3)}% non-background pixels ` +
+        `(need ${(minNonBgFraction * 100).toFixed(3)}%)`,
+    )
+  }
+  return { distinctColors: colors.size, nonBgFraction }
 }
 
 export async function clearStorageAndNavigate(

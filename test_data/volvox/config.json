@@ -2691,6 +2691,26 @@
           "displayId": "volvox_untangle_tabix_paf-MultiLGVSyntenyDisplay"
         }
       ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_pangenome_50_vcf",
+      "name": "volvox pangenome 50 variants (vg deconstruct VCF)",
+      "category": ["Synteny"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox_pangenome_50.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox_pangenome_50.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ],
   "plugins": [

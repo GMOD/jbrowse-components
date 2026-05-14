@@ -1,4 +1,5 @@
 import {
+  assertCanvasHasContent,
   delay,
   findByTestId,
   navigateWithSessionSpec,
@@ -38,6 +39,10 @@ const suite: TestSuite = {
         await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(3000)
+        await assertCanvasHasContent(
+          page,
+          '[data-testid="multi_synteny_canvas_done"]',
+        )
         await canvasSnapshot(
           page,
           'hprc-chrM-44hap-multi-lgv-canvas',
@@ -77,10 +82,12 @@ const suite: TestSuite = {
     {
       // chr20 proof-of-concept: 90-haplotype HPRC pangenome served from a
       // single bgzipped, tabix-indexed `odgi untangle` PAF via
-      // TabixPAFAdapter (no .pif transform, no tiers). Data is the gitignored
-      // symlink in test_data/hprc/; regenerate with the recipe in
+      // TabixPAFAdapter (no .pif transform, no tiers), paired with the
+      // separate `vg deconstruct` VCF track for per-base SNP/indel detail —
+      // the GRAPH_PLAN "v1" scheme. Data is the gitignored symlink in
+      // test_data/hprc/; regenerate with the recipe in
       // agent-docs/GRAPH_PLAN.md.
-      name: 'HPRC chr20 90-haplotype untangle PAF multi-LGV',
+      name: 'HPRC chr20 90-haplotype untangle PAF + per-base VCF multi-LGV',
       fn: async page => {
         await navigateWithSessionSpec(
           page,
@@ -95,6 +102,7 @@ const suite: TestSuite = {
                     trackId: 'hprc_chr20_untangle_paf',
                     displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
                   },
+                  'hprc_chr20_vcf',
                 ],
               },
             ],
@@ -105,6 +113,17 @@ const suite: TestSuite = {
         await findByTestId(page, 'multi_synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
         await delay(3000)
+        // 90 haplotype rows of identity-colored blocks must actually render
+        await assertCanvasHasContent(
+          page,
+          '[data-testid="multi_synteny_canvas_done"]',
+        )
+        // per-base variants from the vg deconstruct VCF render in the same view
+        await assertCanvasHasContent(
+          page,
+          '[data-testid^="display-hprc_chr20_vcf"][data-testid$="-done"] canvas',
+          { minDistinctColors: 3 },
+        )
         await canvasSnapshot(
           page,
           'hprc-chr20-90hap-untangle-paf-canvas',
@@ -113,7 +132,7 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'HPRC chr20 90-haplotype untangle PAF full page',
+      name: 'HPRC chr20 90-haplotype untangle PAF + per-base VCF full page',
       fn: async page => {
         await navigateWithSessionSpec(
           page,
@@ -128,6 +147,7 @@ const suite: TestSuite = {
                     trackId: 'hprc_chr20_untangle_paf',
                     displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
                   },
+                  'hprc_chr20_vcf',
                 ],
               },
             ],

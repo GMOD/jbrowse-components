@@ -3358,6 +3358,30 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox_untangle_tabix_paf",
       "type": "MultiSyntenyTrack",
     },
+    {
+      "adapter": {
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox_pangenome_50.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_pangenome_50.vcf.gz",
+        },
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "name": "volvox pangenome 50 variants (vg deconstruct VCF)",
+      "trackId": "volvox_pangenome_50_vcf",
+      "type": "VariantTrack",
+    },
   ],
 }
 `;
