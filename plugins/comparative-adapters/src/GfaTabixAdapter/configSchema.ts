@@ -82,24 +82,6 @@ const GfaTabixAdapter = ConfigurationSchema(
         defaultValue: { uri: '', locationType: 'UriLocation' },
       },
     }),
-    graphCoarseLocation: {
-      type: 'fileLocation',
-      description:
-        'Location of graph.coarse.bed.gz (super-segments for regionSize > 100 kbp)',
-      defaultValue: { uri: '', locationType: 'UriLocation' },
-    },
-    graphCoarseIndex: ConfigurationSchema('GraphCoarseTabixIndex', {
-      location: {
-        type: 'fileLocation',
-        defaultValue: { uri: '', locationType: 'UriLocation' },
-      },
-    }),
-    graphCoarseAssemblyMap: {
-      type: 'fileLocation',
-      description:
-        'Location of graph.coarse.assembly_map.json (maps GFA assembly names to path lists; enables v2 multi-assembly coarse queries without manual assemblyNameMap)',
-      defaultValue: { uri: '', locationType: 'UriLocation' },
-    },
     /**
      * #slot
      */
@@ -203,20 +185,6 @@ const GfaTabixAdapter = ConfigurationSchema(
               uri: `${snap.prefix}.edges.spatial.bed.gz.tbi`,
               baseUri: snap.baseUri,
             },
-          },
-          graphCoarseLocation: {
-            uri: `${snap.prefix}.graph.coarse.bed.gz`,
-            baseUri: snap.baseUri,
-          },
-          graphCoarseIndex: {
-            location: {
-              uri: `${snap.prefix}.graph.coarse.bed.gz.tbi`,
-              baseUri: snap.baseUri,
-            },
-          },
-          graphCoarseAssemblyMap: {
-            uri: `${snap.prefix}.graph.coarse.assembly_map.json`,
-            baseUri: snap.baseUri,
           },
           seqlensLocation: {
             uri: `${snap.prefix}.seglens.bin`,

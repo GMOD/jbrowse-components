@@ -18,16 +18,6 @@ import type { GraphRenderer } from './renderer/GraphRenderer.ts'
 import type { RenderBatch, SubBatchKey, VertexRange } from './renderer/types.ts'
 import type { ColorScheme, Graph, GraphNode, LayoutResult } from './types.ts'
 
-export interface SyntenyBlock {
-  refStart: number
-  refEnd: number
-  mateRefName: string
-  mateStart: number
-  mateEnd: number
-  strand: number
-  identity: number
-}
-
 interface BandageScaleOpts {
   nodeLengthPerMegabase?: number
   minimumNodeLength?: number
@@ -39,6 +29,11 @@ const DEFAULT_CANVAS_HEIGHT = 600
 const HOVER_BRIGHTEN = 1.4
 const SELECT_BRIGHTEN = 1.6
 const VIEWPORT_DEBOUNCE_MS = 150
+
+// Hard size cap for the single-mode graph view (adr-027). `vg find` subgraph
+// extraction is sub-second up to ~100 kb; past this the view declines with a
+// "zoom in" message rather than switching to a degraded rendering mode.
+const MAX_GRAPH_REGION_BP = 100_000
 
 const MIN_ZOOM = 0.001
 const MAX_ZOOM = 100
@@ -144,10 +139,6 @@ export default function stateModelFactory() {
     .volatile(() => ({
       graph: undefined as Graph | undefined,
       layoutResult: undefined as LayoutResult | undefined,
-      syntenyBlocks: undefined as [string, SyntenyBlock[]][] | undefined,
-      largeModeRegion: undefined as
-        | { refName: string; start: number; end: number }
-        | undefined,
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
@@ -315,8 +306,6 @@ export default function stateModelFactory() {
       clearGraph() {
         self.graph = undefined
         self.layoutResult = undefined
-        self.syntenyBlocks = undefined
-        self.largeModeRegion = undefined
         self.error = undefined
         self.isLoading = false
         self.statusMessage = ''
@@ -389,45 +378,6 @@ export default function stateModelFactory() {
         }
       }
 
-      function* loadFromTabixLarge(
-        adapterConfig: Record<string, unknown>,
-        region: {
-          refName: string
-          assemblyName: string
-          start: number
-          end: number
-        },
-        bpPerPx?: number,
-      ) {
-        self.isLoading = true
-        self.error = undefined
-        self.graph = undefined
-        self.layoutResult = undefined
-        self.setStatusMessage('Fetching synteny overview')
-        try {
-          const session = getSession(self)
-          const { rpcManager } = session
-          const sessionId = 'graph'
-          const blocks = (yield rpcManager.call(sessionId, 'GetSyntenyBlocks', {
-            adapterConfig,
-            region,
-            sessionId,
-            bpPerPx,
-          })) as [string, SyntenyBlock[]][]
-          self.syntenyBlocks = blocks
-          self.largeModeRegion = {
-            refName: region.refName,
-            start: region.start,
-            end: region.end,
-          }
-        } catch (e) {
-          console.error('[GraphGenomeView.loadFromTabixLarge]', e)
-          self.error = e
-        } finally {
-          self.isLoading = false
-        }
-      }
-
       // Inner loading logic shared by loadFromTabixSubgraph and refetchIfNeeded
       function* doSubgraphLoad(
         adapterConfig: Record<string, unknown>,
@@ -439,18 +389,22 @@ export default function stateModelFactory() {
         },
         opts: {
           context?: number
-          bpPerPx?: number
         } = {},
       ) {
         const regionSize = region.end - region.start
-        if (regionSize > 100_000) {
-          yield* loadFromTabixLarge(adapterConfig, region, opts.bpPerPx)
+        if (regionSize > MAX_GRAPH_REGION_BP) {
+          // One mode only (adr-027): past the size cap the graph view declines
+          // rather than degrading to a non-graph rectangle rendering.
+          // Large-region and full-genome synteny is MultiLGVSyntenyDisplay.
+          self.graph = undefined
+          self.layoutResult = undefined
+          self.error = new Error(
+            `Region too large (${Math.round(regionSize / 1000)} kb) — zoom in to view graph (max ${MAX_GRAPH_REGION_BP / 1000} kb)`,
+          )
           return
         }
         self.isLoading = true
         self.error = undefined
-        self.syntenyBlocks = undefined
-        self.largeModeRegion = undefined
         self.setStatusMessage('Fetching subgraph')
         try {
           const session = getSession(self)
@@ -511,7 +465,6 @@ export default function stateModelFactory() {
           },
           opts: {
             context?: number
-            bpPerPx?: number
             trackId?: string
           } = {},
         ) {

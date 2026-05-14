@@ -85,20 +85,6 @@
             "locationType": "UriLocation"
           }
         },
-        "graphCoarseLocation": {
-          "uri": "hprc/hprc-v1.1-mc-grch38-chr20.graph.coarse.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "graphCoarseIndex": {
-          "location": {
-            "uri": "hprc/hprc-v1.1-mc-grch38-chr20.graph.coarse.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        },
-        "graphCoarseAssemblyMap": {
-          "uri": "hprc/hprc-v1.1-mc-grch38-chr20.graph.coarse.assembly_map.json",
-          "locationType": "UriLocation"
-        },
         "seqlensLocation": {
           "uri": "hprc/hprc-v1.1-mc-grch38-chr20.seglens.bin",
           "locationType": "UriLocation"

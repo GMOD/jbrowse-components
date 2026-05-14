@@ -9,11 +9,6 @@ import {
 
 import { annotateFeaturesWithBubbleCs } from './bubbleOverlay.ts'
 import {
-  type CoarseRow,
-  coarseRowsToGfa,
-  parseCoarseLine,
-} from './coarseSubgraphReader.ts'
-import {
   hasFileLocation,
   openTabixIfConfigured,
   parseGfaPathName,
@@ -40,8 +35,6 @@ interface SetupResult {
   syntenyRefNames: Set<string>
   bubblesRefNames?: Set<string>
   bubblesGenomeNames?: string[]
-  graphCoarseRefNames?: Set<string>
-  graphCoarseAssemblyMap?: Map<string, string[]>
 }
 
 function parseOrdinalRanges(line: string, out: Set<number>) {
@@ -71,13 +64,11 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
   private readonly posFile: TabixIndexedFile
   private readonly syntenyFile: TabixIndexedFile
   private readonly syntenyCoarseFile?: TabixIndexedFile
-  private readonly graphCoarseFile?: TabixIndexedFile
   private readonly bubblesFile?: TabixIndexedFile
   private readonly edgesFile?: TabixIndexedFile
   private readonly seqlensHandle?: GenericFilehandle
   private readonly assemblyNameMap: Record<string, string>
   private readonly reverseAssemblyNameMap: Map<string, string>
-  private readonly graphCoarseAssemblyMapHandle?: GenericFilehandle
   private setupP?: Promise<SetupResult>
 
   public constructor(
@@ -119,14 +110,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       pm,
     )
 
-    this.graphCoarseFile = openTabixIfConfigured(
-      this.getConf('graphCoarseLocation') as FileLocation | undefined,
-      this.getConf(['graphCoarseIndex', 'location']) as
-        | FileLocation
-        | undefined,
-      pm,
-    )
-
     this.bubblesFile = openTabixIfConfigured(
       this.getConf('bubblesLocation') as FileLocation | undefined,
       this.getConf(['bubblesIndex', 'location']) as FileLocation | undefined,
@@ -144,13 +127,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       | undefined
     if (hasFileLocation(seqlensLoc)) {
       this.seqlensHandle = openLocation(seqlensLoc, pm)
-    }
-
-    const assemblyMapLoc = this.getConf('graphCoarseAssemblyMap') as
-      | FileLocation
-      | undefined
-    if (hasFileLocation(assemblyMapLoc)) {
-      this.graphCoarseAssemblyMapHandle = openLocation(assemblyMapLoc, pm)
     }
   }
 
@@ -195,20 +171,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       bubblesGenomeNames = readHeaderField(bHeader, 'genomes')?.split(',')
     }
 
-    let graphCoarseRefNames: Set<string> | undefined
-    if (this.graphCoarseFile) {
-      graphCoarseRefNames = new Set(
-        await this.graphCoarseFile.getReferenceSequenceNames(),
-      )
-    }
-
-    let graphCoarseAssemblyMap: Map<string, string[]> | undefined
-    if (this.graphCoarseAssemblyMapHandle) {
-      const text = await this.graphCoarseAssemblyMapHandle.readFile('utf8')
-      const json = JSON.parse(text) as { assemblies: Record<string, string[]> }
-      graphCoarseAssemblyMap = new Map(Object.entries(json.assemblies))
-    }
-
     return {
       genomes,
       chromSizes,
@@ -216,8 +178,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       syntenyRefNames,
       bubblesRefNames,
       bubblesGenomeNames,
-      graphCoarseRefNames,
-      graphCoarseAssemblyMap,
     }
   }
 
@@ -238,42 +198,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       const fileQualified = `${fileGenome}#${refName}`
       if (refNameSet.has(fileQualified)) {
         return fileQualified
-      }
-    }
-    return undefined
-  }
-
-  private resolveCoarseTabixRefName(
-    refNameSet: Set<string>,
-    assemblyName: string,
-    refName: string,
-    assemblyMap?: Map<string, string[]>,
-  ) {
-    const resolved = this.resolveTabixRefName(refNameSet, assemblyName, refName)
-    if (resolved) {
-      return resolved
-    }
-    if (!assemblyMap) {
-      return undefined
-    }
-    // Direct key match: JBrowse assembly name == GFA assembly name
-    const directPaths = assemblyMap.get(assemblyName)
-    if (directPaths) {
-      for (const p of directPaths) {
-        if (p.endsWith(`#${refName}`) && refNameSet.has(p)) {
-          return p
-        }
-      }
-    }
-    // Prefix match: JBrowse assembly name is a prefix of the GFA assembly key
-    // (e.g. "grch38" matches "grch38#0")
-    for (const [asmKey, asmPaths] of assemblyMap) {
-      if (asmKey.startsWith(`${assemblyName}#`)) {
-        for (const p of asmPaths) {
-          if (p.endsWith(`#${refName}`) && refNameSet.has(p)) {
-            return p
-          }
-        }
       }
     }
     return undefined
@@ -451,12 +375,7 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
 
   async getSubgraph(region: Region) {
     const { refName, start, end, assemblyName } = region
-    const {
-      posRefNames,
-      syntenyRefNames,
-      graphCoarseRefNames,
-      graphCoarseAssemblyMap,
-    } = await this.setup()
+    const { posRefNames, syntenyRefNames } = await this.setup()
 
     const tabixRefName = this.resolveTabixRefName(
       posRefNames,
@@ -465,19 +384,6 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
     )
     if (!tabixRefName) {
       return 'H\tVN:Z:1.1'
-    }
-
-    const regionSize = end - start
-    if (regionSize > 100_000 && this.graphCoarseFile && graphCoarseRefNames) {
-      const coarseTabixRefName = this.resolveCoarseTabixRefName(
-        graphCoarseRefNames,
-        assemblyName,
-        refName,
-        graphCoarseAssemblyMap,
-      )
-      if (coarseTabixRefName) {
-        return this.getCoarseSubgraph(coarseTabixRefName, start, end)
-      }
     }
 
     // Collect reference pos lines and ordinals in one pass; cache lines to
@@ -639,22 +545,5 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
 
     const gfa = lines.join('\n')
     return gfa
-  }
-
-  private async getCoarseSubgraph(
-    tabixRefName: string,
-    start: number,
-    end: number,
-  ) {
-    const rows: CoarseRow[] = []
-    await this.graphCoarseFile!.getLines(tabixRefName, start, end, {
-      lineCallback: (line: string) => {
-        const row = parseCoarseLine(line)
-        if (row) {
-          rows.push(row)
-        }
-      },
-    })
-    return coarseRowsToGfa(rows)
   }
 }
