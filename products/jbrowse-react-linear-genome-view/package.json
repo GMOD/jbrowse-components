@@ -58,6 +58,7 @@
     "@jbrowse/plugin-gff3": "workspace:^",
     "@jbrowse/plugin-legacy-jbrowse": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/plugin-maf": "workspace:^",
     "@jbrowse/plugin-sequence": "workspace:^",
     "@jbrowse/plugin-trix": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",

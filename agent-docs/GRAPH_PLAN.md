@@ -24,11 +24,10 @@ HPRC .gbz
   │  vg convert -f → .gfa → odgi build → .og        (one-time)
   │  vg convert -x → .xg                            (one-time, for graph view)
   │
-  ├─ odgi untangle -R <ref> -j <floor> -m <floor>   → sort | bgzip | tabix
-  │     → <ref>.synteny.paf.gz (+ .tbi)             ── feeds MultiLGVSyntenyDisplay
-  │
-  ├─ vg deconstruct -P <ref>                        → bgzip | tabix
-  │     → <ref>.variants.vcf.gz (+ .tbi)            ── standard VCF track (per-base detail)
+  ├─ odgi untangle -R <ref>  →  minimap2 --cs per block  →  sort | bgzip | tabix
+  │     → <ref>.synteny.cs.paf.gz (+ .tbi)          ── feeds MultiLGVSyntenyDisplay
+  │        block structure (untangle) + per-base SNP/indel detail (cs: tag) in
+  │        one track — no separate VCF (adr-030)
   │
   └─ (graph view) vg find -x .xg -p region -c ctx   → GFA
         ── feeds GraphGenomeView (OGDF) or TubeMapView on demand
@@ -45,9 +44,11 @@ by identity. The user zooms; tabix returns the blocks in view; they render.
 No `bpPerPx` thresholds, no coarse file, no modes — it behaves like any other
 JBrowse track.
 
-- **Per-base SNP/indel detail** is the separate `variants.vcf.gz` VCF track
-  (standard JBrowse variant track). Not overlaid on the synteny display in v1;
-  see "Per-base variant integration" below for the design space.
+- **Per-base SNP/indel detail** rides in the same `synteny.cs.paf.gz` via the
+  `cs:` tag — the existing `TabixPAFAdapter` → `MultiPairGetFeatures` →
+  `GpuMultiSyntenyRenderer` path renders allele-colored SNP ticks and indel
+  glyphs on the haplotype rows. One track, one file, one display; no separate
+  VCF and no sample-name join (adr-030). See "Per-base variant detail" below.
 - **Copy number / paralogy** needs no special data: a duplicated reference
   region appears at two reference x-positions and the haplotype's row simply
   has a block at each. The only renderer case is a copy-number *gain*
@@ -128,111 +129,49 @@ A reasonable hybrid: ship the permissive static file as the default, and let
 `graph-server` regenerate a custom-parameter untangle on demand for power
 users. Decide after a direct static-vs-service comparison in the browser.
 
-## Per-base variant integration (target architecture)
+## Per-base variant detail — `cs:`-enriched synteny PAF (adr-030)
 
-adr-025 closed by saying overlay-at-zoom is a possible later enhancement, and
-the user wants the v2 to deliver "as much detail as possible." The target end
-state — derived backwards from the user experience, not forwards from the v1
-code — is **one track, one display, continuous zoom-driven detail**.
+Per-base SNP/indel detail is **not** a separate `vg deconstruct` VCF track and
+**not** a `variantsAdapter` display-config slot. Both block structure and
+per-base detail live in **one `cs:`-tagged synteny PAF**, rendered by the
+existing `TabixPAFAdapter` → `MultiPairGetFeatures` → `GpuMultiSyntenyRenderer`
+path — no new config slot, RPC, or shader. The fragile PanSN-↔-VCF sample-name
+join is gone: a `cs:` string is intrinsic to the block it tags, and the block
+already belongs to a known haplotype. Rationale and what it supersedes:
+`adr-030`.
 
-### End-state UX
+The runtime side is proven (a crafted `cs:`-tagged fixture renders
+allele-colored SNP ticks and indel glyphs correctly). All remaining work is
+**offline data prep**: enriching the untangle PAF with `cs:`. `odgi untangle`
+gives the graph-aware block structure; `minimap2 --cs` per block adds the
+base-level `cs:` tag. The data-prep workstream is in "Next steps" below.
 
-A single `MultiLGVSyntenyDisplay` row per haplotype. Identity-colored synteny
-blocks at any zoom; per-base SNP/indel markers that fade in continuously as
-each variant position reaches ≥~1 px wide — same pattern as how alignments
-tracks render reads as blocks with base-level mismatches at zoom-in. No tier,
-no mode switch, no second track for the user to align by hand.
+**Open decision (settled by the volvox prototype):** *enrich* the untangle PAF
+with `cs:` (keeps untangle's graph-aware block structure — recommended) vs.
+*replace* it with a per-haplotype `minimap2 --cs` PAF (simpler, naturally has
+`cs:`, but sequence-aligned not graph-aware — diverges from adr-024).
 
-### Architecture
+## Pipeline viability audit (2026-05-14)
 
-Two adapters, both owned by the display config (not reached across the
-session):
+Audited the documented preprocessing recipes against the runtime code and the
+cross-referenced tool docs.
 
-```json
-{
-  "type": "MultiSyntenyTrack",
-  "adapter": { "type": "TabixPAFAdapter", "pafGzLocation": "..." },
-  "displays": [
-    {
-      "type": "MultiLGVSyntenyDisplay",
-      "variantsAdapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": "...variants.vcf.gz",
-        "index": { ... }
-      },
-      "sampleNameMap": { "HG002.1": "HG002#1" }
-    }
-  ]
-}
-```
-
-- **Synteny adapter** stays on the track, unchanged.
-- **Variants adapter** is a config slot on the display — the display owns it
-  as a dependency, the same way `LinearAlignmentsDisplay` sub-displays own
-  their per-display configs. *Not* a `variantOverlayTrackId` borrow from a
-  sibling track.
-- **`sampleNameMap`** sits at the one place the PanSN-↔-VCF-GT-header join
-  happens. Explicit, consumer-side, fails loudly when a sample is unmatched
-  (`vg deconstruct` and `bcftools merge` write sample headers inconsistently).
-- **Optional.** Omit `variantsAdapter` and the display behaves exactly like
-  v1. Adding it doesn't change the synteny code path, it adds a second pass.
-
-### Data flow
-
-Worker:
-1. `getMultiPairFeatures` returns synteny blocks from the PAF as today.
-2. If `variantsAdapter` is configured, the same RPC call additionally fetches
-   VCF features for the region and emits a `Map<sample, VariantTick[]>`
-   keyed by the post-`sampleNameMap` PanSN name.
-3. Worker returns both in one `rpcDataMap`, so the main thread gets a
-   consolidated payload (same pattern as the existing synteny RPC).
-
-Main thread:
-1. Render synteny blocks per row (unchanged).
-2. For each row, look up that row's `queryGenome` in the variant tick map and
-   draw markers at variant positions where the sample carries alt. SNPs as
-   colored ticks, indels as wedges sized by length.
-3. Visibility is bpPerPx-continuous via the alignments pattern — no mode
-   switch.
-
-### Why this is the right shape, not a step toward it
-
-The four-ADR simplification arc (024–027) was about removing legacy
-abstractions and reaching the natural design. Stopping at "two row-locked
-tracks the user must assemble themselves" because it requires no new code
-isn't reaching the natural design; it's offloading the integration onto the
-user. The display is the right integration point because it's where the join
-becomes visible.
-
-The three concerns that defeated a naïve overlay design (`bpPerPx` mode,
-sample-name brittleness, cross-track coupling) all dissolve under this
-architecture:
-
-- **No mode.** Continuous render-time density, same as the alignments tracks
-  that already exist. Users don't learn a new behavior.
-- **Sample-name join is explicit and local.** `sampleNameMap` config slot,
-  unmatched samples logged. The X-CIGAR failure mode was producer-side and
-  implicit; this is consumer-side and explicit.
-- **No cross-track reach.** The variants adapter is declared as part of the
-  display config. Self-contained track, session-snapshot-safe.
-
-### Known unresolved questions (for a follow-up ADR)
-
-- **Reference-allele-only positions.** VCF semantics: no record at a variant
-  site means "ref allele." Should the display show ticks for *every*
-  variant site (gray for ref-match) or only alt-carrying positions? Affects
-  both renderer cost and visual readability.
-- **Indel glyph at varying zooms.** A 500 bp deletion vs. a 1 bp SNP need
-  different glyphs at the same screen density. Probably resolved by length
-  thresholds, but real design work.
-- **VCF coverage vs. variant absence.** A block colored `id:0.97` with no
-  ticks could mean "no variants in VCF for these samples" or "VCF doesn't
-  cover this region." Block-level "VCF coverage exists for this region"
-  rendering would disambiguate.
-- **Server-backed path.** `GfaServerAdapter` is a parallel synteny adapter
-  for graph-server. If the display takes a `variantsAdapter` independent of
-  the synteny adapter, the server path gets variant overlay for free —
-  worth verifying.
+- **`jaccardFilter` round-trips — verified.** `odgi untangle` carries `jc:f:`
+  into the PAF; `TabixPAFAdapter` has a `jaccardFilter` config slot and drops
+  blocks with `jc:f:` below the floor (`TabixPAFAdapter.ts`, `configSchema.ts`).
+  `pafIdentity` prefers untangle's `id:f:`. The "bake permissive, filter up at
+  runtime" design is actually implemented, not just planned.
+- **`tools/gfa-to-tabix` is partially stale.** adr-024 retired the
+  `synteny_build` → `synteny.bed.gz` path, but `main.rs` still contains
+  `synteny_build` and the README still lists `synteny.bed.gz` /
+  `synteny.rev.bed.gz` as outputs. The tool is *not* fully retired — its
+  `pos.bed.gz` / `edges.spatial.bed.gz` still feed GraphGenomeView's
+  `GetSubgraph`. The README needs to be split: keep the GetSubgraph outputs,
+  drop the retired synteny ones.
+- **Stale `test_data/hprc` artifacts.** `bubbles.bed.gz` (adr-025),
+  `graph.coarse.bed.gz` / `synteny.coarse.bed.gz` (adr-026) and
+  `synteny.bed.gz` (adr-024) are committed leftovers from retired pipelines;
+  only `synteny.paf.gz` is current. Safe to remove once nothing references them.
 
 ## Known limitations
 
@@ -241,8 +180,10 @@ architecture:
   `vg deconstruct`, or the source alignment) before publication.
 - **The vendored odgi build is unstable** — broken `unchop`/`view`, segfaults
   on unsorted graphs. Needs a version-pinned, known-good odgi.
-- **Block-level only** — a block tagged `id:f:96` hides where the 4 %
-  divergence is; all per-base positioning comes from the `vg deconstruct` VCF.
+- **Per-base detail depends on `cs:` enrichment** — a block tagged `id:f:96`
+  alone hides where the 4 % divergence is; the per-base positioning comes from
+  the `cs:` tag, which the offline prep step must add (adr-030). A PAF without
+  `cs:` renders block-level only.
 - **Linearization can't show non-reference sequence.** Haplotype-novel
   insertions / unplaceable contigs are absent or degenerate-blocked. The
   graph view is the answer for that sequence.
@@ -251,15 +192,101 @@ architecture:
 - **untangle determinism** under 16 threads is unverified — matters for a
   reproducible published pipeline.
 
+## Cross-reference: PangyPlot / BubbleGun (2026-05-14)
+
+Checked our approach against PangyPlot (Mastromatteo et al. 2025, bioRxiv —
+vendored at `~/src/vendor/pangyplot`), a published pangenome graph browser, and
+against Bandage, odgi, SequenceTubeMap and vg docs. Our *individual* approaches
+hold up: Bandage uses OGDF FMMM exactly as `GraphComputeLayout` does; `odgi
+untangle -R` → PAF is its intended linearization use; `vg find -p -c` is the
+documented subgraph-extraction recipe.
+
+The one substantive divergence is **graph simplification**, and it is the
+reason GraphGenomeView caps at 100 kb (adr-027):
+
+| | PangyPlot | GraphGenomeView |
+|---|---|---|
+| 2-D layout | `odgi layout` SGD, **precomputed offline**, baked into a SQLite index | OGDF FMMM, **recomputed live in a worker** on every subgraph load |
+| Simplification | **BubbleGun** bubble/superbubble hierarchy; sub-threshold bubbles collapse to one node | none — every GFA segment is a node |
+| Large regions | abstract via the hierarchy; rendered node count stays bounded | declined past 100 kb |
+
+The 100 kb cap is a workaround for not having simplification. PangyPlot's
+preprocessing (`pangyplot/preprocess/bubble/`): compact the graph, run BubbleGun
+`find_bubbles`/`connect_bubbles`/`find_parents`, store a nested bubble index;
+at query time `decompose_chain` expands chains only down to a size threshold so
+sub-threshold bubbles render as single nodes. adr-026 removed coarsening for the
+*synteny* path; bubble-collapse for the *2-D graph* path is a different,
+still-open question. Also note PangyPlot precomputes layout (deterministic);
+our live FMMM is non-deterministic between runs — `refetchIfNeeded` re-running
+it on session restore is a snapshot-flakiness risk.
+
+Decision (adr-028): adopt offline `odgi layout` as the primary layout source
+with live FMMM as fallback, and replace the arbitrary 100 kb bp cap with a
+node-count limit. BubbleGun-style bubble-collapse to push the node ceiling
+higher remains future work, not yet scheduled.
+
+Soft flag from the same review: `vg find` extraction latency — not WebGL
+rendering — is the documented real-world bottleneck in tools like
+SequenceTubeMap, so it is the thing to instrument and budget.
+
 ## Next steps
 
-- Correctness check of untangle output vs. `vg deconstruct` / source alignment.
-- Re-run the segdup multi-mapping check on chr1 or chr16.
-- Confirm `vg find` / `graph-server` path for GraphGenomeView.
+Three workstreams. The `cs:`-PAF data prep (A) and the GraphGenomeView phases
+(B) are independent; the cross-cutting items (C) gate publication.
+
+### Workstream A — `cs:`-enriched synteny PAF data prep (adr-030)
+
+The runtime is proven; this is all offline data prep.
+
+- **Prototype on volvox** — script: untangle PAF → per block extract query +
+  target subsequences (handle PanSN names, subwalk suffixes like
+  `volvox#0#ctgB:0-6079`, strand) → `minimap2 --cs` → append `cs:Z:` → bgzip +
+  tabix. Validate it renders with the diagnostic harness. Settles the
+  enrich-vs-replace open decision.
+- **Scale to chr20** — ~27 k blocks; a naive per-block `minimap2` subprocess is
+  too slow. Batch (all block query-subseqs in one FASTA, matched back by record
+  name) or per-haplotype-align-then-slice; benchmark and pick. Produce
+  `hprc-v1.1-mc-grch38-chr20.synteny.cs.paf.gz`.
+- **Productionize the prep tool** — committed script under `tools/` first; Rust
+  port into `tools/gfa-to-tabix` only if perf demands it.
+- **Migrate CI** — regenerate the committed `volvox.untangle.paf.gz` fixture
+  `cs:`-enriched so `multi-lgv-tabix-paf.ts` exercises per-base rendering;
+  migrate `multi-lgv-pangenome-vcf.ts` / `MultiLGVSyntenyPangenome.test.tsx`
+  off the VCF shape; enrich the committed chr20 PAF; add an explicit
+  mismatch/indel-renders assertion (not just "canvas non-blank").
+
+### Workstream B — GraphGenomeView skeleton/detail (adr-028 → adr-029)
+
+Four phases, each independently shippable; phase 3 is the headline
+whole-chromosome overview.
+
+- **Phase 1 (adr-028)** — offline layout as a GFA `LO` segment tag, FMMM
+  fallback, node-count interim limit: widen the per-ordinal binary, emit/parse
+  the tag, add the `parseAndLayout` fallback branch, swap `MAX_GRAPH_REGION_BP`
+  for the node-count limit, add the `odgi layout` preprocessing step.
+- **Phase 2** — bubble-hierarchy preprocessing (BubbleGun-equivalent) → static
+  bubble index + adapter read path. Validatable in isolation.
+- **Phase 3** — skeleton tier: multi-resolution polyline preprocessing +
+  skeleton overview rendering. Whole-chromosome overview works here; the
+  node-count limit is lifted for the overview path.
+- **Phase 4** — detail tier: progressive `decompose_chain`-style expansion, the
+  two-tier handoff, subgraph layout anchored to skeleton polylines.
+
+Per-phase ADRs nail the index/binary formats and RPC surface as each is built.
+
+### Workstream C — cross-cutting / publication gates
+
+- Correctness check of untangle output (vs. `vg deconstruct` as an oracle, or
+  the source alignment) before publication.
+- Re-run the segdup multi-mapping check on a segdup-heavy chromosome (chr1/16).
+- Confirm the `vg find` / `graph-server` path for GraphGenomeView.
 - Static-vs-service browser comparison; pick the delivery model.
 - Version-pin odgi + vg; verify untangle thread-determinism.
+- Clean up the partially-stale `tools/gfa-to-tabix` (README + retired
+  `synteny_build`) and the stale `test_data/hprc` artifacts — see "Pipeline
+  viability audit".
 
-### `TabixPAFAdapter` preprocessing requirement
+## `TabixPAFAdapter` preprocessing requirement
 
 The browse path must work at full-genome scale, so the adapter cannot scan the
 PAF to enumerate query genomes. The genome list is read from a single
@@ -274,7 +301,7 @@ tabix -0 -s6 -b8 -e9 <ref>.synteny.paf.gz
 `#` lines are skipped by tabix and returned by `getHeader()`. A file with no
 header still works if the track config sets `assemblyNames` explicitly.
 
-### chr20 proof-of-concept (verified 2026-05-14)
+## chr20 proof-of-concept (verified 2026-05-14)
 
 The full pipeline runs end-to-end on the HPRC chr20 graph:
 
@@ -298,9 +325,17 @@ in the browser. Coverage:
   `id:f:` as a percentage, `jc:f:`/`sc:f:`/`nb:i:` tags.
 - `products/jbrowse-web/browser-tests/suites/multi-lgv-tabix-paf.ts` — CI
   browser test on the volvox fixture.
+- `products/jbrowse-web/browser-tests/suites/multi-lgv-pangenome-vcf.ts` /
+  `products/jbrowse-web/src/tests/MultiLGVSyntenyPangenome.test.tsx` — CI
+  stand-ins on local volvox data. These currently mirror the retired
+  untangle-PAF-plus-separate-VCF shape and are being migrated to the single
+  `cs:`-enriched PAF (adr-030) — see "Next steps".
 - `products/jbrowse-web/browser-tests/suites/hprc-pangenome.ts` — the chr20
-  PoC, `requiresRemote` (config `test_data/hprc/config_hprc_chr20_untangle.json`,
-  data is the gitignored `test_data/hprc/*.synteny.paf.gz`).
+  PoC, `requiresRemote` (config `test_data/hprc/config_hprc_chr20_untangle.json`).
+  The 580 KB `test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz` is
+  committed (gitignore exception); the chrM data and the chr20 VCF/cytoband
+  load from S3 at runtime. Run it with `runner.ts --smoke` (or the
+  `test:browser:smoke` script), which enables every `requiresRemote` suite.
 - `products/jbrowse-web/browser-tests/suites/graph-genome-tabix.ts` — the
   large-mode removal: the over-cap region now asserts the "zoom in to view
   graph" message instead of a rectangle canvas.
@@ -310,9 +345,10 @@ in the browser. Coverage:
 | Removed | Replacement | ADR |
 |---|---|---|
 | GfaTabix `synteny_build` O(ref×hap) pipeline, `synteny.bed.gz` / `.rev` / `.coarse` | whole-graph `odgi untangle` → tabix PAF | adr-024 |
-| `bubbles.bed.gz` overlay, X-CIGAR contract, `bubbleOverlay.ts` | `vg deconstruct` VCF track | adr-025 |
+| `bubbles.bed.gz` overlay, X-CIGAR contract, `bubbleOverlay.ts` | `vg deconstruct` VCF track (per-base mechanism later superseded — adr-030) | adr-025 |
 | Graph coarsening tier (tile + snarl, `graph.coarse.bed.gz`, `GRAPH_COARSE_*`) | resolution-independent untangle blocks + render-time merge | adr-026 (supersedes adr-014) |
 | GraphGenomeView "large mode" (coloured rectangles > 100 kb) | one mode — `vg find` subgraph extraction, "zoom in" past a size cap | adr-027 |
+| `vg deconstruct` VCF track + `variantsAdapter` display-config design (planned, never built) | `cs:`-enriched synteny PAF — block + per-base detail in one track | adr-030 |
 
 ## See also
 

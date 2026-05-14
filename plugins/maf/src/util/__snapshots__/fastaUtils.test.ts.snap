@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`gap in assembly1 1`] = `
+[
+  ".....",
+  "...t.",
+]
+`;
+
+exports[`includeInsertions - insertions at multiple positions 1`] = `
+[
+  "atcggtac",
+  "a-cg-tac",
+]
+`;
+
+exports[`includeInsertions - insertions in multiple samples with different lengths 1`] = `
+[
+  "act--gtac",
+  "actttgtac",
+]
+`;
+
+exports[`includeInsertions - single insertion in one sample 1`] = `
+[
+  "ac--gtac",
+  "acttgtac",
+]
+`;
+
+exports[`includeInsertions with no insertions present 1`] = `
+[
+  "acgta",
+  "ac-tt",
+]
+`;
+
+exports[`includeInsertions=false ignores insertions 1`] = `
+[
+  "acgtac",
+  "acgtac",
+]
+`;
+
+exports[`no showAllLetters 1`] = `
+[
+  ".....",
+  "..-.t",
+]
+`;
+
+exports[`showAllLetters 1`] = `
+[
+  "acgta",
+  "ac-tt",
+]
+`;

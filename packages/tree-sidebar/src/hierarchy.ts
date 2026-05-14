@@ -7,6 +7,8 @@ export interface HierarchyNode<T> {
   value?: number
   x?: number
   y?: number
+  // position derived from cumulative branch lengths (see setBrLength)
+  len?: number
 }
 
 export interface PositionedHierarchyNode<T> extends HierarchyNode<T> {
@@ -172,6 +174,58 @@ export function clusterLayout<T>(
   }
   assignY(root, 0)
   return root as unknown as PositionedHierarchyNode<T>
+}
+
+// Post-order traversal (children visited before their parent)
+export function eachAfter<T>(
+  node: HierarchyNode<T>,
+  fn: (n: HierarchyNode<T>) => void,
+) {
+  if (node.children) {
+    for (const child of node.children) {
+      eachAfter(child, fn)
+    }
+  }
+  fn(node)
+}
+
+// Assigns y positions based on depth — root at 0, leaves at sizeY
+export function assignDepthY<T>(node: HierarchyNode<T>, sizeY: number) {
+  const rootHeight = node.height
+  function visit(n: HierarchyNode<T>, depth: number) {
+    n.y = rootHeight === 0 ? sizeY : (depth / rootHeight) * sizeY
+    if (n.children) {
+      for (const child of n.children) {
+        visit(child, depth + 1)
+      }
+    }
+  }
+  visit(node, 0)
+}
+
+// Largest root-to-leaf cumulative branch length
+export function maxLength<T extends { length?: number }>(
+  d: HierarchyNode<T>,
+): number {
+  return (
+    (d.data.length ?? 0) +
+    (d.children ? d.children.reduce((m, c) => Math.max(m, maxLength(c)), 0) : 0)
+  )
+}
+
+// Assigns `len` (x position scaled by `k`) from cumulative branch lengths
+export function setBrLength<T extends { length?: number }>(
+  d: HierarchyNode<T>,
+  y0: number,
+  k: number,
+) {
+  const newY0 = y0 + Math.max(d.data.length ?? 0, 0)
+  d.len = newY0 * k
+  if (d.children) {
+    for (const child of d.children) {
+      setBrLength(child, newY0, k)
+    }
+  }
 }
 
 export function renderTreeSVG<T>(hierarchy: PositionedHierarchyNode<T>) {

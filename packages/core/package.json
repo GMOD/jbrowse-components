@@ -141,6 +141,9 @@
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
+    "./util/useGpuModelLifecycle": "./src/util/useGpuModelLifecycle.ts",
+    "./util/useGpuRenderer": "./src/util/useGpuRenderer.ts",
+    "./util/useTabVisibilityRerender": "./src/util/useTabVisibilityRerender.ts",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./util/nanoid": "./src/util/nanoid.ts",
     "./ReExports/list": "./src/ReExports/list.ts",
@@ -691,6 +694,18 @@
         "types": "./esm/util/useMeasure.d.ts",
         "import": "./esm/util/useMeasure.js"
       },
+      "./util/useGpuModelLifecycle": {
+        "types": "./esm/util/useGpuModelLifecycle.d.ts",
+        "import": "./esm/util/useGpuModelLifecycle.js"
+      },
+      "./util/useGpuRenderer": {
+        "types": "./esm/util/useGpuRenderer.d.ts",
+        "import": "./esm/util/useGpuRenderer.js"
+      },
+      "./util/useTabVisibilityRerender": {
+        "types": "./esm/util/useTabVisibilityRerender.d.ts",
+        "import": "./esm/util/useTabVisibilityRerender.js"
+      },
       "./ui/ReturnToImportFormDialog": {
         "types": "./esm/ui/ReturnToImportFormDialog.d.ts",
         "import": "./esm/ui/ReturnToImportFormDialog.js"
@@ -1089,6 +1104,15 @@
         ],
         "util/useMeasure": [
           "esm/util/useMeasure.d.ts"
+        ],
+        "util/useGpuModelLifecycle": [
+          "esm/util/useGpuModelLifecycle.d.ts"
+        ],
+        "util/useGpuRenderer": [
+          "esm/util/useGpuRenderer.d.ts"
+        ],
+        "util/useTabVisibilityRerender": [
+          "esm/util/useTabVisibilityRerender.d.ts"
         ],
         "ui/ReturnToImportFormDialog": [
           "esm/ui/ReturnToImportFormDialog.d.ts"

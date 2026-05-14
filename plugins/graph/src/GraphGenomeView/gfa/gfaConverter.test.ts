@@ -199,6 +199,47 @@ test('handles getSubgraph output format (star sequences with LN tags)', () => {
   expect(s1ToS2!.pathIds).toContain('ref#1#chr1')
 })
 
+test('handles self-loop links', () => {
+  const gfa = parseGFA(`S\t1\tACGT
+L\t1\t+\t1\t+\t0M`)
+  const graph = convertGFAToGraph(gfa)
+  expect(graph.nodes.map(n => n.id)).toEqual(['1+'])
+  expect(graph.edges).toHaveLength(1)
+  expect(graph.edges[0]!.from).toBe('1+')
+  expect(graph.edges[0]!.to).toBe('1+')
+})
+
+test('extracts depth from RC/FC/KC tags when dp absent', () => {
+  const rc = convertGFAToGraph(parseGFA('S\t1\tACGT\tRC:i:7'))
+  expect(rc.nodes[0]!.depth).toBe(7)
+  const fc = convertGFAToGraph(parseGFA('S\t1\tACGT\tFC:i:9'))
+  expect(fc.nodes[0]!.depth).toBe(9)
+  const kc = convertGFAToGraph(parseGFA('S\t1\tACGT\tKC:i:11'))
+  expect(kc.nodes[0]!.depth).toBe(11)
+})
+
+test('falls back to depth 1 for zero or missing depth tags', () => {
+  const zero = convertGFAToGraph(parseGFA('S\t1\tACGT\tdp:i:0'))
+  expect(zero.nodes[0]!.depth).toBe(1)
+  const missing = convertGFAToGraph(parseGFA('S\t1\tACGT'))
+  expect(missing.nodes[0]!.depth).toBe(1)
+})
+
+test('sums multiple M operations in CIGAR overlap', () => {
+  const gfa = parseGFA(`S\t1\tACGT
+S\t2\tGGCC
+L\t1\t+\t2\t+\t10M5I3M`)
+  const graph = convertGFAToGraph(gfa)
+  expect(graph.edges[0]!.overlap).toBe(13)
+})
+
+test('handles empty GFA text', () => {
+  const graph = convertGFAToGraph(parseGFA(''))
+  expect(graph.nodes).toHaveLength(0)
+  expect(graph.edges).toHaveLength(0)
+  expect(graph.paths).toBeUndefined()
+})
+
 test('mixed P-lines and W-lines both become paths', () => {
   const gfa = parseGFA(`S\tA\tACGT
 S\tB\tGGCC

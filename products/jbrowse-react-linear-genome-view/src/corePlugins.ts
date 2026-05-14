@@ -9,6 +9,7 @@ import GCContent from '@jbrowse/plugin-gccontent'
 import GFF3 from '@jbrowse/plugin-gff3'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
+import Maf from '@jbrowse/plugin-maf'
 import Sequence from '@jbrowse/plugin-sequence'
 import Trix from '@jbrowse/plugin-trix'
 import Variants from '@jbrowse/plugin-variants'
@@ -28,6 +29,7 @@ const corePlugins = [
   Variants,
   Wiggle,
   GCContent,
+  Maf,
   Trix,
   Arc,
 ]

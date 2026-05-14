@@ -318,6 +318,59 @@ test('rainbow color scheme produces distinct colors for nodes at different indic
   )
 })
 
+test('builds geometry for a self-loop edge', () => {
+  const graph = {
+    name: 'test',
+    nodes: [{ id: 'A+', name: 'A', length: 100, depth: 1 }],
+    edges: [{ from: 'A+', to: 'A+', overlap: 0 }],
+  }
+  const batch = buildGeometry({
+    nodePositions: {
+      'A+': [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+      ],
+    },
+    graph,
+    nodeById: new Map(graph.nodes.map(n => [n.id, n])),
+    colorScheme: 'uniform',
+    contigThickness: 5,
+    connectorThickness: 1.5,
+    drawPaths: false,
+    scale: 1,
+  })
+  expect(batch.nodes.vertexCount).toBeGreaterThan(0)
+  expect(batch.edges.vertexCount).toBeGreaterThan(0)
+  expect(batch.edgeVertexRanges.has(0)).toBe(true)
+})
+
+test('skips edges that reference missing node positions', () => {
+  const graph = {
+    name: 'test',
+    nodes: [{ id: 'A+', name: 'A', length: 100, depth: 1 }],
+    edges: [{ from: 'A+', to: 'missing+', overlap: 0 }],
+  }
+  const batch = buildGeometry({
+    nodePositions: {
+      'A+': [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+      ],
+    },
+    graph,
+    nodeById: new Map(graph.nodes.map(n => [n.id, n])),
+    colorScheme: 'uniform',
+    contigThickness: 5,
+    connectorThickness: 1.5,
+    drawPaths: false,
+    scale: 1,
+  })
+  // node still builds; the dangling edge is silently dropped
+  expect(batch.nodes.vertexCount).toBeGreaterThan(0)
+  expect(batch.edges.vertexCount).toBe(0)
+  expect(batch.edgeVertexRanges.size).toBe(0)
+})
+
 test('brightenColors clamps channels at 255', () => {
   const colors = new Uint32Array([packAbgr(200, 200, 200, 255)])
   const range = { start: 0, count: 1 }

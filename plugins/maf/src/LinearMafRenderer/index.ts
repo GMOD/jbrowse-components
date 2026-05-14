@@ -1,0 +1,21 @@
+import React from 'react'
+
+import LinearMafRenderer from './LinearMafRenderer'
+import configSchema from './configSchema'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+// Stub component — block rendering is bypassed by the GPU backend
+const NullComponent = () => React.createElement(React.Fragment, null)
+
+export default function LinearMafRendererF(pluginManager: PluginManager) {
+  pluginManager.addRendererType(
+    () =>
+      new LinearMafRenderer({
+        name: 'LinearMafRenderer',
+        ReactComponent: NullComponent,
+        configSchema,
+        pluginManager,
+      }),
+  )
+}

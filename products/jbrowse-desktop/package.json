@@ -64,6 +64,7 @@
     "@jbrowse/plugin-linear-comparative-view": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/plugin-lollipop": "workspace:^",
+    "@jbrowse/plugin-maf": "workspace:^",
     "@jbrowse/plugin-menus": "workspace:^",
     "@jbrowse/plugin-rdf": "workspace:^",
     "@jbrowse/plugin-sequence": "workspace:^",

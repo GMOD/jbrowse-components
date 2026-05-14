@@ -5,14 +5,23 @@ export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
 export { buildClusteredLayout, parseClusterTree } from './clusterUtils.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 export {
+  assignDepthY,
   clusterLayout,
   descendants,
+  eachAfter,
   hierarchy,
   leaves,
   links,
+  maxLength,
   renderTreeSVG,
+  setBrLength,
+  sort,
+  sum,
 } from './hierarchy.ts'
-export type { PositionedHierarchyNode } from './hierarchy.ts'
+export type {
+  HierarchyNode,
+  PositionedHierarchyNode,
+} from './hierarchy.ts'
 export type {
   ClusterHierarchyNode,
   ClusterNodeData,

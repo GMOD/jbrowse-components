@@ -141,6 +141,15 @@ export default function stateModelFactory() {
       viewportDirtyTimer: undefined as
         | ReturnType<typeof setTimeout>
         | undefined,
+      // Performance instrumentation, surfaced in GraphStats for browser tests
+      // to assert against budgets. `fetchMs` is the GetSubgraph RPC round-trip,
+      // `layoutMs` is the Bandage FMMM compute time reported by the
+      // GraphComputeLayout RPC, `geometryMs` is the main-thread buildGeometry
+      // pass and `geometryVertexCount` the resulting node-mesh vertex count.
+      lastFetchMs: undefined as number | undefined,
+      lastLayoutMs: undefined as number | undefined,
+      lastGeometryMs: undefined as number | undefined,
+      lastGeometryVertexCount: undefined as number | undefined,
       // Bandage scale options from the last load, reused by recomputeLayout
       // so a quality/linear-layout toggle keeps the pangenome-tuned scaling.
       bandageScaleOpts: undefined as BandageScaleOpts | undefined,
@@ -182,6 +191,16 @@ export default function stateModelFactory() {
       },
       setStatusMessage(message: string) {
         self.statusMessage = message
+      },
+      setFetchMs(ms: number) {
+        self.lastFetchMs = ms
+      },
+      setLayoutMs(ms: number) {
+        self.lastLayoutMs = ms
+      },
+      setGeometryMetrics(ms: number, vertexCount: number) {
+        self.lastGeometryMs = ms
+        self.lastGeometryVertexCount = vertexCount
       },
       setLayoutQuality(quality: number) {
         self.layoutQuality = quality
@@ -306,6 +325,10 @@ export default function stateModelFactory() {
         self.baseNodeColors = undefined
         self.baseEdgeColors = undefined
         self.baseArrowColors = undefined
+        self.lastFetchMs = undefined
+        self.lastLayoutMs = undefined
+        self.lastGeometryMs = undefined
+        self.lastGeometryVertexCount = undefined
       },
     }))
     .actions(self => ({
@@ -344,7 +367,7 @@ export default function stateModelFactory() {
           statusCallback: (message: string) => {
             self.setStatusMessage(message)
           },
-        }) as Promise<{ result: LayoutResult }>
+        }) as Promise<{ result: LayoutResult; duration: number }>
       }
 
       function* parseAndLayout(
@@ -358,11 +381,13 @@ export default function stateModelFactory() {
         self.graph = graph
         self.bandageScaleOpts = scaleOpts
         self.setStatusMessage('Computing layout')
-        const { result } = (yield callLayout(graph, scaleOpts)) as {
+        const { result, duration } = (yield callLayout(graph, scaleOpts)) as {
           result: LayoutResult
+          duration: number
         }
         if (self.graph === graph) {
           self.layoutResult = result
+          self.setLayoutMs(duration)
         }
       }
 
@@ -398,12 +423,14 @@ export default function stateModelFactory() {
           const session = getSession(self)
           const { rpcManager } = session
           const sessionId = 'graph' // getRpcSessionId(self) no rpcSessionId getter
+          const fetchStart = performance.now()
           const gfaText = (yield rpcManager.call(sessionId, 'GetSubgraph', {
             adapterConfig,
             region,
             sessionId,
             opts: { context: opts.context },
           })) as string
+          self.setFetchMs(performance.now() - fetchStart)
           if (!gfaText) {
             throw new Error(
               'Adapter returned no GFA — region may be outside indexed data or the adapter does not implement getSubgraph',
@@ -491,9 +518,13 @@ export default function stateModelFactory() {
           self.setStatusMessage('Computing layout')
 
           try {
-            const { result } = yield callLayout(graph, self.bandageScaleOpts)
+            const { result, duration } = yield callLayout(
+              graph,
+              self.bandageScaleOpts,
+            )
             if (self.graph === graph) {
               self.layoutResult = result
+              self.setLayoutMs(duration)
             }
           } catch (e) {
             console.error('[GraphGenomeView.recomputeLayout]', e)
@@ -613,6 +644,7 @@ export default function stateModelFactory() {
             const nodeById = self.nodeById
             if (self.nodePositions && self.graph && nodeById) {
               void self.viewportDirty
+              const geometryStart = performance.now()
               const batch = buildGeometry({
                 nodePositions: self.nodePositions,
                 graph: self.graph,
@@ -631,6 +663,10 @@ export default function stateModelFactory() {
               })
               b.uploadGeometry(batch)
               self.storeRenderBatchMeta(batch)
+              self.setGeometryMetrics(
+                performance.now() - geometryStart,
+                batch.nodes.vertexCount,
+              )
             }
           },
           // Autorun: re-render on pan/zoom/darkMode without rebuilding geometry

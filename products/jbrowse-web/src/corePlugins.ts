@@ -14,12 +14,14 @@ import Gff3 from '@jbrowse/plugin-gff3'
 import Graph from '@jbrowse/plugin-graph'
 import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
 import GtfPlugin from '@jbrowse/plugin-gtf'
+import Gwas from '@jbrowse/plugin-gwas'
 import HicPlugin from '@jbrowse/plugin-hic'
 import JobsManagementPlugin from '@jbrowse/plugin-jobs-management'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import Lollipop from '@jbrowse/plugin-lollipop'
+import Maf from '@jbrowse/plugin-maf'
 import Menus from '@jbrowse/plugin-menus'
 import RDF from '@jbrowse/plugin-rdf'
 import Sequence from '@jbrowse/plugin-sequence'
@@ -52,6 +54,7 @@ const corePlugins = [
   Variants,
   Wiggle,
   GCContent,
+  Maf,
   SpreadsheetViewPlugin,
   SvInspectorPlugin,
   BreakpointSplitView,
@@ -62,6 +65,7 @@ const corePlugins = [
   Arc,
   Graph,
   TubeMapView,
+  Gwas,
 ]
 
 export default corePlugins

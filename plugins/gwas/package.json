@@ -1,0 +1,60 @@
+{
+  "name": "@jbrowse/plugin-gwas",
+  "version": "4.2.1",
+  "type": "module",
+  "description": "JBrowse 2 GWAS adapters, tracks, and Manhattan plot displays",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/gwas"
+  },
+  "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "files": [
+    "esm"
+  ],
+  "scripts": {
+    "build": "pnpm run /^build:/",
+    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/gwas",
+    "prepublishOnly": "pnpm test",
+    "prepack": "pnpm build",
+    "prebuild": "pnpm clean",
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
+    "clean": "rimraf esm *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@jbrowse/core": "workspace:^",
+    "@jbrowse/mobx-state-tree": "^5.6.0",
+    "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/plugin-wiggle": "workspace:^",
+    "@jbrowse/wiggle-core": "workspace:^",
+    "@mui/material": "^9.0.1",
+    "@types/d3-scale": "^4.0.9",
+    "d3-scale": "^4.0.2",
+    "mobx": "^6.15.3",
+    "mobx-react": "^9.2.1",
+    "rxjs": "^7.8.2"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      }
+    }
+  },
+  "sideEffects": false
+}

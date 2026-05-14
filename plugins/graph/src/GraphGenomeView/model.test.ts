@@ -64,7 +64,7 @@ function rpcRespond() {
       return Promise.resolve(SIMPLE_GFA)
     }
     if (method === 'GraphComputeLayout') {
-      return Promise.resolve({ result: MOCK_LAYOUT })
+      return Promise.resolve({ result: MOCK_LAYOUT, duration: 5 })
     }
     return Promise.reject(new Error(`Unexpected RPC: ${method}`))
   })
@@ -201,6 +201,105 @@ describe('refetchIfNeeded guard conditions', () => {
     mockSession.tracks = []
     await model.refetchIfNeeded()
     expect(mockRpcCall).not.toHaveBeenCalled()
+  })
+})
+
+describe('performance instrumentation', () => {
+  beforeEach(() => {
+    mockRpcCall.mockReset()
+    mockSession.tracks = []
+  })
+
+  test('captures fetch and layout timing on a tabix subgraph load', async () => {
+    rpcRespond()
+    const model = createModel()
+    await model.loadFromTabixSubgraph({ type: 'GfaTabixAdapter' }, TEST_REGION, {
+      trackId: 'gfa-track',
+    })
+    // GetSubgraph round-trip is timed with performance.now() — a resolved
+    // promise still takes a measurable, non-negative amount of time.
+    expect(typeof model.lastFetchMs).toBe('number')
+    expect(model.lastFetchMs).toBeGreaterThanOrEqual(0)
+    // layout duration is passed straight through from the GraphComputeLayout
+    // RPC return (mock reports duration: 5)
+    expect(model.lastLayoutMs).toBe(5)
+  })
+
+  test('captures layout timing on loadGFA', async () => {
+    rpcRespond()
+    const model = createModel()
+    await model.loadGFA(SIMPLE_GFA, 'imported')
+    expect(model.lastLayoutMs).toBe(5)
+  })
+
+  test('clearGraph resets perf metrics', async () => {
+    rpcRespond()
+    const model = createModel()
+    await model.loadGFA(SIMPLE_GFA, 'imported')
+    expect(model.lastLayoutMs).toBe(5)
+    model.clearGraph()
+    expect(model.lastFetchMs).toBeUndefined()
+    expect(model.lastLayoutMs).toBeUndefined()
+    expect(model.lastGeometryMs).toBeUndefined()
+    expect(model.lastGeometryVertexCount).toBeUndefined()
+  })
+})
+
+describe('region size cap (adr-027)', () => {
+  beforeEach(() => {
+    mockRpcCall.mockReset()
+    mockSession.tracks = []
+  })
+
+  test('declines regions over the 100kb cap without an RPC call', async () => {
+    rpcRespond()
+    const model = createModel()
+    await model.loadFromTabixSubgraph(
+      { type: 'GfaTabixAdapter' },
+      { ...TEST_REGION, start: 0, end: 200_000 },
+      { trackId: 'gfa-track' },
+    )
+    expect(model.graph).toBeUndefined()
+    expect(model.error).toBeInstanceOf(Error)
+    expect(String(model.error)).toMatch(/zoom in/i)
+    expect(mockRpcCall).not.toHaveBeenCalled()
+  })
+
+  test('accepts a region exactly at the cap', async () => {
+    rpcRespond()
+    const model = createModel()
+    await model.loadFromTabixSubgraph(
+      { type: 'GfaTabixAdapter' },
+      { ...TEST_REGION, start: 0, end: 100_000 },
+      { trackId: 'gfa-track' },
+    )
+    expect(model.graph).toBeDefined()
+    expect(model.error).toBeUndefined()
+  })
+})
+
+describe('empty subgraph handling', () => {
+  beforeEach(() => {
+    mockRpcCall.mockReset()
+    mockSession.tracks = []
+  })
+
+  test('sets an error when the adapter returns no GFA', async () => {
+    mockRpcCall.mockImplementation((_sid: unknown, method: string) =>
+      method === 'GetSubgraph'
+        ? Promise.resolve('')
+        : Promise.reject(new Error(`Unexpected RPC: ${method}`)),
+    )
+    const model = createModel()
+    await model.loadFromTabixSubgraph(
+      { type: 'GfaTabixAdapter' },
+      TEST_REGION,
+      { trackId: 'gfa-track' },
+    )
+    expect(model.graph).toBeUndefined()
+    expect(model.error).toBeInstanceOf(Error)
+    expect(String(model.error)).toMatch(/no GFA/i)
+    expect(model.isLoading).toBe(false)
   })
 })
 
