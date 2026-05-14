@@ -1,5 +1,5 @@
-// Verifies the two end-to-end "open a subgraph" entry points described in
-// the publication plan (agent-docs/GRAPH_PLAN.md):
+// Verifies the end-to-end "open a subgraph" entry points described in the
+// publication plan (agent-docs/GRAPH_PLAN.md):
 //
 //  (1) From a MultiLGVSyntenyDisplay backed by a GfaTabixAdapter, open the
 //      track menu and pick "Graph genome view (local)" — the GetSubgraph RPC
@@ -10,11 +10,15 @@
 //      pick the GfaTabix track, type a region and click Open — same RPC
 //      path, different entry surface.
 //
-// Both flows depend on the same data path (Phase 0+1 audit-verified
-// `getSubgraph` returning real sequences + edges + paths). These tests pin
-// the *integration* — adapter config plumbing, RPC marshaling, view
-// instantiation, and graph rendering — that the Jest unit tests can't
-// cover.
+//  (3) Same as (1) but picks "Tube map view (local)" — the GfaTabix
+//      getSubgraph GFA flows into a TubeMapView (SequenceTubeMap-style
+//      layout) instead of the Bandage GraphGenomeView. Both view types are
+//      wired through SUBGRAPH_VIEW_TYPES in MultiLGVSyntenyDisplay/model.ts.
+//
+// All flows depend on the same data path (`getSubgraph` returning real
+// sequences + edges + paths). These tests pin the *integration* — adapter
+// config plumbing, RPC marshaling, view instantiation, and rendering — that
+// the Jest unit tests can't cover.
 
 import {
   delay,
@@ -23,7 +27,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { canvasSnapshot, snapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
@@ -199,6 +203,41 @@ const suite: TestSuite = {
             `Console errors during subgraph launch: ${relevant.join('; ')}`,
           )
         }
+      },
+    },
+    {
+      name: 'launch TubeMapView from MultiLGVSyntenyDisplay track menu',
+      fn: async page => {
+        await openMultiLgvWithPangenomeTrack(page)
+
+        const trackMenu = await findByTestId(page, 'track_menu_icon', 10000)
+        await trackMenu?.click()
+        await delay(300)
+
+        const launchItem = await findByText(page, /Launch/i, 10000)
+        await launchItem?.click()
+        await delay(300)
+
+        // SUBGRAPH_VIEW_TYPES in MultiLGVSyntenyDisplay/model.ts also wires
+        // TubeMapView — the same GetSubgraph GFA flows into loadGFA on a
+        // SequenceTubeMap-style view instead of the Bandage GraphGenomeView.
+        const tubeItem = await findByText(
+          page,
+          /Tube map view \(local\)/i,
+          10000,
+        )
+        await tubeItem?.click()
+
+        // TubeMapView.loadGFA lays out synchronously; wait for the SVG and
+        // the "<N> nodes, <M> tracks" toolbar readout. No \b anchor after
+        // "tracks" — textContent runs it straight into the next button label.
+        await page.waitForSelector('svg', { timeout: 30000 })
+        await page.waitForFunction(
+          () => /\d+ nodes, \d+ tracks/.test(document.body.textContent || ''),
+          { timeout: 30000, polling: 500 },
+        )
+        await delay(1000)
+        await snapshot(page, 'tube-map-launched-from-multilgv', 0.2)
       },
     },
   ],
