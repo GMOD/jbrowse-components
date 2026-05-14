@@ -1,7 +1,4 @@
-import { useEffect } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import useMeasure from '@jbrowse/core/util/useMeasure'
 import { observer } from 'mobx-react'
 
 import ClearableSearchField from '../ClearableSearchField.tsx'
@@ -24,22 +21,12 @@ const useStyles = makeStyles()(theme => ({
 const HierarchicalTrackSelectorHeader = observer(
   function HierarchicalTrackSelectorHeader({
     model,
-    setHeaderHeight,
   }: {
     model: HierarchicalTrackSelectorModel
-    setHeaderHeight: (n: number) => void
   }) {
     const { classes } = useStyles()
-    const [ref, { height }] = useMeasure()
-
-    useEffect(() => {
-      if (height !== undefined) {
-        setHeaderHeight(height)
-      }
-    }, [height, setHeaderHeight])
-
     return (
-      <div ref={ref} className={classes.toolbar} data-testid="hierarchical_track_selector">
+      <div className={classes.toolbar} data-testid="hierarchical_track_selector">
         <HamburgerMenu model={model} />
         <ShoppingCart model={model} />
         <ClearableSearchField

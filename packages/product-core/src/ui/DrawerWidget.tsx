@@ -272,7 +272,6 @@ const DrawerWidget = observer(function DrawerWidget({
               toolbarHeight,
             }}
           />
-          <div style={{ height: 300 }} />
         </ErrorBoundary>
       </Suspense>
       {drawerPosition === 'right' ? (

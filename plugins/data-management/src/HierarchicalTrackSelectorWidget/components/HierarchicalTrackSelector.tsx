@@ -1,6 +1,6 @@
-import { useState } from 'react'
-
 import { observer } from 'mobx-react'
+
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import AutoSizer from './AutoSizer.tsx'
 import HierarchicalFab from './HierarchicalFab.tsx'
@@ -9,17 +9,16 @@ import HierarchicalTree from './tree/HierarchicalTree.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
-const AutoSizedHierarchicalTree = ({
-  model,
-  offset,
-}: {
-  model: HierarchicalTrackSelectorModel
-  offset: number
-}) => (
-  <AutoSizer disableWidth>
-    {args => <HierarchicalTree height={args.height - offset} model={model} />}
-  </AutoSizer>
-)
+const useStyles = makeStyles()({
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  treeContainer: {
+    flex: 1,
+    minHeight: 0,
+  },
+})
 
 const Wrapper = ({
   overrideDimensions,
@@ -63,15 +62,19 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   model: HierarchicalTrackSelectorModel
   toolbarHeight?: number
 }) {
-  const [headerHeight, setHeaderHeight] = useState(0)
+  const { classes } = useStyles()
   return (
-    <>
-      <HierarchicalHeader model={model} setHeaderHeight={setHeaderHeight} />
-      <AutoSizedHierarchicalTree
-        model={model}
-        offset={toolbarHeight + headerHeight}
-      />
-    </>
+    <div
+      className={classes.container}
+      style={{ height: `calc(100% - ${toolbarHeight}px)` }}
+    >
+      <HierarchicalHeader model={model} />
+      <div className={classes.treeContainer}>
+        <AutoSizer disableWidth>
+          {args => <HierarchicalTree height={args.height} model={model} />}
+        </AutoSizer>
+      </div>
+    </div>
   )
 })
 
