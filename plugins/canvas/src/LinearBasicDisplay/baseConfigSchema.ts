@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
+import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
@@ -45,7 +47,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         type: 'color',
         description:
           'the secondary color of each feature, used for connecting lines',
-        defaultValue: '#f0f',
+        defaultValue: THEME_DERIVED_COLOR,
         contextVariable: ['feature'],
       },
       color3: {
@@ -133,7 +135,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         nameColor: {
           type: 'color',
           description: 'the color of the name label',
-          defaultValue: '#f0f',
+          defaultValue: THEME_DERIVED_COLOR,
           contextVariable: ['feature'],
         },
         description: {

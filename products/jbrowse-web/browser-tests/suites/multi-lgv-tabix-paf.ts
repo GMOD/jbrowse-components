@@ -116,6 +116,132 @@ const suite: TestSuite = {
         }
       },
     },
+    {
+      name: 'TabixPAFAdapter renders ctgB (subwalk-suffixed PanSN target)',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgB:1-5000',
+              tracks: [
+                {
+                  trackId: 'volvox_untangle_tabix_paf',
+                  displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
+        await waitForDataLoaded(page)
+        await delay(1000)
+        await canvasSnapshot(
+          page,
+          'multi-lgv-tabix-paf-ctgB-canvas',
+          '[data-testid="multi_synteny_canvas_done"]',
+        )
+      },
+    },
+    {
+      name: 'TabixPAFAdapter renders wide ctgA view within 20 seconds',
+      fn: async page => {
+        const t0 = Date.now()
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-50000',
+              tracks: [
+                {
+                  trackId: 'volvox_untangle_tabix_paf',
+                  displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'multi_synteny_canvas_done', 20000)
+        await waitForDataLoaded(page)
+        await delay(500)
+        console.log(`[perf] ctgA:1-50000 first render: ${Date.now() - t0}ms`)
+        await canvasSnapshot(
+          page,
+          'multi-lgv-tabix-paf-wide-view-canvas',
+          '[data-testid="multi_synteny_canvas_done"]',
+        )
+      },
+    },
+    {
+      name: 'TabixPAFAdapter color-by identity renders differently from strand',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-3000',
+              tracks: [
+                {
+                  trackId: 'volvox_untangle_tabix_paf',
+                  displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
+        await waitForDataLoaded(page)
+        await (await findByTestId(page, 'track_menu_icon', 10000))?.click()
+        await delay(300)
+        await (await findByText(page, /Color by/i, 5000))?.click()
+        await delay(300)
+        await (await findByText(page, /^identity$/i, 5000))?.click()
+        await delay(1500)
+        await canvasSnapshot(
+          page,
+          'multi-lgv-tabix-paf-color-identity-canvas',
+          '[data-testid="multi_synteny_canvas_done"]',
+        )
+      },
+    },
+    {
+      name: 'TabixPAFAdapter coverage toggle hides coverage bar',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-3000',
+              tracks: [
+                {
+                  trackId: 'volvox_untangle_tabix_paf',
+                  displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
+        await waitForDataLoaded(page)
+        await (await findByTestId(page, 'track_menu_icon', 10000))?.click()
+        await delay(300)
+        await (await findByText(page, /Show coverage/i, 5000))?.click()
+        await delay(1500)
+        await canvasSnapshot(
+          page,
+          'multi-lgv-tabix-paf-no-coverage-canvas',
+          '[data-testid="multi_synteny_canvas_done"]',
+        )
+      },
+    },
   ],
 }
 

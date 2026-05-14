@@ -33,6 +33,9 @@ import { autorun, observable } from 'mobx'
 import { computeLaidOutData } from './layout.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
+// Pull in RpcRegistry augmentations so rpcManager.call() is typed end-to-end.
+import type {} from '../RenderFeatureDataRPC/GetFeatureDetails.ts'
+import type {} from '../RenderFeatureDataRPC/RenderFeatureData.ts'
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureBackend } from './components/canvasFeatureBackendTypes.ts'
 import type {

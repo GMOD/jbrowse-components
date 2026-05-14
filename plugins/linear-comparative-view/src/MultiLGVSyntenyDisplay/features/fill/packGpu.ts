@@ -32,7 +32,6 @@ export function prepareBlockGeometry(
   showSnps: boolean,
   colors: SyntenyColors,
 ): BlockGeometryData {
-  const t0 = performance.now()
   const rgba = buildColorArrays(colors)
   let totalFeatures = 0
   for (const [, features] of genomeFeatures) {
@@ -112,9 +111,6 @@ export function prepareBlockGeometry(
     )
   }
 
-  console.warn(
-    `[MultiSynteny] prepareBlockGeometry features=${totalFeatures} instances=${n} showSnps=${showSnps} pack=${(performance.now() - t0).toFixed(0)}ms`,
-  )
   return { buffer: sortedBuf, instanceCount: n }
 }
 

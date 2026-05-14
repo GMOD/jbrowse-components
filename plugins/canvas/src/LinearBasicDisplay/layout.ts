@@ -53,8 +53,10 @@ export function computeLaidOutData(
   } = inputs
 
   const out = new Map<number, FeatureDataResult>()
+  // Empty regions need no layout mutations — share the raw object rather than
+  // allocating clone arrays that will never be written.
   for (const [n, raw] of rpcDataMap) {
-    out.set(n, cloneMutableFields(raw))
+    out.set(n, raw.flatbushItems.length > 0 ? cloneMutableFields(raw) : raw)
   }
 
   const refGroups = new Map<string, [number, FeatureDataResult][]>()

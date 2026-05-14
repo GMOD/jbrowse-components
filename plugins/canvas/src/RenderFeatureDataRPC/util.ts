@@ -1,6 +1,6 @@
 import { getFrame, stripAlpha } from '@jbrowse/core/util'
 
-import { readConfigValue } from './renderConfig.ts'
+import { THEME_DERIVED_COLOR, readConfigValue } from './renderConfig.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
@@ -14,7 +14,7 @@ export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
 }
 
 export function isUTR(feature: Feature) {
-  return UTR_REGEX.test(feature.get('type') || '')
+  return UTR_REGEX.test(feature.get('type') ?? '')
 }
 
 export function getBoxColor({
@@ -69,5 +69,5 @@ export function getStrokeColor({
   theme: Theme
 }) {
   const c = readConfigValue<string>(config, 'color2', feature)
-  return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
+  return c === THEME_DERIVED_COLOR ? stripAlpha(theme.palette.text.secondary) : c
 }

@@ -50,6 +50,50 @@ interface RegionMeta {
   outlineColor: number
 }
 
+type RenderState = { scrollY: number; canvasWidth: number; canvasHeight: number }
+
+function drawRegionBlock(
+  hal: GpuHal,
+  uniformData: ArrayBuffer,
+  block: FeatureRenderBlock,
+  meta: RegionMeta,
+  state: RenderState,
+  dpr: number,
+) {
+  const { canvasWidth, canvasHeight, scrollY } = state
+  const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
+  if (!clip) {
+    return
+  }
+
+  hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
+  hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
+
+  rectShader.writeUniforms(uniformData, {
+    bpRangeX: bpRangeXTuple(clip, block.reversed),
+    canvasHeight,
+    canvasWidth: clip.scissorW,
+    scrollY,
+    bpPerPx: clip.bpPerPx,
+    zero: 0,
+    reversed: block.reversed ? 1 : 0,
+    outlineColor: meta.outlineColor,
+  })
+
+  hal.writeUniforms(uniformData)
+
+  if (meta.hasLines) {
+    hal.drawPass(PASS_LINE, block.displayedRegionIndex)
+    hal.drawPass(PASS_CHEVRON, block.displayedRegionIndex, PASS_LINE)
+  }
+  if (meta.hasRects) {
+    hal.drawPass(PASS_RECT, block.displayedRegionIndex)
+  }
+  if (meta.hasArrows) {
+    hal.drawPass(PASS_ARROW, block.displayedRegionIndex)
+  }
+}
+
 export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
   private hal: GpuHal
   private uniformData = new ArrayBuffer(CANVAS_FEATURE_UNIFORM_BYTE_SIZE)
@@ -112,62 +156,18 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
     }
   }
 
-  renderBlocks(
-    blocks: FeatureRenderBlock[],
-    state: { scrollY: number; canvasWidth: number; canvasHeight: number },
-  ) {
-    const { canvasWidth, canvasHeight, scrollY } = state
+  renderBlocks(blocks: FeatureRenderBlock[], state: RenderState) {
     const dpr = getDpr()
-
-    this.hal.resize(canvasWidth, canvasHeight)
-
-    if (this.regions.size === 0) {
-      return
-    }
-
+    this.hal.resize(state.canvasWidth, state.canvasHeight)
+    // Always pair beginFrame/endFrame so the canvas clears to transparent
+    // even when all regions are pruned (e.g. after a density-gate reset).
     this.hal.beginFrame(0, 0, 0, 0)
-
     for (const block of blocks) {
       const meta = this.regions.get(block.displayedRegionIndex)
-      if (!meta) {
-        continue
-      }
-
-      const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
-      if (!clip) {
-        continue
-      }
-
-      this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
-      this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
-
-      rectShader.writeUniforms(this.uniformData, {
-        bpRangeX: bpRangeXTuple(clip, block.reversed),
-        canvasHeight,
-        canvasWidth: clip.scissorW,
-        scrollY,
-        bpPerPx: clip.bpPerPx,
-        zero: 0,
-        reversed: block.reversed ? 1 : 0,
-        outlineColor: meta.outlineColor,
-      })
-
-      this.hal.writeUniforms(this.uniformData)
-
-      if (meta.hasLines) {
-        this.hal.drawPass(PASS_LINE, block.displayedRegionIndex)
-        this.hal.drawPass(PASS_CHEVRON, block.displayedRegionIndex, PASS_LINE)
-      }
-
-      if (meta.hasRects) {
-        this.hal.drawPass(PASS_RECT, block.displayedRegionIndex)
-      }
-
-      if (meta.hasArrows) {
-        this.hal.drawPass(PASS_ARROW, block.displayedRegionIndex)
+      if (meta) {
+        drawRegionBlock(this.hal, this.uniformData, block, meta, state, dpr)
       }
     }
-
     this.hal.clearScissor()
     this.hal.clearViewport()
     this.hal.endFrame()

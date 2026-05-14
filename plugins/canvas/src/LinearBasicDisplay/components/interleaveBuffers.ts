@@ -58,7 +58,7 @@ export function interleaveLines(
     u32[off + LINE_F32.startEnd] = positions[i * 2]!
     u32[off + LINE_F32.startEnd + 1] = positions[i * 2 + 1]!
     f32[off + LINE_F32.y] = ys[i]!
-    f32[off + LINE_F32.direction] = directions[i]!
+    f32[off + LINE_F32.direction] = directions[i]! // Int8 -1/0/1 stored as float32 — shader reads as float
     u32[off + LINE_F32.color] = colors[i]!
   }
   return buf
@@ -76,7 +76,7 @@ export function interleaveArrows(
     const off = i * ARROW_STRIDE_F32
     u32[off + ARROW_F32.x] = xs[i]!
     f32[off + ARROW_F32.y] = ys[i]!
-    f32[off + ARROW_F32.direction] = directions[i]!
+    f32[off + ARROW_F32.direction] = directions[i]! // same Int8→float32 intentional cast as lines
     u32[off + ARROW_F32.color] = colors[i]!
   }
   return buf

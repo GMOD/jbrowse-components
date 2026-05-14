@@ -183,7 +183,6 @@ export async function executeRenderFeatureData({
 
   // rpcResult wraps value + transferables for the RPC framework, which
   // unwraps it before returning to the caller. The function signature
-  // reflects the unwrapped type; the cast is necessary here.
-
-  return rpcResult(result, transferables) as any
+  // reflects the unwrapped type; the double-cast is necessary here.
+  return rpcResult(result, transferables) as unknown as RenderFeatureDataResult
 }
