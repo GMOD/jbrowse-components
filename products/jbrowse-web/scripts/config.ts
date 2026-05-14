@@ -14,11 +14,8 @@ function getGitHash() {
 export default function webpackConfig(config: Configuration) {
   config.plugins!.push(
     new webpack.DefinePlugin({
-      'process.env.ENABLE_TYPE_CHECK': '"true"',
       'process.env.BUILD_GIT_HASH': JSON.stringify(getGitHash()),
     }),
   )
-
-  config.output!.publicPath = 'auto'
   return config
 }

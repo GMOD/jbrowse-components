@@ -2,16 +2,11 @@ import fs from 'fs'
 
 import browserslist from 'browserslist'
 import chalk from 'chalk'
-import open from 'open'
 import webpack from 'webpack'
 // eslint-disable-next-line import/default
 import WebpackDevServer from 'webpack-dev-server'
 
-import {
-  choosePort,
-  createCompiler,
-  prepareUrls,
-} from '../WebpackDevServerUtils.ts'
+import { createCompiler } from '../WebpackDevServerUtils.ts'
 
 process.on('unhandledRejection', err => {
   throw err
@@ -28,56 +23,44 @@ if (browserslist.loadConfig({ path: process.cwd() }) == null) {
   process.exit(1)
 }
 
-const DEFAULT_PORT = Number.parseInt(process.env.PORT || '3000', 10) || 3000
 const HOST = process.env.HOST || '0.0.0.0'
 
 export default function startWebpack(config: webpack.Configuration) {
-  return choosePort(HOST, DEFAULT_PORT)
-    .then(port => {
-      if (port == null) {
-        return
-      }
+  const appName = JSON.parse(fs.readFileSync('package.json', 'utf8')).name as string
+  const wsProtocol = process.env.HTTPS === 'true' ? 'wss' : 'ws'
+  const compiler = createCompiler({ config })
 
-      const protocol = process.env.HTTPS === 'true' ? 'https' : 'http'
-      const wsProtocol = process.env.HTTPS === 'true' ? 'wss' : 'ws'
-      const appName = JSON.parse(fs.readFileSync('package.json', 'utf8')).name
-
-      const urls = prepareUrls(protocol, HOST, port)
-
-      const compiler = createCompiler({
-        appName,
-        config,
-        urls,
-      })
-
-      const devServer = new WebpackDevServer(
-        {
-          host: HOST,
-          port,
-          hot: false,
-          client: {
-            webSocketURL: {
-              hostname: 'localhost',
-              pathname: '/ws',
-              port,
-              protocol: wsProtocol,
-            },
-          },
-          static: {
-            serveIndex: true,
-            staticOptions: { dotfiles: 'allow' },
-          },
+  const devServer = new WebpackDevServer(
+    {
+      host: HOST,
+      port: process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 'auto',
+      hot: false,
+      open: true,
+      client: {
+        webSocketURL: {
+          hostname: 'localhost',
+          pathname: '/ws',
+          protocol: wsProtocol,
         },
-        compiler,
-      )
-      devServer.startCallback(() => {
-        open(urls.localUrlForBrowser).catch(() => {})
-      })
-    })
-    .catch(err => {
-      if (err?.message) {
-        console.log(err.message)
-      }
+      },
+      static: {
+        serveIndex: true,
+        staticOptions: { dotfiles: 'allow' },
+      },
+    },
+    compiler,
+  )
+  devServer.startCallback(err => {
+    if (err) {
+      console.log(err.message)
       process.exit(1)
-    })
+      return
+    }
+    const addr = devServer.server?.address()
+    if (typeof addr === 'object' && addr) {
+      console.log(
+        `You can view ${chalk.bold(appName)} at http://localhost:${chalk.bold(addr.port)}`,
+      )
+    }
+  })
 }

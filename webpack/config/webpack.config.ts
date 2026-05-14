@@ -49,6 +49,7 @@ export default function webpackBuilder(): webpack.Configuration {
     entry: appIndexJs,
     output: {
       path: appBuild,
+      publicPath: 'auto',
       filename: isEnvProduction
         ? 'static/js/[name].[contenthash:8].js'
         : 'static/js/bundle.js',
@@ -114,6 +115,9 @@ export default function webpackBuilder(): webpack.Configuration {
       ],
     },
     plugins: [
+      new webpack.DefinePlugin({
+        'process.env.ENABLE_TYPE_CHECK': '"true"',
+      }),
       new HtmlWebpackPlugin({
         inject: true,
         template: appHtml,
