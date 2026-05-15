@@ -168,8 +168,8 @@ const LinearMafDisplay = observer(function (props: {
                   session,
                   model,
                   view,
-                  contextCoord.dragStartX,
-                  contextCoord.dragEndX,
+                  contextCoord.startX,
+                  contextCoord.endX,
                   sources,
                 )
               }
@@ -180,16 +180,16 @@ const LinearMafDisplay = observer(function (props: {
             label: 'View subsequences (selected rows)',
             onClick: () => {
               if (contextCoord && sources) {
-                const minY = Math.min(contextCoord.dragStartY, contextCoord.dragEndY)
-                const maxY = Math.max(contextCoord.dragStartY, contextCoord.dragEndY)
+                const minY = Math.min(contextCoord.startY, contextCoord.endY)
+                const maxY = Math.max(contextCoord.startY, contextCoord.endY)
                 const startRow = Math.floor((minY + scrollTop) / rowHeight)
                 const endRow = Math.ceil((maxY + scrollTop) / rowHeight)
                 openSubsequenceWidget(
                   session,
                   model,
                   view,
-                  contextCoord.dragStartX,
-                  contextCoord.dragEndX,
+                  contextCoord.startX,
+                  contextCoord.endX,
                   sources.slice(startRow, endRow),
                 )
               }

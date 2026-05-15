@@ -2711,6 +2711,37 @@
           }
         }
       }
+    },
+    {
+      "type": "MafTrack",
+      "trackId": "volvox_maf_tabix",
+      "name": "Volvox MAF (mock 4-way alignment)",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MafTabixAdapter",
+        "bedGzLocation": {
+          "uri": "volvox.maf.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.maf.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "nhLocation": {
+          "uri": "volvox.maf.nh",
+          "locationType": "UriLocation"
+        },
+        "refAssemblyName": "volvox",
+        "samples": [
+          { "id": "volvox",      "label": "Volvox",        "color": "#1f77b4" },
+          { "id": "simvolvox",   "label": "Sim. volvox",   "color": "#ff7f0e" },
+          { "id": "minivolvox",  "label": "Mini volvox",   "color": "#2ca02c" },
+          { "id": "microvolvox", "label": "Micro volvox",  "color": "#d62728" }
+        ]
+      }
     }
   ],
   "plugins": [

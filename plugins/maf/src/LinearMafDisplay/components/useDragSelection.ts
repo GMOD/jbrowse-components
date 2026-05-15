@@ -11,10 +11,6 @@ export interface DragRect {
 
 export interface ContextCoord extends DragRect {
   coord: [number, number]
-  dragStartX: number
-  dragEndX: number
-  dragStartY: number
-  dragEndY: number
 }
 
 interface DragState {
@@ -79,10 +75,6 @@ export function useDragSelection(ref: React.RefObject<HTMLDivElement | null>) {
             startY: s.drag.startY,
             endX: x,
             endY: y,
-            dragStartX: s.drag.startX,
-            dragStartY: s.drag.startY,
-            dragEndX: x,
-            dragEndY: y,
           })
           return { ...s, isDragging: false, showSelectionBox: true }
         }
