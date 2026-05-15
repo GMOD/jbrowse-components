@@ -1,5 +1,5 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
-import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
 import { configSchemaFactory } from './configSchemaFactory.ts'
 import { stateModelFactory } from './stateModelFactory.ts'
@@ -15,7 +15,7 @@ export default function LinearManhattanDisplayF(pluginManager: PluginManager) {
       stateModel: stateModelFactory(pluginManager, configSchema),
       trackType: 'GWASTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: LinearWiggleDisplayReactComponent,
+      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }
