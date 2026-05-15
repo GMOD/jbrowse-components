@@ -446,27 +446,13 @@ export default function stateModelFactory(
       },
     }))
     .views(self => {
-      const {
-        trackMenuItems: superTrackMenuItems,
-
-        renderProps: superRenderProps,
-      } = self
+      const { trackMenuItems: superTrackMenuItems } = self
       return {
         /**
          * #getter
          */
         get treeWidth() {
           return self.hierarchy ? self.treeAreaWidth : 0
-        },
-        /**
-         * #method
-         */
-        renderProps() {
-          const s = superRenderProps()
-          return {
-            ...s,
-            notReady: !self.volatileSamples || s.notReady,
-          }
         },
         /**
          * #method

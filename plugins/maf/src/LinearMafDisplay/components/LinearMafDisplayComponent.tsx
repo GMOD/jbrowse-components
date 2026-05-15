@@ -1,12 +1,7 @@
 import React, { useRef } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  getSession,
-  isSessionModelWithWidgets,
-  useGpuModelLifecycle,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -17,6 +12,7 @@ import YScaleBars from './Sidebar/YScaleBars.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { useDragSelection } from './useDragSelection.ts'
 import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
+import { openSubsequenceWidget } from '../openSubsequenceWidget.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -167,35 +163,15 @@ const LinearMafDisplay = observer(function (props: {
           {
             label: 'View subsequences (all rows)',
             onClick: () => {
-              if (!contextCoord) {
-                return
-              }
-
-              const { refName, assemblyName } = view.displayedRegions[0]!
-              const [s, e] = [
-                Math.min(contextCoord.dragStartX, contextCoord.dragEndX),
-                Math.max(contextCoord.dragStartX, contextCoord.dragEndX),
-              ]
-
-              if (isSessionModelWithWidgets(session)) {
-                const widget = session.addWidget(
-                  'MafSequenceWidget',
-                  'mafSequence',
-                  {
-                    adapterConfig: model.adapterConfig,
-                    samples: model.samples,
-                    regions: [
-                      {
-                        refName,
-                        start: view.pxToBp(s).coord - 1,
-                        end: view.pxToBp(e).coord,
-                        assemblyName,
-                      },
-                    ],
-                    connectedViewId: view.id,
-                  },
+              if (contextCoord && sources) {
+                openSubsequenceWidget(
+                  session,
+                  model,
+                  view,
+                  contextCoord.dragStartX,
+                  contextCoord.dragEndX,
+                  sources,
                 )
-                session.showWidget(widget)
               }
               setContextCoord(undefined)
             },
@@ -203,50 +179,19 @@ const LinearMafDisplay = observer(function (props: {
           {
             label: 'View subsequences (selected rows)',
             onClick: () => {
-              if (!contextCoord || !sources) {
-                return
-              }
-
-              const { refName, assemblyName } = view.displayedRegions[0]!
-              const [s, e] = [
-                Math.min(contextCoord.dragStartX, contextCoord.dragEndX),
-                Math.max(contextCoord.dragStartX, contextCoord.dragEndX),
-              ]
-
-              const minY = Math.min(
-                contextCoord.dragStartY,
-                contextCoord.dragEndY,
-              )
-              const maxY = Math.max(
-                contextCoord.dragStartY,
-                contextCoord.dragEndY,
-              )
-              const startRowIdx = Math.floor((minY + scrollTop) / rowHeight)
-              const endRowIdx = Math.ceil((maxY + scrollTop) / rowHeight)
-              const selectedSamples = sources.slice(startRowIdx, endRowIdx)
-
-              if (
-                isSessionModelWithWidgets(session) &&
-                selectedSamples.length > 0
-              ) {
-                const widget = session.addWidget(
-                  'MafSequenceWidget',
-                  'mafSequence',
-                  {
-                    adapterConfig: model.adapterConfig,
-                    samples: selectedSamples,
-                    regions: [
-                      {
-                        refName,
-                        start: view.pxToBp(s).coord - 1,
-                        end: view.pxToBp(e).coord,
-                        assemblyName,
-                      },
-                    ],
-                    connectedViewId: view.id,
-                  },
+              if (contextCoord && sources) {
+                const minY = Math.min(contextCoord.dragStartY, contextCoord.dragEndY)
+                const maxY = Math.max(contextCoord.dragStartY, contextCoord.dragEndY)
+                const startRow = Math.floor((minY + scrollTop) / rowHeight)
+                const endRow = Math.ceil((maxY + scrollTop) / rowHeight)
+                openSubsequenceWidget(
+                  session,
+                  model,
+                  view,
+                  contextCoord.dragStartX,
+                  contextCoord.dragEndX,
+                  sources.slice(startRow, endRow),
                 )
-                session.showWidget(widget)
               }
               setContextCoord(undefined)
             },
