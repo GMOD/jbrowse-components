@@ -24,6 +24,25 @@
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
         }
       }
+    },
+    {
+      "name": "CHM13#0",
+      "displayName": "CHM13 (chr20 anchor — multi-vantage demo)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "chm13_0_chr20_refseq",
+        "adapter": {
+          "type": "FromConfigRegionsAdapter",
+          "features": [
+            {
+              "uniqueId": "chm13-chr20",
+              "refName": "chr20",
+              "start": 0,
+              "end": 66154539
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration": {
@@ -95,6 +114,28 @@
         "jaccardFilter": 0.5
       },
       "assemblyNames": ["GRCh38#0"]
+    },
+    {
+      "type": "MultiSyntenyTrack",
+      "trackId": "hprc_chr20_chm13_anchor_cs_paf",
+      "name": "HPRC chr20 untangle + cs — CHM13 anchor (multi-vantage demo)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "TabixPAFAdapter",
+        "pafGzLocation": {
+          "uri": "hprc-v1.1-mc-chm13-chr20.synteny.cs.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "hprc-v1.1-mc-chm13-chr20.synteny.cs.paf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "jaccardFilter": 0.5
+      },
+      "assemblyNames": ["CHM13#0"]
     },
     {
       "type": "VariantTrack",

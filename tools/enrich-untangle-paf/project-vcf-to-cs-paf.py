@@ -63,8 +63,24 @@ Limitations / known gaps:
 import argparse
 import bisect
 import gzip
+import re
 import sys
 from collections import defaultdict
+
+
+# Match parsePanSN's subwalk-suffix handling: `name:start-end` → `name`, offset.
+_RE_SUBWALK = re.compile(r':(-?\d+)-(-?\d+)$')
+
+
+def strip_subwalk(target_name):
+    """Returns (stripped_name, offset). offset is added to local tstart/tend
+    to get the position in the unified parent contig — needed when vg deconstruct
+    unifies fragmented PanSN paths (CHM13#0#chr20:100864-26386516,
+    CHM13#0#chr20:29927279-30227020, ...) into one VCF chrom (CHM13#0#chr20)."""
+    m = _RE_SUBWALK.search(target_name)
+    if not m:
+        return target_name, 0
+    return target_name[:m.start()], int(m.group(1))
 
 
 def open_text(path):
@@ -288,8 +304,19 @@ def main():
             # forward in either case. vg deconstruct emits alleles in ref
             # orientation regardless of how the haplotype's path traverses the
             # graph, so the projection is correct for both strands.
-            cs = build_cs_for_block(sample_to_idx[sample], hap_idx, tname,
-                                    ts, te, by_target, by_target_pos,
+            #
+            # Handle subwalk suffix: PAF target names like
+            # `CHM13#0#chr20:100864-26386516` map to VCF chrom
+            # `CHM13#0#chr20` with positions offset by 100864 (vg deconstruct
+            # unifies fragmented PanSN paths into one virtual contig).
+            tname_stripped, tname_offset = strip_subwalk(tname)
+            lookup_name = (tname_stripped if tname_stripped in by_target
+                           else tname)
+            lookup_offset = tname_offset if lookup_name == tname_stripped else 0
+            cs = build_cs_for_block(sample_to_idx[sample], hap_idx,
+                                    lookup_name,
+                                    ts + lookup_offset, te + lookup_offset,
+                                    by_target, by_target_pos,
                                     args.min_af, stats)
             stats['with_cs'] += 1
             f.append(f'cs:Z:{cs}')

@@ -655,6 +655,56 @@ unmapped, 282k overlapping snarls dropped, 1.7k cross-block clips. The
 overlap count is the visible cost of flattening a snarl-nested decomposition
 into a flat cs string — see "Scope" section above.
 
+### Multi-vantage-point demo at HPRC scale (chr20, CHM13 as anchor)
+
+Real-world demonstration on HPRC chr20: same recipe re-run with CHM13 as
+the anchor instead of GRCh38. Validates the architecture at scale and
+reveals what changes when you swap vantage points.
+
+```
+echo CHM13#0#chr20:100864-26386516 ... > chm13-ref-paths.txt   # 7 fragments
+odgi paths -i chr20.groomed.og -L | grep -v '^CHM13#' > chm13-queries.txt
+odgi untangle -i ... -R chm13-ref-paths.txt -Q chm13-queries.txt ...   # 1m40s
+vg deconstruct -P 'CHM13#' -a -u chr20.pg | bgzip ...                    # ~30 min wall
+                                                                         # (slower than
+                                                                         # GRCh38 because
+                                                                         # CHM13 paths are
+                                                                         # fragmented across
+                                                                         # 7 contigs but vg
+                                                                         # unifies them)
+project-vcf-to-cs-paf.py --paf chr20.chm13.untangle.paf
+                         --vcf chr20.chm13.variants.vcf.gz ...           # ~1 min
+                                                                         # 74,345 blocks,
+                                                                         # 0 unmapped
+                                                                         # (subwalk-suffix
+                                                                         # handling required)
+```
+
+vg deconstruct unifies fragmented CHM13 PanSN paths into one virtual VCF
+chrom (`CHM13#0#chr20`, length 66154539); untangle output uses the
+fragmented forms (`CHM13#0#chr20:100864-26386516`, etc). The projection
+script's `strip_subwalk()` handles the coordinate join: strips the suffix
+to find the VCF chrom, adds the suffix's start offset to local block
+positions before lookup. Same cs string output, no caller-visible change.
+
+Render at `chr20:100,000-120,000` (CHM13 coords): 19,719 mismatches /
+15 indicators across 89 haplotype rows. The same locus on GRCh38 view
+returned 16,475 / 7 — CHM13's view is denser, which is biologically
+informative: CHM13 chr20:100k-120k is subtelomeric content GRCh38 doesn't
+have, so the haplotype rows show their true divergence. Same display,
+same renderer, no model changes — only the assembly + cs-PAF differ.
+
+**This is the demo that motivates v2.** Two preprocessing pipelines for
+two anchors (n untangle runs, n vg deconstruct runs, n cs-PAFs). For
+production multi-anchor across all 88 HPRC haplotypes that's intractable —
+which is why "Beyond reference-bound" lands on impg+tracepoints (one TPA
+index, any anchor as the query target).
+
+CHM13-anchored cs-PAF (`hprc-v1.1-mc-chm13-chr20.synteny.cs.paf.gz`,
+52 MB) is **not committed** — same size constraint as the GRCh38 file;
+regenerable via this recipe. Track config (`hprc_chr20_chm13_anchor_cs_paf`)
++ assembly config (`CHM13#0`) are committed.
+
 ### Multi-vantage-point demo (volvox, sample01 as anchor)
 
 Validates that the architecture is anchor-agnostic — the same display, same
@@ -751,9 +801,18 @@ The projection script accepts `--min-af <threshold>` to drop ALTs below an
 allele-frequency threshold (read from VCF INFO/AF, recomputed from GTs if
 absent). On chr20 with `--min-af 0.05`: 608,775 of ~862k allele calls are
 below 5% frequency — filtered out; output size drops from 52 MB to 29 MB.
-Visual benefit is larger: ticks at zoom now show population-level common
-variation instead of one-haplotype-only noise. Per-track choice; ship
-multiple variants (`*.cs.paf.gz`, `*.cs.maf05.paf.gz`) and let users pick.
+Per-track choice; ship multiple variants (`*.cs.paf.gz`, `*.cs.maf05.paf.gz`)
+and let users pick.
+
+**Visual impact is smaller than expected.** Side-by-side render at
+chr20:100,000-120,000 (88 haplotypes, 20 kb): 16,475 mismatches unfiltered
+vs 15,270 with `min-af 0.05` — 7% reduction. Most visual noise at chr20
+zoom is *common* variation, not singletons. To meaningfully reduce density
+at HPRC scale we'd need either an aggressive threshold (loses interesting
+variation), haplotype-row clustering by population (renderer change), or
+zoom-conditional rendering that swaps to an aggregated representation
+above some bp/px threshold (renderer change). AF filtering alone is not the
+answer; it should be one knob in a broader set.
 
 Result: 26,862 blocks for the whole chromosome; a `chr20:1-500,000` view
 returns ~2,400 blocks and renders ~89 haplotype rows in `MultiLGVSyntenyDisplay`

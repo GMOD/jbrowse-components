@@ -1256,12 +1256,6 @@ importers:
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@types/d3-scale':
-        specifier: ^4.0.9
-        version: 4.0.9
-      d3-scale:
-        specifier: ^4.0.2
-        version: 4.0.2
       mobx:
         specifier: ^6.15.3
         version: 6.15.3
