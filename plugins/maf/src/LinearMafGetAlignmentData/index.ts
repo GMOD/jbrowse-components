@@ -1,4 +1,4 @@
-import LinearMafGetAlignmentData from './LinearMafGetAlignmentData'
+import LinearMafGetAlignmentData from './LinearMafGetAlignmentData.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

@@ -6,6 +6,7 @@ import {
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getRoot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
@@ -17,15 +18,11 @@ import {
   RadioGroup,
   TextField,
 } from '@mui/material'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-import type { FileLocation } from '@jbrowse/core/util'
+import type { AbstractRootModel, FileLocation } from '@jbrowse/core/util'
 import type { AddTrackModel } from '@jbrowse/plugin-data-management'
 
 const useStyles = makeStyles()(theme => ({
-  textbox: {
-    width: '100%',
-  },
   paper: {
     margin: theme.spacing(),
     padding: theme.spacing(),
@@ -56,7 +53,7 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
   const [indexTypeChoice, setIndexTypeChoice] =
     useState<IndexTypeOptions>('TBI')
 
-  const rootModel = getRoot<any>(model)
+  const rootModel = getRoot<AbstractRootModel>(model)
   return (
     <Paper className={classes.paper}>
       <Paper>

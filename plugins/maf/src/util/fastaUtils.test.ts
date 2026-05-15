@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { processFeaturesToFasta } from './fastaUtils'
+import { processFeaturesToFasta } from './fastaUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

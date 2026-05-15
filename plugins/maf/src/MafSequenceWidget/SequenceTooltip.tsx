@@ -2,7 +2,7 @@ import React from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-import type { Sample } from '../types'
+import type { Sample } from '../types.ts'
 
 const useStyles = makeStyles()(theme => ({
   tooltip: {

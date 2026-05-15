@@ -2,7 +2,7 @@ import {
   parseAssemblyAndChr,
   parseAssemblyAndChrSimple,
   selectReferenceSequenceString,
-} from './parseAssemblyName'
+} from './parseAssemblyName.ts'
 
 describe('parseAssemblyAndChr (MafTabix format)', () => {
   test('no dot - entire string is assembly name', () => {

@@ -1,4 +1,8 @@
-import { INSTANCE_STRIDE_U32 } from './shaders/maf.generated.ts'
+import {
+  FIELD_OFFSET_F32,
+  INSTANCE_STRIDE_BYTES,
+  INSTANCE_STRIDE_F32,
+} from './shaders/maf.generated.ts'
 
 // Pack RGBA (0-255 each) into a single uint32.
 // The shader's unpackRGBA reads R from bits 0-7, G from 8-15, B from 16-23, A from 24-31.
@@ -130,16 +134,16 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
   }
 
   const count = runs.length
-  const buffer = new ArrayBuffer(count * INSTANCE_STRIDE_U32 * 4)
+  const buffer = new ArrayBuffer(count * INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buffer)
 
   for (let i = 0; i < count; i++) {
     const r = runs[i]!
-    const base = i * INSTANCE_STRIDE_U32
-    u32[base + 0] = r.startBp
-    u32[base + 1] = r.endBp
-    u32[base + 2] = r.rowIndex
-    u32[base + 3] = r.color
+    const base = i * INSTANCE_STRIDE_F32
+    u32[base + FIELD_OFFSET_F32.startBp] = r.startBp
+    u32[base + FIELD_OFFSET_F32.endBp] = r.endBp
+    u32[base + FIELD_OFFSET_F32.rowIndex] = r.rowIndex
+    u32[base + FIELD_OFFSET_F32.color] = r.color
   }
 
   return { buffer, count }

@@ -2,9 +2,9 @@ import React, { useEffect, useRef } from 'react'
 
 import { useTheme } from '@mui/material'
 
-import { FONT, ROW_HEIGHT } from './constants'
+import { FONT, ROW_HEIGHT } from './constants.ts'
 
-import type { Sample } from '../types'
+import type { Sample } from '../types.ts'
 
 interface LabelsCanvasProps {
   samples: Sample[]

@@ -1,6 +1,6 @@
 // Re-export all rendering modules
-export * from './types'
-export * from './gaps'
-export * from './matches'
-export * from './mismatches'
-export * from './insertions'
+export * from './types.ts'
+export * from './gaps.ts'
+export * from './matches.ts'
+export * from './mismatches.ts'
+export * from './insertions.ts'

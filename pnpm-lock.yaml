@@ -600,9 +600,6 @@ importers:
 
   packages/tree-sidebar:
     dependencies:
-      '@gmod/hclust':
-        specifier: ^3.0.12
-        version: 3.0.12
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core

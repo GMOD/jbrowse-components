@@ -5,9 +5,9 @@ import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
-import YScaleBars from './components/Sidebar/YScaleBars'
+import YScaleBars from './components/Sidebar/YScaleBars.tsx'
 
-import type { LinearMafDisplayModel } from './stateModel'
+import type { LinearMafDisplayModel } from './stateModel.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,

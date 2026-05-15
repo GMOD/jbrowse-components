@@ -1,5 +1,5 @@
 // Re-export shared types from central location
-export type { AlignmentRecord, GenomicRegion, Sample } from '../../types'
+export type { AlignmentRecord, GenomicRegion, Sample } from '../../types.ts'
 
 // Rendering constants
 export const FONT_CONFIG = 'bold 10px Courier New,monospace'

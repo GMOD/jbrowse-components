@@ -1,8 +1,14 @@
+export { default as parseNewick } from './newick.ts'
+export type { NewickNode } from './newick.ts'
 export { default as TreeSidebar } from './TreeSidebar.tsx'
 export { SvgRowLabels } from './SvgRowLabels.tsx'
 export { SvgTreePath } from './SvgTreePath.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
-export { buildClusteredLayout, parseClusterTree } from './clusterUtils.ts'
+export {
+  buildClusteredLayout,
+  clusterTree,
+  parseClusterTree,
+} from './clusterUtils.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 export {
   assignDepthY,

@@ -1,4 +1,4 @@
-import type { AlignmentRecord, Sample } from '../types'
+import type { AlignmentRecord, Sample } from '../types.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 interface InsertionInfo {

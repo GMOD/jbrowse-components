@@ -1,6 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 
-import { fillRect } from '../util'
+import { fillRect } from '../util.ts'
 import {
   CHAR_SIZE_WIDTH,
   HIGH_BP_PER_PX_THRESHOLD,
@@ -11,9 +11,9 @@ import {
   INSERTION_PADDING,
   LARGE_INSERTION_THRESHOLD,
   MIN_ROW_HEIGHT_FOR_BORDERS,
-} from './types'
+} from './types.ts'
 
-import type { RenderingContext } from './types'
+import type { RenderingContext } from './types.ts'
 
 export function renderInsertions(
   context: RenderingContext,

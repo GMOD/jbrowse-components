@@ -7,15 +7,15 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
   filterFirstLineInstructions,
   parseRowInstructions,
-} from './rowInstructions'
-import VirtualOffset from './virtualOffset'
-import MafFeature from '../MafFeature'
-import { getSamplesFromConfig } from '../util/getSamples'
-import { parseAssemblyAndChrSimple } from '../util/parseAssemblyName'
+} from './rowInstructions.ts'
+import VirtualOffset from './virtualOffset.ts'
+import MafFeature from '../MafFeature.ts'
+import { getSamplesFromConfig } from '../util/getSamples.ts'
+import { parseAssemblyAndChrSimple } from '../util/parseAssemblyName.ts'
 
-import type { RowInstruction } from './rowInstructions'
-import type { AlignmentRecord, IndexData } from './types'
-import type { MafAdapterOptions } from '../types'
+import type { RowInstruction } from './rowInstructions.ts'
+import type { AlignmentRecord, IndexData } from './types.ts'
+import type { MafAdapterOptions } from '../types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -315,12 +315,10 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   }
 
   setupPre() {
-    if (!this.setupP) {
-      this.setupP = this.doSetup().catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.doSetup().catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
@@ -383,9 +381,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       const dataPosition = absVirtualOffset % 65536
       const voff = new VirtualOffset(blockPosition, dataPosition)
 
-      if (!entries[currChr]) {
-        entries[currChr] = []
-      }
+      entries[currChr] ??= []
       entries[currChr].push({
         chrStart: absChrStart,
         virtualOffset: voff,

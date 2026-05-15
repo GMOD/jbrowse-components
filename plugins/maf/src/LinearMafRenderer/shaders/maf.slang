@@ -57,10 +57,10 @@ VsOut vs_main(MafInstance inst, uint vid : SV_VertexID) {
     sx2 = sx1 + minClipW;
   }
 
-  float clipX = mix(sx1, sx2, local.x);
-  clipX = mix(clipX, -clipX, u.reversed);
+  float clipX = lerp(sx1, sx2, local.x);
+  clipX = lerp(clipX, -clipX, u.reversed);
 
-  float yPx  = mix(rowY, rowY + h, local.y);
+  float yPx  = lerp(rowY, rowY + h, local.y);
   float clipY = yPxToClipY(yPx, u.canvasHeight);
 
   VsOut o;

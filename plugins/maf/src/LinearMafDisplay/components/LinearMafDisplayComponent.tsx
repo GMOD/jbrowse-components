@@ -10,15 +10,15 @@ import {
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Crosshairs from './Crosshairs'
-import MAFTooltip from './MAFTooltip'
-import MsaHighlightOverlay from './MsaHighlightOverlay'
-import YScaleBars from './Sidebar/YScaleBars'
-import VisibleLabelsOverlay from './VisibleLabelsOverlay'
-import { useDragSelection } from './useDragSelection'
-import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory'
+import Crosshairs from './Crosshairs.tsx'
+import MAFTooltip from './MAFTooltip.tsx'
+import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
+import YScaleBars from './Sidebar/YScaleBars.tsx'
+import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
+import { useDragSelection } from './useDragSelection.ts'
+import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
 
-import type { LinearMafDisplayModel } from '../stateModel'
+import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const LinearMafDisplay = observer(function (props: {

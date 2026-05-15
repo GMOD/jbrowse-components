@@ -3,15 +3,15 @@ import { updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import MafFeature from '../MafFeature'
-import { getSamplesFromConfig } from '../util/getSamples'
-import { subscribeToObservable } from '../util/observableUtils'
+import MafFeature from '../MafFeature.ts'
+import { getSamplesFromConfig } from '../util/getSamples.ts'
+import { subscribeToObservable } from '../util/observableUtils.ts'
 import {
   parseAssemblyAndChr,
   selectReferenceSequenceString,
-} from '../util/parseAssemblyName'
+} from '../util/parseAssemblyName.ts'
 
-import type { AlignmentRecord, MafAdapterOptions } from '../types'
+import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -34,14 +34,12 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter {
 
   async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts ?? {}
-    if (!this.setupP) {
-      this.setupP = updateStatus('Downloading index', statusCallback, () =>
-        this.setup(),
-      ).catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= updateStatus('Downloading index', statusCallback, () =>
+      this.setup(),
+    ).catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 

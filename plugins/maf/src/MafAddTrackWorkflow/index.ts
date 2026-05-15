@@ -1,7 +1,7 @@
 import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import MultiMAFWidget from './AddTrackWorkflow'
+import MultiMAFWidget from './AddTrackWorkflow.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

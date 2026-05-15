@@ -2,12 +2,12 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-import ColorLegend from './ColorLegend'
-import SvgWrapper from './SvgWrapper'
+import ColorLegend from './ColorLegend.tsx'
+import SvgWrapper from './SvgWrapper.tsx'
 
-import type { LinearMafDisplayModel } from '../../stateModel'
+import type { LinearMafDisplayModel } from '../../stateModel.ts'
 
-export const YScaleBars = observer(function (props: {
+const YScaleBars = observer(function (props: {
   model: LinearMafDisplayModel
   exportSVG?: boolean
 }) {

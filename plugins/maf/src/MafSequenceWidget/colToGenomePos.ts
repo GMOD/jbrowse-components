@@ -1,4 +1,4 @@
-import type { Sample } from '../types'
+import type { Sample } from '../types.ts'
 
 /**
  * Find the index of the reference sample (matching the assembly name from the region)

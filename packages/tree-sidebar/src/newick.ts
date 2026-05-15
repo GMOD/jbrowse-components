@@ -1,0 +1,70 @@
+/**
+ * Newick format parser in JavaScript.
+ *
+ * Originally based on Jason Davies' 2010 implementation. Extended to handle the
+ * `(A,B)1.5` post-paren-numeric form used by `@gmod/hclust` to serialize
+ * clustering results (encodes internal node height as the label rather than as
+ * a `:` branch length). Output normalizes to a single `length` field
+ * regardless of which input form provided it.
+ *
+ * Supported forms:
+ *
+ *   (A:0.1,B:0.2)F        — name and `:` branch length (standard phylo Newick)
+ *   (A:0.1,B:0.2)F:0.5    — internal node name + branch length to parent
+ *   (A,B)1.5              — numeric post-paren stored as `length` (hclust form)
+ *   (A,B)Foo              — non-numeric post-paren stored as `name`
+ */
+export interface NewickNode {
+  name?: string
+  length?: number
+  children?: NewickNode[]
+}
+
+export default function parseNewick(s: string): NewickNode {
+  const ancestors: NewickNode[] = []
+
+  let tree: NewickNode = {}
+  const tokens = s.split(/\s*(;|\(|\)|,|:)\s*/)
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]!
+    const subtree: NewickNode = {}
+    switch (token) {
+      case '(':
+        tree.children = [subtree]
+        ancestors.push(tree)
+        tree = subtree
+        break
+      case ',':
+        ancestors.at(-1)?.children?.push(subtree)
+        tree = subtree
+        break
+      case ')':
+        tree = ancestors.pop()!
+        break
+      case ':':
+      case ';':
+        break
+      default: {
+        if (token === '') {
+          break
+        }
+        const prev = i > 0 ? tokens[i - 1] : undefined
+        if (prev === ':') {
+          tree.length = Number.parseFloat(token)
+        } else if (prev === ')') {
+          // hclust serializes `(A,B)1.5` with the numeric height as the label;
+          // standard phylo Newick puts a name there. Disambiguate by parseFloat.
+          const n = Number.parseFloat(token)
+          if (Number.isFinite(n) && String(n) === token.trim()) {
+            tree.length = n
+          } else {
+            tree.name = token
+          }
+        } else if (prev === '(' || prev === ',') {
+          tree.name = token
+        }
+      }
+    }
+  }
+  return tree
+}

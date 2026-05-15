@@ -5,22 +5,48 @@ import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type { MafAlignedRow, MafRegionData } from '../LinearMafRenderer/mafBackendTypes.ts'
+import type { Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { NewickNode } from '@jbrowse/tree-sidebar'
+
+type MafAdapter = BaseFeatureDataAdapter & {
+  getSamples: (
+    region: Region | undefined,
+  ) => Promise<{ samples: Sample[]; tree: NewickNode | undefined }>
+}
 
 interface AlignmentRecord { seq: string; start: number; chr: string }
 
-interface Args {
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    LinearMafGetAlignmentData: {
+      args: LinearMafGetAlignmentDataArgs
+      return: LinearMafGetAlignmentDataResult
+    }
+  }
+}
+
+export interface LinearMafGetAlignmentDataArgs {
   adapterConfig: AnyConfigurationModel
   sessionId: string
   region: Region
-  samples: { id: string }[]
   colorForBase: Record<string, string>
   showAllLetters: boolean
   mismatchRendering: boolean
   showAsUpperCase: boolean
-  stopToken?: string
+  stopToken?: StopToken
+  statusCallback?: (msg: string) => void
+}
+
+export interface LinearMafGetAlignmentDataResult {
+  samples: Sample[]
+  tree: NewickNode | undefined
+  regionData: MafRegionData
+  instanceBuffer: ArrayBuffer
+  instanceCount: number
 }
 
 /**
@@ -38,7 +64,10 @@ interface Args {
 export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'LinearMafGetAlignmentData'
 
-  async execute(args: Args, rpcDriverClassName: string) {
+  async execute(
+    args: LinearMafGetAlignmentDataArgs,
+    rpcDriverClassName: string,
+  ): Promise<LinearMafGetAlignmentDataResult> {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(
       args,
@@ -48,7 +77,6 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       region,
       adapterConfig,
       sessionId,
-      samples,
       colorForBase,
       showAllLetters,
       mismatchRendering,
@@ -56,7 +84,12 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
     } = deserializedArgs
 
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    const adapter = dataAdapter as BaseFeatureDataAdapter
+    const adapter = dataAdapter as MafAdapter
+
+    // Server is authoritative for samples + tree (derived from track config).
+    // Shipping them with every region response avoids a separate setup RPC and
+    // keeps the client's sample list aligned with the server-side filtering.
+    const { samples, tree } = await adapter.getSamples(region)
 
     const enc = new TextEncoder()
     const sampleToRow = new Map(samples.map((s, i) => [s.id, i]))
@@ -109,6 +142,8 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
     })
 
     return {
+      samples,
+      tree,
       regionData,
       instanceBuffer,
       instanceCount,

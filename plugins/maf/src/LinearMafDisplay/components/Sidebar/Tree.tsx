@@ -3,8 +3,8 @@ import React, { useCallback, useMemo } from 'react'
 import { descendants, links } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import type { HierarchyNode } from '../../types'
-import type { LinearMafDisplayModel } from '../../stateModel'
+import type { LinearMafDisplayModel } from '../../stateModel.ts'
+import type { HierarchyNode } from '../../types.ts'
 
 const hitboxStyle = {
   pointerEvents: 'all',

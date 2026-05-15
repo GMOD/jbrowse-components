@@ -1,4 +1,4 @@
-import { countNonGapBases, parseLineByLine } from './util'
+import { countNonGapBases, parseLineByLine } from './util.ts'
 
 describe('countNonGapBases', () => {
   test('counts all bases when no gaps', () => {

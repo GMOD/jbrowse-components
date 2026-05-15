@@ -1,4 +1,4 @@
-import type { AlignmentRecord } from './types'
+import type { AlignmentRecord } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**

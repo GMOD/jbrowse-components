@@ -1,30 +1,31 @@
-import { fromNewick } from '@gmod/hclust'
-
 import { hierarchy, sort, sum } from './hierarchy.ts'
+import parseNewick from './newick.ts'
 
 import type { HierarchyNode } from './hierarchy.ts'
 import type { ClusterNodeData } from './types.ts'
 
-export function getLeafNames(node: HierarchyNode<ClusterNodeData>): string[] {
+export function getLeafNames<T extends ClusterNodeData>(
+  node: HierarchyNode<T>,
+): string[] {
   const result: string[] = []
-  const stack: HierarchyNode<ClusterNodeData>[] = [node]
+  const stack: HierarchyNode<T>[] = [node]
   while (stack.length) {
     const n = stack.pop()!
     if (n.children?.length) {
       for (const child of n.children) {
         stack.push(child)
       }
-    } else {
+    } else if (n.data.name !== undefined) {
       result.push(n.data.name)
     }
   }
   return result
 }
 
-function findSubtree(
-  node: HierarchyNode<ClusterNodeData>,
+function findSubtree<T extends ClusterNodeData>(
+  node: HierarchyNode<T>,
   filterSet: Set<string>,
-): HierarchyNode<ClusterNodeData> | undefined {
+): HierarchyNode<T> | undefined {
   const leafNames = getLeafNames(node)
   if (
     leafNames.length === filterSet.size &&
@@ -43,10 +44,20 @@ function findSubtree(
   return undefined
 }
 
-export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
-  let root = hierarchy<ClusterNodeData>(fromNewick(newick), d => d.children)
+/**
+ * Wrap a pre-parsed Newick-shaped tree in a HierarchyNode, sort children by
+ * branch length, and (optionally) descend into the deepest subtree whose
+ * leaves exactly match `subtreeFilter`. Use when you already hold the parsed
+ * tree (e.g. an MST volatile); use `parseClusterTree(string, filter)` to
+ * accept a Newick string directly.
+ */
+export function clusterTree<T extends ClusterNodeData>(
+  data: T,
+  subtreeFilter?: string[],
+) {
+  let root = hierarchy<T>(data, d => d.children as T[] | undefined)
   sum(root, d => (d.children ? 0 : 1))
-  sort(root, (a, b) => (a.data.height || 1) - (b.data.height || 1))
+  sort(root, (a, b) => (a.data.length ?? 1) - (b.data.length ?? 1))
 
   if (subtreeFilter?.length) {
     const filterSet = new Set(subtreeFilter)
@@ -56,6 +67,10 @@ export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
     }
   }
   return root
+}
+
+export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
+  return clusterTree(parseNewick(newick), subtreeFilter)
 }
 
 export function buildClusteredLayout<S extends { name: string }>(

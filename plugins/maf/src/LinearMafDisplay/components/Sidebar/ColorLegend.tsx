@@ -2,10 +2,10 @@ import React from 'react'
 
 import { observer } from 'mobx-react'
 
-import RectBg from './RectBg'
-import Tree from './Tree'
+import RectBg from './RectBg.tsx'
+import Tree from './Tree.tsx'
 
-import type { LinearMafDisplayModel } from '../../stateModel'
+import type { LinearMafDisplayModel } from '../../stateModel.ts'
 
 const ColorLegend = observer(function ({
   model,

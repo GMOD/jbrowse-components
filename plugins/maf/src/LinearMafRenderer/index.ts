@@ -1,7 +1,7 @@
 import React from 'react'
 
-import LinearMafRenderer from './LinearMafRenderer'
-import configSchema from './configSchema'
+import LinearMafRenderer from './LinearMafRenderer.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

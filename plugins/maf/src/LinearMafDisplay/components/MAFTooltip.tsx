@@ -5,10 +5,10 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { generateTooltipContent } from '../util'
+import { generateTooltipContent } from '../util.ts'
 
-import type { LinearMafDisplayModel } from '../stateModel'
-import type { HoveredInfo } from '../util'
+import type { LinearMafDisplayModel } from '../stateModel.ts'
+import type { HoveredInfo } from '../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const MAFTooltip = observer(function ({

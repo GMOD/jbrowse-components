@@ -1,4 +1,4 @@
-import MafGetSequences from './MafGetSequences'
+import MafGetSequences from './MafGetSequences.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

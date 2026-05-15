@@ -1,7 +1,7 @@
-import { fillRect } from '../util'
-import { GAP_STROKE_OFFSET } from './types'
+import { fillRect } from '../util.ts'
+import { GAP_STROKE_OFFSET } from './types.ts'
 
-import type { RenderingContext } from './types'
+import type { RenderingContext } from './types.ts'
 
 export function renderMatches(
   context: RenderingContext,

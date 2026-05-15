@@ -2,10 +2,10 @@ import React from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { observer } from 'mobx-react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
-import type { MafSequenceWidgetModel } from './stateModelFactory'
+import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({

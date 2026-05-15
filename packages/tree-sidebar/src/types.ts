@@ -1,11 +1,8 @@
 import type { PositionedHierarchyNode } from './hierarchy.ts'
+import type { NewickNode } from './newick.ts'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 
-export interface ClusterNodeData {
-  name: string
-  height: number
-  children?: ClusterNodeData[]
-}
+export type ClusterNodeData = NewickNode
 
 export type ClusterHierarchyNode = PositionedHierarchyNode<ClusterNodeData>
 

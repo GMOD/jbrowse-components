@@ -1,7 +1,7 @@
 import {
   filterFirstLineInstructions,
   parseRowInstructions,
-} from './rowInstructions'
+} from './rowInstructions.ts'
 
 describe('parseRowInstructions', () => {
   test('parses single insert instruction', () => {

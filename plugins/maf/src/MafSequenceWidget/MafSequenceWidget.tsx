@@ -6,9 +6,9 @@ import {
   LoadingEllipses,
 } from '@jbrowse/core/ui'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import {
   ContentCopy as CopyIcon,
@@ -22,10 +22,10 @@ import {
   TableRows as TableRowsIcon,
 } from '@mui/icons-material'
 
-import SequenceDisplay from './SequenceDisplay'
-import { copyToClipboard, downloadAsFile } from '../util/clipboard'
+import SequenceDisplay from './SequenceDisplay.tsx'
+import { copyToClipboard, downloadAsFile } from '../util/clipboard.ts'
 
-import type { MafSequenceWidgetModel } from './stateModelFactory'
+import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()(theme => ({

@@ -1,0 +1,107 @@
+import { lazy } from 'react'
+
+import { getSession } from '@jbrowse/core/util'
+
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+const SetRowHeightDialog = lazy(
+  () => import('./components/SetRowHeightDialog/SetRowHeightDialog.tsx'),
+)
+
+interface MafMenuSelf extends IAnyStateTreeNode {
+  showAllLetters: boolean
+  mismatchRendering: boolean
+  showAsUpperCase: boolean
+  showSidebar: boolean
+  subtreeFilter?: readonly string[]
+  setRowHeight: (n: number) => void
+  setRowProportion: (n: number) => void
+  setShowAllLetters: (f: boolean) => void
+  setMismatchRendering: (f: boolean) => void
+  setShowAsUpperCase: (f: boolean) => void
+  setShowSidebar: (f: boolean) => void
+  setSubtreeFilter: (names?: string[]) => void
+}
+
+export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
+  return [
+    {
+      label: 'Set feature height',
+      type: 'subMenu',
+      subMenu: [
+        {
+          label: 'Normal',
+          onClick: () => {
+            self.setRowHeight(15)
+            self.setRowProportion(0.8)
+          },
+        },
+        {
+          label: 'Compact',
+          onClick: () => {
+            self.setRowHeight(8)
+            self.setRowProportion(0.9)
+          },
+        },
+        {
+          label: 'Manually set height',
+          onClick: () => {
+            getSession(self).queueDialog(handleClose => [
+              SetRowHeightDialog,
+              { model: self, handleClose },
+            ])
+          },
+        },
+      ],
+    },
+    {
+      label: 'Show...',
+      type: 'subMenu',
+      subMenu: [
+        {
+          label: 'Letters at all positions',
+          type: 'checkbox',
+          checked: self.showAllLetters,
+          onClick: () => {
+            self.setShowAllLetters(!self.showAllLetters)
+          },
+        },
+        {
+          label: 'Mismatches colored by base',
+          type: 'checkbox',
+          checked: self.mismatchRendering,
+          onClick: () => {
+            self.setMismatchRendering(!self.mismatchRendering)
+          },
+        },
+        {
+          label: 'Letters as uppercase',
+          type: 'checkbox',
+          checked: self.showAsUpperCase,
+          onClick: () => {
+            self.setShowAsUpperCase(!self.showAsUpperCase)
+          },
+        },
+        {
+          label: 'Sidebar with tree and labels',
+          type: 'checkbox',
+          checked: self.showSidebar,
+          onClick: () => {
+            self.setShowSidebar(!self.showSidebar)
+          },
+        },
+      ],
+    },
+    ...(self.subtreeFilter
+      ? [
+          {
+            label: 'Clear subtree filter',
+            onClick: () => {
+              self.setSubtreeFilter(undefined)
+            },
+          },
+        ]
+      : []),
+  ]
+}

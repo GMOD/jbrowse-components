@@ -1,6 +1,6 @@
 import React from 'react'
 
-import MafSequenceHoverHighlight from './MafSequenceHoverHighlight'
+import MafSequenceHoverHighlight from './MafSequenceHoverHighlight.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

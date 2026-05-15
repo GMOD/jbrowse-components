@@ -1,59 +1,56 @@
 import React from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import type { LinearMafDisplayModel } from '../stateModel'
+import type { MsaHighlight } from '../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const useStyles = makeStyles()({
+  highlight: {
+    position: 'absolute',
+    top: 0,
+    backgroundColor: 'rgba(255, 165, 0, 0.4)',
+    border: '1px solid rgba(255, 165, 0, 0.8)',
+    pointerEvents: 'none',
+  },
+})
+
+function highlightBox(
+  view: LinearGenomeViewModel,
+  highlight: MsaHighlight,
+): { left: number; width: number } | undefined {
+  const s = view.bpToPx({ refName: highlight.refName, coord: highlight.start })
+  const e = view.bpToPx({ refName: highlight.refName, coord: highlight.end })
+  if (!s || !e) {
+    return undefined
+  }
+  const left = Math.min(s.offsetPx, e.offsetPx) - view.offsetPx
+  const width = Math.max(Math.abs(e.offsetPx - s.offsetPx), 2)
+  return { left, width }
+}
 
 const MsaHighlightOverlay = observer(function MsaHighlightOverlay({
   model,
   view,
   height,
 }: {
-  model: LinearMafDisplayModel
+  model: { msaHighlights: MsaHighlight[] }
   view: LinearGenomeViewModel
   height: number
 }) {
-  const { msaHighlights } = model
-  if (msaHighlights.length === 0) {
-    return null
-  }
-
-  const { offsetPx } = view
-  const displayedRegion = view.displayedRegions[0]
-  if (!displayedRegion) {
-    return null
-  }
-
+  const { classes } = useStyles()
   return (
     <>
-      {msaHighlights.map((highlight, idx) => {
-        // Check if highlight is on the displayed refName
-        if (highlight.refName !== displayedRegion.refName) {
-          return null
-        }
-
-        const startPx =
-          (highlight.start - displayedRegion.start) / view.bpPerPx - offsetPx
-        const endPx =
-          (highlight.end - displayedRegion.start) / view.bpPerPx - offsetPx
-        const widthPx = Math.max(endPx - startPx, 2)
-
-        return (
+      {model.msaHighlights.map((h, idx) => {
+        const box = highlightBox(view, h)
+        return box ? (
           <div
-            key={idx}
-            style={{
-              position: 'absolute',
-              left: startPx,
-              top: 0,
-              width: widthPx,
-              height,
-              backgroundColor: 'rgba(255, 165, 0, 0.4)',
-              border: '1px solid rgba(255, 165, 0, 0.8)',
-              pointerEvents: 'none',
-            }}
+            key={`${h.refName}-${h.start}-${h.end}-${idx}`}
+            className={classes.highlight}
+            style={{ left: box.left, width: box.width, height }}
           />
-        )
+        ) : null
       })}
     </>
   )

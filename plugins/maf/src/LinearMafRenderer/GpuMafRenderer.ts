@@ -57,12 +57,9 @@ export class GpuMafRenderer implements MafBackend {
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
 
-    console.log('[GpuMafRenderer.renderBlocks]', blocks.length, 'blocks, canvas=', canvasWidth, 'x', canvasHeight, 'regionKeys=', [...this.regionCount.keys()])
-
     for (const block of blocks) {
       const bufCount = this.hal.getBufferCount(block.displayedRegionIndex, PASS_RECT)
       const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
-      console.log(`  block region=${block.displayedRegionIndex} screen=${block.screenStartPx.toFixed(0)}-${block.screenEndPx.toFixed(0)} bufCount=${bufCount} clip=${clip ? `${clip.pxX},${clip.pxW}` : 'null'}`)
       if (bufCount === 0) {
         continue
       }

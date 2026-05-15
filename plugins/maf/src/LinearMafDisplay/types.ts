@@ -1,15 +1,11 @@
-import type { HierarchyNode as TreeHierarchyNode } from '@jbrowse/tree-sidebar'
+import type {
+  HierarchyNode as TreeHierarchyNode,
+  NewickNode,
+} from '@jbrowse/tree-sidebar'
 
 // Re-export Sample from central types
-export type { Sample } from '../types'
+export type { Sample } from '../types.ts'
 
-export interface NodeWithIds {
-  id: string
-  name: string
-  children?: NodeWithIds[]
-  length?: number
-  noTree?: boolean
-}
-
-// MAF trees are hierarchies of NodeWithIds; alias the shared tree-sidebar node
-export type HierarchyNode = TreeHierarchyNode<NodeWithIds>
+// MAF trees are NewickNodes; alias the shared tree-sidebar node
+export type MafTreeNode = NewickNode
+export type HierarchyNode = TreeHierarchyNode<MafTreeNode>

@@ -1,16 +1,15 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import BgzipTaffyAdapterF from './BgzipTaffyAdapter'
-import BigMafAdapterF from './BigMafAdapter'
-import LinearMafDisplayF from './LinearMafDisplay'
-import LinearMafGetAlignmentDataF from './LinearMafGetAlignmentData'
-import LinearMafRendererF from './LinearMafRenderer'
-import MafAddTrackWorkflowF from './MafAddTrackWorkflow'
-import MafGetSamplesF from './MafGetSamples'
-import MafGetSequencesF from './MafGetSequences'
-import MafSequenceWidgetF from './MafSequenceWidget'
-import MafTabixAdapterF from './MafTabixAdapter'
-import MafTrackF from './MafTrack'
+import BgzipTaffyAdapterF from './BgzipTaffyAdapter/index.ts'
+import BigMafAdapterF from './BigMafAdapter/index.ts'
+import LinearMafDisplayF from './LinearMafDisplay/index.ts'
+import LinearMafGetAlignmentDataF from './LinearMafGetAlignmentData/index.ts'
+import LinearMafRendererF from './LinearMafRenderer/index.ts'
+import MafAddTrackWorkflowF from './MafAddTrackWorkflow/index.ts'
+import MafGetSequencesF from './MafGetSequences/index.ts'
+import MafSequenceWidgetF from './MafSequenceWidget/index.ts'
+import MafTabixAdapterF from './MafTabixAdapter/index.ts'
+import MafTrackF from './MafTrack/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -27,7 +26,6 @@ export default class MafViewerPlugin extends Plugin {
     MafTabixAdapterF(pluginManager)
     MafAddTrackWorkflowF(pluginManager)
     MafGetSequencesF(pluginManager)
-    MafGetSamplesF(pluginManager)
     MafSequenceWidgetF(pluginManager)
   }
 

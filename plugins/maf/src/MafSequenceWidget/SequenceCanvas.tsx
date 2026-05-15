@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useRef } from 'react'
 
 import { alpha, useTheme } from '@mui/material'
 
-import { getBaseColor, getContrastText } from './baseColors'
-import { CHAR_WIDTH, FONT, ROW_HEIGHT } from './constants'
+import { getBaseColor, getContrastText } from './baseColors.ts'
+import { CHAR_WIDTH, FONT, ROW_HEIGHT } from './constants.ts'
 
-import type { Sample } from '../types'
+import type { Sample } from '../types.ts'
 
 interface SequenceCanvasProps {
   samples: Sample[]
@@ -43,7 +43,7 @@ export default function SequenceCanvas({
   const theme = useTheme()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const seqLength = sequences[0]?.length || 0
+  const seqLength = sequences[0]?.length ?? 0
 
   // Vertical virtualization
   const startRow = Math.max(

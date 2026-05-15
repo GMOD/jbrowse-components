@@ -1,8 +1,8 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
-import ReactComponent from './components/LinearMafDisplayComponent'
-import configSchemaF from './configSchema'
-import stateModelFactory from './stateModel'
+import ReactComponent from './components/LinearMafDisplayComponent.tsx'
+import configSchemaF from './configSchema.ts'
+import stateModelFactory from './stateModel.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

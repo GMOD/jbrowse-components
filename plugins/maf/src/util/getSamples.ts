@@ -1,7 +1,7 @@
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseNewick } from '@jbrowse/tree-sidebar'
 
-import parseNewick from '../parseNewick'
-import { normalize } from '../util'
+import { normalize } from '../util.ts'
 
 type SampleConfig = string[] | { id: string; label?: string; color?: string }[]
 

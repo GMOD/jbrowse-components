@@ -60,8 +60,8 @@ export function useDragSelection(
         return
       }
       const rect = ref.current?.getBoundingClientRect()
-      const left = rect?.left || 0
-      const top = rect?.top || 0
+      const left = rect?.left ?? 0
+      const top = rect?.top ?? 0
       const clientX = event.clientX - left
       const clientY = event.clientY - top
 
@@ -79,8 +79,8 @@ export function useDragSelection(
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {
       const rect = ref.current?.getBoundingClientRect()
-      const top = rect?.top || 0
-      const left = rect?.left || 0
+      const top = rect?.top ?? 0
+      const left = rect?.left ?? 0
       const clientX = event.clientX - left
       const clientY = event.clientY - top
 
@@ -108,8 +108,8 @@ export function useDragSelection(
 
         if (dragDistanceX > MIN_DRAG_DISTANCE) {
           const rect = ref.current?.getBoundingClientRect()
-          const left = rect?.left || 0
-          const top = rect?.top || 0
+          const left = rect?.left ?? 0
+          const top = rect?.top ?? 0
           setContextCoord({
             coord: [event.clientX, event.clientY],
             dragEndX: event.clientX - left,

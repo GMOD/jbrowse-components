@@ -1,13 +1,13 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import BgzipTaffyAdapter from './BgzipTaffyAdapter'
-import configSchema from './configSchema'
+import BgzipTaffyAdapter from './BgzipTaffyAdapter.ts'
+import configSchema from './configSchema.ts'
 import {
   filterFirstLineInstructions,
   parseRowInstructions,
-} from './rowInstructions'
-import { countNonGapBases, parseLineByLine } from './util'
+} from './rowInstructions.ts'
+import { countNonGapBases, parseLineByLine } from './util.ts'
 
 // Test the core parsing logic with sample TAF data
 describe('TAF parsing', () => {
@@ -565,9 +565,9 @@ describe('BgzipTaffyAdapter methods', () => {
       undefined,
       instructions1,
     )
-    block1.rows.forEach(r => {
+    for (const r of block1.rows) {
       r.length = 10
-    })
+    }
 
     // Second block - delete middle row
     const instructions2 = parseRowInstructions('d 1')

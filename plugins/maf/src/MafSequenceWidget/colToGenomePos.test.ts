@@ -1,4 +1,4 @@
-import { buildColToGenomePos, findRefSampleIndex } from './colToGenomePos'
+import { buildColToGenomePos, findRefSampleIndex } from './colToGenomePos.ts'
 
 describe('findRefSampleIndex', () => {
   const samples = [

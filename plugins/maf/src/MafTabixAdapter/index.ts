@@ -1,7 +1,7 @@
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
-import MafTabixAdapter from './MafTabixAdapter'
-import configSchema from './configSchema'
+import MafTabixAdapter from './MafTabixAdapter.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { observer } from 'mobx-react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
-import LabelsCanvas from './LabelsCanvas'
-import SequenceCanvas from './SequenceCanvas'
-import SequenceTooltip from './SequenceTooltip'
-import { buildColToGenomePos, findRefSampleIndex } from './colToGenomePos'
-import { CHAR_WIDTH, ROW_HEIGHT } from './constants'
+import LabelsCanvas from './LabelsCanvas.tsx'
+import SequenceCanvas from './SequenceCanvas.tsx'
+import SequenceTooltip from './SequenceTooltip.tsx'
+import { buildColToGenomePos, findRefSampleIndex } from './colToGenomePos.ts'
+import { CHAR_WIDTH, ROW_HEIGHT } from './constants.ts'
 
-import type { MafSequenceWidgetModel } from './stateModelFactory'
+import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
 
 const DEFAULT_LABEL_WIDTH = 150
 const MIN_LABEL_WIDTH = 50
@@ -78,7 +78,7 @@ const SequenceDisplay = observer(function SequenceDisplay({
   const [hoveredRow, setHoveredRow] = useState<number>()
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>()
 
-  const seqLength = sequences[0]?.length || 0
+  const seqLength = sequences[0]?.length ?? 0
   const totalSeqWidth = seqLength * CHAR_WIDTH
   const totalHeight = samples ? samples.length * ROW_HEIGHT : 0
 

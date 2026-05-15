@@ -1,4 +1,4 @@
-import { extractSubsequence } from './extractSubsequence'
+import { extractSubsequence } from './extractSubsequence.ts'
 
 test('extracts a simple subsequence without gaps', () => {
   const sequence = 'ACGTACGT'
