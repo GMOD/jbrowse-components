@@ -5,23 +5,44 @@ import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
-import YScaleBars from './components/Sidebar/YScaleBars.tsx'
 
-import type { LinearMafDisplayModel } from './stateModel.ts'
+import type {
+  MafGPURenderState,
+  MafRegionData,
+} from '../LinearMafRenderer/mafBackendTypes.ts'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { ObservableMap } from 'mobx'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
+// Duck-typed contract — every field renderSvg actually touches. Lets the
+// state model's `.actions(self => …)` block pass `self` here without a cast
+// (the action's inner `self` type doesn't yet contain the action itself).
+interface RenderSvgSelf extends IAnyStateTreeNode {
+  rpcDataMap: ObservableMap<
+    number,
+    {
+      instanceBuffer: ArrayBuffer
+      instanceCount: number
+      regionData: MafRegionData
+    }
+  >
+  error: unknown
+  height: number
+  mafRenderState: MafGPURenderState | undefined
+  renderBlocks: RenderBlock[]
+}
+
 export async function renderSvg(
-  self: LinearMafDisplayModel,
+  self: RenderSvgSelf,
   opts: ExportSvgDisplayOptions,
-  _superRenderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>,
 ) {
   await when(() => self.rpcDataMap.size > 0 || !!self.error)
 
-  const view = getContainingView(self) as LinearGenomeViewModel
-  const { offsetPx, width } = view
+  const { width } = getContainingView(self) as LinearGenomeViewModel
   const { height } = self
   const state = self.mafRenderState
 
@@ -39,14 +60,5 @@ export async function renderSvg(
   if (ctx) {
     drawMafBlocks(ctx, self.rpcDataMap, self.renderBlocks, svgState, theme)
   }
-  const dataUrl = canvas.toDataURL()
-
-  return (
-    <>
-      <image href={dataUrl} width={width} height={height} />
-      <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-        <YScaleBars model={self} exportSVG />
-      </g>
-    </>
-  )
+  return <image href={canvas.toDataURL()} width={width} height={height} />
 }

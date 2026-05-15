@@ -85,10 +85,10 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
     }
 
     for (let i = 0; i < len; i++) {
-      const refCode = refSeqBytes[i]!
-      const alnCode = alignmentBytes[i]!
-      const refChar = String.fromCharCode(refCode).toUpperCase()
-      const alnChar = String.fromCharCode(alnCode)
+      // Compare in lowercase so case-insensitive matches work and the
+      // lowercase-keyed colorForBase lookup hits.
+      const refChar = String.fromCharCode(refSeqBytes[i]!).toLowerCase()
+      const alnChar = String.fromCharCode(alignmentBytes[i]!).toLowerCase()
 
       if (refChar === '-') {
         // Insertion in reference: skip (handled separately as insertion markers)
@@ -106,14 +106,13 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
         continue
       }
 
-      const alnUp = alnChar.toUpperCase()
-      const isMatch = alnUp === refChar
+      const isMatch = alnChar === refChar
 
       let color: number
       if (isMatch && !showAllLetters) {
         color = MATCH_COLOR
       } else {
-        const css = colorForBase[alnUp] ?? colorForBase.N ?? '#cccccc'
+        const css = colorForBase[alnChar] ?? '#cccccc'
         color = resolveColor(css)
         if (!isMatch && !mismatchRendering) {
           color = resolveColor('#ff8800')

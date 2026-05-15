@@ -9,7 +9,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export default function LinearMafDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
-    const stateModel = stateModelFactory(configSchema, pluginManager)
+    const stateModel = stateModelFactory(configSchema)
     return new DisplayType({
       name: 'LinearMafDisplay',
       configSchema,

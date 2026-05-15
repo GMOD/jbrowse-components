@@ -1,4 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
   getContainingView,
@@ -8,7 +9,10 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { cast, types } from '@jbrowse/mobx-state-tree'
-import { MultiRegionDisplayMixin } from '@jbrowse/plugin-linear-genome-view'
+import {
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 import { clusterTree, leaves } from '@jbrowse/tree-sidebar'
 import deepEqual from 'fast-deep-equal'
 import { observable } from 'mobx'
@@ -30,14 +34,12 @@ import type {
   MafGPURenderState,
   MafRegionData,
 } from '../LinearMafRenderer/mafBackendTypes.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -54,21 +56,16 @@ const defaultShowSidebar = true
 
 /**
  * #stateModel LinearMafDisplay
- * extends LinearBasicDisplay
+ * extends BaseDisplay + TrackHeightMixin + MultiRegionDisplayMixin
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
-  pluginManager: PluginManager,
 ) {
-  const LinearGenomePlugin = pluginManager.getPlugin(
-    'LinearGenomeViewPlugin',
-  ) as LinearGenomeViewPlugin
-  const { BaseLinearDisplay } = LinearGenomePlugin.exports
-
   return types
     .compose(
       'LinearMafDisplay',
-      BaseLinearDisplay,
+      BaseDisplay,
+      TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       types.model({
         /**
@@ -531,18 +528,15 @@ export default function stateModelFactory(
         return fetchMafAlignmentData(self, needed)
       },
     }))
-    .actions(self => {
-      const { renderSvg: superRenderSvg } = self
-      return {
-        /**
-         * #action
-         */
-        async renderSvg(opts: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self, opts, superRenderSvg)
-        },
-      }
-    })
+    .actions(self => ({
+      /**
+       * #action
+       */
+      async renderSvg(opts: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self, opts)
+      },
+    }))
     .postProcessSnapshot(snap => {
       const {
         rowHeight,
