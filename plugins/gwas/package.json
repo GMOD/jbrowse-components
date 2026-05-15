@@ -36,8 +36,6 @@
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/wiggle-core": "workspace:^",
     "@mui/material": "^9.0.1",
-    "@types/d3-scale": "^4.0.9",
-    "d3-scale": "^4.0.2",
     "mobx": "^6.15.3",
     "mobx-react": "^9.2.1",
     "rxjs": "^7.8.2"
