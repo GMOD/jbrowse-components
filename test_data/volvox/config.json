@@ -66,6 +66,27 @@
       }
     },
     {
+      "name": "volvox-sample01-anchor",
+      "displayName": "volvox (sample01 as anchor)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_sample01_anchor_seq",
+        "adapter": {
+          "type": "FromConfigSequenceAdapter",
+          "adapterId": "volvox-sample01-anchor-seq",
+          "features": [
+            {
+              "uniqueId": "ctgA-sample01",
+              "refName": "ctgA",
+              "start": 0,
+              "end": 45818,
+              "seq": ""
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "volvox404",
       "sequence": {
         "type": "ReferenceSequenceTrack",
@@ -251,6 +272,33 @@
     }
   },
   "tracks": [
+    {
+      "type": "GWASTrack",
+      "trackId": "volvox_gwas",
+      "name": "GWAS test",
+      "category": ["Annotation"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "volvox.gwas.tsv.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.gwas.tsv.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "displayId": "volvox_gwas-LinearManhattanDisplay",
+          "type": "LinearManhattanDisplay"
+        }
+      ]
+    },
     {
       "type": "GCContentTrack",
       "trackId": "volvox_gc",
@@ -2691,6 +2739,78 @@
           "displayId": "volvox_untangle_tabix_paf-MultiLGVSyntenyDisplay"
         }
       ]
+    },
+    {
+      "type": "MultiSyntenyTrack",
+      "trackId": "volvox_untangle_cs_paf",
+      "name": "volvox untangle + cs (vg deconstruct projection)",
+      "category": ["Synteny"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "TabixPAFAdapter",
+        "pafGzLocation": {
+          "uri": "volvox.untangle.cs.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.untangle.cs.paf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "MultiLGVSyntenyDisplay",
+          "displayId": "volvox_untangle_cs_paf-MultiLGVSyntenyDisplay"
+        }
+      ]
+    },
+    {
+      "type": "MultiSyntenyTrack",
+      "trackId": "volvox_untangle_cs_paf_sample01_anchor",
+      "name": "volvox untangle + cs — anchored on sample01 (multi-vantage demo)",
+      "category": ["Synteny"],
+      "assemblyNames": ["volvox-sample01-anchor"],
+      "adapter": {
+        "type": "TabixPAFAdapter",
+        "pafGzLocation": {
+          "uri": "volvox.sample01.untangle.cs.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sample01.untangle.cs.paf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "MultiLGVSyntenyDisplay",
+          "displayId": "volvox_untangle_cs_paf_sample01_anchor-MultiLGVSyntenyDisplay"
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_variants_vcf",
+      "name": "volvox variants (vg deconstruct -a -u)",
+      "category": ["Synteny"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.variants.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.variants.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     },
     {
       "type": "VariantTrack",

@@ -53,6 +53,28 @@
       "assemblyNames": ["GRCh38#0"]
     },
     {
+      "type": "MultiSyntenyTrack",
+      "trackId": "hprc_chr20_untangle_cs_paf",
+      "name": "HPRC chr20 untangle + cs (vg deconstruct projection)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "TabixPAFAdapter",
+        "pafGzLocation": {
+          "uri": "hprc-v1.1-mc-grch38-chr20.synteny.cs.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "hprc-v1.1-mc-grch38-chr20.synteny.cs.paf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "jaccardFilter": 0.5
+      },
+      "assemblyNames": ["GRCh38#0"]
+    },
+    {
       "type": "VariantTrack",
       "trackId": "hprc_chr20_vcf",
       "name": "HPRC chr20 variants (vg deconstruct)",
