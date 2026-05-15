@@ -18,7 +18,7 @@ export async function executeRenderManhattanData({
 }: {
   pluginManager: PluginManager
   args: RenderManhattanDataArgs
-}): Promise<ManhattanRpcResult> {
+}) {
   const {
     sessionId,
     adapterConfig,
@@ -74,5 +74,5 @@ export async function executeRenderManhattanData({
     scoreSumSq,
   }
 
-  return rpcResult(result, [positions.buffer, scores.buffer]) as unknown as ManhattanRpcResult
+  return rpcResult(result, [positions.buffer, scores.buffer])
 }

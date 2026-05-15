@@ -1,4 +1,3 @@
-
 import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
 
 import { Canvas2DManhattanRenderer } from './Canvas2DManhattanRenderer.ts'

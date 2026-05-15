@@ -1,5 +1,3 @@
-export const YSCALEBAR_LABEL_OFFSET = 5
-
 export function normalizeScore(
   score: number,
   domainY: [number, number],

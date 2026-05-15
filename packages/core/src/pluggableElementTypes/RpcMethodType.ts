@@ -80,10 +80,13 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   }
 
   async serializeArguments(
-    args: Record<string, unknown>,
+    args: object,
     rpcDriverClassName: string,
   ): Promise<Record<string, unknown>> {
-    await this.augmentLocationObjects(args, rpcDriverClassName)
+    await this.augmentLocationObjects(
+      args as Record<string, unknown>,
+      rpcDriverClassName,
+    )
     return {
       ...args,
       blobMap: getBlobMap(),

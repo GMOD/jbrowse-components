@@ -4,10 +4,10 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import type { ManhattanHit } from '../findManhattanHit.ts'
-
 export interface TooltipModel {
-  manhattanFeatureUnderMouse: ManhattanHit | undefined
+  featureUnderMouse:
+    | { refName: string; start: number; score: number }
+    | undefined
 }
 
 const TooltipComponent = observer(function TooltipComponent({
@@ -17,11 +17,11 @@ const TooltipComponent = observer(function TooltipComponent({
   model: TooltipModel
   clientMouseCoord: [number, number]
 }) {
-  const { manhattanFeatureUnderMouse } = model
-  if (!manhattanFeatureUnderMouse) {
+  const { featureUnderMouse } = model
+  if (!featureUnderMouse) {
     return null
   }
-  const { refName, start, score } = manhattanFeatureUnderMouse
+  const { refName, start, score } = featureUnderMouse
   return (
     <BaseTooltip
       clientPoint={{ x: clientMouseCoord[0] + 10, y: clientMouseCoord[1] }}

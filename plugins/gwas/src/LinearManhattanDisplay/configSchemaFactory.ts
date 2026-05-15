@@ -10,17 +10,13 @@ export function configSchemaFactory(pluginManager: PluginManager) {
   ) as LGVPlugin
   const { baseLinearDisplayConfigSchema } = LGVPlugin.exports
 
-  const LinearManhattanRendererConfigSchema = pluginManager.getRendererType(
-    'LinearManhattanRenderer',
-  )!.configSchema
-
   return ConfigurationSchema(
     'LinearManhattanDisplay',
     {
-      mouseover: {
-        type: 'string',
-        defaultValue: 'jexl:getTooltip(feature)',
-        contextVariable: ['feature'],
+      color: {
+        type: 'color',
+        description: 'point color',
+        defaultValue: 'darkblue',
       },
       autoscale: {
         type: 'stringEnum',
@@ -53,7 +49,7 @@ export function configSchemaFactory(pluginManager: PluginManager) {
       },
       scaleType: {
         type: 'stringEnum',
-        model: types.enumeration('Scale type', ['linear', 'log']), // todo zscale
+        model: types.enumeration('Scale type', ['linear', 'log']),
         description: 'The type of scale to use',
         defaultValue: 'linear',
       },
@@ -62,9 +58,6 @@ export function configSchemaFactory(pluginManager: PluginManager) {
         description: 'draw upside down',
         defaultValue: false,
       },
-      renderers: ConfigurationSchema('RenderersConfiguration', {
-        LinearManhattanRenderer: LinearManhattanRendererConfigSchema,
-      }),
     },
     {
       baseConfiguration: baseLinearDisplayConfigSchema,

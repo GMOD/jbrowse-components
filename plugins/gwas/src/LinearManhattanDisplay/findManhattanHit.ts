@@ -1,4 +1,4 @@
-import { normalizeScore } from './manhattanDrawUtils.ts'
+import { normalizeScore } from './normalizeScore.ts'
 
 import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
@@ -6,6 +6,7 @@ import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 export interface ManhattanHit {
   refName: string
   start: number
+  end: number
   score: number
 }
 
@@ -58,7 +59,7 @@ export function findManhattanHit(
       const distSq = dx * dx + dy * dy
       if (distSq < bestDistSq) {
         bestDistSq = distSq
-        best = { refName, start: pos, score }
+        best = { refName, start: pos, end: pos, score }
       }
     }
   }

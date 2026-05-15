@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -9,18 +9,15 @@ interface GWASAddTrackComponentProps {
   }
 }
 
+const DEFAULT_SCORE_COLUMN = 'neg_log_pvalue'
+
 const GWASAddTrackComponent = observer(function ({
   model,
 }: GWASAddTrackComponentProps) {
-  const [scoreColumn, setScoreColumn] = useState('neg_log_pvalue')
-
-  useEffect(() => {
-    model.setMixinData({
-      adapter: {
-        scoreColumn,
-      },
-    })
-  }, [model, scoreColumn])
+  const [scoreColumn, setScoreColumn] = useState(() => {
+    model.setMixinData({ adapter: { scoreColumn: DEFAULT_SCORE_COLUMN } })
+    return DEFAULT_SCORE_COLUMN
+  })
 
   return (
     <TextField
@@ -28,7 +25,9 @@ const GWASAddTrackComponent = observer(function ({
       helperText="Name of the column to use as the score for the Manhattan plot (e.g., 'neg_log_pvalue', 'pvalue')"
       value={scoreColumn}
       onChange={e => {
-        setScoreColumn(e.target.value)
+        const value = e.target.value
+        setScoreColumn(value)
+        model.setMixinData({ adapter: { scoreColumn: value } })
       }}
       fullWidth
     />

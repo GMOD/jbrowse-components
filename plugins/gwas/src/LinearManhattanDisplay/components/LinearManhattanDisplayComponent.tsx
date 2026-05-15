@@ -3,38 +3,37 @@ import React, { useCallback, useState } from 'react'
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { useGpuModelLifecycle } from '@jbrowse/core/util/useGpuModelLifecycle'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
+
 
 import { ManhattanRenderer } from '../ManhattanRenderer.ts'
 import { findManhattanHit } from '../findManhattanHit.ts'
-import { YSCALEBAR_LABEL_OFFSET } from '../manhattanDrawUtils.ts'
 import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanRpcResult } from '../../RenderManhattanDataRPC/rpcTypes.ts'
 import type { ManhattanHit } from '../findManhattanHit.ts'
-import type { ManhattanBackend, ManhattanRenderState } from '../manhattanBackendTypes.ts'
+import type {
+  ManhattanBackend,
+  ManhattanRenderState,
+} from '../manhattanBackendTypes.ts'
 import type { TooltipModel } from './TooltipComponent.tsx'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { GpuLifecycleModel } from '@jbrowse/core/util/useGpuModelLifecycle'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ObservableMap } from 'mobx'
 
-interface VisibleRegion {
-  displayedRegionIndex: number
-  refName: string
-}
+type LGV = LinearGenomeViewModel
 
-interface LGV {
-  trackWidthPx: number
-  visibleRegions: VisibleRegion[]
-}
-
-interface ManhattanDisplayModel extends GpuLifecycleModel<ManhattanBackend>, TooltipModel {
+export interface ManhattanDisplayModel
+  extends GpuLifecycleModel<ManhattanBackend>,
+    TooltipModel {
   canvasDrawn: boolean
   height: number
   manhattanRpcDataMap: ObservableMap<number, ManhattanRpcResult>
   manhattanRenderState: ManhattanRenderState | undefined
   renderBlocks: RenderBlock[]
-  setManhattanFeatureUnderMouse(hit: ManhattanHit | undefined): void
+  setFeatureUnderMouse(hit: ManhattanHit | undefined): void
 }
 
 const COORD0: [number, number] = [0, 0]
@@ -44,8 +43,11 @@ const LinearManhattanDisplayComponent = observer(function LinearManhattanDisplay
 }: {
   model: ManhattanDisplayModel
 }) {
-  const { canvasRef, error, retry } = useGpuModelLifecycle(ManhattanRenderer, model)
-  const view = getContainingView(model) as unknown as LGV
+  const { canvasRef, error, retry } = useGpuModelLifecycle(
+    ManhattanRenderer,
+    model,
+  )
+  const view = getContainingView(model) as LGV
   const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
 
   const handleMouseMove = useCallback(
@@ -54,47 +56,42 @@ const LinearManhattanDisplayComponent = observer(function LinearManhattanDisplay
       setClientMouseCoord([event.clientX, event.clientY])
 
       const { manhattanRenderState, renderBlocks, manhattanRpcDataMap } = model
-      if (!manhattanRenderState) {
-        return
+      if (manhattanRenderState) {
+        const refNames = new Map(
+          view.visibleRegions.map(r => [r.displayedRegionIndex, r.refName]),
+        )
+        model.setFeatureUnderMouse(
+          findManhattanHit(
+            event.clientX - rect.left,
+            event.clientY - rect.top - YSCALEBAR_LABEL_OFFSET,
+            renderBlocks,
+            manhattanRpcDataMap,
+            manhattanRenderState,
+            refNames,
+          ),
+        )
       }
-      const refNames = new Map(
-        view.visibleRegions.map(r => [r.displayedRegionIndex, r.refName]),
-      )
-      model.setManhattanFeatureUnderMouse(
-        findManhattanHit(
-          event.clientX - rect.left,
-          event.clientY - rect.top - YSCALEBAR_LABEL_OFFSET,
-          renderBlocks,
-          manhattanRpcDataMap,
-          manhattanRenderState,
-          refNames,
-        ),
-      )
     },
     [model, view],
   )
 
   const handleMouseLeave = useCallback(() => {
-    model.setManhattanFeatureUnderMouse(undefined)
+    model.setFeatureUnderMouse(undefined)
   }, [model])
 
   const width = view.trackWidthPx
   const height = model.height
 
-  if (error) {
-    return (
-      <ErrorOverlay
-        error={error}
-        width={width}
-        height={height}
-        onRetry={() => {
-          retry()
-        }}
-      />
-    )
-  }
-
-  return (
+  return error ? (
+    <ErrorOverlay
+      error={error}
+      width={width}
+      height={height}
+      onRetry={() => {
+        retry()
+      }}
+    />
+  ) : (
     <div
       data-testid={model.canvasDrawn ? 'manhattan-gpu-done' : 'manhattan-gpu'}
       style={{ position: 'relative', width, height }}

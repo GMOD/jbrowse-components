@@ -2,7 +2,6 @@ import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface RenderManhattanDataArgs {
-  [key: string]: unknown
   sessionId: string
   adapterConfig: Record<string, unknown>
   region: Region

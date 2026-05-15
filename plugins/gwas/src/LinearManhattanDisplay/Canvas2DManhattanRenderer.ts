@@ -1,10 +1,13 @@
 import { getDpr, prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 
-import { normalizeScore } from './manhattanDrawUtils.ts'
+import { normalizeScore } from './normalizeScore.ts'
 
-
-import type { ManhattanBackend, ManhattanRegionData, ManhattanRenderState } from './manhattanBackendTypes.ts'
+import type {
+  ManhattanBackend,
+  ManhattanRegionData,
+  ManhattanRenderState,
+} from './manhattanBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 const TWO_PI = Math.PI * 2

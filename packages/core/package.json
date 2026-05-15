@@ -42,6 +42,7 @@
     "./gpu/GpuBackendLifecycleSlotMixin": "./src/gpu/GpuBackendLifecycleSlotMixin.ts",
     "./gpu/hal": "./src/gpu/hal/index.ts",
     "./gpu/initGpuContext": "./src/gpu/initGpuContext.ts",
+    "./gpu/installPerRegionGpuLifecycle": "./src/gpu/installPerRegionGpuLifecycle.ts",
     "./gpu/pruneRegionMap": "./src/gpu/pruneRegionMap.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
     "./gpu/slangPass": "./src/gpu/slangPass.ts",
@@ -297,6 +298,10 @@
       "./gpu/initGpuContext": {
         "types": "./esm/gpu/initGpuContext.d.ts",
         "import": "./esm/gpu/initGpuContext.js"
+      },
+      "./gpu/installPerRegionGpuLifecycle": {
+        "types": "./esm/gpu/installPerRegionGpuLifecycle.d.ts",
+        "import": "./esm/gpu/installPerRegionGpuLifecycle.js"
       },
       "./gpu/pruneRegionMap": {
         "types": "./esm/gpu/pruneRegionMap.d.ts",
@@ -810,6 +815,9 @@
         ],
         "gpu/initGpuContext": [
           "esm/gpu/initGpuContext.d.ts"
+        ],
+        "gpu/installPerRegionGpuLifecycle": [
+          "esm/gpu/installPerRegionGpuLifecycle.d.ts"
         ],
         "gpu/pruneRegionMap": [
           "esm/gpu/pruneRegionMap.d.ts"
