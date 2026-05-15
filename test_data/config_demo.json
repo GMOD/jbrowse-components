@@ -147,6 +147,83 @@
       }
     },
     {
+      "type": "GWASTrack",
+      "trackId": "gwas_hg19",
+      "name": "GWAS summary stats",
+      "assemblyNames": ["hg19"],
+      "category": ["GWAS"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "GWASTrack",
+      "trackId": "gwas_hg19_custom_color",
+      "name": "GWAS summary stats (green)",
+      "assemblyNames": ["hg19"],
+      "category": ["GWAS"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearManhattanDisplay",
+          "displayId": "gwas_hg19_custom_color-LinearManhattanDisplay",
+          "color": "green"
+        }
+      ]
+    },
+    {
+      "type": "GWASTrack",
+      "trackId": "gwas_hg19_color_callback",
+      "name": "GWAS summary stats (color callback)",
+      "assemblyNames": ["hg19"],
+      "category": ["GWAS"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearManhattanDisplay",
+          "displayId": "gwas_hg19_color_callback-LinearManhattanDisplay",
+          "color": "jexl:'hsl('+get(feature,'start')/100000+',50%,50%)'"
+        }
+      ]
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "nclist_genes_hg19",
       "name": "Gencode v19",

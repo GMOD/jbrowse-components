@@ -26,53 +26,77 @@
   "tracks": [
     {
       "type": "MultiSyntenyTrack",
-      "trackId": "volvox_pangenome_50_gfa",
-      "name": "Volvox pangenome (50 genomes, GFA)",
+      "trackId": "volvox_pangenome_50_untangle_cs",
+      "name": "Volvox pangenome (50 genomes, odgi untangle + cs)",
       "category": ["Synteny"],
       "adapter": {
-        "type": "GfaTabixAdapter",
-        "posLocation": {
-          "uri": "volvox/volvox_pangenome_50.pos.bed.gz",
+        "type": "TabixPAFAdapter",
+        "pafGzLocation": {
+          "uri": "volvox/volvox.untangle.cs.paf.gz",
           "locationType": "UriLocation"
         },
-        "posIndex": {
+        "index": {
+          "indexType": "TBI",
           "location": {
-            "uri": "volvox/volvox_pangenome_50.pos.bed.gz.tbi",
+            "uri": "volvox/volvox.untangle.cs.paf.gz.tbi",
             "locationType": "UriLocation"
           }
-        },
-        "syntenyLocation": {
-          "uri": "volvox/volvox_pangenome_50.synteny.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "syntenyIndex": {
-          "location": {
-            "uri": "volvox/volvox_pangenome_50.synteny.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        },
-        "edgesLocation": {
-          "uri": "volvox/volvox_pangenome_50.edges.spatial.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "edgesIndex": {
-          "location": {
-            "uri": "volvox/volvox_pangenome_50.edges.spatial.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        },
-        "seqlensLocation": {
-          "uri": "volvox/volvox_pangenome_50.seglens.bin",
-          "locationType": "UriLocation"
         }
       },
       "assemblyNames": ["ref#0"],
       "displays": [
         {
           "type": "MultiLGVSyntenyDisplay",
-          "displayId": "volvox_pangenome_50_gfa-MultiLGVSyntenyDisplay"
+          "displayId": "volvox_pangenome_50_untangle_cs-MultiLGVSyntenyDisplay"
         }
       ]
+    },
+    {
+      "type": "MultiSyntenyTrack",
+      "trackId": "volvox_pangenome_50_untangle_plain",
+      "name": "Volvox pangenome (50 genomes, odgi untangle blocks only — no per-base detail)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "TabixPAFAdapter",
+        "pafGzLocation": {
+          "uri": "volvox/volvox.untangle.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "volvox/volvox.untangle.paf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["ref#0"],
+      "displays": [
+        {
+          "type": "MultiLGVSyntenyDisplay",
+          "displayId": "volvox_pangenome_50_untangle_plain-MultiLGVSyntenyDisplay"
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_pangenome_50_vcf",
+      "name": "Volvox pangenome variants (vg deconstruct)",
+      "category": ["Variants"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox/volvox50.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox/volvox50.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["ref#0"]
     }
   ],
   "defaultSession": {
@@ -83,7 +107,10 @@
         "init": {
           "loc": "ctgA:1-10000",
           "assembly": "ref#0",
-          "tracks": ["volvox_pangenome_50_gfa"]
+          "tracks": [
+            "volvox_pangenome_50_untangle_cs",
+            "volvox_pangenome_50_vcf"
+          ]
         }
       }
     ]

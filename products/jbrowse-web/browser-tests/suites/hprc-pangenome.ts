@@ -104,7 +104,7 @@ const suite: TestSuite = {
                 loc: 'chr20:100000-120000',
                 tracks: [
                   {
-                    trackId: 'hprc_chr20_untangle_paf',
+                    trackId: 'hprc_chr20_untangle_cs_paf',
                     displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
                   },
                   'hprc_chr20_vcf',
@@ -149,7 +149,7 @@ const suite: TestSuite = {
                 loc: 'chr20:100000-120000',
                 tracks: [
                   {
-                    trackId: 'hprc_chr20_untangle_paf',
+                    trackId: 'hprc_chr20_untangle_cs_paf',
                     displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
                   },
                   'hprc_chr20_vcf',

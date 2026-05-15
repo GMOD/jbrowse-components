@@ -4,6 +4,32 @@
 > re-investigating. Supersedes the "runtime `variantsAdapter` overlay" idea in
 > `GRAPH_PLAN.md` "Per-base variant integration (target architecture)".
 
+> **Honest framing.** This document describes the cs-PAF mechanism, not why
+> cs-PAF is the right choice. **It isn't, in the general case** — bigMaf /
+> MAF is the standard answer for reference-anchored multi-haplotype per-base
+> visualization, and JBrowse already supports it via `plugins/maf/`. Read
+> `GRAPH_PLAN.md` "Honest comparison with MAF/bigMaf" for the full per-axis
+> breakdown. The two specific reasons we keep cs-PAF anyway are: (a) the
+> impg+tracepoints pivot needs PAF substrate, and (b) untangle macro-blocks
+> are the right zoom-out layer regardless. Outside those, MAF would be
+> simpler and more correct.
+>
+> **Known cs-PAF correctness limits documented here and enforced in code:**
+>
+> - **Inversions cannot be encoded.** cs:Z: has no RC operator. When
+>   vg deconstruct emits an inversion bubble as a single `len(REF)==len(ALT)`
+>   record with `ALT == revcomp(REF)`, naive per-base projection paints
+>   thousands of bogus point mutations. `project-vcf-to-cs-paf.py
+>   --large-substitution-threshold` (default 20 bp) skips these records.
+>   Per-base detail inside an inversion is *hidden*, not *shown* — the
+>   block-level `-` strand on the PAF is the only signal. MAF would show
+>   RC'd matches correctly inline.
+> - **Nested snarls are flattened.** ~282k overlapping variants are silently
+>   dropped on chr20 to keep the cs string monotonic.
+> - **Snarl boundaries don't align with untangle blocks.** Heuristic clipping.
+> - **No node-ID provenance on synteny ticks.** cs:Z: is sequence-only;
+>   `AT/AP` from vg deconstruct survives only in the standalone VCF track.
+
 ## Goal
 
 Show per-base SNP/indel detail per haplotype row in `MultiLGVSyntenyDisplay`,
@@ -63,9 +89,12 @@ Committed artifacts:
 - `test_data/volvox/volvox.variants.vcf.gz` + `.tbi`
 - New tracks `volvox_untangle_cs_paf` (synteny) and `volvox_variants_vcf`
   (standalone variant track) in `test_data/volvox/config.json`.
-- `tools/enrich-untangle-paf/project-vcf-to-cs-paf.py` — sibling of the
-  minimap2-based `enrich-untangle-paf.py`; documented as the preferred
-  derivation backend for graph inputs.
+- `tools/enrich-untangle-paf/project-vcf-to-cs-paf.py` — the cs derivation
+  script. A predecessor `enrich-untangle-paf.py` did sequence-realignment of
+  the linearized PAF subseqs and was removed 2026-05-15: it produced
+  alignment soup for untangle blocks whose path coordinates span multiple
+  graph nodes (qsub/tsub don't sequence-correspond in that case). VCF
+  projection (this script) is the only supported derivation path.
 
 Render confirmed via temporary diagnostic suite (since deleted): 50 haplotype
 rows, allele-colored SNP ticks (T=red, A=green, G=orange, C=blue), insertion

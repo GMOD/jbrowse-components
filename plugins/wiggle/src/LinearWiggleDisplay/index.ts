@@ -23,3 +23,4 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
 
 export { default as ReactComponent } from './components/WiggleComponent.tsx'
 export { default as modelFactory } from './model.ts'
+export { default as configSchema } from './configSchema.ts'

@@ -66,7 +66,7 @@ const TracksContainer = observer(function TracksContainer({
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-TracksContainerComponent',
-    undefined,
+    [] as React.ReactNode[],
     { model },
   ) as React.ReactNode
 

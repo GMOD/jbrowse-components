@@ -166,7 +166,7 @@
         "init": {
           "loc": "chr20:1..500,000",
           "assembly": "GRCh38#0",
-          "tracks": ["hprc_chr20_untangle_paf"]
+          "tracks": ["hprc_chr20_untangle_cs_paf", "hprc_chr20_vcf"]
         }
       }
     ]

@@ -108,6 +108,45 @@ const suite: TestSuite = {
         )
       },
     },
+    {
+      // Inversion region — vg deconstruct emits the ~4400 bp bubble as one
+      // len(REF)==len(ALT) record where ALT == rc(REF). The cs:Z: projector
+      // skips these (see project-vcf-to-cs-paf.py --large-substitution-
+      // threshold) because cs has no way to encode "next N bp are inverted";
+      // decomposing into per-base SNPs would falsely paint thousands of
+      // point mutations. The minus-strand block label is the honest signal.
+      name: 'inversion region — minus-strand block, no fake per-base SNPs',
+      fn: async page => {
+        await navigateWithSessionSpec(
+          page,
+          {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'ref#0',
+                loc: 'ctgA:3000-8500',
+                tracks: [
+                  {
+                    trackId: 'volvox_pangenome_50_multi',
+                    displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
+                  },
+                ],
+              },
+            ],
+          },
+          config,
+        )
+
+        await findByTestId(page, 'multi_synteny_canvas_done', 60000)
+        await waitForDataLoaded(page)
+        await delay(2000)
+        await canvasSnapshot(
+          page,
+          'multi-lgv-pangenome-50-inversion-canvas',
+          '[data-testid="multi_synteny_canvas_done"]',
+        )
+      },
+    },
   ],
 }
 

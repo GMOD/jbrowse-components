@@ -2,17 +2,36 @@
 """Project a `vg deconstruct -a -u` VCF onto an `odgi untangle` PAF, emitting
 a cs:-tagged PAF that the JBrowse MultiLGVSyntenyDisplay renders directly.
 
-Sibling of `enrich-untangle-paf.py`. Same output shape (cs:Z:-enriched PAF
-ready for bgzip + tabix), different derivation backend:
+IMPORTANT — read before using:
+    If your only goal is "show N haplotypes aligned to a reference with
+    per-base SNPs/indels," **bigMaf / MAF is the standard, simpler, more
+    correct format** and JBrowse already supports it (`plugins/maf/`). This
+    script exists because (a) the impg+tracepoints pivot needs PAF, and
+    (b) untangle macro-blocks are useful at zoom-out — see
+    `agent-docs/GRAPH_PLAN.md` "Honest comparison with MAF/bigMaf".
 
-  * `enrich-untangle-paf.py` — runs `minimap2 --cs` per block on extracted
-    subsequences. Sequence-only re-alignment, no graph awareness, discards
-    node IDs. Pragmatic when no graph is available.
+    Concrete cs:Z: limits this script CANNOT overcome:
+      - No RC operator → inversions cannot be encoded per-base. Big
+        len(REF)==len(ALT) records with ALT == revcomp(REF) are SKIPPED
+        (--large-substitution-threshold, default 20 bp); per-base detail
+        inside an inversion is *hidden*, not *shown*. MAF would show it.
+      - cs:Z: is a flat linear walk → nested snarls flattened, overlapping
+        records dropped to keep the string monotonic.
+      - cs:Z: has no node-ID column → graph-awareness lost at the renderer.
 
-  * `project-vcf-to-cs-paf.py` (this script) — projects `vg deconstruct -a -u`
-    AP/AT positioned variants onto each untangle block's target window. The
-    graph's own per-base decomposition; no re-alignment; preserves snarl-aware
-    variant calls. Default for HPRC and other graph-pangenome inputs.
+Projects `vg deconstruct -a -u` AP/AT positioned variants onto each
+untangle block's target window. The graph's own per-base decomposition;
+no re-alignment; preserves snarl-aware variant calls. Subject to the
+cs:Z:-format limits listed above.
+
+A predecessor `enrich-untangle-paf.py` (removed 2026-05-15) ran
+`minimap2 --cs` per block on linearized PAF subseqs. That approach
+silently produces alignment soup for untangle blocks whose path
+coordinates merge across bubbles — qsub and tsub linearize different
+node walks, so they don't sequence-correspond even at id:f:99+ blocks.
+The volvox debugging session that surfaced this is in git history.
+**Do not reintroduce sequence-realignment as a cs derivation path for
+untangle output.**
 
 Recipe:
     odgi build -g graph.gfa -o graph.og        # if not already
@@ -47,8 +66,15 @@ Limitations / known gaps:
       and tstart..tend advance forward in either case. vg deconstruct emits
       alleles in reference orientation regardless of graph-traversal
       direction, so the projection is correct for both `+` and `-` blocks.
-      True biological inversions are a separate (smaller) signal that this
-      pipeline does not currently distinguish.
+      True biological inversions still surface as `-` strand AND as a big
+      len(REF)==len(ALT) record (next bullet).
+    * Inversions: vg deconstruct flattens an inversion bubble into one
+      record where len(REF)==len(ALT) and ALT == revcomp(REF). cs:Z: has no
+      RC operator, so per-base projection would paint thousands of bogus
+      SNPs. Records at or above --large-substitution-threshold (default 20)
+      are SKIPPED — block-level `-` strand on the PAF is the only signal
+      for them. This is a real loss of fidelity vs MAF. Verified on volvox
+      ctgA:3957 (4396 bp record, ALT bit-identical to rc(REF)).
     * Snarl-on-block-boundary: a snarl spanning two untangle blocks is
       assigned to whichever block contains its reference-anchor position.
       Variants whose anchor falls in block A but whose deletion extends past
@@ -176,11 +202,22 @@ def select_allele(gt_list, hap_idx):
     return gt_list[0]
 
 
-def variant_to_cs_op(ref, alt):
+_COMP = str.maketrans('ACGTNacgtn', 'TGCANtgcan')
+
+
+def variant_to_cs_op(ref, alt, large_threshold):
     """Reduce (REF, ALT) to (anchor, advance, op_string).
     `anchor` ref bases are stripped left-to-right (added to the running match
     counter by the caller). `advance` is how many further ref bases the
-    op_string consumes. op_string is the cs encoding for the residue."""
+    op_string consumes. op_string is the cs encoding for the residue.
+
+    Returns op=None when the record represents a large equal-length
+    substitution (typically an inversion or a complex bubble that vg
+    deconstruct flattened): cs:Z: cannot encode "the next N bp are reverse-
+    complemented" and decomposing it into N per-base SNPs is misleading. The
+    block-level strand column already conveys "this segment differs in
+    orientation/structure"; we skip the per-base projection in that case so
+    the renderer stays honest at the per-base zoom too."""
     anchor = 0
     while ref and alt and ref[0] == alt[0]:
         ref = ref[1:]
@@ -193,17 +230,21 @@ def variant_to_cs_op(ref, alt):
     if not ref:
         return anchor, 0, f'+{alt.lower()}'
     if len(ref) == len(alt):
+        if len(ref) >= large_threshold:
+            return anchor, len(ref), None
         ops = ''.join(f'*{r.lower()}{a.lower()}' for r, a in zip(ref, alt))
         return anchor, len(ref), ops
     return anchor, len(ref), f'-{ref.lower()}+{alt.lower()}'
 
 
 def build_cs_for_block(sample_idx, hap_idx, target_name, tstart, tend,
-                       by_target, by_target_pos, min_af, stats):
+                       by_target, by_target_pos, min_af, large_threshold, stats):
     """`stats` is a dict counter; updated in-place with `overlap_skipped`,
-    `cross_block_clipped`, `af_filtered`. by_target_pos is a parallel list of
-    just positions for bisect-based start lookup. `min_af` filters out any
-    ALT whose allele frequency is below the threshold."""
+    `cross_block_clipped`, `af_filtered`, `large_skipped`. by_target_pos is a
+    parallel list of just positions for bisect-based start lookup. `min_af`
+    filters out any ALT whose allele frequency is below the threshold.
+    `large_threshold` collapses big equal-length substitutions to plain
+    matches (see variant_to_cs_op)."""
     pieces = []
     cursor = tstart
     rows = by_target.get(target_name)
@@ -221,7 +262,7 @@ def build_cs_for_block(sample_idx, hap_idx, target_name, tstart, tend,
         if min_af > 0.0 and af[allele - 1] < min_af:
             stats['af_filtered'] += 1
             continue
-        anchor, advance, op = variant_to_cs_op(ref, alts[allele - 1])
+        anchor, advance, op = variant_to_cs_op(ref, alts[allele - 1], large_threshold)
         op_start = pos + anchor
         if op_start < cursor:
             stats['overlap_skipped'] += 1
@@ -229,6 +270,23 @@ def build_cs_for_block(sample_idx, hap_idx, target_name, tstart, tend,
         gap = op_start - cursor
         if gap > 0:
             pieces.append(f':{gap}')
+        if op is None:
+            # Skipped (large equal-length, see variant_to_cs_op). Emit a
+            # match run covering the skipped span so the renderer's refPos
+            # walks past it — without this, every subsequent variant's
+            # position in `mismatches[]` is off by `advance`. The block-
+            # level `-` strand on the PAF is the real signal; cs:Z: just
+            # has to stay positionally consistent across the block.
+            stats['large_skipped'] += 1
+            new_cursor = op_start + advance
+            if new_cursor > tend:
+                stats['cross_block_clipped'] += 1
+                new_cursor = tend
+            span = new_cursor - op_start
+            if span > 0:
+                pieces.append(f':{span}')
+            cursor = new_cursor
+            continue
         if op:
             pieces.append(op)
         cursor = op_start + advance
@@ -265,6 +323,14 @@ def main():
                          'haplotypes). Reduces visual overload at zoom on '
                          'large pangenomes. Source: VCF INFO/AF if present, '
                          'else recomputed from GT calls.')
+    ap.add_argument('--large-substitution-threshold', type=int, default=20,
+                    help='Equal-length REF/ALT records this big or bigger are '
+                         'left as plain matches in cs (block-level strand '
+                         'already conveys the structural event). vg '
+                         'deconstruct often flattens an inversion-bubble into '
+                         'one big len(REF)==len(ALT) record; decomposing it '
+                         'into per-base SNPs looks like thousands of point '
+                         'mutations when it is really one event. Default 20.')
     args = ap.parse_args()
 
     samples, variants = parse_vcf(args.vcf)
@@ -282,6 +348,7 @@ def main():
         'overlap_skipped': 0,
         'cross_block_clipped': 0,
         'af_filtered': 0,
+        'large_skipped': 0,
     }
     with open_text(args.paf) as fh, open(args.out, 'w') as out:
         for line in fh:
@@ -317,7 +384,9 @@ def main():
                                     lookup_name,
                                     ts + lookup_offset, te + lookup_offset,
                                     by_target, by_target_pos,
-                                    args.min_af, stats)
+                                    args.min_af,
+                                    args.large_substitution_threshold,
+                                    stats)
             stats['with_cs'] += 1
             f.append(f'cs:Z:{cs}')
             out.write('\t'.join(f) + '\n')
@@ -327,7 +396,9 @@ def main():
         f'{stats["unmapped_sample"]} unmapped, '
         f'{stats["overlap_skipped"]} overlapping snarls dropped, '
         f'{stats["cross_block_clipped"]} cross-block clips, '
-        f'{stats["af_filtered"]} AF-filtered (below {args.min_af})\n'
+        f'{stats["af_filtered"]} AF-filtered (below {args.min_af}), '
+        f'{stats["large_skipped"]} large-substitution skipped '
+        f'(>= {args.large_substitution_threshold} bp equal-length)\n'
     )
 
 

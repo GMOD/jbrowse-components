@@ -13,7 +13,7 @@ Start with `PRD.md`. It is the governing doc for agent work on this branch.
 | **[TODO.md](TODO.md)**                                               | Categorized backlog (architecture, display, UX, perf)   | Picking up a backlog item                     |
 | **[OTHER_IDEAS.md](OTHER_IDEAS.md)**                                 | Future / exploratory concepts (not current work)        | Brainstorming, product direction              |
 | **[architecture-decision-records/](architecture-decision-records/)** | Design decisions                                        | Understanding why something is the way it is  |
-| **[GRAPH_PLAN.md](GRAPH_PLAN.md)**                                   | Graph pangenome plan: two displays, `odgi untangle` + `vg deconstruct` pipeline | Working on graph / synteny |
+| **[GRAPH_PLAN.md](GRAPH_PLAN.md)**                                   | Graph pangenome plan: two displays, `odgi untangle` + `vg deconstruct` pipeline. **Read the top banner and "Honest comparison with MAF/bigMaf"** — cs-PAF is NOT a MAF replacement; documents specific correctness gaps (inversions, nested snarls) | Working on graph / synteny |
 | **[tools/graph-truth-extractor/](../tools/graph-truth-extractor/)** | GetSubgraph RPC validation oracle (vg/odgi/naive)      | Debugging subgraph extraction discrepancies   |
 
 ## Common questions

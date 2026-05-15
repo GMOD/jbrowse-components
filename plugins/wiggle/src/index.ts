@@ -49,4 +49,12 @@ export * from './util.ts'
 export {
   ReactComponent as LinearWiggleDisplayReactComponent,
   modelFactory as linearWiggleDisplayModelFactory,
+  configSchema as linearWiggleDisplayConfigSchema,
 } from './LinearWiggleDisplay/index.ts'
+
+export type {
+  SourceRenderData,
+  WiggleBackend,
+  WiggleGPURenderState,
+  WiggleRenderBlock,
+} from './shared/wiggleBackendTypes.ts'

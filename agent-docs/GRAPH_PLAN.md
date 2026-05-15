@@ -5,6 +5,39 @@
 > formats). The rationale for each removal is in ADRs 024–027. The old plan's
 > Phase 0 audit is preserved read-only in `GRAPH_AUDIT.md`.
 
+> **READ FIRST — what this approach is and isn't.** This is *not* the right
+> way to do per-base pangenome browsing. **bigMaf / MAF is.** MAF stores N-way
+> gapped alignments in one file with one source of truth, handles inversions
+> inline via RC'd row sequences, and has a 20-year-old ecosystem (cactus →
+> hal2maf → bigMaf). JBrowse already ships a MAF plugin (`plugins/maf/`).
+>
+> What we're doing here — `odgi untangle` + `vg deconstruct` + an offline
+> Python projector → cs-enriched PAF — is more moving parts than MAF, has
+> known correctness limits inside inversions and at snarl boundaries (see
+> "What v1 is *not*" and "Honest comparison with MAF/bigMaf" below), and
+> piggybacks on a renderer designed for short reads.
+>
+> We keep it because it has genuine value in three specific places, *not*
+> because it's universally better:
+>
+> 1. **Block-level structure at full-chromosome scale is cheap.** untangle
+>    runs in ~100s on HPRC chr20 and produces 11 MB of macro-blocks; the
+>    equivalent MAF preprocessing (hal2maf + block merging) is hours and
+>    tens-of-GB before filtering.
+> 2. **Forward path for runtime per-base detail.** impg + tracepoints
+>    (`reference_impg_tracepoints.md`) reconstructs viewport-bounded `=`/`X`
+>    CIGAR from a compact index, scales with view not chromosome. The
+>    substrate is PAF, not MAF.
+> 3. **Standalone variant track is preserved.** The same vg deconstruct
+>    VCF ships as a normal JBrowse variant track — full feature widget,
+>    genotype matrix, filter UX — so the cs-PAF doesn't have to be the only
+>    way users see per-base detail.
+>
+> Outside those three, MAF/bigMaf would be simpler and more correct. The
+> sections below detail every place this matters; if you're evaluating the
+> approach, read "Honest comparison with MAF/bigMaf" before forming an
+> opinion.
+
 ## Goal
 
 Two ways to look at an HPRC-style graph pangenome in JBrowse:
@@ -82,6 +115,16 @@ the architecture can't do and the reasons why:
   representation," which is largely a graph-construction artifact. We
   ignore the strand column and project unconditionally — a workaround,
   not a fix.
+- **Large equal-length REF/ALT records collapse to plain matches in cs:Z:.**
+  `vg deconstruct -a -u` sometimes emits an inversion bubble as one record
+  where `len(REF) == len(ALT)` and `ALT == revcomp(REF)` (verified on
+  volvox: a single 4396 bp record at ctgA:3957 whose ALT is bit-identical
+  to `rc(REF)`). cs:Z: has no operator for "next N bp are inverted," so
+  decomposing into per-base SNPs paints thousands of bogus point mutations
+  inside the inversion. `project-vcf-to-cs-paf.py --large-substitution-
+  threshold` (default 20) treats those records as plain matches at the
+  per-base level; the block-level `-` strand on the PAF is the honest
+  signal for these events.
 - **Reference-bound by design.** The whole synteny view assumes one
   reference path is the anchor. A user can't pick a different anchor (any
   haplotype as the reference) without re-running the full prep pipeline
@@ -98,6 +141,93 @@ the architecture can't do and the reasons why:
   haplotype data; we get them anyway because we're piggybacking on the
   existing renderer. A pangenome-native renderer would have a different
   visual vocabulary.
+
+### Honest comparison with MAF / bigMaf
+
+If the question is "show N haplotypes aligned to a reference with per-base
+SNPs/indels visible," **MAF / bigMaf is the standard, simpler answer.** This
+section enumerates every axis where MAF is better, every axis where our
+approach is better, and the cases where the call is genuinely close — so a
+reader can evaluate the tradeoff without being sold to.
+
+#### Where MAF wins outright
+
+- **One file, one source of truth.** A MAF block carries target + N query
+  rows + gapped strings in one record. We carry block geometry (untangle
+  PAF) + per-base detail (vg deconstruct VCF) and join them with a ~300-line
+  Python projector. Every joint is a place for boundary heuristics,
+  sample-name mismatches, and silent drops.
+- **Inversions are correct inline.** A MAF row on `-` strand stores the
+  reverse-complemented sequence aligned forward to the reference; the
+  renderer sees matches where there are matches. cs:Z: has no RC operator,
+  which is exactly why `project-vcf-to-cs-paf.py` needs the
+  `--large-substitution-threshold` flag to skip inversion-bubble records.
+  That's a workaround, not a fix — we're hiding per-base detail inside
+  inversions instead of showing it. MAF would show it correctly.
+- **Multiple alignment, not N pairwise.** MAF blocks are genuine N-way
+  alignments. Our PAF is N copies of `(haplotype, ref)` pairwise. "What
+  does column 12,345 look like across 90 haplotypes?" is one row read in
+  MAF; in our PAF it's 90 row lookups, each with its own cs string to
+  walk.
+- **Mature ecosystem.** UCSC has shipped MAF / bigMaf since the early
+  2000s. cactus → hal2maf → bigMaf is the standard pipeline. Browsers,
+  parsers, tabix-equivalent indices all exist. We're reinventing this in
+  a less battle-tested format.
+- **JBrowse already supports it.** `plugins/maf/` is in this repo and
+  actively maintained. Whatever the cs-PAF renderer shows from a cs string,
+  the MAF plugin shows from a gapped MAF row — same SNP ticks, same indel
+  glyphs, same visual story.
+
+#### Where our approach has an edge
+
+- **Block-level zoom-out at HPRC scale.** `odgi untangle -m 1000` produces
+  ~24k macro-blocks for chr20 (90 haps) in 11 MB. Naively-extracted MAF
+  from a cactus HAL cuts a new block at every variant — millions of tiny
+  blocks pre-merging. Solvable with `mafBlock` / `mafFilter`-style
+  preprocessing, but it's real preprocessing.
+- **Fast regeneration.** untangle runs in ~100s on chr20; hal2maf from a
+  cactus HAL can take hours. Matters if you re-derive frequently. Doesn't
+  matter for shipping a static file.
+- **Forward-compat with impg + tracepoints.** A runtime per-base path
+  (viewport-bounded `=`/`X` reconstruction from a TPA index) needs PAF as
+  substrate, not MAF. If `ImpgTpaAdapter` ships in v2, the PAF pipeline
+  is a natural precursor; MAF would have to be replaced. This is the most
+  load-bearing reason to keep the current architecture — and it's
+  contingent on impg+tracepoints actually shipping.
+- **Graph-derived rather than aligner-derived.** untangle reads alignment
+  from graph topology rather than re-aligning. Philosophically cleaner for
+  a *graph* pangenome. (Note: cs:Z: throws away the graph-awareness
+  downstream, so this advantage doesn't propagate to the renderer.)
+
+#### Where the call is genuinely close
+
+- **Node-ID provenance.** Neither cs-PAF nor bigMaf carries node IDs on
+  per-base ticks. Both lose graph-awareness at the renderer. Wash.
+- **Sample-name handling.** Both formats need PanSN → VCF-sample mapping
+  somewhere. We do it offline in the projector; bigMaf would do it in the
+  cactus → hal2maf step. Same problem, different layer.
+- **Variant track ride-along.** Both architectures benefit from shipping
+  the vg deconstruct VCF as a standalone track alongside the synteny
+  display, since neither cs:Z: nor MAF rows carry the snarl `LV/PS`
+  nesting or the `AT/AP` node-ID provenance the variant widget UX wants.
+
+#### Why we keep cs-PAF anyway
+
+The honest reasons are narrow and contingent:
+
+1. **Macro-block format that's small and fast.** Even if per-base detail
+   moved to MAF, untangle PAF would still be the right zoom-out layer.
+2. **The impg+tracepoints pivot needs PAF.** If that work lands, MAF
+   becomes a dead-end and untangle PAF is the bridge format.
+3. **Sunk infrastructure.** TabixPAFAdapter, MultiLGVSyntenyDisplay, and
+   the cs rendering path are wired up and tested. A pivot to MAF means
+   writing a parallel rendering path and re-testing — real cost for a
+   parallel solution to a problem the cs-PAF can mostly solve.
+
+None of those reasons make cs-PAF *better* than MAF for the demo's primary
+purpose. They make it *good enough and forward-looking*. If impg+tracepoints
+gets shelved, **the right next move is bigMaf, not more cs-PAF
+infrastructure.**
 
 ### What "ideal" looks like
 
@@ -146,6 +276,14 @@ The unique deployment story (static-file, ship-anywhere, runs in the
 academic-default genome browser) is real value even at v1 scope. It's not
 "the" answer to pangenome visualization; it's the answer for users who want
 HPRC variation against GRCh38 in a familiar interface.
+
+**Do not frame this as a MAF replacement.** It is not. MAF / bigMaf is the
+standard, simpler, and on most axes more correct way to do per-base
+reference-anchored multi-haplotype visualization. The honest framing is:
+"cs-PAF preserves a forward path to runtime per-base reconstruction via
+impg+tracepoints, at the cost of an offline projection step with documented
+inversion-handling limits." See "Honest comparison with MAF/bigMaf" above
+for the per-axis breakdown.
 
 ## Architecture: two displays, two standard tools, no custom formats
 
