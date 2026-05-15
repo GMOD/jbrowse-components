@@ -680,6 +680,71 @@ linear file count) or a runtime path via `impg query` (one TPA index, any
 anchor as the query target — see "Beyond reference-bound" above). The volvox
 demo uses pre-baking. The architecture supports either.
 
+### impg + tracepoints prototype (volvox, validates v2 architecture)
+
+Validated `impg query` produces viewport-bounded `=`/`X` CIGAR at chromosome
+scale, and that the same index supports any anchor. Recipe (~30 seconds end
+to end on volvox):
+
+```
+odgi paths -i volvox_pangenome_50.gfa.og -f > volvox.paths.fa     # 51 paths, 2.4 MB
+minimap2 -X --eqx -c volvox.paths.fa volvox.paths.fa > volvox.allvsall.paf
+                                                                  # 5,043 alignments
+~/src/vendor/impg/target/release/impg index -a volvox.allvsall.paf -i volvox.impg
+                                                                  # 322 KB, ~1 s
+```
+
+Then query against any anchor — same index, no per-anchor re-prep:
+
+```
+impg query -a volvox.allvsall.paf -i volvox.impg \
+  -r 'ref#0#ctgA:1000-3000' -o paf       → 50 alignments (1 per haplotype)
+impg query ... -r 'sample01#0#ctgA:1000-3000' -o paf  → 50 alignments
+impg query ... -r 'sample03#0#ctgA:1000-3000' -o paf  → 50 alignments
+impg query ... -r 'sample03#0#ctgA:1000-3000' -x -o paf  → 2550 alignments
+                                                            (transitive closure)
+```
+
+Each PAF row carries a `cg:Z:` tag with `=`/`X` CIGAR ops (e.g.
+`46=1X198=1X256=1X130=...`) reconstructed lazily for the queried range only —
+not the whole block. To convert to `cs:Z:` for the existing renderer, the
+preprocessor needs the underlying sequences (impg's `--sequence-files` flag
+emits MAF or FASTA-aligned output, both of which carry the actual bases).
+
+**What this validates:**
+
+- `impg query` is fast enough to be a runtime backend (~ms for a typical
+  range), not just a bake-time tool.
+- One TPA index supports any anchor (the `-r` flag accepts any indexed
+  sequence as the target). This is the multi-anchor architectural promise:
+  pre-bake once, switch anchor at query time. The volvox bake-time
+  multi-anchor demo above generates one cs-PAF per anchor; the impg path
+  makes that one TPA index and one query parameter.
+- Transitive closure (`-x`) recovers near-all-vs-all coverage from
+  subset-alignment input. Aligns with HPRC's documented forward direction
+  (subset alignments + closure rather than true n² all-vs-all).
+
+**What this doesn't yet prove:**
+
+- A JBrowse `ImpgTpaAdapter` (or a `graph-server` endpoint wrapping
+  `impg query`). The runtime adapter is the next step; the impg binary
+  works, but JBrowse needs either a process to call it (graph-server) or
+  impg compiled to WASM (impg uses lib_wfa2 which is C — buildable but
+  real engineering).
+- Behavior at HPRC chr20 scale. The volvox prototype is 51 paths × 50 kbp;
+  HPRC chr20 is 919 paths × ~30 Mbp average. **`minimap2 -X --eqx -c` is
+  the wrong source aligner at this scale** — it does O(n²) pair alignment
+  with no sparsification, would take hours and produce hundreds of GB of
+  PAF. **wfmash with `-X` segment-mapping subset mode is the standard PGGB
+  source** and is what HPRC actually uses. Not installed locally; needs
+  build (CMake, GSL, htslib). Once available: `wfmash -X chr20.fa
+  chr20.fa | impg index` should produce a TPA at manageable size, and
+  `impg query` time is the metric to watch.
+- TPA storage size at chr20 scale (unmeasured).
+- Node-ID provenance. impg is sequence-coordinate; cs-PAF derived this way
+  has no node IDs. For node-ID linkage to the graph view, the standalone
+  `vg deconstruct` VCF stays as the second artifact.
+
 ### AF filtering for visual scale (`--min-af`)
 
 The projection script accepts `--min-af <threshold>` to drop ALTs below an
