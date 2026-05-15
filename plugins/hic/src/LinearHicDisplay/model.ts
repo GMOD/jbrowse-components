@@ -576,11 +576,13 @@ export default function stateModelFactory(
         const { bpPerPx } = view
         const { adapterConfig } = self
         await self.runFetch(async ctx => {
+          const sessionId = getRpcSessionId(self)
           const { rpcManager } = getSession(self)
           const result = await rpcManager.call(
-            getRpcSessionId(self),
+            sessionId,
             'RenderHicData',
             {
+              sessionId,
               adapterConfig,
               regions: [...regions],
               bpPerPx,

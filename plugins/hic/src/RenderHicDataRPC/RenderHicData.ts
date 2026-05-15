@@ -1,59 +1,42 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type { HicDataResult } from './types.ts'
-import type { Region } from '@jbrowse/core/util'
+import type { HicDataResult, RenderHicDataArgs } from './types.ts'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderHicData: {
-      args: Record<string, unknown>
+      args: RenderHicDataArgs
       return: HicDataResult
     }
   }
 }
 
-interface RenderHicDataArgs {
-  sessionId: string
-  adapterConfig: Record<string, unknown>
-  regions: Region[]
-  bpPerPx: number
-  resolution: number
-  normalization: string
-}
-
 export default class RenderHicData extends RpcMethodType {
   name = 'RenderHicData'
 
-  async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
-    const typedArgs = args as unknown as RenderHicDataArgs
+  async serializeArguments(args: RenderHicDataArgs, rpcDriver: string) {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
-    if (assemblyManager && typedArgs.regions.length) {
-      const result = await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: typedArgs.sessionId,
-        adapterConfig: typedArgs.adapterConfig,
-        regions: typedArgs.regions,
+    if (assemblyManager && args.regions.length) {
+      const { regions } = await renameRegionsIfNeeded(assemblyManager, {
+        sessionId: args.sessionId,
+        adapterConfig: args.adapterConfig,
+        regions: args.regions,
       })
 
-      return super.serializeArguments(
-        {
-          ...typedArgs,
-          regions: result.regions,
-        },
-        rpcDriver,
-      )
+      return super.serializeArguments({ ...args, regions }, rpcDriver)
     }
 
     return super.serializeArguments(args, rpcDriver)
   }
 
-  async execute(args: Record<string, unknown>, _rpcDriver: string) {
+  async execute(args: RenderHicDataArgs, _rpcDriver: string) {
     const { executeRenderHicData } = await import('./executeRenderHicData.ts')
     return executeRenderHicData({
       pluginManager: this.pluginManager,
-      args: args as unknown as RenderHicDataArgs,
+      args,
     })
   }
 }

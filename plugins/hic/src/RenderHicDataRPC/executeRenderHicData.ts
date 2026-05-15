@@ -5,19 +5,14 @@ import {
   computePercentile,
 } from '../regionOffsets.ts'
 
-import type { HicContactItem, HicDataResult } from './types.ts'
+import type {
+  HicContactItem,
+  HicDataResult,
+  RenderHicDataArgs,
+} from './types.ts'
 import type HicAdapter from '../HicAdapter/HicAdapter.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
-
-interface RenderHicDataArgs {
-  sessionId: string
-  adapterConfig: Record<string, unknown>
-  regions: Region[]
-  bpPerPx: number
-  resolution: number
-  normalization: string
-}
 
 function calcRegionPixelStarts(regions: Region[], bpPerPx: number) {
   const out = [0]

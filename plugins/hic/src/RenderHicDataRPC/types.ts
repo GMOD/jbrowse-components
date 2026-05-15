@@ -1,3 +1,16 @@
+import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+
+export interface RenderHicDataArgs {
+  sessionId: string
+  adapterConfig: Record<string, unknown>
+  regions: Region[]
+  bpPerPx: number
+  resolution?: number
+  normalization: string
+  stopToken?: StopToken
+}
+
 export interface HicContactItem {
   bin1: number
   bin2: number
