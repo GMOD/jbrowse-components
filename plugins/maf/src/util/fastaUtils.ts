@@ -161,3 +161,42 @@ function expandWithInsertions(
   // Convert character arrays back to strings
   return outputRowsArrays.map(arr => arr.join(''))
 }
+
+/**
+ * Build a FASTA-formatted string from per-sample raw sequences.
+ * - `singleLine`: each record collapses to one line, with the sample label
+ *   padded to a constant width so columns align in monospace.
+ * - Otherwise: standard FASTA with `>label` on its own line.
+ */
+export function formatFastaSequences(
+  rawSequences: string[],
+  samples: Sample[] | undefined,
+  singleLine: boolean,
+): string {
+  if (!samples || rawSequences.length === 0) {
+    return ''
+  }
+  if (singleLine) {
+    let maxLabelLength = 0
+    for (const s of samples) {
+      const len = (s.label ?? s.id).length
+      if (len > maxLabelLength) {
+        maxLabelLength = len
+      }
+    }
+    return rawSequences
+      .map((r, idx) => {
+        const sample = samples[idx]!
+        const label = sample.label ?? sample.id
+        const padding = ' '.repeat(maxLabelLength - label.length + 2)
+        return `>${label}${padding}${r}`
+      })
+      .join('\n')
+  }
+  return rawSequences
+    .map((r, idx) => {
+      const sample = samples[idx]!
+      return `>${sample.label ?? sample.id}\n${r}`
+    })
+    .join('\n')
+}

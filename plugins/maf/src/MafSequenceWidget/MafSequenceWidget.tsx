@@ -24,6 +24,7 @@ import {
 
 import SequenceDisplay from './SequenceDisplay.tsx'
 import { copyToClipboard, downloadAsFile } from '../util/clipboard.ts'
+import { formatFastaSequences } from '../util/fastaUtils.ts'
 
 import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -71,79 +72,51 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
     true,
   )
   const [rawSequences, setRawSequences] = useState<string[]>([])
-  const [formattedSequence, setFormattedSequence] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
 
+  // Fetch from server. Re-runs only when RPC inputs change. The `active`
+  // flag drops the result if the effect is torn down (or re-fired) before
+  // the promise resolves, avoiding a stale write to rawSequences.
   useEffect(() => {
     if (!adapterConfig || !samples || !regions) {
       return
     }
-    void (async () => {
-      try {
-        setLoading(true)
-        setError(undefined)
-
-        const { rpcManager } = session
-
-        const fastaSequence = await rpcManager.call(
-          'MafSequenceWidget',
-          'MafGetSequences',
-          {
-            sessionId: 'MafSequenceWidget',
-            adapterConfig,
-            samples,
-            showAllLetters,
-            includeInsertions,
-            regions,
-          },
-        )
-
-        setRawSequences(fastaSequence)
-
-        let formatted: string
-        if (singleLineFormat) {
-          let maxLabelLength = 0
-          for (const s of samples) {
-            const len = (s.label ?? s.id).length
-            if (len > maxLabelLength) {
-              maxLabelLength = len
-            }
-          }
-          formatted = fastaSequence
-            .map((r, idx) => {
-              const sample = samples[idx]!
-              const label = sample.label ?? sample.id
-              const padding = ' '.repeat(maxLabelLength - label.length + 2)
-              return `>${label}${padding}${r}`
-            })
-            .join('\n')
-        } else {
-          formatted = fastaSequence
-            .map((r, idx) => {
-              const sample = samples[idx]!
-              return `>${sample.label ?? sample.id}\n${r}`
-            })
-            .join('\n')
+    const active = { current: true }
+    setLoading(true)
+    setError(undefined)
+    session.rpcManager
+      .call('MafSequenceWidget', 'MafGetSequences', {
+        sessionId: 'MafSequenceWidget',
+        adapterConfig,
+        samples,
+        showAllLetters,
+        includeInsertions,
+        regions,
+      })
+      .then(fastaSequence => {
+        if (active.current) {
+          setRawSequences(fastaSequence)
+          setLoading(false)
         }
+      })
+      .catch((e: unknown) => {
+        if (active.current) {
+          console.error(e)
+          setError(e)
+          setLoading(false)
+        }
+      })
+    return () => {
+      active.current = false
+    }
+  }, [adapterConfig, samples, regions, showAllLetters, includeInsertions, session])
 
-        setFormattedSequence(formatted)
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      } finally {
-        setLoading(false)
-      }
-    })()
-  }, [
-    adapterConfig,
+  const formattedSequence = formatFastaSequences(
+    rawSequences,
     samples,
-    regions,
-    showAllLetters,
-    includeInsertions,
     singleLineFormat,
-    session,
-  ])
+  )
 
   const sequenceTooLarge = formattedSequence
     ? formattedSequence.length > 5_000_000

@@ -1,27 +1,15 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const MIN_DRAG_DISTANCE = 3
 
-interface DragSelectionState {
-  isDragging: boolean
-  dragStartX: number | undefined
-  dragEndX: number | undefined
-  dragStartY: number | undefined
-  dragEndY: number | undefined
-  showSelectionBox: boolean
-  mouseX: number | undefined
-  mouseY: number | undefined
+export interface DragRect {
+  startX: number
+  startY: number
+  endX: number
+  endY: number
 }
 
-interface DragSelectionHandlers {
-  handleMouseDown: (event: React.MouseEvent) => void
-  handleMouseMove: (event: React.MouseEvent) => void
-  handleMouseUp: (event: React.MouseEvent) => void
-  handleMouseLeave: () => void
-  clearSelectionBox: () => void
-}
-
-interface ContextCoord {
+export interface ContextCoord extends DragRect {
   coord: [number, number]
   dragStartX: number
   dragEndX: number
@@ -29,159 +17,124 @@ interface ContextCoord {
   dragEndY: number
 }
 
-export function useDragSelection(
+interface DragState {
+  drag?: DragRect
+  isDragging: boolean
+  showSelectionBox: boolean
+  mouse?: { x: number; y: number }
+}
+
+function relativeXY(
   ref: React.RefObject<HTMLDivElement | null>,
-): DragSelectionState &
-  DragSelectionHandlers & {
-    contextCoord: ContextCoord | undefined
-    setContextCoord: (coord: ContextCoord | undefined) => void
-  } {
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStartX, setDragStartX] = useState<number>()
-  const [dragEndX, setDragEndX] = useState<number>()
-  const [dragStartY, setDragStartY] = useState<number>()
-  const [dragEndY, setDragEndY] = useState<number>()
-  const [showSelectionBox, setShowSelectionBox] = useState(false)
-  const [mouseX, setMouseX] = useState<number>()
-  const [mouseY, setMouseY] = useState<number>()
+  e: MouseEvent | React.MouseEvent,
+) {
+  const rect = ref.current?.getBoundingClientRect()
+  return { x: e.clientX - (rect?.left ?? 0), y: e.clientY - (rect?.top ?? 0) }
+}
+
+export function useDragSelection(ref: React.RefObject<HTMLDivElement | null>) {
+  const [state, setState] = useState<DragState>({
+    isDragging: false,
+    showSelectionBox: false,
+  })
   const [contextCoord, setContextCoord] = useState<ContextCoord>()
 
-  const clearSelectionBox = useCallback(() => {
-    setShowSelectionBox(false)
-    setDragStartX(undefined)
-    setDragEndX(undefined)
-    setDragStartY(undefined)
-    setDragEndY(undefined)
-  }, [])
+  function clearSelectionBox() {
+    setState(s => ({ ...s, drag: undefined, showSelectionBox: false }))
+  }
 
-  const handleMouseDown = useCallback(
-    (event: React.MouseEvent) => {
-      if (event.shiftKey) {
-        return
-      }
-      const rect = ref.current?.getBoundingClientRect()
-      const left = rect?.left ?? 0
-      const top = rect?.top ?? 0
-      const clientX = event.clientX - left
-      const clientY = event.clientY - top
+  function handleMouseDown(e: React.MouseEvent) {
+    if (e.shiftKey) {
+      return
+    }
+    const { x, y } = relativeXY(ref, e)
+    setState({
+      isDragging: true,
+      showSelectionBox: false,
+      drag: { startX: x, startY: y, endX: x, endY: y },
+      mouse: { x, y },
+    })
+    e.stopPropagation()
+  }
 
-      setShowSelectionBox(false)
-      setIsDragging(true)
-      setDragStartX(clientX)
-      setDragEndX(clientX)
-      setDragStartY(clientY)
-      setDragEndY(clientY)
-      event.stopPropagation()
-    },
-    [ref],
-  )
+  function handleMouseMove(e: React.MouseEvent) {
+    const { x, y } = relativeXY(ref, e)
+    setState(s => ({
+      ...s,
+      mouse: { x, y },
+      drag:
+        s.isDragging && s.drag ? { ...s.drag, endX: x, endY: y } : s.drag,
+    }))
+  }
 
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      const rect = ref.current?.getBoundingClientRect()
-      const top = rect?.top ?? 0
-      const left = rect?.left ?? 0
-      const clientX = event.clientX - left
-      const clientY = event.clientY - top
-
-      setMouseY(clientY)
-      setMouseX(clientX)
-
-      if (isDragging) {
-        setDragEndX(clientX)
-        setDragEndY(clientY)
-      }
-    },
-    [ref, isDragging],
-  )
-
-  const handleMouseUp = useCallback(
-    (event: React.MouseEvent) => {
-      if (
-        isDragging &&
-        dragStartX !== undefined &&
-        dragEndX !== undefined &&
-        dragStartY !== undefined &&
-        dragEndY !== undefined
-      ) {
-        const dragDistanceX = Math.abs(dragEndX - dragStartX)
-
-        if (dragDistanceX > MIN_DRAG_DISTANCE) {
-          const rect = ref.current?.getBoundingClientRect()
-          const left = rect?.left ?? 0
-          const top = rect?.top ?? 0
+  function handleMouseUp(e: React.MouseEvent) {
+    setState(s => {
+      if (s.isDragging && s.drag) {
+        const dx = Math.abs(s.drag.endX - s.drag.startX)
+        if (dx > MIN_DRAG_DISTANCE) {
+          const { x, y } = relativeXY(ref, e)
           setContextCoord({
-            coord: [event.clientX, event.clientY],
-            dragEndX: event.clientX - left,
-            dragStartX,
-            dragStartY,
-            dragEndY: event.clientY - top,
+            coord: [e.clientX, e.clientY],
+            startX: s.drag.startX,
+            startY: s.drag.startY,
+            endX: x,
+            endY: y,
+            dragStartX: s.drag.startX,
+            dragStartY: s.drag.startY,
+            dragEndX: x,
+            dragEndY: y,
           })
-          setShowSelectionBox(true)
-        } else {
-          clearSelectionBox()
+          return { ...s, isDragging: false, showSelectionBox: true }
         }
       }
-      setIsDragging(false)
-    },
-    [
-      ref,
-      isDragging,
-      dragStartX,
-      dragEndX,
-      dragStartY,
-      dragEndY,
-      clearSelectionBox,
-    ],
-  )
+      return {
+        ...s,
+        isDragging: false,
+        drag: undefined,
+        showSelectionBox: false,
+      }
+    })
+  }
 
-  const handleMouseLeave = useCallback(() => {
-    setMouseY(undefined)
-    setMouseX(undefined)
-    setIsDragging(false)
-  }, [])
+  function handleMouseLeave() {
+    setState(s => ({ ...s, mouse: undefined, isDragging: false }))
+  }
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && showSelectionBox) {
+    if (!state.showSelectionBox) {
+      return
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
         clearSelectionBox()
       }
     }
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        ref.current &&
-        !ref.current.contains(event.target as Node) &&
-        showSelectionBox
-      ) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
         clearSelectionBox()
       }
     }
-
     document.addEventListener('keydown', handleKeyDown)
     document.addEventListener('click', handleClickOutside)
-
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
       document.removeEventListener('click', handleClickOutside)
     }
-  }, [ref, showSelectionBox, clearSelectionBox])
+  }, [ref, state.showSelectionBox])
 
-  const dragDistance =
-    dragStartX !== undefined && dragEndX !== undefined
-      ? Math.abs(dragEndX - dragStartX)
-      : 0
-  const hasDraggedEnough = dragDistance > MIN_DRAG_DISTANCE
+  const { drag, mouse, isDragging, showSelectionBox } = state
+  const draggedEnough =
+    drag !== undefined && Math.abs(drag.endX - drag.startX) > MIN_DRAG_DISTANCE
 
   return {
-    isDragging: isDragging && hasDraggedEnough,
-    dragStartX,
-    dragEndX,
-    dragStartY,
-    dragEndY,
+    isDragging: isDragging && draggedEnough,
+    dragStartX: drag?.startX,
+    dragEndX: drag?.endX,
+    dragStartY: drag?.startY,
+    dragEndY: drag?.endY,
     showSelectionBox,
-    mouseX,
-    mouseY,
+    mouseX: mouse?.x,
+    mouseY: mouse?.y,
     contextCoord,
     setContextCoord,
     handleMouseDown,
