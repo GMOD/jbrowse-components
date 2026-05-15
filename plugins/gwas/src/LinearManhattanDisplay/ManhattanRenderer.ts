@@ -4,10 +4,10 @@ import { Canvas2DManhattanRenderer } from './Canvas2DManhattanRenderer.ts'
 import { GpuManhattanRenderer, MANHATTAN_PASSES } from './GpuManhattanRenderer.ts'
 import * as shader from './shaders/manhattan.generated.ts'
 
-import type { ManhattanBackend } from './manhattanBackendTypes.ts'
+import type { WiggleBackend } from '@jbrowse/plugin-wiggle'
 
-export function ManhattanRenderer(canvas: HTMLCanvasElement): Promise<ManhattanBackend> {
-  return initDualBackend<ManhattanBackend>(
+export function ManhattanRenderer(canvas: HTMLCanvasElement): Promise<WiggleBackend> {
+  return initDualBackend<WiggleBackend>(
     canvas,
     MANHATTAN_PASSES,
     shader.UNIFORMS_SIZE_BYTES,

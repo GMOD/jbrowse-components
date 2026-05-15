@@ -2,21 +2,27 @@ import { clipBlock, writeBpRangeUniforms } from '@jbrowse/core/gpu/blockClipUtil
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import * as shader from './shaders/manhattan.generated.ts'
 
-import type { ManhattanBackend, ManhattanRegionData, ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type {
+  SourceRenderData,
+  WiggleBackend,
+  WiggleGPURenderState,
+  WiggleRenderBlock,
+} from '@jbrowse/plugin-wiggle'
 
 const PASS = 'point'
 const U = shader.UNIFORM_OFFSET_F32
+const POINT_RADIUS_PX = 2
 
 export const MANHATTAN_PASSES: PassDescriptor[] = [
   slangPass({ id: PASS, mod: shader, topology: 'triangle-list' }),
 ]
 
-export class GpuManhattanRenderer implements ManhattanBackend {
+export class GpuManhattanRenderer implements WiggleBackend {
   private hal: GpuHal
   private uniformData = new ArrayBuffer(shader.UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
@@ -27,15 +33,23 @@ export class GpuManhattanRenderer implements ManhattanBackend {
     this.hal = hal
   }
 
-  uploadRegion(displayedRegionIndex: number, data: ManhattanRegionData) {
-    if (data.numFeatures === 0) {
+  uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]) {
+    let total = 0
+    for (const source of sources) {
+      total += source.numFeatures
+    }
+    if (total === 0) {
       this.hal.deleteRegion(displayedRegionIndex)
       this.regionCount.delete(displayedRegionIndex)
       return
     }
-    const buf = buildInstanceBuffer(data)
-    this.hal.uploadBuffer(displayedRegionIndex, PASS, buf, data.numFeatures)
-    this.regionCount.set(displayedRegionIndex, data.numFeatures)
+    this.hal.uploadBuffer(
+      displayedRegionIndex,
+      PASS,
+      buildInstanceBuffer(sources, total),
+      total,
+    )
+    this.regionCount.set(displayedRegionIndex, total)
   }
 
   pruneRegions(activeRegions: number[]) {
@@ -44,13 +58,12 @@ export class GpuManhattanRenderer implements ManhattanBackend {
     })
   }
 
-  renderBlocks(blocks: RenderBlock[], state: ManhattanRenderState): boolean {
-    const { canvasWidth, canvasHeight, domainY, scaleType, pointRadius } = state
+  renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
+    const { canvasWidth, canvasHeight, domainY, scaleType } = state
     const dpr = getDpr()
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
 
-    let drew = false
     for (const block of blocks) {
       if (this.hal.getBufferCount(block.displayedRegionIndex, PASS) === 0) {
         continue
@@ -71,17 +84,15 @@ export class GpuManhattanRenderer implements ManhattanBackend {
       this.uniformF32[U.zero] = 0
       this.uniformF32[U.viewportWidth] = clip.pxW
       this.uniformF32[U.reversed] = block.reversed ? 1 : 0
-      this.uniformF32[U.pointRadius] = pointRadius
+      this.uniformF32[U.pointRadius] = POINT_RADIUS_PX
 
       this.hal.writeUniforms(this.uniformData)
       this.hal.drawPass(PASS, block.displayedRegionIndex)
-      drew = true
     }
 
     this.hal.clearScissor()
     this.hal.clearViewport()
     this.hal.endFrame()
-    return drew
   }
 
   dispose() {
@@ -90,17 +101,26 @@ export class GpuManhattanRenderer implements ManhattanBackend {
   }
 }
 
-function buildInstanceBuffer(data: ManhattanRegionData): ArrayBuffer {
-  const n = data.numFeatures
-  const buf = new ArrayBuffer(n * shader.INSTANCE_STRIDE_BYTES)
+function buildInstanceBuffer(
+  sources: SourceRenderData[],
+  total: number,
+): ArrayBuffer {
+  const buf = new ArrayBuffer(total * shader.INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   const stride = shader.INSTANCE_STRIDE_F32
-
-  for (let i = 0; i < n; i++) {
-    u32[i * stride + shader.FIELD_OFFSET_F32.absPosition] = data.positions[i]!
-    f32[i * stride + shader.FIELD_OFFSET_F32.score] = data.scores[i]!
-    u32[i * stride + shader.FIELD_OFFSET_F32.color] = data.colors[i]!
+  let off = 0
+  for (const source of sources) {
+    const color = source.color
+    const colorAbgr = normalizedRgbToABGR(color[0], color[1], color[2])
+    const positions = source.featurePositions
+    const scores = source.featureScores
+    for (let i = 0; i < source.numFeatures; i++) {
+      u32[off + shader.FIELD_OFFSET_F32.absPosition] = positions[i * 2]!
+      f32[off + shader.FIELD_OFFSET_F32.score] = scores[i]!
+      u32[off + shader.FIELD_OFFSET_F32.color] = colorAbgr
+      off += stride
+    }
   }
   return buf
 }

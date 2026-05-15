@@ -1,30 +1,36 @@
-import { getDpr, prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import {
+  bpToScreenPx,
+  getDpr,
+  prepareCanvas,
+} from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
-
-import { normalizeScore } from './normalizeScore.ts'
+import { normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
+import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import type {
-  ManhattanBackend,
-  ManhattanRegionData,
-  ManhattanRenderState,
-} from './manhattanBackendTypes.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+  SourceRenderData,
+  WiggleBackend,
+  WiggleGPURenderState,
+  WiggleRenderBlock,
+} from '@jbrowse/plugin-wiggle'
 
 const TWO_PI = Math.PI * 2
+const POINT_RADIUS_PX = 2
 
-export class Canvas2DManhattanRenderer implements ManhattanBackend {
+export class Canvas2DManhattanRenderer implements WiggleBackend {
   private canvas: HTMLCanvasElement
-  private regionData = new Map<number, ManhattanRegionData>()
+  private regionData = new Map<number, SourceRenderData[]>()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
 
-  uploadRegion(displayedRegionIndex: number, data: ManhattanRegionData) {
-    if (data.numFeatures === 0) {
+  uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]) {
+    const total = sources.reduce((n, s) => n + s.numFeatures, 0)
+    if (total === 0) {
       this.regionData.delete(displayedRegionIndex)
     } else {
-      this.regionData.set(displayedRegionIndex, data)
+      this.regionData.set(displayedRegionIndex, sources)
     }
   }
 
@@ -32,63 +38,61 @@ export class Canvas2DManhattanRenderer implements ManhattanBackend {
     pruneRegionMap(this.regionData, activeRegions)
   }
 
-  renderBlocks(blocks: RenderBlock[], state: ManhattanRenderState): boolean {
-    const { canvasWidth, canvasHeight, domainY, scaleType, pointRadius } = state
+  renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
+    const { canvasWidth, canvasHeight, domainY, scaleType } = state
     const ctx = this.canvas.getContext('2d')
     if (!ctx) {
-      return false
+      return
     }
 
     prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     const dpr = getDpr()
-    const pr = pointRadius * dpr
+    const pr = POINT_RADIUS_PX * dpr
+    const normalize = makeScoreNormalizer(domainY[0], domainY[1], scaleType === 1)
 
-    let drew = false
     for (const block of blocks) {
-      const data = this.regionData.get(block.displayedRegionIndex)
-      if (!data) {
+      const sources = this.regionData.get(block.displayedRegionIndex)
+      if (!sources) {
         continue
       }
-
-      const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
-      const blockWidth = block.screenEndPx - block.screenStartPx
-      const bpPerPx = bpLength / blockWidth
-      const regionStart = block.bpRangeX[0]
-
-      // All points share one color (set by encodeRegion); extract once.
-      const c = data.colors[0]!
-      const r = (c >>> 0) & 0xFF
-      const g = (c >>> 8) & 0xFF
-      const b = (c >>> 16) & 0xFF
-      const a = (c >>> 24) & 0xFF
+      const [bpStart, bpEnd] = block.bpRangeX
+      const { screenStartPx, screenEndPx, reversed } = block
 
       ctx.save()
       ctx.beginPath()
-      ctx.rect(block.screenStartPx * dpr, 0, blockWidth * dpr, canvasHeight * dpr)
+      ctx.rect(
+        screenStartPx * dpr,
+        0,
+        (screenEndPx - screenStartPx) * dpr,
+        canvasHeight * dpr,
+      )
       ctx.clip()
 
-      ctx.fillStyle = `rgba(${r},${g},${b},${a / 255})`
-      ctx.beginPath()
-      for (let i = 0; i < data.numFeatures; i++) {
-        const pos = data.positions[i]!
-        const score = data.scores[i]!
-
-        const x = (block.reversed
-          ? (block.bpRangeX[1] - pos) / bpPerPx + block.screenStartPx
-          : (pos - regionStart) / bpPerPx + block.screenStartPx) * dpr
-        const y = (1 - normalizeScore(score, domainY, scaleType)) * canvasHeight * dpr
-
-        ctx.moveTo(x + pr, y)
-        ctx.arc(x, y, pr, 0, TWO_PI)
+      for (const source of sources) {
+        ctx.fillStyle = normalizedRgbToCss(source.color)
+        ctx.beginPath()
+        const { featurePositions, featureScores, numFeatures } = source
+        for (let i = 0; i < numFeatures; i++) {
+          const x =
+            bpToScreenPx(
+              featurePositions[i * 2]!,
+              bpStart,
+              bpEnd,
+              screenStartPx,
+              screenEndPx,
+              reversed,
+            ) * dpr
+          const y = (1 - normalize(featureScores[i]!)) * canvasHeight * dpr
+          ctx.moveTo(x + pr, y)
+          ctx.arc(x, y, pr, 0, TWO_PI)
+        }
+        ctx.fill()
       }
-      ctx.fill()
 
       ctx.restore()
-      drew = true
     }
-    return drew
   }
 
   dispose() {

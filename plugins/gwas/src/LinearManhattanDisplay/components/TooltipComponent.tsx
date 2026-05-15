@@ -4,10 +4,10 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import type { ManhattanHit } from '../findManhattanHit.ts'
+
 export interface TooltipModel {
-  featureUnderMouse:
-    | { refName: string; start: number; score: number }
-    | undefined
+  featureUnderMouse: ManhattanHit | undefined
 }
 
 const TooltipComponent = observer(function TooltipComponent({

@@ -1,65 +1,82 @@
-import { normalizeScore } from './normalizeScore.ts'
+import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
+import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
-import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type {
+  WiggleGPURenderState,
+  WiggleRenderBlock,
+} from '@jbrowse/plugin-wiggle'
 
 export interface ManhattanHit {
   refName: string
   start: number
   end: number
   score: number
+  screenX: number
+  screenY: number
 }
 
-interface RegionScores {
-  positions: Uint32Array
-  scores: Float32Array
+interface FeatureSource {
+  featurePositions: Uint32Array
+  featureScores: Float32Array
   numFeatures: number
 }
 
 const HIT_RADIUS_PX = 8
 
+// Finds the closest point within the hit radius. Reads from the same shape
+// wiggle's rpcDataMap stores — `{ sources: [{ featurePositions, featureScores,
+// numFeatures }] }` per region. Y is the score normalized into canvasHeight.
 export function findManhattanHit(
   mouseX: number,
   mouseY: number,
-  renderBlocks: RenderBlock[],
-  regionData: ReadonlyMap<number, RegionScores>,
-  state: ManhattanRenderState,
+  blocks: WiggleRenderBlock[],
+  regionData: ReadonlyMap<number, { sources: FeatureSource[] }>,
+  state: WiggleGPURenderState,
   refNames: Map<number, string>,
 ): ManhattanHit | undefined {
   const { domainY, canvasHeight, scaleType } = state
+  const normalize = makeScoreNormalizer(domainY[0], domainY[1], scaleType === 1)
 
   let bestDistSq = HIT_RADIUS_PX * HIT_RADIUS_PX
   let best: ManhattanHit | undefined
 
-  for (const block of renderBlocks) {
+  for (const block of blocks) {
     const data = regionData.get(block.displayedRegionIndex)
     const refName = refNames.get(block.displayedRegionIndex)
     if (!data || !refName) {
       continue
     }
+    const [bpStart, bpEnd] = block.bpRangeX
+    const { screenStartPx, screenEndPx, reversed } = block
 
-    const bpLen = block.bpRangeX[1] - block.bpRangeX[0]
-    const blockWidth = block.screenEndPx - block.screenStartPx
-    if (blockWidth <= 0 || bpLen <= 0) {
-      continue
-    }
-    const bpPerPx = bpLen / blockWidth
-
-    for (let i = 0; i < data.numFeatures; i++) {
-      const pos = data.positions[i]!
-      const score = data.scores[i]!
-
-      const ptX = block.reversed
-        ? (block.bpRangeX[1] - pos) / bpPerPx + block.screenStartPx
-        : (pos - block.bpRangeX[0]) / bpPerPx + block.screenStartPx
-      const ptY = (1 - normalizeScore(score, domainY, scaleType)) * canvasHeight
-
-      const dx = mouseX - ptX
-      const dy = mouseY - ptY
-      const distSq = dx * dx + dy * dy
-      if (distSq < bestDistSq) {
-        bestDistSq = distSq
-        best = { refName, start: pos, end: pos, score }
+    for (const source of data.sources) {
+      const { featurePositions, featureScores, numFeatures } = source
+      for (let i = 0; i < numFeatures; i++) {
+        const pos = featurePositions[i * 2]!
+        const score = featureScores[i]!
+        const ptX = bpToScreenPx(
+          pos,
+          bpStart,
+          bpEnd,
+          screenStartPx,
+          screenEndPx,
+          reversed,
+        )
+        const ptY = (1 - normalize(score)) * canvasHeight
+        const dx = mouseX - ptX
+        const dy = mouseY - ptY
+        const distSq = dx * dx + dy * dy
+        if (distSq < bestDistSq) {
+          bestDistSq = distSq
+          best = {
+            refName,
+            start: pos,
+            end: featurePositions[i * 2 + 1]!,
+            score,
+            screenX: ptX,
+            screenY: ptY,
+          }
+        }
       }
     }
   }
