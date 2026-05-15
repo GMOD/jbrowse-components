@@ -478,7 +478,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  async getSamples(_query: Region) {
+  async getSamples() {
     return getSamplesFromConfig(this.getConf.bind(this))
   }
 

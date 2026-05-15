@@ -8,23 +8,35 @@ import type { Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    MafGetSequences: {
+      args: MafGetSequencesArgs
+      return: string[]
+    }
+  }
+}
+
+export interface MafGetSequencesArgs {
+  sessionId: string
+  adapterConfig: AnyConfigurationModel
+  samples: Sample[]
+  regions: Region[]
+  showAllLetters: boolean
+  includeInsertions?: boolean
+  stopToken?: StopToken
+  headers?: Record<string, string>
+}
 
 export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MafGetSequences'
 
   async execute(
-    args: {
-      adapterConfig: AnyConfigurationModel
-      samples: Sample[]
-      stopToken?: string
-      sessionId: string
-      headers?: Record<string, string>
-      regions: Region[]
-      showAllLetters: boolean
-      includeInsertions?: boolean
-    },
+    args: MafGetSequencesArgs,
     rpcDriverClassName: string,
-  ) {
+  ): Promise<string[]> {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

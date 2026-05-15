@@ -103,7 +103,7 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
     }, opts?.stopToken)
   }
 
-  async getSamples(_query: Region) {
+  async getSamples() {
     return getSamplesFromConfig(this.getConf.bind(this))
   }
 

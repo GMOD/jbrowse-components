@@ -754,12 +754,7 @@ describe('BgzipTaffyAdapter integration tests', () => {
       }),
     )
 
-    const result = await adapter.getSamples({
-      assemblyName: 'ce10',
-      refName: 'chrI',
-      start: 0,
-      end: 1000,
-    })
+    const result = await adapter.getSamples()
 
     expect(result.tree).toBeDefined()
   })

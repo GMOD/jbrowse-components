@@ -86,7 +86,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
 
         const { rpcManager } = session
 
-        const fastaSequence = (await rpcManager.call(
+        const fastaSequence = await rpcManager.call(
           'MafSequenceWidget',
           'MafGetSequences',
           {
@@ -97,7 +97,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
             includeInsertions,
             regions,
           },
-        )) as string[]
+        )
 
         setRawSequences(fastaSequence)
 

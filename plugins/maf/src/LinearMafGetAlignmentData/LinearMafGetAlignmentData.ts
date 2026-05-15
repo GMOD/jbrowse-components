@@ -13,9 +13,10 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { NewickNode } from '@jbrowse/tree-sidebar'
 
 type MafAdapter = BaseFeatureDataAdapter & {
-  getSamples: (
-    region: Region | undefined,
-  ) => Promise<{ samples: Sample[]; tree: NewickNode | undefined }>
+  getSamples: () => Promise<{
+    samples: Sample[]
+    tree: NewickNode | undefined
+  }>
 }
 
 interface AlignmentRecord { seq: string; start: number; chr: string }
@@ -89,7 +90,7 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
     // Server is authoritative for samples + tree (derived from track config).
     // Shipping them with every region response avoids a separate setup RPC and
     // keeps the client's sample list aligned with the server-side filtering.
-    const { samples, tree } = await adapter.getSamples(region)
+    const { samples, tree } = await adapter.getSamples()
 
     const enc = new TextEncoder()
     const sampleToRow = new Map(samples.map((s, i) => [s.id, i]))
