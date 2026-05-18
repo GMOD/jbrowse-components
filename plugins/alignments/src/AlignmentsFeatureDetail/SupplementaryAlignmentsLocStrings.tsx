@@ -28,22 +28,16 @@ export default function SupplementaryAlignmentsLocStrings({
             const saLength = getLengthOnRef(saCigar)
             const extra = Math.floor(saLength / 5)
             const start = +saStart
-            const end = +saStart + saLength
-            const sp = start - extra
-            const ep = end + extra
-            const locString = `${saRef}:${Math.max(1, sp)}-${ep}`
-            const displayStart = toLocale(start)
-            const displayEnd = toLocale(end)
-            const displayString = `${saRef}:${displayStart}-${displayEnd} (${saStrand}) [${saLength}bp]`
+            const end = start + saLength
+            const locString = `${saRef}:${Math.max(1, start - extra)}-${end + extra}`
+            const displayString = `${saRef}:${toLocale(start)}-${toLocale(end)} (${saStrand}) [${saLength}bp]`
             return (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */
               <li key={`${locString}-${idx}`}>
                 <Link
                   href="#"
-                  onClick={async event => {
+                  onClick={event => {
                     event.preventDefault()
-
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     navToLoc(locString, model)
                   }}
                 >

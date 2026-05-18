@@ -21,17 +21,20 @@ const LinkedPairedAlignments = lazy(
   () => import('./LinkedPairedAlignments.tsx'),
 )
 
-const FeatDefined = observer(function FeatDefined(props: {
+const FeatDefined = observer(function FeatDefined({
+  feat,
+  model,
+}: {
   feat: SimpleFeatureSerialized
   model: AlignmentFeatureWidgetModel
 }) {
-  const { model, feat } = props
-  const flags = feat.flags as number | null
-  const SA = getTag('SA', feat) as string | undefined
+  const flags = typeof feat.flags === 'number' ? feat.flags : null
+  const sa = getTag('SA', feat)
+  const SA = typeof sa === 'string' ? sa : undefined
   return (
     <Paper data-testid="alignment-side-drawer">
       <FeatureDetails
-        {...props}
+        model={model}
         descriptions={{ tags }}
         feature={feat}
         formatter={(value, key) =>
@@ -46,13 +49,13 @@ const FeatDefined = observer(function FeatDefined(props: {
       {SA !== undefined ? (
         <SupplementaryAlignments model={model} tag={SA} feature={feat} />
       ) : null}
-      {flags != null ? (
+      {flags !== null ? (
         <>
           {flags & 1 ? (
             <LinkedPairedAlignments model={model} feature={feat} />
           ) : null}
 
-          <Flags flags={flags} {...props} />
+          <Flags flags={flags} />
         </>
       ) : null}
     </Paper>

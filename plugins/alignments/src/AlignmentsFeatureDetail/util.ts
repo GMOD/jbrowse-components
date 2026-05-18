@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -9,20 +9,28 @@ export function getTag(
     [key: string]: unknown
   },
 ) {
-  return feat.tags?.[tag] || feat[tag]
+  return feat.tags?.[tag] ?? feat[tag]
 }
 
-export async function navToLoc(locString: string, model: IAnyStateTreeNode) {
+export function hasBreakpointSplitView(model: IAnyStateTreeNode) {
+  try {
+    return !!getEnv(getSession(model)).pluginManager.getViewType(
+      'BreakpointSplitView',
+    )
+  } catch {
+    return false
+  }
+}
+
+export function navToLoc(locString: string, model: IAnyStateTreeNode) {
   const session = getSession(model)
   const { view } = model
-  try {
-    if (view) {
-      await view.navToLocString(locString)
-    } else {
-      throw new Error('No view associated with this view anymore')
-    }
-  } catch (e) {
-    console.error(e)
-    session.notify(`${e}`)
+  if (view) {
+    view.navToLocString(locString).catch((e: unknown) => {
+      console.error(e)
+      session.notify(`${e}`)
+    })
+  } else {
+    session.notify('No view associated with this view anymore')
   }
 }
