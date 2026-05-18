@@ -10,7 +10,6 @@ import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 2u;
-static const uint NUM_LINKED_READ_COLORS = 8u;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -28,14 +27,12 @@ struct VsOut {
 };
 
 float3 linkedReadColorByIndex(uint idx, Uniforms u) {
-  if (idx == 0u) { return unpackRGBA(u.linkedReadColor0).xyz; }
-  if (idx == 1u) { return unpackRGBA(u.linkedReadColor1).xyz; }
-  if (idx == 2u) { return unpackRGBA(u.linkedReadColor2).xyz; }
-  if (idx == 3u) { return unpackRGBA(u.linkedReadColor3).xyz; }
-  if (idx == 4u) { return unpackRGBA(u.linkedReadColor4).xyz; }
-  if (idx == 5u) { return unpackRGBA(u.linkedReadColor5).xyz; }
-  if (idx == 6u) { return unpackRGBA(u.linkedReadColor6).xyz; }
-  return unpackRGBA(u.linkedReadColor7).xyz;
+  uint colors[8];
+  colors[0] = u.linkedReadColor0; colors[1] = u.linkedReadColor1;
+  colors[2] = u.linkedReadColor2; colors[3] = u.linkedReadColor3;
+  colors[4] = u.linkedReadColor4; colors[5] = u.linkedReadColor5;
+  colors[6] = u.linkedReadColor6; colors[7] = u.linkedReadColor7;
+  return unpackRGBA(colors[min(idx, 7u)]).xyz;
 }
 
 [shader("vertex")]
@@ -54,8 +51,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
   uint idx = uint(inst.colorType + 0.5);
-  uint ci = min(idx, NUM_LINKED_READ_COLORS - 1u);
-  o.color = float4(linkedReadColorByIndex(ci, u), 0.8);
+  o.color = float4(linkedReadColorByIndex(idx, u), 0.8);
   return o;
 }
 
