@@ -30,7 +30,8 @@ export default function HicSVGColorLegend({
   const fontSize = 10
 
   // Position legend to the right if legendAreaWidth is provided, otherwise top-right inside
-  const x = legendAreaWidth ? width + 10 : width - legendWidth - 10
+  const x =
+    legendAreaWidth !== undefined ? width + 10 : width - legendWidth - 10
   const y = 10
 
   return (

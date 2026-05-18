@@ -89,10 +89,10 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
   const isAuto = resolution === undefined
   const canGoFiner =
     effectiveResolution !== undefined &&
-    (availableResolutions?.some(r => r < effectiveResolution) ?? false)
+    !!availableResolutions?.some(r => r < effectiveResolution)
   const canGoCoarser =
     effectiveResolution !== undefined &&
-    (availableResolutions?.some(r => r > effectiveResolution) ?? false)
+    !!availableResolutions?.some(r => r > effectiveResolution)
 
   return (
     <div className={classes.panel}>

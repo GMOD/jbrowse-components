@@ -104,14 +104,9 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   async getResolution(res: number, opts?: BaseOptions) {
     const { resolutions } = await this.setup(opts)
     const resolutionMultiplier = this.getConf('resolutionMultiplier')
-    let chosenResolution = resolutions.at(-1)!
-    for (let i = resolutions.length - 1; i >= 0; i -= 1) {
-      const r = resolutions[i]!
-      if (r <= 2 * res * resolutionMultiplier) {
-        chosenResolution = r
-      }
-    }
-    return chosenResolution
+    const threshold = 2 * res * resolutionMultiplier
+    const sorted = [...resolutions].sort((a, b) => a - b)
+    return sorted.findLast(r => r <= threshold) ?? sorted[0]!
   }
 
   getFeatures(region: Region, opts: HicOptions = {}) {
@@ -161,20 +156,10 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       resolution !== undefined && metadata.resolutions.includes(resolution)
         ? resolution
         : await this.getResolution(bpPerPx, opts)
-    console.warn(
-      '[HiC Adapter] getMultiRegionContactRecords: requested resolution=',
-      resolution,
-      'bpPerPx=',
-      bpPerPx,
-      'available=',
-      metadata.resolutions,
-      '-> using res=',
-      res,
-    )
 
-    // Build a chromosome → hic-file index map. hic-straw transposes queries
-    // when idx(chr1) > idx(chr2), returning bin1/bin2 in the swapped order.
-    // We mirror that logic so bin1 always maps back to region[i] coordinates.
+    // hic-straw transposes queries when idx(chr1) > idx(chr2), returning
+    // bin1/bin2 in the swapped order. We mirror that logic so bin1 always
+    // maps back to region[i] coordinates.
     const chrIndexMap = new Map(
       metadata.chromosomes.map(c => [c.name, c.index]),
     )
@@ -184,7 +169,11 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         return direct
       }
       const alt = refName.startsWith('chr') ? refName.slice(3) : `chr${refName}`
-      return chrIndexMap.get(alt) ?? 0
+      const altIdx = chrIndexMap.get(alt)
+      if (altIdx === undefined) {
+        throw new Error(`refName ${refName} not found in .hic file`)
+      }
+      return altIdx
     }
 
     const allRecords: MultiRegionContactRecord[] = []

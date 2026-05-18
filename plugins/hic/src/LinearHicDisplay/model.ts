@@ -7,7 +7,7 @@ import {
   getRpcSessionId,
   getSession,
 } from '@jbrowse/core/util'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   ConfigOverrideMixin,
   GlobalDataDisplayMixin,
@@ -15,6 +15,7 @@ import {
   TrackHeightMixin,
   computeRenderTransform,
 } from '@jbrowse/plugin-linear-genome-view'
+import { autorun } from 'mobx'
 
 import { generateColorRamp } from './components/HicRenderer.ts'
 
@@ -88,6 +89,7 @@ export default function stateModelFactory(
        */
       availableResolutions: undefined as number[] | undefined,
     }))
+     
     .preProcessSnapshot((snap: any) => {
       if (!snap) {
         return snap
@@ -97,11 +99,12 @@ export default function stateModelFactory(
       // from the file (5000, 10000, …). Anything < 1000 in old snapshots
       // is almost certainly a stale multiplier — drop it so the model
       // falls back to auto-mode.
+      let normalized = snap
       if (snap.resolution !== undefined && snap.resolution < 1000) {
         const { resolution: _drop, ...withoutRes } = snap
-        snap = withoutRes
+        normalized = withoutRes
       }
-      const { colorScheme, showLegend, ...rest } = snap
+      const { colorScheme, showLegend, ...rest } = normalized
       if (colorScheme === undefined && showLegend === undefined) {
         return rest
       }
@@ -150,13 +153,7 @@ export default function stateModelFactory(
         // avail is sorted ascending (smallest binsize first); pick the
         // largest binsize ≤ 2*bpPerPx, falling back to the smallest if
         // none qualify (very zoomed in).
-        let chosen = avail[0]!
-        for (const r of avail) {
-          if (r <= 2 * bpPerPx) {
-            chosen = r
-          }
-        }
-        return chosen
+        return avail.findLast(r => r <= 2 * bpPerPx) ?? avail[0]!
       },
       get yScalar() {
         const view = getContainingView(self) as LinearGenomeViewModel
@@ -169,8 +166,8 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       // Literal RPC payload for RenderHicData. Adding a field here flows
-      // into both the RPC call (via the fetch autorun in afterAttach.ts)
-      // and into mobx's dependency tracking — the fetch autorun calls
+      // into both the RPC call (via the fetch autorun in afterAttach) and
+      // into mobx's dependency tracking — the fetch autorun calls
       // `self.rpcProps()` once, so any change refires it.
       rpcProps() {
         return {
@@ -618,13 +615,63 @@ export default function stateModelFactory(
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self)
+            const { rpcManager } = getSession(self)
+            const rpcSessionId = getRpcSessionId(self)
+            const { norms, resolutions } = (await rpcManager.call(
+              rpcSessionId,
+              'CoreGetInfo',
+              { adapterConfig: self.adapterConfig },
+            )) as { norms?: string[]; resolutions?: number[] }
+            if (isAlive(self)) {
+              if (norms) {
+                self.setAvailableNormalizations(norms)
+              }
+              if (resolutions) {
+                self.setAvailableResolutions(resolutions)
+                // No initial-resolution selection here — `effectiveResolution`
+                // auto-derives from bpPerPx whenever `self.resolution` is unset.
+              }
+            }
           } catch (e) {
             console.error(e)
-            self.setError(e)
+            if (isAlive(self)) {
+              getSession(self).notifyError(`${e}`, e)
+            }
           }
         })()
+
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              if (self.isMinimized) {
+                return
+              }
+              const view = getContainingView(self) as LinearGenomeViewModel
+              if (!view.initialized) {
+                return
+              }
+              if (!view.dynamicBlocks.contentBlocks.length) {
+                return
+              }
+              // effectiveResolution is undefined until availableResolutions
+              // arrives from CoreGetInfo — skip until then.
+              if (self.effectiveResolution === undefined) {
+                return
+              }
+
+              // rpcProps IS the full RPC payload; any field change refires
+              // the autorun. The viewport read above already retriggers on
+              // pan/zoom.
+              void self.rpcProps()
+              void self.performHicFetch()
+            },
+            {
+              delay: 1000,
+              name: 'LinearHicDisplayRender',
+            },
+          ),
+        )
       },
     }))
 }

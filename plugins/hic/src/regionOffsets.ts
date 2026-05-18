@@ -11,15 +11,14 @@ export function calcRegionCombinedOffsets(
   bpPerPx: number,
   res: number,
 ) {
-  const regionPixelOffsets: number[] = []
+  const pxToBinFactor = bpPerPx / res
+  const out: number[] = []
   let cumulativePixelOffset = 0
   for (const region of regions) {
-    regionPixelOffsets.push(cumulativePixelOffset)
+    out.push(
+      cumulativePixelOffset * pxToBinFactor - Math.floor(region.start / res),
+    )
     cumulativePixelOffset += (region.end - region.start) / bpPerPx
   }
-  const pxToBinFactor = bpPerPx / res
-  return regions.map(
-    (region, i) =>
-      regionPixelOffsets[i]! * pxToBinFactor - Math.floor(region.start / res),
-  )
+  return out
 }
