@@ -580,17 +580,14 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
     })
     .views(self => ({
       get visibleLabels() {
-        const view = getContainingView(self) as LGV
-        return computeMultiSyntenyLabels(
-          self.genomeRows,
-          self.displayedGenomes,
-          self.rowHeight,
-          self.rowSpacing,
-          self.showSnps,
-          view.bpToPx.bind(view),
-          view.offsetPx,
-          view.width,
-        )
+        return computeMultiSyntenyLabels({
+          view: getContainingView(self) as LGV,
+          genomeRows: self.genomeRows,
+          displayedGenomes: self.displayedGenomes,
+          rowHeight: self.rowHeight,
+          rowSpacing: self.rowSpacing,
+          showSnps: self.showSnps,
+        })
       },
       contextMenuItems() {
         const feature = self.contextMenuFeature

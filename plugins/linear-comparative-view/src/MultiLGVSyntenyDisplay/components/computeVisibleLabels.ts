@@ -102,19 +102,28 @@ function makeLabelVisitor(ctx: LabelContext) {
   }
 }
 
+interface LabelView {
+  bpToPx(arg: { refName: string; coord: number }):
+    | { offsetPx: number }
+    | undefined
+  offsetPx: number
+  width: number
+}
+
+interface ComputeMultiSyntenyLabelsParams {
+  view: LabelView
+  genomeRows: Map<string, MultiPairFeature[]>
+  displayedGenomes: string[]
+  rowHeight: number
+  rowSpacing: boolean
+  showSnps: boolean
+}
+
 export function computeMultiSyntenyLabels(
-  genomeRows: Map<string, MultiPairFeature[]>,
-  displayedGenomes: string[],
-  rowHeight: number,
-  rowSpacing: boolean,
-  showSnps: boolean,
-  bpToPx: (arg: {
-    refName: string
-    coord: number
-  }) => { offsetPx: number } | undefined,
-  offsetPx: number,
-  viewWidth: number,
+  params: ComputeMultiSyntenyLabelsParams,
 ) {
+  const { view, genomeRows, displayedGenomes, rowHeight, rowSpacing, showSnps } =
+    params
   const labels: VisibleLabel[] = []
   if (!showSnps || rowHeight < MIN_HEIGHT_FOR_TEXT) {
     return labels
@@ -135,17 +144,17 @@ export function computeMultiSyntenyLabels(
       if (!feat.cs && !feat.cigar) {
         continue
       }
-      const px1 = bpToPx({ refName: feat.origRefName, coord: feat.start })
-      const px2 = bpToPx({ refName: feat.origRefName, coord: feat.end })
+      const px1 = view.bpToPx({ refName: feat.origRefName, coord: feat.start })
+      const px2 = view.bpToPx({ refName: feat.origRefName, coord: feat.end })
       if (!px1 || !px2) {
         continue
       }
-      const x1 = px1.offsetPx - offsetPx
-      const x2 = px2.offsetPx - offsetPx
+      const x1 = px1.offsetPx - view.offsetPx
+      const x2 = px2.offsetPx - view.offsetPx
       const blockWidth = x2 - x1
 
       // Skip features entirely off-screen
-      if (x1 + blockWidth < 0 || x1 > viewWidth) {
+      if (x1 + blockWidth < 0 || x1 > view.width) {
         continue
       }
 

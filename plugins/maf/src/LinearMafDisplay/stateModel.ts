@@ -433,10 +433,18 @@ export default function stateModelFactory(
        * #getter
        */
       get visibleLabels() {
-        const state = self.mafRenderState
-        return state
-          ? computeVisibleLabels(self.renderBlocks, self.rpcDataMap, state)
-          : []
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized || !self.samples) {
+          return []
+        }
+        return computeVisibleLabels({
+          view,
+          rpcDataMap: self.rpcDataMap,
+          rowHeight: self.rowHeight,
+          rowProportion: self.rowProportion,
+          showAllLetters: self.showAllLetters,
+          showAsUpperCase: self.showAsUpperCase,
+        })
       },
     }))
     .views(self => {

@@ -1,9 +1,6 @@
-import { clipBlockForCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
-
 import { CHAR_SIZE_WIDTH, VERTICAL_TEXT_OFFSET } from '../../LinearMafRenderer/rendering/types.ts'
 
-import type { MafGPURenderState, MafRegionData } from '../../LinearMafRenderer/mafBackendTypes.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { MafRegionData } from '../../LinearMafRenderer/mafBackendTypes.ts'
 
 export interface VisibleLabel {
   x: number
@@ -12,61 +9,77 @@ export interface VisibleLabel {
   lowerBase: string
 }
 
+interface LabelView {
+  visibleRegions: {
+    displayedRegionIndex: number
+    start: number
+    screenStartPx: number
+  }[]
+  bpPerPx: number
+}
+
+interface ComputeVisibleLabelsParams {
+  view: LabelView
+  rpcDataMap: { get(idx: number): { regionData: MafRegionData } | undefined }
+  rowHeight: number
+  rowProportion: number
+  showAllLetters: boolean
+  showAsUpperCase: boolean
+}
+
 export function computeVisibleLabels(
-  renderBlocks: RenderBlock[],
-  rpcDataMap: { get(key: number): { regionData: MafRegionData } | undefined },
-  state: MafGPURenderState,
+  params: ComputeVisibleLabelsParams,
 ): VisibleLabel[] {
-  const { canvasWidth, rowHeight, rowProportion, showAllLetters, showAsUpperCase } = state
+  const {
+    view,
+    rpcDataMap,
+    rowHeight,
+    rowProportion,
+    showAllLetters,
+    showAsUpperCase,
+  } = params
+
+  const labels: VisibleLabel[] = []
+  const scale = 1 / view.bpPerPx
+  if (scale < CHAR_SIZE_WIDTH) {
+    return labels
+  }
+
   const h = rowHeight * rowProportion
   const hp2 = h / 2
   const offset = (rowHeight - h) / 2
-  const labels: VisibleLabel[] = []
   const decoder = new TextDecoder()
+  const xOffsetInCell = (scale - CHAR_SIZE_WIDTH) / 2 + 1
 
-  for (const block of renderBlocks) {
-    const entry = rpcDataMap.get(block.displayedRegionIndex)
+  for (const vr of view.visibleRegions) {
+    const entry = rpcDataMap.get(vr.displayedRegionIndex)
     if (!entry) {
       continue
     }
-
     const { regionData } = entry
-    const clip = clipBlockForCanvas(block, canvasWidth)
-    if (!clip) {
-      continue
-    }
-
-    const bpPerPx = clip.bpLength / clip.fullBlockWidth
-    const scale = 1 / bpPerPx
-
-    if (scale < CHAR_SIZE_WIDTH) {
-      continue
-    }
-
-    const leftPx = block.screenStartPx + (regionData.startBp - block.bpRangeX[0]) / bpPerPx
+    const leftPx = vr.screenStartPx + (regionData.startBp - vr.start) * scale
     const refSeq = decoder.decode(regionData.refSeqBytes)
 
     for (const row of regionData.rows) {
       const alignment = decoder.decode(row.alignmentBytes)
       const rowTop = offset + rowHeight * row.rowIndex
+      const yPos = hp2 + rowTop + VERTICAL_TEXT_OFFSET
 
       for (let i = 0, genomicOffset = 0; i < alignment.length; i++) {
         const refChar = refSeq[i]!
         if (refChar !== '-') {
           const alignChar = alignment[i]!
           if (
-            (showAllLetters || refChar.toLowerCase() !== alignChar.toLowerCase()) &&
+            (showAllLetters ||
+              refChar.toLowerCase() !== alignChar.toLowerCase()) &&
             alignChar !== '-'
           ) {
-            const xPos = leftPx + scale * genomicOffset
-            if (xPos >= clip.scissorX - scale && xPos <= clip.scissorX + clip.scissorW) {
-              labels.push({
-                x: xPos + (scale - CHAR_SIZE_WIDTH) / 2 + 1,
-                y: hp2 + rowTop + VERTICAL_TEXT_OFFSET,
-                text: showAsUpperCase ? alignChar.toUpperCase() : alignChar,
-                lowerBase: alignChar.toLowerCase(),
-              })
-            }
+            labels.push({
+              x: leftPx + scale * genomicOffset + xOffsetInCell,
+              y: yPos,
+              text: showAsUpperCase ? alignChar.toUpperCase() : alignChar,
+              lowerBase: alignChar.toLowerCase(),
+            })
           }
           genomicOffset++
         }

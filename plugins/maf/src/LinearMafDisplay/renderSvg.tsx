@@ -7,11 +7,11 @@ import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
-import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import { getContrastBaseMap } from '../LinearMafRenderer/util.ts'
 
+import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
   MafGPURenderState,
   MafRpcDataEntry,
@@ -30,6 +30,7 @@ interface RenderSvgSelf extends IAnyStateTreeNode {
   error: unknown
   height: number
   mafRenderState: MafGPURenderState | undefined
+  visibleLabels: VisibleLabel[]
 }
 
 export async function renderSvg(
@@ -37,7 +38,7 @@ export async function renderSvg(
   opts: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(self) as LinearGenomeViewModel
-  await when(() => self.rpcDataMap.size > 0 || !!self.error)
+  await when(() => !!self.error || self.mafRenderState !== undefined)
 
   if (self.error) {
     return (
@@ -63,11 +64,15 @@ export async function renderSvg(
     canvasHeight: displayHeight,
   }
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  const labels = computeVisibleLabels(renderBlocks, self.rpcDataMap, svgState)
   const contrastForBase = getContrastBaseMap(theme)
   const mafNode = paintLayer(totalWidth, displayHeight, opts, ctx => {
     drawMafBlocks(ctx, self.rpcDataMap, renderBlocks, svgState, theme)
-    drawMafLabels(ctx, labels, contrastForBase, state.mismatchRendering)
+    drawMafLabels(
+      ctx,
+      self.visibleLabels,
+      contrastForBase,
+      state.mismatchRendering,
+    )
   })
 
   return (
