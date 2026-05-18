@@ -18,14 +18,9 @@ export interface RenderingContext {
   canvasWidth: number
   rowHeight: number
   h: number
-  hp2: number
   offset: number
   colorForBase: Record<string, string>
-  contrastForBase: Record<string, string>
   showAllLetters: boolean
-  showAsUpperCase: boolean
   mismatchRendering: boolean
   charHeight: number
-  scissorX: number
-  scissorW: number
 }

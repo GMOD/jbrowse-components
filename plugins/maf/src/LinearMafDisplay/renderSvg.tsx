@@ -4,7 +4,10 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
+import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
+import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
+import { getContrastBaseMap } from '../LinearMafRenderer/util.ts'
 
 import type {
   MafGPURenderState,
@@ -52,6 +55,8 @@ export async function renderSvg(
   const ctx = canvas.getContext('2d')
   if (ctx) {
     drawMafBlocks(ctx, self.rpcDataMap, self.renderBlocks, svgState, theme)
+    const labels = computeVisibleLabels(self.renderBlocks, self.rpcDataMap, svgState)
+    drawMafLabels(ctx, labels, getContrastBaseMap(theme), state.mismatchRendering)
   }
   return <image href={canvas.toDataURL()} width={width} height={height} />
 }

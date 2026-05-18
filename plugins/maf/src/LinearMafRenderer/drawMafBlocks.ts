@@ -4,9 +4,7 @@ import { renderGaps } from './rendering/gaps.ts'
 import { renderInsertions } from './rendering/insertions.ts'
 import { renderMatches } from './rendering/matches.ts'
 import { renderMismatches } from './rendering/mismatches.ts'
-import { renderText } from './rendering/text.ts'
-import { FONT_CONFIG } from './rendering/types.ts'
-import { getCharWidthHeight, getColorBaseMap, getContrastBaseMap } from './util.ts'
+import { getCharWidthHeight, getColorBaseMap } from './util.ts'
 
 import type { MafGPURenderState, MafRegionData } from './mafBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
@@ -26,17 +24,12 @@ export function drawMafBlocks(
     rowProportion,
     showAllLetters,
     mismatchRendering,
-    showAsUpperCase,
   } = state
   const { charHeight } = getCharWidthHeight()
   const colorForBase = getColorBaseMap(theme)
-  const contrastForBase = getContrastBaseMap(theme)
   const h = rowHeight * rowProportion
-  const hp2 = h / 2
   const offset = (rowHeight - h) / 2
   const decoder = new TextDecoder()
-
-  ctx.font = FONT_CONFIG
 
   for (const block of renderBlocks) {
     const entry = rpcDataMap.get(block.displayedRegionIndex)
@@ -62,16 +55,11 @@ export function drawMafBlocks(
           canvasWidth,
           rowHeight,
           h,
-          hp2,
           offset,
           colorForBase,
-          contrastForBase,
           showAllLetters,
-          showAsUpperCase,
           mismatchRendering,
           charHeight,
-          scissorX: clip.scissorX,
-          scissorW: clip.scissorW,
         }
 
         const refSeq = decoder.decode(regionData.refSeqBytes)
@@ -89,7 +77,6 @@ export function drawMafBlocks(
             rowTop,
             bpPerPx,
           )
-          renderText(renderingContext, alignment, refSeq, leftPx, rowTop)
         }
 
         ctx.restore()

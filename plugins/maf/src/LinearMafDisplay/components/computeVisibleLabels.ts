@@ -22,6 +22,7 @@ export function computeVisibleLabels(
   const hp2 = h / 2
   const offset = (rowHeight - h) / 2
   const labels: VisibleLabel[] = []
+  const decoder = new TextDecoder()
 
   for (const block of renderBlocks) {
     const entry = rpcDataMap.get(block.displayedRegionIndex)
@@ -43,10 +44,10 @@ export function computeVisibleLabels(
     }
 
     const leftPx = block.screenStartPx + (regionData.startBp - block.bpRangeX[0]) / bpPerPx
-    const refSeq = new TextDecoder().decode(regionData.refSeqBytes)
+    const refSeq = decoder.decode(regionData.refSeqBytes)
 
     for (const row of regionData.rows) {
-      const alignment = new TextDecoder().decode(row.alignmentBytes)
+      const alignment = decoder.decode(row.alignmentBytes)
       const rowTop = offset + rowHeight * row.rowIndex
 
       for (let i = 0, genomicOffset = 0; i < alignment.length; i++) {

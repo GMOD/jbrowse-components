@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { FONT_CONFIG } from '../../LinearMafRenderer/rendering/types.ts'
+import { drawMafLabels } from '../../LinearMafRenderer/rendering/labels.ts'
 import { getContrastBaseMap } from '../../LinearMafRenderer/util.ts'
 
 import type { VisibleLabel } from './computeVisibleLabels.ts'
@@ -34,15 +34,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
       canvas.height = height * dpr
       ctx.scale(dpr, dpr)
       ctx.clearRect(0, 0, width, height)
-      ctx.font = FONT_CONFIG
-      ctx.textBaseline = 'middle'
-      ctx.textAlign = 'left'
-      for (const label of labels) {
-        ctx.fillStyle = mismatchRendering
-          ? (contrastForBase[label.lowerBase] ?? 'black')
-          : 'black'
-        ctx.fillText(label.text, label.x, label.y)
-      }
+      drawMafLabels(ctx, labels, contrastForBase, mismatchRendering)
     }
   }, [labels, width, height, mismatchRendering, contrastForBase])
 
