@@ -1,6 +1,6 @@
 import {
-  bpToScreenPx,
   clipBlockForCanvas,
+  makeBpMapper,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
@@ -29,14 +29,14 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
 const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 
-// Builds a bp→screen-px mapper closed over a single block. Centralizes the
-// reversed-block handling so draw functions don't have to thread `reversed`
-// through every call.
 function bpMapper(block: Canvas2DRenderBlock) {
-  const [rStart, rEnd] = block.bpRangeX
-  const { screenStartPx, screenEndPx, reversed } = block
-  return (bp: number) =>
-    bpToScreenPx(bp, rStart, rEnd, screenStartPx, screenEndPx, reversed)
+  return makeBpMapper({
+    start: block.bpRangeX[0],
+    end: block.bpRangeX[1],
+    screenStartPx: block.screenStartPx,
+    screenEndPx: block.screenEndPx,
+    reversed: block.reversed,
+  })
 }
 
 function drawLines(

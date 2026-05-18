@@ -1,4 +1,4 @@
-import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
+import { makeBpMapper } from '@jbrowse/core/gpu/canvas2dUtils'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
@@ -6,10 +6,12 @@ import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
+import { computeLabelPosition } from './components/labelPositioning.ts'
 import { LABEL_FONT_SIZE } from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { BpRegionBounds } from '@jbrowse/core/gpu/canvas2dUtils'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   ExportSvgDisplayOptions,
@@ -17,6 +19,7 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+type SvgRegionBounds = BpRegionBounds
 
 export interface RenderSvgModel {
   id: string
@@ -33,13 +36,10 @@ export interface RenderSvgModel {
 function renderLabels(
   ctx: Ctx2D,
   data: FeatureDataResult,
-  regionStart: number,
-  regionEnd: number,
-  screenStartPx: number,
-  screenEndPx: number,
-  reversed?: boolean,
+  vr: SvgRegionBounds,
 ) {
   const { floatingLabelsData } = data
+  const toScreen = makeBpMapper(vr)
 
   ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
 
@@ -47,26 +47,12 @@ function renderLabels(
     const featureStartBp = labelData.minX
     const featureEndBp = labelData.maxX
 
-    if (featureEndBp < regionStart || featureStartBp > regionEnd) {
+    if (featureEndBp < vr.start || featureStartBp > vr.end) {
       continue
     }
 
-    const px1 = bpToScreenPx(
-      featureStartBp,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const px2 = bpToScreenPx(
-      featureEndBp,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
+    const px1 = toScreen(featureStartBp)
+    const px2 = toScreen(featureEndBp)
     const featureLeftPx = Math.min(px1, px2)
     const featureRightPx = Math.max(px1, px2)
     const featureWidth = featureRightPx - featureLeftPx
@@ -82,14 +68,13 @@ function renderLabels(
       },
       padding: number,
     ) => {
-      const labelY = featureBottomPx + label.relativeY + padding
-      const labelX =
-        label.textWidth > featureWidth
-          ? featureLeftPx
-          : Math.min(
-              Math.max(Math.max(screenStartPx, featureLeftPx), 0),
-              featureRightPx - label.textWidth,
-            )
+      const { labelX, labelY } = computeLabelPosition(label, padding, {
+        featureLeftPx,
+        featureRightPx,
+        featureWidth,
+        featureBottomPx,
+        screenStartPx: vr.screenStartPx,
+      })
 
       if (label.isOverlay) {
         ctx.fillStyle = 'rgba(255,255,255,0.8)'
@@ -119,39 +104,22 @@ function renderLabels(
 function renderPeptides(
   ctx: Ctx2D,
   data: FeatureDataResult,
-  regionStart: number,
-  regionEnd: number,
-  screenStartPx: number,
-  screenEndPx: number,
-  reversed?: boolean,
+  vr: SvgRegionBounds,
 ) {
   const { aminoAcidOverlay } = data
   if (!aminoAcidOverlay) {
     return
   }
 
+  const toScreen = makeBpMapper(vr)
   ctx.textAlign = 'center'
   for (const item of aminoAcidOverlay) {
-    if (item.endBp < regionStart || item.startBp > regionEnd) {
+    if (item.endBp < vr.start || item.startBp > vr.end) {
       continue
     }
 
-    const px1 = bpToScreenPx(
-      item.startBp,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const px2 = bpToScreenPx(
-      item.endBp,
-      regionStart,
-      regionEnd,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
+    const px1 = toScreen(item.startBp)
+    const px2 = toScreen(item.endBp)
     const centerPx = (px1 + px2) / 2
     const fontSize = Math.min(item.heightPx, 16)
     const y = item.topPx + item.heightPx / 2 + fontSize / 3
@@ -216,25 +184,9 @@ export async function renderSvg(
       if (!data) {
         continue
       }
-      renderLabels(
-        ctx,
-        data,
-        vr.start,
-        vr.end,
-        vr.screenStartPx,
-        vr.screenEndPx,
-        vr.reversed,
-      )
+      renderLabels(ctx, data, vr)
       if (renderPeptidesFlag) {
-        renderPeptides(
-          ctx,
-          data,
-          vr.start,
-          vr.end,
-          vr.screenStartPx,
-          vr.screenEndPx,
-          vr.reversed,
-        )
+        renderPeptides(ctx, data, vr)
       }
     }
   })

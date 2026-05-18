@@ -1,15 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 
 import { ErrorOverlay, LoadingOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import OverflowIndicator from './OverflowIndicator.tsx'
 import { performMultiRegionHitDetection } from './hitTesting.ts'
+import { useScrollSync } from './useScrollSync.ts'
 import {
   type FeatureItemEntry,
   useAminoAcidOverlay,
@@ -186,63 +186,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const error = gpuError || modelError
 
-  // Sync model.scrollTop → DOM when it changes programmatically (e.g. on
-  // dataset reset via clearDisplaySpecificData). DOM → model sync lives in
-  // the scroll listener below.
-  useEffect(
-    () =>
-      autorun(() => {
-        const target = model.scrollTop
-        const container = scrollContainerRef.current
-        if (container && container.scrollTop !== target) {
-          container.scrollTop = target
-        }
-      }),
-    [model],
-  )
-
-  useEffect(() => {
-    const container = scrollContainerRef.current
-    if (!container) {
-      return
-    }
-
-    let rafId = 0
-    const scheduleSync = () => {
-      if (rafId === 0) {
-        rafId = requestAnimationFrame(() => {
-          rafId = 0
-          model.setScrollTop(container.scrollTop)
-        })
-      }
-    }
-
-    const handleWheel = (e: WheelEvent) => {
-      if (!model.hasOverflow) {
-        return
-      }
-      if (e.shiftKey) {
-        // Chrome remaps shift+wheel to the horizontal axis; since overflowX
-        // is hidden the browser drops it (and can trigger overscroll
-        // back-navigation). Do the vertical scroll ourselves.
-        e.preventDefault()
-        e.stopPropagation()
-        container.scrollTop += e.deltaY
-      } else if (view.scrollZoom) {
-        e.preventDefault()
-      }
-    }
-
-    container.addEventListener('scroll', scheduleSync, { passive: true })
-    container.addEventListener('wheel', handleWheel, { passive: false })
-    return () => {
-      container.removeEventListener('scroll', scheduleSync)
-      container.removeEventListener('wheel', handleWheel)
-      if (rafId !== 0) {
-        cancelAnimationFrame(rafId)
-      }
-    }
-  }, [model, view])
+  useScrollSync(scrollContainerRef, model, view)
 
   const hitTestAtEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -345,11 +289,11 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       const data = laidOutDataMap.get(vr.displayedRegionIndex)
       if (data) {
         for (const f of data.flatbushItems) {
-          map.set(f.featureId, { item: f, vr, data })
+          map.set(f.featureId, { kind: 'feature', item: f, vr, data })
         }
         for (const s of data.subfeatureInfos) {
           if (!map.has(s.featureId)) {
-            map.set(s.featureId, { item: s, vr })
+            map.set(s.featureId, { kind: 'subfeature', item: s, vr })
           }
         }
       }

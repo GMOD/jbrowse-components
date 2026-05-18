@@ -106,3 +106,23 @@ export function bpToScreenPx(
   const w = screenEndPx - screenStartPx
   return reversed ? screenEndPx - frac * w : screenStartPx + frac * w
 }
+
+export interface BpRegionBounds {
+  start: number
+  end: number
+  screenStartPx: number
+  screenEndPx: number
+  reversed?: boolean
+}
+
+// Closure-style bp→screen-px mapper bound to one region. Consumers that walk
+// many bp positions inside one block (label/peptide overlays, rect/line draws)
+// want a 1-arg call instead of repeating 6 args at every site.
+export function makeBpMapper(bounds: BpRegionBounds) {
+  const { start, end, screenStartPx, screenEndPx, reversed } = bounds
+  const span = end - start
+  const w = screenEndPx - screenStartPx
+  return reversed
+    ? (bp: number) => screenEndPx - ((bp - start) / span) * w
+    : (bp: number) => screenStartPx + ((bp - start) / span) * w
+}

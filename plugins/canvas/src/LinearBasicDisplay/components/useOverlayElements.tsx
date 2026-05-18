@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 
-import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
+import { makeBpMapper } from '@jbrowse/core/gpu/canvas2dUtils'
 
 import { computeLabelExtraWidth } from './highlightUtils.ts'
+import { computeLabelPosition } from './labelPositioning.ts'
 import { LABEL_FONT_SIZE } from './sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -14,8 +15,8 @@ import type {
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
 export type FeatureItemEntry =
-  | { item: FlatbushItem; vr: VisibleRegion; data: FeatureDataResult }
-  | { item: SubfeatureInfo; vr: VisibleRegion }
+  | { kind: 'feature'; item: FlatbushItem; vr: VisibleRegion; data: FeatureDataResult }
+  | { kind: 'subfeature'; item: SubfeatureInfo; vr: VisibleRegion }
 
 interface OverlayModel {
   showLabels: boolean
@@ -65,15 +66,7 @@ export function useFloatingLabels(
         continue
       }
 
-      const toScreen = (bp: number) =>
-        bpToScreenPx(
-          bp,
-          vr.start,
-          vr.end,
-          vr.screenStartPx,
-          vr.screenEndPx,
-          vr.reversed,
-        )
+      const toScreen = makeBpMapper(vr)
 
       const flatbushItemById = new Map<string, FlatbushItem>()
       for (const f of data.flatbushItems) {
@@ -140,14 +133,13 @@ export function useFloatingLabels(
           key: string,
           clickable?: boolean,
         ) => {
-          const labelY = featureBottomPx + label.relativeY + padding
-          const labelX =
-            label.textWidth > featureWidth
-              ? featureLeftPx
-              : Math.min(
-                  Math.max(Math.max(vr.screenStartPx, featureLeftPx), 0),
-                  featureRightPx - label.textWidth,
-                )
+          const { labelX, labelY } = computeLabelPosition(label, padding, {
+            featureLeftPx,
+            featureRightPx,
+            featureWidth,
+            featureBottomPx,
+            screenStartPx: vr.screenStartPx,
+          })
 
           elements.push(
             <div
@@ -235,15 +227,7 @@ export function useAminoAcidOverlay(
         continue
       }
 
-      const toScreen = (bp: number) =>
-        bpToScreenPx(
-          bp,
-          vr.start,
-          vr.end,
-          vr.screenStartPx,
-          vr.screenEndPx,
-          vr.reversed,
-        )
+      const toScreen = makeBpMapper(vr)
 
       for (const [i, item] of data.aminoAcidOverlay.entries()) {
         if (item.endBp < vr.start || item.startBp > vr.end) {
@@ -323,22 +307,9 @@ export function useHighlightOverlays(
       if (item.endBp < vr.start || item.startBp > vr.end) {
         return undefined
       }
-      const px1 = bpToScreenPx(
-        item.startBp,
-        vr.start,
-        vr.end,
-        vr.screenStartPx,
-        vr.screenEndPx,
-        vr.reversed,
-      )
-      const px2 = bpToScreenPx(
-        item.endBp,
-        vr.start,
-        vr.end,
-        vr.screenStartPx,
-        vr.screenEndPx,
-        vr.reversed,
-      )
+      const toScreen = makeBpMapper(vr)
+      const px1 = toScreen(item.startBp)
+      const px2 = toScreen(item.endBp)
       const leftPx = Math.max(vr.screenStartPx, Math.min(px1, px2))
       const rightPx = Math.min(vr.screenEndPx, Math.max(px1, px2))
       return {
@@ -387,7 +358,7 @@ export function useHighlightOverlays(
     }
 
     const computeExtraWidth = (entry: FeatureItemEntry) => {
-      if (entry.item.kind !== 'feature' || !('data' in entry)) {
+      if (entry.kind !== 'feature') {
         return 0
       }
       const labelData = entry.data.floatingLabelsData[entry.item.featureId]

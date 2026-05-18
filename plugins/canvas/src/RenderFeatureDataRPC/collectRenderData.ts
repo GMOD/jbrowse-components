@@ -11,11 +11,17 @@ import {
   createTranscriptFloatingLabel,
 } from './floatingLabels.ts'
 import { getFeatureDescription, getFeatureName } from './labelUtils.ts'
+import { packRenderArrays } from './packRenderArrays.ts'
 import { aggregateAminos } from './peptides/aggregateAminoAcids.ts'
 import { isLabelAllowed } from './renderConfig.ts'
 import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
 
 import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
+import type {
+  ArrowData,
+  LineData,
+  RectData,
+} from './packRenderArrays.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
@@ -27,32 +33,6 @@ import type { FeatureLayout, PeptideData } from './types.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { Feat } from 'g2p_mapper'
-
-interface RectData {
-  start: number
-  end: number
-  y: number
-  height: number
-  color: number
-  flatbushIdx: number
-}
-
-interface LineData {
-  start: number
-  end: number
-  y: number
-  color: number
-  direction: number
-  flatbushIdx: number
-}
-
-interface ArrowData {
-  x: number
-  y: number
-  direction: number
-  color: number
-  flatbushIdx: number
-}
 
 interface RenderContext {
   config: DisplayConfig
@@ -523,83 +503,17 @@ export function collectRenderData(
     processFeatureRecord(layout, ctx, collector)
   }
 
-  const { rects, lines, arrows } = collector
-
-  const regionEnd = regionStart + regionWidth
-  const visibleRects = rects.filter(
-    r => r.end > regionStart && r.start < regionEnd,
+  const packed = packRenderArrays(
+    collector.rects,
+    collector.lines,
+    collector.arrows,
+    regionStart,
+    regionStart + regionWidth,
   )
-  const visibleLines = lines.filter(
-    l => l.end > regionStart && l.start < regionEnd,
-  )
-  const visibleArrows = arrows.filter(
-    a => a.x >= regionStart && a.x <= regionEnd,
-  )
-
-  const rectPositions = new Uint32Array(visibleRects.length * 2)
-  const rectYs = new Float32Array(visibleRects.length)
-  const rectHeights = new Float32Array(visibleRects.length)
-  // Color is already a packed RGBA32 u32 on the producer side — no need to
-  // unpack into bytes here, interleaveRects copies the u32 straight to the
-  // vertex buffer and the shader unpacks.
-  const rectColors = new Uint32Array(visibleRects.length)
-  const rectFeatureIndices = new Uint32Array(visibleRects.length)
-
-  for (const [i, rect] of visibleRects.entries()) {
-    rectPositions[i * 2] = rect.start
-    rectPositions[i * 2 + 1] = rect.end
-    rectYs[i] = rect.y
-    rectHeights[i] = rect.height
-    rectColors[i] = rect.color
-    rectFeatureIndices[i] = rect.flatbushIdx
-  }
-
-  const linePositions = new Uint32Array(visibleLines.length * 2)
-  const lineYs = new Float32Array(visibleLines.length)
-  const lineColors = new Uint32Array(visibleLines.length)
-  const lineDirections = new Int8Array(visibleLines.length)
-  const lineFeatureIndices = new Uint32Array(visibleLines.length)
-
-  for (const [i, line] of visibleLines.entries()) {
-    linePositions[i * 2] = line.start
-    linePositions[i * 2 + 1] = line.end
-    lineYs[i] = line.y
-    lineColors[i] = line.color
-    lineDirections[i] = line.direction
-    lineFeatureIndices[i] = line.flatbushIdx
-  }
-
-  const arrowXs = new Uint32Array(visibleArrows.length)
-  const arrowYs = new Float32Array(visibleArrows.length)
-  const arrowDirections = new Int8Array(visibleArrows.length)
-  const arrowColors = new Uint32Array(visibleArrows.length)
-  const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
-
-  for (const [i, arrow] of visibleArrows.entries()) {
-    arrowXs[i] = arrow.x
-    arrowYs[i] = arrow.y
-    arrowDirections[i] = arrow.direction
-    arrowColors[i] = arrow.color
-    arrowFeatureIndices[i] = arrow.flatbushIdx
-  }
 
   return {
-    rectPositions,
-    rectYs,
-    rectHeights,
-    rectColors,
+    ...packed,
     outlineColor,
-    rectFeatureIndices,
-    linePositions,
-    lineYs,
-    lineColors,
-    lineDirections,
-    lineFeatureIndices,
-    arrowXs,
-    arrowYs,
-    arrowDirections,
-    arrowColors,
-    arrowFeatureIndices,
     floatingLabelsData: collector.floatingLabelsData,
     flatbushItems: collector.flatbushItems,
     subfeatureInfos: collector.subfeatureInfos,
