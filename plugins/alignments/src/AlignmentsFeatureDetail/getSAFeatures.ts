@@ -6,7 +6,7 @@ import {
   getLengthSansClipping,
 } from '../MismatchParser/index.ts'
 
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { AlignmentFeatureSerialized } from './util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface ReducedFeature {
@@ -15,7 +15,7 @@ export interface ReducedFeature {
   clipLengthAtStartOfRead: number
   end: number
   strand: number
-  seqLength: number
+  seqLength?: number
   syntenyId?: number
   uniqueId: string
   mate: {
@@ -32,14 +32,17 @@ export async function getSAFeatures({
   feature,
 }: {
   view: LinearGenomeViewModel
-  feature: SimpleFeatureSerialized
+  feature: AlignmentFeatureSerialized
 }) {
   const { assemblyManager } = getSession(view)
-  const cigar = feature.CIGAR as string
-  const origStrand = feature.strand as number
-  const SA = ((feature.tags as Record<string, unknown> | undefined)?.SA ??
-    '') as string
-  const readName = feature.name as string
+  const { CIGAR: cigar, strand: origStrand = 1, name: readName, tags } = feature
+  if (cigar === undefined) {
+    throw new Error('feature missing CIGAR')
+  }
+  if (readName === undefined) {
+    throw new Error('feature missing name')
+  }
+  const SA = typeof tags?.SA === 'string' ? tags.SA : ''
   const clipLengthAtStartOfRead = getClip(cigar, 1)
 
   // get the canonical refname for the read because if the read.get('refName')

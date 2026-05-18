@@ -5,7 +5,7 @@ import SupplementaryAlignmentsLocStrings from './SupplementaryAlignmentsLocStrin
 import { hasBreakpointSplitView } from './util.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { AlignmentFeatureSerialized } from './util.ts'
 
 export default function SupplementaryAlignments({
   model,
@@ -14,7 +14,7 @@ export default function SupplementaryAlignments({
 }: {
   tag: string
   model: AlignmentFeatureWidgetModel
-  feature: SimpleFeatureSerialized
+  feature: AlignmentFeatureSerialized
 }) {
   return (
     <BaseCard title="Supplementary alignments">

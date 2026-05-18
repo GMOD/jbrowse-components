@@ -11,7 +11,7 @@ import { tags } from './tagInfo.ts'
 import { getTag } from './util.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { AlignmentFeatureSerialized } from './util.ts'
 
 // lazies
 const SupplementaryAlignments = lazy(
@@ -25,10 +25,10 @@ const FeatDefined = observer(function FeatDefined({
   feat,
   model,
 }: {
-  feat: SimpleFeatureSerialized
+  feat: AlignmentFeatureSerialized
   model: AlignmentFeatureWidgetModel
 }) {
-  const flags = typeof feat.flags === 'number' ? feat.flags : null
+  const { flags } = feat
   const sa = getTag('SA', feat)
   const SA = typeof sa === 'string' ? sa : undefined
   return (
@@ -49,7 +49,7 @@ const FeatDefined = observer(function FeatDefined({
       {SA !== undefined ? (
         <SupplementaryAlignments model={model} tag={SA} feature={feat} />
       ) : null}
-      {flags !== null ? (
+      {flags !== undefined ? (
         <>
           {flags & 1 ? (
             <LinkedPairedAlignments model={model} feature={feat} />

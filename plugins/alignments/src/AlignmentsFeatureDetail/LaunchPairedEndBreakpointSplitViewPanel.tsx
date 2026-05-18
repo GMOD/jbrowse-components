@@ -5,7 +5,7 @@ import { getAssemblyName } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { AlignmentFeatureSerialized } from './util.ts'
 
 const BreakpointSplitViewChoiceDialog = lazy(
   () => import('./BreakpointSplitViewChoiceDialog.tsx'),
@@ -16,31 +16,18 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
   feature,
 }: {
   model: AlignmentFeatureWidgetModel
-  feature: SimpleFeatureSerialized
+  feature: AlignmentFeatureSerialized
 }) {
   const session = getSession(model)
-  const f1 = {
-    uniqueId: feature.uniqueId,
-    refName: feature.refName,
-    start: feature.start,
-    end: feature.end,
-    strand: feature.strand,
-  }
-  const f2 = {
-    uniqueId: `${feature.id}-mate`,
-    refName: feature.next_ref as string,
-    start: feature.next_pos as number,
-    end: (feature.next_pos as number) + 1,
-    strand: feature.strand as number,
-  }
+  const { uniqueId, refName, start, end, strand, next_ref, next_pos, id } =
+    feature
   const assemblyName = getAssemblyName(model.view)
-  return assemblyName ? (
+  return assemblyName && next_ref !== undefined && next_pos !== undefined ? (
     <div>
       <Typography>Launch split view</Typography>
       <ul>
         <li>
-          {f1.refName}:{toLocale(f1.start)} -&gt; {f2.refName}:
-          {toLocale(f2.start)}{' '}
+          {refName}:{toLocale(start)} -&gt; {next_ref}:{toLocale(next_pos)}{' '}
           <Link
             href="#"
             onClick={event => {
@@ -50,7 +37,20 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
                 {
                   handleClose,
                   session,
-                  feature: new SimpleFeature({ ...f1, mate: f2 }),
+                  feature: new SimpleFeature({
+                    uniqueId,
+                    refName,
+                    start,
+                    end,
+                    strand,
+                    mate: {
+                      uniqueId: `${id}-mate`,
+                      refName: next_ref,
+                      start: next_pos,
+                      end: next_pos + 1,
+                      strand,
+                    },
+                  }),
                   view: model.view,
                   assemblyName,
                 },

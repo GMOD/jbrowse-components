@@ -12,9 +12,8 @@ import { Link, Typography } from '@mui/material'
 
 import { getSAFeatures } from './getSAFeatures.ts'
 
-import type { ReducedFeature } from './getSAFeatures.ts'
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { AlignmentFeatureSerialized } from './util.ts'
 
 const BreakpointSplitViewChoiceDialog = lazy(
   () => import('./BreakpointSplitViewChoiceDialog.tsx'),
@@ -25,54 +24,47 @@ export default function LaunchBreakpointSplitViewPanel({
   feature,
 }: {
   model: AlignmentFeatureWidgetModel
-  feature: SimpleFeatureSerialized
+  feature: AlignmentFeatureSerialized
 }) {
   const { view } = model
   const { data: res, error } = useFetch(
     ['getSAFeatures', feature.uniqueId],
     () => getSAFeatures({ view, feature }),
   )
-
-  const ret: [ReducedFeature, ReducedFeature][] = []
-  if (res) {
-    for (let i = 0; i < res.length - 1; i++) {
-      ret.push([res[i]!, res[i + 1]!] as const)
-    }
-  }
+  const adjacentPairs = res
+    ? res.slice(0, -1).map((f, i) => [f, res[i + 1]!] as const)
+    : []
   const session = getSession(model)
   const assemblyName = getAssemblyName(model.view)
-  return ret.length && assemblyName ? (
+  return adjacentPairs.length && assemblyName ? (
     <div>
       <Typography>Launch split view</Typography>
       {error ? <ErrorBanner error={error} /> : null}
       <ul>
-        {ret.map(arg => {
-          const [f1, f2] = arg
-          return (
-            <li key={`${f1.uniqueId}-${f2.uniqueId}`}>
-              {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
-              {f2.refName}:{toLocale(f2.strand === 1 ? f2.start : f2.end)}{' '}
-              <Link
-                href="#"
-                onClick={event => {
-                  event.preventDefault()
-                  session.queueDialog(handleClose => [
-                    BreakpointSplitViewChoiceDialog,
-                    {
-                      handleClose,
-                      session,
-                      feature: new SimpleFeature({ ...f1, mate: f2 }),
-                      view: model.view,
-                      assemblyName,
-                    },
-                  ])
-                }}
-              >
-                (breakpoint split view)
-              </Link>
-            </li>
-          )
-        })}
+        {adjacentPairs.map(([f1, f2]) => (
+          <li key={`${f1.uniqueId}-${f2.uniqueId}`}>
+            {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
+            {f2.refName}:{toLocale(f2.strand === 1 ? f2.start : f2.end)}{' '}
+            <Link
+              href="#"
+              onClick={event => {
+                event.preventDefault()
+                session.queueDialog(handleClose => [
+                  BreakpointSplitViewChoiceDialog,
+                  {
+                    handleClose,
+                    session,
+                    feature: new SimpleFeature({ ...f1, mate: f2 }),
+                    view: model.view,
+                    assemblyName,
+                  },
+                ])
+              }}
+            >
+              (breakpoint split view)
+            </Link>
+          </li>
+        ))}
       </ul>
     </div>
   ) : null
