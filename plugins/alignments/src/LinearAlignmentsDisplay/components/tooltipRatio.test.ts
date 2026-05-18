@@ -1,6 +1,4 @@
-function pct(n: number, total = 1) {
-  return `${((n / (total || 1)) * 100).toFixed(1)}%`
-}
+import { pct } from './tooltipUtils.ts'
 
 describe('tooltip deletion ratio', () => {
   it('computes ratio using total coverage (depth + deletions)', () => {

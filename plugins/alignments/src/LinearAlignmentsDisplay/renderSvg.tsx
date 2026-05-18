@@ -10,6 +10,7 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
 import { drawAlignmentsToCtx } from './components/Canvas2DAlignmentsRenderer.ts'
+import { makeBpToScreenX } from './components/alignmentComponentUtils.ts'
 import { computePileupBezierArcs } from '../features/arcs/computeOverlay.ts'
 import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 
@@ -95,10 +96,7 @@ export async function renderSvg(
     const arcs = computeSashimiArcs({
       rpcDataMap,
       visibleRegions: view.visibleRegions,
-      bpToScreenX: (refName, bp) => {
-        const r = view.bpToPx({ refName, coord: bp })
-        return r === undefined ? undefined : r.offsetPx - offsetPx
-      },
+      bpToScreenX: makeBpToScreenX(view),
       coverageHeight,
       sashimiArcsHeight,
       sashimiArcsDown,
@@ -130,10 +128,7 @@ export async function renderSvg(
     const arcs = computePileupBezierArcs({
       laidOutPileupMap: rpcDataMap,
       displayedRegions: view.displayedRegions,
-      bpToScreenX: (refName, bp) => {
-        const r = view.bpToPx({ refName, coord: bp })
-        return r === undefined ? undefined : r.offsetPx - offsetPx
-      },
+      bpToScreenX: makeBpToScreenX(view),
       featureHeight: featureHeightSetting,
       featureSpacing,
       pileupTopOffset: coverageDisplayHeight,

@@ -4,6 +4,7 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { makeBpToScreenX } from './alignmentComponentUtils.ts'
 import { openSashimiWidget } from './openFeatureWidget.ts'
 import { formatSashimiTooltip } from './tooltipUtils.ts'
 import { computeSashimiArcs } from '../../features/sashimi/computeOverlay.ts'
@@ -26,7 +27,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     sashimiArcsHeight,
     rpcDataMap,
   } = model
-  const { initialized, offsetPx, visibleRegions, width } = view
+  const { initialized, visibleRegions, width } = view
 
   if (!showSashimiArcs || !showCoverage || !initialized) {
     return null
@@ -35,10 +36,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   const arcs = computeSashimiArcs({
     rpcDataMap,
     visibleRegions,
-    bpToScreenX: (refName, bp) => {
-      const r = view.bpToPx({ refName, coord: bp })
-      return r === undefined ? undefined : r.offsetPx - offsetPx
-    },
+    bpToScreenX: makeBpToScreenX(view),
     coverageHeight,
     sashimiArcsHeight,
     sashimiArcsDown,

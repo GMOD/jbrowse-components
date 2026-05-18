@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { makeBpToScreenX } from './alignmentComponentUtils.ts'
 import { computePileupBezierArcs } from '../../features/arcs/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -44,7 +45,7 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
     pairedArcsDown,
     height,
   } = model
-  const { initialized, offsetPx, displayedRegions, width } = view
+  const { initialized, displayedRegions, width } = view
 
   if (!showLinkedReads || !showLinkedReadsAsBeziers || !initialized) {
     return null
@@ -53,10 +54,7 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
   const arcs = computePileupBezierArcs({
     laidOutPileupMap,
     displayedRegions,
-    bpToScreenX: (refName, bp) => {
-      const r = view.bpToPx({ refName, coord: bp })
-      return r === undefined ? undefined : r.offsetPx - offsetPx
-    },
+    bpToScreenX: makeBpToScreenX(view),
     featureHeight,
     featureSpacing,
     pileupTopOffset,

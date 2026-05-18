@@ -28,7 +28,7 @@ const useStyles = makeStyles()({
 })
 
 interface AdvancedSettingsModel {
-  mismatchAlpha?: boolean
+  mismatchAlpha: boolean
   showInterbaseIndicators: boolean
   showOutlineSetting: boolean
   flipStrandLongReadChains: boolean
@@ -55,7 +55,7 @@ const AdvancedSettingsDialog = observer(function AdvancedSettingsDialog(props: {
   const { model, handleClose } = props
   const { classes } = useStyles()
 
-  const [mismatchAlpha, setMismatchAlpha] = useState(!!model.mismatchAlpha)
+  const [mismatchAlpha, setMismatchAlpha] = useState(model.mismatchAlpha)
   const [showInterbaseIndicators, setShowInterbaseIndicators] = useState(
     model.showInterbaseIndicators,
   )
@@ -75,7 +75,7 @@ const AdvancedSettingsDialog = observer(function AdvancedSettingsDialog(props: {
       title="Advanced settings"
       onCancel={handleClose}
       onSubmit={() => {
-        if (!!model.mismatchAlpha !== mismatchAlpha) {
+        if (model.mismatchAlpha !== mismatchAlpha) {
           model.toggleMismatchAlpha()
         }
         model.setShowInterbaseIndicators(showInterbaseIndicators)

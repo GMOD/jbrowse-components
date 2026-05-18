@@ -5,7 +5,16 @@ import { fillColor } from '../../shared/color.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { CigarCoords } from '../../shared/hitTestTypes.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
+
+export function makeBpToScreenX(view: LinearGenomeViewModel) {
+  const { offsetPx } = view
+  return (refName: string, bp: number) => {
+    const r = view.bpToPx({ refName, coord: bp })
+    return r === undefined ? undefined : r.offsetPx - offsetPx
+  }
+}
 
 export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
   const { palette } = theme
