@@ -922,7 +922,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      zoomTo(bpPerPx: number, offset = self.width / 2, centerAtOffset = false) {
+      zoomTo(bpPerPx: number, offset = self.width / 2) {
         const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
         const oldBpPerPx = self.bpPerPx
         if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
@@ -947,7 +947,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // per step, which (at high bpPerPx) becomes 0.5 * bpPerPx of cursor
         // bp drift and compounds frame-to-frame during a scroll-zoom burst.
         // Fractional offsetPx is harmless — downstream block math handles it.
-        this.scrollTo(targetPx - (centerAtOffset ? self.width / 2 : offset))
+        this.scrollTo(targetPx - offset)
         return newBpPerPx
       },
 
