@@ -16,11 +16,9 @@ export const INSERTION_BORDER_HEIGHT = 5
 export interface RenderingContext {
   ctx: Ctx2D
   scale: number
-  bpPerPx: number
   canvasWidth: number
   rowHeight: number
   h: number
-  offset: number
   colorForBase: Record<string, string>
   showAllLetters: boolean
   mismatchRendering: boolean

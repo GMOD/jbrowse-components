@@ -52,11 +52,9 @@ export function drawMafBlocks(
         const renderingContext = {
           ctx,
           scale,
-          bpPerPx,
           canvasWidth,
           rowHeight,
           h,
-          offset,
           colorForBase,
           showAllLetters,
           mismatchRendering,
