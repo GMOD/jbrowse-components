@@ -21,6 +21,7 @@ import {
   bpToPx,
   computeMoveToLayout,
   moveTo,
+  offsetBpToPx,
   pxToBp,
 } from '@jbrowse/core/util/Base1DUtils'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
@@ -928,26 +929,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return oldBpPerPx
         }
 
-        // Anchor on the cursor's genomic coord (padding-aware via pxToBp /
-        // bpToPx). The naive (offsetPx + cursor_x) * bpPerPx is not stable
-        // across zoom because inter-region padding contributes
-        // paddingWidth * bpPerPx of virtual-bp that scales with bpPerPx.
-        // bpToPx returns undefined when the cursor is over empty space (oob
-        // or in a padding gutter at a reversed-region boundary) — falls back
-        // to the legacy virtual-px formula.
+        // Anchor on the cursor's raw within-region bp offset (float,
+        // padding-aware). Round-tripping through bpToPx using pxToBp's `coord`
+        // loses up to 1 bp per call because regionCoord floors+1 (1-based)
+        // while bpToPx treats coord-r.start as a 0-based offset — visible as
+        // ~5 px judder during rapid scroll-zoom at small bpPerPx. The legacy
+        // (offsetPx + cursor_x) * bpPerPx is also unstable in multi-region
+        // because inter-region padding contributes paddingWidth * bpPerPx of
+        // virtual-bp that scales with bpPerPx. Fall back to the legacy formula
+        // when the cursor is over empty space (oob).
         const anchor = pxToBp(self, offset)
         self.bpPerPx = newBpPerPx
-        const anchorPx = bpToPx({
-          refName: anchor.refName,
-          coord: anchor.coord,
-          displayedRegionIndex: anchor.index,
-          self,
-        })?.offsetPx
-        const targetPx =
-          anchorPx ?? ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx
-        this.scrollTo(
-          Math.round(targetPx - (centerAtOffset ? self.width / 2 : offset)),
-        )
+        const targetPx = anchor.oob
+          ? ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx
+          : offsetBpToPx(self, anchor.index, anchor.offset)
+        // Don't round here: rounding offsetPx every frame loses up to 0.5 px
+        // per step, which (at high bpPerPx) becomes 0.5 * bpPerPx of cursor
+        // bp drift and compounds frame-to-frame during a scroll-zoom burst.
+        // Fractional offsetPx is harmless — downstream block math handles it.
+        this.scrollTo(targetPx - (centerAtOffset ? self.width / 2 : offset))
         return newBpPerPx
       },
 

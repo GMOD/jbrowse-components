@@ -217,6 +217,21 @@ export function pxToBp(
   }
 }
 
+// Precise within-region float-bp-offset → track-px (unrounded). Use when the
+// input is pxToBp's `offset` field. Going through bpToPx with pxToBp's `coord`
+// loses up to 1 bp per call because regionCoord floors+1 (1-based coord) and
+// bpToPx then uses coord-r.start as a 0-based offset — visible as juddery
+// cursor drift during rapid scroll-zoom.
+export function offsetBpToPx(
+  self: ViewLayout,
+  regionIndex: number,
+  regionOffsetBp: number,
+): number {
+  return (
+    cumulativeBp(self, regionIndex, regionOffsetBp, self.bpPerPx) / self.bpPerPx
+  )
+}
+
 export function bpToPx({
   refName,
   coord,

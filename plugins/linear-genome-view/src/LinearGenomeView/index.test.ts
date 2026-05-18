@@ -144,8 +144,7 @@ function initialize() {
 // Multi-region zoom: inter-region padding contributes paddingWidth * bpPerPx
 // of virtual-bp per gutter, so the naive (offsetPx + cursor_x) * bpPerPx zoom
 // anchor drifts ~numPaddings * paddingWidth * Δ(bpPerPx) bp per zoom step.
-// Bug isn't flipped-specific — flipping just makes it visible. Residual drift
-// after the fix is pixel-quantization bound (~bpPerPx/2 per step).
+// Bug isn't flipped-specific — flipping just makes it visible.
 describe.each([
   { name: 'unflipped', reversed: false },
   { name: 'flipped', reversed: true },
@@ -195,12 +194,68 @@ describe.each([
       const after = model.pxToBp(600)
       expect(after.refName).toEqual(before.refName)
       expect(after.index).toEqual(before.index)
-      expect(Math.abs(after.coord - before.coord)).toBeLessThan(
-        2 * model.bpPerPx,
-      )
+      expect(Math.abs(after.coord - before.coord)).toBeLessThan(model.bpPerPx)
     })
   },
 )
+
+// Diagnostic: simulate a 30-frame scroll-zoom burst at a fixed cursor offset
+// and dump the cursor's bp position each frame. Used to characterize the
+// per-frame judder the user reports — fails if drift exceeds a tight bound,
+// so the numbers show up in the failure output.
+describe('scroll-zoom diagnostic — cursor bp stability across frames', () => {
+  it.each([
+    { name: 'single-region zoom-in at bpPerPx=10', start: 10, sign: 1 },
+    { name: 'single-region zoom-out at bpPerPx=10', start: 10, sign: -1 },
+    { name: 'single-region zoom-in at bpPerPx=1', start: 1, sign: 1 },
+    { name: 'multi-region zoom-in at bpPerPx=500', start: 500, sign: 1 },
+  ])('$name', ({ start, sign }) => {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        id: `diag-${start}-${sign}`,
+        type: 'LinearGenomeView',
+        tracks: [{ name: 'foo', type: 'BasicTrack' }],
+      }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1e6 },
+      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1e6 },
+    ])
+    model.setNewView(start, 1000)
+
+    const cursorPx = 600
+    const initial = model.pxToBp(cursorPx)
+    const samples: { frame: number; bpPerPx: number; coord: number }[] = []
+
+    // mimic wheel handler: zoomAccum capped at MAX_ZOOM_RATE_PER_MS * 16.67 ≈ 0.2
+    const d = sign * 0.05
+    const ratio = d > 0 ? 1 + d : 1 / (1 - d)
+    for (let frame = 0; frame < 30; frame++) {
+      model.zoomTo(model.bpPerPx * ratio, cursorPx)
+      const here = model.pxToBp(cursorPx)
+      samples.push({ frame, bpPerPx: model.bpPerPx, coord: here.coord })
+    }
+
+    const drifts = samples.map(s => s.coord - initial.coord)
+    const maxDriftBp = Math.max(...drifts.map(Math.abs))
+    const maxDriftPx = Math.max(
+      ...samples.map(s => Math.abs(s.coord - initial.coord) / s.bpPerPx),
+    )
+    // eslint-disable-next-line no-console
+    console.log(
+      `[scroll-zoom-diag ${start}/${sign}] initial coord=${initial.coord} ` +
+        `maxDriftBp=${maxDriftBp.toFixed(2)} maxDriftPx=${maxDriftPx.toFixed(3)} ` +
+        `final bpPerPx=${samples.at(-1)!.bpPerPx.toFixed(3)} ` +
+        `frame_coords=${samples.map(s => s.coord).join(',')}`,
+    )
+    // Pre-fix: monotonic drift up to ~5 px at bpPerPx=1, frame-to-frame
+    // oscillation up to ~1.5 px at higher bpPerPx. With the float-offset +
+    // unrounded-scrollTo fixes, residual drift is < 1 bp / sub-pixel.
+    expect(maxDriftPx).toBeLessThan(0.2)
+  })
+})
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const { Session, LinearGenomeModel } = initialize()
