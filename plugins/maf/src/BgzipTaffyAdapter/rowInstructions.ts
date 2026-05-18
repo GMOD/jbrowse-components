@@ -78,7 +78,7 @@ export function filterFirstLineInstructions(
  */
 export function parseRowInstructions(meta: string) {
   const ret = meta.split(' ')
-  const rows = [] as RowInstruction[]
+  const rows: RowInstruction[] = []
 
   for (let i = 0; i < ret.length; ) {
     const type = ret[i++]

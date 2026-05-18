@@ -298,8 +298,6 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       alignments[assemblyName] = {
         chr,
         start: row.start,
-        srcSize: row.sequenceLength,
-        strand: row.strand,
         seq: row.bases,
       }
     }
@@ -362,7 +360,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       .split('\n')
       .map(f => f.trim())
       .filter(line => line !== '')
-    const entries = {} as IndexData
+    const entries: IndexData = {}
     let lastChr = ''
     let lastChrStart = 0
     let lastRawVirtualOffset = 0
@@ -479,7 +477,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSamples() {
-    return getSamplesFromConfig(this.getConf.bind(this))
+    return getSamplesFromConfig(key => this.getConf(key))
   }
 
   freeResources(): void {}

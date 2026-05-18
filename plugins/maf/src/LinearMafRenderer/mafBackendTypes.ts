@@ -31,6 +31,14 @@ export interface MafRegionData {
   rows: MafAlignedRow[]
 }
 
+// Stored value type for the display's per-region rpcDataMap. Pairs the
+// GPU-ready instance buffer with the Canvas2D-friendly raw region data.
+export interface MafRpcDataEntry {
+  instanceBuffer: ArrayBuffer
+  instanceCount: number
+  regionData: MafRegionData
+}
+
 export interface MafBackend {
   // instanceBuffer: pre-encoded GPU instances (zero-copy from RPC)
   uploadRegion(

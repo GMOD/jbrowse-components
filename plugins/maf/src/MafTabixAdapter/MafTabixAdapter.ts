@@ -65,20 +65,13 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter {
 
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
         const data = (feature.get('field5') as string).split(',')
-        const alignments = {} as Record<string, AlignmentRecord>
+        const alignments: Record<string, AlignmentRecord> = {}
 
         for (let j = 0, l = data.length; j < l; j++) {
           const elt = data[j]!
           const parts = elt.split(':')
 
-          const [
-            assemblyAndChr,
-            startStr,
-            srcSizeStr,
-            strandStr,
-            unknownStr,
-            seq,
-          ] = parts
+          const [assemblyAndChr, startStr, , , , seq] = parts
 
           if (!assemblyAndChr || !seq) {
             continue
@@ -98,9 +91,6 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter {
             alignments[assemblyName] = {
               chr,
               start: +startStr!,
-              srcSize: +srcSizeStr!,
-              strand: strandStr === '-' ? -1 : 1,
-              unknown: +unknownStr!,
               seq,
             }
           }
@@ -129,7 +119,7 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSamples() {
-    return getSamplesFromConfig(this.getConf.bind(this))
+    return getSamplesFromConfig(key => this.getConf(key))
   }
 
   freeResources(): void {}

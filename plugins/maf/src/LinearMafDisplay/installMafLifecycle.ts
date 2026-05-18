@@ -4,18 +4,12 @@ import { autorun } from 'mobx'
 import type {
   MafBackend,
   MafGPURenderState,
-  MafRegionData,
+  MafRpcDataEntry,
 } from '../LinearMafRenderer/mafBackendTypes.ts'
 import type { InstallGpuDisplayCallbacks } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ObservableMap } from 'mobx'
-
-interface RpcDataEntry {
-  instanceBuffer: ArrayBuffer
-  instanceCount: number
-  regionData: MafRegionData
-}
 
 interface MafLifecycleSelf extends IAnyStateTreeNode {
   installGpuDisplay: <B>(b: B, cbs: InstallGpuDisplayCallbacks<B>) => void
@@ -23,7 +17,7 @@ interface MafLifecycleSelf extends IAnyStateTreeNode {
   currentGpuBackend: unknown
   mafRenderState: MafGPURenderState | undefined
   renderBlocks: RenderBlock[]
-  rpcDataMap: ObservableMap<number, RpcDataEntry>
+  rpcDataMap: ObservableMap<number, MafRpcDataEntry>
 }
 
 /**

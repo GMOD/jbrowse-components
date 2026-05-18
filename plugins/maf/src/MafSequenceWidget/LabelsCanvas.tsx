@@ -61,7 +61,7 @@ export default function LabelsCanvas({
       const y = (rowIdx - startRow) * ROW_HEIGHT
 
       ctx.fillStyle = theme.palette.text.secondary
-      ctx.fillText(sample.label ?? sample.id, 2, y + 2)
+      ctx.fillText(sample.label, 2, y + 2)
     }
   }, [samples, labelWidth, canvasHeight, startRow, endRow, theme])
 

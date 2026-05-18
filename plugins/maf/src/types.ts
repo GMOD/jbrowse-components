@@ -22,12 +22,6 @@ export interface AlignmentRecord {
   chr: string
   /** Start position in the organism's coordinate system */
   start: number
-  /** Total size of the source sequence (optional - not used in rendering) */
-  srcSize?: number
-  /** Strand: 1 for forward, -1 for reverse (optional - not used in rendering) */
-  strand?: number
-  /** Unknown field from MAF format (optional) */
-  unknown?: number
   /** The aligned sequence (including gaps as '-') */
   seq: string
 }
@@ -50,7 +44,7 @@ export interface MafFeature {
  */
 export interface Sample {
   id: string
-  label?: string
+  label: string
   color?: string
 }
 

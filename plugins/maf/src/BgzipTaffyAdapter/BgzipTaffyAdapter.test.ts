@@ -887,7 +887,6 @@ describe('BgzipTaffyAdapter integration tests', () => {
     const firstOrganism = alignments[organismNames[0]!]
     expect(firstOrganism).toHaveProperty('chr')
     expect(firstOrganism).toHaveProperty('start')
-    expect(firstOrganism).toHaveProperty('strand')
     expect(firstOrganism).toHaveProperty('seq')
   })
 })

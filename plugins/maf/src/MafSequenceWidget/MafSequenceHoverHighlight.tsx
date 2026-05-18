@@ -8,6 +8,18 @@ import { observer } from 'mobx-react'
 import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+function isConnectedMafSequenceWidget(
+  w: unknown,
+  viewId: string,
+): w is MafSequenceWidgetModel {
+  const candidate = w as Partial<MafSequenceWidgetModel> | null
+  return (
+    !!candidate &&
+    candidate.type === 'MafSequenceWidget' &&
+    candidate.connectedViewId === viewId
+  )
+}
+
 const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
@@ -29,50 +41,44 @@ const MafSequenceHoverHighlight = observer(function MafSequenceHoverHighlight({
   const session = getSession(model)
   const { assemblyManager } = session
 
-  // Find MafSequenceWidget instances that are connected to this view
   const widgets =
-    'widgets' in session ? (session.widgets as Map<string, unknown>) : undefined
+    'widgets' in session
+      ? (session.widgets as Map<string, unknown>)
+      : undefined
   if (!widgets) {
     return null
   }
 
   const highlights: React.ReactNode[] = []
 
-  for (const [, widget] of widgets) {
-    const w = widget as {
-      type?: string
-      connectedViewId?: string
-      hoverHighlight?: unknown
-    }
-    if (w.type === 'MafSequenceWidget' && w.connectedViewId === model.id) {
-      const mafWidget = widget as MafSequenceWidgetModel
-      const { hoverHighlight } = mafWidget
+  for (const widget of widgets.values()) {
+    if (
+      isConnectedMafSequenceWidget(widget, model.id) &&
+      widget.hoverHighlight
+    ) {
+      const { refName, start, end, assemblyName } = widget.hoverHighlight
+      const assembly = assemblyManager.get(assemblyName)
+      const canonicalRefName =
+        assembly?.getCanonicalRefName(refName) ?? refName
 
-      if (hoverHighlight) {
-        const { refName, start, end, assemblyName } = hoverHighlight
-        const assembly = assemblyManager.get(assemblyName)
-        const canonicalRefName =
-          assembly?.getCanonicalRefName(refName) ?? refName
+      const startPx = model.bpToPx({
+        refName: canonicalRefName,
+        coord: start,
+      })
+      const endPx = model.bpToPx({ refName: canonicalRefName, coord: end })
 
-        const startPx = model.bpToPx({
-          refName: canonicalRefName,
-          coord: start,
-        })
-        const endPx = model.bpToPx({ refName: canonicalRefName, coord: end })
+      if (startPx && endPx) {
+        const left =
+          Math.min(startPx.offsetPx, endPx.offsetPx) - model.offsetPx
+        const width = Math.max(Math.abs(endPx.offsetPx - startPx.offsetPx), 3)
 
-        if (startPx && endPx) {
-          const left =
-            Math.min(startPx.offsetPx, endPx.offsetPx) - model.offsetPx
-          const width = Math.max(Math.abs(endPx.offsetPx - startPx.offsetPx), 3)
-
-          highlights.push(
-            <div
-              key={`maf-hover-${mafWidget.id}`}
-              className={classes.highlight}
-              style={{ left, width }}
-            />,
-          )
-        }
+        highlights.push(
+          <div
+            key={`maf-hover-${widget.id}`}
+            className={classes.highlight}
+            style={{ left, width }}
+          />,
+        )
       }
     }
   }

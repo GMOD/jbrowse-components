@@ -1,7 +1,3 @@
-// Re-export shared types from central location
-export type { AlignmentRecord, GenomicRegion, Sample } from '../../types.ts'
-
-// Rendering constants
 export const FONT_CONFIG = 'bold 10px Courier New,monospace'
 export const CHAR_SIZE_WIDTH = 10
 export const GAP_STROKE_OFFSET = 0.4
@@ -25,7 +21,11 @@ export interface RenderingContext {
   hp2: number
   offset: number
   colorForBase: Record<string, string>
+  contrastForBase: Record<string, string>
   showAllLetters: boolean
+  showAsUpperCase: boolean
   mismatchRendering: boolean
   charHeight: number
+  scissorX: number
+  scissorW: number
 }

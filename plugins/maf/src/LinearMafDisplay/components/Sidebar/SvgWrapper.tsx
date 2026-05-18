@@ -13,11 +13,9 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 const SvgWrapper = observer(function ({
   children,
   model,
-  exportSVG,
 }: {
   model: LinearMafDisplayModel
   children: React.ReactNode
-  exportSVG?: boolean
 }) {
   const theme = useTheme()
   const { treeMenuAnchor, subtreeFilter } = model
@@ -49,9 +47,6 @@ const SvgWrapper = observer(function ({
     [model],
   )
 
-  if (exportSVG) {
-    return <>{children}</>
-  }
   const { totalHeight, treeWidth, hierarchy } = model
   const { width } = getContainingView(model) as LinearGenomeViewModel
   return (

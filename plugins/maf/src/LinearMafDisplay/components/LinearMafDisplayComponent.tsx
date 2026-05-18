@@ -8,7 +8,8 @@ import { observer } from 'mobx-react'
 import Crosshairs from './Crosshairs.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
 import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
-import YScaleBars from './Sidebar/YScaleBars.tsx'
+import ColorLegend from './Sidebar/ColorLegend.tsx'
+import SvgWrapper from './Sidebar/SvgWrapper.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { useDragSelection } from './useDragSelection.ts'
 import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
@@ -80,7 +81,11 @@ const LinearMafDisplay = observer(function (props: {
         height={height}
         mismatchRendering={model.mismatchRendering}
       />
-      {model.showSidebar ? <YScaleBars model={model} /> : null}
+      {model.showSidebar ? (
+        <SvgWrapper model={model}>
+          <ColorLegend model={model} />
+        </SvgWrapper>
+      ) : null}
       <MsaHighlightOverlay model={model} view={view} height={height} />
       {!model.canvasDrawn ? (
         <div

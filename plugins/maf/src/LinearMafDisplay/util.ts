@@ -47,7 +47,6 @@ export interface HoveredInfo {
   chr: string
   isInsertion?: boolean
   isLargeInsertion?: boolean
-  [key: string]: unknown
 }
 
 export interface GenomicPosition {
@@ -101,6 +100,19 @@ interface MsaViewLike {
   connectedHighlights?: MsaHighlight[]
 }
 
+function isConnectedMsaView(
+  v: unknown,
+  viewId: string,
+): v is Required<Pick<MsaViewLike, 'connectedHighlights'>> & MsaViewLike {
+  const candidate = v as MsaViewLike | null
+  return (
+    !!candidate &&
+    candidate.type === 'MsaView' &&
+    candidate.connectedViewId === viewId &&
+    !!candidate.connectedHighlights
+  )
+}
+
 /**
  * Collect highlight regions from MSA views connected to `viewId`. Connections
  * are declared on the MSA view side via `connectedViewId`; cross-view access
@@ -111,12 +123,8 @@ export function getMsaHighlights(
   viewId: string,
 ): MsaHighlight[] {
   const result: MsaHighlight[] = []
-  for (const v of sessionViews as MsaViewLike[]) {
-    if (
-      v.type === 'MsaView' &&
-      v.connectedViewId === viewId &&
-      v.connectedHighlights
-    ) {
+  for (const v of sessionViews) {
+    if (isConnectedMsaView(v, viewId)) {
       for (const h of v.connectedHighlights) {
         result.push(h)
       }

@@ -21,8 +21,6 @@ export function processFeaturesToFasta({
 }: {
   regions: Region[]
   samples: Sample[]
-  showAsUpperCase?: boolean
-  mismatchRendering?: boolean
   showAllLetters?: boolean
   includeInsertions?: boolean
   features: Map<string, Feature>
@@ -179,24 +177,19 @@ export function formatFastaSequences(
   if (singleLine) {
     let maxLabelLength = 0
     for (const s of samples) {
-      const len = (s.label ?? s.id).length
-      if (len > maxLabelLength) {
-        maxLabelLength = len
+      if (s.label.length > maxLabelLength) {
+        maxLabelLength = s.label.length
       }
     }
     return rawSequences
       .map((r, idx) => {
-        const sample = samples[idx]!
-        const label = sample.label ?? sample.id
+        const { label } = samples[idx]!
         const padding = ' '.repeat(maxLabelLength - label.length + 2)
         return `>${label}${padding}${r}`
       })
       .join('\n')
   }
   return rawSequences
-    .map((r, idx) => {
-      const sample = samples[idx]!
-      return `>${sample.label ?? sample.id}\n${r}`
-    })
+    .map((r, idx) => `>${samples[idx]!.label}\n${r}`)
     .join('\n')
 }

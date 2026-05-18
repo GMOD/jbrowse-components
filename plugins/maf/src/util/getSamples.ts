@@ -1,9 +1,25 @@
 import { openLocation } from '@jbrowse/core/util/io'
 import { parseNewick } from '@jbrowse/tree-sidebar'
 
-import { normalize } from '../util.ts'
+import type { Sample } from '../types.ts'
 
-type SampleConfig = string[] | { id: string; label?: string; color?: string }[]
+interface SampleConfigEntry {
+  id: string
+  label?: string
+  color?: string
+}
+
+export type SampleConfig = string[] | SampleConfigEntry[]
+
+function isStringArray(r: SampleConfig): r is string[] {
+  return typeof r[0] === 'string'
+}
+
+export function normalizeSamples(r: SampleConfig): Sample[] {
+  return isStringArray(r)
+    ? r.map(id => ({ id, label: id }))
+    : r.map(s => ({ id: s.id, label: s.label ?? s.id, color: s.color }))
+}
 
 export async function getSamplesFromConfig(getConf: (key: string) => unknown) {
   const nhLoc = getConf('nhLocation')
@@ -20,7 +36,7 @@ export async function getSamplesFromConfig(getConf: (key: string) => unknown) {
       )
 
   return {
-    samples: normalize(getConf('samples') as SampleConfig),
+    samples: normalizeSamples(getConf('samples') as SampleConfig),
     tree: nh ? parseNewick(nh) : undefined,
   }
 }

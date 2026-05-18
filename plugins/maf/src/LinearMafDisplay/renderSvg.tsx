@@ -8,28 +8,21 @@ import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 
 import type {
   MafGPURenderState,
-  MafRegionData,
+  MafRpcDataEntry,
 } from '../LinearMafRenderer/mafBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { ObservableMap } from 'mobx'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { ObservableMap } from 'mobx'
 
 // Duck-typed contract — every field renderSvg actually touches. Lets the
 // state model's `.actions(self => …)` block pass `self` here without a cast
 // (the action's inner `self` type doesn't yet contain the action itself).
 interface RenderSvgSelf extends IAnyStateTreeNode {
-  rpcDataMap: ObservableMap<
-    number,
-    {
-      instanceBuffer: ArrayBuffer
-      instanceCount: number
-      regionData: MafRegionData
-    }
-  >
+  rpcDataMap: ObservableMap<number, MafRpcDataEntry>
   error: unknown
   height: number
   mafRenderState: MafGPURenderState | undefined

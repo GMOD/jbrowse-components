@@ -185,7 +185,7 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
         onClick={() => {
           try {
             const session = getSession(model)
-            let sampleNames = [] as string[]
+            let sampleNames: string[]
             try {
               sampleNames = JSON.parse(samples)
             } catch (e) {

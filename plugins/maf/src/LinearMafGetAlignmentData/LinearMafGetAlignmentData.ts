@@ -5,7 +5,7 @@ import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type { MafAlignedRow, MafRegionData } from '../LinearMafRenderer/mafBackendTypes.ts'
-import type { Sample } from '../types.ts'
+import type { AlignmentRecord, Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -18,8 +18,6 @@ type MafAdapter = BaseFeatureDataAdapter & {
     tree: NewickNode | undefined
   }>
 }
-
-interface AlignmentRecord { seq: string; start: number; chr: string }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {

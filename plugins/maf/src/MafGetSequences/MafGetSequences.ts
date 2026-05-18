@@ -27,7 +27,6 @@ export interface MafGetSequencesArgs {
   showAllLetters: boolean
   includeInsertions?: boolean
   stopToken?: StopToken
-  headers?: Record<string, string>
 }
 
 export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRegions {

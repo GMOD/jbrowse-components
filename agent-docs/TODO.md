@@ -66,3 +66,8 @@ Not working/overcomplicated ui now
 - Significantly more pixel artifacts in webgl/webgpu when zoomed out
 - Unclear how to reproduce: was side scrolling a lgv, synteny view was not updating, and gene glyphs were gone. maybe from lost context
 
+
+
+## GWAS
+
+recombination subtrack

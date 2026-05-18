@@ -8,7 +8,6 @@ import { observer } from 'mobx-react'
 import { generateTooltipContent } from '../util.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
-import type { HoveredInfo } from '../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const MAFTooltip = observer(function ({
@@ -28,7 +27,7 @@ const MAFTooltip = observer(function ({
   return hoveredInfo ? (
     <BaseTooltip>
       <SanitizedHTML
-        html={generateTooltipContent(hoveredInfo as HoveredInfo, p1, p2)}
+        html={generateTooltipContent(hoveredInfo, p1, p2)}
       />
     </BaseTooltip>
   ) : null

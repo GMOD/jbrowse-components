@@ -26,13 +26,13 @@ import {
   getMsaHighlights,
   layoutMafTree,
 } from './util.ts'
-import { normalize } from '../util.ts'
 
 import type { HierarchyNode, MafTreeNode, Sample } from './types.ts'
+import type { HoveredInfo } from './util.ts'
 import type {
   MafBackend,
   MafGPURenderState,
-  MafRegionData,
+  MafRpcDataEntry,
 } from '../LinearMafRenderer/mafBackendTypes.ts'
 import type {
   AnyConfigurationModel,
@@ -120,14 +120,11 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      rpcDataMap: observable.map<
-        number,
-        { instanceBuffer: ArrayBuffer; instanceCount: number; regionData: MafRegionData }
-      >(),
+      rpcDataMap: observable.map<number, MafRpcDataEntry>(),
       /**
        * #volatile
        */
-      hoveredInfo: undefined as Record<string, unknown> | undefined,
+      hoveredInfo: undefined as HoveredInfo | undefined,
       /**
        * #volatile
        */
@@ -159,7 +156,7 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setHoveredInfo(arg?: Record<string, unknown>) {
+      setHoveredInfo(arg?: HoveredInfo) {
         self.hoveredInfo = arg
       },
       /**
@@ -338,10 +335,10 @@ export default function stateModelFactory(
           const volatileSamplesMap = self.volatileSamples
             ? Object.fromEntries(self.volatileSamples.map(e => [e.id, e]))
             : undefined
-          samples = normalize(this.rowNames).map(r => ({
-            ...r,
-            label: volatileSamplesMap?.[r.id]?.label ?? r.label,
-            color: volatileSamplesMap?.[r.id]?.color ?? r.color,
+          samples = this.rowNames.map(id => ({
+            id,
+            label: volatileSamplesMap?.[id]?.label ?? id,
+            color: volatileSamplesMap?.[id]?.color,
           }))
         } else {
           samples = self.volatileSamples
@@ -502,10 +499,7 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      setRpcData(
-        regionIndex: number,
-        data: { instanceBuffer: ArrayBuffer; instanceCount: number; regionData: MafRegionData },
-      ) {
+      setRpcData(regionIndex: number, data: MafRpcDataEntry) {
         self.rpcDataMap.set(regionIndex, data)
       },
       clearDisplaySpecificData() {

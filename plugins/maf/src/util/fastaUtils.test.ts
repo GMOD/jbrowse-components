@@ -31,7 +31,10 @@ const mockFeature = new SimpleFeature({
 test('no showAllLetters', () => {
   const result = processFeaturesToFasta({
     features: makeMap([mockFeature]),
-    samples: [{ id: 'assembly1' }, { id: 'assembly2' }],
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
     regions: [
       {
         refName: 'chr1',
@@ -47,7 +50,10 @@ test('no showAllLetters', () => {
 test('showAllLetters', () => {
   const result = processFeaturesToFasta({
     features: makeMap([mockFeature]),
-    samples: [{ id: 'assembly1' }, { id: 'assembly2' }],
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
     showAllLetters: true,
     regions: [
       {
@@ -86,7 +92,10 @@ test('gap in assembly1', () => {
 
   const result = processFeaturesToFasta({
     features: makeMap([mockFeature]),
-    samples: [{ id: 'assembly1' }, { id: 'assembly2' }],
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
     regions: [
       {
         refName: 'chr1',
@@ -128,7 +137,10 @@ test('includeInsertions - single insertion in one sample', () => {
 
   const result = processFeaturesToFasta({
     features: makeMap([mockFeature]),
-    samples: [{ id: 'assembly1' }, { id: 'assembly2' }],
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
     includeInsertions: true,
     showAllLetters: true,
     regions: [
@@ -174,7 +186,10 @@ test('includeInsertions - insertions in multiple samples with different lengths'
 
   const result = processFeaturesToFasta({
     features: makeMap([mockFeature]),
-    samples: [{ id: 'assembly1' }, { id: 'assembly2' }],
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
     includeInsertions: true,
     showAllLetters: true,
     regions: [
@@ -220,7 +235,10 @@ test('includeInsertions - insertions at multiple positions', () => {
 
   const result = processFeaturesToFasta({
     features: makeMap([mockFeature]),
-    samples: [{ id: 'assembly1' }, { id: 'assembly2' }],
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
     includeInsertions: true,
     showAllLetters: true,
     regions: [
@@ -260,7 +278,10 @@ test('includeInsertions=false ignores insertions', () => {
 
   const result = processFeaturesToFasta({
     features: makeMap([mockFeature]),
-    samples: [{ id: 'assembly1' }, { id: 'assembly2' }],
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
     includeInsertions: false,
     showAllLetters: true,
     regions: [
@@ -282,7 +303,10 @@ test('includeInsertions with no insertions present', () => {
   // No gaps in reference = no insertions
   const result = processFeaturesToFasta({
     features: makeMap([mockFeature]),
-    samples: [{ id: 'assembly1' }, { id: 'assembly2' }],
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
     includeInsertions: true,
     showAllLetters: true,
     regions: [
@@ -341,7 +365,10 @@ test('includeInsertions - insertion only in non-visible sample should not add ga
   // Only include assembly1 and assembly2, NOT assembly3
   const result = processFeaturesToFasta({
     features: makeMap([mockFeature]),
-    samples: [{ id: 'assembly1' }, { id: 'assembly2' }],
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
     includeInsertions: true,
     showAllLetters: true,
     regions: [
@@ -403,7 +430,10 @@ test('includeInsertions - mixed visible/non-visible insertions', () => {
   // Only include assembly1 and assembly2, NOT assembly3
   const result = processFeaturesToFasta({
     features: makeMap([mockFeature]),
-    samples: [{ id: 'assembly1' }, { id: 'assembly2' }],
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
     includeInsertions: true,
     showAllLetters: true,
     regions: [

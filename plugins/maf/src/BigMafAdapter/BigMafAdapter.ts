@@ -1,4 +1,5 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
@@ -8,6 +9,7 @@ import { subscribeToObservable } from '../util/observableUtils.ts'
 import { parseAssemblyAndChrSimple } from '../util/parseAssemblyName.ts'
 
 import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class BigMafAdapter extends BaseFeatureDataAdapter {
@@ -26,21 +28,24 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
       ).dataAdapter as BaseFeatureDataAdapter,
     }
   }
-  async setupPre() {
-    this.setupP ??= this.setup().catch((e: unknown) => {
+  async setupPre(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts ?? {}
+    this.setupP ??= updateStatus('Downloading index', statusCallback, () =>
+      this.setup(),
+    ).catch((e: unknown) => {
       this.setupP = undefined
       throw e
     })
     return this.setupP
   }
 
-  async getRefNames() {
-    const { adapter } = await this.setupPre()
+  async getRefNames(opts?: BaseOptions) {
+    const { adapter } = await this.setupPre(opts)
     return adapter.getRefNames()
   }
 
-  async getHeader() {
-    const { adapter } = await this.setupPre()
+  async getHeader(opts?: BaseOptions) {
+    const { adapter } = await this.setupPre(opts)
     return adapter.getHeader()
   }
 
@@ -48,7 +53,7 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
     const WHITESPACE_REGEX = / +/
 
     return ObservableCreate<Feature>(async observer => {
-      const { adapter } = await this.setupPre()
+      const { adapter } = await this.setupPre(opts)
 
       const sampleFilter = opts?.samples
         ? new Set(opts.samples.map(s => s.id))
@@ -57,7 +62,7 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
         const maf = feature.get('mafBlock') as string
         const blocks = maf.split(';')
-        const alignments = {} as Record<string, AlignmentRecord>
+        const alignments: Record<string, AlignmentRecord> = {}
         let referenceSeq: string | undefined
 
         for (const block of blocks) {
@@ -78,9 +83,6 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
             alignments[org] = {
               chr,
               start: +parts[2]!,
-              srcSize: +parts[3]!,
-              strand: parts[4] === '+' ? 1 : -1,
-              unknown: +parts[5]!,
               seq: sequence,
             }
           }
@@ -104,7 +106,7 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSamples() {
-    return getSamplesFromConfig(this.getConf.bind(this))
+    return getSamplesFromConfig(key => this.getConf(key))
   }
 
   freeResources(): void {}
