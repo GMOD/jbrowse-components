@@ -44,7 +44,9 @@ test(
 
     fireEvent.change(input, { target: { value: 'seg02' } })
     // wait for trix search results to load, then click the combined result
-    fireEvent.click(within(await findByRole('listbox', ...opts)).getByText('seg02'))
+    fireEvent.click(
+      within(await findByRole('listbox', ...opts)).getByText('seg02'),
+    )
     fireEvent.click(await findByText('Open'))
     await findByText('Search results', ...opts)
   },
@@ -72,7 +74,9 @@ test(
     const { getInputValue, findByRole, input, findByText } = await getInput()
 
     fireEvent.change(input, { target: { value: 'contigb' } })
-    fireEvent.click(within(await findByRole('listbox', ...opts)).getByText(/ctgB/))
+    fireEvent.click(
+      within(await findByRole('listbox', ...opts)).getByText(/ctgB/),
+    )
 
     fireEvent.click(await findByText('Open'))
 

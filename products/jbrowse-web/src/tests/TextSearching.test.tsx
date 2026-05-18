@@ -122,7 +122,9 @@ test('search matches description for feature in two places', async () => {
   const { input, findByRole } = await doSetup()
 
   fireEvent.change(input, { target: { value: 'fingerprint' } })
-  fireEvent.click(within(await findByRole('listbox', ...opts)).getByText(/b101.2/))
+  fireEvent.click(
+    within(await findByRole('listbox', ...opts)).getByText(/b101.2/),
+  )
 }, 40_000)
 
 test('failed search resets input to visible location', async () => {
