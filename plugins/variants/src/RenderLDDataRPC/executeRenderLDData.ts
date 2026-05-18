@@ -3,31 +3,20 @@ import { updateStatus } from '@jbrowse/core/util'
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
 
+import type { RenderLDDataArgs } from './RenderLDData.ts'
 import type { LDDataResult } from './types.ts'
 import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { Region } from '@jbrowse/core/util/types'
 
-interface RenderLDDataArgs {
-  sessionId: string
-  adapterConfig: AnyConfigurationModel
-  regions: Region[]
-  bpPerPx: number
-  ldMetric: LDMetric
-  minorAlleleFrequencyFilter: number
-  lengthCutoffFilter: number
-  hweFilterThreshold: number
-  callRateFilter: number
-  jexlFilters: string[]
-  signedLD: boolean
-  useGenomicPositions: boolean
-  fitToHeight: boolean
-  displayHeight?: number
-  stopToken?: StopToken
+type ExecuteArgs = RenderLDDataArgs & {
   statusCallback?: (msg: string) => void
 }
+
+const PRECOMPUTED_LD_ADAPTERS = [
+  'PlinkLDAdapter',
+  'PlinkLDTabixAdapter',
+  'LdmatAdapter',
+] as const
 
 function emptyResult(signedLD: boolean, metric: LDMetric): LDDataResult {
   return {
@@ -48,7 +37,7 @@ export async function executeRenderLDData({
   args,
 }: {
   pluginManager: PluginManager
-  args: RenderLDDataArgs
+  args: ExecuteArgs
 }): Promise<LDDataResult> {
   const {
     sessionId,
@@ -68,10 +57,10 @@ export async function executeRenderLDData({
     statusCallback,
   } = args
 
-  const adapterType = adapterConfig.type as string | undefined
-  const ldData = await (adapterType === 'PlinkLDAdapter' ||
-  adapterType === 'PlinkLDTabixAdapter' ||
-  adapterType === 'LdmatAdapter'
+  const isPrecomputed = (
+    PRECOMPUTED_LD_ADAPTERS as readonly string[]
+  ).includes(adapterConfig.type)
+  const ldData = await (isPrecomputed
     ? updateStatus('Loading LD data', statusCallback, () =>
         getLDMatrixFromPlink({
           pluginManager,

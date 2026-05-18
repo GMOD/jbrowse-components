@@ -29,10 +29,6 @@ export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized
   signedLD?: boolean
 }
 
-export interface RenderArgsDeserializedWithLDData extends RenderArgsDeserialized {
-  ldData: LDMatrixResult
-}
-
 export default class LDRenderer extends ServerSideRendererType {
   supportsSVG = true
 

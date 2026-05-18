@@ -130,19 +130,19 @@ function getGenotypeMapForFeature(
   cellData: CellDataResult | undefined,
   featureId: string,
 ) {
-  if (!cellData) {
-    return undefined
-  }
-  if (cellData.mode === 'regular') {
-    for (const regionData of Object.values(cellData.perRegionCellData)) {
-      const result = regionData.featureGenotypeMap[featureId]
-      if (result) {
-        return result
+  if (cellData) {
+    if (cellData.mode === 'regular') {
+      for (const regionData of Object.values(cellData.perRegionCellData)) {
+        const result = regionData.featureGenotypeMap[featureId]
+        if (result) {
+          return result
+        }
       }
+      return undefined
     }
-    return undefined
+    return cellData.featureData.find(f => f.featureId === featureId)
   }
-  return cellData.featureData.find(f => f.featureId === featureId)
+  return undefined
 }
 
 /**
@@ -1038,10 +1038,6 @@ export default function MultiSampleVariantBaseModelF(
       },
     }))
     .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
       const {
         layout,
         rowHeightMode,
@@ -1051,9 +1047,9 @@ export default function MultiSampleVariantBaseModelF(
         treeAreaWidth,
         subtreeFilter,
         ...rest
-      } = snap as Omit<typeof snap, symbol>
+      } = snap
       return {
-        ...rest,
+        ...(rest as Omit<typeof rest, symbol>),
         ...(layout.length ? { layout } : {}),
         ...(rowHeightMode !== 0 ? { rowHeightMode } : {}),
         ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER
@@ -1063,7 +1059,7 @@ export default function MultiSampleVariantBaseModelF(
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(subtreeFilter?.length ? { subtreeFilter } : {}),
-      } as typeof snap
+      }
     })
 }
 

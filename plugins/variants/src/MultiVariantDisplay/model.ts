@@ -5,7 +5,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
-import type { VariantCellData } from './components/computeVariantCells.ts'
 import type { VariantBackend } from './components/variantBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -41,10 +40,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
         get renderState() {
           const view = getContainingView(self) as LinearGenomeViewModel
-          const cellData = self.cellData as
-            | { perRegionCellData: Record<number, VariantCellData> }
-            | undefined
-          if (!view.initialized || !cellData) {
+          if (!view.initialized || self.cellData?.mode !== 'regular') {
             return undefined
           }
           return {
@@ -81,11 +77,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       startGpuBackendLifecycle(backend: VariantBackend) {
         self.installGpuDisplay<VariantBackend>(backend, {
           upload: b => {
-            const cellData = self.cellData as
-              | { perRegionCellData: Record<number, VariantCellData> }
-              | undefined
+            const { cellData } = self
             const active: number[] = []
-            if (cellData) {
+            if (cellData?.mode === 'regular') {
               for (const [k, v] of Object.entries(cellData.perRegionCellData)) {
                 const n = Number(k)
                 b.uploadRegion(n, v)

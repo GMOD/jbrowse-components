@@ -7,16 +7,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-declare module '@jbrowse/core/rpc/RpcRegistry' {
-  interface RpcRegistry {
-    RenderLDData: {
-      args: Record<string, unknown>
-      return: LDDataResult
-    }
-  }
-}
-
-interface RenderLDDataArgs {
+export interface RenderLDDataArgs {
   sessionId: string
   adapterConfig: AnyConfigurationModel
   regions: Region[]
@@ -34,38 +25,40 @@ interface RenderLDDataArgs {
   stopToken?: StopToken
 }
 
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    RenderLDData: {
+      args: RenderLDDataArgs
+      return: LDDataResult
+    }
+  }
+}
+
 export default class RenderLDData extends RpcMethodType {
   name = 'RenderLDData'
 
-  async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
-    const typedArgs = args as unknown as RenderLDDataArgs
+  async serializeArguments(args: RenderLDDataArgs, rpcDriver: string) {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
-    if (assemblyManager && typedArgs.regions.length) {
-      const result = await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: typedArgs.sessionId,
-        adapterConfig: typedArgs.adapterConfig,
-        regions: typedArgs.regions,
+    if (assemblyManager && args.regions.length) {
+      const { regions } = await renameRegionsIfNeeded(assemblyManager, {
+        sessionId: args.sessionId,
+        adapterConfig: args.adapterConfig,
+        regions: args.regions,
       })
 
-      return super.serializeArguments(
-        {
-          ...typedArgs,
-          regions: result.regions,
-        },
-        rpcDriver,
-      )
+      return super.serializeArguments({ ...args, regions }, rpcDriver)
     }
 
     return super.serializeArguments(args, rpcDriver)
   }
 
-  async execute(args: Record<string, unknown>, _rpcDriver: string) {
+  async execute(args: RenderLDDataArgs, _rpcDriver: string) {
     const { executeRenderLDData } = await import('./executeRenderLDData.ts')
     return executeRenderLDData({
       pluginManager: this.pluginManager,
-      args: args as unknown as RenderLDDataArgs,
+      args,
     })
   }
 }

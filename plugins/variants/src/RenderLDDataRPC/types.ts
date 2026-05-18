@@ -1,15 +1,15 @@
 import type {
   FilterStats,
-  LDMatrixResult,
   LDMetric,
+  LDSnp,
 } from '../VariantRPC/getLDMatrix.ts'
 
 export interface LDFlatbushItem {
   i: number
   j: number
   ldValue: number
-  snp1: LDMatrixResult['snps'][0]
-  snp2: LDMatrixResult['snps'][0]
+  snp1: LDSnp
+  snp2: LDSnp
 }
 
 export interface LDDataResult {
@@ -24,7 +24,7 @@ export interface LDDataResult {
   yScalar: number
   metric: LDMetric
   signedLD: boolean
-  snps: LDMatrixResult['snps']
+  snps: LDSnp[]
   filterStats?: FilterStats
   recombination?: {
     values: Float32Array

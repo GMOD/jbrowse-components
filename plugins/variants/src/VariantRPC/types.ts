@@ -24,10 +24,6 @@ export interface ClusterGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sampleInfo?: Record<string, SampleInfo>
 }
 
-export interface GetLDMatrixArgs extends BaseVariantRpcArgs {
-  ldMetric?: 'r2' | 'dprime'
-}
-
 export interface GetCellDataArgs extends BaseVariantRpcArgs {
   sources: ProcessedSource[]
   renderingMode: string

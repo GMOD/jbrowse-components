@@ -5,7 +5,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
-import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
 import type { VariantMatrixBackend } from './components/variantMatrixBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -51,8 +50,7 @@ export default function stateModelFactory(
        */
       get renderState() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        const cellData = self.cellData as MatrixCellData | undefined
-        if (!cellData) {
+        if (self.cellData?.mode !== 'matrix') {
           return undefined
         }
         return {
@@ -80,9 +78,9 @@ export default function stateModelFactory(
       startGpuBackendLifecycle(backend: VariantMatrixBackend) {
         self.installGpuDisplay<VariantMatrixBackend>(backend, {
           upload: b => {
-            const data = self.cellData as MatrixCellData | undefined
-            if (data) {
-              b.uploadCellData(data)
+            const { cellData } = self
+            if (cellData?.mode === 'matrix') {
+              b.uploadCellData(cellData)
             }
           },
           render: b => {
@@ -97,15 +95,11 @@ export default function stateModelFactory(
       },
     }))
     .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { lineZoneHeight, ...rest } = snap as Omit<typeof snap, symbol>
+      const { lineZoneHeight, ...rest } = snap
       return {
-        ...rest,
+        ...(rest as Omit<typeof rest, symbol>),
         ...(lineZoneHeight !== 20 ? { lineZoneHeight } : {}),
-      } as typeof snap
+      }
     })
 }
 

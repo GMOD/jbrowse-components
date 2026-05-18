@@ -662,13 +662,15 @@ export interface RecombinationData {
   positions: number[]
 }
 
+export interface LDSnp {
+  id: string
+  refName: string
+  start: number
+  end: number
+}
+
 export interface LDMatrixResult {
-  snps: {
-    id: string
-    refName: string
-    start: number
-    end: number
-  }[]
+  snps: LDSnp[]
   ldValues: Float32Array
   metric: LDMetric
   filterStats: FilterStats
@@ -752,7 +754,7 @@ export async function getLDMatrix({
   )
   const totalVariants = rawFeatures.length
 
-  const snps: LDMatrixResult['snps'] = []
+  const snps: LDSnp[] = []
   const encodedGenotypes: Int8Array[] = []
   const packedHaplotypes: PackedHaplotypes[] = []
   let filteredByLength = 0

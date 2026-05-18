@@ -24,7 +24,11 @@ import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
-import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
+import type {
+  FilterStats,
+  LDMetric,
+  LDSnp,
+} from '../VariantRPC/getLDMatrix.ts'
 import type { LDBackend } from './components/ldBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -77,7 +81,7 @@ export default function sharedModelFactory(
       if (!snap) {
         return snap
       }
-      return migrateLDSettings(snap)
+      return migrateOldSettingSnapshots(snap)
     })
     .volatile(() => ({
       /**
@@ -98,7 +102,7 @@ export default function sharedModelFactory(
       setLengthCutoffFilter(arg: number) {
         self.setOverride('lengthCutoffFilter', arg)
       },
-      setLDMetric(metric: string) {
+      setLDMetric(metric: LDMetric) {
         self.setOverride('ldMetric', metric)
       },
       setColorScheme(scheme: string | undefined) {
@@ -167,7 +171,7 @@ export default function sharedModelFactory(
         return self.getConfWithOverride<number>('lineZoneHeight')
       },
       get ldMetric() {
-        return self.getConfWithOverride<string>('ldMetric')
+        return self.getConfWithOverride<LDMetric>('ldMetric')
       },
       get colorScheme() {
         return self.getConfWithOverride<string>('colorScheme') || undefined
@@ -216,7 +220,7 @@ export default function sharedModelFactory(
        * Returns true if this display uses pre-computed LD data (PLINK, ldmat)
        * rather than computing LD from VCF genotypes
        */
-      get snps(): LDMatrixResult['snps'] {
+      get snps(): LDSnp[] {
         return self.rpcData?.snps ?? []
       },
       get maxScore() {
@@ -650,6 +654,7 @@ export default function sharedModelFactory(
             sessionId,
             'RenderLDData',
             {
+              sessionId,
               adapterConfig,
               regions: [...regions],
               bpPerPx,
@@ -698,14 +703,3 @@ export default function sharedModelFactory(
 
 export type SharedLDStateModel = ReturnType<typeof sharedModelFactory>
 export type SharedLDModel = Instance<SharedLDStateModel>
-
-export function namedLDDisplayModel(
-  typeName: string,
-  configSchema: AnyConfigurationSchemaType,
-) {
-  return sharedModelFactory(configSchema).named(typeName)
-}
-
-function migrateLDSettings(snap: Record<string, unknown>) {
-  return migrateOldSettingSnapshots(snap)
-}
