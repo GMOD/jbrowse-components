@@ -18,10 +18,6 @@ function isSymbolic(alt: string) {
   return alt.startsWith('<') || isBreakend(alt)
 }
 
-function isInversion(ref: string, alt: string) {
-  return ref.split('').reverse().join('') === alt
-}
-
 const altTypeToSO: Record<string, string> = {
   '<DEL>': 'deletion',
   '<INS>': 'insertion',
@@ -68,7 +64,7 @@ function getSOTerm(alt: string, ref: string, parser: VCF): string {
   if (lenRef === 1 && lenAlt === 1) {
     return 'SNV'
   } else if (lenRef === lenAlt) {
-    return isInversion(ref, alt) ? 'inversion' : 'substitution'
+    return 'substitution'
   } else {
     return lenRef < lenAlt ? 'insertion' : 'deletion'
   }

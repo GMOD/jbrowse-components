@@ -22,12 +22,12 @@ function dataFromVariant(variant: Variant, parser: VCFParser) {
   }
 }
 function getEnd(variant: Variant) {
-  const { POS, REF = '', ALT = [] } = variant
+  const { POS, REF = '', ALT = [], INFO } = variant
   const start = POS - 1
   let isTRA = false
   let isSymbolic = false
   for (const a of ALT) {
-    if (a.includes('<')) {
+    if (a.startsWith('<')) {
       isSymbolic = true
       if (a === '<TRA>') {
         isTRA = true
@@ -35,20 +35,14 @@ function getEnd(variant: Variant) {
       }
     }
   }
-  if (isSymbolic) {
-    const info = variant.INFO
-    if (!isTRA && Array.isArray(info.END) && info.END.length > 0) {
-      return +info.END[0]
+  if (isSymbolic && !isTRA) {
+    if (Array.isArray(INFO.END) && INFO.END.length > 0) {
+      return +INFO.END[0]
     }
-    const lens = []
-    if (!isTRA && Array.isArray(info.SVLEN)) {
-      for (let i = 0; i < info.SVLEN.length; i++) {
-        if (ALT[i]?.startsWith('<INS')) {
-          lens.push(1)
-        } else {
-          lens.push(Math.abs(+info.SVLEN[i]))
-        }
-      }
+    if (Array.isArray(INFO.SVLEN)) {
+      const lens = INFO.SVLEN.map((len, i) =>
+        ALT[i]?.startsWith('<INS') ? 1 : Math.abs(+len),
+      )
       return start + max(lens)
     }
   }

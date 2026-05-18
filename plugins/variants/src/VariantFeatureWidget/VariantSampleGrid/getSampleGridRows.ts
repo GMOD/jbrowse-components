@@ -77,7 +77,7 @@ export function getSampleGridRows(
       })
       .filter(row =>
         compiledFilters.every(({ key, re }) =>
-          re ? re.exec(row[key]!) : true,
+          re ? re.exec(row[key] ?? '') : true,
         ),
       )
   } catch (e) {

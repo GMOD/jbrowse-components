@@ -6,6 +6,7 @@ import { getAssemblyName } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
 import type { VariantFeatureWidgetModel } from '../stateModelFactory.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 const BreakpointSplitViewChoiceDialog = lazy(
@@ -102,26 +103,29 @@ function LaunchBreakpointSplitViewPanel({
   ) : null
 }
 
-export default function LaunchBreakendPanel(props: {
+function hasViewType(pluginManager: PluginManager, name: string) {
+  try {
+    return !!pluginManager.getViewType(name)
+  } catch {
+    return false
+  }
+}
+
+export default function LaunchBreakendPanel({
+  model,
+  locStrings,
+  feature,
+}: {
   locStrings: string[]
   model: VariantFeatureWidgetModel
   feature: SimpleFeatureSerialized
 }) {
-  const { model, locStrings, feature } = props
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
-  let hasBreakpointSplitView = false
-
-  try {
-    hasBreakpointSplitView = !!pluginManager.getViewType('BreakpointSplitView')
-  } catch (e) {
-    // ignore
-  }
-
   return (
-    <BaseCard {...props} title="Breakends">
+    <BaseCard title="Breakends">
       <LocStringList model={model} locStrings={locStrings} />
-      {hasBreakpointSplitView ? (
+      {hasViewType(pluginManager, 'BreakpointSplitView') ? (
         <LaunchBreakpointSplitViewPanel
           model={model}
           locStrings={locStrings}

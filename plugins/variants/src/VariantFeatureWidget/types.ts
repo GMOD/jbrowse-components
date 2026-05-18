@@ -6,8 +6,15 @@ export interface VCFFeatureSerialized extends SimpleFeatureSerialized {
   INFO?: {
     CHR2?: (string | number | undefined)[]
     END?: (string | number | undefined)[]
-  } & Record<string, (string | number | undefined)[] | boolean>
+    ANN?: string[]
+    CSQ?: string[]
+  } & Record<string, (string | number | undefined)[] | boolean | undefined>
   mate?: { refName: string; start: number; end?: number }
+  samples?: Record<string, Record<string, unknown[]>>
+  genotypes?: Record<string, string>
+  clickedSample?: string
+  clickedGenotype?: string
+  clickedAlleles?: string
 }
 
 export interface Descriptions {
@@ -18,12 +25,5 @@ export interface Descriptions {
     CSQ?: {
       Description?: string
     }
-  }
-}
-
-export interface ReducedFeature {
-  INFO?: {
-    ANN?: string[]
-    CSQ?: string[]
   }
 }
