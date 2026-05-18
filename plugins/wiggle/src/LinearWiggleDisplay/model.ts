@@ -188,17 +188,33 @@ export default function stateModelFactory(
       },
 
       get renderState() {
+        const view = getContainingView(self) as LGV
+        const width = view.trackWidthPx
+        const height = self.height - 2 * YSCALEBAR_LABEL_OFFSET
         const domain = self.domain
-        if (!domain) {
+        if (domain) {
+          return makeRenderState(
+            domain,
+            self.scaleType,
+            self.renderingType,
+            width,
+            height,
+          )
+        }
+        // No domain means either (a) no fetch has completed yet — keep
+        // undefined so the loading overlay stays, or (b) fetch completed
+        // with zero features — return a stub state so renderBlocks runs,
+        // clears the canvas, and canvasDrawn flips. Domain is arbitrary
+        // since no features will draw.
+        if (self.rpcDataMap.size === 0) {
           return undefined
         }
-        const view = getContainingView(self) as LGV
         return makeRenderState(
-          domain,
+          [0, 1],
           self.scaleType,
           self.renderingType,
-          view.trackWidthPx,
-          self.height - 2 * YSCALEBAR_LABEL_OFFSET,
+          width,
+          height,
         )
       },
 

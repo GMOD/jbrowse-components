@@ -265,17 +265,34 @@ export default function stateModelFactory(
       },
 
       get renderState() {
-        const domain = self.domain
-        if (!domain || self.sources.length === 0) {
+        if (self.sources.length === 0) {
           return undefined
         }
         const view = getContainingView(self) as LGV
+        const width = view.trackWidthPx
+        const height = self.height
+        const domain = self.domain
+        if (domain) {
+          return makeRenderState(
+            domain,
+            self.scaleType,
+            self.renderingType,
+            width,
+            height,
+          )
+        }
+        // No domain → either no fetch yet (keep undefined so loading
+        // overlay stays) or fetch returned zero features (stub state so
+        // renderBlocks clears the canvas and canvasDrawn flips).
+        if (self.rpcDataMap.size === 0) {
+          return undefined
+        }
         return makeRenderState(
-          domain,
+          [0, 1],
           self.scaleType,
           self.renderingType,
-          view.trackWidthPx,
-          self.height,
+          width,
+          height,
         )
       },
 

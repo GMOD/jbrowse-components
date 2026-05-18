@@ -30,6 +30,8 @@ type LGV = LinearGenomeViewModel
 export interface ManhattanDisplayModel extends WiggleGpuDisplayModel {
   renderState: WiggleGPURenderState | undefined
   renderBlocks: WiggleRenderBlock[]
+  displayCrossHatches: boolean
+  scalebarOverlapLeft: number
   featureUnderMouse: ManhattanHit | undefined
   setFeatureUnderMouse: (hit: ManhattanHit | undefined) => void
   selectFeature: (feature: Feature) => void
@@ -103,7 +105,8 @@ const LinearManhattanDisplayComponent = observer(function LinearManhattanDisplay
 
   const width = view.trackWidthPx
   const height = model.height
-  const { ticks, featureUnderMouse } = model
+  const { ticks, featureUnderMouse, displayCrossHatches } = model
+  const scalebarLeft = model.scalebarOverlapLeft
 
   return error ? (
     <ErrorOverlay
@@ -137,13 +140,37 @@ const LinearManhattanDisplayComponent = observer(function LinearManhattanDisplay
           style={{
             position: 'absolute',
             top: 0,
-            left: 0,
+            left: scalebarLeft || 50,
             pointerEvents: 'none',
             height,
             width: 70,
           }}
         >
-          <YScaleBar ticks={ticks} orientation="left" />
+          <YScaleBar ticks={ticks} orientation="right" />
+        </svg>
+      ) : null}
+      {displayCrossHatches && ticks ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+            height,
+            width,
+          }}
+        >
+          {ticks.ticks.map(({ value, y }) => (
+            <line
+              key={value}
+              x1={0}
+              x2={width}
+              y1={y}
+              y2={y}
+              stroke="rgba(200,200,200,0.8)"
+              strokeWidth={1}
+            />
+          ))}
         </svg>
       ) : null}
       {featureUnderMouse?.screenX !== undefined ? (
