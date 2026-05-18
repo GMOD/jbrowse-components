@@ -33,7 +33,7 @@ import type {
   MafBackend,
   MafGPURenderState,
   MafGpuProps,
-  MafRpcDataEntry,
+  MafRegionData,
 } from '../LinearMafRenderer/mafBackendTypes.ts'
 import type {
   AnyConfigurationModel,
@@ -121,7 +121,7 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      rpcDataMap: observable.map<number, MafRpcDataEntry>(),
+      rpcDataMap: observable.map<number, MafRegionData>(),
       /**
        * #volatile
        */
@@ -533,7 +533,7 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      setRpcData(regionIndex: number, data: MafRpcDataEntry) {
+      setRpcData(regionIndex: number, data: MafRegionData) {
         self.rpcDataMap.set(regionIndex, data)
       },
       clearDisplaySpecificData() {

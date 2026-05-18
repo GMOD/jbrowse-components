@@ -4,11 +4,11 @@
 // adjusted purely via uniforms — no refetch on rowHeight change.
 //
 // Colors are baked into the instance (one packed ABGR per run) so the
-// worker / main-thread encoder can run-merge consecutive same-colored cells
-// — keeping the per-region quad count proportional to the number of color
-// transitions, not the number of bases. The encoder runs on the main
-// thread (see `installMafLifecycle`), so theme/setting changes re-encode
-// without an RPC roundtrip.
+// main-thread encoder (`buildInstanceBuffer`, called from
+// `installMafLifecycle`'s per-region autorun) can run-merge consecutive
+// same-colored cells — keeping the per-region quad count proportional to
+// the number of color transitions, not the number of bases. Theme /
+// setting changes re-encode on the main thread; no RPC roundtrip.
 //! targets: wgsl, glsl
 
 import hpmath;

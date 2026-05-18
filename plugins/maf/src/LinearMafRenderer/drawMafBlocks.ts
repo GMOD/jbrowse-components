@@ -14,7 +14,7 @@ const decoder = new TextDecoder()
 
 export function drawMafBlocks(
   ctx: Ctx2D,
-  rpcDataMap: { get(key: number): { regionData: MafRegionData } | undefined },
+  regions: { get(key: number): MafRegionData | undefined },
   renderBlocks: RenderBlock[],
   state: MafGPURenderState,
   theme: Theme,
@@ -32,8 +32,8 @@ export function drawMafBlocks(
   const offset = (rowHeight - h) / 2
 
   for (const renderBlock of renderBlocks) {
-    const entry = rpcDataMap.get(renderBlock.displayedRegionIndex)
-    if (!entry) {
+    const regionData = regions.get(renderBlock.displayedRegionIndex)
+    if (!regionData) {
       continue
     }
     const clip = clipBlockForCanvas(renderBlock, canvasWidth)
@@ -57,7 +57,7 @@ export function drawMafBlocks(
     ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
     ctx.clip()
 
-    for (const mafBlock of entry.regionData.blocks) {
+    for (const mafBlock of regionData.blocks) {
       const leftPx =
         renderBlock.screenStartPx +
         (mafBlock.startBp - renderBlock.bpRangeX[0]) / bpPerPx

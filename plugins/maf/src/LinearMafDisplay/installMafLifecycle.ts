@@ -7,7 +7,7 @@ import type {
   MafBackend,
   MafGPURenderState,
   MafGpuProps,
-  MafRpcDataEntry,
+  MafRegionData,
 } from '../LinearMafRenderer/mafBackendTypes.ts'
 import type { InstallGpuDisplayCallbacks } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
@@ -21,7 +21,7 @@ interface MafLifecycleSelf extends IAnyStateTreeNode {
   mafRenderState: MafGPURenderState | undefined
   gpuProps: () => MafGpuProps | undefined
   renderBlocks: RenderBlock[]
-  rpcDataMap: ObservableMap<number, MafRpcDataEntry>
+  rpcDataMap: ObservableMap<number, MafRegionData>
 }
 
 /**
@@ -57,18 +57,22 @@ export function installMafLifecycle(
           perKeyDisposers.set(
             key,
             autorun(() => {
-              const data = self.rpcDataMap.get(key)
+              const regionData = self.rpcDataMap.get(key)
               const props = self.gpuProps()
               const current = self.currentGpuBackend as MafBackend | undefined
-              if (data !== undefined && props !== undefined && current !== undefined) {
+              if (
+                regionData !== undefined &&
+                props !== undefined &&
+                current !== undefined
+              ) {
                 const { buffer, count } = buildInstanceBuffer({
-                  blocks: data.regionData.blocks,
+                  blocks: regionData.blocks,
                   ...props,
                 })
                 current.uploadRegion(key, {
                   instanceBuffer: buffer,
                   instanceCount: count,
-                  regionData: data.regionData,
+                  regionData,
                 })
                 self.renderNow()
               }

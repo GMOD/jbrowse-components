@@ -30,16 +30,10 @@ export interface MafRegionData {
   blocks: MafBlock[]
 }
 
-// Raw per-region RPC result, stored in `rpcDataMap`. The instance buffer is
-// built on the main thread (see `installMafLifecycle`) from this plus the
-// current `MafGpuProps`, so color/style settings never round-trip through
-// the worker.
-export interface MafRpcDataEntry {
-  regionData: MafRegionData
-}
-
 // Inputs to `buildInstanceBuffer` — derived from theme + user toggles on
-// the main thread. Changes here re-encode (without refetching).
+// the main thread. Changes here re-encode (without refetching). The
+// instance buffer itself is built in `installMafLifecycle`'s per-region
+// autorun, so color/style settings never round-trip through the worker.
 export interface MafGpuProps {
   colorForBase: Record<string, string>
   showAllLetters: boolean

@@ -7,20 +7,23 @@ import { drawMafBlocks } from './drawMafBlocks.ts'
 import type {
   MafBackend,
   MafGPURenderState,
+  MafRegionData,
   MafRenderBlock,
   MafUploadPayload,
 } from './mafBackendTypes.ts'
 
 export class Canvas2DMafRenderer implements MafBackend {
   private canvas: HTMLCanvasElement
-  private regions = new Map<number, MafUploadPayload>()
+  // Only `regionData` is needed for Canvas2D rendering — the pre-encoded
+  // GPU instance buffer in the payload is dropped here.
+  private regions = new Map<number, MafRegionData>()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
 
   uploadRegion(displayedRegionIndex: number, data: MafUploadPayload) {
-    this.regions.set(displayedRegionIndex, data)
+    this.regions.set(displayedRegionIndex, data.regionData)
   }
 
   pruneRegions(activeRegions: number[]) {

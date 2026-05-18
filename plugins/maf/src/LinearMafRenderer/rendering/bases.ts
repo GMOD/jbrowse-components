@@ -1,6 +1,9 @@
+import { resolveCellColor } from '../resolveCellColor.ts'
 import { GAP_STROKE_OFFSET } from './types.ts'
 
 import type { RenderingContext } from './types.ts'
+
+const DASH = '-'.charCodeAt(0)
 
 export function renderBases(
   context: RenderingContext,
@@ -12,28 +15,20 @@ export function renderBases(
   const { ctx, scale, h, showAllLetters, mismatchRendering, colorForBase } =
     context
   const cellW = scale + GAP_STROKE_OFFSET
+  const cfg = { colorForBase, showAllLetters, mismatchRendering }
+  const len = alignment.length
 
-  for (let i = 0, genomicOffset = 0; i < alignment.length; i++) {
-    const refChar = seq[i]!
-    if (refChar !== '-') {
-      const alignChar = alignment[i]!
-      if (alignChar !== '-' && alignChar !== ' ') {
-        const base = alignChar.toLowerCase()
-        const isMismatch = refChar.toLowerCase() !== base
-        let color: string
-        if (isMismatch) {
-          color = mismatchRendering ? (colorForBase[base] ?? 'black') : 'orange'
-        } else if (showAllLetters) {
-          color = mismatchRendering
-            ? (colorForBase[base] ?? 'black')
-            : 'lightblue'
-        } else {
-          color = 'lightgrey'
-        }
-        ctx.fillStyle = color
-        ctx.fillRect(leftPx + scale * genomicOffset, rowTop, cellW, h)
-      }
-      genomicOffset++
+  for (let i = 0, genomicOffset = 0; i < len; i++) {
+    const refByte = seq.charCodeAt(i)
+    if (refByte === DASH) {
+      // Reference insertion — skipped here, drawn by renderInsertions.
+      continue
     }
+    const css = resolveCellColor(refByte, alignment.charCodeAt(i), cfg)
+    if (css !== undefined) {
+      ctx.fillStyle = css
+      ctx.fillRect(leftPx + scale * genomicOffset, rowTop, cellW, h)
+    }
+    genomicOffset++
   }
 }

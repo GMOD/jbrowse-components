@@ -22,7 +22,7 @@ interface LabelView {
 
 interface ComputeVisibleLabelsParams {
   view: LabelView
-  rpcDataMap: { get(idx: number): { regionData: MafRegionData } | undefined }
+  rpcDataMap: { get(idx: number): MafRegionData | undefined }
   rowHeight: number
   rowProportion: number
   showAllLetters: boolean
@@ -53,11 +53,11 @@ export function computeVisibleLabels(
   const halfScale = scale / 2
 
   for (const vr of view.visibleRegions) {
-    const entry = rpcDataMap.get(vr.displayedRegionIndex)
-    if (!entry) {
+    const regionData = rpcDataMap.get(vr.displayedRegionIndex)
+    if (!regionData) {
       continue
     }
-    for (const block of entry.regionData.blocks) {
+    for (const block of regionData.blocks) {
       const leftPx = vr.screenStartPx + (block.startBp - vr.start) * scale
       const refSeq = decoder.decode(block.refSeqBytes)
 

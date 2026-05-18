@@ -2,7 +2,7 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { Sample } from './types.ts'
-import type { MafRpcDataEntry } from '../LinearMafRenderer/mafBackendTypes.ts'
+import type { MafRegionData } from '../LinearMafRenderer/mafBackendTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -15,7 +15,7 @@ interface MafFetchSelf extends IAnyStateTreeNode {
     needed: { region: Region; displayedRegionIndex: number }[],
     work: (ctx: FetchContext) => Promise<void>,
   ) => Promise<void>
-  setRpcData: (regionIndex: number, data: MafRpcDataEntry) => void
+  setRpcData: (regionIndex: number, data: MafRegionData) => void
   setSamples: (arg: {
     samples: Sample[]
     tree: NewickNode | undefined
@@ -69,7 +69,7 @@ export async function fetchMafAlignmentData(
       self.setSamples({ samples: first.result.samples, tree: first.result.tree })
     }
     for (const { displayedRegionIndex, result } of results) {
-      self.setRpcData(displayedRegionIndex, { regionData: result.regionData })
+      self.setRpcData(displayedRegionIndex, result.regionData)
     }
   })
 }
