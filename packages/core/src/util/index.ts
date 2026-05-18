@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { unzip } from '@gmod/bgzf-filehandle'
 import useMeasure from '@jbrowse/core/util/useMeasure'
@@ -29,7 +29,6 @@ import {
 
 import type { ParsedLocString } from './locString.ts'
 import type PluginManager from '../PluginManager.ts'
-import type { Feature } from './simpleFeature.ts'
 import type { StopToken } from './stopToken.ts'
 import type {
   AbstractDisplayModel,
@@ -112,43 +111,6 @@ export function useWidthSetter(
     }
   }, [padding, view, width])
   return ref
-}
-
-type Timer = ReturnType<typeof setTimeout>
-
-// https://stackoverflow.com/questions/56283920/
-export function useDebouncedCallback<T>(
-  callback: (...args: T[]) => void,
-  wait = 400,
-) {
-  // track args & timeout handle between calls
-  const argsRef = useRef<T[]>(null)
-  const timeout = useRef<Timer>(null)
-
-  // make sure our timeout gets cleared if our consuming component gets
-  // unmounted
-  useEffect(() => {
-    if (timeout.current) {
-      clearTimeout(timeout.current)
-    }
-  }, [])
-
-  return function debouncedCallback(...args: T[]) {
-    // capture latest args
-    argsRef.current = args
-
-    // clear debounce timer
-    if (timeout.current) {
-      clearTimeout(timeout.current)
-    }
-
-    // start waiting again
-    timeout.current = setTimeout(() => {
-      if (argsRef.current) {
-        callback(...argsRef.current)
-      }
-    }, wait)
-  }
 }
 
 /**
@@ -519,14 +481,6 @@ interface MinimalRegion {
   reversed?: boolean
 }
 
-export function featureSpanPx(
-  feature: Feature,
-  region: MinimalRegion,
-  bpPerPx: number,
-) {
-  return bpSpanPx(feature.get('start'), feature.get('end'), region, bpPerPx)
-}
-
 export function bpSpanPx(
   leftBp: number,
   rightBp: number,
@@ -536,37 +490,6 @@ export function bpSpanPx(
   const start = bpToPx(leftBp, region, bpPerPx)
   const end = bpToPx(rightBp, region, bpPerPx)
   return region.reversed ? ([end, start] as const) : ([start, end] as const)
-}
-
-/**
- * Calculate layout bounds for a feature, accounting for reversed regions.
- *
- * When labels are wider than features, the layout needs extra space:
- * - Normal: extend towards higher genomic coords (visual right)
- * - Reversed: extend towards lower genomic coords (visual right when reversed)
- *
- * This ensures labels always extend towards visual right of the feature.
- *
- * @param featureStart - Feature's genomic start coordinate
- * @param featureEnd - Feature's genomic end coordinate
- * @param layoutWidthBp - Total layout width in base pairs (may include label space)
- * @param reversed - Whether the region is reversed
- * @returns [layoutStart, layoutEnd] in genomic coordinates
- */
-export function calculateLayoutBounds(
-  featureStart: number,
-  featureEnd: number,
-  layoutWidthBp: number,
-  reversed?: boolean,
-): [number, number] {
-  const featureWidthBp = featureEnd - featureStart
-  const labelOverhangBp = Math.max(0, layoutWidthBp - featureWidthBp)
-
-  // When reversed, extend towards lower genomic coords (visual right when reversed)
-  // When normal, extend towards higher genomic coords (visual right when normal)
-  return reversed
-    ? [featureStart - labelOverhangBp, featureEnd]
-    : [featureStart, featureStart + layoutWidthBp]
 }
 
 // do an array map of an iterable
@@ -582,31 +505,6 @@ export function iterMap<T, U>(
     counter += 1
   }
   return results
-}
-
-/**
- * Returns the index of the last element in the array where predicate is true,
- * and -1 otherwise. Based on https://stackoverflow.com/a/53187807
- *
- * @param array - The source array to search in
- *
- * @param predicate - find calls predicate once for each element of the array, in
- * descending order, until it finds one where predicate returns true.
- *
- * @returns findLastIndex returns element index where predicate is true.
- * Otherwise, findLastIndex returns -1.
- */
-export function findLastIndex<T>(
-  array: T[],
-  predicate: (value: T, index: number, obj: T[]) => boolean,
-) {
-  let l = array.length
-  while (l--) {
-    if (predicate(array[l]!, l, array)) {
-      return l
-    }
-  }
-  return -1
 }
 
 export function findLast<T>(
@@ -900,16 +798,6 @@ export function getLayoutId({
   return `${sessionId}-${trackInstanceId}`
 }
 
-export function getStatsId({
-  sessionId,
-  trackInstanceId,
-}: {
-  sessionId: string
-  trackInstanceId: string
-}) {
-  return `${sessionId}-${trackInstanceId}`
-}
-
 // Hook from https://usehooks.com/useLocalStorage/
 export function useLocalStorage<T>(
   key: string,
@@ -991,7 +879,7 @@ export function measureGridWidth(
   )
 }
 
-export function getEnv(obj: any) {
+export function getEnv(obj: IAnyStateTreeNode) {
   return getEnvMST<{ pluginManager: PluginManager }>(obj)
 }
 

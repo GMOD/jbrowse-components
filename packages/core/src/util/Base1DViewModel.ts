@@ -1,4 +1,4 @@
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { bpToPx, moveTo, pxToBp } from './Base1DUtils.ts'
 import calculateDynamicBlocks from './calculateDynamicBlocks.ts'
@@ -54,7 +54,7 @@ const Base1DView = types
      * #action
      */
     setDisplayedRegions(regions: IRegion[]) {
-      self.displayedRegions = cast(regions)
+      self.displayedRegions = regions
     },
     /**
      * #action
