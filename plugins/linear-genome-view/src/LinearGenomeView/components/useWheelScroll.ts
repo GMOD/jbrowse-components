@@ -49,8 +49,6 @@ interface WheelState {
   rectLeft: number
   rafId: number | null
   lastRafTime: number | null
-  lastWheelTime: number | null
-  tabJustActivated: boolean
 }
 
 export function useWheelScroll(
@@ -64,8 +62,6 @@ export function useWheelScroll(
     rectLeft: 0,
     rafId: null,
     lastRafTime: null,
-    lastWheelTime: null,
-    tabJustActivated: false,
   })
 
   useEffect(() => {
@@ -97,14 +93,6 @@ export function useWheelScroll(
     function onWheel(event: WheelEvent) {
       if (event.shiftKey && model.scrollZoom) {
         return
-      }
-
-      const now = performance.now()
-      const wheelGap = s.lastWheelTime !== null ? now - s.lastWheelTime : 0
-      s.lastWheelTime = now
-
-      if (s.tabJustActivated || wheelGap > 1000) {
-        s.tabJustActivated = false
       }
 
       const deltaY = normalizeWheel(event.deltaY, event.deltaMode)
@@ -172,9 +160,11 @@ export function useWheelScroll(
       })
     }
 
+    // when returning to a backgrounded tab, lastRafTime is from before the
+    // tab was hidden — a huge `elapsed` would cap zoomAccum oddly on the first
+    // frame back. Reset it so the next rAF treats itself as the first frame.
     function onVisibilityChange() {
       if (!document.hidden) {
-        s.tabJustActivated = true
         s.lastRafTime = null
       }
     }

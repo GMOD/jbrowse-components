@@ -137,10 +137,16 @@ export function computeMoveToLayout(
   return { bpPerPx, offsetPx: computeScrollPos(self, start, bpPerPx, 0) }
 }
 
+// 1-based display coord: floor(within-region bp) + 1. Use for showing a
+// genomic position to a user, not for arithmetic — round-tripping through
+// bpToPx loses up to 1 bp because bpToPx accepts 0-based BED-style coords.
+// For arithmetic, use pxToBp's `offset` field with offsetBpToPx instead.
 function regionCoord(r: RegionSnap, bp: number) {
   return Math.floor(r.reversed ? r.end - bp : r.start + bp) + 1
 }
 
+// `coord` is 1-based for display; `offset` is the raw 0-based float bp within
+// the region — pair with offsetBpToPx for round-trip arithmetic.
 // manual return type since getSnapshot hard to infer here
 export function pxToBp(
   self: ViewLayout,
@@ -232,6 +238,9 @@ export function offsetBpToPx(
   )
 }
 
+// Accepts a 0-based genomic coord (BED-style feature.start/end). NOT a proper
+// inverse of pxToBp's `coord` field, which is 1-based — for that round-trip,
+// use offsetBpToPx with pxToBp's `offset` field instead.
 export function bpToPx({
   refName,
   coord,
