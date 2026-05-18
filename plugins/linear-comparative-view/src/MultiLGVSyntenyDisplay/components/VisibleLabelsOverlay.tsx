@@ -26,6 +26,10 @@ export default function VisibleLabelsOverlay({
     if (!ctx) {
       return
     }
+    const dpr = window.devicePixelRatio
+    canvas.width = width * dpr
+    canvas.height = height * dpr
+    ctx.scale(dpr, dpr)
     ctx.clearRect(0, 0, width, height)
     drawSyntenyLabels(ctx, labels, yOffset)
   }, [labels, width, height, yOffset])
@@ -37,12 +41,12 @@ export default function VisibleLabelsOverlay({
   return (
     <canvas
       ref={canvasRef}
-      width={width}
-      height={height}
       style={{
         position: 'absolute',
         top: 0,
         left: 0,
+        width,
+        height,
         pointerEvents: 'none',
       }}
     />
