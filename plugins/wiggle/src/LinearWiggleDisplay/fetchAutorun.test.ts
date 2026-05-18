@@ -353,4 +353,25 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
 
     expect(JSON.stringify(display.rpcProps())).toBe(before)
   })
+
+  // Regression: a region containing zero features (e.g. GWAS at a window
+  // with no SNPs) must not strand the loading overlay forever. Before fetch
+  // completes renderState is undefined (overlay stays). After a zero-feature
+  // fetch the domain is undefined but renderState falls back to a stub so
+  // renderBlocks runs, the canvas is cleared, and canvasDrawn can flip.
+  it('renderState falls back to a stub after a zero-feature fetch', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
+    const { display } = createDisplay()
+
+    expect(display.renderState).toBeUndefined()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    expect(display.domain).toBeUndefined()
+    expect(display.renderState).toBeDefined()
+  })
 })
