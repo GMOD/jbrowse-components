@@ -11,77 +11,47 @@ import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import { getContrastBaseMap } from '../LinearMafRenderer/util.ts'
 
-import type { VisibleLabel } from './components/computeVisibleLabels.ts'
-import type {
-  MafGPURenderState,
-  MafRpcDataEntry,
-} from '../LinearMafRenderer/mafBackendTypes.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { LinearMafDisplayModel } from './stateModel.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { ObservableMap } from 'mobx'
-
-// Duck-typed contract — every field renderSvg actually touches. Lets the
-// state model's `.actions(self => …)` block pass `self` here without a cast.
-interface RenderSvgSelf extends IAnyStateTreeNode {
-  rpcDataMap: ObservableMap<number, MafRpcDataEntry>
-  error: unknown
-  height: number
-  mafRenderState: MafGPURenderState | undefined
-  visibleLabels: VisibleLabel[]
-}
 
 export async function renderSvg(
-  self: RenderSvgSelf,
+  model: LinearMafDisplayModel,
   opts: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  const view = getContainingView(self) as LinearGenomeViewModel
-  await when(() => !!self.error || self.mafRenderState !== undefined)
+  const view = getContainingView(model) as LinearGenomeViewModel
+  await when(() => !!model.error || model.mafRenderState !== undefined)
 
-  if (self.error) {
+  if (model.error) {
     return (
       <SVGErrorBox
-        error={self.error}
+        error={model.error}
         width={view.width}
-        height={self.height}
+        height={model.height}
       />
     )
   }
 
-  const state = self.mafRenderState
+  const state = model.mafRenderState
   if (!state) {
     return null
   }
 
   const theme = createJBrowseTheme(opts.theme)
-  const totalWidth = view.totalWidthPx
-  const displayHeight = self.height
-  const svgState = {
-    ...state,
-    canvasWidth: totalWidth,
-    canvasHeight: displayHeight,
-  }
+  const width = view.totalWidthPx
+  const height = model.height
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  const contrastForBase = getContrastBaseMap(theme)
-  const mafNode = paintLayer(totalWidth, displayHeight, opts, ctx => {
-    drawMafBlocks(ctx, self.rpcDataMap, renderBlocks, svgState, theme)
-    drawMafLabels(
-      ctx,
-      self.visibleLabels,
-      contrastForBase,
-      state.mismatchRendering,
-    )
-  })
+  const svgState = { ...state, canvasWidth: width, canvasHeight: height }
+  const contrast = getContrastBaseMap(theme)
 
   return (
-    <SvgClipRect
-      id={`maf-clip-${self.id}`}
-      width={view.width}
-      height={displayHeight}
-    >
-      {mafNode}
+    <SvgClipRect id={`maf-clip-${model.id}`} width={view.width} height={height}>
+      {paintLayer(width, height, opts, ctx => {
+        drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState, theme)
+        drawMafLabels(ctx, model.visibleLabels, contrast, state.mismatchRendering)
+      })}
     </SvgClipRect>
   )
 }

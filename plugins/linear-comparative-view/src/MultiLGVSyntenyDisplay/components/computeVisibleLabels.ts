@@ -21,87 +21,6 @@ export interface VisibleLabel {
 const MIN_MISMATCH_PX_PER_BP = 6
 const MIN_DELETION_WIDTH_PX = 12
 
-interface LabelContext {
-  labels: VisibleLabel[]
-  x: number
-  y: number
-  w: number
-  h: number
-  bpLen: number
-  featStart: number
-}
-
-function makeLabelVisitor(ctx: LabelContext) {
-  const { x, y, w, h, bpLen, labels, featStart } = ctx
-  const pxPerBp = w / bpLen
-  const fontSize = computeLabelFontSize(h)
-
-  return {
-    onMismatch(refPos: number, len: number, queryBase?: string) {
-      if (h < MIN_HEIGHT_FOR_TEXT) {
-        return
-      }
-      const localRefPos = refPos - featStart
-      if (queryBase && len === 1) {
-        if (pxPerBp >= MIN_MISMATCH_PX_PER_BP) {
-          labels.push({
-            type: 'mismatch',
-            x: x + (localRefPos + 0.5) * pxPerBp,
-            y: y + h / 2,
-            text: queryBase.toUpperCase(),
-            fontSize,
-          })
-        }
-      } else if (len > 1) {
-        const pw = len * pxPerBp
-        if (pw > MIN_DELETION_WIDTH_PX) {
-          labels.push({
-            type: 'mismatch',
-            x: x + (localRefPos + len / 2) * pxPerBp,
-            y: y + h / 2,
-            text: `${len}`,
-            fontSize,
-          })
-        }
-      }
-    },
-    onDeletion(refPos: number, len: number) {
-      if (h < MIN_HEIGHT_FOR_TEXT) {
-        return
-      }
-      const localRefPos = refPos - featStart
-      const pw = len * pxPerBp
-      if (pw > MIN_DELETION_WIDTH_PX) {
-        labels.push({
-          type: 'deletion',
-          x: x + (localRefPos + len / 2) * pxPerBp,
-          y: y + h / 2,
-          text: `${len}`,
-          fontSize,
-        })
-      }
-    },
-    onInsertion(refPos: number, len: number) {
-      if (h < MIN_HEIGHT_FOR_TEXT) {
-        return
-      }
-      const localRefPos = refPos - featStart
-      const isLarge =
-        len >= LONG_INSERTION_MIN_LENGTH &&
-        len * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX
-      if (isLarge) {
-        labels.push({
-          type: 'insertion',
-          x: x + localRefPos * pxPerBp,
-          y: y + h / 2,
-          text: `${len}`,
-          fontSize,
-        })
-      }
-    },
-  }
-}
-
 interface LabelView {
   bpToPx(arg: { refName: string; coord: number }):
     | { offsetPx: number }
@@ -125,20 +44,19 @@ export function computeMultiSyntenyLabels(
   const { view, genomeRows, displayedGenomes, rowHeight, rowSpacing, showSnps } =
     params
   const labels: VisibleLabel[] = []
-  if (!showSnps || rowHeight < MIN_HEIGHT_FOR_TEXT) {
+  const padding = rowSpacing ? 1 : 0
+  const h = rowHeight - padding * 2
+  if (!showSnps || h < MIN_HEIGHT_FOR_TEXT) {
     return labels
   }
-
-  const padding = rowSpacing ? 1 : 0
+  const fontSize = computeLabelFontSize(h)
 
   for (let g = 0; g < displayedGenomes.length; g++) {
-    const genomeName = displayedGenomes[g]!
-    const features = genomeRows.get(genomeName)
+    const features = genomeRows.get(displayedGenomes[g]!)
     if (!features) {
       continue
     }
-    const fy = g * rowHeight + padding
-    const fh = rowHeight - padding * 2
+    const yMid = g * rowHeight + padding + h / 2
 
     for (const feat of features) {
       if (!feat.cs && !feat.cigar) {
@@ -149,31 +67,66 @@ export function computeMultiSyntenyLabels(
       if (!px1 || !px2) {
         continue
       }
-      const x1 = px1.offsetPx - view.offsetPx
-      const x2 = px2.offsetPx - view.offsetPx
-      const blockWidth = x2 - x1
-
-      // Skip features entirely off-screen
-      if (x1 + blockWidth < 0 || x1 > view.width) {
+      const x = px1.offsetPx - view.offsetPx
+      const w = px2.offsetPx - view.offsetPx - x
+      if (x + w < 0 || x > view.width) {
         continue
       }
+      const pxPerBp = w / (feat.end - feat.start)
+      const featStart = feat.start
 
-      const bpLen = feat.end - feat.start
-      const ctx: LabelContext = {
-        labels,
-        x: x1,
-        y: fy,
-        w: blockWidth,
-        h: fh,
-        bpLen,
-        featStart: feat.start,
+      const visitor = {
+        onMismatch(refPos: number, len: number, queryBase?: string) {
+          const local = refPos - featStart
+          if (queryBase && len === 1 && pxPerBp >= MIN_MISMATCH_PX_PER_BP) {
+            labels.push({
+              type: 'mismatch',
+              x: x + (local + 0.5) * pxPerBp,
+              y: yMid,
+              text: queryBase.toUpperCase(),
+              fontSize,
+            })
+          } else if (len > 1 && len * pxPerBp > MIN_DELETION_WIDTH_PX) {
+            labels.push({
+              type: 'mismatch',
+              x: x + (local + len / 2) * pxPerBp,
+              y: yMid,
+              text: `${len}`,
+              fontSize,
+            })
+          }
+        },
+        onDeletion(refPos: number, len: number) {
+          if (len * pxPerBp > MIN_DELETION_WIDTH_PX) {
+            labels.push({
+              type: 'deletion',
+              x: x + (refPos - featStart + len / 2) * pxPerBp,
+              y: yMid,
+              text: `${len}`,
+              fontSize,
+            })
+          }
+        },
+        onInsertion(refPos: number, len: number) {
+          if (
+            len >= LONG_INSERTION_MIN_LENGTH &&
+            len * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX
+          ) {
+            labels.push({
+              type: 'insertion',
+              x: x + (refPos - featStart) * pxPerBp,
+              y: yMid,
+              text: `${len}`,
+              fontSize,
+            })
+          }
+        },
       }
-      const visitor = makeLabelVisitor(ctx)
 
       if (feat.cs) {
-        visitCsOps(feat.cs, feat.start, visitor)
-      } else if (feat.cigar) {
-        visitCigarOps(parseCigar2(feat.cigar), feat.start, visitor)
+        visitCsOps(feat.cs, featStart, visitor)
+      } else {
+        visitCigarOps(parseCigar2(feat.cigar), featStart, visitor)
       }
     }
   }

@@ -536,7 +536,7 @@ export default function stateModelFactory(
        */
       async renderSvg(opts: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self, opts)
+        return renderSvg(self as LinearMafDisplayModel, opts)
       },
     }))
     .postProcessSnapshot(snap => {

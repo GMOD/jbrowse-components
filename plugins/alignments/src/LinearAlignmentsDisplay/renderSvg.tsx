@@ -48,56 +48,40 @@ export async function renderSvg(
     return null
   }
 
-  const {
-    laidOutPileupMap: rpcDataMap,
-    showCoverage,
-    coverageHeight,
-    coverageTicks,
-    arcsRpcDataMap,
-    showSashimiArcs,
-    sashimiArcsDown,
-    sashimiArcsHeight,
-    showLinkedReads,
-    showLinkedReadsAsBeziers,
-    featureHeightSetting,
-    featureSpacing,
-    coverageDisplayHeight,
-    pileupViewportHeight,
-  } = model
-
-  const { offsetPx } = view
-  // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
-  const scalebarLeft = Math.max(-offsetPx, 0)
   const totalWidth = view.totalWidthPx
   const displayHeight = model.height
+  const fullRangeY: [number, number] = [0, displayHeight]
+  const renderBlocks = buildRenderBlocks(view.visibleRegions)
 
   // SVG export renders the full display from y=0 with no Y scroll. Reuse the
   // model's renderState — only viewport-related fields are overridden.
   const state = {
     ...baseState,
-    rangeY: [0, displayHeight] as [number, number],
+    rangeY: fullRangeY,
     canvasWidth: totalWidth,
     canvasHeight: displayHeight,
   }
-  const renderBlocks = buildRenderBlocks(view.visibleRegions)
 
   // Same compute as the on-screen getter; only rangeY differs (SVG export
   // shows the full track height regardless of Y scroll).
   const labels = computeVisibleLabels({
     view,
-    laidOutPileupMap: rpcDataMap,
+    laidOutPileupMap: model.laidOutPileupMap,
     height: displayHeight,
-    featureHeightSetting,
-    featureSpacing,
+    featureHeightSetting: model.featureHeightSetting,
+    featureSpacing: model.featureSpacing,
     showMismatches: model.showMismatches,
-    topOffset: coverageDisplayHeight,
-    rangeY: [0, displayHeight],
+    topOffset: model.coverageDisplayHeight,
+    rangeY: fullRangeY,
   })
   const contrastMap = getContrastBaseMap(theme)
   const pileupNode = paintLayer(totalWidth, displayHeight, opts, ctx => {
     drawAlignmentsToCtx(
       ctx,
-      { laidOutPileupMap: rpcDataMap, arcsRpcDataMap },
+      {
+        laidOutPileupMap: model.laidOutPileupMap,
+        arcsRpcDataMap: model.arcsRpcDataMap,
+      },
       renderBlocks,
       state,
     )
@@ -105,72 +89,11 @@ export async function renderSvg(
   })
 
   // Sashimi: vector SVG by design (low arc count + native hover behavior in
-  // the on-screen overlay). Geometry/color/strokeWidth come from the same
-  // `computeSashimiArcs` the overlay uses, so export matches what users see.
-  // Sort by score so high-count arcs paint on top of low-count ones, mirroring
-  // the overlay's z-order.
-  let sashimiNode: React.ReactNode = null
-  if (showSashimiArcs && showCoverage) {
-    const arcs = computeSashimiArcs({
-      rpcDataMap,
-      visibleRegions: view.visibleRegions,
-      bpToScreenX: makeBpToScreenX(view),
-      coverageHeight,
-      sashimiArcsHeight,
-      sashimiArcsDown,
-    })
-    arcs.sort((a, b) => a.score - b.score)
-    const sashimiTopOffset = sashimiArcsDown
-      ? coverageHeight
-      : YSCALEBAR_LABEL_OFFSET
-    sashimiNode = (
-      <g transform={`translate(0,${sashimiTopOffset})`}>
-        {arcs.map(arc => (
-          <path
-            key={`${arc.refName}:${arc.start}:${arc.end}`}
-            d={arc.d}
-            stroke={arc.stroke}
-            strokeWidth={arc.strokeWidth}
-            fill="none"
-          />
-        ))}
-      </g>
-    )
-  }
-
-  // Mirrors the sashimi block: bezier curves (and cross-region straights)
-  // come from the same `computePileupBezierArcs` the on-screen overlay uses,
-  // so SVG export matches what users see.
-  let pileupBezierNode: React.ReactNode = null
-  if (showLinkedReads && showLinkedReadsAsBeziers) {
-    const arcs = computePileupBezierArcs({
-      laidOutPileupMap: rpcDataMap,
-      displayedRegions: view.displayedRegions,
-      bpToScreenX: makeBpToScreenX(view),
-      featureHeight: featureHeightSetting,
-      featureSpacing,
-      pileupTopOffset: coverageDisplayHeight,
-      rangeY: [0, displayHeight],
-      viewportH: pileupViewportHeight,
-      pairedArcsDown: model.pairedArcsDown,
-    })
-    pileupBezierNode = (
-      <g style={{ pointerEvents: 'none' }}>
-        {arcs.map(arc => (
-          <path
-            key={`${arc.id1}:${arc.id2}`}
-            d={arc.d}
-            stroke={arc.stroke}
-            strokeWidth={1.5}
-            strokeOpacity={0.8}
-            fill="none"
-          />
-        ))}
-      </g>
-    )
-  }
-
-  const separatorColor = theme.palette.grey[500]
+  // the on-screen overlay). Geometry/colors come from the same
+  // `computeSashimiArcs` the overlay uses; sorted by score so high-count arcs
+  // paint on top, mirroring overlay z-order.
+  const sashimiNode = renderSashimiArcs(model, view)
+  const pileupBezierNode = renderPileupBezierArcs(model, view, fullRangeY)
 
   return (
     <>
@@ -180,21 +103,23 @@ export async function renderSvg(
         height={displayHeight}
       >
         {pileupNode}
-        {showCoverage ? (
+        {model.showCoverage ? (
           <line
             x1={0}
-            y1={coverageHeight}
+            y1={model.coverageHeight}
             x2={totalWidth}
-            y2={coverageHeight}
-            stroke={separatorColor}
+            y2={model.coverageHeight}
+            stroke={theme.palette.grey[500]}
             strokeWidth={1}
           />
         ) : null}
         {sashimiNode}
         {pileupBezierNode}
       </SvgClipRect>
-      {showCoverage && coverageTicks ? (
-        <g transform={`translate(${scalebarLeft})`}>
+      {model.showCoverage && model.coverageTicks ? (
+        // anchors scale bars to left edge of content; non-zero only when
+        // scrolled before genome start
+        <g transform={`translate(${Math.max(-view.offsetPx, 0)})`}>
           <YScaleBar ticks={model.coverageTicks} orientation="left" />
         </g>
       ) : null}
@@ -205,5 +130,72 @@ export async function renderSvg(
         </g>
       ) : null}
     </>
+  )
+}
+
+function renderSashimiArcs(
+  model: LinearAlignmentsDisplayModel,
+  view: LinearGenomeViewModel,
+): React.ReactNode {
+  if (!model.showSashimiArcs || !model.showCoverage) {
+    return null
+  }
+  const arcs = computeSashimiArcs({
+    rpcDataMap: model.laidOutPileupMap,
+    visibleRegions: view.visibleRegions,
+    bpToScreenX: makeBpToScreenX(view),
+    coverageHeight: model.coverageHeight,
+    sashimiArcsHeight: model.sashimiArcsHeight,
+    sashimiArcsDown: model.sashimiArcsDown,
+  })
+  arcs.sort((a, b) => a.score - b.score)
+  const top = model.sashimiArcsDown ? model.coverageHeight : YSCALEBAR_LABEL_OFFSET
+  return (
+    <g transform={`translate(0,${top})`}>
+      {arcs.map(arc => (
+        <path
+          key={`${arc.refName}:${arc.start}:${arc.end}`}
+          d={arc.d}
+          stroke={arc.stroke}
+          strokeWidth={arc.strokeWidth}
+          fill="none"
+        />
+      ))}
+    </g>
+  )
+}
+
+function renderPileupBezierArcs(
+  model: LinearAlignmentsDisplayModel,
+  view: LinearGenomeViewModel,
+  rangeY: [number, number],
+): React.ReactNode {
+  if (!model.showLinkedReads || !model.showLinkedReadsAsBeziers) {
+    return null
+  }
+  const arcs = computePileupBezierArcs({
+    laidOutPileupMap: model.laidOutPileupMap,
+    displayedRegions: view.displayedRegions,
+    bpToScreenX: makeBpToScreenX(view),
+    featureHeight: model.featureHeightSetting,
+    featureSpacing: model.featureSpacing,
+    pileupTopOffset: model.coverageDisplayHeight,
+    rangeY,
+    viewportH: model.pileupViewportHeight,
+    pairedArcsDown: model.pairedArcsDown,
+  })
+  return (
+    <g style={{ pointerEvents: 'none' }}>
+      {arcs.map(arc => (
+        <path
+          key={`${arc.id1}:${arc.id2}`}
+          d={arc.d}
+          stroke={arc.stroke}
+          strokeWidth={1.5}
+          strokeOpacity={0.8}
+          fill="none"
+        />
+      ))}
+    </g>
   )
 }
