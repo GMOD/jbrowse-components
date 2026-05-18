@@ -1,0 +1,113 @@
+import React, { useRef, useState } from 'react'
+
+import { Menu } from '@jbrowse/core/ui'
+
+interface BaseHit {
+  name: string
+  genotype: string
+  featureId: string
+}
+
+type Tooltip = Record<string, string>
+interface EnrichedFeature { id(): string }
+
+interface InteractionModel {
+  setHoveredGenotype: (g: Tooltip | undefined) => void
+  selectFeature: (f: EnrichedFeature) => void
+  setContextMenuFeature: (f?: EnrichedFeature) => void
+  contextMenuItems: () => { label: string; onClick: () => void }[]
+}
+
+/**
+ * Shared mouse-interaction scaffolding for the variant canvas displays.
+ * Wires onMouseMove (with key-dedup hover), onMouseLeave, onClick
+ * (enriched-feature select), and onContextMenu (enriched-feature + Menu),
+ * and renders the popup Menu itself.
+ *
+ * Caller supplies `getHit` (hit-test the canvas), `getTooltip` (the subset
+ * of hit data passed to setHoveredGenotype), and `enrich` (turn a hit into
+ * the SimpleFeature passed to select/setContextMenuFeature). `onHoverChange`
+ * is invoked when the hovered hit changes — used by the regular variant
+ * display to drive its HoveredCellHighlight overlay.
+ */
+export function useVariantCanvasInteraction<H extends BaseHit>(opts: {
+  model: InteractionModel
+  getHit: (rect: DOMRect, clientX: number, clientY: number) => H | undefined
+  getTooltip: (hit: H) => Tooltip
+  enrich: (hit: H) => EnrichedFeature | undefined
+  onHoverChange?: (hit: H | undefined) => void
+}) {
+  const { model, getHit, getTooltip, enrich, onHoverChange } = opts
+  const [contextMenuCoord, setContextMenuCoord] = useState<
+    [number, number] | undefined
+  >()
+  const lastHoveredRef = useRef<string | undefined>(undefined)
+
+  function applyHoverChange(hit: H | undefined) {
+    if (hit) {
+      model.setHoveredGenotype(getTooltip(hit))
+    } else {
+      model.setHoveredGenotype(undefined)
+    }
+    onHoverChange?.(hit)
+  }
+
+  const onMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const hit = getHit(rect, e.clientX, e.clientY)
+    const key = hit ? `${hit.name}:${hit.genotype}:${hit.featureId}` : undefined
+    if (key !== lastHoveredRef.current) {
+      lastHoveredRef.current = key
+      applyHoverChange(hit)
+    }
+  }
+
+  const onMouseLeave = () => {
+    if (lastHoveredRef.current !== undefined) {
+      lastHoveredRef.current = undefined
+      applyHoverChange(undefined)
+    }
+  }
+
+  const onClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const hit = getHit(rect, e.clientX, e.clientY)
+    const enriched = hit ? enrich(hit) : undefined
+    if (enriched) {
+      model.selectFeature(enriched)
+    }
+  }
+
+  const onContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const hit = getHit(rect, e.clientX, e.clientY)
+    const enriched = hit ? enrich(hit) : undefined
+    if (enriched) {
+      e.preventDefault()
+      model.setContextMenuFeature(enriched)
+      setContextMenuCoord([e.clientX, e.clientY])
+    }
+  }
+
+  const contextMenuNode = contextMenuCoord ? (
+    <Menu
+      open
+      onMenuItemClick={(_, callback) => {
+        callback()
+        setContextMenuCoord(undefined)
+      }}
+      onClose={() => {
+        setContextMenuCoord(undefined)
+        model.setContextMenuFeature(undefined)
+      }}
+      anchorReference="anchorPosition"
+      anchorPosition={{ top: contextMenuCoord[1], left: contextMenuCoord[0] }}
+      menuItems={model.contextMenuItems()}
+    />
+  ) : null
+
+  return {
+    canvasHandlers: { onMouseMove, onMouseLeave, onClick, onContextMenu },
+    contextMenuNode,
+  }
+}

@@ -1,6 +1,6 @@
-import React, { useRef, useState } from 'react'
+import React from 'react'
 
-import { ErrorBar, ErrorOverlay, Menu } from '@jbrowse/core/ui'
+import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
@@ -13,6 +13,7 @@ import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
+import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
@@ -33,15 +34,23 @@ export interface VariantMatrixDisplayModel extends VariantDisplayModelBase {
   renderNow: () => void
 }
 
+interface MatrixHit {
+  genotype: string
+  alleles: string
+  featureName: string
+  description: string
+  length: string
+  sampleName: string
+  name: string
+  featureId: string
+  featureData: MatrixCellData['featureData'][number]
+}
+
 const VariantMatrixComponent = observer(function VariantMatrixComponent({
   model,
 }: {
   model: VariantMatrixDisplayModel
 }) {
-  const [contextMenuCoord, setContextMenuCoord] = useState<
-    [number, number] | undefined
-  >()
-  const lastHoveredRef = useRef<string | undefined>(undefined)
   const { classes } = useStyles()
 
   const { canvas, canvasRef, error, retry } = useGpuModelLifecycle(
@@ -64,20 +73,19 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
       setRowHeight: model.setRowHeight,
     })
 
-  function getFeatureUnderMouse(
+  const getHit = (
     rect: DOMRect,
-    eventClientX: number,
-    eventClientY: number,
-  ) {
+    clientX: number,
+    clientY: number,
+  ): MatrixHit | undefined => {
     const cellData = model.cellData
     const sources = model.sources
     if (!cellData || !sources?.length || cellData.numFeatures === 0) {
       return undefined
     }
     const w = view.totalWidthPxWithoutBorders
-    const mouseX = eventClientX - rect.left
-    const mouseY = eventClientY - rect.top
-
+    const mouseX = clientX - rect.left
+    const mouseY = clientY - rect.top
     const featureIdx = Math.floor((mouseX / w) * cellData.numFeatures)
     const rowIdx = Math.floor((mouseY + model.scrollTop) / model.rowHeight)
     const source = sources[rowIdx]
@@ -105,17 +113,23 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
     return undefined
   }
 
-  function getEnrichedFeature(
-    result: NonNullable<ReturnType<typeof getFeatureUnderMouse>>,
-  ) {
-    const baseFeature = model.featuresVolatile?.find(
-      f => f.id() === result.featureId,
-    )
-    if (!baseFeature) {
-      return undefined
-    }
-    return enrichFeatureFromClick(baseFeature, result.featureData, result)
-  }
+  const { canvasHandlers, contextMenuNode } =
+    useVariantCanvasInteraction<MatrixHit>({
+      model,
+      getHit,
+      getTooltip: hit => {
+        const { featureId, sampleName, featureData, ...tooltip } = hit
+        return tooltip
+      },
+      enrich: hit => {
+        const baseFeature = model.featuresVolatile?.find(
+          f => f.id() === hit.featureId,
+        )
+        return baseFeature
+          ? enrichFeatureFromClick(baseFeature, hit.featureData, hit)
+          : undefined
+      },
+    })
 
   const width = view.totalWidthPxWithoutBorders
   const height = model.availableHeight
@@ -155,46 +169,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           backgroundColor:
             model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
         }}
-        onMouseMove={e => {
-          const rect = e.currentTarget.getBoundingClientRect()
-          const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
-          const key = result
-            ? `${result.name}:${result.genotype}:${result.featureId}`
-            : undefined
-          if (key !== lastHoveredRef.current) {
-            lastHoveredRef.current = key
-            if (result) {
-              const { featureId, sampleName, featureData, ...tooltip } = result
-              model.setHoveredGenotype(tooltip)
-            } else {
-              model.setHoveredGenotype(undefined)
-            }
-          }
-        }}
-        onMouseLeave={() => {
-          if (lastHoveredRef.current !== undefined) {
-            lastHoveredRef.current = undefined
-            model.setHoveredGenotype(undefined)
-          }
-        }}
-        onClick={e => {
-          const rect = e.currentTarget.getBoundingClientRect()
-          const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
-          const enriched = result ? getEnrichedFeature(result) : undefined
-          if (enriched) {
-            model.selectFeature(enriched)
-          }
-        }}
-        onContextMenu={e => {
-          const rect = e.currentTarget.getBoundingClientRect()
-          const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
-          const enriched = result ? getEnrichedFeature(result) : undefined
-          if (enriched) {
-            e.preventDefault()
-            model.setContextMenuFeature(enriched)
-            setContextMenuCoord([e.clientX, e.clientY])
-          }
-        }}
+        {...canvasHandlers}
       />
       {hasOverflow ? (
         <div
@@ -217,25 +192,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           }}
         />
       ) : null}
-      {contextMenuCoord ? (
-        <Menu
-          open
-          onMenuItemClick={(_, callback) => {
-            callback()
-            setContextMenuCoord(undefined)
-          }}
-          onClose={() => {
-            setContextMenuCoord(undefined)
-            model.setContextMenuFeature(undefined)
-          }}
-          anchorReference="anchorPosition"
-          anchorPosition={{
-            top: contextMenuCoord[1],
-            left: contextMenuCoord[0],
-          }}
-          menuItems={model.contextMenuItems()}
-        />
-      ) : null}
+      {contextMenuNode}
     </div>
   )
 })

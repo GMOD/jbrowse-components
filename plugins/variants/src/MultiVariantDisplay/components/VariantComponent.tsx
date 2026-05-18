@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 
-import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
+import { ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
@@ -18,6 +18,7 @@ import {
 } from '../../shared/components/VariantStatusOverlays.tsx'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
+import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
@@ -115,24 +116,32 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   )
 })
 
+interface HoveredCell {
+  rowIndex: number
+  genomicStart: number
+  genomicEnd: number
+  displayedRegionIndex: number
+}
+
+interface VariantHit {
+  genotype: string
+  alleles: string
+  featureName: string
+  description: string
+  length: string
+  sampleName: string
+  name: string
+  featureId: string
+  featureInfo: VariantCellData['featureGenotypeMap'][string]
+  cell: HoveredCell
+}
+
 const VariantComponent = observer(function VariantComponent({
   model,
 }: {
   model: VariantDisplayModel
 }) {
-  const [contextMenuCoord, setContextMenuCoord] = useState<
-    [number, number] | undefined
-  >()
-  const [hoveredCell, setHoveredCell] = useState<
-    | {
-        rowIndex: number
-        genomicStart: number
-        genomicEnd: number
-        displayedRegionIndex: number
-      }
-    | undefined
-  >()
-  const lastHoveredRef = useRef<string | undefined>(undefined)
+  const [hoveredCell, setHoveredCell] = useState<HoveredCell>()
   const flatbushCacheRef = useRef(new WeakMap<ArrayBuffer, Flatbush>())
   const { classes } = useStyles()
 
@@ -160,7 +169,7 @@ const VariantComponent = observer(function VariantComponent({
     rect: DOMRect,
     eventClientX: number,
     eventClientY: number,
-  ) {
+  ): VariantHit | undefined {
     const cellData = model.cellData
     if (!cellData) {
       return undefined
@@ -258,18 +267,26 @@ const VariantComponent = observer(function VariantComponent({
     return undefined
   }
 
-  function getEnrichedFeature(
-    result: NonNullable<ReturnType<typeof getFeatureUnderMouse>>,
-    model: VariantDisplayModel,
-  ) {
-    const baseFeature = model.featuresVolatile?.find(
-      f => f.id() === result.featureId,
-    )
-    if (!baseFeature) {
-      return undefined
-    }
-    return enrichFeatureFromClick(baseFeature, result.featureInfo, result)
-  }
+  const { canvasHandlers, contextMenuNode } =
+    useVariantCanvasInteraction<VariantHit>({
+      model,
+      getHit: getFeatureUnderMouse,
+      getTooltip: hit => {
+        const { featureId, cell, sampleName, featureInfo, ...tooltip } = hit
+        return tooltip
+      },
+      enrich: hit => {
+        const baseFeature = model.featuresVolatile?.find(
+          f => f.id() === hit.featureId,
+        )
+        return baseFeature
+          ? enrichFeatureFromClick(baseFeature, hit.featureInfo, hit)
+          : undefined
+      },
+      onHoverChange: hit => {
+        setHoveredCell(hit?.cell)
+      },
+    })
 
   const width = view.trackWidthPx
   const height = model.availableHeight
@@ -303,54 +320,7 @@ const VariantComponent = observer(function VariantComponent({
           backgroundColor:
             model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
         }}
-        onMouseMove={e => {
-          const rect = e.currentTarget.getBoundingClientRect()
-          const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
-          const key = result
-            ? `${result.name}:${result.genotype}:${result.featureId}`
-            : undefined
-          if (key !== lastHoveredRef.current) {
-            lastHoveredRef.current = key
-            if (result) {
-              const { featureId, cell, sampleName, featureInfo, ...tooltip } =
-                result
-              model.setHoveredGenotype(tooltip)
-              setHoveredCell(cell)
-            } else {
-              model.setHoveredGenotype(undefined)
-              setHoveredCell(undefined)
-            }
-          }
-        }}
-        onMouseLeave={() => {
-          if (lastHoveredRef.current !== undefined) {
-            lastHoveredRef.current = undefined
-            model.setHoveredGenotype(undefined)
-            setHoveredCell(undefined)
-          }
-        }}
-        onClick={e => {
-          const rect = e.currentTarget.getBoundingClientRect()
-          const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
-          const enriched = result
-            ? getEnrichedFeature(result, model)
-            : undefined
-          if (enriched) {
-            model.selectFeature(enriched)
-          }
-        }}
-        onContextMenu={e => {
-          const rect = e.currentTarget.getBoundingClientRect()
-          const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
-          const enriched = result
-            ? getEnrichedFeature(result, model)
-            : undefined
-          if (enriched) {
-            e.preventDefault()
-            model.setContextMenuFeature(enriched)
-            setContextMenuCoord([e.clientX, e.clientY])
-          }
-        }}
+        {...canvasHandlers}
       />
       {hoveredCell ? (
         <HoveredCellHighlight cell={hoveredCell} model={model} />
@@ -370,25 +340,7 @@ const VariantComponent = observer(function VariantComponent({
       <VariantErrorBar model={model} />
       {model.regionTooLarge ? model.regionCannotBeRendered() : null}
       <VariantLoadingOverlay model={model} />
-      {contextMenuCoord ? (
-        <Menu
-          open
-          onMenuItemClick={(_, callback) => {
-            callback()
-            setContextMenuCoord(undefined)
-          }}
-          onClose={() => {
-            setContextMenuCoord(undefined)
-            model.setContextMenuFeature(undefined)
-          }}
-          anchorReference="anchorPosition"
-          anchorPosition={{
-            top: contextMenuCoord[1],
-            left: contextMenuCoord[0],
-          }}
-          menuItems={model.contextMenuItems()}
-        />
-      ) : null}
+      {contextMenuNode}
     </div>
   )
 })

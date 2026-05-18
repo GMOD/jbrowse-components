@@ -155,12 +155,6 @@ export default function sharedModelFactory(
       get prefersOffset() {
         return true
       },
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return 'LDRenderer'
-      },
       get minorAlleleFrequencyFilter() {
         return self.getConfWithOverride<number>('minorAlleleFrequencyFilter')
       },

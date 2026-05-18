@@ -1,8 +1,8 @@
 import { getContainingView } from '@jbrowse/core/util'
-import { setAbgrFill } from '@jbrowse/core/util/colorBits'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { when } from 'mobx'
 
+import { drawVariantMatrixBlocks } from './components/Canvas2DVariantMatrixRenderer.ts'
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
@@ -27,29 +27,15 @@ export async function renderSvg(
     return null
   }
 
-  const {
-    cellFeatureIndices,
-    cellRowIndices,
-    cellColors,
-    numCells,
-    numFeatures,
-  } = cellData
-
   const { rowHeight, scrollTop, availableHeight, canDisplayLabels } = model
   const canvasWidth = view.totalWidthPxWithoutBorders
-  const colWidth = canvasWidth / numFeatures
-
-  const w = Math.max(colWidth, 2)
-  const h = Math.max(rowHeight, 1)
   const cellsNode = paintLayer(canvasWidth, availableHeight, opts, ctx => {
-    for (let i = 0; i < numCells; i++) {
-      const y = cellRowIndices[i]! * rowHeight - scrollTop
-      if (y + rowHeight < 0 || y > availableHeight) {
-        continue
-      }
-      setAbgrFill(ctx, cellColors[i]!)
-      ctx.fillRect(cellFeatureIndices[i]! * colWidth, y, w, h)
-    }
+    drawVariantMatrixBlocks(ctx, cellData, {
+      canvasWidth,
+      canvasHeight: availableHeight,
+      rowHeight,
+      scrollTop,
+    })
   })
 
   const sources = model.sources ?? []

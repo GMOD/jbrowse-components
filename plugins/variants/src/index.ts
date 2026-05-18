@@ -1,7 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 
 import LDDisplayF from './LDDisplay/index.ts'
-import LDRendererF from './LDRenderer/index.ts'
 import LDTrackF from './LDTrack/index.ts'
 import LinearVariantDisplayF from './LinearVariantDisplay/index.ts'
 import MultiVariantDisplayF from './MultiVariantDisplay/index.ts'
@@ -42,7 +41,6 @@ export default class VariantsPlugin extends Plugin {
     MultiVariantDisplayF(pluginManager)
     MultiVariantMatrixDisplayF(pluginManager)
     LDDisplayF(pluginManager)
-    LDRendererF(pluginManager)
     LDDataRPCMethodsF(pluginManager)
 
     pluginManager.addRpcMethod(

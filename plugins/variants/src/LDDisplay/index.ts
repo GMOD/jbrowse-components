@@ -6,7 +6,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import sharedLDConfigFactory from './SharedLDConfigSchema.ts'
 import sharedModelFactory from './shared.ts'
-import configSchema from '../LDRenderer/configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -19,7 +18,6 @@ function makeLDConfigSchema(typeName: string) {
   return ConfigurationSchema(
     typeName,
     {
-      renderer: configSchema,
       height: {
         type: 'number',
         defaultValue: 400,
