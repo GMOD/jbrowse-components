@@ -1,9 +1,10 @@
 import { FONT_CONFIG } from './types.ts'
 
 import type { VisibleLabel } from '../../LinearMafDisplay/components/computeVisibleLabels.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export function drawMafLabels(
-  ctx: CanvasRenderingContext2D,
+  ctx: Ctx2D,
   labels: VisibleLabel[],
   contrastForBase: Record<string, string>,
   mismatchRendering: boolean,

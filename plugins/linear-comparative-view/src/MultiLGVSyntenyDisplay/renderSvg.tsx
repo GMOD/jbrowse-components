@@ -9,6 +9,7 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
 import { drawSyntenyToCtx } from './components/Canvas2DMultiSyntenyRenderer.ts'
+import { drawSyntenyLabels } from './components/drawSyntenyLabels.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from './model.ts'
 import type {
@@ -46,6 +47,7 @@ export async function renderSvg(
   const totalWidth = view.totalWidthPx
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const state = { ...baseState, canvasWidth: totalWidth }
+  const { visibleLabels, syntenyCoverageHeight } = model
 
   const syntenyNode = paintLayer(totalWidth, model.height, opts, ctx => {
     drawSyntenyToCtx(
@@ -54,6 +56,7 @@ export async function renderSvg(
       renderBlocks,
       state,
     )
+    drawSyntenyLabels(ctx, visibleLabels, syntenyCoverageHeight)
   })
 
   const { coverageTicks, treeSidebarActive, hierarchy, lineZoneHeight } = model

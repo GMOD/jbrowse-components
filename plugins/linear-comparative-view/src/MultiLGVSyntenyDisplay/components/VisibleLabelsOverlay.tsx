@@ -1,13 +1,8 @@
 import { useEffect, useRef } from 'react'
 
-import type { VisibleLabel } from './computeVisibleLabels.ts'
+import { drawSyntenyLabels } from './drawSyntenyLabels.ts'
 
-const BASE_CONTRAST: Record<string, string> = {
-  A: '#fff',
-  C: '#fff',
-  G: '#000',
-  T: '#fff',
-}
+import type { VisibleLabel } from './computeVisibleLabels.ts'
 
 export default function VisibleLabelsOverlay({
   labels,
@@ -32,17 +27,7 @@ export default function VisibleLabelsOverlay({
       return
     }
     ctx.clearRect(0, 0, width, height)
-    for (const label of labels) {
-      ctx.font = `bold ${label.fontSize}px monospace`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      let fillColor = '#fff'
-      if (label.type === 'mismatch' && label.text.length === 1) {
-        fillColor = BASE_CONTRAST[label.text] ?? '#fff'
-      }
-      ctx.fillStyle = fillColor
-      ctx.fillText(label.text, label.x, label.y + yOffset)
-    }
+    drawSyntenyLabels(ctx, labels, yOffset)
   }, [labels, width, height, yOffset])
 
   if (labels.length === 0) {

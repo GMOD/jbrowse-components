@@ -1,5 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { Theme } from '@mui/material'
 
 export function getContrastBaseMap(theme: Theme) {
@@ -22,7 +23,7 @@ export function getColorBaseMap(theme: Theme) {
 }
 
 export function fillRect(
-  ctx: CanvasRenderingContext2D,
+  ctx: Ctx2D,
   l: number,
   t: number,
   w: number,

@@ -8,10 +8,11 @@ import { getCharWidthHeight, getColorBaseMap } from './util.ts'
 
 import type { MafGPURenderState, MafRegionData } from './mafBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { Theme } from '@mui/material'
 
 export function drawMafBlocks(
-  ctx: CanvasRenderingContext2D,
+  ctx: Ctx2D,
   rpcDataMap: { get(key: number): { regionData: MafRegionData } | undefined },
   renderBlocks: RenderBlock[],
   state: MafGPURenderState,

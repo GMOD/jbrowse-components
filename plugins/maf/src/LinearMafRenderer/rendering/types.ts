@@ -1,3 +1,5 @@
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+
 export const FONT_CONFIG = 'bold 10px Courier New,monospace'
 export const CHAR_SIZE_WIDTH = 10
 export const GAP_STROKE_OFFSET = 0.4
@@ -12,7 +14,7 @@ export const HIGH_BP_PER_PX_THRESHOLD = 10
 export const INSERTION_BORDER_HEIGHT = 5
 
 export interface RenderingContext {
-  ctx: CanvasRenderingContext2D
+  ctx: Ctx2D
   scale: number
   bpPerPx: number
   canvasWidth: number

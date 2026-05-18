@@ -119,3 +119,75 @@ test('alignments display SVG rasterized export embeds PNG', async () => {
   expect(svg).toContain('<image')
   expect(svg).toContain('data:image/png;base64,iVBOR')
 }, 45000)
+
+test('alignments display SVG vector export', async () => {
+  const { view, findByTestId } = await createView()
+  view.setNewView(0.1, 1)
+  fireEvent.click(
+    await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
+  )
+  await findByTestId('pileup-display-done', ...opts)
+
+  await view.exportSvg({ rasterizeLayers: false })
+  const svg = getSavedSvg()
+  fs.writeFileSync(`${snapshotDir}/alignments_vector_snapshot.svg`, svg)
+  expect(svg).toContain('<svg')
+  // SvgCanvas paths emit as <g>/<path>; rasterized path would emit <image>.
+  expect(svg).not.toContain('<image')
+}, 45000)
+
+test('MAF display SVG vector export', async () => {
+  const { view, findByTestId } = await createView()
+  await view.navToLocString('ctgA:1..2000')
+  fireEvent.click(await findByTestId(hts('volvox_maf_tabix'), ...opts))
+  await findByTestId(/^display-.*-done$/, ...opts)
+
+  await view.exportSvg({ rasterizeLayers: false })
+  const svg = getSavedSvg()
+  fs.writeFileSync(`${snapshotDir}/maf_vector_snapshot.svg`, svg)
+  expect(svg).toContain('<svg')
+  expect(svg).not.toContain('<image')
+}, 45000)
+
+test('MAF display SVG rasterized export embeds PNG', async () => {
+  const { view, findByTestId } = await createView()
+  await view.navToLocString('ctgA:1..2000')
+  fireEvent.click(await findByTestId(hts('volvox_maf_tabix'), ...opts))
+  await findByTestId(/^display-.*-done$/, ...opts)
+
+  await view.exportSvg({ rasterizeLayers: true, createCanvas: canvasFactory })
+  const svg = getSavedSvg()
+  fs.writeFileSync(`${snapshotDir}/maf_rasterized_snapshot.svg`, svg)
+  expect(svg).toContain('<image')
+  expect(svg).toContain('data:image/png;base64,iVBOR')
+}, 45000)
+
+test('MultiLGVSyntenyDisplay SVG vector export', async () => {
+  const { view, findByTestId } = await createView()
+  await view.navToLocString('ctgA:1-50000')
+  fireEvent.click(
+    await findByTestId(hts('volvox_pangenome_50_gfa_tabix'), ...opts),
+  )
+  await findByTestId('multi_synteny_canvas_done', ...opts)
+
+  await view.exportSvg({ rasterizeLayers: false })
+  const svg = getSavedSvg()
+  fs.writeFileSync(`${snapshotDir}/multi_synteny_vector_snapshot.svg`, svg)
+  expect(svg).toContain('<svg')
+  expect(svg).not.toContain('<image')
+}, 90000)
+
+test('MultiLGVSyntenyDisplay SVG rasterized export embeds PNG', async () => {
+  const { view, findByTestId } = await createView()
+  await view.navToLocString('ctgA:1-50000')
+  fireEvent.click(
+    await findByTestId(hts('volvox_pangenome_50_gfa_tabix'), ...opts),
+  )
+  await findByTestId('multi_synteny_canvas_done', ...opts)
+
+  await view.exportSvg({ rasterizeLayers: true, createCanvas: canvasFactory })
+  const svg = getSavedSvg()
+  fs.writeFileSync(`${snapshotDir}/multi_synteny_rasterized_snapshot.svg`, svg)
+  expect(svg).toContain('<image')
+  expect(svg).toContain('data:image/png;base64,iVBOR')
+}, 90000)

@@ -37,6 +37,7 @@ import {
   getGlobalMaxDepth,
   mergeGenomeRows,
 } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import { computeMultiSyntenyLabels } from './components/computeVisibleLabels.ts'
 import { legendItems as legendItemsMap } from './shared/colorUtils.ts'
 import { LABEL_WIDTH } from './shared/types.ts'
 
@@ -46,10 +47,9 @@ import type { SyntenyColorPalette } from './shared/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type {
+import type { ExportSvgDisplayOptions,
   FetchContext,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+  LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { TreeSource } from '@jbrowse/tree-sidebar'
 
 type LGV = LinearGenomeViewModel
@@ -570,13 +570,28 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           })
         },
 
-        async renderSvg(): Promise<React.ReactNode> {
+        async renderSvg(
+          opts: ExportSvgDisplayOptions,
+        ): Promise<React.ReactNode> {
           const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self as MultiLGVSyntenyDisplayModel)
+          return renderSvg(self as MultiLGVSyntenyDisplayModel, opts)
         },
       }
     })
     .views(self => ({
+      get visibleLabels() {
+        const view = getContainingView(self) as LGV
+        return computeMultiSyntenyLabels(
+          self.genomeRows,
+          self.displayedGenomes,
+          self.rowHeight,
+          self.rowSpacing,
+          self.showSnps,
+          view.bpToPx.bind(view),
+          view.offsetPx,
+          view.width,
+        )
+      },
       contextMenuItems() {
         const feature = self.contextMenuFeature
         if (!feature) {

@@ -22,7 +22,6 @@ import { observer } from 'mobx-react'
 
 import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
 import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTestPipeline.ts'
 import {
   BG_COLOR_HEX,
@@ -512,29 +511,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     [doHitTest, doCoverageHitTest, model],
   )
 
-  const labels = useMemo(
-    () =>
-      computeMultiSyntenyLabels(
-        genomeRows,
-        displayedGenomes,
-        rowHeight,
-        rowSpacing,
-        showSnps,
-        view.bpToPx.bind(view),
-        offsetPx,
-        width,
-      ),
-    [
-      genomeRows,
-      displayedGenomes,
-      rowHeight,
-      rowSpacing,
-      showSnps,
-      view,
-      offsetPx,
-      width,
-    ],
-  )
+  const labels = model.visibleLabels
 
   if (error) {
     return (

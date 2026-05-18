@@ -11,8 +11,11 @@ import { when } from 'mobx'
 
 import { drawAlignmentsToCtx } from './components/Canvas2DAlignmentsRenderer.ts'
 import { makeBpToScreenX } from './components/alignmentComponentUtils.ts'
+import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { computePileupBezierArcs } from '../features/arcs/computeOverlay.ts'
 import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
+import { getContrastBaseMap } from '../shared/util.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type {
@@ -77,6 +80,34 @@ export async function renderSvg(
     canvasHeight: displayHeight,
   }
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
+
+  // Recompute labels for the SVG geometry: full-height export (rangeY starts
+  // at 0) with the same screenStartPx as renderBlocks. Reuses model state for
+  // everything else so on-screen and export agree on what's labeled.
+  const labelBlocks = []
+  for (const vr of view.visibleRegions) {
+    const data = rpcDataMap.get(vr.displayedRegionIndex)
+    if (data) {
+      labelBlocks.push({
+        rpcData: data,
+        blockStart: vr.start,
+        blockEnd: vr.end,
+        blockScreenOffsetPx: vr.screenStartPx,
+        bpPerPx: view.bpPerPx,
+        reversed: vr.reversed ?? false,
+      })
+    }
+  }
+  const labels = computeVisibleLabels({
+    blocks: labelBlocks,
+    height: displayHeight,
+    featureHeightSetting,
+    featureSpacing,
+    showMismatches: model.showMismatches,
+    topOffset: coverageDisplayHeight,
+    rangeY: [0, displayHeight],
+  })
+  const contrastMap = getContrastBaseMap(theme)
   const pileupNode = paintLayer(totalWidth, displayHeight, opts, ctx => {
     drawAlignmentsToCtx(
       ctx,
@@ -84,6 +115,7 @@ export async function renderSvg(
       renderBlocks,
       state,
     )
+    drawAlignmentLabels(ctx, labels, contrastMap, theme)
   })
 
   // Sashimi: vector SVG by design (low arc count + native hover behavior in
