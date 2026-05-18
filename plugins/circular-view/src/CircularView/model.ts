@@ -251,22 +251,10 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * figure is always square, so width === height
        */
-      get figureDimensions(): [number, number] {
-        const d = this.radiusPx * 2 + 2 * self.paddingPx
-        return [d, d]
-      },
-      /**
-       * #getter
-       */
-      get figureWidth() {
-        return this.figureDimensions[0]
-      },
-      /**
-       * #getter
-       */
-      get figureHeight() {
-        return this.figureDimensions[1]
+      get figureSize() {
+        return this.radiusPx * 2 + 2 * self.paddingPx
       },
       /**
        * #getter
@@ -392,7 +380,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       get showView() {
         return (
           !!self.displayedRegions.length &&
-          !!this.figureWidth &&
+          !!this.figureSize &&
           this.initialized
         )
       },
@@ -712,11 +700,15 @@ function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
-            onClick: self.openExportDialog,
+            onClick: () => {
+              self.openExportDialog()
+            },
           },
           {
             label: 'Open track selector',
-            onClick: self.activateTrackSelector,
+            onClick: () => {
+              self.activateTrackSelector()
+            },
             icon: TrackSelectorIcon,
           },
         ]

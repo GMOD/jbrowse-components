@@ -29,7 +29,9 @@ const Controls = observer(function Controls({
   return (
     <div className={classes.controls}>
       <IconButton
-        onClick={model.zoomOutButton}
+        onClick={() => {
+          model.zoomOutButton()
+        }}
         title="zoom out"
         disabled={model.atMaxBpPerPx}
       >
@@ -37,7 +39,9 @@ const Controls = observer(function Controls({
       </IconButton>
 
       <IconButton
-        onClick={model.zoomInButton}
+        onClick={() => {
+          model.zoomInButton()
+        }}
         disabled={model.atMinBpPerPx}
         title="zoom in"
       >
@@ -45,26 +49,37 @@ const Controls = observer(function Controls({
       </IconButton>
 
       <IconButton
-        onClick={model.rotateCounterClockwiseButton}
+        onClick={() => {
+          model.rotateCounterClockwiseButton()
+        }}
         title="rotate counter-clockwise"
       >
         <RotateLeftIcon />
       </IconButton>
 
       <IconButton
-        onClick={model.rotateClockwiseButton}
+        onClick={() => {
+          model.rotateClockwiseButton()
+        }}
         title="rotate clockwise"
       >
         <RotateRightIcon />
       </IconButton>
 
-      <IconButton onClick={model.openExportDialog} title="Export SVG">
+      <IconButton
+        onClick={() => {
+          model.openExportDialog()
+        }}
+        title="Export SVG"
+      >
         <PhotoCamera />
       </IconButton>
 
       {model.hideTrackSelectorButton ? null : (
         <IconButton
-          onClick={model.activateTrackSelector}
+          onClick={() => {
+            model.activateTrackSelector()
+          }}
           title="Open track selector"
           data-testid="circular_track_select"
         >

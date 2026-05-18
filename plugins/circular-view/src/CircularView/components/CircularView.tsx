@@ -73,16 +73,14 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     id,
     offsetRadians,
     centerXY,
-    figureWidth,
-    figureHeight,
+    figureSize,
     hideVerticalResizeHandle,
     panX,
     panY,
   } = model
   const { classes } = useStyles()
   const containerRef = useRef<HTMLDivElement>(null)
-  // ref tracks drag imperatively to avoid closure-capture timing issues
-  const dragRef = useRef({ dragging: false, lastAngle: 0 })
+  const lastAngleRef = useRef(0)
   const [isDragging, setIsDragging] = useState(false)
 
   // non-passive wheel listener so we can call preventDefault()
@@ -129,17 +127,16 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
 
   const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId)
-    dragRef.current.dragging = true
-    dragRef.current.lastAngle = angleFromCenter(event.clientX, event.clientY)
+    lastAngleRef.current = angleFromCenter(event.clientX, event.clientY)
     setIsDragging(true)
   }
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (!dragRef.current.dragging) {
+    if (!isDragging) {
       return
     }
     const angle = angleFromCenter(event.clientX, event.clientY)
-    let delta = angle - dragRef.current.lastAngle
+    let delta = angle - lastAngleRef.current
     // wrap delta to [-π, π] to handle the ±π boundary crossing
     if (delta > Math.PI) {
       delta -= 2 * Math.PI
@@ -147,12 +144,11 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       delta += 2 * Math.PI
     }
     model.rotate(delta)
-    dragRef.current.lastAngle = angle
+    lastAngleRef.current = angle
   }
 
   const handlePointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
     event.currentTarget.releasePointerCapture(event.pointerId)
-    dragRef.current.dragging = false
     setIsDragging(false)
   }
 
@@ -182,8 +178,8 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
             cursor: isDragging ? 'grabbing' : 'grab',
             userSelect: 'none',
           }}
-          width={figureWidth}
-          height={figureHeight}
+          width={figureSize}
+          height={figureSize}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -196,7 +192,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       <Controls model={model} />
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle
-          onDrag={model.resizeHeight}
+          onDrag={distance => model.resizeHeight(distance)}
           style={{
             height: dragHandleHeight,
             position: 'absolute',

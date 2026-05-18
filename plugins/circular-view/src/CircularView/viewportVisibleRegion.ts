@@ -1,35 +1,23 @@
-function findCircleIntersectionX(
-  y: number,
+// push intersection points where the circle (center cx,cy, radius r) meets a
+// horizontal line (orientation='h', y=fixed) or vertical line ('v', x=fixed)
+function findCircleIntersection(
+  orientation: 'h' | 'v',
+  fixed: number,
   cx: number,
   cy: number,
   r: number,
   resultArray: [number, number][],
 ) {
-  const d = Math.abs(y - cy)
+  const d = Math.abs(fixed - (orientation === 'h' ? cy : cx))
   if (d <= r) {
-    if (d === r) {
-      resultArray.push([cx, y])
+    const s = Math.sqrt(r * r - d * d)
+    const along = orientation === 'h' ? cx : cy
+    const pt = (a: number): [number, number] =>
+      orientation === 'h' ? [a, fixed] : [fixed, a]
+    if (s === 0) {
+      resultArray.push(pt(along))
     } else {
-      const solution = Math.sqrt(r * r - d * d)
-      resultArray.push([cx - solution, y], [cx + solution, y])
-    }
-  }
-}
-
-function findCircleIntersectionY(
-  x: number,
-  cx: number,
-  cy: number,
-  r: number,
-  resultArray: [number, number][],
-) {
-  const d = Math.abs(x - cx)
-  if (d <= r) {
-    if (d === r) {
-      resultArray.push([x, cy])
-    } else {
-      const solution = Math.sqrt(r * r - d * d)
-      resultArray.push([x, cy - solution], [x, cy + solution])
+      resultArray.push(pt(along - s), pt(along + s))
     }
   }
 }
@@ -125,10 +113,10 @@ export function viewportVisibleSection(
     [viewL, viewB],
     [viewR, viewB],
   ]
-  findCircleIntersectionY(viewL, 0, 0, circleRadius, vertices)
-  findCircleIntersectionY(viewR, 0, 0, circleRadius, vertices)
-  findCircleIntersectionX(viewT, 0, 0, circleRadius, vertices)
-  findCircleIntersectionX(viewB, 0, 0, circleRadius, vertices)
+  findCircleIntersection('v', viewL, 0, 0, circleRadius, vertices)
+  findCircleIntersection('v', viewR, 0, 0, circleRadius, vertices)
+  findCircleIntersection('h', viewT, 0, 0, circleRadius, vertices)
+  findCircleIntersection('h', viewB, 0, 0, circleRadius, vertices)
 
   // for each edge, also look at the closest point to center if it is inside the circle
   if (-viewL < circleRadius) {
