@@ -41,7 +41,7 @@ const suite: TestSuite = {
           'input[aria-describedby]',
           { timeout: 10000 },
         )
-        await colorInput?.click({ clickCount: 3 })
+        await colorInput?.click({ count: 3 })
         await colorInput?.type('red')
         await delay(1500)
 

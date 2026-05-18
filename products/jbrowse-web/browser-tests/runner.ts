@@ -347,7 +347,11 @@ async function setupPage(browser: Browser) {
       testStartTime > 0
         ? `+${((performance.now() - testStartTime) / 1000).toFixed(1)}s`
         : ''
-    console.error(`  [${elapsed}] PageError:`, err.stack || err.message)
+    if (err instanceof Error) {
+      console.error(`  [${elapsed}] PageError:`, err.stack || err.message)
+    } else {
+      console.error(`  [${elapsed}] PageError:`, err)
+    }
   })
   return page
 }

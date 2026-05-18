@@ -2,7 +2,7 @@ import { PNG } from 'pngjs'
 
 import { snapshotConfig } from './snapshot.ts'
 
-import type { Browser, Page } from 'puppeteer'
+import type { Browser, ElementHandle, Page } from 'puppeteer'
 
 export const PORT = 3333
 export const OAUTH_PORT = 3030
@@ -32,14 +32,15 @@ export async function findByText(
   page: Page,
   text: string | RegExp,
   timeout = 30000,
-) {
+): Promise<ElementHandle<Element> | null> {
   if (typeof text === 'string') {
     // ::-p-text() is unreliable in Firefox BiDi with per-browser restarts.
     // Fall back to DOM-based text search if the Puppeteer selector fails.
     try {
-      return await page.waitForSelector(`::-p-text(${text})`, {
+      const handle = await page.waitForSelector(`::-p-text(${text})`, {
         timeout: Math.min(timeout, 3000),
       })
+      return handle as ElementHandle<Element> | null
     } catch {
       await page.waitForFunction(
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -72,7 +73,7 @@ export async function findByText(
     text.source,
     text.flags,
   )
-  return handle.asElement()
+  return handle.asElement() as ElementHandle<Element> | null
 }
 
 export async function waitForLoadingToComplete(page: Page, timeout = 30000) {
