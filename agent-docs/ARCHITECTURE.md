@@ -392,6 +392,17 @@ const node = paintLayer(totalWidth, height, opts, ctx => {
 `paintLayer` (in `@jbrowse/core/util/paintLayer`) decides between a 2× DPR
 raster canvas (when `opts.rasterizeLayers`) or an `SvgCanvas`, and returns
 one `ReactNode` (`<image xlinkHref=…>` or `<g dangerouslySetInnerHTML=…>`).
+Raster mode bakes the 2× DPR scaling into the embedded PNG; vector mode
+serializes the SvgCanvas call log to SVG markup. Either way the caller
+draws to `Ctx2D` in CSS pixels — no manual DPR.
+
+**Avoid hand-rolled JSX-SVG inside `renderSvg.tsx`**. Anything draw-shaped
+(rects, paths, fills, strokes) should go through `paintLayer` so both raster
+and vector modes work and the on-screen draw code can be shared. Hand-rolled
+`<rect>`/`<path>`/`<line>` inside `renderSvg.tsx` is a red flag — it can't
+rasterize, drifts from on-screen output, and locks in vector output. The
+documented exceptions are sashimi/bezier arcs (vector-by-design for hover —
+see below) and trivial chrome like single separator lines or scalebars.
 
 This kills the older "SVG-only `renderToCtx`" pattern that drifted out of
 sync with the on-screen renderer (different bicolor handling, different
@@ -679,11 +690,18 @@ left-edge=`region.end`, right-edge=`region.start`.
 
 ---
 
-## Uniforms & canvas scaling
+## Canvas scaling & hi-DPI
 
-Shader uniforms use **CSS pixels**. The HAL sets the canvas backing store to
-`css × dpr`, so `N / canvas_width` in clip space equals `N` CSS pixels at any
-DPR. **Do not manually scale by `devicePixelRatio`.**
+**GPU canvases (HAL-managed)**: shader uniforms are in CSS pixels; HAL sets the
+backing store to `css × dpr`, so `N / canvas_width` in clip space = `N` CSS
+pixels at any DPR. Do not manually scale by `devicePixelRatio`.
+
+**2D overlay canvases (`VisibleLabelsOverlay`, `MsaHighlightOverlay`, etc.)**:
+caller owns DPR. Set `canvas.width = w * dpr` + `canvas.height = h * dpr` in
+the effect, call `ctx.scale(dpr, dpr)`, then put CSS `width`/`height` in the
+style block. Skipping this renders blurry on Retina displays. `prepareCanvas`
+(in `packages/core/src/gpu/canvas2dUtils.ts`) does this for the on-screen
+Canvas2D backend path; standalone overlay components must replicate it.
 
 ---
 
