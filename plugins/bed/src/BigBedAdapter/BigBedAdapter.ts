@@ -12,7 +12,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import { featureData2 } from '../util.ts'
+import { featureData } from '../util.ts'
 
 import type { FeatureData } from '../util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -162,7 +162,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           `${feat.end}`,
           ...(feat.rest?.split('\t') ?? []),
         ]
-        const f = featureData2({
+        const f = featureData({
           scoreColumn,
           splitLine,
           parser,
@@ -223,50 +223,42 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       }
 
       for (const [name, subfeatures] of Object.entries(parentAggregation)) {
-        const s = min(subfeatures.map(f => f.start))
-        const e = max(subfeatures.map(f => f.end))
-        if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
+        const groupStart = min(subfeatures.map(f => f.start))
+        const groupEnd = max(subfeatures.map(f => f.end))
+        if (
+          doesIntersect2(
+            groupStart,
+            groupEnd,
+            originalQuery.start,
+            originalQuery.end,
+          )
+        ) {
           const subs = subfeatures.sort((a, b) =>
             a.uniqueId.localeCompare(b.uniqueId),
           )
-          // overlapping subs → one gene parent; non-overlapping → separate parents
-          // (handles bacterial GFF where two genes share a name but are distinct loci)
           const sortedByStart = [...subs].sort((a, b) => a.start - b.start)
           const hasOverlaps = sortedByStart.some(
             (f, i) => i > 0 && sortedByStart[i - 1]!.end > f.start,
           )
-          if (hasOverlaps) {
+          const strand = subs.find(f => f.strand !== 0)?.strand ?? 1
+          // overlapping subs → one gene parent; non-overlapping → one parent per sub
+          // (handles bacterial GFF where two genes share a name but are distinct loci)
+          const groups = hasOverlaps ? [subs] : subs.map(sub => [sub])
+          for (const group of groups) {
             observer.next(
               new SimpleFeature({
-                id: `${this.id}-${subs[0]?.uniqueId}-parent`,
+                id: `${this.id}-${group[0]!.uniqueId}-parent`,
                 data: {
                   type: 'gene',
-                  subfeatures: subs,
-                  strand: subs.find(f => f.strand !== 0)?.strand ?? 1,
+                  subfeatures: group,
+                  strand,
                   name,
-                  start: s,
-                  end: e,
+                  start: min(group.map(f => f.start)),
+                  end: max(group.map(f => f.end)),
                   refName: query.refName,
                 },
               }),
             )
-          } else {
-            for (const sub of subs) {
-              observer.next(
-                new SimpleFeature({
-                  id: `${this.id}-${sub.uniqueId}-parent`,
-                  data: {
-                    type: 'gene',
-                    subfeatures: [sub],
-                    strand: subs.find(f => f.strand !== 0)?.strand ?? 1,
-                    name,
-                    start: sub.start,
-                    end: sub.end,
-                    refName: query.refName,
-                  },
-                }),
-              )
-            }
           }
         }
       }

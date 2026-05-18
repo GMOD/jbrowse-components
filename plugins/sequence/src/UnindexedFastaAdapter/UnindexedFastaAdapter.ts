@@ -4,6 +4,8 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { readOptionalMetadata } from '../chromSizesUtils.ts'
+
 import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
@@ -64,10 +66,10 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
   }
 
   public async getHeader() {
-    const loc = this.getConf('metadataLocation')
-    return loc.uri === '' || loc.uri === '/path/to/fa.metadata.yaml'
-      ? null
-      : openLocation(loc, this.pluginManager).readFile('utf8')
+    return readOptionalMetadata(
+      this.getConf('metadataLocation'),
+      this.pluginManager,
+    )
   }
 
   public async setup() {

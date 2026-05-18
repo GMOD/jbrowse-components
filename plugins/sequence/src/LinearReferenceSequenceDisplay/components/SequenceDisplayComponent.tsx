@@ -49,9 +49,9 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
 
       drawSequenceBlocks(ctx, model.sequenceData, model.renderBlocks, {
         bpPerPx: view.bpPerPx,
-        showForward: model.showForwardActual,
-        showReverse: model.showReverseActual,
-        showTranslation: model.showTranslationActual,
+        showForward: model.showForward,
+        showReverse: model.isDna && model.showReverse,
+        showTranslation: model.isDna && model.showTranslation,
         sequenceType: model.sequenceType,
         rowHeight: model.rowHeight,
         palette,

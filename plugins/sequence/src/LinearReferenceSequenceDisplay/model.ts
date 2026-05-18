@@ -37,9 +37,10 @@ export interface LinearReferenceSequenceDisplayModel {
   sequenceData: ReadonlyMap<number, SequenceRegionData>
   renderBlocks: RenderBlock[]
   error: unknown
-  showForwardActual: boolean
-  showReverseActual: boolean
-  showTranslationActual: boolean
+  showForward: boolean
+  showReverse: boolean
+  showTranslation: boolean
+  isDna: boolean
   sequenceType: string
   rowHeight: number
   sequenceHeight: number
@@ -92,28 +93,15 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       get sequenceType() {
         return getConf(getContainingTrack(self), 'sequenceType')
       },
-
+    }))
+    .views(self => ({
       /**
        * #getter
+       * true for DNA tracks; reverse-complement and translation rows are
+       * gated on this since they are biologically meaningful only for DNA.
        */
-      get showForwardActual() {
-        return self.showForward
-      },
-
-      /**
-       * #getter
-       * showReverse setting, is disabled for non-dna sequences
-       */
-      get showReverseActual() {
-        return this.sequenceType === 'dna' ? self.showReverse : false
-      },
-
-      /**
-       * #getter
-       * showTranslation setting is disabled for non-dna sequences
-       */
-      get showTranslationActual() {
-        return this.sequenceType === 'dna' ? self.showTranslation : false
+      get isDna() {
+        return self.sequenceType === 'dna'
       },
     }))
     .views(self => ({
@@ -126,22 +114,10 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         return view.bpPerPx > ZOOMED_OUT_BP_PER_PX
       },
       get numRows() {
-        const { showTranslationActual, showReverseActual, showForwardActual } =
-          self
-        let n = 0
-        if (showForwardActual) {
-          n++
-        }
-        if (showReverseActual) {
-          n++
-        }
-        if (showForwardActual && showTranslationActual) {
-          n += 3
-        }
-        if (showReverseActual && showTranslationActual) {
-          n += 3
-        }
-        return n
+        const f = self.showForward ? 1 : 0
+        const r = self.isDna && self.showReverse ? 1 : 0
+        const t = self.isDna && self.showTranslation ? 1 : 0
+        return f + r + 3 * t * (f + r)
       },
       get sequenceHeight() {
         return this.numRows * 15
@@ -241,50 +217,44 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        * #method
        */
       trackMenuItems() {
-        return [
-          ...(self.sequenceType === 'dna'
-            ? [
-                {
-                  label: 'Show forward',
-                  type: 'checkbox',
-                  checked: self.showForward,
-                  onClick: () => {
-                    self.toggleShowForward()
-                  },
+        return self.isDna
+          ? [
+              {
+                label: 'Show forward',
+                type: 'checkbox',
+                checked: self.showForward,
+                onClick: () => {
+                  self.toggleShowForward()
                 },
-                {
-                  label: 'Show reverse',
-                  type: 'checkbox',
-                  checked: self.showReverse,
-                  onClick: () => {
-                    self.toggleShowReverse()
-                  },
+              },
+              {
+                label: 'Show reverse',
+                type: 'checkbox',
+                checked: self.showReverse,
+                onClick: () => {
+                  self.toggleShowReverse()
                 },
-                {
-                  label: 'Show translation',
-                  type: 'checkbox',
-                  checked: self.showTranslation,
-                  onClick: () => {
-                    self.toggleShowTranslation()
-                  },
+              },
+              {
+                label: 'Show translation',
+                type: 'checkbox',
+                checked: self.showTranslation,
+                onClick: () => {
+                  self.toggleShowTranslation()
                 },
-              ]
-            : []),
-        ]
+              },
+            ]
+          : []
       },
     }))
     .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
       const { showForward, showReverse, showTranslation, ...rest } =
         snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(!showForward ? { showForward } : {}),
-        ...(!showReverse ? { showReverse } : {}),
-        ...(!showTranslation ? { showTranslation } : {}),
+        ...(showForward ? {} : { showForward }),
+        ...(showReverse ? {} : { showReverse }),
+        ...(showTranslation ? {} : { showTranslation }),
       } as typeof snap
     })
 }

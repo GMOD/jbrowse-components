@@ -6,17 +6,14 @@ import { codonTable, complement, revcom } from '@jbrowse/core/util'
 
 import { frameShiftBounds, startsSet, stopsSet } from './sequenceGeometry.ts'
 
-import type { ColorPalette } from './sequenceGeometry.ts'
+import type { ColorEntry, ColorPalette } from './sequenceGeometry.ts'
 import type { SequenceRegionData } from '../model.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Frame } from '@jbrowse/core/util'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { Theme } from '@mui/material'
 
-type RGB = readonly [number, number, number]
-
 const BORDER_COLOR = 'rgb(85,85,85)'
-const FALLBACK_RGB: RGB = [170, 170, 170]
 
 export interface TextColors {
   baseContrast: Map<string, string>
@@ -24,7 +21,7 @@ export interface TextColors {
   stopContrast: string
 }
 
-function contrastColor(rgb: RGB) {
+function contrastColor({ rgb }: ColorEntry) {
   const lum = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
   return lum < 128 ? '#fff' : '#000'
 }
@@ -34,8 +31,8 @@ export function buildTextColors(
   theme: Theme,
 ): TextColors {
   const baseContrast = new Map<string, string>()
-  for (const [base, rgb] of palette.baseColors) {
-    baseContrast.set(base, contrastColor(rgb))
+  for (const [base, color] of palette.bases) {
+    baseContrast.set(base, contrastColor(color))
   }
   return {
     baseContrast,
@@ -44,17 +41,7 @@ export function buildTextColors(
   }
 }
 
-function rgbStyle([r, g, b]: RGB) {
-  return `rgb(${r},${g},${b})`
-}
-
-interface BlockGeometry {
-  block: RenderBlock
-  bpPerPx: number
-}
-
-function bpRangeToScreen(g: BlockGeometry, absBp: number, bpWidth: number) {
-  const { block } = g
+function bpRangeToScreen(block: RenderBlock, absBp: number, bpWidth: number) {
   const [bpStart, bpEnd] = block.bpRangeX
   const x1 = bpToScreenPx(
     absBp,
@@ -77,7 +64,7 @@ function bpRangeToScreen(g: BlockGeometry, absBp: number, bpWidth: number) {
 
 function drawBaseRow(
   ctx: Ctx2D,
-  g: BlockGeometry,
+  block: RenderBlock,
   seq: string,
   seqStart: number,
   y: number,
@@ -87,25 +74,25 @@ function drawBaseRow(
   palette: ColorPalette,
   textColors: TextColors,
 ) {
-  const [bpStart, bpEnd] = g.block.bpRangeX
+  const [bpStart, bpEnd] = block.bpRangeX
   const iStart = Math.max(0, Math.floor(bpStart - seqStart))
   const iEnd = Math.min(seq.length, Math.ceil(bpEnd - seqStart))
+  const isDna = sequenceType === 'dna'
 
   for (let i = iStart; i < iEnd; i++) {
     const letter = seq[i]!
     const upper = letter.toUpperCase()
-    const rgb = palette.baseColors.get(upper) ?? FALLBACK_RGB
-    const { x, w } = bpRangeToScreen(g, seqStart + i, 1)
+    const color = palette.bases.get(upper) ?? palette.fallback
+    const { x, w } = bpRangeToScreen(block, seqStart + i, 1)
 
-    ctx.fillStyle = rgbStyle(rgb)
+    ctx.fillStyle = color.style
     ctx.fillRect(x, y, w, rowHeight)
 
     if (showBorders) {
       ctx.strokeRect(x, y, w, rowHeight)
-      ctx.fillStyle =
-        sequenceType === 'dna'
-          ? (textColors.baseContrast.get(upper) ?? '#000')
-          : '#000'
+      ctx.fillStyle = isDna
+        ? (textColors.baseContrast.get(upper) ?? '#000')
+        : '#000'
       ctx.fillText(letter, x + w / 2, y + rowHeight / 2)
     }
   }
@@ -113,7 +100,7 @@ function drawBaseRow(
 
 function drawTranslationRow(
   ctx: Ctx2D,
-  g: BlockGeometry,
+  block: RenderBlock,
   seq: string,
   seqStart: number,
   frame: Frame,
@@ -124,26 +111,23 @@ function drawTranslationRow(
   palette: ColorPalette,
   textColors: TextColors,
 ) {
-  const bgColor = palette.frameColors.get(frame) ?? FALLBACK_RGB
-  const bgStyle = rgbStyle(bgColor)
+  const bg = palette.frames.get(frame) ?? palette.fallback
   const { frameShift, sliceEnd } = frameShiftBounds(seq, seqStart, frame)
-  const [bpStart, bpEnd] = g.block.bpRangeX
+  const [bpStart, bpEnd] = block.bpRangeX
 
+  ctx.fillStyle = bg.style
   if (showBorders) {
     if (frameShift > 0) {
-      ctx.fillStyle = bgStyle
-      const { x, w } = bpRangeToScreen(g, seqStart, frameShift)
+      const { x, w } = bpRangeToScreen(block, seqStart, frameShift)
       ctx.fillRect(x, y, w, rowHeight)
     }
     const trailing = seq.length - sliceEnd
     if (trailing > 0) {
-      ctx.fillStyle = bgStyle
-      const { x, w } = bpRangeToScreen(g, seqStart + sliceEnd, trailing)
+      const { x, w } = bpRangeToScreen(block, seqStart + sliceEnd, trailing)
       ctx.fillRect(x, y, w, rowHeight)
     }
   } else {
-    ctx.fillStyle = bgStyle
-    const { x, w } = bpRangeToScreen(g, seqStart, seq.length)
+    const { x, w } = bpRangeToScreen(block, seqStart, seq.length)
     ctx.fillRect(x, y, w, rowHeight)
   }
 
@@ -156,25 +140,21 @@ function drawTranslationRow(
     const codon = seq.slice(i, i + 3)
     const normalizedCodon = reversed ? revcom(codon) : codon
     const upperCodon = normalizedCodon.toUpperCase()
-    const { x, w } = bpRangeToScreen(g, seqStart + i, 3)
+    const { x, w } = bpRangeToScreen(block, seqStart + i, 3)
 
     const isStart = startsSet.has(upperCodon)
     const isStop = stopsSet.has(upperCodon)
 
     if (showBorders) {
-      const color = isStart
-        ? palette.startColor
-        : isStop
-          ? palette.stopColor
-          : bgColor
-      ctx.fillStyle = rgbStyle(color)
+      const color = isStart ? palette.start : isStop ? palette.stop : bg
+      ctx.fillStyle = color.style
       ctx.fillRect(x, y, w, rowHeight)
       ctx.strokeRect(x, y, w, rowHeight)
     } else if (isStart) {
-      ctx.fillStyle = rgbStyle(palette.startColor)
+      ctx.fillStyle = palette.start.style
       ctx.fillRect(x, y, w, rowHeight)
     } else if (isStop) {
-      ctx.fillStyle = rgbStyle(palette.stopColor)
+      ctx.fillStyle = palette.stop.style
       ctx.fillRect(x, y, w, rowHeight)
     }
 
@@ -254,13 +234,12 @@ export function drawSequenceBlocks(
     ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
     ctx.clip()
 
-    const g: BlockGeometry = { block, bpPerPx }
     let currentY = 0
 
     for (const frame of topFrames) {
       drawTranslationRow(
         ctx,
-        g,
+        block,
         data.seq,
         data.start,
         frame,
@@ -278,7 +257,7 @@ export function drawSequenceBlocks(
       const fwdSeq = reversed ? complement(data.seq) : data.seq
       drawBaseRow(
         ctx,
-        g,
+        block,
         fwdSeq,
         data.start,
         currentY,
@@ -295,7 +274,7 @@ export function drawSequenceBlocks(
       const revSeq = reversed ? data.seq : complement(data.seq)
       drawBaseRow(
         ctx,
-        g,
+        block,
         revSeq,
         data.start,
         currentY,
@@ -311,7 +290,7 @@ export function drawSequenceBlocks(
     for (const frame of bottomFrames) {
       drawTranslationRow(
         ctx,
-        g,
+        block,
         data.seq,
         data.start,
         frame,

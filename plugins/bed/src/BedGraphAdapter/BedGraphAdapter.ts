@@ -5,10 +5,9 @@ import {
   fetchAndMaybeUnzip,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { parseNamesFromHeader } from '../util.ts'
+import { bucketBedLines, parseNamesFromHeader } from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -72,33 +71,15 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     return Object.keys(features)
   }
   private async loadDataP(opts: BaseOptions = {}) {
-    const pm = this.pluginManager
-    const bedLoc = this.getConf('bedGraphLocation')
-    const buffer = await fetchAndMaybeUnzip(openLocation(bedLoc, pm), opts)
-    const features: Record<string, string[]> = {}
-    const headerLines: string[] = []
-    parseLineByLine(
-      buffer,
-      line => {
-        if (line.startsWith('#')) {
-          headerLines.push(line)
-        } else {
-          const tab = line.indexOf('\t')
-          const refName = line.slice(0, tab)
-          features[refName] ??= []
-          features[refName].push(line)
-        }
-        return true
-      },
-      opts.statusCallback,
+    const buffer = await fetchAndMaybeUnzip(
+      openLocation(this.getConf('bedGraphLocation'), this.pluginManager),
+      opts,
     )
-
-    const columnNames = this.getConf('columnNames')
-
+    const { header, features } = bucketBedLines(buffer, opts.statusCallback)
     return {
-      header: headerLines.join('\n'),
+      header,
       features,
-      columnNames,
+      columnNames: this.getConf('columnNames'),
     }
   }
 

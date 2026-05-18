@@ -99,13 +99,14 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
         this.bed.getLines(query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
             checkStopToken2(stopTokenCheck)
+            const splitLine = line.split('\t')
             observer.next(
               new SimpleFeature(
                 featureData({
-                  line,
-                  colRef,
-                  colStart,
-                  colEnd,
+                  splitLine,
+                  refName: splitLine[colRef]!,
+                  start: +splitLine[colStart]!,
+                  end: +splitLine[colEnd]! + (colStart === colEnd ? 1 : 0),
                   scoreColumn: this.scoreColumn,
                   parser: this.parser,
                   uniqueId: `${this.id}-${fileOffset}`,

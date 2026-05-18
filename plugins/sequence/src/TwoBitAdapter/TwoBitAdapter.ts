@@ -4,7 +4,11 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import { parseChromSizes, refSizesToRegions } from '../chromSizesUtils.ts'
+import {
+  isPlaceholderLocation,
+  parseChromSizes,
+  refSizesToRegions,
+} from '../chromSizesUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
@@ -17,7 +21,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
 
   private async initChromSizes() {
     const conf = this.getConf('chromSizesLocation')
-    if (conf.uri !== '/path/to/default.chrom.sizes' && conf.uri !== '') {
+    if (!isPlaceholderLocation(conf, '/path/to/default.chrom.sizes')) {
       return parseChromSizes(
         await openLocation(conf, this.pluginManager).readFile('utf8'),
       )
@@ -67,7 +71,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { twobit } = await this.setup()
       const size = await twobit.getSequenceSize(refName)
-      const regionEnd = size !== undefined ? Math.min(size, end) : end
+      const regionEnd = size === undefined ? end : Math.min(size, end)
       const seq = await twobit.getSequence(refName, start, regionEnd)
       if (seq) {
         observer.next(

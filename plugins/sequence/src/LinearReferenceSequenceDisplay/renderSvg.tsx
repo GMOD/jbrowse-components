@@ -22,9 +22,10 @@ interface SequenceDisplayModel {
   height: number
   sequenceData: ReadonlyMap<number, SequenceRegionData>
   renderBlocks: RenderBlock[]
-  showForwardActual: boolean
-  showReverseActual: boolean
-  showTranslationActual: boolean
+  showForward: boolean
+  showReverse: boolean
+  showTranslation: boolean
+  isDna: boolean
   sequenceType: string
   rowHeight: number
   zoomedOut: boolean
@@ -48,9 +49,9 @@ export async function renderSvg(
   const ctx = new SvgCanvas()
   drawSequenceBlocks(ctx, sequenceData, model.renderBlocks, {
     bpPerPx: view.bpPerPx,
-    showForward: model.showForwardActual,
-    showReverse: model.showReverseActual,
-    showTranslation: model.showTranslationActual,
+    showForward: model.showForward,
+    showReverse: model.isDna && model.showReverse,
+    showTranslation: model.isDna && model.showTranslation,
     sequenceType: model.sequenceType,
     rowHeight: model.rowHeight,
     palette,

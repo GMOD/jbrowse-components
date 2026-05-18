@@ -1,7 +1,7 @@
 import BED from '@gmod/bed'
 
 import { isBedMethylFeature } from './generateBedMethylFeature.ts'
-import { featureData2, parseNamesFromHeader } from './util.ts'
+import { featureData, parseNamesFromHeader } from './util.ts'
 
 // a BED12 line that looks like a gene (has thickStart, blockCount, strand)
 function makeTranscriptLikeInput() {
@@ -82,16 +82,16 @@ const bigGenePredNames = [
   'geneName2',
 ]
 
-describe('featureData2', () => {
+describe('featureData', () => {
   it('produces transcript subfeatures by default for BED12 gene-like data', () => {
-    const result = featureData2(makeTranscriptLikeInput())
+    const result = featureData(makeTranscriptLikeInput())
     expect(result.type).toBe('mRNA')
     const types = result.subfeatures?.map(s => s.type)
     expect(types).toContain('CDS')
   })
 
   it('skips transcript heuristic when disableGeneHeuristic is true', () => {
-    const result = featureData2({
+    const result = featureData({
       ...makeTranscriptLikeInput(),
       disableGeneHeuristic: true,
     })
@@ -105,11 +105,11 @@ describe('featureData2', () => {
   })
 
   // These tests guarantee that extra fields like geneName2 (used as aggregateField in
-  // BigBedAdapter) survive featureData2 through every code path. Before the refactor,
+  // BigBedAdapter) survive featureData through every code path. Before the refactor,
   // BigBedAdapter extracted the aggregateField from a separate parser.parseLine call;
-  // now it reads it from the featureData2 result directly.
+  // now it reads it from the featureData result directly.
   it('preserves extra fields through the mRNA (UCSC transcript) path', () => {
-    const result = featureData2({
+    const result = featureData({
       splitLine: [
         'chr1',
         '1000',
@@ -138,7 +138,7 @@ describe('featureData2', () => {
   })
 
   it('preserves extra fields through the plain-blocks path (disableGeneHeuristic)', () => {
-    const result = featureData2({
+    const result = featureData({
       splitLine: [
         'chr1',
         '1000',
@@ -167,7 +167,7 @@ describe('featureData2', () => {
   })
 
   it('preserves extra fields when strand is 0 (unstranded, not treated as gene)', () => {
-    const result = featureData2({
+    const result = featureData({
       splitLine: [
         'chr1',
         '1000',

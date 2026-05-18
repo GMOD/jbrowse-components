@@ -7,7 +7,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import { refSizesToRegions } from '../chromSizesUtils.ts'
+import { readOptionalMetadata, refSizesToRegions } from '../chromSizesUtils.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -51,10 +51,10 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
   }
 
   public async getHeader() {
-    const loc = this.getConf('metadataLocation')
-    return loc.uri === '' || loc.uri === '/path/to/fa.metadata.yaml'
-      ? null
-      : openLocation(loc, this.pluginManager).readFile('utf8')
+    return readOptionalMetadata(
+      this.getConf('metadataLocation'),
+      this.pluginManager,
+    )
   }
 
   public async setup() {
@@ -76,7 +76,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
         async () => {
           const { fasta } = await this.setup()
           const size = await fasta.getSequenceSize(refName)
-          const regionEnd = Math.min(size ?? 0, end)
+          const regionEnd = size === undefined ? end : Math.min(size, end)
           const chunkSize = 128000
 
           const s = start - (start % chunkSize)

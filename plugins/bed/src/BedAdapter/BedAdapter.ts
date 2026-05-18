@@ -6,10 +6,9 @@ import {
   fetchAndMaybeUnzip,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { featureData, parseNamesFromHeader } from '../util.ts'
+import { bucketBedLines, featureData, parseNamesFromHeader } from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -34,48 +33,20 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   private async loadDataP(opts?: BaseOptions) {
-    const bedLoc = this.getConf('bedLocation')
     const buffer = await fetchAndMaybeUnzip(
-      openLocation(bedLoc, this.pluginManager),
+      openLocation(this.getConf('bedLocation'), this.pluginManager),
       opts,
     )
-
-    const headerLines: string[] = []
-    const features: Record<string, string[]> = {}
-    parseLineByLine(
-      buffer,
-      line => {
-        if (line.startsWith('#')) {
-          headerLines.push(line)
-        } else {
-          const tab = line.indexOf('\t')
-          const refName = line.slice(0, tab)
-          features[refName] ??= []
-          features[refName].push(line)
-        }
-        return true
-      },
-      opts?.statusCallback,
-    )
-
-    const header = headerLines.join('\n')
-    const autoSql = this.getConf('autoSql') as string
-    const parser = new BED({ autoSql })
-    const columnNames = this.getConf('columnNames')
-    const scoreColumn = this.getConf('scoreColumn')
-    const colRef = this.getConf('colRef')
-    const colStart = this.getConf('colStart')
-    const colEnd = this.getConf('colEnd')
-
+    const { header, features } = bucketBedLines(buffer, opts?.statusCallback)
     return {
       header,
       features,
-      parser,
-      columnNames,
-      scoreColumn,
-      colRef,
-      colStart,
-      colEnd,
+      parser: new BED({ autoSql: this.getConf('autoSql') }),
+      columnNames: this.getConf('columnNames'),
+      scoreColumn: this.getConf('scoreColumn'),
+      colRef: this.getConf('colRef'),
+      colStart: this.getConf('colStart'),
+      colEnd: this.getConf('colEnd'),
     }
   }
 
@@ -116,17 +87,16 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const intervalTree = new IntervalTree<Feature>()
 
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]!
-      const uniqueId = `${this.id}-${refName}-${i}`
+      const splitLine = lines[i]!.split('\t')
       const feat = new SimpleFeature(
         featureData({
-          line,
-          colRef,
-          colStart,
-          colEnd,
+          splitLine,
+          refName: splitLine[colRef]!,
+          start: +splitLine[colStart]!,
+          end: +splitLine[colEnd]! + (colStart === colEnd ? 1 : 0),
           scoreColumn,
           parser,
-          uniqueId,
+          uniqueId: `${this.id}-${refName}-${i}`,
           names,
           disableGeneHeuristic,
         }),

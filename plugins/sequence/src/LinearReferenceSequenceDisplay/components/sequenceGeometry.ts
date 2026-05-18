@@ -3,7 +3,12 @@ import { defaultStarts, defaultStops } from '@jbrowse/core/util'
 import type { Frame } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
-type RGB = readonly [number, number, number]
+export type RGB = readonly [number, number, number]
+
+export interface ColorEntry {
+  rgb: RGB
+  style: string
+}
 
 function hexToRGB(hex: string): RGB {
   const h = hex.replace('#', '')
@@ -15,30 +20,39 @@ function hexToRGB(hex: string): RGB {
   ]
 }
 
+function rgbStyle([r, g, b]: RGB): string {
+  return `rgb(${r},${g},${b})`
+}
+
+function entry(hex: string): ColorEntry {
+  const rgb = hexToRGB(hex)
+  return { rgb, style: rgbStyle(rgb) }
+}
+
 export interface ColorPalette {
-  baseColors: Map<string, RGB>
-  frameColors: Map<number, RGB>
-  startColor: RGB
-  stopColor: RGB
+  bases: Map<string, ColorEntry>
+  frames: Map<Frame, ColorEntry>
+  start: ColorEntry
+  stop: ColorEntry
+  fallback: ColorEntry
 }
 
 export function buildColorPalette(theme: Theme): ColorPalette {
-  const bases = theme.palette.bases as Record<string, { main: string }>
-  const baseColors = new Map<string, RGB>()
+  const themeBases = theme.palette.bases as Record<string, { main: string }>
+  const bases = new Map<string, ColorEntry>()
   for (const base of ['A', 'C', 'G', 'T']) {
-    baseColors.set(base, hexToRGB(bases[base]!.main))
+    bases.set(base, entry(themeBases[base]!.main))
   }
-
-  const frameColors = new Map<number, RGB>()
+  const frames = new Map<Frame, ColorEntry>()
   for (const frame of [1, 2, 3, -1, -2, -3] as Frame[]) {
-    frameColors.set(frame, hexToRGB(theme.palette.frames.at(frame)!.main))
+    frames.set(frame, entry(theme.palette.frames.at(frame)!.main))
   }
-
   return {
-    baseColors,
-    frameColors,
-    startColor: hexToRGB(theme.palette.startCodon),
-    stopColor: hexToRGB(theme.palette.stopCodon),
+    bases,
+    frames,
+    start: entry(theme.palette.startCodon),
+    stop: entry(theme.palette.stopCodon),
+    fallback: entry('#aaaaaa'),
   }
 }
 

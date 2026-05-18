@@ -19,8 +19,8 @@ export function featureData(
   const end2 = +l[!flip ? 5 : 2]!
   const name = l[6]!
   const score = l[7] ? +l[7] : undefined
-  const strand1 = parseStrand(l[8]!)
-  const strand2 = parseStrand(l[9]!)
+  const strand1 = parseStrand(l[8])
+  const strand2 = parseStrand(l[9])
   const extra = l.slice(10)
   const rest = names
     ? Object.fromEntries(names.slice(10).map((n, idx) => [n, extra[idx]]))
