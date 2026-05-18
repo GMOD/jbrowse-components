@@ -52,7 +52,6 @@ import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 
-import type { TooltipPayload } from './components/tooltipUtils.ts'
 
 import type {
   ColorPalette,
@@ -61,6 +60,7 @@ import type {
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { AlignmentsBackend } from './components/rendererTypes.ts'
+import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { ArcsDataResult } from '../features/arcs/compute.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
@@ -677,25 +677,9 @@ export default function stateModelFactory(
         if (!view.initialized) {
           return []
         }
-        const blocks = []
-        for (const block of view.dynamicBlocks.contentBlocks) {
-          if (block.displayedRegionIndex === undefined) {
-            continue
-          }
-          const data = self.laidOutPileupMap.get(block.displayedRegionIndex)
-          if (data) {
-            blocks.push({
-              rpcData: data,
-              blockStart: block.start,
-              blockEnd: block.end,
-              blockScreenOffsetPx: block.offsetPx - view.offsetPx,
-              bpPerPx: view.bpPerPx,
-              reversed: block.reversed ?? false,
-            })
-          }
-        }
         return computeVisibleLabels({
-          blocks,
+          view,
+          laidOutPileupMap: self.laidOutPileupMap,
           height: self.height,
           featureHeightSetting: self.featureHeightSetting,
           featureSpacing: self.featureSpacing,

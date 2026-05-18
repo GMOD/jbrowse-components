@@ -22,17 +22,20 @@ export interface VisibleLabel {
   fontSize: number
 }
 
-interface BlockLabelParams {
-  rpcData: PileupDataResult
-  blockStart: number
-  blockEnd: number
-  blockScreenOffsetPx: number
+interface LabelView {
+  visibleRegions: {
+    displayedRegionIndex: number
+    start: number
+    end: number
+    screenStartPx: number
+    reversed?: boolean
+  }[]
   bpPerPx: number
-  reversed: boolean
 }
 
 interface ComputeVisibleLabelsParams {
-  blocks: BlockLabelParams[]
+  view: LabelView
+  laidOutPileupMap: { get(idx: number): PileupDataResult | undefined }
   height: number
   featureHeightSetting: number
   featureSpacing: number
@@ -45,7 +48,8 @@ export function computeVisibleLabels(
   params: ComputeVisibleLabelsParams,
 ): VisibleLabel[] {
   const {
-    blocks,
+    view,
+    laidOutPileupMap,
     height,
     featureHeightSetting,
     featureSpacing,
@@ -56,33 +60,36 @@ export function computeVisibleLabels(
 
   const labels: VisibleLabel[] = []
 
-  if (!showMismatches || blocks.length === 0) {
+  if (!showMismatches) {
     return labels
   }
 
   const rowHeight = featureHeightSetting + featureSpacing
   const fontSize = computeLabelFontSize(featureHeightSetting)
+  const { bpPerPx } = view
+  const pxPerBp = 1 / bpPerPx
+  const tallEnoughForText = featureHeightSetting >= MIN_HEIGHT_FOR_TEXT
+  const canRenderText = pxPerBp >= 6.5 && tallEnoughForText
+  const rowYPx = (y: number) =>
+    y * rowHeight + featureHeightSetting / 2 - rangeY[0] + topOffset
+  const rowYInRange = (yPx: number) => yPx >= topOffset && yPx <= height
+  const clipPrefix: Record<number, string | undefined> = {
+    [INTERBASE_SOFTCLIP]: 'S',
+    [INTERBASE_HARDCLIP]: 'H',
+  }
 
-  for (const block of blocks) {
-    const {
-      rpcData,
-      blockStart,
-      blockEnd,
-      blockScreenOffsetPx,
-      bpPerPx,
-      reversed,
-    } = block
+  for (const vr of view.visibleRegions) {
+    const rpcData = laidOutPileupMap.get(vr.displayedRegionIndex)
+    if (!rpcData) {
+      continue
+    }
+    const blockStart = vr.start
+    const blockEnd = vr.end
+    const blockScreenOffsetPx = vr.screenStartPx
+    const reversed = vr.reversed ?? false
     const bpEdge = reversed ? blockEnd : blockStart
     const bpToPx = (bp: number) =>
       (reversed ? bpEdge - bp : bp - bpEdge) / bpPerPx + blockScreenOffsetPx
-    const pxPerBp = 1 / bpPerPx
-    const charWidth = 6.5
-    const tallEnoughForText = featureHeightSetting >= MIN_HEIGHT_FOR_TEXT
-    const canRenderText = pxPerBp >= charWidth && tallEnoughForText
-
-    const rowYPx = (y: number) =>
-      y * rowHeight + featureHeightSetting / 2 - rangeY[0] + topOffset
-    const rowYInRange = (yPx: number) => yPx >= topOffset && yPx <= height
 
     // Process deletions (gaps)
     const { gapPositions, gapYs, gapLengths, gapTypes } = rpcData
@@ -138,11 +145,6 @@ export function computeVisibleLabels(
       interbaseTypes,
     } = rpcData
     const numInterbases = interbasePositions.length
-
-    const clipPrefix: Record<number, string | undefined> = {
-      [INTERBASE_SOFTCLIP]: 'S',
-      [INTERBASE_HARDCLIP]: 'H',
-    }
 
     for (let i = 0; i < numInterbases; i++) {
       const pos = interbasePositions[i]!

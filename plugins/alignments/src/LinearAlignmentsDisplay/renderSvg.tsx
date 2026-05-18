@@ -81,25 +81,11 @@ export async function renderSvg(
   }
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
 
-  // Recompute labels for the SVG geometry: full-height export (rangeY starts
-  // at 0) with the same screenStartPx as renderBlocks. Reuses model state for
-  // everything else so on-screen and export agree on what's labeled.
-  const labelBlocks = []
-  for (const vr of view.visibleRegions) {
-    const data = rpcDataMap.get(vr.displayedRegionIndex)
-    if (data) {
-      labelBlocks.push({
-        rpcData: data,
-        blockStart: vr.start,
-        blockEnd: vr.end,
-        blockScreenOffsetPx: vr.screenStartPx,
-        bpPerPx: view.bpPerPx,
-        reversed: vr.reversed ?? false,
-      })
-    }
-  }
+  // Same compute as the on-screen getter; only rangeY differs (SVG export
+  // shows the full track height regardless of Y scroll).
   const labels = computeVisibleLabels({
-    blocks: labelBlocks,
+    view,
+    laidOutPileupMap: rpcDataMap,
     height: displayHeight,
     featureHeightSetting,
     featureSpacing,
