@@ -1,4 +1,5 @@
 import fs from 'fs'
+import net from 'net'
 
 import browserslist from 'browserslist'
 import chalk from 'chalk'
@@ -25,7 +26,19 @@ if (browserslist.loadConfig({ path: process.cwd() }) == null) {
 
 const HOST = process.env.HOST || '0.0.0.0'
 
-export default function startWebpack(config: webpack.Configuration) {
+function isPortFree(port: number) {
+  return new Promise<boolean>(resolve => {
+    const server = net.createServer()
+    server.once('error', () => resolve(false))
+    server.once('listening', () => {
+      server.close()
+      resolve(true)
+    })
+    server.listen(port)
+  })
+}
+
+export default async function startWebpack(config: webpack.Configuration) {
   const appName = JSON.parse(fs.readFileSync('package.json', 'utf8'))
     .name as string
   const wsProtocol = process.env.HTTPS === 'true' ? 'wss' : 'ws'
@@ -34,7 +47,11 @@ export default function startWebpack(config: webpack.Configuration) {
   const devServer = new WebpackDevServer(
     {
       host: HOST,
-      port: process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 'auto',
+      port: process.env.PORT
+        ? Number.parseInt(process.env.PORT, 10)
+        : (await isPortFree(3000))
+          ? 3000
+          : 'auto',
       hot: false,
       open: true,
       client: {
