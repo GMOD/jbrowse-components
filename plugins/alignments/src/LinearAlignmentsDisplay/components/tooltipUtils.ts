@@ -8,6 +8,47 @@ import type {
 } from '../../shared/hitTestTypes.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 
+export interface IndicatorTooltipPayload {
+  type: 'indicator'
+  bin: CoverageTooltipBin
+  refName?: string
+}
+
+export interface CoverageTooltipPayload {
+  type: 'coverage'
+  bin: CoverageTooltipBin
+  refName?: string
+}
+
+export interface ModificationTooltipPayload {
+  type: 'modification'
+  modType?: string
+  probability: number
+  color: string
+  refName?: string
+  position: number
+  snpBase?: string
+}
+
+export interface SashimiTooltipPayload {
+  type: 'sashimi'
+  start: number
+  end: number
+  score: number
+  strand: string
+  refName: string
+}
+
+// HTML/plain strings come from formatChainTooltip / formatCigarTooltip /
+// formatFeatureTooltip / arcTooltip; structured payloads come from the other
+// formatters. The consumer dispatches on typeof + .type.
+export type TooltipPayload =
+  | string
+  | IndicatorTooltipPayload
+  | CoverageTooltipPayload
+  | ModificationTooltipPayload
+  | SashimiTooltipPayload
+
 export function pct(n: number, total = 1) {
   return `${((n / (total || 1)) * 100).toFixed(1)}%`
 }
@@ -246,10 +287,10 @@ export function formatIndicatorTooltip(
   position: number,
   blockRpcData: PileupDataResult | undefined,
   refName: string | undefined,
-) {
+): IndicatorTooltipPayload | undefined {
   const bin = getTooltipBin(position, blockRpcData)
   if (bin) {
-    return JSON.stringify({ type: 'indicator', bin, refName })
+    return { type: 'indicator', bin, refName }
   }
   return undefined
 }
@@ -259,7 +300,7 @@ export function formatCoverageTooltip(
   blockRpcData: PileupDataResult | undefined,
   refName: string | undefined,
   modType?: string,
-) {
+): CoverageTooltipPayload | undefined {
   const bin = getTooltipBin(position, blockRpcData)
   if (!bin) {
     return undefined
@@ -268,7 +309,7 @@ export function formatCoverageTooltip(
     modType && bin.modifications?.[modType]
       ? { ...bin, modifications: { [modType]: bin.modifications[modType] } }
       : bin
-  return JSON.stringify({ type: 'coverage', bin: filteredBin, refName })
+  return { type: 'coverage', bin: filteredBin, refName }
 }
 
 export function formatModificationTooltip(
@@ -278,8 +319,8 @@ export function formatModificationTooltip(
   color: string,
   refName: string | undefined,
   snpBase?: string,
-) {
-  return JSON.stringify({
+): ModificationTooltipPayload {
+  return {
     type: 'modification',
     modType,
     probability,
@@ -287,30 +328,22 @@ export function formatModificationTooltip(
     refName,
     position,
     snpBase,
-  } satisfies ModificationTooltipPayload)
+  }
 }
 
-export interface ModificationTooltipPayload {
-  type: 'modification'
-  modType?: string
-  probability: number
-  color: string
-  refName?: string
-  position: number
-  snpBase?: string
-}
-
-export function formatSashimiTooltip(sashimiHit: SashimiArcHitResult) {
+export function formatSashimiTooltip(
+  sashimiHit: SashimiArcHitResult,
+): SashimiTooltipPayload {
   const strandLabel =
     sashimiHit.strand === 1 ? '+' : sashimiHit.strand === -1 ? '-' : 'unknown'
-  return JSON.stringify({
+  return {
     type: 'sashimi',
     start: sashimiHit.start,
     end: sashimiHit.end,
     score: sashimiHit.score,
     strand: strandLabel,
     refName: sashimiHit.refName,
-  })
+  }
 }
 
 export function formatFeatureTooltip(

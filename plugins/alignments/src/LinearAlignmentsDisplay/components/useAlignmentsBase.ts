@@ -240,65 +240,65 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     const { result } = runHitTest(coords.canvasX, coords.canvasY)
 
-    if (result.type === 'indicator') {
-      model.setOverCigarItem(true)
-      model.setFeatureIdUnderMouse(undefined)
-      model.setMouseoverExtraInformation(
-        formatIndicatorTooltip(
-          result.hit.position,
-          result.resolved.rpcData,
-          result.resolved.refName,
-        ),
-      )
-      model.clearHighlights()
-      return
-    }
-
-    if (result.type === 'coverage') {
-      model.setOverCigarItem(true)
-      model.setFeatureIdUnderMouse(undefined)
-      model.setMouseoverExtraInformation(
-        formatCoverageTooltip(
-          result.hit.position,
-          result.resolved.rpcData,
-          result.resolved.refName,
-        ),
-      )
-      model.clearHighlights()
-      return
-    }
-
-    if (result.type === 'modification') {
-      model.setOverCigarItem(true)
-      model.setFeatureIdUnderMouse(result.featureHit?.id)
-      const snpBase =
-        result.cigarHit?.type === 'mismatch' ? result.cigarHit.base : undefined
-      model.setMouseoverExtraInformation(
-        formatModificationTooltip(
-          result.hit.position,
-          result.hit.modType,
-          result.hit.probability,
-          result.hit.color,
-          result.resolved.refName,
-          snpBase,
-        ),
-      )
-      return
-    }
-
-    if (result.type === 'cigar') {
-      model.setOverCigarItem(true)
-      model.setMouseoverExtraInformation(formatCigarTooltip(result.hit))
-      model.setFeatureIdUnderMouse(result.featureHit?.id)
-      return
-    }
-
-    model.setOverCigarItem(false)
-
-    if (result.type === 'feature') {
-      onFeature(result.hit, result.resolved)
-    } else {
-      onNoFeature()
+    switch (result.type) {
+      case 'indicator':
+        model.setHoverState({
+          overCigarItem: true,
+          featureIdUnderMouse: undefined,
+          mouseoverExtraInformation: formatIndicatorTooltip(
+            result.hit.position,
+            result.resolved.rpcData,
+            result.resolved.refName,
+          ),
+        })
+        model.clearHighlights()
+        return
+      case 'coverage':
+        model.setHoverState({
+          overCigarItem: true,
+          featureIdUnderMouse: undefined,
+          mouseoverExtraInformation: formatCoverageTooltip(
+            result.hit.position,
+            result.resolved.rpcData,
+            result.resolved.refName,
+          ),
+        })
+        model.clearHighlights()
+        return
+      case 'modification': {
+        const snpBase =
+          result.cigarHit?.type === 'mismatch'
+            ? result.cigarHit.base
+            : undefined
+        model.setHoverState({
+          overCigarItem: true,
+          featureIdUnderMouse: result.featureHit?.id,
+          mouseoverExtraInformation: formatModificationTooltip(
+            result.hit.position,
+            result.hit.modType,
+            result.hit.probability,
+            result.hit.color,
+            result.resolved.refName,
+            snpBase,
+          ),
+        })
+        return
+      }
+      case 'cigar':
+        model.setHoverState({
+          overCigarItem: true,
+          featureIdUnderMouse: result.featureHit?.id,
+          mouseoverExtraInformation: formatCigarTooltip(result.hit),
+        })
+        return
+      case 'feature':
+        model.setOverCigarItem(false)
+        onFeature(result.hit, result.resolved)
+        return
+      case 'none':
+        model.setOverCigarItem(false)
+        onNoFeature()
+        return
     }
   }
 
@@ -315,44 +315,41 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     const { result } = runHitTest(canvasX, canvasY)
 
-    if (result.type === 'indicator') {
-      const refName = result.resolved.refName
-      openIndicatorWidget(model, result.hit, refName, result.resolved.rpcData)
-      return
-    }
-
-    if (result.type === 'coverage') {
-      const refName = result.resolved.refName
-      openCoverageWidget(
-        model,
-        result.hit.position,
-        refName,
-        result.resolved.rpcData,
-      )
-      return
-    }
-
-    if (result.type === 'cigar') {
-      const refName = result.resolved.refName
-      openCigarWidget(model, result.hit, refName)
-      return
-    }
-
-    if (result.type === 'modification') {
-      openCoverageWidget(
-        model,
-        result.hit.position,
-        result.resolved.refName,
-        result.resolved.rpcData,
-        result.hit.modType,
-      )
-      return
-    }
-
-    if (result.type === 'feature') {
-      onFeature(result.hit, result.resolved)
-    } else {
-      onNoFeature()
+    switch (result.type) {
+      case 'indicator':
+        openIndicatorWidget(
+          model,
+          result.hit,
+          result.resolved.refName,
+          result.resolved.rpcData,
+        )
+        return
+      case 'coverage':
+        openCoverageWidget(
+          model,
+          result.hit.position,
+          result.resolved.refName,
+          result.resolved.rpcData,
+        )
+        return
+      case 'cigar':
+        openCigarWidget(model, result.hit, result.resolved.refName)
+        return
+      case 'modification':
+        openCoverageWidget(
+          model,
+          result.hit.position,
+          result.resolved.refName,
+          result.resolved.rpcData,
+          result.hit.modType,
+        )
+        return
+      case 'feature':
+        onFeature(result.hit, result.resolved)
+        return
+      case 'none':
+        onNoFeature()
+        return
     }
   }
 

@@ -52,6 +52,8 @@ import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 
+import type { TooltipPayload } from './components/tooltipUtils.ts'
+
 import type {
   ColorPalette,
   RenderState as AlignmentsRenderState,
@@ -277,7 +279,7 @@ export default function stateModelFactory(
     )
     .volatile(() => ({
       featureIdUnderMouse: undefined as undefined | string,
-      mouseoverExtraInformation: undefined as string | undefined,
+      mouseoverExtraInformation: undefined as TooltipPayload | undefined,
       contextMenuFeature: undefined as Feature | undefined,
       contextMenuCoord: undefined as [number, number] | undefined,
       contextMenuCigarHit: undefined as CigarHitResult | undefined,
@@ -1230,8 +1232,18 @@ export default function stateModelFactory(
           self.featureIdUnderMouse = feature
         },
 
-        setMouseoverExtraInformation(extra?: string) {
+        setMouseoverExtraInformation(extra?: TooltipPayload) {
           self.mouseoverExtraInformation = extra
+        },
+
+        setHoverState(state: {
+          overCigarItem: boolean
+          featureIdUnderMouse: string | undefined
+          mouseoverExtraInformation: TooltipPayload | undefined
+        }) {
+          self.overCigarItem = state.overCigarItem
+          self.featureIdUnderMouse = state.featureIdUnderMouse
+          self.mouseoverExtraInformation = state.mouseoverExtraInformation
         },
 
         setContextMenuFeature(feature?: Feature) {

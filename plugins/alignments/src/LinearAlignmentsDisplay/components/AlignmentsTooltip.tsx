@@ -10,7 +10,7 @@ import { pct } from './tooltipUtils.ts'
 import { getModificationName } from '../../shared/modificationData.ts'
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
-import type { ModificationTooltipPayload } from './tooltipUtils.ts'
+import type { TooltipPayload } from './tooltipUtils.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 
 const useStyles = makeStyles()(theme => ({
@@ -263,36 +263,6 @@ export function CoverageTooltipContents({
 
 type Coord = [number, number]
 
-// Parsed coverage tooltip data
-interface CoverageTooltipData {
-  type: 'coverage'
-  bin: CoverageTooltipBin
-  refName?: string
-}
-
-interface IndicatorTooltipData {
-  type: 'indicator'
-  indicatorType: string // 'insertion', 'softclip', 'hardclip'
-  bin: CoverageTooltipBin
-  refName?: string
-}
-
-interface SashimiTooltipData {
-  type: 'sashimi'
-  start: number
-  end: number
-  score: number
-  strand: string
-  refName: string
-}
-
-type TooltipDataType =
-  | CoverageTooltipData
-  | IndicatorTooltipData
-  | SashimiTooltipData
-  | ModificationTooltipPayload
-  | string
-
 /**
  * Custom Tooltip for LinearAlignmentsDisplay
  * Supports flag-style tooltip with vertical line indicator for coverage
@@ -304,7 +274,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
   offsetMouseCoord,
 }: {
   model: {
-    mouseoverExtraInformation: string | undefined
+    mouseoverExtraInformation: TooltipPayload | undefined
     showCoverage: boolean
     coverageHeight: number
   }
@@ -312,31 +282,47 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
   offsetMouseCoord?: Coord
   clientMouseCoord: Coord
 }) {
-  const { mouseoverExtraInformation, showCoverage, coverageHeight } = model
+  const {
+    mouseoverExtraInformation: tooltipData,
+    showCoverage,
+    coverageHeight,
+  } = model
   const { classes } = useStyles()
   const x = clientMouseCoord[0] + 5
   const y = clientMouseCoord[1]
 
-  // Try to parse structured tooltip data
-  let tooltipData: TooltipDataType | undefined
-  if (mouseoverExtraInformation) {
-    try {
-      tooltipData = JSON.parse(mouseoverExtraInformation)
-    } catch {
-      // Not JSON, treat as simple string
-      tooltipData = mouseoverExtraInformation
-    }
+  if (tooltipData === undefined) {
+    return null
   }
 
-  // Indicator tooltip - show all interbase events at position
-  if (
-    tooltipData &&
-    typeof tooltipData === 'object' &&
-    tooltipData.type === 'indicator'
-  ) {
-    const { bin, refName } = tooltipData
-    if (Object.keys(bin.interbase).length > 0) {
-      const location = formatLocation(refName, bin.position)
+  if (typeof tooltipData === 'string') {
+    return (
+      <BaseTooltip clientPoint={{ x, y }}>
+        <div className={classes.tooltipContent}>
+          <SimpleTooltipContents message={tooltipData} />
+        </div>
+      </BaseTooltip>
+    )
+  }
+
+  const hoverBar = offsetMouseCoord ? (
+    <div
+      className={classes.hoverVertical}
+      style={{
+        left: offsetMouseCoord[0],
+        height: showCoverage
+          ? coverageHeight - YSCALEBAR_LABEL_OFFSET * 2
+          : height,
+      }}
+    />
+  ) : null
+
+  switch (tooltipData.type) {
+    case 'indicator': {
+      const { bin, refName } = tooltipData
+      if (Object.keys(bin.interbase).length === 0) {
+        return null
+      }
       return (
         <>
           <BaseTooltip clientPoint={{ x, y }}>
@@ -344,131 +330,84 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
               <InterbaseTooltip
                 interbaseData={bin.interbase}
                 total={bin.interbaseDepth}
-                location={location}
+                location={formatLocation(refName, bin.position)}
               />
             </div>
           </BaseTooltip>
-          {offsetMouseCoord && (
-            <div
-              className={classes.hoverVertical}
-              style={{
-                left: offsetMouseCoord[0],
-                height: showCoverage
-                  ? coverageHeight - YSCALEBAR_LABEL_OFFSET * 2
-                  : height,
-              }}
-            />
-          )}
+          {hoverBar}
         </>
       )
     }
-  }
-
-  // Sashimi arc tooltip
-  if (
-    tooltipData &&
-    typeof tooltipData === 'object' &&
-    tooltipData.type === 'sashimi'
-  ) {
-    const { start, end, score, strand, refName } = tooltipData
-    return (
-      <BaseTooltip clientPoint={{ x, y }}>
-        <div className={classes.tooltipContent}>
-          <div>
-            <strong>Intron/Skip</strong>
-          </div>
-          <div>
-            Location: {refName}:{toLocale(start)}-{toLocale(end)}
-          </div>
-          <div>Length: {toLocale(end - start)} bp</div>
-          <div>Reads supporting junction: {score}</div>
-          <div>Strand: {strand}</div>
-        </div>
-      </BaseTooltip>
-    )
-  }
-
-  // Coverage tooltip with flag-style display (vertical line indicator)
-  if (
-    tooltipData &&
-    typeof tooltipData === 'object' &&
-    tooltipData.type === 'coverage'
-  ) {
-    return (
-      <>
+    case 'coverage':
+      return (
+        <>
+          <BaseTooltip clientPoint={{ x, y }}>
+            <div className={classes.tooltipContent}>
+              <CoverageTooltipContents
+                bin={tooltipData.bin}
+                refName={tooltipData.refName}
+              />
+            </div>
+          </BaseTooltip>
+          {hoverBar}
+        </>
+      )
+    case 'sashimi': {
+      const { start, end, score, strand, refName } = tooltipData
+      return (
         <BaseTooltip clientPoint={{ x, y }}>
           <div className={classes.tooltipContent}>
-            <CoverageTooltipContents
-              bin={tooltipData.bin}
-              refName={tooltipData.refName}
-            />
+            <div>
+              <strong>Intron/Skip</strong>
+            </div>
+            <div>
+              Location: {refName}:{toLocale(start)}-{toLocale(end)}
+            </div>
+            <div>Length: {toLocale(end - start)} bp</div>
+            <div>Reads supporting junction: {score}</div>
+            <div>Strand: {strand}</div>
           </div>
         </BaseTooltip>
-        {offsetMouseCoord && (
-          <div
-            className={classes.hoverVertical}
-            style={{
-              left: offsetMouseCoord[0],
-              height: showCoverage
-                ? coverageHeight - YSCALEBAR_LABEL_OFFSET * 2
-                : height,
-            }}
-          />
-        )}
-      </>
-    )
-  }
-
-  if (
-    tooltipData &&
-    typeof tooltipData === 'object' &&
-    tooltipData.type === 'modification'
-  ) {
-    const { modType, probability, color, refName, position, snpBase } =
-      tooltipData
-    const location = formatLocation(refName, position)
-    return (
-      <BaseTooltip clientPoint={{ x, y }}>
-        <div className={classes.tooltipContent}>
-          <table>
-            <caption>Modification - {location}</caption>
-            <tbody>
-              <tr>
-                <td>
-                  <div style={{ width: 10, height: 10, background: color }} />
-                </td>
-                <td>{modType ? getModificationName(modType) : 'Unknown'}</td>
-              </tr>
-              <tr>
-                <td>Probability</td>
-                <td className={classes.td}>
-                  {(probability * 100).toFixed(1)}%
-                </td>
-              </tr>
-              {snpBase && (
+      )
+    }
+    case 'modification': {
+      const { modType, probability, color, refName, position, snpBase } =
+        tooltipData
+      return (
+        <BaseTooltip clientPoint={{ x, y }}>
+          <div className={classes.tooltipContent}>
+            <table>
+              <caption>
+                Modification - {formatLocation(refName, position)}
+              </caption>
+              <tbody>
                 <tr>
-                  <td>SNP base</td>
-                  <td className={classes.td}>{snpBase}</td>
+                  <td>
+                    <div
+                      style={{ width: 10, height: 10, background: color }}
+                    />
+                  </td>
+                  <td>{modType ? getModificationName(modType) : 'Unknown'}</td>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </BaseTooltip>
-    )
+                <tr>
+                  <td>Probability</td>
+                  <td className={classes.td}>
+                    {(probability * 100).toFixed(1)}%
+                  </td>
+                </tr>
+                {snpBase && (
+                  <tr>
+                    <td>SNP base</td>
+                    <td className={classes.td}>{snpBase}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </BaseTooltip>
+      )
+    }
   }
-
-  if (mouseoverExtraInformation) {
-    return (
-      <BaseTooltip clientPoint={{ x, y }}>
-        <div className={classes.tooltipContent}>
-          <SimpleTooltipContents message={mouseoverExtraInformation} />
-        </div>
-      </BaseTooltip>
-    )
-  }
-
-  return null
 })
 
 export default AlignmentsTooltip
