@@ -9,22 +9,17 @@ export function renderGaps(
   leftPx: number,
   rowTop: number,
 ) {
-  const { ctx, scale } = context
-  const h2 = context.rowHeight / 2
+  const { ctx, scale, rowHeight } = context
+  const midY = rowTop + rowHeight / 2
 
   ctx.beginPath()
-  ctx.fillStyle = 'black'
-
-  for (
-    let i = 0, genomicOffset = 0, seqLength = alignment.length;
-    i < seqLength;
-    i++
-  ) {
+  ctx.strokeStyle = 'black'
+  for (let i = 0, genomicOffset = 0; i < alignment.length; i++) {
     if (seq[i] !== '-') {
       if (alignment[i] === '-') {
         const xPos = leftPx + scale * genomicOffset
-        ctx.moveTo(xPos, rowTop + h2)
-        ctx.lineTo(xPos + scale + GAP_STROKE_OFFSET, rowTop + h2)
+        ctx.moveTo(xPos, midY)
+        ctx.lineTo(xPos + scale + GAP_STROKE_OFFSET, midY)
       }
       genomicOffset++
     }

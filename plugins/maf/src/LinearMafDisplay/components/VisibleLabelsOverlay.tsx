@@ -33,7 +33,6 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
       canvas.width = width * dpr
       canvas.height = height * dpr
       ctx.scale(dpr, dpr)
-      ctx.clearRect(0, 0, width, height)
       drawMafLabels(ctx, labels, contrastForBase, mismatchRendering)
     }
   }, [labels, width, height, mismatchRendering, contrastForBase])

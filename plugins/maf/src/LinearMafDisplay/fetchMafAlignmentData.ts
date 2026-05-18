@@ -15,7 +15,6 @@ import type { NewickNode } from '@jbrowse/tree-sidebar'
 interface RpcProps {
   showAllLetters: boolean
   mismatchRendering: boolean
-  showAsUpperCase: boolean
 }
 
 interface MafFetchSelf extends IAnyStateTreeNode {
@@ -51,7 +50,7 @@ export async function fetchMafAlignmentData(
   self: MafFetchSelf,
   needed: { region: Region; displayedRegionIndex: number }[],
 ) {
-  const { showAllLetters, mismatchRendering, showAsUpperCase } = self.rpcProps()
+  const { showAllLetters, mismatchRendering } = self.rpcProps()
   const adapterConfig = self.adapterConfig
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
@@ -70,7 +69,6 @@ export async function fetchMafAlignmentData(
             colorForBase,
             showAllLetters,
             mismatchRendering,
-            showAsUpperCase,
             stopToken: ctx.stopToken,
           },
         )

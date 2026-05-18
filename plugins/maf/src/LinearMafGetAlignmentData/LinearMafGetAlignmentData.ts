@@ -4,7 +4,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
-import type { MafAlignedRow, MafRegionData } from '../LinearMafRenderer/mafBackendTypes.ts'
+import type { MafBlock, MafRegionData } from '../LinearMafRenderer/mafBackendTypes.ts'
 import type { AlignmentRecord, Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -35,7 +35,6 @@ export interface LinearMafGetAlignmentDataArgs {
   colorForBase: Record<string, string>
   showAllLetters: boolean
   mismatchRendering: boolean
-  showAsUpperCase: boolean
   stopToken?: StopToken
   statusCallback?: (msg: string) => void
 }
@@ -79,7 +78,6 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       colorForBase,
       showAllLetters,
       mismatchRendering,
-      showAsUpperCase,
     } = deserializedArgs
 
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
@@ -93,51 +91,36 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
     const enc = new TextEncoder()
     const sampleToRow = new Map(samples.map((s, i) => [s.id, i]))
 
-    let referenceSeq = ''
-    const rows: MafAlignedRow[] = []
+    // One MAF feature = one alignment block. A single fetched region can
+    // contain many disjoint blocks at unrelated genomic anchors, so each is
+    // stored independently with its own ref seq + start.
+    const blocks: MafBlock[] = []
 
     await subscribeToObservable(
       adapter.getFeatures(region, deserializedArgs),
       (feature: Feature) => {
-        const seq = feature.get('seq') as string
-        if (!referenceSeq) {
-          referenceSeq = seq
-        }
+        const refSeqBytes = enc.encode(feature.get('seq') as string)
+        const startBp = feature.get('start')
         const alignments = feature.get('alignments') as Record<string, AlignmentRecord>
-        for (const [sampleId, data] of Object.entries(alignments)) {
+        const rows = Object.entries(alignments).flatMap(([sampleId, data]) => {
           const rowIndex = sampleToRow.get(sampleId)
-          if (rowIndex === undefined) {
-            continue
-          }
-          rows.push({
-            sampleId,
-            rowIndex,
-            alignmentBytes: enc.encode(data.seq),
-            alignmentStart: data.start,
-            chr: data.chr,
-          })
-        }
+          return rowIndex === undefined
+            ? []
+            : [{ rowIndex, alignmentBytes: enc.encode(data.seq) }]
+        })
+        blocks.push({ startBp, refSeqBytes, rows })
       },
     )
 
-    const refSeqBytes = enc.encode(referenceSeq)
+    const regionData: MafRegionData = { blocks }
 
-    const regionData: MafRegionData = {
-      startBp: region.start,
-      endBp: region.end,
-      refSeqBytes,
-      rows,
-    }
-
-    // Pre-encode the GPU instance buffer on the worker side.
+    // Pre-encode the GPU instance buffer on the worker side. Concatenates
+    // runs across all blocks; positions are absolute genomic uint32.
     const { buffer: instanceBuffer, count: instanceCount } = buildInstanceBuffer({
-      refSeqBytes,
-      rows: rows.map(r => ({ rowIndex: r.rowIndex, alignmentBytes: r.alignmentBytes })),
-      startBp: region.start,
+      blocks,
       colorForBase,
       showAllLetters,
       mismatchRendering,
-      showAsUpperCase,
     })
 
     return {

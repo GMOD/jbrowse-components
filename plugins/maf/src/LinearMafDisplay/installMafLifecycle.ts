@@ -48,12 +48,7 @@ export function installMafLifecycle(
               const data = self.rpcDataMap.get(key)
               const current = self.currentGpuBackend as MafBackend | undefined
               if (data !== undefined && current !== undefined) {
-                current.uploadRegion(
-                  key,
-                  data.instanceBuffer,
-                  data.instanceCount,
-                  data.regionData,
-                )
+                current.uploadRegion(key, data)
                 self.renderNow()
               }
             }),

@@ -412,19 +412,19 @@ export default function stateModelFactory(
           rowProportion: self.rowProportion,
           showAllLetters: self.showAllLetters,
           mismatchRendering: self.mismatchRendering,
-          showAsUpperCase: self.showAsUpperCase,
         }
       },
       /**
        * #method
        * User-controlled rendering settings; used as cache keys to trigger
        * refetch when settings change. Must not include fetch-result derivatives.
+       * `showAsUpperCase` is intentionally absent — it only affects client-side
+       * label text, never the data the worker emits.
        */
       rpcProps() {
         return {
           showAllLetters: self.showAllLetters,
           mismatchRendering: self.mismatchRendering,
-          showAsUpperCase: self.showAsUpperCase,
         }
       },
     }))

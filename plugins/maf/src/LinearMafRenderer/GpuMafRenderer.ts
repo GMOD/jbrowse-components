@@ -6,7 +6,12 @@ import { slangPass } from '@jbrowse/core/gpu/slangPass'
 import * as mafShader from './shaders/maf.generated.ts'
 import { UNIFORMS_SIZE_BYTES, UNIFORM_OFFSET_F32 } from './shaders/maf.generated.ts'
 
-import type { MafBackend, MafGPURenderState, MafRegionData, MafRenderBlock } from './mafBackendTypes.ts'
+import type {
+  MafBackend,
+  MafGPURenderState,
+  MafRenderBlock,
+  MafRpcDataEntry,
+} from './mafBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_RECT = 'rect'
@@ -27,21 +32,17 @@ export class GpuMafRenderer implements MafBackend {
     this.hal = hal
   }
 
-  uploadRegion(
-    displayedRegionIndex: number,
-    instanceBuffer: ArrayBuffer,
-    instanceCount: number,
-    _regionData: MafRegionData,
-  ) {
+  uploadRegion(displayedRegionIndex: number, data: MafRpcDataEntry) {
+    const { instanceBuffer, instanceCount } = data
     if (instanceCount === 0) {
       this.hal.deleteRegion(displayedRegionIndex)
       this.regionCount.delete(displayedRegionIndex)
-      return
+    } else {
+      // Buffer is pre-encoded (absolute genomic coords + rowIndex + color).
+      // Upload directly — no re-encoding for rowHeight/proportion changes.
+      this.hal.uploadBuffer(displayedRegionIndex, PASS_RECT, instanceBuffer, instanceCount)
+      this.regionCount.set(displayedRegionIndex, instanceCount)
     }
-    // Buffer is pre-encoded (absolute genomic coords + rowIndex + color).
-    // Upload directly — no re-encoding needed for rowHeight/proportion changes.
-    this.hal.uploadBuffer(displayedRegionIndex, PASS_RECT, instanceBuffer, instanceCount)
-    this.regionCount.set(displayedRegionIndex, instanceCount)
   }
 
   pruneRegions(activeRegions: number[]) {

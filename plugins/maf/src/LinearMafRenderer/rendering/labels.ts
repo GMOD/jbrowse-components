@@ -11,7 +11,7 @@ export function drawMafLabels(
 ) {
   ctx.font = FONT_CONFIG
   ctx.textBaseline = 'middle'
-  ctx.textAlign = 'left'
+  ctx.textAlign = 'center'
   for (const label of labels) {
     ctx.fillStyle = mismatchRendering
       ? (contrastForBase[label.lowerBase] ?? 'black')

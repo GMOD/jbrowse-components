@@ -4,23 +4,23 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 import { drawMafBlocks } from './drawMafBlocks.ts'
 
-import type { MafBackend, MafGPURenderState, MafRegionData, MafRenderBlock } from './mafBackendTypes.ts'
+import type {
+  MafBackend,
+  MafGPURenderState,
+  MafRenderBlock,
+  MafRpcDataEntry,
+} from './mafBackendTypes.ts'
 
 export class Canvas2DMafRenderer implements MafBackend {
   private canvas: HTMLCanvasElement
-  private regions = new Map<number, { regionData: MafRegionData }>()
+  private regions = new Map<number, MafRpcDataEntry>()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
 
-  uploadRegion(
-    displayedRegionIndex: number,
-    _instanceBuffer: ArrayBuffer,
-    _instanceCount: number,
-    regionData: MafRegionData,
-  ) {
-    this.regions.set(displayedRegionIndex, { regionData })
+  uploadRegion(displayedRegionIndex: number, data: MafRpcDataEntry) {
+    this.regions.set(displayedRegionIndex, data)
   }
 
   pruneRegions(activeRegions: number[]) {
@@ -29,11 +29,10 @@ export class Canvas2DMafRenderer implements MafBackend {
 
   renderBlocks(blocks: MafRenderBlock[], state: MafGPURenderState) {
     const ctx = this.canvas.getContext('2d')
-    if (!ctx) {
-      return
+    if (ctx) {
+      prepareCanvas(this.canvas, ctx, state.canvasWidth, state.canvasHeight)
+      drawMafBlocks(ctx, this.regions, blocks, state, createJBrowseTheme())
     }
-    prepareCanvas(this.canvas, ctx, state.canvasWidth, state.canvasHeight)
-    drawMafBlocks(ctx, this.regions, blocks, state, createJBrowseTheme())
   }
 
   dispose() {
