@@ -12,19 +12,8 @@ export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision
 export const VERTS_PER_INSTANCE = 6
 
 export const UNIFORMS_SIZE_BYTES = 32
-export const UNIFORMS_SIZE_F32 = 8
 
-// Byte offsets (into an ArrayBuffer / DataView).
-export const UNIFORM_OFFSET_BYTES = {
-  canvasSize: 0,
-  yScalar: 8,
-  viewScale: 12,
-  viewOffsetX: 16,
-  signedLd: 20,
-  uniformW: 24,
-} as const
-
-// Indices into a Float32Array / Uint32Array view.
+// Indices into a Float32Array / Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
   canvasSize: 0,
   yScalar: 2,
@@ -58,10 +47,6 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
 
 export const INSTANCE_STRIDE_BYTES = 4
 export const INSTANCE_STRIDE_F32 = 1
-
-export const FIELD_OFFSET_BYTES = {
-  ldValue: 0,
-} as const
 
 export const FIELD_OFFSET_F32 = {
   ldValue: 0,

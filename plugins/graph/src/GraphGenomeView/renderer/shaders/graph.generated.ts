@@ -10,16 +10,8 @@ export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision h
 export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 993\nin float v_edge_dist;\n\n\n#line 53 1\nvoid main()\n{\n\n#line 54\n    float d_0 = abs(v_edge_dist);\n    float af_0 = (fwidth((d_0)));\n\n#line 55\n    entryPointParam_fs_main_0 = vec4(v_color.xyz, v_color.w * (1.0 - smoothstep(1.0 - af_0, 1.0 + af_0, d_0)));\n\n#line 55\n    return;\n}\n\n"
 
 export const UNIFORMS_SIZE_BYTES = 32
-export const UNIFORMS_SIZE_F32 = 8
 
-// Byte offsets (into an ArrayBuffer / DataView).
-export const UNIFORM_OFFSET_BYTES = {
-  scale: 0,
-  translate: 8,
-  viewport: 16,
-} as const
-
-// Indices into a Float32Array / Uint32Array view.
+// Indices into a Float32Array / Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
   scale: 0,
   translate: 2,
@@ -45,14 +37,6 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
 
 export const INSTANCE_STRIDE_BYTES = 28
 export const INSTANCE_STRIDE_F32 = 7
-
-export const FIELD_OFFSET_BYTES = {
-  position: 0,
-  normal: 8,
-  thickness: 16,
-  color: 20,
-  edge_dist: 24,
-} as const
 
 export const FIELD_OFFSET_F32 = {
   position: 0,

@@ -14,21 +14,8 @@ export const VERTS_PER_INSTANCE = 6
 export const MIN_RECT_WIDTH_PX = 2
 
 export const UNIFORMS_SIZE_BYTES = 48
-export const UNIFORMS_SIZE_F32 = 12
 
-// Byte offsets (into an ArrayBuffer / DataView).
-export const UNIFORM_OFFSET_BYTES = {
-  bpRangeX: 0,
-  canvasHeight: 12,
-  canvasWidth: 16,
-  scrollY: 20,
-  bpPerPx: 24,
-  zero: 28,
-  reversed: 32,
-  outlineColor: 36,
-} as const
-
-// Indices into a Float32Array / Uint32Array view.
+// Indices into a Float32Array / Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
   bpRangeX: 0,
   canvasHeight: 3,
@@ -69,13 +56,6 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
 
 export const INSTANCE_STRIDE_BYTES = 20
 export const INSTANCE_STRIDE_F32 = 5
-
-export const FIELD_OFFSET_BYTES = {
-  startEnd: 0,
-  y: 8,
-  height: 12,
-  color: 16,
-} as const
 
 export const FIELD_OFFSET_F32 = {
   startEnd: 0,

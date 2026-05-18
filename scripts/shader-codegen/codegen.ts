@@ -231,20 +231,8 @@ export function emit(inputs: CodegenInputs) {
     const totalBytes = cb.elementVarLayout.binding.size
     lines.push(
       `export const UNIFORMS_SIZE_BYTES = ${totalBytes}`,
-      `export const UNIFORMS_SIZE_F32 = ${totalBytes / 4}`,
       '',
-      '// Byte offsets (into an ArrayBuffer / DataView).',
-      'export const UNIFORM_OFFSET_BYTES = {',
-    )
-    for (const f of u.fields) {
-      if (f.binding?.kind === 'uniform') {
-        lines.push(`  ${f.name}: ${f.binding.offset},`)
-      }
-    }
-    lines.push(
-      '} as const',
-      '',
-      '// Indices into a Float32Array / Uint32Array view.',
+      '// Indices into a Float32Array / Uint32Array view over the uniform buffer.',
       'export const UNIFORM_OFFSET_F32 = {',
     )
     for (const f of u.fields) {
@@ -368,12 +356,8 @@ export function emit(inputs: CodegenInputs) {
       `export const INSTANCE_STRIDE_BYTES = ${stride}`,
       `export const INSTANCE_STRIDE_F32 = ${stride / 4}`,
       '',
-      'export const FIELD_OFFSET_BYTES = {',
+      'export const FIELD_OFFSET_F32 = {',
     )
-    for (const a of attrs) {
-      lines.push(`  ${a.name}: ${a.offsetBytes},`)
-    }
-    lines.push('} as const', '', 'export const FIELD_OFFSET_F32 = {')
     for (const a of attrs) {
       lines.push(`  ${a.name}: ${a.offsetBytes / 4},`)
     }
@@ -439,12 +423,8 @@ export function emitLayoutOnly(
       `export const INSTANCE_STRIDE_BYTES = ${stride}`,
       `export const INSTANCE_STRIDE_F32 = ${stride / 4}`,
       '',
-      'export const FIELD_OFFSET_BYTES = {',
+      'export const FIELD_OFFSET_F32 = {',
     )
-    for (const a of attrs) {
-      lines.push(`  ${a.name}: ${a.offsetBytes},`)
-    }
-    lines.push('} as const', '', 'export const FIELD_OFFSET_F32 = {')
     for (const a of attrs) {
       lines.push(`  ${a.name}: ${a.offsetBytes / 4},`)
     }

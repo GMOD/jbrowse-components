@@ -12,88 +12,8 @@ export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision
 export const VERTS_PER_INSTANCE = 6
 
 export const UNIFORMS_SIZE_BYTES = 304
-export const UNIFORMS_SIZE_F32 = 76
 
-// Byte offsets (into an ArrayBuffer / DataView).
-export const UNIFORM_OFFSET_BYTES = {
-  bpHi: 0,
-  bpLo: 4,
-  bpLen: 8,
-  hpZero: 12,
-  canvasW: 16,
-  canvasH: 20,
-  rangeY0: 24,
-  scrollTop: 28,
-  covOffset: 32,
-  featHeight: 36,
-  featSpacing: 40,
-  covHeight: 44,
-  covYOffset: 48,
-  depthScale: 52,
-  binSize: 56,
-  noncovHeight: 60,
-  depthDomainMax: 64,
-  insertUpper: 68,
-  insertLower: 72,
-  blockStartPx: 76,
-  blockWidth: 80,
-  lineWidthPx: 84,
-  gradientHue: 88,
-  pairedArcsDown: 92,
-  arcsYDomainBp: 96,
-  colorScheme: 100,
-  highlightIdx: 104,
-  highlightOnly: 108,
-  chainMode: 112,
-  showStroke: 116,
-  flipStrandLongRead: 120,
-  coverageScaleType: 124,
-  reversed: 128,
-  colorFwd: 132,
-  colorRev: 136,
-  colorNostrand: 140,
-  colorPairLR: 144,
-  colorPairRL: 148,
-  colorPairRR: 152,
-  colorPairLL: 156,
-  colorBaseA: 160,
-  colorBaseC: 164,
-  colorBaseG: 168,
-  colorBaseT: 172,
-  colorInsertion: 176,
-  colorDeletion: 180,
-  colorSkip: 184,
-  colorSoftclip: 188,
-  colorHardclip: 192,
-  colorCoverage: 196,
-  colorModFwd: 200,
-  colorModRev: 204,
-  colorLongInsert: 208,
-  colorShortInsert: 212,
-  colorSupplementary: 216,
-  colorUnmappedMate: 220,
-  arcColor0: 224,
-  arcColor1: 228,
-  arcColor2: 232,
-  arcColor3: 236,
-  arcColor4: 240,
-  arcColor5: 244,
-  arcColor6: 248,
-  arcColor7: 252,
-  arcLineColor0: 256,
-  arcLineColor1: 260,
-  linkedReadColor0: 264,
-  linkedReadColor1: 268,
-  linkedReadColor2: 272,
-  linkedReadColor3: 276,
-  linkedReadColor4: 280,
-  linkedReadColor5: 284,
-  linkedReadColor6: 288,
-  linkedReadColor7: 292,
-  pxPerBp: 296,
-} as const
-
-// Indices into a Float32Array / Uint32Array view.
+// Indices into a Float32Array / Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
   bpHi: 0,
   bpLo: 1,
@@ -343,14 +263,6 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
 
 export const INSTANCE_STRIDE_BYTES = 20
 export const INSTANCE_STRIDE_F32 = 5
-
-export const FIELD_OFFSET_BYTES = {
-  startOff: 0,
-  endOff: 4,
-  y: 8,
-  gapType: 12,
-  frequency: 16,
-} as const
 
 export const FIELD_OFFSET_F32 = {
   startOff: 0,

@@ -4,11 +4,6 @@
 export const INSTANCE_STRIDE_BYTES = 8
 export const INSTANCE_STRIDE_F32 = 2
 
-export const FIELD_OFFSET_BYTES = {
-  position: 0,
-  depth: 4,
-} as const
-
 export const FIELD_OFFSET_F32 = {
   position: 0,
   depth: 1,
