@@ -9,7 +9,6 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observable } from 'mobx'
 
@@ -17,9 +16,9 @@ import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
+import { rendererMenuItems } from '../shared/rendererMenuItems.tsx'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
 import {
-  makeAutoscaleTypeSubMenu,
   makeResolutionAndSummarySubMenus,
   makeScaleTypeSubMenu,
 } from '../shared/wiggleMenuItems.ts'
@@ -49,7 +48,6 @@ export type { Region } from '@jbrowse/core/util'
 type LGV = LinearGenomeViewModel
 
 const WiggleComponent = lazy(() => import('./components/WiggleComponent.tsx'))
-const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 export default function stateModelFactory(
@@ -347,26 +345,10 @@ export default function stateModelFactory(
             })),
           },
           ...makeResolutionAndSummarySubMenus(self),
-          {
-            label: 'Score',
-            icon: EqualizerIcon,
-            subMenu: [
-              makeScaleTypeSubMenu(self),
-              makeAutoscaleTypeSubMenu(self),
-              {
-                label: 'Set min/max score',
-                onClick: () => {
-                  getSession(self).queueDialog(handleClose => [
-                    SetMinMaxDialog,
-                    {
-                      model: self,
-                      handleClose,
-                    },
-                  ])
-                },
-              },
-            ],
-          },
+          // Inject the wiggle-only scale type into the shared Score submenu.
+          ...rendererMenuItems(self, {
+            extraScoreItems: [makeScaleTypeSubMenu(self)],
+          }),
           {
             label: 'Color',
             icon: PaletteIcon,
@@ -378,14 +360,6 @@ export default function stateModelFactory(
                   handleClose,
                 },
               ])
-            },
-          },
-          {
-            label: 'Draw cross hatches',
-            type: 'checkbox',
-            checked: self.displayCrossHatches,
-            onClick: () => {
-              self.toggleCrossHatches()
             },
           },
         ]

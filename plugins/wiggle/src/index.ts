@@ -52,6 +52,8 @@ export {
   modelFactory as linearWiggleDisplayModelFactory,
 } from './LinearWiggleDisplay/index.ts'
 
+export { rendererMenuItems } from './shared/rendererMenuItems.tsx'
+
 export type {
   SourceRenderData,
   WiggleBackend,

@@ -1,9 +1,8 @@
 import { findManhattanHit } from './findManhattanHit.ts'
 
-import type {
-  WiggleGPURenderState,
-  WiggleRenderBlock,
-} from '@jbrowse/wiggle-core'
+import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
+import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
 
 // One block covering bp 0..1000 across 100 screen px (10 bp/px).
 const block: WiggleRenderBlock = {
@@ -14,28 +13,30 @@ const block: WiggleRenderBlock = {
   reversed: false,
 }
 
-const state: WiggleGPURenderState = {
+const state: ManhattanRenderState = {
   domainY: [0, 10],
-  scaleType: 0,
-  renderingType: 0,
   canvasWidth: 100,
   canvasHeight: 100,
 }
 
 const refNames = new Map([[0, 'chr1']])
 
-function mkData(featurePositions: number[], featureScores: number[]) {
+function mkData(
+  positions: number[],
+  scores: number[],
+): Map<number, ManhattanRpcResult> {
   return new Map([
     [
       0,
       {
-        sources: [
-          {
-            featurePositions: new Uint32Array(featurePositions),
-            featureScores: new Float32Array(featureScores),
-            numFeatures: featureScores.length,
-          },
-        ],
+        positions: new Uint32Array(positions),
+        scores: new Float32Array(scores),
+        colors: new Uint32Array(positions.length),
+        numFeatures: positions.length,
+        scoreMin: 0,
+        scoreMax: 0,
+        scoreSum: 0,
+        scoreSumSq: 0,
       },
     ],
   ])
@@ -44,13 +45,13 @@ function mkData(featurePositions: number[], featureScores: number[]) {
 test('returns undefined when nothing within hit radius', () => {
   // bp=500 → screen (50, 50). Mouse far away at (0,0).
   expect(
-    findManhattanHit(0, 0, [block], mkData([500, 501], [5]), state, refNames),
+    findManhattanHit(0, 0, [block], mkData([500], [5]), state, refNames),
   ).toBeUndefined()
 })
 
 test('finds nearest point within hit radius', () => {
   expect(
-    findManhattanHit(51, 49, [block], mkData([500, 501], [5]), state, refNames),
+    findManhattanHit(51, 49, [block], mkData([500], [5]), state, refNames),
   ).toEqual({
     refName: 'chr1',
     start: 500,
@@ -67,7 +68,7 @@ test('picks closest of two candidates', () => {
     52,
     50,
     [block],
-    mkData([500, 501, 510, 511], [5, 5]),
+    mkData([500, 510], [5, 5]),
     state,
     refNames,
   )
@@ -81,12 +82,12 @@ test('skips blocks with no data', () => {
 })
 
 test('respects reversed block direction', () => {
-  // Reversed: bp=900 → screen x = (1000 - 900) / 10 + 0 = 10
+  // Reversed: bp=900 → screen x = (1000 - 900) / 10 = 10
   const hit = findManhattanHit(
     10,
     50,
     [{ ...block, reversed: true }],
-    mkData([900, 901], [5]),
+    mkData([900], [5]),
     state,
     refNames,
   )

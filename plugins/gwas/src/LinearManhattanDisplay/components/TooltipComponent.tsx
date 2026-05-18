@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import type { ManhattanHit } from '../findManhattanHit.ts'
 
 export interface TooltipModel {
-  featureUnderMouse: ManhattanHit | undefined
+  manhattanHit: ManhattanHit | undefined
 }
 
 const TooltipComponent = observer(function TooltipComponent({
@@ -17,11 +17,11 @@ const TooltipComponent = observer(function TooltipComponent({
   model: TooltipModel
   clientMouseCoord: [number, number]
 }) {
-  const { featureUnderMouse } = model
-  if (!featureUnderMouse) {
+  const { manhattanHit } = model
+  if (!manhattanHit) {
     return null
   }
-  const { refName, start, score } = featureUnderMouse
+  const { refName, start, score } = manhattanHit
   return (
     <BaseTooltip
       clientPoint={{ x: clientMouseCoord[0] + 10, y: clientMouseCoord[1] }}

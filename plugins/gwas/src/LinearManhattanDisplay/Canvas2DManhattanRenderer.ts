@@ -1,105 +1,135 @@
 import {
   bpToScreenPx,
-  getDpr,
+  clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
-import { normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
-import { SCALE_TYPE_LOG, makeScoreNormalizer } from '@jbrowse/wiggle-core'
+import {
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
+} from '@jbrowse/core/util/colorBits'
 
 import type {
-  SourceRenderData,
-  WiggleBackend,
-  WiggleGPURenderState,
-  WiggleRenderBlock,
-} from '@jbrowse/wiggle-core'
+  ManhattanBackend,
+  ManhattanRenderState,
+} from './manhattanBackendTypes.ts'
+import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
 
 const TWO_PI = Math.PI * 2
 const POINT_RADIUS_PX = 2
 
-export class Canvas2DManhattanRenderer implements WiggleBackend {
+function abgrToCss(abgr: number) {
+  return `rgb(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)})`
+}
+
+// Pure draw entry point — used both by on-screen streaming render and SVG
+// export. Mirrors `drawWiggleBlocks` in shape so the SVG pipeline can call
+// it the same way.
+export function drawManhattanBlocks(
+  ctx: Ctx2D,
+  regions: ReadonlyMap<number, ManhattanRpcResult>,
+  blocks: WiggleRenderBlock[],
+  state: ManhattanRenderState,
+) {
+  const { canvasWidth, canvasHeight, domainY } = state
+  const [domainMin, domainMax] = domainY
+  const range = domainMax - domainMin || 1
+
+  for (const block of blocks) {
+    const data = regions.get(block.displayedRegionIndex)
+    if (!data || data.numFeatures === 0) {
+      continue
+    }
+    const clip = clipBlockForCanvas(block, canvasWidth)
+    if (!clip) {
+      continue
+    }
+    const [bpStart, bpEnd] = block.bpRangeX
+    const { screenStartPx, screenEndPx, reversed } = block
+    const { positions, scores, colors, numFeatures } = data
+
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
+    ctx.clip()
+
+    // Batch by color to amortize fillStyle changes.
+    let currentAbgr = colors[0]!
+    ctx.fillStyle = abgrToCss(currentAbgr)
+    ctx.beginPath()
+    for (let i = 0; i < numFeatures; i++) {
+      const abgr = colors[i]!
+      if (abgr !== currentAbgr) {
+        ctx.fill()
+        currentAbgr = abgr
+        ctx.fillStyle = abgrToCss(currentAbgr)
+        ctx.beginPath()
+      }
+      const x = bpToScreenPx(
+        positions[i]!,
+        bpStart,
+        bpEnd,
+        screenStartPx,
+        screenEndPx,
+        reversed,
+      )
+      const norm = (scores[i]! - domainMin) / range
+      const y = (1 - Math.max(0, Math.min(1, norm))) * canvasHeight
+      ctx.moveTo(x + POINT_RADIUS_PX, y)
+      ctx.arc(x, y, POINT_RADIUS_PX, 0, TWO_PI)
+    }
+    ctx.fill()
+
+    ctx.restore()
+  }
+}
+
+// One-shot entry point for SVG export. Mirrors `drawWiggleToCtx`.
+export function drawManhattanToCtx(
+  ctx: Ctx2D,
+  regions: ReadonlyMap<number, ManhattanRpcResult>,
+  blocks: WiggleRenderBlock[],
+  state: ManhattanRenderState,
+) {
+  drawManhattanBlocks(ctx, regions, blocks, state)
+}
+
+// Streaming on-screen backend.
+export class Canvas2DManhattanRenderer implements ManhattanBackend {
   private canvas: HTMLCanvasElement
-  private regionData = new Map<number, SourceRenderData[]>()
+  private ctx: CanvasRenderingContext2D
+  private regions = new Map<number, ManhattanRpcResult>()
 
   constructor(canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      throw new Error('Canvas 2D context not available')
+    }
     this.canvas = canvas
+    this.ctx = ctx
   }
 
-  uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]) {
-    const total = sources.reduce((n, s) => n + s.numFeatures, 0)
-    if (total === 0) {
-      this.regionData.delete(displayedRegionIndex)
+  uploadRegion(displayedRegionIndex: number, data: ManhattanRpcResult) {
+    if (data.numFeatures === 0) {
+      this.regions.delete(displayedRegionIndex)
     } else {
-      this.regionData.set(displayedRegionIndex, sources)
+      this.regions.set(displayedRegionIndex, data)
     }
+  }
+
+  renderBlocks(blocks: WiggleRenderBlock[], state: ManhattanRenderState) {
+    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    drawManhattanBlocks(this.ctx, this.regions, blocks, state)
   }
 
   pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regionData, activeRegions)
-  }
-
-  renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
-    const { canvasWidth, canvasHeight, domainY, scaleType } = state
-    const ctx = this.canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
-
-    prepareCanvas(this.canvas, ctx, canvasWidth, canvasHeight)
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-
-    const dpr = getDpr()
-    const pr = POINT_RADIUS_PX * dpr
-    const normalize = makeScoreNormalizer(
-      domainY[0],
-      domainY[1],
-      scaleType === SCALE_TYPE_LOG,
-    )
-
-    for (const block of blocks) {
-      const sources = this.regionData.get(block.displayedRegionIndex)
-      if (!sources) {
-        continue
-      }
-      const [bpStart, bpEnd] = block.bpRangeX
-      const { screenStartPx, screenEndPx, reversed } = block
-
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(
-        screenStartPx * dpr,
-        0,
-        (screenEndPx - screenStartPx) * dpr,
-        canvasHeight * dpr,
-      )
-      ctx.clip()
-
-      for (const source of sources) {
-        ctx.fillStyle = normalizedRgbToCss(source.color)
-        ctx.beginPath()
-        const { featurePositions, featureScores, numFeatures } = source
-        for (let i = 0; i < numFeatures; i++) {
-          const x =
-            bpToScreenPx(
-              featurePositions[i * 2]!,
-              bpStart,
-              bpEnd,
-              screenStartPx,
-              screenEndPx,
-              reversed,
-            ) * dpr
-          const y = (1 - normalize(featureScores[i]!)) * canvasHeight * dpr
-          ctx.moveTo(x + pr, y)
-          ctx.arc(x, y, pr, 0, TWO_PI)
-        }
-        ctx.fill()
-      }
-
-      ctx.restore()
-    }
+    pruneRegionMap(this.regions, activeRegions)
   }
 
   dispose() {
-    this.regionData.clear()
+    this.regions.clear()
   }
 }

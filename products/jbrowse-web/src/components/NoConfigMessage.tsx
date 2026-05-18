@@ -121,6 +121,10 @@ const sampleConfigs: {
     label: 'Nanopore methylation',
   },
   {
+    config: 'test_data/config_gwas.json',
+    label: 'GWAS (Manhattan plot)',
+  },
+  {
     config: 'test_data/volvox/config_main_thread.json',
     label: 'Volvox (main thread)',
   },

@@ -5,6 +5,7 @@ import GWASAddTrackComponentF from './GWASAddTrackComponent/index.tsx'
 import GWASTrackF from './GWASTrack/index.ts'
 import GuessAdapterF from './GuessAdapter/index.ts'
 import LinearManhattanDisplayF from './LinearManhattanDisplay/index.ts'
+import ManhattanRPCF from './ManhattanRPC/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -17,5 +18,6 @@ export default class GWASPlugin extends Plugin {
     GWASTrackF(pluginManager)
     GuessAdapterF(pluginManager)
     LinearManhattanDisplayF(pluginManager)
+    ManhattanRPCF(pluginManager)
   }
 }
