@@ -1,13 +1,13 @@
 import { installPerRegionGpuLifecycle } from '@jbrowse/core/gpu/installPerRegionGpuLifecycle'
 
+import type { InstallGpuDisplayCallbacks } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   SourceRenderData,
   WiggleBackend,
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from './wiggleBackendTypes.ts'
-import type { InstallGpuDisplayCallbacks } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+} from '@jbrowse/wiggle-core'
 import type { ObservableMap } from 'mobx'
 
 interface PerRegionWiggleSelf extends IAnyStateTreeNode {

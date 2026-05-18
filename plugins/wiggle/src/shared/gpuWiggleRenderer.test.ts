@@ -16,7 +16,7 @@ import {
 import type {
   SourceRenderData,
   WiggleRenderBlock,
-} from './wiggleBackendTypes.ts'
+} from '@jbrowse/wiggle-core'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {
   value: 1,

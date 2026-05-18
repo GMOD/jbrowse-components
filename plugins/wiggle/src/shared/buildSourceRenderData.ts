@@ -8,7 +8,7 @@ import {
 import { getEffectiveScores } from '../util.ts'
 
 import type { WiggleDataResult } from '../util.ts'
-import type { SourceRenderData } from './wiggleBackendTypes.ts'
+import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 // The shape of `model.gpuProps` — single source of truth for "settings that
 // affect the per-instance GPU buffer encoding". buildSourceRenderData

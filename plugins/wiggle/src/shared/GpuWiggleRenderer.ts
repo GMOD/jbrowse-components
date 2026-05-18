@@ -7,13 +7,13 @@ import * as wiggleShader from './shaders/wiggle.generated.ts'
 import { RENDERING_TYPE_LINE } from './wiggleComponentUtils.ts'
 import { computeNumRows, interleaveInstances } from './wiggleInstanceBuffer.ts'
 
+import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 import type {
   SourceRenderData,
   WiggleBackend,
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from './wiggleBackendTypes.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+} from '@jbrowse/wiggle-core'
 
 const PASS_FILL = 'fill'
 const PASS_LINE = 'line'

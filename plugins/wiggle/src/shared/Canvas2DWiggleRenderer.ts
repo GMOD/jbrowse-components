@@ -17,13 +17,13 @@ import {
 } from './wiggleDrawFunctions.ts'
 import { computeNumRows } from './wiggleInstanceBuffer.ts'
 
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   SourceRenderData,
   WiggleBackend,
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from './wiggleBackendTypes.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+} from '@jbrowse/wiggle-core'
 
 interface Canvas2DRegionData {
   sources: SourceRenderData[]

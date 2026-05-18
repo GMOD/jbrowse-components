@@ -23,6 +23,10 @@ export {
   default as BaseLinearDisplayComponent,
 } from './components/BaseLinearDisplay.tsx'
 export {
+  DisplayErrorBar,
+  DisplayLoadingOverlay,
+} from './components/DisplayStatusOverlays.tsx'
+export {
   default as ConfigOverrideMixin,
   migrateOldSettingSnapshots,
 } from './models/ConfigOverrideMixin.ts'

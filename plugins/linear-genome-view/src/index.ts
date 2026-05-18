@@ -94,6 +94,8 @@ export {
   BaseLinearDisplayComponent,
   BlockMsg,
   ConfigOverrideMixin,
+  DisplayErrorBar,
+  DisplayLoadingOverlay,
   FeatureDensityMixin,
   FloatingLegend,
   GlobalDataDisplayMixin,

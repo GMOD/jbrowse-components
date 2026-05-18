@@ -10,7 +10,7 @@ import {
   SCALE_TYPE_LINEAR,
 } from './wiggleComponentUtils.ts'
 
-import type { SourceRenderData } from './wiggleBackendTypes.ts'
+import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 function createMockCanvas() {
   const fillRectCalls: [number, number, number, number][] = []

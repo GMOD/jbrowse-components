@@ -48,8 +48,8 @@ export * from './util.ts'
 
 export {
   ReactComponent as LinearWiggleDisplayReactComponent,
-  modelFactory as linearWiggleDisplayModelFactory,
   configSchema as linearWiggleDisplayConfigSchema,
+  modelFactory as linearWiggleDisplayModelFactory,
 } from './LinearWiggleDisplay/index.ts'
 
 export type {
@@ -57,4 +57,4 @@ export type {
   WiggleBackend,
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from './shared/wiggleBackendTypes.ts'
+} from '@jbrowse/wiggle-core'

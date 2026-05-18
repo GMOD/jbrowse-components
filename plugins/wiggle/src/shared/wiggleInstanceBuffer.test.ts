@@ -4,7 +4,7 @@ import {
 } from './shaders/wiggle.generated.ts'
 import { interleaveInstances } from './wiggleInstanceBuffer.ts'
 
-import type { SourceRenderData } from './wiggleBackendTypes.ts'
+import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 function makeSource(
   scores: number[],

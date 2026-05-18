@@ -2,6 +2,10 @@ import { useCallback, useRef, useState } from 'react'
 
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
+import {
+  DisplayErrorBar,
+  DisplayLoadingOverlay,
+} from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
@@ -12,20 +16,15 @@ import DensityLegend from '../../shared/DensityLegend.tsx'
 import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
-import {
-  WiggleErrorBar,
-  WiggleLoadingOverlay,
-} from '../../shared/WiggleStatusOverlays.tsx'
 import { getRowTop, hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
 
-import type { WiggleBackend } from '../../shared/wiggleBackendTypes.ts'
 import type { WiggleDataResult } from '../../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
 } from '@jbrowse/tree-sidebar'
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
+import type { WiggleBackend, YScaleTicks  } from '@jbrowse/wiggle-core'
 
 type LGV = LinearGenomeViewModel
 
@@ -343,8 +342,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         offsetMouseCoord={offsetMouseCoord}
       />
 
-      <WiggleErrorBar model={model} />
-      <WiggleLoadingOverlay model={model} />
+      <DisplayErrorBar model={model} />
+      <DisplayLoadingOverlay model={model} />
     </div>
   )
 })

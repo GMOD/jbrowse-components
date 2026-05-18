@@ -1,17 +1,18 @@
+import { scaleTypeFromString } from '@jbrowse/wiggle-core'
+
 import type { FeatureArrays } from '../util.ts'
 import type {
   SourceRenderData,
   WiggleGPURenderState,
   WiggleRenderingType,
-  WiggleScaleType,
-} from './wiggleBackendTypes.ts'
+} from '@jbrowse/wiggle-core'
+
+export { SCALE_TYPE_LINEAR, SCALE_TYPE_LOG } from '@jbrowse/wiggle-core'
 
 export const RENDERING_TYPE_XYPLOT: WiggleRenderingType = 0
 export const RENDERING_TYPE_DENSITY: WiggleRenderingType = 1
 export const RENDERING_TYPE_LINE: WiggleRenderingType = 2
 export const RENDERING_TYPE_SCATTER: WiggleRenderingType = 3
-export const SCALE_TYPE_LINEAR: WiggleScaleType = 0
-export const SCALE_TYPE_LOG: WiggleScaleType = 1
 
 function lightenColor(
   rgb: [number, number, number],
@@ -166,7 +167,7 @@ interface MouseRegion {
 // Returns undefined if x is outside any region or no data is loaded.
 export function hitTestMouse<R extends MouseRegion, D>(
   regions: R[],
-  rpcDataMap: Map<number, D>,
+  rpcDataMap: ReadonlyMap<number, D>,
   offsetX: number,
 ) {
   const region = regions.find(
@@ -197,7 +198,7 @@ export function makeRenderState(
 ): WiggleGPURenderState {
   return {
     domainY: domain,
-    scaleType: scaleType === 'log' ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
+    scaleType: scaleTypeFromString(scaleType),
     renderingType: renderingTypeToInt(renderingType),
     canvasWidth: width,
     canvasHeight: height,

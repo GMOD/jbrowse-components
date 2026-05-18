@@ -1,18 +1,18 @@
 import { ErrorBar, LoadingOverlay } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-interface WiggleStatusModel {
+// FetchMixin status surface. Each overlay only Picks the fields it reads.
+interface DisplayStatusModel {
   error: Error | null
-  isLoading: boolean
   isReady: boolean
   statusMessage?: string
   reload: () => void
 }
 
-export const WiggleErrorBar = observer(function WiggleErrorBar({
+export const DisplayErrorBar = observer(function DisplayErrorBar({
   model,
 }: {
-  model: Pick<WiggleStatusModel, 'error' | 'reload'>
+  model: Pick<DisplayStatusModel, 'error' | 'reload'>
 }) {
   return model.error ? (
     <ErrorBar
@@ -24,10 +24,10 @@ export const WiggleErrorBar = observer(function WiggleErrorBar({
   ) : null
 })
 
-export const WiggleLoadingOverlay = observer(function WiggleLoadingOverlay({
+export const DisplayLoadingOverlay = observer(function DisplayLoadingOverlay({
   model,
 }: {
-  model: Pick<WiggleStatusModel, 'statusMessage' | 'isReady'>
+  model: Pick<DisplayStatusModel, 'statusMessage' | 'isReady'>
 }) {
   return (
     <LoadingOverlay

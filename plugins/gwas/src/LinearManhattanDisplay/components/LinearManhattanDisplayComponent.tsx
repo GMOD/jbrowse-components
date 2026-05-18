@@ -3,6 +3,10 @@ import { useCallback, useState } from 'react'
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import { SimpleFeature, getContainingView } from '@jbrowse/core/util'
 import { useGpuModelLifecycle } from '@jbrowse/core/util/useGpuModelLifecycle'
+import {
+  DisplayErrorBar,
+  DisplayLoadingOverlay,
+} from '@jbrowse/plugin-linear-genome-view'
 import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -12,32 +16,20 @@ import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanHit } from '../findManhattanHit.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { GpuLifecycleModel } from '@jbrowse/core/util/useGpuModelLifecycle'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
-  WiggleBackend,
-  WiggleDataResult,
   WiggleGPURenderState,
+  WiggleGpuDisplayModel,
   WiggleRenderBlock,
-} from '@jbrowse/plugin-wiggle'
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
-import type { ObservableMap } from 'mobx'
+} from '@jbrowse/wiggle-core'
 
 type LGV = LinearGenomeViewModel
 
-// The wiggle-composed model supplies everything: rpcDataMap, renderState,
-// renderBlocks, ticks, setFeatureUnderMouse. selectFeature comes from
-// BaseLinearDisplay. We stash a ManhattanHit (with screenX/screenY) into
-// featureUnderMouse — wiggle's volatile is plain JS so the extra fields
-// survive the round-trip.
-export interface ManhattanDisplayModel
-  extends GpuLifecycleModel<WiggleBackend> {
-  canvasDrawn: boolean
-  height: number
-  rpcDataMap: ObservableMap<number, WiggleDataResult>
+// Adds the render snapshot/blocks (needed for point-wise hit testing) and a
+// per-point featureUnderMouse shape on top of the shared wiggle contract.
+export interface ManhattanDisplayModel extends WiggleGpuDisplayModel {
   renderState: WiggleGPURenderState | undefined
   renderBlocks: WiggleRenderBlock[]
-  ticks: YScaleTicks | undefined
   featureUnderMouse: ManhattanHit | undefined
   setFeatureUnderMouse: (hit: ManhattanHit | undefined) => void
   selectFeature: (feature: Feature) => void
@@ -176,6 +168,8 @@ const LinearManhattanDisplayComponent = observer(function LinearManhattanDisplay
         </svg>
       ) : null}
       <TooltipComponent model={model} clientMouseCoord={clientMouseCoord} />
+      <DisplayErrorBar model={model} />
+      <DisplayLoadingOverlay model={model} />
     </div>
   )
 })

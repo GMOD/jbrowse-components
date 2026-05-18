@@ -9,7 +9,7 @@ import type {
   WiggleBackend,
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from './wiggleBackendTypes.ts'
+} from '@jbrowse/wiggle-core'
 
 const TestModel = types
   .compose('TestModel', GpuBackendLifecycleSlotMixin(), types.model({}))

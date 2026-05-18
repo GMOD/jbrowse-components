@@ -6,7 +6,7 @@ import {
   INSTANCE_STRIDE_F32,
 } from './shaders/wiggle.generated.ts'
 
-import type { SourceRenderData } from './wiggleBackendTypes.ts'
+import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 export function interleaveInstances(
   sources: SourceRenderData[],

@@ -5,14 +5,14 @@ import {
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
-import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
+import { SCALE_TYPE_LOG, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import type {
   SourceRenderData,
   WiggleBackend,
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from '@jbrowse/plugin-wiggle'
+} from '@jbrowse/wiggle-core'
 
 const TWO_PI = Math.PI * 2
 const POINT_RADIUS_PX = 2
@@ -50,7 +50,11 @@ export class Canvas2DManhattanRenderer implements WiggleBackend {
 
     const dpr = getDpr()
     const pr = POINT_RADIUS_PX * dpr
-    const normalize = makeScoreNormalizer(domainY[0], domainY[1], scaleType === 1)
+    const normalize = makeScoreNormalizer(
+      domainY[0],
+      domainY[1],
+      scaleType === SCALE_TYPE_LOG,
+    )
 
     for (const block of blocks) {
       const sources = this.regionData.get(block.displayedRegionIndex)

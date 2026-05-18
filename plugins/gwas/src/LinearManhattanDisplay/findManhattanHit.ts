@@ -1,10 +1,11 @@
 import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
-import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
+import { SCALE_TYPE_LOG, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import type {
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from '@jbrowse/plugin-wiggle'
+  WiggleSourceData,
+} from '@jbrowse/wiggle-core'
 
 export interface ManhattanHit {
   refName: string
@@ -15,27 +16,32 @@ export interface ManhattanHit {
   screenY: number
 }
 
-interface FeatureSource {
-  featurePositions: Uint32Array
-  featureScores: Float32Array
-  numFeatures: number
-}
+// Structurally a subset of WiggleSourceData — only the fields the per-point
+// hit test reads. Keeping it narrow lets the test build mocks without the full
+// summary/pos/neg arrays.
+type ManhattanFeatureSource = Pick<
+  WiggleSourceData,
+  'featurePositions' | 'featureScores' | 'numFeatures'
+>
 
 const HIT_RADIUS_PX = 8
 
-// Finds the closest point within the hit radius. Reads from the same shape
-// wiggle's rpcDataMap stores — `{ sources: [{ featurePositions, featureScores,
-// numFeatures }] }` per region. Y is the score normalized into canvasHeight.
+// Finds the closest point within the hit radius. Reads from the same per-region
+// shape wiggle's rpcDataMap stores. Y is the score normalized into canvasHeight.
 export function findManhattanHit(
   mouseX: number,
   mouseY: number,
   blocks: WiggleRenderBlock[],
-  regionData: ReadonlyMap<number, { sources: FeatureSource[] }>,
+  regionData: ReadonlyMap<number, { sources: ManhattanFeatureSource[] }>,
   state: WiggleGPURenderState,
   refNames: Map<number, string>,
 ): ManhattanHit | undefined {
   const { domainY, canvasHeight, scaleType } = state
-  const normalize = makeScoreNormalizer(domainY[0], domainY[1], scaleType === 1)
+  const normalize = makeScoreNormalizer(
+    domainY[0],
+    domainY[1],
+    scaleType === SCALE_TYPE_LOG,
+  )
 
   let bestDistSq = HIT_RADIUS_PX * HIT_RADIUS_PX
   let best: ManhattanHit | undefined

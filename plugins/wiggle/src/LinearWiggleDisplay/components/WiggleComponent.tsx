@@ -2,6 +2,10 @@ import { useCallback, useRef, useState } from 'react'
 
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
+import {
+  DisplayErrorBar,
+  DisplayLoadingOverlay,
+} from '@jbrowse/plugin-linear-genome-view'
 import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -9,10 +13,6 @@ import WiggleTooltip from './WiggleTooltip.tsx'
 import { findHit } from './findHit.ts'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
-import {
-  WiggleErrorBar,
-  WiggleLoadingOverlay,
-} from '../../shared/WiggleStatusOverlays.tsx'
 import { hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
@@ -167,8 +167,8 @@ const WiggleComponent = observer(function WiggleComponent({
         offsetMouseCoord={offsetMouseCoord}
         height={height}
       />
-      <WiggleErrorBar model={model} />
-      <WiggleLoadingOverlay model={model} />
+      <DisplayErrorBar model={model} />
+      <DisplayLoadingOverlay model={model} />
     </div>
   )
 })

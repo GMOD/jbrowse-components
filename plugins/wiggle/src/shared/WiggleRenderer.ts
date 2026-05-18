@@ -4,7 +4,7 @@ import { Canvas2DWiggleRenderer } from './Canvas2DWiggleRenderer.ts'
 import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
 import { UNIFORMS_SIZE_BYTES } from './shaders/wiggle.generated.ts'
 
-import type { WiggleBackend } from './wiggleBackendTypes.ts'
+import type { WiggleBackend } from '@jbrowse/wiggle-core'
 
 export function WiggleRenderer(canvas: HTMLCanvasElement) {
   return initDualBackend<WiggleBackend>(

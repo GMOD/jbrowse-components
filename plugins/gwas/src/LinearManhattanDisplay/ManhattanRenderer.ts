@@ -4,7 +4,7 @@ import { Canvas2DManhattanRenderer } from './Canvas2DManhattanRenderer.ts'
 import { GpuManhattanRenderer, MANHATTAN_PASSES } from './GpuManhattanRenderer.ts'
 import * as shader from './shaders/manhattan.generated.ts'
 
-import type { WiggleBackend } from '@jbrowse/plugin-wiggle'
+import type { WiggleBackend } from '@jbrowse/wiggle-core'
 
 export function ManhattanRenderer(canvas: HTMLCanvasElement): Promise<WiggleBackend> {
   return initDualBackend<WiggleBackend>(

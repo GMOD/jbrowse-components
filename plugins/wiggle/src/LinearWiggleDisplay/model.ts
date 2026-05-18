@@ -32,7 +32,6 @@ import {
   isDefaultBicolor,
 } from '../util.ts'
 
-import type { WiggleBackend } from '../shared/wiggleBackendTypes.ts'
 import type { WiggleDataResult } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -43,6 +42,7 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { WiggleBackend } from '@jbrowse/wiggle-core'
 
 export type { Region } from '@jbrowse/core/util'
 

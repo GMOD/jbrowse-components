@@ -660,6 +660,9 @@ importers:
 
   packages/wiggle-core:
     dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -881,8 +884,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       g2p_mapper:
-        specifier: ^2.1.2
-        version: 2.0.2
+        specifier: ^2.1.1
+        version: 2.1.1
       mobx:
         specifier: ^6.15.3
         version: 6.15.3
@@ -6809,8 +6812,8 @@ packages:
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
 
-  g2p_mapper@2.0.2:
-    resolution: {integrity: sha512-tVo1kRAx9u5DYi2an5RNMQwK88EqU8Zo5+4GQsxFDgjNe20iAmap0+82bsykDZ7OrISwM2sdyyuS86q0CWY4ZQ==}
+  g2p_mapper@2.1.1:
+    resolution: {integrity: sha512-ENc+xskE9FnZ8h8p1TVDHM+jJxfrdKgkh3JMJnLmYrtpxTmtKduRS6ZihclAGVoOj6czw92sTVRXUyfEo79UxQ==}
 
   galactus@2.0.2:
     resolution: {integrity: sha512-HmKyTFGomdAchz4umx8MwBnrnfFmdpwiTyGA4ZOF7rya2Lmgbc9qate4yweInL+0gUBVImhaz12SBGpW3SY4Yg==}
@@ -14410,7 +14413,7 @@ snapshots:
 
   functions-have-names@1.2.3: {}
 
-  g2p_mapper@2.0.2: {}
+  g2p_mapper@2.1.1: {}
 
   galactus@2.0.2:
     dependencies:

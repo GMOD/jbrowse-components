@@ -12,7 +12,7 @@ import type {
   WiggleBackend,
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from '@jbrowse/plugin-wiggle'
+} from '@jbrowse/wiggle-core'
 
 const PASS = 'point'
 const U = shader.UNIFORM_OFFSET_F32

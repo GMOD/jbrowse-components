@@ -11,7 +11,13 @@ export type {
   FeatureArrays,
   ScaleOpts,
   ScoreStats,
+  SourceInfo,
+  WiggleDataResult,
+  WiggleFeatureArrays,
+  WiggleSourceData,
 } from '@jbrowse/wiggle-core'
+
+import type { WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 
@@ -50,11 +56,6 @@ export function toP(s = 0) {
   return +s.toPrecision(6)
 }
 
-export interface SourceInfo {
-  name: string
-  color?: string
-}
-
 // Single-source synthetic name for LinearWiggleDisplay's worker output. Multi
 // uses real source names; single just needs a stable label so it fits the
 // shared { sources: [...] } shape.
@@ -70,31 +71,6 @@ export interface RawFeatureArrays {
   minScores: Float32Array | undefined
   maxScores: Float32Array | undefined
   count: number
-}
-
-export interface WiggleFeatureArrays {
-  featurePositions: Uint32Array
-  featureScores: Float32Array
-  featureMinScores: Float32Array
-  featureMaxScores: Float32Array
-  numFeatures: number
-  hasSummaryScores: boolean
-  posFeaturePositions: Uint32Array
-  posFeatureScores: Float32Array
-  posNumFeatures: number
-  negFeaturePositions: Uint32Array
-  negFeatureScores: Float32Array
-  negNumFeatures: number
-}
-
-// One source's worth of display-ready arrays plus its source identity.
-export type WiggleSourceData = SourceInfo & WiggleFeatureArrays
-
-// What the wiggle RPC returns. Single-display always has length 1; multi
-// has one entry per visible source. Same shape so single and multi share
-// the GPU build path.
-export interface WiggleDataResult {
-  sources: WiggleSourceData[]
 }
 
 export function processFeaturesFromArrays(

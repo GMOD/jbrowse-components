@@ -3,7 +3,7 @@ import { findManhattanHit } from './findManhattanHit.ts'
 import type {
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from '@jbrowse/plugin-wiggle'
+} from '@jbrowse/wiggle-core'
 
 // One block covering bp 0..1000 across 100 screen px (10 bp/px).
 const block: WiggleRenderBlock = {

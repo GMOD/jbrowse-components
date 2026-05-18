@@ -8,11 +8,11 @@ import {
   makeScoreNormalizer,
 } from '../util.ts'
 
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   SourceRenderData,
   WiggleRenderBlock,
-} from './wiggleBackendTypes.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+} from '@jbrowse/wiggle-core'
 
 function makeScoreToY(
   rowHeight: number,

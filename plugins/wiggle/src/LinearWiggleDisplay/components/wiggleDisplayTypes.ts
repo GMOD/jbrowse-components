@@ -1,17 +1,11 @@
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
-import type { WiggleBackend } from '../../shared/wiggleBackendTypes.ts'
-import type { WiggleDataResult } from '../../util.ts'
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
+import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
-export interface WiggleDisplayModel extends WiggleGpuProps {
-  rpcDataMap: Map<number, WiggleDataResult>
-  height: number
+export interface WiggleDisplayModel
+  extends WiggleGpuDisplayModel,
+    WiggleGpuProps {
   domain: [number, number] | undefined
   scaleType: string
-  ticks?: YScaleTicks
-  error: Error | null
-  isLoading: boolean
-  statusMessage?: string
   displayCrossHatches: boolean
   scalebarOverlapLeft: number
   featureUnderMouse?: {
@@ -24,10 +18,4 @@ export interface WiggleDisplayModel extends WiggleGpuProps {
     summary?: boolean
   }
   setFeatureUnderMouse: (feat?: WiggleDisplayModel['featureUnderMouse']) => void
-  reload: () => void
-  canvasDrawn: boolean
-  isReady: boolean
-  startGpuBackendLifecycle: (backend: WiggleBackend) => void
-  stopGpuBackendLifecycle: () => void
-  renderNow: () => void
 }

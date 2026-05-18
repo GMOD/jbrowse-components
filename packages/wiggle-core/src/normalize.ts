@@ -1,3 +1,11 @@
+export type WiggleScaleType = 0 | 1
+export const SCALE_TYPE_LINEAR: WiggleScaleType = 0
+export const SCALE_TYPE_LOG: WiggleScaleType = 1
+
+export function scaleTypeFromString(scaleType: string): WiggleScaleType {
+  return scaleType === 'log' ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR
+}
+
 // Returns a function that normalizes a score to [0,1] given a fixed domain.
 // Hoisting this outside of feature loops avoids recomputing log(min)/log(max)
 // per feature when isLog is true.
