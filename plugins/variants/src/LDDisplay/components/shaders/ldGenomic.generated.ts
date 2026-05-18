@@ -77,22 +77,6 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_ldValue', components: 1, type: 'float', offsetBytes: 16, integer: false },
 ]
 
-export interface LDInstance {
-  position: [number, number]
-  cellSize: [number, number]
-  ldValue: number
-}
-
-export function writeLDInstance(buf: ArrayBuffer, instanceIndex: number, inst: LDInstance) {
-  const base = instanceIndex * 20
-  const dv = new DataView(buf)
-  dv.setFloat32(base + 0, inst.position[0], true)
-  dv.setFloat32(base + 4, inst.position[1], true)
-  dv.setFloat32(base + 8, inst.cellSize[0], true)
-  dv.setFloat32(base + 12, inst.cellSize[1], true)
-  dv.setFloat32(base + 16, inst.ldValue, true)
-}
-
 // Combined `Sampler2D` bindings. Texture unit indices start at 0.
 export const TEXTURES: readonly TextureBinding[] = [
   { textureBinding: 2, samplerBinding: 3, glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },

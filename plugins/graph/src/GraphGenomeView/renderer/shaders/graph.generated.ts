@@ -69,23 +69,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 20, integer: true },
   { name: 'a_edge_dist', components: 1, type: 'float', offsetBytes: 24, integer: false },
 ]
-
-export interface GraphVertex {
-  position: [number, number]
-  normal: [number, number]
-  thickness: number
-  color: number
-  edge_dist: number
-}
-
-export function writeGraphVertex(buf: ArrayBuffer, instanceIndex: number, inst: GraphVertex) {
-  const base = instanceIndex * 28
-  const dv = new DataView(buf)
-  dv.setFloat32(base + 0, inst.position[0], true)
-  dv.setFloat32(base + 4, inst.position[1], true)
-  dv.setFloat32(base + 8, inst.normal[0], true)
-  dv.setFloat32(base + 12, inst.normal[1], true)
-  dv.setFloat32(base + 16, inst.thickness, true)
-  dv.setUint32(base + 20, inst.color, true)
-  dv.setFloat32(base + 24, inst.edge_dist, true)
-}

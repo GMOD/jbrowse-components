@@ -168,21 +168,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_colorType', components: 1, type: 'float', offsetBytes: 12, integer: false },
   { name: 'a_relDepth', components: 1, type: 'float', offsetBytes: 16, integer: false },
 ]
-
-export interface SnpSegment {
-  position: number
-  yOffset: number
-  segHeight: number
-  colorType: number
-  relDepth: number
-}
-
-export function writeSnpSegment(buf: ArrayBuffer, instanceIndex: number, inst: SnpSegment) {
-  const base = instanceIndex * 20
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.position, true)
-  dv.setFloat32(base + 4, inst.yOffset, true)
-  dv.setFloat32(base + 8, inst.segHeight, true)
-  dv.setFloat32(base + 12, inst.colorType, true)
-  dv.setFloat32(base + 16, inst.relDepth, true)
-}

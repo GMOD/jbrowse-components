@@ -78,19 +78,6 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_count', components: 1, type: 'float', offsetBytes: 8, integer: false },
 ]
 
-export interface HicInstance {
-  position: [number, number]
-  count: number
-}
-
-export function writeHicInstance(buf: ArrayBuffer, instanceIndex: number, inst: HicInstance) {
-  const base = instanceIndex * 12
-  const dv = new DataView(buf)
-  dv.setFloat32(base + 0, inst.position[0], true)
-  dv.setFloat32(base + 4, inst.position[1], true)
-  dv.setFloat32(base + 8, inst.count, true)
-}
-
 // Combined `Sampler2D` bindings. Texture unit indices start at 0.
 export const TEXTURES: readonly TextureBinding[] = [
   { textureBinding: 2, samplerBinding: 3, glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },

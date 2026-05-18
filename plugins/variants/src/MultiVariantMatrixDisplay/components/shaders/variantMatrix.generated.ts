@@ -70,17 +70,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_rowIndex', components: 1, type: 'uint', offsetBytes: 4, integer: true },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 8, integer: true },
 ]
-
-export interface CellInstance {
-  featureIndex: number
-  rowIndex: number
-  color: number
-}
-
-export function writeCellInstance(buf: ArrayBuffer, instanceIndex: number, inst: CellInstance) {
-  const base = instanceIndex * 12
-  const dv = new DataView(buf)
-  dv.setFloat32(base + 0, inst.featureIndex, true)
-  dv.setUint32(base + 4, inst.rowIndex, true)
-  dv.setUint32(base + 8, inst.color, true)
-}

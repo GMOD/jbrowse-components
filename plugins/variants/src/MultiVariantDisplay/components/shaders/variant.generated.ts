@@ -84,20 +84,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_shapeType', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
 ]
-
-export interface CellInstance {
-  startEnd: [number, number]
-  rowIndex: number
-  shapeType: number
-  color: number
-}
-
-export function writeCellInstance(buf: ArrayBuffer, instanceIndex: number, inst: CellInstance) {
-  const base = instanceIndex * 20
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.startEnd[0], true)
-  dv.setUint32(base + 4, inst.startEnd[1], true)
-  dv.setUint32(base + 8, inst.rowIndex, true)
-  dv.setUint32(base + 12, inst.shapeType, true)
-  dv.setUint32(base + 16, inst.color, true)
-}

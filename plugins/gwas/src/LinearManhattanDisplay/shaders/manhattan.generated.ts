@@ -93,17 +93,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_score', components: 1, type: 'float', offsetBytes: 4, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 8, integer: true },
 ]
-
-export interface ManhattanInstance {
-  absPosition: number
-  score: number
-  color: number
-}
-
-export function writeManhattanInstance(buf: ArrayBuffer, instanceIndex: number, inst: ManhattanInstance) {
-  const base = instanceIndex * 12
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.absPosition, true)
-  dv.setFloat32(base + 4, inst.score, true)
-  dv.setUint32(base + 8, inst.color, true)
-}

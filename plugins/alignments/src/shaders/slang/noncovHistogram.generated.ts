@@ -364,19 +364,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_segHeight', components: 1, type: 'float', offsetBytes: 8, integer: false },
   { name: 'a_colorType', components: 1, type: 'float', offsetBytes: 12, integer: false },
 ]
-
-export interface Instance {
-  position: number
-  yOffset: number
-  segHeight: number
-  colorType: number
-}
-
-export function writeInstance(buf: ArrayBuffer, instanceIndex: number, inst: Instance) {
-  const base = instanceIndex * 16
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.position, true)
-  dv.setFloat32(base + 4, inst.yOffset, true)
-  dv.setFloat32(base + 8, inst.segHeight, true)
-  dv.setFloat32(base + 12, inst.colorType, true)
-}

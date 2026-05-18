@@ -156,13 +156,3 @@ export const FIELD_OFFSET_F32 = {
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_position', components: 1, type: 'uint', offsetBytes: 0, integer: true },
 ]
-
-export interface Indicator {
-  position: number
-}
-
-export function writeIndicator(buf: ArrayBuffer, instanceIndex: number, inst: Indicator) {
-  const base = instanceIndex * 4
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.position, true)
-}

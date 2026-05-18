@@ -5,14 +5,14 @@
 //   - Uniform std140 layout (field offsets, total size)
 //   - Per-instance vertex buffer layout (field offsets, stride)
 //   - GL_ATTRIBUTES descriptors (for PassDescriptor)
-//   - TS interface types
-//   - Typed writeInstance() + writeUniforms() packers
+//   - Uniforms TS interface + writeUniforms() packer
 //
-// The interleave-style fast-path packers in hand-written TS should import
-// FIELD_OFFSET_F32 / FIELD_OFFSET_U32 (constant indices into Float32Array /
-// Uint32Array) rather than hard-coding offsets. Renaming or reordering fields
-// in the .slang source then either propagates cleanly (if fields are still
-// named the same) or raises a tsgo error.
+// Per-instance writes use the FIELD_OFFSET_F32 / FIELD_OFFSET_U32 constants
+// directly against pre-allocated Float32Array / Uint32Array views over the
+// buffer — see plugins/wiggle/src/shared/wiggleInstanceBuffer.ts for the
+// canonical pattern. Renaming or reordering fields in the .slang source
+// either propagates cleanly (if fields keep the same name) or raises a
+// tsgo error at the offset lookup site.
 
 import { readFileSync, writeFileSync } from 'node:fs'
 
@@ -390,34 +390,7 @@ export function emit(inputs: CodegenInputs) {
         `  { name: 'a_${a.name}', components: ${comps}, type: '${ct}', offsetBytes: ${a.offsetBytes}, integer: ${integer} },`,
       )
     }
-    lines.push(']', '', `export interface ${vs.name} {`)
-    for (const f of vs.fields) {
-      lines.push(`  ${f.name}: ${tsFieldType(f.type)}`)
-    }
-    lines.push(
-      '}',
-      '',
-      `export function write${vs.name}(buf: ArrayBuffer, instanceIndex: number, inst: ${vs.name}) {`,
-      `  const base = instanceIndex * ${stride}`,
-      `  const dv = new DataView(buf)`,
-    )
-    for (const a of attrs) {
-      const elemSize = a.type.kind === 'scalar' ? 4 : sizeOf(a.type.elementType)
-      const uint = isUintField(a.type)
-      const setter = uint ? 'setUint32' : 'setFloat32'
-      if (a.type.kind === 'scalar') {
-        lines.push(
-          `  dv.${setter}(base + ${a.offsetBytes}, inst.${a.name}, true)`,
-        )
-      } else {
-        for (let i = 0; i < a.type.elementCount; i++) {
-          lines.push(
-            `  dv.${setter}(base + ${a.offsetBytes + i * elemSize}, inst.${a.name}[${i}], true)`,
-          )
-        }
-      }
-    }
-    lines.push('}', '')
+    lines.push(']', '')
   }
 
   if (textures && textures.length > 0) {

@@ -102,24 +102,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 20, integer: true },
   { name: 'a_rowIndex', components: 1, type: 'float', offsetBytes: 24, integer: false },
 ]
-
-export interface WiggleInstance {
-  startEnd: [number, number]
-  score: number
-  prevScore: number
-  nextScore: number
-  color: number
-  rowIndex: number
-}
-
-export function writeWiggleInstance(buf: ArrayBuffer, instanceIndex: number, inst: WiggleInstance) {
-  const base = instanceIndex * 28
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.startEnd[0], true)
-  dv.setUint32(base + 4, inst.startEnd[1], true)
-  dv.setFloat32(base + 8, inst.score, true)
-  dv.setFloat32(base + 12, inst.prevScore, true)
-  dv.setFloat32(base + 16, inst.nextScore, true)
-  dv.setUint32(base + 20, inst.color, true)
-  dv.setFloat32(base + 24, inst.rowIndex, true)
-}

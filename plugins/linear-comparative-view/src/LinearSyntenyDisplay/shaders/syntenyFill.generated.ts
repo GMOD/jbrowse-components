@@ -155,39 +155,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_padBottom', components: 1, type: 'float', offsetBytes: 48, integer: false },
   { name: 'a_kind', components: 1, type: 'float', offsetBytes: 52, integer: false },
 ]
-
-export interface Instance {
-  bp1Hi: number
-  bp1Lo: number
-  bp2Hi: number
-  bp2Lo: number
-  bp3Hi: number
-  bp3Lo: number
-  bp4Hi: number
-  bp4Lo: number
-  color: number
-  featureId: number
-  queryTotalLength: number
-  padTop: number
-  padBottom: number
-  kind: number
-}
-
-export function writeInstance(buf: ArrayBuffer, instanceIndex: number, inst: Instance) {
-  const base = instanceIndex * 56
-  const dv = new DataView(buf)
-  dv.setFloat32(base + 0, inst.bp1Hi, true)
-  dv.setFloat32(base + 4, inst.bp1Lo, true)
-  dv.setFloat32(base + 8, inst.bp2Hi, true)
-  dv.setFloat32(base + 12, inst.bp2Lo, true)
-  dv.setFloat32(base + 16, inst.bp3Hi, true)
-  dv.setFloat32(base + 20, inst.bp3Lo, true)
-  dv.setFloat32(base + 24, inst.bp4Hi, true)
-  dv.setFloat32(base + 28, inst.bp4Lo, true)
-  dv.setUint32(base + 32, inst.color, true)
-  dv.setFloat32(base + 36, inst.featureId, true)
-  dv.setFloat32(base + 40, inst.queryTotalLength, true)
-  dv.setFloat32(base + 44, inst.padTop, true)
-  dv.setFloat32(base + 48, inst.padBottom, true)
-  dv.setFloat32(base + 52, inst.kind, true)
-}

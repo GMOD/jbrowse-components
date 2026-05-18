@@ -94,19 +94,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_direction', components: 1, type: 'float', offsetBytes: 8, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 12, integer: true },
 ]
-
-export interface ArrowInstance {
-  x: number
-  y: number
-  direction: number
-  color: number
-}
-
-export function writeArrowInstance(buf: ArrayBuffer, instanceIndex: number, inst: ArrowInstance) {
-  const base = instanceIndex * 16
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.x, true)
-  dv.setFloat32(base + 4, inst.y, true)
-  dv.setFloat32(base + 8, inst.direction, true)
-  dv.setUint32(base + 12, inst.color, true)
-}

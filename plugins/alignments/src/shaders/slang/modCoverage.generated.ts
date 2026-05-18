@@ -367,21 +367,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_packedColor', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_relDepth', components: 1, type: 'float', offsetBytes: 16, integer: false },
 ]
-
-export interface Instance {
-  position: number
-  yOffset: number
-  segHeight: number
-  packedColor: number
-  relDepth: number
-}
-
-export function writeInstance(buf: ArrayBuffer, instanceIndex: number, inst: Instance) {
-  const base = instanceIndex * 20
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.position, true)
-  dv.setFloat32(base + 4, inst.yOffset, true)
-  dv.setFloat32(base + 8, inst.segHeight, true)
-  dv.setUint32(base + 12, inst.packedColor, true)
-  dv.setFloat32(base + 16, inst.relDepth, true)
-}

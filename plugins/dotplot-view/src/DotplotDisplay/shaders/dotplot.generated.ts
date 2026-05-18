@@ -111,33 +111,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_padV', components: 1, type: 'float', offsetBytes: 36, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 40, integer: true },
 ]
-
-export interface DotplotInstance {
-  x1Hi: number
-  x1Lo: number
-  y1Hi: number
-  y1Lo: number
-  x2Hi: number
-  x2Lo: number
-  y2Hi: number
-  y2Lo: number
-  padH: number
-  padV: number
-  color: number
-}
-
-export function writeDotplotInstance(buf: ArrayBuffer, instanceIndex: number, inst: DotplotInstance) {
-  const base = instanceIndex * 44
-  const dv = new DataView(buf)
-  dv.setFloat32(base + 0, inst.x1Hi, true)
-  dv.setFloat32(base + 4, inst.x1Lo, true)
-  dv.setFloat32(base + 8, inst.y1Hi, true)
-  dv.setFloat32(base + 12, inst.y1Lo, true)
-  dv.setFloat32(base + 16, inst.x2Hi, true)
-  dv.setFloat32(base + 20, inst.x2Lo, true)
-  dv.setFloat32(base + 24, inst.y2Hi, true)
-  dv.setFloat32(base + 28, inst.y2Lo, true)
-  dv.setFloat32(base + 32, inst.padH, true)
-  dv.setFloat32(base + 36, inst.padV, true)
-  dv.setUint32(base + 40, inst.color, true)
-}

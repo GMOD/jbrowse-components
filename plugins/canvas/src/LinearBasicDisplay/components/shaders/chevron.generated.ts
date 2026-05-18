@@ -94,20 +94,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_direction', components: 1, type: 'float', offsetBytes: 12, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
 ]
-
-export interface LineInstance {
-  startEnd: [number, number]
-  y: number
-  direction: number
-  color: number
-}
-
-export function writeLineInstance(buf: ArrayBuffer, instanceIndex: number, inst: LineInstance) {
-  const base = instanceIndex * 20
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.startEnd[0], true)
-  dv.setUint32(base + 4, inst.startEnd[1], true)
-  dv.setFloat32(base + 8, inst.y, true)
-  dv.setFloat32(base + 12, inst.direction, true)
-  dv.setUint32(base + 16, inst.color, true)
-}

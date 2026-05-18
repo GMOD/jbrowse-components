@@ -367,24 +367,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_syBot', components: 1, type: 'float', offsetBytes: 12, integer: false },
   { name: 'a_rgba', components: 4, type: 'float', offsetBytes: 16, integer: false },
 ]
-
-export interface Instance {
-  sx1: number
-  syTop: number
-  sx2: number
-  syBot: number
-  rgba: [number, number, number, number]
-}
-
-export function writeInstance(buf: ArrayBuffer, instanceIndex: number, inst: Instance) {
-  const base = instanceIndex * 32
-  const dv = new DataView(buf)
-  dv.setFloat32(base + 0, inst.sx1, true)
-  dv.setFloat32(base + 4, inst.syTop, true)
-  dv.setFloat32(base + 8, inst.sx2, true)
-  dv.setFloat32(base + 12, inst.syBot, true)
-  dv.setFloat32(base + 16, inst.rgba[0], true)
-  dv.setFloat32(base + 20, inst.rgba[1], true)
-  dv.setFloat32(base + 24, inst.rgba[2], true)
-  dv.setFloat32(base + 28, inst.rgba[3], true)
-}

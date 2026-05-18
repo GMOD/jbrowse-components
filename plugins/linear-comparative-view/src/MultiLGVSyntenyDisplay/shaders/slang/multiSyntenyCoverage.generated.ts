@@ -162,17 +162,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_minDepth', components: 1, type: 'float', offsetBytes: 4, integer: false },
   { name: 'a_maxDepth', components: 1, type: 'float', offsetBytes: 8, integer: false },
 ]
-
-export interface CovBin {
-  position: number
-  minDepth: number
-  maxDepth: number
-}
-
-export function writeCovBin(buf: ArrayBuffer, instanceIndex: number, inst: CovBin) {
-  const base = instanceIndex * 12
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.position, true)
-  dv.setFloat32(base + 4, inst.minDepth, true)
-  dv.setFloat32(base + 8, inst.maxDepth, true)
-}

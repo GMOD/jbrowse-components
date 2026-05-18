@@ -83,19 +83,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_rowIndex', components: 1, type: 'uint', offsetBytes: 8, integer: true },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 12, integer: true },
 ]
-
-export interface MafInstance {
-  startBp: number
-  endBp: number
-  rowIndex: number
-  color: number
-}
-
-export function writeMafInstance(buf: ArrayBuffer, instanceIndex: number, inst: MafInstance) {
-  const base = instanceIndex * 16
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.startBp, true)
-  dv.setUint32(base + 4, inst.endBp, true)
-  dv.setUint32(base + 8, inst.rowIndex, true)
-  dv.setUint32(base + 12, inst.color, true)
-}

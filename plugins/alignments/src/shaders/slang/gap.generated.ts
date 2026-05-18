@@ -367,21 +367,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_gapType', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_frequency', components: 1, type: 'float', offsetBytes: 16, integer: false },
 ]
-
-export interface Instance {
-  startOff: number
-  endOff: number
-  y: number
-  gapType: number
-  frequency: number
-}
-
-export function writeInstance(buf: ArrayBuffer, instanceIndex: number, inst: Instance) {
-  const base = instanceIndex * 20
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.startOff, true)
-  dv.setUint32(base + 4, inst.endOff, true)
-  dv.setUint32(base + 8, inst.y, true)
-  dv.setUint32(base + 12, inst.gapType, true)
-  dv.setFloat32(base + 16, inst.frequency, true)
-}

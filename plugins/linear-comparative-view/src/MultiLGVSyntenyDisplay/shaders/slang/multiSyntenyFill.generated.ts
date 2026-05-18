@@ -168,21 +168,3 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_featureId', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
 ]
-
-export interface Instance {
-  startBp: number
-  endBp: number
-  genomeRow: number
-  featureId: number
-  color: number
-}
-
-export function writeInstance(buf: ArrayBuffer, instanceIndex: number, inst: Instance) {
-  const base = instanceIndex * 20
-  const dv = new DataView(buf)
-  dv.setUint32(base + 0, inst.startBp, true)
-  dv.setUint32(base + 4, inst.endBp, true)
-  dv.setUint32(base + 8, inst.genomeRow, true)
-  dv.setUint32(base + 12, inst.featureId, true)
-  dv.setUint32(base + 16, inst.color, true)
-}
