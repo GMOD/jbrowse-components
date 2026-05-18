@@ -20,6 +20,7 @@ import {
 import type {
   CanvasFeatureBackend,
   FeatureRenderBlock,
+  RenderState,
 } from './canvasFeatureBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Canvas2DRenderBlock } from '@jbrowse/core/gpu/canvas2dUtils'
@@ -38,7 +39,7 @@ function bpMapper(block: Canvas2DRenderBlock) {
     bpToScreenPx(bp, rStart, rEnd, screenStartPx, screenEndPx, reversed)
 }
 
-export function drawLines(
+function drawLines(
   ctx: Ctx2D,
   region: RegionRenderData,
   block: Canvas2DRenderBlock,
@@ -86,7 +87,7 @@ export function drawLines(
   }
 }
 
-export function drawRects(
+function drawRects(
   ctx: Ctx2D,
   region: RegionRenderData,
   block: Canvas2DRenderBlock,
@@ -115,7 +116,7 @@ export function drawRects(
   }
 }
 
-export function drawArrows(
+function drawArrows(
   ctx: Ctx2D,
   region: RegionRenderData,
   block: Canvas2DRenderBlock,
@@ -159,7 +160,7 @@ export function drawFeatureBlocks(
   ctx: Ctx2D,
   regions: ReadonlyMap<number, RegionRenderData>,
   blocks: FeatureRenderBlock[],
-  state: { scrollY: number; canvasWidth: number; canvasHeight: number },
+  state: RenderState,
 ) {
   const { canvasWidth, canvasHeight, scrollY } = state
   if (regions.size === 0) {
@@ -190,18 +191,6 @@ export function drawFeatureBlocks(
   }
 }
 
-// One-shot pure entry point used by SVG export per ARCHITECTURE.md "SVG
-// export pipeline". On-screen uses the streamed per-region path via
-// Canvas2DFeatureRenderer because laidOutDataMap entries arrive incrementally.
-export function drawFeaturesToCtx(
-  ctx: Ctx2D,
-  sources: { laidOutDataMap: ReadonlyMap<number, RegionRenderData> },
-  blocks: FeatureRenderBlock[],
-  state: { scrollY: number; canvasWidth: number; canvasHeight: number },
-) {
-  drawFeatureBlocks(ctx, sources.laidOutDataMap, blocks, state)
-}
-
 export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
@@ -220,10 +209,7 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
     this.regions.set(displayedRegionIndex, data)
   }
 
-  renderBlocks(
-    blocks: FeatureRenderBlock[],
-    state: { scrollY: number; canvasWidth: number; canvasHeight: number },
-  ) {
+  renderBlocks(blocks: FeatureRenderBlock[], state: RenderState) {
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     drawFeatureBlocks(this.ctx, this.regions, blocks, state)
   }

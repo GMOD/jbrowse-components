@@ -31,13 +31,13 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, observable } from 'mobx'
 
 import { computeLaidOutData } from './layout.ts'
+import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
-// Pull in RpcRegistry augmentations so rpcManager.call() is typed end-to-end.
-import type {} from '../RenderFeatureDataRPC/GetFeatureDetails.ts'
-import type {} from '../RenderFeatureDataRPC/RenderFeatureData.ts'
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureBackend } from './components/canvasFeatureBackendTypes.ts'
+// rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
+// from it is enough to make rpcManager.call() resolve to the typed args.
 import type {
   FeatureDataResult,
   FlatbushItem,
@@ -156,60 +156,12 @@ export default function baseStateModelFactory(
           configuration: ConfigurationReference(configSchema),
         }),
       )
-      // Migrate legacy snapshot shapes: strip removed FeatureDensityMixin
-      // fields, lift `height` to `heightPreConfig`, and promote the old
-      // per-property `track<Setting>` values into the unified configOverrides
-      // map.
-      .preProcessSnapshot((snap: any) => {
-        if (!snap) {
-          return snap
-        }
-        const {
-          blockState,
-          showLegend,
-          showTooltips,
-          userBpPerPxLimit,
-          userByteSizeLimit,
-          height,
-          trackShowLabels,
-          trackShowDescriptions,
-          trackSubfeatureLabels,
-          trackGeneGlyphMode,
-          trackDisplayMode,
-          trackDisplayDirectionalChevrons,
-          ...rest
-        } = snap
-
-        const migrated: Record<string, unknown> = {}
-        if (trackShowLabels !== undefined) {
-          migrated.showLabels = trackShowLabels
-        }
-        if (trackShowDescriptions !== undefined) {
-          migrated.showDescriptions = trackShowDescriptions
-        }
-        if (trackSubfeatureLabels !== undefined) {
-          migrated.subfeatureLabels = trackSubfeatureLabels
-        }
-        if (trackGeneGlyphMode !== undefined) {
-          migrated.geneGlyphMode = trackGeneGlyphMode
-        }
-        if (trackDisplayMode !== undefined) {
-          migrated.displayMode = trackDisplayMode
-        }
-        if (trackDisplayDirectionalChevrons !== undefined) {
-          migrated.displayDirectionalChevrons = trackDisplayDirectionalChevrons
-        }
-
-        return {
-          ...rest,
-          ...(height !== undefined && rest.heightPreConfig === undefined
-            ? { heightPreConfig: height }
-            : undefined),
-          ...(Object.keys(migrated).length > 0 && {
-            configOverrides: { ...rest.configOverrides, ...migrated },
-          }),
-        }
-      })
+      .preProcessSnapshot(
+        // @ts-expect-error - MST's preProcessSnapshot typing can't verify the
+        // return type against the model creation type
+        (snap: Record<string, unknown> | undefined) =>
+          migrateBasicSnapshot(snap),
+      )
       .volatile(() => ({
         rpcDataMap: observable.map<number, LoadedFeatureData>(),
         // Per-region density stats (featureCount over genomic span) populated
@@ -357,10 +309,7 @@ export default function baseStateModelFactory(
           return {
             displayConfig: {
               ...getConfSnapshot(self.configuration),
-              ...(self.configOverrides as Omit<
-                typeof self.configOverrides,
-                symbol
-              >),
+              ...self.configOverrides,
             } as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,

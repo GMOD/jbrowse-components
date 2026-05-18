@@ -16,7 +16,7 @@ const LAYOUT_Y_PADDING = 5
 // instead of stacking them at y=0. Float32 handles this magnitude losslessly.
 const OFFSCREEN_Y = -1e6
 
-export interface LayoutInputs {
+interface LayoutInputs {
   bpPerPx: number
   regionKeys: Map<number, string>
   showLabels: boolean

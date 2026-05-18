@@ -258,5 +258,5 @@ export default function stateModelFactory(
     })
 }
 
-export type LinearBasicDisplayStateModel = ReturnType<typeof stateModelFactory>
+type LinearBasicDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type LinearBasicDisplayModel = Instance<LinearBasicDisplayStateModel>

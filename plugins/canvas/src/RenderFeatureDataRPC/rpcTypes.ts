@@ -1,5 +1,7 @@
 import type { DisplayConfig } from './renderConfig.ts'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { ThemeOptions } from '@mui/material'
 
 export interface LabelItem {
   text: string
@@ -9,7 +11,6 @@ export interface LabelItem {
 }
 
 export interface RenderFeatureDataArgs {
-  [key: string]: unknown
   sessionId: string
   adapterConfig: Record<string, unknown>
   displayConfig: DisplayConfig
@@ -26,8 +27,35 @@ export interface RenderFeatureDataArgs {
   sequenceAdapter?: Record<string, unknown>
   showOnlyGenes?: boolean
   maxFeatureDensity?: number
+  theme?: ThemeOptions
   stopToken?: StopToken
   statusCallback?: (msg: string) => void
+}
+
+export interface GetFeatureDetailsArgs {
+  sessionId: string
+  adapterConfig: Record<string, unknown>
+  featureId: string
+  region: {
+    refName: string
+    start: number
+    end: number
+    assemblyName: string
+    reversed?: boolean
+  }
+}
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    RenderFeatureData: {
+      args: RenderFeatureDataArgs
+      return: RenderFeatureDataResult
+    }
+    GetCanvasFeatureDetails: {
+      args: GetFeatureDetailsArgs
+      return: { feature?: SimpleFeatureSerialized }
+    }
+  }
 }
 
 export interface FeatureDataResult {

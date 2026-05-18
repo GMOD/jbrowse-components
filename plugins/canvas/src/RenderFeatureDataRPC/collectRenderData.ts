@@ -26,6 +26,7 @@ import type {
 import type { FeatureLayout, PeptideData } from './types.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
+import type { Feat } from 'g2p_mapper'
 
 interface RectData {
   start: number
@@ -197,6 +198,18 @@ function strokeColor(feature: Feature, ctx: RenderContext) {
   return getStrokeColor({ feature, config: ctx.config, theme: ctx.theme })
 }
 
+function featureToFeat(f: Feature): Feat {
+  return {
+    refName: f.get('refName'),
+    start: f.get('start'),
+    end: f.get('end'),
+    type: f.get('type'),
+    strand: f.get('strand'),
+    phase: f.get('phase'),
+    subfeatures: f.get('subfeatures')?.map(featureToFeat),
+  }
+}
+
 function pushBoxRect(
   feature: Feature,
   baseTopPx: number,
@@ -229,8 +242,7 @@ function emitExonRects(
 
   let g2p: Record<number, number> | undefined
   if (protein) {
-    // @ts-expect-error - g2p_mapper types
-    g2p = genomeToTranscriptSeqMapping(transcriptFeature.toJSON()).g2p
+    g2p = genomeToTranscriptSeqMapping(featureToFeat(transcriptFeature)).g2p
   }
 
   for (const childLayout of transcript.children) {

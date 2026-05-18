@@ -48,31 +48,32 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
   const { geneGlyphMode, transcriptTypes, subfeatureLabels } = config
 
-  const heightPx = getFeatureHeightPx(feature, config)
+  const heightPx = getFeatureHeightPx(config)
 
-  // Sort coding transcripts first so they render on top in stacked layout
   let subfeatures = [...(feature.get('subfeatures') ?? [])]
-  const codingStatus = new Map(
-    subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
-  )
-  subfeatures.sort((a, b) => {
-    const aHasCDS = codingStatus.get(a.id())
-    const bHasCDS = codingStatus.get(b.id())
-    if (aHasCDS && !bHasCDS) {
-      return -1
-    }
-    if (!aHasCDS && bHasCDS) {
-      return 1
-    }
-    return 0
-  })
-
   if (geneGlyphMode === 'longest' || geneGlyphMode === 'longestCoding') {
     subfeatures = filterByGeneGlyphMode(
       subfeatures,
       transcriptTypes,
       geneGlyphMode,
     )
+  } else {
+    // Sort coding transcripts first so they render on top in stacked layout.
+    // Skipped for longest/longestCoding which collapse to a single feature.
+    const codingStatus = new Map(
+      subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
+    )
+    subfeatures.sort((a, b) => {
+      const aHasCDS = codingStatus.get(a.id())
+      const bHasCDS = codingStatus.get(b.id())
+      if (aHasCDS && !bHasCDS) {
+        return -1
+      }
+      if (!aHasCDS && bHasCDS) {
+        return 1
+      }
+      return 0
+    })
   }
 
   const transcriptTypeSet = new Set(transcriptTypes)

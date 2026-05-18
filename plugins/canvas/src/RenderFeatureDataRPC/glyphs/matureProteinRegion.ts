@@ -28,11 +28,11 @@ export function hasMatureProteinChildren(feature: Feature) {
 export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
   const { subfeatureLabels } = config
-  const heightPx = getFeatureHeightPx(feature, config)
+  const heightPx = getFeatureHeightPx(config)
 
   const matureProteins = getMatureProteinChildren(feature)
   const sortedChildren = sortByPosition(
-    matureProteins.map(child => layoutChild(child, feature, args)),
+    matureProteins.map(child => layoutChild(child, args)),
   )
 
   const numRows = Math.max(1, sortedChildren.length)

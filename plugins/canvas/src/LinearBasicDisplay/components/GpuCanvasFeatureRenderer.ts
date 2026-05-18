@@ -17,6 +17,7 @@ import { MAX_VISIBLE_CHEVRONS_PER_LINE } from './sharedRendererConstants.ts'
 import type {
   CanvasFeatureBackend,
   FeatureRenderBlock,
+  RenderState,
 } from './canvasFeatureBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
@@ -49,8 +50,6 @@ interface RegionMeta {
   hasArrows: boolean
   outlineColor: number
 }
-
-type RenderState = { scrollY: number; canvasWidth: number; canvasHeight: number }
 
 function drawRegionBlock(
   hal: GpuHal,

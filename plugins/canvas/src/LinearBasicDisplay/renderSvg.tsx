@@ -5,7 +5,7 @@ import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
-import { drawFeaturesToCtx } from './components/Canvas2DFeatureRenderer.ts'
+import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
 import { LABEL_FONT_SIZE } from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -202,16 +202,11 @@ export async function renderSvg(
 
   const renderBlocks = buildRenderBlocks(visibleRegions)
   const featuresNode = paintLayer(totalWidth, height, opts, ctx => {
-    drawFeaturesToCtx(
-      ctx,
-      { laidOutDataMap: model.laidOutDataMap },
-      renderBlocks,
-      {
-        scrollY: 0,
-        canvasWidth: totalWidth,
-        canvasHeight: height,
-      },
-    )
+    drawFeatureBlocks(ctx, model.laidOutDataMap, renderBlocks, {
+      scrollY: 0,
+      canvasWidth: totalWidth,
+      canvasHeight: height,
+    })
   })
   // Labels + peptides always vector — text should remain crisp even when
   // rasterizeLayers is on.

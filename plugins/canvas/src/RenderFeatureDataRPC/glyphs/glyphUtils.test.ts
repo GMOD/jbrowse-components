@@ -77,20 +77,17 @@ describe('sortByPosition', () => {
 
 describe('getFeatureHeightPx', () => {
   it('returns config.featureHeight by default', () => {
-    const feature = mockFeature({ type: 'exon', start: 0, end: 100 })
-    expect(getFeatureHeightPx(feature, mockDisplayConfig())).toBe(10)
+    expect(getFeatureHeightPx(mockDisplayConfig())).toBe(10)
   })
 
   it('applies the compact multiplier', () => {
-    const feature = mockFeature({ type: 'exon', start: 0, end: 100 })
     const config = mockDisplayConfig({ displayMode: 'compact' })
-    expect(getFeatureHeightPx(feature, config)).toBe(6) // 10 * 0.6
+    expect(getFeatureHeightPx(config)).toBe(6) // 10 * 0.6
   })
 
   it('applies the super-compact multiplier', () => {
-    const feature = mockFeature({ type: 'exon', start: 0, end: 100 })
     const config = mockDisplayConfig({ displayMode: 'superCompact' })
-    expect(getFeatureHeightPx(feature, config)).toBe(3) // 10 * 0.3
+    expect(getFeatureHeightPx(config)).toBe(3) // 10 * 0.3
   })
 })
 

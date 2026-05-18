@@ -250,12 +250,12 @@ export function useAminoAcidOverlay(
           continue
         }
 
-        const centerPx = (toScreen(item.startBp) + toScreen(item.endBp)) / 2
+        const pxStart = toScreen(item.startBp)
+        const pxEnd = toScreen(item.endBp)
+        const centerPx = (pxStart + pxEnd) / 2
         const topPx = item.topPx
         const fontSize = Math.min(item.heightPx, 16)
-        const cellWidthPx = Math.abs(
-          toScreen(item.endBp) - toScreen(item.startBp),
-        )
+        const cellWidthPx = Math.abs(pxEnd - pxStart)
         const showIndex = cellWidthPx >= 20
 
         elements.push(

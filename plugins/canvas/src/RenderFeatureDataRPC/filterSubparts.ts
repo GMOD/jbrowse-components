@@ -29,7 +29,7 @@ function utrType(strand: number, isFivePrime: boolean) {
   return 'UTR'
 }
 
-export function makeUTRs(parent: Feature, subs: Feature[]) {
+function makeUTRs(parent: Feature, subs: Feature[]) {
   const subparts = [...subs]
 
   let codeStart = Number.POSITIVE_INFINITY

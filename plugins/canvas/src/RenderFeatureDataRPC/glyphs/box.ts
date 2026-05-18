@@ -3,7 +3,7 @@ import { getFeatureHeightPx } from './glyphUtils.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 
 export function layoutBox(args: LayoutArgs): FeatureLayout {
-  const heightPx = getFeatureHeightPx(args.feature, args.config)
+  const heightPx = getFeatureHeightPx(args.config)
   return {
     feature: args.feature,
     glyphType: 'Box',

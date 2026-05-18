@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
@@ -21,23 +22,7 @@ import type {
 import type { FeatureLayout, PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
-
-const workerTheme = {
-  palette: {
-    text: { secondary: '#666666' },
-    framesCDS: [
-      null,
-      { main: '#FF8080' },
-      { main: '#80FF80' },
-      { main: '#8080FF' },
-      { main: '#8080FF' },
-      { main: '#80FF80' },
-      { main: '#FF8080' },
-    ],
-  },
-} as Theme
 
 export async function executeRenderFeatureData({
   pluginManager,
@@ -56,9 +41,16 @@ export async function executeRenderFeatureData({
     sequenceAdapter,
     showOnlyGenes,
     maxFeatureDensity,
+    theme: themeOptions,
     stopToken,
     statusCallback = () => {},
   } = args
+
+  // Build a full JBrowse theme worker-side from the structurally serializable
+  // ThemeOptions (same pattern as SVG export / ServerSideRendererType). Until
+  // the canvas display wires `theme` into rpcProps, `themeOptions` is undefined
+  // and createJBrowseTheme returns the default theme.
+  const theme = createJBrowseTheme(themeOptions)
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
@@ -153,7 +145,7 @@ export async function executeRenderFeatureData({
         regionStart,
         regionWidth,
         displayConfig,
-        workerTheme,
+        theme,
         !!colorByCDS,
         peptideDataMap,
       ),

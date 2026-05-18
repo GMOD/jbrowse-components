@@ -34,7 +34,7 @@ export interface FlatbushRegionCache {
   cachedReversed?: boolean
 }
 
-export type HitResult =
+type HitResult =
   | { feature: null; subfeature: null }
   | {
       feature: FlatbushItem
@@ -90,7 +90,8 @@ function labelVisibilityChanged(
   b: LabelVisibility,
 ) {
   return (
-    a?.showLabels !== b.showLabels || a?.showDescriptions !== b.showDescriptions
+    a?.showLabels !== b.showLabels ||
+    a.showDescriptions !== b.showDescriptions
   )
 }
 

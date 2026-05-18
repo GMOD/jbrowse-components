@@ -1,34 +1,12 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { renameSingleRegion } from './renameRegion.ts'
+
+import type { GetFeatureDetailsArgs } from './rpcTypes.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
-
-export interface GetFeatureDetailsArgs {
-  [key: string]: unknown
-  sessionId: string
-  adapterConfig: Record<string, unknown>
-  featureId: string
-  region: {
-    refName: string
-    start: number
-    end: number
-    assemblyName: string
-    reversed?: boolean
-  }
-}
-
-declare module '@jbrowse/core/rpc/RpcRegistry' {
-  interface RpcRegistry {
-    GetCanvasFeatureDetails: {
-      args: GetFeatureDetailsArgs
-      return: { feature?: SimpleFeatureSerialized }
-    }
-  }
-}
 
 export default class GetFeatureDetails extends RpcMethodType {
   name = 'GetCanvasFeatureDetails'
@@ -36,42 +14,21 @@ export default class GetFeatureDetails extends RpcMethodType {
   async renameRegionsIfNeeded(
     args: GetFeatureDetailsArgs,
   ): Promise<GetFeatureDetailsArgs> {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
-    if (!assemblyManager) {
-      throw new Error('no assembly manager')
-    }
-
-    const { region, sessionId, adapterConfig } = args
-
-    const result = await renameRegionsIfNeeded(assemblyManager, {
-      sessionId,
-      adapterConfig,
-      regions: [region],
+    const renamedRegion = await renameSingleRegion(this.pluginManager, {
+      sessionId: args.sessionId,
+      adapterConfig: args.adapterConfig,
+      region: args.region,
     })
-
-    // single-region RPC: we pass one region in, get one back
-    const renamedRegion = result.regions[0]
-    if (!renamedRegion) {
-      return args
-    }
-
-    return {
-      ...args,
-      region: renamedRegion,
-    }
+    return renamedRegion ? { ...args, region: renamedRegion } : args
   }
 
-  async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
-    const renamed = await this.renameRegionsIfNeeded(
-      args as GetFeatureDetailsArgs,
-    )
+  async serializeArguments(args: GetFeatureDetailsArgs, rpcDriver: string) {
+    const renamed = await this.renameRegionsIfNeeded(args)
     return super.serializeArguments(renamed, rpcDriver)
   }
 
-  async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { sessionId, adapterConfig, featureId, region } =
-      args as GetFeatureDetailsArgs
+  async execute(args: GetFeatureDetailsArgs, _rpcDriver: string) {
+    const { sessionId, adapterConfig, featureId, region } = args
 
     const dataAdapter = (
       await getAdapter(this.pluginManager, sessionId, adapterConfig)

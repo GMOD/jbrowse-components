@@ -22,7 +22,7 @@ export function sortByPosition(children: FeatureLayout[]) {
   })
 }
 
-export function getFeatureHeightPx(_feature: Feature, config: DisplayConfig) {
+export function getFeatureHeightPx(config: DisplayConfig) {
   const heightMultiplier = HEIGHT_MULTIPLIERS[config.displayMode] ?? 1
   return config.featureHeight * heightMultiplier
 }
@@ -33,15 +33,15 @@ export const STRAND_ARROW_WIDTH = 8
 
 export function layoutChild(
   child: Feature,
-  _parentFeature: Feature,
   args: LayoutArgs,
 ): FeatureLayout {
+  const height = getFeatureHeightPx(args.config)
   return {
     feature: child,
     glyphType: 'Box',
     y: 0,
-    height: getFeatureHeightPx(child, args.config),
-    totalLayoutHeight: getFeatureHeightPx(child, args.config),
+    height,
+    totalLayoutHeight: height,
     children: [],
   }
 }
@@ -53,9 +53,9 @@ export function layoutContainerGlyph(
   args: LayoutArgs,
   subfeatures: Feature[],
 ): FeatureLayout {
-  const heightPx = getFeatureHeightPx(args.feature, args.config)
+  const heightPx = getFeatureHeightPx(args.config)
   const children = sortByPosition(
-    subfeatures.map(child => layoutChild(child, args.feature, args)),
+    subfeatures.map(child => layoutChild(child, args)),
   )
   return {
     feature: args.feature,

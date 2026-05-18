@@ -1,19 +1,8 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type {
-  RenderFeatureDataArgs,
-  RenderFeatureDataResult,
-} from './rpcTypes.ts'
+import { renameSingleRegion } from './renameRegion.ts'
 
-declare module '@jbrowse/core/rpc/RpcRegistry' {
-  interface RpcRegistry {
-    RenderFeatureData: {
-      args: RenderFeatureDataArgs
-      return: RenderFeatureDataResult
-    }
-  }
-}
+import type { RenderFeatureDataArgs } from './rpcTypes.ts'
 
 export default class RenderFeatureData extends RpcMethodType {
   name = 'RenderFeatureData'
@@ -21,37 +10,24 @@ export default class RenderFeatureData extends RpcMethodType {
   async renameRegionsIfNeeded(
     args: RenderFeatureDataArgs,
   ): Promise<RenderFeatureDataArgs> {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
-    if (!assemblyManager) {
-      throw new Error('no assembly manager')
-    }
-
-    const { region, sessionId, adapterConfig } = args
-
-    const result = await renameRegionsIfNeeded(assemblyManager, {
+    const { region, sessionId, adapterConfig, sequenceAdapter } = args
+    const renamedRegion = await renameSingleRegion(this.pluginManager, {
       sessionId,
       adapterConfig,
-      regions: [region],
+      region,
     })
-
-    // single-region RPC: we pass one region in, get one back
-    const renamedRegion = result.regions[0]
     if (!renamedRegion) {
       return args
     }
-
-    let seqAdapterRefName: string | undefined
-    const { sequenceAdapter } = args
-    if (sequenceAdapter) {
-      const seqResult = await renameRegionsIfNeeded(assemblyManager, {
-        sessionId,
-        adapterConfig: sequenceAdapter,
-        regions: [region],
-      })
-      seqAdapterRefName = seqResult.regions[0]?.refName
-    }
-
+    const seqAdapterRefName = sequenceAdapter
+      ? (
+          await renameSingleRegion(this.pluginManager, {
+            sessionId,
+            adapterConfig: sequenceAdapter,
+            region,
+          })
+        )?.refName
+      : undefined
     return {
       ...args,
       region: {
@@ -61,19 +37,17 @@ export default class RenderFeatureData extends RpcMethodType {
     }
   }
 
-  async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
-    const renamed = await this.renameRegionsIfNeeded(
-      args as RenderFeatureDataArgs,
-    )
+  async serializeArguments(args: RenderFeatureDataArgs, rpcDriver: string) {
+    const renamed = await this.renameRegionsIfNeeded(args)
     return super.serializeArguments(renamed, rpcDriver)
   }
 
-  async execute(args: Record<string, unknown>, _rpcDriver: string) {
+  async execute(args: RenderFeatureDataArgs, _rpcDriver: string) {
     const { executeRenderFeatureData } =
       await import('./executeRenderFeatureData.ts')
     return executeRenderFeatureData({
       pluginManager: this.pluginManager,
-      args: args as RenderFeatureDataArgs,
+      args,
     })
   }
 }
