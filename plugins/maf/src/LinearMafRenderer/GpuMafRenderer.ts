@@ -10,7 +10,7 @@ import type {
   MafBackend,
   MafGPURenderState,
   MafRenderBlock,
-  MafRpcDataEntry,
+  MafUploadPayload,
 } from './mafBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
@@ -32,14 +32,14 @@ export class GpuMafRenderer implements MafBackend {
     this.hal = hal
   }
 
-  uploadRegion(displayedRegionIndex: number, data: MafRpcDataEntry) {
+  uploadRegion(displayedRegionIndex: number, data: MafUploadPayload) {
     const { instanceBuffer, instanceCount } = data
     if (instanceCount === 0) {
       this.hal.deleteRegion(displayedRegionIndex)
       this.regionCount.delete(displayedRegionIndex)
     } else {
-      // Buffer is pre-encoded (absolute genomic coords + rowIndex + color).
-      // Upload directly — no re-encoding for rowHeight/proportion changes.
+      // Buffer is pre-encoded on the main thread (see installMafLifecycle).
+      // The shader unpacks absolute genomic coords + rowIndex + color.
       this.hal.uploadBuffer(displayedRegionIndex, PASS_RECT, instanceBuffer, instanceCount)
       this.regionCount.set(displayedRegionIndex, instanceCount)
     }

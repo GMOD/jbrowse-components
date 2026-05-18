@@ -32,6 +32,7 @@ import type { HoveredInfo } from './util.ts'
 import type {
   MafBackend,
   MafGPURenderState,
+  MafGpuProps,
   MafRpcDataEntry,
 } from '../LinearMafRenderer/mafBackendTypes.ts'
 import type {
@@ -151,6 +152,15 @@ export default function stateModelFactory(
       treeMenuAnchor: undefined as
         | { x: number; y: number; names: string[] }
         | undefined,
+      /**
+       * #volatile
+       * Theme-derived per-base color map (lowercase keys: a/c/g/t/n).
+       * Pushed in from the React component via `setColorForBase`. Read by
+       * `gpuProps()` and `mafRenderState`, so theme changes trigger a
+       * main-thread re-encode but never an RPC refetch. Mirrors the
+       * `ColorPalette` pattern in plugin-alignments.
+       */
+      colorForBase: undefined as Record<string, string> | undefined,
     }))
     .actions(self => ({
       /**
@@ -182,6 +192,16 @@ export default function stateModelFactory(
        */
       setMismatchRendering(f: boolean) {
         self.mismatchRendering = f
+      },
+      /**
+       * #action
+       * Push theme-derived base colors in from the React layer. Idempotent
+       * via deepEqual so calling it on every render is fine.
+       */
+      setColorForBase(c: Record<string, string>) {
+        if (!deepEqual(c, self.colorForBase)) {
+          self.colorForBase = c
+        }
       },
       /**
        * #action
@@ -402,7 +422,7 @@ export default function stateModelFactory(
        */
       get mafRenderState(): MafGPURenderState | undefined {
         const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view.initialized || !self.samples) {
+        if (!view.initialized || !self.samples || !self.colorForBase) {
           return undefined
         }
         return {
@@ -412,17 +432,23 @@ export default function stateModelFactory(
           rowProportion: self.rowProportion,
           showAllLetters: self.showAllLetters,
           mismatchRendering: self.mismatchRendering,
+          colorForBase: self.colorForBase,
         }
       },
       /**
        * #method
-       * User-controlled rendering settings; used as cache keys to trigger
-       * refetch when settings change. Must not include fetch-result derivatives.
-       * `showAsUpperCase` is intentionally absent — it only affects client-side
-       * label text, never the data the worker emits.
+       * Inputs to the main-thread GPU instance encoder. Changes here
+       * re-encode in `installMafLifecycle`'s per-region autoruns — no RPC
+       * roundtrip. Intentionally excludes `showAsUpperCase` (label-only)
+       * and view-shape props (rowHeight, rowProportion — driven by shader
+       * uniforms).
        */
-      rpcProps() {
+      gpuProps(): MafGpuProps | undefined {
+        if (!self.colorForBase) {
+          return undefined
+        }
         return {
+          colorForBase: self.colorForBase,
           showAllLetters: self.showAllLetters,
           mismatchRendering: self.mismatchRendering,
         }

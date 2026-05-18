@@ -1,7 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type { MafBlock, MafRegionData } from '../LinearMafRenderer/mafBackendTypes.ts'
@@ -32,9 +31,6 @@ export interface LinearMafGetAlignmentDataArgs {
   adapterConfig: AnyConfigurationModel
   sessionId: string
   region: Region
-  colorForBase: Record<string, string>
-  showAllLetters: boolean
-  mismatchRendering: boolean
   stopToken?: StopToken
   statusCallback?: (msg: string) => void
 }
@@ -43,21 +39,18 @@ export interface LinearMafGetAlignmentDataResult {
   samples: Sample[]
   tree: NewickNode | undefined
   regionData: MafRegionData
-  instanceBuffer: ArrayBuffer
-  instanceCount: number
 }
 
 /**
- * RPC method that fetches MAF alignment features for a single region and
- * returns:
- *   - instanceBuffer: pre-encoded GPU instance buffer (transferable ArrayBuffer)
- *   - instanceCount: number of quads
- *   - regionData: MafRegionData with Uint8Array alignment sequences for
- *                 Canvas2D text/insertion rendering
+ * Fetch MAF alignment features for a single region. Returns raw
+ * `MafRegionData` (one or more blocks; each carries its own ref seq + rows
+ * — see `mafBackendTypes.ts`). The GPU instance buffer is built on the
+ * main thread (see `installMafLifecycle`) from this raw data plus the
+ * current `gpuProps()` — that way color/style toggles never round-trip
+ * through the RPC.
  *
- * All heavy data uses TypedArrays for zero-copy transfer across the worker
- * boundary. The instance buffer is encoded here in the worker so the main
- * thread only needs to upload it to the GPU without re-processing.
+ * All heavy sequence data uses Uint8Array for zero-copy transfer across
+ * the worker boundary.
  */
 export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'LinearMafGetAlignmentData'
@@ -71,31 +64,21 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       args,
       rpcDriverClassName,
     )
-    const {
-      region,
-      adapterConfig,
-      sessionId,
-      colorForBase,
-      showAllLetters,
-      mismatchRendering,
-    } = deserializedArgs
+    const { region, adapterConfig, sessionId } = deserializedArgs
 
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     const adapter = dataAdapter as MafAdapter
 
     // Server is authoritative for samples + tree (derived from track config).
-    // Shipping them with every region response avoids a separate setup RPC and
-    // keeps the client's sample list aligned with the server-side filtering.
+    // Shipping them with every region response avoids a separate setup RPC.
     const { samples, tree } = await adapter.getSamples()
 
     const enc = new TextEncoder()
     const sampleToRow = new Map(samples.map((s, i) => [s.id, i]))
 
     // One MAF feature = one alignment block. A single fetched region can
-    // contain many disjoint blocks at unrelated genomic anchors, so each is
-    // stored independently with its own ref seq + start.
+    // contain many disjoint blocks at unrelated genomic anchors.
     const blocks: MafBlock[] = []
-
     await subscribeToObservable(
       adapter.getFeatures(region, deserializedArgs),
       (feature: Feature) => {
@@ -112,23 +95,6 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       },
     )
 
-    const regionData: MafRegionData = { blocks }
-
-    // Pre-encode the GPU instance buffer on the worker side. Concatenates
-    // runs across all blocks; positions are absolute genomic uint32.
-    const { buffer: instanceBuffer, count: instanceCount } = buildInstanceBuffer({
-      blocks,
-      colorForBase,
-      showAllLetters,
-      mismatchRendering,
-    })
-
-    return {
-      samples,
-      tree,
-      regionData,
-      instanceBuffer,
-      instanceCount,
-    }
+    return { samples, tree, regionData: { blocks } }
   }
 }

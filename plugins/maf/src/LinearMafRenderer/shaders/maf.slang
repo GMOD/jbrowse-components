@@ -2,6 +2,13 @@
 // rectangle (matches, mismatches, gaps). Text rendering is handled by the
 // Canvas2D backend. rowIndex is stored in the instance so row layout can be
 // adjusted purely via uniforms — no refetch on rowHeight change.
+//
+// Colors are baked into the instance (one packed ABGR per run) so the
+// worker / main-thread encoder can run-merge consecutive same-colored cells
+// — keeping the per-region quad count proportional to the number of color
+// transitions, not the number of bases. The encoder runs on the main
+// thread (see `installMafLifecycle`), so theme/setting changes re-encode
+// without an RPC roundtrip.
 //! targets: wgsl, glsl
 
 import hpmath;
@@ -9,10 +16,6 @@ import colorPack;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
-// One instance = one colored horizontal run in the alignment grid.
-// startBp/endBp are absolute genomic uint32 — exact to 4 Gbp.
-// rowIndex is 0-based; Y is computed in the shader from rowHeight/rowProportion
-// uniforms so display height changes never require a refetch.
 struct MafInstance {
   uint startBp  : ATTR0;
   uint endBp    : ATTR1;
@@ -22,7 +25,7 @@ struct MafInstance {
 
 struct Uniforms {
   float3 bpRangeX;      // [bpStartHi, bpStartLo, ±clippedLengthBp]
-  float  canvasHeight;  // CSS px (packed with vec3 into one 16-byte slot)
+  float  canvasHeight;  // CSS px
   float  viewportWidth;
   float  reversed;
   float  zero;          // always 0.0 — prevents hp-split collapse

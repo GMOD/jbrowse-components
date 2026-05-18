@@ -6,13 +6,12 @@ import {
 
 import type { MafBlock } from './mafBackendTypes.ts'
 
-// Pack RGBA (0-255 each) into a single uint32.
-// The shader's unpackRGBA reads R from bits 0-7, G from 8-15, B from 16-23, A from 24-31.
+// Pack RGBA (0-255 each) into a single ABGR uint32. Shader unpacks via
+// unpackRGBA (see colorPack.slang).
 function packRGBA(r: number, g: number, b: number, a = 255): number {
   return ((a & 0xff) * 0x1000000) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff)
 }
 
-// Parse a CSS hex color (#rrggbb or #rgb) to packed uint32.
 function hexToPackedRGBA(css: string): number {
   const hex = css.startsWith('#') ? css.slice(1) : css
   if (hex.length === 3) {
@@ -29,7 +28,7 @@ function hexToPackedRGBA(css: string): number {
 
 const colorCache = new Map<string, number>()
 
-export function resolveColor(css: string): number {
+function resolveColor(css: string): number {
   let packed = colorCache.get(css)
   if (packed === undefined) {
     packed = hexToPackedRGBA(css)
@@ -38,8 +37,8 @@ export function resolveColor(css: string): number {
   return packed
 }
 
-export const MATCH_COLOR = packRGBA(200, 200, 200)  // light grey for matches
-export const GAP_COLOR   = packRGBA(30, 30, 30)     // near-black for gaps
+const MATCH_COLOR = packRGBA(200, 200, 200) // lightgrey for matches
+const GAP_COLOR = packRGBA(30, 30, 30) // dark for gaps
 
 export interface BuildInstancesArgs {
   blocks: MafBlock[]
@@ -56,11 +55,15 @@ interface Run {
 }
 
 /**
- * Encode MAF alignment data into a GPU instance buffer (one quad per color run).
- * Runs of consecutive same-colored bases are merged for efficiency.
- * This runs in the RPC worker — all output is absolute genomic uint32.
- * One region may contain multiple disjoint blocks; runs from all blocks are
- * concatenated into a single flat instance buffer.
+ * Encode MAF alignment data into a GPU instance buffer. One quad per run
+ * of consecutive same-colored cells. Runs on the *main thread* (see
+ * `installMafLifecycle`'s per-region autorun) so theme / setting changes
+ * re-encode without an RPC roundtrip — and merging is by *resolved color*,
+ * which keeps the quad count proportional to color transitions, not bases.
+ *
+ * One region may contain multiple disjoint blocks; runs from all blocks
+ * concatenate into a single flat instance buffer. Output positions are
+ * absolute genomic uint32.
  */
 export function buildInstanceBuffer(args: BuildInstancesArgs): {
   buffer: ArrayBuffer
@@ -88,13 +91,13 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
       }
 
       for (let i = 0; i < len; i++) {
-        // Compare in lowercase so case-insensitive matches work and the
+        // Lowercase compare so case-insensitive matches work and the
         // lowercase-keyed colorForBase lookup hits.
         const refChar = String.fromCharCode(refSeqBytes[i]!).toLowerCase()
         const alnChar = String.fromCharCode(alignmentBytes[i]!).toLowerCase()
 
         if (refChar === '-') {
-          // Insertion in reference: skip (handled separately as insertion markers)
+          // Reference insertion: not rendered as a base cell.
           flushRun(startBp + genomicOffset)
           continue
         }
@@ -102,7 +105,6 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
         const bpPos = startBp + genomicOffset
 
         if (alnChar === '-' || alnChar === ' ') {
-          // Gap in alignment: short black line at mid-height — use a thin run
           flushRun(bpPos)
           runs.push({ startBp: bpPos, endBp: bpPos + 1, rowIndex, color: GAP_COLOR })
           genomicOffset++
@@ -110,7 +112,6 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
         }
 
         const isMatch = alnChar === refChar
-
         let color: number
         if (isMatch && !showAllLetters) {
           color = MATCH_COLOR
@@ -123,7 +124,7 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
         }
 
         if (inRun && color === runColor) {
-          // Extend current run — no push needed, endBp updated on flush
+          // Extend current run.
         } else {
           flushRun(bpPos)
           runStartBp = bpPos
@@ -139,7 +140,6 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
   const count = runs.length
   const buffer = new ArrayBuffer(count * INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buffer)
-
   for (let i = 0; i < count; i++) {
     const r = runs[i]!
     const base = i * INSTANCE_STRIDE_F32
@@ -148,6 +148,5 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
     u32[base + FIELD_OFFSET_F32.rowIndex] = r.rowIndex
     u32[base + FIELD_OFFSET_F32.color] = r.color
   }
-
   return { buffer, count }
 }

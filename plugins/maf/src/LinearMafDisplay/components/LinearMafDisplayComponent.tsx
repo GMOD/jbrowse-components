@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView, getSession, useGpuModelLifecycle } from '@jbrowse/core/util'
@@ -13,6 +13,7 @@ import SvgWrapper from './Sidebar/SvgWrapper.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { useDragSelection } from './useDragSelection.ts'
 import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
+import { getColorBaseMap } from '../../LinearMafRenderer/util.ts'
 import { openSubsequenceWidget } from '../openSubsequenceWidget.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
@@ -28,6 +29,13 @@ const LinearMafDisplay = observer(function (props: {
   const session = getSession(model)
 
   const { canvasRef } = useGpuModelLifecycle(MafRendererFactory, model)
+
+  // Push theme-derived base colors into the model. Drives `gpuProps()`, so
+  // theme changes re-encode on the main thread (no RPC refetch).
+  const colorForBase = useMemo(() => getColorBaseMap(theme), [theme])
+  useEffect(() => {
+    model.setColorForBase(colorForBase)
+  }, [model, colorForBase])
 
   const {
     isDragging,

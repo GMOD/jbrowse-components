@@ -8,18 +8,18 @@ import type {
   MafBackend,
   MafGPURenderState,
   MafRenderBlock,
-  MafRpcDataEntry,
+  MafUploadPayload,
 } from './mafBackendTypes.ts'
 
 export class Canvas2DMafRenderer implements MafBackend {
   private canvas: HTMLCanvasElement
-  private regions = new Map<number, MafRpcDataEntry>()
+  private regions = new Map<number, MafUploadPayload>()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
 
-  uploadRegion(displayedRegionIndex: number, data: MafRpcDataEntry) {
+  uploadRegion(displayedRegionIndex: number, data: MafUploadPayload) {
     this.regions.set(displayedRegionIndex, data)
   }
 
