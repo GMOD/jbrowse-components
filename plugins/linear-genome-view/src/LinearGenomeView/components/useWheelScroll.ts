@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 interface GenomeViewModel {
   bpPerPx: number
   scrollZoom?: boolean
-  zoomTo: (bpPerPx: number, clientX?: number) => void
+  zoomTo: (bpPerPx: number, offset?: number) => void
   horizontalScroll: (delta: number) => void
 }
 
