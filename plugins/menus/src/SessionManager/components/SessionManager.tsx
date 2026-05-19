@@ -42,7 +42,81 @@ const SessionManager = observer(function SessionManager({
       createdAt: r.createdAt,
       fav: r.favorite,
     }))
-    .filter(f => (showOnlyFavs ? f.fav : true))
+    .filter(f => !showOnlyFavs || f.fav)
+
+  function handleDeleteOld() {
+    const toDelete = (session.savedSessionMetadata ?? []).filter(
+      elt => differenceInDays(Date.now(), elt.createdAt) > 1 && !elt.favorite,
+    )
+    for (const elt of toDelete) {
+      session.deleteSavedSession(elt.id)
+    }
+    session.notify(`${toDelete.length} sessions deleted`, 'info')
+  }
+
+  const columns = [
+    {
+      field: 'fav',
+      headerName: 'Fav',
+      width: 20,
+      renderCell: ({ row }: { row: { id: string; fav: boolean } }) => (
+        <IconButton
+          onClick={() => {
+            session.setSavedSessionFavorite(row.id, !row.fav)
+          }}
+        >
+          {row.fav ? <StarIcon /> : <StarBorderIcon />}
+        </IconButton>
+      ),
+    },
+    {
+      field: 'name',
+      headerName: 'Name',
+      editable: true,
+      width: measureGridWidth((rows ?? []).map(r => r.name)),
+      renderCell: ({ row }: { row: { id: string; name: string } }) => (
+        <>
+          <Link
+            href="#"
+            onClick={event => {
+              event.preventDefault()
+              session.activateSession(row.id)
+            }}
+          >
+            {row.name}
+          </Link>
+          {session.id === row.id ? ' (current)' : ''}
+        </>
+      ),
+    },
+    {
+      headerName: 'Created at',
+      field: 'createdAt',
+      renderCell: ({ row }: { row: { createdAt: Date } }) => (
+        <Tooltip
+          disableInteractive
+          slotProps={{ transition: { timeout: 0 } }}
+          title={row.createdAt.toLocaleString()}
+        >
+          <div>{formatDistanceToNow(row.createdAt, { addSuffix: true })}</div>
+        </Tooltip>
+      ),
+    },
+    {
+      field: 'delete',
+      width: 10,
+      headerName: 'Delete',
+      renderCell: ({ row }: { row: { id: string } }) => (
+        <IconButton
+          onClick={() => {
+            session.deleteSavedSession(row.id)
+          }}
+        >
+          <DeleteIcon />
+        </IconButton>
+      ),
+    },
+  ]
 
   return (
     <div>
@@ -58,25 +132,7 @@ const SessionManager = observer(function SessionManager({
           }
           label="Show favorites only?"
         />
-
-        <Button
-          variant="contained"
-          onClick={() => {
-            let i = 0
-            if (session.savedSessionMetadata) {
-              for (const elt of session.savedSessionMetadata) {
-                if (
-                  differenceInDays(Date.now(), elt.createdAt) > 1 &&
-                  !elt.favorite
-                ) {
-                  session.deleteSavedSession(elt.id)
-                  i++
-                }
-              }
-            }
-            session.notify(`${i} sessions deleted`, 'info')
-          }}
-        >
+        <Button variant="contained" onClick={() => { handleDeleteOld() }}>
           Delete non-fav sessions older than 1 day?
         </Button>
       </div>
@@ -87,83 +143,9 @@ const SessionManager = observer(function SessionManager({
             columnHeaderHeight={35}
             rowHeight={25}
             hideFooter={rows.length < 100}
-            slotProps={{
-              toolbar: {
-                showQuickFilter: true,
-              },
-            }}
+            slotProps={{ toolbar: { showQuickFilter: true } }}
             rows={rows}
-            columns={[
-              {
-                field: 'fav',
-                headerName: 'Fav',
-                width: 20,
-                renderCell: ({ row }) => (
-                  <IconButton
-                    onClick={() => {
-                      session.setSavedSessionFavorite(row.id, !row.fav)
-                    }}
-                  >
-                    {row.fav ? <StarIcon /> : <StarBorderIcon />}
-                  </IconButton>
-                ),
-              },
-              {
-                field: 'name',
-                headerName: 'Name',
-                editable: true,
-                width: measureGridWidth(rows.map(r => r.name)),
-                renderCell: ({ row }) => (
-                  <>
-                    <Link
-                      href="#"
-                      onClick={event => {
-                        event.preventDefault()
-                        session.activateSession(row.id)
-                      }}
-                    >
-                      {row.name}
-                    </Link>
-                    {session.id === row.id ? ' (current)' : ''}
-                  </>
-                ),
-              },
-              {
-                headerName: 'Created at',
-                field: 'createdAt',
-                renderCell: ({ row }) => (
-                  <Tooltip
-                    disableInteractive
-                    slotProps={{
-                      transition: {
-                        timeout: 0,
-                      },
-                    }}
-                    title={row.createdAt.toLocaleString()}
-                  >
-                    <div>
-                      {formatDistanceToNow(row.createdAt, {
-                        addSuffix: true,
-                      })}
-                    </div>
-                  </Tooltip>
-                ),
-              },
-              {
-                field: 'delete',
-                width: 10,
-                headerName: 'Delete',
-                renderCell: ({ row }) => (
-                  <IconButton
-                    onClick={() => {
-                      session.deleteSavedSession(row.id)
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                ),
-              },
-            ]}
+            columns={columns}
           />
         </DataGridFlexContainer>
       ) : (
