@@ -9,7 +9,7 @@ const ColorBySelector = observer(function ColorBySelector({
 }: {
   model: LinearSyntenyViewModel
 }) {
-  const { colorBy } = model
+  const { colorBy, opacityByIdentity } = model
 
   return (
     <CascadingMenuButton
@@ -63,6 +63,16 @@ const ColorBySelector = observer(function ColorBySelector({
           },
           helpText:
             'Color alignments by sequence identity percentage. Higher identity matches appear in warmer colors, lower identity matches appear cooler. Useful for identifying highly conserved vs divergent regions.',
+        },
+        {
+          label: 'Fade by identity',
+          type: 'checkbox',
+          checked: opacityByIdentity,
+          onClick: () => {
+            model.setOpacityByIdentity(!opacityByIdentity)
+          },
+          helpText:
+            'Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel. Combines with any color scheme.',
         },
       ]}
     >

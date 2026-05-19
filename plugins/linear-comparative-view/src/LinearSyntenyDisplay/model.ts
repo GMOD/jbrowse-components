@@ -370,7 +370,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get computedColors() {
         const { instanceData, featureData } = self
-        const { colorBy } = getContainingView(self) as LinearSyntenyViewModel
+        const view = getContainingView(self) as LinearSyntenyViewModel
+        const { colorBy, opacityByIdentity } = view
         if (!instanceData || !featureData) {
           return undefined
         }
@@ -383,7 +384,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           colorBy,
           syriTypes: this.syriTypesForColoring,
           identities:
-            colorBy === 'identity' ? featureData.identities : undefined,
+            colorBy === 'identity' || opacityByIdentity
+              ? featureData.identities
+              : undefined,
+          opacityByIdentity,
         })
       },
       /**

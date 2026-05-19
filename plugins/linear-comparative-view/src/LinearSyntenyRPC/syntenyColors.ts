@@ -127,6 +127,7 @@ export function computeSyntenyColors({
   colorBy,
   syriTypes,
   identities,
+  opacityByIdentity,
 }: {
   kinds: Uint8Array
   featureIdx: Uint32Array
@@ -136,12 +137,14 @@ export function computeSyntenyColors({
   colorBy: string
   syriTypes?: readonly SyriType[]
   identities?: Float32Array
+  opacityByIdentity?: boolean
 }) {
   const colorFn = createColorFunction(colorBy, syriTypes, identities)
   const indelColors = buildIndelColors(colorBy)
   const colorI = indelColors[CIGAR_I] ?? DEFAULT_COLOR
   const colorD = indelColors[CIGAR_D] ?? DEFAULT_COLOR
   const colorN = indelColors[CIGAR_N] ?? DEFAULT_COLOR
+  const fadeByIdentity = opacityByIdentity && identities
   const out = new Uint32Array(instanceCount)
 
   for (let i = 0; i < instanceCount; i++) {
@@ -159,7 +162,19 @@ export function computeSyntenyColors({
     } else {
       const f = featureIdx[i]!
       const base = colorFn(strands[f]!, refNames[f]!, f)
-      out[i] = kind === KIND_BASE_HIDDEN ? base & 0x00ffffff : base
+      if (kind === KIND_BASE_HIDDEN) {
+        out[i] = base & 0x00ffffff
+      } else if (fadeByIdentity) {
+        const id = identities[f]!
+        // Identity in [0,1] -> alpha byte in [0x4c, 0xff] (30% floor so
+        // low-identity blocks remain perceptible). Unknown identity (-1)
+        // gets full alpha.
+        const alphaByte =
+          id < 0 ? 0xff : Math.max(0x4c, Math.round(id * 255))
+        out[i] = (base & 0x00ffffff) | (alphaByte << 24)
+      } else {
+        out[i] = base
+      }
     }
   }
   return out

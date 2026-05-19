@@ -79,6 +79,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         colorBy: types.optional(types.string, 'default'),
         /**
          * #property
+         * Fade alignment blocks by per-feature identity (lower identity = more
+         * transparent). Orthogonal to colorBy — combines with strand/query/syri
+         * to surface identity-dropoff zones without consuming the color channel.
+         */
+        opacityByIdentity: types.optional(types.boolean, false),
+        /**
+         * #property
          * used for initializing the view from a session snapshot. tracks is
          * 2D — outer index is the level (the gap between views[i] and
          * views[i+1]), so a 3-way view has two entries.
@@ -212,6 +219,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setColorBy(arg: string) {
         self.colorBy = arg
+      },
+      /**
+       * #action
+       */
+      setOpacityByIdentity(arg: boolean) {
+        self.opacityByIdentity = arg
       },
       /**
        * #action
