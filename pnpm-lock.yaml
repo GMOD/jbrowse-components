@@ -692,6 +692,9 @@ importers:
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

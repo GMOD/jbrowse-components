@@ -1,19 +1,21 @@
 import { BamRecord } from '@gmod/bam'
 
-import { forEachMismatchNumeric } from './forEachMismatchNumeric.ts'
-import { CHAR_FROM_CODE, CIGAR_H, CIGAR_S } from '../shared/cigarUtil.ts'
-import { decodeSeq } from '../shared/decodeSeq.ts'
 import {
+  CHAR_FROM_CODE,
+  CIGAR_H,
+  CIGAR_S,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
   MISMATCH_TYPE,
   SOFTCLIP_TYPE,
-} from '../shared/forEachMismatchTypes.ts'
+  forEachMismatchNumeric,
+} from '@jbrowse/cigar-utils'
+
+import { decodeSeq } from '../shared/decodeSeq.ts'
 import { convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type BamAdapter from './BamAdapter.ts'
-import type { MismatchCallback } from '../shared/forEachMismatchTypes.ts'
-import type { Mismatch } from '@jbrowse/alignments-core'
+import type { Mismatch, MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class BamSlightlyLazyFeature

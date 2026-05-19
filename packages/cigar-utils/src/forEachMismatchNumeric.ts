@@ -1,3 +1,4 @@
+import { SEQRET, SEQRET_NUMERIC_DECODER } from './bamSeqDecoder.ts'
 import {
   CIGAR_D,
   CIGAR_H,
@@ -6,9 +7,7 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-  SEQRET,
-  SEQRET_NUMERIC_DECODER,
-} from '../shared/cigarUtil.ts'
+} from './cigarConstants.ts'
 import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
@@ -16,9 +15,9 @@ import {
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
-} from '../shared/forEachMismatchTypes.ts'
+} from './mismatchCallback.ts'
 
-import type { MismatchCallback } from '../shared/forEachMismatchTypes.ts'
+import type { MismatchCallback } from './mismatchCallback.ts'
 
 /**
  * Core mismatch iteration logic for BAM records.

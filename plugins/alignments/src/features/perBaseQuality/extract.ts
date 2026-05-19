@@ -6,7 +6,7 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-} from '../../shared/cigarUtil.ts'
+} from '@jbrowse/cigar-utils'
 
 import type { PerBaseQualityEntry } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'

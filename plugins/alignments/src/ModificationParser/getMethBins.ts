@@ -8,7 +8,7 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-} from '../shared/cigarUtil.ts'
+} from '@jbrowse/cigar-utils'
 
 import type { getModPositions } from './getModPositions.ts'
 

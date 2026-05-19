@@ -4,11 +4,27 @@ export {
   CIGAR_H,
   CIGAR_I,
   CIGAR_M,
+  CIGAR_M_EQ_MASK,
   CIGAR_N,
   CIGAR_P,
   CIGAR_S,
   CIGAR_X,
 } from './cigarConstants.ts'
+export {
+  CHAR_FROM_CODE,
+  SEQRET,
+  SEQRET_NUMERIC_DECODER,
+} from './bamSeqDecoder.ts'
+export { forEachMismatchNumeric } from './forEachMismatchNumeric.ts'
+export {
+  DELETION_TYPE,
+  HARDCLIP_TYPE,
+  INSERTION_TYPE,
+  MISMATCH_TYPE,
+  SKIP_TYPE,
+  SOFTCLIP_TYPE,
+} from './mismatchCallback.ts'
+export type { MismatchCallback } from './mismatchCallback.ts'
 export {
   visitCigarOps,
   visitCigarRenderedSegments,

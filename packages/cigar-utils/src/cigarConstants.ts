@@ -8,3 +8,7 @@ export const CIGAR_H = 5
 export const CIGAR_P = 6
 export const CIGAR_EQ = 7
 export const CIGAR_X = 8
+
+// Bitmask for CIGAR operation categories (use with: (1 << op) & MASK)
+// Alignment match ops (M=0, ==7) — may contain mismatches, need MD tag
+export const CIGAR_M_EQ_MASK = 0b10000001 // (1<<0)|(1<<7) = 129

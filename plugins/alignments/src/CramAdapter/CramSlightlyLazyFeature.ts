@@ -1,18 +1,18 @@
-import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
-import { CHAR_FROM_CODE } from '../shared/cigarUtil.ts'
 import {
+  CHAR_FROM_CODE,
   DELETION_TYPE,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
-} from '../shared/forEachMismatchTypes.ts'
+} from '@jbrowse/cigar-utils'
+
+import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
 import { cacheGetter, convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type CramAdapter from './CramAdapter.ts'
-import type { MismatchCallback } from '../shared/forEachMismatchTypes.ts'
-import type { Mismatch } from '@jbrowse/alignments-core'
+import type { Mismatch, MismatchCallback } from '@jbrowse/cigar-utils'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
