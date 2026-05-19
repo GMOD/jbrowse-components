@@ -7,7 +7,6 @@ import {
   SimpleFeature,
   getContainingTrack,
   getContainingView,
-  getEnv,
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
@@ -21,7 +20,6 @@ import { TreeSidebarMixin, clusterLayout } from '@jbrowse/tree-sidebar'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { observable } from 'mobx'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
@@ -37,7 +35,7 @@ import {
   makeResolutionAndSummarySubMenus,
   makeScaleTypeSubMenu,
 } from '../shared/wiggleMenuItems.ts'
-import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
+import { getScale } from '../util.ts'
 
 import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -97,7 +95,6 @@ export default function stateModelFactory(
       makeWigglePreProcessSnapshot({ multiWiggle: true }),
     )
     .volatile(() => ({
-      rpcDataMap: observable.map<number, WiggleDataResult>(),
       sourcesVolatile: [] as SourceInfo[],
       featureUnderMouse: undefined as
         | {
@@ -168,62 +165,8 @@ export default function stateModelFactory(
         }))
       },
 
-      get hasResolution() {
-        const adapterConfig = self.adapterConfig as { type: string }
-        const { pluginManager } = getEnv(self)
-        return (
-          pluginManager
-            .getAdapterType(adapterConfig.type)
-            ?.adapterCapabilities.includes('hasResolution') ?? false
-        )
-      },
-
-      get visibleScoreRange() {
-        const view = getContainingView(self) as LGV
-        if (!view.initialized || self.rpcDataMap.size === 0) {
-          return undefined
-        }
-        const numStdDev = self.getConfWithOverride<number>('numStdDev')
-        // Use coarseDynamicBlocks (500ms debounced) instead of visibleRegions
-        // so autoscale doesn't recompute on every animation frame during zoom.
-        const visibleEntries = view.coarseDynamicBlocks.flatMap(block => {
-          const regionData = self.rpcDataMap.get(block.displayedRegionIndex!)
-          if (!regionData) {
-            return []
-          }
-          const visStart = Math.floor(block.start)
-          const visEnd = Math.ceil(block.end)
-          return regionData.sources.map(source => ({
-            visStart,
-            visEnd,
-            data: source,
-          }))
-        })
-        const allEntries = [...self.rpcDataMap.values()].flatMap(regionData =>
-          regionData.sources.map(source => ({ data: source })),
-        )
-        return computeAutoscaleDomain(
-          self.autoscaleType,
-          self.summaryScoreMode,
-          numStdDev,
-          visibleEntries,
-          allEntries,
-        )
-      },
     }))
     .views(self => ({
-      get domain() {
-        const range = self.visibleScoreRange
-        if (!range) {
-          return undefined
-        }
-        return getNiceDomain({
-          domain: range,
-          bounds: [self.minScoreConfig, self.maxScoreConfig],
-          scaleType: self.scaleType,
-        })
-      },
-
       get numSources() {
         return self.sources.length
       },
@@ -343,11 +286,6 @@ export default function stateModelFactory(
             color: s.color,
           }))
         }
-      },
-
-      clearDisplaySpecificData() {
-        self.rpcDataMap.clear()
-        self.setLoadedBpPerPx(undefined)
       },
 
       startGpuBackendLifecycle(backend: WiggleBackend) {

@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -10,7 +10,6 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import PaletteIcon from '@mui/icons-material/Palette'
-import { observable } from 'mobx'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
@@ -25,8 +24,6 @@ import {
 import {
   SINGLE_WIGGLE_SOURCE_NAME,
   YSCALEBAR_LABEL_OFFSET,
-  computeAutoscaleDomain,
-  getNiceDomain,
   getScale,
   isDefaultBicolor,
 } from '../util.ts'
@@ -72,7 +69,6 @@ export default function stateModelFactory(
       makeWigglePreProcessSnapshot(),
     )
     .volatile(() => ({
-      rpcDataMap: observable.map<number, WiggleDataResult>(),
       featureUnderMouse: undefined as
         | {
             refName: string
@@ -101,63 +97,6 @@ export default function stateModelFactory(
     .views(self => ({
       get effectiveBicolorPivot() {
         return isDefaultBicolor(self.color) ? self.bicolorPivot : -Infinity
-      },
-
-      get hasResolution() {
-        const adapterConfig = self.adapterConfig as { type: string }
-        const { pluginManager } = getEnv(self)
-        return (
-          pluginManager
-            .getAdapterType(adapterConfig.type)
-            ?.adapterCapabilities.includes('hasResolution') ?? false
-        )
-      },
-
-      get visibleScoreRange() {
-        const view = getContainingView(self) as LGV
-        if (!view.initialized || self.rpcDataMap.size === 0) {
-          return undefined
-        }
-        const numStdDev = self.getConfWithOverride<number>('numStdDev')
-        // Use coarseDynamicBlocks (500ms debounced) instead of visibleRegions
-        // so autoscale doesn't recompute on every animation frame during zoom.
-        const visibleEntries = view.coarseDynamicBlocks.flatMap(block => {
-          const regionData = self.rpcDataMap.get(block.displayedRegionIndex!)
-          const source = regionData?.sources[0]
-          if (!source) {
-            return []
-          }
-          return [
-            {
-              visStart: Math.floor(block.start),
-              visEnd: Math.ceil(block.end),
-              data: source,
-            },
-          ]
-        })
-        const allEntries = [...self.rpcDataMap.values()].flatMap(regionData =>
-          regionData.sources[0] ? [{ data: regionData.sources[0] }] : [],
-        )
-        return computeAutoscaleDomain(
-          self.autoscaleType,
-          self.summaryScoreMode,
-          numStdDev,
-          visibleEntries,
-          allEntries,
-        )
-      },
-    }))
-    .views(self => ({
-      get domain() {
-        const range = self.visibleScoreRange
-        if (!range) {
-          return undefined
-        }
-        return getNiceDomain({
-          domain: range,
-          bounds: [self.minScoreConfig, self.maxScoreConfig],
-          scaleType: self.scaleType,
-        })
       },
     }))
     .views(self => ({
@@ -253,11 +192,6 @@ export default function stateModelFactory(
     .actions(self => ({
       setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
         self.rpcDataMap.set(displayedRegionIndex, data)
-      },
-
-      clearDisplaySpecificData() {
-        self.rpcDataMap.clear()
-        self.setLoadedBpPerPx(undefined)
       },
 
       reload() {

@@ -2,10 +2,17 @@ import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
+  getEnv,
   measureText,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ConfigOverrideMixin } from '@jbrowse/plugin-linear-genome-view'
+import { observable } from 'mobx'
+
+import { computeAutoscaleDomain, getNiceDomain } from '../util.ts'
+
+import type { WiggleDataResult } from '../util.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Shared mixin for LinearWiggleDisplay and MultiLinearWiggleDisplay. Owns
 // score/scale/color config getters & setters, loadedBpPerPx, and the
@@ -23,6 +30,7 @@ export function WiggleCommonMixin() {
     )
     .volatile(() => ({
       loadedBpPerPx: undefined as number | undefined,
+      rpcDataMap: observable.map<number, WiggleDataResult>(),
     }))
     .views(self => ({
       get scalebarOverlapLeft() {
@@ -105,6 +113,73 @@ export function WiggleCommonMixin() {
         }
         const view = getContainingView(self) as unknown as { bpPerPx: number }
         return view.bpPerPx === self.loadedBpPerPx
+      },
+    }))
+    .views(self => ({
+      get hasResolution() {
+        const { pluginManager } = getEnv(self)
+        const adapterConfig = getConf(
+          getContainingTrack(self),
+          'adapter',
+        ) as { type: string }
+        return (
+          pluginManager
+            .getAdapterType(adapterConfig.type)
+            ?.adapterCapabilities.includes('hasResolution') ?? false
+        )
+      },
+    }))
+    .views(self => ({
+      get visibleScoreRange() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized || self.rpcDataMap.size === 0) {
+          return undefined
+        }
+        const numStdDev = self.getConfWithOverride<number>('numStdDev')
+        // Use coarseDynamicBlocks (500ms debounced) instead of visibleRegions
+        // so autoscale doesn't recompute on every animation frame during zoom.
+        const visibleEntries = view.coarseDynamicBlocks.flatMap(block => {
+          const regionData = self.rpcDataMap.get(block.displayedRegionIndex!)
+          if (!regionData) {
+            return []
+          }
+          const visStart = Math.floor(block.start)
+          const visEnd = Math.ceil(block.end)
+          return regionData.sources.map(source => ({
+            visStart,
+            visEnd,
+            data: source,
+          }))
+        })
+        const allEntries = [...self.rpcDataMap.values()].flatMap(regionData =>
+          regionData.sources.map(source => ({ data: source })),
+        )
+        return computeAutoscaleDomain(
+          self.autoscaleType,
+          self.summaryScoreMode,
+          numStdDev,
+          visibleEntries,
+          allEntries,
+        )
+      },
+    }))
+    .views(self => ({
+      get domain() {
+        const range = self.visibleScoreRange
+        if (!range) {
+          return undefined
+        }
+        return getNiceDomain({
+          domain: range,
+          bounds: [self.minScoreConfig, self.maxScoreConfig],
+          scaleType: self.scaleType,
+        })
+      },
+    }))
+    .actions(self => ({
+      clearDisplaySpecificData() {
+        self.rpcDataMap.clear()
+        self.setLoadedBpPerPx(undefined)
       },
     }))
 }
