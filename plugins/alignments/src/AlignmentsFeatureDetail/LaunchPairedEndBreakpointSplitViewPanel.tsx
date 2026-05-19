@@ -1,15 +1,12 @@
-import { lazy } from 'react'
-
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
-import { getAssemblyName } from '@jbrowse/sv-core'
+import {
+  getAssemblyName,
+  launchBreakpointSplitView,
+} from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
-
-const BreakpointSplitViewChoiceDialog = lazy(
-  () => import('./BreakpointSplitViewChoiceDialog.tsx'),
-)
 
 export default function LaunchPairedEndBreakpointSplitViewPanel({
   model,
@@ -25,42 +22,34 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
   return assemblyName && next_ref !== undefined && next_pos !== undefined ? (
     <div>
       <Typography>Launch split view</Typography>
-      <ul>
-        <li>
-          {refName}:{toLocale(start)} -&gt; {next_ref}:{toLocale(next_pos)}{' '}
-          <Link
-            href="#"
-            onClick={event => {
-              event.preventDefault()
-              session.queueDialog(handleClose => [
-                BreakpointSplitViewChoiceDialog,
-                {
-                  handleClose,
-                  session,
-                  feature: new SimpleFeature({
-                    uniqueId,
-                    refName,
-                    start,
-                    end,
-                    strand,
-                    mate: {
-                      uniqueId: `${id}-mate`,
-                      refName: next_ref,
-                      start: next_pos,
-                      end: next_pos + 1,
-                      strand,
-                    },
-                  }),
-                  view: model.view,
-                  assemblyName,
-                },
-              ])
-            }}
-          >
-            (breakpoint split view)
-          </Link>
-        </li>
-      </ul>
+      <Link
+        href="#"
+        onClick={event => {
+          event.preventDefault()
+          launchBreakpointSplitView({
+            session,
+            view: model.view,
+            assemblyName,
+            feature: new SimpleFeature({
+              uniqueId,
+              refName,
+              start,
+              end,
+              strand,
+              mate: {
+                uniqueId: `${id}-mate`,
+                refName: next_ref,
+                start: next_pos,
+                end: next_pos + 1,
+                strand,
+              },
+            }),
+          })
+        }}
+      >
+        {refName}:{toLocale(start)} -&gt; {next_ref}:{toLocale(next_pos)}{' '}
+        (breakpoint split view)
+      </Link>
     </div>
   ) : null
 }

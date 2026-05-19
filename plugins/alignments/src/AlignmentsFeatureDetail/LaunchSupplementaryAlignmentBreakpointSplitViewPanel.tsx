@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import { ErrorBanner } from '@jbrowse/core/ui'
 import {
   SimpleFeature,
@@ -7,17 +5,16 @@ import {
   toLocale,
   useFetch,
 } from '@jbrowse/core/util'
-import { getAssemblyName } from '@jbrowse/sv-core'
+import {
+  getAssemblyName,
+  launchBreakpointSplitView,
+} from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
 import { getSAFeatures } from './getSAFeatures.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
-
-const BreakpointSplitViewChoiceDialog = lazy(
-  () => import('./BreakpointSplitViewChoiceDialog.tsx'),
-)
 
 export default function LaunchBreakpointSplitViewPanel({
   model,
@@ -49,16 +46,12 @@ export default function LaunchBreakpointSplitViewPanel({
               href="#"
               onClick={event => {
                 event.preventDefault()
-                session.queueDialog(handleClose => [
-                  BreakpointSplitViewChoiceDialog,
-                  {
-                    handleClose,
-                    session,
-                    feature: new SimpleFeature({ ...f1, mate: f2 }),
-                    view: model.view,
-                    assemblyName,
-                  },
-                ])
+                launchBreakpointSplitView({
+                  session,
+                  view: model.view,
+                  assemblyName,
+                  feature: new SimpleFeature({ ...f1, mate: f2 }),
+                })
               }}
             >
               (breakpoint split view)

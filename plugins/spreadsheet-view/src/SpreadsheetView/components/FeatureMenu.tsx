@@ -1,7 +1,6 @@
-import { lazy } from 'react'
-
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { SimpleFeature, assembleLocStringFast } from '@jbrowse/core/util'
+import { launchBreakpointSplitView } from '@jbrowse/sv-core'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 
 import { locationLinkClick } from '../util.ts'
@@ -10,10 +9,6 @@ import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util'
-
-const BreakpointSplitViewChoiceDialog = lazy(
-  () => import('./BreakpointSplitViewChoiceDialog.tsx'),
-)
 
 export default function FeatureMenu({
   assemblyName,
@@ -48,16 +43,12 @@ export default function FeatureMenu({
         {
           label: 'Open in breakpoint split view',
           onClick: () => {
-            session.queueDialog(handleClose => [
-              BreakpointSplitViewChoiceDialog,
-              {
-                handleClose,
-                session,
-                stableViewId: `${spreadsheetViewId}_${assemblyName}_breakpointsplitview`,
-                feature: new SimpleFeature(feature),
-                assemblyName,
-              },
-            ])
+            launchBreakpointSplitView({
+              session,
+              feature: new SimpleFeature(feature),
+              assemblyName,
+              stableViewId: `${spreadsheetViewId}_${assemblyName}_breakpointsplitview`,
+            })
           },
         },
       ]}
