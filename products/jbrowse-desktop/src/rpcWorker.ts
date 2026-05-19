@@ -1,4 +1,3 @@
-import './workerPolyfill.js'
 import { initializeWorker } from '@jbrowse/product-core'
 import { enableStaticRendering } from 'mobx-react'
 
