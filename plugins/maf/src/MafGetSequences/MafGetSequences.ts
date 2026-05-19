@@ -2,7 +2,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import { processFeaturesToFasta } from '../util/fastaUtils.ts'
+import { processFeaturesToFasta } from '../util/processFeaturesToFasta.ts'
 
 import type { Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

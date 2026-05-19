@@ -101,24 +101,6 @@ const SequenceDisplay = observer(function SequenceDisplay({
     if (!seqWrapper) {
       return
     }
-
-    const handleScroll = () => {
-      setScrollTop(seqWrapper.scrollTop)
-      setScrollLeft(seqWrapper.scrollLeft)
-    }
-
-    seqWrapper.addEventListener('scroll', handleScroll)
-    return () => {
-      seqWrapper.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
-
-  useEffect(() => {
-    const seqWrapper = seqWrapperRef.current
-    if (!seqWrapper) {
-      return
-    }
-
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { height, width } = entry.contentRect
@@ -130,11 +112,7 @@ const SequenceDisplay = observer(function SequenceDisplay({
         }
       }
     })
-
     resizeObserver.observe(seqWrapper)
-    setContainerHeight(seqWrapper.clientHeight || 400)
-    setContainerWidth(seqWrapper.clientWidth || 800)
-
     return () => {
       resizeObserver.disconnect()
     }
@@ -241,7 +219,14 @@ const SequenceDisplay = observer(function SequenceDisplay({
           />
         </div>
       )}
-      <div ref={seqWrapperRef} className={classes.sequenceWrapper}>
+      <div
+        ref={seqWrapperRef}
+        className={classes.sequenceWrapper}
+        onScroll={e => {
+          setScrollTop(e.currentTarget.scrollTop)
+          setScrollLeft(e.currentTarget.scrollLeft)
+        }}
+      >
         <div
           className={classes.sequenceInner}
           style={{ width: totalSeqWidth, height: totalHeight }}

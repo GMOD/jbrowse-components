@@ -24,7 +24,7 @@ import {
 
 import SequenceDisplay from './SequenceDisplay.tsx'
 import { copyToClipboard, downloadAsFile } from '../util/clipboard.ts'
-import { formatFastaSequences } from '../util/fastaUtils.ts'
+import { formatFastaSequences } from '../util/formatFastaSequences.ts'
 
 import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -137,104 +137,104 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
     )
   }
 
+  const menuItems: MenuItem[] = [
+    {
+      label: 'Show all letters',
+      icon: AllLettersIcon,
+      type: 'radio',
+      checked: showAllLetters,
+      onClick: () => {
+        setShowAllLetters(true)
+      },
+    },
+    {
+      label: 'Show only differences',
+      icon: DifferenceIcon,
+      type: 'radio',
+      checked: !showAllLetters,
+      onClick: () => {
+        setShowAllLetters(false)
+      },
+    },
+    {
+      label: 'Include insertions',
+      icon: InsertionsIcon,
+      type: 'checkbox',
+      checked: includeInsertions,
+      onClick: () => {
+        setIncludeInsertions(!includeInsertions)
+      },
+    },
+    {
+      label: 'Single line format',
+      icon: TableRowsIcon,
+      type: 'checkbox',
+      checked: singleLineFormat,
+      onClick: () => {
+        setSingleLineFormat(!singleLineFormat)
+      },
+    },
+    {
+      label: 'Color background',
+      icon: ColorBackgroundIcon,
+      type: 'checkbox',
+      checked: colorBackground,
+      onClick: () => {
+        setColorBackground(!colorBackground)
+      },
+    },
+    {
+      label: 'Show sample names',
+      icon: LabelIcon,
+      type: 'checkbox',
+      checked: showSampleNames,
+      onClick: () => {
+        setShowSampleNames(!showSampleNames)
+      },
+    },
+    { type: 'divider' },
+    {
+      label: 'Copy to clipboard',
+      icon: CopyIcon,
+      disabled: loading || !formattedSequence,
+      onClick: () => {
+        copyToClipboard(
+          formattedSequence,
+          () => {
+            session.notify('Sequence copied to clipboard', 'info')
+          },
+          e => {
+            session.notifyError(`${e}`, e)
+          },
+        ).catch((e: unknown) => {
+          console.error(e)
+        })
+      },
+    },
+    {
+      label: 'Download as FASTA',
+      icon: DownloadIcon,
+      disabled: loading || !formattedSequence,
+      onClick: () => {
+        downloadAsFile(
+          formattedSequence,
+          'sequence.fasta',
+          () => {
+            session.notify('Sequence downloaded', 'info')
+          },
+          e => {
+            session.notifyError(`${e}`, e)
+          },
+        )
+      },
+    },
+  ]
+
   return (
     <Paper className={classes.root}>
       <div className={classes.controls}>
         <CascadingMenuButton
-          menuItems={
-            [
-              {
-                label: 'Show all letters',
-                icon: AllLettersIcon,
-                type: 'radio',
-                checked: showAllLetters,
-                onClick: () => {
-                  setShowAllLetters(true)
-                },
-              },
-              {
-                label: 'Show only differences',
-                icon: DifferenceIcon,
-                type: 'radio',
-                checked: !showAllLetters,
-                onClick: () => {
-                  setShowAllLetters(false)
-                },
-              },
-              {
-                label: 'Include insertions',
-                icon: InsertionsIcon,
-                type: 'checkbox',
-                checked: includeInsertions,
-                onClick: () => {
-                  setIncludeInsertions(!includeInsertions)
-                },
-              },
-              {
-                label: 'Single line format',
-                icon: TableRowsIcon,
-                type: 'checkbox',
-                checked: singleLineFormat,
-                onClick: () => {
-                  setSingleLineFormat(!singleLineFormat)
-                },
-              },
-              {
-                label: 'Color background',
-                icon: ColorBackgroundIcon,
-                type: 'checkbox',
-                checked: colorBackground,
-                onClick: () => {
-                  setColorBackground(!colorBackground)
-                },
-              },
-              {
-                label: 'Show sample names',
-                icon: LabelIcon,
-                type: 'checkbox',
-                checked: showSampleNames,
-                onClick: () => {
-                  setShowSampleNames(!showSampleNames)
-                },
-              },
-              { type: 'divider' },
-              {
-                label: 'Copy to clipboard',
-                icon: CopyIcon,
-                disabled: loading || !formattedSequence,
-                onClick: () => {
-                  copyToClipboard(
-                    formattedSequence,
-                    () => {
-                      session.notify('Sequence copied to clipboard', 'info')
-                    },
-                    e => {
-                      session.notifyError(`${e}`, e)
-                    },
-                  ).catch((e: unknown) => {
-                    console.error(e)
-                  })
-                },
-              },
-              {
-                label: 'Download as FASTA',
-                icon: DownloadIcon,
-                disabled: loading || !formattedSequence,
-                onClick: () => {
-                  downloadAsFile(
-                    formattedSequence,
-                    'sequence.fasta',
-                    () => {
-                      session.notify('Sequence downloaded', 'info')
-                    },
-                    e => {
-                      session.notifyError(`${e}`, e)
-                    },
-                  )
-                },
-              },
-            ] as MenuItem[]
-          }
+          menuItems={menuItems}
           ButtonComponent={props => (
             <Button
               {...props}

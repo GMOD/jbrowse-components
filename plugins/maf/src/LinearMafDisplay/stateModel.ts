@@ -47,14 +47,16 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
-const defaultRowHeight = 15
-const defaultRowProportion = 0.8
-const defaultShowAllLetters = false
-const defaultMismatchRendering = true
-const defaultShowBranchLen = false
-const defaultTreeAreaWidth = 80
-const defaultShowAsUpperCase = true
-const defaultShowSidebar = true
+const DEFAULTS = {
+  rowHeight: 15,
+  rowProportion: 0.8,
+  showAllLetters: false,
+  mismatchRendering: true,
+  showBranchLen: false,
+  treeAreaWidth: 80,
+  showAsUpperCase: true,
+  showSidebar: true,
+} as const
 
 /**
  * #stateModel LinearMafDisplay
@@ -81,37 +83,35 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        rowHeight: defaultRowHeight,
+        rowHeight: DEFAULTS.rowHeight,
         /**
          * #property
          */
-        rowProportion: defaultRowProportion,
+        rowProportion: DEFAULTS.rowProportion,
         /**
          * #property
          */
-        showAllLetters: defaultShowAllLetters,
+        showAllLetters: DEFAULTS.showAllLetters,
         /**
          * #property
          */
-        mismatchRendering: defaultMismatchRendering,
-
+        mismatchRendering: DEFAULTS.mismatchRendering,
         /**
          * #property
          */
-        showBranchLen: defaultShowBranchLen,
-
+        showBranchLen: DEFAULTS.showBranchLen,
         /**
          * #property
          */
-        treeAreaWidth: defaultTreeAreaWidth,
+        treeAreaWidth: DEFAULTS.treeAreaWidth,
         /**
          * #property
          */
-        showAsUpperCase: defaultShowAsUpperCase,
+        showAsUpperCase: DEFAULTS.showAsUpperCase,
         /**
          * #property
          */
-        showSidebar: defaultShowSidebar,
+        showSidebar: DEFAULTS.showSidebar,
         /**
          * #property
          */
@@ -196,13 +196,11 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * Push theme-derived base colors in from the React layer. Idempotent
-       * via deepEqual so calling it on every render is fine.
+       * Push theme-derived base colors in from the React layer. Callers
+       * useMemo by theme so the reference is stable across renders.
        */
       setColorForBase(c: Record<string, string>) {
-        if (!deepEqual(c, self.colorForBase)) {
-          self.colorForBase = c
-        }
+        self.colorForBase = c
       },
       /**
        * #action
@@ -308,8 +306,7 @@ export default function stateModelFactory(
        * #getter
        */
       get rendererConfig(): AnyConfigurationModel {
-        const configBlob = getConf(self, ['renderer']) || {}
-        const config = configBlob as Omit<typeof configBlob, symbol>
+        const config = getConf(self, ['renderer']) ?? {}
         const { rendererType } = self
         if (!rendererType) {
           throw new Error('LinearMafRenderer renderer type not found')
@@ -627,18 +624,20 @@ export default function stateModelFactory(
       }
       return {
         ...(rest as Omit<typeof rest, symbol>),
-        ...(rowHeight !== defaultRowHeight ? { rowHeight } : {}),
-        ...(rowProportion !== defaultRowProportion ? { rowProportion } : {}),
-        ...(showAllLetters !== defaultShowAllLetters ? { showAllLetters } : {}),
-        ...(mismatchRendering !== defaultMismatchRendering
+        ...(rowHeight !== DEFAULTS.rowHeight ? { rowHeight } : {}),
+        ...(rowProportion !== DEFAULTS.rowProportion ? { rowProportion } : {}),
+        ...(showAllLetters !== DEFAULTS.showAllLetters
+          ? { showAllLetters }
+          : {}),
+        ...(mismatchRendering !== DEFAULTS.mismatchRendering
           ? { mismatchRendering }
           : {}),
-        ...(showBranchLen !== defaultShowBranchLen ? { showBranchLen } : {}),
-        ...(treeAreaWidth !== defaultTreeAreaWidth ? { treeAreaWidth } : {}),
-        ...(showAsUpperCase !== defaultShowAsUpperCase
+        ...(showBranchLen !== DEFAULTS.showBranchLen ? { showBranchLen } : {}),
+        ...(treeAreaWidth !== DEFAULTS.treeAreaWidth ? { treeAreaWidth } : {}),
+        ...(showAsUpperCase !== DEFAULTS.showAsUpperCase
           ? { showAsUpperCase }
           : {}),
-        ...(showSidebar !== defaultShowSidebar ? { showSidebar } : {}),
+        ...(showSidebar !== DEFAULTS.showSidebar ? { showSidebar } : {}),
         ...(subtreeFilter && subtreeFilter.length > 0 ? { subtreeFilter } : {}),
       }
     })

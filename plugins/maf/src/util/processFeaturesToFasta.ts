@@ -7,10 +7,10 @@ interface InsertionInfo {
 }
 
 /**
- * Process features into FASTA format
- * @param features - The features to process
- * @param selectedRegion - Optional region to extract
- * @returns FASTA formatted text
+ * Worker-side: convert MAF features into per-sample sequence rows aligned to
+ * `regions[0]`. With `showAllLetters`, every base is written; without it,
+ * matches collapse to `.` and only mismatches show. `includeInsertions` adds
+ * per-insert columns expanded to the max length across samples.
  */
 export function processFeaturesToFasta({
   regions,
@@ -103,28 +103,25 @@ export function processFeaturesToFasta({
     )
   }
 
-  // Convert character arrays back to strings
   return outputRowsArrays.map(arr => arr.join(''))
 }
 
 /**
- * Expand sequences to include insertions
- * At each position with insertions, find the max insertion length,
- * then expand all sequences by that amount
+ * Expand sequences to include insertions: at each insertion position, find the
+ * max insertion length across samples, then splice that many columns into
+ * every row (filled with the sample's own insertion or `-` for samples with
+ * no insertion). Right-to-left iteration so earlier positions remain valid.
  */
 function expandWithInsertions(
   outputRowsArrays: string[][],
   insertionsAtPosition: Map<number, InsertionInfo[]>,
   numSamples: number,
 ) {
-  // Sort insertion positions in descending order so we can insert from right to left
-  // without affecting earlier positions
   const sortedPositions = [...insertionsAtPosition.keys()].sort((a, b) => b - a)
 
   for (const pos of sortedPositions) {
     const insertions = insertionsAtPosition.get(pos)!
 
-    // Find max insertion length at this position
     let maxLen = 0
     for (const ins of insertions) {
       if (ins.sequence.length > maxLen) {
@@ -132,13 +129,11 @@ function expandWithInsertions(
       }
     }
 
-    // Create a map from sample index to insertion sequence
     const sampleInsertions = new Map<number, string>()
     for (const ins of insertions) {
       sampleInsertions.set(ins.sampleIndex, ins.sequence)
     }
 
-    // Insert characters at this position for each sample
     for (let sampleIdx = 0; sampleIdx < numSamples; sampleIdx++) {
       const rowArray = outputRowsArrays[sampleIdx]!
       const insertionSeq = sampleInsertions.get(sampleIdx)
@@ -156,40 +151,5 @@ function expandWithInsertions(
     }
   }
 
-  // Convert character arrays back to strings
   return outputRowsArrays.map(arr => arr.join(''))
-}
-
-/**
- * Build a FASTA-formatted string from per-sample raw sequences.
- * - `singleLine`: each record collapses to one line, with the sample label
- *   padded to a constant width so columns align in monospace.
- * - Otherwise: standard FASTA with `>label` on its own line.
- */
-export function formatFastaSequences(
-  rawSequences: string[],
-  samples: Sample[] | undefined,
-  singleLine: boolean,
-): string {
-  if (!samples || rawSequences.length === 0) {
-    return ''
-  }
-  if (singleLine) {
-    let maxLabelLength = 0
-    for (const s of samples) {
-      if (s.label.length > maxLabelLength) {
-        maxLabelLength = s.label.length
-      }
-    }
-    return rawSequences
-      .map((r, idx) => {
-        const { label } = samples[idx]!
-        const padding = ' '.repeat(maxLabelLength - label.length + 2)
-        return `>${label}${padding}${r}`
-      })
-      .join('\n')
-  }
-  return rawSequences
-    .map((r, idx) => `>${samples[idx]!.label}\n${r}`)
-    .join('\n')
 }

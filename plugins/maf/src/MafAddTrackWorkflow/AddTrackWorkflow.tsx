@@ -198,37 +198,44 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
             ].join('')
 
             if (isSessionWithAddTracks(session)) {
+              let adapter
+              switch (fileTypeChoice) {
+                case 'BigMafAdapter':
+                  adapter = {
+                    type: fileTypeChoice,
+                    bigBedLocation: loc,
+                    samples: sampleNames,
+                    nhLocation: nhLoc,
+                  }
+                  break
+                case 'MafTabixAdapter':
+                  adapter = {
+                    type: fileTypeChoice,
+                    bedGzLocation: loc,
+                    nhLocation: nhLoc,
+                    index: {
+                      indexType: indexTypeChoice,
+                      location: indexLoc,
+                    },
+                    samples: sampleNames,
+                  }
+                  break
+                case 'BgzipTaffyAdapter':
+                  adapter = {
+                    type: fileTypeChoice,
+                    tafGzLocation: loc,
+                    taiLocation: indexLoc,
+                    nhLocation: nhLoc,
+                    samples: sampleNames,
+                  }
+                  break
+              }
               session.addTrackConf({
                 trackId,
                 type: 'MafTrack',
                 name: trackName,
                 assemblyNames: [model.assembly],
-                adapter:
-                  fileTypeChoice === 'BigMafAdapter'
-                    ? {
-                        type: fileTypeChoice,
-                        bigBedLocation: loc,
-                        samples: sampleNames,
-                        nhLocation: nhLoc,
-                      }
-                    : fileTypeChoice === 'MafTabixAdapter'
-                      ? {
-                          type: fileTypeChoice,
-                          bedGzLocation: loc,
-                          nhLocation: nhLoc,
-                          index: {
-                            indexType: indexTypeChoice,
-                            location: indexLoc,
-                          },
-                          samples: sampleNames,
-                        }
-                      : {
-                          type: fileTypeChoice,
-                          tafGzLocation: loc,
-                          taiLocation: indexLoc,
-                          nhLocation: nhLoc,
-                          samples: sampleNames,
-                        },
+                adapter,
               })
 
               model.view?.showTrack(trackId)

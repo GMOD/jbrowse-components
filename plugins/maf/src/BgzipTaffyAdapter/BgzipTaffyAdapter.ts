@@ -106,38 +106,47 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
 
     // Apply coordinate instructions
     for (const ins of instructions) {
-      if (ins.type === 'i') {
-        block.rows.splice(ins.row, 0, {
-          sequenceName: ins.sequenceName,
-          start: ins.start,
-          strand: ins.strand,
-          sequenceLength: ins.sequenceLength,
-          bases: '',
-          length: 0,
-        })
-      } else if (ins.type === 's') {
-        const row = block.rows[ins.row]
-        if (row) {
-          row.sequenceName = ins.sequenceName
-          row.start = ins.start
-          row.strand = ins.strand
-          row.sequenceLength = ins.sequenceLength
+      switch (ins.type) {
+        case 'i': {
+          block.rows.splice(ins.row, 0, {
+            sequenceName: ins.sequenceName,
+            start: ins.start,
+            strand: ins.strand,
+            sequenceLength: ins.sequenceLength,
+            bases: '',
+            length: 0,
+          })
+          break
         }
-      } else if (ins.type === 'd') {
-        if (block.rows[ins.row]) {
-          block.rows.splice(ins.row, 1)
+        case 's': {
+          const row = block.rows[ins.row]
+          if (row) {
+            row.sequenceName = ins.sequenceName
+            row.start = ins.start
+            row.strand = ins.strand
+            row.sequenceLength = ins.sequenceLength
+          }
+          break
         }
-      } else if (ins.type === 'g') {
-        const row = block.rows[ins.row]
-        if (row) {
-          row.start += ins.gapLength
+        case 'd': {
+          if (block.rows[ins.row]) {
+            block.rows.splice(ins.row, 1)
+          }
+          break
         }
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      else if (ins.type === 'G') {
-        const row = block.rows[ins.row]
-        if (row) {
-          row.start += ins.gapSubstring.length
+        case 'g': {
+          const row = block.rows[ins.row]
+          if (row) {
+            row.start += ins.gapLength
+          }
+          break
+        }
+        case 'G': {
+          const row = block.rows[ins.row]
+          if (row) {
+            row.start += ins.gapSubstring.length
+          }
+          break
         }
       }
     }
