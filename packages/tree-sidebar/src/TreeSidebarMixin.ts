@@ -6,15 +6,13 @@ import { descendants } from './hierarchy.ts'
 
 import type { ClusterHierarchyNode, HoveredTreeNode } from './types.ts'
 
+interface HierarchySelf {
+  hierarchy: ClusterHierarchyNode | undefined
+  totalHeight?: number
+}
+
 export function TreeSidebarMixin<
   S extends { name: string } = { name: string },
-  H extends {
-    hierarchy: ClusterHierarchyNode | undefined
-    totalHeight?: number
-  } = {
-    hierarchy: ClusterHierarchyNode | undefined
-    totalHeight?: number
-  },
 >() {
   return types
     .model({
@@ -39,7 +37,7 @@ export function TreeSidebarMixin<
     }))
     .views(self => ({
       get spatialIndex() {
-        const extended = self as typeof self & H
+        const extended = self as typeof self & HierarchySelf
         const h = extended.hierarchy
         // touch treeAreaWidth and totalHeight so MobX tracks them as dependencies
         void self.treeAreaWidth
@@ -66,13 +64,16 @@ export function TreeSidebarMixin<
     }))
     .actions(self => ({
       setLayout(layout: S[], clearTree = true) {
-        const orderChanged =
+        // Clear the cached cluster tree whenever the set of sample names
+        // changes (membership or order) — the tree was built from the prior
+        // layout and is no longer valid.
+        const namesChanged =
           clearTree &&
           !!self.clusterTree &&
-          self.layout.length === layout.length &&
-          self.layout.some((source, idx) => source.name !== layout[idx]?.name)
+          (self.layout.length !== layout.length ||
+            self.layout.some((source, idx) => source.name !== layout[idx]?.name))
         self.layout = layout
-        if (orderChanged) {
+        if (namesChanged) {
           self.clusterTree = undefined
         }
       },

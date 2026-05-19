@@ -38,6 +38,20 @@ test('treats non-numeric post-paren label as name', () => {
   })
 })
 
+test('treats trailing-zero numeric post-paren as length', () => {
+  expect(parseNewick('(A,B)1.50;')).toEqual({
+    length: 1.5,
+    children: [{ name: 'A' }, { name: 'B' }],
+  })
+})
+
+test('treats scientific-notation post-paren as length', () => {
+  expect(parseNewick('(A,B)1e-3;')).toEqual({
+    length: 1e-3,
+    children: [{ name: 'A' }, { name: 'B' }],
+  })
+})
+
 test('parses internal node name plus colon branch length', () => {
   expect(parseNewick('(A:1,B:2)Root:5;')).toEqual({
     name: 'Root',

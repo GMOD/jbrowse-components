@@ -20,6 +20,8 @@ export interface NewickNode {
   children?: NewickNode[]
 }
 
+const NUMERIC_TOKEN = /^-?\d+(\.\d+)?([eE][+-]?\d+)?$/
+
 export default function parseNewick(s: string): NewickNode {
   const ancestors: NewickNode[] = []
 
@@ -53,10 +55,11 @@ export default function parseNewick(s: string): NewickNode {
           tree.length = Number.parseFloat(token)
         } else if (prev === ')') {
           // hclust serializes `(A,B)1.5` with the numeric height as the label;
-          // standard phylo Newick puts a name there. Disambiguate by parseFloat.
-          const n = Number.parseFloat(token)
-          if (Number.isFinite(n) && String(n) === token.trim()) {
-            tree.length = n
+          // standard phylo Newick puts a name there. Disambiguate with a
+          // regex so tokens like `1.50` or `1e-3` (which fail a String(n)
+          // round-trip) still parse as length.
+          if (NUMERIC_TOKEN.test(token.trim())) {
+            tree.length = Number.parseFloat(token)
           } else {
             tree.name = token
           }

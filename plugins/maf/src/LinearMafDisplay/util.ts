@@ -2,6 +2,7 @@ import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 import {
   assignDepthY,
   eachAfter,
+  leafNameMap,
   leaves,
   maxLength,
   setBrLength,
@@ -136,22 +137,5 @@ export function getMsaHighlights(
 export function computeNodeDescendantNames<T extends { name?: string }>(
   root: HierarchyNode<T>,
 ): Map<HierarchyNode<T>, string[]> {
-  const map = new Map<HierarchyNode<T>, string[]>()
-  function visit(node: HierarchyNode<T>): string[] {
-    if (!node.children?.length) {
-      const names = node.data.name === undefined ? [] : [node.data.name]
-      map.set(node, names)
-      return names
-    }
-    const names: string[] = []
-    for (const child of node.children) {
-      for (const name of visit(child)) {
-        names.push(name)
-      }
-    }
-    map.set(node, names)
-    return names
-  }
-  visit(root)
-  return map
+  return leafNameMap(root)
 }

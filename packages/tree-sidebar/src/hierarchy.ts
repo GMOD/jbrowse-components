@@ -145,34 +145,19 @@ export function clusterLayout<T>(
   const leafNodes = leaves(root)
   const n = leafNodes.length
   const step = n > 0 ? sizeX / n : 0
-
   for (let i = 0; i < n; i++) {
     leafNodes[i]!.x = (i + 0.5) * step
   }
-
-  function assignX(node: HierarchyNode<T>) {
-    if (!node.children) {
-      return
-    }
-    let totalX = 0
-    for (const child of node.children) {
-      assignX(child)
-      totalX += child.x!
-    }
-    node.x = totalX / node.children.length
-  }
-  assignX(root)
-
-  const rootHeight = root.height
-  function assignY(node: HierarchyNode<T>, depth: number) {
-    node.y = rootHeight === 0 ? sizeY : (depth / rootHeight) * sizeY
+  eachAfter(root, node => {
     if (node.children) {
+      let totalX = 0
       for (const child of node.children) {
-        assignY(child, depth + 1)
+        totalX += child.x!
       }
+      node.x = totalX / node.children.length
     }
-  }
-  assignY(root, 0)
+  })
+  assignDepthY(root, sizeY)
   return root as unknown as PositionedHierarchyNode<T>
 }
 
@@ -226,6 +211,32 @@ export function setBrLength<T extends { length?: number }>(
       setBrLength(child, newY0, k)
     }
   }
+}
+
+// Single post-order pass building a Map from every node to the array of
+// leaf names below it. Useful when callers need leaf names for many nodes —
+// repeated `getLeafNames(node)` calls are O(n²) over a tree.
+export function leafNameMap<T extends { name?: string }>(
+  root: HierarchyNode<T>,
+): Map<HierarchyNode<T>, string[]> {
+  const map = new Map<HierarchyNode<T>, string[]>()
+  function visit(node: HierarchyNode<T>): string[] {
+    if (!node.children?.length) {
+      const names = node.data.name === undefined ? [] : [node.data.name]
+      map.set(node, names)
+      return names
+    }
+    const names: string[] = []
+    for (const child of node.children) {
+      for (const name of visit(child)) {
+        names.push(name)
+      }
+    }
+    map.set(node, names)
+    return names
+  }
+  visit(root)
+  return map
 }
 
 export function renderTreeSVG<T>(hierarchy: PositionedHierarchyNode<T>) {

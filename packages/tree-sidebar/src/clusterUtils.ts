@@ -23,25 +23,38 @@ export function getLeafNames<T extends ClusterNodeData>(
 }
 
 function findSubtree<T extends ClusterNodeData>(
-  node: HierarchyNode<T>,
+  root: HierarchyNode<T>,
   filterSet: Set<string>,
 ): HierarchyNode<T> | undefined {
-  const leafNames = getLeafNames(node)
-  if (
-    leafNames.length === filterSet.size &&
-    leafNames.every(name => filterSet.has(name))
-  ) {
-    return node
-  }
-  if (node.children) {
-    for (const child of node.children) {
-      const found = findSubtree(child, filterSet)
-      if (found) {
-        return found
+  // Single post-order pass: at each node track (leaf-name count below,
+  // whether all those names are in filterSet). The first node whose count
+  // equals filterSet.size and is fully contained is the unique match
+  // (descendants have strictly fewer leaves).
+  let found: HierarchyNode<T> | undefined
+  function visit(n: HierarchyNode<T>): { count: number; allIn: boolean } {
+    if (n.children?.length) {
+      let count = 0
+      let allIn = true
+      for (const child of n.children) {
+        const r = visit(child)
+        count += r.count
+        if (!r.allIn) {
+          allIn = false
+        }
       }
+      if (!found && allIn && count === filterSet.size) {
+        found = n
+      }
+      return { count, allIn }
     }
+    const { name } = n.data
+    if (name === undefined) {
+      return { count: 0, allIn: true }
+    }
+    return { count: 1, allIn: filterSet.has(name) }
   }
-  return undefined
+  visit(root)
+  return found
 }
 
 /**

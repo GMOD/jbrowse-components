@@ -16,6 +16,7 @@ export {
   descendants,
   eachAfter,
   hierarchy,
+  leafNameMap,
   leaves,
   links,
   maxLength,
