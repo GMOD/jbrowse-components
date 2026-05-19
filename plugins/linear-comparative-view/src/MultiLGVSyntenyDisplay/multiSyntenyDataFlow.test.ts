@@ -4,6 +4,7 @@ import {
 } from '@jbrowse/alignments-core'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
 
+import { buildSyntenyRegionData } from '../LinearSyntenyRPC/buildSyntenyRegionData.ts'
 import { buildRegionData, feat } from './components/syntenyTestHelpers.ts'
 import {
   getGlobalMaxDepth,
@@ -50,35 +51,6 @@ describe('collapsed intron view: same refName, different regions', () => {
   })
 })
 
-describe('displayedRegionIndex round-trip: fetch stores and render looks up by number', () => {
-  test('data stored by displayedRegionIndex is retrievable', () => {
-    const displayedRegions = [
-      { assemblyName: 'hg38', refName: 'chr1', start: 0, end: 248956422 },
-      { assemblyName: 'hg38', refName: 'chr2', start: 0, end: 242193529 },
-    ]
-
-    const rpcDataMap = new Map<number, SyntenyRegionData>()
-    for (let i = 0; i < displayedRegions.length; i++) {
-      const region = displayedRegions[i]!
-      rpcDataMap.set(
-        i,
-        buildRegionData(region, [
-          feat({ start: region.start + 100, end: region.start + 200 }),
-        ]),
-      )
-    }
-
-    for (
-      let displayedRegionIndex = 0;
-      displayedRegionIndex < displayedRegions.length;
-      displayedRegionIndex++
-    ) {
-      const data = rpcDataMap.get(displayedRegionIndex)
-      expect(data).toBeDefined()
-    }
-  })
-})
-
 describe('genomeRows aggregation across regions', () => {
   test('merges features from multiple rpcDataMap entries', () => {
     const rpcDataMap = new Map<number, SyntenyRegionData>([
@@ -104,41 +76,14 @@ describe('genomeRows aggregation across regions', () => {
   })
 
   test('multiple genomes are preserved separately', () => {
-    const rpcDataMap = new Map<number, SyntenyRegionData>([
+    const data = buildSyntenyRegionData(
+      { start: 0, end: 500, refName: 'chr1' },
       [
-        0,
-        {
-          refName: 'chr1',
-          regionStart: 0,
-          genomeFeatures: [
-            [
-              'genomeA',
-              [feat({ queryGenome: 'genomeA', start: 100, end: 200 })],
-            ],
-            [
-              'genomeB',
-              [feat({ queryGenome: 'genomeB', start: 300, end: 400 })],
-            ],
-          ],
-          coverageDepths: new Float32Array(0),
-          coverageMaxDepth: 0,
-          coverageStartPos: 0,
-          snpPositions: new Uint32Array(0),
-          snpYOffsets: new Float32Array(0),
-          snpHeights: new Float32Array(0),
-          snpColorTypes: new Uint8Array(0),
-          snpRelDepths: new Float32Array(0),
-          snpCount: 0,
-          mismatchPositions: new Uint32Array(0),
-          mismatchBases: new Uint8Array(0),
-          numMismatches: 0,
-          indicatorPositions: new Uint32Array(0),
-          numIndicators: 0,
-        },
+        ['genomeA', [feat({ queryGenome: 'genomeA', start: 100, end: 200 })]],
+        ['genomeB', [feat({ queryGenome: 'genomeB', start: 300, end: 400 })]],
       ],
-    ])
-
-    const merged = mergeGenomeRows(rpcDataMap)
+    )
+    const merged = mergeGenomeRows(new Map([[0, data]]))
 
     expect(merged.size).toBe(2)
     expect(merged.get('genomeA')?.length).toBe(1)
@@ -300,8 +245,8 @@ describe('multi-region coverage rendering data', () => {
   })
 })
 
-describe('rendering parity: Canvas2D and GPU paths use same data', () => {
-  test('coverage data is identical for both rendering paths', () => {
+describe('SyntenyRegionData output buffers', () => {
+  test('coverage, SNP, and mismatch arrays are populated when features have CS tags', () => {
     const features = [
       feat({ start: 100, end: 300, cs: ':50*ag:50*ct:99' }),
       feat({ start: 200, end: 400 }),
