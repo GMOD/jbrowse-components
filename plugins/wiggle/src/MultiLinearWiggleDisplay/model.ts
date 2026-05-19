@@ -53,7 +53,9 @@ type LGV = LinearGenomeViewModel
 const MultiWiggleComponent = lazy(
   () => import('./components/MultiWiggleComponent.tsx'),
 )
-const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
+const SetMinMaxDialog = lazy(() =>
+  import('@jbrowse/wiggle-core').then(m => ({ default: m.SetMinMaxDialog })),
+)
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(
   () => import('./components/WiggleClusterDialog/WiggleClusterDialog.tsx'),

@@ -3,8 +3,8 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 
-const CoverageRangeDialog = lazy(
-  () => import('../components/CoverageRangeDialog.tsx'),
+const SetMinMaxDialog = lazy(() =>
+  import('@jbrowse/wiggle-core').then(m => ({ default: m.SetMinMaxDialog })),
 )
 
 interface CoverageModel {
@@ -22,6 +22,20 @@ interface CoverageModel {
 
   showYScalebar: boolean
   setShowYScalebar: (show: boolean) => void
+}
+
+// Shape the alignments coverage fields into the canonical
+// min/max/scaleType + setters interface that wiggle-core's
+// SetMinMaxDialog expects. We disambiguate with "coverage*" on the model
+// (so it doesn't collide with non-coverage min/max), then unwrap here.
+function adaptForMinMaxDialog(model: CoverageModel) {
+  return {
+    minScore: model.coverageMinScore ?? Number.MIN_VALUE,
+    maxScore: model.coverageMaxScore ?? Number.MAX_VALUE,
+    scaleType: model.coverageScaleType,
+    setMinScore: model.setCoverageMinScore,
+    setMaxScore: model.setCoverageMaxScore,
+  }
 }
 
 // Single "Coverage" submenu collecting on/off, scale type, autoscale, the
@@ -96,11 +110,11 @@ export function getCoverageMenuItem(model: CoverageModel) {
         ],
       },
       {
-        label: 'Set range…',
+        label: 'Set min/max score',
         onClick: () => {
           getSession(model).queueDialog(handleClose => [
-            CoverageRangeDialog,
-            { model, handleClose },
+            SetMinMaxDialog,
+            { model: adaptForMinMaxDialog(model), handleClose },
           ])
         },
       },

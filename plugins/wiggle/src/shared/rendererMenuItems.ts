@@ -5,7 +5,9 @@ import EqualizerIcon from '@mui/icons-material/Equalizer'
 
 import { makeAutoscaleTypeSubMenu } from './wiggleMenuItems.ts'
 
-const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
+const SetMinMaxDialog = lazy(() =>
+  import('@jbrowse/wiggle-core').then(m => ({ default: m.SetMinMaxDialog })),
+)
 
 interface MenuSelf {
   scaleType: string

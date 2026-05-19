@@ -20,6 +20,7 @@ export interface YScaleTicks {
   yBottom: number
 }
 
+export { default as SetMinMaxDialog } from './SetMinMaxDialog.tsx'
 export { default as YScaleBar } from './YScaleBar.tsx'
 
 export type {
