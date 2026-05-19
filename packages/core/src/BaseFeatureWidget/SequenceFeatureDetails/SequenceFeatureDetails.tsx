@@ -1,14 +1,10 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useRef, useState } from 'react'
 
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector.tsx'
-import {
-  createSequenceFeatureDetailsModel,
-  destroySequenceFeatureDetailsModel,
-} from './model.ts'
 import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts'
 import { getSession } from '../../util/index.ts'
 import { useFeatureSequence } from '../../util/useFeatureSequence.ts'
@@ -20,8 +16,6 @@ import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
 const SequencePanel = lazy(() => import('./SequencePanel.tsx'))
 const SequenceDialog = lazy(() => import('./dialogs/SequenceDialog.tsx'))
 
-// set the key on this component to feature.id to clear state after new feature
-// is selected
 const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
   model,
   feature,
@@ -29,17 +23,7 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
   model: BaseFeatureWidgetModel
   feature: SimpleFeatureSerialized
 }) {
-  const [sequenceFeatureDetails] = useState(() => {
-    const m = createSequenceFeatureDetailsModel()
-    m.setFeature(feature)
-    return m
-  })
-  useEffect(() => {
-    return () => {
-      destroySequenceFeatureDetailsModel(sequenceFeatureDetails)
-    }
-  }, [sequenceFeatureDetails])
-
+  const { sequenceFeatureDetails } = model
   const { upDownBp } = sequenceFeatureDetails
   const seqPanelRef = useRef<HTMLDivElement>(null)
 

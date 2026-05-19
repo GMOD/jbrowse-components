@@ -3,6 +3,7 @@ import {
   calculateUTRs,
   filterSuccessiveElementsWithSameStartAndEndCoord,
   formatSubfeatures,
+  getStrandStr,
   revlist,
   stitch,
 } from './util.tsx'
@@ -180,6 +181,21 @@ describe('calculateUTRs2', () => {
     expect(utrs).toContainEqual(
       expect.objectContaining({ start: 80, end: 100, type: 'three_prime_UTR' }),
     )
+  })
+})
+
+describe('getStrandStr', () => {
+  test('plus strand', () => {
+    expect(getStrandStr(1)).toBe('(+)')
+  })
+  test('minus strand', () => {
+    expect(getStrandStr(-1)).toBe('(-)')
+  })
+  test('no strand (0)', () => {
+    expect(getStrandStr(0)).toBe('')
+  })
+  test('undefined strand', () => {
+    expect(getStrandStr(undefined)).toBe('')
   })
 })
 

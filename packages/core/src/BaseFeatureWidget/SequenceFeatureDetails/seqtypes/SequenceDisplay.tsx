@@ -24,7 +24,7 @@ const SequenceDisplay = observer(function SequenceDisplay({
   return chunks.map((chunk, idx) => {
     const f = coordStart - (start % charactersPerRow)
     const prefix =
-      (idx === 0 && start % charactersPerRow === 0) || idx > 0
+      idx > 0 || start % charactersPerRow === 0
         ? `${`${f + idx * strand * charactersPerRow}`.padStart(4)}   `
         : ''
     const isLastChunk = idx === chunks.length - 1

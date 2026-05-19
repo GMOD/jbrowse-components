@@ -61,6 +61,10 @@ export interface SimpleFeatureSerializedNoId {
   end: number
   refName: string
   type?: string
+  strand?: number
+  name?: string
+  id?: string | number
+  __jbrowsefmt?: Record<string, unknown>
   subfeatures?: SimpleFeatureSerializedNoId[]
 }
 

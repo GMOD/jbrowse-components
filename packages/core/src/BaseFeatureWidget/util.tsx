@@ -6,7 +6,7 @@ export interface Feat {
   end: number
   type?: string
   name?: string
-  id?: string
+  id?: string | number
   phase?: number
 }
 export interface ParentFeat extends Feat {
@@ -140,6 +140,10 @@ export function ellipses(slug: string) {
   return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
 }
 
+export function getStrandStr(strand: number | undefined) {
+  return strand === -1 ? '(-)' : strand === 1 ? '(+)' : ''
+}
+
 export function replaceUndefinedWithNull(obj: SimpleFeatureSerialized) {
   return JSON.parse(JSON.stringify(obj, (_, v) => (v === undefined ? null : v)))
 }
@@ -149,13 +153,12 @@ export function formatSubfeatures(
   depth: number,
   parse: (obj: Record<string, unknown>) => void,
   currentDepth = 0,
-  returnObj: Record<string, unknown> = {},
 ) {
   if (depth <= currentDepth) {
     return
   }
   for (const sub of obj.subfeatures ?? []) {
-    formatSubfeatures(sub, depth, parse, currentDepth + 1, returnObj)
+    formatSubfeatures(sub, depth, parse, currentDepth + 1)
     parse(sub)
   }
 }

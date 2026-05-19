@@ -79,7 +79,30 @@ describe('splitString', () => {
       charactersPerRow: 10,
       showCoordinates: false,
     })
-    expect(segments.filter(Boolean)).toHaveLength(0)
+    expect(segments).toHaveLength(0)
     expect(remainder).toBe(0)
+  })
+
+  test('empty string with nonzero currRemainder carries it through', () => {
+    const { segments, remainder } = splitString({
+      str: '',
+      charactersPerRow: 10,
+      showCoordinates: false,
+      currRemainder: 3,
+    })
+    expect(segments).toHaveLength(0)
+    expect(remainder).toBe(3)
+  })
+
+  test('first chunk smaller than charactersPerRow when currRemainder set', () => {
+    const { segments } = splitString({
+      str: 'ABCDEFGH',
+      charactersPerRow: 4,
+      showCoordinates: false,
+      currRemainder: 1,
+    })
+    expect(segments[0]).toBe('ABC')
+    expect(segments[1]).toBe('DEFG')
+    expect(segments[2]).toBe('H')
   })
 })

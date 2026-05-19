@@ -117,14 +117,15 @@ const CDNASequence = observer(function CDNASequence({
           ? `${intron.slice(0, intronBp)}...${intron.slice(-intronBp)}`
           : intron,
       )
-      const { segments, remainder } = splitString({
-        str,
-        charactersPerRow,
-        currRemainder,
-        showCoordinates,
-      })
+      const { segments: intronSegments, remainder: intronRemainder } =
+        splitString({
+          str,
+          charactersPerRow,
+          currRemainder,
+          showCoordinates,
+        })
 
-      if (segments.length) {
+      if (intronSegments.length) {
         middleChunks.push(
           <SequenceDisplay
             key={`${chunk.start}-${chunk.end}-${chunk.type}-intron`}
@@ -132,10 +133,10 @@ const CDNASequence = observer(function CDNASequence({
             strand={mult}
             coordStart={coordStart}
             start={currStart}
-            chunks={segments}
+            chunks={intronSegments}
           />,
         )
-        currRemainder = remainder
+        currRemainder = intronRemainder
         currStart = currStart + str.length * mult
         coordStart = coordStart + str.length * mult
       }

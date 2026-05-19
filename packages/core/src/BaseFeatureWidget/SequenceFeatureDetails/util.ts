@@ -1,5 +1,7 @@
 /**
  * Splits a string into chunks for display with optional coordinate spacing.
+ * The first chunk may be short to complete a row partially filled by a prior
+ * call (tracked via `currRemainder`).
  */
 export function splitString({
   str,
@@ -14,49 +16,35 @@ export function splitString({
   currRemainder?: number
   spacingInterval?: number
 }) {
-  const numChunks = Math.ceil(str.length / charactersPerRow)
-  const segments = new Array(numChunks)
-  // Initialize position counter for coordinate spacing
+  const segments: string[] = []
   let positionCounter = currRemainder % spacingInterval
-
-  let chunkIndex = 0
   let stringOffset = 0
+  let isFirstChunk = true
 
-  // Process the string in chunks
-  for (; chunkIndex < numChunks + 1; ++chunkIndex) {
-    // For the first chunk, adjust for remainder from previous section
-    const chunkSize =
-      chunkIndex === 0 ? charactersPerRow - currRemainder : charactersPerRow
-
+  while (stringOffset < str.length) {
+    const chunkSize = isFirstChunk
+      ? charactersPerRow - currRemainder
+      : charactersPerRow
     const currentChunk = str.slice(stringOffset, stringOffset + chunkSize)
-
-    // Break if no more content
-    if (!currentChunk) {
-      break
-    }
-
-    segments[chunkIndex] = showCoordinates
-      ? formatWithCoordinateSpacing(
-          currentChunk,
-          positionCounter,
-          spacingInterval,
-        )
-      : currentChunk
-
-    // Reset position counter after each row
+    segments.push(
+      showCoordinates
+        ? formatWithCoordinateSpacing(
+            currentChunk,
+            positionCounter,
+            spacingInterval,
+          )
+        : currentChunk,
+    )
     positionCounter = 0
     stringOffset += chunkSize
+    isFirstChunk = false
   }
 
-  // Calculate remainder for the next section
+  const lastSegmentLength = segments.at(-1)?.replaceAll(' ', '').length ?? 0
+  const carryRemainder = segments.length <= 1 ? currRemainder : 0
   return {
     segments,
-    remainder: calculateRemainder(
-      segments,
-      chunkIndex,
-      currRemainder,
-      charactersPerRow,
-    ),
+    remainder: (lastSegmentLength + carryRemainder) % charactersPerRow,
   }
 }
 
@@ -87,21 +75,3 @@ function formatWithCoordinateSpacing(
   return formattedChunk
 }
 
-/**
- * Calculates the remainder count for continuing to the next section.
- */
-function calculateRemainder(
-  segments: string[],
-  chunkIndex: number,
-  currRemainder: number,
-  charactersPerRow: number,
-) {
-  // Get the length of the last segment without spaces
-  const lastSegmentLength = segments.at(-1)?.replaceAll(' ', '').length ?? 0
-
-  // If we're on the first chunk, include the previous remainder
-  const additionalRemainder = chunkIndex < 2 ? currRemainder : 0
-
-  // Calculate the new remainder
-  return (lastSegmentLength + additionalRemainder) % charactersPerRow
-}
