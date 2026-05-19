@@ -3,25 +3,25 @@
 exports[`<AboutWidget /> renders 1`] = `
 <div>
   <div
-    class="css-1cuw7jc"
+    class="css-12fnbn3"
   >
     <h4
-      class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1ya2hdm-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-xzkaa2-MuiTypography-root"
       style="--Typography-textAlign: center;"
     >
       JBrowse 2
     </h4>
     <h6
-      class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter css-1neszgn-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter css-mixo6d-MuiTypography-root"
       style="--Typography-textAlign: center;"
     />
     <p
-      class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-1j3qii7-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-16xd5lk-MuiTypography-root"
       style="--Typography-textAlign: center;"
     >
       JBrowse is a 
       <a
-        class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1orsvah-MuiTypography-root-MuiLink-root"
+        class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-366eis-MuiTypography-root-MuiLink-root"
         href="http://gmod.org/"
         rel="noopener noreferrer"
         target="_blank"
@@ -30,7 +30,7 @@ exports[`<AboutWidget /> renders 1`] = `
          
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
           data-testid="OpenInNewIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -45,49 +45,163 @@ exports[`<AboutWidget /> renders 1`] = `
     </p>
     <br />
     <p
-      class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-1j3qii7-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-16xd5lk-MuiTypography-root"
       style="--Typography-textAlign: center;"
     >
-      © 2019-2022 The Evolutionary Software Foundation
+      © 2019-2026 The Evolutionary Software Foundation
     </p>
     <div
-      class="css-1syf0v2"
+      class="css-1hw29i9"
     >
-      <p
-        class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-9g9pc9-MuiPaper-root-MuiAccordion-root"
+        style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
       >
-        External plugins loaded
-      </p>
-      <ul>
-        <li>
-          <a
-            class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1orsvah-MuiTypography-root-MuiLink-root"
-            href="http://google.com"
-            rel="noopener noreferrer"
-            target="_blank"
+        <h3
+          class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
+        >
+          <button
+            aria-expanded="true"
+            class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
+            tabindex="0"
+            type="button"
           >
-            HelloPlugin 1.0.0
-             
-            <svg
-              aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
-              data-testid="OpenInNewIcon"
-              focusable="false"
-              viewBox="0 0 24 24"
+            <span
+              class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
             >
-              <path
-                d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"
-              />
-            </svg>
-          </a>
-        </li>
-      </ul>
-      <p
-        class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+              >
+                External plugins loaded
+              </p>
+            </span>
+            <span
+              class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+                data-testid="ExpandMoreIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+                />
+              </svg>
+            </span>
+          </button>
+        </h3>
+        <div
+          class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
+          style="min-height: 0px;"
+        >
+          <div
+            class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
+          >
+            <div
+              class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
+            >
+              <div
+                class="MuiAccordion-region css-at4ued-MuiAccordion-region"
+                role="region"
+              >
+                <div
+                  class="MuiAccordionDetails-root css-1uc1gvv-MuiAccordionDetails-root"
+                >
+                  <ul>
+                    <li>
+                      <a
+                        class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-366eis-MuiTypography-root-MuiLink-root"
+                        href="http://google.com"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        HelloPlugin 1.0.0
+                         
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+                          data-testid="OpenInNewIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"
+                          />
+                        </svg>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-9g9pc9-MuiPaper-root-MuiAccordion-root"
+        style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
       >
-        Core plugins loaded
-      </p>
-      <ul />
+        <h3
+          class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
+        >
+          <button
+            aria-expanded="true"
+            class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+              >
+                Core plugins loaded
+              </p>
+            </span>
+            <span
+              class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+                data-testid="ExpandMoreIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+                />
+              </svg>
+            </span>
+          </button>
+        </h3>
+        <div
+          class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
+          style="min-height: 0px;"
+        >
+          <div
+            class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
+          >
+            <div
+              class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
+            >
+              <div
+                class="MuiAccordion-region css-at4ued-MuiAccordion-region"
+                role="region"
+              >
+                <div
+                  class="MuiAccordionDetails-root css-1uc1gvv-MuiAccordionDetails-root"
+                >
+                  <ul />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

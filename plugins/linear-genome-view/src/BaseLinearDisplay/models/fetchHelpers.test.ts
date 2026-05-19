@@ -30,7 +30,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig({ visibleBp: 10_000 })
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -46,7 +46,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig({ fetchSizeLimit: 1_000_000 })
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -65,7 +65,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig({ fetchSizeLimit: 1_000_000 })
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -82,7 +82,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig({ fetchSizeLimit: 1_000_000 })
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -99,7 +99,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig({ fetchSizeLimit: 1_000_000 })
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -115,7 +115,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig({ fetchSizeLimit: 1_000_000 })
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -132,7 +132,7 @@ describe('checkByteEstimate', () => {
     const staleCtx = { isStale: () => true }
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -147,7 +147,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig()
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -166,7 +166,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig({ fetchSizeLimit: 10_000_000 })
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -187,7 +187,7 @@ describe('checkByteEstimate', () => {
     ]
 
     await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session-abc',
       testRegions,
       config,
@@ -207,7 +207,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig({ fetchSizeLimit: 1_000_000 })
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -225,7 +225,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig({ visibleBp: 20_000 })
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -242,7 +242,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig({ visibleBp: 19_999 })
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,
@@ -259,7 +259,7 @@ describe('checkByteEstimate', () => {
     const config = makeConfig({ fetchSizeLimit: 1_000_000 })
 
     const result = await checkByteEstimate(
-      rpc as any,
+      rpc,
       'session1',
       regions,
       config,

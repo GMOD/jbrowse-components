@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
+import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
 import AboutWidget from './AboutWidget.tsx'
@@ -27,7 +29,11 @@ describe('<AboutWidget />', () => {
           },
         },
       )
-    const { container } = render(<AboutWidget model={session.widgetModel} />)
+    const { container } = render(
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <AboutWidget model={session.widgetModel} />
+      </ThemeProvider>,
+    )
     expect(container).toMatchSnapshot()
   })
 })

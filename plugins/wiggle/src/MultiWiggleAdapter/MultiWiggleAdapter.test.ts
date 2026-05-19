@@ -1,6 +1,13 @@
 import MultiWiggleAdapter from './MultiWiggleAdapter.ts'
 import configSchema from './configSchema.ts'
 
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+// getSources strips dataAdapter before returning — these tests only exercise
+// metadata flow, never call into dataAdapter. One named stub avoids per-call
+// casts.
+const stubDataAdapter = {} as BaseFeatureDataAdapter
+
 describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
   it('derives source names from URI filenames', async () => {
     const mockGetSubAdapter = jest
@@ -87,7 +94,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             uri: 'http://example.com/data/sample1.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
         {
           source: 'source-2',
@@ -95,7 +102,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             uri: 'http://example.com/data/sample2.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -144,7 +151,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             localPath: '/home/user/data/file1.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -183,7 +190,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             blob: mockFile,
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -222,7 +229,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             uri: 'http://example.com/data/sample.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -249,7 +256,7 @@ describe('MultiWiggleAdapter.getSources', () => {
         {
           source: 'fallback-source',
           type: 'OtherAdapter',
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -304,7 +311,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           },
           customProp: 'custom-value',
           anotherProp: 42,
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -338,7 +345,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             uri: 'http://example.com/path/to/deep/nested/sample.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
         {
           source: 'test2',
@@ -346,7 +353,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             uri: 'file:///local/path/file.with.dots.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
         {
           source: 'test3',
@@ -354,7 +361,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             uri: 'https://s3.amazonaws.com/bucket/key/data.no-extension',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -388,7 +395,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             uri: 'http://example.com/data/test.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })

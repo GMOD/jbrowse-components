@@ -4,8 +4,7 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './TabixPAFAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
 
-const pafPath =
-  require.resolve('../../../../test_data/volvox/volvox.untangle.paf.gz')
+const pafPath = require.resolve('./test_data/volvox.untangle.paf.gz')
 
 function makeAdapter(jaccardFilter = 0, assemblyNames: string[] = []) {
   return new Adapter(

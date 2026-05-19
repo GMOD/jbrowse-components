@@ -6,7 +6,7 @@ import MyConfigSchema from './configSchema.ts'
 
 function makeAdapter(
   pifFile: string,
-  assemblyNames: [string, string],
+  assemblyNames: string[],
   indexType: 'TBI' | 'CSI' = 'TBI',
 ) {
   return new Adapter(
@@ -233,7 +233,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const pairInfo = await adapter.getPairInfo()
       expect(pairInfo.pairCount).toBe(2)
       expect(pairInfo.pairs.size).toBe(2)
@@ -246,7 +246,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const result = await adapter.getMultiPairFeatures({
         refName: 'ctgA',
         start: 0,
@@ -279,7 +279,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const result = await adapter.getMultiPairFeatures({
         refName: 'ctgA',
         start: 0,
@@ -299,7 +299,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const result = await adapter.getMultiPairFeatures({
         refName: 'ctgA',
         start: 100000,
@@ -338,7 +338,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const multiResult = await multiAdapter.getMultiPairFeatures({
         refName: 'ctgA',
         start: 0,
@@ -373,7 +373,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const result = await adapter.getMultiPairFeatures({
         refName: 'ctgA',
         start: 0,
@@ -395,7 +395,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const result = await adapter.getMultiPairFeatures({
         refName: 'ctgA',
         start: 0,
@@ -416,7 +416,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const result = await adapter.getMultiPairFeatures({
         refName: 'ctgA',
         start: 0,
@@ -438,7 +438,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
 
       // Query only the middle portion of the alignment
       const result = await adapter.getMultiPairFeatures({
@@ -463,7 +463,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const result = await adapter.getMultiPairFeatures({
         refName: 'nonexistent',
         start: 0,
@@ -484,7 +484,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const header = await adapter.getHeader()
 
       expect(header).toContain('pairs=2')
@@ -499,7 +499,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
 
       const queryRefNames = await adapter.getRefNames({
         regions: [
@@ -519,7 +519,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
 
       // Use a very high bpPerPx to trigger structural tier
       const result = await adapter.getMultiPairFeatures(
@@ -551,7 +551,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
 
       // Use bpPerPx just above splitThreshold to trigger summary tier
       const pairInfo = await adapter.getPairInfo()
@@ -583,7 +583,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const result = await adapter.getMultiPairFeatures({
         refName: 'ctgA',
         start: 0,
@@ -614,7 +614,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const result = await adapter.getMultiPairFeatures({
         refName: 'ctgA',
         start: 0,
@@ -644,7 +644,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
 
       const fromVolvox = await adapter.getMultiPairFeatures({
         refName: 'ctgA',
@@ -677,7 +677,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
       const result = await adapter.getMultiPairFeatures({
         refName: 'ctgA',
         start: 0,
@@ -700,7 +700,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
 
       // Query from volvox — both pairs contain volvox
       const fromVolvox = await adapter.getMultiPairFeatures({
@@ -740,7 +740,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
 
       // volvox ctgA = 50001bp
       const result = await adapter.getMultiPairFeatures({
@@ -763,7 +763,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
         'volvox_ins',
         'volvox',
         'volvox_del',
-      ] as unknown as [string, string])
+      ])
 
       const multiResult = await adapter.getMultiPairFeatures({
         refName: 'ctgA',

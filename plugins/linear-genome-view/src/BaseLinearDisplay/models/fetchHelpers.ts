@@ -18,7 +18,7 @@ export interface ByteEstimateResult {
 }
 
 export async function checkByteEstimate(
-  rpcManager: RpcManager,
+  rpcManager: Pick<RpcManager, 'call'>,
   sessionId: string,
   regions: {
     refName: string
