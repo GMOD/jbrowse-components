@@ -18,17 +18,6 @@ export interface PositionedHierarchyNode<T> extends HierarchyNode<T> {
   parent: PositionedHierarchyNode<T> | null
 }
 
-function computeHeight<T>(node: HierarchyNode<T>): number {
-  let h = 0
-  if (node.children) {
-    for (const child of node.children) {
-      h = Math.max(h, computeHeight(child) + 1)
-    }
-  }
-  node.height = h
-  return h
-}
-
 function wrap<T>(
   data: T,
   childrenAccessor: (d: T) => T[] | undefined | null,
@@ -45,6 +34,11 @@ function wrap<T>(
   }
   if (kids?.length) {
     node.children = kids.map(d => wrap(d, childrenAccessor, node, depth + 1))
+    let h = 0
+    for (const child of node.children) {
+      h = Math.max(h, child.height + 1)
+    }
+    node.height = h
   }
   return node
 }
@@ -53,9 +47,7 @@ export function hierarchy<T>(
   data: T,
   childrenAccessor: (d: T) => T[] | undefined | null,
 ): HierarchyNode<T> {
-  const root = wrap(data, childrenAccessor, null, 0)
-  computeHeight(root)
-  return root
+  return wrap(data, childrenAccessor, null, 0)
 }
 
 export function sum<T>(

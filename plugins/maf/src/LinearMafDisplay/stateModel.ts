@@ -14,18 +14,14 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { clusterTree, leaves } from '@jbrowse/tree-sidebar'
+import { clusterTree, leafNameMap, leaves } from '@jbrowse/tree-sidebar'
 import deepEqual from 'fast-deep-equal'
 import { observable } from 'mobx'
 
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { fetchMafAlignmentData } from './fetchMafAlignmentData.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
-import {
-  computeNodeDescendantNames,
-  getMsaHighlights,
-  layoutMafTree,
-} from './util.ts'
+import { getMsaHighlights, layoutMafTree } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 
 import type { HierarchyNode, MafTreeNode, Sample } from './types.ts'
@@ -401,7 +397,7 @@ export default function stateModelFactory(
        */
       get nodeDescendantNames() {
         if (this.hierarchy) {
-          return computeNodeDescendantNames(this.hierarchy)
+          return leafNameMap(this.hierarchy)
         }
         return new Map<HierarchyNode, string[]>()
       },

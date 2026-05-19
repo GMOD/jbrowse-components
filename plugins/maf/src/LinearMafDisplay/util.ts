@@ -2,7 +2,6 @@ import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 import {
   assignDepthY,
   eachAfter,
-  leafNameMap,
   leaves,
   maxLength,
   setBrLength,
@@ -132,10 +131,4 @@ export function getMsaHighlights(
     }
   }
   return result
-}
-
-export function computeNodeDescendantNames<T extends { name?: string }>(
-  root: HierarchyNode<T>,
-): Map<HierarchyNode<T>, string[]> {
-  return leafNameMap(root)
 }

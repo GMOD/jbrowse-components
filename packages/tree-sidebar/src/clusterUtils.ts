@@ -1,4 +1,4 @@
-import { hierarchy, sort, sum } from './hierarchy.ts'
+import { hierarchy, leaves, sort, sum } from './hierarchy.ts'
 import parseNewick from './newick.ts'
 
 import type { HierarchyNode } from './hierarchy.ts'
@@ -7,19 +7,9 @@ import type { ClusterNodeData } from './types.ts'
 export function getLeafNames<T extends ClusterNodeData>(
   node: HierarchyNode<T>,
 ): string[] {
-  const result: string[] = []
-  const stack: HierarchyNode<T>[] = [node]
-  while (stack.length) {
-    const n = stack.pop()!
-    if (n.children?.length) {
-      for (const child of n.children) {
-        stack.push(child)
-      }
-    } else if (n.data.name !== undefined) {
-      result.push(n.data.name)
-    }
-  }
-  return result
+  return leaves(node)
+    .map(l => l.data.name)
+    .filter((n): n is string => n !== undefined)
 }
 
 function findSubtree<T extends ClusterNodeData>(

@@ -1,10 +1,4 @@
-import {
-  computeNodeDescendantNames,
-  generateTooltipContent,
-  getMsaHighlights,
-} from './util.ts'
-
-import type { HierarchyNode } from '@jbrowse/tree-sidebar'
+import { generateTooltipContent, getMsaHighlights } from './util.ts'
 
 describe('getMsaHighlights', () => {
   test('returns empty when no MSA views are connected', () => {
@@ -112,37 +106,3 @@ describe('generateTooltipContent', () => {
   })
 })
 
-describe('computeNodeDescendantNames', () => {
-  test('leaf node returns its own name', () => {
-    const leaf: HierarchyNode<{ name: string }> = {
-      data: { name: 'hg38' },
-    } as HierarchyNode<{ name: string }>
-    const map = computeNodeDescendantNames(leaf)
-    expect(map.get(leaf)).toEqual(['hg38'])
-  })
-
-  test('internal node returns all descendant leaf names', () => {
-    const leafA = { data: { name: 'a' } } as HierarchyNode<{ name: string }>
-    const leafB = { data: { name: 'b' } } as HierarchyNode<{ name: string }>
-    const leafC = { data: { name: 'c' } } as HierarchyNode<{ name: string }>
-    const inner = {
-      data: {},
-      children: [leafB, leafC],
-    } as unknown as HierarchyNode<{ name: string }>
-    const root = {
-      data: {},
-      children: [leafA, inner],
-    } as unknown as HierarchyNode<{ name: string }>
-
-    const map = computeNodeDescendantNames(root)
-    expect(map.get(root)).toEqual(['a', 'b', 'c'])
-    expect(map.get(inner)).toEqual(['b', 'c'])
-    expect(map.get(leafA)).toEqual(['a'])
-  })
-
-  test('leaf with undefined name returns empty array', () => {
-    const leaf = { data: {} } as HierarchyNode<{ name?: string }>
-    const map = computeNodeDescendantNames(leaf)
-    expect(map.get(leaf)).toEqual([])
-  })
-})
