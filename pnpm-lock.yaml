@@ -210,8 +210,8 @@ importers:
         specifier: ^0.5.2
         version: 0.5.2(eslint@10.4.0)
       eslint-plugin-tss-unused-classes:
-        specifier: ^1.0.3
-        version: 1.0.3(eslint@10.4.0)
+        specifier: ^1.0.4
+        version: 1.0.4(eslint@10.4.0)
       eslint-plugin-unicorn:
         specifier: ^64.0.0
         version: 64.0.0(eslint@10.4.0)
@@ -386,8 +386,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.23
-        version: 6.0.23
+        specifier: ^6.0.25
+        version: 6.0.25
       '@jbrowse/jexl':
         specifier: ^3.0.2
         version: 3.0.2
@@ -699,8 +699,8 @@ importers:
         specifier: ^7.2.4
         version: 7.2.4
       '@gmod/cram':
-        specifier: ^8.2.4
-        version: 8.2.4
+        specifier: ^8.2.6
+        version: 8.2.6
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -1238,8 +1238,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.23
-        version: 6.0.23
+        specifier: ^6.0.25
+        version: 6.0.25
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1502,8 +1502,8 @@ importers:
   plugins/maf:
     dependencies:
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.23
-        version: 6.0.23
+        specifier: ^6.0.25
+        version: 6.0.25
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2100,8 +2100,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0
       electron:
-        specifier: ^42.1.0
-        version: 42.1.0
+        specifier: ^42.2.0
+        version: 42.2.0
       electron-chromedriver:
         specifier: ^42.1.0
         version: 42.1.0
@@ -3794,11 +3794,11 @@ packages:
   '@gmod/bed@2.2.5':
     resolution: {integrity: sha512-bk+D5yrV1cxNCuiJ771iK68jmU8yEGV2vufdJW1SjeByl7ievJoYKgRdSwEol4hleqV1cNcmlMvfmj3t+n+OMw==}
 
-  '@gmod/bgzf-filehandle@6.0.23':
-    resolution: {integrity: sha512-Xrkzq1sP09HOiKfjJGN1eRWKOjSvx4nNhNmeZBIwYCQSVgEyrzQn6GKW3QqK9RAZmkmc2wlkjly2jMBbq/++vA==}
+  '@gmod/bgzf-filehandle@6.0.25':
+    resolution: {integrity: sha512-nlI9+G6AFvnZXMgGwy0Jm3oGbkGES9zCz9DaZNYGJPAvgzS1QTGIUmCcD/E132C86es3UDlVOK82MhwGopQqZg==}
 
-  '@gmod/cram@8.2.4':
-    resolution: {integrity: sha512-XO7H8Fj1pClAnaKlGRt7zwGQyW2GenSSl9WmpKeXZ9FDd0i/jLyoKhzj9I1IZmsN0NoqKT9LqXZeHmaaCr0aNQ==}
+  '@gmod/cram@8.2.6':
+    resolution: {integrity: sha512-qsH3nN3f1sqWAs915iDpuX4jiG1CSCNisb9cBF7rxmZpxg82pnM9x9AxQQC95dUt3bAEBN5RPdZzJTa3YYzKtg==}
 
   '@gmod/faidx@2.0.0':
     resolution: {integrity: sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==}
@@ -6308,6 +6308,11 @@ packages:
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
+  electron@42.2.0:
+    resolution: {integrity: sha512-b2Tc7sIKiZEl0tBVwFM5GJ+FT5KYhmy9QJHjx8BGVZPVW2SctXWEvrE959ElB56qw7H05dBkhlikDA1DmpaAMw==}
+    engines: {node: '>= 22.12.0'}
+    hasBin: true
+
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
     engines: {node: '>=12'}
@@ -6521,10 +6526,10 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7
 
-  eslint-plugin-tss-unused-classes@1.0.3:
-    resolution: {integrity: sha512-FtfNwEsUfEN7y+6+C9j4INh3LTL1lyujmtj8MiorPVbEDYwt9NcjuOpsjvEkSzsD0oyLZB1kBFrW59JTtepRnA==}
+  eslint-plugin-tss-unused-classes@1.0.4:
+    resolution: {integrity: sha512-1Ap12QLHvqenENXFO6tTA8T59be83zc7SJ/yWOHmYd0A5qKEQz4MorRWcgisCul9FT2EqIWZ1txhaCw2uQVCKg==}
     peerDependencies:
-      eslint: ^7.14.0 || ^8.0.0 || ^9.0.0
+      eslint: ^7.14.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
 
   eslint-plugin-unicorn@64.0.0:
     resolution: {integrity: sha512-rNZwalHh8i0UfPlhNwg5BTUO1CMdKNmjqe+TgzOTZnpKoi8VBgsW7u9qCHIdpxEzZ1uwrJrPF0uRb7l//K38gA==}
@@ -8076,6 +8081,10 @@ packages:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
     engines: {node: '>=10'}
 
+  p-limit@7.3.0:
+    resolution: {integrity: sha512-7cIXg/Z0M5WZRblrsOla88S4wAK+zOQQWeBYfV3qJuJXMr+LnbYjaadrFaS0JILfEDPVqHyKnZ1Z/1d6J9VVUw==}
+    engines: {node: '>=20'}
+
   p-locate@4.1.0:
     resolution: {integrity: sha512-R79ZZ/0wAxKGu3oYMlz8jy/kbhsNrS7SKZ7PxEHBgJ5+F2mtFW2fK2cOtBh1cHYkQsbzFV7I+EoRKe6Yt0oK7A==}
     engines: {node: '>=8'}
@@ -9579,6 +9588,10 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+  yocto-queue@1.2.2:
+    resolution: {integrity: sha512-4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ==}
+    engines: {node: '>=12.20'}
+
   zod-validation-error@3.5.4:
     resolution: {integrity: sha512-+hEiRIiPobgyuFlEojnqjJnhFvg4r/i3cqgcm67eehZf/WBaK3g6cD02YU9mtdVxZjv8CzCA9n/Rhrs3yAAvAw==}
     engines: {node: '>=18.0.0'}
@@ -10874,7 +10887,7 @@ snapshots:
 
   '@gmod/bam@7.2.4':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.23
+      '@gmod/bgzf-filehandle': 6.0.25
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
       generic-filehandle2: 2.1.7
@@ -10889,13 +10902,14 @@ snapshots:
 
   '@gmod/bed@2.2.5': {}
 
-  '@gmod/bgzf-filehandle@6.0.23':
+  '@gmod/bgzf-filehandle@6.0.25':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
+      p-limit: 7.3.0
       pako-esm2: 2.0.2
 
-  '@gmod/cram@8.2.4':
+  '@gmod/cram@8.2.6':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
@@ -10910,7 +10924,7 @@ snapshots:
 
   '@gmod/indexedfasta@5.0.7':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.23
+      '@gmod/bgzf-filehandle': 6.0.25
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
@@ -10923,7 +10937,7 @@ snapshots:
   '@gmod/tabix@3.3.8':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
-      '@gmod/bgzf-filehandle': 6.0.23
+      '@gmod/bgzf-filehandle': 6.0.25
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
@@ -13675,6 +13689,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  electron@42.2.0:
+    dependencies:
+      '@electron/get': 5.0.0
+      '@types/node': 24.12.4
+      extract-zip: 2.0.1
+    transitivePeerDependencies:
+      - supports-color
+
   emittery@0.13.1: {}
 
   emoji-regex@10.6.0: {}
@@ -14013,7 +14035,7 @@ snapshots:
       string.prototype.matchall: 4.0.12
       string.prototype.repeat: 1.0.0
 
-  eslint-plugin-tss-unused-classes@1.0.3(eslint@10.4.0):
+  eslint-plugin-tss-unused-classes@1.0.4(eslint@10.4.0):
     dependencies:
       eslint: 10.4.0
 
@@ -15878,6 +15900,10 @@ snapshots:
     dependencies:
       yocto-queue: 0.1.0
 
+  p-limit@7.3.0:
+    dependencies:
+      yocto-queue: 1.2.2
+
   p-locate@4.1.0:
     dependencies:
       p-limit: 2.3.0
@@ -17637,6 +17663,8 @@ snapshots:
       fd-slicer: 1.1.0
 
   yocto-queue@0.1.0: {}
+
+  yocto-queue@1.2.2: {}
 
   zod-validation-error@3.5.4(zod@3.25.76):
     dependencies:
