@@ -18,3 +18,4 @@ minimumReleaseAgeExclude:
   - '@gmod/*'
   - 'g2p_mapper'
   - 'ixixx'
+  - 'gff-nostream'

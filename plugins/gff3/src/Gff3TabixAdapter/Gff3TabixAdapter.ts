@@ -5,7 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { parseRecordsJBrowse } from 'gff-nostream'
+import { extractType, parseRecordsJBrowse } from 'gff-nostream'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -94,7 +94,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   ) {
     const { statusCallback = () => {} } = opts
     try {
-      const lines: (LineRecord & { type: string })[] = []
+      const lines: LineRecord[] = []
 
       await updateStatus('Downloading features', statusCallback, () =>
         gff.getLines(
@@ -102,19 +102,13 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           query.start,
           query.end,
           (line, fileOffset, start, end) => {
-            // Extract type (column 3) without full split - find 2nd and 3rd tabs
-            const t1 = line.indexOf('\t')
-            const t2 = line.indexOf('\t', t1 + 1)
-            const t3 = line.indexOf('\t', t2 + 1)
-            const type = line.slice(t2 + 1, t3)
-
             lines.push({
               line,
               lineHash: fileOffset,
               start,
               end,
               hasEscapes: line.includes('%'),
-              type,
+              type: extractType(line),
             })
           },
         ),
