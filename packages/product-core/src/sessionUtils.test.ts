@@ -1,4 +1,5 @@
 import { getType, types, unprotect } from '@jbrowse/mobx-state-tree'
+import { runInAction } from 'mobx'
 
 import { filterSessionInPlace } from './sessionUtils.ts'
 
@@ -18,7 +19,9 @@ test('filterSessionInPlace removes stale references from maps', () => {
     refs: { a: 'a', b: 'b' },
   })
   unprotect(container)
-  container.items.delete('b')
-  filterSessionInPlace(container, getType(container))
+  runInAction(() => {
+    container.items.delete('b')
+    filterSessionInPlace(container, getType(container))
+  })
   expect([...container.refs.keys()]).toEqual(['a'])
 })

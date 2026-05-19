@@ -521,15 +521,13 @@ export default function RootModel({
                 onClick: () => {
                   if (self.session) {
                     const session = self.session as BaseSession
-                    session.queueDialog(
-                      handleClose => [
-                        PreferencesDialog,
-                        {
-                          session: self.session,
-                          handleClose,
-                        },
-                      ],
-                    )
+                    session.queueDialog(handleClose => [
+                      PreferencesDialog,
+                      {
+                        session: self.session,
+                        handleClose,
+                      },
+                    ])
                   }
                 },
               },

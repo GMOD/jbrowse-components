@@ -56,9 +56,7 @@ const LinearComparativeRenderArea = observer(
       <div className={classes.container}>
         {views.map((view, i) => (
           <Fragment key={view.id}>
-            {i > 0 ? (
-              <LevelSection model={model} levelIdx={i - 1} />
-            ) : null}
+            {i > 0 ? <LevelSection model={model} levelIdx={i - 1} /> : null}
             <View view={view} />
           </Fragment>
         ))}

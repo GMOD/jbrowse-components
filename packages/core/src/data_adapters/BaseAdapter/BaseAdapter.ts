@@ -1,8 +1,8 @@
+import { getAdapterId } from './getAdapterId.ts'
 import {
   ConfigurationSchema,
   readConfObject,
 } from '../../configuration/index.ts'
-import { getAdapterId } from './getAdapterId.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
