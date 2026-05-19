@@ -16,8 +16,8 @@ import { aggregateAminos } from './peptides/aggregateAminoAcids.ts'
 import { isLabelAllowed } from './renderConfig.ts'
 import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
 
-import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
 import type { ArrowData, LineData, RectData } from './packRenderArrays.ts'
+import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type {
   AminoAcidOverlayItem,

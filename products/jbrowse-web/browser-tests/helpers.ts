@@ -32,7 +32,7 @@ export async function findByText(
   page: Page,
   text: string | RegExp,
   timeout = 30000,
-): Promise<ElementHandle<Element> | null> {
+): Promise<ElementHandle | null> {
   if (typeof text === 'string') {
     // ::-p-text() is unreliable in Firefox BiDi with per-browser restarts.
     // Fall back to DOM-based text search if the Puppeteer selector fails.
@@ -40,7 +40,7 @@ export async function findByText(
       const handle = await page.waitForSelector(`::-p-text(${text})`, {
         timeout: Math.min(timeout, 3000),
       })
-      return handle as ElementHandle<Element> | null
+      return handle
     } catch {
       await page.waitForFunction(
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -73,7 +73,7 @@ export async function findByText(
     text.source,
     text.flags,
   )
-  return handle.asElement() as ElementHandle<Element> | null
+  return handle.asElement() as ElementHandle | null
 }
 
 export async function waitForLoadingToComplete(page: Page, timeout = 30000) {

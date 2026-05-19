@@ -1,12 +1,12 @@
+import type { ManhattanRpcResult } from '../../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanHit } from '../findManhattanHit.ts'
 import type {
   ManhattanBackend,
   ManhattanRenderState,
 } from '../manhattanBackendTypes.ts'
-import type { ManhattanRpcResult } from '../../ManhattanRPC/rpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { GpuLifecycleModel } from '@jbrowse/core/util/useGpuModelLifecycle'
-import type { YScaleTicks, WiggleRenderBlock } from '@jbrowse/wiggle-core'
+import type { WiggleRenderBlock, YScaleTicks } from '@jbrowse/wiggle-core'
 
 // Component-facing slice of LinearManhattanDisplayModel. Hand-rolled to
 // avoid a circular type between stateModelFactory.ts (lazy-imports the

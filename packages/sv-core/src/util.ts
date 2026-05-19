@@ -1,5 +1,4 @@
 import { parseBreakend } from '@gmod/vcf'
-
 import { getEnv, getSession } from '@jbrowse/core/util'
 
 import type { Track } from './types.ts'

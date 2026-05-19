@@ -17,9 +17,9 @@ export default function VariantConsequenceDataGrid({
         rows={data.map((elt, id) => {
           const parts = elt.split('|')
           const row: Record<string, string> = { id: `${id}` }
-          fields.forEach((field, i) => {
+          for (const [i, field] of fields.entries()) {
             row[field] = parts[i] ?? ''
-          })
+          }
           return row
         })}
         columns={fields.map(c => ({ field: c }))}

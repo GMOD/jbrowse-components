@@ -18,8 +18,8 @@ import {
 } from '@jbrowse/wiggle-core'
 import { observable } from 'mobx'
 
-import { computeManhattanScoreRange } from './computeManhattanScoreRange.ts'
 import TooltipComponent from './components/TooltipComponent.tsx'
+import { computeManhattanScoreRange } from './computeManhattanScoreRange.ts'
 
 import type { ManhattanHit } from './findManhattanHit.ts'
 import type {
@@ -186,7 +186,7 @@ export function stateModelFactory(
               if (!ctx.isStale()) {
                 self.setRpcData(
                   r.displayedRegionIndex,
-                  result as ManhattanRpcResult,
+                  result,
                 )
               }
             }),

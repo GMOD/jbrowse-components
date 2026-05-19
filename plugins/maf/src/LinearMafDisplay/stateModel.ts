@@ -21,12 +21,12 @@ import { observable } from 'mobx'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { fetchMafAlignmentData } from './fetchMafAlignmentData.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
-import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import {
   computeNodeDescendantNames,
   getMsaHighlights,
   layoutMafTree,
 } from './util.ts'
+import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 
 import type { HierarchyNode, MafTreeNode, Sample } from './types.ts'
 import type { HoveredInfo } from './util.ts'

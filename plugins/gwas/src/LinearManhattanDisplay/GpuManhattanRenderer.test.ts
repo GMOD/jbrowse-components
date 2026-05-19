@@ -1,5 +1,4 @@
 import { buildInstanceBuffer } from './GpuManhattanRenderer.ts'
-
 import * as shader from './shaders/manhattan.generated.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'

@@ -9,13 +9,13 @@ import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import OverflowIndicator from './OverflowIndicator.tsx'
 import { performMultiRegionHitDetection } from './hitTesting.ts'
-import { useScrollSync } from './useScrollSync.ts'
 import {
   type FeatureItemEntry,
   useAminoAcidOverlay,
   useFloatingLabels,
   useHighlightOverlays,
 } from './useOverlayElements.tsx'
+import { useScrollSync } from './useScrollSync.ts'
 
 import type { CanvasFeatureBackend } from './canvasFeatureBackendTypes.ts'
 import type { FlatbushRegionCache, VisibleRegion } from './hitTesting.ts'
