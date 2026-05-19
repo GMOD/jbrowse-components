@@ -392,23 +392,27 @@ The practical difference is N:
 ## SVG export pipeline (single source of truth)
 
 SVG export and on-screen rendering share the same pure draw function(s) per
-plugin. Two shapes, picked by data layout:
+plugin. Two shapes, picked by **whether there's a non-trivial builder step
+between fetched data and paint**:
 
-- **Single data source** (canvas, wiggle, MAF, hic, LD, multi-variant,
-  multi-variant-matrix, multi-LGV-synteny, sequence, manhattan, dotplot):
-  just `drawXxxBlocks(ctx, regions, blocks, state)`. The `regions` arg is the
-  fetched data itself (rpcDataMap or equivalent) — no merge step. Both the
-  on-screen `Canvas2DXxxRenderer.renderBlocks` and `renderSvg.tsx` call this
-  directly.
-- **Multi-source / merged** (alignments — pileup + arcs): a builder splits the
-  work in two:
-  - `buildXxxRegionMap(...sources) → Map<regionIdx, RegionData>` — pure
-    merge of multiple observable sources into one regions map. The on-screen
-    `Canvas2DXxxRenderer.sync(sources)` calls this directly.
-  - `drawXxxBlocks(ctx, regions, blocks, state)` — paints a pre-built map.
-  - `drawXxxToCtx(ctx, sources, blocks, state)` — one-shot wrapper that
-    calls `buildXxxRegionMap` then `drawXxxBlocks`. Used by `renderSvg.tsx`
-    so the export doesn't have to wire the builder by hand.
+- **Direct** — `drawXxxBlocks(ctx, regions, blocks, state)` is the only entry
+  point; `regions` IS the fetched data (or a 1:1 derived map like
+  `laidOutDataMap`). Both the on-screen `Canvas2DXxxRenderer.renderBlocks`
+  and `renderSvg.tsx` call it directly.
+  Plugins: canvas, MAF, HiC, LD, multi-variant-matrix, sequence, manhattan,
+  dotplot.
+- **With builder wrapper** — fetched data needs transformation
+  (encode/filter/merge) before painting:
+  - `drawXxxBlocks(ctx, regions, blocks, state)` — paints a pre-built map
+    (the on-screen renderer accumulates regions and calls this).
+  - `drawXxxToCtx(ctx, sources, blocks, state)` — one-shot wrapper used by
+    `renderSvg.tsx`: builds the regions map from observable sources, then
+    calls `drawXxxBlocks`. The wrapper is what the on-screen
+    `uploadRegion` (per-region) accumulates over time.
+  Plugins: alignments (merge pileup + arcs), wiggle / multi-wiggle (per-region
+  encode), multi-variant (Record→Map + filter), multi-LGV-synteny (merge into
+  layout map). Alignments goes one step further and exports a named
+  `buildAlignmentsRegionMap` because the on-screen `sync(sources)` reuses it.
 
 All entry points take any 2D-context-shaped surface: real
 `CanvasRenderingContext2D` for on-screen, `SvgCanvas` for vector export.
@@ -417,12 +421,12 @@ export does *not* instantiate the renderer. It calls the pure functions
 directly.
 
 **Per-block vs monolithic is an upload/data-shape question, not a draw-API
-question.** MAF, canvas, wiggle, multi-LGV-synteny are per-region streamed
-(uploadRegion + renderBlocks); HiC, LD, variants-matrix are monolithic
-(uploadX + render). All of them still expose a single `drawXxxBlocks`
-because none has a non-trivial merge layer between fetch and paint. The
-alignments split exists because pileup data and arcs data live in two
-separate observable maps that must be merged before painting.
+question.** Canvas, wiggle, MAF, manhattan, multi-variant are per-region
+streamed (uploadRegion + renderBlocks); alignments + multi-LGV-synteny are
+whole-map synced (sync(sources) + renderBlocks); HiC, LD, variants-matrix,
+dotplot are monolithic (uploadX + render). Whether a plugin needs a
+`drawXxxToCtx` wrapper depends only on whether there's transformation
+between raw data and paint, not on its upload pattern.
 
 SVG export in `renderSvg.tsx` follows this recipe:
 
@@ -472,20 +476,25 @@ rasterize, drifts from on-screen output, and locks in vector output.
    through `paintLayer`; only the overlays stay JSX.
 
 Everything else — every "regular" draw path (fills, glyphs, mismatches,
-coverage bins, score bars, ribbons, dot lines, sequence text) — goes through
-`paintLayer(width, height, opts, ctx => drawXxxToCtx(ctx, …))`.
+coverage bins, score bars, ribbons, dot lines, sequence text) — goes
+through `paintLayer(width, height, opts, ctx => drawXxx{Blocks,ToCtx}(ctx,
+…))` using whichever entry point the plugin exposes (see "Direct" vs "With
+builder wrapper" above).
 
 This kills the older "SVG-only `renderToCtx`" pattern that drifted out of
 sync with the on-screen renderer (different bicolor handling, different
 Y-axis offsets, different bezier curves, different palettes — each plugin
-had its own flavor of drift). The canonical reference implementation is
+had its own flavor of drift). The canonical reference for the
+builder-wrapper shape is
 `plugins/alignments/src/LinearAlignmentsDisplay/components/Canvas2DAlignmentsRenderer.ts`
-(`drawAlignmentsToCtx` + `drawAlignmentBlocks`); other plugins follow the
-same shape.
+(`buildAlignmentsRegionMap` + `drawAlignmentsToCtx` + `drawAlignmentBlocks`);
+for the direct shape see
+`plugins/maf/src/LinearMafRenderer/drawMafBlocks.ts`.
 
 **Shared utilities** (in `@jbrowse/core/util/`):
 - `createSvgRasterCanvas(width, height, opts)` — the 2× DPR canvas + `opts.createCanvas` fallback ritual.
 - `paintLayer(width, height, opts, paint) → ReactNode` — raster-vs-vector dispatch.
+- `svgExport` — `SVGErrorBox` (red error banner) and `SvgClipRect` (clipPath wrapper) for every renderSvg.tsx.
 - `Ctx2D = CanvasRenderingContext2D | SvgCanvas` — shared type alias used by every `drawXxxBlocks` signature.
 
 ---
