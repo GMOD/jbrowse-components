@@ -32,6 +32,9 @@ type MaybeCollapsedKeys = [string, boolean][] | undefined
 const defaultItemHeight = 22
 const categoryItemHeight = 40
 const overscan = 20
+const MAX_RECENTLY_USED = 10
+const sortTrackNamesK = 'sortTrackNames'
+const sortCategoriesK = 'sortCategories'
 
 // for settings that are config dependent
 function keyConfigPostFix() {
@@ -45,9 +48,9 @@ function keyConfigPostFix() {
     : 'empty'
 }
 
-export function getItemHeight(item: TreeNode, folderCategories?: Set<string>) {
+export function getItemHeight(item: TreeNode, folderCategories: Set<string>) {
   if (item.type === 'category') {
-    return folderCategories?.has(item.id)
+    return folderCategories.has(item.id)
       ? defaultItemHeight
       : categoryItemHeight
   }
@@ -84,14 +87,6 @@ function collapsedK(assemblyNames: string[], viewType: string) {
   ].join('-')
 }
 
-function sortTrackNamesK() {
-  return 'sortTrackNames'
-}
-
-function sortCategoriesK() {
-  return 'sortCategories'
-}
-
 function localStorageGetJSON<T>(key: string, defaultValue: T) {
   const val = localStorageGetItem(key)
   return val ? (JSON.parse(val) as T) : defaultValue
@@ -102,8 +97,6 @@ function localStorageSetJSON(key: string, val: unknown) {
     localStorageSetItem(key, JSON.stringify(val))
   }
 }
-
-const MAX_RECENTLY_USED = 10
 
 /**
  * #stateModel HierarchicalTrackSelectorWidget
@@ -144,14 +137,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #volatile
        */
       sortTrackNames: localStorageGetJSON<MaybeBoolean>(
-        sortTrackNamesK(),
+        sortTrackNamesK,
         undefined,
       ),
       /**
        * #volatile
        */
       sortCategories: localStorageGetJSON<MaybeBoolean>(
-        sortCategoriesK(),
+        sortCategoriesK,
         undefined,
       ),
       /**
@@ -406,14 +399,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
         const viewType = pluginManager.getViewType(self.view.type)!
-        if (trackConf) {
-          for (const display of trackConf.displays) {
-            if (viewType.displayTypes.some(d => d.name === display.type)) {
-              return trackConf
-            }
-          }
-        }
-        return undefined
+        const viewDisplayNames = new Set(viewType.displayTypes.map(d => d.name))
+        const matches = trackConf?.displays.some((display: { type: string }) =>
+          viewDisplayNames.has(display.type),
+        )
+        return matches ? trackConf : undefined
       },
     }))
 
@@ -746,8 +736,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               } = self
               localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
               localStorageSetJSON(favoritesK(), favorites)
-              localStorageSetJSON(sortTrackNamesK(), sortTrackNames)
-              localStorageSetJSON(sortCategoriesK(), sortCategories)
+              localStorageSetJSON(sortTrackNamesK, sortTrackNames)
+              localStorageSetJSON(sortCategoriesK, sortCategories)
               if (view) {
                 localStorageSetJSON(
                   collapsedK(assemblyNames, view.type),

@@ -199,6 +199,16 @@ export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
   )
 }
 
+/** abstract interface for a session that allows deleting track configs */
+export interface SessionWithDeleteTrackConf extends AbstractSessionModel {
+  deleteTrackConf(configuration: AnyConfigurationModel): void
+}
+export function isSessionWithDeleteTrackConf(
+  t: unknown,
+): t is SessionWithDeleteTrackConf {
+  return isSessionModel(t) && 'deleteTrackConf' in t
+}
+
 /** abstract interface for a session allows adding tracks */
 export interface SessionWithShareURL extends AbstractSessionModel {
   shareURL: string

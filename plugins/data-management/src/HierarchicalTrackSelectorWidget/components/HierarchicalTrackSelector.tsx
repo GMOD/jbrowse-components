@@ -1,7 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 import { observer } from 'mobx-react'
 
-import AutoSizer from './AutoSizer.tsx'
 import HierarchicalFab from './HierarchicalFab.tsx'
 import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
 import HierarchicalTree from './tree/HierarchicalTree.tsx'
@@ -19,19 +19,6 @@ const useStyles = makeStyles()({
   },
 })
 
-const Wrapper = ({
-  overrideDimensions,
-  children,
-}: {
-  overrideDimensions?: { width: number; height: number }
-  children: React.ReactNode
-}) =>
-  overrideDimensions ? (
-    <div style={{ ...overrideDimensions }}>{children}</div>
-  ) : (
-    children
-  )
-
 const HierarchicalTrackSelectorContainer = observer(
   function HierarchicalTrackSelectorContainer({
     model,
@@ -42,14 +29,19 @@ const HierarchicalTrackSelectorContainer = observer(
     toolbarHeight: number
     overrideDimensions?: { width: number; height: number }
   }) {
-    return (
-      <Wrapper overrideDimensions={overrideDimensions}>
+    const inner = (
+      <>
         <HierarchicalTrackSelector
           model={model}
           toolbarHeight={toolbarHeight}
         />
         <HierarchicalFab model={model} />
-      </Wrapper>
+      </>
+    )
+    return overrideDimensions ? (
+      <div style={{ ...overrideDimensions }}>{inner}</div>
+    ) : (
+      inner
     )
   },
 )
@@ -62,16 +54,15 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   toolbarHeight?: number
 }) {
   const { classes } = useStyles()
+  const [ref, { height }] = useMeasure()
   return (
     <div
       className={classes.container}
       style={{ height: `calc(100% - ${toolbarHeight}px)` }}
     >
       <HierarchicalHeader model={model} />
-      <div className={classes.treeContainer}>
-        <AutoSizer disableWidth>
-          {args => <HierarchicalTree height={args.height} model={model} />}
-        </AutoSizer>
+      <div ref={ref} className={classes.treeContainer}>
+        {height ? <HierarchicalTree height={height} model={model} /> : null}
       </div>
     </div>
   )

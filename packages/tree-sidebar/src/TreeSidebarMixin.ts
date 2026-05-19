@@ -71,7 +71,9 @@ export function TreeSidebarMixin<
           clearTree &&
           !!self.clusterTree &&
           (self.layout.length !== layout.length ||
-            self.layout.some((source, idx) => source.name !== layout[idx]?.name))
+            self.layout.some(
+              (source, idx) => source.name !== layout[idx]?.name,
+            ))
         self.layout = layout
         if (namesChanged) {
           self.clusterTree = undefined

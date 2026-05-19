@@ -23,7 +23,9 @@ export async function renderSvg(
   const view = getContainingView(model) as unknown as RenderSvgView
   const { viewWidth, viewHeight, hview, vview } = view
   if (model.error) {
-    return <SVGErrorBox error={model.error} width={viewWidth} height={viewHeight} />
+    return (
+      <SVGErrorBox error={model.error} width={viewWidth} height={viewHeight} />
+    )
   }
   const { geometry } = model
   if (!geometry) {

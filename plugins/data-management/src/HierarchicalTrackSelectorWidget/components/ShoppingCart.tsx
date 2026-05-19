@@ -1,5 +1,9 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import {
+  getEnv,
+  getSession,
+  isSessionWithDeleteTrackConf,
+} from '@jbrowse/core/util'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import { Badge } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -20,12 +24,18 @@ const ShoppingCart = observer(function ShoppingCart({
   const { pluginManager } = getEnv(model)
   const { adminMode, sessionTracks } = session
   const s = new Set<string>(sessionTracks?.map(t => t.trackId))
-  const canEdit = (t: string) => adminMode ?? s.has(t)
+  const canEdit = (t: string) => adminMode === true || s.has(t)
   const items = pluginManager.evaluateExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
     [],
     { session },
   ) as MenuItem[]
+  const definedSelection = selection.filter(
+    (elt): elt is AnyConfigurationModel => !!elt,
+  )
+  const canDeleteAll =
+    isSessionWithDeleteTrackConf(session) &&
+    definedSelection.every(elt => canEdit(elt.trackId))
 
   return selection.length ? (
     <CascadingMenuButton
@@ -36,16 +46,13 @@ const ShoppingCart = observer(function ShoppingCart({
             model.clearSelection()
           },
         },
-        ...(selection
-          .filter((elt): elt is AnyConfigurationModel => !!elt)
-          .every(elt => canEdit(elt.trackId))
+        ...(canDeleteAll
           ? [
               {
                 label: 'Delete tracks',
                 onClick: () => {
-                  for (const track of selection) {
-                    // @ts-expect-error
-                    session.deleteTrackConf?.(track)
+                  for (const track of definedSelection) {
+                    session.deleteTrackConf(track)
                   }
                 },
               },

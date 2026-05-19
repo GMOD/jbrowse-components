@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-
-const noRange = { startIndex: -1, endIndex: -1 }
+import { type RefObject, useEffect, useRef, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import SharedTooltip from './SharedTooltip.tsx'
@@ -10,6 +9,57 @@ import TreeItem from './TreeItem.tsx'
 import { useSearchHighlight } from '../../../useSearchHighlight.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+
+interface Range {
+  startIndex: number
+  endIndex: number
+  totalHeight: number
+  itemOffsets: number[]
+}
+
+// Subscribes to container scroll + MST offset changes and exposes the current
+// visible range; only re-renders when start/end actually change.
+function useVisibleRange(
+  containerRef: RefObject<HTMLDivElement | null>,
+  model: HierarchicalTrackSelectorModel,
+  height: number,
+): Range {
+  const [range, setRange] = useState(() => model.itemOffsets(height, 0))
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) {
+      return
+    }
+    let rafId: number | undefined
+    const recompute = () => {
+      rafId = undefined
+      const next = model.itemOffsets(height, container.scrollTop)
+      setRange(prev =>
+        next.startIndex === prev.startIndex &&
+        next.endIndex === prev.endIndex &&
+        next.totalHeight === prev.totalHeight
+          ? prev
+          : next,
+      )
+    }
+    const onScroll = () => {
+      rafId ??= requestAnimationFrame(recompute)
+    }
+    const dispose = autorun(() => {
+      void model.flattenedItemOffsets
+      recompute()
+    })
+    container.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      dispose()
+      container.removeEventListener('scroll', onScroll)
+      if (rafId !== undefined) {
+        cancelAnimationFrame(rafId)
+      }
+    }
+  }, [containerRef, model, height])
+  return range
+}
 
 const HierarchicalTree = observer(function HierarchicalTree({
   height,
@@ -21,50 +71,16 @@ const HierarchicalTree = observer(function HierarchicalTree({
   const { flattenedItems } = model
   const { drawerPosition } = getSession(model)
   const containerRef = useRef<HTMLDivElement>(null)
-  const visibleRangeRef = useRef(noRange)
-  const [scrollTop, setScrollTop] = useState(0)
   useSearchHighlight(
     containerRef,
     model.filterText,
     'jbrowse-hierarchical-search',
   )
-  const { startIndex, endIndex, totalHeight, itemOffsets } = model.itemOffsets(
+  const { startIndex, endIndex, totalHeight, itemOffsets } = useVisibleRange(
+    containerRef,
+    model,
     height,
-    scrollTop,
   )
-  visibleRangeRef.current = { startIndex, endIndex }
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) {
-      return
-    }
-
-    let rafId: number | undefined
-    const onScroll = () => {
-      if (rafId !== undefined) {
-        return
-      }
-      rafId = requestAnimationFrame(() => {
-        rafId = undefined
-        const newScrollTop = container.scrollTop
-        const { startIndex, endIndex } = model.itemOffsets(height, newScrollTop)
-        const prev = visibleRangeRef.current
-        if (startIndex !== prev.startIndex || endIndex !== prev.endIndex) {
-          visibleRangeRef.current = { startIndex, endIndex }
-          setScrollTop(newScrollTop)
-        }
-      })
-    }
-
-    container.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      container.removeEventListener('scroll', onScroll)
-      if (rafId !== undefined) {
-        cancelAnimationFrame(rafId)
-      }
-    }
-  }, [height, model])
 
   return (
     <div

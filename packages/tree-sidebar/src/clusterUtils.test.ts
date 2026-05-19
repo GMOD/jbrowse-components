@@ -11,10 +11,7 @@ import type { NewickNode } from './newick.ts'
 test('getLeafNames walks the subtree', () => {
   const root = hierarchy<NewickNode>(
     {
-      children: [
-        { name: 'A' },
-        { children: [{ name: 'B' }, { name: 'C' }] },
-      ],
+      children: [{ name: 'A' }, { children: [{ name: 'B' }, { name: 'C' }] }],
     },
     d => d.children,
   )
@@ -42,35 +39,41 @@ test('clusterTree sorts children by branch length ascending', () => {
 
 test('parseClusterTree returns the full tree when no filter is given', () => {
   const root = parseClusterTree('((A:1,B:1):1,(C:1,D:1):1);')
-  expect(leaves(root).map(l => l.data.name).sort()).toEqual([
-    'A',
-    'B',
-    'C',
-    'D',
-  ])
+  expect(
+    leaves(root)
+      .map(l => l.data.name)
+      .sort(),
+  ).toEqual(['A', 'B', 'C', 'D'])
 })
 
 test('parseClusterTree descends into the subtree matching the filter', () => {
   const root = parseClusterTree('((A:1,B:1):1,(C:1,D:1):1);', ['C', 'D'])
-  expect(leaves(root).map(l => l.data.name).sort()).toEqual(['C', 'D'])
+  expect(
+    leaves(root)
+      .map(l => l.data.name)
+      .sort(),
+  ).toEqual(['C', 'D'])
 })
 
 test('parseClusterTree filter matches nested clade', () => {
-  const root = parseClusterTree(
-    '((A:1,(B:1,C:1):1):1,(D:1,E:1):1);',
-    ['B', 'C'],
-  )
-  expect(leaves(root).map(l => l.data.name).sort()).toEqual(['B', 'C'])
+  const root = parseClusterTree('((A:1,(B:1,C:1):1):1,(D:1,E:1):1);', [
+    'B',
+    'C',
+  ])
+  expect(
+    leaves(root)
+      .map(l => l.data.name)
+      .sort(),
+  ).toEqual(['B', 'C'])
 })
 
 test('parseClusterTree returns full tree when filter has no exact subtree', () => {
   const root = parseClusterTree('((A:1,B:1):1,(C:1,D:1):1);', ['A', 'C'])
-  expect(leaves(root).map(l => l.data.name).sort()).toEqual([
-    'A',
-    'B',
-    'C',
-    'D',
-  ])
+  expect(
+    leaves(root)
+      .map(l => l.data.name)
+      .sort(),
+  ).toEqual(['A', 'B', 'C', 'D'])
 })
 
 test('parseClusterTree returns whole tree for filter matching root leaves', () => {
@@ -80,12 +83,11 @@ test('parseClusterTree returns whole tree for filter matching root leaves', () =
     'C',
     'D',
   ])
-  expect(leaves(root).map(l => l.data.name).sort()).toEqual([
-    'A',
-    'B',
-    'C',
-    'D',
-  ])
+  expect(
+    leaves(root)
+      .map(l => l.data.name)
+      .sort(),
+  ).toEqual(['A', 'B', 'C', 'D'])
 })
 
 test('buildClusteredLayout reorders base sources and merges existing fields', () => {

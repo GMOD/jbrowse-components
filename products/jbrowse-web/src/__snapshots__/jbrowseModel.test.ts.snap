@@ -146,6 +146,33 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
     },
     {
+      "displayName": "volvox (sample01 as anchor)",
+      "name": "volvox-sample01-anchor",
+      "sequence": {
+        "adapter": {
+          "features": [
+            {
+              "end": 45818,
+              "refName": "ctgA",
+              "seq": "",
+              "start": 0,
+              "uniqueId": "ctgA-sample01",
+            },
+          ],
+          "type": "FromConfigSequenceAdapter",
+        },
+        "displays": [
+          {
+            "displayId": "volvox_sample01_anchor_seq-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+          {},
+        ],
+        "trackId": "volvox_sample01_anchor_seq",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
+    {
       "name": "volvox404",
       "sequence": {
         "adapter": {
@@ -424,6 +451,37 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
   ],
   "preConfiguredSessions": [],
   "tracks": [
+    {
+      "adapter": {
+        "bedGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.gwas.tsv.gz",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.gwas.tsv.gz.tbi",
+          },
+        },
+        "scoreColumn": "neg_log_pvalue",
+        "type": "GWASAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Annotation",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_gwas-LinearManhattanDisplay",
+          "type": "LinearManhattanDisplay",
+        },
+      ],
+      "name": "GWAS test",
+      "trackId": "volvox_gwas",
+      "type": "GWASTrack",
+    },
     {
       "adapter": {
         "twoBitLocation": {
@@ -3363,6 +3421,90 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "index": {
           "location": {
             "locationType": "UriLocation",
+            "uri": "volvox.untangle.cs.paf.gz.tbi",
+          },
+        },
+        "pafGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.untangle.cs.paf.gz",
+        },
+        "type": "TabixPAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_untangle_cs_paf-MultiLGVSyntenyDisplay",
+          "type": "MultiLGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox untangle + cs (vg deconstruct projection)",
+      "trackId": "volvox_untangle_cs_paf",
+      "type": "MultiSyntenyTrack",
+    },
+    {
+      "adapter": {
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.sample01.untangle.cs.paf.gz.tbi",
+          },
+        },
+        "pafGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sample01.untangle.cs.paf.gz",
+        },
+        "type": "TabixPAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox-sample01-anchor",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_untangle_cs_paf_sample01_anchor-MultiLGVSyntenyDisplay",
+          "type": "MultiLGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox untangle + cs — anchored on sample01 (multi-vantage demo)",
+      "trackId": "volvox_untangle_cs_paf_sample01_anchor",
+      "type": "MultiSyntenyTrack",
+    },
+    {
+      "adapter": {
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.variants.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.variants.vcf.gz",
+        },
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "name": "volvox variants (vg deconstruct -a -u)",
+      "trackId": "volvox_variants_vcf",
+      "type": "VariantTrack",
+    },
+    {
+      "adapter": {
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
             "uri": "volvox_pangenome_50.vcf.gz.tbi",
           },
         },
@@ -3381,6 +3523,57 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox pangenome 50 variants (vg deconstruct VCF)",
       "trackId": "volvox_pangenome_50_vcf",
       "type": "VariantTrack",
+    },
+    {
+      "adapter": {
+        "bedGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.maf.bed.gz",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.maf.bed.gz.tbi",
+          },
+        },
+        "nhLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.maf.nh",
+        },
+        "refAssemblyName": "volvox",
+        "samples": [
+          {
+            "color": "#1f77b4",
+            "id": "volvox",
+            "label": "Volvox",
+          },
+          {
+            "color": "#ff7f0e",
+            "id": "simvolvox",
+            "label": "Sim. volvox",
+          },
+          {
+            "color": "#2ca02c",
+            "id": "minivolvox",
+            "label": "Mini volvox",
+          },
+          {
+            "color": "#d62728",
+            "id": "microvolvox",
+            "label": "Micro volvox",
+          },
+        ],
+        "type": "MafTabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Alignments",
+      ],
+      "name": "Volvox MAF (mock 4-way alignment)",
+      "trackId": "volvox_maf_tabix",
+      "type": "MafTrack",
     },
   ],
 }

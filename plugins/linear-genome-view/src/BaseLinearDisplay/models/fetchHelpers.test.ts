@@ -186,13 +186,7 @@ describe('checkByteEstimate', () => {
       { refName: 'chr2', start: 0, end: 500, assemblyName: 'hg38' },
     ]
 
-    await checkByteEstimate(
-      rpc,
-      'session-abc',
-      testRegions,
-      config,
-      notStale,
-    )
+    await checkByteEstimate(rpc, 'session-abc', testRegions, config, notStale)
 
     expect(rpc.call).toHaveBeenCalledWith(
       'session-abc',

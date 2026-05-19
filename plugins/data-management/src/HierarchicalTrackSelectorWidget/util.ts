@@ -5,6 +5,19 @@ import type { TreeNode, TreeTrackNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
+export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
+  if (subtree?.type === 'category') {
+    return subtree.children.flatMap(t =>
+      t.type === 'category' ? getAllChildren(t) : t.conf,
+    )
+  }
+  return []
+}
+
+export function isUnsupported(name = '') {
+  return name.endsWith('(Unsupported)') || name.endsWith('(Unknown)')
+}
+
 export function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
   const s = new Set(a1)
   return a2.some(a => s.has(a))

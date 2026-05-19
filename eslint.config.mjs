@@ -356,8 +356,7 @@ export default defineConfig(
       'no-restricted-syntax': [
         'error',
         {
-          selector:
-            "NewExpression[callee.name='SvgCanvas']",
+          selector: "NewExpression[callee.name='SvgCanvas']",
           message:
             'Use paintLayer(width, height, opts, ctx => drawXxxToCtx(ctx, …)) instead of constructing SvgCanvas directly. See agent-docs/ARCHITECTURE.md "SVG export pipeline".',
         },

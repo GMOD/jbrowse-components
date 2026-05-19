@@ -4,6 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import FilledStarIcon from '@mui/icons-material/Star'
 import StarIcon from '@mui/icons-material/StarBorderOutlined'
+import { observer } from 'mobx-react'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -14,7 +15,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const TrackSelectorTrackMenu = function ({
+const TrackSelectorTrackMenu = observer(function TrackSelectorTrackMenu({
   id,
   stopPropagation,
   model,
@@ -79,6 +80,6 @@ const TrackSelectorTrackMenu = function ({
       <MoreHorizIcon />
     </CascadingMenuButton>
   )
-}
+})
 
 export default TrackSelectorTrackMenu

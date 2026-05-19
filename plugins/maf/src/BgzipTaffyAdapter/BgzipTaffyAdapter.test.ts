@@ -379,16 +379,11 @@ describe('BgzipTaffyAdapter methods', () => {
   })
 
   test('parseCoordinatesAndEstablishBlock copies from previous block', () => {
-    
-
     // First block
     const instructions1 = parseRowInstructions(
       'i 0 ce10.chrI 100 + 1000 i 1 mm10.chr1 200 + 2000',
     )
-    const block1 = parseCoordinatesAndEstablishBlock(
-      undefined,
-      instructions1,
-    )
+    const block1 = parseCoordinatesAndEstablishBlock(undefined, instructions1)
     block1.rows[0]!.length = 50
     block1.rows[1]!.length = 50
 
@@ -402,25 +397,17 @@ describe('BgzipTaffyAdapter methods', () => {
   })
 
   test('parseCoordinatesAndEstablishBlock handles insert in middle of block', () => {
-    
-
     // First block with 2 rows
     const instructions1 = parseRowInstructions(
       'i 0 ce10.chrI 100 + 1000 i 1 mm10.chr1 200 + 2000',
     )
-    const block1 = parseCoordinatesAndEstablishBlock(
-      undefined,
-      instructions1,
-    )
+    const block1 = parseCoordinatesAndEstablishBlock(undefined, instructions1)
     block1.rows[0]!.length = 10
     block1.rows[1]!.length = 10
 
     // Second block - insert new row at position 1
     const instructions2 = parseRowInstructions('i 1 rn6.chr1 300 + 3000')
-    const block2 = parseCoordinatesAndEstablishBlock(
-      block1,
-      instructions2,
-    )
+    const block2 = parseCoordinatesAndEstablishBlock(block1, instructions2)
 
     expect(block2.rows).toHaveLength(3)
     expect(block2.rows[0]!.sequenceName).toBe('ce10.chrI')
@@ -429,26 +416,18 @@ describe('BgzipTaffyAdapter methods', () => {
   })
 
   test('parseCoordinatesAndEstablishBlock handles delete', () => {
-    
-
     // First block with 3 rows
     const instructions1 = parseRowInstructions(
       'i 0 ce10.chrI 100 + 1000 i 1 mm10.chr1 200 + 2000 i 2 rn6.chr1 300 + 3000',
     )
-    const block1 = parseCoordinatesAndEstablishBlock(
-      undefined,
-      instructions1,
-    )
+    const block1 = parseCoordinatesAndEstablishBlock(undefined, instructions1)
     for (const r of block1.rows) {
       r.length = 10
     }
 
     // Second block - delete middle row
     const instructions2 = parseRowInstructions('d 1')
-    const block2 = parseCoordinatesAndEstablishBlock(
-      block1,
-      instructions2,
-    )
+    const block2 = parseCoordinatesAndEstablishBlock(block1, instructions2)
 
     expect(block2.rows).toHaveLength(2)
     expect(block2.rows[0]!.sequenceName).toBe('ce10.chrI')
@@ -456,32 +435,22 @@ describe('BgzipTaffyAdapter methods', () => {
   })
 
   test('parseCoordinatesAndEstablishBlock handles gap', () => {
-    
-
     const instructions1 = parseRowInstructions(
       'i 0 ce10.chrI 100 + 1000 i 1 mm10.chr1 200 + 2000',
     )
-    const block1 = parseCoordinatesAndEstablishBlock(
-      undefined,
-      instructions1,
-    )
+    const block1 = parseCoordinatesAndEstablishBlock(undefined, instructions1)
     block1.rows[0]!.length = 10
     block1.rows[1]!.length = 10
 
     // Add gap to row 1
     const instructions2 = parseRowInstructions('g 1 50')
-    const block2 = parseCoordinatesAndEstablishBlock(
-      block1,
-      instructions2,
-    )
+    const block2 = parseCoordinatesAndEstablishBlock(block1, instructions2)
 
     expect(block2.rows[0]!.start).toBe(110) // 100 + 10
     expect(block2.rows[1]!.start).toBe(260) // 200 + 10 + 50 (gap)
   })
 
   test('finalizeBlock transposes columns to rows', () => {
-    
-
     const block = {
       rows: [
         {
@@ -516,8 +485,6 @@ describe('BgzipTaffyAdapter methods', () => {
   })
 
   test('finalizeBlock counts non-gap bases correctly', () => {
-    
-
     const block = {
       rows: [
         {

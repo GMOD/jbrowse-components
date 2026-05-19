@@ -2,13 +2,15 @@ import { downloadBookmarkFile } from './utils.ts'
 
 import type { GridBookmarkModel } from './model.ts'
 
-const mockSaveAs = jest.fn<void, [Blob, string]>()
+const mockSaveAs = jest.fn((_blob: Blob, _name: string) => {})
 
 // Factory is hoisted, so reference mockSaveAs lazily via a wrapper to avoid
 // the const TDZ at factory-eval time.
 jest.mock('@jbrowse/core/util/FileSaver', () => ({
   __esModule: true,
-  saveAs: (blob: Blob, name: string) => mockSaveAs(blob, name),
+  saveAs: (blob: Blob, name: string) => {
+    mockSaveAs(blob, name)
+  },
 }))
 
 // jsdom's Blob does not implement Blob.prototype.text() — only slice/size/type
@@ -22,6 +24,7 @@ function readBlob(blob: Blob): Promise<string> {
     reader.onerror = () => {
       reject(reader.error ?? new Error('FileReader error'))
     }
+    // eslint-disable-next-line unicorn/prefer-blob-reading-methods
     reader.readAsText(blob)
   })
 }

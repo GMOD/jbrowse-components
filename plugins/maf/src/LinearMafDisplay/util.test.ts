@@ -105,4 +105,3 @@ describe('generateTooltipContent', () => {
     expect(result).toContain('...')
   })
 })
-

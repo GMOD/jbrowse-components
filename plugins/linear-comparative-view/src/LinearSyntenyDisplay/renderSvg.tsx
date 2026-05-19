@@ -16,7 +16,13 @@ export async function renderSvg(
   await when(() => model.featureData != null || !!model.error)
   const view = getContainingView(model) as LinearSyntenyViewModel
   if (model.error) {
-    return <SVGErrorBox error={model.error} width={view.width} height={model.height} />
+    return (
+      <SVGErrorBox
+        error={model.error}
+        width={view.width}
+        height={model.height}
+      />
+    )
   }
   if (!model.featureData) {
     return null

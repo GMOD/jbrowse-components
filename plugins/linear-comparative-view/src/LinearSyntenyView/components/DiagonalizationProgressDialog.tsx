@@ -156,7 +156,13 @@ const DiagonalizationProgressDialog = observer(
           {done ? null : <LinearProgress style={{ marginTop: 16 }} />}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => { handleClose() }} color="primary" disabled={!done}>
+          <Button
+            onClick={() => {
+              handleClose()
+            }}
+            color="primary"
+            disabled={!done}
+          >
             {done ? 'Done' : 'Processing...'}
           </Button>
         </DialogActions>

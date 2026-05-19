@@ -10,7 +10,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getAllChildren, getAllTrackNodes } from '../util.ts'
+import { getAllChildren, getAllTrackNodes } from '../../util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeCategoryNode } from '../../types.ts'

@@ -3,8 +3,8 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox, FormControlLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isUnsupported } from '../util.ts'
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
+import { isUnsupported } from '../../util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeTrackNode } from '../../types.ts'
@@ -96,8 +96,8 @@ function TrackLabel({
     <>
       <FormControlLabel
         className={classes.checkboxLabel}
-        data-tooltip={description || undefined}
-        aria-description={description || undefined}
+        data-tooltip={description}
+        aria-description={description}
         onClick={event => {
           if (event.ctrlKey || event.metaKey) {
             if (model.selectionSet.has(conf)) {
