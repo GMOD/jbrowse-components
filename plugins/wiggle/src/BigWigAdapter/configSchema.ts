@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config BigWigAdapter
+ * used to load BigWig or BigBed quantitative signal files
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

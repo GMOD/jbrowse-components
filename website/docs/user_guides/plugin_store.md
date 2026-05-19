@@ -1,9 +1,9 @@
 ---
 id: plugin_store
 title: Plugin store
+description: Installing community plugins
+guide_category: Other features
 ---
-
-import Figure from '../figure'
 
 Users can add plugins to their session using the in-app plugin store. The plugin
 will be added to your "session" which can be shared with the share button (or if

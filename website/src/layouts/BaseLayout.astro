@@ -1,0 +1,153 @@
+---
+import { baseUrl } from '../lib/base-url'
+import styles from './BaseLayout.module.css'
+
+interface Props {
+  title?: string
+  description?: string
+}
+const { title = 'JBrowse', description } = Astro.props
+const pathname = Astro.url.pathname
+
+function isActive(href: string) {
+  return pathname === href || (href !== `${baseUrl}/` && pathname.startsWith(href))
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:image" content={`${baseUrl}/img/logo.svg`} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+    />
+    <style is:global>
+      :root {
+        --nav-height: 60px;
+        --sidebar-width: 320px;
+        --sidebar-link-padding: 6px 12px;
+        --color-accent: hsl(160, 51%, 35%);
+        --color-accent-dark: hsl(160, 55%, 26%);
+        --color-primary: #1565c0;
+        --color-primary-dark: #0d47a1;
+        --color-navy: #0d223f;
+        --color-teal-bright: #46cbae;
+        --color-border: #dadde1;
+        --color-surface: #f5f5f5;
+        --color-footer-bg: #303846;
+        --color-footer-text: #ebedf0;
+        --color-sidebar-text: #2d3748;
+        --color-sidebar-hover-bg: rgba(0, 0, 0, 0.06);
+        --color-sidebar-active-bg: hsl(160, 40%, 93%);
+        --color-sidebar-active-text: hsl(160, 55%, 26%);
+        --color-text: #1c1e21;
+        --color-text-muted: #606770;
+        --color-code-bg: #1e1e2e;
+        --color-code-text: #cdd6f4;
+        --color-inline-code-bg: #f0f0f0;
+        --color-inline-code-text: #c7254e;
+        --color-blockquote-bg: #f0faf8;
+        --color-highlight-bg: #fff3cd;
+      }
+      * { box-sizing: border-box; }
+      html { overflow-x: hidden; }
+      body { margin: 0; font-family: 'Roboto', sans-serif; color: var(--color-text); display: flex; flex-direction: column; min-height: 100vh; }
+      a { color: var(--color-accent); }
+      a:hover { color: var(--color-accent-dark); }
+    </style>
+  </head>
+  <body>
+    <nav class={styles.nav}>
+      <a class={styles.brand} href={`${baseUrl}/`}>
+        <img src={`${baseUrl}/img/logo.svg`} alt="" />
+        JBrowse
+      </a>
+
+      <div class={styles.navLinks} id="nav-links">
+        <a href="http://genomes.jbrowse.org/">Genomes</a>
+        <a href={`${baseUrl}/docs/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/docs/`) }]}>Docs</a>
+        <a href={`${baseUrl}/blog/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/blog/`) }]}>Blog</a>
+        <a href={`${baseUrl}/download/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/download/`) }]}>Download</a>
+        <a href={`${baseUrl}/plugin_store/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/plugin_store/`) }]}>Plugins</a>
+        <a href={`${baseUrl}/features/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/features/`) }]}>Features</a>
+        <a href={`${baseUrl}/gallery/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/gallery/`) }]}>Gallery</a>
+        <a href={`${baseUrl}/demos/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/demos/`) }]}>Demos</a>
+        <a href={`${baseUrl}/contact/`} class:list={[{ [styles.navActive]: isActive(`${baseUrl}/contact/`) }]}>Contact</a>
+        <a href={`${baseUrl}/search/`} class:list={[styles.navSearchLink, { [styles.navActive]: isActive(`${baseUrl}/search/`) }]}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>Search
+        </a>
+      </div>
+
+      <div class={styles.navRight}>
+        <a href="https://jbrowse.org/jbrowse1.html">Looking for JBrowse 1?</a>
+        <a href="https://github.com/GMOD/jbrowse-components" class:list={[styles.socialIcon, styles.githubIcon]} aria-label="GitHub"></a>
+        <a href="https://genomic.social/@usejbrowse" class:list={[styles.socialIcon, styles.mastodonIcon]} aria-label="Mastodon"></a>
+        <a href="https://bsky.app/profile/jbrowse.org" class:list={[styles.socialIcon, styles.blueskyIcon]} aria-label="Bluesky"></a>
+      </div>
+
+      <button class={styles.navToggle} id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        &#9776;
+      </button>
+    </nav>
+
+    <main style="flex:1">
+      <slot />
+    </main>
+
+    <footer class={styles.footer}>
+      <div class={styles.footerColumns}>
+        <div class={styles.footerCol}>
+          <h4>Docs</h4>
+          <ul>
+            <li><a href={`${baseUrl}/docs/`}>Documentation</a></li>
+            <li><a href={`${baseUrl}/cancer/`}>Cancer resources</a></li>
+          </ul>
+        </div>
+        <div class={styles.footerCol}>
+          <h4>Community</h4>
+          <ul>
+            <li><a href="https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im" target="_blank" rel="noopener noreferrer">Gitter chat ↗</a></li>
+            <li><a href="https://bsky.app/profile/jbrowse.org" target="_blank" rel="noopener noreferrer">Bluesky ↗</a></li>
+            <li><a href="https://genomic.social/@usejbrowse" target="_blank" rel="noopener noreferrer">Mastodon ↗</a></li>
+          </ul>
+        </div>
+        <div class={styles.footerCol}>
+          <h4>More</h4>
+          <ul>
+            <li><a href={`${baseUrl}/blog/`}>Blog</a></li>
+            <li><a href={`${baseUrl}/contact/`}>Contact</a></li>
+            <li><a href="https://github.com/GMOD/jbrowse-components" target="_blank" rel="noopener noreferrer">GitHub ↗</a></li>
+            <li><a href="https://jbrowse.org/jbrowse1.html" target="_blank" rel="noopener noreferrer">Looking for JBrowse 1? ↗</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class={styles.footerBottom}>
+        Copyright &copy; 2026 Evolutionary Software Foundation, Inc.
+      </div>
+    </footer>
+
+    <script is:inline define:vars={{ baseUrl }}>
+      ;(function () {
+        document.getElementById('nav-toggle').addEventListener('click', function () {
+          const expanded = this.getAttribute('aria-expanded') === 'true'
+          this.setAttribute('aria-expanded', String(!expanded))
+        })
+      })()
+    </script>
+  </body>
+</html>

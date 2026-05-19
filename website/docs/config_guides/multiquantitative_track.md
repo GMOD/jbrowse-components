@@ -43,18 +43,25 @@ Example MultiQuantitativeTrack config:
 }
 ```
 
-Note that the "bigWigs" array listed above only works with absolute URLs, if you
-want to use relative URLs, you can use the "subadapters" array listed below:
+The `bigWigs` array only works with absolute URLs. For relative URLs or
+per-subtrack options like color and grouping, use `subadapters` instead.
 
-#### General MultiQuantitativeTrack options
+#### The source field
 
-You can pass an array of urls for bigWig files to the "bigWigs" slot for
-MultiWiggleAdapter, or an array of complete subtrack adapter configs to the
-"subadapters" slot for MultiWiggleAdapter. The subadapters slot can contain
-extra fields such as color, which is interpreted as the subtrack color, and any
-accessory fields like "group" that might help end users organize the subtracks.
+Each subtrack has a `source` identifier used as its label in the UI and carried
+on features as `feature.source`. When using `bigWigs`, `source` is auto-derived
+from the URL filename. When using `subadapters`, set it explicitly. `name` is an
+alias — `source` takes priority if both are set.
 
-Example with group field:
+Since features carry `feature.source`, you can reference it in jexl color
+callbacks, e.g. `jexl:feature.source=='k1'?'red':'blue'`.
+
+The `subadapters` slot also supports:
+
+- `color` - default subtrack color
+- `group` - grouping label for organizing subtracks
+
+Example:
 
 ```json
 {
@@ -68,24 +75,19 @@ Example with group field:
     "subadapters": [
       {
         "type": "BigWigAdapter",
-        "name": "k1",
-        "bigWigLocation": {
-          "uri": "https://www.encodeproject.org/files/ENCFF055ZII/@@download/ENCFF055ZII.bigWig"
-        },
+        "source": "k1",
+        "color": "red",
+        "uri": "https://www.encodeproject.org/files/ENCFF055ZII/@@download/ENCFF055ZII.bigWig",
         "group": "group1"
       },
       {
         "type": "BigWigAdapter",
-        "name": "k2",
-        "bigWigLocation": {
-          "uri": "https://www.encodeproject.org/files/ENCFF826HEW/@@download/ENCFF826HEW.bigWig"
-        },
+        "source": "k2",
+        "color": "blue",
+        "uri": "https://www.encodeproject.org/files/ENCFF826HEW/@@download/ENCFF826HEW.bigWig",
         "group": "group2"
       }
     ]
   }
 }
 ```
-
-The "name" or "source" field on the sub-adapters will be used as the sub-track
-label (where, "source" will be given priority over "name" if specified)

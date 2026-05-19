@@ -27,6 +27,8 @@ tools/gfa-to-tabix/target/
 test/data
 *.log
 .cache/
+debug-storybook.log
+website/.astro/
 
 # Graph test data - generated and large
 test_data/chr20_region.gfa

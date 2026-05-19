@@ -1,9 +1,8 @@
 ---
 id: embed_linear_genome_view
 title: Embedding JBrowse
+description: Embed the linear genome view component in a custom web page
 ---
-
-import Figure from '../figure'
 
 ## Welcome!
 
@@ -355,6 +354,30 @@ Notes about the above config:
   bamFile+'.bai'. The full configuration schema allows handling cases where the
   bai is in a different place. Our auto-generated config docs have more info.
 
+## Using the component in a React app
+
+If you are using `@jbrowse/react-linear-genome-view2` as an NPM package in a
+React app (rather than the UMD script tag approach above), import
+`useCreateViewState` instead of calling `createViewState` directly in your
+component body. `createViewState` is expensive and should not run on every
+render:
+
+```js
+import {
+  useCreateViewState,
+  JBrowseLinearGenomeView,
+} from '@jbrowse/react-linear-genome-view2'
+
+function GenomeBrowser() {
+  const state = useCreateViewState({ assembly, tracks, location: '...' })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+```
+
+The hook creates the view state once on mount and keeps it stable across
+re-renders, so panning, zooming, and parent state changes do not reset the
+browser.
+
 ## Further reading
 
 This tutorial above is just a simple example to get you started. There is much
@@ -373,6 +396,7 @@ customizing it, and more. Here is some further reading
   https://jbrowse.org/demos/app-vanillajs (also has storybook docs
   https://jbrowse.org/storybook/app/main/)
 
-- As mentioned earlier, the embedded components If you haven't checked it out,
-  the "jbrowse-web" quickstart guide here is our main suggestion for deployment
-  https://jbrowse.org/jb2/docs/quickstart_web/
+- As mentioned earlier, the embedded components are not a full app deployment
+  (no shareable session URLs, no track hub connections, no admin panel). If you
+  haven't checked it out, the "jbrowse-web" quickstart guide is our main
+  suggestion for a full deployment https://jbrowse.org/jb2/docs/quickstart_web/

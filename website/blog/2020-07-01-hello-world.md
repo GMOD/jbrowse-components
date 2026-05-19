@@ -1,5 +1,6 @@
 ---
 title: JBrowse 2 launch!
+date: 2020-07-01
 author: Colin Diesh
 author_url: https://github.com/cmdcolin
 tags: [jbrowse, intro]

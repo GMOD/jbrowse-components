@@ -5,10 +5,8 @@ title: Extension points
 
 ## What are extension points?
 
-Extension points are a basic bit of logic that allows plugin developers to
-register a callback that can be called in some other part of the code
-
-## Adding to extension points
+Extension points let plugin developers register callbacks that are invoked at
+specific places in the application.
 
 ## Using extension points
 
@@ -38,14 +36,8 @@ pluginManager.addToExtensionPoint(
 )
 ```
 
-In this case, `arg` that is passed in evaluateExtensionPoint calls all the
-callbacks that have been registered by `addToExtensionPoint`. If multiple
-extension points are registered, the return value of the first extension point
-is passed as the new argument to the second, and so on (they are chained
-together).
-
-So in the example above, ret would be `{value:3}` after evaluating the extension
-point.
+Each registered callback receives the return value of the previous one as its
+argument (chained). In the example above, `ret` would be `{value:3}`.
 
 ## API description of extension points
 
@@ -57,11 +49,10 @@ point.
 pluginManager.evaluateExtensionPoint(extensionPointName, args, props)
 ```
 
-Args are 'accumulated' (which means: the return value of your extension point is
-passed along to the args argument of the next one), while the props variable is
-just passed along
+`args` are accumulated (each callback's return value becomes the next callback's
+`args`), while `props` is passed through unchanged.
 
-There is also an async version of the extension point evaluation:
+There is also an async version:
 
 ```typescript
 // extra props are optional, can pass an extra context object your extension
@@ -69,21 +60,17 @@ There is also an async version of the extension point evaluation:
 pluginManager.evaluateAsyncExtensionPoint(extensionPointName, args, props)
 ```
 
-Users can additionally add to extension points, so that when they are evaluated,
-it runs a chain of callbacks that are registered to that extension point:
-
 ### Registration API
 
 ```typescript
-pluginManager.addToExtensionPoint(extensionPointName, callback => newArgs)
+pluginManager.addToExtensionPoint(extensionPointName, args => {
+  /* do something */
+  return newArgs // returned value is passed as args to the next registered callback
+})
 ```
 
-The addToExtensionPoint API will create a new one if it does not already exist,
-so "add to" will also "create extension point if not already existing, or
-otherwise add to it"
-
-The newArgs returned by your callback are passed on as the args to the next in
-the chain.
+`addToExtensionPoint` creates the extension point if it doesn't exist yet. The
+returned value becomes the `args` for the next callback in the chain.
 
 ## Current listing of extension points used in codebase
 
@@ -91,14 +78,14 @@ Here are the extension points in the core codebase:
 
 ### Core-extendPluggableElement
 
-- `args` - `pluggableElement:PluggableElement` - this
-- `props` - none
-
 type: synchronous
 
-used to add extra functionality to e.g state tree models, for example, extra
-right-click context menus. your callback will receive every pluggable element
-registered to the system
+- `args` - `PluggableElement` - the pluggable element being installed
+- `props` - none
+
+Used to add extra functionality to e.g. state tree models, for example extra
+right-click context menus. Your callback receives every pluggable element
+registered to the system.
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/dotplot-view/src/extensionPoints.ts#L9-L43
 
@@ -131,8 +118,7 @@ type: synchronous
 
 used to extend the session model itself with new features
 
-- `args` - `AbstractSessionModel` - instance of the session model to customize
-  the about dialog
+- `args` - `AbstractSessionModel` - instance of the session model
 
 ### Core-replaceAbout
 
@@ -167,7 +153,7 @@ pluginManager.addToExtensionPoint(
 
 type: synchronous
 
-adds option to provide a different component for the "About this track" dialog
+adds an extra panel to the "About this track" dialog
 
 ```typescript
 interface props {
@@ -438,9 +424,8 @@ A more complete example using this extension point is in
 
 type: async
 
-launches a linear genome view given parameters. it is not common to extend this
-extension point, but you can use it as an example to create a LaunchView type
-for your own view
+Launches a linear genome view. Rarely extended directly, but useful as a
+reference for implementing a LaunchView for your own view type.
 
 - `args` - an object with the following format
 
@@ -459,8 +444,7 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: async
 
-similar to LaunchView-LinearGenomeView, this is not common to extend, but you
-can use it as an example to create a LaunchView type for your own view
+Launches a circular view.
 
 - `args` - an object with the following format
 
@@ -478,9 +462,7 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: async
 
-launches a sv inspector with given parameters. it is not common to extend this
-extension point, but you can use it as an example to create a LaunchView type
-for your own view
+Launches an SV inspector.
 
 - `args` - an object with the following format
 
@@ -499,9 +481,7 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: async
 
-launches a sv inspector with given parameters. it is not common to extend this
-extension point, but you can use it as an example to create a LaunchView type
-for your own view
+Launches a spreadsheet view.
 
 - `args` - an object with the following format
 
@@ -520,9 +500,7 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: async
 
-launches a dotplot with given parameters. it is not common to extend this
-extension point, but you can use it as an example to create a LaunchView type
-for your own view
+Launches a dotplot view.
 
 ```typescript
 interface args {
@@ -542,9 +520,7 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: async
 
-launches a linear synteny view with given parameters. it is not common to extend
-this extension point, but you can use it as an example to create a LaunchView
-type for your own view
+Launches a linear synteny view.
 
 ```typescript
 interface args {

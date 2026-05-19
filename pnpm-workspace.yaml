@@ -5,13 +5,16 @@ packages:
   - 'tools/gfa-to-tabix'
   - 'tools/graph-truth-extractor'
   - 'tools/graph-server'
+  - 'website'
 blockExoticSubdeps: true
 allowBuilds:
   canvas: true
+  core-js-pure: true
   electron: true
   electron-chromedriver: true
   esbuild: true
   puppeteer: true
+  sharp: true
   unrs-resolver: true
 minimumReleaseAge: '1440'
 minimumReleaseAgeExclude:

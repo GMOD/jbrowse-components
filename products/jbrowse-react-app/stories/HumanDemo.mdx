@@ -1,0 +1,39 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { HumanDemo } from './JBrowseReactApp.stories'
+
+<Meta title="Real Data: Human GRCh38" />
+
+# Real Data: Human GRCh38
+
+This example shows a live `@jbrowse/react-app2` instance configured with
+publicly available GRCh38 data:
+
+- **Assembly:** GRCh38/hg38 (bgzip-indexed FASTA from jbrowse.org)
+- **NCBI RefSeq genes:** Gff3Tabix track with full-text search index
+- **NA12878 exome:** CRAM alignment track (1000 Genomes)
+- **1000 Genomes variants:** VCF tabix track
+- **PhyloP conservation:** BigWig track
+
+The `init` shorthand in `defaultSession` opens a specific location and set of
+tracks on startup without needing to construct the full internal session format:
+
+```js
+defaultSession: {
+  views: [{
+    type: 'LinearGenomeView',
+    init: {
+      loc: '1:100,000-110,000',
+      assembly: 'hg38',
+      tracks: [
+        'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
+        'hg38.100way.phyloP100way',
+      ],
+    },
+  }],
+},
+```
+
+Note that `CramAdapter` requires a `sequenceAdapter` field so it can decode
+reference-compressed reads.
+
+<Story of={HumanDemo} />

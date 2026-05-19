@@ -8,7 +8,7 @@ Example config:
 ```json
 {
   "type": "VariantTrack",
-  "trackId": "my track",
+  "trackId": "my_track",
   "name": "My Variants",
   "assemblyNames": ["hg19"],
   "adapter": {
@@ -31,7 +31,8 @@ Example config:
 
 - `vcfGzLocation` - a 'file location' for the bgzip'd VCF file
 - `index` - a sub-configuration schema containing
-  - indexType: 'TBI' or 'CSI'. Default: 'TBI'
+  - indexType: 'TBI' or 'CSI'. Default: 'TBI'. Use CSI for chromosomes longer
+    than 512 Mb (e.g. some plant genomes) since TBI cannot index them
   - location: a 'file location' for the index
 
 Example VcfTabixAdapter adapter config:
@@ -51,6 +52,47 @@ Example VcfTabixAdapter adapter config:
   }
 }
 ```
+
+A reduced form is also accepted; the index is inferred as `yourfile.vcf.gz.tbi`:
+
+```json
+{ "type": "VcfTabixAdapter", "uri": "http://yourhost/file.vcf.gz" }
+```
+
+## Coloring variants by type
+
+Use a jexl expression on the `color1` renderer slot to color variants by their
+`SVTYPE` INFO field (or any other VCF field). The expression reads the INFO
+field via `get(feature,'INFO').SVTYPE` and maps it to a color:
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "my_sv_track",
+  "name": "SVs colored by type",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "http://yourhost/svs.vcf.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "displayId": "my_sv_track-LinearVariantDisplay",
+      "renderer": {
+        "type": "SvgFeatureRenderer",
+        "color1": "jexl:({'DEL':'red','INS':'blue','DUP':'green','INV':'orange','BND':'purple','TRA':'purple'})[get(feature,'INFO').SVTYPE] || 'gray'"
+      }
+    }
+  ]
+}
+```
+
+The `|| 'gray'` fallback colors any SVTYPE not in the map (or variants without
+an SVTYPE field) gray. You can use the same pattern for SNP/INDEL VCFs by
+reading `get(feature,'INFO').CLNSIG` or any other INFO key. See
+[customizing feature colors](/docs/config_guides/customizing_feature_colors) for
+more jexl color examples.
 
 ## MultiVariant display configuration
 
@@ -256,9 +298,10 @@ display options:
 
 ### Notes
 
-- The `showReferenceAlleles` option only affects the
-  `MultiLinearVariantDisplay`. The `LinearVariantMatrixDisplay` uses a different
-  visualization that doesn't draw reference alleles in the same way.
+- The `showReferenceAlleles` option can be set on both
+  `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay`, though the
+  visual effect may differ between them due to their different rendering
+  approaches.
 - Users can still change these settings at runtime using the track menu. The
   configuration values serve as the initial defaults.
 - When a user changes a setting via the track menu, their preference is stored

@@ -8,6 +8,7 @@ export {
   NextstrainExample,
   OneLinearGenomeView,
   ShadowDOMOneLinearGenomeView,
+  UseCreateViewState,
   UsingLocObject,
   WithAggregateTextSearching,
   WithCustomTheme,

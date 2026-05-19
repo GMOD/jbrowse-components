@@ -3,19 +3,12 @@ title: Default session
 id: default_session
 ---
 
-In JBrowse, a session refers to the particular state of the application e.g. the
-views that are open, the tracks that are open, etc.
+A "default session" in `config.json` sets the initial state loaded for all
+users. Sessions can be complex to write by hand, so use **File → Export
+session** to export the current state, then copy the `"session"` object into
+`"defaultSession"` in your `config.json`.
 
-You can configure a "default session" in the config.json that can be used as the
-default application state that is loaded for all your users.
-
-The session is a representation of the 'internal state' of the app, so it can be
-hard to programmatically write, but you can manually use the app, get to a state
-you want it to be in, and then select "File -> Export session". This will give
-you a session.json file, and then you can copy the "session" from this file into
-the "defaultSession" in your config.json
-
-Example session (reduced for example purposes)
+Example exported session (abbreviated):
 
 ```json
 {
@@ -43,7 +36,7 @@ Example session (reduced for example purposes)
 }
 ```
 
-Then copy the above into your config.json in the "defaultSession", for example:
+In `config.json`:
 
 ```json
 {
@@ -107,7 +100,6 @@ Then copy the above into your config.json in the "defaultSession", for example:
 
 :::info
 
-Note: if you want to programmatically configure sessions using the URL, see
-https://jbrowse.org/jb2/docs/urlparams/
+To configure sessions via URL, see [URL parameters](/docs/urlparams).
 
 :::

@@ -1,0 +1,219 @@
+---
+import { getCollection } from 'astro:content'
+import { baseUrl } from '../../lib/base-url'
+import { blogPath } from '../../lib/blog-path'
+import BlogLayout from '../../layouts/BlogLayout.astro'
+import { renderMarkdown } from '../../lib/markdown.ts'
+import blog from '../../styles/blog.module.css'
+
+export async function getStaticPaths() {
+  const posts = (await getCollection('blog')).sort(
+    (a, b) => a.data.date.getTime() - b.data.date.getTime(),
+  )
+  return posts.map((post, i) => ({
+    params: { slug: blogPath(post) },
+    props: {
+      post,
+      prev: i > 0 ? { slug: blogPath(posts[i - 1]), title: posts[i - 1].data.title } : null,
+      next:
+        i < posts.length - 1
+          ? { slug: blogPath(posts[i + 1]), title: posts[i + 1].data.title }
+          : null,
+    },
+  }))
+}
+
+const { post, prev, next } = Astro.props
+const { slug } = Astro.params
+const { html } = await renderMarkdown(post.body ?? '')
+---
+
+<BlogLayout title={post.data.title} currentSlug={slug}>
+  <article class="post">
+    <header>
+      <h1>{post.data.title}</h1>
+      <div class="meta">
+        <time datetime={post.data.date.toISOString()}>
+          {
+            post.data.date.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })
+          }
+        </time>
+        {
+          post.data.author && (
+            <span class="author">
+              {post.data.author_url ? (
+                <a href={post.data.author_url} target="_blank" rel="noopener noreferrer">
+                  {post.data.author}
+                </a>
+              ) : (
+                post.data.author
+              )}
+            </span>
+          )
+        }
+        {
+          post.data.tags && (
+            <div class={blog.tags}>
+              {post.data.tags.map(tag => (
+                <span class={blog.tag}>{tag}</span>
+              ))}
+            </div>
+          )
+        }
+      </div>
+    </header>
+    <div class="content" data-pagefind-body>
+      <Fragment set:html={html} />
+    </div>
+    <footer>
+      <div class="post-nav">
+        <div class="post-nav-prev">
+          {
+            prev && (
+              <a href={`${baseUrl}/blog/${prev.slug}/`}>
+                <span class="nav-label">← Older</span>
+                <span class="nav-title">{prev.title}</span>
+              </a>
+            )
+          }
+        </div>
+        <div class="post-nav-next">
+          {
+            next && (
+              <a href={`${baseUrl}/blog/${next.slug}/`}>
+                <span class="nav-label">Newer →</span>
+                <span class="nav-title">{next.title}</span>
+              </a>
+            )
+          }
+        </div>
+      </div>
+    </footer>
+  </article>
+</BlogLayout>
+
+<style>
+  .post {
+    max-width: 800px;
+    padding: clamp(1.25rem, 3vw, 2.5rem);
+    line-height: 1.7;
+    overflow-wrap: break-word;
+  }
+  header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1rem;
+  }
+  h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 0.5rem;
+  }
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  time {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+  .author {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+  .author a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+  .author a:hover {
+    color: var(--color-accent-dark);
+    text-decoration: underline;
+  }
+  .content :global(h2) {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 2rem 0 0.75rem;
+  }
+  .content :global(h3) {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 1.5rem 0 0.5rem;
+  }
+  .content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 1rem 0;
+    display: block;
+  }
+  .content :global(pre) {
+    background: var(--color-surface);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
+  .content :global(code) {
+    background: var(--color-surface);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  .content :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+  .content :global(blockquote) {
+    border-left: 4px solid var(--color-accent);
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    color: var(--color-text-muted);
+  }
+  footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .post-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .post-nav-prev,
+  .post-nav-next {
+    flex: 1;
+    min-width: 0;
+  }
+  .post-nav-next {
+    text-align: right;
+  }
+  .post-nav a {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .post-nav a:hover .nav-title {
+    text-decoration: underline;
+  }
+  .nav-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .nav-title {
+    font-size: 0.9rem;
+    color: var(--color-accent);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>

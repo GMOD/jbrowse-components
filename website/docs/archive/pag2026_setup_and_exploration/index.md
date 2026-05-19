@@ -1,6 +1,9 @@
-# PAG 33 (2026) JBrowse setup and exploration
+---
+title: PAG 33 (2026) JBrowse setup and exploration
+id: pag2026_setup_and_exploration
+---
 
-# Introduction
+## Introduction
 
 This tutorial was written for the JBrowse workshop at PAG 33. As this workshop
 was aimed at attendees with a wide range of experience with JBrowse, it contains
@@ -18,7 +21,7 @@ If you are following this tutorial after PAG 33, please note that the UI of
 current versions of JBrowse may differ slightly from those shown in the
 screenshots here.
 
-# JBrowse UI overview
+## JBrowse UI overview
 
 Let's get started with JBrowse by opening up a JBrowse page configured with a
 genome of interest. For this tutorial, we'll use the mm10 mouse genome. Please
@@ -33,7 +36,7 @@ version.
 
 Here is what you should see when that page loads.
 
-![initial page load of mm10 genome](img/mm10_initial_load.png)
+![initial page load of mm10 genome](/img/pag2026/mm10_initial_load.png)
 
 On the left you see the browser is showing the mouse genome open to a location
 on chromosome 12. The very top bar has menus for various actions, as well as the
@@ -51,14 +54,14 @@ filled in checkbox next to the track that is already open.
 Go ahead and explore the page by trying out the different navigation buttons,
 opening new tracks, and hovering over or clicking on the visualizations inside
 the tracks. For more information on the many controls and options available in
-JBrowse, please see the [user guide](../../user_guides/basic_usage.md).
+JBrowse, please see the [user guide](/docs/user_guides/basic_usage).
 
 To illustrate an important feature of JBrowse 2, let's open a new view. From the
 "Add" menu at the top of the page, choose "Linear genome view." A new view will
 appear where you can choose an assembly (we only have one available, but some
 JBrowse instances will have many) and a location.
 
-![form to open a new linear genome view](img/open_lgv_form.png)
+![form to open a new linear genome view](/img/pag2026/open_lgv_form.png)
 
 Enter "Pax9" in the location box and click "Open." The new view will now be open
 to the same location as we saw when we first loaded the page. We'll just use a
@@ -67,7 +70,7 @@ as well as views of different types, is a core JBrowse feature. You can see
 examples of some of these views on the JBrowse [gallery page](/jb2/gallery/).
 For now, though, go ahead and close one of the two open views.
 
-# Adding tracks
+## Adding tracks
 
 The JBrowse 2 Genome Hubs come with a lot of useful tracks already configured,
 but with JBrowse you aren't limited to the existing tracks. Let's say we have
@@ -95,7 +98,7 @@ the way web browsers work, you’ll have to go through the process of opening th
 file every time you refresh or revisit the page. If you’re using JBrowse
 Desktop, however, you won’t have this limitation.
 
-![add track step one](img/add_track_step_1.png)
+![add track step one](/img/pag2026/add_track_step_1.png)
 
 Go ahead and click the “Next” button. In the next step that appears, verify that
 all the information is correct and change the name of the track if you would
@@ -104,7 +107,7 @@ click "Add". The new track will automatically open, and you can find the entry
 for it in the track selector under the automatically created "Session tracks"
 category.
 
-![add track step 2](img/add_track_step_2.png)
+![add track step 2](/img/pag2026/add_track_step_2.png)
 
 ## Managing sessions
 
@@ -127,7 +130,7 @@ display a share link that can be sent to others to share your current session,
 or can be used as a type of bookmark to the session as it was when the link was
 created.
 
-# Exploring variants
+## Exploring variants
 
 For the next part of this tutorial, we're going to explore a missense mutation
 in the Msh3 gene. Make sure the original "NCBI RefSeq - RefSeq All" track and
@@ -167,14 +170,14 @@ three vertical dots next to the track label), select "Display types" and then
 and each SNP is marked on the samples for which they exist. Zoom out and scroll
 around to get familiar with how this display shows the data.
 
-![multi-sample variant display](img/multi_sample_variant_display.png)
+![multi-sample variant display](/img/pag2026/multi_sample_variant_display.png)
 
 When zoomed out further, you can see large-scale patterns in the data, and the
 track menu contains a lot of options for organizing and coloring the data to
 help you see what you’re looking for. We won’t focus on those today, but let us
 know if this would be of interest for a future tutorial.
 
-# Exploring short read DNA-seq alignments
+## Exploring short read DNA-seq alignments
 
 As we saw above, the only strain with the missense variant was RF/J, so let’s
 inspect the reads for the variant call in that strain. To do this, we’ll add
@@ -196,7 +199,7 @@ way as CRAM files.
 Make sure you’re navigated back to the exon of interest from above. The reads
 track should now be open below the variants track.
 
-![Gene, variant, and reads tracks](img/missense_variant_and_reads.png)
+![Gene, variant, and reads tracks](/img/pag2026/missense_variant_and_reads.png)
 
 Before we dive too deeply into exploring this track, we’re going to change it to
 make it a bit simpler and then come back to this version later. To do this we'll
@@ -220,7 +223,7 @@ track. Another way to see more reads at a time is to decrease the height of the
 rectangles. To do this, open the track menu and select “Set feature height… ->
 Compact” (or Super-compact).
 
-![compact height reads](img/reads_compact.png)
+![compact height reads](/img/pag2026/reads_compact.png)
 
 We can see the green boxes in our reads represent an “A,” and they are at the
 same position as the variant track, so that supports the “C -> A” SNP we find in
@@ -242,7 +245,7 @@ The deletion shows up as gray bars in the reads with a number indicating the
 length of the deletion, and they align with a deletion in the “MGP SNPs and
 indels” track.
 
-![reads with deletion](img/deletion.png)
+![reads with deletion](/img/pag2026/deletion.png)
 
 We can also see some blue “I”s indicating that the reads have soft clipping. We
 are able to view the soft clipped bases by selecting “Show -> Show soft
@@ -256,7 +259,7 @@ select “Show… -> Show center line.” This creates a set of dotted lines sho
 where the center of the view falls. Align that to the center of the deletion and
 from the track menu select “Sort by… -> Base pair.”
 
-![reads with deletion, sorted and showing soft clipping](img/deletion_soft_clip_sort.png)
+![reads with deletion, sorted and showing soft clipping](/img/pag2026/deletion_soft_clip_sort.png)
 
 Now we’ll look at an insertion.
 
@@ -268,7 +271,7 @@ Insertions show up as a purple box that is between bases with the length of the
 insertion printed inside it. Shown below is this insertion with the soft
 clipping turned back off and the sorting cleared.
 
-![reads with insertion](img/insertion.png)
+![reads with insertion](/img/pag2026/insertion.png)
 
 Before we go to the next location, we are going to change the display type
 again. From the track menu, select “Display types -> SNPCoverage display” and
@@ -284,7 +287,7 @@ the left the scale of the plot, and you can get the exact value of the depth by
 hovering over a location in the plot. You can see here that there is a deletion,
 illustrated by the coverage plot showing a region with zero depth.
 
-![coverage plot with deletion](img/deletion_2.png)
+![coverage plot with deletion](/img/pag2026/deletion_2.png)
 
 We’ve now seen the Pileup and SNPCoverage displays. The default display that we
 will go back to now is actually a combination of those two displays. From the
@@ -304,13 +307,13 @@ You can see that for this deletion, there are no reads that span it, so the area
 where the deletion is located is empty. You can still see the soft clipping
 indicators, though, as well as some hard clipping indicators.
 
-![combo display showing deletion](img/deletion_2_zoom.png)
+![combo display showing deletion](/img/pag2026/deletion_2_zoom.png)
 
 Let’s show the soft clipping again. You can see that for the hard clipping
 indicators, unlike the soft clipping, the clipped sequence is not stored in the
 file, so they cannot be viewed.
 
-![combo display showing deletion with soft clipping](img/deletion_2_zoom_soft_clipping.png)
+![combo display showing deletion with soft clipping](/img/pag2026/deletion_2_zoom_soft_clipping.png)
 
 We’re now going to try a different type of display. In the track menu, select
 “Display types -> Read arc display” and also “Show legend.” Now navigate to this
@@ -327,19 +330,19 @@ long (over three standard deviations above the average) are shown with red arcs.
 As we can see, there is group of reads in the same region that are all separated
 by a long distance from their mates.
 
-![read arc display](img/read_arcs.png)
+![read arc display](/img/pag2026/read_arcs.png)
 
 How many of these reads have long inserts, compared to the total number of
 reads? To find out, we’ll look at another display type. In the track menu,
 select “Display types -> Linked reads display,” then “Show legend,” then also
 “Set feature height.. -> Compact”
 
-![linked reads display](img/linked_reads.png)
+![linked reads display](/img/pag2026/linked_reads.png)
 
 In this display, the lined reads are drawn on the same row and are connected by
 a line, allowing you to see how many of these types of reads there are.
 
-# Exploring long read RNA-seq alignments
+## Exploring long read RNA-seq alignments
 
 Up until now we’ve been looking at Illumina short-read DNA sequencing data. To
 illustrate a few more features of the alignments tracks, let’s look at some
@@ -363,13 +366,13 @@ In RNA-seq reads like these, a single read can be split across many locations,
 and the locations are connected by lines. As you can see, the areas where the
 reads align match the exons in the Cnpy2 gene.
 
-![RNA-seq for the Cnpy2 gene](img/rna_seq_gene.png)
+![RNA-seq for the Cnpy2 gene](/img/pag2026/rna_seq_gene.png)
 
 Showing soft clipping with RNA-seq reads also allows you to see something else
 about the reads. Select “Pileup settings -> Show -> Show soft clipping” from the
 track menu.
 
-![RNA-seq for the Cnpy2 gene with soft clipping shown](img/rna_seq_gene_soft_clipping.png)
+![RNA-seq for the Cnpy2 gene with soft clipping shown](/img/pag2026/rna_seq_gene_soft_clipping.png)
 
 On the right side of these reads you can see green bars. Remember that green is
 the color for the base “A.” These are the poly(A) tails of the mRNA.

@@ -1,0 +1,244 @@
+---
+import { Icon } from 'astro-icon/components'
+import { baseUrl } from '../lib/base-url'
+import btn from '../styles/button.module.css'
+import { currentVersion } from '../config.ts'
+---
+
+<div class="outer-box">
+  <!-- Hero row -->
+  <div class="hero-row">
+    <div class="hero-text">
+      <p class="hero-title">JBrowse</p>
+      <p class="hero-subtitle">The next-generation genome browser</p>
+      <p class="body-text">
+        JBrowse is a genome browser that runs on the web, on your desktop, or
+        embedded in your app.
+      </p>
+      <div class="btn-row">
+        <a class:list={[btn.btn, btn.btnPrimary]} href={`${baseUrl}/download/`}>
+          <Icon name="mdi:tray-arrow-down" width="20" height="20" />
+          Download
+        </a>
+        <a
+          class:list={[btn.btn, btn.btnSecondary]}
+          href={`https://jbrowse.org/code/jb2/${currentVersion}/?session=share-HShsEcnq3i&password=nYzTU`}
+        >
+          <Icon name="mdi:open-in-app" width="20" height="20" />
+          Browse demo
+        </a>
+      </div>
+      <div style="text-align:center">
+        <p class="body-text">
+          Check out our <a href={`${baseUrl}/blog/`}>latest release blogpost</a>, our
+          <a href={`${baseUrl}/docs/embedded_components/`}>embedded components</a>,
+          and our
+          <a href={`${baseUrl}/download/#jbrowse-cli-tools`}>command line tools</a>.
+        </p>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img
+        src={`${baseUrl}/img/screenshot.webp`}
+        width="1362"
+        height="731"
+        alt="screenshot of jbrowse 2"
+      />
+    </div>
+  </div>
+</div>
+
+<div class="outer-box">
+  <!-- Features -->
+  <div class="section-box">
+    <p class="section-title">Features</p>
+    <hr />
+    <div class="two-col">
+      <div>
+        <ul>
+          <li>
+            Improved visualization of <b>structural variants</b> and
+            <b>genome synteny</b> with tightly-integrated linear, circular,
+            dotplot, and synteny views
+          </li>
+          <li>
+            In-browser <b>protein 3D structure displays</b> with integrated
+            alignment and phylogenetic tree views. Mouse over a genomic variant
+            to see where it lands on the structure!
+          </li>
+          <li>
+            <b>Support for many common data types</b> including BAM, CRAM,
+            tabix indexed VCF, GFF, BED, BigBed, BigWig, and several
+            specialized formats
+          </li>
+          <li>
+            <b>Powerful extensibility</b> with a plugin ecosystem which can add
+            additional view types, track types, data adapters, and more!
+          </li>
+          <li>
+            <a href={`${baseUrl}/features`}>
+              See a summary of new features and a comparison to JBrowse 1
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="features-image">
+        <img
+          src={`${baseUrl}/img/sv_inspector_importform_loaded.png`}
+          width="1377"
+          height="614"
+          alt="screenshot of jbrowse 2 SV inspector"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Citation -->
+  <div class="section-box">
+    <p class="section-title">Citation</p>
+    <hr />
+    <p class="body-text">
+      We at the JBrowse Consortium are working to make JBrowse a pluggable,
+      open-source computational platform for integrating many kinds of
+      biological data from many different places.
+    </p>
+    <p class="body-text">
+      Research citations are one of the main metrics the consortium uses to
+      demonstrate our relevance and utility when applying for funding to
+      continue our work. If you use JBrowse in research that you publish,
+      please cite the most recent JBrowse paper:
+    </p>
+    <cite>
+      Diesh <em>et al</em>, 2023. JBrowse 2: a modular genome browser with
+      views of synteny and structural variation. Genome Biology 24:74.
+      <a href="https://doi.org/10.1186/s13059-023-02914-z">
+        https://doi.org/10.1186/s13059-023-02914-z
+      </a>
+    </cite>
+  </div>
+
+  <!-- License -->
+  <div class="section-box">
+    <p class="section-title">License</p>
+    <hr />
+    <p class="body-text">
+      JBrowse is released under the
+      <a href="https://www.apache.org/licenses/LICENSE-2.0">
+        Apache License, Version 2.0
+      </a>.
+    </p>
+  </div>
+
+  <!-- Funding -->
+  <div class="section-box">
+    <p class="section-title">Funding and Collaboration</p>
+    <hr />
+    <p class="body-text">
+      JBrowse development has received support from the US National Institutes
+      of Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
+      Institute for Cancer Research (OICR), and the University of California,
+      Berkeley.
+    </p>
+  </div>
+</div>
+
+<style>
+  .hero-title {
+    font-size: clamp(1.75rem, 5vw, 3rem);
+    font-weight: 400;
+    line-height: 1.167;
+    margin: 0 0 0.35em;
+  }
+  .hero-subtitle {
+    font-size: clamp(1.4rem, 3.5vw, 2.125rem);
+    font-weight: 400;
+    line-height: 1.235;
+    margin: 0 0 0.35em;
+  }
+  .section-title {
+    font-size: clamp(1.4rem, 3.5vw, 2.125rem);
+    font-weight: 400;
+    line-height: 1.235;
+    margin: 0;
+  }
+  .body-text {
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .outer-box {
+    margin: clamp(0.75rem, 4vw, 3rem);
+  }
+
+  .hero-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .hero-image img {
+    border-radius: 8px;
+    border: 4px solid var(--color-border);
+    height: auto;
+    width: 100%;
+    display: block;
+  }
+
+  .btn-row {
+    display: flex;
+    justify-content: space-evenly;
+    gap: 8px;
+  }
+
+  .section-box {
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .two-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .features-image img {
+    border: 4px solid var(--color-border);
+    border-radius: 8px;
+    height: auto;
+    width: 100%;
+  }
+
+  @media (min-width: 900px) {
+    .hero-row {
+      flex-direction: row;
+      align-items: center;
+    }
+    .hero-text {
+      flex: 50%;
+    }
+    .hero-image {
+      flex: 50%;
+    }
+    .btn-row {
+      margin: 16px;
+    }
+    .two-col {
+      flex-direction: row;
+    }
+    .two-col > div:first-child {
+      flex: 50%;
+    }
+    .features-image {
+      flex: 50%;
+    }
+  }
+</style>

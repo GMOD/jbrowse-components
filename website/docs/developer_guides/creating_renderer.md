@@ -3,14 +3,11 @@ id: creating_renderer
 title: Creating custom renderers
 ---
 
-import Figure from '../figure'
-
 ### What is a renderer
 
-In JBrowse 1, a track type typically would directly call the data parser and do
-its own rendering. In JBrowse 2, the data parsing and rendering is offloaded to
-a web-worker or other RPC. This allows things to be faster in many cases. This
-is conceptually related to "server side rendering" or SSR in React terms.
+In JBrowse 1, a track type would directly call the data parser and do its own
+rendering. In JBrowse 2, data parsing and rendering is offloaded to a web worker
+via RPC, which keeps the main thread responsive.
 
 <Figure src="/img/renderer.png" caption="Conceptual diagram of how a track calls a renderer using the RPC"/>
 
@@ -24,10 +21,8 @@ is recommended.
 
 ### How to create a new renderer
 
-The fundamental aspect of creating a new renderer is creating a class that
-implements the "render" function. A renderer is actually a pair of a React
-component that contains the renderer's output, which we call the "rendering",
-and the renderer itself.
+A renderer is a class that implements a `render` function. It returns a React
+component (the "rendering") along with any image data.
 
 ```js
 class MyRenderer implements ServerSideRendererType {
@@ -36,7 +31,7 @@ class MyRenderer implements ServerSideRendererType {
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
     ctx.fillStyle = 'red'
-    ctx.drawRect(0, 0, 100, 100)
+    ctx.fillRect(0, 0, 100, 100)
     const imageData = createImageBitmap(canvas)
     return {
       reactElement: React.createElement(this.ReactComponent, { ...props }),
@@ -48,15 +43,10 @@ class MyRenderer implements ServerSideRendererType {
 }
 ```
 
-In the above simplified example, our renderer creates a canvas using width and
-height that are supplied via arguments, and draw a rectangle. We then return a
-`React.createElement` call which creates a "rendering" component that will
-contain the output.
-
 :::info
 
-The above canvas operations use an `OffscreenCanvas` for Chrome, or in other
-browsers serialize the drawing commands to be drawn in the main thread.
+The above canvas operations use an `OffscreenCanvas`, which is supported in all
+modern browsers.
 
 :::
 
@@ -81,15 +71,14 @@ The layout is available on BoxRendererType renderers so that it can layout
 things in pileup format, and has an addRect function to get the y-coordinate at
 which to render your data.
 
-The `features` argument is a map of feature ID to the feature itself. To iterate
-over the features Map, we can use an iterator or convert to an array:
+`features` is a Map of feature ID → feature. To iterate:
 
 ```js
 class MyRenderer extends ServerSideRendererType {
   render(props) {
     const { features, width, height } = props
     // iterate over the ES6 map of features
-    for (const feature in features.values()) {
+    for (const feature of features.values()) {
       // render each feature to canvas or output SVG
     }
 
@@ -160,15 +149,17 @@ Then, we have our Rendering component just be plain React code. This is a highly
 simplified SVG renderer just to illustrate:
 
 ```jsx
+import { bpSpanPx } from '@jbrowse/core/util'
+
 export default function SvgFeatureRendering(props) {
-  const { width, features, regions, layout, bpPerPx } = props
+  const { width, config, features, regions, layout, bpPerPx } = props
   const region = regions[0]!
 
   const feats = Array.from(features.values())
-  const height = readConfObject(config, 'height', { feature })
   return (
     <svg>
       {feats.map(feature => {
+        const height = readConfObject(config, 'height', { feature })
         // our layout determines at what y-coordinate to
         // plot our feature, given all the other features
         const top = layout.addRect(
@@ -190,34 +181,20 @@ export default function SvgFeatureRendering(props) {
 }
 ```
 
-:::info Note
+:::info
 
-1. The above SVG renderer is highly simplified, but it shows that you can have a
-   simple React component that leverages the existing `BoxRendererType`, so that
-   you do not have to necessarily create your own renderer class
-
-2. The renderers receive an array of regions to render, but if they are only
-   equipped to handle one region at a time then they can select only rendering
-   to `regions[0]`
+The SVG renderer above shows you can use a simple React component with the
+existing `BoxRendererType` without writing a full renderer class. Renderers
+receive an array of regions; those handling only one at a time use `regions[0]`.
 
 :::
 
 ### Overriding the renderer's `getFeatures` method
 
-Normally, it is sufficient to override the `getFeatures` function in your
-dataAdapter.
-
-If you want to drastically modify the feature fetching behavior, you can modify
-the renderer's `getFeatures` call.
-
-The base `ServerSideRendererType` class has a built-in `getFeatures` function
-that, in turn, calls your adapter's `getFeatures` function, but if you need
-tighter control over how your adapter's `getFeatures` method is called, then
-your renderer.
-
-The Hi-C renderer type does not operate on conventional features and instead
-works with contact matrices, so the Hi-C renderer has a custom `getFeatures`
-function:
+Usually overriding `getFeatures` in your adapter is enough. If you need tighter
+control over feature fetching, you can override `getFeatures` in the renderer
+itself. The Hi-C renderer does this because it works with contact matrices
+rather than conventional features:
 
 ```js
 import { toArray } from 'rxjs/operators'

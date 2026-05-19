@@ -1,0 +1,54 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { AddTracksProgrammatically } from './JBrowseReactApp.stories'
+
+<Meta title="Adding Tracks Programmatically" />
+
+# Adding Tracks Programmatically
+
+After initializing the app, you can register new track configurations at runtime
+with `state.jbrowse.addTrackConf()` and display them with `view.showTrack()`.
+The track config format is identical to a track entry in jbrowse-web's
+`config.json`, so tracks created with `jbrowse add-track --out <config>` can be
+used directly.
+
+```js
+// Call from an event handler, not during render
+function addMyTrack() {
+  state.jbrowse.addTrackConf({
+    type: 'FeatureTrack',
+    trackId: 'my_genes',
+    name: 'My Genes',
+    assemblyNames: ['hg38'],
+    adapter: {
+      type: 'Gff3TabixAdapter',
+      uri: 'https://example.com/genes.gff.gz',
+    },
+  })
+  state.session.views[0]?.showTrack('my_genes')
+}
+```
+
+**Important:** call `addTrackConf` and `showTrack` from an event handler or
+effect, not directly in the render function. Calling them during render leads to
+repeated registration and display calls on every re-render.
+
+For tracks you know at startup, prefer the `init.tracks` array in your
+`defaultSession` — it is declarative and runs once:
+
+```js
+defaultSession: {
+  views: [{
+    type: 'LinearGenomeView',
+    init: {
+      assembly: 'hg38',
+      loc: 'chr1:1-100000',
+      tracks: ['my_genes'],
+    },
+  }],
+}
+```
+
+The live example below starts without the GFF3 genes track. Clicking the button
+calls `addTrackConf` + `showTrack` to register and display it:
+
+<Story of={AddTracksProgrammatically} />

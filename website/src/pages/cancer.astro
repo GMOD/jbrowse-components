@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import page from '../styles/page.module.css'
+import btn from '../styles/button.module.css'
+---
+
+<BaseLayout title="JBrowse 2 Cancer Resources">
+  <div class={page.content}>
+    <div class="hero">
+      <h1>JBrowse 2 Cancer Resources</h1>
+      <p class="subtitle">A hub of tutorials, plugins, and information regarding cancer data and JBrowse 2</p>
+      <a
+        class:list={[btn.btn, btn.btnPrimary]}
+        href="https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Browse a cancer annotations demo
+      </a>
+    </div>
+
+    <h2>JBrowse 2 plugins for cancer annotation datasets</h2>
+    <p>
+      This is a hub of plugins that provide JBrowse 2 access to cancer-associated annotation datasets.
+      Visit the <a href="/plugin_store">Plugin Store</a> for the full list of available plugins.
+    </p>
+
+    <p>
+      Don't see your dataset?
+      <a href="https://github.com/GMOD/jbrowse-components/issues/new/choose" target="_blank" rel="noopener noreferrer">Make a request</a>
+      for a new plugin, or <a href="/docs/developer_guide">design your own plugin</a>.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .hero {
+    background: #135560;
+    color: #fff;
+    padding: 3rem 2rem;
+    margin: -2rem -2rem 2rem;
+    text-align: center;
+  }
+  h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 0.75rem;
+    color: #fff;
+  }
+  .subtitle {
+    font-size: 1.1rem;
+    margin: 0 0 1.5rem;
+    opacity: 0.9;
+  }
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin: 1.5rem 0 0.75rem;
+  }
+</style>

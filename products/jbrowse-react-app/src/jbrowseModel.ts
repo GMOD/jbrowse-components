@@ -6,7 +6,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 /**
  * #stateModel JBrowseReactAppConfigModel
  * #category root
- * the rootModel.jbrowse state model for JBrowse Web
+ * the rootModel.jbrowse state model for JBrowse React App
  */
 export default function JBrowseWeb({
   pluginManager,

@@ -3,8 +3,7 @@ id: intro
 title: Intro to the config.json format
 ---
 
-A JBrowse 2 configuration for jbrowse-web is stored in a file (often called
-config.json) and is structured as follows
+The JBrowse 2 config file (typically `config.json`) is structured as follows:
 
 ```json
 {
@@ -31,18 +30,15 @@ The most important thing to configure are your assemblies and your tracks.
 
 :::info
 
-Note: On jbrowse desktop, a "session" is essentially a complete JBrowse config
-with a .jbrowse file extension
+On jbrowse desktop, a "session" is a complete JBrowse config with a `.jbrowse`
+file extension.
 
 :::
 
 :::info
 
-Note: with embedded components e.g. @jbrowse/react-linear-genome-view, it does
-not accept a config file but rather an object at runtime with the config loaded.
-
-To fetch a config.json object on the fly in @jbrowse/react-linear-genome-view,
-you might use something like this:
+Embedded components (e.g. `@jbrowse/react-linear-genome-view`) take a config
+object at runtime rather than a config file. To fetch one on the fly:
 
 ```typescript
 const response = await fetch('config.json')

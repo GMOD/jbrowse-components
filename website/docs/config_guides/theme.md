@@ -3,8 +3,6 @@ id: theme
 title: Coloring/theming
 ---
 
-import Figure from '../figure'
-
 ### Color
 
 The color scheme as well as some sizing options can be configured via the theme.
@@ -43,7 +41,7 @@ The customized theme screenshot uses the below configuration:
 ```json
 {
   "configuration": {
-    "theme" :{
+    "theme": {
       "palette": {
         "primary": {
           "main": "#311b92"
@@ -60,6 +58,7 @@ The customized theme screenshot uses the below configuration:
       }
     }
   }
+}
 ```
 
 ### Extra themes and dark mode
@@ -125,9 +124,11 @@ options:
 
 ```json
 {
-  "theme": {
-    "typography": { "fontSize": 10 },
-    "spacing": 2
+  "configuration": {
+    "theme": {
+      "typography": { "fontSize": 10 },
+      "spacing": 2
+    }
   }
 }
 ```

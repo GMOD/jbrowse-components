@@ -23,20 +23,20 @@ fs.writeFileSync('config.json', JSON.stringify(config, null, 2))
 
 The command line tools can be installed globally using `npm` as follows
 
-```sh-session
+```bash
 $ npm install -g @jbrowse/cli
 ```
 
 A CLI tool called `jbrowse` should then be available in the path. You can test
 your installation with
 
-```sh-session
+```bash
 $ jbrowse --version
 ```
 
 It is also possible to do one-off executions using npx, e.g.
 
-```sh-session
+```bash
 npx @jbrowse/cli create myfolder
 ```
 

@@ -1,6 +1,6 @@
 ---
 title: 2022 year in review
-date: 2022-12-26 22:20:37
+date: 2022-12-16
 ---
 
 2022 was a big year for JBrowse 2!

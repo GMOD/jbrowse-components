@@ -1,94 +1,90 @@
 // replace with this in your code:
-// import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
+// import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
+import { useState } from 'react'
+
 import { JBrowseApp, createViewState } from '../../src/index.ts'
 
 export const DarkTheme = () => {
-  const state = createViewState({
-    config: {
-      configuration: {
-        theme: {
-          palette: {
-            mode: 'dark',
-          },
-        },
-      },
-      assemblies: [
-        {
-          name: 'volvox',
-          sequence: {
-            type: 'ReferenceSequenceTrack',
-            trackId: 'volvox_refseq',
-            adapter: {
-              type: 'TwoBitAdapter',
-              uri: 'volvox.2bit',
-            },
-          },
-          refNameAliases: {
-            adapter: {
-              type: 'FromConfigAdapter',
-              adapterId: 'W6DyPGJ0UU',
-              features: [
-                {
-                  refName: 'ctgA',
-                  uniqueId: 'alias1',
-                  aliases: ['A', 'contigA'],
-                },
-                {
-                  refName: 'ctgB',
-                  uniqueId: 'alias2',
-                  aliases: ['B', 'contigB'],
-                },
-              ],
+  const [state] = useState(() =>
+    createViewState({
+      config: {
+        configuration: {
+          theme: {
+            palette: {
+              mode: 'dark',
             },
           },
         },
-      ],
-
-      defaultSession: {
-        name: 'Integration test example',
-        views: [
+        assemblies: [
           {
-            id: 'integration_test',
-            type: 'LinearGenomeView',
-            offsetPx: 2000,
-            bpPerPx: 0.05,
-            displayedRegions: [
-              {
-                refName: 'ctgA',
-                start: 0,
-                end: 50001,
-                assemblyName: 'volvox',
+            name: 'volvox',
+            sequence: {
+              type: 'ReferenceSequenceTrack',
+              trackId: 'volvox_refseq',
+              adapter: {
+                type: 'TwoBitAdapter',
+                uri: 'volvox.2bit',
               },
-            ],
+            },
+            refNameAliases: {
+              adapter: {
+                type: 'FromConfigAdapter',
+                adapterId: 'W6DyPGJ0UU',
+                features: [
+                  {
+                    refName: 'ctgA',
+                    uniqueId: 'alias1',
+                    aliases: ['A', 'contigA'],
+                  },
+                  {
+                    refName: 'ctgB',
+                    uniqueId: 'alias2',
+                    aliases: ['B', 'contigB'],
+                  },
+                ],
+              },
+            },
           },
         ],
-      },
-      tracks: [
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'volvox_cram',
-          name: 'volvox-sorted.cram',
-          assemblyNames: ['volvox'],
-          category: ['Alignments'],
-          adapter: {
-            type: 'CramAdapter',
-            uri: 'volvox-sorted.cram',
-            locationType: 'UriLocation',
-
-            sequenceAdapter: {
-              type: 'TwoBitAdapter',
-              uri: 'volvox.2bit',
+        tracks: [
+          {
+            type: 'AlignmentsTrack',
+            trackId: 'volvox_cram',
+            name: 'volvox-sorted.cram',
+            assemblyNames: ['volvox'],
+            category: ['Alignments'],
+            adapter: {
+              type: 'CramAdapter',
+              uri: 'volvox-sorted.cram',
+              locationType: 'UriLocation',
+              sequenceAdapter: {
+                type: 'TwoBitAdapter',
+                uri: 'volvox.2bit',
+              },
             },
           },
+        ],
+        defaultSession: {
+          name: 'My session',
+          views: [
+            {
+              id: 'view1',
+              type: 'LinearGenomeView',
+              init: {
+                assembly: 'volvox',
+                loc: 'ctgA:1..50000',
+                tracks: ['volvox_cram'],
+              },
+            },
+          ],
         },
-      ],
-    },
-  })
-  state.session.views[0]?.showTrack('volvox_cram')
+      },
+    }),
+  )
 
   return (
     <div>
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/BasicExample.tsx">
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/DarkTheme.tsx">
         Source code
       </a>
       <JBrowseApp viewState={state} />

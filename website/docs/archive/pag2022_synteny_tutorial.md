@@ -3,6 +3,12 @@ id: pag2022_synteny_tutorial
 title: PAG2022 - Synteny visualization using JBrowse Desktop
 ---
 
+:::caution Archived content
+
+This is workshop material from PAG 2022. External links may be stale.
+
+:::
+
 We presented a tutorial of visualizing synteny with JBrowse Desktop at PAG 2022
 
 A guide to follow along is written here:

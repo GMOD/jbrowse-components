@@ -1,6 +1,8 @@
 export {
+  AddTracksProgrammatically,
   BasicExample,
   DarkTheme,
+  EmbeddedPlugin,
   HumanDemo,
   SyntenyExample,
   WithFetchConfigJson,

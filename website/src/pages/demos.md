@@ -1,0 +1,53 @@
+---
+layout: '../layouts/MarkdownLayout.astro'
+title: JBrowse 2 Demos
+---
+
+# JBrowse 2 demos
+
+These demos contain examples of new workflows and views in JBrowse 2, with links
+to live sessions on the web so you can try them out in the app yourself.
+
+Note: everything demonstrated here on the web can also be done in JBrowse
+desktop.
+
+**Demo instances**
+
+- [Human instance with HG002 insertion shown (many other tracks available too)](https://jbrowse.org/code/jb2/latest/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt)
+- [SKBR3 breast cancer cell line - breakpoint split view translocation](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-pjaAq1hNxB&password=Z9teR)
+- [Human instance coloring methylation/modifications on nanopore reads](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-XyL52LPDoO&password=861E4)
+- [Breakpoint split view demo (showing multi-hop split read connection)](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fbreakpoint%2Fconfig.json&session=share-xeUuLRakik&password=vh0ca)
+- [Grape vs Peach dotplot](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_dotplot.json&session=share-zw51jIwuXb&password=i8WqY)
+- [Yeast dotplot](https://jbrowse.org/code/jb2/latest/?config=test_data/yeast_synteny/config.json)
+- [1000 genomes extended trio demo](https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-SUK-mntGyB&password=eQF0F)
+- [Volvox sample data (small imaginary test datasets)](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fvolvox%2Fconfig.json&session=share-JCsm46ATdn&password=ilHg5)
+- [ENCODE Multi-bigwig example](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-Pw7kOjagSF&password=e0SuE)
+- [COLO829 melanoma cancer cell line tumor vs normal multi-bigwig example](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-7skGDzEmMi&password=NGzLX)
+- [Inversion example ("single row" breakpoint split view)](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-sA7riIQWhJ&password=3pkHd)
+- [Inversion example (linked reads mode)](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-ofjI26CNas&password=ohqlR)
+- [Multi-way synteny demo (grape vs peach vs cacao)](https://jbrowse.org/code/jb2/latest/?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fplant_synteny_demo%2Fconfig2.json&session=share-pARmvLazem&password=ZPOwE)
+- [Tetraploid potato multi-sample VCF rendering](https://jbrowse.org/code/jb2/latest/?config=/genomes/potato/config.json)
+- [Human trio phased VCF rendering](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-vQBatl-Of9&password=Mhl6F)
+
+**Conference and other guided demos**
+
+- [2025 Biocuration workshop w/ Apollo 3](https://github.com/GMOD/2025-biocuration-tutorial)
+  and
+  [intro slides](https://docs.google.com/presentation/d/1JevD7lDPbNNnwrFfvWRQy2cDEULhZ_wP--E3F9YtfBU/edit?usp=sharing)
+- [2025 PAG Workshop](http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2025) and
+  [intro slides](https://docs.google.com/presentation/d/1uL5x1Mxewxn5NdKOLaVz05Hns_-GRslJMyO8Q1dtxr0/edit?usp=sharing)
+- [2024 PAG Workshop](http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2024) and
+  [intro slides](https://docs.google.com/presentation/d/1p4SudzTyTZuXxOS5t4ibygWcxjACPrggdM7P1gKIvAQ/edit?usp=sharing)
+- [2023 ISMB/BOSC lightning talk](https://docs.google.com/presentation/d/18vdbamIwaCQUVagMD65EILQ35v7p79sJBZr6D0WiX9c/edit?usp=sharing)
+- [2023 PAG workshop](http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2023)
+- [2023 publication figures](https://jbrowse.org/demos/paper2022/) (see our
+  [Genome Biology](https://doi.org/10.1186/s13059-023-02914-z) publication for
+  more info)
+- [2022 Plant and Animal Genomes](https://jbrowse.org/demos/pag2022/) (see also
+  [workshop video tutorial here](/jb2/docs/archive/pag2022_synteny_tutorial))
+- [2021 Biology of Genomes](https://jbrowse.org/demos/bog2021/)
+- [2020 Cancer SVs demo](https://jbrowse.org/demos/cancer-demo-2020/) - guided
+  demo of structural variant visualization
+- [2020 ASHG](https://jbrowse.org/demos/ashg2020/)
+- [2020 ITCR](https://jbrowse.org/demos/itcr2020/)
+- [2020 Biology of Genomes](https://jbrowse.org/demos/bog2020/)

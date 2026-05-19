@@ -48,6 +48,12 @@ Example `BamAdapter` config:
 }
 ```
 
+A reduced form is also accepted; the index is inferred as `yourfile.bam.bai`:
+
+```json
+{ "type": "BamAdapter", "uri": "http://yourhost/file.bam" }
+```
+
 #### CramAdapter configuration options
 
 - `cramLocation` - a 'file location' for the CRAM
@@ -79,4 +85,10 @@ Example `CramAdapter` config:
     }
   }
 }
+```
+
+A reduced form is also accepted; the index is inferred as `yourfile.cram.crai`:
+
+```json
+{ "type": "CramAdapter", "uri": "http://yourhost/file.cram" }
 ```
