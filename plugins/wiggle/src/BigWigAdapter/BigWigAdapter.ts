@@ -34,11 +34,11 @@ function computeStatsFromView(
   let featureCount = 0
 
   for (let i = 0; i < view.length; i++) {
-    if (view.end(i) <= targetStart || view.start(i) >= targetEnd) {
+    if (view.end(i)! <= targetStart || view.start(i)! >= targetEnd) {
       continue
     }
 
-    const score = view.score(i)
+    const score = view.score(i)!
     const min = view.minScore(i) ?? score
     const max = view.maxScore(i) ?? score
 

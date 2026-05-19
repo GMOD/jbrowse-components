@@ -381,8 +381,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.19
-        version: 6.0.19
+        specifier: ^6.0.20
+        version: 6.0.20
       '@jbrowse/jexl':
         specifier: ^3.0.2
         version: 3.0.2
@@ -587,8 +587,8 @@ importers:
         specifier: workspace:^
         version: link:../text-indexing-core
       ixixx:
-        specifier: ^3.0.5
-        version: 3.0.5
+        specifier: ^3.0.9
+        version: 3.0.9
       react:
         specifier: '>=18.0.0'
         version: 19.2.6
@@ -806,8 +806,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/bbi':
-        specifier: ^9.0.11
-        version: 9.0.11
+        specifier: ^9.0.15
+        version: 9.0.15
       '@gmod/bed':
         specifier: ^2.2.3
         version: 2.2.3
@@ -1209,8 +1209,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.19
-        version: 6.0.19
+        specifier: ^6.0.20
+        version: 6.0.20
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1359,8 +1359,8 @@ importers:
   plugins/linear-comparative-view:
     dependencies:
       '@gmod/hclust':
-        specifier: ^3.0.12
-        version: 3.0.12
+        specifier: ^3.0.14
+        version: 3.0.14
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -1470,8 +1470,8 @@ importers:
   plugins/maf:
     dependencies:
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.19
-        version: 6.0.19
+        specifier: ^6.0.20
+        version: 6.0.20
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1569,8 +1569,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@gmod/indexedfasta':
-        specifier: ^5.0.5
-        version: 5.0.5
+        specifier: ^5.0.7
+        version: 5.0.7
       '@gmod/twobit':
         specifier: ^6.0.7
         version: 6.0.7
@@ -1737,8 +1737,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/hclust':
-        specifier: ^3.0.12
-        version: 3.0.12
+        specifier: ^3.0.14
+        version: 3.0.14
       '@gmod/tabix':
         specifier: ^3.3.6
         version: 3.3.6
@@ -1806,11 +1806,11 @@ importers:
   plugins/wiggle:
     dependencies:
       '@gmod/bbi':
-        specifier: ^9.0.11
-        version: 9.0.11
+        specifier: ^9.0.15
+        version: 9.0.15
       '@gmod/hclust':
-        specifier: ^3.0.12
-        version: 3.0.12
+        specifier: ^3.0.14
+        version: 3.0.14
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1881,8 +1881,8 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1
       ixixx:
-        specifier: ^3.0.5
-        version: 3.0.5
+        specifier: ^3.0.9
+        version: 3.0.9
       json-parse-better-errors:
         specifier: ^1.0.2
         version: 1.0.2
@@ -2579,8 +2579,8 @@ importers:
         specifier: ^5.0.6
         version: 5.0.6
       '@types/node':
-        specifier: ^20.19.41
-        version: 20.19.41
+        specifier: ^25.8.0
+        version: 25.8.0
 
 packages:
 
@@ -3756,14 +3756,14 @@ packages:
   '@gmod/bam@7.2.0':
     resolution: {integrity: sha512-fBkzKeaojfIxk6t85qo2QCjdOhWFRyYilIMFXm7Kkd2ho4g9U9gfwaMWzjXA8XN3e1oWOSmEqZxZK6CO9z6PPQ==}
 
-  '@gmod/bbi@9.0.11':
-    resolution: {integrity: sha512-KrdIMQSRMmJ89v+dzJa+ZZ15kEYNJGEOUvp7YDrwQsOOHhIdWTdl37GMj2Y2dLiCe60UFtgVXyWJeYzX2sAJOw==}
+  '@gmod/bbi@9.0.15':
+    resolution: {integrity: sha512-fs9g06ROWAkRWESSAlWWQoo3cEGxPaqhNYbqpUcVzLkHaPKHlLCZc/j6mXaLYrz3jmq9LiYUHTfYZ1y40bqGJQ==}
 
   '@gmod/bed@2.2.3':
     resolution: {integrity: sha512-JPrijnobKsFhBcWamy+Vu647QsYCP6Az0gvq56AYpZ7IdvyJYdi7iLrhe3eQEOXjSsARj6ShbX3vxmN3N36X2A==}
 
-  '@gmod/bgzf-filehandle@6.0.19':
-    resolution: {integrity: sha512-Zs/568HtsrL5XZGDLTeVZaNFKG7/8HKG+LP+B201OdkQBa1VpZyQg95i65bSuwyqDGnRjkvNbyASwEsxzG9Rrg==}
+  '@gmod/bgzf-filehandle@6.0.20':
+    resolution: {integrity: sha512-bgW0IMPv502D4jYsoMULegYebxxbV54Y50qH+wwZvNXr07LPuK+4hy9Q8+ranNVuLokOBKwIXmTZj6RVFTVW8Q==}
 
   '@gmod/cram@8.2.1':
     resolution: {integrity: sha512-3TQy754LR+DMvTHHx3tVsVnB0XjXaIolbBjPFIOOqW5gBG6HE2tmxsVzQGNAc1X/edYjedIFcwW+anmm6rUy2w==}
@@ -3772,11 +3772,11 @@ packages:
     resolution: {integrity: sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==}
     engines: {node: '>=15'}
 
-  '@gmod/hclust@3.0.12':
-    resolution: {integrity: sha512-rkmEYjy+8cRg2fv7Ukli3oE7pGV/B5CqtzcrEB8YLk+UQ2R2DCSfH+dXWPqRKcpa3hVI2rHr+tcJ7tfrfoCsHA==}
+  '@gmod/hclust@3.0.14':
+    resolution: {integrity: sha512-RED2t41otUeFoBR/hWawpfaZbT16Af/NO8rpXXkXSUaE1NHEzPnXEd8Fhf8caFdWUErKhiyKp0U+SWW0PLQBUA==}
 
-  '@gmod/indexedfasta@5.0.5':
-    resolution: {integrity: sha512-CB0WqY/+VbrvmHWv0v5uql2ZFfAEMqFu+XARTxePiMWJncqtJwK5C+vWzPkUN626OQO9FrK7KjLN7FFuzt8XUQ==}
+  '@gmod/indexedfasta@5.0.7':
+    resolution: {integrity: sha512-E/BtszY8K4xN6s2IEafpfZ1E8pyWsBx4xEmcMr0SKaBLPzh0VGqEKdmZpH+Sq5Kq7vYVuL8UriFhc6xNwLfXcA==}
 
   '@gmod/nclist@3.0.8':
     resolution: {integrity: sha512-pXK9vktFSyuO4NLcopCrKlUEmq+xFv5wG3S+GoYFdzegVUd8zPjNZAbrhKUKRwTlBkWtWqCkNXchJJj4A+WIkg==}
@@ -4879,9 +4879,6 @@ packages:
 
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
-
-  '@types/node@20.19.41':
-    resolution: {integrity: sha512-ECymXOukMnOoVkC2bb1Vc/w/836DXncOg5m8Xj1RH7xSHZJWNYY6Zh7EH477vcnD5egKNNfy2RpNOmuChhFPgQ==}
 
   '@types/node@24.12.4':
     resolution: {integrity: sha512-GUUEShf+PBCGW2KaXwcIt3Yk+e3pkKwWKb9GSyM9WQVE+ep2jzmHdGsHzu4wgcZy5fN9FBdVzjpBQsYlpfpgLA==}
@@ -7378,8 +7375,8 @@ packages:
     resolution: {integrity: sha512-H0dkQoCa3b2VEeKQBOxFph+JAbcrQdE7KC0UkqwpLmv2EC4P41QXP+rqo9wYodACiG5/WM5s9oDApTU8utwj9g==}
     engines: {node: '>= 0.4'}
 
-  ixixx@3.0.5:
-    resolution: {integrity: sha512-VAXqb1N63uO1mUyht9FL8OPfg3SA8cFOrg7rE318+bmdxGdjkBOsdWUs176nweqTVHtjCSXS0iYyn1gFNnlG1w==}
+  ixixx@3.0.9:
+    resolution: {integrity: sha512-jMTz1b1Tcdc1UGL6MGKueGNWDSbUnHL3dKCGtziZRNBcUFa3NPouAEFKTRC6KAkWyNGH1pNXk/y0YOZ/hlz2rw==}
     hasBin: true
 
   jackspeak@3.4.3:
@@ -9223,9 +9220,6 @@ packages:
   unbzip2-stream@1.4.3:
     resolution: {integrity: sha512-mlExGW4w71ebDJviH16lQLtZS32VKqsSfk80GCfUlwT/4/hNRFsoscrF/c++9xinkMzECL1uL9DDwXqFWkruPg==}
 
-  undici-types@6.21.0:
-    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
-
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
@@ -10843,14 +10837,14 @@ snapshots:
 
   '@gmod/bam@7.2.0':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.19
+      '@gmod/bgzf-filehandle': 6.0.20
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
       generic-filehandle2: 2.1.7
     transitivePeerDependencies:
       - buffer
 
-  '@gmod/bbi@9.0.11':
+  '@gmod/bbi@9.0.15':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@jbrowse/quick-lru': 7.3.5
@@ -10858,7 +10852,7 @@ snapshots:
 
   '@gmod/bed@2.2.3': {}
 
-  '@gmod/bgzf-filehandle@6.0.19':
+  '@gmod/bgzf-filehandle@6.0.20':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
@@ -10875,11 +10869,11 @@ snapshots:
 
   '@gmod/faidx@2.0.0': {}
 
-  '@gmod/hclust@3.0.12': {}
+  '@gmod/hclust@3.0.14': {}
 
-  '@gmod/indexedfasta@5.0.5':
+  '@gmod/indexedfasta@5.0.7':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.19
+      '@gmod/bgzf-filehandle': 6.0.20
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
@@ -10892,7 +10886,7 @@ snapshots:
   '@gmod/tabix@3.3.6':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
-      '@gmod/bgzf-filehandle': 6.0.19
+      '@gmod/bgzf-filehandle': 6.0.20
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
@@ -12193,10 +12187,6 @@ snapshots:
   '@types/mdx@2.0.13': {}
 
   '@types/mime@1.3.5': {}
-
-  '@types/node@20.19.41':
-    dependencies:
-      undici-types: 6.21.0
 
   '@types/node@24.12.4':
     dependencies:
@@ -14976,7 +14966,7 @@ snapshots:
       has-symbols: 1.1.0
       set-function-name: 2.0.2
 
-  ixixx@3.0.5:
+  ixixx@3.0.9:
     dependencies:
       split2: 4.2.0
 
@@ -17203,8 +17193,6 @@ snapshots:
     dependencies:
       buffer: 5.7.1
       through: 2.3.8
-
-  undici-types@6.21.0: {}
 
   undici-types@7.16.0: {}
 

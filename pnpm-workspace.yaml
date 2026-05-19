@@ -17,3 +17,4 @@ minimumReleaseAge: '1440'
 minimumReleaseAgeExclude:
   - '@gmod/*'
   - 'g2p_mapper'
+  - 'ixixx'
