@@ -438,7 +438,10 @@ const CanvasLoadingOverlay = observer(function CanvasLoadingOverlay({
   model: Pick<LinearBasicDisplayModel, 'isReady' | 'statusMessage'>
 }) {
   return (
-    <LoadingOverlay statusMessage={model.statusMessage} isVisible={!model.isReady} />
+    <LoadingOverlay
+      statusMessage={model.statusMessage}
+      isVisible={!model.isReady}
+    />
   )
 })
 

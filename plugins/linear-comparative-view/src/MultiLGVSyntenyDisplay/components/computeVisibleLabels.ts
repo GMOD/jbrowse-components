@@ -22,9 +22,10 @@ const MIN_MISMATCH_PX_PER_BP = 6
 const MIN_DELETION_WIDTH_PX = 12
 
 interface LabelView {
-  bpToPx(arg: { refName: string; coord: number }):
-    | { offsetPx: number }
-    | undefined
+  bpToPx(arg: {
+    refName: string
+    coord: number
+  }): { offsetPx: number } | undefined
   offsetPx: number
   width: number
 }
@@ -41,8 +42,14 @@ interface ComputeMultiSyntenyLabelsParams {
 export function computeMultiSyntenyLabels(
   params: ComputeMultiSyntenyLabelsParams,
 ) {
-  const { view, genomeRows, displayedGenomes, rowHeight, rowSpacing, showSnps } =
-    params
+  const {
+    view,
+    genomeRows,
+    displayedGenomes,
+    rowHeight,
+    rowSpacing,
+    showSnps,
+  } = params
   const labels: VisibleLabel[] = []
   const padding = rowSpacing ? 1 : 0
   const h = rowHeight - padding * 2

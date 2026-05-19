@@ -47,9 +47,11 @@ import type { SyntenyColorPalette } from './shared/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { ExportSvgDisplayOptions,
+import type {
+  ExportSvgDisplayOptions,
   FetchContext,
-  LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 import type { TreeSource } from '@jbrowse/tree-sidebar'
 
 type LGV = LinearGenomeViewModel

@@ -24,10 +24,7 @@ export {
   sort,
   sum,
 } from './hierarchy.ts'
-export type {
-  HierarchyNode,
-  PositionedHierarchyNode,
-} from './hierarchy.ts'
+export type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
 export type {
   ClusterHierarchyNode,
   ClusterNodeData,

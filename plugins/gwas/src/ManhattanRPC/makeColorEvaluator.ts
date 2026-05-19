@@ -13,8 +13,7 @@ export function makeColorEvaluator(
 ): (feature: Feature) => number {
   if (color.startsWith('jexl:')) {
     const expr = stringToJexlExpression(color, jexl)
-    return feature =>
-      cssColorToABGR(expr.eval({ feature }) as string)
+    return feature => cssColorToABGR(expr.eval({ feature }) as string)
   }
   const constant = cssColorToABGR(color)
   return () => constant

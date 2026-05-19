@@ -383,9 +383,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
               <tbody>
                 <tr>
                   <td>
-                    <div
-                      style={{ width: 10, height: 10, background: color }}
-                    />
+                    <div style={{ width: 10, height: 10, background: color }} />
                   </td>
                   <td>{modType ? getModificationName(modType) : 'Unknown'}</td>
                 </tr>

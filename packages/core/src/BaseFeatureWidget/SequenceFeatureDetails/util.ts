@@ -74,4 +74,3 @@ function formatWithCoordinateSpacing(
 
   return formattedChunk
 }
-

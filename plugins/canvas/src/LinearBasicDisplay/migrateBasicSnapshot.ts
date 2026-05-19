@@ -1,7 +1,9 @@
 // Migrate legacy snapshot shapes: strip removed FeatureDensityMixin fields,
 // lift `height` to `heightPreConfig`, and promote the old per-property
 // `track<Setting>` values into the unified configOverrides map.
-export function migrateBasicSnapshot(snap: Record<string, unknown> | undefined) {
+export function migrateBasicSnapshot(
+  snap: Record<string, unknown> | undefined,
+) {
   if (!snap) {
     return snap
   }

@@ -16,10 +16,7 @@ interface MafFetchSelf extends IAnyStateTreeNode {
     work: (ctx: FetchContext) => Promise<void>,
   ) => Promise<void>
   setRpcData: (regionIndex: number, data: MafRegionData) => void
-  setSamples: (arg: {
-    samples: Sample[]
-    tree: NewickNode | undefined
-  }) => void
+  setSamples: (arg: { samples: Sample[]; tree: NewickNode | undefined }) => void
 }
 
 /**
@@ -66,7 +63,10 @@ export async function fetchMafAlignmentData(
     }
     const first = results[0]
     if (first) {
-      self.setSamples({ samples: first.result.samples, tree: first.result.tree })
+      self.setSamples({
+        samples: first.result.samples,
+        tree: first.result.tree,
+      })
     }
     for (const { displayedRegionIndex, result } of results) {
       self.setRpcData(displayedRegionIndex, result.regionData)

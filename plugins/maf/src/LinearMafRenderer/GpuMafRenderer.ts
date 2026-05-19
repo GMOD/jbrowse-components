@@ -4,7 +4,10 @@ import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as mafShader from './shaders/maf.generated.ts'
-import { UNIFORMS_SIZE_BYTES, UNIFORM_OFFSET_F32 } from './shaders/maf.generated.ts'
+import {
+  UNIFORMS_SIZE_BYTES,
+  UNIFORM_OFFSET_F32,
+} from './shaders/maf.generated.ts'
 
 import type {
   MafBackend,
@@ -40,7 +43,12 @@ export class GpuMafRenderer implements MafBackend {
     } else {
       // Buffer is pre-encoded on the main thread by the per-region encode autorun.
       // The shader unpacks absolute genomic coords + rowIndex + color.
-      this.hal.uploadBuffer(displayedRegionIndex, PASS_RECT, instanceBuffer, instanceCount)
+      this.hal.uploadBuffer(
+        displayedRegionIndex,
+        PASS_RECT,
+        instanceBuffer,
+        instanceCount,
+      )
       this.regionCount.set(displayedRegionIndex, instanceCount)
     }
   }
@@ -59,7 +67,10 @@ export class GpuMafRenderer implements MafBackend {
     this.hal.beginFrame(0, 0, 0, 0)
 
     for (const block of blocks) {
-      const bufCount = this.hal.getBufferCount(block.displayedRegionIndex, PASS_RECT)
+      const bufCount = this.hal.getBufferCount(
+        block.displayedRegionIndex,
+        PASS_RECT,
+      )
       const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
       if (bufCount === 0) {
         continue

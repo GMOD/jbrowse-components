@@ -52,7 +52,6 @@ import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 
-
 import type {
   ColorPalette,
   RenderState as AlignmentsRenderState,

@@ -15,8 +15,7 @@ export async function renameSingleRegion<R extends Region>(
     region: R
   },
 ): Promise<R | undefined> {
-  const assemblyManager =
-    pluginManager.rootModel?.session?.assemblyManager
+  const assemblyManager = pluginManager.rootModel?.session?.assemblyManager
   if (!assemblyManager) {
     throw new Error('no assembly manager')
   }

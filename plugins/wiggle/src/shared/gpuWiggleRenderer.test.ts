@@ -13,10 +13,7 @@ import {
   SCALE_TYPE_LOG,
 } from './wiggleComponentUtils.ts'
 
-import type {
-  SourceRenderData,
-  WiggleRenderBlock,
-} from '@jbrowse/wiggle-core'
+import type { SourceRenderData, WiggleRenderBlock } from '@jbrowse/wiggle-core'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {
   value: 1,

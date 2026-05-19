@@ -24,7 +24,7 @@ import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
 } from '@jbrowse/tree-sidebar'
-import type { WiggleBackend, YScaleTicks  } from '@jbrowse/wiggle-core'
+import type { WiggleBackend, YScaleTicks } from '@jbrowse/wiggle-core'
 
 type LGV = LinearGenomeViewModel
 

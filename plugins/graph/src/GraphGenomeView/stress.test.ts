@@ -30,7 +30,12 @@ function generateBubbleGFA(bubbleCount: number) {
     const altA = segId(3 * b + 1)
     const altB = segId(3 * b + 2)
     const sink = segId(3 * b + 3)
-    lines.push(`L\t${source}\t+\t${altA}\t+\t0M`, `L\t${source}\t+\t${altB}\t+\t0M`, `L\t${altA}\t+\t${sink}\t+\t0M`, `L\t${altB}\t+\t${sink}\t+\t0M`)
+    lines.push(
+      `L\t${source}\t+\t${altA}\t+\t0M`,
+      `L\t${source}\t+\t${altB}\t+\t0M`,
+      `L\t${altA}\t+\t${sink}\t+\t0M`,
+      `L\t${altB}\t+\t${sink}\t+\t0M`,
+    )
     refPath.push(altA, sink)
     altPath.push(altB, sink)
   }

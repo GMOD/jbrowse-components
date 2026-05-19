@@ -9,7 +9,9 @@ interface BaseHit {
 }
 
 type Tooltip = Record<string, string>
-interface EnrichedFeature { id(): string }
+interface EnrichedFeature {
+  id(): string
+}
 
 interface InteractionModel {
   setHoveredGenotype: (g: Tooltip | undefined) => void

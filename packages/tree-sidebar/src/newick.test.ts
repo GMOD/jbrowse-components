@@ -20,11 +20,7 @@ test('parses simple newick with branch lengths', () => {
 
 test('parses unlabelled tree', () => {
   expect(parseNewick('((,),,(,));')).toEqual({
-    children: [
-      { children: [{}, {}] },
-      {},
-      { children: [{}, {}] },
-    ],
+    children: [{ children: [{}, {}] }, {}, { children: [{}, {}] }],
   })
 })
 

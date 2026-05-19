@@ -4,11 +4,7 @@ import {
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
-import {
-  abgrBlue,
-  abgrGreen,
-  abgrRed,
-} from '@jbrowse/core/util/colorBits'
+import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 
 import type {
   ManhattanBackend,

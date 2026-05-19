@@ -213,9 +213,13 @@ describe('performance instrumentation', () => {
   test('captures fetch and layout timing on a tabix subgraph load', async () => {
     rpcRespond()
     const model = createModel()
-    await model.loadFromTabixSubgraph({ type: 'GfaTabixAdapter' }, TEST_REGION, {
-      trackId: 'gfa-track',
-    })
+    await model.loadFromTabixSubgraph(
+      { type: 'GfaTabixAdapter' },
+      TEST_REGION,
+      {
+        trackId: 'gfa-track',
+      },
+    )
     // GetSubgraph round-trip is timed with performance.now() — a resolved
     // promise still takes a measurable, non-negative amount of time.
     expect(typeof model.lastFetchMs).toBe('number')

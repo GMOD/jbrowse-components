@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
-import { getContainingView, getSession, useGpuModelLifecycle } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  useGpuModelLifecycle,
+} from '@jbrowse/core/util'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,

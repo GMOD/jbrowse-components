@@ -13,9 +13,7 @@ describe('hasExonOrCDS', () => {
       start: 0,
       end: 100,
       type: 'mRNA',
-      subfeatures: [
-        { refName: 'chr1', start: 0, end: 100, type: 'CDS' },
-      ],
+      subfeatures: [{ refName: 'chr1', start: 0, end: 100, type: 'CDS' }],
     })
     expect(model.hasCDS).toBe(true)
     expect(model.hasExon).toBe(false)
@@ -30,9 +28,7 @@ describe('hasExonOrCDS', () => {
       start: 0,
       end: 100,
       type: 'mRNA',
-      subfeatures: [
-        { refName: 'chr1', start: 0, end: 100, type: 'exon' },
-      ],
+      subfeatures: [{ refName: 'chr1', start: 0, end: 100, type: 'exon' }],
     })
     expect(model.hasExon).toBe(true)
     expect(model.hasExonOrCDS).toBe(true)

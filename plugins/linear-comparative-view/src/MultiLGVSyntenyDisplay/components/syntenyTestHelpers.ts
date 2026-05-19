@@ -9,7 +9,9 @@ import { computeCoverage } from '@jbrowse/plugin-alignments'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
-export function feat(overrides: Partial<MultiPairFeature> = {}): MultiPairFeature {
+export function feat(
+  overrides: Partial<MultiPairFeature> = {},
+): MultiPairFeature {
   return {
     queryGenome: 'genomeA',
     origRefName: 'chr1',

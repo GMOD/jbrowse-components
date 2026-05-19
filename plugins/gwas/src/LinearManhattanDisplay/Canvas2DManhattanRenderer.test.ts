@@ -55,7 +55,10 @@ const state: ManhattanRenderState = {
 // ABGR packing matches normalizedRgbToABGR/cssColorToABGR: 0xAABBGGRR.
 function abgr(r: number, g: number, b: number, a = 255) {
   return (
-    (((a & 0xff) << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff)) >>>
+    (((a & 0xff) << 24) |
+      ((b & 0xff) << 16) |
+      ((g & 0xff) << 8) |
+      (r & 0xff)) >>>
     0
   )
 }
@@ -86,7 +89,9 @@ test('draws one arc per feature at the expected screen position', () => {
     [block],
     state,
   )
-  const arcs = calls.filter((c): c is Extract<Call, { kind: 'arc' }> => c.kind === 'arc')
+  const arcs = calls.filter(
+    (c): c is Extract<Call, { kind: 'arc' }> => c.kind === 'arc',
+  )
   expect(arcs).toHaveLength(3)
   // bp=0 → x=0, score=10 (max) → y=0
   expect(arcs[0]).toMatchObject({ x: 0, y: 0 })
@@ -107,7 +112,9 @@ test('switches fillStyle per unique per-feature color', () => {
     state,
   )
   const fills = calls
-    .filter((c): c is Extract<Call, { kind: 'fillStyle' }> => c.kind === 'fillStyle')
+    .filter(
+      (c): c is Extract<Call, { kind: 'fillStyle' }> => c.kind === 'fillStyle',
+    )
     .map(c => c.value)
   // Initial red → switch to blue once (covers both blue points).
   expect(fills).toEqual(['rgb(255,0,0)', 'rgb(0,0,255)'])

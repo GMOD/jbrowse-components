@@ -76,7 +76,7 @@ export function generateTooltipContent(
       const len = base.length
       const lengthSuffix = len > 1 ? ` ${len}bp` : ''
       const baseDisplay =
-        base.length > thresh ? `${base.slice(0, thresh)  }...` : base
+        base.length > thresh ? `${base.slice(0, thresh)}...` : base
       const insertionLabel = isInsertion ? ' Insertion' : ''
 
       contentLines.push(

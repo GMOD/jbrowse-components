@@ -42,9 +42,7 @@ const MafSequenceHoverHighlight = observer(function MafSequenceHoverHighlight({
   const { assemblyManager } = session
 
   const widgets =
-    'widgets' in session
-      ? (session.widgets as Map<string, unknown>)
-      : undefined
+    'widgets' in session ? (session.widgets as Map<string, unknown>) : undefined
   if (!widgets) {
     return null
   }
@@ -58,8 +56,7 @@ const MafSequenceHoverHighlight = observer(function MafSequenceHoverHighlight({
     ) {
       const { refName, start, end, assemblyName } = widget.hoverHighlight
       const assembly = assemblyManager.get(assemblyName)
-      const canonicalRefName =
-        assembly?.getCanonicalRefName(refName) ?? refName
+      const canonicalRefName = assembly?.getCanonicalRefName(refName) ?? refName
 
       const startPx = model.bpToPx({
         refName: canonicalRefName,
@@ -68,8 +65,7 @@ const MafSequenceHoverHighlight = observer(function MafSequenceHoverHighlight({
       const endPx = model.bpToPx({ refName: canonicalRefName, coord: end })
 
       if (startPx && endPx) {
-        const left =
-          Math.min(startPx.offsetPx, endPx.offsetPx) - model.offsetPx
+        const left = Math.min(startPx.offsetPx, endPx.offsetPx) - model.offsetPx
         const width = Math.max(Math.abs(endPx.offsetPx - startPx.offsetPx), 3)
 
         highlights.push(

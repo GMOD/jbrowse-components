@@ -58,8 +58,7 @@ export function useDragSelection(ref: React.RefObject<HTMLDivElement | null>) {
     setState(s => ({
       ...s,
       mouse: { x, y },
-      drag:
-        s.isDragging && s.drag ? { ...s.drag, endX: x, endY: y } : s.drag,
+      drag: s.isDragging && s.drag ? { ...s.drag, endX: x, endY: y } : s.drag,
     }))
   }
 

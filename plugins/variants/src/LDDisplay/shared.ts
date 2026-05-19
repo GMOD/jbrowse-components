@@ -24,11 +24,7 @@ import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
-import type {
-  FilterStats,
-  LDMetric,
-  LDSnp,
-} from '../VariantRPC/getLDMatrix.ts'
+import type { FilterStats, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { LDBackend } from './components/ldBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'

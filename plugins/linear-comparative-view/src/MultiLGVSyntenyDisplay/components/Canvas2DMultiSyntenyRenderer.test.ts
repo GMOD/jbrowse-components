@@ -156,7 +156,10 @@ describe('drawSyntenyToCtx multi-region coverage', () => {
     const features = Array.from({ length: 5 }, () =>
       feat({ origRefName: 'chr1', start: 50, end: 150, cs: ':30+acgt:69' }),
     )
-    const region = buildRegionData({ refName: 'chr1', start: 0, end: 200 }, features)
+    const region = buildRegionData(
+      { refName: 'chr1', start: 0, end: 200 },
+      features,
+    )
     expect(region.numIndicators).toBeGreaterThan(0)
 
     const ctx = new SvgCanvas()
@@ -214,14 +217,17 @@ describe('drawSyntenyToCtx feature rendering', () => {
   test('uint32 positions exact at 3 Gbp', () => {
     // Place feature past the float32 precision floor (2^24 ≈ 16.7 Mbp).
     const startBp = 3_000_000_000
-    const region = buildRegionData({ refName: 'chr1', start: startBp, end: startBp + 200 }, [
-      feat({
-        origRefName: 'chr1',
-        start: startBp + 100,
-        end: startBp + 150,
-        cs: ':30*ag:20',
-      }),
-    ])
+    const region = buildRegionData(
+      { refName: 'chr1', start: startBp, end: startBp + 200 },
+      [
+        feat({
+          origRefName: 'chr1',
+          start: startBp + 100,
+          end: startBp + 150,
+          cs: ':30*ag:20',
+        }),
+      ],
+    )
 
     const ctx = new SvgCanvas()
     draw(

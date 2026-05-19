@@ -11,7 +11,12 @@ import type { MafCellColorConfig } from './resolveCellColor.ts'
 // Pack RGBA (0-255 each) into a single ABGR uint32 — the shader unpacks
 // via unpackRGBA (see packages/core/src/gpu/shaders/colorPack.slang).
 function packRGBA(r: number, g: number, b: number, a = 255): number {
-  return ((a & 0xff) * 0x1000000) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff)
+  return (
+    ((a & 0xff) * 0x1000000) |
+    ((b & 0xff) << 16) |
+    ((g & 0xff) << 8) |
+    (r & 0xff)
+  )
 }
 
 function hexToPackedRGBA(hex: string): number {

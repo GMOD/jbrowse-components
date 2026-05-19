@@ -13,8 +13,7 @@ import type { YScaleTicks, WiggleRenderBlock } from '@jbrowse/wiggle-core'
 // component) and the component (which would otherwise import the inferred
 // model type). Mirrors plugins/wiggle/src/LinearWiggleDisplay/components/
 // wiggleDisplayTypes.ts.
-export interface ManhattanDisplayModel
-  extends GpuLifecycleModel<ManhattanBackend> {
+export interface ManhattanDisplayModel extends GpuLifecycleModel<ManhattanBackend> {
   rpcDataMap: ReadonlyMap<number, ManhattanRpcResult>
   renderBlocks: WiggleRenderBlock[]
   manhattanRenderState(): ManhattanRenderState | undefined

@@ -1,10 +1,7 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type {
-  GetManhattanDataArgs,
-  ManhattanRpcResult,
-} from './rpcTypes.ts'
+import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -36,9 +33,8 @@ export default class GetManhattanData extends RpcMethodType {
   }
 
   async execute(args: GetManhattanDataArgs, _rpcDriver: string) {
-    const { executeGetManhattanData } = await import(
-      './executeGetManhattanData.ts'
-    )
+    const { executeGetManhattanData } =
+      await import('./executeGetManhattanData.ts')
     return executeGetManhattanData({
       pluginManager: this.pluginManager,
       args,

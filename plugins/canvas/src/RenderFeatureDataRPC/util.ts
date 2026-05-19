@@ -69,5 +69,7 @@ export function getStrokeColor({
   theme: Theme
 }) {
   const c = readConfigValue<string>(config, 'color2', feature)
-  return c === THEME_DERIVED_COLOR ? stripAlpha(theme.palette.text.secondary) : c
+  return c === THEME_DERIVED_COLOR
+    ? stripAlpha(theme.palette.text.secondary)
+    : c
 }

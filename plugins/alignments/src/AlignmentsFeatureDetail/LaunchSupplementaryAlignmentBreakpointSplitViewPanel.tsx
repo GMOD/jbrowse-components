@@ -5,10 +5,7 @@ import {
   toLocale,
   useFetch,
 } from '@jbrowse/core/util'
-import {
-  getAssemblyName,
-  launchBreakpointSplitView,
-} from '@jbrowse/sv-core'
+import { getAssemblyName, launchBreakpointSplitView } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
 import { getSAFeatures } from './getSAFeatures.ts'

@@ -110,7 +110,14 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
     return () => {
       active.current = false
     }
-  }, [adapterConfig, samples, regions, showAllLetters, includeInsertions, session])
+  }, [
+    adapterConfig,
+    samples,
+    regions,
+    showAllLetters,
+    includeInsertions,
+    session,
+  ])
 
   const formattedSequence = formatFastaSequences(
     rawSequences,

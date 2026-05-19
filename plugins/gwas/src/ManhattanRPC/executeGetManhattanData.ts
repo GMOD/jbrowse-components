@@ -10,10 +10,7 @@ import { toArray } from 'rxjs/operators'
 
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
 
-import type {
-  GetManhattanDataArgs,
-  ManhattanRpcResult,
-} from './rpcTypes.ts'
+import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -42,10 +39,8 @@ export async function executeGetManhattanData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  const features = await updateStatus(
-    'Loading GWAS data',
-    statusCallback,
-    () => firstValueFrom(dataAdapter.getFeatures(region).pipe(toArray())),
+  const features = await updateStatus('Loading GWAS data', statusCallback, () =>
+    firstValueFrom(dataAdapter.getFeatures(region).pipe(toArray())),
   )
 
   checkStopToken2(stopTokenCheck)

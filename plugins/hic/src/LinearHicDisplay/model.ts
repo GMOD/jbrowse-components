@@ -89,7 +89,7 @@ export default function stateModelFactory(
        */
       availableResolutions: undefined as number[] | undefined,
     }))
-     
+
     .preProcessSnapshot((snap: any) => {
       if (!snap) {
         return snap

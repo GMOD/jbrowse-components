@@ -1,8 +1,5 @@
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
-import {
-  getAssemblyName,
-  launchBreakpointSplitView,
-} from '@jbrowse/sv-core'
+import { getAssemblyName, launchBreakpointSplitView } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'

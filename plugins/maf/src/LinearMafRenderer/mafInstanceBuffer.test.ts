@@ -28,7 +28,11 @@ function decodeRuns(buffer: ArrayBuffer, count: number): DecodedRun[] {
   return runs
 }
 
-function block(startBp: number, ref: string, rows: [number, string][]): MafBlock {
+function block(
+  startBp: number,
+  ref: string,
+  rows: [number, string][],
+): MafBlock {
   const enc = new TextEncoder()
   return {
     startBp,
@@ -41,7 +45,13 @@ function block(startBp: number, ref: string, rows: [number, string][]): MafBlock
 }
 
 const args = {
-  colorForBase: { a: '#ff0000', c: '#00ff00', g: '#0000ff', t: '#ffff00', n: '#888' },
+  colorForBase: {
+    a: '#ff0000',
+    c: '#00ff00',
+    g: '#0000ff',
+    t: '#ffff00',
+    n: '#888',
+  },
   showAllLetters: false,
   mismatchRendering: true,
 }

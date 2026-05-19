@@ -15,7 +15,10 @@ function parseOAuthError(text: string) {
       error?: string
       error_description?: string
     }
-    return { isInvalidGrant: error === 'invalid_grant', statusText: error_description ?? text }
+    return {
+      isInvalidGrant: error === 'invalid_grant',
+      statusText: error_description ?? text,
+    }
   } catch {
     return { isInvalidGrant: false, statusText: text }
   }
@@ -246,9 +249,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           // Remove listener before any branching so it fires exactly once.
           this.deleteMessageChannel()
-          const redirectUrl = new URL(
-            event.data.redirectUri.replace('#', '?'),
-          )
+          const redirectUrl = new URL(event.data.redirectUri.replace('#', '?'))
           const urlParams = new URLSearchParams(redirectUrl.search)
           const expectedState = self.state()
           if (expectedState && urlParams.get('state') !== expectedState) {

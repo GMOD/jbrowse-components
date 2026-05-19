@@ -3,7 +3,10 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
-import type { MafBlock, MafRegionData } from '../LinearMafRenderer/mafBackendTypes.ts'
+import type {
+  MafBlock,
+  MafRegionData,
+} from '../LinearMafRenderer/mafBackendTypes.ts'
 import type { AlignmentRecord, Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -84,7 +87,10 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       (feature: Feature) => {
         const refSeqBytes = enc.encode(feature.get('seq') as string)
         const startBp = feature.get('start')
-        const alignments = feature.get('alignments') as Record<string, AlignmentRecord>
+        const alignments = feature.get('alignments') as Record<
+          string,
+          AlignmentRecord
+        >
         const rows = Object.entries(alignments).flatMap(([sampleId, data]) => {
           const rowIndex = sampleToRow.get(sampleId)
           return rowIndex === undefined

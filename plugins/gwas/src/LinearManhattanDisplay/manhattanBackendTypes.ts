@@ -13,9 +13,6 @@ export interface ManhattanRenderState {
 export interface ManhattanBackend {
   uploadRegion(displayedRegionIndex: number, data: ManhattanRpcResult): void
   pruneRegions(activeRegions: number[]): void
-  renderBlocks(
-    blocks: WiggleRenderBlock[],
-    state: ManhattanRenderState,
-  ): void
+  renderBlocks(blocks: WiggleRenderBlock[], state: ManhattanRenderState): void
   dispose(): void
 }

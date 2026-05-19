@@ -22,7 +22,9 @@ function mkData(
 }
 
 test('packs absPosition / score / color at the offsets the shader expects', () => {
-  const buf = buildInstanceBuffer(mkData([42, 1337], [0.5, 7.25], [0xff0000ff, 0xff00ff00]))
+  const buf = buildInstanceBuffer(
+    mkData([42, 1337], [0.5, 7.25], [0xff0000ff, 0xff00ff00]),
+  )
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   const stride = shader.INSTANCE_STRIDE_F32

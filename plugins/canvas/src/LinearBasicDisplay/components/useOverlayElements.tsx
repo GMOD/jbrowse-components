@@ -15,7 +15,12 @@ import type {
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
 export type FeatureItemEntry =
-  | { kind: 'feature'; item: FlatbushItem; vr: VisibleRegion; data: FeatureDataResult }
+  | {
+      kind: 'feature'
+      item: FlatbushItem
+      vr: VisibleRegion
+      data: FeatureDataResult
+    }
   | { kind: 'subfeature'; item: SubfeatureInfo; vr: VisibleRegion }
 
 interface OverlayModel {

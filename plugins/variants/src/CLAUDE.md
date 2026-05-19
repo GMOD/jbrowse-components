@@ -21,17 +21,17 @@ This applies specifically to:
 - `computeVariantCells.ts` (per-feature loop, lines ~168+, each iterating
   per-sample at ~256-308-362-434)
 - `computeVariantMatrixCells.ts` (matrix equivalent)
-- Anything called from `installGpuDisplay`'s `upload`/`render` callback
-  bodies *that touches per-cell data*
+- Anything called from `installGpuDisplay`'s `upload`/`render` callback bodies
+  _that touches per-cell data_
 
 ## What is NOT in scope
 
-- `perRegionCellData` iteration: a typical view shows 1-3 regions. `Object.entries`
-  there is fine; the allocation is dwarfed by the work inside.
+- `perRegionCellData` iteration: a typical view shows 1-3 regions.
+  `Object.entries` there is fine; the allocation is dwarfed by the work inside.
 - One-shot actions (sort-by-genotype, hover lookup): runs once per user click.
   Normal `.find` is fine.
 - UI code (dialogs, settings panels, SVG overlays).
 - VCF parse paths, RPC argument shaping: amortized across the whole fetch.
 
-The discipline above is only for the *huge* loops. Don't apply it everywhere —
+The discipline above is only for the _huge_ loops. Don't apply it everywhere —
 the codebase as a whole prefers declarative iteration.

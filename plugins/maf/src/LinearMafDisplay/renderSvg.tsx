@@ -50,7 +50,12 @@ export async function renderSvg(
     <SvgClipRect id={`maf-clip-${model.id}`} width={view.width} height={height}>
       {paintLayer(width, height, opts, ctx => {
         drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState, theme)
-        drawMafLabels(ctx, model.visibleLabels, contrast, state.mismatchRendering)
+        drawMafLabels(
+          ctx,
+          model.visibleLabels,
+          contrast,
+          state.mismatchRendering,
+        )
       })}
     </SvgClipRect>
   )

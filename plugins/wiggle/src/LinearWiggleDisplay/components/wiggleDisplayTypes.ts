@@ -2,8 +2,7 @@ import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
 export interface WiggleDisplayModel
-  extends WiggleGpuDisplayModel,
-    WiggleGpuProps {
+  extends WiggleGpuDisplayModel, WiggleGpuProps {
   domain: [number, number] | undefined
   scaleType: string
   displayCrossHatches: boolean

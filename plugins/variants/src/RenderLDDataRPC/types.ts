@@ -1,8 +1,4 @@
-import type {
-  FilterStats,
-  LDMetric,
-  LDSnp,
-} from '../VariantRPC/getLDMatrix.ts'
+import type { FilterStats, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 
 export interface LDFlatbushItem {
   i: number

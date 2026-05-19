@@ -26,7 +26,15 @@ interface Hover {
   localY: number
 }
 
-function HicTooltip({ item, x, y }: { item: HicContactItem; x: number; y: number }) {
+function HicTooltip({
+  item,
+  x,
+  y,
+}: {
+  item: HicContactItem
+  x: number
+  y: number
+}) {
   return (
     <BaseTooltip clientPoint={{ x: x + 15, y }}>
       <div>Score: {reducePrecision(item.counts)}</div>

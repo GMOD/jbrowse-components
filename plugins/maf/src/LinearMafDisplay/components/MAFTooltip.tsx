@@ -26,9 +26,7 @@ const MAFTooltip = observer(function ({
 
   return hoveredInfo ? (
     <BaseTooltip>
-      <SanitizedHTML
-        html={generateTooltipContent(hoveredInfo, p1, p2)}
-      />
+      <SanitizedHTML html={generateTooltipContent(hoveredInfo, p1, p2)} />
     </BaseTooltip>
   ) : null
 })

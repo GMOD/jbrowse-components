@@ -183,9 +183,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .preProcessSnapshot(snap => {
       // old snapshots used `featureData`, new ones use `finalizedFeatureData`;
       // accept both for backwards compat
-      const { featureData, finalizedFeatureData, ...rest } = snap as typeof snap & {
-        finalizedFeatureData?: MaybeSerializedFeat
-      }
+      const { featureData, finalizedFeatureData, ...rest } =
+        snap as typeof snap & {
+          finalizedFeatureData?: MaybeSerializedFeat
+        }
       return {
         unformattedFeatureData: featureData,
         featureData: finalizedFeatureData,

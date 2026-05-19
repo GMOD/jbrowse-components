@@ -57,9 +57,9 @@ export async function executeRenderLDData({
     statusCallback,
   } = args
 
-  const isPrecomputed = (
-    PRECOMPUTED_LD_ADAPTERS as readonly string[]
-  ).includes(adapterConfig.type)
+  const isPrecomputed = (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(
+    adapterConfig.type,
+  )
   const ldData = await (isPrecomputed
     ? updateStatus('Loading LD data', statusCallback, () =>
         getLDMatrixFromPlink({

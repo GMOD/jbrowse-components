@@ -1,8 +1,6 @@
 import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
 
-import type {
-  ManhattanRenderState,
-} from './manhattanBackendTypes.ts'
+import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
 

@@ -31,10 +31,7 @@ export function getFeatureHeightPx(config: DisplayConfig) {
 // kept exported for that consumer.
 export const STRAND_ARROW_WIDTH = 8
 
-export function layoutChild(
-  child: Feature,
-  args: LayoutArgs,
-): FeatureLayout {
+export function layoutChild(child: Feature, args: LayoutArgs): FeatureLayout {
   const height = getFeatureHeightPx(args.config)
   return {
     feature: child,

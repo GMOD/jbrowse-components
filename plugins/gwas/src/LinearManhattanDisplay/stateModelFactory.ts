@@ -10,10 +10,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import {
-  WiggleCommonMixin,
-  rendererMenuItems,
-} from '@jbrowse/plugin-wiggle'
+import { WiggleCommonMixin, rendererMenuItems } from '@jbrowse/plugin-wiggle'
 import {
   YSCALEBAR_LABEL_OFFSET,
   getNiceDomain,
@@ -220,5 +217,8 @@ export function stateModelFactory(
     }))
 }
 
-export type LinearManhattanDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type LinearManhattanDisplayModel = Instance<LinearManhattanDisplayStateModel>
+export type LinearManhattanDisplayStateModel = ReturnType<
+  typeof stateModelFactory
+>
+export type LinearManhattanDisplayModel =
+  Instance<LinearManhattanDisplayStateModel>

@@ -9,10 +9,7 @@ import {
 } from '../util.ts'
 
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type {
-  SourceRenderData,
-  WiggleRenderBlock,
-} from '@jbrowse/wiggle-core'
+import type { SourceRenderData, WiggleRenderBlock } from '@jbrowse/wiggle-core'
 
 function makeScoreToY(
   rowHeight: number,

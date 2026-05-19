@@ -2856,10 +2856,10 @@
         },
         "refAssemblyName": "volvox",
         "samples": [
-          { "id": "volvox",      "label": "Volvox",        "color": "#1f77b4" },
-          { "id": "simvolvox",   "label": "Sim. volvox",   "color": "#ff7f0e" },
-          { "id": "minivolvox",  "label": "Mini volvox",   "color": "#2ca02c" },
-          { "id": "microvolvox", "label": "Micro volvox",  "color": "#d62728" }
+          { "id": "volvox", "label": "Volvox", "color": "#1f77b4" },
+          { "id": "simvolvox", "label": "Sim. volvox", "color": "#ff7f0e" },
+          { "id": "minivolvox", "label": "Mini volvox", "color": "#2ca02c" },
+          { "id": "microvolvox", "label": "Micro volvox", "color": "#d62728" }
         ]
       }
     }

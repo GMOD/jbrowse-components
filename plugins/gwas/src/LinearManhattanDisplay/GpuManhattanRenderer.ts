@@ -1,4 +1,7 @@
-import { clipBlock, writeBpRangeUniforms } from '@jbrowse/core/gpu/blockClipUtils'
+import {
+  clipBlock,
+  writeBpRangeUniforms,
+} from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
 import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
