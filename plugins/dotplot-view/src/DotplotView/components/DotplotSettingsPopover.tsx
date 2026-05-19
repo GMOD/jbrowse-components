@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { SliderTooltip } from '@jbrowse/synteny-core'
 import TuneIcon from '@mui/icons-material/Tune'
 import { IconButton, Popover, Slider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import SliderTooltip from './SliderTooltip.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
 

@@ -2,12 +2,12 @@ import { useState } from 'react'
 
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { SliderTooltip } from '@jbrowse/synteny-core'
 import HelpIcon from '@mui/icons-material/Help'
 import TuneIcon from '@mui/icons-material/Tune'
 import { IconButton, Popover, Slider, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import SliderTooltip from './SliderTooltip.tsx'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 
