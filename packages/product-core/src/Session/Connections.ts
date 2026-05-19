@@ -3,8 +3,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession.ts'
 
+import type { BaseSession } from './BaseSession.ts'
 import type { SessionWithReferenceManagementType } from './ReferenceManagement.ts'
-import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
@@ -28,7 +28,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
        * #getter
        */
       get connections(): BaseConnectionConfigModel[] {
-        const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
+        const { jbrowse } = self as typeof self & BaseSession
         return jbrowse.connections
       },
     }))
@@ -104,7 +104,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       deleteConnection(configuration: AnyConfigurationModel) {
-        const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
+        const { jbrowse } = self as typeof self & BaseSession
         return jbrowse.deleteConnectionConf(configuration)
       },
 
@@ -112,7 +112,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       addConnectionConf(connectionConf: AnyConfigurationModel) {
-        const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
+        const { jbrowse } = self as typeof self & BaseSession
         return jbrowse.addConnectionConf(connectionConf)
       },
 

@@ -19,14 +19,12 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
-  SessionWithDialogs,
+  BaseSession,
   SessionWithDrawerWidgets,
   SessionWithTracks,
 } from '@jbrowse/product-core'
 
-type SessionBase = SessionWithDialogs &
-  SessionWithTracks &
-  SessionWithDrawerWidgets
+type SessionBase = BaseSession & SessionWithTracks & SessionWithDrawerWidgets
 
 const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
 

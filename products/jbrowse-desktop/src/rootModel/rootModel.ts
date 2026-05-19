@@ -41,7 +41,7 @@ import type {
   SessionWithWidgets,
 } from '@jbrowse/core/util'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
-import type { SessionWithDialogs } from '@jbrowse/product-core'
+import type { BaseSession } from '@jbrowse/product-core'
 
 // lazies
 const PreferencesDialog = lazy(
@@ -192,7 +192,7 @@ export default function rootModelFactory({
                   icon: DNA,
                   onClick: () => {
                     if (self.session) {
-                      const session = self.session as SessionWithDialogs
+                      const session = self.session as BaseSession
                       session.queueDialog(doneCallback => [
                         OpenSequenceDialog,
                         {
@@ -314,7 +314,7 @@ export default function rootModelFactory({
                   icon: SettingsIcon,
                   onClick: () => {
                     if (self.session) {
-                      const session = self.session as SessionWithDialogs
+                      const session = self.session as BaseSession
                       session.queueDialog(handleClose => [
                         PreferencesDialog,
                         {

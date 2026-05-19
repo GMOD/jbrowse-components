@@ -1,7 +1,6 @@
 export * from './ReferenceManagement.ts'
 export * from './Connections.ts'
 export * from './DrawerWidgets.ts'
-export * from './DialogQueue.ts'
 export * from './Themes.ts'
 export * from './Tracks.ts'
 export * from './MultipleViews.ts'

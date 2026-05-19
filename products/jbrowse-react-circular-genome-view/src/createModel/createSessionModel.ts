@@ -4,7 +4,6 @@ import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
-  DialogQueueSessionMixin,
   DrawerWidgetSessionMixin,
   ReferenceManagementSessionMixin,
   TrackMenuSessionMixin,
@@ -21,7 +20,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * - [BaseSessionModel](../basesessionmodel)
  * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
  * - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
- * - [DialogQueueSessionMixin](../dialogqueuesessionmixin)
  * - [TracksManagerSessionMixin](../tracksmanagersessionmixin)
  * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
  * - [SnackbarModel](../snackbarmodel)
@@ -33,7 +31,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       BaseSessionModel(pluginManager),
       DrawerWidgetSessionMixin(pluginManager),
       ConnectionManagementSessionMixin(pluginManager),
-      DialogQueueSessionMixin(pluginManager),
       TracksManagerSessionMixin(pluginManager),
       ReferenceManagementSessionMixin(pluginManager),
       TrackMenuSessionMixin(pluginManager),
@@ -45,14 +42,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       view: pluginManager.getViewType('CircularView')!.stateModel,
     })
-    .volatile((/* self */) => ({
-      /**
-       * this is the current "task" that is being performed in the UI.
-       * this is usually an object of the form
-       * `{ taskName: "configure", target: thing_being_configured }`
-       */
-      task: undefined,
-    }))
     .views(self => ({
       /**
        * #getter

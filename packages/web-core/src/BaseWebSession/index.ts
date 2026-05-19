@@ -1,11 +1,6 @@
 import { lazy } from 'react'
 
-import {
-  AppFocusMixin,
-  DockviewLayoutMixin,
-  SessionAssembliesMixin,
-  TemporaryAssembliesMixin,
-} from '@jbrowse/app-core'
+import { AssembliesMixin, DockviewLayoutMixin } from '@jbrowse/app-core'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
@@ -22,7 +17,6 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
-  DialogQueueSessionMixin,
   MultipleViewsSessionMixin,
   ReferenceManagementSessionMixin,
   SessionTracksManagerSessionMixin,
@@ -65,14 +59,11 @@ interface Display {
  * used for "web based" products, including jbrowse-web and react-app
  * composed of
  * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
- * - [DialogQueueSessionMixin](../dialogqueuesessionmixin)
  * - [ThemeManagerSessionMixin](../thememanagersessionmixin)
  * - [MultipleViewsSessionMixin](../multipleviewssessionmixin)
  * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
- * - [SessionAssembliesMixin](../sessionassembliesmixin)
- * - [TemporaryAssembliesMixin](../temporaryassembliesmixin)
+ * - [AssembliesMixin](../assembliesmixin)
  * - [WebSessionConnectionsMixin](../websessionconnectionsmixin)
- * - [AppFocusMixin](../appfocusmixin)
  */
 export function BaseWebSession({
   pluginManager,
@@ -87,18 +78,15 @@ export function BaseWebSession({
       types.compose(
         'WebCoreSessionModelGroupA',
         ReferenceManagementSessionMixin(pluginManager),
-        DialogQueueSessionMixin(pluginManager),
         ThemeManagerSessionMixin(pluginManager),
         MultipleViewsSessionMixin(pluginManager),
       ),
       types.compose(
         'WebCoreSessionModelGroupB',
         SessionTracksManagerSessionMixin(pluginManager),
-        SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
-        TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
+        AssembliesMixin(pluginManager, assemblyConfigSchema),
         WebSessionConnectionsMixin(pluginManager),
         DockviewLayoutMixin(),
-        AppFocusMixin(),
         SnackbarModel(),
       ),
     )
@@ -115,14 +103,6 @@ export function BaseWebSession({
        * #volatile
        */
       sessionThemeName: localStorageGetItem('themeName') || 'default',
-      /**
-       * #volatile
-       * this is the current "task" that is being performed in the UI. this is
-       * usually an object of the form
-       *
-       * `{ taskName: "configure", target: thing_being_configured }`
-       */
-      task: undefined,
       /**
        * #volatile
        */

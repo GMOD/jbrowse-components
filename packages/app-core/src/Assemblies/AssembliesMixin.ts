@@ -6,11 +6,14 @@ import type { AnyConfiguration } from '@jbrowse/core/configuration'
 import type { BaseSession } from '@jbrowse/product-core'
 
 /**
- * #stateModel SessionAssembliesMixin
+ * #stateModel AssembliesMixin
  * #category root
+ *
+ * Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
+ * `temporaryAssemblies` (used for ad-hoc read-vs-ref style assemblies).
  */
-export function SessionAssembliesMixin(
-  pluginManager: PluginManager,
+export function AssembliesMixin(
+  _pluginManager: PluginManager,
   assemblyConfigSchemasType: BaseAssemblyConfigSchema,
 ) {
   return types
@@ -19,6 +22,10 @@ export function SessionAssembliesMixin(
        * #property
        */
       sessionAssemblies: types.array(assemblyConfigSchemasType),
+      /**
+       * #property
+       */
+      temporaryAssemblies: types.array(assemblyConfigSchemasType),
     })
     .actions(s => {
       const self = s as typeof s & BaseSession
@@ -67,6 +74,30 @@ export function SessionAssembliesMixin(
             self.sessionAssemblies.remove(elt)
           }
         },
+
+        /**
+         * #action
+         * used for read vs ref type assemblies.
+         */
+        addTemporaryAssembly(conf: AnyConfiguration) {
+          const asm = self.temporaryAssemblies.find(f => f.name === conf.name)
+          if (asm) {
+            console.warn(`Assembly ${conf.name} already exists`)
+            return asm
+          }
+          const length = self.temporaryAssemblies.push(conf)
+          return self.temporaryAssemblies[length - 1]
+        },
+
+        /**
+         * #action
+         */
+        removeTemporaryAssembly(name: string) {
+          const elt = self.temporaryAssemblies.find(a => a.name === name)
+          if (elt) {
+            self.temporaryAssemblies.remove(elt)
+          }
+        },
       }
     })
     .postProcessSnapshot(snap => {
@@ -74,10 +105,14 @@ export function SessionAssembliesMixin(
       if (!snap) {
         return snap
       }
-      const { sessionAssemblies, ...rest } = snap as Omit<typeof snap, symbol>
+      const { sessionAssemblies, temporaryAssemblies, ...rest } = snap as Omit<
+        typeof snap,
+        symbol
+      >
       return {
         ...rest,
         ...(sessionAssemblies.length ? { sessionAssemblies } : {}),
+        ...(temporaryAssemblies.length ? { temporaryAssemblies } : {}),
       } as typeof snap
     })
 }

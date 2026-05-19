@@ -38,7 +38,7 @@ import type { SessionDB, SessionMetadata } from '../types.ts'
 import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
-import type { SessionWithDialogs } from '@jbrowse/product-core'
+import type { BaseSession } from '@jbrowse/product-core'
 import type { WebRootModelInterface } from '@jbrowse/web-core'
 import type { IDBPDatabase } from 'idb'
 
@@ -520,7 +520,8 @@ export default function RootModel({
                 icon: SettingsIcon,
                 onClick: () => {
                   if (self.session) {
-                    ;(self.session as SessionWithDialogs).queueDialog(
+                    const session = self.session as BaseSession
+                    session.queueDialog(
                       handleClose => [
                         PreferencesDialog,
                         {

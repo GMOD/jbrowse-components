@@ -5,7 +5,12 @@ import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { DialogComponentType } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+
+type DoneCallback = (
+  doneCallback: () => void,
+) => [DialogComponentType, Record<string, unknown>]
 
 /**
  * #stateModel BaseSessionModel
@@ -31,6 +36,11 @@ export function BaseSessionModel<
        * #property
        */
       margin: 0,
+      /**
+       * #property
+       * used to keep track of which view is in focus
+       */
+      focusedViewId: types.maybe(types.string),
     })
     .volatile(() => ({
       /**
@@ -50,6 +60,10 @@ export function BaseSessionModel<
        */
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       hovered: undefined as unknown,
+      /**
+       * #volatile
+       */
+      queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][],
     }))
     .views(self => ({
       /**
@@ -99,6 +113,18 @@ export function BaseSessionModel<
       get assemblies(): Instance<BaseAssemblyConfigSchema>[] {
         return self.jbrowse.assemblies
       },
+      /**
+       * #getter
+       */
+      get DialogComponent() {
+        return self.queueOfDialogs[0]?.[0]
+      },
+      /**
+       * #getter
+       */
+      get DialogProps() {
+        return self.queueOfDialogs[0]?.[1]
+      },
     }))
     .actions(self => ({
       /**
@@ -128,6 +154,27 @@ export function BaseSessionModel<
        */
       setName(str: string) {
         self.name = str
+      },
+      /**
+       * #action
+       */
+      setFocusedViewId(viewId: string) {
+        self.focusedViewId = viewId
+      },
+      /**
+       * #action
+       */
+      removeActiveDialog() {
+        self.queueOfDialogs = self.queueOfDialogs.slice(1)
+      },
+      /**
+       * #action
+       */
+      queueDialog(doneCallback: DoneCallback) {
+        const [component, props] = doneCallback(() => {
+          this.removeActiveDialog()
+        })
+        self.queueOfDialogs = [...self.queueOfDialogs, [component, props]]
       },
     }))
     .postProcessSnapshot(snap => {
