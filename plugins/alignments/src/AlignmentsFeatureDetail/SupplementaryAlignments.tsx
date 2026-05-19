@@ -1,8 +1,8 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { hasBreakpointSplitView } from '@jbrowse/sv-core'
 
 import LaunchBreakpointSplitViewPanel from './LaunchSupplementaryAlignmentBreakpointSplitViewPanel.tsx'
 import SupplementaryAlignmentsLocStrings from './SupplementaryAlignmentsLocStrings.tsx'
-import { hasBreakpointSplitView } from './util.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'

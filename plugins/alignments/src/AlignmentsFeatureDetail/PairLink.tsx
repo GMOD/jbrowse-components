@@ -1,6 +1,5 @@
+import { navToLoc } from '@jbrowse/sv-core'
 import { Link } from '@mui/material'
-
-import { navToLoc } from './util.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 

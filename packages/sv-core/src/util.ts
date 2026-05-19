@@ -1,8 +1,11 @@
 import { parseBreakend } from '@gmod/vcf'
 
+import { getEnv, getSession } from '@jbrowse/core/util'
+
 import type { Track } from './types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export function getBreakendCoveringRegions({
   feature,
@@ -70,6 +73,29 @@ export function stripIds(arr: Track[]) {
 
 export function makeTitle(f: Feature) {
   return `${f.get('name') || f.get('id') || 'breakend'} split detail`
+}
+
+export function hasBreakpointSplitView(model: IAnyStateTreeNode) {
+  try {
+    return !!getEnv(getSession(model)).pluginManager.getViewType(
+      'BreakpointSplitView',
+    )
+  } catch {
+    return false
+  }
+}
+
+export function navToLoc(locString: string, model: IAnyStateTreeNode) {
+  const session = getSession(model)
+  const { view } = model
+  if (view) {
+    view.navToLocString(locString).catch((e: unknown) => {
+      console.error(e)
+      session.notify(`${e}`)
+    })
+  } else {
+    session.notify('No view associated with this view anymore')
+  }
 }
 
 export interface Region {

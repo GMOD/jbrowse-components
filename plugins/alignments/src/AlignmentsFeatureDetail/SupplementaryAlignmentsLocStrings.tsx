@@ -1,7 +1,7 @@
 import { toLocale } from '@jbrowse/core/util'
+import { navToLoc } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
-import { navToLoc } from './util.ts'
 import { getLengthOnRef } from '../MismatchParser/index.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
