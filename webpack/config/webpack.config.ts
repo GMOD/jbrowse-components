@@ -44,6 +44,7 @@ export default function webpackBuilder(): webpack.Configuration {
     stats: 'errors-warnings',
     mode: isEnvProduction ? 'production' : 'development',
     bail: isEnvProduction,
+    cache: { type: 'memory' },
     devtool: isEnvProduction
       ? shouldUseSourceMap
         ? 'source-map'
