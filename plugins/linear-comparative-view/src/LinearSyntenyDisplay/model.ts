@@ -334,7 +334,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         if (syriTypes.some(t => t !== undefined)) {
           const types = new Array<SyriType>(n)
           for (let i = 0; i < n; i++) {
-            types[i] = (syriTypes[i] || 'SYN') as SyriType
+            types[i] = (syriTypes[i] ?? 'SYN') as SyriType
           }
           return {
             types,

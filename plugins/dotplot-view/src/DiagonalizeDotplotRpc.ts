@@ -109,9 +109,8 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
       alignments,
       view.hview.displayedRegions,
       view.vview.displayedRegions,
-      (progress, message) => {
+      () => {
         checkStopToken(stopToken)
-        statusCallback?.(message)
       },
     )
 

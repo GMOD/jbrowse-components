@@ -20,10 +20,9 @@ export interface DiagonalizationResult {
   }
 }
 
-export type ProgressCallback = (
-  progress: number,
-  message: string,
-) => void | Promise<void>
+// onTick: sync callback fired at internal phase boundaries. Throw to abort
+// (e.g. wrap checkStopToken from a worker).
+export type DiagonalizeTick = () => void
 
 // Groups alignments by vertical-axis (query) chromosome, accumulates total
 // aligned bases, length-weighted position, and strand per (query, reference)
@@ -36,10 +35,8 @@ export async function diagonalizeRegions(
   alignments: AlignmentData[],
   referenceRegions: Region[],
   currentRegions: Region[],
-  progressCallback?: ProgressCallback,
+  onTick?: DiagonalizeTick,
 ): Promise<DiagonalizationResult> {
-  await progressCallback?.(20, `Grouping ${alignments.length} alignments...`)
-
   // outer key: vertical chrom; inner key: horizontal chrom
   const queryGroups = new Map<
     string,
@@ -73,10 +70,7 @@ export async function diagonalizeRegions(
     data.strandWeightedSum += (aln.strand >= 0 ? 1 : -1) * alnLength
   }
 
-  await progressCallback?.(
-    50,
-    'Determining optimal ordering and orientation...',
-  )
+  onTick?.()
 
   const queryOrdering: {
     refName: string
@@ -108,10 +102,7 @@ export async function diagonalizeRegions(
     })
   }
 
-  await progressCallback?.(
-    70,
-    `Sorting ${queryOrdering.length} query regions...`,
-  )
+  onTick?.()
 
   const refOrder = new Map(referenceRegions.map((r, i) => [r.refName, i]))
 
@@ -123,8 +114,6 @@ export async function diagonalizeRegions(
     }
     return a.bestRefPos - b.bestRefPos
   })
-
-  await progressCallback?.(85, 'Building new region layout...')
 
   const regionsByName = new Map(currentRegions.map(r => [r.refName, r]))
   const orderedNames = new Set(queryOrdering.map(q => q.refName))
@@ -145,8 +134,6 @@ export async function diagonalizeRegions(
   const regionsWithoutAlignments = currentRegions.filter(
     r => !orderedNames.has(r.refName),
   )
-
-  await progressCallback?.(100, 'Diagonalization complete!')
 
   return {
     newRegions: [...newQueryRegions, ...regionsWithoutAlignments],

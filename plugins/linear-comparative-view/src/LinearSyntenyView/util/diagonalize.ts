@@ -1,7 +1,6 @@
 export {
   type AlignmentData,
   type DiagonalizationResult,
-  type ProgressCallback,
   diagonalizeRegions,
 } from '@jbrowse/core/util/diagonalizeRegions'
 

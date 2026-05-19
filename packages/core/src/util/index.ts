@@ -1123,6 +1123,6 @@ export { makeDisplayedRegionKey } from './blockTypes.ts'
 export {
   type AlignmentData,
   type DiagonalizationResult,
-  type ProgressCallback,
+  type DiagonalizeTick,
   diagonalizeRegions,
 } from './diagonalizeRegions.ts'
