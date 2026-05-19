@@ -31,7 +31,6 @@
     "./BaseFeatureWidget/BaseFeatureDetail/SimpleField": "./src/BaseFeatureWidget/BaseFeatureDetail/SimpleField.tsx",
     "./configuration": "./src/configuration/index.ts",
     "./data_adapters/BaseAdapter": "./src/data_adapters/BaseAdapter/index.ts",
-    "./data_adapters/BaseAdapter/BaseOptions": "./src/data_adapters/BaseAdapter/BaseOptions.ts",
     "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
     "./data_adapters/BaseAdapter/types": "./src/data_adapters/BaseAdapter/types.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
@@ -149,7 +148,8 @@
     "./util/tss-react/types": "./src/util/tss-react/types.ts",
     "./configuration/configurationSchema": "./src/configuration/configurationSchema.ts",
     "./pluggableElementTypes/renderers/RendererType": "./src/pluggableElementTypes/renderers/RendererType.tsx",
-    "./util/layouts": "./src/util/layouts/index.ts"
+    "./util/layouts": "./src/util/layouts/index.ts",
+    "./data_adapters/BaseAdapter/getAdapterId": "./src/data_adapters/BaseAdapter/getAdapterId.ts"
   },
   "files": [
     "esm"
@@ -250,10 +250,6 @@
       "./data_adapters/BaseAdapter": {
         "types": "./esm/data_adapters/BaseAdapter/index.d.ts",
         "import": "./esm/data_adapters/BaseAdapter/index.js"
-      },
-      "./data_adapters/BaseAdapter/BaseOptions": {
-        "types": "./esm/data_adapters/BaseAdapter/BaseOptions.d.ts",
-        "import": "./esm/data_adapters/BaseAdapter/BaseOptions.js"
       },
       "./data_adapters/BaseAdapter/stats": {
         "types": "./esm/data_adapters/BaseAdapter/stats.d.ts",
@@ -726,6 +722,10 @@
       "./util/layouts": {
         "types": "./esm/util/layouts/index.d.ts",
         "import": "./esm/util/layouts/index.js"
+      },
+      "./data_adapters/BaseAdapter/getAdapterId": {
+        "types": "./esm/data_adapters/BaseAdapter/getAdapterId.d.ts",
+        "import": "./esm/data_adapters/BaseAdapter/getAdapterId.js"
       }
     },
     "typesVersions": {
@@ -762,9 +762,6 @@
         ],
         "data_adapters/BaseAdapter": [
           "esm/data_adapters/BaseAdapter/index.d.ts"
-        ],
-        "data_adapters/BaseAdapter/BaseOptions": [
-          "esm/data_adapters/BaseAdapter/BaseOptions.d.ts"
         ],
         "data_adapters/BaseAdapter/stats": [
           "esm/data_adapters/BaseAdapter/stats.d.ts"
@@ -1119,6 +1116,9 @@
         ],
         "util/layouts": [
           "esm/util/layouts/index.d.ts"
+        ],
+        "data_adapters/BaseAdapter/getAdapterId": [
+          "esm/data_adapters/BaseAdapter/getAdapterId.d.ts"
         ]
       }
     }

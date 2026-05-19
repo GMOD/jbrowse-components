@@ -1,6 +1,5 @@
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
-import BgzipTaffyAdapter from './BgzipTaffyAdapter.ts'
 import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -10,8 +9,9 @@ export default function BgzipTaffyAdapterF(pluginManager: PluginManager) {
     () =>
       new AdapterType({
         name: 'BgzipTaffyAdapter',
-        AdapterClass: BgzipTaffyAdapter,
         configSchema,
+        getAdapterClass: () =>
+          import('./BgzipTaffyAdapter.ts').then(f => f.default),
       }),
   )
 }

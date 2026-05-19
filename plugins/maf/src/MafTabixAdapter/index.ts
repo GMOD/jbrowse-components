@@ -1,6 +1,5 @@
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
-import MafTabixAdapter from './MafTabixAdapter.ts'
 import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -10,8 +9,9 @@ export default function MafTabixAdapterF(pluginManager: PluginManager) {
     () =>
       new AdapterType({
         name: 'MafTabixAdapter',
-        AdapterClass: MafTabixAdapter,
         configSchema,
+        getAdapterClass: () =>
+          import('./MafTabixAdapter.ts').then(f => f.default),
       }),
   )
 }
