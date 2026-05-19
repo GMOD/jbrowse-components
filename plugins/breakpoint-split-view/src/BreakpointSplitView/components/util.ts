@@ -1,6 +1,8 @@
 import { parseBreakend } from '@gmod/vcf'
 import { assembleLocStringFast, notEmpty } from '@jbrowse/core/util'
 
+import { getPairedOrientation } from './getOrientationColor.tsx'
+
 import type { Feature } from '@jbrowse/core/util'
 
 export function getBadlyPairedAlignments(features: Map<string, Feature>) {
@@ -16,19 +18,12 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
     })
     const unmapped = flags & 4
     const correctlyPaired = flags & 2
-    const pairOrientation = feature.get('pair_orientation') as
-      | string
-      | undefined
-
-    // Include reads that either:
-    // 1. Don't have the proper pair flag set (!correctlyPaired), OR
-    // 2. Have the proper pair flag but wrong orientation (mis-oriented: F1F2, R1R2, etc.)
-    const isMisOriented =
-      pairOrientation === 'F1F2' ||
-      pairOrientation === 'F2F1' ||
-      pairOrientation === 'R1R2' ||
-      pairOrientation === 'R2R1'
-    const isBadlyPaired = !correctlyPaired || isMisOriented
+    // Include reads that either don't have the proper-pair flag set, or have
+    // it set but a non-LR orientation (LL/RR same-strand, RL outie).
+    const isBadlyPaired =
+      !correctlyPaired ||
+      getPairedOrientation({ pair_orientation: feature.get('pair_orientation') })
+        .abnormal
 
     if (
       !alreadyPairedWithSamePosition.has(locString) &&

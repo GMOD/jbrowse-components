@@ -3,10 +3,8 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
-  getLongReadOrientationAbnormal,
-  getLongReadOrientationColorOrDefault,
-  getPairedOrientationColor,
-  isAbnormalOrientation,
+  getLongReadOrientation,
+  getPairedOrientation,
 } from './getOrientationColor.tsx'
 import {
   LEFT,
@@ -59,18 +57,15 @@ const AlignmentConnections = observer(function AlignmentConnections({
           const s1 = f1.get('strand')!
           const s2 = f2.get('strand')!
           const sameRef = f1ref === f2ref
-          let orientationColor = ''
-          let isAbnormal = false
-          if (sameRef) {
-            if (hasPaired) {
-              const r = { pair_orientation: f1.get('pair_orientation') }
-              orientationColor = getPairedOrientationColor(r)
-              isAbnormal = isAbnormalOrientation(r)
-            } else {
-              orientationColor = getLongReadOrientationColorOrDefault(s1, s2)
-              isAbnormal = getLongReadOrientationAbnormal(s1, s2)
-            }
-          }
+          const orientation = sameRef
+            ? hasPaired
+              ? getPairedOrientation({
+                  pair_orientation: f1.get('pair_orientation'),
+                })
+              : getLongReadOrientation(s1, s2)
+            : undefined
+          const orientationColor = orientation?.color ?? ''
+          const isAbnormal = orientation?.abnormal ?? false
           const p1 = c1[s1 === -1 ? LEFT : RIGHT]
           const sn2 = s2 === -1
           const p2 = hasPaired ? c2[sn2 ? LEFT : RIGHT] : c2[sn2 ? RIGHT : LEFT]

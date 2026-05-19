@@ -86,37 +86,21 @@ export const strokeColor = {
   color_unknown: alpha('#555', 0.8),
 }
 
-const defaultColor = strokeColor.color_unknown
-
-export function getPairedOrientationColorOrDefault(f: {
-  pair_orientation?: string
-}) {
+export function getPairedOrientation(f: { pair_orientation?: string }) {
   const r = orientationTypes.fr[f.pair_orientation ?? '']
-  if (!r || r === 'LR') {
-    return undefined
+  const abnormal = r !== undefined && r !== 'LR'
+  return {
+    abnormal,
+    color: abnormal ? strokeColor[pairMap[r]] : strokeColor.color_unknown,
   }
-  return strokeColor[pairMap[r]]
 }
 
-export function getLongReadOrientationColorOrDefault(s1: number, s2: number) {
+export function getLongReadOrientation(s1: number, s2: number) {
   if (s1 === -1 && s2 === 1) {
-    return strokeColor.color_pair_rr
+    return { abnormal: true, color: strokeColor.color_pair_rr }
   } else if (s1 === 1 && s2 === -1) {
-    return strokeColor.color_pair_ll
+    return { abnormal: true, color: strokeColor.color_pair_ll }
   } else {
-    return strokeColor.color_unknown
+    return { abnormal: false, color: strokeColor.color_unknown }
   }
-}
-
-export function getLongReadOrientationAbnormal(s1: number, s2: number) {
-  return (s1 === -1 && s2 === 1) || (s1 === 1 && s2 === -1)
-}
-
-export function isAbnormalOrientation(f: { pair_orientation?: string }) {
-  const r = orientationTypes.fr[f.pair_orientation ?? '']
-  return r !== undefined && r !== 'LR'
-}
-
-export function getPairedOrientationColor(f: { pair_orientation?: string }) {
-  return getPairedOrientationColorOrDefault(f) ?? defaultColor
 }

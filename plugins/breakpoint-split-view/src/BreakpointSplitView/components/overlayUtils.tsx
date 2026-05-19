@@ -76,14 +76,9 @@ export function strandToSign(s: string) {
   return s === '+' ? 1 : s === '-' ? -1 : 0
 }
 
+// Flat (y1===y2) connections render as a quadratic arc bowed upward, keeping
+// same-row links visible; otherwise a straight line.
 const FLAT_ARC_HEIGHT = 30
-
-function arcOrLine(x1: number, y1: number, x2: number, y2: number) {
-  const midX = (x1 + x2) / 2
-  return y1 === y2
-    ? `Q ${midX} ${y1 - FLAT_ARC_HEIGHT} ${x2} ${y2}`
-    : `L ${x2} ${y2}`
-}
 
 export function buildSimplePath(
   x1: number,
@@ -91,7 +86,9 @@ export function buildSimplePath(
   x2: number,
   y2: number,
 ) {
-  return `M ${x1} ${y1} ${arcOrLine(x1, y1, x2, y2)}`
+  return y1 === y2
+    ? `M ${x1} ${y1} Q ${(x1 + x2) / 2} ${y1 - FLAT_ARC_HEIGHT} ${x2} ${y2}`
+    : `M ${x1} ${y1} L ${x2} ${y2}`
 }
 
 export function buildBreakpointPath(
@@ -102,5 +99,7 @@ export function buildBreakpointPath(
   x1Tick: number,
   x2Tick: number,
 ) {
-  return `M ${x1Tick} ${y1} L ${x1} ${y1} ${arcOrLine(x1, y1, x2, y2)} L ${x2Tick} ${y2}`
+  return y1 === y2
+    ? `M ${x1Tick} ${y1} L ${x1} ${y1} Q ${(x1 + x2) / 2} ${y1 - FLAT_ARC_HEIGHT} ${x2} ${y2} L ${x2Tick} ${y2}`
+    : `M ${x1Tick} ${y1} L ${x1} ${y1} L ${x2} ${y2} L ${x2Tick} ${y2}`
 }

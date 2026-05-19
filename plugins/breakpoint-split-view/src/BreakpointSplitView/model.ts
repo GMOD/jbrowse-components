@@ -32,29 +32,23 @@ import {
 
 type Compactness = 'normal' | 'compact' | 'super-compact'
 
+interface CompactableDisplay {
+  setCompactness: (v: Compactness) => void
+}
+
+function isCompactable(d: unknown): d is CompactableDisplay {
+  return d !== null && typeof d === 'object' && 'setCompactness' in d
+}
+
 // SYNC: plugins/linear-genome-view/src/LinearGenomeView/menuItems.ts, plugins/linear-comparative-view/src/LinearComparativeView/model.ts
 function buildCompactAllTracksMenu(tracks: { displays: unknown[] }[]) {
-  const hasAny = tracks.some(t =>
-    t.displays.some(
-      d => d !== null && typeof d === 'object' && 'setCompactness' in d,
-    ),
-  )
-  if (!hasAny) {
+  const compactable = tracks.flatMap(t => t.displays.filter(isCompactable))
+  if (compactable.length === 0) {
     return []
   }
   function applyCompactness(level: Compactness) {
-    for (const track of tracks) {
-      for (const display of track.displays) {
-        if (
-          display !== null &&
-          typeof display === 'object' &&
-          'setCompactness' in display
-        ) {
-          ;(
-            display as { setCompactness: (v: Compactness) => void }
-          ).setCompactness(level)
-        }
-      }
+    for (const display of compactable) {
+      display.setCompactness(level)
     }
   }
   return [
@@ -169,7 +163,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get hasSomethingToShow() {
-        return self.views.length > 0 || !!self.init
+        return self.views.length > 0 || self.init !== undefined
       },
 
       /**
