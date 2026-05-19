@@ -3,13 +3,7 @@ import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable } from '@jbrowse/core/ui/Icons'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  getType,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
@@ -22,7 +16,6 @@ import StorageIcon from '@mui/icons-material/Storage'
 import { autorun } from 'mobx'
 
 import jbrowseWebFactory from '../jbrowseModel.ts'
-import { filterSessionInPlace } from '../util.ts'
 import { version } from '../version.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -32,9 +25,7 @@ import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
-  SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
-import type { BaseSessionType } from '@jbrowse/product-core'
 
 export interface Menu {
   label: string
@@ -141,47 +132,21 @@ export default function RootModel({
         /**
          * #action
          */
-        setSession(sessionSnapshot?: SnapshotIn<BaseSessionType>) {
-          const oldSession = self.session
-          self.session = cast(sessionSnapshot)
-          if (self.session) {
-            // validate all references in the session snapshot
-            try {
-              filterSessionInPlace(self.session, getType(self.session))
-            } catch (error) {
-              // throws error if session filtering failed
-              self.session = oldSession
-              throw error
-            }
-          }
-        },
-
-        /**
-         * #action
-         */
         setPluginsUpdated(flag: boolean) {
           self.pluginsUpdated = flag
         },
         /**
          * #action
+         * BaseRootModel's setDefaultSession reuses defaultSession's literal
+         * name; react-app instead timestamps it so multiple "new sessions"
+         * don't collide.
          */
         setDefaultSession() {
           const { defaultSession } = self.jbrowse
-          this.setSession({
+          self.setSession({
             ...defaultSession,
             name: `${defaultSession.name} ${new Date().toLocaleString()}`,
           })
-        },
-        /**
-         * #action
-         */
-        renameCurrentSession(sessionName: string) {
-          if (self.session) {
-            this.setSession({
-              ...getSnapshot(self.session),
-              name: sessionName,
-            })
-          }
         },
 
         /**

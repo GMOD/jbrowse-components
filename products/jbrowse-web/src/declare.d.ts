@@ -1,5 +1,6 @@
 declare module 'hic-straw'
 declare module '@fontsource/roboto'
+declare module 'dockview-core/dist/styles/dockview.css'
 
 interface Window {
   // Set by SessionLoader.ts to allow overriding config path via embed

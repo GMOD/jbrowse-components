@@ -12,9 +12,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable, DNA } from '@jbrowse/core/ui/Icons'
 import {
   addDisposer,
-  cast,
   getSnapshot,
-  getType,
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
@@ -42,14 +40,13 @@ import { autorun } from 'mobx'
 import packageJSON from '../../package.json' with { type: 'json' }
 import jbrowseWebFactory from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
-import { filterSessionInPlace } from '../util.ts'
 
 import type { SessionDB, SessionMetadata } from '../types.ts'
 import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
+import type { SessionWithDialogs } from '@jbrowse/product-core'
 import type { WebRootModelInterface } from '@jbrowse/web-core'
 import type { IDBPDatabase } from 'idb'
 
@@ -325,24 +322,6 @@ export default function RootModel({
       /**
        * #action
        */
-      setSession(sessionSnapshot: SnapshotIn<BaseSessionType>) {
-        const oldSession = self.session
-        self.session = cast(sessionSnapshot)
-        if (self.session) {
-          // validate all references in the session snapshot
-          try {
-            filterSessionInPlace(self.session, getType(self.session))
-          } catch (error) {
-            // throws error if session filtering failed
-            self.session = oldSession
-            throw error
-          }
-        }
-      },
-
-      /**
-       * #action
-       */
       setPluginsUpdated(flag: boolean) {
         self.pluginsUpdated = flag
       },
@@ -362,13 +341,9 @@ export default function RootModel({
        */
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
-        const params = new URLSearchParams(window.location.search)
-        const sessionName = params.get('sessionName')
-        this.setSession({
+        self.setSession({
           ...defaultSession,
-          name:
-            sessionName ||
-            `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
+          name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
         })
       },
       /**
@@ -377,7 +352,7 @@ export default function RootModel({
       async activateSession(id: string) {
         const ret = await self.sessionDB?.get('sessions', id)
         if (ret) {
-          this.setSession(ret)
+          self.setSession(ret)
         } else {
           self.session?.notifyError('Session not found')
         }
@@ -404,16 +379,6 @@ export default function RootModel({
           await self.fetchSessionMetadata()
         }
       },
-      /**
-       * #action
-       */
-      renameCurrentSession(sessionName: string) {
-        this.setSession({
-          ...getSnapshot(self.session),
-          name: sessionName,
-        })
-      },
-
       /**
        * #action
        */

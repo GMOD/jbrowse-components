@@ -15,6 +15,8 @@ import { fetchCJS } from '../../util.tsx'
 
 import type { JBrowseConfig } from './types.ts'
 
+export { addRelativeUris } from '@jbrowse/product-core'
+
 const { ipcRenderer } = window.require('electron')
 
 export async function loadPluginManager(configPath: string) {
@@ -112,19 +114,4 @@ export async function createPluginManager(
   rootModel.setDefaultSession()
 
   return pluginManager
-}
-
-export function addRelativeUris(
-  config: Record<string, unknown> | null,
-  base: URL,
-) {
-  if (typeof config === 'object' && config !== null) {
-    for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object' && config[key] !== null) {
-        addRelativeUris(config[key] as Record<string, unknown>, base)
-      } else if (key === 'uri') {
-        config.baseUri = base.href
-      }
-    }
-  }
 }

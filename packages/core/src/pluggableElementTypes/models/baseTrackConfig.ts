@@ -198,15 +198,29 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
             )
           }
         }
-        const knownDisplayTypes = new Set(
-          pluginManager.getDisplayElements().map(d => d.name),
-        )
+        const displayElements = pluginManager.getDisplayElements()
+        const knownDisplayTypes = new Set(displayElements.map(d => d.name))
+        // Map of legacy display type → canonical name, built from each
+        // DisplayType's `aliases` declaration. Lets each display "own" its
+        // renames without a central migration file.
+        const displayAliasMap = new Map<string, string>()
+        for (const d of displayElements) {
+          if (d.aliases) {
+            for (const alias of d.aliases) {
+              displayAliasMap.set(alias, d.name)
+            }
+          }
+        }
         const knownRendererTypes = new Set(
           pluginManager.getRendererTypes().map(r => r.name),
         )
         return {
           ...snap,
           displays: displays
+            .map(d => {
+              const canonical = displayAliasMap.get(d.type)
+              return canonical ? { ...d, type: canonical } : d
+            })
             .filter(d => knownDisplayTypes.has(d.type))
             .map(d => {
               const { renderer, ...rest } = d

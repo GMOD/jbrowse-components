@@ -5,11 +5,27 @@ import { doAnalytics } from '@jbrowse/core/util/analytics'
 import corePlugins from './corePlugins.ts'
 import { loadHubSpec } from './loadHubSpec.ts'
 import { loadSessionSpec } from './loadSessionSpec.ts'
-import { migrateSessionSnapshot } from './migrateSessionSnapshot.ts'
 import JBrowseRootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
 import type { SessionLoaderModel } from './SessionLoader.ts'
+import type { PluginRecord } from '@jbrowse/core/PluginLoader'
+
+function asPluginRecord({ plugin: P, definition }: PluginRecord) {
+  return {
+    plugin: new P(),
+    definition,
+    metadata: { url: pluginUrl(definition) },
+  }
+}
+
+function formatSessionError(e: unknown) {
+  const m = `${e}`
+    .replace('[@jbrowse/mobx-state-tree] ', '')
+    .replace(/\(.+/, '')
+  const r = m.length > 1000 ? `${m.slice(0, 1000)}...see more in console` : m
+  return r.startsWith('Error:') ? r : `Error: ${r}`
+}
 
 export function createPluginManager(
   model: SessionLoaderModel,
@@ -18,25 +34,10 @@ export function createPluginManager(
     sessionSnapshot: Record<string, unknown>,
   ) => void,
 ) {
-  // it is ready when a session has loaded and when there is no config error
-  //
-  // Assuming that the query changes model.sessionError or
-  // model.sessionSnapshot or model.blankSession
   const pluginManager = new PluginManager([
-    ...corePlugins.map(P => ({
-      plugin: new P(),
-      metadata: { isCore: true },
-    })),
-    ...(model.runtimePlugins ?? []).map(({ plugin: P, definition }) => ({
-      plugin: new P(),
-      definition,
-      metadata: { url: pluginUrl(definition) },
-    })),
-    ...(model.sessionPlugins ?? []).map(({ plugin: P, definition }) => ({
-      plugin: new P(),
-      definition,
-      metadata: { url: pluginUrl(definition) },
-    })),
+    ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
+    ...(model.runtimePlugins ?? []).map(asPluginRecord),
+    ...(model.sessionPlugins ?? []).map(asPluginRecord),
   ]).createPluggableElements()
 
   const RootModel = JBrowseRootModelFactory({
@@ -56,38 +57,35 @@ export function createPluginManager(
 
     rootModel.setReloadPluginManagerCallback(reloadPluginManagerCallback)
 
-    const configWithRpc = model.configSnapshot as {
-      configuration?: { rpc?: { defaultDriver?: unknown } }
-    }
-    if (!configWithRpc.configuration?.rpc?.defaultDriver) {
+    const configuredRpc = (
+      model.configSnapshot as {
+        configuration?: { rpc?: { defaultDriver?: unknown } }
+      }
+    ).configuration?.rpc?.defaultDriver
+    if (!configuredRpc) {
       rootModel.jbrowse.configuration.rpc.defaultDriver.set(
         'WebWorkerRpcDriver',
       )
     }
 
-    let afterInitializedCb = () => {}
+    const { sessionError, sessionSpec, sessionSnapshot, hubSpec, sessionName } =
+      model
+    let pendingSessionInit: (() => unknown) | undefined
 
     // in order: saves the previous autosave for recovery, tries to load the
     // local session if session in query, or loads the default session
     try {
-      const {
-        sessionError,
-        sessionSpec,
-        sessionSnapshot,
-        hubSpec,
-        sessionName,
-      } = model
       if (sessionError) {
         // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw sessionError
       } else if (sessionSnapshot) {
-        rootModel.setSession(migrateSessionSnapshot(sessionSnapshot))
+        rootModel.setSession(sessionSnapshot)
       } else if (hubSpec) {
-        afterInitializedCb = () =>
+        pendingSessionInit = () =>
           // @ts-expect-error
           loadHubSpec({ ...hubSpec, sessionName }, pluginManager)
       } else if (sessionSpec) {
-        afterInitializedCb = () =>
+        pendingSessionInit = () =>
           // @ts-expect-error
           loadSessionSpec({ ...sessionSpec, sessionName }, pluginManager)
       } else {
@@ -98,27 +96,18 @@ export function createPluginManager(
       }
     } catch (e) {
       rootModel.setDefaultSession()
-      const str = `${e}`
-      const m = str
-        .replace('[@jbrowse/mobx-state-tree] ', '')
-        .replace(/\(.+/, '')
-      const r =
-        m.length > 1000 ? `${m.slice(0, 1000)}...see more in console` : m
-      const s = r.startsWith('Error:') ? r : `Error: ${r}`
       rootModel.session?.notifyError(
-        `${s}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
+        `${formatSessionError(e)}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
         model.sessionError,
         model.sessionSnapshot,
       )
       console.error(e)
     }
 
-    // send analytics
     doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
-
     pluginManager.setRootModel(rootModel)
     pluginManager.configure()
-    afterInitializedCb()
+    pendingSessionInit?.()
     return pluginManager
   } else {
     return undefined

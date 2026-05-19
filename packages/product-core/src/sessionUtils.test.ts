@@ -1,6 +1,6 @@
 import { getType, types, unprotect } from '@jbrowse/mobx-state-tree'
 
-import { filterSessionInPlace } from './util.ts'
+import { filterSessionInPlace } from './sessionUtils.ts'
 
 const Item = types.model('Item', {
   id: types.identifier,

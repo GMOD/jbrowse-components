@@ -4,6 +4,7 @@
   "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
   "compilerOptions": {
     "rootDir": "src",
-    "lib": ["esnext"]
+    "lib": ["esnext", "dom"],
+    "types": ["jest", "node"]
   }
 }

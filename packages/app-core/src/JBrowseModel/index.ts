@@ -1,6 +1,7 @@
 import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { cast, getParent, getSnapshot } from '@jbrowse/mobx-state-tree'
+import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { migrateConfigSnapshot } from '@jbrowse/product-core'
 import { toJS } from 'mobx'
 
 import { JBrowseConfigF } from '../JBrowseConfig/index.ts'
@@ -30,7 +31,7 @@ export function JBrowseModelF({
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
-  return JBrowseConfigF({ pluginManager, assemblyConfigSchema })
+  const model = JBrowseConfigF({ pluginManager, assemblyConfigSchema })
     .views(self => ({
       /**
        * #getter
@@ -184,4 +185,13 @@ export function JBrowseModelF({
         return elt ? self.internetAccounts.remove(elt) : false
       },
     }))
+
+  // Migrate legacy display types (e.g. LinearPileupDisplay →
+  // LinearAlignmentsDisplay) when ingesting config snapshots so saved
+  // configs from older JBrowse versions still load.
+  return types.snapshotProcessor(model, {
+    preProcessor(snapshot: Record<string, unknown>) {
+      return migrateConfigSnapshot(snapshot)
+    },
+  })
 }

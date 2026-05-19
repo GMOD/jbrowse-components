@@ -19,6 +19,7 @@ export default function register(pluginManager: PluginManager) {
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: BaseLinearDisplayComponent,
+      aliases: ['LinearFeatureDisplay'],
     })
   })
 }

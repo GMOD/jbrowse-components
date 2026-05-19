@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { App } from '@jbrowse/app-core'
 import { onSnapshot } from '@jbrowse/mobx-state-tree'
@@ -17,11 +17,9 @@ const JBrowse = observer(function JBrowse({
 }: {
   pluginManager: PluginManager
 }) {
-  const {
-    adminKey,
-    adminServer,
-    config: configPath,
-  } = readQueryParams(['adminKey', 'adminServer', 'config'])
+  const [{ adminKey, adminServer, config: configPath }] = useState(() =>
+    readQueryParams(['adminKey', 'adminServer', 'config']),
+  )
   const { rootModel } = pluginManager
   const { error, jbrowse, session: s } = rootModel!
   const session = s as WebSessionModel

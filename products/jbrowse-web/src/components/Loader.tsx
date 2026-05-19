@@ -37,19 +37,7 @@ function createReloadedLoader(
   sessionSnapshot: Record<string, unknown>,
 ) {
   return SessionLoader.create({
-    configPath: loader.configPath,
-    sessionQuery: loader.sessionQuery,
-    password: loader.password,
-    adminKey: loader.adminKey,
-    loc: loader.loc,
-    assembly: loader.assembly,
-    tracks: loader.tracks,
-    sessionTracks: loader.sessionTracks,
-    tracklist: loader.tracklist,
-    highlight: loader.highlight,
-    nav: loader.nav,
-    hubURL: loader.hubURL,
-    sessionName: loader.sessionName,
+    ...getSnapshot(loader),
     initialTimestamp: Date.now(),
     configSnapshot,
     sessionSnapshot,
@@ -78,7 +66,6 @@ export function Loader({
   initialTimestamp?: number
 }) {
   const [loader] = useState(() => {
-    const initialTimestamp = initialTimestampProp ?? Date.now()
     const {
       config,
       session,
@@ -118,12 +105,12 @@ export function Loader({
       assembly,
       tracks,
       sessionTracks,
-      tracklist: JSON.parse(tracklist || 'false'),
+      tracklist: tracklist === 'true',
       highlight,
-      nav: JSON.parse(nav || 'true'),
+      nav: nav !== 'false',
       hubURL: hubURL?.split(','),
       sessionName,
-      initialTimestamp,
+      initialTimestamp: initialTimestampProp ?? Date.now(),
     })
   })
 

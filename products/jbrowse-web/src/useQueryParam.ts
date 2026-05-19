@@ -1,14 +1,5 @@
-import { useCallback, useSyncExternalStore } from 'react'
-
 function getSearchParams() {
   return new URLSearchParams(window.location.search)
-}
-
-function subscribe(callback: () => void) {
-  window.addEventListener('popstate', callback)
-  return () => {
-    window.removeEventListener('popstate', callback)
-  }
 }
 
 function updateUrl(params: URLSearchParams) {
@@ -26,29 +17,6 @@ export function readQueryParams<T extends string>(keys: T[]) {
     result[key] = params.get(key) ?? undefined
   }
   return result
-}
-
-export function useQueryParam(key: string) {
-  const value = useSyncExternalStore(
-    subscribe,
-    () => getSearchParams().get(key),
-    () => null,
-  )
-
-  const setValue = useCallback(
-    (newValue: string | undefined) => {
-      const params = getSearchParams()
-      if (newValue === undefined) {
-        params.delete(key)
-      } else {
-        params.set(key, newValue)
-      }
-      updateUrl(params)
-    },
-    [key],
-  )
-
-  return [value ?? undefined, setValue] as const
 }
 
 export function deleteQueryParams(keys: readonly string[]) {

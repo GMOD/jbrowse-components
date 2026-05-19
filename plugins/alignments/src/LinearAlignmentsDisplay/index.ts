@@ -24,6 +24,12 @@ export default function register(pluginManager: PluginManager) {
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: AlignmentsDisplayComponent,
+      aliases: [
+        'LinearPileupDisplay',
+        'LinearSNPCoverageDisplay',
+        'LinearReadArcsDisplay',
+        'LinearReadCloudDisplay',
+      ],
     })
   })
 }

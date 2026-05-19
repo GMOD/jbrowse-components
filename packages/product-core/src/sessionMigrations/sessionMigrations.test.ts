@@ -1,7 +1,4 @@
-import {
-  migrateConfigSnapshot,
-  migrateSessionSnapshot,
-} from './migrateSessionSnapshot.ts'
+import { migrateConfigSnapshot, migrateSessionSnapshot } from './index.ts'
 
 describe('migrateSessionSnapshot', () => {
   test('returns snapshot unchanged when no old display types present', () => {
