@@ -63,7 +63,7 @@ export default function stateModelFactory() {
       /**
        * #getter
        */
-      get rows() {
+      get rows(): GridRow[] | undefined {
         return self.rowSet?.rows.map((row, i) => ({
           id: i,
           feature: row.feature,
