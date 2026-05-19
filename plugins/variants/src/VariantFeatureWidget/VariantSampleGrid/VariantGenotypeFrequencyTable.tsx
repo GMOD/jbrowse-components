@@ -3,10 +3,6 @@ import { DataGrid } from '@mui/x-data-grid'
 
 import type { FrequencyTable, VariantSampleGridRow } from './types.ts'
 
-function toP(n: number) {
-  return n.toPrecision(3)
-}
-
 export default function VariantGenotypeFrequencyTable({
   rows,
   selectedGenotypes,
@@ -32,7 +28,7 @@ export default function VariantGenotypeFrequencyTable({
     id: key,
     ...val,
     count: `${val.count} / ${rows.length}`,
-    frequency: `${toP((val.count / rows.length) * 100)}%`,
+    frequency: `${((val.count / rows.length) * 100).toPrecision(3)}%`,
   }))
 
   const rowSelectionModel =

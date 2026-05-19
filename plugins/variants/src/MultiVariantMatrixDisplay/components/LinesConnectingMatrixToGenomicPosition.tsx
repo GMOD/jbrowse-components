@@ -120,10 +120,7 @@ const AllLines = observer(function AllLines({
         onHover(undefined)
         return
       }
-      const svg =
-        event.currentTarget instanceof SVGSVGElement
-          ? event.currentTarget
-          : event.currentTarget.ownerSVGElement
+      const svg = event.currentTarget.ownerSVGElement
       if (!svg) {
         return
       }
