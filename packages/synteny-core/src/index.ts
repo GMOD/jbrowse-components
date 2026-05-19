@@ -1,6 +1,16 @@
 export { bpToCumBpAndPad, buildBpRegionIndex } from './bpRegionIndex.ts'
 export type { BpIndexViewSnap, BpRegionIndex } from './bpRegionIndex.ts'
 export { visitCigarRenderedSegments } from './cigarBpVisitor.ts'
+export {
+  applyAlpha,
+  colorSchemes,
+  defaultCigarColors,
+  getQueryColor,
+  hashString,
+  strandCigarColors,
+  syriColors,
+} from './colorUtils.ts'
+export type { ColorScheme, SyriType } from './colorUtils.ts'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export { default as ImportSyntenyOpenCustomTrack } from './ImportSyntenyOpenCustomTrack.tsx'
 export { default as AnchorsSelector } from './AnchorsSelector.tsx'

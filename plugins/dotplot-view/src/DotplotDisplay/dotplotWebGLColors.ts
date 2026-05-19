@@ -6,8 +6,8 @@ import {
   packAbgr,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
+import { hashString } from '@jbrowse/synteny-core'
 
-import { hashString } from '../util.ts'
 
 import type { DotplotRpcData } from './types.ts'
 

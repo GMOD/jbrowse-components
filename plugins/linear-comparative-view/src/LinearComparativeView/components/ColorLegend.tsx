@@ -1,7 +1,7 @@
+import { syriColors } from '@jbrowse/synteny-core'
 import { Box, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { syriColors } from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 

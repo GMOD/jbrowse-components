@@ -3,14 +3,17 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
+import {
+  applyAlpha,
+  colorSchemes,
+  getQueryColor,
+} from '@jbrowse/synteny-core'
 
-import { getTooltip } from './components/util.ts'
-import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { getTooltip } from './components/util.ts'
 
 import type { ClickCoord } from './components/util.ts'
-import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -20,6 +23,7 @@ import type {
   DupConflict,
   SyriType,
 } from '@jbrowse/plugin-comparative-adapters'
+import type { ColorScheme } from '@jbrowse/synteny-core'
 
 export interface SyntenyFeatureData {
   strands: Int8Array

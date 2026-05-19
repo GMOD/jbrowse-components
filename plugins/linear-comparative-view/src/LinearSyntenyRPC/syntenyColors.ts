@@ -1,12 +1,7 @@
 import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/alignments-core'
 import { category10 } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
-
-import {
-  colorSchemes,
-  hashString,
-  syriColors,
-} from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
+import { colorSchemes, hashString, syriColors } from '@jbrowse/synteny-core'
 
 import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
 

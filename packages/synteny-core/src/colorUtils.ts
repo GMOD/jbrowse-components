@@ -5,9 +5,8 @@ import {
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 
-import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
+export type SyriType = 'SYN' | 'INV' | 'TRANS' | 'DUP'
 
-// SYNC: keep in sync with util.ts in dotplot-view
 export function hashString(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
@@ -24,8 +23,8 @@ export function getQueryColor(queryName: string) {
 }
 
 // CIGAR operation colors. Kept opaque — every consumer either runs them
-// through applyAlpha() (model.ts) or packs them via cssColorToABGR() and
-// applies u.alpha in the shader / `a * alpha` in Canvas2D. A non-opaque
+// through applyAlpha() or packs them via cssColorToABGR() and applies an
+// alpha uniform in the shader / `a * alpha` in Canvas2D. A non-opaque
 // literal here would multiply with that uniform and render fainter than
 // intended.
 export const defaultCigarColors = {

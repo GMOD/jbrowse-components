@@ -1,6 +1,6 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { syriColors } from '@jbrowse/synteny-core'
 
-import { syriColors } from './drawSyntenyUtils.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import {
   buildFeaturePath,

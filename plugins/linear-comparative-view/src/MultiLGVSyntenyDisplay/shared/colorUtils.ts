@@ -1,4 +1,4 @@
-import { syriColors } from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
+import { syriColors } from '@jbrowse/synteny-core'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
