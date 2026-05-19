@@ -31,6 +31,13 @@ beforeEach(() => {
   doBeforeEach()
 })
 
+// Flush any pending dynamic-import microtasks before Jest tears down the env,
+// otherwise lazy plugin/adapter imports started during render resolve after
+// teardown and throw "require after Jest environment has been torn down".
+afterEach(async () => {
+  await new Promise(resolve => setTimeout(resolve, 100))
+})
+
 test('banner shows when file handles cannot be silently restored', async () => {
   ;(restoreFileHandlesFromSnapshot as jest.Mock).mockResolvedValue([
     { handleId: 'h1', success: false },

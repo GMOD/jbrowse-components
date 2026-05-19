@@ -1,17 +1,13 @@
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-export type AdapterType =
-  | 'IndexedFastaAdapter'
-  | 'BgzipFastaAdapter'
-  | 'FastaAdapter'
-  | 'TwoBitAdapter'
-
-export const adapterTypes: AdapterType[] = [
+export const adapterTypes = [
   'IndexedFastaAdapter',
   'BgzipFastaAdapter',
   'FastaAdapter',
   'TwoBitAdapter',
-]
+] as const
+
+export type AdapterType = (typeof adapterTypes)[number]
 
 export const adapterLabels: Record<AdapterType, string> = {
   IndexedFastaAdapter: 'FASTA with index (.fa + .fai)',

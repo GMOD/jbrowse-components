@@ -10,7 +10,10 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { WiggleCommonMixin, rendererMenuItems } from '@jbrowse/plugin-wiggle'
+import {
+  WiggleScoreConfigMixin,
+  rendererMenuItems,
+} from '@jbrowse/plugin-wiggle'
 import {
   YSCALEBAR_LABEL_OFFSET,
   getNiceDomain,
@@ -51,7 +54,7 @@ export function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      WiggleCommonMixin(),
+      WiggleScoreConfigMixin(),
       types.model({
         type: types.literal('LinearManhattanDisplay'),
         /**
