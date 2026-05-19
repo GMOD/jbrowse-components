@@ -4,6 +4,7 @@ import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { interleaveInstances } from './instanceInterleave.ts'
 import * as syntenyEdgeShader from './shaders/syntenyEdge.generated.ts'
 import * as syntenyFillShader from './shaders/syntenyFill.generated.ts'
+import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 
 import type {
@@ -11,7 +12,6 @@ import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
-import type { PickIndex } from './syntenyPickEngine.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
@@ -54,8 +54,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
 
-  private regions = new Map<number, SyntenyInstanceData>()
-  private pickIndices = new Map<number, PickIndex>()
+  private cache = new SyntenyGeometryCache()
   private lastState: SyntenyRenderState | undefined
   private pickCtx: CanvasRenderingContext2D | undefined
   private disposed = false
@@ -70,8 +69,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   }
 
   uploadGeometry(key: number, data: SyntenyInstanceData) {
-    this.regions.set(key, data)
-    this.pickIndices.delete(key)
+    this.cache.set(key, data)
     const interleaved = interleaveInstances(data)
     this.hal.uploadBuffer(key, PASS_FILL, interleaved, data.instanceCount)
     this.hal.uploadBuffer(
@@ -83,8 +81,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   }
 
   deleteGeometry(key: number) {
-    this.regions.delete(key)
-    this.pickIndices.delete(key)
+    this.cache.delete(key)
     this.hal.deleteRegion(key)
   }
 
@@ -93,12 +90,12 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
       return false
     }
     this.lastState = state
-    if (this.regions.size === 0) {
+    if (this.cache.regions.size === 0) {
       return false
     }
     this.hal.beginFrame(1, 1, 1, 1)
     for (const [key, params] of state.perTrack) {
-      const data = this.regions.get(key)
+      const data = this.cache.regions.get(key)
       if (!data || data.instanceCount === 0) {
         continue
       }
@@ -126,8 +123,8 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     return pickFeatureAtPoint({
       ctx,
       state,
-      regions: this.regions,
-      pickIndices: this.pickIndices,
+      regions: this.cache.regions,
+      pickIndices: this.cache.pickIndices,
       canvasLogicalWidth: this.canvas.width / dpr,
       x,
       y,
@@ -136,8 +133,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
 
   dispose() {
     this.disposed = true
-    this.regions.clear()
-    this.pickIndices.clear()
+    this.cache.clear()
     this.lastState = undefined
     this.pickCtx = undefined
     this.hal.dispose()

@@ -1,6 +1,7 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { syriColors } from './drawSyntenyUtils.ts'
+import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import {
   buildFeaturePath,
   computeTransform,
@@ -14,11 +15,7 @@ import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyBackendTypes.ts'
-import type {
-  CanvasLike,
-  ComputedTransform,
-  PickIndex,
-} from './syntenyPickEngine.ts'
+import type { CanvasLike, ComputedTransform } from './syntenyPickEngine.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 export type { CanvasLike } from './syntenyPickEngine.ts'
@@ -168,9 +165,8 @@ export function drawSyntenyTrack(
 export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
-  private regions = new Map<number, SyntenyInstanceData>()
+  private cache = new SyntenyGeometryCache()
   private lastState: SyntenyRenderState | undefined
-  private pickIndices = new Map<number, PickIndex>()
 
   private get dpr() {
     return typeof window !== 'undefined' ? window.devicePixelRatio : 1
@@ -196,18 +192,16 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   }
 
   uploadGeometry(key: number, data: SyntenyInstanceData) {
-    this.regions.set(key, data)
-    this.pickIndices.delete(key)
+    this.cache.set(key, data)
   }
 
   deleteGeometry(key: number) {
-    this.regions.delete(key)
-    this.pickIndices.delete(key)
+    this.cache.delete(key)
   }
 
   render(state: SyntenyRenderState) {
     this.lastState = state
-    if (this.regions.size === 0) {
+    if (this.cache.regions.size === 0) {
       return false
     }
 
@@ -222,7 +216,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
 
     const { overdrawPx } = state
     for (const [key, params] of state.perTrack) {
-      const data = this.regions.get(key)
+      const data = this.cache.regions.get(key)
       if (!data || data.instanceCount === 0) {
         continue
       }
@@ -241,8 +235,8 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     return pickFeatureAtPoint({
       ctx: this.ctx,
       state,
-      regions: this.regions,
-      pickIndices: this.pickIndices,
+      regions: this.cache.regions,
+      pickIndices: this.cache.pickIndices,
       canvasLogicalWidth: this.canvas.width / this.dpr,
       x,
       y,
@@ -250,8 +244,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   }
 
   dispose() {
-    this.regions.clear()
-    this.pickIndices.clear()
+    this.cache.clear()
     this.lastState = undefined
   }
 }
