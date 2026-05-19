@@ -1,6 +1,13 @@
 import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/alignments-core'
 import { category10 } from '@jbrowse/core/ui/colors'
-import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
+import {
+  cssColorToABGR,
+  getBlue,
+  getGreen,
+  getRed,
+  packAbgr,
+  parseCssColor,
+} from '@jbrowse/core/util/colorBits'
 import { colorSchemes, hashString, syriColors } from '@jbrowse/synteny-core'
 
 import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
@@ -26,6 +33,27 @@ const BLACK = packAbgr(0, 0, 0, 255)
 
 const category10Packed = category10.map(hex => cssColorToABGR(hex))
 
+// Precomputed 256-bin LUT mapping identity in [0,1] to packed ABGR. Bin 0 is
+// red (hue 0), bin 255 is green (hue 120). Values <0 (unknown identity) map
+// to DEFAULT_COLOR at the call site.
+const IDENTITY_LUT = (() => {
+  const lut = new Uint32Array(256)
+  for (let i = 0; i < 256; i++) {
+    const hue = (i / 255) * 120
+    const c = parseCssColor(`hsl(${hue}, 100%, 40%)`)
+    lut[i] = packAbgr(getRed(c), getGreen(c), getBlue(c), 255)
+  }
+  return lut
+})()
+
+function identityToPacked(identity: number) {
+  if (identity < 0) {
+    return DEFAULT_COLOR
+  }
+  const bin = Math.min(255, Math.max(0, Math.round(identity * 255)))
+  return IDENTITY_LUT[bin]!
+}
+
 const syriColorMap: Record<SyriType, number> = {
   SYN: cssColorToABGR(syriColors.SYN),
   INV: cssColorToABGR(syriColors.INV),
@@ -36,10 +64,16 @@ const syriColorMap: Record<SyriType, number> = {
 function createColorFunction(
   colorBy: string,
   syriTypes?: readonly SyriType[],
+  identities?: Float32Array,
 ): (strand: number, refName: string, index: number) => number {
   if (colorBy === 'syri' && syriTypes) {
     return (_strand: number, _refName: string, index: number) =>
       syriColorMap[syriTypes[index]!]
+  }
+
+  if (colorBy === 'identity' && identities) {
+    return (_strand: number, _refName: string, index: number) =>
+      identityToPacked(identities[index]!)
   }
 
   if (colorBy === 'strand') {
@@ -92,6 +126,7 @@ export function computeSyntenyColors({
   instanceCount,
   colorBy,
   syriTypes,
+  identities,
 }: {
   kinds: Uint8Array
   featureIdx: Uint32Array
@@ -100,8 +135,9 @@ export function computeSyntenyColors({
   instanceCount: number
   colorBy: string
   syriTypes?: readonly SyriType[]
+  identities?: Float32Array
 }) {
-  const colorFn = createColorFunction(colorBy, syriTypes)
+  const colorFn = createColorFunction(colorBy, syriTypes, identities)
   const indelColors = buildIndelColors(colorBy)
   const colorI = indelColors[CIGAR_I] ?? DEFAULT_COLOR
   const colorD = indelColors[CIGAR_D] ?? DEFAULT_COLOR

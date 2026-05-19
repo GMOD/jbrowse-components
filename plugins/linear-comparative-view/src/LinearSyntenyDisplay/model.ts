@@ -382,6 +382,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           instanceCount: instanceData.instanceCount,
           colorBy,
           syriTypes: this.syriTypesForColoring,
+          identities:
+            colorBy === 'identity' ? featureData.identities : undefined,
         })
       },
       /**

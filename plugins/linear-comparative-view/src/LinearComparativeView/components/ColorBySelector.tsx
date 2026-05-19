@@ -54,6 +54,16 @@ const ColorBySelector = observer(function ColorBySelector({
           helpText:
             'Color alignments by structural variant type using SyRI-style classification: syntenic (gray), inversions (orange), translocations (yellow-green), and duplications (cyan). Colors match plotsr defaults.',
         },
+        {
+          label: 'Identity',
+          type: 'radio',
+          checked: colorBy === 'identity',
+          onClick: () => {
+            model.setColorBy('identity')
+          },
+          helpText:
+            'Color alignments by sequence identity percentage. Higher identity matches appear in warmer colors, lower identity matches appear cooler. Useful for identifying highly conserved vs divergent regions.',
+        },
       ]}
     >
       <PaletteIcon />
