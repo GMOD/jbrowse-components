@@ -170,6 +170,16 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     return basesStr
   }
 
+  // utf-8 (default) tends to be faster than 'ascii' in modern engines.
+  private decoder = new TextDecoder()
+
+  // Strip optional ` @tags` suffix, trim, then RLE-decode if needed.
+  parseBasesColumn(s: string, runLengthEncodeBases: boolean): string {
+    const atIndex = s.indexOf(' @')
+    const basesOnly = atIndex !== -1 ? s.slice(0, atIndex) : s
+    return this.parseBases(basesOnly.trim(), runLengthEncodeBases)
+  }
+
   // Streaming generator version of parseTafBlocks
   // Yields features one at a time instead of collecting into array
   *parseTafBlocksStreaming(
@@ -182,8 +192,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     let columns: string[] = []
     let isFirstCoordLine = true
 
-    const decoder = new TextDecoder('ascii')
-    const text = decoder.decode(buffer)
+    const text = this.decoder.decode(buffer)
     const lines = text.split('\n')
 
     for (const line of lines) {
@@ -228,20 +237,12 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
         )
         columns = []
 
-        const basesAtIndex = basesAndTags.indexOf(' @')
-        const basesOnly =
-          basesAtIndex !== -1
-            ? basesAndTags.slice(0, basesAtIndex)
-            : basesAndTags
-        const bases = this.parseBases(basesOnly.trim(), runLengthEncodeBases)
+        const bases = this.parseBasesColumn(basesAndTags, runLengthEncodeBases)
         if (bases.length > 0) {
           columns.push(bases)
         }
       } else if (currentBlock) {
-        const basesAtIndex = trimmedLine.indexOf(' @')
-        const basesOnly =
-          basesAtIndex !== -1 ? trimmedLine.slice(0, basesAtIndex) : trimmedLine
-        const bases = this.parseBases(basesOnly.trim(), runLengthEncodeBases)
+        const bases = this.parseBasesColumn(trimmedLine, runLengthEncodeBases)
         if (bases.length > 0) {
           columns.push(bases)
         }
@@ -257,9 +258,6 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       }
     }
   }
-
-  // TextDecoder for efficient string building from typed array
-  private decoder = new TextDecoder('ascii')
 
   finalizeBlock(block: AlignmentBlock, columns: string[]) {
     const numCols = columns.length
@@ -349,9 +347,8 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       const file = openLocation(this.getConf('tafGzLocation'))
       const response = await file.read(65536, 0)
       const buffer = await unzip(response)
-      const decoder = new TextDecoder('ascii')
-      const text = decoder.decode(buffer.slice(0, 1000))
-      const firstLine = text.split('\n')[0] || ''
+      const text = this.decoder.decode(buffer)
+      const firstLine = text.split('\n', 1)[0] ?? ''
       if (firstLine.startsWith('#taf')) {
         return firstLine.includes('run_length_encode_bases:1')
       }
