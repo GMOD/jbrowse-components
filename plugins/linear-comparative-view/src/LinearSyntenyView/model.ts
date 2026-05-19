@@ -394,32 +394,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               : []),
             {
               label: 'CIGAR display mode',
-              subMenu: [
-                {
-                  label: 'Colorize indels',
-                  type: 'radio',
-                  checked: self.cigarMode === 'full',
-                  onClick: () => {
-                    self.setCigarMode('full')
-                  },
+              subMenu: (
+                [
+                  { label: 'Colorize indels', mode: 'full' },
+                  { label: "Don't colorize indels", mode: 'matches' },
+                  { label: "Don't draw CIGAR", mode: 'off' },
+                ] as const
+              ).map(({ label, mode }) => ({
+                label,
+                type: 'radio' as const,
+                checked: self.cigarMode === mode,
+                onClick: () => {
+                  self.setCigarMode(mode)
                 },
-                {
-                  label: "Don't colorize indels",
-                  type: 'radio',
-                  checked: self.cigarMode === 'matches',
-                  onClick: () => {
-                    self.setCigarMode('matches')
-                  },
-                },
-                {
-                  label: "Don't draw CIGAR",
-                  type: 'radio',
-                  checked: self.cigarMode === 'off',
-                  onClick: () => {
-                    self.setCigarMode('off')
-                  },
-                },
-              ],
+              })),
             },
             {
               label: 'Link views',

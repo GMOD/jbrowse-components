@@ -78,7 +78,9 @@ const Header = observer(function Header({
             type: 'subMenu',
             subMenu: views.map((view, idx) => ({
               label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
-              onClick: () => view.activateTrackSelector(),
+              onClick: () => {
+                view.activateTrackSelector()
+              },
             })),
           },
         ]}
