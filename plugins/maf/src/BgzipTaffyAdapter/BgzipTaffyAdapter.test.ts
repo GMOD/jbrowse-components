@@ -7,7 +7,12 @@ import {
   filterFirstLineInstructions,
   parseRowInstructions,
 } from './rowInstructions.ts'
-import { countNonGapBases, parseLineByLine } from './util.ts'
+import {
+  finalizeBlock,
+  parseBases,
+  parseCoordinatesAndEstablishBlock,
+} from './tafParsing.ts'
+import { countNonGapBases, parseLineByLine } from './testFixtures.ts'
 
 // Test the core parsing logic with sample TAF data
 describe('TAF parsing', () => {
@@ -337,157 +342,26 @@ TC
 })
 
 describe('BgzipTaffyAdapter methods', () => {
-  // Create a minimal adapter instance for testing methods
-  function createTestAdapter() {
-    // We can't easily instantiate the adapter without a full plugin setup,
-    // but we can test the static/pure methods by extracting them
-    return {
-      parseBases(basesStr: string, runLengthEncodeBases: boolean): string {
-        if (runLengthEncodeBases) {
-          const tokens = basesStr.split(' ')
-          let result = ''
-          for (let i = 0; i < tokens.length; i += 2) {
-            const base = tokens[i]!
-            const count = parseInt(tokens[i + 1]!, 10)
-            if (!isNaN(count) && base.length === 1) {
-              result += base.repeat(count)
-            }
-          }
-          return result
-        }
-        return basesStr
-      },
-
-      parseCoordinatesAndEstablishBlock(
-        pBlock:
-          | {
-              rows: {
-                sequenceName: string
-                start: number
-                strand: number
-                sequenceLength: number
-                bases: string
-                length: number
-              }[]
-            }
-          | undefined,
-        instructions: ReturnType<typeof parseRowInstructions>,
-      ) {
-        const block = {
-          rows: [] as {
-            sequenceName: string
-            start: number
-            strand: number
-            sequenceLength: number
-            bases: string
-            length: number
-          }[],
-          columnNumber: 0,
-        }
-
-        if (pBlock) {
-          for (const pRow of pBlock.rows) {
-            block.rows.push({
-              sequenceName: pRow.sequenceName,
-              start: pRow.start + pRow.length,
-              strand: pRow.strand,
-              sequenceLength: pRow.sequenceLength,
-              bases: '',
-              length: 0,
-            })
-          }
-        }
-
-        for (const ins of instructions) {
-          if (ins.type === 'i') {
-            block.rows.splice(ins.row, 0, {
-              sequenceName: ins.sequenceName,
-              start: ins.start,
-              strand: ins.strand,
-              sequenceLength: ins.sequenceLength,
-              bases: '',
-              length: 0,
-            })
-          } else if (ins.type === 's') {
-            const row = block.rows[ins.row]
-            if (row) {
-              row.sequenceName = ins.sequenceName
-              row.start = ins.start
-              row.strand = ins.strand
-              row.sequenceLength = ins.sequenceLength
-            }
-          } else if (ins.type === 'd') {
-            if (block.rows[ins.row]) {
-              block.rows.splice(ins.row, 1)
-            }
-          } else if (ins.type === 'g') {
-            const row = block.rows[ins.row]
-            if (row) {
-              row.start += ins.gapLength
-            }
-          }
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          else if (ins.type === 'G') {
-            const row = block.rows[ins.row]
-            if (row) {
-              row.start += ins.gapSubstring.length
-            }
-          }
-        }
-
-        return block
-      },
-
-      finalizeBlock(
-        block: {
-          rows: { bases: string; length: number }[]
-          columnNumber: number
-        },
-        columns: string[],
-      ) {
-        block.columnNumber = columns.length
-        for (let j = 0; j < block.rows.length; j++) {
-          const row = block.rows[j]!
-          let bases = ''
-          let length = 0
-          for (const col of columns) {
-            const base = col[j] ?? '-'
-            bases += base
-            if (base !== '-') {
-              length++
-            }
-          }
-          row.bases = bases
-          row.length = length
-        }
-      },
-    }
-  }
+  const testDecoder = new TextDecoder()
 
   test('parseBases handles plain format', () => {
-    const adapter = createTestAdapter()
-    expect(adapter.parseBases('ACGT', false)).toBe('ACGT')
-    expect(adapter.parseBases('acgt', false)).toBe('acgt')
-    expect(adapter.parseBases('AC-T', false)).toBe('AC-T')
+    expect(parseBases('ACGT', false)).toBe('ACGT')
+    expect(parseBases('acgt', false)).toBe('acgt')
+    expect(parseBases('AC-T', false)).toBe('AC-T')
   })
 
   test('parseBases handles run-length encoded format', () => {
-    const adapter = createTestAdapter()
-    expect(adapter.parseBases('A 3', true)).toBe('AAA')
-    expect(adapter.parseBases('A 2 T 2', true)).toBe('AATT')
-    expect(adapter.parseBases('- 3 A 1', true)).toBe('---A')
+    expect(parseBases('A 3', true)).toBe('AAA')
+    expect(parseBases('A 2 T 2', true)).toBe('AATT')
+    expect(parseBases('- 3 A 1', true)).toBe('---A')
   })
 
   test('parseCoordinatesAndEstablishBlock creates new block from scratch', () => {
-    const adapter = createTestAdapter()
     const instructions = filterFirstLineInstructions(
       parseRowInstructions('s 0 ce10.chrI 100 + 1000 s 1 mm10.chr1 200 + 2000'),
     )
 
-    const block = adapter.parseCoordinatesAndEstablishBlock(
-      undefined,
-      instructions,
-    )
+    const block = parseCoordinatesAndEstablishBlock(undefined, instructions)
 
     expect(block.rows).toHaveLength(2)
     expect(block.rows[0]).toMatchObject({
@@ -505,13 +379,13 @@ describe('BgzipTaffyAdapter methods', () => {
   })
 
   test('parseCoordinatesAndEstablishBlock copies from previous block', () => {
-    const adapter = createTestAdapter()
+    
 
     // First block
     const instructions1 = parseRowInstructions(
       'i 0 ce10.chrI 100 + 1000 i 1 mm10.chr1 200 + 2000',
     )
-    const block1 = adapter.parseCoordinatesAndEstablishBlock(
+    const block1 = parseCoordinatesAndEstablishBlock(
       undefined,
       instructions1,
     )
@@ -519,7 +393,7 @@ describe('BgzipTaffyAdapter methods', () => {
     block1.rows[1]!.length = 50
 
     // Second block - no instructions, should copy from previous
-    const block2 = adapter.parseCoordinatesAndEstablishBlock(block1, [])
+    const block2 = parseCoordinatesAndEstablishBlock(block1, [])
 
     expect(block2.rows).toHaveLength(2)
     // Starts should be previous start + previous length
@@ -528,13 +402,13 @@ describe('BgzipTaffyAdapter methods', () => {
   })
 
   test('parseCoordinatesAndEstablishBlock handles insert in middle of block', () => {
-    const adapter = createTestAdapter()
+    
 
     // First block with 2 rows
     const instructions1 = parseRowInstructions(
       'i 0 ce10.chrI 100 + 1000 i 1 mm10.chr1 200 + 2000',
     )
-    const block1 = adapter.parseCoordinatesAndEstablishBlock(
+    const block1 = parseCoordinatesAndEstablishBlock(
       undefined,
       instructions1,
     )
@@ -543,7 +417,7 @@ describe('BgzipTaffyAdapter methods', () => {
 
     // Second block - insert new row at position 1
     const instructions2 = parseRowInstructions('i 1 rn6.chr1 300 + 3000')
-    const block2 = adapter.parseCoordinatesAndEstablishBlock(
+    const block2 = parseCoordinatesAndEstablishBlock(
       block1,
       instructions2,
     )
@@ -555,13 +429,13 @@ describe('BgzipTaffyAdapter methods', () => {
   })
 
   test('parseCoordinatesAndEstablishBlock handles delete', () => {
-    const adapter = createTestAdapter()
+    
 
     // First block with 3 rows
     const instructions1 = parseRowInstructions(
       'i 0 ce10.chrI 100 + 1000 i 1 mm10.chr1 200 + 2000 i 2 rn6.chr1 300 + 3000',
     )
-    const block1 = adapter.parseCoordinatesAndEstablishBlock(
+    const block1 = parseCoordinatesAndEstablishBlock(
       undefined,
       instructions1,
     )
@@ -571,7 +445,7 @@ describe('BgzipTaffyAdapter methods', () => {
 
     // Second block - delete middle row
     const instructions2 = parseRowInstructions('d 1')
-    const block2 = adapter.parseCoordinatesAndEstablishBlock(
+    const block2 = parseCoordinatesAndEstablishBlock(
       block1,
       instructions2,
     )
@@ -582,12 +456,12 @@ describe('BgzipTaffyAdapter methods', () => {
   })
 
   test('parseCoordinatesAndEstablishBlock handles gap', () => {
-    const adapter = createTestAdapter()
+    
 
     const instructions1 = parseRowInstructions(
       'i 0 ce10.chrI 100 + 1000 i 1 mm10.chr1 200 + 2000',
     )
-    const block1 = adapter.parseCoordinatesAndEstablishBlock(
+    const block1 = parseCoordinatesAndEstablishBlock(
       undefined,
       instructions1,
     )
@@ -596,7 +470,7 @@ describe('BgzipTaffyAdapter methods', () => {
 
     // Add gap to row 1
     const instructions2 = parseRowInstructions('g 1 50')
-    const block2 = adapter.parseCoordinatesAndEstablishBlock(
+    const block2 = parseCoordinatesAndEstablishBlock(
       block1,
       instructions2,
     )
@@ -606,7 +480,7 @@ describe('BgzipTaffyAdapter methods', () => {
   })
 
   test('finalizeBlock transposes columns to rows', () => {
-    const adapter = createTestAdapter()
+    
 
     const block = {
       rows: [
@@ -632,7 +506,7 @@ describe('BgzipTaffyAdapter methods', () => {
 
     const columns = ['AC', 'GT', 'AC']
 
-    adapter.finalizeBlock(block, columns)
+    finalizeBlock(block, columns, testDecoder)
 
     expect(block.columnNumber).toBe(3)
     expect(block.rows[0]!.bases).toBe('AGA') // First char from each column
@@ -642,7 +516,7 @@ describe('BgzipTaffyAdapter methods', () => {
   })
 
   test('finalizeBlock counts non-gap bases correctly', () => {
-    const adapter = createTestAdapter()
+    
 
     const block = {
       rows: [
@@ -670,7 +544,7 @@ describe('BgzipTaffyAdapter methods', () => {
     // Row 1 gets: C, C, C = 3 non-gap
     const columns = ['AC', '-C', 'AC']
 
-    adapter.finalizeBlock(block, columns)
+    finalizeBlock(block, columns, testDecoder)
 
     expect(block.rows[0]!.bases).toBe('A-A')
     expect(block.rows[0]!.length).toBe(2)

@@ -1,4 +1,4 @@
-import { countNonGapBases, parseLineByLine } from './util.ts'
+import { countNonGapBases, parseLineByLine } from './testFixtures.ts'
 
 describe('countNonGapBases', () => {
   test('counts all bases when no gaps', () => {

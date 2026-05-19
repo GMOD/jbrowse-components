@@ -12,6 +12,8 @@ import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
+const WHITESPACE_REGEX = / +/
+
 export default class BigMafAdapter extends BaseFeatureDataAdapter {
   public setupP?: Promise<{ adapter: BaseFeatureDataAdapter }>
 
@@ -50,8 +52,6 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
   }
 
   getFeatures(query: Region, opts?: MafAdapterOptions) {
-    const WHITESPACE_REGEX = / +/
-
     return ObservableCreate<Feature>(async observer => {
       const { adapter } = await this.setupPre(opts)
 

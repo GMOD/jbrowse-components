@@ -8,45 +8,25 @@ import {
   filterFirstLineInstructions,
   parseRowInstructions,
 } from './rowInstructions.ts'
+import {
+  blockToFeature,
+  finalizeBlock,
+  parseBasesColumn,
+  parseCoordinatesAndEstablishBlock,
+} from './tafParsing.ts'
 import VirtualOffset from './virtualOffset.ts'
 import MafFeature from '../MafFeature.ts'
 import { getSamplesFromConfig } from '../util/getSamples.ts'
-import { parseAssemblyAndChrSimple } from '../util/parseAssemblyName.ts'
 
-import type { RowInstruction } from './rowInstructions.ts'
-import type { AlignmentRecord, IndexData } from './types.ts'
+import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
+import type { IndexData } from './types.ts'
 import type { MafAdapterOptions } from '../types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-// Represents a row in the alignment (like Alignment_Row in C)
-interface RowState {
-  sequenceName: string
-  start: number
-  strand: number
-  sequenceLength: number
-  bases: string
-  length: number
-}
-
-// Represents an alignment block (like Alignment in C)
-interface AlignmentBlock {
-  rows: RowState[]
-  columnNumber: number
-}
-
 interface SetupData {
   index: IndexData
   runLengthEncodeBases: boolean
-}
-
-interface TafFeature {
-  uniqueId: string
-  start: number
-  end: number
-  strand: number
-  alignments: Record<string, AlignmentRecord>
-  seq: string
 }
 
 /**
@@ -75,109 +55,12 @@ function lowerBound<T>(arr: T[], target: number, getKey: (item: T) => number) {
 export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   public setupP?: Promise<SetupData>
 
-  async getRefNames() {
-    const { index } = await this.setup()
-    return Object.keys(index)
-  }
-
-  // Faithful translation of parse_coordinates_and_establish_block from taf.c
-  parseCoordinatesAndEstablishBlock(
-    pBlock: AlignmentBlock | undefined,
-    instructions: RowInstruction[],
-  ): AlignmentBlock {
-    const block: AlignmentBlock = {
-      rows: [],
-      columnNumber: 0,
-    }
-
-    // Copy rows from previous block
-    if (pBlock) {
-      for (const pRow of pBlock.rows) {
-        block.rows.push({
-          sequenceName: pRow.sequenceName,
-          start: pRow.start + pRow.length,
-          strand: pRow.strand,
-          sequenceLength: pRow.sequenceLength,
-          bases: '',
-          length: 0,
-        })
-      }
-    }
-
-    // Apply coordinate instructions
-    for (const ins of instructions) {
-      switch (ins.type) {
-        case 'i': {
-          block.rows.splice(ins.row, 0, {
-            sequenceName: ins.sequenceName,
-            start: ins.start,
-            strand: ins.strand,
-            sequenceLength: ins.sequenceLength,
-            bases: '',
-            length: 0,
-          })
-          break
-        }
-        case 's': {
-          const row = block.rows[ins.row]
-          if (row) {
-            row.sequenceName = ins.sequenceName
-            row.start = ins.start
-            row.strand = ins.strand
-            row.sequenceLength = ins.sequenceLength
-          }
-          break
-        }
-        case 'd': {
-          if (block.rows[ins.row]) {
-            block.rows.splice(ins.row, 1)
-          }
-          break
-        }
-        case 'g': {
-          const row = block.rows[ins.row]
-          if (row) {
-            row.start += ins.gapLength
-          }
-          break
-        }
-        case 'G': {
-          const row = block.rows[ins.row]
-          if (row) {
-            row.start += ins.gapSubstring.length
-          }
-          break
-        }
-      }
-    }
-
-    return block
-  }
-
-  parseBases(basesStr: string, runLengthEncodeBases: boolean): string {
-    if (runLengthEncodeBases) {
-      const tokens = basesStr.split(' ')
-      let result = ''
-      for (let i = 0; i < tokens.length; i += 2) {
-        const base = tokens[i]!
-        const count = parseInt(tokens[i + 1]!, 10)
-        if (!isNaN(count) && base.length === 1) {
-          result += base.repeat(count)
-        }
-      }
-      return result
-    }
-    return basesStr
-  }
-
   // utf-8 (default) tends to be faster than 'ascii' in modern engines.
   private decoder = new TextDecoder()
 
-  // Strip optional ` @tags` suffix, trim, then RLE-decode if needed.
-  parseBasesColumn(s: string, runLengthEncodeBases: boolean): string {
-    const atIndex = s.indexOf(' @')
-    const basesOnly = atIndex !== -1 ? s.slice(0, atIndex) : s
-    return this.parseBases(basesOnly.trim(), runLengthEncodeBases)
+  async getRefNames() {
+    const { index } = await this.setup()
+    return Object.keys(index)
   }
 
   // Streaming generator version of parseTafBlocks
@@ -207,8 +90,8 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       if (hasCoordinates) {
         // If we have a current block with columns, finalize and yield it
         if (currentBlock && columns.length > 0) {
-          this.finalizeBlock(currentBlock, columns)
-          const feature = this.blockToFeature(currentBlock, sampleFilter)
+          finalizeBlock(currentBlock, columns, this.decoder)
+          const feature = blockToFeature(currentBlock, sampleFilter)
           if (feature) {
             yield feature
           }
@@ -231,18 +114,15 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
           isFirstCoordLine = false
         }
 
-        currentBlock = this.parseCoordinatesAndEstablishBlock(
-          pBlock,
-          instructions,
-        )
+        currentBlock = parseCoordinatesAndEstablishBlock(pBlock, instructions)
         columns = []
 
-        const bases = this.parseBasesColumn(basesAndTags, runLengthEncodeBases)
+        const bases = parseBasesColumn(basesAndTags, runLengthEncodeBases)
         if (bases.length > 0) {
           columns.push(bases)
         }
       } else if (currentBlock) {
-        const bases = this.parseBasesColumn(trimmedLine, runLengthEncodeBases)
+        const bases = parseBasesColumn(trimmedLine, runLengthEncodeBases)
         if (bases.length > 0) {
           columns.push(bases)
         }
@@ -251,71 +131,11 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
 
     // Finalize and yield last block
     if (currentBlock && columns.length > 0) {
-      this.finalizeBlock(currentBlock, columns)
-      const feature = this.blockToFeature(currentBlock, sampleFilter)
+      finalizeBlock(currentBlock, columns, this.decoder)
+      const feature = blockToFeature(currentBlock, sampleFilter)
       if (feature) {
         yield feature
       }
-    }
-  }
-
-  finalizeBlock(block: AlignmentBlock, columns: string[]) {
-    const numCols = columns.length
-    block.columnNumber = numCols
-
-    // Pre-allocate buffer for bases (reused across rows)
-    const buffer = new Uint8Array(numCols)
-    const DASH = 45 // '-'.charCodeAt(0)
-
-    for (let j = 0; j < block.rows.length; j++) {
-      const row = block.rows[j]!
-      let length = 0
-
-      for (let i = 0; i < numCols; i++) {
-        const col = columns[i]!
-        const charCode = col.charCodeAt(j)
-        // Use dash if character doesn't exist (NaN from charCodeAt)
-        buffer[i] = isNaN(charCode) ? DASH : charCode
-        if (buffer[i] !== DASH) {
-          length++
-        }
-      }
-
-      row.bases = this.decoder.decode(buffer)
-      row.length = length
-    }
-  }
-
-  blockToFeature(
-    block: AlignmentBlock,
-    sampleFilter?: Set<string>,
-  ): TafFeature | undefined {
-    if (block.rows.length === 0 || block.columnNumber === 0) {
-      return undefined
-    }
-
-    const row0 = block.rows[0]!
-    const alignments: Record<string, AlignmentRecord> = {}
-
-    for (const row of block.rows) {
-      const { assemblyName, chr } = parseAssemblyAndChrSimple(row.sequenceName)
-      if (sampleFilter && !sampleFilter.has(assemblyName)) {
-        continue
-      }
-      alignments[assemblyName] = {
-        chr,
-        start: row.start,
-        seq: row.bases,
-      }
-    }
-
-    return {
-      uniqueId: `${row0.start}-${row0.length}`,
-      start: row0.start,
-      end: row0.start + row0.length,
-      strand: row0.strand,
-      alignments,
-      seq: row0.bases,
     }
   }
 
