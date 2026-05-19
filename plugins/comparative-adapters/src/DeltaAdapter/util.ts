@@ -1,7 +1,7 @@
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
 import type { PAFRecord } from '../PAFAdapter/util.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter/BaseOptions'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 
 /* paf2delta from paftools.js in the minimap2 repository, license reproduced below
  *

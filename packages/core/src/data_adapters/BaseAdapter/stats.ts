@@ -4,7 +4,7 @@ import { toArray } from 'rxjs/operators'
 import { max, min, sum } from '../../util/index.ts'
 import { rectifyStats } from '../../util/stats.ts'
 
-import type { BaseOptions } from './BaseOptions.ts'
+import type { BaseOptions } from './types.ts'
 import type { FeatureDensityStats } from './types.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { RectifiedQuantitativeStats } from '../../util/stats.ts'

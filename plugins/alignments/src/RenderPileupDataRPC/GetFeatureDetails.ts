@@ -37,9 +37,7 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    if (sequenceAdapter && !dataAdapter.sequenceAdapterConfig) {
-      dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
-    }
+    dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
 
     const features = await firstValueFrom(
       dataAdapter.getFeatures(region, {}).pipe(toArray()),

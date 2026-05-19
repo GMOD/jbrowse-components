@@ -121,6 +121,4 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter {
   async getSamples() {
     return getSamplesFromConfig(key => this.getConf(key))
   }
-
-  freeResources(): void {}
 }

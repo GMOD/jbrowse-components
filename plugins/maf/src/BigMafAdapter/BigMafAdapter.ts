@@ -108,6 +108,4 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
   async getSamples() {
     return getSamplesFromConfig(key => this.getConf(key))
   }
-
-  freeResources(): void {}
 }

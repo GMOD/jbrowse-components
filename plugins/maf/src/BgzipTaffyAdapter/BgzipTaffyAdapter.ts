@@ -305,6 +305,4 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   async getSamples() {
     return getSamplesFromConfig(key => this.getConf(key))
   }
-
-  freeResources(): void {}
 }

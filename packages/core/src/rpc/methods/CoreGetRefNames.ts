@@ -24,13 +24,7 @@ export default class CoreGetRefNames extends RpcMethodType {
       return []
     }
 
-    // Set sequenceAdapterConfig on the adapter for BAM/CRAM adapters that need
-    // reference sequence data. Wrapper adapters like SNPCoverageAdapter override
-    // setSequenceAdapterConfig to propagate to their subadapters.
-    if (sequenceAdapter && !dataAdapter.sequenceAdapterConfig) {
-      dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
-    }
-
+    dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
     return dataAdapter.getRefNames(deserializedArgs)
   }
 }
