@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 
 import { Autocomplete, TextField } from '@mui/material'
@@ -90,9 +90,21 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   inputStyle?: CSSProperties
 }) {
   const { assemblyManager } = session
-  const [currentSearch, setCurrentSearch] = useState('')
-  const [inputValue, setInputValue] = useState('')
-  const debouncedSearch = useDebounce(currentSearch, 50)
+  const externalValue = value ?? ''
+  // MUI Autocomplete needs `inputValue` (the displayed text) controlled
+  // separately from `value` per the docs — they're isolated states. We just
+  // accept whatever MUI tells us via `onInputChange`: MUI emits a 'reset'
+  // event when the `value` prop changes externally, a 'blur'/'selectOption'
+  // event after clearOnBlur fires, and 'input' on each keystroke. Echoing
+  // the value back into state covers all of those without us tracking which
+  // case is which.
+  const [inputValue, setInputValue] = useState(externalValue)
+  // `searchQuery` is what we feed into the listbox filter and the
+  // background fetch. It only tracks real typing — non-'input' events
+  // (blur, reset, select) clear it so we don't fire a phantom search for
+  // the locstring on snap-back.
+  const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearch = useDebounce(searchQuery, 50)
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
   const shouldSearch = !!assemblyName && debouncedSearch !== ''
@@ -106,26 +118,22 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
     },
   )
 
-  const inputBoxVal = value ?? ''
   const width = Math.min(
     Math.max(
-      measureText(inputBoxVal, INPUT_FONT_SIZE) + ADORNMENT_RESERVE_PX,
+      measureText(externalValue, INPUT_FONT_SIZE) + ADORNMENT_RESERVE_PX,
       minWidth,
     ),
     maxWidth,
   )
-  const regionOptions: Option[] = useMemo(
-    () =>
-      assembly?.regions?.map(region => ({
-        result: new RefSequenceResult({
-          refName: region.refName,
-          label: region.refName,
-          displayString: region.refName,
-          matchedAttribute: 'refName',
-        }),
-      })) ?? [],
-    [assembly?.regions],
-  )
+  const regionOptions: Option[] =
+    assembly?.regions?.map(region => ({
+      result: new RefSequenceResult({
+        refName: region.refName,
+        label: region.refName,
+        displayString: region.refName,
+        matchedAttribute: 'refName',
+      }),
+    })) ?? []
 
   return (
     <Autocomplete
@@ -138,22 +146,24 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       selectOnFocus
       clearOnBlur
       style={{ ...style, width }}
-      value={inputBoxVal}
+      value={externalValue}
       loading={isLoading}
       inputValue={inputValue}
       onInputChange={(_event, newInputValue, reason) => {
+        setInputValue(newInputValue)
         if (reason === 'input') {
-          setInputValue(newInputValue)
+          setSearchQuery(newInputValue)
           onChange?.(newInputValue)
-          setCurrentSearch(newInputValue)
-        } else {
-          setInputValue(inputBoxVal)
+        } else if (reason === 'blur' || reason === 'selectOption') {
+          // User is done typing — drop the query so a stale fetch doesn't
+          // leave results in the listbox the next time it opens. We do NOT
+          // clear on 'reset', because MUI emits 'reset' on its own
+          // re-render loop (focused-state changes, value-prop identity
+          // churn) and clearing there would kill the in-flight search.
+          setSearchQuery('')
         }
       }}
       loadingText="loading results"
-      onClose={() => {
-        setCurrentSearch('')
-      }}
       onChange={(_event, selectedOption) => {
         if (selectedOption && assemblyName) {
           onSelect?.(
@@ -161,11 +171,16 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
               ? new BaseResult({ label: selectedOption })
               : selectedOption.result,
           )
+          // Snap the displayed text back to the current `externalValue`. If
+          // navigation succeeds, the parent updates `value` and MUI fires
+          // another 'reset' that puts the new locstring in. If it doesn't,
+          // we still revert from the stale typed text to the current loc.
+          setInputValue(externalValue)
         }
       }}
       options={searchOptions?.length ? searchOptions : regionOptions}
       getOptionDisabled={option => option.group === 'limitOption'}
-      filterOptions={opts => getFiltered(opts, currentSearch)}
+      filterOptions={opts => getFiltered(opts, searchQuery)}
       renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
         <TextField
           {...restParams}
