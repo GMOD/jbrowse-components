@@ -165,7 +165,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       }}
       loadingText="loading results"
       onChange={(_event, selectedOption) => {
-        if (selectedOption && assemblyName) {
+        if (selectedOption) {
           onSelect?.(
             typeof selectedOption === 'string'
               ? new BaseResult({ label: selectedOption })
