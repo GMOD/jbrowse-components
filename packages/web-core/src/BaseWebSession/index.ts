@@ -160,14 +160,6 @@ export function BaseWebSession({
         return [...self.jbrowse.connections, ...self.sessionConnections]
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setName(str: string) {
-        self.name = str
-      },
-    }))
 
     .views(self => ({
       /**

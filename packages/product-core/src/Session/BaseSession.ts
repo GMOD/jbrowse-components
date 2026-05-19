@@ -123,6 +123,12 @@ export function BaseSessionModel<
       setHovered(thing: unknown) {
         self.hovered = thing
       },
+      /**
+       * #action
+       */
+      setName(str: string) {
+        self.name = str
+      },
     }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

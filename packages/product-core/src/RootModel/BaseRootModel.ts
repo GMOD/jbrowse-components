@@ -3,7 +3,6 @@ import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   cast,
-  getSnapshot,
   getType,
   isStateTreeNode,
   types,
@@ -139,12 +138,12 @@ export function BaseRootModelFactory({
        * #action
        */
       renameCurrentSession(newName: string) {
-        if (self.session) {
-          this.setSession({
-            ...getSnapshot(self.session),
-            name: newName,
-          })
-        }
+        // Every concrete session model is composed from BaseSessionModel, which
+        // provides setName — avoid a full setSession rebuild here since the
+        // only field changing is `name`.
+        ;(self.session as { setName?: (s: string) => void } | undefined)?.setName?.(
+          newName,
+        )
       },
     }))
 }
