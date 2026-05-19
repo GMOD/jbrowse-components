@@ -4,8 +4,8 @@ import {
   CIGAR_I,
   CIGAR_M,
   CIGAR_X,
-} from '@jbrowse/alignments-core'
-import { parseCigar2 } from '@jbrowse/alignments-core'
+  parseCigar2,
+} from '@jbrowse/cigar-utils'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'

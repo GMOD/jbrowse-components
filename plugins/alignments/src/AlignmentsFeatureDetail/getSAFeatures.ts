@@ -4,7 +4,7 @@ import {
   featurizeSA,
   getClip,
   getLengthSansClipping,
-} from '@jbrowse/alignments-core'
+} from '@jbrowse/cigar-utils'
 
 import type { AlignmentFeatureSerialized } from './util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

@@ -1,4 +1,4 @@
-import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/alignments-core'
+import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/cigar-utils'
 import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 
 import {

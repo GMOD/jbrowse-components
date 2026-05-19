@@ -1,65 +1,29 @@
 export {
-  BASE_A_COLOR,
-  BASE_C_COLOR,
-  BASE_G_COLOR,
-  BASE_T_COLOR,
   DEFAULT_CIGAR_OP_DRAW_COLORS,
-  DELETION_COLOR,
-  INDICATOR_TRIANGLE_H,
-  INDICATOR_TRIANGLE_HW,
-  INSERTION_COLOR,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
   MISMATCH_COLOR,
   computeLabelFontSize,
-  drawCigarOps,
-  drawCsOps,
-  drawDeletion,
   drawIndicatorTriangle,
-  drawInsertion,
   extractIndelsFromCs,
   extractMismatchesFromCs,
   isCsOpChar,
   isDigit,
-  parseCsSeqLen,
   textWidthForNumber,
 } from './labelConstants.ts'
 export type { CigarOpDrawColors, IndelEntry } from './labelConstants.ts'
 export {
   CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_H,
   CIGAR_I,
-  CIGAR_M,
   CIGAR_N,
-  CIGAR_P,
-  CIGAR_S,
-  CIGAR_X,
-  cigarToMismatches2,
-  featurizeSA,
-  getClip,
-  getLength,
   getLengthOnRef,
-  getLengthSansClipping,
-  getMismatches,
-  getNextRefPos,
-  mdToMismatches2,
   parseCigar2,
   parseCigar2Typed,
   visitCigarOps,
-  visitCigarRenderedSegments,
   visitCsOps,
 } from '@jbrowse/cigar-utils'
-export type {
-  CigarOpsVisitor,
-  ClipMismatch,
-  DeletionMismatch,
-  InsertionMismatch,
-  Mismatch,
-  SNPMismatch,
-  SkipMismatch,
-} from '@jbrowse/cigar-utils'
+export type { ClipMismatch, Mismatch } from '@jbrowse/cigar-utils'
 export { getTag } from './getTag.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
@@ -71,10 +35,7 @@ export {
   drawNoncovSegments,
   drawSnpSegments,
   getDevicePixelRatio,
-  resizeCanvas,
-  snpColorForType,
 } from './rendererUtils.ts'
-export type { NoncovDrawColors } from './rendererUtils.ts'
 export {
   packCoverageBinsForGpu,
   packIndicatorsForGpu,
@@ -82,21 +43,12 @@ export {
   packNoncovSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from './coverageGpuPacking.ts'
-export {
-  FIELD_OFFSET_F32 as SNP_COVERAGE_FIELD_OFFSET_F32,
-  INSTANCE_STRIDE_F32 as SNP_COVERAGE_STRIDE_F32,
-} from './snpCoverageLayout.generated.ts'
-export {
-  FIELD_OFFSET_F32 as MOD_COVERAGE_FIELD_OFFSET_F32,
-  INSTANCE_STRIDE_F32 as MOD_COVERAGE_STRIDE_F32,
-} from './modCoverageLayout.generated.ts'
 export { computeCoverage } from './coverageCompute.ts'
-export type { CoverageFeature, CoverageGap } from './coverageCompute.ts'
+export type { CoverageGap } from './coverageCompute.ts'
 export {
   YSCALEBAR_LABEL_OFFSET,
   buildCoverageTooltipBin,
   computeCoverageTicks,
-  computeGlobalCoverageStats,
   computeInsertionIndicators,
   computeSNPCoverage,
   computeVisibleCoverageStats,
@@ -106,14 +58,9 @@ export {
   getGlobalMaxCoverageDepth,
   niceStep,
 } from './coverageDownsampling.ts'
-export type { YScaleTicks as CoverageTicks } from '@jbrowse/wiggle-core'
 export type {
-  CoverageArrays,
   CoverageRegion,
   CoverageTooltipBin,
-  DownsampledBins,
-  InsertionIndicatorResult,
-  MismatchArrays,
   MismatchEntry,
   SNPCoverageResult,
 } from './coverageDownsampling.ts'

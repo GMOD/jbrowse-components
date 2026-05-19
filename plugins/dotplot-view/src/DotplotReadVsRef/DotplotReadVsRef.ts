@@ -5,7 +5,7 @@ import {
   getClip,
   getLength,
   getLengthSansClipping,
-} from '@jbrowse/alignments-core'
+} from '@jbrowse/cigar-utils'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'

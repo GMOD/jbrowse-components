@@ -41,14 +41,5 @@ export {
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
-  getGroupByMenuItem,
-  getSetMaxHeightMenuItem,
-  getShowMenuItem,
-  getSortByMenuItem,
 } from './shared/menus/index.ts'
-export { computeSNPCoverage } from '@jbrowse/alignments-core'
-export type { MismatchEntry } from '@jbrowse/alignments-core'
-export { default as CoverageYScaleBar } from './LinearAlignmentsDisplay/components/CoverageYScaleBar.tsx'
-export type { CoverageTicks } from '@jbrowse/alignments-core'
 export { CoverageTooltipContents } from './LinearAlignmentsDisplay/components/AlignmentsTooltip.tsx'
-export type { CoverageTooltipBin } from '@jbrowse/alignments-core'
