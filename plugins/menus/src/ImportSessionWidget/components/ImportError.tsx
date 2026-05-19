@@ -23,11 +23,9 @@ export default function ImportError({ error }: { error: unknown }) {
     <Paper className={classes.error}>
       <div className={classes.errorHeader}>
         <ErrorIcon color="inherit" fontSize="large" />
-        <div>
-          <Typography variant="h6" color="inherit" align="center">
-            Import error
-          </Typography>
-        </div>
+        <Typography variant="h6" color="inherit" align="center">
+          Import error
+        </Typography>
       </div>
       <Typography className={classes.errorMessage}>{`${error}`}</Typography>
     </Paper>
