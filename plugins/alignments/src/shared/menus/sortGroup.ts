@@ -37,6 +37,7 @@ export function getSortByMenuItem(model: SortByModel) {
       },
       {
         label: 'Base pair',
+        subLabel: 'tip: right-click a base / indel / clip to sort at that position',
         onClick: () => {
           model.setSortedBy('basePair')
         },

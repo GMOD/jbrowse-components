@@ -25,7 +25,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import EqualizerIcon from '@mui/icons-material/Equalizer'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { observable } from 'mobx'
@@ -41,12 +40,15 @@ import {
 } from '../features/arcs/compute.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
+  ARC_DIRECTION_OPTIONS,
+  LINKED_READS_OPTIONS,
   getColorByMenuItem,
-  getFeatureHeightMenuItem,
+  getCoverageMenuItem,
   getFiltersMenuItem,
   getGroupByMenuItem,
-  getShowMenuItem,
+  getReadsMenuItem,
   getSortByMenuItem,
+  radioModeSubMenu,
 } from '../shared/menus/index.ts'
 import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
@@ -174,10 +176,6 @@ const AlignmentsTooltip = lazy(
   () => import('./components/AlignmentsTooltip.tsx'),
 )
 
-const AdvancedSettingsDialog = lazy(
-  () => import('./components/AdvancedSettingsDialog.tsx'),
-)
-
 export const ColorScheme = {
   normal: 0,
   strand: 1,
@@ -191,38 +189,6 @@ export const ColorScheme = {
   baseQuality: 9,
   insertSizeGradient: 10,
 } as const
-
-// Single home for each mode-enum's user-visible labels, so menu code never
-// has to reverse-engineer a label from the stored value.
-const ARC_DIRECTION_OPTIONS: { value: ArcDirection; label: string }[] = [
-  { value: 'off', label: 'Off' },
-  { value: 'up', label: 'Pointing up' },
-  { value: 'down', label: 'Pointing down' },
-]
-
-const LINKED_READS_OPTIONS: { value: LinkedReadsMode; label: string }[] = [
-  { value: 'off', label: 'Off' },
-  { value: 'normal', label: 'Normal' },
-  { value: 'bezier', label: 'Bezier' },
-]
-
-// Build a radio-style submenu from an (value, label) options list and an
-// enum-typed setter. Reusable across all linked-reads / arc-direction
-// pickers.
-function radioModeSubMenu<T extends string>(
-  options: { value: T; label: string }[],
-  current: T,
-  setMode: (m: T) => void,
-) {
-  return options.map(({ value, label }) => ({
-    label,
-    type: 'radio' as const,
-    checked: current === value,
-    onClick: () => {
-      setMode(value)
-    },
-  }))
-}
 
 /**
  * State model factory for LinearAlignmentsDisplay
@@ -241,7 +207,7 @@ export default function stateModelFactory(
         type: types.literal('LinearAlignmentsDisplay'),
         configuration: ConfigurationReference(configSchema),
         linkedReads: types.optional(
-          types.enumeration<'off' | 'normal' | 'bezier'>('LinkedReadsMode', [
+          types.enumeration<LinkedReadsMode>('LinkedReadsMode', [
             'off',
             'normal',
             'bezier',
@@ -1176,7 +1142,7 @@ export default function stateModelFactory(
           self.flipStrandLongReadChains = flag
         },
 
-        setLinkedReads(mode: 'off' | 'normal' | 'bezier') {
+        setLinkedReads(mode: LinkedReadsMode) {
           const wasOff = self.linkedReads === 'off'
           const willBeOff = mode === 'off'
           self.linkedReads = mode
@@ -1417,21 +1383,34 @@ export default function stateModelFactory(
        * Track menu items
        */
       trackMenuItems() {
-        const colorByMenu = getColorByMenuItem(self, {
-          showLinkedReads: self.linkedReads !== 'off',
-          includeModifications: true,
-          includeTagOption: true,
-          arcsState: self,
-        })
-
+        // Top-level shape, ordered by user frequency:
+        //   1. Color by      — most-used (rebound on every visit to highlight a
+        //      finding)
+        //   2. Sort, filter, group — data subsetting + ordering operations
+        //   3. Reads         — visual settings for the pileup body
+        //   4. Coverage      — visual + scale settings for the coverage band
+        //   5. Read connections — linked-reads / paired arcs / sashimi overlays
         const items: MenuItem[] = [
-          getShowMenuItem(self),
-          getFiltersMenuItem(self, { showPairFilters: self.isChainMode }),
-          getSortByMenuItem(self),
-          colorByMenu,
-          getGroupByMenuItem(self),
+          getColorByMenuItem(self, {
+            showLinkedReads: self.linkedReads !== 'off',
+            includeModifications: true,
+            includeTagOption: true,
+            arcsState: self,
+          }),
           {
-            label: 'Read connections...',
+            label: 'Sort, filter, group',
+            icon: SwapVertIcon,
+            type: 'subMenu' as const,
+            subMenu: [
+              getSortByMenuItem(self),
+              getFiltersMenuItem(self, { showPairFilters: self.isChainMode }),
+              getGroupByMenuItem(self),
+            ],
+          },
+          getReadsMenuItem(self),
+          getCoverageMenuItem(self),
+          {
+            label: 'Read connections',
             type: 'subMenu' as const,
             subMenu: [
               {
@@ -1456,7 +1435,6 @@ export default function stateModelFactory(
                       self.setPairedArcs(v)
                     },
                   ),
-                  { type: 'divider' as const },
                   {
                     label: 'Samplot mode (flat lines, Y = |insert size|)',
                     type: 'checkbox' as const,
@@ -1483,31 +1461,6 @@ export default function stateModelFactory(
                 ),
               },
             ],
-          },
-          getFeatureHeightMenuItem(self),
-          {
-            label: 'Coverage...',
-            icon: EqualizerIcon,
-            type: 'subMenu' as const,
-            subMenu: [
-              {
-                label: 'Show coverage',
-                type: 'checkbox' as const,
-                checked: self.showCoverage,
-                onClick: () => {
-                  self.setShowCoverage(!self.showCoverage)
-                },
-              },
-            ],
-          },
-          {
-            label: 'Advanced...',
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                AdvancedSettingsDialog,
-                { model: self, handleClose },
-              ])
-            },
           },
         ]
 

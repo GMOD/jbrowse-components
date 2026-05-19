@@ -1,8 +1,14 @@
 export { getColorByMenuItem } from './colorBy.ts'
-export { getFiltersMenuItem } from './filters.ts'
+export { getCoverageMenuItem } from './coverage.ts'
 export {
   getFeatureHeightMenuItem,
   getSetMaxHeightMenuItem,
 } from './featureSize.ts'
-export { getShowMenuItem } from './show.ts'
+export { getFiltersMenuItem } from './filters.ts'
+export {
+  ARC_DIRECTION_OPTIONS,
+  LINKED_READS_OPTIONS,
+  radioModeSubMenu,
+} from './menuHelpers.ts'
+export { getReadsMenuItem } from './reads.ts'
 export { getGroupByMenuItem, getSortByMenuItem } from './sortGroup.ts'
