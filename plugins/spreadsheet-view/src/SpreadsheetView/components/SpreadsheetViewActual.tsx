@@ -45,9 +45,7 @@ const SpreadsheetViewActual = observer(function SpreadsheetViewActual({
         />
       )}
     </>
-  ) : (
-    <div>Unknown</div>
-  )
+  ) : null
 })
 
 export default SpreadsheetViewActual

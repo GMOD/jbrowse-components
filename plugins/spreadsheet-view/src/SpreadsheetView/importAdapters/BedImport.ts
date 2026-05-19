@@ -1,5 +1,4 @@
-import { isNumber } from './isNumber.ts'
-import { bufferToLines, parseStrand } from './util.ts'
+import { bufferToLines, parseExtraColNames, parseExtraCols, parseStrand } from './util.ts'
 
 export function parseBedBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)
@@ -18,30 +17,15 @@ export function parseBedBuffer(buffer: Uint8Array) {
     0,
     (rest[0]?.split('\t').length ?? 0) - coreColumns.length,
   )
-  const extraNames = lastHeaderLine?.includes('\t')
-    ? lastHeaderLine
-        .slice(1)
-        .split('\t')
-        .slice(coreColumns.length)
-        .map(t => t.trim())
-    : Array.from({ length: numExtraColumns }, (_v, i) => `field_${i}`)
-
+  const extraNames = parseExtraColNames(lastHeaderLine, coreColumns.length, numExtraColumns)
   const colNames = [...coreColumns, ...extraNames]
-
-  const parseExtraCols = (cols: string[]) =>
-    Object.fromEntries(
-      extraNames.map((n, colIdx) => {
-        const r = cols[colIdx + coreColumns.length]
-        return [n, isNumber(r) ? +r : r]
-      }),
-    )
 
   return {
     columns: colNames.map(c => ({ name: c })),
     rowSet: {
       rows: rest.map((line, idx) => {
         const cols = line.split('\t')
-        const extra = parseExtraCols(cols)
+        const extra = parseExtraCols(cols, extraNames, coreColumns.length)
         return {
           cellData: {
             refName: cols[0],

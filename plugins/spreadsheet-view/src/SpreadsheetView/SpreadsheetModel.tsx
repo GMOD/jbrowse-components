@@ -64,13 +64,16 @@ export default function stateModelFactory() {
        * #getter
        */
       get rows() {
-        return self.rowSet?.rows.map((row, i) => {
-          const result: GridRow = { id: i, feature: row.feature }
-          for (const [idx, c] of self.columns.entries()) {
-            result[c.name] = row.cellData?.[c.name] ?? row.cells?.[idx]?.text
-          }
-          return result
-        })
+        return self.rowSet?.rows.map((row, i) => ({
+          id: i,
+          feature: row.feature,
+          ...Object.fromEntries(
+            self.columns.map((c, idx) => [
+              c.name,
+              row.cellData?.[c.name] ?? row.cells?.[idx]?.text,
+            ]),
+          ),
+        }))
       },
 
       /**

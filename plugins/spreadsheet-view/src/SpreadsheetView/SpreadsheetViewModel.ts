@@ -8,7 +8,6 @@ import ImportWizard from './ImportWizard.ts'
 import Spreadsheet from './SpreadsheetModel.tsx'
 
 import type { SpreadsheetModel } from './SpreadsheetModel.tsx'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface SpreadsheetViewInit {
@@ -75,10 +74,6 @@ export default function stateModelFactory() {
            * #volatile
            */
           width: 400,
-          /**
-           * #volatile
-           */
-          rowMenuItems: [] as MenuItem[],
         }))
         .views(self => ({
           /**
@@ -92,12 +87,6 @@ export default function stateModelFactory() {
           },
         }))
         .actions(self => ({
-          /**
-           * #action
-           */
-          setRowMenuItems(newItems: MenuItem[]) {
-            self.rowMenuItems = newItems
-          },
           /**
            * #action
            */

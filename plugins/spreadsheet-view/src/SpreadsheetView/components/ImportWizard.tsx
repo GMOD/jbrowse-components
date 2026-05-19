@@ -60,7 +60,7 @@ const ImportWizard = observer(function ImportWizard({
               row
               aria-label="file type"
               name="type"
-              value={fileType}
+              value={selectorType}
               onChange={event => {
                 setSelectorType(event.target.value)
               }}

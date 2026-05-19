@@ -1,3 +1,32 @@
+import { isNumber } from './isNumber.ts'
+
+export function parseExtraColNames(
+  lastHeaderLine: string | undefined,
+  coreColCount: number,
+  numExtraColumns: number,
+) {
+  return lastHeaderLine?.includes('\t')
+    ? lastHeaderLine
+        .slice(1)
+        .split('\t')
+        .slice(coreColCount)
+        .map(t => t.trim())
+    : Array.from({ length: numExtraColumns }, (_v, i) => `field_${i}`)
+}
+
+export function parseExtraCols(
+  cols: string[],
+  extraNames: string[],
+  coreColCount: number,
+) {
+  return Object.fromEntries(
+    extraNames.map((n, i) => {
+      const r = cols[i + coreColCount]
+      return [n, isNumber(r) ? +r : r]
+    }),
+  )
+}
+
 export function parseStrand(strand?: string) {
   if (strand === '+') {
     return 1
