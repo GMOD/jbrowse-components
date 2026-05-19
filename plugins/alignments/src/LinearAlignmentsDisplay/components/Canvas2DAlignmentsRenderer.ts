@@ -288,7 +288,7 @@ export function drawAlignmentBlocks(
 
   const { effectiveArcsHeight, covH } = computeBlockHeights(state)
   const pileupTop = state.pileupTopOffset
-  const mode = state.renderingMode ?? 'pileup'
+  const arcsDown = state.pairedArcs === 'down'
 
   for (const block of blocks) {
     const region = regions.get(block.displayedRegionIndex)
@@ -308,7 +308,7 @@ export function drawAlignmentBlocks(
     ctx.rect(scissorX, 0, scissorW, canvasHeight)
     ctx.clip()
 
-    if (effectiveArcsHeight > 0 && !state.pairedArcsDown && covH > 0) {
+    if (effectiveArcsHeight > 0 && !arcsDown && covH > 0) {
       ctx.save()
       ctx.beginPath()
       ctx.rect(scissorX, 0, scissorW, covH)
@@ -346,9 +346,9 @@ export function drawAlignmentBlocks(
     ctx.rect(scissorX, pileupTop, scissorW, canvasHeight - pileupTop)
     ctx.clip()
 
-    if (mode === 'linkedRead') {
+    if (state.linkedReads === 'normal') {
       drawConnectingLines(ctx, region, block, bpLength, fullBlockWidth, state)
-    } else if (mode === 'linkedReadBezier') {
+    } else if (state.linkedReads === 'bezier') {
       drawLinkedReadLines(ctx, region, block, bpLength, fullBlockWidth, state)
     }
 
@@ -377,13 +377,13 @@ export function drawAlignmentBlocks(
 
     drawHighlightOverlays(ctx, region, block, state)
 
-    if (mode === 'linkedRead') {
+    if (state.linkedReads === 'normal') {
       drawChainOverlays(ctx, region, block, state)
     }
 
     ctx.restore() // pileup clip
 
-    if (effectiveArcsHeight > 0 && state.pairedArcsDown) {
+    if (effectiveArcsHeight > 0 && arcsDown) {
       ctx.save()
       ctx.beginPath()
       ctx.rect(scissorX, covH, scissorW, effectiveArcsHeight)
@@ -397,7 +397,7 @@ export function drawAlignmentBlocks(
         state,
         covH,
         effectiveArcsHeight,
-        state.pairedArcsDown,
+        arcsDown,
       )
       ctx.restore()
     }

@@ -135,11 +135,10 @@ const PileupInner = observer(function PileupInner({
     height,
     showCoverage,
     coverageHeight,
-    showArcs,
+    pairedArcs,
+    sashimiArcs,
     isChainMode,
     coverageDisplayHeight: topOffset,
-    showSashimiArcs,
-    sashimiArcsDown,
     sashimiArcsHeight,
   } = model
 
@@ -251,7 +250,7 @@ const PileupInner = observer(function PileupInner({
           />
         ) : null}
 
-        {showArcs && model.pairedArcsDown ? (
+        {pairedArcs === 'down' ? (
           <div
             onMouseDown={handleArcsResizeMouseDown}
             onMouseEnter={() => {
@@ -274,7 +273,7 @@ const PileupInner = observer(function PileupInner({
           />
         ) : null}
 
-        {showSashimiArcs && sashimiArcsDown && showCoverage ? (
+        {sashimiArcs === 'down' && showCoverage ? (
           <div
             onMouseDown={handleSashimiArcsResizeMouseDown}
             onMouseEnter={() => {

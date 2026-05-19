@@ -701,7 +701,7 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callCount)
   })
 
-  it('does NOT refetch when showArcs toggles (arc-only setting)', async () => {
+  it('does NOT refetch when pairedArcs toggles (arc-only setting)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
     const { display } = createDisplay()
@@ -712,7 +712,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setShowArcs(true)
+    display.setPairedArcs('up')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
@@ -724,7 +724,7 @@ describe('FetchVisibleRegions autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
     const { display } = createDisplay()
 
-    display.setShowArcs(true)
+    display.setPairedArcs('up')
     jest.advanceTimersByTime(400)
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
@@ -759,7 +759,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
   })
 
-  it('refetches when showLinkedReads toggles (switches RPC type)', async () => {
+  it('refetches when linkedReads toggles (switches RPC type)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
     const { display } = createDisplay()
@@ -770,7 +770,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setShowLinkedReads(true)
+    display.setLinkedReads('normal')
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 

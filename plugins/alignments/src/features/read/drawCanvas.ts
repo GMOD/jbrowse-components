@@ -34,7 +34,7 @@ export function drawReads(
 ) {
   const fH = state.featureHeight
   const colorOpts = {
-    renderingMode: state.renderingMode,
+    linkedReads: state.linkedReads,
     flipStrandLongReadChains: state.flipStrandLongReadChains,
   }
 

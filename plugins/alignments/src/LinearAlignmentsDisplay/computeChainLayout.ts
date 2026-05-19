@@ -232,7 +232,7 @@ function attachLinkedReadLines(
  */
 export function buildLaidOutChainMap(
   dataMap: ReadonlyMap<number, PileupDataResult>,
-  renderingMode: string,
+  linkedReads: 'normal' | 'bezier',
 ): Map<number, PileupDataResult> {
   const out = new Map<number, PileupDataResult>()
   const withReads: [number, PileupDataResult][] = []
@@ -257,5 +257,5 @@ export function buildLaidOutChainMap(
       out.set(idx, cloneWithChainLayout(data, readYs, maxY))
     }
   }
-  return renderingMode === 'linkedReadBezier' ? attachLinkedReadLines(out) : out
+  return linkedReads === 'bezier' ? attachLinkedReadLines(out) : out
 }

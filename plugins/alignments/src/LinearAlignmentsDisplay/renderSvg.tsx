@@ -137,21 +137,20 @@ function renderSashimiArcs(
   model: LinearAlignmentsDisplayModel,
   view: LinearGenomeViewModel,
 ): React.ReactNode {
-  if (!model.showSashimiArcs || !model.showCoverage) {
+  if (model.sashimiArcs === 'off' || !model.showCoverage) {
     return null
   }
+  const isDown = model.sashimiArcs === 'down'
   const arcs = computeSashimiArcs({
     rpcDataMap: model.laidOutPileupMap,
     visibleRegions: view.visibleRegions,
     bpToScreenX: makeBpToScreenX(view),
     coverageHeight: model.coverageHeight,
     sashimiArcsHeight: model.sashimiArcsHeight,
-    sashimiArcsDown: model.sashimiArcsDown,
+    sashimiArcsDown: isDown,
   })
   arcs.sort((a, b) => a.score - b.score)
-  const top = model.sashimiArcsDown
-    ? model.coverageHeight
-    : YSCALEBAR_LABEL_OFFSET
+  const top = isDown ? model.coverageHeight : YSCALEBAR_LABEL_OFFSET
   return (
     <g transform={`translate(0,${top})`}>
       {arcs.map(arc => (
@@ -172,7 +171,7 @@ function renderPileupBezierArcs(
   view: LinearGenomeViewModel,
   rangeY: [number, number],
 ): React.ReactNode {
-  if (!model.showLinkedReads || !model.showLinkedReadsAsBeziers) {
+  if (model.linkedReads !== 'bezier') {
     return null
   }
   const arcs = computePileupBezierArcs({
@@ -184,7 +183,7 @@ function renderPileupBezierArcs(
     pileupTopOffset: model.coverageDisplayHeight,
     rangeY,
     viewportH: model.pileupViewportHeight,
-    pairedArcsDown: model.pairedArcsDown,
+    pairedArcsDown: model.pairedArcs === 'down',
   })
   return (
     <g style={{ pointerEvents: 'none' }}>

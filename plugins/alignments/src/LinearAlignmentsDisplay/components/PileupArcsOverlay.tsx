@@ -34,20 +34,19 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
   const [selectedArcId, setSelectedArcId] = useState<string | null>(null)
   const view = getContainingView(model) as LinearGenomeViewModel
   const {
-    showLinkedReads,
-    showLinkedReadsAsBeziers,
+    linkedReads,
+    pairedArcs,
     laidOutPileupMap,
     featureHeightSetting: featureHeight,
     featureSpacing,
     coverageDisplayHeight: pileupTopOffset,
     currentRangeY: rangeY,
     pileupViewportHeight: viewportH,
-    pairedArcsDown,
     height,
   } = model
   const { initialized, displayedRegions, width } = view
 
-  if (!showLinkedReads || !showLinkedReadsAsBeziers || !initialized) {
+  if (linkedReads !== 'bezier' || !initialized) {
     return null
   }
 
@@ -60,7 +59,7 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
     pileupTopOffset,
     rangeY,
     viewportH,
-    pairedArcsDown,
+    pairedArcsDown: pairedArcs === 'down',
   })
 
   if (!arcs.length) {

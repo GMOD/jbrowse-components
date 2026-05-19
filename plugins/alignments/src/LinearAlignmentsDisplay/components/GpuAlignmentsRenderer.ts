@@ -153,8 +153,7 @@ function fillFrameUniforms(
   // Bezier mode is a chain mode for read-coloring purposes (supplementary
   // colors, strand flipping, mate-unmapped coloring, chevrons) — only the
   // connecting-line geometry differs.
-  const mode = state.renderingMode ?? 'pileup'
-  i[U.chainMode] = mode === 'linkedRead' || mode === 'linkedReadBezier' ? 1 : 0
+  i[U.chainMode] = state.linkedReads !== 'off' ? 1 : 0
   i[U.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
   i[U.flipStrandLongRead] = state.flipStrandLongReadChains !== false ? 1 : 0
   f[U.reversed] = frame.reversed ? 1 : 0
@@ -195,7 +194,7 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   f[U.bpLo] = lo
   f[U.bpLen] = block.bpRangeX[1] - block.bpRangeX[0]
   f[U.lineWidthPx] = state.arcLineWidth ?? 1
-  f[U.pairedArcsDown] = state.pairedArcsDown ? 1 : 0
+  f[U.pairedArcsDown] = state.pairedArcs === 'down' ? 1 : 0
   // Samplot picks its own domain (autoscaled |tlen|); arc mode defaults to
   // the bp-span that fits availH at the current zoom, reproducing the prior
   // `yBp * pxPerBp` math.
@@ -493,7 +492,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
       this.writeUniforms(state, frame)
 
-      const mode = state.renderingMode ?? 'pileup'
+      const arcsDown = state.pairedArcs === 'down'
       const { effectiveArcsHeight, covH } = computeBlockHeights(state)
       const pileupTop = Math.round(state.pileupTopOffset * dpr)
       const pileupH = Math.max(0, bufH - pileupTop)
@@ -511,7 +510,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.hal.drawPass(PASS_INDICATOR, block.displayedRegionIndex)
       }
 
-      if (effectiveArcsHeight > 0 && !state.pairedArcsDown && covH > 0) {
+      if (effectiveArcsHeight > 0 && !arcsDown && covH > 0) {
         const arcCovH = covH - state.coverageYOffset
         this.drawArcsPass(
           block,
@@ -530,9 +529,9 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.hal.setScissor(vpX, pileupTop, vpW, pileupH)
       }
 
-      if (mode === 'linkedRead') {
+      if (state.linkedReads === 'normal') {
         this.hal.drawPass(PASS_CONN_LINE, block.displayedRegionIndex)
-      } else if (mode === 'linkedReadBezier') {
+      } else if (state.linkedReads === 'bezier') {
         this.hal.drawPass(PASS_LINKED_READ_LINE, block.displayedRegionIndex)
       }
       this.hal.drawPass(PASS_READ, block.displayedRegionIndex)
@@ -564,7 +563,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         dpr,
       )
 
-      if (effectiveArcsHeight > 0 && state.pairedArcsDown) {
+      if (effectiveArcsHeight > 0 && arcsDown) {
         this.drawArcsPass(
           block,
           region,

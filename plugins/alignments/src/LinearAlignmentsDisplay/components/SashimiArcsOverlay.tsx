@@ -20,26 +20,26 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   const [selectedArcKey, setSelectedArcKey] = useState<string | null>(null)
   const view = getContainingView(model) as LinearGenomeViewModel
   const {
-    showSashimiArcs,
+    sashimiArcs,
     showCoverage,
     coverageHeight,
-    sashimiArcsDown,
     sashimiArcsHeight,
     rpcDataMap,
   } = model
   const { initialized, visibleRegions, width } = view
 
-  if (!showSashimiArcs || !showCoverage || !initialized) {
+  if (sashimiArcs === 'off' || !showCoverage || !initialized) {
     return null
   }
 
+  const isDown = sashimiArcs === 'down'
   const arcs = computeSashimiArcs({
     rpcDataMap,
     visibleRegions,
     bpToScreenX: makeBpToScreenX(view),
     coverageHeight,
     sashimiArcsHeight,
-    sashimiArcsDown,
+    sashimiArcsDown: isDown,
   })
 
   // Sort by score so high-count arcs paint on top of low-count ones.
@@ -51,12 +51,12 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     <svg
       style={{
         position: 'absolute',
-        top: sashimiArcsDown ? coverageHeight : YSCALEBAR_LABEL_OFFSET,
+        top: isDown ? coverageHeight : YSCALEBAR_LABEL_OFFSET,
         left: 0,
         pointerEvents: 'none',
-        height: sashimiArcsDown ? sashimiArcsHeight : effectiveHeight,
+        height: isDown ? sashimiArcsHeight : effectiveHeight,
         width,
-        overflow: sashimiArcsDown ? 'hidden' : 'visible',
+        overflow: isDown ? 'hidden' : 'visible',
       }}
     >
       {arcs.map(arc => {

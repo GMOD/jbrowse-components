@@ -2,6 +2,7 @@ import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
+import type { ArcDirection, LinkedReadsMode } from '../constants.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
@@ -45,7 +46,7 @@ export interface RenderState {
   selectedChainIds: string[]
   // Color palette from theme
   colors: ColorPalette
-  renderingMode?: 'pileup' | 'linkedRead' | 'linkedReadBezier'
+  linkedReads: LinkedReadsMode
   flipStrandLongReadChains?: boolean
   reversed?: boolean
   arcLineWidth?: number
@@ -54,10 +55,8 @@ export interface RenderState {
   // passes availH/pxPerBp (zoom-proportional); samplot mode passes the
   // autoscaled max |tlen| so Y is zoom-stable. See arc.slang `arcsYDomainBp`.
   arcsYDomainBp?: number
-  // Show arcs alongside pileup (between coverage and reads)
-  showArcs?: boolean
+  pairedArcs: ArcDirection
   arcsHeight?: number
-  pairedArcsDown: boolean
   pileupTopOffset: number
   showOutline?: boolean
 }
@@ -91,7 +90,7 @@ export function ensureRegion<T>(
 export function computeBlockHeights(state: RenderState) {
   return {
     effectiveArcsHeight:
-      state.showArcs && state.arcsHeight ? state.arcsHeight : 0,
+      state.pairedArcs !== 'off' && state.arcsHeight ? state.arcsHeight : 0,
     covH: state.showCoverage ? state.coverageHeight : 0,
   }
 }

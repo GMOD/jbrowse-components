@@ -69,34 +69,35 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result.type).toBe('LinearAlignmentsDisplay')
   })
 
-  test('migrates renderingMode linkedRead → showLinkedReads', () => {
+  test('migrates renderingMode linkedRead → linkedReads enum', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
       renderingMode: 'linkedRead',
     }
     const result = migrateAlignmentsSnapshot(snap)
-    expect(result.showLinkedReads).toBe(true)
+    expect(result.linkedReads).toBe('normal')
+    expect(result).not.toHaveProperty('showLinkedReads')
     const overrides = result.configOverrides as Record<string, unknown>
     expect(overrides.colorBy).toEqual({ type: 'insertSizeAndOrientation' })
     expect(result).not.toHaveProperty('renderingMode')
   })
 
-  test('migrates renderingMode cloud → showLinkedReads', () => {
+  test('migrates renderingMode cloud → linkedReads enum', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
       renderingMode: 'cloud',
     }
     const result = migrateAlignmentsSnapshot(snap)
-    expect(result.showLinkedReads).toBe(true)
+    expect(result.linkedReads).toBe('normal')
   })
 
-  test('migrates renderingMode pileup → showLinkedReads false', () => {
+  test('migrates renderingMode pileup → linkedReads off', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
       renderingMode: 'pileup',
     }
     const result = migrateAlignmentsSnapshot(snap)
-    expect(result.showLinkedReads).toBe(false)
+    expect(result.linkedReads).toBe('off')
     expect(result).not.toHaveProperty('renderingMode')
   })
 
@@ -111,14 +112,15 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(overrides.colorBy).toEqual({ type: 'strand' })
   })
 
-  test('migrates showReadCloud → showLinkedReads', () => {
+  test('migrates showReadCloud → linkedReads enum', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
       showReadCloud: true,
     }
     const result = migrateAlignmentsSnapshot(snap)
-    expect(result.showLinkedReads).toBe(true)
+    expect(result.linkedReads).toBe('normal')
     expect(result).not.toHaveProperty('showReadCloud')
+    expect(result).not.toHaveProperty('showLinkedReads')
   })
 
   test('migrates nested PileupDisplay/SNPCoverageDisplay format', () => {
@@ -157,7 +159,8 @@ describe('migrateAlignmentsSnapshot', () => {
     }
     const result = migrateAlignmentsSnapshot(snap)
     expect(result.type).toBe('LinearAlignmentsDisplay')
-    expect(result.showSashimiArcs).toBe(false)
+    expect(result.sashimiArcs).toBe('off')
+    expect(result).not.toHaveProperty('showSashimiArcs')
     expect(result.showInterbaseIndicators).toBe(false)
     expect(result.showCoverage).toBe(true)
     expect(result.coverageHeight).toBe(45)
@@ -183,7 +186,8 @@ describe('migrateAlignmentsSnapshot', () => {
     const result = migrateAlignmentsSnapshot(snap)
     expect(result.type).toBe('LinearAlignmentsDisplay')
     expect(result.heightPreConfig).toBe(300)
-    expect(result.showLinkedReads).toBe(true)
+    expect(result.linkedReads).toBe('normal')
+    expect(result).not.toHaveProperty('showLinkedReads')
     const overrides = result.configOverrides as Record<string, unknown>
     expect(overrides.mismatchAlpha).toBe(true)
     expect(overrides.colorBy).toEqual({ type: 'insertSizeAndOrientation' })
@@ -212,6 +216,79 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result).not.toHaveProperty('featureHeight')
     expect(result).not.toHaveProperty('noSpacing')
     expect(result).not.toHaveProperty('trackMaxHeight')
+  })
+
+  test('folds showLinkedReads+showLinkedReadsAsBeziers booleans into linkedReads enum', () => {
+    const off = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      showLinkedReads: false,
+      showLinkedReadsAsBeziers: false,
+    })
+    expect(off.linkedReads).toBe('off')
+    expect(off).not.toHaveProperty('showLinkedReads')
+    expect(off).not.toHaveProperty('showLinkedReadsAsBeziers')
+
+    const normal = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      showLinkedReads: true,
+      showLinkedReadsAsBeziers: false,
+    })
+    expect(normal.linkedReads).toBe('normal')
+
+    const bezier = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      showLinkedReads: true,
+      showLinkedReadsAsBeziers: true,
+    })
+    expect(bezier.linkedReads).toBe('bezier')
+  })
+
+  test('folds showArcs+pairedArcsDown booleans into pairedArcs enum', () => {
+    const off = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      showArcs: false,
+      pairedArcsDown: true,
+    })
+    expect(off.pairedArcs).toBe('off')
+    expect(off).not.toHaveProperty('showArcs')
+    expect(off).not.toHaveProperty('pairedArcsDown')
+
+    const up = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      showArcs: true,
+      pairedArcsDown: false,
+    })
+    expect(up.pairedArcs).toBe('up')
+
+    const down = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      showArcs: true,
+      pairedArcsDown: true,
+    })
+    expect(down.pairedArcs).toBe('down')
+  })
+
+  test('folds showSashimiArcs+sashimiArcsDown booleans into sashimiArcs enum', () => {
+    const off = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      showSashimiArcs: false,
+    })
+    expect(off.sashimiArcs).toBe('off')
+    expect(off).not.toHaveProperty('showSashimiArcs')
+
+    const down = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      showSashimiArcs: true,
+      sashimiArcsDown: true,
+    })
+    expect(down.sashimiArcs).toBe('down')
+
+    // Default when only `sashimiArcsDown` is present: sashimi assumed on
+    const upDefault = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      sashimiArcsDown: false,
+    })
+    expect(upDefault.sashimiArcs).toBe('up')
   })
 
   test('migrates sortedBySetting to configOverrides.sortedBy', () => {

@@ -8,8 +8,11 @@
  *   - LinearReadCloudDisplay → LinearAlignmentsDisplay type remap
  *   - LinearSNPCoverageDisplay → LinearAlignmentsDisplay type remap + property migration
  *   - Old nested PileupDisplay/SNPCoverageDisplay sub-display format
- *   - renderingMode → showLinkedReads
- *   - showReadCloud → showLinkedReads
+ *   - renderingMode → linkedReads enum
+ *   - showReadCloud → linkedReads enum
+ *   - showLinkedReads + showLinkedReadsAsBeziers booleans → linkedReads enum
+ *   - showArcs + pairedArcsDown booleans → pairedArcs enum
+ *   - showSashimiArcs + sashimiArcsDown booleans → sashimiArcs enum
  *   - height → heightPreConfig
  *   - Individual override properties → configOverrides map
  *   - Strips removed properties: blockState, showTooltips
@@ -116,8 +119,49 @@ export function migrateAlignmentsSnapshot(
     }
   }
 
+  // Fold paired boolean toggles into single enum fields
+  result = migrateBooleanPairsToEnum(result)
+
   // Migrate individual override properties → configOverrides
   return migrateOverrideProperties(result)
+}
+
+function migrateBooleanPairsToEnum(snap: Record<string, unknown>) {
+  const {
+    showLinkedReads,
+    showLinkedReadsAsBeziers,
+    showArcs,
+    pairedArcsDown,
+    showSashimiArcs,
+    sashimiArcsDown,
+    ...rest
+  } = snap
+
+  const result: Record<string, unknown> = { ...rest }
+
+  if (showLinkedReads !== undefined || showLinkedReadsAsBeziers !== undefined) {
+    result.linkedReads = showLinkedReads
+      ? showLinkedReadsAsBeziers
+        ? 'bezier'
+        : 'normal'
+      : 'off'
+  }
+
+  if (showArcs !== undefined || pairedArcsDown !== undefined) {
+    result.pairedArcs = showArcs ? (pairedArcsDown ? 'down' : 'up') : 'off'
+  }
+
+  if (showSashimiArcs !== undefined || sashimiArcsDown !== undefined) {
+    // Old default was showSashimiArcs=true, sashimiArcsDown=false → 'up'
+    result.sashimiArcs =
+      showSashimiArcs === false
+        ? 'off'
+        : sashimiArcsDown
+          ? 'down'
+          : 'up'
+  }
+
+  return result
 }
 
 function migrateOverrideProperties(snap: Record<string, unknown>) {

@@ -57,6 +57,7 @@ import type {
   RenderState as AlignmentsRenderState,
 } from './components/AlignmentsRenderer.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
+import type { ArcDirection, LinkedReadsMode } from './constants.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
@@ -191,40 +192,36 @@ export const ColorScheme = {
   insertSizeGradient: 10,
 } as const
 
-function arcDirectionSubMenu(
-  show: boolean,
-  down: boolean,
-  setShow: (v: boolean) => void,
-  setDown: (v: boolean) => void,
+// Single home for each mode-enum's user-visible labels, so menu code never
+// has to reverse-engineer a label from the stored value.
+const ARC_DIRECTION_OPTIONS: { value: ArcDirection; label: string }[] = [
+  { value: 'off', label: 'Off' },
+  { value: 'up', label: 'Pointing up' },
+  { value: 'down', label: 'Pointing down' },
+]
+
+const LINKED_READS_OPTIONS: { value: LinkedReadsMode; label: string }[] = [
+  { value: 'off', label: 'Off' },
+  { value: 'normal', label: 'Normal' },
+  { value: 'bezier', label: 'Bezier' },
+]
+
+// Build a radio-style submenu from an (value, label) options list and an
+// enum-typed setter. Reusable across all linked-reads / arc-direction
+// pickers.
+function radioModeSubMenu<T extends string>(
+  options: { value: T; label: string }[],
+  current: T,
+  setMode: (m: T) => void,
 ) {
-  return [
-    {
-      label: 'Off',
-      type: 'radio' as const,
-      checked: !show,
-      onClick: () => {
-        setShow(false)
-      },
+  return options.map(({ value, label }) => ({
+    label,
+    type: 'radio' as const,
+    checked: current === value,
+    onClick: () => {
+      setMode(value)
     },
-    {
-      label: 'Pointing up',
-      type: 'radio' as const,
-      checked: show && !down,
-      onClick: () => {
-        setShow(true)
-        setDown(false)
-      },
-    },
-    {
-      label: 'Pointing down',
-      type: 'radio' as const,
-      checked: show && down,
-      onClick: () => {
-        setShow(true)
-        setDown(true)
-      },
-    },
-  ]
+  }))
 }
 
 /**
@@ -243,7 +240,14 @@ export default function stateModelFactory(
       types.model({
         type: types.literal('LinearAlignmentsDisplay'),
         configuration: ConfigurationReference(configSchema),
-        showLinkedReads: false,
+        linkedReads: types.optional(
+          types.enumeration<'off' | 'normal' | 'bezier'>('LinkedReadsMode', [
+            'off',
+            'normal',
+            'bezier',
+          ]),
+          'off',
+        ),
         showCoverage: true,
         coverageHeight: 45,
         showMismatches: true,
@@ -259,12 +263,23 @@ export default function stateModelFactory(
           arcColorByTypes,
           'insertSizeAndOrientation',
         ),
-        pairedArcsDown: true,
-        showSashimiArcs: true,
-        sashimiArcsDown: false,
+        pairedArcs: types.optional(
+          types.enumeration<ArcDirection>('PairedArcsMode', [
+            'off',
+            'up',
+            'down',
+          ]),
+          'off',
+        ),
+        sashimiArcs: types.optional(
+          types.enumeration<ArcDirection>('SashimiArcsMode', [
+            'off',
+            'up',
+            'down',
+          ]),
+          'up',
+        ),
         sashimiArcsHeight: 40,
-        showArcs: false,
-        showLinkedReadsAsBeziers: false,
         arcsHeight: 40,
         showSoftClipping: false,
         jexlFilters: types.optional(types.array(types.string), []),
@@ -299,6 +314,14 @@ export default function stateModelFactory(
       overCigarItem: false,
       colorPalette: null as ColorPalette | null,
     }))
+    // `isChainMode` is its own getter — it's used in many places as a
+    // domain concept ("are we drawing the chain layout?") that reads
+    // better than the equivalent `linkedReads === 'normal'`.
+    .views(self => ({
+      get isChainMode() {
+        return self.linkedReads === 'normal'
+      },
+    }))
     .views(self => ({
       get featureWidgetType() {
         return {
@@ -313,18 +336,6 @@ export default function stateModelFactory(
           return selection.id()
         }
         return undefined
-      },
-
-      get renderingMode(): 'pileup' | 'linkedRead' | 'linkedReadBezier' {
-        return self.showLinkedReads
-          ? self.showLinkedReadsAsBeziers
-            ? 'linkedReadBezier'
-            : 'linkedRead'
-          : 'pileup'
-      },
-
-      get isChainMode() {
-        return self.showLinkedReads && !self.showLinkedReadsAsBeziers
       },
 
       get DisplayMessageComponent() {
@@ -369,7 +380,7 @@ export default function stateModelFactory(
 
       get chainIdMap() {
         const map = new Map<number, string[]>()
-        if (self.showLinkedReads) {
+        if (self.linkedReads !== 'off') {
           for (const data of self.rpcDataMap.values()) {
             if (!data.readChainIndices) {
               continue
@@ -476,8 +487,8 @@ export default function stateModelFactory(
       },
 
       get laidOutPileupMap() {
-        if (this.renderingMode !== 'pileup') {
-          return buildLaidOutChainMap(self.rpcDataMap, this.renderingMode)
+        if (self.linkedReads !== 'off') {
+          return buildLaidOutChainMap(self.rpcDataMap, self.linkedReads)
         }
         return buildLaidOutPileupMap({
           dataMap: self.rpcDataMap,
@@ -497,7 +508,7 @@ export default function stateModelFactory(
       },
 
       get arcsRpcDataMap(): Map<number, ArcsDataResult> {
-        if (!self.showArcs || self.rpcDataMap.size === 0) {
+        if (self.pairedArcs === 'off' || self.rpcDataMap.size === 0) {
           return new Map()
         }
         const allRegionInfos = [...self.loadedRegions.entries()].map(
@@ -644,8 +655,8 @@ export default function stateModelFactory(
       get coverageDisplayHeight() {
         return (
           (self.showCoverage ? self.coverageHeight : 0) +
-          (self.showArcs && self.pairedArcsDown ? self.arcsHeight : 0) +
-          (self.showSashimiArcs && self.sashimiArcsDown && self.showCoverage
+          (self.pairedArcs === 'down' ? self.arcsHeight : 0) +
+          (self.sashimiArcs === 'down' && self.showCoverage
             ? self.sashimiArcsHeight
             : 0)
         )
@@ -741,11 +752,11 @@ export default function stateModelFactory(
 
       // Fields that invalidate the fetched pileup/chain data. Worker-
       // bound (filterBy, colorBy, …) plus the one main-thread decision
-      // field that selects between pileup and chain RPC
-      // (showLinkedReads). Arc-only fields (arcColorByType, drawInter,
-      // drawLongRange) are NOT here — they are tracked by the
-      // arcsRpcDataMap computed getter and do not require a refetch.
-      // Non-tag sort changes are handled main-thread by laidOutPileupMap.
+      // field that selects between pileup and chain RPC (linkedReads).
+      // Arc-only fields (arcColorByType, drawInter, drawLongRange) are
+      // NOT here — they are tracked by the arcsRpcDataMap computed
+      // getter and do not require a refetch. Non-tag sort changes are
+      // handled main-thread by laidOutPileupMap.
       rpcProps() {
         return {
           filterBy: self.filterBy,
@@ -755,7 +766,7 @@ export default function stateModelFactory(
           showSoftClipping: self.showSoftClipping,
           drawSingletons: self.drawSingletons,
           drawProperPairs: self.drawProperPairs,
-          showLinkedReads: self.showLinkedReads,
+          linkedReads: self.linkedReads,
         }
       },
 
@@ -781,9 +792,8 @@ export default function stateModelFactory(
           showModifications: self.showModifications,
           showPerBaseQuality: self.showPerBaseQuality,
           showOutline: self.showOutlineSetting,
-          showArcs: self.showArcs,
+          pairedArcs: self.pairedArcs,
           arcsHeight: self.arcsHeight,
-          pairedArcsDown: self.pairedArcsDown,
           pileupTopOffset: self.coverageDisplayHeight,
           canvasWidth: view.width,
           canvasHeight: self.height,
@@ -792,7 +802,7 @@ export default function stateModelFactory(
           highlightedChainIds: self.highlightedChainIds,
           selectedChainIds: self.selectedChainIds,
           colors: palette,
-          renderingMode: self.renderingMode,
+          linkedReads: self.linkedReads,
           flipStrandLongReadChains: self.flipStrandLongReadChains,
           arcLineWidth: self.lineWidth,
           arcColorByType: self.arcColorByType,
@@ -817,7 +827,7 @@ export default function stateModelFactory(
 
       get insertSizeTicks(): YScaleTicks | undefined {
         const domain = this.arcsYDomainBp
-        if (!self.showArcs || domain === undefined) {
+        if (self.pairedArcs === 'off' || domain === undefined) {
           return undefined
         }
         // Match the renderer's arcsCtxHeight / arcTop: pointing-up overlays
@@ -825,12 +835,12 @@ export default function stateModelFactory(
         // gets its own band below coverage (band = arcsHeight, top = covH).
         // Fall back to 0 when coverage is hidden.
         const covH = self.showCoverage ? self.coverageHeight : 0
-        const arcsBandHeight = self.pairedArcsDown ? self.arcsHeight : covH
+        const isDown = self.pairedArcs === 'down'
         return computeInsertSizeTicks({
           arcsYDomainBp: domain,
-          arcsHeight: arcsBandHeight,
-          pairedArcsDown: self.pairedArcsDown,
-          arcsTop: self.pairedArcsDown ? covH : 0,
+          arcsHeight: isDown ? self.arcsHeight : covH,
+          pairedArcsDown: isDown,
+          arcsTop: isDown ? covH : 0,
         })
       },
     }))
@@ -1098,8 +1108,12 @@ export default function stateModelFactory(
           self.currentRangeY = [0, 0]
         },
 
-        setShowSashimiArcs(show: boolean) {
-          self.showSashimiArcs = show
+        setSashimiArcs(mode: ArcDirection) {
+          self.sashimiArcs = mode
+        },
+
+        setPairedArcs(mode: ArcDirection) {
+          self.pairedArcs = mode
         },
 
         setShowCoverage(show: boolean) {
@@ -1110,28 +1124,12 @@ export default function stateModelFactory(
           self.coverageHeight = height
         },
 
-        setShowArcs(show: boolean) {
-          self.showArcs = show
-        },
-
-        setShowLinkedReadsAsBeziers(show: boolean) {
-          self.showLinkedReadsAsBeziers = show
-        },
-
         setArcsHeight(height: number) {
           self.arcsHeight = height
         },
 
-        setSashimiArcsDown(flag: boolean) {
-          self.sashimiArcsDown = flag
-        },
-
         setSashimiArcsHeight(height: number) {
           self.sashimiArcsHeight = height
-        },
-
-        setPairedArcsDown(flag: boolean) {
-          self.pairedArcsDown = flag
         },
 
         setLineWidth(width: number) {
@@ -1178,16 +1176,20 @@ export default function stateModelFactory(
           self.flipStrandLongReadChains = flag
         },
 
-        setShowLinkedReads(flag: boolean) {
-          self.showLinkedReads = flag
-          clearHoverState()
-          if (flag) {
-            self.clearOverride('showOutline')
-            self.setOverride('colorBy', { type: 'insertSizeAndOrientation' })
-          } else {
-            self.setOverride('colorBy', { type: 'normal' })
+        setLinkedReads(mode: 'off' | 'normal' | 'bezier') {
+          const wasOff = self.linkedReads === 'off'
+          const willBeOff = mode === 'off'
+          self.linkedReads = mode
+          if (wasOff !== willBeOff) {
+            clearHoverState()
+            if (willBeOff) {
+              self.setOverride('colorBy', { type: 'normal' })
+            } else {
+              self.clearOverride('showOutline')
+              self.setOverride('colorBy', { type: 'insertSizeAndOrientation' })
+            }
+            self.invalidateLoadedRegions()
           }
-          self.invalidateLoadedRegions()
         },
 
         updateVisibleModifications(uniqueModifications: string[]) {
@@ -1351,9 +1353,7 @@ export default function stateModelFactory(
           sequenceAdapter,
           region,
           stopToken,
-          self.renderingMode !== 'pileup'
-            ? 'RenderChainData'
-            : 'RenderPileupData',
+          self.linkedReads !== 'off' ? 'RenderChainData' : 'RenderPileupData',
         )
 
         return { displayedRegionIndex, result }
@@ -1418,7 +1418,7 @@ export default function stateModelFactory(
        */
       trackMenuItems() {
         const colorByMenu = getColorByMenuItem(self, {
-          showLinkedReads: self.showLinkedReads,
+          showLinkedReads: self.linkedReads !== 'off',
           includeModifications: true,
           includeTagOption: true,
           arcsState: self,
@@ -1437,49 +1437,23 @@ export default function stateModelFactory(
               {
                 label: 'Linked reads',
                 type: 'subMenu' as const,
-                subMenu: [
-                  {
-                    label: 'Off',
-                    type: 'radio' as const,
-                    checked: !self.showLinkedReads,
-                    onClick: () => {
-                      self.setShowLinkedReads(false)
-                    },
+                subMenu: radioModeSubMenu(
+                  LINKED_READS_OPTIONS,
+                  self.linkedReads,
+                  v => {
+                    self.setLinkedReads(v)
                   },
-                  {
-                    label: 'Normal',
-                    type: 'radio' as const,
-                    checked:
-                      self.showLinkedReads && !self.showLinkedReadsAsBeziers,
-                    onClick: () => {
-                      self.setShowLinkedReads(true)
-                      self.setShowLinkedReadsAsBeziers(false)
-                    },
-                  },
-                  {
-                    label: 'Bezier',
-                    type: 'radio' as const,
-                    checked:
-                      self.showLinkedReads && self.showLinkedReadsAsBeziers,
-                    onClick: () => {
-                      self.setShowLinkedReads(true)
-                      self.setShowLinkedReadsAsBeziers(true)
-                    },
-                  },
-                ],
+                ),
               },
               {
                 label: 'Paired arcs',
                 type: 'subMenu' as const,
                 subMenu: [
-                  ...arcDirectionSubMenu(
-                    self.showArcs,
-                    self.pairedArcsDown,
+                  ...radioModeSubMenu(
+                    ARC_DIRECTION_OPTIONS,
+                    self.pairedArcs,
                     v => {
-                      self.setShowArcs(v)
-                    },
-                    v => {
-                      self.setPairedArcsDown(v)
+                      self.setPairedArcs(v)
                     },
                   ),
                   { type: 'divider' as const },
@@ -1500,14 +1474,11 @@ export default function stateModelFactory(
               {
                 label: 'Sashimi arcs',
                 type: 'subMenu' as const,
-                subMenu: arcDirectionSubMenu(
-                  self.showSashimiArcs,
-                  self.sashimiArcsDown,
+                subMenu: radioModeSubMenu(
+                  ARC_DIRECTION_OPTIONS,
+                  self.sashimiArcs,
                   v => {
-                    self.setShowSashimiArcs(v)
-                  },
-                  v => {
-                    self.setSashimiArcsDown(v)
+                    self.setSashimiArcs(v)
                   },
                 ),
               },

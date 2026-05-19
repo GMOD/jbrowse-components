@@ -16,6 +16,15 @@ export const INSERTION_SERIF_MIN_PX_PER_BP = 3
 
 export const ALIGNMENTS_FUDGE_FACTOR = 0.8
 
+// Linked-reads rendering mode. 'off' → ordinary pileup; 'normal' → chain
+// layout with straight connecting lines; 'bezier' → chain layout with
+// bezier curves.
+export type LinkedReadsMode = 'off' | 'normal' | 'bezier'
+
+// Direction of arc overlays (paired-end and sashimi). 'up' bumps into the
+// coverage band; 'down' opens its own band below coverage.
+export type ArcDirection = 'off' | 'up' | 'down'
+
 export type InsertionType = 'large' | 'long' | 'small'
 
 export function getInsertionType(

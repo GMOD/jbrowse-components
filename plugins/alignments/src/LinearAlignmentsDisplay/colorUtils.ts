@@ -1,5 +1,6 @@
 import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 
+import type { LinkedReadsMode } from './constants.ts'
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 
 const CS_NORMAL = 0
@@ -109,20 +110,17 @@ export function getReadColor(
   colorScheme: number,
   palette: ColorPalette,
   opts?: {
-    renderingMode?: string
+    linkedReads?: LinkedReadsMode
     flipStrandLongReadChains?: boolean
   },
 ) {
   const flags = data.readFlags[i]!
   const strand = data.readStrands[i]!
+  const isChain = opts?.linkedReads !== undefined && opts.linkedReads !== 'off'
 
   // In chain/linked-read mode, supplementary chains use orange for paired-end reads
   const chainSupp = data.readChainHasSupp?.[i] ?? 0
-  if (
-    (opts?.renderingMode === 'linkedRead' ||
-      opts?.renderingMode === 'linkedReadBezier') &&
-    chainSupp > 0
-  ) {
+  if (isChain && chainSupp > 0) {
     const isPaired = (flags & 1) !== 0
     if (isPaired) {
       return rgb255(palette.colorSupplementary)
@@ -139,9 +137,7 @@ export function getReadColor(
   if (
     mateUnmapped &&
     (isOrientationScheme(colorScheme) ||
-      (colorScheme === CS_NORMAL &&
-        (opts?.renderingMode === 'linkedRead' ||
-          opts?.renderingMode === 'linkedReadBezier')))
+      (colorScheme === CS_NORMAL && isChain))
   ) {
     return rgb255(palette.colorUnmappedMate)
   }
