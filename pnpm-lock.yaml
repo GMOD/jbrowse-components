@@ -530,8 +530,8 @@ importers:
   packages/sv-core:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.7
-        version: 7.0.7
+        specifier: ^7.0.8
+        version: 7.0.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
@@ -679,8 +679,8 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^7.2.3
-        version: 7.2.3
+        specifier: ^7.2.4
+        version: 7.2.4
       '@gmod/cram':
         specifier: ^8.2.3
         version: 8.2.3
@@ -739,8 +739,8 @@ importers:
   plugins/arc:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.7
-        version: 7.0.7
+        specifier: ^7.0.8
+        version: 7.0.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -806,8 +806,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/bbi':
-        specifier: ^9.0.15
-        version: 9.0.15
+        specifier: ^9.0.16
+        version: 9.0.16
       '@gmod/bed':
         specifier: ^2.2.5
         version: 2.2.5
@@ -830,8 +830,8 @@ importers:
   plugins/breakpoint-split-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.7
-        version: 7.0.7
+        specifier: ^7.0.8
+        version: 7.0.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -902,8 +902,8 @@ importers:
   plugins/circular-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.7
-        version: 7.0.7
+        specifier: ^7.0.8
+        version: 7.0.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1602,8 +1602,8 @@ importers:
   plugins/spreadsheet-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.7
-        version: 7.0.7
+        specifier: ^7.0.8
+        version: 7.0.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1743,8 +1743,8 @@ importers:
         specifier: ^3.3.8
         version: 3.3.8
       '@gmod/vcf':
-        specifier: ^7.0.7
-        version: 7.0.7
+        specifier: ^7.0.8
+        version: 7.0.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1806,8 +1806,8 @@ importers:
   plugins/wiggle:
     dependencies:
       '@gmod/bbi':
-        specifier: ^9.0.15
-        version: 9.0.15
+        specifier: ^9.0.16
+        version: 9.0.16
       '@gmod/hclust':
         specifier: ^3.0.14
         version: 3.0.14
@@ -3753,11 +3753,11 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@7.2.3':
-    resolution: {integrity: sha512-+ohfcNq4pfV9KF8wFCoriVszkxOUKY9d3eK28HoJ6KxN8i4VvLmgblRmeNBdR85LdQKPsdp6OG49S1fEIGTnbg==}
+  '@gmod/bam@7.2.4':
+    resolution: {integrity: sha512-arBx8cmGR0uxpgluz5z3d4kzXZAkq88P0MZkmCp/+KeA6e/fM6pNa4CUzT1H7SLfo6+hUHrC8t4bByoy50RQ+w==}
 
-  '@gmod/bbi@9.0.15':
-    resolution: {integrity: sha512-fs9g06ROWAkRWESSAlWWQoo3cEGxPaqhNYbqpUcVzLkHaPKHlLCZc/j6mXaLYrz3jmq9LiYUHTfYZ1y40bqGJQ==}
+  '@gmod/bbi@9.0.16':
+    resolution: {integrity: sha512-IjDMlOSXFHl3iGtX9RcBjYyJKPItgDYRuvLYDF+VQ61kRQx3gYzxSDTXidRnMqPrTWyIxtCcHtoG/fPAgLt4Fw==}
 
   '@gmod/bed@2.2.5':
     resolution: {integrity: sha512-bk+D5yrV1cxNCuiJ771iK68jmU8yEGV2vufdJW1SjeByl7ievJoYKgRdSwEol4hleqV1cNcmlMvfmj3t+n+OMw==}
@@ -3793,8 +3793,8 @@ packages:
   '@gmod/ucsc-hub@2.0.9':
     resolution: {integrity: sha512-De/30Zy4vGtEOG9cCO73fqLlTSgIr365k8VeZJqab0zQnK/1lTUyDA3qeit0OpW8x0BthhIAuPgpjOchRnj7dw==}
 
-  '@gmod/vcf@7.0.7':
-    resolution: {integrity: sha512-jhP4RWbwNGK8b2yAtjJiM2FeDIqJgjqaaLQcuB5ZlLO6zdh9IzRZfVvhmGSrh6UCvTKjcWqVgP3YhzwiV7Dsiw==}
+  '@gmod/vcf@7.0.8':
+    resolution: {integrity: sha512-ELbqMAkoCmBCtGoKyB98IHCtFeCQLWgPevhMfJUlYexA/cfSkHvXn5/7Bt85BBfP2sQIVc+QQ08T5OQ3Fu8pJQ==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -10839,7 +10839,7 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@7.2.3':
+  '@gmod/bam@7.2.4':
     dependencies:
       '@gmod/bgzf-filehandle': 6.0.22
       '@jbrowse/quick-lru': 7.3.5
@@ -10848,7 +10848,7 @@ snapshots:
     transitivePeerDependencies:
       - buffer
 
-  '@gmod/bbi@9.0.15':
+  '@gmod/bbi@9.0.16':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@jbrowse/quick-lru': 7.3.5
@@ -10902,7 +10902,7 @@ snapshots:
 
   '@gmod/ucsc-hub@2.0.9': {}
 
-  '@gmod/vcf@7.0.7': {}
+  '@gmod/vcf@7.0.8': {}
 
   '@humanfs/core@0.19.2':
     dependencies:

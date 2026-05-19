@@ -36,12 +36,15 @@ function getEnd(variant: Variant) {
     }
   }
   if (isSymbolic && !isTRA) {
-    if (Array.isArray(INFO.END) && INFO.END.length > 0) {
-      return +INFO.END[0]
+    if (Array.isArray(INFO.END)) {
+      const end = INFO.END[0]
+      if (end !== undefined) {
+        return +end
+      }
     }
     if (Array.isArray(INFO.SVLEN)) {
       const lens = INFO.SVLEN.map((len, i) =>
-        ALT[i]?.startsWith('<INS') ? 1 : Math.abs(+len),
+        ALT[i]?.startsWith('<INS') ? 1 : Math.abs(len === undefined ? 0 : +len),
       )
       return start + max(lens)
     }

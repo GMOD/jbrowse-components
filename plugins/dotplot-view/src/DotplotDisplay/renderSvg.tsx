@@ -6,15 +6,21 @@ import { when } from 'mobx'
 import { drawDotplotInstances } from './drawDotplot.ts'
 
 import type { DotplotRenderModel } from './types.ts'
-import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
+
+interface RenderSvgView {
+  viewWidth: number
+  viewHeight: number
+  hview: { offsetPx: number; bpPerPx: number }
+  vview: { offsetPx: number; bpPerPx: number }
+}
 
 export async function renderSvg(
   model: DotplotRenderModel,
   opts?: PaintLayerOpts,
 ) {
   await when(() => !!model.geometry || !!model.error)
-  const view = getContainingView(model) as DotplotViewModel
+  const view = getContainingView(model) as unknown as RenderSvgView
   const { viewWidth, viewHeight, hview, vview } = view
   if (model.error) {
     return <SVGErrorBox error={model.error} width={viewWidth} height={viewHeight} />
