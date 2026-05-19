@@ -22,8 +22,9 @@ function abgrToCss(abgr: number) {
 }
 
 // Pure draw entry point — used both by on-screen streaming render and SVG
-// export. Mirrors `drawWiggleBlocks` in shape so the SVG pipeline can call
-// it the same way.
+// export. No per-region builder layer (the rpcDataMap entries are already
+// the region payload), so SVG export calls this directly rather than going
+// through a `drawXxxToCtx` wrapper.
 export function drawManhattanBlocks(
   ctx: Ctx2D,
   regions: ReadonlyMap<number, ManhattanRpcResult>,
@@ -81,16 +82,6 @@ export function drawManhattanBlocks(
 
     ctx.restore()
   }
-}
-
-// One-shot entry point for SVG export. Mirrors `drawWiggleToCtx`.
-export function drawManhattanToCtx(
-  ctx: Ctx2D,
-  regions: ReadonlyMap<number, ManhattanRpcResult>,
-  blocks: WiggleRenderBlock[],
-  state: ManhattanRenderState,
-) {
-  drawManhattanBlocks(ctx, regions, blocks, state)
 }
 
 // Streaming on-screen backend.

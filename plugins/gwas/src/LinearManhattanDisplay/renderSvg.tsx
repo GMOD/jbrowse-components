@@ -7,7 +7,7 @@ import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
-import { drawManhattanToCtx } from './Canvas2DManhattanRenderer.ts'
+import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 
 import type { LinearManhattanDisplayModel } from './stateModelFactory.ts'
 import type {
@@ -59,19 +59,10 @@ export async function renderSvg(
   const manhattanNode = (
     <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
       {paintLayer(totalWidth, drawHeight, opts, ctx => {
-        drawManhattanToCtx(ctx, rpcDataMap, renderBlocks, state)
+        drawManhattanBlocks(ctx, rpcDataMap, renderBlocks, state)
       })}
     </g>
   )
-
-  if (opts?.rasterizeLayers) {
-    return (
-      <>
-        {manhattanNode}
-        {legendEl}
-      </>
-    )
-  }
 
   return (
     <>

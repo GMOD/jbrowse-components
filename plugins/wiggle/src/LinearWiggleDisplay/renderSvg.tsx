@@ -82,15 +82,6 @@ export async function renderSvg(
     </g>
   )
 
-  if (opts?.rasterizeLayers) {
-    return (
-      <>
-        {wiggleNode}
-        {legendEl}
-      </>
-    )
-  }
-
   return (
     <>
       <SvgClipRect

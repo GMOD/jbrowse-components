@@ -1,4 +1,8 @@
-export function ErrorBox({
+// Reusable SVG-export building blocks. Co-located with `paintLayer.tsx` so
+// non-LGV plugins (dotplot, linear-synteny, etc.) can use them without
+// pulling in the linear-genome-view plugin.
+
+export function SVGErrorBox({
   error,
   width,
   height,

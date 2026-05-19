@@ -58,7 +58,6 @@
     "./pluggableElementTypes/models/BaseViewModel": "./src/pluggableElementTypes/models/BaseViewModel.ts",
     "./pluggableElementTypes/renderers/CircularChordRendererType": "./src/pluggableElementTypes/renderers/CircularChordRendererType.tsx",
     "./pluggableElementTypes/renderers/FeatureRendererType": "./src/pluggableElementTypes/renderers/FeatureRendererType.ts",
-    "./pluggableElementTypes/renderers/ServerSideRendererType": "./src/pluggableElementTypes/renderers/ServerSideRendererType.ts",
     "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
     "./pluggableElementTypes/RpcMethodType": "./src/pluggableElementTypes/RpcMethodType.ts",
     "./pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": "./src/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.ts",
@@ -90,6 +89,7 @@
     "./ui/ErrorBanner": "./src/ui/ErrorBanner.tsx",
     "./ui/ErrorBoundary": "./src/ui/ErrorBoundary.tsx",
     "./ui/ErrorMessageStackTraceDialog": "./src/ui/ErrorMessageStackTraceDialog.tsx",
+    "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
     "./ui/Icons": "./src/ui/Icons.tsx",
     "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
     "./ui/Logo": "./src/ui/Logo.tsx",
@@ -98,7 +98,6 @@
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
-    "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
     "./ui/theme": "./src/ui/theme.ts",
     "./ui/useGraphicsCapabilities": "./src/ui/useGraphicsCapabilities.ts",
     "./util": "./src/util/index.ts",
@@ -125,8 +124,6 @@
     "./util/layouts/placeRect": "./src/util/layouts/placeRect.ts",
     "./util/librpc": "./src/util/librpc.ts",
     "./util/mst-reflection": "./src/util/mst-reflection.ts",
-    "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.ts",
-    "./util/offscreenCanvasUtils": "./src/util/offscreenCanvasUtils.tsx",
     "./util/paintLayer": "./src/util/paintLayer.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
     "./util/QuickLRU": "./src/util/QuickLRU/index.ts",
@@ -136,15 +133,14 @@
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
     "./util/SvgCanvas": "./src/util/SvgCanvas.ts",
+    "./util/svgExport": "./src/util/svgExport.tsx",
     "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
     "./util/tracks": "./src/util/tracks.ts",
     "./util/tss-react": "./src/util/tss-react/index.ts",
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
-    "./util/useMeasure": "./src/util/useMeasure.ts",
     "./util/useGpuModelLifecycle": "./src/util/useGpuModelLifecycle.ts",
-    "./util/useGpuRenderer": "./src/util/useGpuRenderer.ts",
-    "./util/useTabVisibilityRerender": "./src/util/useTabVisibilityRerender.ts",
+    "./util/useMeasure": "./src/util/useMeasure.ts",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./util/nanoid": "./src/util/nanoid.ts",
     "./ReExports/list": "./src/ReExports/list.ts",
@@ -363,10 +359,6 @@
         "types": "./esm/pluggableElementTypes/renderers/FeatureRendererType.d.ts",
         "import": "./esm/pluggableElementTypes/renderers/FeatureRendererType.js"
       },
-      "./pluggableElementTypes/renderers/ServerSideRendererType": {
-        "types": "./esm/pluggableElementTypes/renderers/ServerSideRendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/ServerSideRendererType.js"
-      },
       "./pluggableElementTypes/renderers/util/serializableFilterChain": {
         "types": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts",
         "import": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.js"
@@ -491,6 +483,10 @@
         "types": "./esm/ui/ErrorMessageStackTraceDialog.d.ts",
         "import": "./esm/ui/ErrorMessageStackTraceDialog.js"
       },
+      "./ui/getGraphicsCapabilities": {
+        "types": "./esm/ui/getGraphicsCapabilities.d.ts",
+        "import": "./esm/ui/getGraphicsCapabilities.js"
+      },
       "./ui/Icons": {
         "types": "./esm/ui/Icons.d.ts",
         "import": "./esm/ui/Icons.js"
@@ -522,10 +518,6 @@
       "./ui/SnackbarModel": {
         "types": "./esm/ui/SnackbarModel.d.ts",
         "import": "./esm/ui/SnackbarModel.js"
-      },
-      "./ui/getGraphicsCapabilities": {
-        "types": "./esm/ui/getGraphicsCapabilities.d.ts",
-        "import": "./esm/ui/getGraphicsCapabilities.js"
       },
       "./ui/theme": {
         "types": "./esm/ui/theme.d.ts",
@@ -631,14 +623,6 @@
         "types": "./esm/util/mst-reflection.d.ts",
         "import": "./esm/util/mst-reflection.js"
       },
-      "./util/offscreenCanvasPonyfill": {
-        "types": "./esm/util/offscreenCanvasPonyfill.d.ts",
-        "import": "./esm/util/offscreenCanvasPonyfill.js"
-      },
-      "./util/offscreenCanvasUtils": {
-        "types": "./esm/util/offscreenCanvasUtils.d.ts",
-        "import": "./esm/util/offscreenCanvasUtils.js"
-      },
       "./util/paintLayer": {
         "types": "./esm/util/paintLayer.d.ts",
         "import": "./esm/util/paintLayer.js"
@@ -675,6 +659,10 @@
         "types": "./esm/util/SvgCanvas.d.ts",
         "import": "./esm/util/SvgCanvas.js"
       },
+      "./util/svgExport": {
+        "types": "./esm/util/svgExport.d.ts",
+        "import": "./esm/util/svgExport.js"
+      },
       "./util/TimeTraveller": {
         "types": "./esm/util/TimeTraveller.d.ts",
         "import": "./esm/util/TimeTraveller.js"
@@ -695,21 +683,13 @@
         "types": "./esm/util/types/mst.d.ts",
         "import": "./esm/util/types/mst.js"
       },
-      "./util/useMeasure": {
-        "types": "./esm/util/useMeasure.d.ts",
-        "import": "./esm/util/useMeasure.js"
-      },
       "./util/useGpuModelLifecycle": {
         "types": "./esm/util/useGpuModelLifecycle.d.ts",
         "import": "./esm/util/useGpuModelLifecycle.js"
       },
-      "./util/useGpuRenderer": {
-        "types": "./esm/util/useGpuRenderer.d.ts",
-        "import": "./esm/util/useGpuRenderer.js"
-      },
-      "./util/useTabVisibilityRerender": {
-        "types": "./esm/util/useTabVisibilityRerender.d.ts",
-        "import": "./esm/util/useTabVisibilityRerender.js"
+      "./util/useMeasure": {
+        "types": "./esm/util/useMeasure.d.ts",
+        "import": "./esm/util/useMeasure.js"
       },
       "./ui/ReturnToImportFormDialog": {
         "types": "./esm/ui/ReturnToImportFormDialog.d.ts",
@@ -864,9 +844,6 @@
         "pluggableElementTypes/renderers/FeatureRendererType": [
           "esm/pluggableElementTypes/renderers/FeatureRendererType.d.ts"
         ],
-        "pluggableElementTypes/renderers/ServerSideRendererType": [
-          "esm/pluggableElementTypes/renderers/ServerSideRendererType.d.ts"
-        ],
         "pluggableElementTypes/renderers/util/serializableFilterChain": [
           "esm/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts"
         ],
@@ -959,6 +936,9 @@
         ],
         "ui/ErrorMessageStackTraceDialog": [
           "esm/ui/ErrorMessageStackTraceDialog.d.ts"
+        ],
+        "ui/getGraphicsCapabilities": [
+          "esm/ui/getGraphicsCapabilities.d.ts"
         ],
         "ui/Icons": [
           "esm/ui/Icons.d.ts"
@@ -1062,12 +1042,6 @@
         "util/mst-reflection": [
           "esm/util/mst-reflection.d.ts"
         ],
-        "util/offscreenCanvasPonyfill": [
-          "esm/util/offscreenCanvasPonyfill.d.ts"
-        ],
-        "util/offscreenCanvasUtils": [
-          "esm/util/offscreenCanvasUtils.d.ts"
-        ],
         "util/paintLayer": [
           "esm/util/paintLayer.d.ts"
         ],
@@ -1095,6 +1069,9 @@
         "util/SvgCanvas": [
           "esm/util/SvgCanvas.d.ts"
         ],
+        "util/svgExport": [
+          "esm/util/svgExport.d.ts"
+        ],
         "util/TimeTraveller": [
           "esm/util/TimeTraveller.d.ts"
         ],
@@ -1110,17 +1087,11 @@
         "util/types/mst": [
           "esm/util/types/mst.d.ts"
         ],
-        "util/useMeasure": [
-          "esm/util/useMeasure.d.ts"
-        ],
         "util/useGpuModelLifecycle": [
           "esm/util/useGpuModelLifecycle.d.ts"
         ],
-        "util/useGpuRenderer": [
-          "esm/util/useGpuRenderer.d.ts"
-        ],
-        "util/useTabVisibilityRerender": [
-          "esm/util/useTabVisibilityRerender.d.ts"
+        "util/useMeasure": [
+          "esm/util/useMeasure.d.ts"
         ],
         "ui/ReturnToImportFormDialog": [
           "esm/ui/ReturnToImportFormDialog.d.ts"

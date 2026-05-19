@@ -7,6 +7,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
+import { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/svgExport'
 import { when } from 'mobx'
 
 import SVGLegend from './SVGLegend.tsx'
@@ -19,7 +20,6 @@ import BlockState, {
   renderBlockData,
 } from './models/serverSideRenderedBlock.ts'
 import { getId } from './models/util.ts'
-import { ErrorBox } from '../LinearGenomeView/SVGErrorBox.tsx'
 
 import type { BaseLinearDisplayModel } from './model.ts'
 import type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
@@ -40,7 +40,7 @@ export async function renderBaseLinearDisplaySvg(
   const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
 
   if (self.error) {
-    return <ErrorBox error={self.error} width={width} height={height} />
+    return <SVGErrorBox error={self.error} width={width} height={height} />
   }
 
   const renderings = await Promise.all(
@@ -125,46 +125,34 @@ export async function renderBaseLinearDisplaySvg(
   const theme = createJBrowseTheme(opts.theme)
   const legendItems = self.showLegend ? self.legendItems(theme) : []
 
+  const blockHeight = overrideHeight ?? height
   return (
     <>
       {renderings.map(([block, rendering], index) => {
         const { offsetPx, widthPx } = block
         const offset = offsetPx - viewOffsetPx
-        const clipid = getId(id, index)
-
         return (
           <Fragment key={`frag-${index}`}>
-            <defs>
-              <clipPath id={clipid}>
-                <rect
-                  x={0}
-                  y={0}
-                  width={widthPx}
-                  height={overrideHeight ?? height}
-                />
-              </clipPath>
-            </defs>
             <g transform={`translate(${offset} 0)`}>
-              <g clipPath={`url(#${clipid})`}>
+              <SvgClipRect
+                id={getId(id, index)}
+                width={widthPx}
+                height={blockHeight}
+              >
                 <ReactRendering rendering={rendering} />
-              </g>
+              </SvgClipRect>
             </g>
           </Fragment>
         )
       })}
-      {/* Render floating labels with clipping */}
-      <defs>
-        <clipPath id={labelsClipId}>
-          <rect x={0} y={0} width={width} height={overrideHeight ?? height} />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${labelsClipId})`}>
+      {/* Floating labels share one clip across the whole view */}
+      <SvgClipRect id={labelsClipId} width={width} height={blockHeight}>
         <SvgFloatingLabels
           featureLabels={featureLabels}
           offsetPx={offsetPx}
           viewWidth={width}
         />
-      </g>
+      </SvgClipRect>
       {legendItems.length > 0 ? (
         <SVGLegend
           items={legendItems}

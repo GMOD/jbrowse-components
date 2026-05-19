@@ -1,5 +1,6 @@
 import { getContainingView, max } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
@@ -58,18 +59,16 @@ export async function renderSvg(
     })
   })
 
-  const clipId = `clip-${self.id}-svg`
   const recombTrackHeight = lineZoneHeight / 2
   const recombTrackYOffset = lineZoneHeight / 2
 
   return (
     <>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={visibleWidth} height={height} />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${clipId})`}>
+      <SvgClipRect
+        id={`ld-clip-${self.id}`}
+        width={visibleWidth}
+        height={height}
+      >
         <g transform={`translate(0 ${lineZoneHeight})`}>{matrixEl}</g>
         {useGenomicPositions ? (
           <Wrapper model={self} exportSVG>
@@ -96,7 +95,7 @@ export async function renderSvg(
             />
           </g>
         ) : null}
-      </g>
+      </SvgClipRect>
       {showLegend ? (
         <LDSVGColorLegend
           ldMetric={ldMetric}

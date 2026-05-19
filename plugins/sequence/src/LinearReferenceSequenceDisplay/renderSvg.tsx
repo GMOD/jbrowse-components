@@ -1,6 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import {
   buildTextColors,
@@ -45,33 +46,33 @@ export async function renderSvg(
   const theme = createJBrowseTheme(opts?.theme)
   const palette = buildColorPalette(theme)
   const textColors = buildTextColors(palette, theme)
+  const totalWidth = view.trackWidthPx
+  const height = model.height
 
-  const ctx = new SvgCanvas()
-  drawSequenceBlocks(ctx, sequenceData, model.renderBlocks, {
-    bpPerPx: view.bpPerPx,
-    showForward: model.showForward,
-    showReverse: model.isDna && model.showReverse,
-    showTranslation: model.isDna && model.showTranslation,
-    sequenceType: model.sequenceType,
-    rowHeight: model.rowHeight,
-    palette,
-    textColors,
-    canvasWidth: view.trackWidthPx,
-    canvasHeight: model.height,
+  // Sequence is text-heavy; routed through paintLayer so rasterizeLayers can
+  // PNG-embed when set, but the default (vector) path keeps letters crisp.
+  const node = paintLayer(totalWidth, height, opts, ctx => {
+    drawSequenceBlocks(ctx, sequenceData, model.renderBlocks, {
+      bpPerPx: view.bpPerPx,
+      showForward: model.showForward,
+      showReverse: model.isDna && model.showReverse,
+      showTranslation: model.isDna && model.showTranslation,
+      sequenceType: model.sequenceType,
+      rowHeight: model.rowHeight,
+      palette,
+      textColors,
+      canvasWidth: totalWidth,
+      canvasHeight: height,
+    })
   })
 
-  const clipId = `sequence-clip-${model.id}`
   return (
-    <g>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={view.width} height={model.height} />
-        </clipPath>
-      </defs>
-      <g
-        clipPath={`url(#${clipId})`}
-        dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }}
-      />
-    </g>
+    <SvgClipRect
+      id={`sequence-clip-${model.id}`}
+      width={view.width}
+      height={height}
+    >
+      {node}
+    </SvgClipRect>
   )
 }

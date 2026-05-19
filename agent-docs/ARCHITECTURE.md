@@ -287,9 +287,21 @@ the data shape, not the one your neighbour copied:
 
 | Pattern | Upload methods | Render | Use when | Examples |
 |---|---|---|---|---|
-| **Per-region streamed** | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, state)` | each region's data is independent, reactive per-region updates | canvas, wiggle, multi-variant |
-| **Whole-map synced** | `sync(sources)` | `renderBlocks(blocks, state)` | encoder settings drive packing, or multiple per-region streams must rebuild coherently | alignments, multi-LGV synteny |
-| **Monolithic** | `uploadX(data)` | `render(state)` (no blocks) | display has no region partitioning (heatmaps spanning the whole view) | LD, multi-variant matrix |
+| **Per-region streamed** | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, state)` | each region's data is independent across regions, reactive per-region updates | canvas, wiggle, multi-wiggle, **MAF**, manhattan, multi-variant |
+| **Whole-map synced** | `sync(sources)` | `renderBlocks(blocks, state)` | per-region streams must rebuild coherently (e.g. main-thread cross-region Y layout), or encoder settings drive packing | alignments, multi-LGV synteny |
+| **Monolithic** | `uploadX(data)` | `render(state)` (no blocks) | display has no region partitioning (heatmaps spanning the whole view) | HiC, LD, multi-variant matrix, dotplot |
+
+MAF is **per-region streamed** (like canvas/wiggle), not whole-map synced like
+alignments. MAF blocks are independent — no main-thread Y-layout couples
+adjacent regions — so each region's upload re-encodes in isolation via
+`installPerRegionGpuLifecycle`. Alignments' whole-map sync exists *only*
+because pileup Y-rows must be assigned consistently across multiple
+`displayedRegions` (a read spanning a region boundary needs the same Y row in
+both regions), forcing the upload to rebuild the whole map whenever any
+region's input changes. If a future MAF feature added cross-region coupling
+(e.g. main-thread re-clustering of rows based on combined data), it would
+move to whole-map synced — until then, per-region streamed is the right
+shape.
 
 All three patterns expose the same lifecycle (`installGpuDisplay({ upload,
 render })`); the difference is how the upload callback shovels bytes.
@@ -379,19 +391,38 @@ The practical difference is N:
 
 ## SVG export pipeline (single source of truth)
 
-SVG export and on-screen rendering share the same draw pipeline per plugin.
-Each plugin exposes two top-level pure functions:
+SVG export and on-screen rendering share the same pure draw function(s) per
+plugin. Two shapes, picked by data layout:
 
-- `drawXxxBlocks(ctx, regions, blocks, state)` — paints a pre-built regions
-  map. Used by the on-screen `Canvas2DXxxRenderer.renderBlocks`.
-- `drawXxxToCtx(ctx, sources, blocks, state)` — one-shot wrapper that
-  builds the regions map from observable sources and calls
-  `drawXxxBlocks`. Used by `renderSvg.tsx`.
+- **Single data source** (canvas, wiggle, MAF, hic, LD, multi-variant,
+  multi-variant-matrix, multi-LGV-synteny, sequence, manhattan, dotplot):
+  just `drawXxxBlocks(ctx, regions, blocks, state)`. The `regions` arg is the
+  fetched data itself (rpcDataMap or equivalent) — no merge step. Both the
+  on-screen `Canvas2DXxxRenderer.renderBlocks` and `renderSvg.tsx` call this
+  directly.
+- **Multi-source / merged** (alignments — pileup + arcs): a builder splits the
+  work in two:
+  - `buildXxxRegionMap(...sources) → Map<regionIdx, RegionData>` — pure
+    merge of multiple observable sources into one regions map. The on-screen
+    `Canvas2DXxxRenderer.sync(sources)` calls this directly.
+  - `drawXxxBlocks(ctx, regions, blocks, state)` — paints a pre-built map.
+  - `drawXxxToCtx(ctx, sources, blocks, state)` — one-shot wrapper that
+    calls `buildXxxRegionMap` then `drawXxxBlocks`. Used by `renderSvg.tsx`
+    so the export doesn't have to wire the builder by hand.
 
-Both take any 2D-context-shaped surface: real `CanvasRenderingContext2D` for
-on-screen, `SvgCanvas` for vector export. `Canvas2DXxxRenderer` is bound
-(canvas required at construction) — SVG export does *not* instantiate the
-renderer. It calls `drawXxxToCtx` directly.
+All entry points take any 2D-context-shaped surface: real
+`CanvasRenderingContext2D` for on-screen, `SvgCanvas` for vector export.
+`Canvas2DXxxRenderer` is bound (canvas required at construction) — SVG
+export does *not* instantiate the renderer. It calls the pure functions
+directly.
+
+**Per-block vs monolithic is an upload/data-shape question, not a draw-API
+question.** MAF, canvas, wiggle, multi-LGV-synteny are per-region streamed
+(uploadRegion + renderBlocks); HiC, LD, variants-matrix are monolithic
+(uploadX + render). All of them still expose a single `drawXxxBlocks`
+because none has a non-trivial merge layer between fetch and paint. The
+alignments split exists because pileup data and arcs data live in two
+separate observable maps that must be merged before painting.
 
 SVG export in `renderSvg.tsx` follows this recipe:
 
@@ -400,7 +431,8 @@ await when(() => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLa
 if (model.error) return <SVGErrorBox …/>
 const renderBlocks = buildRenderBlocks(view.visibleRegions)
 const node = paintLayer(totalWidth, height, opts, ctx => {
-  drawXxxToCtx(ctx, sources, renderBlocks, state)
+  drawXxxBlocks(ctx, model.rpcDataMap, renderBlocks, state)
+  // OR, for multi-source: drawXxxToCtx(ctx, sources, renderBlocks, state)
 })
 ```
 
@@ -415,9 +447,33 @@ draws to `Ctx2D` in CSS pixels — no manual DPR.
 (rects, paths, fills, strokes) should go through `paintLayer` so both raster
 and vector modes work and the on-screen draw code can be shared. Hand-rolled
 `<rect>`/`<path>`/`<line>` inside `renderSvg.tsx` is a red flag — it can't
-rasterize, drifts from on-screen output, and locks in vector output. The
-documented exceptions are sashimi/bezier arcs (vector-by-design for hover —
-see below) and trivial chrome like single separator lines or scalebars.
+rasterize, drifts from on-screen output, and locks in vector output.
+
+**Permitted exception classes** (only these — anything else is a regression):
+
+1. **Trivial chrome**: scalebars, single separator lines, clipPath wrappers,
+   transform `<g>` for offsetting an already-paintLayer'd block. Use
+   `<SvgClipRect>` from `@jbrowse/plugin-linear-genome-view` for the
+   clipPath+rect pair so every plugin shares one shape.
+2. **Bezier-arc overlays** (sashimi in `plugins/alignments`, paired arcs in
+   `plugins/alignments` and `plugins/arc`): low element count, native SVG
+   `<path>` gives hover/tooltip behavior raster cannot match. Math comes from
+   a shared `computeXxxArcs(opts) → Arc[]` so on-screen overlay and SVG
+   export consume identical geometry. Don't add a new "vector by design"
+   exception just because something is "interactive" — bezier-arc displays
+   already render this way on-screen, so the JSX path *is* the on-screen
+   path.
+3. **Shared React-SVG overlays** that the on-screen view also uses (e.g.
+   `VariantLabels`, `LinesConnectingMatrixToGenomicPosition`,
+   `RecombinationTrack` in `plugins/variants/LDDisplay`,
+   `SvgRowLabels`/`SvgTreePath` from `@jbrowse/tree-sidebar`). Same
+   component renders on-screen + in export with an `exportSVG` prop. The
+   heavy raster-friendly fill path (the matrix itself) **must** still go
+   through `paintLayer`; only the overlays stay JSX.
+
+Everything else — every "regular" draw path (fills, glyphs, mismatches,
+coverage bins, score bars, ribbons, dot lines, sequence text) — goes through
+`paintLayer(width, height, opts, ctx => drawXxxToCtx(ctx, …))`.
 
 This kills the older "SVG-only `renderToCtx`" pattern that drifted out of
 sync with the on-screen renderer (different bicolor handling, different
@@ -426,14 +482,6 @@ had its own flavor of drift). The canonical reference implementation is
 `plugins/alignments/src/LinearAlignmentsDisplay/components/Canvas2DAlignmentsRenderer.ts`
 (`drawAlignmentsToCtx` + `drawAlignmentBlocks`); other plugins follow the
 same shape.
-
-**Sashimi exception.** Sashimi arcs are deliberately rendered as vector SVG
-on both paths via a shared `computeSashimiArcs(opts) → SashimiArc[]`
-function: arc counts are low, vector performance is fine, and SVG `<path>`
-elements give native hover/tooltip behavior the rasterized pipeline cannot
-match. The on-screen `SashimiArcsOverlay` and the SVG export consume the
-same arc array, so geometry and colors stay in sync. This is the *only*
-draw path that intentionally avoids `paintLayer`; treat the same.
 
 **Shared utilities** (in `@jbrowse/core/util/`):
 - `createSvgRasterCanvas(width, height, opts)` — the 2× DPR canvas + `opts.createCanvas` fallback ritual.

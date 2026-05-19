@@ -143,8 +143,5 @@ export {
   SVGTracks,
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
-export {
-  ErrorBox as SVGErrorBox,
-  SvgClipRect,
-} from './LinearGenomeView/SVGErrorBox.tsx'
+export { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/svgExport'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util.ts'

@@ -1,6 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/svgExport'
 import { when } from 'mobx'
 
 import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
@@ -14,10 +14,13 @@ export async function renderSvg(
   opts?: PaintLayerOpts,
 ) {
   await when(() => model.featureData != null || !!model.error)
+  const view = getContainingView(model) as LinearSyntenyViewModel
+  if (model.error) {
+    return <SVGErrorBox error={model.error} width={view.width} height={model.height} />
+  }
   if (!model.featureData) {
     return null
   }
-  const view = getContainingView(model) as LinearSyntenyViewModel
   const data = model.renderInstanceData
   const params = model.renderParams
   if (!data || !params || data.instanceCount === 0) {

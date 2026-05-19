@@ -1,5 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { drawHicBlocks } from './components/Canvas2DHicRenderer.ts'
@@ -36,7 +37,6 @@ export async function renderSvg(
   const height = opts.overrideHeight ?? self.height
   const visibleWidth = view.width
   const ramp = generateColorRamp(colorScheme)
-  const clipId = `clip-${self.id}-svg`
 
   // Reuse the model's renderTransform so SVG export aligns identically to
   // the on-screen render (handles scrolled-left-of-genome and stale zoom).
@@ -56,12 +56,13 @@ export async function renderSvg(
 
   return (
     <>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={visibleWidth} height={height} />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${clipId})`}>{matrixEl}</g>
+      <SvgClipRect
+        id={`hic-clip-${self.id}`}
+        width={visibleWidth}
+        height={height}
+      >
+        {matrixEl}
+      </SvgClipRect>
       {showLegend && colorMaxScore > 0 ? (
         <HicSVGColorLegend
           maxScore={colorMaxScore}

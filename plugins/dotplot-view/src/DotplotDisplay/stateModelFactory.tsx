@@ -78,8 +78,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #method
        */
-      renderSvg(_opts: ExportSvgOptions & { theme?: ThemeOptions }) {
-        return renderSvg(self)
+      renderSvg(opts: ExportSvgOptions & { theme?: ThemeOptions }) {
+        return renderSvg(self, opts)
       },
     }))
     .actions(self => ({
