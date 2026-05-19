@@ -31,10 +31,7 @@ import UndoIcon from '@mui/icons-material/Undo'
 import packageJSON from '../../package.json' with { type: 'json' }
 import jbrowseWebFactory from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
-import {
-  setupSessionDB,
-  setupSessionStorageAutosave,
-} from './persistence.ts'
+import { setupSessionDB, setupSessionStorageAutosave } from './persistence.ts'
 import { buildSessionListSubmenu } from './sessionMenus.ts'
 
 import type { SessionDB, SessionMetadata } from '../types.ts'

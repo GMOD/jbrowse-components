@@ -62,4 +62,3 @@ export function getArcPalette(
 ): RGBColor[] {
   return colorByType === 'samplot' ? samplotArcColorPalette : arcColorPalette
 }
-

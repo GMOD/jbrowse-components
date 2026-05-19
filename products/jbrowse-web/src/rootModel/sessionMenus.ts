@@ -18,7 +18,10 @@ interface SessionMenuItem {
   onClick: () => void
 }
 
-function sessionLabel(r: SessionMetadata, currentSessionId: string | undefined) {
+function sessionLabel(
+  r: SessionMetadata,
+  currentSessionId: string | undefined,
+) {
   const suffix =
     r.id === currentSessionId
       ? 'current'
@@ -74,7 +77,9 @@ export function buildSessionListSubmenu({
 }): SessionMenuItem[] {
   return sessions?.length
     ? [
-        ...sessions.map(r => sessionItem(r, currentSessionId, actions, itemIcon)),
+        ...sessions.map(r =>
+          sessionItem(r, currentSessionId, actions, itemIcon),
+        ),
         moreItem(actions.showMore),
       ]
     : emptyLabel

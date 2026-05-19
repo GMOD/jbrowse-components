@@ -1,3 +1,4 @@
+import { parseCigar2 } from '@jbrowse/cigar-utils'
 import {
   methylated5hmC,
   methylated5mC,
@@ -5,8 +6,6 @@ import {
   unmethylated5mC,
 } from '@jbrowse/core/ui/theme'
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
-
-import { parseCigar2 } from '@jbrowse/cigar-utils'
 import {
   detectSimplexModifications,
   getMethBins,
@@ -17,9 +16,9 @@ import {
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
 import { getColorForModification, getTagAlt } from '../../util.ts'
 
-import type { ParsedModData } from '@jbrowse/modifications-utils'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { ParsedModData } from '@jbrowse/modifications-utils'
 
 // Methylated/unmethylated display colors for bisulfite/ONT methylation mode.
 // Differ from the modification-mode colors in shared/modificationData.ts —

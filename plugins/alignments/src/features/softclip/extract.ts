@@ -1,5 +1,5 @@
-import type { ClipMismatch } from '@jbrowse/alignments-core'
 import type { SoftclipData } from '../../shared/webglRpcTypes.ts'
+import type { ClipMismatch } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 export function emitSoftclip(

@@ -164,7 +164,6 @@ export default function stateModelFactory(
           ),
         }))
       },
-
     }))
     .views(self => ({
       get numSources() {

@@ -1,4 +1,9 @@
-import { bufferToLines, parseExtraColNames, parseExtraCols, parseStrand } from './util.ts'
+import {
+  bufferToLines,
+  parseExtraColNames,
+  parseExtraCols,
+  parseStrand,
+} from './util.ts'
 
 export function parseBedBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)
@@ -17,7 +22,11 @@ export function parseBedBuffer(buffer: Uint8Array) {
     0,
     (rest[0]?.split('\t').length ?? 0) - coreColumns.length,
   )
-  const extraNames = parseExtraColNames(lastHeaderLine, coreColumns.length, numExtraColumns)
+  const extraNames = parseExtraColNames(
+    lastHeaderLine,
+    coreColumns.length,
+    numExtraColumns,
+  )
   const colNames = [...coreColumns, ...extraNames]
 
   return {

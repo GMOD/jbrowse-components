@@ -132,7 +132,12 @@ const SessionManager = observer(function SessionManager({
           }
           label="Show favorites only?"
         />
-        <Button variant="contained" onClick={() => { handleDeleteOld() }}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            handleDeleteOld()
+          }}
+        >
           Delete non-fav sessions older than 1 day?
         </Button>
       </div>

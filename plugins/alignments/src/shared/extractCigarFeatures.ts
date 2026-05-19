@@ -4,7 +4,6 @@ import { emitInsertion } from '../features/insertion/extract.ts'
 import { emitMismatch } from '../features/mismatch/extract.ts'
 import { emitSoftclip } from '../features/softclip/extract.ts'
 
-import type { Mismatch } from '@jbrowse/alignments-core'
 import type {
   GapData,
   HardclipData,
@@ -12,6 +11,7 @@ import type {
   MismatchData,
   SoftclipData,
 } from './webglRpcTypes.ts'
+import type { Mismatch } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 // Output buffers each emitter pushes into. Bundled to keep the dispatch

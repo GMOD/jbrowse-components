@@ -1,5 +1,12 @@
 import { useState } from 'react'
 
+import { getTag } from '@jbrowse/alignments-core'
+import {
+  featurizeSA,
+  getClip,
+  getLength,
+  getLengthSansClipping,
+} from '@jbrowse/cigar-utils'
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import {
@@ -10,13 +17,6 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getTag } from '@jbrowse/alignments-core'
-import {
-  featurizeSA,
-  getClip,
-  getLength,
-  getLengthSansClipping,
-} from '@jbrowse/cigar-utils'
 import {
   Button,
   CircularProgress,

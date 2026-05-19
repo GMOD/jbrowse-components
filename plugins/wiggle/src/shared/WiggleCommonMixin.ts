@@ -1,5 +1,4 @@
 import { getContainingView } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
 import { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'

@@ -1,5 +1,4 @@
 import { BamRecord } from '@gmod/bam'
-
 import {
   CHAR_FROM_CODE,
   CIGAR_H,

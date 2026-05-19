@@ -3,10 +3,10 @@ import {
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
   computeLabelFontSize,
+  parseCigar2,
   visitCigarOps,
   visitCsOps,
 } from '@jbrowse/alignments-core'
-import { parseCigar2 } from '@jbrowse/alignments-core'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 

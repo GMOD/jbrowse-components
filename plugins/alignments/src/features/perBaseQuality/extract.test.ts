@@ -1,5 +1,6 @@
-import { extractPerBaseQuality } from './extract.ts'
 import { parseCigar2 } from '@jbrowse/alignments-core'
+
+import { extractPerBaseQuality } from './extract.ts'
 
 import type { PerBaseQualityEntry } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'

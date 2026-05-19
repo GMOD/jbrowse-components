@@ -110,10 +110,9 @@ export function WiggleScoreConfigMixin() {
     .views(self => ({
       get hasResolution() {
         const { pluginManager } = getEnv(self)
-        const adapterConfig = getConf(
-          getContainingTrack(self),
-          'adapter',
-        ) as { type: string }
+        const adapterConfig = getConf(getContainingTrack(self), 'adapter') as {
+          type: string
+        }
         return (
           pluginManager
             .getAdapterType(adapterConfig.type)

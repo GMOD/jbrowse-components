@@ -12,8 +12,8 @@ import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
 import { cacheGetter, convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type CramAdapter from './CramAdapter.ts'
-import type { Mismatch, MismatchCallback } from '@jbrowse/cigar-utils'
 import type { CramRecord } from '@gmod/cram'
+import type { Mismatch, MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // Module-level constant for CIGAR code conversion (avoids recreation on each call)

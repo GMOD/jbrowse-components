@@ -590,7 +590,9 @@ async function instantiateAdapter(
   config: AnyConfigurationModel,
   pluginManager: PluginManager,
 ) {
-  const CLASS = await pluginManager.getAdapterType(config.type)!.getAdapterClass()
+  const CLASS = await pluginManager
+    .getAdapterType(config.type)!
+    .getAdapterClass()
   return new CLASS(config, undefined, pluginManager)
 }
 

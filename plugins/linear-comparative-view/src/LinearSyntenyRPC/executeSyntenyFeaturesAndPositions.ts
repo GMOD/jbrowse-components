@@ -1,3 +1,4 @@
+import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
@@ -5,7 +6,6 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'

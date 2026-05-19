@@ -1,12 +1,7 @@
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import {
-  cast,
-  getType,
-  isStateTreeNode,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, getType, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
 import { filterSessionInPlace } from '../sessionUtils.ts'
@@ -108,9 +103,7 @@ export function BaseRootModelFactory({
         const oldSession = self.session
         const migrated =
           sessionSnapshot && typeof sessionSnapshot === 'object'
-            ? migrateSessionSnapshot(
-                sessionSnapshot as Record<string, unknown>,
-              )
+            ? migrateSessionSnapshot(sessionSnapshot as Record<string, unknown>)
             : sessionSnapshot
         self.session = cast(migrated)
         if (self.session) {
@@ -141,9 +134,9 @@ export function BaseRootModelFactory({
         // Every concrete session model is composed from BaseSessionModel, which
         // provides setName — avoid a full setSession rebuild here since the
         // only field changing is `name`.
-        ;(self.session as { setName?: (s: string) => void } | undefined)?.setName?.(
-          newName,
-        )
+        ;(
+          self.session as { setName?: (s: string) => void } | undefined
+        )?.setName?.(newName)
       },
     }))
 }

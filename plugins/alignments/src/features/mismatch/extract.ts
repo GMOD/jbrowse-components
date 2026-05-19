@@ -1,5 +1,5 @@
-import type { Mismatch } from '@jbrowse/alignments-core'
 import type { MismatchData } from '../../shared/webglRpcTypes.ts'
+import type { Mismatch } from '@jbrowse/alignments-core'
 
 export function emitMismatch(
   mm: Extract<Mismatch, { type: 'mismatch' }>,

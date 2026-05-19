@@ -22,8 +22,9 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
     // it set but a non-LR orientation (LL/RR same-strand, RL outie).
     const isBadlyPaired =
       !correctlyPaired ||
-      getPairedOrientation({ pair_orientation: feature.get('pair_orientation') })
-        .abnormal
+      getPairedOrientation({
+        pair_orientation: feature.get('pair_orientation'),
+      }).abnormal
 
     if (
       !alreadyPairedWithSamePosition.has(locString) &&

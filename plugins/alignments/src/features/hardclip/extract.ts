@@ -1,5 +1,5 @@
-import type { ClipMismatch } from '@jbrowse/alignments-core'
 import type { HardclipData } from '../../shared/webglRpcTypes.ts'
+import type { ClipMismatch } from '@jbrowse/alignments-core'
 
 export function emitHardclip(
   mm: ClipMismatch,

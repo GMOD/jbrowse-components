@@ -41,8 +41,8 @@ const SessionTriaged = observer(function SessionTriaged({
         })
         loader.setSessionTriaged(undefined)
       }}
-      onCancel={async () => {
-        await factoryReset()
+      onCancel={() => {
+        factoryReset()
         loader.setSessionTriaged(undefined)
       }}
       reason={sessionTriaged.reason}

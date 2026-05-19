@@ -33,7 +33,7 @@ const blank = { uri: '' } as FileLocation
 
 export function initialFormState(): FormState {
   return {
-    adapterSelection: adapterTypes[0]!,
+    adapterSelection: adapterTypes[0],
     assemblyName: '',
     assemblyDisplayName: '',
     fastaLocation: blank,

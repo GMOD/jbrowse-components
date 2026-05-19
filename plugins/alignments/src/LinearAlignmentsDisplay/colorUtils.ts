@@ -1,7 +1,4 @@
-import {
-  abgrToCssRgba,
-  normalizedRgbToCss,
-} from '@jbrowse/core/util/colorBits'
+import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 
@@ -237,4 +234,4 @@ export function getReadColor(
   }
 }
 
-export {normalizedRgbToCssRgba as rgba255} from '@jbrowse/core/util/colorBits'
+export { normalizedRgbToCssRgba as rgba255 } from '@jbrowse/core/util/colorBits'

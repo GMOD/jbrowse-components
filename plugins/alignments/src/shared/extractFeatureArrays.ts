@@ -6,7 +6,6 @@ import {
 } from '../features/modification/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
 
-import type { Mismatch } from '@jbrowse/alignments-core'
 import type { ColorBy } from './types.ts'
 import type {
   FeatureData,
@@ -18,6 +17,7 @@ import type {
   SoftclipData,
 } from './webglRpcTypes.ts'
 import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
+import type { Mismatch } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 interface ExtractOpts {
