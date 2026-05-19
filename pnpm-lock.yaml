@@ -320,6 +320,9 @@ importers:
 
   packages/alignments-core:
     dependencies:
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
@@ -362,6 +365,8 @@ importers:
       react-dom:
         specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
+
+  packages/cigar-utils: {}
 
   packages/core:
     dependencies:
@@ -934,9 +939,9 @@ importers:
       '@gmod/tabix':
         specifier: ^3.3.8
         version: 3.3.8
-      '@jbrowse/alignments-core':
+      '@jbrowse/cigar-utils':
         specifier: workspace:^
-        version: link:../../packages/alignments-core
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1367,6 +1372,9 @@ importers:
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

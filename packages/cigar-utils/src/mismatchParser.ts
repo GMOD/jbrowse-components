@@ -2,8 +2,6 @@ import { CIGAR_D, CIGAR_H, CIGAR_I, CIGAR_N, CIGAR_S } from './cigarConstants.ts
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
 import { mdToMismatches2 } from './mdToMismatches2.ts'
 
-import type { Feature } from '@jbrowse/core/util'
-
 const startClip = new RegExp(/(\d+)[SH]$/)
 const endClip = new RegExp(/^(\d+)([SH])/)
 
@@ -123,10 +121,6 @@ export function getClip(cigar: string, strand: number) {
   return strand === -1
     ? +(startClip.exec(cigar) ?? [])[1]! || 0
     : +(endClip.exec(cigar) ?? [])[1]! || 0
-}
-
-export function getTag(feature: Feature, tag: string) {
-  return feature.get('tags')?.[tag]
 }
 
 // produces a list of "feature-like" object from parsing supplementary

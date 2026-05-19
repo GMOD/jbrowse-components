@@ -36,35 +36,31 @@ export {
   CIGAR_P,
   CIGAR_S,
   CIGAR_X,
-} from './cigarConstants.ts'
-export {
-  visitCigarOps,
-  visitCigarRenderedSegments,
-  visitCsOps,
-} from './cigarOpsVisitor.ts'
-export type { CigarOpsVisitor } from './cigarOpsVisitor.ts'
-export {
+  cigarToMismatches2,
   featurizeSA,
   getClip,
   getLength,
   getLengthOnRef,
   getLengthSansClipping,
   getMismatches,
-  getTag,
+  getNextRefPos,
+  mdToMismatches2,
   parseCigar2,
   parseCigar2Typed,
-} from './mismatchParser.ts'
-export { cigarToMismatches2 } from './cigarToMismatches2.ts'
-export { mdToMismatches2 } from './mdToMismatches2.ts'
-export { getNextRefPos } from './getNextRefPos.ts'
+  visitCigarOps,
+  visitCigarRenderedSegments,
+  visitCsOps,
+} from '@jbrowse/cigar-utils'
 export type {
+  CigarOpsVisitor,
   ClipMismatch,
   DeletionMismatch,
   InsertionMismatch,
   Mismatch,
   SNPMismatch,
   SkipMismatch,
-} from './mismatchTypes.ts'
+} from '@jbrowse/cigar-utils'
+export { getTag } from './getTag.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
   CANVAS2D_COVERAGE,

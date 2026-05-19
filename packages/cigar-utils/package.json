@@ -1,14 +1,14 @@
 {
-  "name": "@jbrowse/alignments-core",
+  "name": "@jbrowse/cigar-utils",
   "version": "4.1.14",
   "type": "module",
-  "description": "Shared GPU rendering utilities for alignments and synteny displays",
+  "description": "Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps",
   "keywords": [
     "jbrowse",
     "jbrowse2",
-    "gpu",
-    "webgl",
-    "webgpu"
+    "cigar",
+    "sam",
+    "bam"
   ],
   "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
@@ -16,7 +16,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "packages/alignments-core"
+    "directory": "packages/cigar-utils"
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
@@ -26,16 +26,12 @@
   "scripts": {
     "build:esm": "tsgo -p tsconfig.build.esm.json",
     "build": "pnpm build:esm",
-    "test": "cd ../..; jest --passWithNoTests packages/alignments-core",
+    "test": "cd ../..; jest --passWithNoTests packages/cigar-utils",
     "clean": "rimraf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "prepack": "pnpm build"
   },
-  "dependencies": {
-    "@jbrowse/cigar-utils": "workspace:^",
-    "@jbrowse/core": "workspace:^",
-    "@jbrowse/wiggle-core": "workspace:^"
-  },
+  "dependencies": {},
   "publishConfig": {
     "access": "public",
     "main": "esm/index.js",

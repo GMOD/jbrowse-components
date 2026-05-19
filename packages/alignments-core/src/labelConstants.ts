@@ -5,7 +5,7 @@ import {
   CIGAR_M,
   CIGAR_N,
   CIGAR_X,
-} from './cigarConstants.ts'
+} from '@jbrowse/cigar-utils'
 
 export const LONG_INSERTION_MIN_LENGTH = 10
 export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15
