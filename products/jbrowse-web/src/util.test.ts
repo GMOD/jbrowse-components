@@ -23,8 +23,8 @@ describe('b64PadSuffix', () => {
   })
 
   it('throws for length % 4 === 1', () => {
-    expect(() => b64PadSuffix('a')).toThrow('base64 not a valid length')
-    expect(() => b64PadSuffix('abcda')).toThrow('base64 not a valid length')
+    expect(() => b64PadSuffix('a')).toThrow('Illegal base64url string!')
+    expect(() => b64PadSuffix('abcda')).toThrow('Illegal base64url string!')
   })
 })
 
