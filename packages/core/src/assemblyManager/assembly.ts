@@ -263,7 +263,7 @@ export default function assemblyFactory(
        * #getter
        */
       get aliases(): string[] {
-        return self.getConf('aliases') || []
+        return self.getConf('aliases') ?? []
       },
 
       /**
@@ -307,7 +307,7 @@ export default function assemblyFactory(
        * #getter
        */
       get refNameColors() {
-        const colors: string[] = self.getConf('refNameColors') || []
+        const colors: string[] = self.getConf('refNameColors') ?? []
         return colors.length === 0 ? refNameColors : colors
       },
     }))
@@ -586,6 +586,14 @@ export default function assemblyFactory(
     }))
 }
 
+async function instantiateAdapter(
+  config: AnyConfigurationModel,
+  pluginManager: PluginManager,
+) {
+  const CLASS = await pluginManager.getAdapterType(config.type)!.getAdapterClass()
+  return new CLASS(config, undefined, pluginManager)
+}
+
 async function getRefNameAliases({
   config,
   pluginManager,
@@ -595,13 +603,10 @@ async function getRefNameAliases({
   pluginManager: PluginManager
   stopToken?: StopToken
 }) {
-  const type = pluginManager.getAdapterType(config.type)!
-  const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(
+  const adapter = (await instantiateAdapter(
     config,
-    undefined,
     pluginManager,
-  ) as BaseRefNameAliasAdapter
+  )) as BaseRefNameAliasAdapter
   return adapter.getRefNameAliases({ stopToken })
 }
 
@@ -612,10 +617,7 @@ async function getCytobands({
   config: AnyConfigurationModel
   pluginManager: PluginManager
 }) {
-  const type = pluginManager.getAdapterType(config.type)!
-  const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(config, undefined, pluginManager)
-
+  const adapter = await instantiateAdapter(config, pluginManager)
   // @ts-expect-error
   return adapter.getData()
 }
@@ -629,9 +631,10 @@ async function getAssemblyRegions({
   pluginManager: PluginManager
   stopToken?: StopToken
 }) {
-  const type = pluginManager.getAdapterType(config.type)!
-  const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(config, undefined, pluginManager) as RegionsAdapter
+  const adapter = (await instantiateAdapter(
+    config,
+    pluginManager,
+  )) as RegionsAdapter
   return adapter.getRegions({ stopToken })
 }
 

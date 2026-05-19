@@ -192,11 +192,7 @@ const adapterTypes = [
   'TwoBitAdapter',
 ] as const
 
-type AdapterType =
-  | 'IndexedFastaAdapter'
-  | 'BgzipFastaAdapter'
-  | 'UnindexedFastaAdapter'
-  | 'TwoBitAdapter'
+type AdapterType = (typeof adapterTypes)[number]
 
 const AssemblyAddForm = observer(function AssemblyAddForm({
   session,

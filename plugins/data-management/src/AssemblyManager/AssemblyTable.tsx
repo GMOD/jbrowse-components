@@ -62,14 +62,12 @@ const AssemblyTable = observer(function AssemblyTable({
                         data-testid={`${name}-delete`}
                         disabled={!editable}
                         onClick={() => {
-                          if (editable) {
-                            if (!session.removeAssembly) {
-                              session.notify(
-                                'Unable to find removeAssembly function',
-                              )
-                            } else {
-                              session.removeAssembly(name)
-                            }
+                          if (!session.removeAssembly) {
+                            session.notify(
+                              'Unable to find removeAssembly function',
+                            )
+                          } else {
+                            session.removeAssembly(name)
                           }
                         }}
                       >

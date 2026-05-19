@@ -15,7 +15,7 @@ const AssemblyEditor = observer(function AssemblyEditor({
   assembly,
   onClose,
 }: {
-  assembly?: AnyConfigurationModel
+  assembly: AnyConfigurationModel
   onClose: () => void
 }) {
   const { classes } = useStyles()
@@ -23,11 +23,7 @@ const AssemblyEditor = observer(function AssemblyEditor({
     <>
       <DialogContent>
         <div className={classes.container}>
-          {assembly ? (
-            <ConfigurationEditor model={{ target: assembly }} />
-          ) : (
-            <div>No assembly</div>
-          )}
+          <ConfigurationEditor model={{ target: assembly }} />
         </div>
       </DialogContent>
       <DialogActions>
