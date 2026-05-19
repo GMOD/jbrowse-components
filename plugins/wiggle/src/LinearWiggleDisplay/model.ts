@@ -194,6 +194,8 @@ export default function stateModelFactory(
         self.rpcDataMap.set(displayedRegionIndex, data)
       },
 
+      // clearAllRpcData comes from MultiRegionDisplayMixin, not WiggleCommonMixin,
+      // so this can't move to the mixin without a type cast.
       reload() {
         self.clearAllRpcData()
       },
