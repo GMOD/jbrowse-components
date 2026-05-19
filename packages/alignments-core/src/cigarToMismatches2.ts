@@ -7,9 +7,9 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-} from '../shared/cigarUtil.ts'
+} from './cigarConstants.ts'
 
-import type { Mismatch } from '../shared/types.ts'
+import type { Mismatch } from './mismatchTypes.ts'
 
 // Handles packed NUMERIC_CIGAR format from @gmod/bam
 // Format: Uint32Array where each value is (length << 4) | opIndex

@@ -5,7 +5,7 @@ import {
   CIGAR_M,
   CIGAR_X,
 } from '@jbrowse/alignments-core'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import { parseCigar2 } from '@jbrowse/alignments-core'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'

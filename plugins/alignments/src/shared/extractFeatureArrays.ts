@@ -6,7 +6,8 @@ import {
 } from '../features/modification/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
 
-import type { ColorBy, Mismatch } from './types.ts'
+import type { Mismatch } from '@jbrowse/alignments-core'
+import type { ColorBy } from './types.ts'
 import type {
   FeatureData,
   GapData,

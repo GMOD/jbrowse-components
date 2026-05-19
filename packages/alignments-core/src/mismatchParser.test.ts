@@ -1,6 +1,6 @@
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
-import { getMismatches, parseCigar2 } from './index.ts'
 import { mdToMismatches2 } from './mdToMismatches2.ts'
+import { getMismatches, parseCigar2 } from './mismatchParser.ts'
 
 const seq =
   'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTT'

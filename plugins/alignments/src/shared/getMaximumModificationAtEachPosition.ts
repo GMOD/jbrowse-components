@@ -1,4 +1,4 @@
-import { getNextRefPos } from '../MismatchParser/index.ts'
+import { getNextRefPos } from '@jbrowse/alignments-core'
 import { modProbAt } from '../ModificationParser/getModProbabilities.ts'
 
 import type { getModPositions } from '../ModificationParser/getModPositions.ts'

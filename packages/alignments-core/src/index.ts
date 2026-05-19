@@ -43,6 +43,28 @@ export {
   visitCsOps,
 } from './cigarOpsVisitor.ts'
 export type { CigarOpsVisitor } from './cigarOpsVisitor.ts'
+export {
+  featurizeSA,
+  getClip,
+  getLength,
+  getLengthOnRef,
+  getLengthSansClipping,
+  getMismatches,
+  getTag,
+  parseCigar2,
+  parseCigar2Typed,
+} from './mismatchParser.ts'
+export { cigarToMismatches2 } from './cigarToMismatches2.ts'
+export { mdToMismatches2 } from './mdToMismatches2.ts'
+export { getNextRefPos } from './getNextRefPos.ts'
+export type {
+  ClipMismatch,
+  DeletionMismatch,
+  InsertionMismatch,
+  Mismatch,
+  SNPMismatch,
+  SkipMismatch,
+} from './mismatchTypes.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
   CANVAS2D_COVERAGE,
@@ -72,6 +94,8 @@ export {
   FIELD_OFFSET_F32 as MOD_COVERAGE_FIELD_OFFSET_F32,
   INSTANCE_STRIDE_F32 as MOD_COVERAGE_STRIDE_F32,
 } from './modCoverageLayout.generated.ts'
+export { computeCoverage } from './coverageCompute.ts'
+export type { CoverageFeature, CoverageGap } from './coverageCompute.ts'
 export {
   YSCALEBAR_LABEL_OFFSET,
   buildCoverageTooltipBin,

@@ -1,6 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import { parseCigar2 } from '@jbrowse/alignments-core'
 import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'

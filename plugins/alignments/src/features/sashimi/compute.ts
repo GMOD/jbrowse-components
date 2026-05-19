@@ -1,4 +1,4 @@
-import type { CoverageGap } from '../coverage/compute.ts'
+import type { CoverageGap } from '@jbrowse/alignments-core'
 
 // Bucket skip-gaps by (start,end) and emit one arc per (junction, strand). The
 // junction Map is keyed by string concat — gap counts are typically small, so

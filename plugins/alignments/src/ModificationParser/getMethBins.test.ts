@@ -1,6 +1,6 @@
 import { getMethBins } from './getMethBins.ts'
 import { getModPositions } from './getModPositions.ts'
-import { parseCigar2 } from '../MismatchParser/index.ts'
+import { parseCigar2 } from '@jbrowse/alignments-core'
 
 import type { ParsedModData } from './getMethBins.ts'
 

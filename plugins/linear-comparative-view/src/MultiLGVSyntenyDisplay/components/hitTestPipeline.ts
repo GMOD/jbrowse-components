@@ -1,6 +1,6 @@
 import { visitCigarOps, visitCsOps } from '@jbrowse/alignments-core'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import { parseCigar2 } from '@jbrowse/alignments-core'
 
 import { buildHitTestOpsVisitor } from '../shared/extractCigarFeatures.ts'
 

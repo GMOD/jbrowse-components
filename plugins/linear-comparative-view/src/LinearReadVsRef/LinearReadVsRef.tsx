@@ -16,7 +16,7 @@ import {
   getLength,
   getLengthSansClipping,
   getTag,
-} from '@jbrowse/plugin-alignments'
+} from '@jbrowse/alignments-core'
 import {
   Button,
   CircularProgress,

@@ -1,4 +1,4 @@
-import type { Mismatch } from '../../shared/types.ts'
+import type { Mismatch } from '@jbrowse/alignments-core'
 import type { GapData } from '../../shared/webglRpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 

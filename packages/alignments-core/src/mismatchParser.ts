@@ -1,11 +1,4 @@
-import {
-  CIGAR_D,
-  CIGAR_H,
-  CIGAR_I,
-  CIGAR_N,
-  CIGAR_S,
-} from '@jbrowse/alignments-core'
-
+import { CIGAR_D, CIGAR_H, CIGAR_I, CIGAR_N, CIGAR_S } from './cigarConstants.ts'
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
 import { mdToMismatches2 } from './mdToMismatches2.ts'
 

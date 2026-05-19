@@ -9,7 +9,7 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-} from '../shared/cigarUtil.ts'
+} from './cigarConstants.ts'
 
 // Handles both packed Uint32Array and unpacked number[] formats
 export function getNextRefPos(

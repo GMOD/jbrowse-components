@@ -1,5 +1,5 @@
 import { modProbAt } from './getModProbabilities.ts'
-import { getNextRefPos } from '../MismatchParser/index.ts'
+import { getNextRefPos } from '@jbrowse/alignments-core'
 import {
   CIGAR_D,
   CIGAR_EQ,

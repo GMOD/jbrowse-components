@@ -1,8 +1,8 @@
 import {
+  computeCoverage,
   computeSNPCoverage,
   extractMismatchesFromCs,
 } from '@jbrowse/alignments-core'
-import { computeCoverage } from '@jbrowse/plugin-alignments'
 
 import { buildSyntenyRegionData } from '../LinearSyntenyRPC/buildSyntenyRegionData.ts'
 import { buildRegionData, feat } from './components/syntenyTestHelpers.ts'

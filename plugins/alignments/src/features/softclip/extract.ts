@@ -1,4 +1,4 @@
-import type { ClipMismatch } from '../../shared/types.ts'
+import type { ClipMismatch } from '@jbrowse/alignments-core'
 import type { SoftclipData } from '../../shared/webglRpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 

@@ -1,4 +1,4 @@
-import { computeCoverage } from './compute.ts'
+import { computeCoverage } from './coverageCompute.ts'
 
 describe('computeCoverage', () => {
   it('returns empty for no features', () => {

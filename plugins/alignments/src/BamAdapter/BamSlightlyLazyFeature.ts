@@ -13,7 +13,7 @@ import { convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type BamAdapter from './BamAdapter.ts'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes.ts'
-import type { Mismatch } from '../shared/types.ts'
+import type { Mismatch } from '@jbrowse/alignments-core'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class BamSlightlyLazyFeature

@@ -1,5 +1,3 @@
-import { cigarToMismatches2 } from './cigarToMismatches2.ts'
-import { parseCigar2 } from './index.ts'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -9,7 +7,9 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-} from '../shared/cigarUtil.ts'
+} from './cigarConstants.ts'
+import { cigarToMismatches2 } from './cigarToMismatches2.ts'
+import { parseCigar2 } from './mismatchParser.ts'
 
 const ml = (currLen: number, opIndex: number) => (currLen << 4) | opIndex
 const parseCigar3 = (args: string) => [...parseCigar2(args)]

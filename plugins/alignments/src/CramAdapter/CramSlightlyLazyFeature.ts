@@ -12,7 +12,7 @@ import { cacheGetter, convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type CramAdapter from './CramAdapter.ts'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes.ts'
-import type { Mismatch } from '../shared/types.ts'
+import type { Mismatch } from '@jbrowse/alignments-core'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 

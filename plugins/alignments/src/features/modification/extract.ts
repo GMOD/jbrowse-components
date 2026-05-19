@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/core/ui/theme'
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 
-import { parseCigar2 } from '../../MismatchParser/index.ts'
+import { parseCigar2 } from '@jbrowse/alignments-core'
 import { detectSimplexModifications } from '../../ModificationParser/detectSimplexModifications.ts'
 import { getMethBins } from '../../ModificationParser/getMethBins.ts'
 import { getModPositions } from '../../ModificationParser/getModPositions.ts'

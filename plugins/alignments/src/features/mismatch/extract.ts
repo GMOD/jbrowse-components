@@ -1,4 +1,4 @@
-import type { Mismatch } from '../../shared/types.ts'
+import type { Mismatch } from '@jbrowse/alignments-core'
 import type { MismatchData } from '../../shared/webglRpcTypes.ts'
 
 export function emitMismatch(

@@ -5,7 +5,7 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import { parseCigar2Typed } from '@jbrowse/plugin-alignments'
+import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'

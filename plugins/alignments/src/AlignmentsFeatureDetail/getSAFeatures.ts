@@ -4,7 +4,7 @@ import {
   featurizeSA,
   getClip,
   getLengthSansClipping,
-} from '../MismatchParser/index.ts'
+} from '@jbrowse/alignments-core'
 
 import type { AlignmentFeatureSerialized } from './util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

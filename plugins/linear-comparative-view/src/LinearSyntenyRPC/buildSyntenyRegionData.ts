@@ -1,10 +1,10 @@
 import {
+  computeCoverage,
   computeInsertionIndicators,
   computeSNPCoverage,
   extractIndelsFromCs,
   extractMismatchesFromCs,
 } from '@jbrowse/alignments-core'
-import { computeCoverage } from '@jbrowse/plugin-alignments'
 
 import type { SyntenyRegionData } from './syntenyRegionTypes.ts'
 import type { IndelEntry, MismatchEntry } from '@jbrowse/alignments-core'

@@ -4,7 +4,7 @@ import {
   visitCsOps,
 } from '@jbrowse/alignments-core'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import { parseCigar2 } from '@jbrowse/alignments-core'
 
 import {
   FIELD_OFFSET_F32 as FILL_FIELD,
