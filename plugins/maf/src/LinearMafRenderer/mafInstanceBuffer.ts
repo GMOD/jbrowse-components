@@ -62,7 +62,7 @@ interface Run {
 /**
  * Encode MAF alignment data into a GPU instance buffer. One quad per run
  * of consecutive same-colored cells. Runs on the *main thread* (see
- * `installMafLifecycle`'s per-region autorun) so theme / setting changes
+ * the per-region encode autorun in `LinearMafDisplay`) so theme / setting changes
  * re-encode without an RPC roundtrip — and merging is by *resolved color*,
  * which keeps the quad count proportional to color transitions, not to
  * bases.

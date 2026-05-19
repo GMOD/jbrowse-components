@@ -53,6 +53,7 @@ export {
 } from './LinearWiggleDisplay/index.ts'
 
 export { rendererMenuItems } from './shared/rendererMenuItems.tsx'
+export { WiggleCommonMixin } from './shared/WiggleCommonMixin.ts'
 
 export type {
   SourceRenderData,

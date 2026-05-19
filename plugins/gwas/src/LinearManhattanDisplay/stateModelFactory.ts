@@ -2,14 +2,23 @@ import { lazy } from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { installPerRegionGpuLifecycle } from '@jbrowse/core/gpu/installPerRegionGpuLifecycle'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  linearWiggleDisplayModelFactory,
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
+import {
+  WiggleCommonMixin,
   rendererMenuItems,
 } from '@jbrowse/plugin-wiggle'
-import { getNiceDomain } from '@jbrowse/wiggle-core'
+import {
+  YSCALEBAR_LABEL_OFFSET,
+  getNiceDomain,
+  getScale,
+} from '@jbrowse/wiggle-core'
 import { observable } from 'mobx'
 
 import { computeManhattanScoreRange } from './computeManhattanScoreRange.ts'
@@ -36,13 +45,16 @@ const LinearManhattanDisplayComponent = lazy(
 )
 
 export function stateModelFactory(
-  pluginManager: PluginManager,
+  _pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
     .compose(
       'LinearManhattanDisplay',
-      linearWiggleDisplayModelFactory(pluginManager, configSchema),
+      BaseDisplay,
+      TrackHeightMixin(),
+      MultiRegionDisplayMixin(),
+      WiggleCommonMixin(),
       types.model({
         type: types.literal('LinearManhattanDisplay'),
         /**
@@ -52,24 +64,23 @@ export function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      // 1:1 points keyed by displayedRegionIndex. The inherited wiggle
-      // `rpcDataMap` (of type WiggleDataResult) is never written to in this
-      // model — Manhattan owns its data path end-to-end. Don't try to use
-      // it; the right read site is `manhattanData`.
-      manhattanData: observable.map<number, ManhattanRpcResult>(),
-      // Currently hovered point. Distinct from wiggle's `featureUnderMouse`
-      // (different shape) — the hover circle + tooltip both read from here.
+      // 1:1 points keyed by displayedRegionIndex.
+      rpcDataMap: observable.map<number, ManhattanRpcResult>(),
+      // Currently hovered point — drives the hover circle + tooltip.
       manhattanHit: undefined as ManhattanHit | undefined,
     }))
     .views(self => ({
-      get TooltipComponent() {
-        return TooltipComponent
-      },
       get DisplayMessageComponent() {
         return LinearManhattanDisplayComponent
       },
+      get TooltipComponent() {
+        return TooltipComponent
+      },
+      get color() {
+        return self.getConfWithOverride<string>('color')
+      },
       get domain(): [number, number] | undefined {
-        const range = computeManhattanScoreRange(self.manhattanData.values())
+        const range = computeManhattanScoreRange(self.rpcDataMap.values())
         if (!range) {
           return undefined
         }
@@ -81,14 +92,36 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      // Replaces wiggle's rpcProps. SettingsInvalidate watches this shape —
-      // only `color` triggers a refetch (the worker bakes per-feature color
-      // into the result). Inherited wiggle keys (bicolorPivot, resolution)
-      // are deliberately omitted: they would cause wasted refetches because
-      // the GWAS executor doesn't consume them.
+      get ticks() {
+        const { height, domain, scaleType } = self
+        if (!domain) {
+          return undefined
+        }
+        const yTop = YSCALEBAR_LABEL_OFFSET
+        const yBottom = height - YSCALEBAR_LABEL_OFFSET - 1
+        const scale = getScale({
+          scaleType,
+          domain,
+          range: [yBottom, yTop],
+          inverted: false,
+        })
+        const minimalTicks = self.getConfWithOverride<boolean>('minimalTicks')
+        const values =
+          height < 100 || minimalTicks ? (domain as number[]) : scale.ticks(4)
+        return {
+          ticks: values.map(v => ({ value: v, y: scale(v) })),
+          yTop,
+          yBottom,
+        }
+      },
+      // SettingsInvalidate watches this shape — only `color` triggers a
+      // refetch (the worker bakes per-feature color into the result).
       rpcProps(): { color: string } {
         return { color: self.color }
       },
+      // Manhattan data is pre-transformed (-log10 p values) and zoom-
+      // independent. MultiRegionDisplayMixin's default isCacheValid is `true`,
+      // so no override is needed.
       manhattanRenderState(): ManhattanRenderState | undefined {
         if (!self.domain) {
           return undefined
@@ -100,29 +133,31 @@ export function stateModelFactory(
           canvasHeight: self.height,
         }
       },
-      // Replaces wiggle's menu — drops "Rendering type", "Resolution and
-      // summary", and "Scale type" (none apply to single-point rendering of
-      // pre-transformed -log10 p values). Reuses wiggle's shared Score +
-      // cross-hatch items via rendererMenuItems.
+      // Manhattan menu: just the shared Score submenu and cross-hatch toggle.
+      // Rendering type / Resolution / Scale type don't apply to single-point
+      // rendering of pre-transformed -log10 p values.
       trackMenuItems() {
         return rendererMenuItems(self)
       },
     }))
     .actions(self => ({
-      setManhattanData(idx: number, data: ManhattanRpcResult) {
-        self.manhattanData.set(idx, data)
+      setRpcData(idx: number, data: ManhattanRpcResult) {
+        self.rpcDataMap.set(idx, data)
       },
       setManhattanHit(hit: ManhattanHit | undefined) {
         self.manhattanHit = hit
       },
+      setColor(color?: string) {
+        self.setOverride('color', color)
+      },
       clearDisplaySpecificData() {
-        self.manhattanData.clear()
+        self.rpcDataMap.clear()
+      },
+      reload() {
+        self.clearAllRpcData()
       },
     }))
     .actions(self => ({
-      // Mirrors plugins/wiggle/src/LinearWiggleDisplay/model.ts fetchNeeded.
-      // Differences: no bpPerPx (GWAS data is zoom-independent) and no
-      // setLoadedBpPerPx after fetch.
       async fetchNeeded(
         needed: { region: Region; displayedRegionIndex: number }[],
       ) {
@@ -142,7 +177,7 @@ export function stateModelFactory(
                   sessionId,
                   adapterConfig,
                   region: r.region,
-                  color: self.color,
+                  ...self.rpcProps(),
                   stopToken: ctx.stopToken,
                   statusCallback: (msg: string) => {
                     if (isAlive(self)) {
@@ -152,7 +187,7 @@ export function stateModelFactory(
                 },
               )
               if (!ctx.isStale()) {
-                self.setManhattanData(
+                self.setRpcData(
                   r.displayedRegionIndex,
                   result as ManhattanRpcResult,
                 )
@@ -169,7 +204,7 @@ export function stateModelFactory(
       startGpuBackendLifecycle(backend: ManhattanBackend) {
         installPerRegionGpuLifecycle(
           self,
-          self.manhattanData,
+          self.rpcDataMap,
           backend,
           data => data,
           b => {

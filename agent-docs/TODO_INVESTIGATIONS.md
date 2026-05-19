@@ -34,6 +34,32 @@ incremental — return stable references for unchanged entries so per-key
 autoruns can detect no-op re-fires. Medium scope; most visible on
 whole-genome canvas tracks with N=24 chromosomes.
 
+Two-part fix:
+
+1. **Memoize `computeLaidOutData` per ref group.** Take a previous-output
+   cache as input. Group rpcDataMap by refKey as today; for any group where
+   (a) the set of region indices is unchanged, (b) each region's raw data
+   ref is identity-equal to last time, and (c) inputs (bpPerPx, showLabels,
+   etc.) are unchanged, reuse the previous output instances for every region
+   in that group. New region arrives → only its ref group recomputes, others
+   keep stable refs. Cache lives on the MST model alongside `laidOutDataMap`.
+
+2. **Convert `laidOutDataMap` from computed to observable map maintained by
+   an `afterAttach` autorun.** Autorun reads inputs, runs the memoized
+   compute, then diffs against the observable map — sets only changed keys
+   (stable refs trivially skip), deletes removed keys. Consumers
+   (`startGpuBackendLifecycle` upload, hit-testing, renderSvg) read the
+   observable map; the upload callback can then use
+   `installPerRegionGpuLifecycle` so only the genuinely-changed region's
+   per-key autorun fires and re-uploads. Adding a new chromosome to a
+   whole-genome canvas track: 1 GPU upload instead of N.
+
+Risk to manage: `featureIdIndex` / `subfeatureIdIndex` (built via `indexById`
+over `laidOutDataMap.values()`) currently re-derive whenever `laidOutDataMap`
+re-derives. After the change they'd need to either become observable-map
+maintained too, or each read with stable refs needs to memoize internally.
+Same shape applies to `maxY` and any other whole-map iteration.
+
 **Alignments/synteny: same O(N²) structure, small N.** `laidOutPileupMap` and
 the synteny `sync()` path are whole-map computed/iteration patterns with
 identical O(N²) mechanics. Per-key autoruns can't help because the whole-map

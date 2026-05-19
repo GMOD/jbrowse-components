@@ -23,14 +23,13 @@ export async function renderSvg(
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
   await when(
-    () =>
-      model.manhattanData.size > 0 || !!model.error || model.regionTooLarge,
+    () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
   )
   const { offsetPx } = view
   // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
   const scalebarLeft = Math.max(-offsetPx, 0)
   const height = model.height
-  const { ticks, manhattanData } = model
+  const { ticks, rpcDataMap } = model
   const renderState = model.manhattanRenderState()
 
   if (model.error) {
@@ -39,7 +38,7 @@ export async function renderSvg(
     )
   }
 
-  if (manhattanData.size === 0 || !renderState) {
+  if (rpcDataMap.size === 0 || !renderState) {
     return null
   }
 
@@ -60,7 +59,7 @@ export async function renderSvg(
   const manhattanNode = (
     <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
       {paintLayer(totalWidth, drawHeight, opts, ctx => {
-        drawManhattanToCtx(ctx, manhattanData, renderBlocks, state)
+        drawManhattanToCtx(ctx, rpcDataMap, renderBlocks, state)
       })}
     </g>
   )

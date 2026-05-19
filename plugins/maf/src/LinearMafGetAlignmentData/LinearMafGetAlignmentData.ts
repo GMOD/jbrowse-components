@@ -45,7 +45,7 @@ export interface LinearMafGetAlignmentDataResult {
  * Fetch MAF alignment features for a single region. Returns raw
  * `MafRegionData` (one or more blocks; each carries its own ref seq + rows
  * — see `mafBackendTypes.ts`). The GPU instance buffer is built on the
- * main thread (see `installMafLifecycle`) from this raw data plus the
+ * main thread (in `startGpuBackendLifecycle`'s per-region encode) from this raw data plus the
  * current `gpuProps()` — that way color/style toggles never round-trip
  * through the RPC.
  *

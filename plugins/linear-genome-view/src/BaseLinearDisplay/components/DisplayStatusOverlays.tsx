@@ -2,8 +2,10 @@ import { ErrorBar, LoadingOverlay } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 // FetchMixin status surface. Each overlay only Picks the fields it reads.
+// `error` is `unknown` to match FetchMixin's volatile (which preserves
+// non-Error throws); ErrorBar normalizes at the boundary.
 interface DisplayStatusModel {
-  error: Error | null
+  error: unknown
   isReady: boolean
   statusMessage?: string
   reload: () => void

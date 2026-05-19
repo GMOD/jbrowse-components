@@ -23,7 +23,9 @@ interface UploadableBackend<Encoded> {
  * change re-fires every per-key autorun (O(N) re-encode).
  *
  * `encode` runs inside the per-key autorun, so any observable it reads (e.g.
- * a config-derived view) is auto-tracked.
+ * a config-derived view) is auto-tracked. Returning `undefined` skips the
+ * upload for this tick — the autorun stays subscribed and re-fires once the
+ * missing input (e.g. a theme-derived encoder param) becomes available.
  *
  * `render` is forwarded as-is to `installGpuDisplay`; it owns the per-frame
  * draw call and returns whether anything was actually drawn (gates the
@@ -37,7 +39,7 @@ export function installPerRegionGpuLifecycle<
   self: PerRegionGpuLifecycleSelf,
   rpcDataMap: ObservableMap<number, Data>,
   backend: B,
-  encode: (data: Data) => Encoded,
+  encode: (data: Data) => Encoded | undefined,
   render: InstallGpuDisplayCallbacks<B>['render'],
 ) {
   const perKeyDisposers = new Map<number, () => void>()
@@ -59,8 +61,11 @@ export function installPerRegionGpuLifecycle<
               const data = rpcDataMap.get(key)
               const bCurrent = self.currentGpuBackend as B | undefined
               if (data !== undefined && bCurrent !== undefined) {
-                bCurrent.uploadRegion(key, encode(data))
-                self.renderNow()
+                const encoded = encode(data)
+                if (encoded !== undefined) {
+                  bCurrent.uploadRegion(key, encoded)
+                  self.renderNow()
+                }
               }
             }),
           )

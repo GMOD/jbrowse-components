@@ -38,7 +38,7 @@ export class GpuMafRenderer implements MafBackend {
       this.hal.deleteRegion(displayedRegionIndex)
       this.regionCount.delete(displayedRegionIndex)
     } else {
-      // Buffer is pre-encoded on the main thread (see installMafLifecycle).
+      // Buffer is pre-encoded on the main thread by the per-region encode autorun.
       // The shader unpacks absolute genomic coords + rowIndex + color.
       this.hal.uploadBuffer(displayedRegionIndex, PASS_RECT, instanceBuffer, instanceCount)
       this.regionCount.set(displayedRegionIndex, instanceCount)

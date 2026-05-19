@@ -5,7 +5,7 @@
 //
 // Colors are baked into the instance (one packed ABGR per run) so the
 // main-thread encoder (`buildInstanceBuffer`, called from
-// `installMafLifecycle`'s per-region autorun) can run-merge consecutive
+// the per-region encode autorun in `LinearMafDisplay`) can run-merge consecutive
 // same-colored cells — keeping the per-region quad count proportional to
 // the number of color transitions, not the number of bases. Theme /
 // setting changes re-encode on the main thread; no RPC roundtrip.

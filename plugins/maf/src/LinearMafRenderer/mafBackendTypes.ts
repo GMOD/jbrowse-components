@@ -32,8 +32,9 @@ export interface MafRegionData {
 
 // Inputs to `buildInstanceBuffer` — derived from theme + user toggles on
 // the main thread. Changes here re-encode (without refetching). The
-// instance buffer itself is built in `installMafLifecycle`'s per-region
-// autorun, so color/style settings never round-trip through the worker.
+// instance buffer itself is built in the per-region encode autorun
+// installed by `startGpuBackendLifecycle`, so color/style settings never
+// round-trip through the worker.
 export interface MafGpuProps {
   colorForBase: Record<string, string>
   showAllLetters: boolean

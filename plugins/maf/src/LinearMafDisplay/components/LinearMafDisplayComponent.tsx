@@ -2,6 +2,10 @@ import React, { useEffect, useMemo, useRef } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView, getSession, useGpuModelLifecycle } from '@jbrowse/core/util'
+import {
+  DisplayErrorBar,
+  DisplayLoadingOverlay,
+} from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -95,20 +99,8 @@ const LinearMafDisplay = observer(function (props: {
         </SvgWrapper>
       ) : null}
       <MsaHighlightOverlay model={model} view={view} height={height} />
-      {!model.canvasDrawn ? (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(255,255,255,0.7)',
-          }}
-        >
-          {model.statusMessage ?? 'Loading…'}
-        </div>
-      ) : null}
+      <DisplayErrorBar model={model} />
+      <DisplayLoadingOverlay model={model} />
       {mouseY !== undefined &&
       mouseX !== undefined &&
       mouseX > sidebarWidth &&

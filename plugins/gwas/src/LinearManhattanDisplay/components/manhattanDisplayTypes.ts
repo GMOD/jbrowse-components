@@ -15,7 +15,7 @@ import type { YScaleTicks, WiggleRenderBlock } from '@jbrowse/wiggle-core'
 // wiggleDisplayTypes.ts.
 export interface ManhattanDisplayModel
   extends GpuLifecycleModel<ManhattanBackend> {
-  manhattanData: ReadonlyMap<number, ManhattanRpcResult>
+  rpcDataMap: ReadonlyMap<number, ManhattanRpcResult>
   renderBlocks: WiggleRenderBlock[]
   manhattanRenderState(): ManhattanRenderState | undefined
   height: number

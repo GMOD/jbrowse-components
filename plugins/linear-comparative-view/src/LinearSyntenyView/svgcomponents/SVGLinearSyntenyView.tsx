@@ -77,7 +77,7 @@ export async function renderToSvg(
         tracks.map(async (track: TrackEntry) => {
           const d = track.displays[0] as LinearSyntenyDisplayModel
           await when(() => d.ready)
-          return renderSyntenyDisplaySvg(d)
+          return renderSyntenyDisplaySvg(d, opts)
         }),
       )
     }),

@@ -61,16 +61,16 @@ export function linearSyntenyViewHelperModelFactory(
         collapsed: false,
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       * Shared GPU backend owned by this level. All synteny displays within
-       * the level upload their geometry to the same backend and render onto
-       * one canvas.
-       */
-      gpuBackend: null as SyntenyBackend | null,
-    }))
     .views(self => ({
+      /**
+       * #getter
+       * Typed accessor for the slot-mixin-owned `currentGpuBackend`. All
+       * synteny displays within the level upload their geometry to the same
+       * backend and render onto one canvas.
+       */
+      get gpuBackend(): SyntenyBackend | undefined {
+        return self.currentGpuBackend as SyntenyBackend | undefined
+      },
       get effectiveHeight() {
         return self.collapsed ? 10 : self.height
       },
@@ -205,61 +205,53 @@ export function linearSyntenyViewHelperModelFactory(
         return m
       },
     }))
-    .actions(self => {
-      const baseStop = self.stopGpuBackendLifecycle
-      return {
-        /**
-         * #action
-         */
-        startGpuBackendLifecycle(backend: SyntenyBackend) {
-          self.gpuBackend = backend
-          // renderInstanceData is MST-cached; its reference is stable while
-          // upstream deps are unchanged. Track what we last uploaded per
-          // key so an upload-autorun re-fire from one display doesn't push
-          // identical bytes back to the GPU for the others.
-          const lastUploaded = new Map<number, SyntenyInstanceData>()
-          let prevUploadBackend: SyntenyBackend | undefined
-          self.installGpuDisplay<SyntenyBackend>(backend, {
-            upload: b => {
-              // When the backend instance changes (e.g. canvas remounted after
-              // context loss or Suspense), the new backend has no geometry —
-              // clear the cache to force a full re-upload.
-              if (b !== prevUploadBackend) {
-                lastUploaded.clear()
-                prevUploadBackend = b
+    .actions(self => ({
+      /**
+       * #action
+       */
+      startGpuBackendLifecycle(backend: SyntenyBackend) {
+        // renderInstanceData is MST-cached; its reference is stable while
+        // upstream deps are unchanged. Track what we last uploaded per
+        // key so an upload-autorun re-fire from one display doesn't push
+        // identical bytes back to the GPU for the others.
+        const lastUploaded = new Map<number, SyntenyInstanceData>()
+        let prevUploadBackend: SyntenyBackend | undefined
+        self.installGpuDisplay<SyntenyBackend>(backend, {
+          upload: b => {
+            // When the backend instance changes (e.g. canvas remounted after
+            // context loss or Suspense), the new backend has no geometry —
+            // clear the cache to force a full re-upload.
+            if (b !== prevUploadBackend) {
+              lastUploaded.clear()
+              prevUploadBackend = b
+            }
+            const currentKeys = new Set<number>()
+            for (const [key, data] of self.geometryByDisplayKey) {
+              currentKeys.add(key)
+              if (lastUploaded.get(key) === data) {
+                continue
               }
-              const currentKeys = new Set<number>()
-              for (const [key, data] of self.geometryByDisplayKey) {
-                currentKeys.add(key)
-                if (lastUploaded.get(key) === data) {
-                  continue
-                }
-                b.uploadGeometry(key, data)
-                lastUploaded.set(key, data)
+              b.uploadGeometry(key, data)
+              lastUploaded.set(key, data)
+            }
+            for (const key of lastUploaded.keys()) {
+              if (!currentKeys.has(key)) {
+                b.deleteGeometry(key)
+                lastUploaded.delete(key)
               }
-              for (const key of lastUploaded.keys()) {
-                if (!currentKeys.has(key)) {
-                  b.deleteGeometry(key)
-                  lastUploaded.delete(key)
-                }
-              }
-            },
-            render: b => {
-              const state = self.syntenyRenderState
-              if (!state) {
-                return false
-              }
-              b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
-              return b.render(state)
-            },
-          })
-        },
-        stopGpuBackendLifecycle() {
-          baseStop()
-          self.gpuBackend = null
-        },
-      }
-    })
+            }
+          },
+          render: b => {
+            const state = self.syntenyRenderState
+            if (!state) {
+              return false
+            }
+            b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
+            return b.render(state)
+          },
+        })
+      },
+    }))
 }
 
 export type LinearSyntenyViewHelperStateModel = ReturnType<

@@ -1,4 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { installPerRegionGpuLifecycle } from '@jbrowse/core/gpu/installPerRegionGpuLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
@@ -19,8 +20,8 @@ import { observable } from 'mobx'
 
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { fetchMafAlignmentData } from './fetchMafAlignmentData.ts'
-import { installMafLifecycle } from './installMafLifecycle.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
+import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import {
   computeNodeDescendantNames,
   getMsaHighlights,
@@ -438,7 +439,7 @@ export default function stateModelFactory(
       /**
        * #method
        * Inputs to the main-thread GPU instance encoder. Changes here
-       * re-encode in `installMafLifecycle`'s per-region autoruns — no RPC
+       * re-encode in the per-region encode autorun — no RPC
        * roundtrip. Intentionally excludes `showAsUpperCase` (label-only)
        * and view-shape props (rowHeight, rowProportion — driven by shader
        * uniforms).
@@ -539,6 +540,9 @@ export default function stateModelFactory(
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
       },
+      reload() {
+        self.clearAllRpcData()
+      },
       // Override base setHeight: distribute the new total height across rows so
       // the resize handle and programmatic setHeight both work.
       setHeight(newHeight: number) {
@@ -548,7 +552,40 @@ export default function stateModelFactory(
         }
       },
       startGpuBackendLifecycle(backend: MafBackend) {
-        installMafLifecycle(self, backend)
+        // Per-region streamed upload. The encode callback builds the GPU
+        // instance buffer on the main thread from raw region data + gpuProps,
+        // so theme / showAllLetters / mismatchRendering changes re-encode
+        // without an RPC roundtrip. Returning undefined while gpuProps isn't
+        // ready (theme not yet pushed in by the React bridge) holds the
+        // upload until it is — see installPerRegionGpuLifecycle.
+        installPerRegionGpuLifecycle(
+          self,
+          self.rpcDataMap,
+          backend,
+          regionData => {
+            const props = self.gpuProps()
+            if (!props) {
+              return undefined
+            }
+            const { buffer, count } = buildInstanceBuffer({
+              blocks: regionData.blocks,
+              ...props,
+            })
+            return {
+              instanceBuffer: buffer,
+              instanceCount: count,
+              regionData,
+            }
+          },
+          b => {
+            const state = self.mafRenderState
+            if (!state) {
+              return false
+            }
+            b.renderBlocks(self.renderBlocks, state)
+            return true
+          },
+        )
       },
     }))
     .actions(self => ({

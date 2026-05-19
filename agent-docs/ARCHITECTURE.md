@@ -250,20 +250,35 @@ export function XxxRenderer(canvas: HTMLCanvasElement) {
 `initDualBackend` calls `createGpuHal`; if a HAL is returned, the GPU backend
 is constructed, otherwise Canvas 2D.
 
-### Wiggle-family contract (shared via `@jbrowse/wiggle-core`)
+### Wiggle-family contract
 
 Wiggle-style per-position GPU displays (wiggle, multi-wiggle, Manhattan)
-share one backend interface and one set of payload types, all in
-`packages/wiggle-core/src/`:
+share types and scale utilities. Two packages split the surface:
+
+`@jbrowse/wiggle-core` — the cross-plugin contract. Import types and pure
+utilities from here so new plugins don't drag in the wiggle plugin's MST
+factories or RPC methods:
 
 - `backendTypes.ts` — `WiggleBackend`, `WiggleGPURenderState`, `SourceRenderData`
 - `dataTypes.ts` — `WiggleDataResult`, `WiggleSourceData`, `WiggleFeatureArrays`
 - `normalize.ts` — `SCALE_TYPE_LOG`/`LINEAR`, `scaleTypeFromString`, `makeScoreNormalizer`
 - `displayModel.ts` — `WiggleGpuDisplayModel<TBackend>`: model↔component contract
+- `scale.ts` / `autoscale.ts` — `getNiceDomain`, `getScale`, autoscale helpers
 
-GWAS's Manhattan reuses `linearWiggleDisplayModelFactory` + the wiggle RPC, and
-implements `WiggleBackend` with its own pass. New wiggle-style displays should
-import from `@jbrowse/wiggle-core`, not `@jbrowse/plugin-wiggle`.
+`@jbrowse/plugin-wiggle` — composable model pieces. These live in the plugin
+because they depend on `BaseDisplay` / `MultiRegionDisplayMixin` and wire up
+RPC methods:
+
+- `linearWiggleDisplayConfigSchema` / `linearWiggleDisplayModelFactory` — used
+  by GWAS's `LinearManhattanDisplay` as the base for config + model
+- `rendererMenuItems(self, {extraScoreItems})` — shared Score + cross-hatch
+  menu items composed by every wiggle-family display
+
+GWAS's Manhattan composes `linearWiggleDisplayModelFactory` for the shared
+score-domain / cross-hatch / color machinery, but ships its own
+`GetManhattanData` RPC (Manhattan returns per-feature points, not pre-binned
+density), implements `WiggleBackend` with its own pass, and overrides
+`isCacheValid` to `() => true` since Manhattan data is zoom-independent.
 
 ### Three upload patterns
 
@@ -726,10 +741,18 @@ key on a tuple of two displayedRegion indices.
   `packages/core/src/gpu/createDualRenderer.ts`. Use `slangPass()` to build
   the `PassDescriptor`.
 - **MST model:**
-  - Compose `MultiRegionDisplayMixin()` for LGV-family displays (brings in
-    `GpuBackendLifecycleSlotMixin`, `FetchMixin`, fetch autorun, and
-    `rpcProps()`→refetch wiring); non-region displays compose
-    `GpuBackendLifecycleSlotMixin()` directly.
+  - Compose `MultiRegionDisplayMixin()` for LGV-family per-region displays
+    (brings in `GpuBackendLifecycleSlotMixin`, `FetchMixin`,
+    `RegionTooLargeMixin`, the four fetch autoruns, and `rpcProps()`→refetch
+    wiring).
+  - Compose `GlobalDataDisplayMixin()` for displays that hold a single
+    non-regional dataset (HiC contact matrix, LD triangle, variant matrix).
+    Same slot mixin + `FetchMixin` + `RegionTooLargeMixin` plumbing, but
+    **no** fetch autoruns — each display installs its own `afterAttach`
+    autorun expressing its trigger conditions (e.g. HiC: viewport change;
+    LD: viewport + `showLDTriangle` + …).
+  - Compose `GpuBackendLifecycleSlotMixin()` directly only when neither
+    fetch surface is needed (rare — most GPU displays fetch something).
   - Add a cached `renderState` view.
   - Define `startGpuBackendLifecycle(backend)` calling
     `self.installGpuDisplay(backend, { upload, render })`.
@@ -743,8 +766,10 @@ key on a tuple of two displayedRegion indices.
   For FetchMixin status, mount `DisplayErrorBar` + `DisplayLoadingOverlay`
   from `@jbrowse/plugin-linear-genome-view` (generic over any model with
   `{ error, reload, isReady, statusMessage }`).
-- **Wiggle-style displays** — compose `linearWiggleDisplayModelFactory` and
-  implement `WiggleBackend` from `@jbrowse/wiggle-core`; see plugins/gwas.
+- **Wiggle-style displays** — compose `linearWiggleDisplayModelFactory` from
+  `@jbrowse/plugin-wiggle` and implement `WiggleBackend` (typed from
+  `@jbrowse/wiggle-core`). Override `isCacheValid` to `() => true` if the
+  display is zoom-independent. See plugins/gwas.
 - **Tests** — unit (`MockHal`); browser (Puppeteer, `--backend=webgl|webgpu|canvas2d`).
 
 ---

@@ -51,7 +51,7 @@ const LinearManhattanDisplayComponent = observer(
           event.clientX - rect.left,
           event.clientY - rect.top - YSCALEBAR_LABEL_OFFSET,
           model.renderBlocks,
-          model.manhattanData,
+          model.rpcDataMap,
           state,
           refNames,
         )
