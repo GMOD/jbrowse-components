@@ -381,8 +381,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.22
-        version: 6.0.22
+        specifier: ^6.0.23
+        version: 6.0.23
       '@jbrowse/jexl':
         specifier: ^3.0.2
         version: 3.0.2
@@ -682,8 +682,8 @@ importers:
         specifier: ^7.2.4
         version: 7.2.4
       '@gmod/cram':
-        specifier: ^8.2.3
-        version: 8.2.3
+        specifier: ^8.2.4
+        version: 8.2.4
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -806,8 +806,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/bbi':
-        specifier: ^9.0.16
-        version: 9.0.16
+        specifier: ^9.0.17
+        version: 9.0.17
       '@gmod/bed':
         specifier: ^2.2.5
         version: 2.2.5
@@ -1209,8 +1209,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.22
-        version: 6.0.22
+        specifier: ^6.0.23
+        version: 6.0.23
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1470,8 +1470,8 @@ importers:
   plugins/maf:
     dependencies:
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.22
-        version: 6.0.22
+        specifier: ^6.0.23
+        version: 6.0.23
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1806,8 +1806,8 @@ importers:
   plugins/wiggle:
     dependencies:
       '@gmod/bbi':
-        specifier: ^9.0.16
-        version: 9.0.16
+        specifier: ^9.0.17
+        version: 9.0.17
       '@gmod/hclust':
         specifier: ^3.0.14
         version: 3.0.14
@@ -3756,8 +3756,8 @@ packages:
   '@gmod/bam@7.2.4':
     resolution: {integrity: sha512-arBx8cmGR0uxpgluz5z3d4kzXZAkq88P0MZkmCp/+KeA6e/fM6pNa4CUzT1H7SLfo6+hUHrC8t4bByoy50RQ+w==}
 
-  '@gmod/bbi@9.0.16':
-    resolution: {integrity: sha512-IjDMlOSXFHl3iGtX9RcBjYyJKPItgDYRuvLYDF+VQ61kRQx3gYzxSDTXidRnMqPrTWyIxtCcHtoG/fPAgLt4Fw==}
+  '@gmod/bbi@9.0.17':
+    resolution: {integrity: sha512-+JO08Ct0MPWdqLygd+XcwgJoq/543B7spkeZW1E/Xl43WFC9JPZotoB425Y2ylKq3tFgBiTKEPc7t+THY4SqTQ==}
 
   '@gmod/bed@2.2.5':
     resolution: {integrity: sha512-bk+D5yrV1cxNCuiJ771iK68jmU8yEGV2vufdJW1SjeByl7ievJoYKgRdSwEol4hleqV1cNcmlMvfmj3t+n+OMw==}
@@ -3765,8 +3765,11 @@ packages:
   '@gmod/bgzf-filehandle@6.0.22':
     resolution: {integrity: sha512-ePqBw/N1+AC0fE/klwVxqxFoldJZzmgGWRZeXPebSoYcT9wIsekj5ZHiS9zGL42VsGmmCwmnTm9D4cE5x+Wr8w==}
 
-  '@gmod/cram@8.2.3':
-    resolution: {integrity: sha512-xksMifqkVtqELYS1D/rGQuZNPPawdWWj+mFVeuP0VjG1OEVlFp1lJ86EjAMib39XleMNAzLVfJ8bOPqM5qeZ2w==}
+  '@gmod/bgzf-filehandle@6.0.23':
+    resolution: {integrity: sha512-Xrkzq1sP09HOiKfjJGN1eRWKOjSvx4nNhNmeZBIwYCQSVgEyrzQn6GKW3QqK9RAZmkmc2wlkjly2jMBbq/++vA==}
+
+  '@gmod/cram@8.2.4':
+    resolution: {integrity: sha512-XO7H8Fj1pClAnaKlGRt7zwGQyW2GenSSl9WmpKeXZ9FDd0i/jLyoKhzj9I1IZmsN0NoqKT9LqXZeHmaaCr0aNQ==}
 
   '@gmod/faidx@2.0.0':
     resolution: {integrity: sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==}
@@ -10848,7 +10851,7 @@ snapshots:
     transitivePeerDependencies:
       - buffer
 
-  '@gmod/bbi@9.0.16':
+  '@gmod/bbi@9.0.17':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@jbrowse/quick-lru': 7.3.5
@@ -10862,7 +10865,13 @@ snapshots:
       generic-filehandle2: 2.1.7
       pako-esm2: 2.0.2
 
-  '@gmod/cram@8.2.3':
+  '@gmod/bgzf-filehandle@6.0.23':
+    dependencies:
+      '@jbrowse/quick-lru': 7.3.5
+      generic-filehandle2: 2.1.7
+      pako-esm2: 2.0.2
+
+  '@gmod/cram@8.2.4':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
