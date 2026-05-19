@@ -1,6 +1,7 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { IntervalTree, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
+import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { parseNamesFromHeader } from '../util.ts'
@@ -14,7 +15,6 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
     header: string
     feats1: Record<string, string[]>
     feats2: Record<string, string[]>
-    columnNames: string[]
   }>
 
   protected intervalTrees: Record<
@@ -25,36 +25,35 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   private async loadDataP(opts?: BaseOptions) {
-    const data = await fetchAndMaybeUnzipText(
+    const buffer = await fetchAndMaybeUnzip(
       openLocation(this.getConf('bedpeLocation'), this.pluginManager),
       opts,
     )
 
-    const lines = data.split(/\n|\r\n|\r/).filter(Boolean)
-    let i = 0
-    while (i < lines.length && lines[i]!.startsWith('#')) {
-      i++
-    }
-    const header = lines.slice(0, i).join('\n')
+    const headerLines: string[] = []
     const feats1: Record<string, string[]> = {}
     const feats2: Record<string, string[]> = {}
-    for (; i < lines.length; i++) {
-      const line = lines[i]!
-      const cols = line.split('\t')
-      const r1 = cols[0]!
-      const r2 = cols[3]!
-      feats1[r1] ??= []
-      feats2[r2] ??= []
-      feats1[r1].push(line)
-      feats2[r2].push(line)
-    }
-    const columnNames = this.getConf('columnNames')
+    parseLineByLine(
+      buffer,
+      line => {
+        if (line.startsWith('#')) {
+          headerLines.push(line)
+        } else {
+          const cols = line.split('\t')
+          const r1 = cols[0]!
+          const r2 = cols[3]!
+          ;(feats1[r1] ??= []).push(line)
+          ;(feats2[r2] ??= []).push(line)
+        }
+        return true
+      },
+      opts?.statusCallback,
+    )
 
     return {
-      header,
+      header: headerLines.join('\n'),
       feats1,
       feats2,
-      columnNames,
     }
   }
 
@@ -78,8 +77,12 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
   }
 
   async getNames() {
-    const { header, columnNames } = await this.loadData()
-    return columnNames.length ? columnNames : parseNamesFromHeader(header)
+    const columnNames: string[] = this.getConf('columnNames')
+    if (columnNames.length) {
+      return columnNames
+    }
+    const { header } = await this.loadData()
+    return parseNamesFromHeader(header)
   }
 
   private async loadFeatureTreeP(refName: string) {

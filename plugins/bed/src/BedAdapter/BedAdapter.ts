@@ -18,11 +18,6 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     header: string
     features: Record<string, string[]>
     parser: BED
-    columnNames: string[]
-    scoreColumn: string
-    colRef: number
-    colStart: number
-    colEnd: number
   }>
 
   protected intervalTrees: Record<
@@ -42,11 +37,6 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
       header,
       features,
       parser: new BED({ autoSql: this.getConf('autoSql') }),
-      columnNames: this.getConf('columnNames'),
-      scoreColumn: this.getConf('scoreColumn'),
-      colRef: this.getConf('colRef'),
-      colStart: this.getConf('colStart'),
-      colEnd: this.getConf('colEnd'),
     }
   }
 
@@ -70,19 +60,26 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
   }
 
   async getNames() {
-    const { header, columnNames } = await this.loadData()
-    return columnNames.length ? columnNames : parseNamesFromHeader(header)
+    const columnNames: string[] = this.getConf('columnNames')
+    if (columnNames.length) {
+      return columnNames
+    }
+    const { header } = await this.loadData()
+    return parseNamesFromHeader(header)
   }
 
   private async loadFeatureIntervalTreeHelper(refName: string) {
-    const { colRef, colStart, colEnd, features, parser, scoreColumn } =
-      await this.loadData()
+    const { features, parser } = await this.loadData()
     const lines = features[refName]
     if (!lines) {
       return undefined
     }
     const names = await this.getNames()
-    const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
+    const scoreColumn: string = this.getConf('scoreColumn')
+    const colRef: number = this.getConf('colRef')
+    const colStart: number = this.getConf('colStart')
+    const colEnd: number = this.getConf('colEnd')
+    const disableGeneHeuristic: boolean = this.getConf('disableGeneHeuristic')
 
     const intervalTree = new IntervalTree<Feature>()
 

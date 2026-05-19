@@ -23,10 +23,6 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
 
   protected bed: TabixIndexedFile
 
-  protected columnNames: string[]
-
-  protected scoreColumn: string
-
   public static capabilities = ['getFeatures', 'getRefNames']
 
   setupP?: Promise<Awaited<ReturnType<TabixIndexedFile['getMetadata']>>>
@@ -40,7 +36,6 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     const bedGzLoc = this.getConf('bedGzLocation') as FileLocation
     const type = this.getConf(['index', 'indexType'])
     const loc = this.getConf(['index', 'location'])
-    const autoSql = this.getConf('autoSql')
     const pm = this.pluginManager
 
     this.bed = new TabixIndexedFile({
@@ -49,9 +44,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       tbiFilehandle: type !== 'CSI' ? openLocation(loc, pm) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
     })
-    this.columnNames = this.getConf('columnNames')
-    this.scoreColumn = this.getConf('scoreColumn')
-    this.parser = new BED({ autoSql })
+    this.parser = new BED({ autoSql: this.getConf('autoSql') })
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
@@ -78,8 +71,9 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   async getNames() {
-    if (this.columnNames.length) {
-      return this.columnNames
+    const columnNames: string[] = this.getConf('columnNames')
+    if (columnNames.length) {
+      return columnNames
     }
     return parseNamesFromHeader(await this.getHeader())
   }
@@ -92,7 +86,8 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1
       const names = await this.getNames()
-      const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
+      const scoreColumn: string = this.getConf('scoreColumn')
+      const disableGeneHeuristic: boolean = this.getConf('disableGeneHeuristic')
       const stopTokenCheck = createStopTokenChecker(stopToken)
       checkStopToken(stopToken)
       await updateStatus('Downloading features', statusCallback, () =>
@@ -107,7 +102,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
                   refName: splitLine[colRef]!,
                   start: +splitLine[colStart]!,
                   end: +splitLine[colEnd]! + (colStart === colEnd ? 1 : 0),
-                  scoreColumn: this.scoreColumn,
+                  scoreColumn,
                   parser: this.parser,
                   uniqueId: `${this.id}-${fileOffset}`,
                   names,

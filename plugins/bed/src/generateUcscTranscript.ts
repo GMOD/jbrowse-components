@@ -100,7 +100,8 @@ export function generateUcscTranscript(
     ...rest
   } = data
 
-  // exonFrames from bigGenePred - the @gmod/bed parser returns it in genomic order
+  // exonFrames from bigGenePred - the @gmod/bed parser returns it in genomic order.
+  // _exonFrames fallback supports BED files that use the underscore-prefixed column name.
   const exonFrames = (rest.exonFrames ?? rest._exonFrames) as
     | number[]
     | undefined

@@ -16,7 +16,6 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
   protected bedFeatures?: Promise<{
     header: string
     features: Record<string, string[]>
-    columnNames: string[]
   }>
 
   protected intervalTrees: Record<
@@ -25,8 +24,12 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
   > = {}
 
   async getNames() {
-    const { header, columnNames } = await this.loadData()
-    return columnNames.length ? columnNames : parseNamesFromHeader(header)
+    const columnNames: string[] = this.getConf('columnNames')
+    if (columnNames.length) {
+      return columnNames
+    }
+    const { header } = await this.loadData()
+    return parseNamesFromHeader(header)
   }
   private async loadFeatureIntervalTreeHelper(refName: string) {
     const { features } = await this.loadData()
@@ -75,12 +78,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
       openLocation(this.getConf('bedGraphLocation'), this.pluginManager),
       opts,
     )
-    const { header, features } = bucketBedLines(buffer, opts.statusCallback)
-    return {
-      header,
-      features,
-      columnNames: this.getConf('columnNames'),
-    }
+    return bucketBedLines(buffer, opts.statusCallback)
   }
 
   async loadFeatureIntervalTree(refName: string) {

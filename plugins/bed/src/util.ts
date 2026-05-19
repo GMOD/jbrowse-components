@@ -69,20 +69,16 @@ export function bucketBedLines(
 
 function defaultParser(fields: string[], splitLine: string[]): BedData {
   const obj: Record<string, string> = {}
-  let hasBlockCount = false
   for (const [i, element] of splitLine.entries()) {
     const field = fields[i]
     if (field) {
-      obj[field] = element!
-      if (field === 'blockCount') {
-        hasBlockCount = true
-      }
+      obj[field] = element
     }
   }
 
   // heuristically take the 'slow path' only when block fields are present, as
   // GWAS-type BED data can be very large and we avoid the extra work for it
-  if (hasBlockCount) {
+  if ('blockCount' in obj) {
     const {
       blockStarts,
       blockCount,

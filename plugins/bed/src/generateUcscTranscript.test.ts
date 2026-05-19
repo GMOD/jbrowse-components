@@ -388,7 +388,7 @@ describe('generateUcscTranscript', () => {
       ])
     })
 
-    it('handles _exonFrames (underscore prefix from BigBed)', () => {
+    it('handles _exonFrames (underscore prefix from column-name header)', () => {
       const result = generateUcscTranscript({
         uniqueId: 'exon2',
         start: 0,
