@@ -27,32 +27,10 @@ export interface AlignmentRecord {
 }
 
 /**
- * A MAF feature containing alignments from multiple organisms
- */
-export interface MafFeature {
-  start: number
-  end: number
-  refName: string
-  /** Reference sequence */
-  seq: string
-  /** Map of organism ID to alignment record */
-  alignments: Record<string, AlignmentRecord>
-}
-
-/**
  * Sample/organism metadata for display
  */
 export interface Sample {
   id: string
   label: string
   color?: string
-}
-
-/**
- * Genomic region for queries and rendering
- */
-export interface GenomicRegion {
-  start: number
-  end: number
-  refName: string
 }
