@@ -16,7 +16,7 @@ import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
-import { rendererMenuItems } from '../shared/rendererMenuItems.tsx'
+import { rendererMenuItems } from '../shared/rendererMenuItems.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
 import {
   makeResolutionAndSummarySubMenus,

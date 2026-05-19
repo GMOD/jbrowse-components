@@ -45,12 +45,12 @@ export async function writeAWSAnalytics(
     // stats to be recorded in db
     const stats: AnalyticsObj = {
       ver,
-      'plugins-count': plugins?.length || 0,
+      'plugins-count': plugins?.length ?? 0,
       'plugin-names': plugins?.map(p => p.name).join(','),
       'assemblies-count': assemblies.length,
       'tracks-count': tracks.length,
-      'session-tracks-count': session?.sessionTracks.length || 0,
-      'open-views': session?.views.length || 0,
+      'session-tracks-count': session?.sessionTracks.length ?? 0,
+      'open-views': session?.views.length ?? 0,
       'synteny-tracks-count': multiAssemblyTracks,
       'saved-sessions-count': savedSessionCount,
 

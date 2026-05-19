@@ -71,3 +71,7 @@ Not working/overcomplicated ui now
 ## GWAS
 
 recombination subtrack
+
+## Refactors
+
+why is renderermenuitems imported into gwas anyways, i thought we modularized it out to avoid having to use it at all in gwas

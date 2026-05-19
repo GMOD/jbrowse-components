@@ -13,8 +13,12 @@ interface ScrollSyncView {
 }
 
 // Two-way scroll sync between model.scrollTop (MST) and the DOM container.
-// model → DOM via autorun (catches programmatic resets like
-// clearDisplaySpecificData). DOM → model via a rAF-coalesced scroll listener.
+//
+// 1. model → DOM via autorun (catches programmatic resets like
+// clearDisplaySpecificData).
+//
+// 2. DOM → model via a rAF-coalesced scroll listener.
+//
 // The wheel listener also rescues Chrome's shift+wheel behavior: with
 // overflowX:hidden Chrome drops the remapped horizontal scroll (and can fire
 // overscroll back-navigation), so we do the vertical scroll ourselves.
@@ -23,17 +27,19 @@ export function useScrollSync(
   model: ScrollSyncModel,
   view: ScrollSyncView,
 ) {
-  useEffect(
-    () =>
-      autorun(() => {
-        const target = model.scrollTop
-        const container = containerRef.current
-        if (container && container.scrollTop !== target) {
-          container.scrollTop = target
-        }
-      }),
-    [containerRef, model],
-  )
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) {
+      return
+    }
+
+    return autorun(() => {
+      const target = model.scrollTop
+      if (el.scrollTop !== target) {
+        el.scrollTop = target
+      }
+    })
+  }, [containerRef, model])
 
   useEffect(() => {
     const container = containerRef.current

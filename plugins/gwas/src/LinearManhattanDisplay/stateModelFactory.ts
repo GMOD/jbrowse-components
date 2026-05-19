@@ -184,10 +184,7 @@ export function stateModelFactory(
                 },
               )
               if (!ctx.isStale()) {
-                self.setRpcData(
-                  r.displayedRegionIndex,
-                  result,
-                )
+                self.setRpcData(r.displayedRegionIndex, result)
               }
             }),
           )

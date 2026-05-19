@@ -1,9 +1,6 @@
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 
-import type {
-  ManhattanBackend,
-  ManhattanRenderState,
-} from './manhattanBackendTypes.ts'
+import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
 
