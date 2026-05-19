@@ -9,8 +9,6 @@ import type { ArcColorByType } from '../shared/types.ts'
 // (u.arcColor0..7 / u.arcLineColor0..1). Canvas2D / SVG arc renderers
 // reuse these same arrays. Adding a color here requires growing the Slang
 // Uniforms struct and the writeUniforms() palette copy.
-export const NUM_ARC_COLORS = 8
-export const NUM_LINE_COLORS = 2
 // Pixels of padding above the arc apex (must match arc.slang).
 export const ARC_HEIGHT_MARGIN = 8
 
@@ -48,7 +46,6 @@ export const arcLineColorPalette: RGBColor[] = [
 // Indices match LINKED_READ_COLOR_* in computeLinkedReadLines.ts. Used by the
 // GPU palette UBO, the Canvas2D draw, and the SVG export so the three paths
 // stay in lockstep.
-export const NUM_LINKED_READ_COLORS = 8
 export const linkedReadColorPalette: RGBColor[] = [
   rgb(fillColor.color_pair_lr), // 0 unknown
   rgb(fillColor.color_pair_lr), // 1 LR
@@ -66,7 +63,3 @@ export function getArcPalette(
   return colorByType === 'samplot' ? samplotArcColorPalette : arcColorPalette
 }
 
-export const sashimiColorPalette: RGBColor[] = [
-  rgb(fillColor.color_longinsert),
-  rgb(fillColor.color_interchrom),
-]
