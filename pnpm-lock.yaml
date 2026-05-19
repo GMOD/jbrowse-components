@@ -150,8 +150,8 @@ importers:
         specifier: ^0.2.6
         version: 0.2.6
       '@typescript/native-preview':
-        specifier: 7.0.0-dev.20260516.1
-        version: 7.0.0-dev.20260516.1
+        specifier: 7.0.0-dev.20260517.1
+        version: 7.0.0-dev.20260517.1
       '@webgpu/types':
         specifier: ^0.1.70
         version: 0.1.70
@@ -426,8 +426,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       dompurify:
-        specifier: ^3.4.3
-        version: 3.4.3
+        specifier: ^3.4.4
+        version: 3.4.4
       escape-html:
         specifier: ^1.0.3
         version: 1.0.3
@@ -530,8 +530,8 @@ importers:
   packages/sv-core:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.3
-        version: 7.0.3
+        specifier: ^7.0.5
+        version: 7.0.5
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
@@ -679,11 +679,11 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^7.1.21
-        version: 7.1.21
+        specifier: ^7.2.0
+        version: 7.2.0
       '@gmod/cram':
-        specifier: ^8.0.5
-        version: 8.0.5
+        specifier: ^8.2.1
+        version: 8.2.1
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -739,8 +739,8 @@ importers:
   plugins/arc:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.3
-        version: 7.0.3
+        specifier: ^7.0.5
+        version: 7.0.5
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -806,14 +806,14 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/bbi':
-        specifier: ^9.0.9
-        version: 9.0.9
+        specifier: ^9.0.11
+        version: 9.0.11
       '@gmod/bed':
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.3
+        version: 2.2.3
       '@gmod/tabix':
-        specifier: ^3.3.4
-        version: 3.3.4
+        specifier: ^3.3.6
+        version: 3.3.6
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -830,8 +830,8 @@ importers:
   plugins/breakpoint-split-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.3
-        version: 7.0.3
+        specifier: ^7.0.5
+        version: 7.0.5
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -902,8 +902,8 @@ importers:
   plugins/circular-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.3
-        version: 7.0.3
+        specifier: ^7.0.5
+        version: 7.0.5
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -932,8 +932,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.3.4
-        version: 3.3.4
+        specifier: ^3.3.6
+        version: 3.3.6
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1001,8 +1001,8 @@ importers:
   plugins/data-management:
     dependencies:
       '@gmod/ucsc-hub':
-        specifier: ^2.0.4
-        version: 2.0.4
+        specifier: ^2.0.7
+        version: 2.0.7
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1116,8 +1116,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/tabix':
-        specifier: ^3.3.4
-        version: 3.3.4
+        specifier: ^3.3.6
+        version: 3.3.6
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1335,8 +1335,8 @@ importers:
   plugins/legacy-jbrowse:
     dependencies:
       '@gmod/nclist':
-        specifier: ^3.0.7
-        version: 3.0.7
+        specifier: ^3.0.8
+        version: 3.0.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1572,8 +1572,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       '@gmod/twobit':
-        specifier: ^6.0.5
-        version: 6.0.5
+        specifier: ^6.0.7
+        version: 6.0.7
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1602,8 +1602,8 @@ importers:
   plugins/spreadsheet-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.3
-        version: 7.0.3
+        specifier: ^7.0.5
+        version: 7.0.5
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1692,8 +1692,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.0.12
-        version: 3.0.12
+        specifier: ^3.0.13
+        version: 3.0.13
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1740,11 +1740,11 @@ importers:
         specifier: ^3.0.12
         version: 3.0.12
       '@gmod/tabix':
-        specifier: ^3.3.4
-        version: 3.3.4
+        specifier: ^3.3.6
+        version: 3.3.6
       '@gmod/vcf':
-        specifier: ^7.0.3
-        version: 7.0.3
+        specifier: ^7.0.5
+        version: 7.0.5
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1806,8 +1806,8 @@ importers:
   plugins/wiggle:
     dependencies:
       '@gmod/bbi':
-        specifier: ^9.0.9
-        version: 9.0.9
+        specifier: ^9.0.11
+        version: 9.0.11
       '@gmod/hclust':
         specifier: ^3.0.12
         version: 3.0.12
@@ -3753,21 +3753,20 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@7.1.21':
-    resolution: {integrity: sha512-nhzb0KTeN5bwheefBJRl2mcll6UAAgwDJ8c3SijKxW1mtmFp6o5TTM27gNB21DOPPRZa6CfUMKf/aI29QI+r7Q==}
+  '@gmod/bam@7.2.0':
+    resolution: {integrity: sha512-fBkzKeaojfIxk6t85qo2QCjdOhWFRyYilIMFXm7Kkd2ho4g9U9gfwaMWzjXA8XN3e1oWOSmEqZxZK6CO9z6PPQ==}
 
-  '@gmod/bbi@9.0.9':
-    resolution: {integrity: sha512-p2T98daTTbNyQ7oH0F9hoBC4IjMnrPyuBcFzJT66nlbl2DSpqtQDehryhf/nb+u0HTw9AFtzxI3Ew3Fs3uwhLA==}
+  '@gmod/bbi@9.0.11':
+    resolution: {integrity: sha512-KrdIMQSRMmJ89v+dzJa+ZZ15kEYNJGEOUvp7YDrwQsOOHhIdWTdl37GMj2Y2dLiCe60UFtgVXyWJeYzX2sAJOw==}
 
-  '@gmod/bed@2.2.1':
-    resolution: {integrity: sha512-gFVyHmXAi0fq2dfcOPBsCsKVlYAC67Jk/wIKs47PGex/IK+ii5qg4257fd8VPfoQJCp4OXE168nctguGjCuFBA==}
+  '@gmod/bed@2.2.3':
+    resolution: {integrity: sha512-JPrijnobKsFhBcWamy+Vu647QsYCP6Az0gvq56AYpZ7IdvyJYdi7iLrhe3eQEOXjSsARj6ShbX3vxmN3N36X2A==}
 
   '@gmod/bgzf-filehandle@6.0.19':
     resolution: {integrity: sha512-Zs/568HtsrL5XZGDLTeVZaNFKG7/8HKG+LP+B201OdkQBa1VpZyQg95i65bSuwyqDGnRjkvNbyASwEsxzG9Rrg==}
 
-  '@gmod/cram@8.0.5':
-    resolution: {integrity: sha512-H74qUQuV2T98AWyoIs02TwT6Ae8fF7jreeOcxbcnT+GqYmLqr1fcP+Q+2t1OQniRvQLiEZf6JI14l8jpxUvl2Q==}
-    engines: {node: '>=6'}
+  '@gmod/cram@8.2.1':
+    resolution: {integrity: sha512-3TQy754LR+DMvTHHx3tVsVnB0XjXaIolbBjPFIOOqW5gBG6HE2tmxsVzQGNAc1X/edYjedIFcwW+anmm6rUy2w==}
 
   '@gmod/faidx@2.0.0':
     resolution: {integrity: sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==}
@@ -3779,23 +3778,23 @@ packages:
   '@gmod/indexedfasta@5.0.5':
     resolution: {integrity: sha512-CB0WqY/+VbrvmHWv0v5uql2ZFfAEMqFu+XARTxePiMWJncqtJwK5C+vWzPkUN626OQO9FrK7KjLN7FFuzt8XUQ==}
 
-  '@gmod/nclist@3.0.7':
-    resolution: {integrity: sha512-dNFcB4i/1nzv2uYOooyqCWG/9uGwiHZ+DDT2KrvcMT+ZZEGcogMfE23fXbskFuqpOM6jKb8wTKAAYYFiNCP+CQ==}
+  '@gmod/nclist@3.0.8':
+    resolution: {integrity: sha512-pXK9vktFSyuO4NLcopCrKlUEmq+xFv5wG3S+GoYFdzegVUd8zPjNZAbrhKUKRwTlBkWtWqCkNXchJJj4A+WIkg==}
 
-  '@gmod/tabix@3.3.4':
-    resolution: {integrity: sha512-gtsWSDV3UhF8YJH4rHseRux9JyALq/pVkt4d8saHqASE+vKURLgMXg3Iu7kZkSV8Zr3slIQEQM5PKQhjq5AMgg==}
+  '@gmod/tabix@3.3.6':
+    resolution: {integrity: sha512-3QLj0rsFRCRfrLUXQbwqKGVG7FmH7y8hboghzraSGRZ59zbM0rDchr5AgqjiS/xwujBzfFfLQ5D2+0dPtSLLCw==}
 
-  '@gmod/trix@3.0.12':
-    resolution: {integrity: sha512-lDeMVkGqmPJVqW1T07lAap9LtL/dyiT85vx5Z+O5JxRD250GfdPFIoTp/twjhodP4QjjP2yCLpTsn7iFDsPHfg==}
+  '@gmod/trix@3.0.13':
+    resolution: {integrity: sha512-4taqhiXc0pt3OHVJYs0trZR7Whk/Xyf3gqds+j3P8ox1wRA8sZlqIW2eVLImu2pJYGYslPfxwkqwv6tS5u7xxQ==}
 
-  '@gmod/twobit@6.0.5':
-    resolution: {integrity: sha512-RK9t8+B+CoicfvH5qxnJ4saKVvsI6M+qnqz01ANJa05ZuJCGkUc14ZbwME7eYlfkZ9zgYw1+uuBllXcZOAuHRw==}
+  '@gmod/twobit@6.0.7':
+    resolution: {integrity: sha512-G9OOK3zPSHfs98/yAO1f9jMajPhthvBg1CChOq4+zZWfrWMtU5ZhAGZQzcpQwXkWYNAmia2WJH5lDRHpwbj6qw==}
 
-  '@gmod/ucsc-hub@2.0.4':
-    resolution: {integrity: sha512-Mlt0kU9IJeryi/r0jEdWKYEePWQmN4vUBEwvL71ymtDtoC4u/344HKmxitNoCIZSqT0wpaQY+HAcYdchtR2/4g==}
+  '@gmod/ucsc-hub@2.0.7':
+    resolution: {integrity: sha512-lL64UO1LJIxia+JD9DXo1hoN70FDzxozTJoZZKNIZDEBDV+Wd9uUXIRlwCEytKK3ylqXKV6+hk8snP/q4uE0zg==}
 
-  '@gmod/vcf@7.0.3':
-    resolution: {integrity: sha512-/gofdSYN7PJBrOSNA93cZM6MluLgZoKSHrvkS4Zia/o5/UzEk8LWDyyfHZd+gVlL7JKTQkid2bnH2pVdeympqQ==}
+  '@gmod/vcf@7.0.5':
+    resolution: {integrity: sha512-G26QYOUcpb8Bva51S0Fj95gggNzffnuPfJXaRx8WEvDlFb7eh5U1MEzSj3l/UaxPhkB4pZBhYaF8AFcZEDKjkg==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -5052,50 +5051,50 @@ packages:
     resolution: {integrity: sha512-f1UQF7ggd42YiwI5wGrRaPsa+P0CINBlrkLPmGfpq/u/I/oVtecoEIfFR9ag/oa1sLOsRNZ6xehf6qMZhQGBDg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260516.1':
-    resolution: {integrity: sha512-RWhsFuzf26MXZOCppITm7Vg3ouR0bxA9O6Q9zRJMk/feyuGUFwO1V9qxX3DgiONatHmHKNR6+sBZNpnSbeCNGA==}
+  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260517.1':
+    resolution: {integrity: sha512-YjoHUk4g7ayc8328Wt/JU9T+ChfOO1hNc5qGmkkygL4J4Q3/Wp+EqCNcFinYRSca0Yl5WdcVngd8xyGFeTlwUA==}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [darwin]
 
-  '@typescript/native-preview-darwin-x64@7.0.0-dev.20260516.1':
-    resolution: {integrity: sha512-V+8gKoi/pT5y6wsGzhs4MXL3YpPRaOri0U9/5++E9eqJtcbsUFMsEB3cykvBfzfGN7MtJxzNl1PQ8xudoyADeg==}
+  '@typescript/native-preview-darwin-x64@7.0.0-dev.20260517.1':
+    resolution: {integrity: sha512-E/xAkhVaWaoU/u5itoRc1WD8M+A/JPmNbb4SiBexTZDQ3h/5xWU0HRwq/drRiLjFlcm0e1i66MzB8tbc2icctQ==}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [darwin]
 
-  '@typescript/native-preview-linux-arm64@7.0.0-dev.20260516.1':
-    resolution: {integrity: sha512-aBsfW6gq45WKSvyvnI3hgoW3ARHFHP+/BttGhob9n3wWx7SF7ALJdQ9lb7XKK0OVDyd8o3g3/DgYizc26DlWuw==}
+  '@typescript/native-preview-linux-arm64@7.0.0-dev.20260517.1':
+    resolution: {integrity: sha512-u+xY12IarGGRFXh7hbN/cxW5aYNdwa84mG0pyXglvThXT0rzzPGUEJdxVkNBo6UHqnc4FJihdcaioWpXBxQe9w==}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [linux]
 
-  '@typescript/native-preview-linux-arm@7.0.0-dev.20260516.1':
-    resolution: {integrity: sha512-FHVd7C2ogrMRcUj3KWc6R9VYU6x+FUll7I5fvJKHE8e8UtzpmkxmLH18uaOFMwoFQmSMqAZOcnGlgtRDSe/vqw==}
+  '@typescript/native-preview-linux-arm@7.0.0-dev.20260517.1':
+    resolution: {integrity: sha512-CJZJ21rSBtBxmfebMh8K/kH+e3Z+s8hM2+4ud0ZesEBgkBjePBo6FR4/1IJl38i4OvYnpbZerANR0yCRytv/Pw==}
     engines: {node: '>=16.20.0'}
     cpu: [arm]
     os: [linux]
 
-  '@typescript/native-preview-linux-x64@7.0.0-dev.20260516.1':
-    resolution: {integrity: sha512-U8CF9xzmNRAq9KfI2DrUlhylBDBoUNN3JK+B8fGoL4yl56/1/OSv/nAc3zQy9o65c7pUtbK5mJ7UsHsEfY/3VA==}
+  '@typescript/native-preview-linux-x64@7.0.0-dev.20260517.1':
+    resolution: {integrity: sha512-yRnlMPugNitsW9lBBQVfy8NgeUrgenjspq2LKeYmaAlvw6uf1bkbSHw6hJeCpl1oh7kH+RAHUx0yzm/RlfFdKg==}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [linux]
 
-  '@typescript/native-preview-win32-arm64@7.0.0-dev.20260516.1':
-    resolution: {integrity: sha512-hjjyWSDlfUi6Ie9S7Uu+jQxzM0ZwzH8enaZ8uDy3/ntKfCizNHvC4vv1RNbLC6IW28A0LINr/s9ZmWXxYNgVmA==}
+  '@typescript/native-preview-win32-arm64@7.0.0-dev.20260517.1':
+    resolution: {integrity: sha512-fomiKzxtXrrasjJWbwaC8BGbzVQQv0VYVWijF0yKdXqxXjDRD01zT72Z1sjQGz0QJ19TVTVhJiNa7nI3wUaEsw==}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [win32]
 
-  '@typescript/native-preview-win32-x64@7.0.0-dev.20260516.1':
-    resolution: {integrity: sha512-Itbj6PB/FHisZuaDYJnmwKgbjd3EWuOyBsVUqakQR+BIEYuNdrmbf6ocxaPO0RZrGMLbrV12AE5/EZC+vqYN/w==}
+  '@typescript/native-preview-win32-x64@7.0.0-dev.20260517.1':
+    resolution: {integrity: sha512-ekFca6XpdGIfLwqaRSm0GzYvI1COhoN+a62KeSwmaZN8EGWN/Rwrp/Tm9VjWGrdHSOLQFdEAGNibmp4bRB4HyA==}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [win32]
 
-  '@typescript/native-preview@7.0.0-dev.20260516.1':
-    resolution: {integrity: sha512-mRzRdR9whPRzkLcGk1+wa15/jlIAFMyYV3X9A5+zHQiPR0ZZl1ywSHNtPa/OZmba3Mzsu9jIIFLmPIsryVt3aQ==}
+  '@typescript/native-preview@7.0.0-dev.20260517.1':
+    resolution: {integrity: sha512-RSenvv0X4Uubpqyq9Z28xucCqpt5Gm/YaBs04b2Chps+qxYH+sRhYlLoiRkCx9x7Kxx6WLK3mjP+Xj6YNxHZjg==}
     engines: {node: '>=16.20.0'}
     hasBin: true
 
@@ -6218,8 +6217,8 @@ packages:
     resolution: {integrity: sha512-GrwoxYN+uWlzO8uhUXRl0P+kHE4GtVPfYzVLcUxPL7KNdHKj66vvlhiweIHqYYXWlw+T8iLMp42Lm67ghw4WMQ==}
     engines: {node: '>= 4'}
 
-  dompurify@3.4.3:
-    resolution: {integrity: sha512-VVwJidIJcp1hpg2OMXML3ZVRPYSZiq4aX7qBh83BSIpOaRDqI+qxhXjjIWnpzkOXhmp0L81lnoME1mnCc9H48A==}
+  dompurify@3.4.4:
+    resolution: {integrity: sha512-r8K7KGKEcztXfA/nfabSYB2hg9tDphORJTdf8xprN/luSLGmNhOBN8dm1/SYjqLLet6YUFEXOcrdTuwryp/Bew==}
 
   domutils@2.8.0:
     resolution: {integrity: sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==}
@@ -10842,7 +10841,7 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@7.1.21':
+  '@gmod/bam@7.2.0':
     dependencies:
       '@gmod/bgzf-filehandle': 6.0.19
       '@jbrowse/quick-lru': 7.3.5
@@ -10851,13 +10850,13 @@ snapshots:
     transitivePeerDependencies:
       - buffer
 
-  '@gmod/bbi@9.0.9':
+  '@gmod/bbi@9.0.11':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
-  '@gmod/bed@2.2.1': {}
+  '@gmod/bed@2.2.3': {}
 
   '@gmod/bgzf-filehandle@6.0.19':
     dependencies:
@@ -10865,7 +10864,7 @@ snapshots:
       generic-filehandle2: 2.1.7
       pako-esm2: 2.0.2
 
-  '@gmod/cram@8.0.5':
+  '@gmod/cram@8.2.1':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
@@ -10884,31 +10883,28 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
-  '@gmod/nclist@3.0.7':
+  '@gmod/nclist@3.0.8':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@jbrowse/quick-lru': 7.3.5
       '@jridgewell/resolve-uri': 3.1.2
 
-  '@gmod/tabix@3.3.4':
+  '@gmod/tabix@3.3.6':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@gmod/bgzf-filehandle': 6.0.19
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
-  '@gmod/trix@3.0.12':
-    dependencies:
-      '@jbrowse/quick-lru': 7.3.5
+  '@gmod/trix@3.0.13': {}
 
-  '@gmod/twobit@6.0.5':
+  '@gmod/twobit@6.0.7':
     dependencies:
-      '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
-  '@gmod/ucsc-hub@2.0.4': {}
+  '@gmod/ucsc-hub@2.0.7': {}
 
-  '@gmod/vcf@7.0.3': {}
+  '@gmod/vcf@7.0.5': {}
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -12410,36 +12406,36 @@ snapshots:
       '@typescript-eslint/types': 8.59.3
       eslint-visitor-keys: 5.0.1
 
-  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260516.1':
+  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260517.1':
     optional: true
 
-  '@typescript/native-preview-darwin-x64@7.0.0-dev.20260516.1':
+  '@typescript/native-preview-darwin-x64@7.0.0-dev.20260517.1':
     optional: true
 
-  '@typescript/native-preview-linux-arm64@7.0.0-dev.20260516.1':
+  '@typescript/native-preview-linux-arm64@7.0.0-dev.20260517.1':
     optional: true
 
-  '@typescript/native-preview-linux-arm@7.0.0-dev.20260516.1':
+  '@typescript/native-preview-linux-arm@7.0.0-dev.20260517.1':
     optional: true
 
-  '@typescript/native-preview-linux-x64@7.0.0-dev.20260516.1':
+  '@typescript/native-preview-linux-x64@7.0.0-dev.20260517.1':
     optional: true
 
-  '@typescript/native-preview-win32-arm64@7.0.0-dev.20260516.1':
+  '@typescript/native-preview-win32-arm64@7.0.0-dev.20260517.1':
     optional: true
 
-  '@typescript/native-preview-win32-x64@7.0.0-dev.20260516.1':
+  '@typescript/native-preview-win32-x64@7.0.0-dev.20260517.1':
     optional: true
 
-  '@typescript/native-preview@7.0.0-dev.20260516.1':
+  '@typescript/native-preview@7.0.0-dev.20260517.1':
     optionalDependencies:
-      '@typescript/native-preview-darwin-arm64': 7.0.0-dev.20260516.1
-      '@typescript/native-preview-darwin-x64': 7.0.0-dev.20260516.1
-      '@typescript/native-preview-linux-arm': 7.0.0-dev.20260516.1
-      '@typescript/native-preview-linux-arm64': 7.0.0-dev.20260516.1
-      '@typescript/native-preview-linux-x64': 7.0.0-dev.20260516.1
-      '@typescript/native-preview-win32-arm64': 7.0.0-dev.20260516.1
-      '@typescript/native-preview-win32-x64': 7.0.0-dev.20260516.1
+      '@typescript/native-preview-darwin-arm64': 7.0.0-dev.20260517.1
+      '@typescript/native-preview-darwin-x64': 7.0.0-dev.20260517.1
+      '@typescript/native-preview-linux-arm': 7.0.0-dev.20260517.1
+      '@typescript/native-preview-linux-arm64': 7.0.0-dev.20260517.1
+      '@typescript/native-preview-linux-x64': 7.0.0-dev.20260517.1
+      '@typescript/native-preview-win32-arm64': 7.0.0-dev.20260517.1
+      '@typescript/native-preview-win32-x64': 7.0.0-dev.20260517.1
 
   '@ungap/structured-clone@1.3.1': {}
 
@@ -13563,7 +13559,7 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.4.3:
+  dompurify@3.4.4:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
