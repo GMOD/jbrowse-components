@@ -55,10 +55,6 @@ export function linearSyntenyViewHelperModelFactory(
          * #property
          */
         level: types.number,
-        /**
-         * #property
-         */
-        collapsed: false,
       }),
     )
     .views(self => ({
@@ -71,9 +67,6 @@ export function linearSyntenyViewHelperModelFactory(
       get gpuBackend(): SyntenyBackend | undefined {
         return self.currentGpuBackend as SyntenyBackend | undefined
       },
-      get effectiveHeight() {
-        return self.collapsed ? 10 : self.height
-      },
     }))
     .actions(self => ({
       /**
@@ -81,19 +74,6 @@ export function linearSyntenyViewHelperModelFactory(
        */
       setHeight(n: number) {
         self.height = n
-        return self.height
-      },
-      /**
-       * #action
-       */
-      setCollapsed(collapsed: boolean) {
-        self.collapsed = collapsed
-      },
-      /**
-       * #action
-       */
-      toggleCollapsed() {
-        self.collapsed = !self.collapsed
       },
       /**
        * #action
@@ -246,7 +226,7 @@ export function linearSyntenyViewHelperModelFactory(
             if (!state) {
               return false
             }
-            b.resize(self.parentView.views[0]!.width, self.effectiveHeight)
+            b.resize(self.parentView.views[0]!.width, self.height)
             return b.render(state)
           },
         })

@@ -297,14 +297,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setLevelHeight(newHeight: number, level = 0) {
-        const l = self.levels[level]!
-        l.setHeight(newHeight)
-        return l.height
-      },
-      /**
-       * #action
-       */
       setLinkViews(arg: boolean) {
         self.linkViews = arg
       },
@@ -410,30 +402,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       expandAllViews() {
         for (const view of self.views) {
           view.setScalebarOnly(false)
-        }
-      },
-      /**
-       * #action
-       */
-      collapseAllLevels() {
-        for (const level of self.levels) {
-          level.setCollapsed(true)
-        }
-      },
-      /**
-       * #action
-       */
-      expandAllLevels() {
-        for (const level of self.levels) {
-          level.setCollapsed(false)
-        }
-      },
-      /**
-       * #action
-       */
-      focusLevel(idx: number) {
-        for (const [i, level] of self.levels.entries()) {
-          level.setCollapsed(i !== idx)
         }
       },
       /**

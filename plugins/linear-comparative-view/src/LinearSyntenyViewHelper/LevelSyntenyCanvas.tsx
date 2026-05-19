@@ -92,7 +92,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const { classes } = useStyles()
   const parentView = getContainingView(model) as unknown as ParentViewDuck
   const width = parentView.width
-  const height = model.effectiveHeight
+  const height = model.height
 
   const dragStartX = useRef<number | undefined>(undefined)
   const lastDragX = useRef<number | undefined>(undefined)
@@ -187,13 +187,15 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     }
     const hit = backend.pick(coords.x, coords.y)
     const hitDisplay = hit ? model.displaysByKey.get(hit.key) : undefined
-    for (const display of model.linearSyntenyDisplays) {
-      if (isAlive(display)) {
-        display.setHoveredFeatureIdx(
-          display === hitDisplay ? hit!.featureIndex : -1,
-        )
+    transaction(() => {
+      for (const display of model.linearSyntenyDisplays) {
+        if (isAlive(display)) {
+          display.setHoveredFeatureIdx(
+            display === hitDisplay ? hit!.featureIndex : -1,
+          )
+        }
       }
-    }
+    })
   }
 
   function handleMouseMove(event: React.MouseEvent<HTMLCanvasElement>) {
@@ -213,11 +215,13 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   }
 
   function handleMouseLeave() {
-    for (const display of model.linearSyntenyDisplays) {
-      if (isAlive(display)) {
-        display.setHoveredFeatureIdx(-1)
+    transaction(() => {
+      for (const display of model.linearSyntenyDisplays) {
+        if (isAlive(display)) {
+          display.setHoveredFeatureIdx(-1)
+        }
       }
-    }
+    })
     dragStartX.current = undefined
     lastDragX.current = undefined
   }
@@ -243,13 +247,15 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       return
     }
     const hit = backend.pick(coords.x, coords.y)
-    for (const display of model.linearSyntenyDisplays) {
-      const isHit = hit && model.displaysByKey.get(hit.key) === display
-      display.setClickedFeatureIdx(isHit ? hit.featureIndex : -1)
-      if (isHit) {
-        openFeatureWidget(display, hit.featureIndex)
+    transaction(() => {
+      for (const display of model.linearSyntenyDisplays) {
+        const isHit = hit && model.displaysByKey.get(hit.key) === display
+        display.setClickedFeatureIdx(isHit ? hit.featureIndex : -1)
+        if (isHit) {
+          openFeatureWidget(display, hit.featureIndex)
+        }
       }
-    }
+    })
   }
 
   function handleContextMenu(event: React.MouseEvent<HTMLCanvasElement>) {

@@ -2,9 +2,6 @@ import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
@@ -35,26 +32,8 @@ const useStyles = makeStyles()(() => ({
     height: 4,
     background: '#ccc',
   },
-  collapsedBar: {
-    height: 10,
-    background: '#e8e8e8',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    '&:hover': {
-      background: '#d0d0d0',
-    },
-  },
   wrapper: {
     position: 'relative',
-  },
-  collapseButton: {
-    position: 'absolute',
-    right: 4,
-    top: -2,
-    zIndex: 200,
-    padding: 0,
   },
 }))
 
@@ -78,7 +57,7 @@ const LinearComparativeRenderArea = observer(
         {views.map((view, i) => (
           <Fragment key={view.id}>
             {i > 0 ? (
-              <LevelSection model={model} levelIdx={i - 1} classes={classes} />
+              <LevelSection model={model} levelIdx={i - 1} />
             ) : null}
             <View view={view} />
           </Fragment>
@@ -91,28 +70,12 @@ const LinearComparativeRenderArea = observer(
 const LevelSection = observer(function LevelSection({
   model,
   levelIdx,
-  classes,
 }: {
   model: LinearComparativeViewModel
   levelIdx: number
-  classes: Record<string, string>
 }) {
+  const { classes } = useStyles()
   const level = model.levels[levelIdx]!
-
-  if (level.collapsed) {
-    return (
-      <Tooltip
-        title={`Expand level ${levelIdx + 1} (${model.views[levelIdx]!.assemblyNames[0] ?? ''} ↔ ${model.views[levelIdx + 1]!.assemblyNames[0] ?? ''})`}
-      >
-        <div
-          className={classes.collapsedBar}
-          onClick={() => level.toggleCollapsed()}
-        >
-          <ExpandMoreIcon style={{ fontSize: 12, color: '#999' }} />
-        </div>
-      </Tooltip>
-    )
-  }
 
   return (
     <>
@@ -121,15 +84,6 @@ const LevelSection = observer(function LevelSection({
           <LevelSyntenyCanvas model={level} />
           <Overlays model={model} level={levelIdx} />
         </div>
-        <Tooltip title="Collapse this level">
-          <IconButton
-            className={classes.collapseButton}
-            size="small"
-            onClick={() => level.toggleCollapsed()}
-          >
-            <ExpandLessIcon style={{ fontSize: 14 }} />
-          </IconButton>
-        </Tooltip>
       </div>
       <ResizeHandle
         onDrag={n => {

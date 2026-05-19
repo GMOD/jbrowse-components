@@ -163,9 +163,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get parentHelper() {
         return getParent<{
           height: number
-          effectiveHeight?: number
           level: number
-          collapsed?: boolean
         }>(self, 4)
       },
       get level() {
@@ -182,11 +180,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get height() {
-        const parent = this.parentHelper
-        return parent.effectiveHeight ?? parent.height
-      },
-      get isLevelCollapsed() {
-        return this.parentHelper.collapsed ?? false
+        return this.parentHelper.height
       },
       /**
        * #getter
@@ -424,7 +418,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * substitutes yTop before handing this to the backend.
        */
       get renderParams() {
-        if (self.isMinimized || this.isLevelCollapsed) {
+        if (self.isMinimized) {
           return undefined
         }
         const view = getContainingView(self) as LinearSyntenyViewModel

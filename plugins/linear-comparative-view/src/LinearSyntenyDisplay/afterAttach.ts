@@ -20,7 +20,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     autorun(
       async function syntenyFetchAutorun() {
-        if (self.isMinimized || self.isLevelCollapsed) {
+        if (self.isMinimized) {
           return
         }
         const view = getContainingView(self) as LinearSyntenyViewModel
