@@ -1,4 +1,4 @@
-import type { ModificationType } from '../shared/types.ts'
+import type { ModificationType } from './types.ts'
 
 type ModificationTypeList = readonly ModificationType[]
 

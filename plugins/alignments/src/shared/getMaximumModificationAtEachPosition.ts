@@ -1,7 +1,7 @@
-import { getNextRefPos } from '@jbrowse/alignments-core'
-import { modProbAt } from '../ModificationParser/getModProbabilities.ts'
+import { getNextRefPos } from '@jbrowse/cigar-utils'
+import { modProbAt } from '@jbrowse/modifications-utils'
 
-import type { getModPositions } from '../ModificationParser/getModPositions.ts'
+import type { getModPositions } from '@jbrowse/modifications-utils'
 
 export function getMaxProbModAtEachPosition(
   modifications: ReturnType<typeof getModPositions>,

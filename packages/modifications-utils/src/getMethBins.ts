@@ -1,5 +1,3 @@
-import { modProbAt } from './getModProbabilities.ts'
-import { getNextRefPos } from '@jbrowse/alignments-core'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -8,7 +6,10 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
+  getNextRefPos,
 } from '@jbrowse/cigar-utils'
+
+import { modProbAt } from './getModProbabilities.ts'
 
 import type { getModPositions } from './getModPositions.ts'
 

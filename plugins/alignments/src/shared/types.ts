@@ -1,8 +1,3 @@
-export interface ModificationType {
-  type: string
-  base: string
-  strand: string
-}
 export interface ModificationTypeWithColor {
   color: string
   type: string

@@ -6,15 +6,18 @@ import {
 } from '@jbrowse/core/ui/theme'
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 
-import { parseCigar2 } from '@jbrowse/alignments-core'
-import { detectSimplexModifications } from '../../ModificationParser/detectSimplexModifications.ts'
-import { getMethBins } from '../../ModificationParser/getMethBins.ts'
-import { getModPositions } from '../../ModificationParser/getModPositions.ts'
-import { getModProbabilities } from '../../ModificationParser/getModProbabilities.ts'
+import { parseCigar2 } from '@jbrowse/cigar-utils'
+import {
+  detectSimplexModifications,
+  getMethBins,
+  getModPositions,
+  getModProbabilities,
+} from '@jbrowse/modifications-utils'
+
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
 import { getColorForModification, getTagAlt } from '../../util.ts'
 
-import type { ParsedModData } from '../../ModificationParser/getMethBins.ts'
+import type { ParsedModData } from '@jbrowse/modifications-utils'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 

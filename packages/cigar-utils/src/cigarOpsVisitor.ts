@@ -6,7 +6,14 @@ import {
   CIGAR_N,
   CIGAR_X,
 } from './cigarConstants.ts'
-import { isCsOpChar, isDigit } from './labelConstants.ts'
+
+function isDigit(ch: string) {
+  return ch >= '0' && ch <= '9'
+}
+
+function isCsOpChar(ch: string | undefined) {
+  return ch === ':' || ch === '*' || ch === '+' || ch === '-'
+}
 
 export interface CigarOpsVisitor {
   onMismatch(refPos: number, len: number, queryBase?: string): void

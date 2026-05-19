@@ -1,6 +1,9 @@
-import { getTagAlt } from '../util.ts'
-
 import type { Feature } from '@jbrowse/core/util'
+
+function getTagAlt(feature: Feature, tag: string, alt: string) {
+  const tags = feature.get('tags') as Record<string, unknown> | undefined
+  return tags?.[tag] ?? tags?.[alt]
+}
 
 /**
  * Returns the probability value from the flat probabilities array at the

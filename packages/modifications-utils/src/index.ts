@@ -1,0 +1,8 @@
+export { modificationRegex, parseModHeader } from './consts.ts'
+export { detectSimplexModifications } from './detectSimplexModifications.ts'
+export { getMethBins } from './getMethBins.ts'
+export type { ParsedModData } from './getMethBins.ts'
+export { getModPositions } from './getModPositions.ts'
+export { getModProbabilities, modProbAt } from './getModProbabilities.ts'
+export { getModTypes } from './getModTypes.ts'
+export type { ModificationType } from './types.ts'
