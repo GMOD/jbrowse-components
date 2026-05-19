@@ -928,6 +928,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
           return oldBpPerPx
         }
+        if (!self.displayedRegions.length) {
+          self.bpPerPx = newBpPerPx
+          return newBpPerPx
+        }
 
         // Anchor on the cursor's raw within-region bp offset (float,
         // padding-aware). Round-tripping through bpToPx using pxToBp's `coord`

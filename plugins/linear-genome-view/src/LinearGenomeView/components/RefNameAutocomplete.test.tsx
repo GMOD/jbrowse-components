@@ -4,7 +4,7 @@ import { RefNameAutocomplete } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 // @ts-expect-error
 import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
@@ -320,6 +320,125 @@ describe('RefNameAutocomplete', () => {
     await user.click(screen.getByText('ctgB:1..200'))
 
     await waitFor(() => {
+      expect(input.value).toBe('ctgA:1-100')
+    }, patience)
+  })
+
+  // Convenience: queries the combobox input fresh from the DOM. After a
+  // rerender, the React DOM-side value updates but a previously captured
+  // reference can lag — re-query each time you assert.
+  const getInput = () =>
+    screen.getByRole('combobox') as unknown as HTMLInputElement
+
+  it('reflects external value changes when the user is not typing', async () => {
+    const { session } = setup()
+
+    const { rerender } = render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        value="ctgA:1-100"
+        fetchResults={async () => []}
+      />,
+    )
+    expect(getInput().value).toBe('ctgA:1-100')
+
+    rerender(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        value="ctgB:1-200"
+        fetchResults={async () => []}
+      />,
+    )
+    expect(getInput().value).toBe('ctgB:1-200')
+  })
+
+  it('clobbers typed text when external value changes (location bar behaviour)', async () => {
+    const user = userEvent.setup()
+    const { session } = setup()
+
+    const { rerender } = render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        value="ctgA:1-100"
+        fetchResults={async () => []}
+      />,
+    )
+
+    await user.click(getInput())
+    await user.clear(getInput())
+    await user.type(getInput(), 'gene1')
+    expect(getInput().value).toBe('gene1')
+
+    // The view navigated under the user (bookmark click, programmatic nav,
+    // …). The address bar should reflect where we actually are, not stale
+    // typed text.
+    rerender(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        value="ctgB:1-200"
+        fetchResults={async () => []}
+      />,
+    )
+    expect(getInput().value).toBe('ctgB:1-200')
+  })
+
+  it('lets the user fully empty the input mid-type without snapping back', async () => {
+    const user = userEvent.setup()
+    const { session } = setup()
+
+    render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        value="ctgA:1-100"
+        fetchResults={async () => []}
+      />,
+    )
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const input = screen.getByRole('combobox') as HTMLInputElement
+
+    await user.click(input)
+    await user.clear(input)
+    // before this fix, the empty value fell through to `value` so the next
+    // typed character appended to "ctgA:1-100" instead of replacing it
+    expect(input.value).toBe('')
+    await user.type(input, 'foo')
+    expect(input.value).toBe('foo')
+  })
+
+  it('reverts to value after a freeSolo submit that does not navigate', async () => {
+    const user = userEvent.setup()
+    const { session } = setup()
+    // Simulates the production path: SearchBox.onSelect attempts navigation,
+    // catches its own errors, and `value` does not change. The autocomplete
+    // must still drop the typed text and revert to `value`.
+    const onSelect = jest.fn()
+
+    render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        value="ctgA:1-100"
+        fetchResults={async () => []}
+        onSelect={onSelect}
+      />,
+    )
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const input = screen.getByRole('combobox') as HTMLInputElement
+
+    await user.click(input)
+    await user.clear(input)
+    await user.type(input, 'nonexistent_xyz')
+    expect(input.value).toBe('nonexistent_xyz')
+
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalled()
       expect(input.value).toBe('ctgA:1-100')
     }, patience)
   })
