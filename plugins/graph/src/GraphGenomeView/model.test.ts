@@ -289,6 +289,7 @@ describe('empty subgraph handling', () => {
   })
 
   test('sets an error when the adapter returns no GFA', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     mockRpcCall.mockImplementation((_sid: unknown, method: string) =>
       method === 'GetSubgraph'
         ? Promise.resolve('')
@@ -304,6 +305,7 @@ describe('empty subgraph handling', () => {
     expect(model.error).toBeInstanceOf(Error)
     expect(String(model.error)).toMatch(/no GFA/i)
     expect(model.isLoading).toBe(false)
+    consoleSpy.mockRestore()
   })
 })
 

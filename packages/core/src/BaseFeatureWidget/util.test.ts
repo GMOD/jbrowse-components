@@ -87,12 +87,14 @@ describe('calculateUTRs', () => {
   })
 
   test('returns empty when exons < cds length', () => {
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const cds: Feat[] = [
       { start: 10, end: 30 },
       { start: 50, end: 70 },
     ]
     const exons: Feat[] = [{ start: 0, end: 100 }]
     expect(calculateUTRs(cds, exons)).toStrictEqual([])
+    consoleSpy.mockRestore()
   })
 
   test('calculates 5prime and 3prime UTRs from CDS within exons', () => {
