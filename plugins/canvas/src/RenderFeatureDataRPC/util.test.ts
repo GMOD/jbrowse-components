@@ -7,11 +7,13 @@ import { layoutSubfeatures } from './glyphs/subfeatures.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 import { isUTR, truncateLabel } from './util.ts'
 
+import type { Feature } from '@jbrowse/core/util'
+
 function createMockFeature(opts: {
   type?: string
-  subfeatures?: ReturnType<typeof createMockFeature>[]
-  parent?: () => unknown
-}) {
+  subfeatures?: Feature[]
+  parent?: () => Feature | undefined
+}): Feature {
   const data: Record<string, unknown> = {
     type: opts.type,
     subfeatures: opts.subfeatures,
@@ -19,7 +21,7 @@ function createMockFeature(opts: {
   return {
     get: (key: string) => data[key],
     parent: opts.parent,
-  }
+  } as unknown as Feature
 }
 
 const defaultConfig = mockDisplayConfig({
@@ -35,11 +37,8 @@ const GLYPH_NAMES = new Map([
   [layoutMatureProteinRegion, 'MatureProteinRegion'],
 ])
 
-function glyphType(
-  feature: ReturnType<typeof createMockFeature>,
-  config = defaultConfig,
-) {
-  return GLYPH_NAMES.get(findGlyph(feature as any, config))
+function glyphType(feature: Feature, config = defaultConfig) {
+  return GLYPH_NAMES.get(findGlyph(feature, config))
 }
 
 describe('findGlyph (glyph matching)', () => {
@@ -213,18 +212,18 @@ describe('findGlyph (glyph matching)', () => {
 
 describe('isUTR', () => {
   it('detects UTR type', () => {
-    expect(isUTR({ get: () => 'UTR' } as any)).toBe(true)
-    expect(isUTR({ get: () => 'five_prime_UTR' } as any)).toBe(true)
-    expect(isUTR({ get: () => 'three_prime_UTR' } as any)).toBe(true)
-    expect(isUTR({ get: () => "5'UTR" } as any)).toBe(true)
-    expect(isUTR({ get: () => 'untranslated_region' } as any)).toBe(true)
-    expect(isUTR({ get: () => 'untranslated region' } as any)).toBe(true)
+    expect(isUTR(createMockFeature({ type: 'UTR' }))).toBe(true)
+    expect(isUTR(createMockFeature({ type: 'five_prime_UTR' }))).toBe(true)
+    expect(isUTR(createMockFeature({ type: 'three_prime_UTR' }))).toBe(true)
+    expect(isUTR(createMockFeature({ type: "5'UTR" }))).toBe(true)
+    expect(isUTR(createMockFeature({ type: 'untranslated_region' }))).toBe(true)
+    expect(isUTR(createMockFeature({ type: 'untranslated region' }))).toBe(true)
   })
 
   it('rejects non-UTR types', () => {
-    expect(isUTR({ get: () => 'exon' } as any)).toBe(false)
-    expect(isUTR({ get: () => 'CDS' } as any)).toBe(false)
-    expect(isUTR({ get: () => 'mRNA' } as any)).toBe(false)
+    expect(isUTR(createMockFeature({ type: 'exon' }))).toBe(false)
+    expect(isUTR(createMockFeature({ type: 'CDS' }))).toBe(false)
+    expect(isUTR(createMockFeature({ type: 'mRNA' }))).toBe(false)
   })
 })
 

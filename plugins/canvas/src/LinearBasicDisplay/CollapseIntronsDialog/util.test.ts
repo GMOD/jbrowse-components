@@ -5,83 +5,65 @@ import {
   getTranscripts,
 } from './util.ts'
 
+import type { Feature } from '@jbrowse/core/util'
+
+function feat({
+  type,
+  subfeatures,
+}: {
+  type?: string
+  subfeatures?: Feature[]
+} = {}): Feature {
+  return {
+    get: (k: string) =>
+      k === 'type' ? type : k === 'subfeatures' ? subfeatures : undefined,
+  } as unknown as Feature
+}
+
 describe('CollapseIntrons utilities', () => {
   describe('getExonsAndCDS', () => {
     it('extracts exons from transcripts', () => {
       const transcripts = [
-        {
-          get: (key: string) => {
-            if (key === 'subfeatures') {
-              return [
-                { get: (k: string) => (k === 'type' ? 'exon' : undefined) },
-                { get: (k: string) => (k === 'type' ? 'intron' : undefined) },
-                { get: (k: string) => (k === 'type' ? 'exon' : undefined) },
-              ]
-            }
-            return undefined
-          },
-        },
-      ] as any
-
-      const result = getExonsAndCDS(transcripts)
-      expect(result).toHaveLength(2)
+        feat({
+          subfeatures: [
+            feat({ type: 'exon' }),
+            feat({ type: 'intron' }),
+            feat({ type: 'exon' }),
+          ],
+        }),
+      ]
+      expect(getExonsAndCDS(transcripts)).toHaveLength(2)
     })
 
     it('extracts CDS from transcripts', () => {
       const transcripts = [
-        {
-          get: (key: string) => {
-            if (key === 'subfeatures') {
-              return [
-                { get: (k: string) => (k === 'type' ? 'CDS' : undefined) },
-                { get: (k: string) => (k === 'type' ? 'UTR' : undefined) },
-              ]
-            }
-            return undefined
-          },
-        },
-      ] as any
-
-      const result = getExonsAndCDS(transcripts)
-      expect(result).toHaveLength(1)
+        feat({
+          subfeatures: [feat({ type: 'CDS' }), feat({ type: 'UTR' })],
+        }),
+      ]
+      expect(getExonsAndCDS(transcripts)).toHaveLength(1)
     })
 
     it('handles transcripts with no subfeatures', () => {
-      const transcripts = [
-        {
-          get: () => undefined,
-        },
-      ] as any
-
-      const result = getExonsAndCDS(transcripts)
-      expect(result).toHaveLength(0)
+      expect(getExonsAndCDS([feat()])).toHaveLength(0)
     })
   })
 
   describe('featureHasExonsOrCDS', () => {
     it('returns true when subfeatures include an exon', () => {
-      const feat = {
-        get: (k: string) =>
-          k === 'subfeatures'
-            ? [{ get: (kk: string) => (kk === 'type' ? 'exon' : undefined) }]
-            : undefined,
-      } as any
-      expect(featureHasExonsOrCDS(feat)).toBe(true)
+      expect(
+        featureHasExonsOrCDS(feat({ subfeatures: [feat({ type: 'exon' })] })),
+      ).toBe(true)
     })
 
     it('returns false when subfeatures contain neither exon nor CDS', () => {
-      const feat = {
-        get: (k: string) =>
-          k === 'subfeatures'
-            ? [{ get: (kk: string) => (kk === 'type' ? 'UTR' : undefined) }]
-            : undefined,
-      } as any
-      expect(featureHasExonsOrCDS(feat)).toBe(false)
+      expect(
+        featureHasExonsOrCDS(feat({ subfeatures: [feat({ type: 'UTR' })] })),
+      ).toBe(false)
     })
 
     it('returns false when feature has no subfeatures', () => {
-      const feat = { get: () => undefined } as any
-      expect(featureHasExonsOrCDS(feat)).toBe(false)
+      expect(featureHasExonsOrCDS(feat())).toBe(false)
     })
   })
 
@@ -91,21 +73,15 @@ describe('CollapseIntrons utilities', () => {
     })
 
     it('wraps a transcript-shaped feature (exons directly under it) in [feature]', () => {
-      const feat = {
-        get: (k: string) =>
-          k === 'subfeatures'
-            ? [{ get: (kk: string) => (kk === 'type' ? 'exon' : undefined) }]
-            : undefined,
-      } as any
-      expect(getTranscripts(feat)).toEqual([feat])
+      const f = feat({ subfeatures: [feat({ type: 'exon' })] })
+      expect(getTranscripts(f)).toEqual([f])
     })
 
     it('returns subfeatures for a gene-shaped feature (transcripts under it)', () => {
-      const transcript = { get: () => undefined } as any
-      const feat = {
-        get: (k: string) => (k === 'subfeatures' ? [transcript] : undefined),
-      } as any
-      expect(getTranscripts(feat)).toEqual([transcript])
+      const transcript = feat()
+      expect(getTranscripts(feat({ subfeatures: [transcript] }))).toEqual([
+        transcript,
+      ])
     })
   })
 

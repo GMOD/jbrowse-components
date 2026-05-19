@@ -1,10 +1,12 @@
 import { findTranscriptsWithCDS } from './peptideUtils.ts'
 
+import type { Feature } from '@jbrowse/core/util'
+
 function createMockFeature(opts: {
   id?: string
   type?: string
-  subfeatures?: ReturnType<typeof createMockFeature>[]
-}) {
+  subfeatures?: Feature[]
+}): Feature {
   const data: Record<string, unknown> = {
     type: opts.type,
     subfeatures: opts.subfeatures,
@@ -12,7 +14,7 @@ function createMockFeature(opts: {
   return {
     get: (key: string) => data[key],
     id: () => opts.id ?? 'mock-id',
-  }
+  } as unknown as Feature
 }
 
 describe('findTranscriptsWithCDS', () => {
@@ -31,7 +33,7 @@ describe('findTranscriptsWithCDS', () => {
       subfeatures: [mRNA],
     })
 
-    const features = new Map([['gene-1', gene as any]])
+    const features = new Map([['gene-1', gene]])
     const result = findTranscriptsWithCDS(features)
 
     expect(result).toHaveLength(1)
@@ -48,7 +50,7 @@ describe('findTranscriptsWithCDS', () => {
       ],
     })
 
-    const features = new Map([['gene-1', gene as any]])
+    const features = new Map([['gene-1', gene]])
     const result = findTranscriptsWithCDS(features)
 
     expect(result).toHaveLength(1)
@@ -67,7 +69,7 @@ describe('findTranscriptsWithCDS', () => {
       subfeatures: [mRNA, createMockFeature({ type: 'CDS' })],
     })
 
-    const features = new Map([['gene-1', gene as any]])
+    const features = new Map([['gene-1', gene]])
     const result = findTranscriptsWithCDS(features)
 
     expect(result).toHaveLength(1)
@@ -81,7 +83,7 @@ describe('findTranscriptsWithCDS', () => {
       subfeatures: [createMockFeature({ type: 'CDS' })],
     })
 
-    const features = new Map([['transcript-1', transcript as any]])
+    const features = new Map([['transcript-1', transcript]])
     const result = findTranscriptsWithCDS(features)
 
     expect(result).toHaveLength(1)
@@ -105,7 +107,7 @@ describe('findTranscriptsWithCDS', () => {
       subfeatures: [mRNA1, mRNA2],
     })
 
-    const features = new Map([['gene-1', gene as any]])
+    const features = new Map([['gene-1', gene]])
     const result = findTranscriptsWithCDS(features)
 
     expect(result).toHaveLength(2)
@@ -122,7 +124,7 @@ describe('findTranscriptsWithCDS', () => {
       ],
     })
 
-    const features = new Map([['gene-1', gene as any]])
+    const features = new Map([['gene-1', gene]])
     const result = findTranscriptsWithCDS(features)
 
     expect(result).toHaveLength(0)
@@ -140,7 +142,7 @@ describe('findTranscriptsWithCDS', () => {
       subfeatures: [mRNA],
     })
 
-    const features = new Map([['gene-1', gene as any]])
+    const features = new Map([['gene-1', gene]])
     const result = findTranscriptsWithCDS(features)
 
     expect(result).toHaveLength(0)
@@ -153,7 +155,7 @@ describe('findTranscriptsWithCDS', () => {
       subfeatures: [],
     })
 
-    const features = new Map([['gene-1', gene as any]])
+    const features = new Map([['gene-1', gene]])
     const result = findTranscriptsWithCDS(features)
 
     expect(result).toHaveLength(0)
@@ -166,7 +168,7 @@ describe('findTranscriptsWithCDS', () => {
       subfeatures: [createMockFeature({ type: 'CDS' })],
     })
 
-    const features = new Map([['transcript-1', transcript as any]])
+    const features = new Map([['transcript-1', transcript]])
     const result = findTranscriptsWithCDS(features)
 
     expect(result).toHaveLength(1)
@@ -180,7 +182,7 @@ describe('findTranscriptsWithCDS', () => {
       subfeatures: [createMockFeature({ type: 'CDS' })],
     })
 
-    const features = new Map([['transcript-1', transcript as any]])
+    const features = new Map([['transcript-1', transcript]])
     const result = findTranscriptsWithCDS(features)
 
     expect(result).toHaveLength(1)

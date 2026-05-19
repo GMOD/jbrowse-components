@@ -4,13 +4,15 @@ import {
   getFeaturesThatPassMinorAlleleFrequencyFilter,
 } from './minorAlleleFrequencyUtils.ts'
 
+import type { Feature } from '@jbrowse/core/util'
+
 // Mock feature for testing
 function createMockFeature(
   id: string,
   start: number,
   end: number,
   genotypes: Record<string, string>,
-) {
+): Feature {
   return {
     id: () => id,
     get: (key: string) => {
@@ -25,7 +27,7 @@ function createMockFeature(
       }
       return undefined
     },
-  }
+  } as unknown as Feature
 }
 
 describe('calculateAlleleCounts', () => {
@@ -273,7 +275,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     ]
 
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+      features,
       minorAlleleFrequencyFilter: 0.2,
       lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
@@ -303,7 +305,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     ]
 
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+      features,
       minorAlleleFrequencyFilter: 0,
       lengthCutoffFilter: 10,
     })
@@ -324,7 +326,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     ]
 
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+      features,
       minorAlleleFrequencyFilter: 0,
       lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
@@ -345,7 +347,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     ]
 
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+      features,
       minorAlleleFrequencyFilter: 0,
       lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
@@ -367,7 +369,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     ]
 
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+      features,
       minorAlleleFrequencyFilter: 0.01,
       lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
@@ -389,7 +391,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     ]
 
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features2 as any,
+      features: features2,
       minorAlleleFrequencyFilter: 0.2,
       lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
@@ -414,7 +416,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     const features = [createMockFeature('snp1', 100, 101, genotypes)]
 
     getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+      features,
       minorAlleleFrequencyFilter: 0,
       lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
       genotypesCache,
