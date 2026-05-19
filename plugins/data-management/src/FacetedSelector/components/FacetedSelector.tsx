@@ -77,8 +77,6 @@ const FacetedSelector = observer(function FacetedSelector({
     ),
   ]
 
-  const facetColumns = columns.map(col => ({ field: col.id }))
-
   return (
     <>
       <FacetedHeader model={model} faceted={faceted} />
@@ -116,7 +114,7 @@ const FacetedSelector = observer(function FacetedSelector({
               <FacetFilters
                 faceted={faceted}
                 rows={rows}
-                columns={facetColumns}
+                fields={columns.map(c => c.id)}
               />
             </div>
           </>

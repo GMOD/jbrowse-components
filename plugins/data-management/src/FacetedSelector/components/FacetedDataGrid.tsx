@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 
 import { notEmpty } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -7,7 +7,6 @@ import { alpha, darken, lighten } from '@mui/material/styles'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { computeInitialWidths } from './computeInitialWidths.ts'
 import { useSearchHighlight } from '../../useSearchHighlight.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
@@ -189,15 +188,8 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
 }) {
   const { classes } = useStyles()
   const { view } = model
-  const {
-    rows,
-    useShoppingCart,
-    filteredRows,
-    filteredNonMetadataKeys,
-    filteredMetadataKeys,
-    visible,
-    filterText,
-  } = faceted
+  const { useShoppingCart, filteredRows, visible, filterText, initialWidths } =
+    faceted
 
   const [, startTransition] = useTransition()
 
@@ -206,17 +198,6 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
     : shownTrackIds
 
   const visibleColumns = columns.filter(col => visible[col.id] !== false)
-
-  const initialWidths = useMemo(
-    () =>
-      computeInitialWidths(
-        rows,
-        filteredNonMetadataKeys,
-        filteredMetadataKeys,
-        visible,
-      ),
-    [rows, filteredNonMetadataKeys, filteredMetadataKeys, visible],
-  )
 
   const [overrides, setOverrides] = useState<Record<string, number>>({})
   const colWidths: Record<string, number> = { ...initialWidths, ...overrides }
