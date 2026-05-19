@@ -75,7 +75,7 @@
     "base64-js": "^1.5.1",
     "body-parser": "^2.2.2",
     "copy-to-clipboard": "^4.0.2",
-    "date-fns": "^4.1.0",
+    "date-fns": "^4.2.1",
     "dockview-core": "^6.3.0",
     "generic-filehandle2": "^2.1.7",
     "idb": "^8.0.3",

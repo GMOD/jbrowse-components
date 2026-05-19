@@ -381,8 +381,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.20
-        version: 6.0.20
+        specifier: ^6.0.22
+        version: 6.0.22
       '@jbrowse/jexl':
         specifier: ^3.0.2
         version: 3.0.2
@@ -530,8 +530,8 @@ importers:
   packages/sv-core:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.5
-        version: 7.0.5
+        specifier: ^7.0.7
+        version: 7.0.7
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
@@ -679,11 +679,11 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^7.2.0
-        version: 7.2.0
+        specifier: ^7.2.3
+        version: 7.2.3
       '@gmod/cram':
-        specifier: ^8.2.1
-        version: 8.2.1
+        specifier: ^8.2.3
+        version: 8.2.3
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -739,8 +739,8 @@ importers:
   plugins/arc:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.5
-        version: 7.0.5
+        specifier: ^7.0.7
+        version: 7.0.7
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -809,11 +809,11 @@ importers:
         specifier: ^9.0.15
         version: 9.0.15
       '@gmod/bed':
-        specifier: ^2.2.3
-        version: 2.2.3
+        specifier: ^2.2.5
+        version: 2.2.5
       '@gmod/tabix':
-        specifier: ^3.3.6
-        version: 3.3.6
+        specifier: ^3.3.8
+        version: 3.3.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -830,8 +830,8 @@ importers:
   plugins/breakpoint-split-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.5
-        version: 7.0.5
+        specifier: ^7.0.7
+        version: 7.0.7
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -884,8 +884,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       g2p_mapper:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.5
+        version: 2.1.5
       mobx:
         specifier: ^6.15.3
         version: 6.15.3
@@ -902,8 +902,8 @@ importers:
   plugins/circular-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.5
-        version: 7.0.5
+        specifier: ^7.0.7
+        version: 7.0.7
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -932,8 +932,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.3.6
-        version: 3.3.6
+        specifier: ^3.3.8
+        version: 3.3.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1001,8 +1001,8 @@ importers:
   plugins/data-management:
     dependencies:
       '@gmod/ucsc-hub':
-        specifier: ^2.0.7
-        version: 2.0.7
+        specifier: ^2.0.9
+        version: 2.0.9
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1116,8 +1116,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/tabix':
-        specifier: ^3.3.6
-        version: 3.3.6
+        specifier: ^3.3.8
+        version: 3.3.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1209,8 +1209,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.20
-        version: 6.0.20
+        specifier: ^6.0.22
+        version: 6.0.22
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1335,8 +1335,8 @@ importers:
   plugins/legacy-jbrowse:
     dependencies:
       '@gmod/nclist':
-        specifier: ^3.0.8
-        version: 3.0.8
+        specifier: ^3.0.10
+        version: 3.0.10
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1470,8 +1470,8 @@ importers:
   plugins/maf:
     dependencies:
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.20
-        version: 6.0.20
+        specifier: ^6.0.22
+        version: 6.0.22
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1572,8 +1572,8 @@ importers:
         specifier: ^5.0.7
         version: 5.0.7
       '@gmod/twobit':
-        specifier: ^6.0.7
-        version: 6.0.7
+        specifier: ^6.0.9
+        version: 6.0.9
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1602,8 +1602,8 @@ importers:
   plugins/spreadsheet-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.5
-        version: 7.0.5
+        specifier: ^7.0.7
+        version: 7.0.7
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1692,8 +1692,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.0.13
-        version: 3.0.13
+        specifier: ^3.0.15
+        version: 3.0.15
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1740,11 +1740,11 @@ importers:
         specifier: ^3.0.14
         version: 3.0.14
       '@gmod/tabix':
-        specifier: ^3.3.6
-        version: 3.3.6
+        specifier: ^3.3.8
+        version: 3.3.8
       '@gmod/vcf':
-        specifier: ^7.0.5
-        version: 7.0.5
+        specifier: ^7.0.7
+        version: 7.0.7
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2019,8 +2019,8 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@mui/system@9.0.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
+        specifier: ^4.2.1
+        version: 4.2.1
       deepmerge:
         specifier: ^4.3.1
         version: 4.3.1
@@ -2536,8 +2536,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
+        specifier: ^4.2.1
+        version: 4.2.1
       dockview-core:
         specifier: ^6.3.0
         version: 6.3.0
@@ -3753,20 +3753,20 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@7.2.0':
-    resolution: {integrity: sha512-fBkzKeaojfIxk6t85qo2QCjdOhWFRyYilIMFXm7Kkd2ho4g9U9gfwaMWzjXA8XN3e1oWOSmEqZxZK6CO9z6PPQ==}
+  '@gmod/bam@7.2.3':
+    resolution: {integrity: sha512-+ohfcNq4pfV9KF8wFCoriVszkxOUKY9d3eK28HoJ6KxN8i4VvLmgblRmeNBdR85LdQKPsdp6OG49S1fEIGTnbg==}
 
   '@gmod/bbi@9.0.15':
     resolution: {integrity: sha512-fs9g06ROWAkRWESSAlWWQoo3cEGxPaqhNYbqpUcVzLkHaPKHlLCZc/j6mXaLYrz3jmq9LiYUHTfYZ1y40bqGJQ==}
 
-  '@gmod/bed@2.2.3':
-    resolution: {integrity: sha512-JPrijnobKsFhBcWamy+Vu647QsYCP6Az0gvq56AYpZ7IdvyJYdi7iLrhe3eQEOXjSsARj6ShbX3vxmN3N36X2A==}
+  '@gmod/bed@2.2.5':
+    resolution: {integrity: sha512-bk+D5yrV1cxNCuiJ771iK68jmU8yEGV2vufdJW1SjeByl7ievJoYKgRdSwEol4hleqV1cNcmlMvfmj3t+n+OMw==}
 
-  '@gmod/bgzf-filehandle@6.0.20':
-    resolution: {integrity: sha512-bgW0IMPv502D4jYsoMULegYebxxbV54Y50qH+wwZvNXr07LPuK+4hy9Q8+ranNVuLokOBKwIXmTZj6RVFTVW8Q==}
+  '@gmod/bgzf-filehandle@6.0.22':
+    resolution: {integrity: sha512-ePqBw/N1+AC0fE/klwVxqxFoldJZzmgGWRZeXPebSoYcT9wIsekj5ZHiS9zGL42VsGmmCwmnTm9D4cE5x+Wr8w==}
 
-  '@gmod/cram@8.2.1':
-    resolution: {integrity: sha512-3TQy754LR+DMvTHHx3tVsVnB0XjXaIolbBjPFIOOqW5gBG6HE2tmxsVzQGNAc1X/edYjedIFcwW+anmm6rUy2w==}
+  '@gmod/cram@8.2.3':
+    resolution: {integrity: sha512-xksMifqkVtqELYS1D/rGQuZNPPawdWWj+mFVeuP0VjG1OEVlFp1lJ86EjAMib39XleMNAzLVfJ8bOPqM5qeZ2w==}
 
   '@gmod/faidx@2.0.0':
     resolution: {integrity: sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==}
@@ -3778,23 +3778,23 @@ packages:
   '@gmod/indexedfasta@5.0.7':
     resolution: {integrity: sha512-E/BtszY8K4xN6s2IEafpfZ1E8pyWsBx4xEmcMr0SKaBLPzh0VGqEKdmZpH+Sq5Kq7vYVuL8UriFhc6xNwLfXcA==}
 
-  '@gmod/nclist@3.0.8':
-    resolution: {integrity: sha512-pXK9vktFSyuO4NLcopCrKlUEmq+xFv5wG3S+GoYFdzegVUd8zPjNZAbrhKUKRwTlBkWtWqCkNXchJJj4A+WIkg==}
+  '@gmod/nclist@3.0.10':
+    resolution: {integrity: sha512-L2D7a6O9pzzCxPxBh75T3fFRayF3oLqY77UsL9wXMTBHCr7gifeetCcBPoZfxNImWWcB0+U3uAQ8OEAGjTzmaw==}
 
-  '@gmod/tabix@3.3.6':
-    resolution: {integrity: sha512-3QLj0rsFRCRfrLUXQbwqKGVG7FmH7y8hboghzraSGRZ59zbM0rDchr5AgqjiS/xwujBzfFfLQ5D2+0dPtSLLCw==}
+  '@gmod/tabix@3.3.8':
+    resolution: {integrity: sha512-fyTWQTSS1ZyKeVIPF6pnCqOyrkNTGWgmhH71VGTsq8GDKZs70KxfRtRghu8q/z34nE4DEG2+G/vXn+AJivJVZQ==}
 
-  '@gmod/trix@3.0.13':
-    resolution: {integrity: sha512-4taqhiXc0pt3OHVJYs0trZR7Whk/Xyf3gqds+j3P8ox1wRA8sZlqIW2eVLImu2pJYGYslPfxwkqwv6tS5u7xxQ==}
+  '@gmod/trix@3.0.15':
+    resolution: {integrity: sha512-KPXXQDHF8jYq9LZZ+QSITwEc4lm2wNcsuJlqIj1eVlRuYDis/191jLqcQiy0SPMEMwmNfl2HroXs6+1TOHDMxA==}
 
-  '@gmod/twobit@6.0.7':
-    resolution: {integrity: sha512-G9OOK3zPSHfs98/yAO1f9jMajPhthvBg1CChOq4+zZWfrWMtU5ZhAGZQzcpQwXkWYNAmia2WJH5lDRHpwbj6qw==}
+  '@gmod/twobit@6.0.9':
+    resolution: {integrity: sha512-8X0QERQbJ152ITLQEEujrYG3Ho19FOMCj4LnOkxB8A9EynNp+ensmIh4/aQAzwgtrqqzb8DOFubET6c4bVdzwA==}
 
-  '@gmod/ucsc-hub@2.0.7':
-    resolution: {integrity: sha512-lL64UO1LJIxia+JD9DXo1hoN70FDzxozTJoZZKNIZDEBDV+Wd9uUXIRlwCEytKK3ylqXKV6+hk8snP/q4uE0zg==}
+  '@gmod/ucsc-hub@2.0.9':
+    resolution: {integrity: sha512-De/30Zy4vGtEOG9cCO73fqLlTSgIr365k8VeZJqab0zQnK/1lTUyDA3qeit0OpW8x0BthhIAuPgpjOchRnj7dw==}
 
-  '@gmod/vcf@7.0.5':
-    resolution: {integrity: sha512-G26QYOUcpb8Bva51S0Fj95gggNzffnuPfJXaRx8WEvDlFb7eh5U1MEzSj3l/UaxPhkB4pZBhYaF8AFcZEDKjkg==}
+  '@gmod/vcf@7.0.7':
+    resolution: {integrity: sha512-jhP4RWbwNGK8b2yAtjJiM2FeDIqJgjqaaLQcuB5ZlLO6zdh9IzRZfVvhmGSrh6UCvTKjcWqVgP3YhzwiV7Dsiw==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -6045,6 +6045,9 @@ packages:
   date-fns@4.1.0:
     resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
 
+  date-fns@4.2.1:
+    resolution: {integrity: sha512-37RhSdxaG1suen6VDCza6rNrQfooyQh57HFVPwQGEq2QWliVLzPQZ8Oa017weOu+HZCnzI7N3Pf/wyoBKfEqrA==}
+
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
     peerDependencies:
@@ -6216,6 +6219,7 @@ packages:
 
   dompurify@3.4.4:
     resolution: {integrity: sha512-r8K7KGKEcztXfA/nfabSYB2hg9tDphORJTdf8xprN/luSLGmNhOBN8dm1/SYjqLLet6YUFEXOcrdTuwryp/Bew==}
+    deprecated: Fixed a security issue introduced in 3.4.4
 
   domutils@2.8.0:
     resolution: {integrity: sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==}
@@ -6808,8 +6812,8 @@ packages:
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
 
-  g2p_mapper@2.1.1:
-    resolution: {integrity: sha512-ENc+xskE9FnZ8h8p1TVDHM+jJxfrdKgkh3JMJnLmYrtpxTmtKduRS6ZihclAGVoOj6czw92sTVRXUyfEo79UxQ==}
+  g2p_mapper@2.1.5:
+    resolution: {integrity: sha512-avgTnFeLtnJlRy+4x4eeJyuMlLRUj80voCTRfdQNxI5AOW4KeeybS3uL78tCr4UcnLkV6jH7DbRkAFw9KwThXA==}
 
   galactus@2.0.2:
     resolution: {integrity: sha512-HmKyTFGomdAchz4umx8MwBnrnfFmdpwiTyGA4ZOF7rya2Lmgbc9qate4yweInL+0gUBVImhaz12SBGpW3SY4Yg==}
@@ -10835,9 +10839,9 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@7.2.0':
+  '@gmod/bam@7.2.3':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.20
+      '@gmod/bgzf-filehandle': 6.0.22
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
       generic-filehandle2: 2.1.7
@@ -10850,15 +10854,15 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
-  '@gmod/bed@2.2.3': {}
+  '@gmod/bed@2.2.5': {}
 
-  '@gmod/bgzf-filehandle@6.0.20':
+  '@gmod/bgzf-filehandle@6.0.22':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
       pako-esm2: 2.0.2
 
-  '@gmod/cram@8.2.1':
+  '@gmod/cram@8.2.3':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
@@ -10873,32 +10877,32 @@ snapshots:
 
   '@gmod/indexedfasta@5.0.7':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.20
+      '@gmod/bgzf-filehandle': 6.0.22
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
-  '@gmod/nclist@3.0.8':
+  '@gmod/nclist@3.0.10':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@jbrowse/quick-lru': 7.3.5
       '@jridgewell/resolve-uri': 3.1.2
 
-  '@gmod/tabix@3.3.6':
+  '@gmod/tabix@3.3.8':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
-      '@gmod/bgzf-filehandle': 6.0.20
+      '@gmod/bgzf-filehandle': 6.0.22
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
-  '@gmod/trix@3.0.13': {}
+  '@gmod/trix@3.0.15': {}
 
-  '@gmod/twobit@6.0.7':
+  '@gmod/twobit@6.0.9':
     dependencies:
       generic-filehandle2: 2.1.7
 
-  '@gmod/ucsc-hub@2.0.7': {}
+  '@gmod/ucsc-hub@2.0.9': {}
 
-  '@gmod/vcf@7.0.5': {}
+  '@gmod/vcf@7.0.7': {}
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -13394,6 +13398,8 @@ snapshots:
 
   date-fns@4.1.0: {}
 
+  date-fns@4.2.1: {}
+
   debug@2.6.9:
     dependencies:
       ms: 2.0.0
@@ -14399,7 +14405,7 @@ snapshots:
 
   functions-have-names@1.2.3: {}
 
-  g2p_mapper@2.1.1: {}
+  g2p_mapper@2.1.5: {}
 
   galactus@2.0.2:
     dependencies:
