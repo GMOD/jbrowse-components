@@ -10,7 +10,7 @@ const useStyles = makeStyles()(() => ({
   bp: {
     display: 'flex',
     alignItems: 'center',
-    marginLeft: 10,
+    marginLeft: 7, // matches LGV HeaderRegionWidth gap (HeaderForm marginRight: 7)
   },
   searchBox: {
     display: 'flex',
