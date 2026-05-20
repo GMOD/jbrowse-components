@@ -85,12 +85,17 @@ const HighlightGrid = observer(function HighlightGrid({
                   href="#"
                   onClick={event => {
                     event.preventDefault()
-                    row.view.navTo({
-                      refName: row.highlight.refName,
-                      start: row.highlight.start,
-                      end: row.highlight.end,
-                      assemblyName: row.highlight.assemblyName,
-                    })
+                    row.view.navTo(
+                      {
+                        refName: row.highlight.refName,
+                        start: row.highlight.start,
+                        end: row.highlight.end,
+                        assemblyName: row.highlight.assemblyName,
+                      },
+                      // slightly zoom out so the highlighted region has
+                      // context on either side
+                      0.2,
+                    )
                   }}
                 >
                   {value}
