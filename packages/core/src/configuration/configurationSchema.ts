@@ -315,13 +315,27 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
     },
   })
 
-  return types.union(
+  return types.snapshotProcessor(
+    types.union(
+      {
+        dispatcher: snapshot =>
+          typeof snapshot === 'string' ? trackRef : schemaType,
+      },
+      trackRef,
+      schemaType,
+    ),
     {
-      dispatcher: snapshot =>
-        typeof snapshot === 'string' ? trackRef : schemaType,
+      postProcessor(snapshot) {
+        if (
+          typeof snapshot === 'object' &&
+          snapshot !== null &&
+          'trackId' in snapshot
+        ) {
+          return (snapshot as { trackId: string }).trackId
+        }
+        return snapshot
+      },
     },
-    trackRef,
-    schemaType,
   )
 }
 
