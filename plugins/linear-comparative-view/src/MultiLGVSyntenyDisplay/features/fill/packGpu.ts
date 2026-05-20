@@ -48,9 +48,6 @@ export function prepareBlockGeometry(
   for (const [genomeName, features] of genomeFeatures) {
     const g = genomeIndexMap.get(genomeName)
     if (g === undefined) {
-      console.warn(
-        `[MultiSynteny] genome "${genomeName}" not in displayedGenomes [${displayedGenomes.join(', ')}] — ${features.length} features dropped`,
-      )
       continue
     }
     for (const feat of features) {

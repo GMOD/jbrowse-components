@@ -322,7 +322,7 @@ async function setupPage(browser: Browser) {
 
   page.on('console', msg => {
     const text = msg.text()
-    if (text.includes('favicon')) {
+    if (text.includes('favicon') || text.includes('GPU stall due to ReadPixels')) {
       return
     }
     const type = msg.type()
