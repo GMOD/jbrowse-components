@@ -373,11 +373,18 @@ describe('ConfigurationReference', () => {
   }
 
   describe('TrackConfigurationReference', () => {
+    // `holder: { ref: 'aaa' }` and similar test snapshots use a string id where
+    // the SnapshotIn type expects an object. MST's union(reference, schema)
+    // accepts both at runtime, but `ConfigurationReference` casts its return
+    // to `SCHEMATYPE`, which narrows SnapshotIn down to just the object form.
+    // These tests exercise the string branch on purpose — `@ts-expect-error`
+    // marks the TS-only gap rather than working around it with `any`.
     test('resolves a known trackId via session.tracksById', () => {
       const { Session } = buildTrackEnv()
       const session = Session.create(
         {
           _tracks: [{ trackId: 'aaa', name: 'first' }],
+          // @ts-expect-error see comment above
           holder: { ref: 'aaa' },
         },
         { pluginManager },
@@ -390,6 +397,7 @@ describe('ConfigurationReference', () => {
       const session = Session.create(
         {
           _tracks: [{ trackId: 'aaa', name: 'first' }],
+          // @ts-expect-error see comment above
           holder: { ref: 'aaa' },
         },
         { pluginManager },
@@ -402,6 +410,7 @@ describe('ConfigurationReference', () => {
       const session = Session.create(
         {
           _tracks: [{ trackId: 'aaa', name: 'first' }],
+          // @ts-expect-error see comment above
           holder: { ref: 'missing' },
         },
         { pluginManager },
@@ -414,6 +423,7 @@ describe('ConfigurationReference', () => {
       const session = Session.create(
         {
           _tracks: [{ trackId: 'aaa', name: 'first' }],
+          // @ts-expect-error see comment above
           holder: { ref: 'aaa' },
         },
         { pluginManager },
@@ -469,6 +479,9 @@ describe('ConfigurationReference', () => {
   }
 
   describe('DisplayConfigurationReference', () => {
+    // Same `@ts-expect-error` pattern as TrackConfigurationReference tests:
+    // `configuration: 'd1'` passes a displayId string where SnapshotIn expects
+    // an object. Accepted at runtime via the union's string-dispatcher branch.
     test('resolves by displayId', () => {
       const { TrackState } = buildDisplayEnv()
       const track = TrackState.create(
@@ -477,11 +490,12 @@ describe('ConfigurationReference', () => {
             trackId: 't1',
             displays: [{ type: 'TestDisplay', displayId: 'd1', foo: 'hello' }],
           },
+          // @ts-expect-error see comment above
           displays: [{ type: 'TestDisplay', configuration: 'd1' }],
         },
         { pluginManager },
       )
-      expect(readConfObject(track.displays[0].configuration, 'foo')).toBe(
+      expect(readConfObject(track.displays[0]!.configuration, 'foo')).toBe(
         'hello',
       )
     })
@@ -496,11 +510,12 @@ describe('ConfigurationReference', () => {
               { type: 'TestDisplay', displayId: 'configured', foo: 'matched' },
             ],
           },
+          // @ts-expect-error see comment above
           displays: [{ type: 'TestDisplay', configuration: 'someUnknownId' }],
         },
         { pluginManager },
       )
-      expect(readConfObject(track.displays[0].configuration, 'foo')).toBe(
+      expect(readConfObject(track.displays[0]!.configuration, 'foo')).toBe(
         'matched',
       )
     })
@@ -513,13 +528,14 @@ describe('ConfigurationReference', () => {
             trackId: 't1',
             displays: [],
           },
+          // @ts-expect-error see comment above
           displays: [{ type: 'TestDisplay', configuration: 'newId' }],
         },
         { pluginManager },
       )
       // The auto-created config has the default value; documents the existing
       // "orphaned MST node" behavior — it is detached from track.displays.
-      expect(readConfObject(track.displays[0].configuration, 'foo')).toBe('x')
+      expect(readConfObject(track.displays[0]!.configuration, 'foo')).toBe('x')
       expect(track.configuration.displays.length).toBe(0)
     })
 
@@ -549,12 +565,13 @@ describe('ConfigurationReference', () => {
       const track = TrackState.create(
         {
           configuration: { trackId: 't9', displays: [] },
+          // @ts-expect-error see comment above
           displays: [{ configuration: 'absent' }],
         },
         { pluginManager },
       )
-      expect(() => track.displays[0].configuration).toThrow(/t9/)
-      expect(() => track.displays[0].configuration).toThrow(/absent/)
+      expect(() => track.displays[0]!.configuration).toThrow(/t9/)
+      expect(() => track.displays[0]!.configuration).toThrow(/absent/)
     })
 
     test('writes displayId back into the snapshot', () => {
@@ -567,11 +584,12 @@ describe('ConfigurationReference', () => {
             trackId: 't1',
             displays: [{ type: 'TestDisplay', displayId: 'd1', foo: 'hello' }],
           },
+          // @ts-expect-error see comment above
           displays: [{ type: 'TestDisplay', configuration: 'd1' }],
         },
         { pluginManager },
       )
-      expect(getSnapshot(track.displays[0])).toEqual({
+      expect(getSnapshot(track.displays[0]!)).toEqual({
         type: 'TestDisplay',
         configuration: 'd1',
       })
@@ -599,6 +617,7 @@ describe('ConfigurationReference', () => {
       const session = Session.create(
         {
           _tracks: [{ trackId: 'aaa', name: 'first' }],
+          // @ts-expect-error see comment on the TrackConfigurationReference describe
           holder: { ref: 'aaa' },
         },
         { pluginManager },

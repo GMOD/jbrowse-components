@@ -83,8 +83,10 @@ function pxWidthForBlocks(
   const widths: number[] = []
   for (const b of blocks) {
     if (!hide.has(b.key)) {
-      widths.push(stringLenPx(b.refName))
-      widths.push(stringLenPx(getTickDisplayStr(b.end, bpPerPx)))
+      widths.push(
+        stringLenPx(b.refName),
+        stringLenPx(getTickDisplayStr(b.end, bpPerPx)),
+      )
     }
   }
   return max(widths)

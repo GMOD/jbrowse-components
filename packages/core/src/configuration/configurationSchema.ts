@@ -374,18 +374,16 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
           ret = displays.find(
             (d: unknown) => (d as { type?: string }).type === displayType,
           )
-          if (!ret) {
-            // CAVEAT: this auto-created config is *detached* — it is not
-            // added to track.configuration.displays, so user edits via the
-            // editor widget will not persist. Acceptable for ephemeral
-            // defaults of display types whose config wasn't in the saved
-            // track, but if saving edits matters here the config must be
-            // appended to the track's displays array via an action.
-            ret = schemaType.create(
-              { displayId: `${id}`, type: displayType },
-              getEnv(parent),
-            )
-          }
+          // CAVEAT: this auto-created config is *detached* — it is not added
+          // to track.configuration.displays, so user edits via the editor
+          // widget will not persist. Acceptable for ephemeral defaults of
+          // display types whose config wasn't in the saved track, but if
+          // saving edits matters here the config must be appended to the
+          // track's displays array via an action.
+          ret ??= schemaType.create(
+            { displayId: `${id}`, type: displayType },
+            getEnv(parent),
+          )
         }
       }
 

@@ -2,8 +2,8 @@ import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 
 import { splitHiLo } from './hiLoUtils.ts'
 
-import type { DotplotColorFn } from './dotplotWebGLColors.ts'
 import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
+import type { DotplotColorFn } from './dotplotWebGLColors.ts'
 import type { DotplotRpcData } from './types.ts'
 
 const MIN_CIGAR_PX_WIDTH = 4
