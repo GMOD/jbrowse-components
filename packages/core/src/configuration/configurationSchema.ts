@@ -285,21 +285,25 @@ export function ConfigurationSchema<
 }
 
 /**
- * Creates a reference type for track configurations that:
- * - Resolves trackId strings to configuration objects at runtime
- * - Always serializes as just the trackId string in snapshots
+ * Reference to a track configuration. Snapshot output is always the trackId
+ * string. The hydrated MST node lives in `session.tracksById` (see
+ * TracksManagerSessionMixin); this resolver just returns the cached node, so
+ * `track.configuration` is identity-stable across reads.
  *
- * Hydration of frozen track snapshots into MST models happens in
- * session.tracksById (see TracksManagerSessionMixin). This resolver just
- * returns the already-hydrated node, so track.configuration is a stable MST
- * instance across reads.
+ * The union + snapshotProcessor is for the rare path where a caller passes a
+ * full track-config snapshot object (rather than a trackId string) — e.g.
+ * DotplotView spawning a LinearSyntenyView via `configuration: getSnapshot(trackConf)`.
+ * String input → ref; object input → inline schema instance. Either way the
+ * postProcessor squashes serialized output to just the trackId.
  */
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
       const ret =
         getSession(parent).tracksById[id] ??
-        // @ts-expect-error
+        // @ts-expect-error -- schemaType is IAnyType so resolveIdentifier's
+        // generic can't narrow; backstop path, kept in case the session's
+        // tracksById misses an id reachable via root traversal.
         (resolveIdentifier(schemaType, getRoot(parent), id) as unknown)
       if (!ret) {
         throw new Error(`Could not resolve identifier "${id}"`)
@@ -311,43 +315,29 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
     },
   })
 
-  // Use snapshotProcessor to always serialize as just the trackId.
-  // The union allows accepting either a string ID or full object as input,
-  // but postProcessor ensures output is always just the ID string.
-  return types.snapshotProcessor(
-    types.union(
-      {
-        dispatcher: snapshot =>
-          typeof snapshot === 'string' ? trackRef : schemaType,
-      },
-      trackRef,
-      schemaType,
-    ),
+  return types.union(
     {
-      postProcessor(snapshot) {
-        if (
-          typeof snapshot === 'object' &&
-          snapshot !== null &&
-          'trackId' in snapshot
-        ) {
-          return (snapshot as { trackId: string }).trackId
-        }
-        return snapshot
-      },
+      dispatcher: snapshot =>
+        typeof snapshot === 'string' ? trackRef : schemaType,
     },
+    trackRef,
+    schemaType,
   )
 }
 
 /**
- * Creates a reference type for display configurations that:
- * - Resolves displayId strings to configuration objects at runtime
- * - Works with frozen track configurations (where displays are plain objects)
- * - Falls back to creating a default configuration if display is not explicitly configured
+ * Reference to a display configuration. Looked up inside the containing track
+ * config's `displays` array. Snapshot output is the displayId string.
  *
- * Note: Unlike TrackConfigurationReference, we don't use snapshotProcessor here
- * because it interferes with how sub-displays (like PileupDisplay) are created
- * and causes "setConfig is not a function" errors. Display configs are serialized
- * through the containing track's snapshot processing instead.
+ * The union (without snapshotProcessor) mirrors TrackConfigurationReference's
+ * input flexibility — string id OR inline display-config snapshot — but the
+ * postProcessor is omitted intentionally: `types.reference.set` already emits
+ * the displayId, and adding snapshotProcessor here historically caused
+ * "setConfig is not a function" errors (the original call site is no longer
+ * in the codebase but the asymmetry is kept until that's investigated).
+ *
+ * Resolution order: by displayId, then by parent.type, then auto-create
+ * a detached default (see CAVEAT inside).
  */
 export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
@@ -362,21 +352,39 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       // Fallback: match by display type when the displayId isn't found.
       // This handles state models whose display type wasn't registered when
       // the track config was written.
+      //
+      // The `if (displayType)` guard is important: without it, an undefined
+      // displayType would `find` a display whose own `.type` is also
+      // undefined — a silent wrong match. In practice parent.type is always
+      // a string literal, but we guard defensively so the throw fires
+      // cleanly if anything goes wrong upstream.
       if (!ret) {
         const displayType = (parent as { type?: string }).type
-        ret = displays.find(
-          (d: unknown) => (d as { type?: string }).type === displayType,
-        )
-        if (!ret && displayType) {
-          ret = schemaType.create(
-            { displayId: `${id}`, type: displayType },
-            getEnv(parent),
+        if (displayType) {
+          ret = displays.find(
+            (d: unknown) => (d as { type?: string }).type === displayType,
           )
+          if (!ret) {
+            // CAVEAT: this auto-created config is *detached* — it is not
+            // added to track.configuration.displays, so user edits via the
+            // editor widget will not persist. Acceptable for ephemeral
+            // defaults of display types whose config wasn't in the saved
+            // track, but if saving edits matters here the config must be
+            // appended to the track's displays array via an action.
+            ret = schemaType.create(
+              { displayId: `${id}`, type: displayType },
+              getEnv(parent),
+            )
+          }
         }
       }
 
       if (!ret) {
-        throw new Error(`Display configuration "${id}" not found`)
+        const displayType = (parent as { type?: string }).type
+        const trackId = (track.configuration as { trackId?: string }).trackId
+        throw new Error(
+          `Display configuration "${id}" not found on track "${trackId}" (looked up by displayId, then by type "${displayType ?? '<no type on parent>'}")`,
+        )
       }
       return ret
     },
@@ -398,21 +406,26 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
 export function ConfigurationReference<
   SCHEMATYPE extends AnyConfigurationSchemaType,
 >(schemaType: SCHEMATYPE) {
-  const name = schemaType.name
-  // Check if this is a track configuration schema
-  if (
-    name.includes('TrackConfigurationSchema') &&
-    !name.includes('DisplayConfigurationSchema')
-  ) {
+  // Track schemas all declare `explicitIdentifier: 'trackId'`, so the track
+  // branch dispatches deterministically by identifier.
+  //
+  // Display schemas are different: most don't declare an identifier on the
+  // schema itself because the `displayId` field is auto-injected by
+  // baseTrackConfig.preProcessSnapshot (as `${trackId}-${displayType}`) at
+  // track-config load time. So for displays we identify by schema-name suffix
+  // — the `*DisplayConfigurationSchema` suffix is appended by
+  // makeConfigurationSchemaModel.
+  const id = schemaType.jbrowseSchemaOptions?.explicitIdentifier
+  if (id === 'trackId') {
     return TrackConfigurationReference(schemaType) as SCHEMATYPE
   }
-  // Check if this is a display configuration schema
-  if (name.includes('DisplayConfigurationSchema')) {
+  if (
+    id === 'displayId' ||
+    schemaType.name.endsWith('DisplayConfigurationSchema')
+  ) {
     return DisplayConfigurationReference(schemaType) as SCHEMATYPE
   }
-  // Default behavior for other configuration types
-  // we cast this to SCHEMATYPE, because the reference *should* behave just
-  // like the object it points to. It won't be undefined (this is a
-  // `reference`, not a `safeReference`)
+  // Cast to SCHEMATYPE because the reference behaves just like the object it
+  // points to — it won't be undefined (this is a `reference`, not `safeReference`)
   return types.union(types.reference(schemaType), schemaType) as SCHEMATYPE
 }

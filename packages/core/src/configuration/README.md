@@ -30,13 +30,3 @@ These types are specific to configuration schemas.
   ```
 - `frozen` - any data structure. assumed to be immutable; internal changes to it
   will not be noticed by any mobx observers
-
-## Configuration Layers
-
-There is also a configuration construct called a `ConfigurationLayer` that acts
-as a "layer over" another configuration schema. It has the same slots, with the
-same types, but all of its slot values default to whatever the default of of the
-corresponding slot in the parent schema is.
-
-These are useful for "overriding" only some values of a parent schema, such as
-for providing a cascading configuration system for subtracks.

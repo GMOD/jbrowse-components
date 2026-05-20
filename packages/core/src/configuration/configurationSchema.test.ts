@@ -2,7 +2,10 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf, readConfObject } from './index.ts'
 import PluginManager from '../PluginManager.ts'
-import { ConfigurationSchema } from './configurationSchema.ts'
+import {
+  ConfigurationReference,
+  ConfigurationSchema,
+} from './configurationSchema.ts'
 import { isConfigurationModel } from './util.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -339,5 +342,305 @@ describe('configuration schemas', () => {
       'Not instantiated',
     )
     expect(readConfObject(tester, ['index', 'indexType'])).toBe('TBI')
+  })
+})
+
+describe('ConfigurationReference', () => {
+  // Minimal session shim. isSessionModel needs `rpcManager` + `configuration`;
+  // tracksById is what TrackConfigurationReference reads.
+  function buildTrackEnv() {
+    const TrackConfig = ConfigurationSchema(
+      'TestTrack',
+      { name: { type: 'string', defaultValue: '' } },
+      { explicitIdentifier: 'trackId' },
+    )
+    const Holder = types.model('Holder', {
+      ref: ConfigurationReference(TrackConfig),
+    })
+    const Session = types
+      .model('Session', {
+        rpcManager: types.frozen({}),
+        configuration: types.frozen({}),
+        _tracks: types.array(TrackConfig),
+        holder: Holder,
+      })
+      .views(self => ({
+        get tracksById() {
+          return Object.fromEntries(self._tracks.map(t => [t.trackId, t]))
+        },
+      }))
+    return { TrackConfig, Holder, Session }
+  }
+
+  describe('TrackConfigurationReference', () => {
+    test('resolves a known trackId via session.tracksById', () => {
+      const { Session } = buildTrackEnv()
+      const session = Session.create(
+        {
+          _tracks: [{ trackId: 'aaa', name: 'first' }],
+          holder: { ref: 'aaa' },
+        },
+        { pluginManager },
+      )
+      expect(readConfObject(session.holder.ref, 'name')).toBe('first')
+    })
+
+    test('returns the same instance across reads', () => {
+      const { Session } = buildTrackEnv()
+      const session = Session.create(
+        {
+          _tracks: [{ trackId: 'aaa', name: 'first' }],
+          holder: { ref: 'aaa' },
+        },
+        { pluginManager },
+      )
+      expect(session.holder.ref).toBe(session.holder.ref)
+    })
+
+    test('throws when the id is not found', () => {
+      const { Session } = buildTrackEnv()
+      const session = Session.create(
+        {
+          _tracks: [{ trackId: 'aaa', name: 'first' }],
+          holder: { ref: 'missing' },
+        },
+        { pluginManager },
+      )
+      expect(() => session.holder.ref).toThrow(/missing/)
+    })
+
+    test('snapshots as just the trackId string', () => {
+      const { Session } = buildTrackEnv()
+      const session = Session.create(
+        {
+          _tracks: [{ trackId: 'aaa', name: 'first' }],
+          holder: { ref: 'aaa' },
+        },
+        { pluginManager },
+      )
+      expect(getSnapshot(session.holder)).toEqual({ ref: 'aaa' })
+    })
+
+    test('a full-object snapshot input round-trips to its id on output', () => {
+      // Real codepath: DotplotView spawning LinearSyntenyView passes
+      // `configuration: getSnapshot(trackConf)` rather than a trackId string.
+      // The dispatcher routes object input through the schema branch; the
+      // snapshotProcessor postProcessor then squashes serialized output to
+      // just the id. Don't drop the union/postProcessor — this path depends
+      // on it.
+      const { Session } = buildTrackEnv()
+      const session = Session.create(
+        {
+          _tracks: [{ trackId: 'aaa', name: 'first' }],
+          holder: { ref: { trackId: 'aaa', name: 'inline' } },
+        },
+        { pluginManager },
+      )
+      expect(getSnapshot(session.holder)).toEqual({ ref: 'aaa' })
+    })
+  })
+
+  // Track-state-model shape. isTrackModel needs `configuration.trackId`.
+  function buildDisplayEnv() {
+    const DisplayConfig = ConfigurationSchema(
+      'TestDisplay',
+      { foo: { type: 'string', defaultValue: 'x' } },
+      { explicitIdentifier: 'displayId', explicitlyTyped: true },
+    )
+    const TrackConfig = ConfigurationSchema(
+      'TestTrack',
+      { displays: types.array(DisplayConfig) },
+      { explicitIdentifier: 'trackId' },
+    )
+    const DisplayState = types.model('DisplayState', {
+      type: types.string,
+      configuration: ConfigurationReference(DisplayConfig),
+    })
+    const TrackState = types.model('TrackState', {
+      configuration: TrackConfig,
+      displays: types.array(DisplayState),
+    })
+    return { DisplayConfig, TrackConfig, DisplayState, TrackState }
+  }
+
+  describe('DisplayConfigurationReference', () => {
+    test('resolves by displayId', () => {
+      const { TrackState } = buildDisplayEnv()
+      const track = TrackState.create(
+        {
+          configuration: {
+            trackId: 't1',
+            displays: [{ type: 'TestDisplay', displayId: 'd1', foo: 'hello' }],
+          },
+          displays: [{ type: 'TestDisplay', configuration: 'd1' }],
+        },
+        { pluginManager },
+      )
+      expect(readConfObject(track.displays[0].configuration, 'foo')).toBe(
+        'hello',
+      )
+    })
+
+    test('falls back to type-match when displayId is missing', () => {
+      const { TrackState } = buildDisplayEnv()
+      const track = TrackState.create(
+        {
+          configuration: {
+            trackId: 't1',
+            displays: [
+              { type: 'TestDisplay', displayId: 'configured', foo: 'matched' },
+            ],
+          },
+          displays: [{ type: 'TestDisplay', configuration: 'someUnknownId' }],
+        },
+        { pluginManager },
+      )
+      expect(readConfObject(track.displays[0].configuration, 'foo')).toBe(
+        'matched',
+      )
+    })
+
+    test('auto-creates a default config when neither id nor type matches', () => {
+      const { TrackState } = buildDisplayEnv()
+      const track = TrackState.create(
+        {
+          configuration: {
+            trackId: 't1',
+            displays: [],
+          },
+          displays: [{ type: 'TestDisplay', configuration: 'newId' }],
+        },
+        { pluginManager },
+      )
+      // The auto-created config has the default value; documents the existing
+      // "orphaned MST node" behavior — it is detached from track.displays.
+      expect(readConfObject(track.displays[0].configuration, 'foo')).toBe('x')
+      expect(track.configuration.displays.length).toBe(0)
+    })
+
+    test('error when parent has no type to fall back on', () => {
+      // Build a custom display state model without a `type` field so the
+      // resolver can't auto-create. Verifies the throw path mentions the
+      // trackId and that the type lookup also failed.
+      const DisplayConfig = ConfigurationSchema(
+        'NoTypeDisplay',
+        { foo: { type: 'string', defaultValue: 'x' } },
+        { explicitIdentifier: 'displayId', explicitlyTyped: true },
+      )
+      const TrackConfig = ConfigurationSchema(
+        'NoTypeTrack',
+        { displays: types.array(DisplayConfig) },
+        { explicitIdentifier: 'trackId' },
+      )
+      // DisplayState without a `type` field — parent.type undefined.
+      const DisplayState = types.model('NoTypeDisplayState', {
+        configuration: ConfigurationReference(DisplayConfig),
+      })
+      const TrackState = types.model('NoTypeTrackState', {
+        configuration: TrackConfig,
+        displays: types.array(DisplayState),
+      })
+
+      const track = TrackState.create(
+        {
+          configuration: { trackId: 't9', displays: [] },
+          displays: [{ configuration: 'absent' }],
+        },
+        { pluginManager },
+      )
+      expect(() => track.displays[0].configuration).toThrow(/t9/)
+      expect(() => track.displays[0].configuration).toThrow(/absent/)
+    })
+
+    test('writes displayId back into the snapshot', () => {
+      // The ref's set() callback should produce the displayId string when
+      // the containing state model is serialized.
+      const { TrackState } = buildDisplayEnv()
+      const track = TrackState.create(
+        {
+          configuration: {
+            trackId: 't1',
+            displays: [{ type: 'TestDisplay', displayId: 'd1', foo: 'hello' }],
+          },
+          displays: [{ type: 'TestDisplay', configuration: 'd1' }],
+        },
+        { pluginManager },
+      )
+      expect(getSnapshot(track.displays[0])).toEqual({
+        type: 'TestDisplay',
+        configuration: 'd1',
+      })
+    })
+  })
+
+  describe('dispatch', () => {
+    test('schemas without trackId/displayId use the plain reference branch', () => {
+      // No explicitIdentifier → not a track or display ref → plain union.
+      // Observable difference: snapshots come out as full objects, not id strings.
+      const PlainConfig = ConfigurationSchema('Plain', {
+        name: { type: 'string', defaultValue: 'p' },
+      })
+      const Holder = types.model('PlainHolder', {
+        config: ConfigurationReference(PlainConfig),
+      })
+      const inst = Holder.create({ config: {} }, { pluginManager })
+      expect(typeof getSnapshot(inst).config).toBe('object')
+    })
+
+    test('track schemas snapshot the ref as the id string', () => {
+      // Asserts the dispatch picks TrackConfigurationReference (the only one
+      // that wraps with snapshotProcessor → id-string output).
+      const { Session } = buildTrackEnv()
+      const session = Session.create(
+        {
+          _tracks: [{ trackId: 'aaa', name: 'first' }],
+          holder: { ref: 'aaa' },
+        },
+        { pluginManager },
+      )
+      expect(typeof getSnapshot(session.holder).ref).toBe('string')
+    })
+
+    test('display schemas without explicitIdentifier still dispatch as display', () => {
+      // The schema name suffix `*DisplayConfigurationSchema` is the fallback
+      // signal when displayId isn't declared on the schema itself (most
+      // display schemas — displayId is auto-injected by baseTrackConfig
+      // preProcessSnapshot). This locks in that the name-suffix dispatch
+      // routes correctly without depending on baseTrackConfig.
+      const NoIdDisplayConfig = ConfigurationSchema(
+        // name → `NoIdDisplayConfigurationSchema`, ends with the suffix
+        'NoIdDisplay',
+        { foo: { type: 'string', defaultValue: 'x' } },
+        { explicitlyTyped: true },
+      )
+      const TrackConfig = ConfigurationSchema(
+        'SuffixTrack',
+        { displays: types.array(NoIdDisplayConfig) },
+        { explicitIdentifier: 'trackId' },
+      )
+      const DisplayState = types.model('SuffixDisplayState', {
+        type: types.string,
+        configuration: ConfigurationReference(NoIdDisplayConfig),
+      })
+      const TrackState = types.model('SuffixTrackState', {
+        configuration: TrackConfig,
+        displays: types.array(DisplayState),
+      })
+
+      // Type-match fallback inside DisplayConfigurationReference picks this up.
+      const track = TrackState.create(
+        {
+          configuration: {
+            trackId: 't1',
+            displays: [{ type: 'NoIdDisplay', foo: 'fromConfig' }],
+          },
+          displays: [{ type: 'NoIdDisplay', configuration: 'autogenId' }],
+        },
+        { pluginManager },
+      )
+      expect(readConfObject(track.displays[0].configuration, 'foo')).toBe(
+        'fromConfig',
+      )
+    })
   })
 })

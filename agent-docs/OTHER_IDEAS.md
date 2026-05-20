@@ -1,5 +1,14 @@
 # Ideas and Future Directions
 
+## ConfigurationLayer (fanciful — moved from configuration/README.md)
+
+Hypothetical construct that acts as a "layer over" another configuration schema.
+Same slots, same types, but every slot's default value is whatever the parent
+schema's current value happens to be. Use case: cascading config for subtracks
+where a child overrides a handful of slots and inherits the rest dynamically.
+Never built; current `baseConfiguration` extension covers most of the practical
+need (inherits the *schema*, not the live values).
+
 ## Specification Layer
 
 **Declarative JBrowse Spec** (exploratory)
