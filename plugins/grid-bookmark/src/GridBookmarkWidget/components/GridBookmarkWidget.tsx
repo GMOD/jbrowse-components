@@ -133,8 +133,11 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
           <ToggleButton value="highlights">Highlights</ToggleButton>
         </ToggleButtonGroup>
       </Stack>
-      {model.gridView === 'bookmarks' ? <BookmarkGrid model={model} /> : null}
-      {model.gridView === 'highlights' ? <HighlightGrid model={model} /> : null}
+      {model.gridView === 'bookmarks' ? (
+        <BookmarkGrid model={model} />
+      ) : (
+        <HighlightGrid model={model} />
+      )}
     </div>
   )
 })

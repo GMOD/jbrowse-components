@@ -17,17 +17,8 @@ const useStyles = makeStyles()({
   },
 })
 
-/**
- * Renders the colored band for a highlight or bookmark region with optional
- * chip (the children) on top. The chip is hidden when the band collapses to
- * a sub-pixel sliver. Used by both linear-genome-view's URL/session
- * highlights and grid-bookmark's bookmark highlights.
- *
- * Note: this is for the tracks-area band only. The overview scalebar
- * highlights (OverviewHighlight in both plugins) intentionally roll their
- * own — they use Base1DViewModel.bpToPx (different return shape) and have
- * no chip, so sharing this component there is more friction than gain.
- */
+// Shared band renderer for LGV and grid-bookmark highlights; OverviewHighlight
+// stays separate (different bpToPx API, no chip)
 export default function HighlightBand({
   coords,
   background,

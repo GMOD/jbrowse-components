@@ -84,14 +84,6 @@ export default function f(_pluginManager: PluginManager) {
       bookmarks: types.optional(types.array(LabeledRegionModel), () =>
         JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
       ),
-      /**
-       * #property
-       * which grid is visible in the widget: bookmarks or highlights
-       */
-      gridView: types.optional(
-        types.enumeration('GridView', ['bookmarks', 'highlights']),
-        'bookmarks',
-      ),
     })
     .volatile(() => ({
       /**
@@ -102,6 +94,11 @@ export default function f(_pluginManager: PluginManager) {
        * #volatile
        */
       selectedAssembliesPre: undefined as string[] | undefined,
+      /**
+       * #volatile
+       * which grid tab is visible: bookmarks or highlights
+       */
+      gridView: 'bookmarks' as 'bookmarks' | 'highlights',
     }))
     .views(self => ({
       /**
@@ -336,11 +333,8 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { bookmarks: _, gridView, ...rest } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        ...(gridView !== 'bookmarks' ? { gridView } : {}),
-      }
+      const { bookmarks: _, ...rest } = snap as Omit<typeof snap, symbol>
+      return rest
     })
 }
 

@@ -142,7 +142,7 @@ const HighlightGrid = observer(function HighlightGrid({
             width: 100,
             renderCell: ({ value, row }) => (
               <ColorPicker
-                color={value || theme.palette.highlight.main}
+                color={value ?? theme.palette.highlight.main}
                 onChange={newColor => {
                   row.view.updateHighlight(row.highlight, { color: newColor })
                 }}
@@ -175,7 +175,9 @@ const HighlightGrid = observer(function HighlightGrid({
         }}
         rowSelectionModel={{ type: 'include', ids: selectedIds }}
         processRowUpdate={row => {
-          row.view.updateHighlight(row.highlight, { label: row.label })
+          row.view.updateHighlight(row.highlight, {
+            label: row.label || undefined,
+          })
           return row
         }}
         onProcessRowUpdateError={e => {

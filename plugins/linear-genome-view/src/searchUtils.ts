@@ -122,7 +122,7 @@ export async function fetchResults({
     ...new Set(
       assembly?.allRefNames
         ?.filter(ref => ref.toLowerCase().startsWith(queryString.toLowerCase()))
-        .map(ref => assembly.getCanonicalRefName(ref) || ref)
+        .map(ref => assembly.getCanonicalRefName(ref) ?? ref)
         .slice(0, 10),
     ),
   ].map(r => new BaseResult({ label: r, matchedObject: { refName: r } }))

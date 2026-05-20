@@ -243,6 +243,10 @@ export default class GridBookmarkPlugin extends Plugin {
                 // strip dead bookmarkLabelsVisible from any pre-existing
                 // snapshots; labels are now controlled by base LGV labelsVisible
                 bookmarkLabelsVisible: _ignored,
+                // strip LGV defaults here too — postProcessSnapshot chain
+                // ordering isn't guaranteed, so we guard in both places
+                highlightsVisible,
+                labelsVisible,
                 ...rest
               } = snap as unknown as Record<string, unknown>
               return {
@@ -250,6 +254,8 @@ export default class GridBookmarkPlugin extends Plugin {
                 ...(bookmarkHighlightsVisible === false
                   ? { bookmarkHighlightsVisible }
                   : {}),
+                ...(!highlightsVisible ? { highlightsVisible } : {}),
+                ...(!labelsVisible ? { labelsVisible } : {}),
               } as typeof snap
             })
 
