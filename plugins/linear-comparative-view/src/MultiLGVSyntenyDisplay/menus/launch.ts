@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
@@ -115,8 +115,26 @@ export function getLaunchSubMenu(self: LaunchModel): MenuItem[] {
   const view = getContainingView(self) as LGV
   const track = getContainingTrack(self)
   const trackId = getConf(track, 'trackId')
-  const adapterConfig = getConf(track, 'adapter')
   const refAssembly = view.displayedRegions[0]?.assemblyName
+
+  // Prefer a GfaTabixAdapter/GfaServerAdapter from the session for subgraph
+  // extraction since the display's adapter (e.g. TabixPAFAdapter) may not
+  // implement getSubgraph.
+  const session = getSession(self)
+  const trackAssemblyNames = getConf(track, 'assemblyNames') as string[]
+  const gfaTrack = session.tracks.find(t => {
+    const adapterType = readConfObject(t, ['adapter', 'type']) as string
+    return (
+      (adapterType === 'GfaTabixAdapter' ||
+        adapterType === 'GfaServerAdapter') &&
+      (readConfObject(t, 'assemblyNames') as string[]).some(a =>
+        trackAssemblyNames.includes(a),
+      )
+    )
+  })
+  const adapterConfig = gfaTrack
+    ? readConfObject(gfaTrack, 'adapter')
+    : getConf(track, 'adapter')
   const loc = view.displayedRegions[0]
     ? `${view.displayedRegions[0].refName}:${Math.floor(view.offsetPx * view.bpPerPx)}-${Math.floor((view.offsetPx + view.width) * view.bpPerPx)}`
     : undefined

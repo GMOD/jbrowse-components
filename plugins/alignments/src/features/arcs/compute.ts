@@ -54,7 +54,7 @@ interface ArcSettings {
   colorByType: ArcColorByType
   // samplot mode: flat lines at Y=|tlen| with DEL/DUP/INV/BND coloring,
   // and concordant FR pairs filtered out so only discordant pairs remain.
-  samplot: boolean
+  samplot?: boolean
   drawInter: boolean
   drawLongRange: boolean
 }
@@ -349,7 +349,7 @@ export function computeArcsFromPileupData(
   regions: RegionInfo[],
   settings: ArcSettings,
 ) {
-  const { colorByType, samplot, drawInter, drawLongRange } = settings
+  const { colorByType, samplot = false, drawInter, drawLongRange } = settings
 
   const readsByName = new Map<
     string,

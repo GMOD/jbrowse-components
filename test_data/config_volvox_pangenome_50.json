@@ -52,6 +52,17 @@
       ]
     },
     {
+      "type": "MultiSyntenyTrack",
+      "trackId": "volvox_pangenome_50_gfa",
+      "name": "Volvox 50-sample GFA (tabix index)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "GfaTabixAdapter",
+        "prefix": "volvox/volvox_pangenome_50"
+      },
+      "assemblyNames": ["ref#0"]
+    },
+    {
       "type": "VariantTrack",
       "trackId": "volvox_pangenome_50_vcf",
       "name": "Volvox pangenome variants (vg deconstruct)",
