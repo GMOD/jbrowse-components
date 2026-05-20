@@ -19,7 +19,9 @@ exports[`export session with alignments and gff tracks 1`] = `
             "start": 0,
           },
         ],
+        "highlightsVisible": true,
         "id": "integration_test",
+        "labelsVisible": true,
         "tracks": [
           {
             "configuration": "volvox_alignments_pileup_coverage",
@@ -69,6 +71,7 @@ exports[`export session with alignments and gff tracks 1`] = `
     ],
     "widgets": {
       "GridBookmark": {
+        "gridView": "bookmarks",
         "id": "GridBookmark",
         "type": "GridBookmarkWidget",
       },
