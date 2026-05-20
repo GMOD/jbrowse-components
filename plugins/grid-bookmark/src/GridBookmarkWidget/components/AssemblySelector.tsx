@@ -24,7 +24,7 @@ const AssemblySelector = observer(function AssemblySelector({
   const isAllSelected = [...validAssemblies].every(e => selectedSet.has(e))
 
   return (
-    <FormControl disabled={noAssemblies} fullWidth>
+    <FormControl size="small" disabled={noAssemblies} fullWidth>
       <InputLabel id={id}>{label}</InputLabel>
       <Select
         labelId={id}
@@ -37,7 +37,7 @@ const AssemblySelector = observer(function AssemblySelector({
               : event.target.value,
           )
         }}
-        input={<OutlinedInput label={label} />}
+        input={<OutlinedInput label={label} size="small" />}
         renderValue={selected => selected.join(', ')}
       >
         <MenuItem

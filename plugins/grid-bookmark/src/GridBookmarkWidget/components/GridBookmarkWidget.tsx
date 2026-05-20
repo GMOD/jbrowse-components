@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Delete from '@mui/icons-material/Delete'
 import GetApp from '@mui/icons-material/GetApp'
 import Menu from '@mui/icons-material/Menu'
@@ -10,7 +9,12 @@ import Palette from '@mui/icons-material/Palette'
 import Publish from '@mui/icons-material/Publish'
 import Settings from '@mui/icons-material/Settings'
 import Share from '@mui/icons-material/Share'
-import { Alert, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import {
+  Alert,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AssemblySelector from './AssemblySelector.tsx'
@@ -39,25 +43,18 @@ const DeleteBookmarksDialog = lazy(
   () => import('./dialogs/DeleteBookmarksDialog.tsx'),
 )
 
-const useStyles = makeStyles()({
-  flex: {
-    display: 'flex',
-  },
-})
-
 const GridBookmarkWidget = observer(function GridBookmarkWidget({
   model,
 }: {
   model: GridBookmarkModel
 }) {
-  const { classes } = useStyles()
   return (
     <div>
       <Alert severity="info">
         Click and type within the <strong>label</strong> field to annotate your
         bookmark
       </Alert>
-      <div className={classes.flex}>
+      <Stack direction="row" spacing={1} alignItems="center">
         <CascadingMenuButton
           data-testid="grid_bookmark_menu"
           menuItems={[
@@ -140,7 +137,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
           <ToggleButton value="bookmarks">Bookmarks</ToggleButton>
           <ToggleButton value="highlights">Highlights</ToggleButton>
         </ToggleButtonGroup>
-      </div>
+      </Stack>
       {model.gridView === 'bookmarks' ? <BookmarkGrid model={model} /> : null}
       {model.gridView === 'highlights' ? <HighlightGrid model={model} /> : null}
     </div>
