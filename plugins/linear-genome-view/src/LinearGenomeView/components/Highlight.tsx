@@ -118,7 +118,13 @@ const Highlight = observer(function Highlight({
                   'GridBookmarkWidget',
                   'GridBookmark',
                 )) as BookmarkWidget
-              bookmarkWidget.addBookmark(highlight)
+              // highlights are persisted via types.frozen and can legitimately
+              // omit assemblyName (e.g. user-supplied session highlights), but
+              // the bookmark Region MST type requires it
+              bookmarkWidget.addBookmark({
+                ...highlight,
+                assemblyName: highlight.assemblyName ?? model.assemblyNames[0],
+              })
               session.showWidget(bookmarkWidget)
               dismissHighlight()
             },
