@@ -46,7 +46,7 @@ feedback.
 
 ---
 
-**Updated:** 2026-05-07 | PRD.md holds invariants; this file is the categorized backlog.
+**Updated:** 2026-05-19 | PRD.md holds invariants; this file is the categorized backlog.
 
 
 
@@ -122,15 +122,56 @@ needs a data model for "sub-block" homology — but worth scoping.
 
 ### SVbyEye-inspired
 
-**Identity-binned ribbon coloring (`colorBy: identityHeatmap`).**
-`pafAlignmentToBins.R` splits each alignment into fixed-bp windows and reports
-per-bin identity. Render the ribbon as a gradient of identity-binned segments
-(e.g. ≥99.5% green, 99–99.5% yellow-green, 95–99% yellow, <95% red). Reveals
-identity-dropoff zones (recombination hotspots, paralog mis-mapping) that the
-current binary match/mismatch CIGAR coloring hides. Implementation: extend
-`visitCigarRenderedSegments` to also emit a "binned" mode that accumulates match
-counts over a configurable bp window and emits one segment per bin.
-**Files:** `buildSyntenyGeometry.ts`, `syntenyColors.ts`.
+**Identity-binned ribbon coloring as LOD (`cigarMode: 'binned'`).**
+
+The core idea from SVbyEye's `pafAlignmentToBins.R`: tile each alignment's
+reference span into fixed-bp windows, count `=`/`M` ops vs total ops per
+window, and render one segment per window colored by its local
+`n.match / aln.len`. Per-bin identity exposes recombination hotspots,
+paralog mis-mapping, and divergence gradients that whole-block identity
+coloring averages away.
+
+**Why this is a real win vs. our current path.** We render every CIGAR
+op as its own GPU instance (`KIND_CIGAR_I/D/N`, `KIND_BASE`). At
+chromosome-scale zoom this is double-bad:
+- *Pixel budget*: 10 kb of CIGAR maps to <1 CSS px; drawing 1000 ops in
+  1 px is wasted GPU work plus visual noise.
+- *Information loss*: the user can't see *which* regions diverge — every
+  indel chevron looks similar and gets averaged-out by the renderer.
+
+The whole-block identity coloring shipped in `9e0e238` / `bddf2f7` would
+be much stronger under binning because each segment carries its *own*
+identity instead of the per-feature mean.
+
+**Frame as LOD, not replacement.** Faithful per-op rendering is still
+right when zoomed in (inspecting an inversion, looking at a specific
+indel). Two modes complement each other:
+- *Zoomed out* → binned: one segment per N-bp window, identity color,
+  no indel chevrons.
+- *Zoomed in* → current path: per-op, faithful.
+
+This mirrors the alignments display's existing mismatch-dot-cutoff
+pattern.
+
+**Implementation sketch (in order):**
+1. **Per-bin identity in the worker.** Extend the CIGAR walk in
+   `buildSyntenyGeometry.ts` to maintain a sliding `(matches, total)`
+   window and emit per-bin records alongside the existing
+   `KIND_BASE`/`KIND_CIGAR_*` stream. Drives a new `KIND_BIN` instance
+   type with a per-bin identity vertex attribute. No renderer changes
+   yet — just confirm the data flows.
+2. **`cigarMode: 'binned'` option** wired to bpPerPx-based auto-LOD:
+   when `bpPerPx > binsize / cssPx` (i.e. each bin would render
+   sub-pixel), switch to binned mode. Manual override available.
+3. **Reuse the LUT color path** (`lutLookup(IDENTITY_LUT, ...)` from
+   `syntenyColors.ts`) keyed on the bin attribute.
+4. **Hide indel chevrons in binned mode** — `KIND_CIGAR_*` instances
+   skip emission when binning, so the GPU instance count drops
+   dramatically at low zoom.
+
+**Files:** `buildSyntenyGeometry.ts` (per-bin emit), `syntenyColors.ts`
+(KIND_BIN color path), shader uniforms / vertex attribute additions,
+`LinearSyntenyView/model.ts` (`cigarMode` enum extension).
 
 **SV-aware CIGAR break-out (above-threshold indels).**
 `breakPafAlignment.R` splits a PAF row at indels above a size threshold and
@@ -155,15 +196,6 @@ and pre-flips alignments so the dominant strand runs forward. For PAFs where a
 contig was assembled in reverse, this produces a much cleaner ribbon picture.
 Add an opt-in adapter-level transform ("Flip to majority strand on load") to
 the PAF / synteny adapter config.
-
-**Interactive coordinate lift across alignments (`liftRangesToAlignment`).**
-SVbyEye lifts an annotation range from query↔target space via CIGAR walking.
-For us: right-click a feature in LGV-A → "Lift to LGV-B" → walk the underlying
-synteny block's CIGAR to project the range and `centerAt` the corresponding
-position in LGV-B. We can already pan-sync, but lifting a *specific bp range*
-through a non-collinear alignment is what users actually want. The lift logic
-mostly exists in `@jbrowse/synteny-core`'s CIGAR visitors — wire it to a menu
-action.
 
 **Overlapping-alignment disjoin (`disjoinPafAlignments`).**
 For repeat-heavy regions, multiple PAF rows cover the same query and target
@@ -224,22 +256,15 @@ vertical band through each row at the matching position. Persistent visual
 landmark that survives panning. Pairs with the anchor-feature alignment idea
 but layered, not destructive.
 
-**Color-by-mapping-quality (`colorBy: mapq` / `colorBy: nm`).**
-PAF column 12 (mapq) and the `NM:i:` tag (edit distance) are present in nearly
-all PAFs we ingest but unused in coloring. Distinct from CIGAR-op coloring:
-captures *aligner confidence* and *overall divergence per alignment* rather
-than per-base op type. Two more entries in the `colorBy` enum; aligner-quality
-filtering is what users often want when triaging messy PAFs.
+**Color-by-NM tag (`colorBy: nm`).**
+The `NM:i:` PAF tag (edit distance) is present in most PAFs we ingest but
+unused. `colorBy: mappingQuality` (PAF column 12) and `colorBy: identity`
+already ship; NM gives a third per-alignment quality signal — useful for
+triaging messy PAFs where MAPQ isn't computed. Needs adapter-level
+surfacing (`PAFAdapter` would need to pass `NM:i` through to feature
+attributes; `parsePAFLine` parses `extra` tags already).
 
 ### Ideas borrowed from SafFire (`~/src/SafFire`)
-
-**Opacity-by-identity ribbon shading.**
-SafFire (`lib.js:86-89`) maps percent identity directly to ribbon alpha (range
-~0.5–0.7), so low-identity blocks read as faint and high-identity blocks pop —
-without consuming the color channel. We already encode identity via CIGAR-op
-coloring, which competes with strand/syri palettes. Add an additive alpha
-modulation driven by per-block identity (computed from CIGAR or NM). Cheap
-shader uniform on top of the existing color path; orthogonal to `colorBy`.
 
 **Identity-as-histogram axis** (a third row).
 SafFire draws a separate Y-band under the main ribbons where each block sits at
