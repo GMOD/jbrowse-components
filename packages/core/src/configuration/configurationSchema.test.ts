@@ -605,6 +605,5 @@ describe('ConfigurationReference', () => {
       )
       expect(typeof getSnapshot(session.holder).ref).toBe('string')
     })
-
   })
 })

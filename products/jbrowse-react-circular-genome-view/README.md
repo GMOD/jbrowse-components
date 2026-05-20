@@ -1,10 +1,19 @@
 # @jbrowse/react-circular-genome-view2
 
-> JBrowse 2 circular genome view React component
+React component for the [JBrowse 2](https://jbrowse.org/jb2/) circular genome
+view.
 
-[JBrowse 2](https://jbrowse.org/jb2/) is a pluggable open-source platform for
-visualizing, integrating, and sharing biological data. This component consists
-of a single JBrowse 2 circular genome view.
+Docs and live examples:
+https://jbrowse.org/storybook/cgv/main/?path=/story/getting-started--page
+
+## Install
+
+```
+yarn add @jbrowse/react-circular-genome-view2
+npm install @jbrowse/react-circular-genome-view2 --legacy-peer-deps
+```
+
+`--legacy-peer-deps` silences npm's peer-dep warnings.
 
 ## Usage
 
@@ -28,47 +37,18 @@ function View() {
 }
 ```
 
-![](docs/img/exampleView.png)
+The component uses [Roboto](https://fonts.google.com/specimen/Roboto) when
+available — add
+[`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto) to pull
+it in.
 
 For working examples, see https://jbrowse.org/jb2/docs/embedded_components/
 
-## Install
+## Previous package
 
-With [yarn](https://yarnpkg.com/):
-
-```
-$ yarn add @jbrowse/react-circular-genome-view2
-```
-
-Or with [npm](https://npmjs.org/):
-
-```
-$ npm install @jbrowse/react-circular-genome-view2 --legacy-peer-deps
-```
-
-The --legacy-peer-deps helps with installing via NPM to avoid warnings about the
-peer dependencies not being met while installing.
-
-### Documentation
-
-Documentation for this component is located here
-
-https://jbrowse.org/storybook/cgv/main/?path=/story/getting-started--page
-
-### Note on fonts
-
-[Roboto](https://fonts.google.com/specimen/Roboto) is the recommended font for
-JBrowse, and this component will use that font if it is available. The easiest
-way to add it is to add the
-[`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto) package
-to your project and import it in your root `index.js`.
-
-## Academic Use
-
-This package was written with funding from the [NHGRI](https://genome.gov/) as
-part of the JBrowse project. If you use it in an academic project that you
-publish, please cite the most recent JBrowse paper, which will be linked from
-[jbrowse.org](https://jbrowse.org/).
+Earlier `@jbrowse/react-circular-genome-view` (no `2` suffix) was renamed in
+v3.2.0. Its README is preserved on npm:
+https://www.npmjs.com/package/@jbrowse/react-circular-genome-view
 
 ## License
 
