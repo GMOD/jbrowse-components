@@ -15,6 +15,7 @@ import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../model.ts'
+import type { GridRowId } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
   cell: {
@@ -32,7 +33,7 @@ const HighlightGrid = observer(function HighlightGrid({
   const { classes } = useStyles()
   const theme = useTheme()
   const session = getSession(model)
-  const [selectedIds, setSelectedIds] = useState(new Set<string>())
+  const [selectedIds, setSelectedIds] = useState(new Set<GridRowId>())
   const selectedSet = new Set(model.selectedAssemblies)
   const rows = session.views
     .filter(
@@ -170,8 +171,8 @@ const HighlightGrid = observer(function HighlightGrid({
           },
         ]}
         checkboxSelection
-        onRowSelectionModelChange={model => {
-          setSelectedIds(new Set([...model.ids].map(String)))
+        onRowSelectionModelChange={({ ids }) => {
+          setSelectedIds(ids)
         }}
         rowSelectionModel={{ type: 'include', ids: selectedIds }}
         processRowUpdate={row => {
