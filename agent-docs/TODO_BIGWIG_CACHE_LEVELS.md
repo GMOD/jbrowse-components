@@ -1,3 +1,5 @@
+This is speculative, it is unclear if it generalizes to multiwiggle
+
 ### Derive wiggle `isCacheValid` from BigWig zoom levels
 
 **Problem:** Wiggle uses strict `view.bpPerPx === loadedBpPerPx` equality for
@@ -14,6 +16,3 @@ within the same BigWig tier no longer refetch.
 mapping is stable and deterministic. If zoom level is ambiguous at boundary
 bpPerPx values, strict equality is still safer.
 
-Challenge: multiwiggle
-
-Unclear if this is truly doable or worth it

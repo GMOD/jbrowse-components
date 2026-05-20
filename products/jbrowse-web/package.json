@@ -77,7 +77,7 @@
     "copy-to-clipboard": "^4.0.2",
     "date-fns": "^4.2.1",
     "dockview-core": "^6.3.0",
-    "generic-filehandle2": "^2.1.7",
+    "generic-filehandle2": "^2.1.9",
     "idb": "^8.0.3",
     "mobx": "^6.15.3",
     "mobx-react": "^9.2.1",
