@@ -30,12 +30,17 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, observable } from 'mobx'
 
+import {
+  buildFeatureFlatbushIndex,
+  buildSubfeatureFlatbushIndex,
+} from './components/hitTesting.ts'
 import { computeLaidOutData } from './layout.ts'
 import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureBackend } from './components/canvasFeatureBackendTypes.ts'
+import type { FlatbushRegionIndexes } from './components/hitTesting.ts'
 // rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
 // from it is enough to make rpcManager.call() resolve to the typed args.
 import type {
@@ -439,6 +444,33 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
+        // Flatbush spatial indexes per region for hit testing. Recomputes when
+        // any input observable moves (laid-out data, label visibility, zoom,
+        // reversed flag); MobX caches the value so repeated hover events read
+        // the same indexes for free.
+        get flatbushIndexes() {
+          const view = getContainingView(self) as LGV
+          const labels = {
+            showLabels: self.showLabels,
+            showDescriptions: self.effectiveShowDescriptions,
+          }
+          const reversedRegions = self.reversedRegions
+          const bpPerPx = view.bpPerPx
+          const result = new Map<number, FlatbushRegionIndexes>()
+          for (const [idx, data] of self.laidOutDataMap) {
+            result.set(idx, {
+              feature: buildFeatureFlatbushIndex(
+                data.flatbushItems,
+                data.floatingLabelsData,
+                bpPerPx,
+                reversedRegions.has(idx),
+                labels,
+              ),
+              subfeature: buildSubfeatureFlatbushIndex(data.subfeatureInfos),
+            })
+          }
+          return result
+        },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts)

@@ -18,7 +18,10 @@ import {
 import { useScrollSync } from './useScrollSync.ts'
 
 import type { CanvasFeatureBackend } from './canvasFeatureBackendTypes.ts'
-import type { FlatbushRegionCache, VisibleRegion } from './hitTesting.ts'
+import type {
+  FlatbushRegionIndexes,
+  VisibleRegion,
+} from './hitTesting.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
@@ -28,6 +31,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+// Hand-rolled structural type, NOT `Instance<typeof stateModelFactory>`. The
+// MST factory references this component via `lazy()`, so importing the real
+// model type back into the component creates a circular type reference that
+// breaks inference across the whole file. Keep this in sync when adding
+// model fields the component reads.
 interface LinearBasicDisplayModel {
   height: number
   laidOutDataMap: Map<number, FeatureDataResult>
@@ -43,6 +51,7 @@ interface LinearBasicDisplayModel {
   subfeatureIdUnderMouse: string | null
   hoveredFeature: FlatbushItem | null
   hoveredSubfeature: SubfeatureInfo | null
+  flatbushIndexes: ReadonlyMap<number, FlatbushRegionIndexes>
   scrollTop: number
   effectiveShowDescriptions: boolean
   regionTooLarge: boolean
@@ -139,7 +148,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
   >()
-  const flatbushCacheMapRef = useRef(new Map<number, FlatbushRegionCache>())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const view = getContainingView(model) as LGV
@@ -194,22 +202,12 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     const mouseY = e.clientY - rect.top
     const scrollTop = scrollContainerRef.current?.scrollTop ?? 0
     const yPos = mouseY + scrollTop
-    const cache = flatbushCacheMapRef.current
-    for (const key of cache.keys()) {
-      if (!model.laidOutDataMap.has(key)) {
-        cache.delete(key)
-      }
-    }
     return performMultiRegionHitDetection(
-      cache,
       model.laidOutDataMap,
+      model.flatbushIndexes,
       view.visibleRegions,
       mouseX,
       yPos,
-      {
-        showLabels: model.showLabels,
-        showDescriptions: model.effectiveShowDescriptions,
-      },
     )
   }
 

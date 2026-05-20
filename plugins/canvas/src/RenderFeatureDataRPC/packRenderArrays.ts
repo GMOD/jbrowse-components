@@ -42,7 +42,7 @@ export function packRenderArrays(
     l => l.end > regionStart && l.start < regionEnd,
   )
   const visibleArrows = arrows.filter(
-    a => a.x >= regionStart && a.x <= regionEnd,
+    a => a.x >= regionStart && a.x < regionEnd,
   )
 
   const rectPositions = new Uint32Array(visibleRects.length * 2)
