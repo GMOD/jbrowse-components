@@ -65,9 +65,17 @@ that auto-injection.
   `resolveIdentifier`. The fallback path is likely dead after the frozen
   refactor (every track is in tracksById) but is kept as a backstop. Has a
   `@ts-expect-error` because `IAnyType` doesn't carry the identifier shape.
-- Wraps the union with `types.snapshotProcessor` so output is always the
-  trackId string. Input accepts string OR full object (dispatcher in the
-  union).
+- `types.union(trackRef, schemaType)` with a dispatcher on `typeof snap ===
+  'string'`. Production callers always pass an id string → trackRef branch.
+  The schemaType branch exists for test setups that create tracks without
+  a `configuration` field at all — the missing field routes to schemaType
+  which auto-instantiates a default config.
+- No `snapshotProcessor`: the trackRef branch's own `set(value) =>
+  value.trackId` already emits an id string on the common path. The
+  previous wrapper existed to normalize inline-object input from
+  `DotplotView -> LinearSyntenyView` (`configuration: getSnapshot(trackConf)`);
+  that caller was updated to pass `trackConf.trackId` directly
+  (plugins/dotplot-view/src/DotplotView/model.ts), so the wrapper is gone.
 
 ### `DisplayConfigurationReference` quirks
 

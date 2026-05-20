@@ -734,11 +734,11 @@ export default function stateModelFactory(pm: PluginManager) {
                 )
                 return {
                   type: trackConf.type,
-                  configuration: getSnapshot(trackConf),
+                  configuration: trackConf.trackId,
                   displays: [
                     {
                       type: displayConf.type,
-                      configuration: getSnapshot(displayConf),
+                      configuration: displayConf.displayId,
                     },
                   ],
                 }

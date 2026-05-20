@@ -421,22 +421,27 @@ describe('ConfigurationReference', () => {
       expect(getSnapshot(session.holder)).toEqual({ ref: 'aaa' })
     })
 
-    test('a full-object snapshot input round-trips to its id on output', () => {
-      // Real codepath: DotplotView spawning LinearSyntenyView passes
-      // `configuration: getSnapshot(trackConf)` rather than a trackId string.
-      // The dispatcher routes object input through the schema branch; the
-      // snapshotProcessor postProcessor then squashes serialized output to
-      // just the id. Don't drop the union/postProcessor — this path depends
-      // on it.
+    test('object input falls through to the schemaType branch', () => {
+      // The union dispatcher routes non-string snapshots to schemaType. This
+      // is used by test setups that create tracks without a `configuration`
+      // field at all — schemaType auto-instantiates a default config. We
+      // assert the codepath survives object input here; the object is held
+      // as a standalone schema instance (not a reference), and serializes
+      // back as the full object snapshot.
+      //
+      // No production caller passes inline objects anymore; the previous
+      // DotplotView -> LinearSyntenyView path (configuration: getSnapshot(...))
+      // was updated to pass trackConf.trackId directly.
       const { Session } = buildTrackEnv()
       const session = Session.create(
         {
           _tracks: [{ trackId: 'aaa', name: 'first' }],
-          holder: { ref: { trackId: 'aaa', name: 'inline' } },
+          holder: { ref: { trackId: 'bbb', name: 'inline' } },
         },
         { pluginManager },
       )
-      expect(getSnapshot(session.holder)).toEqual({ ref: 'aaa' })
+      const snap = getSnapshot(session.holder) as { ref: { trackId: string } }
+      expect(snap.ref.trackId).toBe('bbb')
     })
   })
 

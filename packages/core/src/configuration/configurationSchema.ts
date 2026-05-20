@@ -285,16 +285,15 @@ export function ConfigurationSchema<
 }
 
 /**
- * Reference to a track configuration. Snapshot output is always the trackId
- * string. The hydrated MST node lives in `session.tracksById` (see
+ * Reference to a track configuration. Snapshot output is the trackId string.
+ * The hydrated MST node lives in `session.tracksById` (see
  * TracksManagerSessionMixin); this resolver just returns the cached node, so
  * `track.configuration` is identity-stable across reads.
  *
- * The union + snapshotProcessor is for the rare path where a caller passes a
- * full track-config snapshot object (rather than a trackId string) — e.g.
- * DotplotView spawning a LinearSyntenyView via `configuration: getSnapshot(trackConf)`.
- * String input → ref; object input → inline schema instance. Either way the
- * postProcessor squashes serialized output to just the trackId.
+ * The union exists so that callers that don't supply a `configuration` field
+ * (some test setups) fall through to the schemaType branch and get a
+ * default-instantiated config. Production callers always pass a trackId
+ * string, which routes through the trackRef branch.
  */
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
@@ -315,27 +314,13 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
     },
   })
 
-  return types.snapshotProcessor(
-    types.union(
-      {
-        dispatcher: snapshot =>
-          typeof snapshot === 'string' ? trackRef : schemaType,
-      },
-      trackRef,
-      schemaType,
-    ),
+  return types.union(
     {
-      postProcessor(snapshot) {
-        if (
-          typeof snapshot === 'object' &&
-          snapshot !== null &&
-          'trackId' in snapshot
-        ) {
-          return (snapshot as { trackId: string }).trackId
-        }
-        return snapshot
-      },
+      dispatcher: snapshot =>
+        typeof snapshot === 'string' ? trackRef : schemaType,
     },
+    trackRef,
+    schemaType,
   )
 }
 
