@@ -28,7 +28,9 @@ export interface ExportSvgOptions {
 export interface HighlightType {
   start: number
   end: number
-  assemblyName: string
+  // optional because view.highlight is persisted via types.frozen and
+  // session JSON authored by hand may legitimately omit the assemblyName
+  assemblyName?: string
   refName: string
 }
 

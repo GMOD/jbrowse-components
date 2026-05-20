@@ -109,11 +109,11 @@ export type {
   NonBlockCanvasDisplayModel,
 } from './BaseLinearDisplay/index.ts'
 export {
+  HighlightBand,
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,
   RefNameAutocomplete,
   SearchBox,
-  HighlightBand,
 } from './LinearGenomeView/index.ts'
 export { fetchResults } from './searchUtils.ts'
 export type {
