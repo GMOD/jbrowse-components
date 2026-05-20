@@ -1,13 +1,11 @@
-import { useState } from 'react'
-
-import { Menu } from '@jbrowse/core/ui'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
-import { IconButton, Tooltip } from '@mui/material'
+import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getHighlightCoords } from '../util.ts'
@@ -31,17 +29,15 @@ const useStyles = makeStyles()(theme => ({
     left: 0,
     overflow: 'hidden',
     background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
-    // lift above the sibling TrackContainers (which would otherwise paint
-    // on top in tree order and swallow chip clicks). pointer-events:none
-    // lets clicks fall through to the tracks except on the chip itself
+    // paint above sibling TrackContainers (which would otherwise win in
+    // tree order). pointer-events:none lets clicks fall through to the
+    // tracks except on the chip itself
     zIndex: 1,
     pointerEvents: 'none',
   },
-  linkIcon: {
-    color: colord(theme.palette.highlight.main).darken(0.2).toRgbString(),
-  },
   iconButton: {
     pointerEvents: 'auto',
+    color: colord(theme.palette.highlight.main).darken(0.2).toRgbString(),
   },
 }))
 
@@ -53,16 +49,7 @@ const Highlight = observer(function Highlight({
   highlight: HighlightType
 }) {
   const { classes } = useStyles()
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const session = getSession(model) as SessionWithWidgets
-
-  const handleClose = () => {
-    setAnchorEl(null)
-  }
-  const dismissHighlight = () => {
-    model.removeHighlight(highlight)
-  }
-
   const coords = getHighlightCoords(model, highlight)
 
   return coords ? (
@@ -73,30 +60,14 @@ const Highlight = observer(function Highlight({
         width: coords.width,
       }}
     >
-      <Tooltip title="Highlighted region" arrow>
-        <IconButton
-          className={classes.iconButton}
-          onClick={event => {
-            setAnchorEl(event.currentTarget)
-          }}
-        >
-          <LinkIcon fontSize="small" className={classes.linkIcon} />
-        </IconButton>
-      </Tooltip>
-      <Menu
-        anchorEl={anchorEl}
-        onMenuItemClick={(_event, callback) => {
-          callback()
-          handleClose()
-        }}
-        open={Boolean(anchorEl)}
-        onClose={() => handleClose()}
+      <CascadingMenuButton
+        className={classes.iconButton}
         menuItems={[
           {
             label: 'Dismiss highlight',
             icon: CloseIcon,
             onClick: () => {
-              dismissHighlight()
+              model.removeHighlight(highlight)
             },
           },
           {
@@ -116,11 +87,15 @@ const Highlight = observer(function Highlight({
                 assemblyName: highlight.assemblyName ?? model.assemblyNames[0],
               })
               session.showWidget(bookmarkWidget)
-              dismissHighlight()
+              model.removeHighlight(highlight)
             },
           },
         ]}
-      />
+      >
+        <Tooltip title="Highlighted region" arrow>
+          <LinkIcon fontSize="small" />
+        </Tooltip>
+      </CascadingMenuButton>
     </div>
   ) : null
 })

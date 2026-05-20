@@ -1,7 +1,7 @@
-import { Fragment, useEffect } from 'react'
+import { useEffect } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getSession, notEmpty } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
@@ -15,19 +15,19 @@ import type { SessionWithWidgets } from '@jbrowse/core/util'
 type LGV = IExtendedLGV
 
 const useStyles = makeStyles()({
-  bookmarkButton: {
-    overflow: 'hidden',
-    position: 'absolute',
-    zIndex: 800,
-    pointerEvents: 'auto',
-  },
   highlight: {
     overflow: 'hidden',
     height: '100%',
     position: 'absolute',
-    // let clicks pass through the colored band to features on the
-    // underlying track; only the bookmark chip should catch clicks
+    left: 0,
+    // paint above sibling TrackContainers (which would otherwise win in
+    // tree order). pointer-events:none lets clicks fall through to the
+    // tracks except on the bookmark chip itself
+    zIndex: 1,
     pointerEvents: 'none',
+  },
+  iconButton: {
+    pointerEvents: 'auto',
   },
 })
 
@@ -46,38 +46,27 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
     }
   }, [session, bookmarkWidget])
 
-  const set = new Set(model.assemblyNames)
+  const viewAssemblies = new Set(model.assemblyNames)
 
   return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
     ? bookmarkWidget.bookmarks
-        .filter(value => set.has(value.assemblyName))
-        .map(r => {
+        .filter(r => viewAssemblies.has(r.assemblyName))
+        .map((r, idx) => {
           const coords = getHighlightCoords(model, r)
-          return coords
-            ? {
-                ...coords,
-                highlight: r.highlight,
-                label: r.label,
-                bookmark: r,
-              }
-            : undefined
-        })
-        .filter(notEmpty)
-        .map(({ left, width, highlight, label, bookmark }, idx) => (
-          /* biome-ignore lint/suspicious/noArrayIndexKey: */
-          <Fragment key={`${left}_${width}_${idx}`}>
+          return coords ? (
             <div
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
+              key={`${coords.left}_${coords.width}_${idx}`}
               className={classes.highlight}
-              id="highlight"
               style={{
-                left,
-                width,
-                background: highlight,
+                transform: `translateX(${coords.left}px)`,
+                width: coords.width,
+                background: r.highlight,
               }}
-            />
-            {bookmarkLabelsVisible && width > 20 ? (
-              <div className={classes.bookmarkButton} style={{ left }}>
+            >
+              {bookmarkLabelsVisible && coords.width > 20 ? (
                 <CascadingMenuButton
+                  className={classes.iconButton}
                   menuItems={[
                     {
                       label: 'Open bookmark widget',
@@ -91,31 +80,32 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                         bookmarkWidget.setBookmarkHighlightsVisible(false)
                       },
                     },
-
                     {
                       label: 'Remove bookmark',
                       onClick: () => {
-                        bookmarkWidget.removeBookmarkObject(bookmark)
+                        bookmarkWidget.removeBookmarkObject(r)
                       },
                     },
                   ]}
                 >
-                  <Tooltip title={label} arrow>
+                  <Tooltip title={r.label} arrow>
                     <BookmarkIcon
                       fontSize="small"
+                      // match band color but bump alpha to 0.8 so the chip
+                      // is legible; if the band is fully transparent, hide
+                      // the chip color too
                       sx={{
-                        color:
-                          colord(highlight).alpha() !== 0
-                            ? colord(highlight).alpha(0.8).toRgbString()
-                            : colord(highlight).alpha(0).toRgbString(),
+                        color: colord(r.highlight)
+                          .alpha(colord(r.highlight).alpha() === 0 ? 0 : 0.8)
+                          .toRgbString(),
                       }}
                     />
                   </Tooltip>
                 </CascadingMenuButton>
-              </div>
-            ) : null}
-          </Fragment>
-        ))
+              ) : null}
+            </div>
+          ) : null
+        })
     : null
 })
 
