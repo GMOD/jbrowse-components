@@ -489,6 +489,10 @@ export default function baseStateModelFactory(
           }
         },
 
+        clearHeightBeforeExpand() {
+          self.heightBeforeExpand = undefined
+        },
+
         setRpcData(
           displayedRegionIndex: number,
           data: FeatureDataResult,
@@ -928,6 +932,7 @@ export default function baseStateModelFactory(
                   const view = getContainingView(self) as LGV
                   void view.displayedRegions
                   self.clearStaleDensityState()
+                  self.clearHeightBeforeExpand()
                 },
                 { name: 'CanvasClearDensityOnDisplayedRegions' },
               ),

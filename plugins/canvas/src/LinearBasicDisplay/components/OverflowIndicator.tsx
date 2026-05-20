@@ -1,14 +1,30 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
+import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const buttonStyle = {
-  fontSize: 10,
-  padding: '2px 6px',
-  cursor: 'pointer',
-  border: '1px solid rgba(0,0,0,0.2)',
-  borderRadius: 3,
-  background: 'rgba(255,255,255,0.85)',
-  color: '#555',
-} as const
+const useStyles = makeStyles()(theme => ({
+  root: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    zIndex: 999,
+    pointerEvents: 'auto',
+  },
+  button: {
+    padding: 2,
+    background: theme.palette.background.paper,
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: 3,
+    '&:hover': {
+      background: theme.palette.action.hover,
+    },
+  },
+  icon: {
+    fontSize: 14,
+  },
+}))
 
 const OverflowIndicator = observer(function OverflowIndicator({
   expanded,
@@ -21,55 +37,32 @@ const OverflowIndicator = observer(function OverflowIndicator({
   onExpand: () => void
   onRestore: () => void
 }) {
+  const { classes } = useStyles()
+  const label = expanded ? 'Restore previous height' : 'Expand to fit features'
+  const title = showScrollHint ? `${label} — shift+wheel to scroll` : label
   return (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: 4,
-        right: 4,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-        zIndex: 999,
-        pointerEvents: 'auto',
-      }}
-    >
-      {showScrollHint ? (
-        <span
-          style={{
-            fontSize: 9,
-            color: '#888',
-            background: 'rgba(255,255,255,0.75)',
-            padding: '1px 4px',
-            borderRadius: 3,
-          }}
-        >
-          shift+wheel to scroll
-        </span>
-      ) : null}
-      {expanded ? (
-        <button
-          title="Restore previous track height"
-          style={buttonStyle}
+    <div className={classes.root}>
+      <Tooltip title={title}>
+        <IconButton
+          aria-label={label}
+          size="small"
+          className={classes.button}
           onClick={e => {
             e.stopPropagation()
-            onRestore()
+            if (expanded) {
+              onRestore()
+            } else {
+              onExpand()
+            }
           }}
         >
-          ↕ Restore height
-        </button>
-      ) : (
-        <button
-          title="Expand track to fit all features"
-          style={buttonStyle}
-          onClick={e => {
-            e.stopPropagation()
-            onExpand()
-          }}
-        >
-          ↕ Expand
-        </button>
-      )}
+          {expanded ? (
+            <UnfoldLessIcon className={classes.icon} />
+          ) : (
+            <UnfoldMoreIcon className={classes.icon} />
+          )}
+        </IconButton>
+      </Tooltip>
     </div>
   )
 })

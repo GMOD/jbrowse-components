@@ -42,6 +42,7 @@ interface LinearBasicDisplayModel {
   maxY: number
   hasOverflow: boolean
   heightBeforeExpand: number | undefined
+  autoHeight: boolean
   showLabels: boolean
   selectedFeatureId: string | undefined
   featureIdUnderMouse: string | null
@@ -398,12 +399,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         </div>
       </div>
 
-      {model.hasOverflow || model.heightBeforeExpand !== undefined ? (
+      {!model.autoHeight &&
+      (model.hasOverflow || model.heightBeforeExpand !== undefined) ? (
         <OverflowIndicator
           expanded={model.heightBeforeExpand !== undefined}
           showScrollHint={view.scrollZoom && model.hasOverflow}
-          onExpand={model.expandToFit}
-          onRestore={model.collapseFromExpand}
+          onExpand={() => { model.expandToFit() }}
+          onRestore={() => { model.collapseFromExpand() }}
         />
       ) : null}
 
