@@ -1,5 +1,4 @@
 import {
-  getEnv,
   getRoot,
   getSnapshot,
   isLateType,
@@ -343,13 +342,14 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
  *   1. by displayId
  *   2. by `parent.type` — handles old sessions where the saved displayId
  *      no longer matches but a display of the same type exists on the track
- *   3. auto-create a detached default — handles new display types added to
- *      the schema that weren't present in the saved track config
  *
- * The auto-create path produces a config that is NOT in
- * `track.configuration.displays`. Edits via the editor widget will not persist
- * (no path from the saved snapshot back). Acceptable for ephemeral defaults;
- * if persistence matters the config must be appended via an action.
+ * Step 2 is the safety net because `baseTrackConfig.preProcessSnapshot`
+ * already injects a stub display for every registered displayType on the
+ * track, so a same-type lookup always succeeds at runtime for properly
+ * loaded tracks. An older third step auto-created a *detached* config when
+ * neither matched — that produced an orphaned MST node whose edits silently
+ * didn't persist. Removed in favor of a clear throw, since
+ * preProcessSnapshot's injection makes the path effectively dead.
  *
  * Union-with-schemaType branch is for the same reason as `TrackConfigurationReference`:
  * `CircularView.addTrackConf` passes inline display configs as MST instances.
@@ -365,29 +365,17 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       let ret = displays.find((d: { displayId: string }) => d.displayId === id)
 
       // Fallback: match by display type when the displayId isn't found.
-      // This handles state models whose display type wasn't registered when
-      // the track config was written.
-      //
-      // The `if (displayType)` guard is important: without it, an undefined
-      // displayType would `find` a display whose own `.type` is also
-      // undefined — a silent wrong match. In practice parent.type is always
-      // a string literal, but we guard defensively so the throw fires
-      // cleanly if anything goes wrong upstream.
+      // baseTrackConfig.preProcessSnapshot injects a display entry for every
+      // registered displayType for the track, so id-mismatch (e.g. an old
+      // session with a different displayId convention) finds a same-type
+      // entry here. The `if (displayType)` guard prevents an undefined
+      // parent.type from silently matching a display whose `.type` is also
+      // undefined.
       if (!ret) {
         const displayType = (parent as { type?: string }).type
         if (displayType) {
           ret = displays.find(
             (d: unknown) => (d as { type?: string }).type === displayType,
-          )
-          // CAVEAT: this auto-created config is *detached* — it is not added
-          // to track.configuration.displays, so user edits via the editor
-          // widget will not persist. Acceptable for ephemeral defaults of
-          // display types whose config wasn't in the saved track, but if
-          // saving edits matters here the config must be appended to the
-          // track's displays array via an action.
-          ret ??= schemaType.create(
-            { displayId: `${id}`, type: displayType },
-            getEnv(parent),
           )
         }
       }

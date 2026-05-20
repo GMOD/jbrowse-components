@@ -59,24 +59,23 @@ it through `baseConfiguration: baseLinearDisplayConfigSchema`, which
 
 ### `TrackConfigurationReference` quirks
 
-Two load-bearing complications, both for views that hold ephemeral track
-configs without registering them in `session.tracks`. Canaries are named so
-future agents catch breakage fast:
+Two load-bearing complications, both for views that hold ephemeral track configs
+without registering them in `session.tracks`. Canaries are named so future
+agents catch breakage fast:
 
-- **`get` falls back from `tracksById` to MST `resolveIdentifier`.** Required
-  by `LinearSyntenyView.viewTrackConfigs` (LinearReadVsRef). Canary:
+- **`get` falls back from `tracksById` to MST `resolveIdentifier`.** Required by
+  `LinearSyntenyView.viewTrackConfigs` (LinearReadVsRef). Canary:
   `ReadVsRef.test.tsx`.
 - **`types.union(trackRef, schemaType)` accepts string id OR full snapshot.**
   Required by `CircularView.addTrackConf` / `SvInspectorView`, which push
   synthesized configs as MST instances. Canary: `SVInspector.test.tsx`.
 
-Simplifying either requires first migrating view-local configs into the
-session.
+Simplifying either requires first migrating view-local configs into the session.
 
-Do NOT add `as SCHEMATYPE` to the return value — it narrows `SnapshotIn` to
-just the object branch and forces every caller to `@ts-expect-error` string
-ids. The inferred union `SnapshotIn` is naturally `string | SnapshotIn<schema>`,
-which is what callers want.
+Do NOT add `as SCHEMATYPE` to the return value — it narrows `SnapshotIn` to just
+the object branch and forces every caller to `@ts-expect-error` string ids. The
+inferred union `SnapshotIn` is naturally `string | SnapshotIn<schema>`, which is
+what callers want.
 
 ### `DisplayConfigurationReference` quirks
 
@@ -85,13 +84,13 @@ which is what callers want.
   but not done yet.
 - Falls back to type-match (`d.type === parent.type`) — handles old sessions
   where the saved displayId no longer matches but a display of the same type
-  exists on the track.
-- Last-ditch: creates a detached config via `schemaType.create(...)` — handles
-  new display types added to the schema that weren't present in the saved track
-  config. **CAVEAT:** the auto-created node is orphaned; it is not in
-  `track.configuration.displays`, so edits via the editor widget will not
-  persist. Acceptable for ephemeral defaults; if persistence matters, append to
-  the displays array via an action.
+  exists on the track. `baseTrackConfig.preProcessSnapshot` injects a stub
+  display for every registered displayType on the track, so this fallback always
+  succeeds at runtime.
+- Throws if both lookups fail. A previous third step would auto-create a
+  detached MST node here — removed because preProcessSnapshot's display-stub
+  injection makes the path dead, and the detached node was a silent footgun (its
+  edits didn't persist).
 
 ## Testing the reference layer
 

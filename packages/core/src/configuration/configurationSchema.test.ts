@@ -482,7 +482,12 @@ describe('ConfigurationReference', () => {
       )
     })
 
-    test('auto-creates a default config when neither id nor type matches', () => {
+    test('throws when neither id nor type matches', () => {
+      // Track has no displays entry, and DisplayState's type doesn't match
+      // anything either. Used to auto-create a detached config silently; now
+      // throws so the missing-display is visible. In production
+      // `baseTrackConfig.preProcessSnapshot` always injects a stub display
+      // per registered type, so the type-match branch above succeeds first.
       const { TrackState } = buildDisplayEnv()
       const track = TrackState.create(
         {
@@ -494,10 +499,7 @@ describe('ConfigurationReference', () => {
         },
         { pluginManager },
       )
-      // The auto-created config has the default value; documents the existing
-      // "orphaned MST node" behavior — it is detached from track.displays.
-      expect(readConfObject(track.displays[0]!.configuration, 'foo')).toBe('x')
-      expect(track.configuration.displays.length).toBe(0)
+      expect(() => track.displays[0]!.configuration).toThrow(/newId/)
     })
 
     test('error when parent has no type to fall back on', () => {
