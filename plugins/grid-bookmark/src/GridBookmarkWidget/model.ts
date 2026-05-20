@@ -336,8 +336,11 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { bookmarks: _, ...rest } = snap as Omit<typeof snap, symbol>
-      return rest
+      const { bookmarks: _, gridView, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(gridView !== 'bookmarks' ? { gridView } : {}),
+      }
     })
 }
 

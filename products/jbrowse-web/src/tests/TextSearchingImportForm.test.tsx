@@ -74,9 +74,8 @@ test(
     const { getInputValue, findByRole, input, findByText } = await getInput()
 
     fireEvent.change(input, { target: { value: 'contigb' } })
-    fireEvent.click(
-      within(await findByRole('listbox', ...opts)).getByText(/ctgB/),
-    )
+    const listbox = await findByRole('listbox', ...opts)
+    fireEvent.click(await within(listbox).findByText(/ctgB/, {}, delay))
 
     fireEvent.click(await findByText('Open'))
 

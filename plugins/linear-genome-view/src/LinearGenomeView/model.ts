@@ -1961,6 +1961,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         trackLabels,
         colorByCDS,
         showTrackOutlines,
+        highlightsVisible,
+        labelsVisible,
         ...rest
       } = snap as Omit<typeof snap, symbol>
 
@@ -1981,6 +1983,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
         ...(!showTrackOutlines ? { showTrackOutlines } : {}),
+        ...(!highlightsVisible ? { highlightsVisible } : {}),
+        ...(!labelsVisible ? { labelsVisible } : {}),
       } as typeof snap
     })
 }
