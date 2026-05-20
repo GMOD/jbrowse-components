@@ -176,8 +176,12 @@ export default class GridBookmarkPlugin extends Plugin {
                       label: 'Bookmark highlighted region',
                       icon: BookmarkIcon,
                       onClick: () => {
-                        const bookmarkWidget = self.activateBookmarkWidget()
-                        bookmarkWidget.addBookmark(highlight)
+                        if (highlight.assemblyName) {
+                          self.activateBookmarkWidget().addBookmark({
+                            ...highlight,
+                            assemblyName: highlight.assemblyName,
+                          })
+                        }
                       },
                     },
                   ]
@@ -249,7 +253,7 @@ export default class GridBookmarkPlugin extends Plugin {
                 !('labelsVisible' in s)
               ) {
                 const { bookmarkLabelsVisible: _ignored, ...rest } = s
-                return { ...rest, labelsVisible: false } as typeof snap
+                return { ...rest, labelsVisible: false }
               }
               return snap
             })

@@ -98,7 +98,7 @@ export default function f(_pluginManager: PluginManager) {
        * #volatile
        * which grid tab is visible: bookmarks or highlights
        */
-      gridView: 'bookmarks' as 'bookmarks' | 'highlights',
+      gridView: 'bookmarks',
     }))
     .views(self => ({
       /**

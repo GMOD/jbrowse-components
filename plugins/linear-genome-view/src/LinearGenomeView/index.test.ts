@@ -227,19 +227,19 @@ describe('scroll-zoom diagnostic — cursor bp stability across frames', () => {
 
     const cursorPx = 600
     const initial = model.pxToBp(cursorPx)
-    const samples: { frame: number; bpPerPx: number; coord: number }[] = []
+    const samples: { bpPerPx: number; coord: number }[] = []
 
     // mimic wheel handler: zoomAccum capped at MAX_ZOOM_RATE_PER_MS * 16.67 ≈ 0.2
     const d = sign * 0.05
     const ratio = d > 0 ? 1 + d : 1 / (1 - d)
     for (let frame = 0; frame < 30; frame++) {
       model.zoomTo(model.bpPerPx * ratio, cursorPx)
-      const here = model.pxToBp(cursorPx)
-      samples.push({ frame, bpPerPx: model.bpPerPx, coord: here.coord })
+      samples.push({
+        bpPerPx: model.bpPerPx,
+        coord: model.pxToBp(cursorPx).coord,
+      })
     }
 
-    const drifts = samples.map(s => s.coord - initial.coord)
-    const maxDriftBp = Math.max(...drifts.map(Math.abs))
     const maxDriftPx = Math.max(
       ...samples.map(s => Math.abs(s.coord - initial.coord) / s.bpPerPx),
     )

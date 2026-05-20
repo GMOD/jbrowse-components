@@ -49,7 +49,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
         Click and type within the <strong>label</strong> field to annotate your
         bookmark
       </Alert>
-      <Stack direction="row" spacing={1} alignItems="center">
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <CascadingMenuButton
           data-testid="grid_bookmark_menu"
           menuItems={[

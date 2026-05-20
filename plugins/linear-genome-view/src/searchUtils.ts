@@ -1,9 +1,9 @@
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
 
 import { parseLocStrings } from './LinearGenomeView/util.ts'
 
 import type { LinearGenomeViewModel } from './LinearGenomeView/index.ts'
-import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
