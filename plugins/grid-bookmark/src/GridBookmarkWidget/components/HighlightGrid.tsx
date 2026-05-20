@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Delete from '@mui/icons-material/Delete'
-import { IconButton, Link, Tooltip, Typography } from '@mui/material'
+import { IconButton, Link, Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
@@ -20,9 +20,6 @@ const useStyles = makeStyles()({
     height: 16,
     borderRadius: 2,
     border: '1px solid rgba(0, 0, 0, 0.2)',
-  },
-  header: {
-    margin: '8px 0 4px',
   },
   cell: {
     whiteSpace: 'nowrap',
@@ -38,6 +35,7 @@ const HighlightGrid = observer(function HighlightGrid({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
+  const selectedSet = new Set(model.selectedAssemblies)
   const rows = session.views
     .filter(
       (v): v is IExtendedLGV =>
@@ -58,101 +56,100 @@ const HighlightGrid = observer(function HighlightGrid({
         }
       }),
     )
+    // honor the AssemblySelector in the widget header. highlights without an
+    // assemblyName (pre-init session JSON) always pass through so they're not
+    // hidden by the filter
+    .filter(r => !r.assemblyName || selectedSet.has(r.assemblyName))
 
   return rows.length ? (
-    <>
-      <Typography variant="subtitle2" className={classes.header}>
-        Highlights
-      </Typography>
-      <DataGridFlexContainer>
-        <DataGrid
-          density="compact"
-          disableRowSelectionOnClick
-          hideFooterSelectedRowCount
-          hideFooterPagination={rows.length <= 100}
-          rows={rows}
-          columns={[
-            {
-              field: 'locString',
-              headerName: 'Location',
-              width: Math.max(
-                measureText('Location', 12) + 30,
-                measureGridWidth(rows.map(r => r.locString)),
-              ),
-              renderCell: ({ value, row }) => (
-                <Link
-                  className={classes.cell}
-                  href="#"
-                  onClick={event => {
-                    event.preventDefault()
-                    row.view.navTo(
-                      {
-                        refName: row.highlight.refName,
-                        start: row.highlight.start,
-                        end: row.highlight.end,
-                        assemblyName: row.highlight.assemblyName,
-                      },
-                      // slightly zoom out so the highlighted region has
-                      // context on either side
-                      0.2,
-                    )
+    <DataGridFlexContainer>
+      <DataGrid
+        density="compact"
+        disableRowSelectionOnClick
+        hideFooterSelectedRowCount
+        hideFooterPagination={rows.length <= 100}
+        rows={rows}
+        columns={[
+          {
+            field: 'locString',
+            headerName: 'Location',
+            width: Math.max(
+              measureText('Location', 12) + 30,
+              measureGridWidth(rows.map(r => r.locString)),
+            ),
+            renderCell: ({ value, row }) => (
+              <Link
+                className={classes.cell}
+                href="#"
+                onClick={event => {
+                  event.preventDefault()
+                  row.view.navTo(
+                    {
+                      refName: row.highlight.refName,
+                      start: row.highlight.start,
+                      end: row.highlight.end,
+                      assemblyName: row.highlight.assemblyName,
+                    },
+                    // slightly zoom out so the highlighted region has
+                    // context on either side
+                    0.2,
+                  )
+                }}
+              >
+                {value}
+              </Link>
+            ),
+          },
+          {
+            field: 'label',
+            headerName: 'Label',
+            width: Math.max(
+              measureText('Label', 12) + 30,
+              measureGridWidth(rows.map(r => r.label)),
+            ),
+          },
+          {
+            field: 'assemblyName',
+            headerName: 'Assembly',
+            width: Math.max(
+              measureText('Assembly', 12) + 30,
+              measureGridWidth(rows.map(r => r.assemblyName)),
+            ),
+          },
+          {
+            field: 'color',
+            headerName: 'Color',
+            width: 60,
+            renderCell: ({ value }) =>
+              value ? (
+                <span
+                  className={classes.swatch}
+                  style={{ background: value }}
+                />
+              ) : null,
+          },
+          {
+            field: 'actions',
+            headerName: '',
+            width: 50,
+            sortable: false,
+            filterable: false,
+            renderCell: ({ row }) => (
+              <Tooltip title="Remove highlight">
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    row.view.removeHighlight(row.highlight)
                   }}
                 >
-                  {value}
-                </Link>
-              ),
-            },
-            {
-              field: 'label',
-              headerName: 'Label',
-              width: Math.max(
-                measureText('Label', 12) + 30,
-                measureGridWidth(rows.map(r => r.label)),
-              ),
-            },
-            {
-              field: 'assemblyName',
-              headerName: 'Assembly',
-              width: Math.max(
-                measureText('Assembly', 12) + 30,
-                measureGridWidth(rows.map(r => r.assemblyName)),
-              ),
-            },
-            {
-              field: 'color',
-              headerName: 'Color',
-              width: 60,
-              renderCell: ({ value }) =>
-                value ? (
-                  <span
-                    className={classes.swatch}
-                    style={{ background: value }}
-                  />
-                ) : null,
-            },
-            {
-              field: 'actions',
-              headerName: '',
-              width: 50,
-              sortable: false,
-              filterable: false,
-              renderCell: ({ row }) => (
-                <Tooltip title="Remove highlight">
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      row.view.removeHighlight(row.highlight)
-                    }}
-                  >
-                    <Delete fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              ),
-            },
-          ]}
-        />
-      </DataGridFlexContainer>
-    </>
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            ),
+          },
+        ]}
+      />
+    </DataGridFlexContainer>
   ) : null
 })
 

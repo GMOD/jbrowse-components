@@ -58,9 +58,9 @@ const Highlight = observer(function Highlight({
                   'GridBookmarkWidget',
                   'GridBookmark',
                 )) as BookmarkWidget
-              // highlights are persisted via types.frozen and can legitimately
-              // omit assemblyName (e.g. user-supplied session highlights), but
-              // the bookmark Region MST type requires it
+              // afterAttach backfills missing assemblyName on init; the
+              // ?? fallback here only kicks in for highlights added before
+              // the view is initialized
               bookmarkWidget.addBookmark({
                 ...highlight,
                 assemblyName: highlight.assemblyName ?? model.assemblyNames[0],

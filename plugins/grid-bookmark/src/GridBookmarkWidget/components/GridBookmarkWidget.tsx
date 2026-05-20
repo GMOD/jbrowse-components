@@ -9,12 +9,7 @@ import Palette from '@mui/icons-material/Palette'
 import Publish from '@mui/icons-material/Publish'
 import Settings from '@mui/icons-material/Settings'
 import Share from '@mui/icons-material/Share'
-import {
-  Alert,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-} from '@mui/material'
+import { Alert, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AssemblySelector from './AssemblySelector.tsx'

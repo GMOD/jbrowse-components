@@ -133,9 +133,7 @@ export default function f(_pluginManager: PluginManager) {
        */
       get areBookmarksHighlightLabelsOnAllOpenViews() {
         const { views } = getSession(self)
-        return views.every(v =>
-          'labelsVisible' in v ? v.labelsVisible : true,
-        )
+        return views.every(v => ('labelsVisible' in v ? v.labelsVisible : true))
       },
     }))
     .views(self => ({

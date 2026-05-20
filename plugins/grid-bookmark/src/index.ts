@@ -224,7 +224,10 @@ export default class GridBookmarkPlugin extends Plugin {
               // migrate old per-plugin bookmarkLabelsVisible to base LGV
               // labelsVisible so users who had set it to false keep that state
               const s = snap as Record<string, unknown>
-              if (s.bookmarkLabelsVisible === false && !('labelsVisible' in s)) {
+              if (
+                s.bookmarkLabelsVisible === false &&
+                !('labelsVisible' in s)
+              ) {
                 const { bookmarkLabelsVisible: _ignored, ...rest } = s
                 return { ...rest, labelsVisible: false } as typeof snap
               }

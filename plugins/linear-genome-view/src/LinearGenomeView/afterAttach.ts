@@ -8,6 +8,15 @@ import { autorun, when } from 'mobx'
 
 import type { LinearGenomeViewModel } from './model.ts'
 
+function tryParseJson(s: string): Record<string, unknown> | undefined {
+  try {
+    const v: unknown = JSON.parse(s)
+    return v && typeof v === 'object' ? (v as Record<string, unknown>) : undefined
+  } catch {
+    return undefined
+  }
+}
+
 /**
  * Autorun that handles the init state - navigating to initial location,
  * showing tracks, etc.
@@ -93,19 +102,60 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
             self.setHideHeader(!init.nav)
           }
 
+          // backfill assemblyName on any session-authored highlights that
+          // omitted it so downstream code (bookmark widget grid, addBookmark,
+          // etc) doesn't have to keep falling back
+          if (self.highlight.length) {
+            const fallback = self.assemblyNames[0]
+            if (fallback) {
+              const normalized = self.highlight.map(h =>
+                h.assemblyName ? h : { ...h, assemblyName: fallback },
+              )
+              if (normalized.some((h, i) => h !== self.highlight[i])) {
+                self.setHighlight(normalized)
+              }
+            }
+          }
+
           if (init.highlight) {
             for (const h of init.highlight) {
-              const p = parseLocString(h, refName =>
-                assemblyManager.isValidRefName(refName, init.assembly),
-              )
-              const { start, end } = p
-              if (start !== undefined && end !== undefined) {
+              // accept either a loc string ("chr1:100-200") or a JSON object
+              // ({refName, start, end, assemblyName?, color?, label?}) so URL
+              // highlights can carry color/label like session-authored ones
+              const json =
+                h.trim().startsWith('{') && tryParseJson(h)
+              if (
+                json &&
+                typeof json.refName === 'string' &&
+                typeof json.start === 'number' &&
+                typeof json.end === 'number'
+              ) {
                 self.addToHighlights({
-                  ...p,
-                  start,
-                  end,
-                  assemblyName: init.assembly,
+                  refName: json.refName,
+                  start: json.start,
+                  end: json.end,
+                  assemblyName:
+                    typeof json.assemblyName === 'string'
+                      ? json.assemblyName
+                      : init.assembly,
+                  color:
+                    typeof json.color === 'string' ? json.color : undefined,
+                  label:
+                    typeof json.label === 'string' ? json.label : undefined,
                 })
+              } else {
+                const p = parseLocString(h, refName =>
+                  assemblyManager.isValidRefName(refName, init.assembly),
+                )
+                const { start, end } = p
+                if (start !== undefined && end !== undefined) {
+                  self.addToHighlights({
+                    ...p,
+                    start,
+                    end,
+                    assemblyName: init.assembly,
+                  })
+                }
               }
             }
           }
