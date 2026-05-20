@@ -64,6 +64,7 @@ const HighlightGrid = observer(function HighlightGrid({
           density="compact"
           disableRowSelectionOnClick
           hideFooterSelectedRowCount
+          hideFooterPagination={rows.length <= 100}
           rows={rows}
           columns={[
             {
