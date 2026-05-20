@@ -98,18 +98,17 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
                   label: base.textSearching ? 'Re-index track' : 'Index track',
                   onClick: () => {
                     const rootModel = getParent<DesktopRootModel>(self)
-                    const { jobsManager } = rootModel
                     const { trackId, assemblyNames, textSearching, name } = base
                     const indexName = `${name}-index`
                     // TODO: open jobs list widget
-                    jobsManager.queueJob({
+                    rootModel.jobsManager.queueJob({
                       indexingParams: {
-                        attributes: textSearching?.indexingAttributes || [
+                        attributes: textSearching?.indexingAttributes ?? [
                           'Name',
                           'ID',
                         ],
                         exclude:
-                          textSearching?.indexingFeatureTypesToExclude || [
+                          textSearching?.indexingFeatureTypesToExclude ?? [
                             'CDS',
                             'exon',
                           ],

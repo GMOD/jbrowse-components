@@ -222,7 +222,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
         const trackConfigs = findTrackConfigsToIndex(self.tracks, trackIds).map(
-          c => JSON.parse(JSON.stringify(toJS(c))),
+          c => structuredClone(toJS(c)),
         )
         try {
           this.setRunning(true)
@@ -295,7 +295,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 current
               jobStatusWidget.addFinishedJob({
                 name,
-                statusMessage: statusMessage || 'done',
+                statusMessage: statusMessage ?? 'done',
                 progressPct: progressPct ?? 100,
                 cancelCallback: cancelCallback!,
                 setStatusMessage: () => {},
@@ -338,7 +338,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               firstIndexingJob
             jobStatusWidget.addJob({
               name,
-              statusMessage: statusMessage || '',
+              statusMessage: statusMessage ?? '',
               progressPct: progressPct ?? 0,
               cancelCallback: cancelCallback!,
               setStatusMessage: () => {},

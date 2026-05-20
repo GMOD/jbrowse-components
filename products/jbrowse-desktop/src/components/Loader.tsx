@@ -13,9 +13,7 @@ import { loadPluginManager } from './StartScreen/util.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-setGpuOverride(
-  new URLSearchParams(window.location.search).get('renderer') ?? null,
-)
+setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
 
 // Loads a plugin manager from a URL-provided config path. Cancels stale results
 // if config changes while a previous load is still in flight.
