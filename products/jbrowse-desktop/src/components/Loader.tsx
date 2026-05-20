@@ -11,8 +11,8 @@ import { useQueryParam } from '../useQueryParam.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
 import { loadPluginManager } from './StartScreen/util.tsx'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
 

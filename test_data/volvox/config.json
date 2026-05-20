@@ -273,6 +273,373 @@
   },
   "tracks": [
     {
+      "type": "MultiBedTrack",
+      "trackId": "volvox_mouse_inheritance_single",
+      "name": "Mouse inheritance painting (single BED, laneField=mouse)",
+      "category": ["Multi-canvas"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "volvox_mouse_inheritance.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox_mouse_inheritance.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "columnNames": [
+          "chrom",
+          "start",
+          "end",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "mouse"
+        ]
+      },
+      "displays": [
+        {
+          "displayId": "volvox_mouse_inheritance_single-MultiLinearBasicDisplay",
+          "type": "MultiLinearBasicDisplay",
+          "laneField": "mouse",
+          "color": "jexl:get(feature,'itemRgb') ? 'rgb(' + get(feature,'itemRgb') + ')' : 'goldenrod'"
+        }
+      ]
+    },
+    {
+      "type": "MultiBedTrack",
+      "trackId": "volvox_mouse_inheritance_multi",
+      "name": "Mouse inheritance painting (MultiBedAdapter, per-mouse files)",
+      "category": ["Multi-canvas"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiBedAdapter",
+        "subadapters": [
+          {
+            "type": "BedTabixAdapter",
+            "source": "dad",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/dad.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/dad.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "mom",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/mom.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/mom.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring01",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring01.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring01.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring02",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring02.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring02.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring03",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring03.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring03.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring04",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring04.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring04.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring05",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring05.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring05.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring06",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring06.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring06.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring07",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring07.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring07.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring08",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring08.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring08.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring09",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring09.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring09.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring10",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring10.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring10.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring11",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring11.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring11.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring12",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring12.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring12.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring13",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring13.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring13.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring14",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring14.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring14.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring15",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring15.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring15.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring16",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring16.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring16.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring17",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring17.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring17.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring18",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring18.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring18.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring19",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring19.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring19.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          },
+          {
+            "type": "BedTabixAdapter",
+            "source": "offspring20",
+            "bedGzLocation": {
+              "uri": "volvox_mouse_inheritance_per_mouse/offspring20.bed.gz",
+              "locationType": "UriLocation"
+            },
+            "index": {
+              "location": {
+                "uri": "volvox_mouse_inheritance_per_mouse/offspring20.bed.gz.tbi",
+                "locationType": "UriLocation"
+              }
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "displayId": "volvox_mouse_inheritance_multi-MultiLinearBasicDisplay",
+          "type": "MultiLinearBasicDisplay",
+          "color": "jexl:get(feature,'itemRgb') ? 'rgb(' + get(feature,'itemRgb') + ')' : 'goldenrod'"
+        }
+      ]
+    },
+    {
       "type": "GWASTrack",
       "trackId": "volvox_gwas",
       "name": "GWAS test",
