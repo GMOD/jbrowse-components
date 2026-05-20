@@ -1,21 +1,82 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks'
-import { HumanExomeExample, WithInit } from './JBrowseLinearGenomeView.stories'
+import {
+  HumanExomeExample,
+  UsingLocObject,
+  WithInit,
+  WithShowTrack,
+} from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Initialization" />
 
 # Initialization
 
-The `init` field under `defaultSession.view` is a _simplified_ way to specify a
-default session. It lets you write a few short fields — which assembly, where to
-land, which tracks to open — instead of the verbose snapshot format that
-`defaultSession.view.tracks` requires.
+This page covers the ways to set up a JBrowse view at startup, and when each
+form fits. The shortest path — and what Getting Started recommends — is the
+`init` field on `defaultSession.view`.
 
-## `init` vs full `defaultSession`
+## The `init` shape
+
+```js
+init: {
+  assembly: 'hg38',                  // assembly name or alias
+  loc: 'chr1:11,106,077-11,261,675', // any locstring
+  tracks: ['my-gene-track-id'],       // trackIds to open
+}
+```
+
+Sibling fields on `defaultSession.view` configure the view itself —
+`showCytobandsSetting`, `showGridlines`, `colorByCDS`, etc. A complete example
+using cytobands, ref-name aliases, and a tabix-indexed RefSeq gene track:
+
+<Story of={WithInit} />
+
+## Top-level `location` (no `defaultSession`)
+
+If you don't need a full default session — just "land on this region" — pass a
+top-level `location` to `createViewState`. It accepts either a locstring or a
+`{ refName, start, end }` object. The object form is useful when you already
+have structured coordinates and don't want to format and reparse a string:
+
+```js
+const state = createViewState({
+  assembly,
+  tracks,
+  location: { refName: '10', start: 29838737, end: 29838819 },
+})
+```
+
+<Story of={UsingLocObject} />
+
+## Opening tracks programmatically with `showTrack`
+
+When tracks need to open in response to runtime conditions (a button click, a
+search hit, a parent component prop) rather than at first mount, prefer the
+imperative `viewState.session.view.showTrack(trackId)` method:
+
+<Story of={WithShowTrack} />
+
+The same method also works for loading heavier tracks on top of an `init`
+session — for example, adding a CRAM exome alignments track on GRCh38 after
+`createViewState` returns:
+
+<Story of={HumanExomeExample} />
+
+CRAM tracks (and BAM files without MD tags) require a `sequenceAdapter` block
+on the track config so the worker can decode reads against the reference — see
+the source for the exact shape.
+
+## The full snapshot form
+
+`init` is shorthand for what would otherwise be a verbose snapshot under
+`defaultSession.view.tracks`. The verbose form exists for one reason: it's
+exactly what gets serialized when you save or export a session, so it can
+round-trip arbitrary view state. Reach for it only when you are loading a
+session you previously exported (see
+[Default Sessions](?path=/docs/default-sessions--docs)).
 
 Both forms below open the same RefSeq genes track at the same locus on GRCh38.
-Compare the verbosity:
 
-### With `init` (simple)
+### With `init` (recommended)
 
 ```js
 defaultSession: {
@@ -30,9 +91,6 @@ defaultSession: {
   },
 }
 ```
-
-You name the trackIds you want open. JBrowse resolves them after the assembly
-loads, picks sensible default displays, and applies the location.
 
 ### Equivalent full snapshot
 
@@ -68,54 +126,26 @@ defaultSession: {
 }
 ```
 
-You provide IDs at every level — track configuration, display type, display
-configuration — and you compute (or guess at) `bpPerPx` and `offsetPx` for the
-location instead of giving a locstring.
+IDs at every level, plus precomputed `bpPerPx` / `offsetPx` instead of a
+locstring. Use this only for round-tripping an exported session.
 
-The verbose form exists for a reason: it's exactly what gets serialized when you
-save or export a session, so it can round-trip arbitrary view state. Reach for
-it only when you are loading a session you previously exported (see
-[Default Sessions](?path=/docs/default-sessions--docs)). For everything else,
-use `init`.
+## Configuration shape
 
-## The `init` shape
+The component reuses the same
+[configuration](https://jbrowse.org/jb2/docs/config_guide) format as JBrowse
+Web, with two differences:
 
-```js
-init: {
-  assembly: 'hg38',                 // assembly name or alias
-  loc: 'chr1:11,106,077-11,261,675', // any locstring
-  tracks: ['my-gene-track-id'],      // trackIds to open
-}
-```
+**Single assembly**, not an array. JBrowse Web takes `assemblies: [...]`; the
+embedded LGV takes one `assembly: {...}`.
 
-Sibling fields on `defaultSession.view` configure the view itself —
-`showCytobandsSetting`, `showGridlines`, `colorByCDS`, etc.
-
-## GRCh38 with a real RefSeq track
-
-A complete example using a remote BgzipFasta sequence adapter, GRCh38 ref-name
-aliases, cytobands, and a tabix-indexed RefSeq gene track — all wired up through
-`init`:
-
-<Story of={WithInit} />
-
-## Loading alignments via `showTrack`
-
-When tracks need to open in response to runtime conditions (a button click, a
-search hit, a parent component prop) rather than at first mount, prefer the
-imperative `viewState.session.view.showTrack(trackId)` method. The example below
-adds a CRAM exome alignments track on top of GRCh38, opened via `showTrack`
-after `createViewState` returns:
-
-<Story of={HumanExomeExample} />
-
-CRAM tracks (and BAM files without MD tags) require a `sequenceAdapter` block on
-the track config so the worker can decode reads against the reference — see the
-source for the exact shape.
+**Inline JS or external JSON**. The config can be a plain JS object built in
+your app, or loaded from a standalone JSON file fetched at runtime.
 
 ## Which to choose
 
 - **`init`** — first paint, declarative, just trackIds. Default.
+- **Top-level `location`** — when you only need a starting region and don't
+  need to open any tracks declaratively.
 - **`showTrack`** — runtime, imperative, composes with React state.
 - **Full `defaultSession` snapshot** — only when round-tripping an exported
   session.

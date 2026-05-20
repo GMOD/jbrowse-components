@@ -10,26 +10,46 @@ import {
 
 `createViewState` returns an object whose `.session.view` is the live
 `LinearGenomeViewModel`. Components outside the view tree can read it, mutate
-it, and call its actions — which is how you wire up "jump to this gene" buttons,
-search-result lists, or programmatic tours.
+it, and call its actions — which is how you wire up "jump to this gene"
+buttons, search-result lists, or programmatic tours.
 
-The two actions you'll reach for most often are `navToLocString` and `navTo`.
+The two actions you'll reach for most often are `navToLocString` (string
+form) and `navToLocations` (parsed-object form). Both are async and will
+re-set the displayed regions if needed; both reject on invalid input so you
+can surface errors in a banner.
 
 ## `navToLocString` (string locations)
 
-Takes a JBrowse-style locstring like `ctgA:1-5,000` or `chr1:1m-2m`. Easiest to
-drive from a `<select>` or a static list of bookmarks.
+Takes a JBrowse-style locstring like `ctgA:1-5,000` or `chr1:1m-2m`. Easiest
+to drive from a `<select>` or a static list of bookmarks:
+
+```js
+state.session.view
+  .navToLocString('ctgA:1,000..5,000')
+  .catch(e => console.error(e))
+```
 
 <Story of={ExternalNavigateLocstring} />
 
-## `navTo` (object locations)
+## `navToLocations` (object locations)
 
-Takes `{ refName, start, end, assemblyName }` directly. Skip the string
-formatting and parsing round-trip when you already have numeric coordinates —
-e.g. when bridging from a backend search service.
+Takes an array of `{ refName, start, end, assemblyName? }` objects. Skip the
+string formatting and parsing round-trip when you already have numeric
+coordinates — e.g. when bridging from a backend search service. Pass multiple
+regions to land in a multi-region view:
+
+```js
+state.session.view
+  .navToLocations([{ refName: 'ctgA', start: 1050, end: 9000 }])
+  .catch(e => console.error(e))
+```
 
 <Story of={ExternalNavigateObject} />
 
-Both actions are async and resolve once the new region has been loaded; errors
-(refName not found, range invalid) propagate as rejections that you can surface
-in a banner.
+## `navTo` vs `navToLocations`
+
+There's also a lower-level `navTo(query)` action. The difference: `navTo`
+only navigates if the target lies **inside the currently displayed regions**
+— it won't re-set them. `navToLocations` (and `navToLocString`) will
+re-set displayed regions as needed, so they're almost always what you want
+for external navigation.

@@ -14,6 +14,24 @@ anything outside the LGV can subscribe to its state with `mobx-react`'s
 companion panels — coordinate readouts, feature inspectors, summary tables —
 that stay in sync with the view without manual event wiring.
 
+## Using `observer`
+
+Wrap a component with `observer` from `mobx-react` to make it re-render whenever
+any observable it reads changes:
+
+```js
+import { observer } from 'mobx-react'
+
+const VisibleRegion = observer(function VisibleRegion({ viewState }) {
+  const view = viewState.session.views[0]
+  return <div>Current location: {view.coarseVisibleLocStrings}</div>
+})
+```
+
+`observer` components are automatically memoized — no need to wrap them in
+`React.memo`. Components that only receive plain props (strings, numbers,
+callbacks) don't need `observer`.
+
 ## Visible regions
 
 `view.dynamicBlocks` describes the regions currently scrolled into view, updated
@@ -25,10 +43,11 @@ on every pan and zoom. An observer reading it gets free reactivity:
 
 Reading actual feature data requires a round-trip through the RPC manager (the
 same path the renderer uses). The example queries features for the visible
-region inside an effect that reruns when the region changes.
+region inside an effect that reruns when the region changes:
 
 <Story of={WithObserveVisibleFeatures} />
 
 For frequently-changing state, debounce or throttle your queries —
 `dynamicBlocks` updates every animation frame during a drag, and you likely
-don't want a fetch per frame.
+don't want a fetch per frame. `view.coarseDynamicBlocks` is the debounced
+variant and is usually what you want.
