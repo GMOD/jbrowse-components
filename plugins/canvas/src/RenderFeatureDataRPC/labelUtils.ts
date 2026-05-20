@@ -1,5 +1,5 @@
 import { isLabelAllowed, readConfigValue } from './renderConfig.ts'
-import { truncateLabel } from './util.ts'
+import { hasVisibleText, truncateLabel } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 import type { FeatureLayout } from './types.ts'
@@ -35,12 +35,11 @@ export function applyLabelDimensions(
     const name = isTranscriptChild
       ? truncateLabel(getFeatureName(feature) ?? '')
       : truncateLabel(readConfigValue(config, ['labels', 'name'], feature))
-    const description = truncateLabel(
-      readConfigValue(config, ['labels', 'description'], feature),
-    )
+    const description = isTranscriptChild
+      ? ''
+      : truncateLabel(readConfigValue(config, ['labels', 'description'], feature))
     const labelCount =
-      (/\S/.test(name) ? 1 : 0) +
-      (/\S/.test(description) && !isTranscriptChild ? 1 : 0)
+      (hasVisibleText(name) ? 1 : 0) + (hasVisibleText(description) ? 1 : 0)
 
     const isOverlayMode = isTranscriptChild && subfeatureLabels === 'overlay'
     if (!isOverlayMode && labelCount > 0) {

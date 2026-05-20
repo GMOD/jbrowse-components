@@ -13,6 +13,11 @@ export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
 }
 
+// True when the string contains at least one non-whitespace character.
+export function hasVisibleText(text: string) {
+  return /\S/.test(text)
+}
+
 export function isUTR(feature: Feature) {
   return UTR_REGEX.test(feature.get('type') ?? '')
 }

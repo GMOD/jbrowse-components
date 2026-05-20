@@ -241,19 +241,16 @@ export function useAminoAcidOverlay(
 
         const pxStart = toScreen(item.startBp)
         const pxEnd = toScreen(item.endBp)
-        const centerPx = (pxStart + pxEnd) / 2
-        const topPx = item.topPx
         const fontSize = Math.min(item.heightPx, 16)
-        const cellWidthPx = Math.abs(pxEnd - pxStart)
-        const showIndex = cellWidthPx >= 20
+        const showIndex = Math.abs(pxEnd - pxStart) >= 20
 
         elements.push(
           <div
             key={`${vr.displayedRegionIndex}-${i}`}
             style={{
               position: 'absolute',
-              left: centerPx,
-              top: topPx,
+              left: (pxStart + pxEnd) / 2,
+              top: item.topPx,
               height: item.heightPx,
               transform: 'translateX(-50%)',
               fontSize,

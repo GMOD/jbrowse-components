@@ -1,7 +1,7 @@
 import { measureText } from '@jbrowse/core/util'
 
 import { readConfigValue } from './renderConfig.ts'
-import { truncateLabel } from './util.ts'
+import { hasVisibleText, truncateLabel } from './util.ts'
 import { LABEL_FONT_SIZE } from '../LinearBasicDisplay/components/sharedRendererConstants.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
@@ -24,8 +24,8 @@ export function createFeatureFloatingLabels({
   const name = truncateLabel(rawName ?? '')
   const description = truncateLabel(rawDescription ?? '')
 
-  const shouldShowLabel = /\S/.test(name)
-  const shouldShowDescription = /\S/.test(description)
+  const shouldShowLabel = hasVisibleText(name)
+  const shouldShowDescription = hasVisibleText(description)
 
   const fontSize = shouldShowLabel
     ? readConfigValue<number>(config, ['labels', 'fontSize'], feature)

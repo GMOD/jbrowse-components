@@ -161,6 +161,47 @@ function emitCodonRects(
   }
 }
 
+function rangeLine(
+  type: string | undefined,
+  start: number,
+  end: number,
+) {
+  return `${type ? `${type}: ` : ''}${start.toLocaleString()}-${end.toLocaleString()}`
+}
+
+function buildTranscriptTooltip(args: {
+  parentName: string | undefined
+  transcriptName: string | undefined
+  transcriptType: string | undefined
+  transcriptStart: number
+  transcriptEnd: number
+}) {
+  const { parentName, transcriptName, transcriptType, transcriptStart, transcriptEnd } = args
+  const parts: string[] = []
+  if (parentName) {
+    parts.push(`Gene: ${parentName}`)
+  }
+  if (transcriptName) {
+    parts.push(`Transcript: ${transcriptName}`)
+  }
+  parts.push(rangeLine(transcriptType, transcriptStart, transcriptEnd))
+  return parts.join('\n')
+}
+
+function buildFeatureTooltip(args: {
+  name: string | undefined
+  description: string | undefined
+  featureType: string | undefined
+  featureStart: number
+  featureEnd: number
+}) {
+  const { name, description, featureType, featureStart, featureEnd } = args
+  if (name) {
+    return `${name}${description ? ` - ${description}` : ''}`
+  }
+  return rangeLine(featureType, featureStart, featureEnd)
+}
+
 function boxColor(feature: Feature, ctx: RenderContext) {
   return getBoxColor({
     feature,
@@ -229,7 +270,7 @@ function emitExonRects(
     const childType = childFeature.get('type')
 
     const aminoAcids =
-      childType === 'CDS' && g2p && protein && !childIsUTR
+      childType === 'CDS' && g2p && protein
         ? aggregateAminos(protein, g2p, childStart, childEnd, transcriptStrand)
         : undefined
 
@@ -286,21 +327,16 @@ function processTranscriptLayout(
   // Transcript metadata: subfeature hit info + floating label
   const transcriptStart = transcriptFeature.get('start')
   const transcriptEnd = transcriptFeature.get('end')
+  const transcriptType = transcriptFeature.get('type')
   const parentName = getFeatureName(parentFeature)
   const transcriptName = getFeatureName(transcriptFeature)
-
-  const tooltipParts: string[] = []
-  if (parentName) {
-    tooltipParts.push(`Gene: ${parentName}`)
-  }
-  if (transcriptName) {
-    tooltipParts.push(`Transcript: ${transcriptName}`)
-  }
-  const transcriptType = transcriptFeature.get('type')
-  tooltipParts.push(
-    `${transcriptType ? `${transcriptType}: ` : ''}${transcriptStart.toLocaleString()}-${transcriptEnd.toLocaleString()}`,
-  )
-  const tooltip = tooltipParts.join('\n')
+  const tooltip = buildTranscriptTooltip({
+    parentName,
+    transcriptName,
+    transcriptType,
+    transcriptStart,
+    transcriptEnd,
+  })
 
   collector.subfeatureInfos.push({
     kind: 'subfeature',
@@ -383,9 +419,13 @@ function processFeatureRecord(
   }
 
   const featureType = feature.get('type')
-  const tooltip = name
-    ? `${name}${description ? ` - ${description}` : ''}`
-    : `${featureType ? `${featureType}: ` : ''}${featureStart.toLocaleString()}-${featureEnd.toLocaleString()}`
+  const tooltip = buildFeatureTooltip({
+    name,
+    description,
+    featureType,
+    featureStart,
+    featureEnd,
+  })
 
   collector.flatbushItems.push({
     kind: 'feature',
