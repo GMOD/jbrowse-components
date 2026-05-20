@@ -127,9 +127,8 @@ export async function fetchResults({
     ),
   ].map(r => new BaseResult({ label: r, matchedObject: { refName: r } }))
 
-  return dedupe(
-    [...(refNameResults || []), ...(textSearchResults || [])],
-    elt => elt.getId(),
+  return dedupe([...refNameResults, ...(textSearchResults ?? [])], elt =>
+    elt.getId(),
   )
 }
 
