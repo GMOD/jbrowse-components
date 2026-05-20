@@ -35,9 +35,7 @@ const SharedBookmarksModel = types.model('SharedBookmarksModel', {
 
 export interface IExtendedLGV extends LinearGenomeViewModel {
   bookmarkHighlightsVisible: boolean
-  bookmarkLabelsVisible: boolean
   setBookmarkHighlightsVisible: (arg: boolean) => void
-  setBookmarkLabelsVisible: (arg: boolean) => void
 }
 
 export interface ILabeledRegionModel extends SnapshotIn<
@@ -128,7 +126,7 @@ export default function f(_pluginManager: PluginManager) {
       get areBookmarksHighlightLabelsOnAllOpenViews() {
         const { views } = getSession(self)
         return views.every(v =>
-          'bookmarkLabelsVisible' in v ? v.bookmarkLabelsVisible : true,
+          'labelsVisible' in v ? v.labelsVisible : true,
         )
       },
     }))

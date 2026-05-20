@@ -63,8 +63,7 @@ const Highlight = observer(function Highlight({
               // the bookmark Region MST type requires it
               bookmarkWidget.addBookmark({
                 ...highlight,
-                assemblyName:
-                  highlight.assemblyName ?? model.assemblyNames[0],
+                assemblyName: highlight.assemblyName ?? model.assemblyNames[0],
               })
               session.showWidget(bookmarkWidget)
               model.removeHighlight(highlight)
@@ -78,7 +77,7 @@ const Highlight = observer(function Highlight({
               fontSize="small"
               sx={{ color: bandColor.alpha(0.8).toRgbString() }}
             />
-            {highlight.label ? (
+            {highlight.label && model.labelsVisible ? (
               <Typography variant="caption" noWrap>
                 {highlight.label}
               </Typography>

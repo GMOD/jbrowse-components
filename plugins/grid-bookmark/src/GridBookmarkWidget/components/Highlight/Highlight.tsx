@@ -5,7 +5,7 @@ import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { HighlightBand } from '@jbrowse/plugin-linear-genome-view'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
-import { Tooltip } from '@mui/material'
+import { Box, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../../model.ts'
@@ -15,7 +15,7 @@ type LGV = IExtendedLGV
 
 const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const session = getSession(model) as SessionWithWidgets
-  const { bookmarkHighlightsVisible, bookmarkLabelsVisible } = model
+  const { bookmarkHighlightsVisible, labelsVisible } = model
 
   const bookmarkWidget = session.widgets.get('GridBookmark') as
     | GridBookmarkModel
@@ -45,37 +45,42 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
               coords={coords}
               background={r.highlight}
             >
-              {bookmarkLabelsVisible ? (
-                <CascadingMenuButton
-                  menuItems={[
-                    {
-                      label: 'Open bookmark widget',
-                      onClick: () => {
-                        session.showWidget(bookmarkWidget)
-                      },
+              <CascadingMenuButton
+                menuItems={[
+                  {
+                    label: 'Open bookmark widget',
+                    onClick: () => {
+                      session.showWidget(bookmarkWidget)
                     },
-                    {
-                      label: 'Turn off bookmark highlights',
-                      onClick: () => {
-                        bookmarkWidget.setBookmarkHighlightsVisible(false)
-                      },
+                  },
+                  {
+                    label: 'Turn off bookmark highlights',
+                    onClick: () => {
+                      bookmarkWidget.setBookmarkHighlightsVisible(false)
                     },
-                    {
-                      label: 'Remove bookmark',
-                      onClick: () => {
-                        bookmarkWidget.removeBookmarkObject(r)
-                      },
+                  },
+                  {
+                    label: 'Remove bookmark',
+                    onClick: () => {
+                      bookmarkWidget.removeBookmarkObject(r)
                     },
-                  ]}
-                >
-                  <Tooltip title={r.label} arrow>
+                  },
+                ]}
+              >
+                <Tooltip title={r.label} arrow>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <BookmarkIcon
                       fontSize="small"
                       sx={{ color: bandColor.alpha(chipAlpha).toRgbString() }}
                     />
-                  </Tooltip>
-                </CascadingMenuButton>
-              ) : null}
+                    {r.label && labelsVisible ? (
+                      <Typography variant="caption" noWrap>
+                        {r.label}
+                      </Typography>
+                    ) : null}
+                  </Box>
+                </Tooltip>
+              </CascadingMenuButton>
             </HighlightBand>
           ) : null
         })

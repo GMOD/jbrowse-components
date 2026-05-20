@@ -108,8 +108,8 @@ Session-authored `view.highlight` entries also accept optional `color` and
 
 `color` overrides the theme highlight color (used as-is, so explicit alpha is
 preserved). `label` is shown inline next to the chip icon and in the chip
-tooltip. URL-supplied highlights cannot set these — they're for session
-JSON authoring only.
+tooltip. URL-supplied highlights cannot set these — they're for session JSON
+authoring only.
 
 ### &tracklist=
 

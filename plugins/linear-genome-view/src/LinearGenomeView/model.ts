@@ -216,6 +216,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         * controls whether highlight/bookmark chip labels are shown inline
+         */
+        labelsVisible: types.optional(types.boolean, true),
+
+        /**
+         * #property
          * color by CDS
          */
         colorByCDS: types.optional(types.boolean, () =>
@@ -843,6 +849,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setHighlightsVisible(arg: boolean) {
         self.highlightsVisible = arg
+      },
+      /**
+       * #action
+       */
+      setLabelsVisible(arg: boolean) {
+        self.labelsVisible = arg
       },
       /**
        * #action
