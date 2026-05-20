@@ -60,8 +60,6 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
     const ctx = this.ctx
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, this.width, this.height)
-    ctx.lineWidth = lineWidth
-    ctx.lineCap = 'round'
 
     for (const displayKey of displayKeys) {
       const geometry = this.geometries.get(displayKey)
@@ -74,6 +72,7 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
         viewBpV,
         bpPerPxVInv,
         viewHeight: this.height,
+        lineWidth,
       })
     }
   }

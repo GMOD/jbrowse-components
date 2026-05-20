@@ -36,6 +36,14 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * color by setting that overrides the config setting
            */
           colorBy: types.optional(types.string, 'default'),
+          /**
+           * #property
+           */
+          alpha: types.optional(types.number, 1),
+          /**
+           * #property
+           */
+          minAlignmentLength: types.optional(types.number, 0),
         })
         .volatile(() => ({
           /**
@@ -43,18 +51,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * RPC-computed feature data
            */
           rpcData: undefined as DotplotRpcData | undefined,
-          /**
-           * #volatile
-           */
-          alpha: 1,
-          /**
-           * #volatile
-           */
-          minAlignmentLength: 0,
-          /**
-           * #volatile
-           */
-          lineWidth: 2,
           /**
            * #volatile
            * GPU-instance geometry produced from featPositions, self-
@@ -119,12 +115,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMinAlignmentLength(value: number) {
         self.minAlignmentLength = value
-      },
-      /**
-       * #action
-       */
-      setLineWidth(value: number) {
-        self.lineWidth = value
       },
       /**
        * #action

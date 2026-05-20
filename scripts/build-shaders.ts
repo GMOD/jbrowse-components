@@ -98,7 +98,13 @@ function walk(dir: string, out: string[] = []) {
       continue
     }
     const fullPath = path.join(dir, entry)
-    const stat = statSync(fullPath)
+    let stat
+    try {
+      stat = statSync(fullPath)
+    } catch {
+      // Skip dangling symlinks — common in dev trees with stale test_data.
+      continue
+    }
     if (stat.isDirectory()) {
       walk(fullPath, out)
     } else if (entry.endsWith('.slang')) {

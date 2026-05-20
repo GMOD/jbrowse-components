@@ -11,6 +11,7 @@ import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 interface RenderSvgView {
   viewWidth: number
   viewHeight: number
+  lineWidth: number
   hview: { offsetPx: number; bpPerPx: number }
   vview: { offsetPx: number; bpPerPx: number }
 }
@@ -21,7 +22,7 @@ export async function renderSvg(
 ) {
   await when(() => !!model.geometry || !!model.error)
   const view = getContainingView(model) as unknown as RenderSvgView
-  const { viewWidth, viewHeight, hview, vview } = view
+  const { viewWidth, viewHeight, hview, vview, lineWidth } = view
   if (model.error) {
     return (
       <SVGErrorBox error={model.error} width={viewWidth} height={viewHeight} />
@@ -34,13 +35,13 @@ export async function renderSvg(
   const viewBpH = hview.offsetPx * hview.bpPerPx
   const viewBpV = vview.offsetPx * vview.bpPerPx
   return paintLayer(viewWidth, viewHeight, opts, ctx => {
-    ctx.lineWidth = 2
     drawDotplotInstances(ctx, geometry, {
       viewBpH,
       bpPerPxHInv: 1 / hview.bpPerPx,
       viewBpV,
       bpPerPxVInv: 1 / vview.bpPerPx,
       viewHeight,
+      lineWidth,
     })
   })
 }

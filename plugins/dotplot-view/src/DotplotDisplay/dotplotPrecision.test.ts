@@ -1,4 +1,4 @@
-import { buildLineSegments } from './drawDotplotWebGL.ts'
+import { buildLineSegments } from './dotplotGeometry.ts'
 
 import type { DotplotRpcData } from './types.ts'
 

@@ -36,11 +36,10 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
-  const { dotplotDisplays } = model
+  const { dotplotDisplays, lineWidth } = model
   const firstDisplay = dotplotDisplays[0]
   const alpha = firstDisplay?.alpha ?? 1
   const minAlignmentLength = firstDisplay?.minAlignmentLength ?? 0
-  const lineWidth = firstDisplay?.lineWidth ?? 2
 
   // Opacity: cubic scaling for more granularity near 0
   const exponent = 3
@@ -106,9 +105,7 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
               value={lineWidth}
               onChange={(_, value) => {
                 const v = typeof value === 'number' ? value : value[0]
-                for (const d of dotplotDisplays) {
-                  d.setLineWidth(v)
-                }
+                model.setLineWidth(v)
               }}
               min={0.5}
               max={10}

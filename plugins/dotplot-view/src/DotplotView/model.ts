@@ -152,6 +152,13 @@ export default function stateModelFactory(pm: PluginManager) {
           drawCigar: true,
           /**
            * #property
+           * Screen-space line width (CSS pixels) applied to every dotplot
+           * display in this view. View-level because the GPU pass renders all
+           * displays with one uniform.
+           */
+          lineWidth: types.optional(types.number, 2.5),
+          /**
+           * #property
            */
           hview: types.optional(DotplotHView, {}),
           /**
@@ -410,7 +417,7 @@ export default function stateModelFactory(pm: PluginManager) {
             viewBpVHi,
             viewBpVLo: viewBpV - viewBpVHi,
             bpPerPxVInv: 1 / vview.bpPerPx,
-            lineWidth: this.dotplotDisplays[0]!.lineWidth,
+            lineWidth: self.lineWidth,
             displayKeys,
           }
         },
@@ -464,6 +471,12 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setDrawCigar(flag: boolean) {
           self.drawCigar = flag
+        },
+        /**
+         * #action
+         */
+        setLineWidth(value: number) {
+          self.lineWidth = value
         },
         /**
          * #action

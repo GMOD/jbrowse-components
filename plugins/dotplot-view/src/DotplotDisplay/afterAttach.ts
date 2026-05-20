@@ -8,8 +8,8 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { createDotplotColorFunction } from './dotplotWebGLColors.ts'
-import { buildLineSegments } from './drawDotplotWebGL.ts'
+import { createDotplotColorFunction } from './dotplotColors.ts'
+import { buildLineSegments } from './dotplotGeometry.ts'
 
 import type { DotplotGetFeaturesAndPositionsArgs } from './DotplotGetFeaturesAndPositions.ts'
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'

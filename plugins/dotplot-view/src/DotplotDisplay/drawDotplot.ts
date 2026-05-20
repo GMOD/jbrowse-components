@@ -1,4 +1,4 @@
-import { unpackColorToCSS } from './dotplotWebGLColors.ts'
+import { unpackColorToCSS } from './dotplotColors.ts'
 
 import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -9,6 +9,7 @@ export interface DotplotDrawParams {
   viewBpV: number
   bpPerPxVInv: number
   viewHeight: number
+  lineWidth: number
 }
 
 export function drawDotplotInstances(
@@ -16,7 +17,12 @@ export function drawDotplotInstances(
   geometry: DotplotGeometryData,
   params: DotplotDrawParams,
 ) {
-  const { viewBpH, bpPerPxHInv, viewBpV, bpPerPxVInv, viewHeight } = params
+  const { viewBpH, bpPerPxHInv, viewBpV, bpPerPxVInv, viewHeight, lineWidth } =
+    params
+  // Round caps make sub-lineWidth segments render as dots, matching the GPU
+  // capsule-SDF path. Setting per call keeps callers from forgetting.
+  ctx.lineWidth = lineWidth
+  ctx.lineCap = 'round'
   const {
     x1Hi,
     x1Lo,
