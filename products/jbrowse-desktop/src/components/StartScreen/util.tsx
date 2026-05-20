@@ -14,6 +14,7 @@ import sessionModelFactory from '../../sessionModel/sessionModel.ts'
 import { fetchCJS } from '../../util.tsx'
 
 import type { JBrowseConfig } from './types.ts'
+import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 
 export { addRelativeUris } from '@jbrowse/product-core'
 
@@ -22,8 +23,7 @@ const { ipcRenderer } = window.require('electron')
 export async function loadPluginManager(configPath: string) {
   const snap = await ipcRenderer.invoke('loadSession', configPath)
   const pm = await createPluginManager(snap)
-  // @ts-expect-error
-  pm.rootModel?.setSessionPath(configPath)
+  ;(pm.rootModel as DesktopRootModel | undefined)?.setSessionPath(configPath)
   return pm
 }
 
@@ -48,14 +48,10 @@ export async function createPluginManager(
       plugin: new P(),
       definition,
       metadata: {
-        // @ts-expect-error
-        url: definition.url,
-        // @ts-expect-error
-        esmUrl: definition.esmUrl,
-        // @ts-expect-error
-        umdUrl: definition.umdUrl,
-        // @ts-expect-error
-        cjsUrl: definition.cjsUrl,
+        url: 'url' in definition ? definition.url : undefined,
+        esmUrl: 'esmUrl' in definition ? definition.esmUrl : undefined,
+        umdUrl: 'umdUrl' in definition ? definition.umdUrl : undefined,
+        cjsUrl: 'cjsUrl' in definition ? definition.cjsUrl : undefined,
       },
     })),
   ])
