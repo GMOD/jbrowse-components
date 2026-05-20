@@ -382,26 +382,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return undefined
         }
         return computeSyntenyColors({
-          kinds: instanceData.kinds,
-          featureIdx: instanceData.instanceFeatureIdx,
-          strands: featureData.strands,
-          refNames: featureData.refNames,
-          instanceCount: instanceData.instanceCount,
+          instanceData,
+          featureData,
           colorBy,
-          syriTypes: this.syriTypesForColoring,
-          identities:
-            colorBy === 'identity' || opacityByIdentity
-              ? featureData.identities
-              : undefined,
-          mappingQuals:
-            colorBy === 'mappingQuality'
-              ? featureData.mappingQuals
-              : undefined,
-          meanScores:
-            colorBy === 'meanQueryIdentity'
-              ? featureData.meanScores
-              : undefined,
           opacityByIdentity,
+          syriTypes: this.syriTypesForColoring,
         })
       },
       /**

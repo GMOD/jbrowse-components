@@ -67,53 +67,46 @@ const syriColorMap: Record<SyriType, number> = {
   DUP: cssColorToABGR(syriColors.DUP),
 }
 
+interface ColorInputs {
+  strands: Int8Array
+  refNames: readonly string[]
+  identities: Float32Array
+  mappingQuals: Float32Array
+  meanScores: Float32Array
+}
+
 function createColorFunction(
   colorBy: string,
-  data: {
-    syriTypes?: readonly SyriType[]
-    identities?: Float32Array
-    mappingQuals?: Float32Array
-    meanScores?: Float32Array
-  },
-): (strand: number, refName: string, index: number) => number {
-  const { syriTypes, identities, mappingQuals, meanScores } = data
+  d: ColorInputs,
+  syriTypes: readonly SyriType[] | undefined,
+): (index: number) => number {
   if (colorBy === 'syri' && syriTypes) {
-    return (_strand: number, _refName: string, index: number) =>
-      syriColorMap[syriTypes[index]!]
+    return index => syriColorMap[syriTypes[index]!]
   }
-
-  if (colorBy === 'identity' && identities) {
-    return (_strand: number, _refName: string, index: number) =>
-      lutLookup(IDENTITY_LUT, identities[index]!)
+  if (colorBy === 'identity') {
+    return index => lutLookup(IDENTITY_LUT, d.identities[index]!)
   }
-
-  if (colorBy === 'mappingQuality' && mappingQuals) {
-    return (_strand: number, _refName: string, index: number) =>
-      lutLookup(MAPQ_LUT, mappingQuals[index]!, 60)
+  if (colorBy === 'mappingQuality') {
+    return index => lutLookup(MAPQ_LUT, d.mappingQuals[index]!, 60)
   }
-
-  if (colorBy === 'meanQueryIdentity' && meanScores) {
-    return (_strand: number, _refName: string, index: number) =>
-      lutLookup(MEAN_SCORE_LUT, meanScores[index]!)
+  if (colorBy === 'meanQueryIdentity') {
+    return index => lutLookup(MEAN_SCORE_LUT, d.meanScores[index]!)
   }
-
   if (colorBy === 'strand') {
-    return (strand: number) => (strand === -1 ? STRAND_NEG : STRAND_POS)
+    return index => (d.strands[index] === -1 ? STRAND_NEG : STRAND_POS)
   }
-
   if (colorBy === 'query') {
     const colorCache = new Map<string, number>()
-    return (_strand: number, refName: string) => {
+    return index => {
+      const refName = d.refNames[index]!
       let c = colorCache.get(refName)
       if (c === undefined) {
-        const hash = hashString(refName)
-        c = category10Packed[hash % category10Packed.length]!
+        c = category10Packed[hashString(refName) % category10Packed.length]!
         colorCache.set(refName, c)
       }
       return c
     }
   }
-
   return () => DEFAULT_COLOR
 }
 
@@ -135,46 +128,36 @@ function buildIndelColors(colorBy: string) {
   return indelColors
 }
 
-// Pure function: produce a fresh Uint32Array of packed ABGR colors from
-// per-instance descriptors (`kinds`, `featureIdx`) plus per-feature
-// strand/refName plus the current color scheme. Called both on the worker
-// (initial colors) and on the main thread (color-scheme change).
-export function computeSyntenyColors({
-  kinds,
-  featureIdx,
-  strands,
-  refNames,
-  instanceCount,
-  colorBy,
-  syriTypes,
-  identities,
-  mappingQuals,
-  meanScores,
-  opacityByIdentity,
-}: {
+interface InstanceInputs {
   kinds: Uint8Array
-  featureIdx: Uint32Array
-  strands: Int8Array
-  refNames: readonly string[]
+  instanceFeatureIdx: Uint32Array
   instanceCount: number
+}
+
+// Pure function: produce a fresh Uint32Array of packed ABGR colors from
+// per-instance descriptors plus per-feature data and the current color
+// scheme. Called on the main thread whenever colorBy or featureData
+// changes — no RPC round-trip.
+export function computeSyntenyColors({
+  instanceData,
+  featureData,
+  colorBy,
+  opacityByIdentity,
+  syriTypes,
+}: {
+  instanceData: InstanceInputs
+  featureData: ColorInputs
   colorBy: string
-  syriTypes?: readonly SyriType[]
-  identities?: Float32Array
-  mappingQuals?: Float32Array
-  meanScores?: Float32Array
   opacityByIdentity?: boolean
+  syriTypes?: readonly SyriType[]
 }) {
-  const colorFn = createColorFunction(colorBy, {
-    syriTypes,
-    identities,
-    mappingQuals,
-    meanScores,
-  })
+  const { kinds, instanceFeatureIdx, instanceCount } = instanceData
+  const colorFn = createColorFunction(colorBy, featureData, syriTypes)
   const indelColors = buildIndelColors(colorBy)
   const colorI = indelColors[CIGAR_I] ?? DEFAULT_COLOR
   const colorD = indelColors[CIGAR_D] ?? DEFAULT_COLOR
   const colorN = indelColors[CIGAR_N] ?? DEFAULT_COLOR
-  const fadeByIdentity = opacityByIdentity && identities
+  const { identities } = featureData
   const out = new Uint32Array(instanceCount)
 
   for (let i = 0; i < instanceCount; i++) {
@@ -190,15 +173,15 @@ export function computeSyntenyColors({
     } else if (kind === KIND_CIGAR_N) {
       out[i] = colorN
     } else {
-      const f = featureIdx[i]!
-      const base = colorFn(strands[f]!, refNames[f]!, f)
+      const f = instanceFeatureIdx[i]!
+      const base = colorFn(f)
       if (kind === KIND_BASE_HIDDEN) {
         out[i] = base & 0x00ffffff
-      } else if (fadeByIdentity) {
-        const id = identities[f]!
+      } else if (opacityByIdentity) {
         // Identity in [0,1] -> alpha byte in [0x4c, 0xff] (30% floor so
         // low-identity blocks remain perceptible). Unknown identity (-1)
         // gets full alpha.
+        const id = identities[f]!
         const alphaByte =
           id < 0 ? 0xff : Math.max(0x4c, Math.round(id * 255))
         out[i] = (base & 0x00ffffff) | (alphaByte << 24)
