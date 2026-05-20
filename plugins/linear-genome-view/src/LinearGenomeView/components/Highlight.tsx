@@ -29,9 +29,10 @@ const useStyles = makeStyles()(theme => ({
     left: 0,
     overflow: 'hidden',
     background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
-    // above TrackLabel (zIndex 200) so the chip icon is clickable, but let
-    // clicks pass through the rest of the overlay to the tracks below
-    zIndex: 201,
+    // lift above the sibling TrackContainers (which would otherwise paint
+    // on top in tree order and swallow chip clicks). pointer-events:none
+    // lets clicks fall through to the tracks except on the chip itself
+    zIndex: 1,
     pointerEvents: 'none',
   },
   linkIcon: {
