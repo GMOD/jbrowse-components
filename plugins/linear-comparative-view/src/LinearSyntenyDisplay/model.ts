@@ -3,11 +3,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
-import {
-  applyAlpha,
-  colorSchemes,
-  getQueryColor,
-} from '@jbrowse/synteny-core'
+import { applyAlpha, colorSchemes, getQueryColor } from '@jbrowse/synteny-core'
 
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'

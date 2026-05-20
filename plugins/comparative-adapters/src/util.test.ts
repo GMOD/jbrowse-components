@@ -6,9 +6,9 @@ test('flip cigar', () => {
 
 describe('pafIdentity', () => {
   test('prefers de:f: tag (1 - de)', () => {
-    expect(pafIdentity({ de: 0.02, numMatches: 50, blockLen: 100 })).toBeCloseTo(
-      0.98,
-    )
+    expect(
+      pafIdentity({ de: 0.02, numMatches: 50, blockLen: 100 }),
+    ).toBeCloseTo(0.98)
   })
 
   test('falls back to id:f: (fraction)', () => {

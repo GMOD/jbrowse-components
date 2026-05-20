@@ -59,11 +59,12 @@ matches (`=`) from mismatches (`X`). Without `--eqx` the CIGAR uses ambiguous
 `M` operators and `make-pif` leaves identity to be approximated from the
 standard PAF columns.
 
-This matches the approach used by [rustybam](https://github.com/mrvollger/rustybam)
-(`rb stats --paf` writes the same `perID_by_all` quantity) and
-[SVbyEye](https://github.com/daewoooo/SVbyEye) (which derives per-bin identity
-from the CIGAR for its miropeats-style ribbons). Storing identity at file-build
-time means coloring at view time is a cheap column lookup.
+This matches the approach used by
+[rustybam](https://github.com/mrvollger/rustybam) (`rb stats --paf` writes the
+same `perID_by_all` quantity) and [SVbyEye](https://github.com/daewoooo/SVbyEye)
+(which derives per-bin identity from the CIGAR for its miropeats-style ribbons).
+Storing identity at file-build time means coloring at view time is a cheap
+column lookup.
 
 ### Tabix index parameters
 
@@ -109,8 +110,9 @@ the `PairwiseIndexedPAFAdapter`.
 ### Optional preprocessing with rustybam
 
 For large or messy PAFs (millions of short alignments, soft-clipped overhangs,
-inconsistent strand orientation), [rustybam](https://github.com/mrvollger/rustybam)
-can clean the alignments before `make-pif`:
+inconsistent strand orientation),
+[rustybam](https://github.com/mrvollger/rustybam) can clean the alignments
+before `make-pif`:
 
 ```bash
 minimap2 -cx asm5 --eqx reference.fa query.fa \

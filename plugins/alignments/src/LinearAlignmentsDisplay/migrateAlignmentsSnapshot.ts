@@ -164,11 +164,7 @@ function migrateBooleanPairsToEnum(snap: Record<string, unknown>) {
   if (showSashimiArcs !== undefined || sashimiArcsDown !== undefined) {
     // Old default was showSashimiArcs=true, sashimiArcsDown=false → 'up'
     result.sashimiArcs =
-      showSashimiArcs === false
-        ? 'off'
-        : sashimiArcsDown
-          ? 'down'
-          : 'up'
+      showSashimiArcs === false ? 'off' : sashimiArcsDown ? 'down' : 'up'
   }
 
   return result

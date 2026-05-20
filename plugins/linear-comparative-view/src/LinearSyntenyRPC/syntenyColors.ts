@@ -182,8 +182,7 @@ export function computeSyntenyColors({
         // low-identity blocks remain perceptible). Unknown identity (-1)
         // gets full alpha.
         const id = identities[f]!
-        const alphaByte =
-          id < 0 ? 0xff : Math.max(0x4c, Math.round(id * 255))
+        const alphaByte = id < 0 ? 0xff : Math.max(0x4c, Math.round(id * 255))
         out[i] = (base & 0x00ffffff) | (alphaByte << 24)
       } else {
         out[i] = base

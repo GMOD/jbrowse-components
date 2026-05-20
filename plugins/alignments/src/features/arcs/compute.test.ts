@@ -477,7 +477,8 @@ describe('computeArcsFromPileupData', () => {
     }
     // tlen=300 ∈ [100, 500] FR → dropped
     expect(
-      computeArcsFromPileupData(new Map([[0, mkPair(300)]]), regions, opts).arcs,
+      computeArcsFromPileupData(new Map([[0, mkPair(300)]]), regions, opts)
+        .arcs,
     ).toHaveLength(0)
     // tlen=10000 > upper → kept (discordant long-insert)
     expect(

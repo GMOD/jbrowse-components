@@ -36,6 +36,7 @@ const backendArg = args.find(a => a.startsWith('--backend='))
 const backendValue = backendArg ? backendArg.split('=')[1]! : undefined
 const skipWebGPU = args.includes('--skip-webgpu')
 const quiet = args.includes('--quiet')
+const debug = args.includes('--debug')
 const useFirefoxArg = args.find(a => a.startsWith('--firefox='))
 const firefoxPath = useFirefoxArg
   ? useFirefoxArg.split('=')[1]!
@@ -109,6 +110,7 @@ async function runTests(
 ) {
   let passed = 0
   let failed = 0
+  const failures: { suite: string; test: string; error: string }[] = []
   let page = initialPage
 
   const suitesToRun = suites.filter(suite => {
@@ -150,10 +152,8 @@ async function runTests(
 
       const start = performance.now()
       testStartTime = start
-      console.log(
-        `    ⏳ [${suitesToRun.indexOf(suite) + 1}/${suitesToRun.length}] Starting: ${test.name}`,
-      )
-      process.stdout.write(`    ⏳ ${test.name}...`)
+      const progress = `[${suitesToRun.indexOf(suite) + 1}/${suitesToRun.length}]`
+      process.stdout.write(`    ⏳ ${progress} ${test.name}...`)
 
       try {
         await page.goto(`http://localhost:${PORT}/test_data/volvox/config.json`)
@@ -185,7 +185,9 @@ async function runTests(
           process.stdout.clearLine(0)
           process.stdout.cursorTo(0)
         }
-        console.log(`    ✓ ${test.name} (${Math.round(duration)}ms)`)
+        console.log(
+          `    ✓ ${progress} ${test.name} (${Math.round(duration)}ms)`,
+        )
 
         // Recycle browser after every test to prevent resource exhaustion
         // (swiftshader limitation in headless Chrome accumulates resources across tests)
@@ -203,12 +205,13 @@ async function runTests(
       } catch (e) {
         failed++
         const error = e instanceof Error ? e.message : String(e)
+        failures.push({ suite: suite.name, test: test.name, error })
 
         if (process.stdout.isTTY) {
           process.stdout.clearLine(0)
           process.stdout.cursorTo(0)
         }
-        console.log(`    ✗ FAILED: ${suite.name} > ${test.name}`)
+        console.log(`    ✗ ${progress} FAILED: ${suite.name} > ${test.name}`)
         console.log(`      Error: ${error}`)
 
         // Always recycle browser after failed test to ensure clean state for next test
@@ -221,14 +224,14 @@ async function runTests(
             console.error(
               `      [recovery] Browser recycle failed, cannot recover: ${recycleErr instanceof Error ? recycleErr.message : recycleErr}`,
             )
-            return { passed, failed }
+            return { passed, failed, failures }
           }
         }
       }
     }
   }
 
-  return { passed, failed }
+  return { passed, failed, failures }
 }
 
 // Firefox leaks WebGPU device resources across navigations, causing
@@ -241,6 +244,7 @@ async function runTestsWithRestart(
 ) {
   let passed = 0
   let failed = 0
+  const failures: { suite: string; test: string; error: string }[] = []
 
   const suitesToRun = suites.filter(suite => {
     if (suite.requiresAuth && !includeAuth) {
@@ -274,8 +278,8 @@ async function runTestsWithRestart(
 
       const start = performance.now()
       testStartTime = start
-      console.log(`    ⏳ Starting: ${test.name}`)
-      process.stdout.write(`    ⏳ ${test.name}...`)
+      const progress = `[${suitesToRun.indexOf(suite) + 1}/${suitesToRun.length}]`
+      process.stdout.write(`    ⏳ ${progress} ${test.name}...`)
 
       let browser: Browser | undefined
       try {
@@ -290,16 +294,19 @@ async function runTestsWithRestart(
           process.stdout.clearLine(0)
           process.stdout.cursorTo(0)
         }
-        console.log(`    ✓ ${test.name} (${Math.round(duration)}ms)`)
+        console.log(
+          `    ✓ ${progress} ${test.name} (${Math.round(duration)}ms)`,
+        )
       } catch (e) {
         failed++
         const error = e instanceof Error ? e.message : String(e)
+        failures.push({ suite: suite.name, test: test.name, error })
 
         if (process.stdout.isTTY) {
           process.stdout.clearLine(0)
           process.stdout.cursorTo(0)
         }
-        console.log(`    ✗ FAILED: ${suite.name} > ${test.name}`)
+        console.log(`    ✗ ${progress} FAILED: ${suite.name} > ${test.name}`)
         console.log(`      Error: ${error}`)
       } finally {
         if (browser) {
@@ -312,21 +319,43 @@ async function runTestsWithRestart(
       }
     }
   }
-  return { passed, failed }
+  return { passed, failed, failures }
 }
 
 let testStartTime = 0
+
+function isGpuLifecycleNoise(text: string): boolean {
+  if (text.includes('[WebGL2Hal #')) {
+    return !text.includes('context LOST') && !text.includes('GL error')
+  }
+  return (
+    text.includes('[GPU] WebGPU not supported') ||
+    text.includes('[GPU] No compatible GPU adapter') ||
+    text.includes('[GPU] WebGPU initialization failed') ||
+    text.includes('[GPU] WebGL2 unavailable') ||
+    text.includes('[GPU] WebGPU device creation failed') ||
+    text.includes('GroupMarkerNotSet') ||
+    text.includes('Automatic fallback to software WebGL') ||
+    text.includes('No available adapters')
+  )
+}
 
 async function setupPage(browser: Browser) {
   const page = await browser.newPage()
 
   page.on('console', msg => {
     const text = msg.text()
-    if (text.includes('favicon') || text.includes('GPU stall due to ReadPixels')) {
+    if (
+      text.includes('favicon') ||
+      text.includes('GPU stall due to ReadPixels')
+    ) {
       return
     }
     const type = msg.type()
     if (quiet && type !== 'error') {
+      return
+    }
+    if (!debug && isGpuLifecycleNoise(text)) {
       return
     }
     const elapsed =
@@ -462,6 +491,12 @@ async function main() {
 
     let totalPassed = 0
     let totalFailed = 0
+    const allFailures: {
+      backend: string
+      suite: string
+      test: string
+      error: string
+    }[] = []
 
     for (const backend of backends) {
       console.log(`\nLaunching browser (headed: ${headed})...`)
@@ -476,15 +511,26 @@ async function main() {
       }
       console.log(`(backend: ${backend ?? 'default'})`)
 
-      const { passed, failed } = await runWithBackend(suites, backend)
+      const { passed, failed, failures } = await runWithBackend(suites, backend)
       totalPassed += passed
       totalFailed += failed
+      for (const f of failures) {
+        allFailures.push({ backend: backend ?? 'default', ...f })
+      }
     }
 
     console.log(`\n${'─'.repeat(50)}`)
     console.log(`  Tests: ${totalPassed} passed, ${totalFailed} failed`)
     if (backends.length > 1) {
       console.log(`  Backends tested: ${backends.join(', ')}`)
+    }
+    if (allFailures.length > 0) {
+      console.log(`\n  Failed tests:`)
+      for (const f of allFailures) {
+        const prefix = backends.length > 1 ? `[${f.backend}] ` : ''
+        console.log(`    ✗ ${prefix}${f.suite} > ${f.test}`)
+        console.log(`      ${f.error}`)
+      }
     }
     console.log(`${'─'.repeat(50)}\n`)
 

@@ -8,7 +8,6 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { hashString } from '@jbrowse/synteny-core'
 
-
 import type { DotplotRpcData } from './types.ts'
 
 function packColor(r: number, g: number, b: number, alpha: number) {

@@ -1,6 +1,9 @@
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { getFeatureHeightMenuItem, getSetMaxHeightMenuItem } from './featureSize.ts'
+import {
+  getFeatureHeightMenuItem,
+  getSetMaxHeightMenuItem,
+} from './featureSize.ts'
 
 interface ReadsModel {
   featureHeightSetting: number
@@ -40,7 +43,7 @@ export function getReadsMenuItem(model: ReadsModel) {
     type: 'subMenu' as const,
     subMenu: [
       getFeatureHeightMenuItem(model),
-{
+      {
         label: 'Show mismatches',
         type: 'checkbox' as const,
         checked: model.showMismatches,
@@ -64,7 +67,7 @@ export function getReadsMenuItem(model: ReadsModel) {
           model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
         },
       },
-{
+      {
         label: 'Fade mismatches by base quality',
         type: 'checkbox' as const,
         checked: model.mismatchAlpha,
@@ -88,7 +91,7 @@ export function getReadsMenuItem(model: ReadsModel) {
           model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
         },
       },
-getSetMaxHeightMenuItem(model),
+      getSetMaxHeightMenuItem(model),
     ],
   }
 }

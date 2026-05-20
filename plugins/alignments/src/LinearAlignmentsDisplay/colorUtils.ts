@@ -136,8 +136,7 @@ export function getReadColor(
   const mateUnmapped = (flags & 8) !== 0
   if (
     mateUnmapped &&
-    (isOrientationScheme(colorScheme) ||
-      (colorScheme === CS_NORMAL && isChain))
+    (isOrientationScheme(colorScheme) || (colorScheme === CS_NORMAL && isChain))
   ) {
     return rgb255(palette.colorUnmappedMate)
   }

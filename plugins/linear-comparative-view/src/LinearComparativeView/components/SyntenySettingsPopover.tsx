@@ -8,7 +8,6 @@ import TuneIcon from '@mui/icons-material/Tune'
 import { IconButton, Popover, Slider, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 
 const useStyles = makeStyles()(theme => ({

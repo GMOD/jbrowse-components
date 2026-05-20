@@ -316,14 +316,17 @@ function computeArcShape({
 }) {
   if (samplot) {
     const baseY = tlen !== undefined ? Math.abs(tlen) : absrad
-    const jitter = 1 + SAMPLOT_JITTER_BOUNDS * (pairJitter01(p1Bp, p2Bp) * 2 - 1)
+    const jitter =
+      1 + SAMPLOT_JITTER_BOUNDS * (pairJitter01(p1Bp, p2Bp) * 2 - 1)
     return {
       shapeType: isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT,
       yBp: Math.round(baseY * jitter),
     }
   }
   const shapeType =
-    longRange && drawArcInsteadOfBezier ? ARC_SHAPE_SEMICIRCLE : ARC_SHAPE_BEZIER
+    longRange && drawArcInsteadOfBezier
+      ? ARC_SHAPE_SEMICIRCLE
+      : ARC_SHAPE_BEZIER
   return { shapeType, yBp: absrad }
 }
 

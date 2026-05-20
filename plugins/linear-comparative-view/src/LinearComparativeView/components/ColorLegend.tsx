@@ -2,7 +2,6 @@ import { syriColors } from '@jbrowse/synteny-core'
 import { Box, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 
 const syriLegendItems = [
