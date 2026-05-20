@@ -650,6 +650,10 @@ export default function baseStateModelFactory(
           self.setOverride('showLabels', value)
         },
 
+        setAutoHeight(value: boolean) {
+          self.setOverride('autoHeight', value)
+        },
+
         setShowDescriptions(value: boolean) {
           self.setOverride('showDescriptions', value)
         },
@@ -967,6 +971,14 @@ export default function baseStateModelFactory(
               checked: self.showOutline,
               onClick: () => {
                 self.setShowOutline(!self.showOutline)
+              },
+            },
+            {
+              label: 'Auto-fit height',
+              type: 'checkbox' as const,
+              checked: self.autoHeight,
+              onClick: () => {
+                self.setAutoHeight(!self.autoHeight)
               },
             },
           ]

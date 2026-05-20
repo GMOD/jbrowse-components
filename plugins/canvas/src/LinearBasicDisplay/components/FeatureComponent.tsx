@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react'
 
 import { ErrorOverlay, LoadingOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
@@ -95,21 +96,42 @@ export interface Props {
   model: LinearBasicDisplayModel
 }
 
-const OverlayLayer = ({ children }: { children: React.ReactNode }) =>
-  children ? (
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-      }}
-    >
-      {children}
-    </div>
-  ) : null
+const useStyles = makeStyles()({
+  root: {
+    position: 'relative',
+    width: '100%',
+  },
+  scrollContainer: {
+    position: 'absolute',
+    inset: 0,
+    overflowX: 'hidden',
+  },
+  content: {
+    position: 'relative',
+    minHeight: '100%',
+  },
+  canvas: {
+    display: 'block',
+    position: 'sticky',
+    top: 0,
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'none',
+  },
+})
+
+const OverlayLayer = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className: string
+}) => (children ? <div className={className}>{children}</div> : null)
 
 const ContextMenu = observer(function ContextMenu({
   model,
@@ -147,6 +169,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     [number, number] | undefined
   >()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const { classes } = useStyles()
 
   const view = getContainingView(model) as LGV
 
@@ -354,28 +377,15 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   }
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        width: '100%',
-        height,
-      }}
-    >
+    <div className={classes.root} style={{ height }}>
       <div
         ref={scrollContainerRef}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          overflowY: model.hasOverflow ? 'auto' : 'hidden',
-          overflowX: 'hidden',
-        }}
+        className={classes.scrollContainer}
+        style={{ overflowY: model.hasOverflow ? 'auto' : 'hidden' }}
       >
         <div
-          style={{
-            position: 'relative',
-            height: model.hasOverflow ? model.maxY : '100%',
-            minHeight: '100%',
-          }}
+          className={classes.content}
+          style={{ height: model.hasOverflow ? model.maxY : '100%' }}
         >
           <canvas
             ref={canvasRef}
@@ -383,19 +393,23 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
             onMouseLeave={handleMouseLeave}
             onClick={handleClick}
             onContextMenu={handleContextMenu}
+            className={classes.canvas}
             style={{
-              display: 'block',
               width,
               height,
-              position: 'sticky',
-              top: 0,
               cursor: model.hoveredFeature ? 'pointer' : 'default',
             }}
           />
 
-          <OverlayLayer>{highlightOverlays}</OverlayLayer>
-          <OverlayLayer>{floatingLabelElements}</OverlayLayer>
-          <OverlayLayer>{aminoAcidOverlayElements}</OverlayLayer>
+          <OverlayLayer className={classes.overlay}>
+            {highlightOverlays}
+          </OverlayLayer>
+          <OverlayLayer className={classes.overlay}>
+            {floatingLabelElements}
+          </OverlayLayer>
+          <OverlayLayer className={classes.overlay}>
+            {aminoAcidOverlayElements}
+          </OverlayLayer>
         </div>
       </div>
 
@@ -403,7 +417,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       (model.hasOverflow || model.heightBeforeExpand !== undefined) ? (
         <OverflowIndicator
           expanded={model.heightBeforeExpand !== undefined}
-          showScrollHint={view.scrollZoom && model.hasOverflow}
+          hasOverflow={model.hasOverflow}
+          scrollZoom={view.scrollZoom}
           onExpand={() => { model.expandToFit() }}
           onRestore={() => { model.collapseFromExpand() }}
         />

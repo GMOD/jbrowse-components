@@ -4,11 +4,12 @@ import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+const SCROLLBAR_WIDTH = 14
+
 const useStyles = makeStyles()(theme => ({
   root: {
     position: 'absolute',
     bottom: 2,
-    right: 2,
     zIndex: 999,
     pointerEvents: 'auto',
   },
@@ -28,20 +29,26 @@ const useStyles = makeStyles()(theme => ({
 
 const OverflowIndicator = observer(function OverflowIndicator({
   expanded,
-  showScrollHint,
+  hasOverflow,
+  scrollZoom,
   onExpand,
   onRestore,
 }: {
   expanded: boolean
-  showScrollHint: boolean
+  hasOverflow: boolean
+  scrollZoom: boolean
   onExpand: () => void
   onRestore: () => void
 }) {
   const { classes } = useStyles()
   const label = expanded ? 'Restore previous height' : 'Expand to fit features'
-  const title = showScrollHint ? `${label} — shift+wheel to scroll` : label
+  const title =
+    hasOverflow && scrollZoom ? `${label} — shift+wheel to scroll` : label
   return (
-    <div className={classes.root}>
+    <div
+      className={classes.root}
+      style={{ right: hasOverflow ? SCROLLBAR_WIDTH + 2 : 2 }}
+    >
       <Tooltip title={title}>
         <IconButton
           aria-label={label}
