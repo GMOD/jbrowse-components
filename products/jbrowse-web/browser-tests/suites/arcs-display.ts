@@ -61,6 +61,37 @@ const suite: TestSuite = {
       },
     },
     {
+      name: 'samplot mode (paired-end SV)',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-50000',
+              tracks: [
+                {
+                  trackId: 'volvox_sv_cram',
+                  displaySnapshot: {
+                    type: 'LinearAlignmentsDisplay',
+                    pairedArcs: 'samplot',
+                  },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display-done', 60000)
+        await waitForDataLoaded(page)
+        await canvasSnapshot(
+          page,
+          'arcs-samplot-canvas',
+          '[data-testid="pileup-display-done"] canvas',
+        )
+      },
+    },
+    {
       name: 'paired-end stranded RNA-seq',
       fn: async page => {
         await navigateWithSessionSpec(page, {

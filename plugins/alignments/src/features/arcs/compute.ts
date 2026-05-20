@@ -282,6 +282,15 @@ function parseSATag(sa: string): SAAlignment[] {
   return result
 }
 
+// Deterministic 0..1 hash from arc endpoints — gives each pair a stable jitter
+// offset regardless of fetch/render order, so snapshot tests don't flake.
+// `Math.sin(x)*43758.5453 mod 1` is the standard GPU-style cheap hash.
+function pairJitter01(p1Bp: number, p2Bp: number) {
+  const seed = (p1Bp * 374761393 + p2Bp * 668265263) >>> 0
+  const x = Math.sin(seed) * 43758.5453
+  return x - Math.floor(x)
+}
+
 // Pick the shape constant and target Y (in genomic bp) for a single arc.
 // Samplot: flat line at Y=|tlen| with ±8% multiplicative jitter so coincident
 // reads separate visually. Arc mode: semicircle when the span exceeds the
@@ -293,6 +302,8 @@ function computeArcShape({
   drawArcInsteadOfBezier,
   absrad,
   tlen,
+  p1Bp,
+  p2Bp,
 }: {
   samplot: boolean
   isSplit: boolean
@@ -300,10 +311,12 @@ function computeArcShape({
   drawArcInsteadOfBezier: boolean
   absrad: number
   tlen: number | undefined
+  p1Bp: number
+  p2Bp: number
 }) {
   if (samplot) {
     const baseY = tlen !== undefined ? Math.abs(tlen) : absrad
-    const jitter = 1 + SAMPLOT_JITTER_BOUNDS * (Math.random() * 2 - 1)
+    const jitter = 1 + SAMPLOT_JITTER_BOUNDS * (pairJitter01(p1Bp, p2Bp) * 2 - 1)
     return {
       shapeType: isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT,
       yBp: Math.round(baseY * jitter),
@@ -548,6 +561,8 @@ export function computeArcsFromPileupData(
       drawArcInsteadOfBezier,
       absrad,
       tlen,
+      p1Bp,
+      p2Bp,
     })
 
     arcs.push({
