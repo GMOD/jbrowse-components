@@ -1,3 +1,6 @@
+import { useState } from 'react'
+
+import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import {
   assembleLocString,
@@ -7,20 +10,13 @@ import {
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Delete from '@mui/icons-material/Delete'
-import { IconButton, Link, Tooltip } from '@mui/material'
-import { DataGrid } from '@mui/x-data-grid'
+import { IconButton, Link, Stack, Tooltip, useTheme } from '@mui/material'
+import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../model.ts'
 
 const useStyles = makeStyles()({
-  swatch: {
-    display: 'inline-block',
-    width: 16,
-    height: 16,
-    borderRadius: 2,
-    border: '1px solid rgba(0, 0, 0, 0.2)',
-  },
   cell: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -34,7 +30,9 @@ const HighlightGrid = observer(function HighlightGrid({
   model: GridBookmarkModel
 }) {
   const { classes } = useStyles()
+  const theme = useTheme()
   const session = getSession(model)
+  const [selectedIds, setSelectedIds] = useState(new Set<string>())
   const selectedSet = new Set(model.selectedAssemblies)
   const rows = session.views
     .filter(
@@ -63,6 +61,23 @@ const HighlightGrid = observer(function HighlightGrid({
 
   return rows.length ? (
     <DataGridFlexContainer>
+      {selectedIds.size > 0 ? (
+        <Stack direction="row" alignItems="center" px={1}>
+          <Tooltip title={`Delete ${selectedIds.size} selected highlight(s)`}>
+            <IconButton
+              size="small"
+              onClick={() => {
+                for (const r of rows.filter(r => selectedIds.has(r.id))) {
+                  r.view.removeHighlight(r.highlight)
+                }
+                setSelectedIds(new Set())
+              }}
+            >
+              <Delete fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Stack>
+      ) : null}
       <DataGrid
         density="compact"
         disableRowSelectionOnClick
@@ -70,6 +85,10 @@ const HighlightGrid = observer(function HighlightGrid({
         hideFooterPagination={rows.length <= 100}
         rows={rows}
         columns={[
+          {
+            ...GRID_CHECKBOX_SELECTION_COL_DEF,
+            width: 50,
+          },
           {
             field: 'locString',
             headerName: 'Location',
@@ -103,6 +122,7 @@ const HighlightGrid = observer(function HighlightGrid({
           {
             field: 'label',
             headerName: 'Label',
+            editable: true,
             width: Math.max(
               measureText('Label', 12) + 30,
               measureGridWidth(rows.map(r => r.label)),
@@ -119,14 +139,15 @@ const HighlightGrid = observer(function HighlightGrid({
           {
             field: 'color',
             headerName: 'Color',
-            width: 60,
-            renderCell: ({ value }) =>
-              value ? (
-                <span
-                  className={classes.swatch}
-                  style={{ background: value }}
-                />
-              ) : null,
+            width: 100,
+            renderCell: ({ value, row }) => (
+              <ColorPicker
+                color={value || theme.palette.highlight.main}
+                onChange={newColor => {
+                  row.view.updateHighlight(row.highlight, { color: newColor })
+                }}
+              />
+            ),
           },
           {
             field: 'actions',
@@ -148,6 +169,18 @@ const HighlightGrid = observer(function HighlightGrid({
             ),
           },
         ]}
+        checkboxSelection
+        onRowSelectionModelChange={model => {
+          setSelectedIds(new Set([...model.ids].map(String)))
+        }}
+        rowSelectionModel={{ type: 'include', ids: selectedIds }}
+        processRowUpdate={row => {
+          row.view.updateHighlight(row.highlight, { label: row.label })
+          return row
+        }}
+        onProcessRowUpdateError={e => {
+          session.notifyError(`${e}`, e)
+        }}
       />
     </DataGridFlexContainer>
   ) : null

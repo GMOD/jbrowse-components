@@ -847,6 +847,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      updateHighlight(old: HighlightType, updates: Partial<HighlightType>) {
+        const idx = self.highlight.indexOf(old)
+        if (idx !== -1) {
+          self.highlight.splice(idx, 1, { ...old, ...updates })
+        }
+      },
+      /**
+       * #action
+       */
       setHighlightsVisible(arg: boolean) {
         self.highlightsVisible = arg
       },

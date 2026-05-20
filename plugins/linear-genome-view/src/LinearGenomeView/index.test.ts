@@ -1548,6 +1548,18 @@ describe('highlights', () => {
     expect(model.labelsVisible).toBe(false)
   })
 
+  test('updateHighlight replaces label and color in place', () => {
+    const model = setupHighlightModel()
+    const h = { refName: 'ctgA', start: 100, end: 200, assemblyName: 'volvox' }
+    model.addToHighlights(h)
+    const ref = model.highlight[0]!
+    model.updateHighlight(ref, { label: 'test', color: '#ff0000' })
+    expect(model.highlight.length).toBe(1)
+    expect(model.highlight[0]!.label).toBe('test')
+    expect(model.highlight[0]!.color).toBe('#ff0000')
+    expect(model.highlight[0]!.start).toBe(100)
+  })
+
   test('getHighlightCoords maps to pixel position', () => {
     const model = setupHighlightModel()
     // 1 bp/px and offset 0, so start=100 -> left=100, width=100
