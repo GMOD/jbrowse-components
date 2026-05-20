@@ -116,7 +116,7 @@ export default function RecentSessionPanel({
           sessionToRename={sessionToRename}
           onClose={() => {
             setSessionToRename(undefined)
-            mutateSessions().catch(() => {})
+            mutateSessions().catch(e => console.error(e))
           }}
         />
       ) : null}
@@ -125,7 +125,7 @@ export default function RecentSessionPanel({
           sessionsToDelete={sessionsToDelete}
           onClose={() => {
             setSessionsToDelete(undefined)
-            mutateSessions().catch(() => {})
+            mutateSessions().catch(e => console.error(e))
           }}
         />
       ) : null}

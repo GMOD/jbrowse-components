@@ -12,6 +12,7 @@ import StartScreen from './StartScreen/StartScreen.tsx'
 import { loadPluginManager } from './StartScreen/util.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 
 setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
 
@@ -54,10 +55,11 @@ const Loader = observer(function Loader() {
 
   const handleSetPluginManager = useCallback(
     (pm: PluginManager) => {
-      // @ts-expect-error
-      pm.rootModel?.setOpenNewSessionCallback(async (path: string) => {
-        handleSetPluginManager(await loadPluginManager(path))
-      })
+      ;(pm.rootModel as DesktopRootModel | undefined)?.setOpenNewSessionCallback(
+        async (path: string) => {
+          handleSetPluginManager(await loadPluginManager(path))
+        },
+      )
 
       setPluginManager(pm)
       setError(undefined)

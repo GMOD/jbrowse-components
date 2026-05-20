@@ -182,7 +182,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             name,
             statusMessage,
             progressPct,
-            cancelCallback: cancelCallback!,
+            cancelCallback: cancelCallback ?? (() => {}),
             setStatusMessage: () => {},
           })
         }
@@ -297,7 +297,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 name,
                 statusMessage: statusMessage ?? 'done',
                 progressPct: progressPct ?? 100,
-                cancelCallback: cancelCallback!,
+                cancelCallback: cancelCallback ?? (() => {}),
                 setStatusMessage: () => {},
               })
             }
@@ -340,7 +340,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               name,
               statusMessage: statusMessage ?? '',
               progressPct: progressPct ?? 0,
-              cancelCallback: cancelCallback!,
+              cancelCallback: cancelCallback ?? (() => {}),
               setStatusMessage: () => {},
             })
             jobStatusWidget.removeQueuedJob(name)
