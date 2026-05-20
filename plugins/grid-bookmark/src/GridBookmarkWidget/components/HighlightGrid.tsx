@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Delete from '@mui/icons-material/Delete'
-import { IconButton, Tooltip, Typography } from '@mui/material'
+import { IconButton, Link, Tooltip, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
@@ -23,6 +23,11 @@ const useStyles = makeStyles()({
   },
   header: {
     margin: '8px 0 4px',
+  },
+  cell: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 })
 
@@ -73,6 +78,23 @@ const HighlightGrid = observer(function HighlightGrid({
               width: Math.max(
                 measureText('Location', 12) + 30,
                 measureGridWidth(rows.map(r => r.locString)),
+              ),
+              renderCell: ({ value, row }) => (
+                <Link
+                  className={classes.cell}
+                  href="#"
+                  onClick={event => {
+                    event.preventDefault()
+                    row.view.navTo({
+                      refName: row.highlight.refName,
+                      start: row.highlight.start,
+                      end: row.highlight.end,
+                      assemblyName: row.highlight.assemblyName,
+                    })
+                  }}
+                >
+                  {value}
+                </Link>
               ),
             },
             {
