@@ -125,7 +125,7 @@ export default class GridBookmarkPlugin extends Plugin {
                   return [
                     ...superMenuItems(),
                     {
-                      label: 'Bookmarks',
+                      label: 'Bookmarks/highlights',
                       icon: BookmarksIcon,
                       subMenu: [
                         {
@@ -141,14 +141,22 @@ export default class GridBookmarkPlugin extends Plugin {
                           },
                         },
                         {
-                          label: 'Toggle bookmark highlights',
+                          label: 'Toggle highlights',
                           icon: HighlightIcon,
                           type: 'checkbox',
-                          checked: self.bookmarkHighlightsVisible,
+                          // checked when either kind is visible; toggle flips
+                          // both so users get a single switch for all
+                          // highlight overlays in the view
+                          checked:
+                            self.bookmarkHighlightsVisible ||
+                            self.highlightsVisible,
                           onClick: () => {
-                            self.setBookmarkHighlightsVisible(
-                              !self.bookmarkHighlightsVisible,
+                            const next = !(
+                              self.bookmarkHighlightsVisible ||
+                              self.highlightsVisible
                             )
+                            self.setBookmarkHighlightsVisible(next)
+                            self.setHighlightsVisible(next)
                           },
                         },
                         {

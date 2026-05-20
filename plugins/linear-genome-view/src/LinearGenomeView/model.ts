@@ -210,6 +210,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         * controls whether view.highlight entries are rendered
+         */
+        highlightsVisible: types.optional(types.boolean, true),
+
+        /**
+         * #property
          * color by CDS
          */
         colorByCDS: types.optional(types.boolean, () =>
@@ -831,6 +837,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       removeHighlight(highlight: HighlightType) {
         self.highlight.remove(highlight)
+      },
+      /**
+       * #action
+       */
+      setHighlightsVisible(arg: boolean) {
+        self.highlightsVisible = arg
       },
       /**
        * #action

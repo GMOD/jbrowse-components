@@ -92,6 +92,25 @@ actions that require a fully-qualified region. The same caveat applies when
 authoring `view.highlight` directly in a session JSON: include `assemblyName` on
 each entry.
 
+Session-authored `view.highlight` entries also accept optional `color` and
+`label` fields:
+
+```json
+{
+  "refName": "11",
+  "start": 32200274,
+  "end": 32203877,
+  "assemblyName": "mm39",
+  "color": "rgba(240, 128, 128, 0.3)",
+  "label": "R2_intron"
+}
+```
+
+`color` overrides the theme highlight color (used as-is, so explicit alpha is
+preserved). `label` is shown inline next to the chip icon and in the chip
+tooltip. URL-supplied highlights cannot set these — they're for session
+JSON authoring only.
+
 ### &tracklist=
 
 Example

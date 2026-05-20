@@ -4,7 +4,7 @@ import { colord } from '@jbrowse/core/util/colord'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
-import { Tooltip, useTheme } from '@mui/material'
+import { Box, Tooltip, Typography, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import HighlightBand from './HighlightBand.tsx'
@@ -31,13 +31,15 @@ const Highlight = observer(function Highlight({
   const theme = useTheme()
   const session = getSession(model) as SessionWithWidgets
   const coords = model.getHighlightCoords(highlight)
-  const highlightColor = colord(theme.palette.highlight.main)
+
+  // user-supplied color is used as-is so explicit alpha is preserved; fall
+  // back to the theme color with a standard alpha
+  const bandColor = highlight.color
+    ? colord(highlight.color)
+    : colord(theme.palette.highlight.main).alpha(0.35)
 
   return coords ? (
-    <HighlightBand
-      coords={coords}
-      background={highlightColor.alpha(0.35).toRgbString()}
-    >
+    <HighlightBand coords={coords} background={bandColor.toRgbString()}>
       <CascadingMenuButton
         menuItems={[
           {
@@ -70,11 +72,18 @@ const Highlight = observer(function Highlight({
           },
         ]}
       >
-        <Tooltip title="Highlighted region" arrow>
-          <LinkIcon
-            fontSize="small"
-            sx={{ color: highlightColor.darken(0.2).toRgbString() }}
-          />
+        <Tooltip title={highlight.label ?? 'Highlighted region'} arrow>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <LinkIcon
+              fontSize="small"
+              sx={{ color: bandColor.alpha(0.8).toRgbString() }}
+            />
+            {highlight.label ? (
+              <Typography variant="caption" noWrap>
+                {highlight.label}
+              </Typography>
+            ) : null}
+          </Box>
         </Tooltip>
       </CascadingMenuButton>
     </HighlightBand>
