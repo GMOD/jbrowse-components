@@ -1,7 +1,10 @@
 ### Alignments
 
-**Samplot mode follow-ups.** Phase 1+2 landed (flat lines, Y = |tlen|, SV-type
-palette, shared Canvas2D ⇄ SVG rasterizer). Remaining:
+**Samplot mode follow-ups.** Landed: flat lines + Y=|tlen| + SV-type palette,
+shared Canvas2D ⇄ SVG rasterizer, samplot as a `pairedArcs` mode (not a hidden
+color scheme), discordant-only filter (FR pairs inside the insert-size stats
+band are dropped, mirroring samplot.py's `--max_depth 1`), rotated TLEN
+scalebar label, deterministic per-pair jitter (stable snapshots). Remaining:
 
 
 - *Discardable samplot strand fallback.* `getSamplotColorIndex`'s
