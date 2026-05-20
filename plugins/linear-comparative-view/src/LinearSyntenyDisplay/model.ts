@@ -30,6 +30,12 @@ export interface SyntenyFeatureData {
   starts: Uint32Array
   ends: Uint32Array
   identities: Float32Array
+  // PAF mapping-quality (column 12), -1 where missing. Float32 because the
+  // sentinel is -1 and we want to avoid an extra "valid" bitmap.
+  mappingQuals: Float32Array
+  // Adapter-computed weighted-mean per query/target pair, normalized to
+  // [0,1]. -1 where missing. See PAFAdapter/util.ts:getWeightedMeans.
+  meanScores: Float32Array
   featureIds: string[]
   names: string[]
   refNames: string[]
@@ -386,6 +392,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           identities:
             colorBy === 'identity' || opacityByIdentity
               ? featureData.identities
+              : undefined,
+          mappingQuals:
+            colorBy === 'mappingQuality'
+              ? featureData.mappingQuals
+              : undefined,
+          meanScores:
+            colorBy === 'meanQueryIdentity'
+              ? featureData.meanScores
               : undefined,
           opacityByIdentity,
         })

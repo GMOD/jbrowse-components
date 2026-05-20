@@ -42,7 +42,7 @@ const ColorBySelector = observer(function ColorBySelector({
             'Color alignments by sequence identity percentage. Higher identity matches appear in warmer colors, while lower identity matches appear cooler. Useful for identifying highly conserved vs. divergent regions.',
         },
         {
-          label: 'Mean Query Identity',
+          label: 'Mean query identity',
           type: 'radio',
           checked: colorBy === 'meanQueryIdentity',
           onClick: () => {
@@ -52,7 +52,7 @@ const ColorBySelector = observer(function ColorBySelector({
             'Color alignments based on the mean identity across the query sequence. This provides a smoothed view of overall alignment quality, reducing noise from local variations. For instance, a single long query of e.g. a contig of an assembly, when aligned to the target, may get split into many smaller "hits". This score aggregates across them, and colors them all the same. Similar code exists in the program dotPlotly',
         },
         {
-          label: 'Mapping Quality',
+          label: 'Mapping quality',
           type: 'radio',
           checked: colorBy === 'mappingQuality',
           onClick: () => {

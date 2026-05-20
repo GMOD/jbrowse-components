@@ -163,6 +163,8 @@ export async function executeSyntenyFeaturesAndPositions({
   const mateStartsArray = new Uint32Array(count)
   const mateEndsArray = new Uint32Array(count)
   const identitiesArray = new Float32Array(count)
+  const mappingQualsArray = new Float32Array(count)
+  const meanScoresArray = new Float32Array(count)
   // padPx (CSS pixels, ≤ a few thousand) — Float32 is more than adequate.
   const padTopArray = new Float32Array(count)
   const padBottomArray = new Float32Array(count)
@@ -263,6 +265,10 @@ export async function executeSyntenyFeaturesAndPositions({
 
     const identity = f.get('identity') as number | undefined
     identitiesArray[validCount] = identity ?? -1
+    mappingQualsArray[validCount] =
+      (f.get('mappingQual') as number | undefined) ?? -1
+    meanScoresArray[validCount] =
+      (f.get('meanScore') as number | undefined) ?? -1
 
     mateStartsArray[validCount] = mate.start
     mateEndsArray[validCount] = mate.end
@@ -296,6 +302,8 @@ export async function executeSyntenyFeaturesAndPositions({
     starts: startsArray.subarray(0, validCount),
     ends: endsArray.subarray(0, validCount),
     identities: identitiesArray.subarray(0, validCount),
+    mappingQuals: mappingQualsArray.subarray(0, validCount),
+    meanScores: meanScoresArray.subarray(0, validCount),
     featureIds,
     names,
     refNames,
@@ -344,6 +352,8 @@ export async function executeSyntenyFeaturesAndPositions({
     featureData.starts.buffer,
     featureData.ends.buffer,
     featureData.identities.buffer,
+    featureData.mappingQuals.buffer,
+    featureData.meanScores.buffer,
     featureData.mateStarts.buffer,
     featureData.mateEnds.buffer,
     instanceData.bp1Hi.buffer,

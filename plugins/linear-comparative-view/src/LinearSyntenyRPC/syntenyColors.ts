@@ -33,25 +33,31 @@ const BLACK = packAbgr(0, 0, 0, 255)
 
 const category10Packed = category10.map(hex => cssColorToABGR(hex))
 
-// Precomputed 256-bin LUT mapping identity in [0,1] to packed ABGR. Bin 0 is
-// red (hue 0), bin 255 is green (hue 120). Values <0 (unknown identity) map
-// to DEFAULT_COLOR at the call site.
-const IDENTITY_LUT = (() => {
+// Precomputed 256-bin LUTs mapping a normalized [0,1] value to packed ABGR
+// across an HSL hue range. Hue scales chosen to match the dotplot view:
+// 120° (red→green) for identity, 200° (red→cyan) for mean-score, 60°
+// (red→yellow) for MAPQ. Negative inputs (missing data) fall back to
+// DEFAULT_COLOR at the call site.
+function buildHslLut(hueRange: number) {
   const lut = new Uint32Array(256)
   for (let i = 0; i < 256; i++) {
-    const hue = (i / 255) * 120
+    const hue = (i / 255) * hueRange
     const c = parseCssColor(`hsl(${hue}, 100%, 40%)`)
     lut[i] = packAbgr(getRed(c), getGreen(c), getBlue(c), 255)
   }
   return lut
-})()
+}
 
-function identityToPacked(identity: number) {
-  if (identity < 0) {
+const IDENTITY_LUT = buildHslLut(120)
+const MEAN_SCORE_LUT = buildHslLut(200)
+const MAPQ_LUT = buildHslLut(60)
+
+function lutLookup(lut: Uint32Array, value: number, max = 1) {
+  if (value < 0) {
     return DEFAULT_COLOR
   }
-  const bin = Math.min(255, Math.max(0, Math.round(identity * 255)))
-  return IDENTITY_LUT[bin]!
+  const norm = Math.min(1, value / max)
+  return lut[Math.round(norm * 255)]!
 }
 
 const syriColorMap: Record<SyriType, number> = {
@@ -63,9 +69,14 @@ const syriColorMap: Record<SyriType, number> = {
 
 function createColorFunction(
   colorBy: string,
-  syriTypes?: readonly SyriType[],
-  identities?: Float32Array,
+  data: {
+    syriTypes?: readonly SyriType[]
+    identities?: Float32Array
+    mappingQuals?: Float32Array
+    meanScores?: Float32Array
+  },
 ): (strand: number, refName: string, index: number) => number {
+  const { syriTypes, identities, mappingQuals, meanScores } = data
   if (colorBy === 'syri' && syriTypes) {
     return (_strand: number, _refName: string, index: number) =>
       syriColorMap[syriTypes[index]!]
@@ -73,7 +84,17 @@ function createColorFunction(
 
   if (colorBy === 'identity' && identities) {
     return (_strand: number, _refName: string, index: number) =>
-      identityToPacked(identities[index]!)
+      lutLookup(IDENTITY_LUT, identities[index]!)
+  }
+
+  if (colorBy === 'mappingQuality' && mappingQuals) {
+    return (_strand: number, _refName: string, index: number) =>
+      lutLookup(MAPQ_LUT, mappingQuals[index]!, 60)
+  }
+
+  if (colorBy === 'meanQueryIdentity' && meanScores) {
+    return (_strand: number, _refName: string, index: number) =>
+      lutLookup(MEAN_SCORE_LUT, meanScores[index]!)
   }
 
   if (colorBy === 'strand') {
@@ -127,6 +148,8 @@ export function computeSyntenyColors({
   colorBy,
   syriTypes,
   identities,
+  mappingQuals,
+  meanScores,
   opacityByIdentity,
 }: {
   kinds: Uint8Array
@@ -137,9 +160,16 @@ export function computeSyntenyColors({
   colorBy: string
   syriTypes?: readonly SyriType[]
   identities?: Float32Array
+  mappingQuals?: Float32Array
+  meanScores?: Float32Array
   opacityByIdentity?: boolean
 }) {
-  const colorFn = createColorFunction(colorBy, syriTypes, identities)
+  const colorFn = createColorFunction(colorBy, {
+    syriTypes,
+    identities,
+    mappingQuals,
+    meanScores,
+  })
   const indelColors = buildIndelColors(colorBy)
   const colorI = indelColors[CIGAR_I] ?? DEFAULT_COLOR
   const colorD = indelColors[CIGAR_D] ?? DEFAULT_COLOR

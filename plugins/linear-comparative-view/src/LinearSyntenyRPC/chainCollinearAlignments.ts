@@ -121,16 +121,31 @@ function emitChain(
   let mergedMateEnd = -Infinity
   let totalWeight = 0
   let weightedIdentity = 0
+  let totalMapqWeight = 0
+  let weightedMapq = 0
+  // meanScore is per query/target pair, identical across all features in a
+  // chain by construction — just take the first non-missing value.
+  let firstMeanScore: number | undefined
 
   for (let i = start; i < end; i++) {
     const c = group[i]!
     mergedMateStart = Math.min(mergedMateStart, c.mateStart)
     mergedMateEnd = Math.max(mergedMateEnd, c.mateEnd)
-    const identity = features[c.index]!.get('identity') as number | undefined
+    const f = features[c.index]!
+    const identity = f.get('identity') as number | undefined
+    const mappingQual = f.get('mappingQual') as number | undefined
+    const meanScore = f.get('meanScore') as number | undefined
     const len = c.end - c.start
     if (identity !== undefined && identity >= 0) {
       weightedIdentity += identity * len
       totalWeight += len
+    }
+    if (mappingQual !== undefined && mappingQual >= 0) {
+      weightedMapq += mappingQual * len
+      totalMapqWeight += len
+    }
+    if (firstMeanScore === undefined && meanScore !== undefined && meanScore >= 0) {
+      firstMeanScore = meanScore
     }
   }
 
@@ -157,6 +172,9 @@ function emitChain(
         name: firstFeat.get('name'),
         assemblyName: firstFeat.get('assemblyName'),
         identity: totalWeight > 0 ? weightedIdentity / totalWeight : undefined,
+        mappingQual:
+          totalMapqWeight > 0 ? weightedMapq / totalMapqWeight : undefined,
+        meanScore: firstMeanScore,
         CIGAR: '',
         syriType: undefined,
       },

@@ -65,6 +65,26 @@ const ColorBySelector = observer(function ColorBySelector({
             'Color alignments by sequence identity percentage. Higher identity matches appear in warmer colors, lower identity matches appear cooler. Useful for identifying highly conserved vs divergent regions.',
         },
         {
+          label: 'Mean query identity',
+          type: 'radio',
+          checked: colorBy === 'meanQueryIdentity',
+          onClick: () => {
+            model.setColorBy('meanQueryIdentity')
+          },
+          helpText:
+            'Color alignments by the length-weighted mean identity across each query/target pair. Aggregates noise from local variations, giving a smoothed view of overall alignment quality across a query contig.',
+        },
+        {
+          label: 'Mapping quality',
+          type: 'radio',
+          checked: colorBy === 'mappingQuality',
+          onClick: () => {
+            model.setColorBy('mappingQuality')
+          },
+          helpText:
+            'Color alignments by mapping quality (PAF MAPQ). Higher quality (more confident) mappings appear in warmer colors. Useful for identifying ambiguous or multi-mapping regions.',
+        },
+        {
           label: 'Fade by identity',
           type: 'checkbox',
           checked: opacityByIdentity,
