@@ -142,25 +142,23 @@ config via `ConfigurationReference(schemaType)`, dispatched on the schema's
 | `'displayId'`        | `DisplayConfigurationReference` |
 | anything else        | plain `types.union(ref, schema)`|
 
-Each branch has load-bearing quirks that look removable but aren't.
 Authoritative docs (with named canary tests) live alongside the code at
 `packages/core/src/configuration/CLAUDE.md`. Highlights:
 
-- **TrackConfigurationReference** falls back from `session.tracksById` to
-  MST `resolveIdentifier`, and wraps the ref in a `types.union(ref, schema)`.
-  Both exist for views that hold ephemeral track configs outside
-  `session.tracks` (LinearSyntenyView, CircularView/SvInspectorView).
-  Canaries: `ReadVsRef.test.tsx`, `SVInspector.test.tsx`.
+- **TrackConfigurationReference** resolves through `session.tracksById`,
+  falling back to MST `resolveIdentifier`, and the return is a
+  `types.union(ref, schema)`. Both the fallback and the union exist for
+  views that hold ephemeral track configs outside `session.tracks`
+  (LinearSyntenyView, CircularView/SvInspectorView). Canaries:
+  `ReadVsRef.test.tsx`, `SVInspector.test.tsx`.
 - **DisplayConfigurationReference** resolves by displayId, then by
   `parent.type`. The type-match path always succeeds at runtime because
   `baseTrackConfig.preProcessSnapshot` injects a stub display entry for
-  every registered displayType on the track. A previous third "auto-create
-  detached MST node" step was removed — it was effectively dead and its
-  silent edits-don't-persist behavior was a footgun.
-- Do **not** add `as SCHEMATYPE` to the `ConfigurationReference` return
-  value. It narrows `SnapshotIn` to just the object branch and forces every
-  caller to `@ts-expect-error` string ids.
+  every registered displayType on the track.
+- `ConfigurationReference`'s return is left unannotated. Adding
+  `as SCHEMATYPE` narrows `SnapshotIn` to just the object branch and breaks
+  string-id callers; the inferred union `SnapshotIn` is
+  `string | SnapshotIn<schema>`.
 
 Simplifying either of the TrackConfigurationReference quirks requires first
-migrating view-local configs into the session (with whatever lifetime
-management that implies for ephemeral tracks).
+migrating view-local configs into the session.
