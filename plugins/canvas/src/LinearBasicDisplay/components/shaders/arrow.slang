@@ -30,8 +30,6 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
-  uint v = vid % 9u;
-
   float cx = hpToClipX(hpSplitUint(inst.x), u.bpRangeX, u.zero);
 
   float yPx = floor(inst.y - u.scrollY + 0.5) + 0.5;
@@ -45,13 +43,13 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
 
   float sx;
   float sy;
-  if (v < 6u) {
-    float localX = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-    float localY = (v == 0u || v == 1u || v == 4u) ? 1.0 : -1.0;
+  if (vid < 6u) {
+    float localX = (vid == 0u || vid == 2u || vid == 3u) ? 0.0 : 1.0;
+    float localY = (vid == 0u || vid == 1u || vid == 4u) ? 1.0 : -1.0;
     sx = cx + localX * stemLength * 0.5 * dir;
     sy = cy + localY * stemHalf;
   } else {
-    uint hvid = v - 6u;
+    uint hvid = vid - 6u;
     if (hvid == 0u) {
       sx = cx + stemLength * 0.5 * dir;
       sy = cy + headHalf;

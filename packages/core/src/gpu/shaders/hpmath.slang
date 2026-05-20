@@ -13,8 +13,10 @@ public float2 hpSplitUint(uint value) {
   return float2(float(hi), float(lo));
 }
 
-// WARNING: max(-inf) and dot() prevent the compiler from combining hi/lo
-// split terms. Do not simplify.
+// `max(-inf)` and `dot()` exist to thwart the compiler — without them it
+// collapses (hi_a+lo_a)-(hi_b+lo_b) into one large subtraction and the
+// float32 precision the hi/lo split exists to preserve is gone. `hpZero` is
+// a tiny CPU-supplied number; `-1/hpZero` is smaller than any real diff.
 public float hpToClipX(float2 splitPos, float3 bpRange, float hpZero) {
   float inf = 1.0 / hpZero;
   float step = 2.0 / bpRange.z;
@@ -40,12 +42,9 @@ public float yPxToClipY(float yPx, float canvasHeight) {
   return 1.0 - (yPx / canvasHeight) * 2.0;
 }
 
-// Reconstructs the screen-x position for one corner stored as cumBp hi/lo.
-// With viewBp = offsetPx * bpPerPx (padded-bp at canvas-left), the formula
-// (cumBp - viewBp)/bpPerPx + pad equals cumBp/bpPerPx + pad - offsetPx,
-// which is the LGV render position. The max(-inf) barrier prevents the
-// compiler from combining hi/lo terms before the multiply.
-// Used by synteny (syntenyTypes.slang) and dotplot (dotplot.slang).
+// (cumBp - viewBp)/bpPerPx + pad == cumBp/bpPerPx + pad - offsetPx (LGV
+// render position). Used by synteny + dotplot. Same hi/lo precision trick
+// as hpToClipX — see comment there.
 public float hpCornerScreenX(
   float bpHi, float bpLo,
   float originHi, float originLo,
@@ -57,7 +56,6 @@ public float hpCornerScreenX(
   return dot(float2(hi, lo), float2(bpPerPxInv, bpPerPxInv)) + pad;
 }
 
-// Two-triangle fan: returns the (x,y) ∈ {0,1}² corner for vid 0..5.
 // vid%6: 0→(0,0)  1→(1,0)  2→(0,1)  3→(0,1)  4→(1,0)  5→(1,1)
 public float2 quadLocal(uint vid) {
   uint v = vid % 6u;

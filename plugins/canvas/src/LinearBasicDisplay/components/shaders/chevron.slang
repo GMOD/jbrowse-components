@@ -27,6 +27,9 @@ struct VsOut {
   float  dist     : TEXCOORD0;
 };
 
+// Off-clip vertex; the GPU culls any triangle that contains it.
+static const float4 OFFSCREEN = float4(2.0, 2.0, 0.0, 1.0);
+
 [shader("vertex")]
 VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   int localChevronIndex = int(vid / 12u);
@@ -41,24 +44,25 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   o.dist = 0.0;
 
   if (inst.direction == 0.0 || lineWidthPx < CHEVRON_SPACING_PX * 0.5) {
-    o.position = float4(2.0, 2.0, 0.0, 1.0);
+    o.position = OFFSCREEN;
     return o;
   }
 
   int totalChevrons = max(1, int(floor(lineWidthPx / CHEVRON_SPACING_PX)));
   float bpSpacing = lineLengthBp / float(totalChevrons + 1);
 
-  float vpBase = u.bpRangeX.x + u.bpRangeX.y - float(inst.startEnd.x);
-  float vpOther = vpBase + u.bpRangeX.z;
-  float viewportStartBp = min(vpBase, vpOther);
-  float viewportEndBp = max(vpBase, vpOther);
+  float viewStartFromLine =
+    u.bpRangeX.x + u.bpRangeX.y - float(inst.startEnd.x);
+  float viewEndFromLine = viewStartFromLine + u.bpRangeX.z;
+  float viewportStartBp = min(viewStartFromLine, viewEndFromLine);
+  float viewportEndBp   = max(viewStartFromLine, viewEndFromLine);
 
   int firstVisible = max(0, int(floor(viewportStartBp / bpSpacing)) - 1);
   int lastVisible = min(totalChevrons - 1, int(ceil(viewportEndBp / bpSpacing)));
 
   int globalChevronIndex = firstVisible + localChevronIndex;
   if (globalChevronIndex < 0 || globalChevronIndex > lastVisible || globalChevronIndex >= totalChevrons) {
-    o.position = float4(2.0, 2.0, 0.0, 1.0);
+    o.position = OFFSCREEN;
     return o;
   }
 
@@ -72,11 +76,12 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 
   float halfW = CHEVRON_W_PX / u.canvasWidth;
   float halfH = CHEVRON_H_PX / u.canvasHeight;
-  float halfThickness = CHEVRON_THICKNESS_PX / u.canvasHeight;
-  // Extend geometry 1px per side for fwidth-based AA (matches arc.slang pattern).
-  float aaClip = 2.0 / u.canvasHeight;
-  float halfThicknessExt = halfThickness + aaClip;
-  float hw = CHEVRON_THICKNESS_PX * 0.5 + 1.0;
+  // Extrude geometry 1px per side for fwidth-based AA in the fragment.
+  float coreHalfThickness = CHEVRON_THICKNESS_PX / u.canvasHeight;
+  float aaPad = 2.0 / u.canvasHeight;
+  float extHalfThickness = coreHalfThickness + aaPad;
+  // Perpendicular-pixel-distance carried by `dist` varying.
+  float armHalfPx = CHEVRON_THICKNESS_PX * 0.5 + 1.0;
   float dir = lerp(inst.direction, -inst.direction, u.reversed);
 
   bool isTopArm = v < 6u;
@@ -89,17 +94,17 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float sx;
   float sy;
   switch (qv) {
-    case 0u: sx = outerX; sy = cy + armY + (isTopArm ? aaClip : -aaClip);                                        break;
-    case 1u: sx = tipX;   sy = cy + halfThicknessExt;                                                             break;
-    case 2u: sx = tipX;   sy = cy - halfThicknessExt;                                                             break;
-    case 3u: sx = outerX; sy = cy + armY + (isTopArm ? aaClip : -aaClip);                                        break;
-    case 4u: sx = tipX;   sy = cy - halfThicknessExt;                                                             break;
-    default: sx = outerX; sy = cy + armY + (isTopArm ? -(2.0*halfThickness+aaClip) : (2.0*halfThickness+aaClip)); break;
+    case 0u: sx = outerX; sy = cy + armY + (isTopArm ? aaPad : -aaPad);                                  break;
+    case 1u: sx = tipX;   sy = cy + extHalfThickness;                                                    break;
+    case 2u: sx = tipX;   sy = cy - extHalfThickness;                                                    break;
+    case 3u: sx = outerX; sy = cy + armY + (isTopArm ? aaPad : -aaPad);                                  break;
+    case 4u: sx = tipX;   sy = cy - extHalfThickness;                                                    break;
+    default: sx = outerX; sy = cy + armY + (isTopArm ? -(2.0*coreHalfThickness+aaPad) : (2.0*coreHalfThickness+aaPad)); break;
   }
 
   float d = isTopArm
-    ? ((qv == 0u || qv == 1u || qv == 3u) ? hw : -hw)
-    : ((qv == 1u || qv == 5u)             ? hw : -hw);
+    ? ((qv == 0u || qv == 1u || qv == 3u) ? armHalfPx : -armHalfPx)
+    : ((qv == 1u || qv == 5u)             ? armHalfPx : -armHalfPx);
 
   o.position = float4(sx, sy, 0.0, 1.0);
   o.color = unpackRGBA(inst.color);
@@ -109,7 +114,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float hw = CHEVRON_THICKNESS_PX * 0.5;
-  float alpha = clamp((hw - abs(fragIn.dist)) / fwidth(fragIn.dist) + 0.5, 0.0, 1.0);
+  float coreHalfPx = CHEVRON_THICKNESS_PX * 0.5;
+  float alpha = clamp((coreHalfPx - abs(fragIn.dist)) / fwidth(fragIn.dist) + 0.5, 0.0, 1.0);
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }
