@@ -15,6 +15,7 @@ import { observer } from 'mobx-react'
 
 import AssemblySelector from './AssemblySelector.tsx'
 import BookmarkGrid from './BookmarkGrid.tsx'
+import HighlightGrid from './HighlightGrid.tsx'
 
 import type { GridBookmarkModel } from '../model.ts'
 
@@ -128,6 +129,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
         <AssemblySelector model={model} />
       </div>
       <BookmarkGrid model={model} />
+      <HighlightGrid model={model} />
     </div>
   )
 })
