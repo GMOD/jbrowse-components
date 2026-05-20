@@ -136,14 +136,6 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               model.setGridView(value)
             }
           }}
-          sx={{
-            marginLeft: 1,
-            '& .MuiToggleButton-root': {
-              padding: '2px 8px',
-              fontSize: '0.7rem',
-              textTransform: 'none',
-            },
-          }}
         >
           <ToggleButton value="bookmarks">Bookmarks</ToggleButton>
           <ToggleButton value="highlights">Highlights</ToggleButton>
