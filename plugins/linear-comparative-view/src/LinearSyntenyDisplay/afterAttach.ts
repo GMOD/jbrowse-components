@@ -36,10 +36,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }
 
         // Tracked deps that SHOULD trigger refetch when changed:
-        //   - chainMergeLodBucket (value-memoized: only changes when LOD
-        //     bucket changes, not on every fine-grained bpPerPx change)
         //   - displayedRegions (per view) — region set drives cumBp output
-        //   - adapterConfig and chain/CIGAR drawing options
+        //   - adapterConfig and CIGAR drawing options
         // Tracking `v.bpPerPx`, `v.offsetPx`, `v.width`,
         // `v.interRegionPaddingWidth`, or `v.minimumBlockWidth` directly
         // here would refire the autorun on every scroll frame even though
@@ -47,17 +45,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // depend on those values (the worker uses them only for viewport
         // culling, with a 50% buffer that absorbs typical scroll moves).
         // See agent-docs/ARCHITECTURE.md "Coordinate convention".
-        void self.chainMergeLodBucket
         for (const v of view.views) {
           void v.displayedRegions
         }
         const adapterConfig = self.adapterConfig
-        const {
-          drawCIGAR,
-          drawCIGARMatchesOnly,
-          drawLocationMarkers,
-          chainMerge,
-        } = view
+        const { drawCIGAR, drawCIGARMatchesOnly, drawLocationMarkers } = view
         // Untracked reads: values for the worker. Reading these inside
         // `untracked` prevents them from registering as autorun deps, so
         // scroll/zoom changes don't refire the fetch. The worker still
@@ -93,7 +85,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               drawCIGAR,
               drawCIGARMatchesOnly,
               drawLocationMarkers,
-              chainMerge,
               statusCallback: (msg: string) => {
                 if (thisStopToken === currentStopToken && isAlive(self)) {
                   self.setStatusMessage(msg)

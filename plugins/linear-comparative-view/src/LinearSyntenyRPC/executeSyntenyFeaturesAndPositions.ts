@@ -11,7 +11,6 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
-import { chainCollinearAlignments } from './chainCollinearAlignments.ts'
 
 import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
@@ -92,7 +91,6 @@ export async function executeSyntenyFeaturesAndPositions({
   drawCIGAR = true,
   drawCIGARMatchesOnly = false,
   drawLocationMarkers = false,
-  chainMerge = false,
   statusCallback,
 }: {
   pluginManager: PluginManager
@@ -104,7 +102,6 @@ export async function executeSyntenyFeaturesAndPositions({
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
-  chainMerge?: boolean
   statusCallback?: (msg: string) => void
 }) {
   const dataAdapter = (
@@ -138,19 +135,10 @@ export async function executeSyntenyFeaturesAndPositions({
   const v1 = viewSnaps[level]!
   const v2 = viewSnaps[level + 1]!
 
-  const processedFeatures = chainMerge
-    ? await updateStatus('Chaining collinear alignments', statusCallback, () =>
-        chainCollinearAlignments(
-          features,
-          Math.min(10_000_000, Math.max(v1.bpPerPx, v2.bpPerPx) * 50),
-        ),
-      )
-    : features
-
   const v1Index = buildBpRegionIndex(v1)
   const v2Index = buildBpRegionIndex(v2)
 
-  const count = processedFeatures.length
+  const count = features.length
   // cumBp (bpBefore + bpOffset, no padding) fits in Float64 — max 3Gbp.
   const p11Array = new Float64Array(count)
   const p12Array = new Float64Array(count)
@@ -195,7 +183,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const v2RefNames = v2Index.entries
   const stopTokenChecker = createStopTokenChecker(stopToken)
   let validCount = 0
-  for (const f of processedFeatures) {
+  for (const f of features) {
     checkStopToken2(stopTokenChecker)
     const refName = f.get('refName') as string
     const mate = f.get('mate') as {

@@ -201,8 +201,8 @@ the PAF / synteny adapter config.
 For repeat-heavy regions, multiple PAF rows cover the same query and target
 intervals, painting on top of each other and producing visual mud. SVbyEye
 splits at intersection boundaries so each segment is owned by a single row.
-Add an optional pre-pass in the PAF adapter (or in `chainCollinearAlignments`'s
-neighbourhood) that disjoins overlapping intervals and stacks them onto
+Add an optional pre-pass in the PAF adapter that disjoins overlapping
+intervals and stacks them onto
 parallel sub-rows rather than overpainting. Trade-off: more ribbons → more
 fill cost; gate behind a config flag.
 

@@ -210,29 +210,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * LOD bucket for `chainMerge` collinear-alignment distance. The worker
-       * threshold (`chainCollinearAlignments`) is continuous in `bpPerPx`,
-       * which would cause every zoom tick to invalidate the fetch. MST
-       * getters are memoized on return value — when the computed bucket is
-       * the same number, observers don't re-fire. For the non-chainMerge
-       * path the bucket is a constant, so zoom/pan never touch the autorun
-       * through this getter. Phase 2 may quantize further (power-of-2).
-       */
-      get chainMergeLodBucket() {
-        const view = getContainingView(self) as LinearSyntenyViewModel
-        if (!view.chainMerge) {
-          return 0
-        }
-        const level = this.level
-        const v0 = view.views[level]
-        const v1 = view.views[level + 1]
-        if (!v0 || !v1) {
-          return 0
-        }
-        return Math.min(10_000_000, Math.max(v0.bpPerPx, v1.bpPerPx) * 50)
-      },
-      /**
-       * #getter
        */
       get numFeats() {
         return self.featureData?.featureIds.length ?? 0

@@ -58,10 +58,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawLocationMarkers: false,
         /**
          * #property
-         */
-        chainMerge: false,
-        /**
-         * #property
          * pixels beyond the visible viewport edge that synteny lines are still drawn
          */
         overdrawPx: DEFAULT_OVERDRAW_PX,
@@ -193,12 +189,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setChainMerge(arg: boolean) {
-        self.chainMerge = arg
-      },
-      /**
-       * #action
-       */
       setOverdrawPx(arg: number) {
         self.overdrawPx = arg
       },
@@ -319,14 +309,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               checked: self.drawCurves,
               onClick: () => {
                 self.setDrawCurves(!self.drawCurves)
-              },
-            },
-            {
-              label: 'Chain collinear alignments',
-              type: 'checkbox',
-              checked: self.chainMerge,
-              onClick: () => {
-                self.setChainMerge(!self.chainMerge)
               },
             },
             {
@@ -575,7 +557,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawCurves,
         drawLocationMarkers,
         overdrawPx,
-        chainMerge,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -584,7 +565,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(drawCurves ? { drawCurves } : {}),
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
         ...(overdrawPx !== DEFAULT_OVERDRAW_PX ? { overdrawPx } : {}),
-        ...(chainMerge ? { chainMerge } : {}),
       } as typeof snap
     })
 }
