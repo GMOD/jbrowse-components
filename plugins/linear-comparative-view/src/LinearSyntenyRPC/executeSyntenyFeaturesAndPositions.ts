@@ -19,6 +19,8 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+const EMPTY_CIGAR = new Uint32Array(0)
+
 export interface SyntenyViewSnap {
   bpPerPx: number
   interRegionPaddingWidth: number
@@ -267,9 +269,18 @@ export async function executeSyntenyFeaturesAndPositions({
     assemblyNames.push((f.get('assemblyName') as string | undefined) ?? '')
     mateRefNames.push(mate.refName)
     mateAssemblyNames.push(mate.assemblyName)
-    parsedCigars.push(
-      parseCigar2Typed((f.get('CIGAR') as string | undefined) ?? ''),
-    )
+    // Only parse the CIGAR when it will actually be visited. Chromosome-scale
+    // alignments can carry multi-megabyte CIGAR strings (~4 bytes/op in the
+    // parsed Uint32Array, so tens of MB per feature). Gate matches the
+    // willDrawCigar predicate in buildSyntenyGeometry — drawCIGAR off or
+    // alignment narrower than minCigarPxWidth=4 means the visitor never fires,
+    // and addLocationMarkers operates on bp coords without needing the CIGAR.
+    const cigarStr = f.get('CIGAR') as string | undefined
+    const widthPx0 = topMaxX - topMinX
+    const widthPx1 = botMaxX - botMinX
+    const willNeedCigar =
+      !!cigarStr && drawCIGAR && Math.max(widthPx0, widthPx1) >= 4
+    parsedCigars.push(willNeedCigar ? parseCigar2Typed(cigarStr) : EMPTY_CIGAR)
     precomputedSyriTypes.push(f.get('syriType') as string | undefined)
 
     validCount++
