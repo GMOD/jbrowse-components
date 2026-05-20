@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -22,12 +22,16 @@ const useStyles = makeStyles()(theme => ({
     left: 0,
     overflow: 'hidden',
     background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
+    // above TrackLabel (zIndex 200) so the chip icon is clickable, but let
+    // clicks pass through the rest of the overlay to the tracks below
+    zIndex: 201,
+    pointerEvents: 'none',
   },
   linkIcon: {
     color: colord(theme.palette.highlight.main).darken(0.2).toRgbString(),
   },
-  z3: {
-    zIndex: 3,
+  iconButton: {
+    pointerEvents: 'auto',
   },
 }))
 
@@ -44,8 +48,7 @@ const Highlight = observer(function Highlight({
   }
 }) {
   const { classes } = useStyles()
-  const [open, setOpen] = useState(false)
-  const anchorEl = useRef(null)
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const session = getSession(model) as SessionWithWidgets
   const { assemblyManager } = session
 
@@ -53,11 +56,10 @@ const Highlight = observer(function Highlight({
     model.removeHighlight(highlight)
   }
 
-  function handleClose() {
-    setOpen(false)
+  const handleClose = () => {
+    setAnchorEl(null)
   }
 
-  // coords
   const mapCoords = (r: {
     assemblyName: string
     refName: string
@@ -95,24 +97,23 @@ const Highlight = observer(function Highlight({
         width: h.width,
       }}
     >
-      <Tooltip title="Highlighted from URL parameter" arrow>
+      <Tooltip title="Highlighted region" arrow>
         <IconButton
-          ref={anchorEl}
-          className={classes.z3}
-          onClick={() => {
-            setOpen(true)
+          className={classes.iconButton}
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
           }}
         >
           <LinkIcon fontSize="small" className={classes.linkIcon} />
         </IconButton>
       </Tooltip>
       <Menu
-        anchorEl={anchorEl.current}
+        anchorEl={anchorEl}
         onMenuItemClick={(_event, callback) => {
           callback()
           handleClose()
         }}
-        open={open}
+        open={Boolean(anchorEl)}
         onClose={handleClose}
         menuItems={[
           {
@@ -135,6 +136,7 @@ const Highlight = observer(function Highlight({
               }
               // @ts-expect-error
               bookmarkWidget.addBookmark(highlight as Region)
+              session.showWidget(bookmarkWidget)
               dismissHighlight()
             },
           },
