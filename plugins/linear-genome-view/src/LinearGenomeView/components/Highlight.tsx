@@ -1,146 +1,91 @@
-import { useRef, useState } from 'react'
-
-import { Menu } from '@jbrowse/core/ui'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
-import { IconButton, Tooltip } from '@mui/material'
+import { Box, Tooltip, Typography, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import HighlightBand from './HighlightBand.tsx'
+
 import type { LinearGenomeViewModel } from '../model.ts'
-import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
+import type { HighlightType } from '../types.ts'
+import type { SessionWithWidgets, Widget } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(theme => ({
-  highlight: {
-    height: '100%',
-    position: 'absolute',
-    left: 0,
-    overflow: 'hidden',
-    background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
-  },
-  linkIcon: {
-    color: colord(theme.palette.highlight.main).darken(0.2).toRgbString(),
-  },
-  z3: {
-    zIndex: 3,
-  },
-}))
+// minimal shape we need from grid-bookmark's widget. declared here because
+// the linear-genome-view plugin can't import grid-bookmark types directly
+interface BookmarkWidget extends Widget {
+  addBookmark: (region: HighlightType) => void
+}
 
 const Highlight = observer(function Highlight({
   model,
   highlight,
 }: {
   model: LGV
-  highlight: {
-    assemblyName: string
-    refName: string
-    start: number
-    end: number
-  }
+  highlight: HighlightType
 }) {
-  const { classes } = useStyles()
-  const [open, setOpen] = useState(false)
-  const anchorEl = useRef(null)
+  const theme = useTheme()
   const session = getSession(model) as SessionWithWidgets
-  const { assemblyManager } = session
+  const coords = model.getHighlightCoords(highlight)
 
-  const dismissHighlight = () => {
-    model.removeHighlight(highlight)
-  }
+  // user-supplied color is used as-is so explicit alpha is preserved; fall
+  // back to the theme color with a standard alpha
+  const bandColor = highlight.color
+    ? colord(highlight.color)
+    : colord(theme.palette.highlight.main).alpha(0.35)
 
-  function handleClose() {
-    setOpen(false)
-  }
-
-  // coords
-  const mapCoords = (r: {
-    assemblyName: string
-    refName: string
-    start: number
-    end: number
-  }) => {
-    const s = model.bpToPx({
-      refName: r.refName,
-      coord: r.start,
-    })
-    const e = model.bpToPx({
-      refName: r.refName,
-      coord: r.end,
-    })
-    return s && e
-      ? {
-          width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
-          left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
-        }
-      : undefined
-  }
-
-  const asm = assemblyManager.get(highlight.assemblyName)
-
-  const h = mapCoords({
-    ...highlight,
-    refName: asm?.getCanonicalRefName(highlight.refName) ?? highlight.refName,
-  })
-
-  return h ? (
-    <div
-      className={classes.highlight}
-      style={{
-        transform: `translateX(${h.left}px)`,
-        width: h.width,
-      }}
-    >
-      <Tooltip title="Highlighted from URL parameter" arrow>
-        <IconButton
-          ref={anchorEl}
-          className={classes.z3}
-          onClick={() => {
-            setOpen(true)
-          }}
-        >
-          <LinkIcon fontSize="small" className={classes.linkIcon} />
-        </IconButton>
-      </Tooltip>
-      <Menu
-        anchorEl={anchorEl.current}
-        onMenuItemClick={(_event, callback) => {
-          callback()
-          handleClose()
-        }}
-        open={open}
-        onClose={handleClose}
+  return coords ? (
+    <HighlightBand coords={coords} background={bandColor.toRgbString()}>
+      <CascadingMenuButton
         menuItems={[
           {
             label: 'Dismiss highlight',
             icon: CloseIcon,
             onClick: () => {
-              dismissHighlight()
+              model.removeHighlight(highlight)
             },
           },
           {
             label: 'Bookmark highlighted region',
             icon: BookmarkIcon,
             onClick: () => {
-              let bookmarkWidget = session.widgets.get('GridBookmark')
-              if (!bookmarkWidget) {
-                bookmarkWidget = session.addWidget(
+              const bookmarkWidget = (session.widgets.get('GridBookmark') ??
+                session.addWidget(
                   'GridBookmarkWidget',
                   'GridBookmark',
-                )
-              }
-              // @ts-expect-error
-              bookmarkWidget.addBookmark(highlight as Region)
-              dismissHighlight()
+                )) as BookmarkWidget
+              // afterAttach backfills missing assemblyName on init; the
+              // ?? fallback here only kicks in for highlights added before
+              // the view is initialized
+              bookmarkWidget.addBookmark({
+                ...highlight,
+                assemblyName: highlight.assemblyName ?? model.assemblyNames[0],
+              })
+              session.showWidget(bookmarkWidget)
+              model.removeHighlight(highlight)
             },
           },
         ]}
-      />
-    </div>
+      >
+        <Tooltip title={highlight.label ?? 'Highlighted region'} arrow>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <LinkIcon
+              fontSize="small"
+              sx={{ color: bandColor.alpha(0.8).toRgbString() }}
+            />
+            {highlight.label && model.labelsVisible ? (
+              <Typography variant="caption" noWrap>
+                {highlight.label}
+              </Typography>
+            ) : null}
+          </Box>
+        </Tooltip>
+      </CascadingMenuButton>
+    </HighlightBand>
   ) : null
 })
 

@@ -1,11 +1,11 @@
-import { Fragment, useEffect } from 'react'
+import { useEffect } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getSession, notEmpty } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { HighlightBand } from '@jbrowse/plugin-linear-genome-view'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
-import { Tooltip } from '@mui/material'
+import { Box, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../../model.ts'
@@ -13,24 +13,9 @@ import type { SessionWithWidgets } from '@jbrowse/core/util'
 
 type LGV = IExtendedLGV
 
-const useStyles = makeStyles()({
-  bookmarkButton: {
-    overflow: 'hidden',
-    position: 'absolute',
-    zIndex: 800,
-  },
-  highlight: {
-    overflow: 'hidden',
-    height: '100%',
-    position: 'absolute',
-  },
-})
-
 const Highlight = observer(function Highlight({ model }: { model: LGV }) {
-  const { classes } = useStyles()
   const session = getSession(model) as SessionWithWidgets
-  const { assemblyManager } = session
-  const { bookmarkHighlightsVisible, bookmarkLabelsVisible } = model
+  const { bookmarkHighlightsVisible, labelsVisible } = model
 
   const bookmarkWidget = session.widgets.get('GridBookmark') as
     | GridBookmarkModel
@@ -42,80 +27,63 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
     }
   }, [session, bookmarkWidget])
 
-  const set = new Set(model.assemblyNames)
+  const viewAssemblies = new Set(model.assemblyNames)
 
   return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
     ? bookmarkWidget.bookmarks
-        .filter(value => set.has(value.assemblyName))
-        .map(r => {
-          const asm = assemblyManager.get(r.assemblyName)
-          const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
-          const s = model.bpToPx({ refName, coord: r.start })
-          const e = model.bpToPx({ refName, coord: r.end })
-          return s && e
-            ? {
-                width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
-                left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
-                highlight: r.highlight,
-                label: r.label,
-                bookmark: r,
-              }
-            : undefined
-        })
-        .filter(notEmpty)
-        .map(({ left, width, highlight, label, bookmark }, idx) => (
-          /* biome-ignore lint/suspicious/noArrayIndexKey: */
-          <Fragment key={`${left}_${width}_${idx}`}>
-            <div
-              className={classes.highlight}
-              id="highlight"
-              style={{
-                left,
-                width,
-                background: highlight,
-              }}
-            />
-            {bookmarkLabelsVisible && width > 20 ? (
-              <div className={classes.bookmarkButton} style={{ left }}>
-                <CascadingMenuButton
-                  menuItems={[
-                    {
-                      label: 'Open bookmark widget',
-                      onClick: () => {
-                        session.showWidget(bookmarkWidget)
-                      },
+        .filter(r => viewAssemblies.has(r.assemblyName))
+        .map((r, idx) => {
+          const coords = model.getHighlightCoords(r)
+          const bandColor = colord(r.highlight)
+          // match band color but bump alpha to 0.8 so the chip is legible;
+          // if the band is fully transparent, hide the chip color too
+          const chipAlpha = bandColor.alpha() === 0 ? 0 : 0.8
+          return coords ? (
+            <HighlightBand
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
+              key={`${coords.left}_${coords.width}_${idx}`}
+              coords={coords}
+              background={r.highlight}
+            >
+              <CascadingMenuButton
+                menuItems={[
+                  {
+                    label: 'Open bookmark widget',
+                    onClick: () => {
+                      session.showWidget(bookmarkWidget)
                     },
-                    {
-                      label: 'Turn off highlights',
-                      onClick: () => {
-                        bookmarkWidget.setBookmarkHighlightsVisible(false)
-                      },
+                  },
+                  {
+                    label: 'Turn off bookmark highlights',
+                    onClick: () => {
+                      bookmarkWidget.setBookmarkHighlightsVisible(false)
                     },
-
-                    {
-                      label: 'Remove bookmark',
-                      onClick: () => {
-                        bookmarkWidget.removeBookmarkObject(bookmark)
-                      },
+                  },
+                  {
+                    label: 'Remove bookmark',
+                    onClick: () => {
+                      bookmarkWidget.removeBookmarkObject(r)
                     },
-                  ]}
-                >
-                  <Tooltip title={label} arrow>
+                  },
+                ]}
+              >
+                <Tooltip title={r.label} arrow>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <BookmarkIcon
                       fontSize="small"
-                      sx={{
-                        color:
-                          colord(highlight).alpha() !== 0
-                            ? colord(highlight).alpha(0.8).toRgbString()
-                            : colord(highlight).alpha(0).toRgbString(),
-                      }}
+                      sx={{ color: bandColor.alpha(chipAlpha).toRgbString() }}
                     />
-                  </Tooltip>
-                </CascadingMenuButton>
-              </div>
-            ) : null}
-          </Fragment>
-        ))
+                    {r.label && labelsVisible ? (
+                      <Typography variant="caption" noWrap>
+                        {r.label}
+                      </Typography>
+                    ) : null}
+                  </Box>
+                </Tooltip>
+              </CascadingMenuButton>
+            </HighlightBand>
+          ) : null
+        })
     : null
 })
 

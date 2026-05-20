@@ -34,7 +34,9 @@ const OverviewHighlight = observer(function OverviewHighlight({
   const { assemblyManager } = session
   return highlight
     .map(r => {
-      const asm = assemblyManager.get(r.assemblyName)
+      const asm = r.assemblyName
+        ? assemblyManager.get(r.assemblyName)
+        : undefined
       const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
       const s = overview.bpToPx({
         ...r,

@@ -35,9 +35,7 @@ const SharedBookmarksModel = types.model('SharedBookmarksModel', {
 
 export interface IExtendedLGV extends LinearGenomeViewModel {
   bookmarkHighlightsVisible: boolean
-  bookmarkLabelsVisible: boolean
   setBookmarkHighlightsVisible: (arg: boolean) => void
-  setBookmarkLabelsVisible: (arg: boolean) => void
 }
 
 export interface ILabeledRegionModel extends SnapshotIn<
@@ -96,6 +94,11 @@ export default function f(_pluginManager: PluginManager) {
        * #volatile
        */
       selectedAssembliesPre: undefined as string[] | undefined,
+      /**
+       * #volatile
+       * which grid tab is visible: bookmarks or highlights
+       */
+      gridView: 'bookmarks' as 'bookmarks' | 'highlights',
     }))
     .views(self => ({
       /**
@@ -127,9 +130,7 @@ export default function f(_pluginManager: PluginManager) {
        */
       get areBookmarksHighlightLabelsOnAllOpenViews() {
         const { views } = getSession(self)
-        return views.every(v =>
-          'bookmarkLabelsVisible' in v ? v.bookmarkLabelsVisible : true,
-        )
+        return views.every(v => ('labelsVisible' in v ? v.labelsVisible : true))
       },
     }))
     .views(self => ({
@@ -174,6 +175,12 @@ export default function f(_pluginManager: PluginManager) {
        */
       setSelectedAssemblies(assemblies?: string[]) {
         self.selectedAssembliesPre = assemblies
+      },
+      /**
+       * #action
+       */
+      setGridView(arg: 'bookmarks' | 'highlights') {
+        self.gridView = arg
       },
     }))
     .views(self => ({

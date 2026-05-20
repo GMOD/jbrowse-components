@@ -38,10 +38,6 @@ export default class GridBookmarkPlugin extends Plugin {
                * #property
                */
               bookmarkHighlightsVisible: true,
-              /**
-               * #property
-               */
-              bookmarkLabelsVisible: true,
             })
             .actions(self => ({
               /**
@@ -49,12 +45,6 @@ export default class GridBookmarkPlugin extends Plugin {
                */
               setBookmarkHighlightsVisible(arg: boolean) {
                 self.bookmarkHighlightsVisible = arg
-              },
-              /**
-               * #action
-               */
-              setBookmarkLabelsVisible(arg: boolean) {
-                self.bookmarkLabelsVisible = arg
               },
               /**
                * #action
@@ -125,7 +115,7 @@ export default class GridBookmarkPlugin extends Plugin {
                   return [
                     ...superMenuItems(),
                     {
-                      label: 'Bookmarks',
+                      label: 'Bookmarks/highlights',
                       icon: BookmarksIcon,
                       subMenu: [
                         {
@@ -141,25 +131,31 @@ export default class GridBookmarkPlugin extends Plugin {
                           },
                         },
                         {
-                          label: 'Toggle bookmark highlights',
+                          label: 'Toggle highlights',
                           icon: HighlightIcon,
                           type: 'checkbox',
-                          checked: self.bookmarkHighlightsVisible,
+                          // checked when either kind is visible; toggle flips
+                          // both so users get a single switch for all
+                          // highlight overlays in the view
+                          checked:
+                            self.bookmarkHighlightsVisible ||
+                            self.highlightsVisible,
                           onClick: () => {
-                            self.setBookmarkHighlightsVisible(
-                              !self.bookmarkHighlightsVisible,
+                            const next = !(
+                              self.bookmarkHighlightsVisible ||
+                              self.highlightsVisible
                             )
+                            self.setBookmarkHighlightsVisible(next)
+                            self.setHighlightsVisible(next)
                           },
                         },
                         {
-                          label: 'Toggle bookmark labels',
+                          label: 'Toggle labels',
                           icon: LabelIcon,
                           type: 'checkbox',
-                          checked: self.bookmarkLabelsVisible,
+                          checked: self.labelsVisible,
                           onClick: () => {
-                            self.setBookmarkLabelsVisible(
-                              !self.bookmarkLabelsVisible,
-                            )
+                            self.setLabelsVisible(!self.labelsVisible)
                           },
                         },
                       ],
@@ -220,6 +216,23 @@ export default class GridBookmarkPlugin extends Plugin {
                 },
               }
             })
+            .preProcessSnapshot(snap => {
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+              if (!snap || typeof snap !== 'object') {
+                return snap
+              }
+              // migrate old per-plugin bookmarkLabelsVisible to base LGV
+              // labelsVisible so users who had set it to false keep that state
+              const s = snap as Record<string, unknown>
+              if (
+                s.bookmarkLabelsVisible === false &&
+                !('labelsVisible' in s)
+              ) {
+                const { bookmarkLabelsVisible: _ignored, ...rest } = s
+                return { ...rest, labelsVisible: false } as typeof snap
+              }
+              return snap
+            })
             .postProcessSnapshot(snap => {
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
               if (!snap) {
@@ -227,7 +240,13 @@ export default class GridBookmarkPlugin extends Plugin {
               }
               const {
                 bookmarkHighlightsVisible,
-                bookmarkLabelsVisible,
+                // strip dead bookmarkLabelsVisible from any pre-existing
+                // snapshots; labels are now controlled by base LGV labelsVisible
+                bookmarkLabelsVisible: _ignored,
+                // strip LGV defaults here too — postProcessSnapshot chain
+                // ordering isn't guaranteed, so we guard in both places
+                highlightsVisible,
+                labelsVisible,
                 ...rest
               } = snap as unknown as Record<string, unknown>
               return {
@@ -235,9 +254,8 @@ export default class GridBookmarkPlugin extends Plugin {
                 ...(bookmarkHighlightsVisible === false
                   ? { bookmarkHighlightsVisible }
                   : {}),
-                ...(bookmarkLabelsVisible === false
-                  ? { bookmarkLabelsVisible }
-                  : {}),
+                ...(!highlightsVisible ? { highlightsVisible } : {}),
+                ...(!labelsVisible ? { labelsVisible } : {}),
               } as typeof snap
             })
 
@@ -251,7 +269,7 @@ export default class GridBookmarkPlugin extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('Tools', {
-        label: 'Bookmarks',
+        label: 'Bookmarks/highlights',
         icon: BookmarksIcon,
         onClick: (session: SessionWithWidgets) => {
           let bookmarkWidget = session.widgets.get('GridBookmark')

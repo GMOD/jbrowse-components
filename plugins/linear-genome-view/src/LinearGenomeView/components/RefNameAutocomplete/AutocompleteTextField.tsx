@@ -7,27 +7,16 @@ import type {
 
 export default function AutocompleteTextField({
   TextFieldProps,
-  inputBoxVal,
   params,
-  setInputValue,
-  setCurrentSearch,
 }: {
   TextFieldProps: TFP
-  inputBoxVal: string
   params: AutocompleteRenderInputParams
-  setInputValue: (arg: string) => void
-  setCurrentSearch: (arg: string) => void
 }) {
   const { helperText, slotProps = {} } = TextFieldProps
   const { ref: inputRef, ...restInputProps } = params.InputProps
   const { InputProps: _InputProps, ...restParams } = params
   return (
     <TextField
-      onBlur={() => {
-        // this is used to restore a refName or the non-user-typed input to the
-        // box on blurring
-        setInputValue(inputBoxVal)
-      }}
       {...restParams}
       {...TextFieldProps}
       inputRef={inputRef}
@@ -41,9 +30,6 @@ export default function AutocompleteTextField({
         },
       }}
       placeholder="Search for location"
-      onChange={e => {
-        setCurrentSearch(e.target.value)
-      }}
     />
   )
 }

@@ -1495,3 +1495,122 @@ describe('TrackInit with display configuration', () => {
     expect(model.tracks[1]!.displays[0]!.height).toBe(300)
   })
 })
+
+describe('highlights', () => {
+  function setupHighlightModel() {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({
+      configuration: {},
+    })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        id: 'highlight-test',
+        type: 'LinearGenomeView',
+        tracks: [],
+      }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+    ])
+    model.setNewView(1, 0)
+    return model
+  }
+
+  test('add and remove highlights', () => {
+    const model = setupHighlightModel()
+    const h = { refName: 'ctgA', start: 100, end: 200, assemblyName: 'volvox' }
+    model.addToHighlights(h)
+    expect(model.highlight.length).toBe(1)
+    expect(model.highlight[0]!.start).toBe(100)
+    model.removeHighlight(model.highlight[0]!)
+    expect(model.highlight.length).toBe(0)
+  })
+
+  test('setHighlight replaces the array', () => {
+    const model = setupHighlightModel()
+    model.setHighlight([
+      { refName: 'ctgA', start: 0, end: 50, assemblyName: 'volvox' },
+      { refName: 'ctgA', start: 100, end: 200, assemblyName: 'volvox' },
+    ])
+    expect(model.highlight.length).toBe(2)
+    model.setHighlight([])
+    expect(model.highlight.length).toBe(0)
+  })
+
+  test('visibility and label toggles default to true and can be flipped', () => {
+    const model = setupHighlightModel()
+    expect(model.highlightsVisible).toBe(true)
+    expect(model.labelsVisible).toBe(true)
+    model.setHighlightsVisible(false)
+    model.setLabelsVisible(false)
+    expect(model.highlightsVisible).toBe(false)
+    expect(model.labelsVisible).toBe(false)
+  })
+
+  test('updateHighlight replaces label and color in place', () => {
+    const model = setupHighlightModel()
+    const h = { refName: 'ctgA', start: 100, end: 200, assemblyName: 'volvox' }
+    model.addToHighlights(h)
+    const ref = model.highlight[0]!
+    model.updateHighlight(ref, { label: 'test', color: '#ff0000' })
+    expect(model.highlight.length).toBe(1)
+    expect(model.highlight[0]!.label).toBe('test')
+    expect(model.highlight[0]!.color).toBe('#ff0000')
+    expect(model.highlight[0]!.start).toBe(100)
+  })
+
+  test('getHighlightCoords maps to pixel position', () => {
+    const model = setupHighlightModel()
+    // 1 bp/px and offset 0, so start=100 -> left=100, width=100
+    const coords = model.getHighlightCoords({
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      assemblyName: 'volvox',
+    })
+    expect(coords).toBeDefined()
+    expect(coords!.left).toBe(100)
+    expect(coords!.width).toBe(100)
+  })
+
+  test('getHighlightCoords falls back when assemblyName is missing', () => {
+    const model = setupHighlightModel()
+    // no assemblyName -- should still resolve via refName against displayed
+    // regions in a single-assembly view
+    const coords = model.getHighlightCoords({
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+    })
+    expect(coords).toBeDefined()
+    expect(coords!.left).toBe(100)
+  })
+
+  test('getHighlightCoords floors width at 3px for sub-pixel highlights', () => {
+    const model = setupHighlightModel()
+    // max zoom out for this view is ~13.9 bp/px; a 1bp highlight is well
+    // below 1px and should be floored at 3
+    model.setNewView(13, 0)
+    const coords = model.getHighlightCoords({
+      refName: 'ctgA',
+      start: 100,
+      end: 101,
+      assemblyName: 'volvox',
+    })
+    expect(coords).toBeDefined()
+    expect(coords!.width).toBe(3)
+  })
+
+  test('getHighlightCoords returns undefined for an off-region highlight', () => {
+    const model = setupHighlightModel()
+    expect(
+      model.getHighlightCoords({
+        refName: 'noExist',
+        start: 0,
+        end: 100,
+        assemblyName: 'volvox',
+      }),
+    ).toBeUndefined()
+  })
+})

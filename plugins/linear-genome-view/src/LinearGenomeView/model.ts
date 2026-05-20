@@ -210,6 +210,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         * controls whether view.highlight entries are rendered
+         */
+        highlightsVisible: types.optional(types.boolean, true),
+
+        /**
+         * #property
+         * controls whether highlight/bookmark chip labels are shown inline
+         */
+        labelsVisible: types.optional(types.boolean, true),
+
+        /**
+         * #property
          * color by CDS
          */
         colorByCDS: types.optional(types.boolean, () =>
@@ -831,6 +843,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       removeHighlight(highlight: HighlightType) {
         self.highlight.remove(highlight)
+      },
+      /**
+       * #action
+       */
+      updateHighlight(old: HighlightType, updates: Partial<HighlightType>) {
+        const idx = self.highlight.indexOf(old)
+        if (idx !== -1) {
+          self.highlight.splice(idx, 1, { ...old, ...updates })
+        }
+      },
+      /**
+       * #action
+       */
+      setHighlightsVisible(arg: boolean) {
+        self.highlightsVisible = arg
+      },
+      /**
+       * #action
+       */
+      setLabelsVisible(arg: boolean) {
+        self.labelsVisible = arg
       },
       /**
        * #action
@@ -1804,6 +1837,37 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
+       * Map a highlight or bookmark region to its pixel position+width inside
+       * the tracks container. Falls back to the raw refName if the region's
+       * assemblyName is missing or unknown so highlights authored without an
+       * assembly still render in single-assembly views.
+       */
+      getHighlightCoords(region: {
+        assemblyName?: string
+        refName: string
+        start: number
+        end: number
+      }) {
+        const { assemblyManager } = getSession(self)
+        const asm = region.assemblyName
+          ? assemblyManager.get(region.assemblyName)
+          : undefined
+        const refName =
+          asm?.getCanonicalRefName(region.refName) ?? region.refName
+        const s = this.bpToPx({ refName, coord: region.start })
+        const e = this.bpToPx({ refName, coord: region.end })
+        return s && e
+          ? {
+              // floor at 3px so the band stays visible when zoomed far enough
+              // out that the highlight collapses to a sub-pixel sliver
+              width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
+              left: Math.min(s.offsetPx, e.offsetPx) - self.offsetPx,
+            }
+          : undefined
+      },
+
+      /**
+       * #method
        * scrolls the view to center on the given bp. if that is not in any of
        * the displayed regions, does nothing
        *
@@ -1897,6 +1961,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         trackLabels,
         colorByCDS,
         showTrackOutlines,
+        highlightsVisible,
+        labelsVisible,
         ...rest
       } = snap as Omit<typeof snap, symbol>
 
@@ -1917,6 +1983,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
         ...(!showTrackOutlines ? { showTrackOutlines } : {}),
+        ...(!highlightsVisible ? { highlightsVisible } : {}),
+        ...(!labelsVisible ? { labelsVisible } : {}),
       } as typeof snap
     })
 }
