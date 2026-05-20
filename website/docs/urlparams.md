@@ -92,9 +92,9 @@ actions that require a fully-qualified region. The same caveat applies when
 authoring `view.highlight` directly in a session JSON: include `assemblyName` on
 each entry.
 
-`view.highlight` entries also accept optional `color` and `label` fields,
-both when authoring a session JSON directly and via the URL by passing a
-JSON object (URL-encoded) instead of a loc string:
+`view.highlight` entries also accept optional `color` and `label` fields, both
+when authoring a session JSON directly and via the URL by passing a JSON object
+(URL-encoded) instead of a loc string:
 
 ```json
 {
@@ -107,8 +107,8 @@ JSON object (URL-encoded) instead of a loc string:
 }
 ```
 
-`color` overrides the theme highlight color (used as-is, so explicit alpha
-is preserved). `label` is shown inline next to the chip icon and in the chip
+`color` overrides the theme highlight color (used as-is, so explicit alpha is
+preserved). `label` is shown inline next to the chip icon and in the chip
 tooltip. URL form (URL-encode the JSON):
 
 ```

@@ -25,7 +25,7 @@ test('Open the bookmarks widget from the top level menu', async () => {
 
   const user = userEvent.setup()
   await user.click(await findByText('Tools'))
-  await user.click(await findByText('Bookmarks'))
+  await user.click(await findByText('Bookmarks/highlights'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
 }, 60000)
@@ -35,7 +35,7 @@ test('Open the bookmarks widget from the view menu', async () => {
 
   const user = userEvent.setup()
   await user.click(await findByTestId('view_menu_icon'))
-  await user.click(await findByText('Bookmarks'))
+  await user.click(await findByText('Bookmarks/highlights'))
   await user.click(await findByText('Open bookmark widget'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
@@ -80,7 +80,7 @@ test('Create a bookmark using the menu button to bookmark the current region', a
   const user = userEvent.setup()
   await user.click(await findByTestId('tracksContainer', ...opts))
   await user.click(await findByTestId('view_menu_icon'))
-  await user.click(await findByText('Bookmarks'))
+  await user.click(await findByText('Bookmarks/highlights'))
   await user.click(await findByText('Bookmark current region'))
 
   // @ts-expect-error
@@ -93,7 +93,7 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
 
   const user = userEvent.setup()
   await user.click(await findByTestId('view_menu_icon'))
-  await user.click(await findByText('Bookmarks'))
+  await user.click(await findByText('Bookmarks/highlights'))
   await user.click(await findByText('Open bookmark widget'))
 
   // @ts-expect-error
@@ -116,7 +116,7 @@ test('Navigate to a bookmark using the hotkey to navigate to the most recently c
 
   const user = userEvent.setup()
   await user.click(await findByTestId('view_menu_icon'))
-  await user.click(await findByText('Bookmarks'))
+  await user.click(await findByText('Bookmarks/highlights'))
   await user.click(await findByText('Open bookmark widget'))
 
   // @ts-expect-error
@@ -146,7 +146,7 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
 
   const user = userEvent.setup()
   await user.click(await findByText('Tools'))
-  await user.click(await findByText('Bookmarks'))
+  await user.click(await findByText('Bookmarks/highlights'))
 
   // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
@@ -183,7 +183,7 @@ test('Toggle highlight visibility across all views', async () => {
   const user = userEvent.setup()
 
   await user.click(await findByText('Tools'))
-  await user.click(await findByText('Bookmarks'))
+  await user.click(await findByText('Bookmarks/highlights'))
 
   // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
@@ -215,7 +215,7 @@ test('Toggle highlight label visibility across all views', async () => {
   const user = userEvent.setup()
 
   await user.click(await findByText('Tools'))
-  await user.click(await findByText('Bookmarks'))
+  await user.click(await findByText('Bookmarks/highlights'))
 
   // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')

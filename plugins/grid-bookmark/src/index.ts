@@ -263,7 +263,7 @@ export default class GridBookmarkPlugin extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('Tools', {
-        label: 'Bookmarks',
+        label: 'Bookmarks/highlights',
         icon: BookmarksIcon,
         onClick: (session: SessionWithWidgets) => {
           let bookmarkWidget = session.widgets.get('GridBookmark')

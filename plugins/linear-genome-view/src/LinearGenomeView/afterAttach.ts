@@ -11,7 +11,9 @@ import type { LinearGenomeViewModel } from './model.ts'
 function tryParseJson(s: string): Record<string, unknown> | undefined {
   try {
     const v: unknown = JSON.parse(s)
-    return v && typeof v === 'object' ? (v as Record<string, unknown>) : undefined
+    return v && typeof v === 'object'
+      ? (v as Record<string, unknown>)
+      : undefined
   } catch {
     return undefined
   }
@@ -122,8 +124,7 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
               // accept either a loc string ("chr1:100-200") or a JSON object
               // ({refName, start, end, assemblyName?, color?, label?}) so URL
               // highlights can carry color/label like session-authored ones
-              const json =
-                h.trim().startsWith('{') && tryParseJson(h)
+              const json = h.trim().startsWith('{') && tryParseJson(h)
               if (
                 json &&
                 typeof json.refName === 'string' &&
