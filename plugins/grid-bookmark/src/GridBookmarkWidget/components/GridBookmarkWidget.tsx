@@ -10,7 +10,7 @@ import Palette from '@mui/icons-material/Palette'
 import Publish from '@mui/icons-material/Publish'
 import Settings from '@mui/icons-material/Settings'
 import Share from '@mui/icons-material/Share'
-import { Alert } from '@mui/material'
+import { Alert, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AssemblySelector from './AssemblySelector.tsx'
@@ -127,9 +127,30 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
         </CascadingMenuButton>
 
         <AssemblySelector model={model} />
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={model.gridView}
+          onChange={(_event, value) => {
+            if (value) {
+              model.setGridView(value)
+            }
+          }}
+          sx={{
+            marginLeft: 1,
+            '& .MuiToggleButton-root': {
+              padding: '2px 8px',
+              fontSize: '0.7rem',
+              textTransform: 'none',
+            },
+          }}
+        >
+          <ToggleButton value="bookmarks">Bookmarks</ToggleButton>
+          <ToggleButton value="highlights">Highlights</ToggleButton>
+        </ToggleButtonGroup>
       </div>
-      <BookmarkGrid model={model} />
-      <HighlightGrid model={model} />
+      {model.gridView === 'bookmarks' ? <BookmarkGrid model={model} /> : null}
+      {model.gridView === 'highlights' ? <HighlightGrid model={model} /> : null}
     </div>
   )
 })

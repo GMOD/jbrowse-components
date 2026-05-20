@@ -84,6 +84,14 @@ export default function f(_pluginManager: PluginManager) {
       bookmarks: types.optional(types.array(LabeledRegionModel), () =>
         JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
       ),
+      /**
+       * #property
+       * which grid is visible in the widget: bookmarks or highlights
+       */
+      gridView: types.optional(
+        types.enumeration('GridView', ['bookmarks', 'highlights']),
+        'bookmarks',
+      ),
     })
     .volatile(() => ({
       /**
@@ -172,6 +180,12 @@ export default function f(_pluginManager: PluginManager) {
        */
       setSelectedAssemblies(assemblies?: string[]) {
         self.selectedAssembliesPre = assemblies
+      },
+      /**
+       * #action
+       */
+      setGridView(arg: 'bookmarks' | 'highlights') {
+        self.gridView = arg
       },
     }))
     .views(self => ({
