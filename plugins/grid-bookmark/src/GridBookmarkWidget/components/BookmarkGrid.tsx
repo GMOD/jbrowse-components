@@ -23,6 +23,10 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
+// MUI DataGrid default page size for pagination; hide the footer pager when
+// the row count fits in a single page
+const DEFAULT_PAGE_SIZE = 100
+
 const BookmarkGrid = observer(function BookmarkGrid({
   model,
 }: {
@@ -73,6 +77,7 @@ const BookmarkGrid = observer(function BookmarkGrid({
       <DataGrid
         density="compact"
         disableRowSelectionOnClick
+        hideFooterPagination={rows.length <= DEFAULT_PAGE_SIZE}
         rows={rows}
         columns={[
           {

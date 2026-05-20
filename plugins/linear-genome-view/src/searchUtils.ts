@@ -1,4 +1,3 @@
-import { filterRefNames } from '@jbrowse/core/TextSearch/fetchResults'
 import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
 
 import { parseLocStrings } from './LinearGenomeView/util.ts'
@@ -155,11 +154,19 @@ export async function fetchResults({
     rankSearchResults,
   )
 
-  const refNameResults = filterRefNames(
-    assembly?.allRefNames,
-    queryString,
-    searchType,
-  )
+  // resolve aliases (e.g. 'contigB') to the canonical refname ('ctgB') so
+  // the dropdown shows the name that matches the FASTA / displayed regions.
+  // matchedObject is set so the client-side filter (which checks label
+  // against the user's query) keeps these even when the typed alias text
+  // doesn't appear in the canonical label.
+  const refNameResults = [
+    ...new Set(
+      assembly?.allRefNames
+        ?.filter(ref => ref.toLowerCase().startsWith(queryString.toLowerCase()))
+        .map(ref => assembly.getCanonicalRefName(ref) ?? ref)
+        .slice(0, 10),
+    ),
+  ].map(r => new BaseResult({ label: r, matchedObject: { refName: r } }))
 
   return dedupe([...refNameResults, ...(textSearchResults ?? [])], elt =>
     elt.getId(),

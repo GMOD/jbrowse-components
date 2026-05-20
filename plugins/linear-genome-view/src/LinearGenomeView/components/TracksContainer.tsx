@@ -146,7 +146,7 @@ const HighlightGroup = observer(function HighlightGroup({
 }: {
   model: LGV
 }) {
-  return model.highlight.length ? (
+  return model.highlightsVisible && model.highlight.length ? (
     <Suspense fallback={null}>
       {model.highlight.map((highlight, idx) => (
         <Highlight

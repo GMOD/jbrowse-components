@@ -123,6 +123,7 @@ export type {
 } from './BaseLinearDisplay/index.ts'
 export {
   AUTO_FORCE_LOAD_BP,
+  HighlightBand,
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,
   RefNameAutocomplete,

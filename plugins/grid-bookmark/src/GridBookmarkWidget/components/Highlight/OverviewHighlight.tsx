@@ -30,7 +30,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
   const session = getSession(model) as SessionWithWidgets
   const { classes } = useStyles()
   const { assemblyManager } = session
-  const { bookmarkHighlightsVisible, bookmarkLabelsVisible } = model
+  const { bookmarkHighlightsVisible, labelsVisible } = model
   const bookmarkWidget = session.widgets.get('GridBookmark') as
     | GridBookmarkModel
     | undefined
@@ -66,7 +66,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
           return (
             <Tooltip
               key={`${JSON.stringify(obj)}-${idx}`}
-              title={bookmarkLabelsVisible ? label : ''}
+              title={labelsVisible ? label : ''}
               arrow
             >
               <div

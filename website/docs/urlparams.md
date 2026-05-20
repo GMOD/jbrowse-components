@@ -83,6 +83,42 @@ space (URL-encoded as `%20`):
 
 `&highlight=chr1:6000-7000%20chr1:7100-7200`
 
+Note: `&assembly=` should always accompany `&highlight=` — the highlight is
+stored with the assembly name so that downstream features (e.g. bookmarking the
+highlighted region from the chip menu) can resolve it. The highlight will still
+render without an assembly in a single-assembly view if the refName matches a
+displayed region, but it is not portable across assemblies and may fail in
+actions that require a fully-qualified region. The same caveat applies when
+authoring `view.highlight` directly in a session JSON: include `assemblyName` on
+each entry.
+
+`view.highlight` entries also accept optional `color` and `label` fields, both
+when authoring a session JSON directly and via the URL by passing a JSON object
+(URL-encoded) instead of a loc string:
+
+```json
+{
+  "refName": "11",
+  "start": 32200274,
+  "end": 32203877,
+  "assemblyName": "mm39",
+  "color": "rgba(240, 128, 128, 0.3)",
+  "label": "R2_intron"
+}
+```
+
+`color` overrides the theme highlight color (used as-is, so explicit alpha is
+preserved). `label` is shown inline next to the chip icon and in the chip
+tooltip. URL form (URL-encode the JSON):
+
+```
+&highlight={"refName":"11","start":32200274,"end":32203877,"color":"rgba(240,128,128,0.3)","label":"R2_intron"}
+```
+
+Multiple JSON highlights can be combined with space delimiters (`%20` after
+URL-encoding), and loc strings and JSON objects can be mixed in the same
+`&highlight=` value.
+
 ### &tracklist=
 
 Example

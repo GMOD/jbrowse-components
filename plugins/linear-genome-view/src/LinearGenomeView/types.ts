@@ -29,8 +29,15 @@ export interface ExportSvgOptions {
 export interface HighlightType {
   start: number
   end: number
-  assemblyName: string
+  // optional because view.highlight is persisted via types.frozen and
+  // session JSON authored by hand may legitimately omit the assemblyName
+  assemblyName?: string
   refName: string
+  // overrides the theme's highlight color; user-supplied color is used as-is
+  // so explicit alpha is preserved
+  color?: string
+  // shown in the chip tooltip; otherwise a generic label is used
+  label?: string
 }
 
 export interface NavLocation {
