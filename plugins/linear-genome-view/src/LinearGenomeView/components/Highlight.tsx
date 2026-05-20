@@ -70,6 +70,8 @@ const Highlight = observer(function Highlight({
   const coords =
     s && e
       ? {
+          // floor at 3px so the band stays visible when zoomed far enough
+          // out that the highlight collapses to a sub-pixel sliver
           width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
           left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
         }
