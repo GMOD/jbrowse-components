@@ -268,6 +268,26 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(down.pairedArcs).toBe('down')
   })
 
+  test('migrates legacy arcColorByType=samplot to pairedArcs=samplot', () => {
+    const result = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      arcColorByType: 'samplot',
+      pairedArcs: 'up',
+    })
+    expect(result.pairedArcs).toBe('samplot')
+    expect(result.arcColorByType).toBe('insertSizeAndOrientation')
+  })
+
+  test('leaves non-samplot arcColorByType untouched', () => {
+    const result = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      arcColorByType: 'insertSize',
+      pairedArcs: 'down',
+    })
+    expect(result.arcColorByType).toBe('insertSize')
+    expect(result.pairedArcs).toBe('down')
+  })
+
   test('folds showSashimiArcs+sashimiArcsDown booleans into sashimiArcs enum', () => {
     const off = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',

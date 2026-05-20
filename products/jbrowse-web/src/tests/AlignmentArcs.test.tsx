@@ -1,5 +1,14 @@
+import { userEvent } from '@testing-library/user-event'
+
 import { testLinkedReadsDisplay } from './testLinkedReadsDisplay.tsx'
-import { doBeforeEach, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  findCanvasIn,
+  hts,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -53,6 +62,27 @@ test(
   'short-read arc display, out of view pairing',
   async () => {
     await testArc('ctgA:478..6,191', 'volvox_sv_cram')
+  },
+  timeout,
+)
+
+test(
+  'samplot mode draws flat |tlen| lines over coverage',
+  async () => {
+    const user = userEvent.setup()
+    const { view, findByTestId, findByText } = await createView()
+    const opts = [{}, { timeout: timeout - 5000 }] as const
+
+    await view.navToLocString('ctgA:1-50000')
+    await user.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
+    await user.click(await findByTestId('track_menu_icon', ...opts))
+    await user.click(await findByText('Read connections'))
+    await user.click(await findByText('Paired arcs'))
+    await user.click(await findByText('Samplot (discordant only)'))
+
+    const display = await findByTestId('pileup-display-done', ...opts)
+    await new Promise(res => setTimeout(res, 2000))
+    expectCanvasMatch(findCanvasIn(display))
   },
   timeout,
 )

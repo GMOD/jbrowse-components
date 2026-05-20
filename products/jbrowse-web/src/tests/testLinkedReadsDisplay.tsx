@@ -23,11 +23,11 @@ export async function testLinkedReadsDisplay({
   await user.click(await findByTestId('track_menu_icon', ...opts))
 
   if (displayMode === 'arc') {
-    await user.click(await findByText('Read connections...'))
+    await user.click(await findByText('Read connections'))
     await user.click(await findByText('Paired arcs'))
     await user.click(await findByText('Pointing down'))
   } else {
-    await user.click(await findByText('Read connections...'))
+    await user.click(await findByText('Read connections'))
     await user.click(await findByText('Linked reads'))
     await (displayMode === 'bezier'
       ? user.click(await findByText('Bezier'))
