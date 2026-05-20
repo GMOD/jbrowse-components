@@ -108,6 +108,7 @@ describe('computeArcsFromPileupData', () => {
   test('returns empty result for empty data', () => {
     const result = computeArcsFromPileupData(new Map(), [], {
       colorByType: 'insertSizeAndOrientation',
+      samplot: false,
       drawInter: true,
       drawLongRange: true,
     })
@@ -165,6 +166,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
+      samplot: false,
       drawInter: true,
       drawLongRange: true,
     })
@@ -224,6 +226,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
+      samplot: false,
       drawInter: false,
       drawLongRange: false,
     })
@@ -249,6 +252,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
+      samplot: false,
       drawInter: true,
       drawLongRange: true,
     })
@@ -315,6 +319,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
+      samplot: false,
       drawInter: false,
       drawLongRange: false,
     })

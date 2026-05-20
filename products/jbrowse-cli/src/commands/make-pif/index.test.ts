@@ -129,7 +129,7 @@ describe('splitAlignmentByCigar', () => {
 })
 
 describe('de:f: identity tag', () => {
-  function collect(lines: string[]) {
+  function collect(_lines: string[]) {
     const chunks: string[] = []
     const stream = {
       write(chunk: string | Buffer) {
