@@ -2,6 +2,7 @@ import { spawn } from 'child_process'
 import path from 'path'
 
 import {
+  computeDeFromCigar,
   extractLargeIndels,
   flipCigar,
   parseCigar,
@@ -139,6 +140,18 @@ async function writePairAlignments(
     const typeTag = `sy:Z:${syriType}`
 
     const cigarField = rest.find(f => f.startsWith('cg:Z:'))
+    if (cigarField) {
+      const de = computeDeFromCigar(cigarField.slice(5))
+      if (de !== undefined) {
+        const deTag = `de:f:${de.toFixed(6)}`
+        const deIdx = rest.findIndex(f => f.startsWith('de:f:'))
+        if (deIdx === -1) {
+          rest.push(deTag)
+        } else {
+          rest[deIdx] = deTag
+        }
+      }
+    }
     const summaryRest = stripDetailFromRest(rest)
     if (cigarField) {
       const indelTag = extractLargeIndels(

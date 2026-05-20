@@ -29,6 +29,30 @@ export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
   return fetchAndMaybeUnzipText(file, opts)
 }
 
+// Identity in [0,1] from a parsed PAF row's `extra` map. Prefers the
+// `de:f:` tag (minimap2 / make-pif gap-compressed divergence) since it is
+// computed from the actual CIGAR. Falls back to odgi untangle's `id:f:` tag
+// (a percentage or fraction), then to residue matches over block length.
+export function pafIdentity(
+  extra: Record<string, string | number | undefined>,
+) {
+  if (extra.de !== undefined) {
+    const d = +extra.de
+    if (Number.isFinite(d) && d >= 0 && d <= 1) {
+      return 1 - d
+    }
+  }
+  if (extra.id !== undefined) {
+    const v = +extra.id
+    if (Number.isFinite(v)) {
+      return v > 1 ? v / 100 : v
+    }
+  }
+  const matches = +(extra.numMatches ?? 0)
+  const blockLen = +(extra.blockLen ?? 0)
+  return blockLen > 0 ? matches / blockLen : 0
+}
+
 export function parsePAFLine(line: string) {
   const parts = line.split('\t')
   const extra: Record<string, string | number> = {

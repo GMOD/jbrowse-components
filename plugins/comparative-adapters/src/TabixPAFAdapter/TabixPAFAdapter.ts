@@ -5,7 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { parsePAFLine, parsePanSN } from '../util.ts'
+import { pafIdentity, parsePAFLine, parsePanSN } from '../util.ts'
 
 import type { MultiPairFeature } from '../MultiPairFeature.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -20,19 +20,6 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { FileLocation, Region } from '@jbrowse/core/util/types'
 
 export type { MultiPairFeature } from '../MultiPairFeature.ts'
-
-// PAF identity: prefer the `id:f:` tag (odgi untangle's estimate), normalizing
-// a percentage to a fraction; otherwise fall back to residue matches over
-// block length (PAF columns 10/11).
-function pafIdentity(extra: Record<string, string | number>) {
-  if (extra.id !== undefined) {
-    const v = +extra.id
-    return v > 1 ? v / 100 : v
-  }
-  const matches = +extra.numMatches!
-  const blockLen = +extra.blockLen!
-  return blockLen > 0 ? matches / blockLen : 0
-}
 
 /**
  * Reads a standard PAF (sorted by target, bgzipped, `tabix -0 -s6 -b8 -e9`)

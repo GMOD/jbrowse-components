@@ -6,7 +6,12 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { flipCigar, parsePAFLine, swapIndelCigar } from '../util.ts'
+import {
+  flipCigar,
+  pafIdentity,
+  parsePAFLine,
+  swapIndelCigar,
+} from '../util.ts'
 import { getWeightedMeans } from './util.ts'
 
 import type { PAFRecord } from './util.ts'
@@ -154,7 +159,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               ...rest,
               CIGAR,
               syntenyId: i,
-              identity: numMatches / blockLen,
+              identity: pafIdentity(extra),
               numMatches,
               blockLen,
               mate: {

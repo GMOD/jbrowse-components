@@ -24,6 +24,45 @@ export function swapIndelCigar(cigar: string): string {
   return cigar.replaceAll('D', 'K').replaceAll('I', 'D').replaceAll('K', 'I')
 }
 
+// Gap-compressed per-base divergence (minimap2 `de` tag). Returns undefined
+// for empty CIGARs or CIGARs that only use `M` (which conflates matches and
+// mismatches). Counts each insertion / deletion run as a single event.
+// Formula: 1 - matches / (matches + mismatches + insertionEvents + deletionEvents)
+export function computeDeFromCigar(cigarStr: string): number | undefined {
+  const ops = parseCigar(cigarStr)
+  if (ops.length === 0) {
+    return undefined
+  }
+  let matches = 0
+  let mismatches = 0
+  let insertionEvents = 0
+  let deletionEvents = 0
+  let hasEqOrX = false
+  for (let i = 0; i < ops.length; i += 2) {
+    const len = +ops[i]!
+    const op = ops[i + 1]!
+    if (op === '=') {
+      matches += len
+      hasEqOrX = true
+    } else if (op === 'X') {
+      mismatches += len
+      hasEqOrX = true
+    } else if (op === 'I') {
+      insertionEvents += 1
+    } else if (op === 'D' || op === 'N') {
+      deletionEvents += 1
+    }
+  }
+  if (!hasEqOrX) {
+    return undefined
+  }
+  const denom = matches + mismatches + insertionEvents + deletionEvents
+  if (denom === 0) {
+    return undefined
+  }
+  return 1 - matches / denom
+}
+
 // Extracts large indels from a CIGAR string and encodes them as absolute
 // positions. This avoids the need to sequentially decode the full CIGAR to
 // find where structural events are. Format:

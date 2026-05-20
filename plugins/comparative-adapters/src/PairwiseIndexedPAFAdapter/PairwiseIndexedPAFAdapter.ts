@@ -5,7 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { parsePAFLine } from '../util.ts'
+import { pafIdentity, parsePAFLine } from '../util.ts'
 
 import type { MultiPairFeature, PairInfo } from '../MultiPairFeature.ts'
 import type { SyriType } from '../syriUtils.ts'
@@ -297,7 +297,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                   CIGAR,
                   ...(sy ? { syriType: sy } : {}),
                   syntenyId: fileOffset,
-                  identity: +numMatches / +blockLen,
+                  identity: pafIdentity(extra),
                   numMatches: +numMatches,
                   blockLen: +blockLen,
                   mate: {
@@ -405,7 +405,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             mateEnd: r.tend,
             syriType:
               extra.sy !== undefined ? (extra.sy as SyriType) : undefined,
-            identity: (+extra.numMatches! || 0) / (+extra.blockLen! || 1),
+            identity: pafIdentity(extra),
             featureId: `${fileOffset}`,
             segmentId: (extra.sg as string) || undefined,
             cigar: (extra.cg as string) || undefined,

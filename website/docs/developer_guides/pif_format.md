@@ -46,6 +46,19 @@ operations are consistent with the q-line's column order (query is primary):
 
 The t-line carries the original PAF CIGAR unchanged.
 
+### Identity tag
+
+`make-pif` enriches each alignment with a `de:f:` tag (the gap-compressed
+per-base divergence used by minimap2) when the CIGAR contains `=`/`X` operators
+and no `de:f:` tag is already present. The renderer reads this tag as
+`identity = 1 - de`, falling back to `numMatches / blockLen` when the tag is
+absent.
+
+For accurate identity, run minimap2 with `--eqx` so the CIGAR distinguishes
+matches (`=`) from mismatches (`X`). Without `--eqx` the CIGAR uses ambiguous
+`M` operators and `make-pif` leaves identity to be approximated from the
+standard PAF columns.
+
 ### Tabix index parameters
 
 The file is sorted, bgzipped, and indexed with:
@@ -75,7 +88,9 @@ jbrowse make-pif input.paf --csi
 Full workflow from two genome assemblies:
 
 ```bash
-minimap2 -cx asm5 reference.fa query.fa > alignment.paf
+# --eqx makes minimap2 emit =/X in the CIGAR so make-pif can compute accurate
+# per-alignment identity (stored as a de:f: tag in the PIF).
+minimap2 -cx asm5 --eqx reference.fa query.fa > alignment.paf
 jbrowse make-pif alignment.paf
 jbrowse add-assembly reference.fa --out $OUT --load copy
 jbrowse add-assembly query.fa --out $OUT --load copy
@@ -84,6 +99,26 @@ jbrowse add-track alignment.pif.gz -a query,reference --out $OUT --load copy
 
 `jbrowse add-track` detects the `.pif.gz` extension and automatically configures
 the `PairwiseIndexedPAFAdapter`.
+
+### Optional preprocessing with rustybam
+
+For large or messy PAFs (millions of short alignments, soft-clipped overhangs,
+inconsistent strand orientation), [rustybam](https://github.com/mrvollger/rustybam)
+can clean the alignments before `make-pif`:
+
+```bash
+minimap2 -cx asm5 --eqx reference.fa query.fa \
+  | rb trim-paf \
+  | rb break-paf --max-size 10000 \
+  | rb orient \
+  | rb filter --paired-len 1000 \
+  | jbrowse make-pif /dev/stdin --out alignment.pif.gz
+```
+
+This is entirely optional — rustybam-produced tags pass through `make-pif` and
+are available to the renderer, but `make-pif` alone is sufficient. The
+[SafFire](https://github.com/mrvollger/SafFire) viewer documents the rationale
+for each rustybam step.
 
 ## JBrowse configuration
 

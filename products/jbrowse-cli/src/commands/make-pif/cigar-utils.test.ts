@@ -1,4 +1,27 @@
-import { extractLargeIndels } from './cigar-utils.ts'
+import { computeDeFromCigar, extractLargeIndels } from './cigar-utils.ts'
+
+test('computeDeFromCigar with =/X computes divergence', () => {
+  // 98 matches, 2 mismatches, no indels → de = 2/100 = 0.02
+  expect(computeDeFromCigar('98=2X')).toBeCloseTo(0.02, 5)
+})
+
+test('computeDeFromCigar counts each indel run as one event', () => {
+  // 100 matches, 1 insertion event, 1 deletion event
+  // → de = 1 - 100/(100+0+1+1) = 1 - 100/102
+  expect(computeDeFromCigar('50=10I50=20D')).toBeCloseTo(1 - 100 / 102, 5)
+})
+
+test('computeDeFromCigar returns undefined for M-only CIGARs', () => {
+  expect(computeDeFromCigar('100M5D50M')).toBeUndefined()
+})
+
+test('computeDeFromCigar returns undefined for empty CIGAR', () => {
+  expect(computeDeFromCigar('')).toBeUndefined()
+})
+
+test('computeDeFromCigar returns 0 for a perfect = run', () => {
+  expect(computeDeFromCigar('100=')).toBe(0)
+})
 
 test('extracts large deletions with absolute positions', () => {
   const cigar = '1000M5000D2000M'

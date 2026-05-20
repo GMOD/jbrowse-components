@@ -7,6 +7,7 @@ import path from 'path'
 import { gunzipSync } from 'zlib'
 
 import { splitAlignmentByCigar } from './cigar-utils.ts'
+import { createPIFFromLines } from './pif-generator.ts'
 import { runCommand, runInTmpDir } from '../../testUtil.ts'
 
 const base = path.join(__dirname, '..', '..', '..', 'test', 'data')
@@ -124,5 +125,89 @@ describe('splitAlignmentByCigar', () => {
     const cg1 = result[1]!.find(f => f.startsWith('cg:Z:'))
     expect(cg0).toBe('cg:Z:30M5I20M')
     expect(cg1).toBe('cg:Z:40M10M')
+  })
+})
+
+describe('de:f: identity tag', () => {
+  function collect(lines: string[]) {
+    const chunks: string[] = []
+    const stream = {
+      write(chunk: string | Buffer) {
+        chunks.push(chunk.toString())
+        return true
+      },
+    } as unknown as Parameters<typeof createPIFFromLines>[1]
+    return { stream, chunks }
+  }
+
+  test('computes de:f: from =/X CIGAR when absent', async () => {
+    const line = [
+      'q1',
+      '1000',
+      '0',
+      '100',
+      '+',
+      't1',
+      '1000',
+      '0',
+      '100',
+      '98',
+      '100',
+      '60',
+      'cg:Z:98=2X',
+    ].join('\t')
+    const { stream, chunks } = collect([line])
+    await createPIFFromLines([line], stream, 10000, 0)
+    const out = chunks.join('')
+    expect(out).toMatch(/de:f:0\.02/)
+  })
+
+  test('overwrites stale de:f: after splitAlignmentByCigar split', async () => {
+    // Parent de:f:0.5 is wrong post-split; each sub gets its own from CIGAR.
+    const line = [
+      'q1',
+      '1000',
+      '0',
+      '300',
+      '+',
+      't1',
+      '1000',
+      '0',
+      '300',
+      '200',
+      '300',
+      '60',
+      'de:f:0.500000',
+      'cg:Z:100=100D100=',
+    ].join('\t')
+    const { stream, chunks } = collect([line])
+    await createPIFFromLines([line], stream, 50, 0)
+    const out = chunks.join('')
+    // Each sub-alignment of 100= has zero divergence
+    expect(out).toMatch(/de:f:0\.000000/)
+    expect(out).not.toMatch(/de:f:0\.500000/)
+  })
+
+  test('leaves de:f: alone when CIGAR is M-only', async () => {
+    const line = [
+      'q1',
+      '1000',
+      '0',
+      '100',
+      '+',
+      't1',
+      '1000',
+      '0',
+      '100',
+      '98',
+      '100',
+      '60',
+      'de:f:0.123456',
+      'cg:Z:100M',
+    ].join('\t')
+    const { stream, chunks } = collect([line])
+    await createPIFFromLines([line], stream, 10000, 0)
+    const out = chunks.join('')
+    expect(out).toMatch(/de:f:0\.123456/)
   })
 })
