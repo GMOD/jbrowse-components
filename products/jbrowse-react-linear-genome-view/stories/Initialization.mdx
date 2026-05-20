@@ -61,9 +61,9 @@ session — for example, adding a CRAM exome alignments track on GRCh38 after
 
 <Story of={HumanExomeExample} />
 
-CRAM tracks (and BAM files without MD tags) require a `sequenceAdapter` block
-on the track config so the worker can decode reads against the reference — see
-the source for the exact shape.
+CRAM tracks (and BAM files without MD tags) require a `sequenceAdapter` block on
+the track config so the worker can decode reads against the reference — see the
+source for the exact shape.
 
 ## The full snapshot form
 
@@ -144,8 +144,8 @@ your app, or loaded from a standalone JSON file fetched at runtime.
 ## Which to choose
 
 - **`init`** — first paint, declarative, just trackIds. Default.
-- **Top-level `location`** — when you only need a starting region and don't
-  need to open any tracks declaratively.
+- **Top-level `location`** — when you only need a starting region and don't need
+  to open any tracks declaratively.
 - **`showTrack`** — runtime, imperative, composes with React state.
 - **Full `defaultSession` snapshot** — only when round-tripping an exported
   session.
