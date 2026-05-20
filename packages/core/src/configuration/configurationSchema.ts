@@ -287,22 +287,24 @@ export function ConfigurationSchema<
 /**
  * Reference to a track configuration. Snapshot output is the trackId string.
  *
- * Two-step resolution: `session.tracksById` first (the hot path — every
- * session-scoped track is hydrated and cached there by
- * TracksManagerSessionMixin), then MST `resolveIdentifier` against the root
- * as a fallback.
+ * Two load-bearing complications, both for views that hold ephemeral track
+ * configs without registering them in `session.tracks`:
  *
- * The fallback is load-bearing for tracks that live OUTSIDE `session.tracks`.
- * The concrete case is `LinearSyntenyView.viewTrackConfigs`: that view holds
- * inline synteny-track configs scoped to the view, not the session, so
- * `tracksById` never sees them. The LinearReadVsRef panel exercises this
- * path — its `ReadVsRef.test.tsx` integration test will fail with
- * "Could not resolve trackId" if the fallback is removed. Removing the
- * fallback also breaks any other view that stores configs on itself rather
- * than in the session (e.g. dotplot's inline-config call sites prior to
- * commit 5bec022a10 — those were rewritten to pass id strings, but the
- * view-local-config pattern itself is still supported precisely because of
- * this fallback).
+ * 1. **`get` falls back from `tracksById` to MST `resolveIdentifier`.**
+ *    Required by `LinearSyntenyView.viewTrackConfigs` (LinearReadVsRef);
+ *    `ReadVsRef.test.tsx` is the canary.
+ *
+ * 2. **`types.union(trackRef, schemaType)` accepts string id OR full snapshot.**
+ *    Required by `CircularView.addTrackConf` / `SvInspectorView`, which push
+ *    synthesized configs as full MST instances. `SVInspector.test.tsx` is the
+ *    canary.
+ *
+ * Simplifying either requires first migrating view-local configs into the
+ * session.
+ *
+ * NOTE: don't add `as SCHEMATYPE` to the return value. It narrows SnapshotIn
+ * to just the object branch, forcing callers to wrap string ids in
+ * `@ts-expect-error`. The inferred union SnapshotIn is `string | SnapshotIn<schema>`.
  */
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
@@ -348,6 +350,9 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
  * `track.configuration.displays`. Edits via the editor widget will not persist
  * (no path from the saved snapshot back). Acceptable for ephemeral defaults;
  * if persistence matters the config must be appended via an action.
+ *
+ * Union-with-schemaType branch is for the same reason as `TrackConfigurationReference`:
+ * `CircularView.addTrackConf` passes inline display configs as MST instances.
  */
 export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
@@ -425,12 +430,13 @@ export function ConfigurationReference<
 >(schemaType: SCHEMATYPE) {
   const id = schemaType.jbrowseSchemaOptions?.explicitIdentifier
   if (id === 'trackId') {
-    return TrackConfigurationReference(schemaType) as SCHEMATYPE
+    return TrackConfigurationReference(schemaType)
   }
   if (id === 'displayId') {
-    return DisplayConfigurationReference(schemaType) as SCHEMATYPE
+    return DisplayConfigurationReference(schemaType)
   }
-  // Cast to SCHEMATYPE because the reference behaves just like the object it
-  // points to — it won't be undefined (this is a `reference`, not `safeReference`)
-  return types.union(types.reference(schemaType), schemaType) as SCHEMATYPE
+  // Plain (non-track/display) ref. The union accepts either an id string
+  // (resolved via `types.reference`) or an inline schema snapshot (held as a
+  // standalone schema instance).
+  return types.union(types.reference(schemaType), schemaType)
 }

@@ -59,17 +59,24 @@ it through `baseConfiguration: baseLinearDisplayConfigSchema`, which
 
 ### `TrackConfigurationReference` quirks
 
-- Looks up via `session.tracksById[id]` first, falls back to MST
-  `resolveIdentifier` against the root. The fallback is load-bearing for views
-  (e.g. LinearSyntenyView) that hold inline track configs in their own
-  `viewTrackConfigs` rather than in `session.tracks` — the LinearReadVsRef panel
-  exercises this path.
-- `types.union(trackRef, schemaType)` with a dispatcher on
-  `typeof snap === 'string'`. Production callers always pass an id string →
-  trackRef branch, which serializes back as the id via its `set` callback. The
-  schemaType branch is purely a test affordance: setups that create tracks
-  without a `configuration` field at all route the missing field to schemaType,
-  which auto-instantiates a default config.
+Two load-bearing complications, both for views that hold ephemeral track
+configs without registering them in `session.tracks`. Canaries are named so
+future agents catch breakage fast:
+
+- **`get` falls back from `tracksById` to MST `resolveIdentifier`.** Required
+  by `LinearSyntenyView.viewTrackConfigs` (LinearReadVsRef). Canary:
+  `ReadVsRef.test.tsx`.
+- **`types.union(trackRef, schemaType)` accepts string id OR full snapshot.**
+  Required by `CircularView.addTrackConf` / `SvInspectorView`, which push
+  synthesized configs as MST instances. Canary: `SVInspector.test.tsx`.
+
+Simplifying either requires first migrating view-local configs into the
+session.
+
+Do NOT add `as SCHEMATYPE` to the return value — it narrows `SnapshotIn` to
+just the object branch and forces every caller to `@ts-expect-error` string
+ids. The inferred union `SnapshotIn` is naturally `string | SnapshotIn<schema>`,
+which is what callers want.
 
 ### `DisplayConfigurationReference` quirks
 
