@@ -1,9 +1,11 @@
 import {
   getEnv,
+  getRoot,
   getSnapshot,
   isLateType,
   isStateTreeNode,
   isType,
+  resolveIdentifier,
   types,
 } from '@jbrowse/mobx-state-tree'
 
@@ -284,19 +286,33 @@ export function ConfigurationSchema<
 
 /**
  * Reference to a track configuration. Snapshot output is the trackId string.
- * The hydrated MST node lives in `session.tracksById` (see
- * TracksManagerSessionMixin); this resolver just returns the cached node, so
- * `track.configuration` is identity-stable across reads.
  *
- * The union exists so that callers that don't supply a `configuration` field
- * (some test setups) fall through to the schemaType branch and get a
- * default-instantiated config. Production callers always pass a trackId
- * string, which routes through the trackRef branch.
+ * Two-step resolution: `session.tracksById` first (the hot path — every
+ * session-scoped track is hydrated and cached there by
+ * TracksManagerSessionMixin), then MST `resolveIdentifier` against the root
+ * as a fallback.
+ *
+ * The fallback is load-bearing for tracks that live OUTSIDE `session.tracks`.
+ * The concrete case is `LinearSyntenyView.viewTrackConfigs`: that view holds
+ * inline synteny-track configs scoped to the view, not the session, so
+ * `tracksById` never sees them. The LinearReadVsRef panel exercises this
+ * path — its `ReadVsRef.test.tsx` integration test will fail with
+ * "Could not resolve trackId" if the fallback is removed. Removing the
+ * fallback also breaks any other view that stores configs on itself rather
+ * than in the session (e.g. dotplot's inline-config call sites prior to
+ * commit 5bec022a10 — those were rewritten to pass id strings, but the
+ * view-local-config pattern itself is still supported precisely because of
+ * this fallback).
  */
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
-      const ret = getSession(parent).tracksById[id]
+      const ret =
+        getSession(parent).tracksById[id] ??
+        // @ts-expect-error -- schemaType is IAnyType so resolveIdentifier's
+        // generic can't narrow. Tree-wide MST identifier lookup; see the
+        // function-level JSDoc for why this fallback is required.
+        (resolveIdentifier(schemaType, getRoot(parent), id) as unknown)
       if (!ret) {
         throw new Error(`Could not resolve trackId "${id}"`)
       }
