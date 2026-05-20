@@ -1,5 +1,6 @@
 import { parseCigar2 } from '@jbrowse/alignments-core'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
@@ -62,15 +63,7 @@ export async function executeDotplotFeaturesAndPositions({
       .pipe(toArray()),
   )
 
-  const seen = new Set<string>()
-  const features = rawFeatures.filter(f => {
-    const id = f.id()
-    if (seen.has(id)) {
-      return false
-    }
-    seen.add(id)
-    return true
-  })
+  const features = dedupe(rawFeatures, f => f.id())
 
   const assemblyManager = pluginManager.rootModel?.session?.assemblyManager
   const assemblyCache = new Map<

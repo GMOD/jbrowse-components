@@ -80,11 +80,14 @@ function pxWidthForBlocks(
   bpPerPx: number,
   hide: Set<string>,
 ) {
-  const visible = blocks.filter(b => !hide.has(b.key))
-  return max([
-    ...visible.map(b => stringLenPx(b.refName)),
-    ...visible.map(b => stringLenPx(getTickDisplayStr(b.end, bpPerPx))),
-  ])
+  const widths: number[] = []
+  for (const b of blocks) {
+    if (!hide.has(b.key)) {
+      widths.push(stringLenPx(b.refName))
+      widths.push(stringLenPx(getTickDisplayStr(b.end, bpPerPx)))
+    }
+  }
+  return max(widths)
 }
 
 /**
@@ -389,17 +392,11 @@ export default function stateModelFactory(pm: PluginManager) {
           if (!this.initialized) {
             return undefined
           }
-          const { hview, vview } = self
-          const displays = this.dotplotDisplays
-          const displayKeys: number[] = []
-          for (let idx = 0, l = displays.length; idx < l; idx++) {
-            if (displays[idx]!.geometry) {
-              displayKeys.push(idx)
-            }
-          }
+          const displayKeys = [...this.geometryByTrackIndex.keys()]
           if (displayKeys.length === 0) {
             return undefined
           }
+          const { hview, vview } = self
           const viewBpH = hview.offsetPx * hview.bpPerPx
           const viewBpV = vview.offsetPx * vview.bpPerPx
           const viewBpHHi = Math.floor(viewBpH / 4096) * 4096
@@ -411,7 +408,7 @@ export default function stateModelFactory(pm: PluginManager) {
             viewBpVHi,
             viewBpVLo: viewBpV - viewBpVHi,
             bpPerPxVInv: 1 / vview.bpPerPx,
-            lineWidth: displays[0]!.lineWidth,
+            lineWidth: this.dotplotDisplays[0]!.lineWidth,
             displayKeys,
           }
         },
@@ -521,22 +518,20 @@ export default function stateModelFactory(pm: PluginManager) {
          * #action
          */
         zoomOut() {
-          self.hview.zoomOut()
-          self.vview.zoomOut()
-          // Center when zoomed out to show all content
-          if (self.hview.bpPerPx >= self.hview.maxBpPerPx * 0.99) {
-            self.hview.center()
-          }
-          if (self.vview.bpPerPx >= self.vview.maxBpPerPx * 0.99) {
-            self.vview.center()
+          for (const v of self.views) {
+            v.zoomOut()
+            if (v.bpPerPx >= v.maxBpPerPx * 0.99) {
+              v.center()
+            }
           }
         },
         /**
          * #action
          */
         zoomIn() {
-          self.hview.zoomIn()
-          self.vview.zoomIn()
+          for (const v of self.views) {
+            v.zoomIn()
+          }
         },
       }))
       .actions(self => ({
@@ -912,22 +907,8 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        squareView() {
+        applySquare(ratio: number) {
           const { hview, vview } = self
-          const avg = (hview.bpPerPx + vview.bpPerPx) / 2
-          const hpx = hview.pxToBp(hview.width / 2)
-          const vpx = vview.pxToBp(vview.width / 2)
-          hview.setBpPerPx(avg)
-          hview.centerAt(hpx.coord, hpx.refName, hpx.index)
-          vview.setBpPerPx(avg)
-          vview.centerAt(vpx.coord, vpx.refName, vpx.index)
-        },
-        /**
-         * #action
-         */
-        squareViewProportional() {
-          const { hview, vview } = self
-          const ratio = hview.width / vview.width
           const avg = (hview.bpPerPx + vview.bpPerPx) / 2
           const hpx = hview.pxToBp(hview.width / 2)
           const vpx = vview.pxToBp(vview.width / 2)
@@ -935,6 +916,18 @@ export default function stateModelFactory(pm: PluginManager) {
           hview.centerAt(hpx.coord, hpx.refName, hpx.index)
           vview.setBpPerPx(avg)
           vview.centerAt(vpx.coord, vpx.refName, vpx.index)
+        },
+        /**
+         * #action
+         */
+        squareView() {
+          this.applySquare(1)
+        },
+        /**
+         * #action
+         */
+        squareViewProportional() {
+          this.applySquare(self.hview.width / self.vview.width)
         },
       }))
       .views(self => ({

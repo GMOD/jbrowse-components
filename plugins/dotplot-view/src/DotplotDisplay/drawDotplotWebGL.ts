@@ -3,22 +3,8 @@ import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 import { splitHiLo } from './hiLoUtils.ts'
 
 import type { DotplotColorFn } from './dotplotWebGLColors.ts'
+import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
-
-export interface LineSegmentArrays {
-  x1Hi: Float32Array
-  x1Lo: Float32Array
-  y1Hi: Float32Array
-  y1Lo: Float32Array
-  x2Hi: Float32Array
-  x2Lo: Float32Array
-  y2Hi: Float32Array
-  y2Lo: Float32Array
-  padHs: Float32Array
-  padVs: Float32Array
-  colors: Uint32Array
-  count: number
-}
 
 const MIN_CIGAR_PX_WIDTH = 4
 
@@ -44,7 +30,7 @@ export function buildLineSegments(
   minAlignmentLength: number,
   bpPerPxH: number,
   bpPerPxV: number,
-): LineSegmentArrays {
+): DotplotGeometryData {
   const {
     p11Hi,
     p11Lo,
@@ -155,6 +141,6 @@ export function buildLineSegments(
     padHs: out.padHs.subarray(0, out.n),
     padVs: out.padVs.subarray(0, out.n),
     colors: out.colors.subarray(0, out.n),
-    count: out.n,
+    instanceCount: out.n,
   }
 }

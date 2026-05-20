@@ -136,8 +136,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
     setMouseOvered,
     refEl,
     refCallback,
-    root,
-    rootRect,
+    rect,
     mousedown,
     mousecurr,
     mouseup,
@@ -157,7 +156,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
   } = useCursorMode(cursorMode)
 
   // Event handlers
-  useWheelHandler(refEl, hview, vview, mousecurr, rootRect.height)
+  useWheelHandler(refEl, hview, vview, mousecurr, rect.height)
   useMouseMoveHandler(
     mousecurrClient,
     mousedownClient,
@@ -192,7 +191,6 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
         }
       />
       <div
-        ref={root}
         className={classes.root}
         onMouseLeave={() => {
           setMouseOvered(false)

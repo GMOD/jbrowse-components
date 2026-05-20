@@ -44,55 +44,43 @@ MstNode>`, so:
 ### Reference resolution
 
 Track and display state models hold their config via `ConfigurationReference`.
-Dispatch lives in `configurationSchema.ts:ConfigurationReference`:
+Dispatch lives in `configurationSchema.ts:ConfigurationReference`, keyed on
+the schema's `explicitIdentifier`:
 
-| Signal on schema                            | Branch                          |
-|---------------------------------------------|---------------------------------|
-| `explicitIdentifier: 'trackId'`             | `TrackConfigurationReference`   |
-| `explicitIdentifier: 'displayId'`           | `DisplayConfigurationReference` |
-| schema name ends `DisplayConfigurationSchema` | `DisplayConfigurationReference` |
-| anything else                               | plain `types.union(ref, schema)`|
+| `explicitIdentifier` | Branch                            |
+|----------------------|-----------------------------------|
+| `'trackId'`          | `TrackConfigurationReference`     |
+| `'displayId'`        | `DisplayConfigurationReference`   |
+| anything else        | plain `types.union(ref, schema)`  |
 
-Two signals for displays because most display schemas don't declare
-`displayId` themselves — it's auto-injected by
-`baseTrackConfig.preProcessSnapshot` as `${trackId}-${displayType}` when the
-track config loads. The name-suffix fallback catches schemas that rely on
-that auto-injection.
+Most concrete display schemas don't declare `displayId` directly — they
+inherit it through `baseConfiguration: baseLinearDisplayConfigSchema`, which
+`preprocessConfigurationSchemaArguments` merges into the subclass's options.
 
 ### `TrackConfigurationReference` quirks
 
-- Looks up via `session.tracksById[id]` first; falls back to
-  `resolveIdentifier`. The fallback path is likely dead after the frozen
-  refactor (every track is in tracksById) but is kept as a backstop. Has a
-  `@ts-expect-error` because `IAnyType` doesn't carry the identifier shape.
+- Looks up via `session.tracksById[id]`. Throws if not present.
 - `types.union(trackRef, schemaType)` with a dispatcher on `typeof snap ===
-  'string'`. Production callers always pass an id string → trackRef branch.
-  The schemaType branch exists for test setups that create tracks without
-  a `configuration` field at all — the missing field routes to schemaType
-  which auto-instantiates a default config.
-- No `snapshotProcessor`: the trackRef branch's own `set(value) =>
-  value.trackId` already emits an id string on the common path. The
-  previous wrapper existed to normalize inline-object input from
-  `DotplotView -> LinearSyntenyView` (`configuration: getSnapshot(trackConf)`);
-  that caller was updated to pass `trackConf.trackId` directly
-  (plugins/dotplot-view/src/DotplotView/model.ts), so the wrapper is gone.
+  'string'`. Production callers always pass an id string → trackRef branch,
+  which serializes back as the id via its `set` callback. The schemaType
+  branch is purely a test affordance: setups that create tracks without a
+  `configuration` field at all route the missing field to schemaType, which
+  auto-instantiates a default config.
 
 ### `DisplayConfigurationReference` quirks
 
 - Looks up via `track.configuration.displays.find(d => d.displayId === id)`.
   Linear scan; would benefit from a `displaysById` MobX view on the track
   config but not done yet.
-- Falls back to type-match (`d.type === parent.type`) — handles state models
-  whose display type wasn't in the saved config.
-- Last-ditch fallback creates a detached config via `schemaType.create(...)`.
-  **CAVEAT:** this is an orphaned MST node — edits via the editor widget will
-  not persist because there's no path from the saved snapshot back to it.
-  Acceptable for ephemeral defaults; if persistence matters, the config must
-  be appended to `track.configuration.displays` via an action.
-- Does NOT use `snapshotProcessor` — the JSDoc on the function explains
-  this triggers "setConfig is not a function" errors on sub-displays.
-  Asymmetric with track refs by design; the root-cause `setConfig` call is
-  not yet identified.
+- Falls back to type-match (`d.type === parent.type`) — handles old sessions
+  where the saved displayId no longer matches but a display of the same type
+  exists on the track.
+- Last-ditch: creates a detached config via `schemaType.create(...)` — handles
+  new display types added to the schema that weren't present in the saved
+  track config. **CAVEAT:** the auto-created node is orphaned; it is not in
+  `track.configuration.displays`, so edits via the editor widget will not
+  persist. Acceptable for ephemeral defaults; if persistence matters, append
+  to the displays array via an action.
 
 ## Testing the reference layer
 

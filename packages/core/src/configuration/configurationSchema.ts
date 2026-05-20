@@ -1,11 +1,9 @@
 import {
   getEnv,
-  getRoot,
   getSnapshot,
   isLateType,
   isStateTreeNode,
   isType,
-  resolveIdentifier,
   types,
 } from '@jbrowse/mobx-state-tree'
 
@@ -298,14 +296,9 @@ export function ConfigurationSchema<
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
-      const ret =
-        getSession(parent).tracksById[id] ??
-        // @ts-expect-error -- schemaType is IAnyType so resolveIdentifier's
-        // generic can't narrow; backstop path, kept in case the session's
-        // tracksById misses an id reachable via root traversal.
-        (resolveIdentifier(schemaType, getRoot(parent), id) as unknown)
+      const ret = getSession(parent).tracksById[id]
       if (!ret) {
-        throw new Error(`Could not resolve identifier "${id}"`)
+        throw new Error(`Could not resolve trackId "${id}"`)
       }
       return ret
     },
@@ -328,15 +321,17 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
  * Reference to a display configuration. Looked up inside the containing track
  * config's `displays` array. Snapshot output is the displayId string.
  *
- * The union (without snapshotProcessor) mirrors TrackConfigurationReference's
- * input flexibility — string id OR inline display-config snapshot — but the
- * postProcessor is omitted intentionally: `types.reference.set` already emits
- * the displayId, and adding snapshotProcessor here historically caused
- * "setConfig is not a function" errors (the original call site is no longer
- * in the codebase but the asymmetry is kept until that's investigated).
+ * Resolution order:
+ *   1. by displayId
+ *   2. by `parent.type` — handles old sessions where the saved displayId
+ *      no longer matches but a display of the same type exists on the track
+ *   3. auto-create a detached default — handles new display types added to
+ *      the schema that weren't present in the saved track config
  *
- * Resolution order: by displayId, then by parent.type, then auto-create
- * a detached default (see CAVEAT inside).
+ * The auto-create path produces a config that is NOT in
+ * `track.configuration.displays`. Edits via the editor widget will not persist
+ * (no path from the saved snapshot back). Acceptable for ephemeral defaults;
+ * if persistence matters the config must be appended via an action.
  */
 export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
@@ -402,26 +397,23 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
   )
 }
 
+/**
+ * Dispatch by the schema's identifier: `trackId` → track-ref (resolves through
+ * `session.tracksById`), `displayId` → display-ref (resolves through the
+ * parent track's displays array), anything else → plain reference.
+ *
+ * Display schemas must declare `explicitIdentifier: 'displayId'` (directly or
+ * via `baseConfiguration: baseLinearDisplayConfigSchema`, which merges its
+ * options through `preprocessConfigurationSchemaArguments`).
+ */
 export function ConfigurationReference<
   SCHEMATYPE extends AnyConfigurationSchemaType,
 >(schemaType: SCHEMATYPE) {
-  // Track schemas all declare `explicitIdentifier: 'trackId'`, so the track
-  // branch dispatches deterministically by identifier.
-  //
-  // Display schemas are different: most don't declare an identifier on the
-  // schema itself because the `displayId` field is auto-injected by
-  // baseTrackConfig.preProcessSnapshot (as `${trackId}-${displayType}`) at
-  // track-config load time. So for displays we identify by schema-name suffix
-  // — the `*DisplayConfigurationSchema` suffix is appended by
-  // makeConfigurationSchemaModel.
   const id = schemaType.jbrowseSchemaOptions?.explicitIdentifier
   if (id === 'trackId') {
     return TrackConfigurationReference(schemaType) as SCHEMATYPE
   }
-  if (
-    id === 'displayId' ||
-    schemaType.name.endsWith('DisplayConfigurationSchema')
-  ) {
+  if (id === 'displayId') {
     return DisplayConfigurationReference(schemaType) as SCHEMATYPE
   }
   // Cast to SCHEMATYPE because the reference behaves just like the object it

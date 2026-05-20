@@ -27,5 +27,5 @@ export default ConfigurationSchema(
       description: 'Default rendering type',
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, explicitIdentifier: 'displayId' },
 )

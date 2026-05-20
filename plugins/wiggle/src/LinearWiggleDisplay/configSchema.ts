@@ -37,5 +37,5 @@ export default ConfigurationSchema(
       defaultValue: 'whiskers',
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, explicitIdentifier: 'displayId' },
 )

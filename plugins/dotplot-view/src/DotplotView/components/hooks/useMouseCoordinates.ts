@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import type { Coord } from '../../types.ts'
 
@@ -20,11 +20,9 @@ export function useMouseCoordinates() {
   const [mousedownClient, setMouseDownClient] = useState<Coord>()
   const [mouseupClient, setMouseUpClient] = useState<Coord>()
   const [mouseOvered, setMouseOvered] = useState(false)
-  const root = useRef<HTMLDivElement>(null)
   const [refEl, refCallback] = useState<HTMLDivElement | null>(null)
 
   const rect = refEl?.getBoundingClientRect() ?? blank
-  const rootRect = rect
   const mousedown = getOffset(mousedownClient, rect)
   const mousecurr = getOffset(mousecurrClient, rect)
   const mouseup = getOffset(mouseupClient, rect)
@@ -47,9 +45,8 @@ export function useMouseCoordinates() {
     // Refs
     refEl,
     refCallback,
-    root,
     // Derived values
-    rootRect,
+    rect,
     mousedown,
     mousecurr,
     mouseup,

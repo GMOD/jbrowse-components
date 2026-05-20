@@ -47,7 +47,7 @@ describe('buildLineSegments hi/lo precision', () => {
     // Feature at 800 Mbp — Float32(8e8) alone has ~64px ULP at bpPerPx=1.
     const data = makeRpcData(1_000, 1_100, 8e8, 8e8 + 100)
     const segs = buildLineSegments(data, () => 0xff0000ff, false, 0, 1, 1)
-    expect(segs.count).toBe(1)
+    expect(segs.instanceCount).toBe(1)
     expect(segs.x1Hi[0]! + segs.x1Lo[0]!).toBe(1_000)
     expect(segs.x2Hi[0]! + segs.x2Lo[0]!).toBe(1_100)
     expect(segs.y1Hi[0]! + segs.y1Lo[0]!).toBe(8e8)
@@ -77,6 +77,6 @@ describe('buildLineSegments hi/lo precision', () => {
   test('minAlignmentLength filters short features', () => {
     const data = makeRpcData(0, 100, 0, 100)
     const segs = buildLineSegments(data, () => 0, false, 200, 1, 1)
-    expect(segs.count).toBe(0)
+    expect(segs.instanceCount).toBe(0)
   })
 })

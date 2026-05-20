@@ -593,8 +593,8 @@ describe('ConfigurationReference', () => {
     })
 
     test('track schemas snapshot the ref as the id string', () => {
-      // Asserts the dispatch picks TrackConfigurationReference (the only one
-      // that wraps with snapshotProcessor → id-string output).
+      // Asserts the dispatch picks TrackConfigurationReference (the trackRef
+      // branch serializes via its `set` callback as just the trackId).
       const { Session } = buildTrackEnv()
       const session = Session.create(
         {
@@ -606,46 +606,5 @@ describe('ConfigurationReference', () => {
       expect(typeof getSnapshot(session.holder).ref).toBe('string')
     })
 
-    test('display schemas without explicitIdentifier still dispatch as display', () => {
-      // The schema name suffix `*DisplayConfigurationSchema` is the fallback
-      // signal when displayId isn't declared on the schema itself (most
-      // display schemas — displayId is auto-injected by baseTrackConfig
-      // preProcessSnapshot). This locks in that the name-suffix dispatch
-      // routes correctly without depending on baseTrackConfig.
-      const NoIdDisplayConfig = ConfigurationSchema(
-        // name → `NoIdDisplayConfigurationSchema`, ends with the suffix
-        'NoIdDisplay',
-        { foo: { type: 'string', defaultValue: 'x' } },
-        { explicitlyTyped: true },
-      )
-      const TrackConfig = ConfigurationSchema(
-        'SuffixTrack',
-        { displays: types.array(NoIdDisplayConfig) },
-        { explicitIdentifier: 'trackId' },
-      )
-      const DisplayState = types.model('SuffixDisplayState', {
-        type: types.string,
-        configuration: ConfigurationReference(NoIdDisplayConfig),
-      })
-      const TrackState = types.model('SuffixTrackState', {
-        configuration: TrackConfig,
-        displays: types.array(DisplayState),
-      })
-
-      // Type-match fallback inside DisplayConfigurationReference picks this up.
-      const track = TrackState.create(
-        {
-          configuration: {
-            trackId: 't1',
-            displays: [{ type: 'NoIdDisplay', foo: 'fromConfig' }],
-          },
-          displays: [{ type: 'NoIdDisplay', configuration: 'autogenId' }],
-        },
-        { pluginManager },
-      )
-      expect(readConfObject(track.displays[0].configuration, 'foo')).toBe(
-        'fromConfig',
-      )
-    })
   })
 })

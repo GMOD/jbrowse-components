@@ -97,28 +97,16 @@ export function doAfterAttach(
           return
         }
         const { drawCigar, hview, vview } = view
-        const segments = buildLineSegments(
-          rpcData,
-          createDotplotColorFunction(colorBy, alpha, rpcData),
-          drawCigar,
-          minAlignmentLength,
-          hview.bpPerPx,
-          vview.bpPerPx,
+        self.setGeometry(
+          buildLineSegments(
+            rpcData,
+            createDotplotColorFunction(colorBy, alpha, rpcData),
+            drawCigar,
+            minAlignmentLength,
+            hview.bpPerPx,
+            vview.bpPerPx,
+          ),
         )
-        self.setGeometry({
-          x1Hi: segments.x1Hi,
-          x1Lo: segments.x1Lo,
-          y1Hi: segments.y1Hi,
-          y1Lo: segments.y1Lo,
-          x2Hi: segments.x2Hi,
-          x2Lo: segments.x2Lo,
-          y2Hi: segments.y2Hi,
-          y2Lo: segments.y2Lo,
-          padHs: segments.padHs,
-          padVs: segments.padVs,
-          colors: segments.colors,
-          instanceCount: segments.count,
-        })
       },
       { name: 'DotplotGeometryRecompute' },
     ),

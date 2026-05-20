@@ -32,13 +32,11 @@ function getTrackWarnings({
 }) {
   const rows: { name: string; message: string; effect: string; id: string }[] =
     []
-  for (const [i, trackWarning] of trackWarnings.entries()) {
-    const track = trackWarning
+  for (const [i, track] of trackWarnings.entries()) {
     const name = getConf(track, 'name')
-    const d = track.displays[0]!
-    for (let j = 0; j < d.warnings.length; j++) {
-      const warning = d.warnings[j]!
-      rows.push({ name, ...warning, id: `${i}_${j}` })
+    const warnings = track.displays[0]!.warnings
+    for (let j = 0; j < warnings.length; j++) {
+      rows.push({ name, ...warnings[j]!, id: `${i}_${j}` })
     }
   }
   return rows
