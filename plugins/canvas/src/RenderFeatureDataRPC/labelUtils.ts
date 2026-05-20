@@ -37,7 +37,9 @@ export function applyLabelDimensions(
       : truncateLabel(readConfigValue(config, ['labels', 'name'], feature))
     const description = isTranscriptChild
       ? ''
-      : truncateLabel(readConfigValue(config, ['labels', 'description'], feature))
+      : truncateLabel(
+          readConfigValue(config, ['labels', 'description'], feature),
+        )
     const labelCount =
       (hasVisibleText(name) ? 1 : 0) + (hasVisibleText(description) ? 1 : 0)
 

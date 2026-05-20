@@ -1,10 +1,6 @@
 import { packRenderArrays } from './packRenderArrays.ts'
 
-import type {
-  ArrowData,
-  LineData,
-  RectData,
-} from './packRenderArrays.ts'
+import type { ArrowData, LineData, RectData } from './packRenderArrays.ts'
 
 function rect(start: number, end: number): RectData {
   return { start, end, y: 0, height: 10, color: 0, flatbushIdx: 0 }

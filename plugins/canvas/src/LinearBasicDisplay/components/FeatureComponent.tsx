@@ -18,10 +18,7 @@ import {
 import { useScrollSync } from './useScrollSync.ts'
 
 import type { CanvasFeatureBackend } from './canvasFeatureBackendTypes.ts'
-import type {
-  FlatbushRegionIndexes,
-  VisibleRegion,
-} from './hitTesting.ts'
+import type { FlatbushRegionIndexes, VisibleRegion } from './hitTesting.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,

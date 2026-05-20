@@ -161,11 +161,7 @@ function emitCodonRects(
   }
 }
 
-function rangeLine(
-  type: string | undefined,
-  start: number,
-  end: number,
-) {
+function rangeLine(type: string | undefined, start: number, end: number) {
   return `${type ? `${type}: ` : ''}${start.toLocaleString()}-${end.toLocaleString()}`
 }
 
@@ -176,7 +172,13 @@ function buildTranscriptTooltip(args: {
   transcriptStart: number
   transcriptEnd: number
 }) {
-  const { parentName, transcriptName, transcriptType, transcriptStart, transcriptEnd } = args
+  const {
+    parentName,
+    transcriptName,
+    transcriptType,
+    transcriptStart,
+    transcriptEnd,
+  } = args
   const parts: string[] = []
   if (parentName) {
     parts.push(`Gene: ${parentName}`)
