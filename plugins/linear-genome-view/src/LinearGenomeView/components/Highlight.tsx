@@ -71,7 +71,7 @@ const Highlight = observer(function Highlight({
           },
         ]}
       >
-        <Tooltip title={highlight.label ?? 'Highlighted region'} arrow>
+        <Tooltip title={highlight.label || 'Highlighted region'} arrow>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <LinkIcon
               fontSize="small"
