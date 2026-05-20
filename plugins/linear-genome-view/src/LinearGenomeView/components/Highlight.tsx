@@ -10,6 +10,8 @@ import LinkIcon from '@mui/icons-material/Link'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { getHighlightCoords } from '../util.ts'
+
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { HighlightType } from '../types.ts'
 import type { SessionWithWidgets, Widget } from '@jbrowse/core/util'
@@ -53,7 +55,6 @@ const Highlight = observer(function Highlight({
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const session = getSession(model) as SessionWithWidgets
-  const { assemblyManager } = session
 
   const handleClose = () => {
     setAnchorEl(null)
@@ -62,20 +63,7 @@ const Highlight = observer(function Highlight({
     model.removeHighlight(highlight)
   }
 
-  const asm = assemblyManager.get(highlight.assemblyName)
-  const refName =
-    asm?.getCanonicalRefName(highlight.refName) ?? highlight.refName
-  const s = model.bpToPx({ refName, coord: highlight.start })
-  const e = model.bpToPx({ refName, coord: highlight.end })
-  const coords =
-    s && e
-      ? {
-          // floor at 3px so the band stays visible when zoomed far enough
-          // out that the highlight collapses to a sub-pixel sliver
-          width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
-          left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
-        }
-      : undefined
+  const coords = getHighlightCoords(model, highlight)
 
   return coords ? (
     <div

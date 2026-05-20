@@ -19,3 +19,4 @@ export default function LinearGenomeViewF(pluginManager: PluginManager) {
 
 export * from './model.ts'
 export * from './types.ts'
+export { getHighlightCoords } from './util.ts'

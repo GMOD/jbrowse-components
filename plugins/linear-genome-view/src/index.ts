@@ -113,6 +113,7 @@ export {
   type LinearGenomeViewStateModel,
   RefNameAutocomplete,
   SearchBox,
+  getHighlightCoords,
 } from './LinearGenomeView/index.ts'
 export { fetchResults } from './searchUtils.ts'
 export type {

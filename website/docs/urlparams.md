@@ -84,13 +84,13 @@ space (URL-encoded as `%20`):
 `&highlight=chr1:6000-7000%20chr1:7100-7200`
 
 Note: `&assembly=` should always accompany `&highlight=` — the highlight is
-stored with the assembly name so that downstream features (e.g. bookmarking
-the highlighted region from the chip menu) can resolve it. The highlight will
-still render without an assembly in a single-assembly view if the refName
-matches a displayed region, but it is not portable across assemblies and may
-fail in actions that require a fully-qualified region. The same caveat
-applies when authoring `view.highlight` directly in a session JSON: include
-`assemblyName` on each entry.
+stored with the assembly name so that downstream features (e.g. bookmarking the
+highlighted region from the chip menu) can resolve it. The highlight will still
+render without an assembly in a single-assembly view if the refName matches a
+displayed region, but it is not portable across assemblies and may fail in
+actions that require a fully-qualified region. The same caveat applies when
+authoring `view.highlight` directly in a session JSON: include `assemblyName` on
+each entry.
 
 ### &tracklist=
 
