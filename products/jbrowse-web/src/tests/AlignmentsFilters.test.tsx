@@ -23,6 +23,7 @@ async function testFilterTrack(trackId: string, tag: string, value: string) {
   const user = userEvent.setup()
   await user.click(await screen.findByTestId(hts(trackId), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+  await user.click(await screen.findByText('Sort, filter, group'))
   await user.click(await screen.findByText('Filter by...'))
   await user.click(await screen.findByText('Edit filters...'))
   await user.type(await screen.findByLabelText('Tag name', ...opts), tag)

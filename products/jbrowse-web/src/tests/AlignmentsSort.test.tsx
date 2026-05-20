@@ -30,6 +30,7 @@ test('selects a sort, sort by base pair', async () => {
   )
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
 
+  await user.click(await screen.findByText('Sort, filter, group'))
   await user.click(await screen.findByText('Sort by...'))
   await user.click(await screen.findByText('Base pair'))
   const display1 = await screen.findByTestId('pileup-display-done', ...opts)
