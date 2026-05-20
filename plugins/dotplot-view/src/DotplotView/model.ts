@@ -152,6 +152,13 @@ export default function stateModelFactory(pm: PluginManager) {
           drawCigar: true,
           /**
            * #property
+           * When true, hview and vview are kept at the same bpPerPx so the
+           * dotplot stays square. Wheel zoom already preserves the ratio;
+           * box-zoom and other independent ops trigger an autorun resync.
+           */
+          lockAspectRatio: false,
+          /**
+           * #property
            * Screen-space line width (CSS pixels) applied to every dotplot
            * display in this view. View-level because the GPU pass renders all
            * displays with one uniform.
@@ -475,6 +482,27 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
+        setLockAspectRatio(flag: boolean) {
+          self.lockAspectRatio = flag
+        },
+        /**
+         * #action
+         * Equalize hview/vview bpPerPx without recentering. Used by the
+         * aspect-lock autorun to absorb divergence from box-zoom and similar
+         * operations while preserving the user's current pan position.
+         */
+        syncBpPerPx() {
+          const { hview, vview } = self
+          if (hview.bpPerPx === vview.bpPerPx) {
+            return
+          }
+          const avg = (hview.bpPerPx + vview.bpPerPx) / 2
+          hview.setBpPerPx(avg)
+          vview.setBpPerPx(avg)
+        },
+        /**
+         * #action
+         */
         setLineWidth(value: number) {
           self.lineWidth = value
         },
@@ -665,9 +693,20 @@ export default function stateModelFactory(pm: PluginManager) {
          * #action
          */
         showAllRegions() {
+          // When the aspect-ratio lock is engaged, use the larger of the two
+          // maxBpPerPx so both assemblies fit fully — the autorun would
+          // otherwise average to a value that crops the bigger one.
+          const hMax = () =>
+            self.lockAspectRatio
+              ? Math.max(self.hview.maxBpPerPx, self.vview.maxBpPerPx)
+              : self.hview.maxBpPerPx
+          const vMax = () =>
+            self.lockAspectRatio
+              ? Math.max(self.hview.maxBpPerPx, self.vview.maxBpPerPx)
+              : self.vview.maxBpPerPx
           // First zoom to max to trigger border recalculation
-          self.hview.zoomTo(self.hview.maxBpPerPx)
-          self.vview.zoomTo(self.vview.maxBpPerPx)
+          self.hview.zoomTo(hMax())
+          self.vview.zoomTo(vMax())
 
           // Calculate what borders should be at this zoom level
           const { borderX, borderY } = this.calculateBorders()
@@ -677,8 +716,8 @@ export default function stateModelFactory(pm: PluginManager) {
           self.setBorderY(borderY)
 
           // Now zoom again with updated borders/dimensions and center
-          self.hview.zoomTo(self.hview.maxBpPerPx)
-          self.vview.zoomTo(self.vview.maxBpPerPx)
+          self.hview.zoomTo(hMax())
+          self.vview.zoomTo(vMax())
           self.vview.center()
           self.hview.center()
         },
@@ -904,6 +943,17 @@ export default function stateModelFactory(pm: PluginManager) {
           addDisposer(
             self,
             autorun(
+              function dotplotAspectLockAutorun() {
+                if (self.lockAspectRatio) {
+                  self.syncBpPerPx()
+                }
+              },
+              { name: 'DotplotAspectLock' },
+            ),
+          )
+          addDisposer(
+            self,
+            autorun(
               function dotplotBorderAutorun() {
                 // make sure we have a width on the view before trying to load
                 if (self.volatileWidth === undefined) {
@@ -1011,6 +1061,7 @@ export default function stateModelFactory(pm: PluginManager) {
           fontSize,
           trackSelectorType,
           drawCigar,
+          lockAspectRatio,
           assemblyNames,
           viewTrackConfigs,
           ...rest
@@ -1027,6 +1078,7 @@ export default function stateModelFactory(pm: PluginManager) {
             ? { trackSelectorType }
             : {}),
           ...(!drawCigar ? { drawCigar } : {}),
+          ...(lockAspectRatio ? { lockAspectRatio } : {}),
           ...(assemblyNames.length ? { assemblyNames } : {}),
           ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
         } as typeof snap

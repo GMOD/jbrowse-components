@@ -122,7 +122,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
   model: DotplotViewModel
 }) {
   const { classes } = useStyles()
-  const { hview, vview, cursorMode } = model
+  const { hview, vview, cursorMode, lockAspectRatio } = model
 
   // Mouse coordinate tracking
   const {
@@ -144,7 +144,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
     mouserectClient,
     xdistance,
     ydistance,
-  } = useMouseCoordinates()
+  } = useMouseCoordinates(lockAspectRatio)
 
   // Cursor mode and validation
   const {
