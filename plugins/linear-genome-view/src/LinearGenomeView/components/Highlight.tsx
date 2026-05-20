@@ -11,9 +11,16 @@ import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model.ts'
-import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
+import type { HighlightType } from '../types.ts'
+import type { SessionWithWidgets, Widget } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
+
+// minimal shape we need from grid-bookmark's widget. declared here because
+// the linear-genome-view plugin can't import grid-bookmark types directly
+interface BookmarkWidget extends Widget {
+  addBookmark: (region: HighlightType) => void
+}
 
 const useStyles = makeStyles()(theme => ({
   highlight: {
@@ -40,61 +47,39 @@ const Highlight = observer(function Highlight({
   highlight,
 }: {
   model: LGV
-  highlight: {
-    assemblyName: string
-    refName: string
-    start: number
-    end: number
-  }
+  highlight: HighlightType
 }) {
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const session = getSession(model) as SessionWithWidgets
   const { assemblyManager } = session
 
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
   const dismissHighlight = () => {
     model.removeHighlight(highlight)
   }
 
-  const handleClose = () => {
-    setAnchorEl(null)
-  }
-
-  const mapCoords = (r: {
-    assemblyName: string
-    refName: string
-    start: number
-    end: number
-  }) => {
-    const s = model.bpToPx({
-      refName: r.refName,
-      coord: r.start,
-    })
-    const e = model.bpToPx({
-      refName: r.refName,
-      coord: r.end,
-    })
-    return s && e
+  const asm = assemblyManager.get(highlight.assemblyName)
+  const refName =
+    asm?.getCanonicalRefName(highlight.refName) ?? highlight.refName
+  const s = model.bpToPx({ refName, coord: highlight.start })
+  const e = model.bpToPx({ refName, coord: highlight.end })
+  const coords =
+    s && e
       ? {
           width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
           left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
         }
       : undefined
-  }
 
-  const asm = assemblyManager.get(highlight.assemblyName)
-
-  const h = mapCoords({
-    ...highlight,
-    refName: asm?.getCanonicalRefName(highlight.refName) ?? highlight.refName,
-  })
-
-  return h ? (
+  return coords ? (
     <div
       className={classes.highlight}
       style={{
-        transform: `translateX(${h.left}px)`,
-        width: h.width,
+        transform: `translateX(${coords.left}px)`,
+        width: coords.width,
       }}
     >
       <Tooltip title="Highlighted region" arrow>
@@ -114,7 +99,7 @@ const Highlight = observer(function Highlight({
           handleClose()
         }}
         open={Boolean(anchorEl)}
-        onClose={handleClose}
+        onClose={() => handleClose()}
         menuItems={[
           {
             label: 'Dismiss highlight',
@@ -127,15 +112,12 @@ const Highlight = observer(function Highlight({
             label: 'Bookmark highlighted region',
             icon: BookmarkIcon,
             onClick: () => {
-              let bookmarkWidget = session.widgets.get('GridBookmark')
-              if (!bookmarkWidget) {
-                bookmarkWidget = session.addWidget(
+              const bookmarkWidget = (session.widgets.get('GridBookmark') ??
+                session.addWidget(
                   'GridBookmarkWidget',
                   'GridBookmark',
-                )
-              }
-              // @ts-expect-error
-              bookmarkWidget.addBookmark(highlight as Region)
+                )) as BookmarkWidget
+              bookmarkWidget.addBookmark(highlight)
               session.showWidget(bookmarkWidget)
               dismissHighlight()
             },
