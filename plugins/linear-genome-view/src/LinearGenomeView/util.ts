@@ -1,40 +1,7 @@
-import { assembleLocString, getSession, parseLocString } from '@jbrowse/core/util'
+import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 
-import type { LinearGenomeViewModel } from './model.ts'
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
-
-/**
- * Map a region (highlight or bookmark) to its pixel position+width inside the
- * tracks container of a LinearGenomeView. Falls back to the raw refName if the
- * region's assemblyName is missing or unknown so highlights authored without an
- * assembly still render in single-assembly views.
- */
-export function getHighlightCoords(
-  model: LinearGenomeViewModel,
-  region: {
-    assemblyName?: string
-    refName: string
-    start: number
-    end: number
-  },
-) {
-  const { assemblyManager } = getSession(model)
-  const asm = region.assemblyName
-    ? assemblyManager.get(region.assemblyName)
-    : undefined
-  const refName = asm?.getCanonicalRefName(region.refName) ?? region.refName
-  const s = model.bpToPx({ refName, coord: region.start })
-  const e = model.bpToPx({ refName, coord: region.end })
-  return s && e
-    ? {
-        // floor at 3px so the band stays visible when zoomed far enough out
-        // that the highlight collapses to a sub-pixel sliver
-        width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
-        left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
-      }
-    : undefined
-}
 
 /**
  * Expand a region by a grow factor, adding padding on each side.

@@ -1,14 +1,13 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
-import { Tooltip } from '@mui/material'
+import { Tooltip, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getHighlightCoords } from '../util.ts'
+import HighlightBand from './HighlightBand.tsx'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { HighlightType } from '../types.ts'
@@ -22,25 +21,6 @@ interface BookmarkWidget extends Widget {
   addBookmark: (region: HighlightType) => void
 }
 
-const useStyles = makeStyles()(theme => ({
-  highlight: {
-    height: '100%',
-    position: 'absolute',
-    left: 0,
-    overflow: 'hidden',
-    background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
-    // paint above sibling TrackContainers (which would otherwise win in
-    // tree order). pointer-events:none lets clicks fall through to the
-    // tracks except on the chip itself
-    zIndex: 1,
-    pointerEvents: 'none',
-  },
-  iconButton: {
-    pointerEvents: 'auto',
-    color: colord(theme.palette.highlight.main).darken(0.2).toRgbString(),
-  },
-}))
-
 const Highlight = observer(function Highlight({
   model,
   highlight,
@@ -48,20 +28,17 @@ const Highlight = observer(function Highlight({
   model: LGV
   highlight: HighlightType
 }) {
-  const { classes } = useStyles()
+  const theme = useTheme()
   const session = getSession(model) as SessionWithWidgets
-  const coords = getHighlightCoords(model, highlight)
+  const coords = model.getHighlightCoords(highlight)
+  const highlightColor = colord(theme.palette.highlight.main)
 
   return coords ? (
-    <div
-      className={classes.highlight}
-      style={{
-        transform: `translateX(${coords.left}px)`,
-        width: coords.width,
-      }}
+    <HighlightBand
+      coords={coords}
+      background={highlightColor.alpha(0.35).toRgbString()}
     >
       <CascadingMenuButton
-        className={classes.iconButton}
         menuItems={[
           {
             label: 'Dismiss highlight',
@@ -84,7 +61,8 @@ const Highlight = observer(function Highlight({
               // the bookmark Region MST type requires it
               bookmarkWidget.addBookmark({
                 ...highlight,
-                assemblyName: highlight.assemblyName ?? model.assemblyNames[0],
+                assemblyName:
+                  highlight.assemblyName ?? model.assemblyNames[0],
               })
               session.showWidget(bookmarkWidget)
               model.removeHighlight(highlight)
@@ -93,10 +71,13 @@ const Highlight = observer(function Highlight({
         ]}
       >
         <Tooltip title="Highlighted region" arrow>
-          <LinkIcon fontSize="small" />
+          <LinkIcon
+            fontSize="small"
+            sx={{ color: highlightColor.darken(0.2).toRgbString() }}
+          />
         </Tooltip>
       </CascadingMenuButton>
-    </div>
+    </HighlightBand>
   ) : null
 })
 

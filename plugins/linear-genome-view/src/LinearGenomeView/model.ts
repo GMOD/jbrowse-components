@@ -1804,6 +1804,37 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
+       * Map a highlight or bookmark region to its pixel position+width inside
+       * the tracks container. Falls back to the raw refName if the region's
+       * assemblyName is missing or unknown so highlights authored without an
+       * assembly still render in single-assembly views.
+       */
+      getHighlightCoords(region: {
+        assemblyName?: string
+        refName: string
+        start: number
+        end: number
+      }) {
+        const { assemblyManager } = getSession(self)
+        const asm = region.assemblyName
+          ? assemblyManager.get(region.assemblyName)
+          : undefined
+        const refName =
+          asm?.getCanonicalRefName(region.refName) ?? region.refName
+        const s = this.bpToPx({ refName, coord: region.start })
+        const e = this.bpToPx({ refName, coord: region.end })
+        return s && e
+          ? {
+              // floor at 3px so the band stays visible when zoomed far enough
+              // out that the highlight collapses to a sub-pixel sliver
+              width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
+              left: Math.min(s.offsetPx, e.offsetPx) - self.offsetPx,
+            }
+          : undefined
+      },
+
+      /**
+       * #method
        * scrolls the view to center on the given bp. if that is not in any of
        * the displayed regions, does nothing
        *
