@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Delete from '@mui/icons-material/Delete'
-import { IconButton, Link, Stack, Tooltip, useTheme } from '@mui/material'
+import { IconButton, Link, Tooltip, useTheme } from '@mui/material'
 import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
@@ -51,7 +51,7 @@ const HighlightGrid = observer(function HighlightGrid({
           locString: assembleLocString({ refName, start, end }),
           label: highlight.label ?? '',
           assemblyName,
-          color: highlight.color ?? '',
+          color: highlight.color,
         }
       }),
     )
@@ -63,21 +63,20 @@ const HighlightGrid = observer(function HighlightGrid({
   return rows.length ? (
     <DataGridFlexContainer>
       {selectedIds.size > 0 ? (
-        <Stack direction="row" alignItems="center" px={1}>
-          <Tooltip title={`Delete ${selectedIds.size} selected highlight(s)`}>
-            <IconButton
-              size="small"
-              onClick={() => {
-                for (const r of rows.filter(r => selectedIds.has(r.id))) {
-                  r.view.removeHighlight(r.highlight)
-                }
-                setSelectedIds(new Set())
-              }}
-            >
-              <Delete fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Stack>
+        <Tooltip title={`Delete ${selectedIds.size} selected highlight(s)`}>
+          <IconButton
+            size="small"
+            sx={{ ml: 1 }}
+            onClick={() => {
+              for (const r of rows.filter(r => selectedIds.has(r.id))) {
+                r.view.removeHighlight(r.highlight)
+              }
+              setSelectedIds(new Set())
+            }}
+          >
+            <Delete fontSize="small" />
+          </IconButton>
+        </Tooltip>
       ) : null}
       <DataGrid
         density="compact"
