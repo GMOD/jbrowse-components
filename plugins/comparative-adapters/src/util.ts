@@ -31,8 +31,10 @@ export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
 
 // Identity in [0,1] from a parsed PAF row's `extra` map. Prefers the
 // `de:f:` tag (minimap2 / make-pif gap-compressed divergence) since it is
-// computed from the actual CIGAR. Falls back to odgi untangle's `id:f:` tag
-// (a percentage or fraction), then to residue matches over block length.
+// computed from the actual CIGAR — same identity source rustybam's `rb stats
+// --paf` writes and SVbyEye computes per-bin. Falls back to odgi untangle's
+// `id:f:` tag (a percentage or fraction), then to residue matches over block
+// length.
 export function pafIdentity(
   extra: Record<string, string | number | undefined>,
 ) {

@@ -14,6 +14,10 @@ export interface AlignmentRecord {
   tend: number
   numMatches: number
   blockLen: number
+  // Gap-compressed per-base divergence (1 - identity), CIGAR-derived. When
+  // present, takes precedence over numMatches/blockLen for the block's
+  // meanIdentity.
+  de?: number
 }
 
 export interface StructuralBlock {
@@ -28,6 +32,13 @@ export interface StructuralBlock {
   tend: number
   syriType: SyriType
   meanIdentity: number
+}
+
+// When de (CIGAR-derived divergence) is available, treat the record's
+// "matches contribution" as (1 - de) * blockLen so the block-mean math stays
+// `totalMatches / totalBlockLen`. Falls back to the PAF nmatch column.
+function matchesFor(rec: AlignmentRecord) {
+  return rec.de !== undefined ? (1 - rec.de) * rec.blockLen : rec.numMatches
 }
 
 export function mergeIntoStructuralBlocks(
@@ -79,7 +90,7 @@ export function mergeIntoStructuralBlocks(
     let blockTEnd = current.rec.tend
     let blockQStart = current.rec.qstart
     let blockQEnd = current.rec.qend
-    let totalMatches = current.rec.numMatches
+    let totalMatches = matchesFor(current.rec)
     let totalBlockLen = current.rec.blockLen
 
     for (let i = 1; i < group.length; i++) {
@@ -89,7 +100,7 @@ export function mergeIntoStructuralBlocks(
         blockTEnd = Math.max(blockTEnd, next.rec.tend)
         blockQStart = Math.min(blockQStart, next.rec.qstart)
         blockQEnd = Math.max(blockQEnd, next.rec.qend)
-        totalMatches += next.rec.numMatches
+        totalMatches += matchesFor(next.rec)
         totalBlockLen += next.rec.blockLen
       } else {
         // Flush current block

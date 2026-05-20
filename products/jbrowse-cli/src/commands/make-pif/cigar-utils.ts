@@ -28,6 +28,10 @@ export function swapIndelCigar(cigar: string): string {
 // for empty CIGARs or CIGARs that only use `M` (which conflates matches and
 // mismatches). Counts each insertion / deletion run as a single event.
 // Formula: 1 - matches / (matches + mismatches + insertionEvents + deletionEvents)
+// This mirrors rustybam's `rb stats --paf` `perID_by_all` column (and the
+// `de:f:` tag minimap2 itself emits) — see https://github.com/mrvollger/rustybam
+// for the upstream pipeline used by SafFire. Storing identity at build time
+// is the same trick SVbyEye uses to make its plots cheap to recolor.
 export function computeDeFromCigar(cigarStr: string): number | undefined {
   const ops = parseCigar(cigarStr)
   if (ops.length === 0) {

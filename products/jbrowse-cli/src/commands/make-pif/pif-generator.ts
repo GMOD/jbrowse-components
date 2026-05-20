@@ -150,6 +150,18 @@ async function writePairAlignments(
         } else {
           rest[deIdx] = deTag
         }
+        allSubAlignments[i]!.record.de = de
+      }
+    }
+    // If we couldn't compute de but an upstream tool emitted one (e.g.
+    // minimap2 from M-only CIGARs), propagate it to the structural tier.
+    if (allSubAlignments[i]!.record.de === undefined) {
+      const existing = rest.find(f => f.startsWith('de:f:'))
+      if (existing) {
+        const parsed = +existing.slice(5)
+        if (Number.isFinite(parsed) && parsed >= 0 && parsed <= 1) {
+          allSubAlignments[i]!.record.de = parsed
+        }
       }
     }
     const summaryRest = stripDetailFromRest(rest)

@@ -77,3 +77,26 @@ test('computes mean identity from merged records', () => {
   // (90+80)/(100+100) = 0.85
   expect(blocks[0]!.meanIdentity).toBeCloseTo(0.85, 2)
 })
+
+test('prefers de when present (CIGAR-derived identity)', () => {
+  // numMatches says 50% identity but de says 99% — de should win.
+  const records: AlignmentRecord[] = [
+    { ...rec('chr1', 0, 1000, 'chr1', 0, 1000, '+', 50, 100), de: 0.01 },
+    { ...rec('chr1', 1000, 2000, 'chr1', 1000, 2000, '+', 50, 100), de: 0.03 },
+  ]
+  const blocks = mergeIntoStructuralBlocks(records, 50000)
+  expect(blocks.length).toBe(1)
+  // ((1-0.01)*100 + (1-0.03)*100) / 200 = 0.98
+  expect(blocks[0]!.meanIdentity).toBeCloseTo(0.98, 2)
+})
+
+test('falls back to numMatches when de is missing', () => {
+  const records: AlignmentRecord[] = [
+    { ...rec('chr1', 0, 1000, 'chr1', 0, 1000, '+', 90, 100), de: 0.05 },
+    rec('chr1', 1000, 2000, 'chr1', 1000, 2000, '+', 80, 100),
+  ]
+  const blocks = mergeIntoStructuralBlocks(records, 50000)
+  expect(blocks.length).toBe(1)
+  // ((1-0.05)*100 + 80) / 200 = 0.875
+  expect(blocks[0]!.meanIdentity).toBeCloseTo(0.875, 3)
+})
