@@ -134,6 +134,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
+      samplot: false,
       drawInter: false,
       drawLongRange: true,
     })
@@ -195,6 +196,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
+      samplot: false,
       drawInter: false,
       drawLongRange: true,
     })
@@ -273,6 +275,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
+      samplot: false,
       drawInter: false,
       drawLongRange: true,
     })
@@ -340,6 +343,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'orientation',
+      samplot: false,
       drawInter: false,
       drawLongRange: true,
     })
@@ -368,6 +372,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSize',
+      samplot: false,
       drawInter: false,
       drawLongRange: true,
     })
@@ -396,6 +401,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
       colorByType: 'insertSizeAndOrientation',
+      samplot: false,
       drawInter: false,
       drawLongRange: true,
     })
@@ -422,7 +428,8 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const opts = {
-      colorByType: 'samplot' as const,
+      colorByType: 'insertSizeAndOrientation' as const,
+      samplot: true,
       drawInter: false,
       drawLongRange: true,
     }
@@ -445,6 +452,40 @@ describe('computeArcsFromPileupData', () => {
     expect(run(4).arcs[0]!.colorType).toBe(2)
   })
 
+  test('samplot drops concordant FR pairs within insert-size stats band', () => {
+    const mkPair = (tlen: number) =>
+      makePileupData({
+        regionStart: 0,
+        readPositions: new Uint32Array([0, 100]),
+        readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+        readStrands: new Int8Array([1]),
+        readInsertSizes: new Float32Array([tlen]),
+        readPairOrientations: new Uint8Array([1]),
+        readNames: ['readA'],
+        readNextRefs: ['chr1'],
+        readNextPositions: new Uint32Array([500]),
+        insertSizeStats: { upper: 500, lower: 100 },
+      })
+    const regions = [
+      { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
+    ]
+    const opts = {
+      colorByType: 'insertSizeAndOrientation' as const,
+      samplot: true,
+      drawInter: false,
+      drawLongRange: true,
+    }
+    // tlen=300 ∈ [100, 500] FR → dropped
+    expect(
+      computeArcsFromPileupData(new Map([[0, mkPair(300)]]), regions, opts).arcs,
+    ).toHaveLength(0)
+    // tlen=10000 > upper → kept (discordant long-insert)
+    expect(
+      computeArcsFromPileupData(new Map([[0, mkPair(10000)]]), regions, opts)
+        .arcs,
+    ).toHaveLength(1)
+  })
+
   test('samplot SA-tag arcs: opposite strands → INV, same strand → DEL', () => {
     const mkSplit = (primaryStrand: number, saStrand: '+' | '-') =>
       makePileupData({
@@ -461,7 +502,8 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const opts = {
-      colorByType: 'samplot' as const,
+      colorByType: 'insertSizeAndOrientation' as const,
+      samplot: true,
       drawInter: false,
       drawLongRange: true,
     }

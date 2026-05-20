@@ -122,6 +122,16 @@ export function migrateAlignmentsSnapshot(
   // Fold paired boolean toggles into single enum fields
   result = migrateBooleanPairsToEnum(result)
 
+  // arcColorByType: 'samplot' → pairedArcs: 'samplot' (samplot is now a
+  // pairedArcs mode rather than a color scheme).
+  if (result.arcColorByType === 'samplot') {
+    result = {
+      ...result,
+      arcColorByType: 'insertSizeAndOrientation',
+      pairedArcs: 'samplot',
+    }
+  }
+
   // Migrate individual override properties → configOverrides
   return migrateOverrideProperties(result)
 }

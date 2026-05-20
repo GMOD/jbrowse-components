@@ -10,6 +10,7 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
 import { drawAlignmentsToCtx } from './components/Canvas2DAlignmentsRenderer.ts'
+import TlenAxisLabel from './components/TlenAxisLabel.tsx'
 import { makeBpToScreenX } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
@@ -127,6 +128,12 @@ export async function renderSvg(
         // 50 matches the on-screen SVG width for the insert-size scale bar
         <g transform={`translate(${totalWidth - 50})`}>
           <YScaleBar ticks={model.insertSizeTicks} orientation="right" />
+          {model.pairedArcs === 'samplot' ? (
+            <TlenAxisLabel
+              yTop={model.insertSizeTicks.yTop}
+              yBottom={model.insertSizeTicks.yBottom}
+            />
+          ) : null}
         </g>
       ) : null}
     </>

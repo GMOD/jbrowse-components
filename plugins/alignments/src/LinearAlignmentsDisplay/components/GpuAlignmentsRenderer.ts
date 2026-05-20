@@ -94,7 +94,6 @@ import type {
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
-import type { ArcColorByType } from '../../shared/types.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 // Shader strides — every pass shares the same Uniforms struct (see
@@ -207,11 +206,7 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
 
 // Pack every palette color into the UBO as u32 ABGR. Pure — writes through
 // the given u32 view only, no rendering side effects.
-function writePaletteToUbo(
-  u: Uint32Array,
-  c: ColorPalette,
-  arcColorByType: ArcColorByType | undefined,
-) {
+function writePaletteToUbo(u: Uint32Array, c: ColorPalette, samplot: boolean) {
   const pack = (rgb: RGBColor) => normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
   u[U.colorFwd] = pack(c.colorFwdStrand)
   u[U.colorRev] = pack(c.colorRevStrand)
@@ -236,7 +231,7 @@ function writePaletteToUbo(
   u[U.colorShortInsert] = pack(c.colorShortInsert)
   u[U.colorSupplementary] = pack(c.colorSupplementary)
   u[U.colorUnmappedMate] = pack(c.colorUnmappedMate)
-  const arcPal = getArcPalette(arcColorByType)
+  const arcPal = getArcPalette(samplot)
   for (let i = 0; i < arcPal.length; i++) {
     u[USLOTS.arcColor[i]!] = pack(arcPal[i]!)
   }
@@ -433,7 +428,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
   private writeUniforms(state: RenderState, frame: BlockFrame) {
     fillFrameUniforms(this.uF32, this.uU32, this.uI32, state, frame)
-    writePaletteToUbo(this.uU32, state.colors, state.arcColorByType)
+    writePaletteToUbo(this.uU32, state.colors, state.pairedArcs === 'samplot')
     if (state.showModifications) {
       // Canvas equivalent: buildBaseColorMap / buildCigarOpDrawColors in
       // features/mismatch/baseColors.ts — keep in sync when changing this.

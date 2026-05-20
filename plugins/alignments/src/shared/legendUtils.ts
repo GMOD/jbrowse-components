@@ -57,12 +57,18 @@ const samplotLegendItems: LegendItem[] = [
 
 /**
  * Get legend items for read cloud/arcs display based on colorBy setting.
- * Used by both LinearReadCloudDisplay and LinearReadArcsDisplay.
+ * Used by both LinearReadCloudDisplay and LinearReadArcsDisplay. When
+ * `samplot` is true the samplot DEL/DUP/INV/BND legend wins over the
+ * pileup color scheme — samplot mode dominates the arc band display.
  */
 export function getReadDisplayLegendItems(
   colorBy: ColorBy | undefined,
   visibleModifications?: ReadonlyMap<string, ModificationTypeWithColor>,
+  samplot = false,
 ): LegendItem[] {
+  if (samplot) {
+    return samplotLegendItems
+  }
   const colorType = colorBy?.type
 
   if (colorType === 'modifications' && visibleModifications) {
@@ -81,9 +87,6 @@ export function getReadDisplayLegendItems(
   }
   if (colorType === 'orientation') {
     return orientationLegendItems
-  }
-  if (colorType === 'samplot') {
-    return samplotLegendItems
   }
   if (colorType === 'mappingQuality') {
     return [

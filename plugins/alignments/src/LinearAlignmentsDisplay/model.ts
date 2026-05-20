@@ -42,6 +42,7 @@ import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
   ARC_DIRECTION_OPTIONS,
   LINKED_READS_OPTIONS,
+  PAIRED_ARCS_OPTIONS,
   getColorByMenuItem,
   getCoverageMenuItem,
   getFiltersMenuItem,
@@ -59,7 +60,11 @@ import type {
   RenderState as AlignmentsRenderState,
 } from './components/AlignmentsRenderer.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
-import type { ArcDirection, LinkedReadsMode } from './constants.ts'
+import type {
+  ArcDirection,
+  LinkedReadsMode,
+  PairedArcsMode,
+} from './constants.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { AlignmentsBackend } from './components/rendererTypes.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
@@ -94,7 +99,6 @@ const arcColorByTypes = types.enumeration<ArcColorByType>('ArcColorByType', [
   'insertSizeAndOrientation',
   'insertSize',
   'orientation',
-  'samplot',
 ])
 
 export {
@@ -230,10 +234,11 @@ export default function stateModelFactory(
           'insertSizeAndOrientation',
         ),
         pairedArcs: types.optional(
-          types.enumeration<ArcDirection>('PairedArcsMode', [
+          types.enumeration<PairedArcsMode>('PairedArcsMode', [
             'off',
             'up',
             'down',
+            'samplot',
           ]),
           'off',
         ),
@@ -449,7 +454,11 @@ export default function stateModelFactory(
       },
 
       get legendItems(): LegendItem[] {
-        return getReadDisplayLegendItems(self.getOverride<ColorBy>('colorBy'))
+        return getReadDisplayLegendItems(
+          self.getOverride<ColorBy>('colorBy'),
+          undefined,
+          self.pairedArcs === 'samplot',
+        )
       },
 
       get laidOutPileupMap() {
@@ -490,6 +499,7 @@ export default function stateModelFactory(
           allRegionInfos,
           {
             colorByType: self.arcColorByType,
+            samplot: self.pairedArcs === 'samplot',
             drawInter: self.drawInter,
             drawLongRange: self.drawLongRange,
           },
@@ -771,7 +781,6 @@ export default function stateModelFactory(
           linkedReads: self.linkedReads,
           flipStrandLongReadChains: self.flipStrandLongReadChains,
           arcLineWidth: self.lineWidth,
-          arcColorByType: self.arcColorByType,
           arcsYDomainBp: this.arcsYDomainBp,
           bpRangeX: [0, 0],
         }
@@ -779,7 +788,7 @@ export default function stateModelFactory(
 
       // Floored at 1000bp to avoid near-zero division when all pairs are concordant.
       get arcsYDomainBp(): number | undefined {
-        if (self.arcColorByType !== 'samplot') {
+        if (self.pairedArcs !== 'samplot') {
           return undefined
         }
         let maxBp = 0
@@ -793,20 +802,17 @@ export default function stateModelFactory(
 
       get insertSizeTicks(): YScaleTicks | undefined {
         const domain = this.arcsYDomainBp
-        if (self.pairedArcs === 'off' || domain === undefined) {
+        if (domain === undefined) {
           return undefined
         }
-        // Match the renderer's arcsCtxHeight / arcTop: pointing-up overlays
-        // the coverage area (band = coverageHeight, top = 0), pointing-down
-        // gets its own band below coverage (band = arcsHeight, top = covH).
-        // Fall back to 0 when coverage is hidden.
-        const covH = self.showCoverage ? self.coverageHeight : 0
-        const isDown = self.pairedArcs === 'down'
+        // Samplot always overlays the coverage band pointing-up — the
+        // arcsYDomainBp guard above ensures this getter only runs in
+        // samplot mode. Fall back to 0 when coverage is hidden.
         return computeInsertSizeTicks({
           arcsYDomainBp: domain,
-          arcsHeight: isDown ? self.arcsHeight : covH,
-          pairedArcsDown: isDown,
-          arcsTop: isDown ? covH : 0,
+          arcsHeight: self.showCoverage ? self.coverageHeight : 0,
+          pairedArcsDown: false,
+          arcsTop: 0,
         })
       },
     }))
@@ -1078,7 +1084,7 @@ export default function stateModelFactory(
           self.sashimiArcs = mode
         },
 
-        setPairedArcs(mode: ArcDirection) {
+        setPairedArcs(mode: PairedArcsMode) {
           self.pairedArcs = mode
         },
 
@@ -1427,27 +1433,13 @@ export default function stateModelFactory(
               {
                 label: 'Paired arcs',
                 type: 'subMenu' as const,
-                subMenu: [
-                  ...radioModeSubMenu(
-                    ARC_DIRECTION_OPTIONS,
-                    self.pairedArcs,
-                    v => {
-                      self.setPairedArcs(v)
-                    },
-                  ),
-                  {
-                    label: 'Samplot mode (flat lines, Y = |insert size|)',
-                    type: 'checkbox' as const,
-                    checked: self.arcColorByType === 'samplot',
-                    onClick: () => {
-                      self.setColorByType(
-                        self.arcColorByType === 'samplot'
-                          ? 'insertSizeAndOrientation'
-                          : 'samplot',
-                      )
-                    },
+                subMenu: radioModeSubMenu(
+                  PAIRED_ARCS_OPTIONS,
+                  self.pairedArcs,
+                  v => {
+                    self.setPairedArcs(v)
                   },
-                ],
+                ),
               },
               {
                 label: 'Sashimi arcs',

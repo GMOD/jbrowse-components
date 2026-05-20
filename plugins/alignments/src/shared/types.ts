@@ -9,7 +9,6 @@ export type ArcColorByType =
   | 'insertSizeAndOrientation'
   | 'insertSize'
   | 'orientation'
-  | 'samplot'
 
 export interface ColorBy {
   type: string

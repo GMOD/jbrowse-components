@@ -11,6 +11,7 @@ import { observer } from 'mobx-react'
 
 import PileupArcsOverlay from './PileupArcsOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
+import TlenAxisLabel from './TlenAxisLabel.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { formatChainTooltip, formatFeatureTooltip } from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
@@ -402,7 +403,7 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { insertSizeTicks } = model
+  const { insertSizeTicks, pairedArcs } = model
   if (!insertSizeTicks) {
     return null
   }
@@ -418,6 +419,12 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
       }}
     >
       <YScaleBar ticks={insertSizeTicks} orientation="right" />
+      {pairedArcs === 'samplot' ? (
+        <TlenAxisLabel
+          yTop={insertSizeTicks.yTop}
+          yBottom={insertSizeTicks.yBottom}
+        />
+      ) : null}
     </svg>
   )
 })

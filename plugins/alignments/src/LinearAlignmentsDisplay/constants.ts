@@ -25,6 +25,11 @@ export type LinkedReadsMode = 'off' | 'normal' | 'bezier'
 // coverage band; 'down' opens its own band below coverage.
 export type ArcDirection = 'off' | 'up' | 'down'
 
+// Paired-end arc mode. Adds 'samplot' on top of ArcDirection: samplot
+// always renders pointing-up (over coverage) as flat lines at Y=|tlen|,
+// colored DEL/DUP/INV/BND, and skips concordant FR pairs.
+export type PairedArcsMode = ArcDirection | 'samplot'
+
 export type InsertionType = 'large' | 'long' | 'small'
 
 export function getInsertionType(

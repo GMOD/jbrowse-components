@@ -110,7 +110,7 @@ export function drawArcs(
     arcsH,
     pairedArcsDown,
     lineWidth: state.arcLineWidth ?? 1,
-    palette: getArcPalette(state.arcColorByType),
+    palette: getArcPalette(state.pairedArcs === 'samplot'),
   })
 
   for (let i = 0; i < region.numArcLines; i++) {

@@ -52,6 +52,9 @@ interface RegionInfo {
 
 interface ArcSettings {
   colorByType: ArcColorByType
+  // samplot mode: flat lines at Y=|tlen| with DEL/DUP/INV/BND coloring,
+  // and concordant FR pairs filtered out so only discordant pairs remain.
+  samplot: boolean
   drawInter: boolean
   drawLongRange: boolean
 }
@@ -72,6 +75,21 @@ function getOrientationColorIndex(pairOrientationNum: number) {
     default:
       return undefined
   }
+}
+
+// A pair is concordant FR (the modal, "normal" insert) when its tlen sits
+// inside the insert-size stats band AND it is LR orientation. Samplot drops
+// these to surface SV signals (mirrors samplot.py's --max_depth 1 default).
+function isConcordantFRPair(
+  pairOrientationNum: number | undefined,
+  tlen: number | undefined,
+  stats: { upper: number; lower: number } | undefined,
+) {
+  if (pairOrientationNum !== 1 || tlen === undefined || stats === undefined) {
+    return false
+  }
+  const abs = Math.abs(tlen)
+  return abs >= stats.lower && abs <= stats.upper
 }
 
 // Samplot palette: 0=DEL/normal (black), 1=DUP (red), 2=INV (blue). Matches
@@ -104,7 +122,6 @@ function getSamplotColorIndex(
 // classifier reads as a story rather than as magic numbers.
 const COLOR_DEFAULT = 0
 const COLOR_LONG_INSERT = 1
-const COLOR_GRADIENT = 8
 const COLOR_UNPAIRED_FR = 4
 const COLOR_UNPAIRED_RF = 7
 
@@ -119,7 +136,8 @@ function unpairedOrientationColor(p1Strand: number, p2Strand: number) {
 }
 
 function getArcColorType(args: {
-  colorByType: string
+  colorByType: ArcColorByType
+  samplot: boolean
   hasPaired: boolean
   longRange: boolean
   drawArcInsteadOfBezier: boolean
@@ -133,6 +151,7 @@ function getArcColorType(args: {
 }) {
   const {
     colorByType,
+    samplot,
     hasPaired,
     longRange,
     drawArcInsteadOfBezier,
@@ -148,7 +167,7 @@ function getArcColorType(args: {
   // Two overrides apply regardless of scheme:
   //   samplot uses its own DEL/DUP/INV palette
   //   long-range arcs (drawn as semicircles) always paint as long-insert
-  if (colorByType === 'samplot') {
+  if (samplot) {
     return getSamplotColorIndex(pairOrientationNum ?? 0, p1Strand, p2Strand)
   }
   if (longRange && drawArcInsteadOfBezier) {
@@ -160,9 +179,6 @@ function getArcColorType(args: {
     getInsertSizeColorIndex(p1Ref, p2Ref, tlen ?? 0, stats) ?? COLOR_DEFAULT
 
   switch (colorByType) {
-    case 'gradient':
-      return COLOR_GRADIENT
-
     case 'insertSize':
       return hasPaired ? insertSizeColor() : COLOR_DEFAULT
 
@@ -176,9 +192,6 @@ function getArcColorType(args: {
         ? (getOrientationColorIndex(pairOrientationNum ?? 0) ??
             insertSizeColor())
         : unpairedOrientationColor(p1Strand, p2Strand)
-
-    default:
-      return COLOR_DEFAULT
   }
 }
 
@@ -269,6 +282,38 @@ function parseSATag(sa: string): SAAlignment[] {
   return result
 }
 
+// Pick the shape constant and target Y (in genomic bp) for a single arc.
+// Samplot: flat line at Y=|tlen| with ±8% multiplicative jitter so coincident
+// reads separate visually. Arc mode: semicircle when the span exceeds the
+// bezier threshold, otherwise bezier — Y is the genomic radius |x2-x1|/2.
+function computeArcShape({
+  samplot,
+  isSplit,
+  longRange,
+  drawArcInsteadOfBezier,
+  absrad,
+  tlen,
+}: {
+  samplot: boolean
+  isSplit: boolean
+  longRange: boolean
+  drawArcInsteadOfBezier: boolean
+  absrad: number
+  tlen: number | undefined
+}) {
+  if (samplot) {
+    const baseY = tlen !== undefined ? Math.abs(tlen) : absrad
+    const jitter = 1 + SAMPLOT_JITTER_BOUNDS * (Math.random() * 2 - 1)
+    return {
+      shapeType: isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT,
+      yBp: Math.round(baseY * jitter),
+    }
+  }
+  const shapeType =
+    longRange && drawArcInsteadOfBezier ? ARC_SHAPE_SEMICIRCLE : ARC_SHAPE_BEZIER
+  return { shapeType, yBp: absrad }
+}
+
 function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
   const radii = pendingArcs
     .filter(a => a.p1Ref === a.p2Ref)
@@ -288,8 +333,7 @@ export function computeArcsFromPileupData(
   regions: RegionInfo[],
   settings: ArcSettings,
 ) {
-  const { colorByType, drawInter, drawLongRange } = settings
-  const samplot = colorByType === 'samplot'
+  const { colorByType, samplot, drawInter, drawLongRange } = settings
 
   const readsByName = new Map<
     string,
@@ -450,6 +494,7 @@ export function computeArcsFromPileupData(
     tlen,
     isSplit,
   } of pendingArcs) {
+    // Interchromosomal: never an arc — drop a tick on each endpoint.
     if (p1Ref !== p2Ref) {
       if (drawInter) {
         lines.push(
@@ -460,13 +505,31 @@ export function computeArcsFromPileupData(
       continue
     }
 
-    const radius = (p2Bp - p1Bp) / 2
-    const absrad = Math.abs(radius)
+    // Samplot suppresses the modal-insert FR pairs so SV signals stand out.
+    if (samplot && isConcordantFRPair(pairOrientationNum, tlen, stats)) {
+      continue
+    }
+
+    const absrad = Math.abs((p2Bp - p1Bp) / 2)
     const longRange = absrad >= longRangeThreshold
     const drawArcInsteadOfBezier = absrad > ARC_VS_BEZIER_THRESHOLD
 
+    // Arc-mode very long-range pairs render as vertical lines rather than
+    // tiny bumps. Samplot has no equivalent cap — its flat lines look fine
+    // off-band — so the gate is arc-mode-only.
+    if (!samplot && longRange && absrad > VERTICAL_LINE_THRESHOLD) {
+      if (drawLongRange) {
+        lines.push(
+          { x: { refName: p1Ref, bp: p1Bp }, colorType: 1 },
+          { x: { refName: p1Ref, bp: p2Bp }, colorType: 1 },
+        )
+      }
+      continue
+    }
+
     const colorType = getArcColorType({
       colorByType,
+      samplot,
       hasPaired,
       longRange,
       drawArcInsteadOfBezier,
@@ -478,34 +541,14 @@ export function computeArcsFromPileupData(
       p2Strand,
       stats,
     })
-
-    // Samplot skips the vertical-line threshold — flat lines above the
-    // arcs band cap look correct for long-range pairs and samplot.py has no
-    // equivalent cutoff.
-    if (!samplot && longRange && absrad > VERTICAL_LINE_THRESHOLD) {
-      if (drawLongRange) {
-        lines.push(
-          { x: { refName: p1Ref, bp: p1Bp }, colorType: 1 },
-          { x: { refName: p1Ref, bp: p2Bp }, colorType: 1 },
-        )
-      }
-      continue
-    }
-
-    let shapeType: number
-    if (samplot) {
-      shapeType = isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT
-    } else if (longRange && drawArcInsteadOfBezier) {
-      shapeType = ARC_SHAPE_SEMICIRCLE
-    } else {
-      shapeType = ARC_SHAPE_BEZIER
-    }
-    const rawYBp = samplot && tlen !== undefined ? Math.abs(tlen) : absrad
-    const yBp = samplot
-      ? Math.round(
-          rawYBp * (1 + SAMPLOT_JITTER_BOUNDS * (Math.random() * 2 - 1)),
-        )
-      : rawYBp
+    const { shapeType, yBp } = computeArcShape({
+      samplot,
+      isSplit,
+      longRange,
+      drawArcInsteadOfBezier,
+      absrad,
+      tlen,
+    })
 
     arcs.push({
       p1: { refName: p1Ref, bp: p1Bp },

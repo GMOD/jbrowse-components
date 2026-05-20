@@ -1,6 +1,7 @@
 import type {
   ArcDirection,
   LinkedReadsMode,
+  PairedArcsMode,
 } from '../../LinearAlignmentsDisplay/constants.ts'
 
 // Single home for each mode-enum's user-visible labels, so menu code never
@@ -9,6 +10,16 @@ export const ARC_DIRECTION_OPTIONS: { value: ArcDirection; label: string }[] = [
   { value: 'off', label: 'Off' },
   { value: 'up', label: 'Pointing up' },
   { value: 'down', label: 'Pointing down' },
+]
+
+// Paired-arcs adds a fourth 'samplot' option (always pointing-up over
+// coverage, with discordant-only filter and DEL/DUP/INV/BND coloring).
+export const PAIRED_ARCS_OPTIONS: {
+  value: PairedArcsMode
+  label: string
+}[] = [
+  ...ARC_DIRECTION_OPTIONS,
+  { value: 'samplot', label: 'Samplot (discordant only)' },
 ]
 
 export const LINKED_READS_OPTIONS: {
