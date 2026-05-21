@@ -1,4 +1,4 @@
-import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import {
@@ -25,6 +25,7 @@ type SequenceDisplayMode =
   | 'gene'
   | 'gene_collapsed_intron'
   | 'gene_updownstream'
+  | 'gene_updownstream_collapsed_intron'
   | 'cdna'
   | 'cds'
   | 'genomic'
@@ -65,6 +66,8 @@ export function SequenceFeatureDetailsF() {
       /**
        * #volatile
        */
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       mode: '' as SequenceDisplayMode,
     }))
     .actions(self => ({
@@ -126,26 +129,30 @@ export function SequenceFeatureDetailsF() {
       /**
        * #getter
        */
-      get hasCDS() {
+      get hasCDS(): boolean {
         const featureType = self.feature?.type?.toLowerCase()
         if (featureType === 'mature_protein_region_of_cds') {
           return true
         }
-        return self.feature?.subfeatures?.some(sub => {
-          const type = sub.type?.toLowerCase()
-          return type === 'cds' || type === 'mature_protein_region_of_cds'
-        })
+        return (
+          self.feature?.subfeatures?.some(sub => {
+            const type = sub.type?.toLowerCase()
+            return type === 'cds' || type === 'mature_protein_region_of_cds'
+          }) ?? false
+        )
       },
       /**
        * #getter
        */
-      get hasExon() {
-        return self.feature?.subfeatures?.some(sub => sub.type === 'exon')
+      get hasExon(): boolean {
+        return (
+          self.feature?.subfeatures?.some(sub => sub.type === 'exon') ?? false
+        )
       },
       /**
        * #getter
        */
-      get hasExonOrCDS() {
+      get hasExonOrCDS(): boolean {
         return this.hasExon || this.hasCDS
       },
     }))
@@ -179,16 +186,6 @@ export function SequenceFeatureDetailsF() {
         )
       },
     }))
-}
-
-export function createSequenceFeatureDetailsModel() {
-  return SequenceFeatureDetailsF().create({})
-}
-
-export function destroySequenceFeatureDetailsModel(
-  model: SequenceFeatureDetailsModel,
-) {
-  destroy(model)
 }
 
 export type SequenceFeatureDetailsStateModel = ReturnType<

@@ -39,7 +39,7 @@ export default function FieldName({
       </div>
     </Tooltip>
   ) : (
-    <div className={classes.fieldName} style={{ width: width }}>
+    <div className={classes.fieldName} style={{ width }}>
       {val}
     </div>
   )

@@ -90,6 +90,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
     }))
 
@@ -167,6 +168,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   }
 
                   self.setFormattedData(feature)
+                  self.sequenceFeatureDetails.setFeature(feature)
                 }
               } catch (e) {
                 console.error(e)
@@ -179,8 +181,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .preProcessSnapshot(snap => {
-      // @ts-expect-error
-      const { featureData, finalizedFeatureData, ...rest } = snap
+      // old snapshots used `featureData`, new ones use `finalizedFeatureData`;
+      // accept both for backwards compat
+      const { featureData, finalizedFeatureData, ...rest } =
+        snap as typeof snap & {
+          finalizedFeatureData?: MaybeSerializedFeat
+        }
       return {
         unformattedFeatureData: featureData,
         featureData: finalizedFeatureData,

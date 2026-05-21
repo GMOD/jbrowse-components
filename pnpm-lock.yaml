@@ -452,6 +452,9 @@ importers:
       source-map-js:
         specifier: ^1.2.1
         version: 1.2.1
+      swr:
+        specifier: ^2.4.1
+        version: 2.4.1(react@19.2.6)
 
   packages/embedded-core:
     dependencies:

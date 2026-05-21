@@ -27,7 +27,10 @@ export default function BaseCard({
 }: BaseCardProps) {
   const { classes } = useStyles()
   return (
-    <Accordion defaultExpanded={defaultExpanded}>
+    <Accordion
+      defaultExpanded={defaultExpanded}
+      slotProps={{ transition: { unmountOnExit: true } }}
+    >
       <AccordionSummary expandIcon={<ExpandMore className={classes.icon} />}>
         <Typography variant="button">{title}</Typography>
       </AccordionSummary>
