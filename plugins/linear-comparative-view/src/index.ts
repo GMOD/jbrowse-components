@@ -7,14 +7,9 @@ import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView.ts'
 import LinearComparativeViewF from './LinearComparativeView/index.ts'
 import LinearReadVsRefMenuItemF from './LinearReadVsRef/index.ts'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay/index.ts'
-import { GetSubgraph } from './LinearSyntenyRPC/GetSubgraph.ts'
-import { GetSyntenyBlocks } from './LinearSyntenyRPC/GetSyntenyBlocks.ts'
-import { MultiLGVSyntenyClusterIdentityMatrix } from './LinearSyntenyRPC/MultiLGVSyntenyClusterIdentityMatrix.ts'
-import { MultiPairGetFeatures } from './LinearSyntenyRPC/MultiPairGetFeatures.ts'
 import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFeaturesAndPositions.ts'
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
 import LinearSyntenyViewHelperF from './LinearSyntenyViewHelper/index.tsx'
-import MultiLGVSyntenyDisplayF from './MultiLGVSyntenyDisplay/index.ts'
 import MultiSyntenyTrackF from './MultiSyntenyTrack/index.ts'
 import SyntenyFeatureWidgetF from './SyntenyFeatureDetail/index.ts'
 import SyntenyTrackF from './SyntenyTrack/index.tsx'
@@ -35,19 +30,12 @@ export default class LinearComparativeViewPlugin extends Plugin {
     LinearSyntenyDisplayF(pluginManager)
     SyntenyFeatureWidgetF(pluginManager)
     LGVSyntenyDisplayF(pluginManager)
-    MultiLGVSyntenyDisplayF(pluginManager)
     LaunchLinearSyntenyViewF(pluginManager)
     SyntenyTrackF(pluginManager)
     MultiSyntenyTrackF(pluginManager)
     LinearReadVsRefMenuItemF(pluginManager)
     pluginManager.addRpcMethod(
       () => new SyntenyGetFeaturesAndPositions(pluginManager),
-    )
-    pluginManager.addRpcMethod(() => new MultiPairGetFeatures(pluginManager))
-    pluginManager.addRpcMethod(() => new GetSubgraph(pluginManager))
-    pluginManager.addRpcMethod(() => new GetSyntenyBlocks(pluginManager))
-    pluginManager.addRpcMethod(
-      () => new MultiLGVSyntenyClusterIdentityMatrix(pluginManager),
     )
   }
 

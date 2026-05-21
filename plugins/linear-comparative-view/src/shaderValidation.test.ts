@@ -5,10 +5,6 @@ import path from 'path'
 
 import { WGSL_SOURCE as edgeVertexShader } from './LinearSyntenyDisplay/shaders/syntenyEdge.generated.ts'
 import { WGSL_SOURCE as fillVertexShader } from './LinearSyntenyDisplay/shaders/syntenyFill.generated.ts'
-import { WGSL_SOURCE as WGSL_COVERAGE_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenyCoverage.generated.ts'
-import { WGSL_SOURCE as WGSL_FILL_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenyFill.generated.ts'
-import { WGSL_SOURCE as WGSL_INDICATOR_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenyIndicator.generated.ts'
-import { WGSL_SOURCE as WGSL_SNP_COVERAGE_SHADER } from './MultiLGVSyntenyDisplay/shaders/slang/multiSyntenySnp.generated.ts'
 
 let tmpDir: string
 
@@ -34,10 +30,6 @@ function validateWgsl(name: string, code: string) {
 const wgslShaders: [string, string][] = [
   ['syntenyFill', fillVertexShader],
   ['syntenyEdge', edgeVertexShader],
-  ['multiSyntenyFill', WGSL_FILL_SHADER],
-  ['multiSyntenyCoverage', WGSL_COVERAGE_SHADER],
-  ['multiSyntenySnpCoverage', WGSL_SNP_COVERAGE_SHADER],
-  ['multiSyntenyIndicator', WGSL_INDICATOR_SHADER],
 ]
 
 const skipIfNoNaga = hasNaga() ? describe : describe.skip

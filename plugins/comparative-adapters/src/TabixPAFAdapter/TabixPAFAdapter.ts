@@ -177,9 +177,7 @@ export default class TabixPAFAdapter extends BaseFeatureDataAdapter {
   }
 
   // Reference-perspective pairwise features, for use in LinearSyntenyDisplay /
-  // DotplotDisplay. The PAF is indexed on the target only, so the query-genome
-  // perspective is not range-queryable here — MultiLGVSyntenyDisplay uses
-  // getMultiPairFeatures instead.
+  // DotplotDisplay. The PAF is indexed on the target only.
   getFeatures(query: Region, opts: BaseOptions = {}) {
     const { statusCallback = () => {} } = opts
     return ObservableCreate<Feature>(async observer => {

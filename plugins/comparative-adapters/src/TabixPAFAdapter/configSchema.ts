@@ -9,8 +9,7 @@ import { types } from '@jbrowse/mobx-state-tree'
  * (which reads the JBrowse-specific dual-indexed `.pif.gz`), this consumes a
  * plain PAF directly — the output of `odgi untangle -R <ref> | sort | bgzip`.
  * Each query line is one block of a haplotype path projected onto a reference
- * path; query genomes are grouped by their PanSN `sample#hap` prefix and fed
- * to MultiLGVSyntenyDisplay via getMultiPairFeatures.
+ * path; query genomes are grouped by their PanSN `sample#hap` prefix.
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

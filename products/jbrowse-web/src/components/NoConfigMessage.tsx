@@ -191,14 +191,6 @@ const syntenyConfigs: {
     label: 'HPRC chr20 (90 haps)',
   },
   {
-    config: 'test_data/config_gfa_pangenome.json',
-    label: 'Volvox GFA pangenome',
-  },
-  {
-    config: 'test_data/config_graph_genome.json',
-    label: 'Graph genome (GFA)',
-  },
-  {
     config: 'test_data/hs1_vs_mm39/config.json',
     label: 'hs1 vs mm39',
   },
