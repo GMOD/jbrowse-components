@@ -23,17 +23,16 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
           'LinearSyntenyView requires at least 2 views to be specified',
         )
       }
-      // Normalize 1D tracks to 2D — flat array goes to level 0. The 2D form
-      // targets one entry per level (between views[i] and views[i+1]).
+      // 2D tracks targets one entry per level (between views[i] and
+      // views[i+1]); flat 1D tracks goes to level 0; empty stays empty.
       session.addView('LinearSyntenyView', {
         init: {
           views,
-          tracks:
-            tracks.length === 0
-              ? []
-              : isNestedTracks(tracks)
-                ? tracks
-                : [tracks],
+          tracks: isNestedTracks(tracks)
+            ? tracks
+            : tracks.length
+              ? [tracks]
+              : [],
         },
       })
     },
