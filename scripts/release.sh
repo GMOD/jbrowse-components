@@ -37,8 +37,7 @@ BLOGPOST_DRAFT=website/release_announcement_drafts/$RELEASE_TAG.md
 echo "Releasing $RELEASE_TAG (from $PREVIOUS_VERSION)"
 
 # Update website config
-RELEASE_TAG=$RELEASE_TAG node --print "const config = require('./website/docusaurus.config.json'); config.customFields.currentVersion = process.env.RELEASE_TAG; JSON.stringify(config,0,2)" >tmp.json
-mv tmp.json website/docusaurus.config.json
+echo "export const currentVersion = '$RELEASE_TAG'" >website/src/config.ts
 
 # Generate changelog from GitHub PRs
 echo "Generating changelog..."

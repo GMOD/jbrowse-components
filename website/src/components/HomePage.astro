@@ -2,7 +2,6 @@
 import { Icon } from 'astro-icon/components'
 import { baseUrl } from '../lib/base-url'
 import btn from '../styles/button.module.css'
-import { currentVersion } from '../config.ts'
 ---
 
 <div class="outer-box">
@@ -22,7 +21,7 @@ import { currentVersion } from '../config.ts'
         </a>
         <a
           class:list={[btn.btn, btn.btnSecondary]}
-          href={`https://jbrowse.org/code/jb2/${currentVersion}/?session=share-HShsEcnq3i&password=nYzTU`}
+          href={`https://jbrowse.org/code/jb2/latest/?session=share-HShsEcnq3i&password=nYzTU`}
         >
           <Icon name="mdi:open-in-app" width="20" height="20" />
           Browse demo
