@@ -29,7 +29,6 @@ import {
 
 import type { ParsedLocString } from './locString.ts'
 import type PluginManager from '../PluginManager.ts'
-import type { BaseBlock } from './blockTypes.ts'
 import type { Feature } from './simpleFeature.ts'
 import type { StopToken } from './stopToken.ts'
 import type {
@@ -45,7 +44,6 @@ import type { Region as MUIRegion } from './types/mst.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type {
   IAnyStateTreeNode,
-  IStateTreeNode,
   Instance,
 } from '@jbrowse/mobx-state-tree'
 import type { GenericFilehandle } from 'generic-filehandle2'
@@ -739,22 +737,6 @@ export async function bytesForRegions(
         block => block.maxv.blockPosition + 65535 - block.minv.blockPosition,
       ),
   )
-}
-
-export interface ViewSnap {
-  bpPerPx: number
-  interRegionPaddingWidth: number
-  minimumBlockWidth: number
-  width: number
-  offsetPx: number
-  staticBlocks: { contentBlocks: BaseBlock[]; blocks: BaseBlock[] }
-  displayedRegions: (IStateTreeNode & {
-    start: number
-    end: number
-    refName: string
-    reversed?: boolean
-    assemblyName: string
-  })[]
 }
 
 // Supported adapter types by text indexer ensure that this matches the method

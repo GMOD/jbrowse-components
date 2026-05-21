@@ -1826,13 +1826,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       bpToPx({
         refName,
         coord,
-        regionNumber,
+        displayedRegionIndex,
       }: {
         refName: string
         coord: number
-        regionNumber?: number
+        displayedRegionIndex?: number
       }) {
-        return bpToPx({ refName, coord, regionNumber, self })
+        return bpToPx({ refName, coord, displayedRegionIndex, self })
       },
 
       /**
@@ -1873,13 +1873,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        *
        * @param coord - basepair at which you want to center the view
        * @param refName - refName of the displayedRegion you are centering at
-       * @param regionNumber - index of the displayedRegion
+       * @param displayedRegionIndex - index of the displayedRegion
        */
-      centerAt(coord: number, refName: string, regionNumber?: number) {
+      centerAt(coord: number, refName: string, displayedRegionIndex?: number) {
         const centerPx = this.bpToPx({
           refName,
           coord,
-          regionNumber,
+          displayedRegionIndex,
         })
         if (centerPx !== undefined) {
           self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))

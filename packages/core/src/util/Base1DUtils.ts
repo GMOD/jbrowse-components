@@ -1,5 +1,3 @@
-import type { Region, ViewSnap } from './index.ts'
-
 export interface BpOffset {
   refName?: string
   index: number
@@ -8,28 +6,105 @@ export interface BpOffset {
   end?: number
 }
 
-function lengthBetween(self: ViewSnap, start: BpOffset, end: BpOffset) {
-  let bpSoFar = 0
-  const { displayedRegions } = self
-  if (start.index === end.index) {
-    bpSoFar += end.offset - start.offset
-  } else {
-    const s = displayedRegions[start.index]!
-    bpSoFar += s.end - s.start - start.offset
-    if (end.index - start.index >= 2) {
-      for (let i = start.index + 1, l = end.index; i < l; i++) {
-        const region = displayedRegions[i]!
-        const len = region.end - region.start
-        bpSoFar += len
-      }
+interface RegionSnap {
+  start: number
+  end: number
+  refName: string
+  reversed?: boolean
+  assemblyName: string
+}
+
+interface MoveSnap {
+  displayedRegions: { start: number; end: number }[]
+  bpPerPx: number
+  width: number
+  minimumBlockWidth: number
+  interRegionPaddingWidth: number
+}
+
+interface ViewLayout {
+  displayedRegions: RegionSnap[]
+  bpPerPx: number
+  offsetPx: number
+  width: number
+  minimumBlockWidth: number
+  interRegionPaddingWidth: number
+}
+
+// total bp from the start of displayedRegions through regionIndex + regionOffset,
+// counting inter-region padding as bp
+function cumulativeBp(
+  self: MoveSnap,
+  regionIndex: number,
+  regionOffset: number,
+  bpPerPx: number,
+) {
+  const { displayedRegions, minimumBlockWidth, interRegionPaddingWidth } = self
+  const paddingBp = interRegionPaddingWidth * bpPerPx
+  let bpSoFar = regionOffset
+  for (let i = 0; i < regionIndex; i++) {
+    const r = displayedRegions[i]!
+    const len = r.end - r.start
+    bpSoFar += len
+    if (len / bpPerPx >= minimumBlockWidth && i < displayedRegions.length - 1) {
+      bpSoFar += paddingBp
     }
-    bpSoFar += end.offset
   }
   return bpSoFar
 }
 
+function lengthBetween(
+  displayedRegions: { start: number; end: number }[],
+  start: BpOffset,
+  end: BpOffset,
+) {
+  if (start.index === end.index) {
+    return end.offset - start.offset
+  } else {
+    const s = displayedRegions[start.index]!
+    let bpSoFar = s.end - s.start - start.offset
+    for (let i = start.index + 1; i < end.index; i++) {
+      const r = displayedRegions[i]!
+      bpSoFar += r.end - r.start
+    }
+    bpSoFar += end.offset
+    return bpSoFar
+  }
+}
+
+function computeTargetBpPerPx(self: MoveSnap, start: BpOffset, end: BpOffset) {
+  const {
+    width,
+    interRegionPaddingWidth,
+    displayedRegions,
+    bpPerPx,
+    minimumBlockWidth,
+  } = self
+  const len = lengthBetween(displayedRegions, start, end)
+  let numBlocksWideEnough = 0
+  for (let i = start.index; i < end.index; i++) {
+    const r = displayedRegions[i]!
+    if ((r.end - r.start) / bpPerPx >= minimumBlockWidth) {
+      numBlocksWideEnough++
+    }
+  }
+  return len / (width - interRegionPaddingWidth * numBlocksWideEnough)
+}
+
+function computeScrollPos(
+  self: MoveSnap,
+  start: BpOffset,
+  bpPerPx: number,
+  extraBp: number,
+) {
+  return Math.round(
+    (cumulativeBp(self, start.index, start.offset, bpPerPx) - extraBp) /
+      bpPerPx,
+  )
+}
+
 export function moveTo(
-  self: ViewSnap & {
+  self: MoveSnap & {
     zoomTo: (arg: number) => number
     scrollTo: (arg: number) => void
   },
@@ -39,56 +114,42 @@ export function moveTo(
   if (!start || !end) {
     return
   }
-  const {
-    width,
-    interRegionPaddingWidth,
-    displayedRegions,
-    bpPerPx,
-    minimumBlockWidth,
-  } = self
-
-  const len = lengthBetween(self, start, end)
-  let numBlocksWideEnough = 0
-  for (let i = start.index, l = end.index; i < l; i++) {
-    const r = displayedRegions[i]!
-    if ((r.end - r.start) / bpPerPx > minimumBlockWidth) {
-      numBlocksWideEnough++
-    }
-  }
-
-  const targetBpPerPx =
-    len / (width - interRegionPaddingWidth * numBlocksWideEnough)
+  const targetBpPerPx = computeTargetBpPerPx(self, start, end)
   const newBpPerPx = self.zoomTo(targetBpPerPx)
-
-  // If our target bpPerPx was smaller than the allowed minBpPerPx, adjust
-  // the scroll so the requested range is in the middle of the screen
-  let extraBp = 0
-  if (targetBpPerPx < newBpPerPx) {
-    extraBp = ((newBpPerPx - targetBpPerPx) * self.width) / 2
-  }
-
-  let bpToStart = -extraBp
-  for (let i = 0, l = displayedRegions.length; i < l; i++) {
-    const region = displayedRegions[i]!
-    if (start.index === i) {
-      bpToStart += start.offset
-      break
-    } else {
-      bpToStart += region.end - region.start
-    }
-  }
-
-  const scrollPos = Math.round(bpToStart / self.bpPerPx)
-  self.scrollTo(scrollPos)
+  const extraBp =
+    targetBpPerPx < newBpPerPx
+      ? ((newBpPerPx - targetBpPerPx) * self.width) / 2
+      : 0
+  self.scrollTo(computeScrollPos(self, start, newBpPerPx, extraBp))
 }
 
-function coord(r: Region, bp: number) {
+/**
+ * Pure version of moveTo: returns the {bpPerPx, offsetPx} that moveTo would
+ * apply, without mutating any model. Assumes no bpPerPx clamping (i.e.
+ * Base1DView with no min/maxBpPerPx).
+ */
+export function computeMoveToLayout(
+  self: MoveSnap,
+  start: BpOffset,
+  end: BpOffset,
+): { bpPerPx: number; offsetPx: number } {
+  const bpPerPx = computeTargetBpPerPx(self, start, end)
+  return { bpPerPx, offsetPx: computeScrollPos(self, start, bpPerPx, 0) }
+}
+
+// 1-based display coord: floor(within-region bp) + 1. Use for showing a
+// genomic position to a user, not for arithmetic — round-tripping through
+// bpToPx loses up to 1 bp because bpToPx accepts 0-based BED-style coords.
+// For arithmetic, use pxToBp's `offset` field with offsetBpToPx instead.
+function regionCoord(r: RegionSnap, bp: number) {
   return Math.floor(r.reversed ? r.end - bp : r.start + bp) + 1
 }
 
+// `coord` is 1-based for display; `offset` is the raw 0-based float bp within
+// the region — pair with offsetBpToPx for round-trip arithmetic.
 // manual return type since getSnapshot hard to infer here
 export function pxToBp(
-  self: ViewSnap,
+  self: ViewLayout,
   px: number,
 ): {
   coord: number
@@ -101,208 +162,114 @@ export function pxToBp(
   end: number
   reversed?: boolean
 } {
-  let bpSoFar = 0
   const {
     bpPerPx,
     offsetPx,
     displayedRegions,
     interRegionPaddingWidth,
-    staticBlocks,
+    minimumBlockWidth,
   } = self
-  const blocks = staticBlocks.contentBlocks
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
     const r = displayedRegions[0]!
-    const snap = r
-    return {
-      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-      ...(snap as Omit<typeof snap, symbol>),
-      oob: true,
-      coord: coord(r, bp),
-      offset: bp,
-      index: 0,
-    }
+    return { ...r, oob: true, coord: regionCoord(r, bp), offset: bp, index: 0 }
   }
 
-  const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
-  let currBlock = 0
+  const paddingBp = interRegionPaddingWidth * bpPerPx
+  let bpSoFar = 0
 
   for (let i = 0, l = displayedRegions.length; i < l; i++) {
     const r = displayedRegions[i]!
     const len = r.end - r.start
     const offset = bp - bpSoFar
-    if (len + bpSoFar > bp && bpSoFar <= bp) {
-      const snap = r
+    if (offset >= 0 && offset < len) {
       return {
-        // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-        ...(snap as Omit<typeof snap, symbol>),
+        ...r,
         oob: false,
         offset,
-        coord: coord(r, offset),
+        coord: regionCoord(r, offset),
         index: i,
       }
     }
-
-    // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
-    // a static block
-    if (blocks[currBlock]?.regionNumber === i) {
+    if (len / bpPerPx >= minimumBlockWidth && i < l - 1) {
       const paddingStart = bpSoFar + len
-      const paddingEnd = paddingStart + interRegionPaddingBp
-      // If bp is in the inter-region padding, use the next region's info
-      if (
-        bp >= paddingStart &&
-        bp < paddingEnd &&
-        i + 1 < displayedRegions.length
-      ) {
+      if (bp >= paddingStart && bp < paddingStart + paddingBp) {
         const nextR = displayedRegions[i + 1]!
-        const snap = nextR
         return {
-          // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-          ...(snap as Omit<typeof snap, symbol>),
+          ...nextR,
           oob: false,
           offset: 0,
-          coord: coord(nextR, 0),
+          coord: regionCoord(nextR, 0),
           index: i + 1,
         }
       }
-      bpSoFar += len + interRegionPaddingBp
-      currBlock++
+      bpSoFar += len + paddingBp
     } else {
       bpSoFar += len
     }
   }
 
-  if (bp >= bpSoFar && displayedRegions.length > 0) {
-    const r = displayedRegions.at(-1)!
-    const len = r.end - r.start
-    const offset = bp - bpSoFar + len
-
-    const snap = r
-    return {
-      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-      ...(snap as Omit<typeof snap, symbol>),
-      oob: true,
-      offset,
-      coord: coord(r, offset),
-      index: displayedRegions.length - 1,
-    }
+  const r = displayedRegions.at(-1)
+  if (!r) {
+    throw new Error('pxToBp called with empty displayedRegions')
   }
+  const offset = bp - bpSoFar + r.end - r.start
   return {
-    coord: 0,
-    index: 0,
-    refName: '',
+    ...r,
     oob: true,
-    assemblyName: '',
-    offset: 0,
-    start: 0,
-    end: 0,
-    reversed: false,
+    offset,
+    coord: regionCoord(r, offset),
+    index: displayedRegions.length - 1,
   }
 }
 
+// Precise within-region float-bp-offset → track-px (unrounded). Use when the
+// input is pxToBp's `offset` field. Going through bpToPx with pxToBp's `coord`
+// loses up to 1 bp per call because regionCoord floors+1 (1-based coord) and
+// bpToPx then uses coord-r.start as a 0-based offset — visible as juddery
+// cursor drift during rapid scroll-zoom.
+export function offsetBpToPx(
+  self: ViewLayout,
+  regionIndex: number,
+  regionOffsetBp: number,
+): number {
+  return (
+    cumulativeBp(self, regionIndex, regionOffsetBp, self.bpPerPx) / self.bpPerPx
+  )
+}
+
+// Accepts a 0-based genomic coord (BED-style feature.start/end). NOT a proper
+// inverse of pxToBp's `coord` field, which is 1-based — for that round-trip,
+// use offsetBpToPx with pxToBp's `offset` field instead.
 export function bpToPx({
   refName,
   coord,
-  regionNumber,
+  displayedRegionIndex,
   self,
 }: {
   refName: string
   coord: number
-  regionNumber?: number
-  self: ViewSnap
+  displayedRegionIndex?: number
+  self: ViewLayout
 }) {
-  let bpSoFar = 0
+  const { bpPerPx, displayedRegions } = self
 
-  const { interRegionPaddingWidth, bpPerPx, displayedRegions, staticBlocks } =
-    self
-  const blocks = staticBlocks.contentBlocks
-  const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
-  let currBlock = 0
-
-  let i = 0
-  for (let l = displayedRegions.length; i < l; i++) {
+  for (let i = 0, l = displayedRegions.length; i < l; i++) {
     const r = displayedRegions[i]!
-    const len = r.end - r.start
     if (
       refName === r.refName &&
       coord >= r.start &&
       coord <= r.end &&
-      (regionNumber ? regionNumber === i : true)
+      (displayedRegionIndex === undefined || displayedRegionIndex === i)
     ) {
-      bpSoFar += r.reversed ? r.end - coord : coord - r.start
-      break
-    }
-
-    // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
-    // a static block
-    if (blocks[currBlock]?.regionNumber === i) {
-      bpSoFar += len + interRegionPaddingBp
-      currBlock++
-    } else {
-      bpSoFar += len
+      const regionOffset = r.reversed ? r.end - coord : coord - r.start
+      return {
+        index: i,
+        offsetPx: Math.round(
+          cumulativeBp(self, i, regionOffset, bpPerPx) / bpPerPx,
+        ),
+      }
     }
   }
-  const found = displayedRegions[i]
-  if (found) {
-    return {
-      index: i,
-      offsetPx: Math.round(bpSoFar / bpPerPx),
-    }
-  }
-
   return undefined
-}
-
-export function bpToPxMap({
-  refName,
-  coord,
-  regionNumber,
-  self,
-}: {
-  refName: string
-  coord: number
-  regionNumber?: number
-  self: ViewSnap
-}) {
-  let bpSoFar = 0
-
-  const { interRegionPaddingWidth, bpPerPx, displayedRegions, staticBlocks } =
-    self
-  const blocks = staticBlocks.contentBlocks
-  const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
-  const map = {}
-  let currBlock = 0
-
-  let i = 0
-  for (let l = displayedRegions.length; i < l; i++) {
-    const r = displayedRegions[i]!
-    const len = r.end - r.start
-    if (
-      refName === r.refName &&
-      coord >= r.start &&
-      coord <= r.end &&
-      (regionNumber === undefined ? true : regionNumber === i)
-    ) {
-      bpSoFar += r.reversed ? r.end - coord : coord - r.start
-      break
-    }
-
-    // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
-    // a static block
-    if (blocks[currBlock]?.regionNumber === i) {
-      bpSoFar += len + interRegionPaddingBp
-      currBlock++
-    } else {
-      bpSoFar += len
-    }
-  }
-  const found = displayedRegions[i]
-  if (found) {
-    return {
-      index: i,
-      offsetPx: Math.round(bpSoFar / bpPerPx),
-    }
-  }
-
-  return map
 }
