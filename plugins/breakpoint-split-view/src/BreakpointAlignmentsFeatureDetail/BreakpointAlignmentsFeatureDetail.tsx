@@ -19,7 +19,7 @@ const BreakpointAlignmentsFeatureDetail = observer(
     }
   }) {
     const { featureData } = model
-    const { feature1, feature2 } = structuredClone(featureData)
+    const { feature1, feature2 } = featureData
     return (
       <Paper>
         <BaseCoreDetails title="Feature 1" feature={feature1} />

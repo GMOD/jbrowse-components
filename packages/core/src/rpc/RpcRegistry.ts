@@ -1,0 +1,98 @@
+import type { FeatureDensityStats } from '../data_adapters/BaseAdapter/types.ts'
+import type { ResultsSerialized } from '../pluggableElementTypes/renderers/ServerSideRendererType.ts'
+import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
+import type { StopToken } from '../util/stopToken.ts'
+import type { Region } from '../util/types/index.ts'
+
+export interface RegionLike {
+  refName: string
+  start: number
+  end: number
+  assemblyName: string
+}
+
+export interface RpcRegistry {
+  CoreGetRefNames: {
+    args: {
+      adapterConfig: Record<string, unknown>
+      sequenceAdapter?: Record<string, unknown>
+      regions?: { assemblyName: string }[]
+      stopToken?: StopToken
+    }
+    return: string[]
+  }
+  CoreGetRegions: {
+    args: {
+      adapterConfig: Record<string, unknown>
+    }
+    return: Region[]
+  }
+  CoreGetSequence: {
+    args: {
+      region: RegionLike
+      adapterConfig: Record<string, unknown>
+      stopToken?: StopToken
+    }
+    return: string | undefined
+  }
+  CoreGetFeatures: {
+    args: {
+      regions: RegionLike[]
+      adapterConfig: Record<string, unknown>
+      statusCallback?: (arg: string) => void
+      stopToken?: StopToken
+      opts?: Record<string, unknown>
+    }
+    return: Feature[]
+  }
+  CoreGetFeatureDensityStats: {
+    args: {
+      adapterConfig: Record<string, unknown>
+      regions: RegionLike[]
+      stopToken?: StopToken
+      headers?: Record<string, string>
+    }
+    return: FeatureDensityStats
+  }
+  CoreGetInfo: {
+    args: {
+      adapterConfig: Record<string, unknown>
+      stopToken?: StopToken
+    }
+    return: Record<string, unknown> | null
+  }
+  CoreGetMetadata: {
+    args: {
+      adapterConfig: Record<string, unknown>
+      stopToken?: StopToken
+    }
+    return: Record<string, unknown> | null
+  }
+  CoreGetExportData: {
+    args: {
+      regions: RegionLike[]
+      adapterConfig: Record<string, unknown>
+      formatType: string
+      opts?: Record<string, unknown>
+    }
+    return: string
+  }
+  CoreFreeResources: {
+    args: Record<string, unknown>
+    return: undefined
+  }
+  CoreRender: {
+    args: Record<string, unknown>
+    return: ResultsSerialized
+  }
+  CoreGetFeatureDetails: {
+    args: Record<string, unknown>
+    return: { feature: SimpleFeatureSerialized | undefined }
+  }
+}
+
+export type RpcMethodName = keyof RpcRegistry
+
+export type RpcArgs<M extends RpcMethodName> = RpcRegistry[M]['args']
+
+export type RpcReturn<M extends RpcMethodName> = RpcRegistry[M]['return']

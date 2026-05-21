@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
-import { clamp, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { LayoutRecord } from './types.ts'
@@ -9,13 +7,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-type LGV = LinearGenomeViewModel
-
 interface Display {
-  height: number
-  scrollTop: number
-  SNPCoverageDisplay?: { height: number }
-  notReady?: () => boolean
   searchFeatureByID?: (str: string) => LayoutRecord
 }
 
@@ -24,53 +16,8 @@ interface Track {
   configuration: AnyConfigurationModel
 }
 
-const [, TOP, , BOTTOM] = [0, 1, 2, 3] as const
-
-function cheight(chunk: LayoutRecord) {
-  return chunk[BOTTOM] - chunk[TOP]
-}
-
-export function heightFromSpecificLevel(
-  views: LGV[],
-  trackId: string,
-  level: number,
-  getYPosOverride?: (trackId: string, level: number) => number,
-) {
-  return getYPosOverride
-    ? getYPosOverride(trackId, level)
-    : views[level]!.trackRefs[trackId]?.getBoundingClientRect().top || 0
-}
-
-export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
-  return (view.bpToPx({ refName, coord })?.offsetPx || 0) - view.offsetPx
-}
-
-// gets the y-position of a layout record in a track
-export function yPos(
-  trackId: string,
-  level: number,
-  views: LGV[],
-  tracks: Track[],
-  c: LayoutRecord,
-  getYPosOverride?: (trackId: string, level: number) => number,
-) {
-  const display = tracks[level]!.displays[0]!
-  const max = display.height
-  const offset = display.SNPCoverageDisplay?.height ?? 0
-  const scrollTop = getYPosOverride ? 0 : display.scrollTop
-  return (
-    clamp(c[TOP] - scrollTop + cheight(c) / 2 + offset, offset, max) +
-    heightFromSpecificLevel(views, trackId, level, getYPosOverride)
-  )
-}
-
-// forces a re-render on the next frame when the variable changes
-export const useNextFrame = (variable: unknown) => {
-  const [, setNextFrameState] = useState<unknown>()
-  useEffect(() => {
-    setNextFrameState(variable)
-  }, [variable])
-}
+// Must match the CSS height of viewDivider in BreakpointSplitView.tsx
+export const VIEW_DIVIDER_HEIGHT = 3
 
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
 // on npm has a large kb size, and we are just intersecting open track ids so
@@ -99,13 +46,12 @@ export async function getBlockFeatures(
   const sessionId = getRpcSessionId(track)
 
   return Promise.all(
-    views.flatMap(
-      async view =>
-        (await rpcManager.call(sessionId, 'BreakpointGetFeatures', {
-          adapterConfig: getConf(track, ['adapter']),
-          sessionId,
-          regions: view.staticBlocks.contentBlocks,
-        })) as Feature[][],
+    views.map(async view =>
+      rpcManager.call(sessionId, 'BreakpointGetFeatures', {
+        adapterConfig: getConf(track, ['adapter']),
+        sessionId,
+        regions: view.staticBlocks.contentBlocks,
+      }),
     ),
   )
 }

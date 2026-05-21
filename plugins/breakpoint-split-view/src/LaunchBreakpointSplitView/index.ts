@@ -1,4 +1,3 @@
-import type { BreakpointViewModel } from '../BreakpointSplitView/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -24,12 +23,11 @@ export default function LaunchBreakpointSplitViewF(
           'BreakpointSplitView requires at least 2 views to be specified',
         )
       }
-
       session.addView('BreakpointSplitView', {
         init: {
           views,
         },
-      }) as BreakpointViewModel
+      })
     },
   )
 }

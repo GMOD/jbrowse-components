@@ -30,3 +30,19 @@ export interface Breakend {
 }
 
 export type LayoutRecord = [number, number, number, number]
+
+import type { Feature } from '@jbrowse/core/util'
+
+export interface LayoutMatch {
+  feature: Feature
+  layout: LayoutRecord
+  level: number
+  clipLengthAtStartOfRead: number
+}
+
+export interface OverlayMatch {
+  kind: 'alignment' | 'translocation' | 'paired' | 'breakend'
+  allFeatures: Map<string, Feature>
+  layoutMatches: LayoutMatch[][]
+  hasPairedReads?: boolean
+}

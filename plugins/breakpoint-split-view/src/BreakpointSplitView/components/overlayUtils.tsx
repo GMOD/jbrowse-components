@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import type { BreakpointViewModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { getSession } from '@jbrowse/core/util'
@@ -7,28 +9,39 @@ export const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
 export interface OverlayProps {
   model: BreakpointViewModel
   trackId: string
-  parentRef: React.RefObject<SVGSVGElement | null>
-  getTrackYPosOverride?: (trackId: string, level: number) => number
+  /** SVG export: fixed track tops, scrollTops zeroed */
+  yOffsetsOverride?: number[]
+  /** Live rendering: DOM-measured track tops relative to the overlay SVG */
+  domYOffsets?: number[]
 }
 
-export function getYOffset(parentRef: React.RefObject<SVGSVGElement | null>) {
-  // Reading ref during render is intentional for synchronous positioning
-  return parentRef.current?.getBoundingClientRect().top ?? 0
+export function useMouseoverElt() {
+  const [mouseoverElt, setMouseoverElt] = useState<string>()
+  useEffect(() => {
+    function clear() {
+      setMouseoverElt(undefined)
+    }
+    window.addEventListener('wheel', clear, { passive: true })
+    return () => {
+      window.removeEventListener('wheel', clear)
+    }
+  }, [])
+  return [mouseoverElt, setMouseoverElt] as const
 }
 
-export function createMouseHandlers(
+export function createVariantMouseHandlers(
   id: string,
   setMouseoverElt: (id: string | undefined) => void,
   session: ReturnType<typeof getSession>,
-  widgetType: string,
-  widgetId: string,
   featureData: unknown,
 ) {
   return {
     onClick: () => {
-      const featureWidget = session.addWidget?.(widgetType, widgetId, {
-        featureData,
-      })
+      const featureWidget = session.addWidget?.(
+        'VariantFeatureWidget',
+        'variantFeature',
+        { featureData },
+      )
       session.showWidget?.(featureWidget)
     },
     onMouseOver: () => {
@@ -52,7 +65,9 @@ export function getCanonicalRefs(
   const f1ref = assembly.getCanonicalRefName(f1RefName)
   const f2ref = assembly.getCanonicalRefName(f2RefName)
   if (!f1ref || !f2ref) {
-    throw new Error(`unable to find ref for ${f1ref || f2ref}`)
+    throw new Error(
+      `unable to find canonical ref for ${!f1ref ? f1RefName : f2RefName}`,
+    )
   }
   return { f1ref, f2ref }
 }
@@ -61,14 +76,9 @@ export function strandToSign(s: string) {
   return s === '+' ? 1 : s === '-' ? -1 : 0
 }
 
+// Flat (y1===y2) connections render as a quadratic arc bowed upward, keeping
+// same-row links visible; otherwise a straight line.
 const FLAT_ARC_HEIGHT = 30
-
-function arcOrLine(x1: number, y1: number, x2: number, y2: number) {
-  const midX = (x1 + x2) / 2
-  return y1 === y2
-    ? `Q ${midX} ${y1 - FLAT_ARC_HEIGHT} ${x2} ${y2}`
-    : `L ${x2} ${y2}`
-}
 
 export function buildSimplePath(
   x1: number,
@@ -76,7 +86,9 @@ export function buildSimplePath(
   x2: number,
   y2: number,
 ) {
-  return `M ${x1} ${y1} ${arcOrLine(x1, y1, x2, y2)}`
+  return y1 === y2
+    ? `M ${x1} ${y1} Q ${(x1 + x2) / 2} ${y1 - FLAT_ARC_HEIGHT} ${x2} ${y2}`
+    : `M ${x1} ${y1} L ${x2} ${y2}`
 }
 
 export function buildBreakpointPath(
@@ -87,5 +99,7 @@ export function buildBreakpointPath(
   x1Tick: number,
   x2Tick: number,
 ) {
-  return `M ${x1Tick} ${y1} L ${x1} ${y1} ${arcOrLine(x1, y1, x2, y2)} L ${x2Tick} ${y2}`
+  return y1 === y2
+    ? `M ${x1Tick} ${y1} L ${x1} ${y1} Q ${(x1 + x2) / 2} ${y1 - FLAT_ARC_HEIGHT} ${x2} ${y2} L ${x2Tick} ${y2}`
+    : `M ${x1Tick} ${y1} L ${x1} ${y1} L ${x2} ${y2} L ${x2Tick} ${y2}`
 }

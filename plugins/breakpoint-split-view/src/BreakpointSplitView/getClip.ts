@@ -1,8 +1,10 @@
-const startClip = /(\d+)[SH]$/
-const endClip = /^(\d+)([SH])/
+// clip at the end of the CIGAR string = start of a reverse-strand read
+const trailingClip = /(\d+)[SH]$/
+// clip at the start of the CIGAR string = start of a forward-strand read
+const leadingClip = /^(\d+)([SH])/
 
 export function getClip(cigar: string, strand: number) {
   return strand === -1
-    ? +(startClip.exec(cigar)?.[1] ?? 0)
-    : +(endClip.exec(cigar)?.[1] ?? 0)
+    ? +(trailingClip.exec(cigar)?.[1] ?? 0)
+    : +(leadingClip.exec(cigar)?.[1] ?? 0)
 }

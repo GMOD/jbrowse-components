@@ -5,17 +5,22 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { getClip } from '../BreakpointSplitView/getClip.ts'
+
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { RpcRegistry } from '@jbrowse/core/rpc/RpcRegistry'
 import type { RenderArgs } from '@jbrowse/core/rpc/methods/util'
-import type { Region } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-const startClip = /(\d+)[SH]$/
-const endClip = /^(\d+)([SH])/
-
-function getClip(cigar: string, strand: number) {
-  return strand === -1
-    ? +(startClip.exec(cigar)?.[1] ?? 0)
-    : +(endClip.exec(cigar)?.[1] ?? 0)
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    BreakpointGetFeatures: {
+      args: Record<string, unknown>
+      return: Feature[]
+    }
+  }
 }
 
 // This interface covers features from two different track types:
@@ -44,7 +49,6 @@ interface MinimalFeature {
   // Variant-specific fields
   INFO?: Record<string, unknown>
   ALT?: unknown[]
-  mate?: Record<string, unknown>
   type?: string
 }
 
@@ -80,7 +84,7 @@ export default class BreakpointGetFeatures extends RpcMethodType {
       regions: Region[]
       adapterConfig: Record<string, unknown>
       statusCallback: (arg: string) => void
-      stopToken?: string
+      stopToken?: StopToken
       opts?: Record<string, unknown>
     },
     rpcDriver: string,

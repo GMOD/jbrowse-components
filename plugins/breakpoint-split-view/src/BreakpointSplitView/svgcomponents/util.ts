@@ -23,7 +23,7 @@ export function getTrackOffsets(
   textOffset: number,
   extra = 0,
 ) {
-  const offsets = {} as Record<string, number>
+  const offsets: Record<string, number> = {}
   let curr = textOffset
   for (const track of view.tracks) {
     offsets[track.configuration.trackId] = curr + extra

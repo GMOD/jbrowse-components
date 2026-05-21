@@ -15,6 +15,7 @@ const preservedExports = [
   '@jbrowse/core/util/fileHandleStore',
   '@jbrowse/core/util/tss-react/types',
   '@jbrowse/core/configuration/configurationSchema',
+  '@jbrowse/core/rpc/RpcRegistry',
 ]
 
 // Scan the codebase for all @jbrowse/core imports

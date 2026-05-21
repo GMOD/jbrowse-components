@@ -761,12 +761,6 @@ importers:
       '@mui/material':
         specifier: ^7.3.11
         version: 7.3.11(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@types/file-saver-es':
-        specifier: ^2.0.3
-        version: 2.0.3
-      file-saver-es:
-        specifier: ^2.0.5
-        version: 2.0.5
       mobx:
         specifier: ^6.15.3
         version: 6.15.3
@@ -3713,6 +3707,9 @@ packages:
 
   '@gmod/bed@2.2.5':
     resolution: {integrity: sha512-bk+D5yrV1cxNCuiJ771iK68jmU8yEGV2vufdJW1SjeByl7ievJoYKgRdSwEol4hleqV1cNcmlMvfmj3t+n+OMw==}
+
+  '@gmod/bgzf-filehandle@6.0.19':
+    resolution: {integrity: sha512-Zs/568HtsrL5XZGDLTeVZaNFKG7/8HKG+LP+B201OdkQBa1VpZyQg95i65bSuwyqDGnRjkvNbyASwEsxzG9Rrg==}
 
   '@gmod/bgzf-filehandle@6.0.26':
     resolution: {integrity: sha512-w7KLBVfwEPud6FBbe635Io91Jrmi7qUcB89vQsSKzVmfAvvmMU8S6TxLgDyhkEW8zIVbXx4rGvboB2OXoPX8Zg==}
@@ -12469,7 +12466,7 @@ snapshots:
 
   '@gmod/bam@7.2.4':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.26
+      '@gmod/bgzf-filehandle': 6.0.19
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
       generic-filehandle2: 2.1.7
@@ -12483,6 +12480,12 @@ snapshots:
       generic-filehandle2: 2.1.7
 
   '@gmod/bed@2.2.5': {}
+
+  '@gmod/bgzf-filehandle@6.0.19':
+    dependencies:
+      '@jbrowse/quick-lru': 7.3.5
+      generic-filehandle2: 2.1.7
+      pako-esm2: 2.0.2
 
   '@gmod/bgzf-filehandle@6.0.26':
     dependencies:
@@ -12509,7 +12512,7 @@ snapshots:
 
   '@gmod/indexedfasta@5.0.7':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.26
+      '@gmod/bgzf-filehandle': 6.0.19
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
@@ -12522,7 +12525,7 @@ snapshots:
   '@gmod/tabix@3.3.8':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
-      '@gmod/bgzf-filehandle': 6.0.26
+      '@gmod/bgzf-filehandle': 6.0.19
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.7
 
