@@ -24,6 +24,41 @@ const useStyles = makeStyles()({
   },
 })
 
+export function HighlightText({
+  text,
+  query,
+  className,
+}: {
+  text: string
+  query: string
+  className?: string
+}) {
+  if (!query || !text) {
+    return <SanitizedHTML html={text} className={className} />
+  }
+  const lowerText = text.toLowerCase()
+  const lowerQuery = query.toLowerCase()
+  let highlighted = ''
+  let lastIndex = 0
+  let idx = lowerText.indexOf(lowerQuery, lastIndex)
+  while (idx !== -1) {
+    if (idx > lastIndex) {
+      highlighted += text.slice(lastIndex, idx)
+    }
+    highlighted += `<mark style="background: #FFEB3B">${text.slice(
+      idx,
+      idx + query.length,
+    )}</mark>`
+    lastIndex = idx + query.length
+    idx = lowerText.indexOf(lowerQuery, lastIndex)
+  }
+  if (lastIndex < text.length) {
+    highlighted += text.slice(lastIndex)
+  }
+  return <SanitizedHTML html={highlighted} className={className} />
+}
+
+
 const frac = 0.75
 
 const FacetedSelector = observer(function FacetedSelector({

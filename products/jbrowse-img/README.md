@@ -99,11 +99,38 @@ jb2export --fasta data/volvox/volvox.fa \
   --loc ctgA:609..968
 ```
 
-You can see that instead of adding extra dash dash --flags, it is a colon based
-syntax that follows a track definition.
+Instead of extra `--flags`, track modifiers use a colon-based syntax that
+follows the track file argument. Full list of available modifiers:
 
-The color and sort are specific to pileup, and height can apply to any track.
-More options may be described here soon
+**All tracks**
+
+| Modifier     | Example      | Description                        |
+| ------------ | ------------ | ---------------------------------- |
+| `height:N`   | `height:400` | Track height in pixels             |
+| `force:true` | `force:true` | Render even if region is too large |
+
+**Alignment tracks (BAM/CRAM)**
+
+| Modifier                         | Example                                          | Description                                                                      |
+| -------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS`                   | Color scheme                                                                     |
+| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`                     | Sort reads                                                                       |
+| `featureHeight:preset\|N`        | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (2px), `super-compact` (1px) |
+| `noSpacing:true\|false`          | `noSpacing:true`                                 | Remove gap between reads                                                         |
+| `softClipping:true\|false`       | `softClipping:true`                              | Show soft-clipped bases                                                          |
+| `snpcov`                         | `snpcov`                                         | Render only the SNP/coverage subtrack                                            |
+
+**BigWig tracks**
+
+| Modifier                 | Example                | Description                                              |
+| ------------------------ | ---------------------- | -------------------------------------------------------- |
+| `autoscale:mode`         | `autoscale:localsd`    | Autoscale mode (`local`, `global`, `localsd`)            |
+| `minmax:min:max`         | `minmax:0:100`         | Manual score range                                       |
+| `scaletype:type`         | `scaletype:log`        | Scale type (`linear` or `log`)                           |
+| `fill:true\|false`       | `fill:false`           | Fill under curve                                         |
+| `crosshatch:true\|false` | `crosshatch:true`      | Draw crosshatches                                        |
+| `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier) |
+| `color:colorname`        | `color:purple`         | Fill color                                               |
 
 ### Force render a large region
 

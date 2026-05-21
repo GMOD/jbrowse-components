@@ -25,6 +25,7 @@ const htmlTags = [
   'i',
   'img',
   'li',
+  'mark',
   'p',
   'pre',
   'span',

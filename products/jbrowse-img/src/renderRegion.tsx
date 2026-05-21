@@ -53,6 +53,48 @@ function applyTrackOpts(
       }
     }
 
+    // apply feature height to pileup (supports normal/compact/super-compact or a number)
+    else if (opt.startsWith('featureHeight:')) {
+      const [, val] = opt.split(':')
+      if (val) {
+        const pileup = display.PileupDisplay ?? display
+        if (val === 'normal') {
+          pileup.setFeatureHeight(7)
+          pileup.setNoSpacing(false)
+        } else if (val === 'compact') {
+          pileup.setFeatureHeight(2)
+          pileup.setNoSpacing(true)
+        } else if (val === 'super-compact') {
+          pileup.setFeatureHeight(1)
+          pileup.setNoSpacing(true)
+        } else {
+          const n = +val
+          if (isNaN(n)) {
+            throw new Error(
+              `Invalid featureHeight "${val}". Use normal, compact, super-compact, or a number.`,
+            )
+          }
+          pileup.setFeatureHeight(n)
+        }
+      }
+    }
+
+    // remove spacing between pileup features
+    else if (opt.startsWith('noSpacing:')) {
+      const [, val = 'true'] = opt.split(':')
+      const pileup = display.PileupDisplay ?? display
+      pileup.setNoSpacing(booleanize(val))
+    }
+
+    // show soft clipping on pileup
+    else if (opt.startsWith('softClipping:')) {
+      const [, val = 'true'] = opt.split(':')
+      const pileup = display.PileupDisplay ?? display
+      if (booleanize(val) !== pileup.showSoftClipping) {
+        pileup.toggleSoftClipping()
+      }
+    }
+
     // force track to render even if maxbpperpx limit hit...
     else if (opt.startsWith('force:')) {
       const [, force] = opt.split(':')

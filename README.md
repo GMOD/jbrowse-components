@@ -35,6 +35,11 @@ The core technology stack includes React, Typescript, and
   https://genomebiology.biomedcentral.com/articles/10.1186/s13059-023-02914-z
 - _Setting up the JBrowse 2 genome browser_ (2024)
   https://currentprotocols.onlinelibrary.wiley.com/doi/full/10.1002/cpz1.1120
+- _Setting up JBrowse 2 for Visualizing Genome Synteny_ (2025)
+  https://currentprotocols.onlinelibrary.wiley.com/doi/full/10.1002/cpz1.70236
+- _Proteins in the Genome Browser: Integration of Phylogenies, Alignments, and
+  Structures With Nucleotide-level Evidence in JBrowse 2_ (2026)
+  https://www.sciencedirect.com/science/article/abs/pii/S0022283626000185
 
 ## Contributing to the codebase
 

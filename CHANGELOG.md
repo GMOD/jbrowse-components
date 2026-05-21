@@ -1,3 +1,19 @@
+## Changes since v4.2.1 (2026-04-27)
+
+### bug
+
+- Fix highlight chip not being clickable
+  ([#5554](https://github.com/GMOD/jbrowse-components/pull/5554)) @cmdcolin
+
+### documentation
+
+- Change website from docusaurus to astro
+  ([#5550](https://github.com/GMOD/jbrowse-components/pull/5550)) @cmdcolin
+- More doc improvements from claude code audit of docs
+  ([#5549](https://github.com/GMOD/jbrowse-components/pull/5549)) @cmdcolin
+- Add documentation to help with visualizing and interpreting SVs in jbrowse
+  ([#5547](https://github.com/GMOD/jbrowse-components/pull/5547)) @cmdcolin
+
 ## Changes since v4.2.0 (2026-04-16)
 
 ### bug

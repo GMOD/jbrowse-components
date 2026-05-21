@@ -27,3 +27,13 @@ test('per-track options after a second track of the same type are captured', () 
     ['noRasterize', []],
   ])
 })
+
+test('featureHeight options are parsed as track options', () => {
+  const args =
+    '--bam alignment.bam color:tag:XS featureHeight:super-compact --out out.svg'
+
+  expect(parseArgv(args.split(' '))).toEqual([
+    ['bam', ['alignment.bam', 'color:tag:XS', 'featureHeight:super-compact']],
+    ['out', ['out.svg']],
+  ])
+})
