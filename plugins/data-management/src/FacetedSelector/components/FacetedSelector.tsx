@@ -25,7 +25,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function HighlightText({
+export function HighlightText({
   text,
   query,
   className,
@@ -39,25 +39,24 @@ function HighlightText({
   }
   const lowerText = text.toLowerCase()
   const lowerQuery = query.toLowerCase()
-  const parts: React.ReactNode[] = []
+  let highlighted = ''
   let lastIndex = 0
   let idx = lowerText.indexOf(lowerQuery, lastIndex)
   while (idx !== -1) {
     if (idx > lastIndex) {
-      parts.push(text.slice(lastIndex, idx))
+      highlighted += text.slice(lastIndex, idx)
     }
-    parts.push(
-      <mark key={idx} style={{ background: '#FFEB3B' }}>
-        {text.slice(idx, idx + query.length)}
-      </mark>,
-    )
+    highlighted += `<mark style="background: #FFEB3B">${text.slice(
+      idx,
+      idx + query.length,
+    )}</mark>`
     lastIndex = idx + query.length
     idx = lowerText.indexOf(lowerQuery, lastIndex)
   }
   if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex))
+    highlighted += text.slice(lastIndex)
   }
-  return <span className={className}>{parts}</span>
+  return <SanitizedHTML html={highlighted} className={className} />
 }
 
 const frac = 0.75
