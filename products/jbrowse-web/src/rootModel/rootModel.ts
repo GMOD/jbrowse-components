@@ -525,6 +525,7 @@ export default function RootModel({
                       PreferencesDialog,
                       {
                         session: self.session,
+                        pluginManager,
                         handleClose,
                       },
                     ])

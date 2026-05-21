@@ -1,4 +1,8 @@
-import { RootAppMenuMixin, processMutableMenuActions } from '@jbrowse/app-core'
+import {
+  JBrowseModelF,
+  RootAppMenuMixin,
+  processMutableMenuActions,
+} from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -8,29 +12,24 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
+import { PreferencesDialog } from '@jbrowse/web-core'
 import AddIcon from '@mui/icons-material/Add'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
+import SettingsIcon from '@mui/icons-material/Settings'
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StorageIcon from '@mui/icons-material/Storage'
 import { autorun } from 'mobx'
 
-import jbrowseWebFactory from '../jbrowseModel.ts'
 import { version } from '../version.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
 } from '@jbrowse/mobx-state-tree'
-
-export interface Menu {
-  label: string
-  menuItems: MenuItem[]
-}
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
 type SessionModelFactory = (args: {
@@ -66,7 +65,7 @@ export default function RootModel({
     .compose(
       BaseRootModelFactory({
         pluginManager,
-        jbrowseModelType: jbrowseWebFactory({
+        jbrowseModelType: JBrowseModelF({
           pluginManager,
           assemblyConfigSchema,
         }),
@@ -170,9 +169,8 @@ export default function RootModel({
                 {
                   label: 'New session',
                   icon: AddIcon,
-
-                  onClick: (session: any) => {
-                    session.setDefaultSession()
+                  onClick: () => {
+                    self.setDefaultSession()
                   },
                 },
                 {
@@ -250,6 +248,20 @@ export default function RootModel({
             {
               label: 'Tools',
               menuItems: [
+                {
+                  label: 'Preferences',
+                  icon: SettingsIcon,
+                  onClick: () => {
+                    self.session?.queueDialog((handleClose: () => void) => [
+                      PreferencesDialog,
+                      {
+                        session: self.session,
+                        pluginManager,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
                 {
                   label: 'Use workspaces',
                   icon: SpaceDashboardIcon,

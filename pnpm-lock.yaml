@@ -668,6 +668,9 @@ importers:
       mobx:
         specifier: ^6.15.3
         version: 6.15.3
+      mobx-react:
+        specifier: ^9.2.1
+        version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
         specifier: '>=18.0.0'
         version: 19.2.6

@@ -12,18 +12,14 @@ export const WithFetchConfigJson = () => {
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
-      const url = 'test_data/volvox/config.json'
-      const response = await fetch(url)
+      const configPath = 'test_data/volvox/config.json'
+      const response = await fetch(configPath)
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status} fetching config ${url}`)
+        throw new Error(`HTTP ${response.status} fetching config ${configPath}`)
       }
       const config = await response.json()
-      const configPath = 'test_data/volvox/config.json'
       addRelativeUris(config, new URL(configPath, window.location.href).href)
-      const state = createViewState({
-        config,
-      })
-      setState(state)
+      setState(createViewState({ config }))
     })()
   }, [])
 

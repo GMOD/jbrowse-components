@@ -71,6 +71,18 @@ exports[`adds menus 1`] = `
     "label": "Tools",
     "menuItems": [
       {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Preferences",
+        "onClick": [Function],
+      },
+      {
         "checked": false,
         "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
         "icon": {
@@ -161,6 +173,18 @@ exports[`adds menus 2`] = `
     "label": "Tools",
     "menuItems": [
       {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Preferences",
+        "onClick": [Function],
+      },
+      {
         "checked": false,
         "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
         "icon": {
@@ -234,7 +258,10 @@ exports[`adds track and connection configs to an assembly 1`] = `
         "displayId": "sequenceConfigId-LinearReferenceSequenceDisplay",
         "type": "LinearReferenceSequenceDisplay",
       },
-      {},
+      {
+        "displayId": "sequenceConfigId-LinearGCContentDisplay",
+        "type": "LinearGCContentDisplay",
+      },
     ],
     "trackId": "sequenceConfigId",
     "type": "ReferenceSequenceTrack",
