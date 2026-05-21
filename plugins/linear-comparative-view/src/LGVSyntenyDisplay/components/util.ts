@@ -7,10 +7,7 @@ import {
   parseCigar2,
 } from '@jbrowse/cigar-utils'
 
-import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
-
-type LSV = LinearSyntenyViewModel
 
 function findPosInCigar(cigar: number[], startX: number) {
   let featX = 0
@@ -40,7 +37,7 @@ interface SimpleRegion {
   end: number
 }
 
-export async function navToSynteny({
+export function navToSynteny({
   feature,
   windowSize: ws,
   session,
@@ -92,43 +89,17 @@ export async function navToSynteny({
     rMateStart = mateStart
     rMateEnd = mateEnd
   }
-  const l1 = `${featRef}:${Math.floor(rFeatStart - ws)}-${Math.floor(rFeatEnd + ws)}`
   const m1 = Math.min(rMateStart, rMateEnd)
   const m2 = Math.max(rMateStart, rMateEnd)
-  const l2 = `${mateRef}:${Math.floor(m1 - ws)}-${Math.floor(m2 + ws)}${
-    horizontallyFlip ? '[rev]' : ''
-  }`
+  const l1 = `${featRef}:${Math.max(0, Math.floor(rFeatStart - ws))}-${Math.floor(rFeatEnd + ws)}`
+  const l2 = `${mateRef}:${Math.max(0, Math.floor(m1 - ws))}-${Math.floor(m2 + ws)}${horizontallyFlip ? '[rev]' : ''}`
   session.addView('LinearSyntenyView', {
-    type: 'LinearSyntenyView',
-    views: [
-      {
-        type: 'LinearGenomeView',
-        hideHeader: true,
-        init: {
-          assembly: featAsm,
-          loc: l1,
-        },
-      },
-      {
-        type: 'LinearGenomeView',
-        hideHeader: true,
-        init: {
-          assembly: mateAsm,
-          loc: l2,
-        },
-      },
-    ],
-    tracks: [
-      {
-        configuration: trackId,
-        type: 'SyntenyTrack',
-        displays: [
-          {
-            type: 'LinearSyntenyDisplay',
-            configuration: `${trackId}-LinearSyntenyDisplay`,
-          },
-        ],
-      },
-    ],
-  }) as LSV
+    init: {
+      views: [
+        { assembly: featAsm, loc: l1 },
+        { assembly: mateAsm, loc: l2 },
+      ],
+      tracks: [[trackId]],
+    },
+  })
 }

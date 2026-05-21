@@ -97,9 +97,6 @@ export default function LaunchSyntenyViewDialog({
               region: useRegionOfInterest
                 ? view?.dynamicBlocks.contentBlocks[0]
                 : undefined,
-            }).catch((e: unknown) => {
-              console.error(e)
-              session.notifyError(`${e}`, e)
             })
             handleClose()
           }}
