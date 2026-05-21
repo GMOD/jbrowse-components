@@ -24,30 +24,31 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
     header: string
   }>
 
-  private buildConfigured() {
-    const vcfGzLocation = this.getConf('vcfGzLocation')
-    const location = this.getConf(['index', 'location'])
-    const indexType = this.getConf(['index', 'indexType'])
-    const isCSI = indexType === 'CSI'
-    const vcf = new TabixIndexedFile({
-      filehandle: openLocation(vcfGzLocation, this.pluginManager),
-      csiFilehandle: isCSI ? openLocation(location, this.pluginManager) : undefined,
-      tbiFilehandle: !isCSI ? openLocation(location, this.pluginManager) : undefined,
-      chunkCacheSize: 50 * 2 ** 20,
-    })
-    return vcf.getHeader().then(header => ({
-      vcf,
-      parser: new VcfParser({ header }),
-      header,
-    }))
-  }
-
   private configureOnce() {
-    this.configured ??= this.buildConfigured().catch((e: unknown) => {
-      this.configured = undefined
-      throw e
-    })
-    return this.configured
+    if (!this.configured) {
+      const vcfGzLocation = this.getConf('vcfGzLocation')
+      const location = this.getConf(['index', 'location'])
+      const indexType = this.getConf(['index', 'indexType'])
+      const isCSI = indexType === 'CSI'
+      const vcf = new TabixIndexedFile({
+        filehandle: openLocation(vcfGzLocation, this.pluginManager),
+        csiFilehandle: isCSI ? openLocation(location, this.pluginManager) : undefined,
+        tbiFilehandle: !isCSI ? openLocation(location, this.pluginManager) : undefined,
+        chunkCacheSize: 50 * 2 ** 20,
+      })
+      this.configured = vcf
+        .getHeader()
+        .then(header => ({
+          vcf,
+          parser: new VcfParser({ header }),
+          header,
+        }))
+        .catch((e: unknown) => {
+          this.configured = undefined
+          throw e
+        })
+    }
+    return this.configured!
   }
 
   async configure(opts?: BaseOptions) {

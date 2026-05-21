@@ -29,13 +29,9 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
       const gff = new TabixIndexedFile({
         filehandle: openLocation(gffGzLocation, this.pluginManager),
         csiFilehandle:
-          indexType === 'CSI'
-            ? openLocation(loc, this.pluginManager)
-            : undefined,
+          indexType === 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
         tbiFilehandle:
-          indexType !== 'CSI'
-            ? openLocation(loc, this.pluginManager)
-            : undefined,
+          indexType !== 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
         chunkCacheSize: 50 * 2 ** 20,
       })
       this.configured = gff
@@ -50,7 +46,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           throw e
         })
     }
-    return this.configured
+    return this.configured!
   }
 
   async configure(opts?: BaseOptions) {
