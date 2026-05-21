@@ -1,11 +1,10 @@
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
+
 import {
   generateBedMethylFeature,
   isBedMethylFeature,
 } from './generateBedMethylFeature.ts'
-import {
-  generateRepeatMaskerFeature,
-  isRepeatMaskerDescriptionField,
-} from './generateRepeatMaskerFeature.ts'
+import { parseRepeatMaskerDescription } from './generateRepeatMaskerFeature.ts'
 import {
   generateUcscTranscript,
   isUcscTranscript,
@@ -14,23 +13,72 @@ import {
 import type { MinimalFeature } from './types.ts'
 import type BED from '@gmod/bed'
 
-function defaultParser(fields: string[], splitLine: string[]) {
-  const obj = {} as Record<string, string>
-  let hasBlockCount = false
+interface BedData {
+  strand?: string | number
+  score?: string | number
+  chrom?: string
+  chromStart?: number | string
+  chromEnd?: number | string
+  description?: string
+  blockCount?: number
+  chromStarts?: number[]
+  blockSizes?: number[]
+  blockStarts?: number[]
+  thickStart?: number
+  thickEnd?: number
+  [key: string]: unknown
+}
 
+export interface FeatureData {
+  uniqueId: string
+  refName: string
+  start: number
+  end: number
+  strand?: number
+  score?: number
+  type?: string
+  subfeatures?: MinimalFeature[]
+  [key: string]: unknown
+}
+
+// Heuristically split features and header from a buffered BED file, bucketing
+// data lines by the first tab-separated column (refName).
+export function bucketBedLines(
+  buffer: Uint8Array,
+  statusCallback?: (s: string) => void,
+) {
+  const features: Record<string, string[]> = {}
+  const headerLines: string[] = []
+  parseLineByLine(
+    buffer,
+    line => {
+      if (line.startsWith('#')) {
+        headerLines.push(line)
+      } else {
+        const tab = line.indexOf('\t')
+        const refName = line.slice(0, tab)
+        features[refName] ??= []
+        features[refName].push(line)
+      }
+      return true
+    },
+    statusCallback,
+  )
+  return { header: headerLines.join('\n'), features }
+}
+
+function defaultParser(fields: string[], splitLine: string[]): BedData {
+  const obj: Record<string, string> = {}
   for (const [i, element] of splitLine.entries()) {
     const field = fields[i]
     if (field) {
-      obj[field] = element!
-      if (field === 'blockCount') {
-        hasBlockCount = true
-      }
+      obj[field] = element
     }
   }
 
-  // heuristically try to determine whether to follow 'slow path' as there can
-  // be many features in e.g. GWAS type data
-  if (hasBlockCount) {
+  // heuristically take the 'slow path' only when block fields are present, as
+  // GWAS-type BED data can be very large and we avoid the extra work for it
+  if ('blockCount' in obj) {
     const {
       blockStarts,
       blockCount,
@@ -40,7 +88,6 @@ function defaultParser(fields: string[], splitLine: string[]) {
       blockSizes,
       ...rest
     } = obj
-
     return {
       ...rest,
       blockStarts: arrayify(blockStarts),
@@ -49,9 +96,8 @@ function defaultParser(fields: string[], splitLine: string[]) {
       thickStart: thickStart ? +thickStart : undefined,
       thickEnd: thickEnd ? +thickEnd : undefined,
       blockCount: blockCount ? +blockCount : undefined,
-    } as Record<string, unknown>
+    }
   }
-
   return obj
 }
 
@@ -72,7 +118,7 @@ export function makeBlocks({
   blockSizes?: number[]
   blockStarts?: number[]
 }) {
-  const subfeatures = []
+  const subfeatures: MinimalFeature[] = []
   const starts = chromStarts ?? blockStarts ?? []
   for (let b = 0; b < blockCount; b++) {
     const bmin = (starts[b] ?? 0) + start
@@ -90,47 +136,18 @@ export function makeBlocks({
   return subfeatures
 }
 
-export function featureData({
-  line,
-  colRef,
-  colStart,
-  colEnd,
-  scoreColumn,
-  parser,
-  uniqueId,
-  names,
-  disableGeneHeuristic,
-}: {
-  line: string
-  colRef: number
-  colStart: number
-  colEnd: number
-  scoreColumn: string
-  parser: BED
-  uniqueId: string
-  names?: string[]
-  disableGeneHeuristic?: boolean
-}) {
-  const splitLine = line.split('\t')
-  const refName = splitLine[colRef]!
-  const start = Number.parseInt(splitLine[colStart]!, 10)
-  const end =
-    Number.parseInt(splitLine[colEnd]!, 10) + (colStart === colEnd ? 1 : 0)
-
-  return featureData2({
-    splitLine,
-    refName,
-    start,
-    end,
-    parser,
-    uniqueId,
-    scoreColumn,
-    names,
-    disableGeneHeuristic,
-  })
+export function parseNamesFromHeader(header: string) {
+  const defs = header.split(/\n|\r\n|\r/).filter(Boolean)
+  const defline = defs.at(-1)
+  return defline?.includes('\t')
+    ? defline
+        .slice(1)
+        .split('\t')
+        .map(f => f.trim())
+    : undefined
 }
 
-function parseStrand(strand: unknown) {
+export function parseStrand(strand: string | number | undefined): number {
   if (strand === '-' || strand === -1) {
     return -1
   }
@@ -140,19 +157,11 @@ function parseStrand(strand: unknown) {
   return 0
 }
 
-interface FeatureData {
-  uniqueId: string
-  refName: string
-  start: number
-  end: number
-  strand?: number | string
-  score?: number
-  type?: string
-  subfeatures?: MinimalFeature[]
-  [key: string]: unknown
+export function arrayify(f: string | undefined): number[] | undefined {
+  return f === undefined ? undefined : f.split(',').map(Number)
 }
 
-export function featureData2({
+export function featureData({
   splitLine,
   refName,
   start,
@@ -173,34 +182,7 @@ export function featureData2({
   names?: string[]
   disableGeneHeuristic?: boolean
 }): FeatureData {
-  const data = names
-    ? defaultParser(names, splitLine)
-    : parser.parseLine(splitLine, { uniqueId })
-  const {
-    strand: strand2,
-    score: score2,
-    chrom: _1,
-    chromStart: _2,
-    chromEnd: _3,
-    ...rest
-  } = data
-
-  // @ts-expect-error
-  const score = scoreColumn ? +data[scoreColumn] : score2 ? +score2 : undefined
-  const strand = parseStrand(strand2)
-
-  const subfeatures = rest.blockCount
-    ? makeBlocks({
-        start,
-        uniqueId,
-        refName,
-        chromStarts: rest.chromStarts as number[],
-        blockCount: rest.blockCount as number,
-        blockSizes: rest.blockSizes as number[],
-        blockStarts: rest.blockStarts as number[],
-      })
-    : undefined
-
+  // bedMethyl detection runs on raw splitLine before parsing
   if (isBedMethylFeature({ splitLine, start, end })) {
     return generateBedMethylFeature({
       splitLine,
@@ -209,69 +191,95 @@ export function featureData2({
       start,
       end,
     })
-  } else if (isRepeatMaskerDescriptionField(rest.description)) {
+  }
+
+  const data: BedData = names
+    ? defaultParser(names, splitLine)
+    : parser.parseLine(splitLine, { uniqueId })
+  const {
+    strand: strandRaw,
+    score: scoreRaw,
+    chrom,
+    chromStart,
+    chromEnd,
+    ...rest
+  } = data
+  const strand = parseStrand(strandRaw)
+  const score = scoreColumn
+    ? Number(data[scoreColumn])
+    : scoreRaw !== undefined
+      ? Number(scoreRaw)
+      : undefined
+
+  const repeat = parseRepeatMaskerDescription(rest.description)
+  if (repeat) {
     const {
-      chromStarts: _4,
-      blockSizes: _5,
-      blockStarts: _6,
-      blockCount: _7,
-      thickStart: _8,
-      thickEnd: _9,
       description,
+      chromStarts,
+      blockSizes,
+      blockStarts,
+      blockCount,
+      thickStart,
+      thickEnd,
+      subfeatures,
       ...rest2
     } = rest
-    return generateRepeatMaskerFeature({
+    return {
       ...rest2,
-      description,
+      ...repeat,
       uniqueId,
       score,
       start,
       end,
       strand,
       refName,
-      subfeatures,
-    })
-  } else if (
+    }
+  }
+
+  const subfeatures = rest.blockCount
+    ? makeBlocks({
+        start,
+        uniqueId,
+        refName,
+        chromStarts: rest.chromStarts,
+        blockCount: rest.blockCount,
+        blockSizes: rest.blockSizes,
+        blockStarts: rest.blockStarts,
+      })
+    : undefined
+
+  const transcriptCheck = {
+    strand,
+    blockCount: rest.blockCount,
+    thickStart: rest.thickStart,
+    thickEnd: rest.thickEnd,
+  }
+  if (
     !disableGeneHeuristic &&
     subfeatures &&
-    isUcscTranscript({
-      strand,
-      blockCount: rest.blockCount,
-      thickStart: rest.thickStart,
-    })
+    isUcscTranscript(transcriptCheck)
   ) {
     return generateUcscTranscript({
       ...rest,
       score,
       start,
       end,
-      strand,
+      strand: transcriptCheck.strand,
       refName,
       uniqueId,
       subfeatures,
-      thickStart: rest.thickStart as number,
-      thickEnd: rest.thickEnd as number,
+      thickStart: transcriptCheck.thickStart,
+      thickEnd: transcriptCheck.thickEnd,
     })
-  } else {
-    return {
-      ...rest,
-      uniqueId,
-      score,
-      start,
-      end,
-      strand,
-      refName,
-      subfeatures,
-    }
   }
-}
-
-export function arrayify(f?: string | number[]) {
-  if (f === undefined) {
-    return undefined
+  return {
+    ...rest,
+    uniqueId,
+    score,
+    start,
+    end,
+    strand,
+    refName,
+    subfeatures,
   }
-  if (typeof f === 'string') {
-    return f.split(',').map(s => +s)
-  }
-  return f
 }

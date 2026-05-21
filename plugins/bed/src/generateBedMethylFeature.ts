@@ -1,3 +1,5 @@
+import { parseStrand } from './util.ts'
+
 // this uses modkit bedMethyl. unclear how to reliably detect minimal 9+2 bedMethyl
 export function isBedMethylFeature({
   splitLine,
@@ -9,8 +11,10 @@ export function isBedMethylFeature({
   end: number
 }) {
   return (
-    +(splitLine[6] || 0) === start &&
-    +(splitLine[7] || 0) === end &&
+    splitLine[6] !== undefined &&
+    +splitLine[6] === start &&
+    splitLine[7] !== undefined &&
+    +splitLine[7] === end &&
     [9, 10, 11, 12, 13, 14, 15, 16, 17].every(
       r => splitLine[r] && !Number.isNaN(+splitLine[r]),
     )
@@ -38,7 +42,7 @@ export function generateBedMethylFeature({
     ,
     code,
     ,
-    strand,
+    strandRaw,
     ,
     ,
     color,
@@ -59,8 +63,8 @@ export function generateBedMethylFeature({
     start,
     end,
     code,
-    score: +fraction_modified! || 0,
-    strand,
+    score: +fraction_modified!,
+    strand: parseStrand(strandRaw),
     color,
     source: code,
     n_valid_cov,

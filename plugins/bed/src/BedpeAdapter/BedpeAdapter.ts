@@ -1,8 +1,10 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { IntervalTree, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
+import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { parseNamesFromHeader } from '../util.ts'
 import { featureData } from './util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -13,7 +15,6 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
     header: string
     feats1: Record<string, string[]>
     feats2: Record<string, string[]>
-    columnNames: string[]
   }>
 
   protected intervalTrees: Record<
@@ -24,51 +25,43 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   private async loadDataP(opts?: BaseOptions) {
-    const data = await fetchAndMaybeUnzipText(
+    const buffer = await fetchAndMaybeUnzip(
       openLocation(this.getConf('bedpeLocation'), this.pluginManager),
       opts,
     )
 
-    const lines = data.split(/\n|\r\n|\r/).filter(f => !!f)
-    const headerLines = []
-    let i = 0
-    for (; i < lines.length && lines[i]!.startsWith('#'); i++) {
-      headerLines.push(lines[i])
-    }
-    const header = headerLines.join('\n')
-    const feats1 = {} as Record<string, string[]>
-    const feats2 = {} as Record<string, string[]>
-    for (; i < lines.length; i++) {
-      const line = lines[i]!
-      const cols = line.split('\t')
-      const r1 = cols[0]!
-      const r2 = cols[3]!
-      if (!feats1[r1]) {
-        feats1[r1] = []
-      }
-      if (!feats2[r2]) {
-        feats2[r2] = []
-      }
-      feats1[r1].push(line)
-      feats2[r2].push(line)
-    }
-    const columnNames = this.getConf('columnNames')
+    const headerLines: string[] = []
+    const feats1: Record<string, string[]> = {}
+    const feats2: Record<string, string[]> = {}
+    parseLineByLine(
+      buffer,
+      line => {
+        if (line.startsWith('#')) {
+          headerLines.push(line)
+        } else {
+          const cols = line.split('\t')
+          const r1 = cols[0]!
+          const r2 = cols[3]!
+          ;(feats1[r1] ??= []).push(line)
+          ;(feats2[r2] ??= []).push(line)
+        }
+        return true
+      },
+      opts?.statusCallback,
+    )
 
     return {
-      header,
+      header: headerLines.join('\n'),
       feats1,
       feats2,
-      columnNames,
     }
   }
 
   private async loadData(opts: BaseOptions = {}) {
-    if (!this.bedpeFeatures) {
-      this.bedpeFeatures = this.loadDataP(opts).catch((e: unknown) => {
-        this.bedpeFeatures = undefined
-        throw e
-      })
-    }
+    this.bedpeFeatures ??= this.loadDataP(opts).catch((e: unknown) => {
+      this.bedpeFeatures = undefined
+      throw e
+    })
 
     return this.bedpeFeatures
   }
@@ -84,34 +77,25 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
   }
 
   async getNames() {
-    const { header, columnNames } = await this.loadData()
+    const columnNames: string[] = this.getConf('columnNames')
     if (columnNames.length) {
       return columnNames
     }
-    const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs.at(-1)
-    return defline?.includes('\t')
-      ? defline
-          .slice(1)
-          .split('\t')
-          .map(field => field.trim())
-      : undefined
+    const { header } = await this.loadData()
+    return parseNamesFromHeader(header)
   }
 
   private async loadFeatureTreeP(refName: string) {
     const { feats1, feats2 } = await this.loadData()
     const names = await this.getNames()
     const intervalTree = new IntervalTree<Feature>()
-    const ret1 =
-      feats1[refName]?.map((f, i) =>
-        featureData(f, `${this.id}-${refName}-${i}-r1`, false, names),
-      ) ?? []
-    const ret2 =
-      feats2[refName]?.map((f, i) =>
-        featureData(f, `${this.id}-${refName}-${i}-r2`, true, names),
-      ) ?? []
 
-    for (const obj of [...ret1, ...ret2]) {
+    for (const [i, f] of (feats1[refName] ?? []).entries()) {
+      const obj = featureData(f, `${this.id}-${refName}-${i}-r1`, false, names)
+      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+    }
+    for (const [i, f] of (feats2[refName] ?? []).entries()) {
+      const obj = featureData(f, `${this.id}-${refName}-${i}-r2`, true, names)
       intervalTree.insert([obj.get('start'), obj.get('end')], obj)
     }
 
@@ -119,14 +103,12 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
   }
 
   private async loadFeatureTree(refName: string) {
-    if (!this.intervalTrees[refName]) {
-      this.intervalTrees[refName] = this.loadFeatureTreeP(refName).catch(
-        (e: unknown) => {
-          this.intervalTrees[refName] = undefined
-          throw e
-        },
-      )
-    }
+    this.intervalTrees[refName] ??= this.loadFeatureTreeP(refName).catch(
+      (e: unknown) => {
+        this.intervalTrees[refName] = undefined
+        throw e
+      },
+    )
     return this.intervalTrees[refName]
   }
 
@@ -134,7 +116,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureTree(refName)
-      for (const f of intervalTree?.search([start, end]) || []) {
+      for (const f of intervalTree?.search([start, end]) ?? []) {
         observer.next(f)
       }
       observer.complete()

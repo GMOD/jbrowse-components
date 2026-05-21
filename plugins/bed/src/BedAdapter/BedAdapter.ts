@@ -6,10 +6,9 @@ import {
   fetchAndMaybeUnzip,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { featureData } from '../util.ts'
+import { bucketBedLines, featureData, parseNamesFromHeader } from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -19,11 +18,6 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     header: string
     features: Record<string, string[]>
     parser: BED
-    columnNames: string[]
-    scoreColumn: string
-    colRef: number
-    colStart: number
-    colEnd: number
   }>
 
   protected intervalTrees: Record<
@@ -34,60 +28,23 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   private async loadDataP(opts?: BaseOptions) {
-    const bedLoc = this.getConf('bedLocation')
     const buffer = await fetchAndMaybeUnzip(
-      openLocation(bedLoc, this.pluginManager),
+      openLocation(this.getConf('bedLocation'), this.pluginManager),
       opts,
     )
-
-    const headerLines = [] as string[]
-    const features = {} as Record<string, string[]>
-    parseLineByLine(
-      buffer,
-      line => {
-        if (line.startsWith('#')) {
-          headerLines.push(line)
-        } else {
-          const tab = line.indexOf('\t')
-          const refName = line.slice(0, tab)
-          if (!features[refName]) {
-            features[refName] = []
-          }
-          features[refName].push(line)
-        }
-        return true
-      },
-      opts?.statusCallback,
-    )
-
-    const header = headerLines.join('\n')
-    const autoSql = this.getConf('autoSql') as string
-    const parser = new BED({ autoSql })
-    const columnNames = this.getConf('columnNames')
-    const scoreColumn = this.getConf('scoreColumn')
-    const colRef = this.getConf('colRef')
-    const colStart = this.getConf('colStart')
-    const colEnd = this.getConf('colEnd')
-
+    const { header, features } = bucketBedLines(buffer, opts?.statusCallback)
     return {
       header,
       features,
-      parser,
-      columnNames,
-      scoreColumn,
-      colRef,
-      colStart,
-      colEnd,
+      parser: new BED({ autoSql: this.getConf('autoSql') }),
     }
   }
 
   async loadData(opts: BaseOptions = {}) {
-    if (!this.bedFeatures) {
-      this.bedFeatures = this.loadDataP(opts).catch((e: unknown) => {
-        this.bedFeatures = undefined
-        throw e
-      })
-    }
+    this.bedFeatures ??= this.loadDataP(opts).catch((e: unknown) => {
+      this.bedFeatures = undefined
+      throw e
+    })
 
     return this.bedFeatures
   }
@@ -103,44 +60,40 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
   }
 
   async getNames() {
-    const { header, columnNames } = await this.loadData()
+    const columnNames: string[] = this.getConf('columnNames')
     if (columnNames.length) {
       return columnNames
     }
-    const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs.at(-1)
-    return defline?.includes('\t')
-      ? defline
-          .slice(1)
-          .split('\t')
-          .map(field => field.trim())
-      : undefined
+    const { header } = await this.loadData()
+    return parseNamesFromHeader(header)
   }
 
   private async loadFeatureIntervalTreeHelper(refName: string) {
-    const { colRef, colStart, colEnd, features, parser, scoreColumn } =
-      await this.loadData()
+    const { features, parser } = await this.loadData()
     const lines = features[refName]
     if (!lines) {
       return undefined
     }
     const names = await this.getNames()
-    const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
+    const scoreColumn: string = this.getConf('scoreColumn')
+    const colRef: number = this.getConf('colRef')
+    const colStart: number = this.getConf('colStart')
+    const colEnd: number = this.getConf('colEnd')
+    const disableGeneHeuristic: boolean = this.getConf('disableGeneHeuristic')
 
     const intervalTree = new IntervalTree<Feature>()
-    // eslint-disable-next-line unicorn/no-for-loop
+
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]!
-      const uniqueId = `${this.id}-${refName}-${i}`
+      const splitLine = lines[i]!.split('\t')
       const feat = new SimpleFeature(
         featureData({
-          line,
-          colRef,
-          colStart,
-          colEnd,
+          splitLine,
+          refName: splitLine[colRef]!,
+          start: +splitLine[colStart]!,
+          end: +splitLine[colEnd]! + (colStart === colEnd ? 1 : 0),
           scoreColumn,
           parser,
-          uniqueId,
+          uniqueId: `${this.id}-${refName}-${i}`,
           names,
           disableGeneHeuristic,
         }),
@@ -152,14 +105,12 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
   }
 
   async loadFeatureIntervalTree(refName: string) {
-    if (!this.intervalTrees[refName]) {
-      this.intervalTrees[refName] = this.loadFeatureIntervalTreeHelper(
-        refName,
-      ).catch((e: unknown) => {
-        this.intervalTrees[refName] = undefined
-        throw e
-      })
-    }
+    this.intervalTrees[refName] ??= this.loadFeatureIntervalTreeHelper(
+      refName,
+    ).catch((e: unknown) => {
+      this.intervalTrees[refName] = undefined
+      throw e
+    })
     return this.intervalTrees[refName]
   }
 
@@ -167,11 +118,8 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureIntervalTree(refName)
-      const features = intervalTree?.search([start, end])
-      if (features) {
-        for (const f of features) {
-          observer.next(f)
-        }
+      for (const f of intervalTree?.search([start, end]) ?? []) {
+        observer.next(f)
       }
       observer.complete()
     }, opts.stopToken)

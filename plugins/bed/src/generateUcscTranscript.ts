@@ -1,61 +1,63 @@
 import type { MinimalFeature } from './types.ts'
 
-export function isUcscTranscript({
-  thickStart,
-  blockCount,
-  strand,
-}: {
-  thickStart?: unknown
-  blockCount?: unknown
+interface UcscTranscriptCheck {
+  thickStart?: number
+  thickEnd?: number
+  blockCount?: number
   strand?: number
-}) {
+}
+
+interface ValidUcscTranscriptCheck {
+  thickStart: number
+  thickEnd: number
+  blockCount: number
+  strand: number
+}
+
+// type guard: narrows input fields to required + non-zero when true
+// strand===0 means unstranded — likely not a gene
+export function isUcscTranscript(
+  input: UcscTranscriptCheck,
+): input is ValidUcscTranscriptCheck {
   return (
-    typeof thickStart === 'number' &&
-    typeof blockCount === 'number' &&
-    strand !== 0
+    input.thickStart !== undefined &&
+    input.thickEnd !== undefined &&
+    input.thickStart !== input.thickEnd &&
+    input.blockCount !== undefined &&
+    input.blockCount > 0 &&
+    input.strand !== undefined &&
+    input.strand !== 0
   )
 }
 
-/**
- * Calculate phase for each CDS based on cumulative widths.
- * Phase = (3 - cumulative_cds_width % 3) % 3
- * CDS must be in transcriptional order (5' to 3')
- */
+// phase = (3 - cumulative_cds_width % 3) % 3, computed in transcriptional order
 function calculatePhasesFromCds(
   cdsRegions: { start: number; end: number }[],
   strand: number,
 ) {
-  // Sort in transcriptional order: ascending for +strand, descending for -strand
   const sorted = [...cdsRegions].sort((a, b) =>
     strand > 0 ? a.start - b.start : b.start - a.start,
   )
-
   const phaseMap = new Map<number, number>()
   let cumulativeWidth = 0
-
   for (const cds of sorted) {
-    // Phase is how many bases at the START of this CDS complete the previous codon
-    const phase = (3 - (cumulativeWidth % 3)) % 3
-    phaseMap.set(cds.start, phase)
+    phaseMap.set(cds.start, (3 - (cumulativeWidth % 3)) % 3)
     cumulativeWidth += cds.end - cds.start
   }
-
   return phaseMap
 }
 
-/**
- * Convert UCSC exonFrames (reading frame 0,1,2) to GFF phase (bases to skip 0,1,2)
- * Frame 0 → phase 0 (first base at codon position 0, skip 0)
- * Frame 1 → phase 2 (first base at codon position 1, skip 2 to next codon)
- * Frame 2 → phase 1 (first base at codon position 2, skip 1 to next codon)
- */
+// convert UCSC exonFrames (0,1,2) to GFF phase: frame 0→0, frame 1→2, frame 2→1
+// UCSC frame = bases from start of codon; GFF phase = bases to skip to reach next codon
+// https://genome.ucsc.edu/FAQ/FAQformat.html#format1 (bigGenePred exonFrames)
+// https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md (phase)
 function frameToPhase(frame: number) {
   return (3 - frame) % 3
 }
 
 interface UcscTranscriptInput {
   uniqueId: string
-  strand?: number
+  strand: number
   thickStart: number
   thickEnd: number
   refName: string
@@ -65,10 +67,10 @@ interface UcscTranscriptInput {
   [key: string]: unknown
 }
 
-interface UcscTranscriptOutput {
+interface UcscTranscriptOutput extends MinimalFeature {
   uniqueId: string
   strand: number
-  type: string
+  type: 'mRNA' | 'transcript'
   refName: string
   start: number
   end: number
@@ -79,24 +81,28 @@ interface UcscTranscriptOutput {
 export function generateUcscTranscript(
   data: UcscTranscriptInput,
 ): UcscTranscriptOutput {
-  const { strand = 0, uniqueId, start, end, ...rest } = data
   const {
-    subfeatures: oldSubfeatures,
+    strand,
+    uniqueId,
+    start,
+    end,
     thickStart,
     thickEnd,
     refName,
-    chrom: _1,
-    chromStart: _2,
-    chromEnd: _3,
-    chromStarts: _4,
-    blockStarts: _5,
-    blockSizes: _6,
-    blockCount: _7,
-    ...rest2
-  } = rest
+    subfeatures: oldSubfeatures,
+    chrom,
+    chromStart,
+    chromEnd,
+    chromStarts,
+    blockStarts,
+    blockSizes,
+    blockCount,
+    ...rest
+  } = data
 
-  // exonFrames from bigGenePred - the @gmod/bed parser returns it in genomic order
-  const exonFrames = (rest2.exonFrames ?? rest2._exonFrames) as
+  // exonFrames from bigGenePred - the @gmod/bed parser returns it in genomic order.
+  // _exonFrames fallback supports BED files that use the underscore-prefixed column name.
+  const exonFrames = (rest.exonFrames ?? rest._exonFrames) as
     | number[]
     | undefined
 
@@ -107,10 +113,10 @@ export function generateUcscTranscript(
   const fiveUTR = strand > 0 ? 'five_prime_UTR' : 'three_prime_UTR'
   const threeUTR = strand > 0 ? 'three_prime_UTR' : 'five_prime_UTR'
 
-  const { cdsEndStat, cdsStartStat } = rest2
+  const { cdsEndStat, cdsStartStat } = rest
   if (cdsStartStat === 'none' && cdsEndStat === 'none') {
     return {
-      ...rest2,
+      ...rest,
       uniqueId,
       strand,
       type: 'transcript',
@@ -126,11 +132,10 @@ export function generateUcscTranscript(
   if (!exonFrames) {
     const cdsRegions: { start: number; end: number }[] = []
     for (const block of feats) {
-      const { start, end } = block
-      if (thickStart < end && thickEnd > start) {
+      if (thickStart < block.end && thickEnd > block.start) {
         cdsRegions.push({
-          start: Math.max(start, thickStart),
-          end: Math.min(end, thickEnd),
+          start: Math.max(block.start, thickStart),
+          end: Math.min(block.end, thickEnd),
         })
       }
     }
@@ -139,23 +144,27 @@ export function generateUcscTranscript(
 
   const subfeatures: MinimalFeature[] = []
   for (const [i, feat] of feats.entries()) {
-    const block = feat
-    const { start, end } = block
+    const { start: bStart, end: bEnd } = feat
 
-    if (thickStart >= end) {
+    if (thickStart >= bEnd) {
       // entire block is 5' UTR
-      subfeatures.push({ type: fiveUTR, start, end, refName })
-    } else if (thickEnd <= start) {
+      subfeatures.push({ type: fiveUTR, start: bStart, end: bEnd, refName })
+    } else if (thickEnd <= bStart) {
       // entire block is 3' UTR
-      subfeatures.push({ type: threeUTR, start, end, refName })
+      subfeatures.push({ type: threeUTR, start: bStart, end: bEnd, refName })
     } else {
       // block overlaps CDS region - may have UTR on either side
-      if (start < thickStart) {
-        subfeatures.push({ type: fiveUTR, start, end: thickStart, refName })
+      if (bStart < thickStart) {
+        subfeatures.push({
+          type: fiveUTR,
+          start: bStart,
+          end: thickStart,
+          refName,
+        })
       }
 
-      const cdsStart = Math.max(start, thickStart)
-      const cdsEnd = Math.min(end, thickEnd)
+      const cdsStart = Math.max(bStart, thickStart)
+      const cdsEnd = Math.min(bEnd, thickEnd)
 
       // Get phase from exonFrames (with conversion) or calculated phases
       let phase = 0
@@ -176,14 +185,19 @@ export function generateUcscTranscript(
         refName,
       })
 
-      if (end > thickEnd) {
-        subfeatures.push({ type: threeUTR, start: thickEnd, end, refName })
+      if (bEnd > thickEnd) {
+        subfeatures.push({
+          type: threeUTR,
+          start: thickEnd,
+          end: bEnd,
+          refName,
+        })
       }
     }
   }
 
   return {
-    ...rest2,
+    ...rest,
     uniqueId,
     strand,
     type: 'mRNA',

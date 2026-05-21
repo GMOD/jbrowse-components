@@ -1,76 +1,39 @@
-export function isRepeatMaskerDescriptionField(desc?: unknown): desc is string {
-  if (typeof desc !== 'string') {
-    return false
-  } else {
-    const ret = desc.trim().split(' ')
-    return [0, 1, 2, 3, 5, 6].every(s =>
-      ret[s] !== undefined ? !Number.isNaN(+ret[s]) : false,
-    )
-  }
-}
+const FIELDS = [
+  'bitsw_score',
+  'percent_div',
+  'percent_del',
+  'percent_ins',
+  'query_chr',
+  'query_begin',
+  'query_end',
+  'query_remaining',
+  'orientation',
+  'matching_repeat_name',
+  'matching_repeat_class',
+  'matching_repeat_begin',
+  'matching_repeat_end',
+  'matching_repeat_remaining',
+  'repeat_id',
+] as const
 
-function makeRepeatTrackDescription(description?: string) {
-  if (isRepeatMaskerDescriptionField(description)) {
-    const [
-      bitsw_score,
-      percent_div,
-      percent_del,
-      percent_ins,
-      query_chr,
-      query_begin,
-      query_end,
-      query_remaining,
-      orientation,
-      matching_repeat_name,
-      matching_repeat_class,
-      matching_repeat_begin,
-      matching_repeat_end,
-      matching_repeat_remaining,
-      repeat_id,
-    ] = description.trim().split(' ')
-    return {
-      bitsw_score,
-      percent_div,
-      percent_del,
-      percent_ins,
-      query_chr,
-      query_begin,
-      query_end,
-      query_remaining,
-      orientation,
-      matching_repeat_name,
-      matching_repeat_class,
-      matching_repeat_begin,
-      matching_repeat_end,
-      matching_repeat_remaining,
-      repeat_id,
+export type RepeatMaskerFields = Record<(typeof FIELDS)[number], string>
+
+// RepeatMasker .out-derived description: 15 space-separated fields with numeric
+// values at positions 0,1,2,3,5,6. Returns parsed fields or undefined if the
+// description doesn't match the format.
+export function parseRepeatMaskerDescription(
+  desc: unknown,
+): RepeatMaskerFields | undefined {
+  if (typeof desc === 'string') {
+    const parts = desc.trim().split(' ')
+    const looksRight = [0, 1, 2, 3, 5, 6].every(
+      i => parts[i] !== undefined && !Number.isNaN(+parts[i]),
+    )
+    if (looksRight) {
+      return Object.fromEntries(
+        FIELDS.map((f, i) => [f, parts[i] ?? '']),
+      ) as RepeatMaskerFields
     }
   }
-  return { description }
-}
-
-export function generateRepeatMaskerFeature({
-  uniqueId,
-  refName,
-  start,
-  end,
-  description,
-  ...rest
-}: {
-  uniqueId: string
-  refName: string
-  start: number
-  end: number
-  description: string
-  [key: string]: unknown
-}) {
-  const { subfeatures, ...rest2 } = rest
-  return {
-    ...rest2,
-    ...makeRepeatTrackDescription(description),
-    uniqueId,
-    refName,
-    start,
-    end,
-  }
+  return undefined
 }

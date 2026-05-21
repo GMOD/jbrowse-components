@@ -4,9 +4,13 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  checkStopToken,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
-import { featureData } from '../util.ts'
+import { featureData, parseNamesFromHeader } from '../util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -19,15 +23,9 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
 
   protected bed: TabixIndexedFile
 
-  protected columnNames: string[]
-
-  protected scoreColumn: string
-
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  setupP?: Promise<{
-    meta: Awaited<ReturnType<TabixIndexedFile['getMetadata']>>
-  }>
+  setupP?: Promise<Awaited<ReturnType<TabixIndexedFile['getMetadata']>>>
 
   public constructor(
     config: AnyConfigurationModel,
@@ -38,7 +36,6 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     const bedGzLoc = this.getConf('bedGzLocation') as FileLocation
     const type = this.getConf(['index', 'indexType'])
     const loc = this.getConf(['index', 'location'])
-    const autoSql = this.getConf('autoSql')
     const pm = this.pluginManager
 
     this.bed = new TabixIndexedFile({
@@ -47,9 +44,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       tbiFilehandle: type !== 'CSI' ? openLocation(loc, pm) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
     })
-    this.columnNames = this.getConf('columnNames')
-    this.scoreColumn = this.getConf('scoreColumn')
-    this.parser = new BED({ autoSql })
+    this.parser = new BED({ autoSql: this.getConf('autoSql') })
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
@@ -60,70 +55,54 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     return this.bed.getHeader(opts)
   }
 
-  async getMetadataPre2(_opts?: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.getMetadataPre().catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+  private async configure() {
+    this.setupP ??= this.bed.getMetadata().catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
-  async getMetadataPre() {
-    const meta = await this.bed.getMetadata()
-    return { meta }
-  }
-
   async getMetadata(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Downloading index', statusCallback, () =>
-      this.getMetadataPre2(opts),
+      this.configure(),
     )
   }
 
   async getNames() {
-    if (this.columnNames.length) {
-      return this.columnNames
+    const columnNames: string[] = this.getConf('columnNames')
+    if (columnNames.length) {
+      return columnNames
     }
-    const header = await this.getHeader()
-    const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs.at(-1)
-    return defline?.includes('\t')
-      ? defline
-          .slice(1)
-          .split('\t')
-          .map(f => f.trim())
-      : undefined
+    return parseNamesFromHeader(await this.getHeader())
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {
-    const { stopToken, statusCallback = () => {} } = opts || {}
+    const { stopToken, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const { meta } = await this.getMetadata()
-      const { columnNumbers } = meta
+      const { columnNumbers } = await this.getMetadata()
       const colRef = columnNumbers.ref - 1
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1
       const names = await this.getNames()
-      const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
-      let start = performance.now()
+      const scoreColumn: string = this.getConf('scoreColumn')
+      const disableGeneHeuristic: boolean = this.getConf('disableGeneHeuristic')
+      const stopTokenCheck = createStopTokenChecker(stopToken)
       checkStopToken(stopToken)
       await updateStatus('Downloading features', statusCallback, () =>
         this.bed.getLines(query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
-            if (performance.now() - start > 500) {
-              checkStopToken(stopToken)
-              start = performance.now()
-            }
+            checkStopToken2(stopTokenCheck)
+            const splitLine = line.split('\t')
             observer.next(
               new SimpleFeature(
                 featureData({
-                  line,
-                  colRef,
-                  colStart,
-                  colEnd,
-                  scoreColumn: this.scoreColumn,
+                  splitLine,
+                  refName: splitLine[colRef]!,
+                  start: +splitLine[colStart]!,
+                  end: +splitLine[colEnd]! + (colStart === colEnd ? 1 : 0),
+                  scoreColumn,
                   parser: this.parser,
                   uniqueId: `${this.id}-${fileOffset}`,
                   names,
