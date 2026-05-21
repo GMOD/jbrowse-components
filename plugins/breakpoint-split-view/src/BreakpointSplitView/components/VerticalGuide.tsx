@@ -28,13 +28,9 @@ const VerticalGuide = observer(function VerticalGuide({
     <Tooltip
       open
       placement="top"
-      title={model.views
-        .map(view => view.pxToBp(coordX))
-        .map((elt, idx) => (
-          <div key={[JSON.stringify(elt), idx].join('-')}>
-            {stringify(elt, true)}
-          </div>
-        ))}
+      title={model.views.map(view => (
+        <div key={view.id}>{stringify(view.pxToBp(coordX), true)}</div>
+      ))}
       arrow
     >
       <div

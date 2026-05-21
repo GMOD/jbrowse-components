@@ -13,6 +13,11 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.secondary.main,
     height: 3,
   },
+  // CSS grid with both children at gridArea 1/1 makes the overlay sit exactly
+  // on top of the views without any JS coordinate translation. The downside is
+  // that the overlay becomes a DOM sibling of the views rather than a child, so
+  // the wheel handler cannot use event.target to identify which view was
+  // scrolled — it must fall back to a querySelectorAll + Y-coordinate scan.
   container: {
     display: 'grid',
   },
@@ -47,11 +52,11 @@ const BreakpointSplitViewLevels = observer(function BreakpointSplitViewLevels({
   return (
     <div className={classes.content}>
       <div className={classes.rel}>
-        {views.map((view, idx) => {
+        {views.flatMap((view, idx) => {
           const { ReactComponent } = pluginManager.getViewType(view.type)!
           const viewComponent = <ReactComponent key={view.id} model={view} />
           return idx === views.length - 1
-            ? viewComponent
+            ? [viewComponent]
             : [
                 viewComponent,
                 <div
@@ -73,15 +78,19 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
   const { classes } = useStyles()
   return (
     <div className={classes.rubberbandContainer}>
-      {model.showHeader ? <Header model={model} /> : null}
-      <Rubberband
-        model={model}
-        ControlComponent={<div className={classes.rubberbandDiv} />}
-      />
-      <div className={classes.container}>
-        <BreakpointSplitViewLevels model={model} />
-        <BreakpointSplitViewOverlay model={model} />
-      </div>
+      {model.showHeader && model.initialized ? <Header model={model} /> : null}
+      {model.initialized ? (
+        <>
+          <Rubberband
+            model={model}
+            ControlComponent={<div className={classes.rubberbandDiv} />}
+          />
+          <div className={classes.container}>
+            <BreakpointSplitViewLevels model={model} />
+            <BreakpointSplitViewOverlay model={model} />
+          </div>
+        </>
+      ) : null}
     </div>
   )
 })

@@ -1,10 +1,10 @@
-import { useState } from 'react'
-
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import LinkIcon from '@mui/icons-material/Link'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import SearchIcon from '@mui/icons-material/Search'
-import { FormGroup } from '@mui/material'
+import TuneIcon from '@mui/icons-material/Tune'
+import { ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
@@ -12,9 +12,42 @@ import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
 import type { BreakpointViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  buttons: {
+    display: 'flex',
+    alignItems: 'center',
+  },
   inline: {
     display: 'inline-flex',
   },
+  vertical: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+})
+
+const LinkViewsButton = observer(function LinkViewsButton({
+  model,
+}: {
+  model: BreakpointViewModel
+}) {
+  return (
+    <ToggleButton
+      value="linkViews"
+      selected={model.linkViews}
+      onChange={() => {
+        model.setLinkViews(!model.linkViews)
+      }}
+      title="Link views (sync scroll/zoom across views)"
+      sx={{ border: 'none' }}
+      size="small"
+    >
+      <LinkIcon />
+    </ToggleButton>
+  )
 })
 
 const Header = observer(function Header({
@@ -24,53 +57,69 @@ const Header = observer(function Header({
 }) {
   const { classes } = useStyles()
   const { views } = model
-  const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
-  const [sideBySide, setSideBySide] = useState(views.length <= 3)
+  const [showSearchBoxes, setShowSearchBoxes] = useLocalStorage(
+    'bsv-showSearchBoxes',
+    views.length <= 3,
+  )
+  const [sideBySide, setSideBySide] = useLocalStorage(
+    'bsv-sideBySide',
+    views.length <= 3,
+  )
   return (
-    <FormGroup row>
-      <CascadingMenuButton menuItems={() => model.menuItems()}>
-        <MoreVertIcon />
-      </CascadingMenuButton>
-      <CascadingMenuButton
-        menuItems={[
-          {
-            label: 'Show search boxes',
-            type: 'checkbox',
-            checked: showSearchBoxes,
-            onClick: () => {
-              setShowSearchBoxes(!showSearchBoxes)
+    <div className={classes.header}>
+      <div className={classes.buttons}>
+        {model.initialized ? (
+          <CascadingMenuButton
+            size="small"
+            title="Menu"
+            menuItems={() => model.menuItems()}
+          >
+            <MoreVertIcon />
+          </CascadingMenuButton>
+        ) : null}
+        <LinkViewsButton model={model} />
+        <CascadingMenuButton
+          size="small"
+          title="Display settings"
+          menuItems={[
+            {
+              label: 'Show search boxes',
+              type: 'checkbox',
+              checked: showSearchBoxes,
+              onClick: () => {
+                setShowSearchBoxes(!showSearchBoxes)
+              },
             },
-          },
-
-          {
-            label: 'Orientation - Side-by-side',
-            type: 'radio',
-            checked: sideBySide,
-            onClick: () => {
-              setSideBySide(!sideBySide)
+            {
+              label: 'Search boxes - side-by-side',
+              type: 'radio',
+              checked: sideBySide,
+              onClick: () => {
+                setSideBySide(true)
+              },
             },
-          },
-          {
-            label: 'Orientation - Vertical',
-            type: 'radio',
-            checked: !sideBySide,
-            onClick: () => {
-              setSideBySide(!sideBySide)
+            {
+              label: 'Search boxes - stacked',
+              type: 'radio',
+              checked: !sideBySide,
+              onClick: () => {
+                setSideBySide(false)
+              },
             },
-          },
-        ]}
-      >
-        <SearchIcon />
-      </CascadingMenuButton>
+          ]}
+        >
+          <TuneIcon />
+        </CascadingMenuButton>
+      </div>
 
       {showSearchBoxes ? (
-        <span className={sideBySide ? classes.inline : undefined}>
+        <span className={sideBySide ? classes.inline : classes.vertical}>
           {views.map(view => (
             <HeaderSearchBoxes key={view.id} view={view} />
           ))}
         </span>
       ) : null}
-    </FormGroup>
+    </div>
   )
 })
 export default Header

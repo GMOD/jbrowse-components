@@ -1,152 +1,104 @@
-import { useMemo, useState } from 'react'
-
 import { getSession, getStrokeProps } from '@jbrowse/core/util'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
-  getLongReadOrientationAbnormal,
-  getLongReadOrientationColorOrDefault,
-  getPairedOrientationColor,
-  isAbnormalOrientation,
+  getLongReadOrientation,
+  getPairedOrientation,
 } from './getOrientationColor.tsx'
-import { LEFT, RIGHT, getTestId, getYOffset } from './overlayUtils.tsx'
 import {
-  getBadlyPairedAlignments,
-  getMatchedAlignmentFeatures,
-  hasPairedReads,
-} from './util.ts'
-import {
-  getPxFromCoordinate,
-  heightFromSpecificLevel,
-  useNextFrame,
-  yPos,
-} from '../util.ts'
+  LEFT,
+  RIGHT,
+  getCanonicalRefs,
+  getTestId,
+  useMouseoverElt,
+} from './overlayUtils.tsx'
 
 import type { OverlayProps } from './overlayUtils.tsx'
 
 const AlignmentConnections = observer(function AlignmentConnections({
   model,
   trackId,
-  parentRef,
-  getTrackYPosOverride,
+  yOffsetsOverride,
+  domYOffsets,
 }: OverlayProps) {
-  const { interactiveOverlay, views, showIntraviewLinks } = model
+  const { interactiveOverlay, views, showIntraviewLinks, assembly } = model
   const theme = useTheme()
   const session = getSession(model)
-  const snap = getSnapshot(model)
-  const { assemblyManager } = session
-  const v0 = views[0]
-  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
-  useNextFrame(snap)
-  const allFeatures = model.getTrackFeatures(trackId)
-  const hasPaired = useMemo(() => hasPairedReads(allFeatures), [allFeatures])
+  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
+  const match = model.overlayMatches.get(trackId)
+  const { tracks, yOffsets, heights, getX, getY } = model.getTrackOverlayData(
+    trackId,
+    yOffsetsOverride,
+    domYOffsets,
+  )
+  const layoutMatches = match?.layoutMatches ?? []
+  const hasPaired = match?.hasPairedReads
+  const allFeatures = match?.allFeatures
 
-  const layoutMatches = useMemo(() => {
-    const matched = hasPaired
-      ? getBadlyPairedAlignments(allFeatures)
-      : getMatchedAlignmentFeatures(allFeatures)
-    const layoutMatches = model.getMatchedFeaturesInLayout(trackId, matched)
-    if (!hasPaired) {
-      for (const m of layoutMatches) {
-        m.sort((a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead)
-      }
-    }
-    return layoutMatches
-  }, [allFeatures, trackId, hasPaired, model])
-
-  const [mouseoverElt, setMouseoverElt] = useState<string>()
-  const yOffset = getYOffset(parentRef)
-
-  const tracks = views.map(v => v.getTrack(trackId))
-
-  if (!assembly) {
-    return null
-  }
-
-  return (
+  return assembly && match ? (
     <g fill="none" data-testid={getTestId(trackId, layoutMatches.length > 0)}>
-      {layoutMatches.map(chunk => {
-        const ret = []
-        for (let i = 0; i < chunk.length - 1; i++) {
-          const { layout: c1, feature: f1, level: level1 } = chunk[i]!
+      {layoutMatches.flatMap(chunk =>
+        chunk.slice(0, -1).flatMap((item, i) => {
+          const { layout: c1, feature: f1, level: level1 } = item
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
 
+          if (tracks[level1]?.minimized || tracks[level2]?.minimized) {
+            return []
+          }
           if (!showIntraviewLinks && level1 === level2) {
-            return null
+            return []
           }
-          const f1ref = assembly.getCanonicalRefName(f1.get('refName'))
-          const f2ref = assembly.getCanonicalRefName(f2.get('refName'))
-
-          if (!f1ref || !f2ref) {
-            throw new Error(`unable to find ref for ${f1ref || f2ref}`)
-          }
-          const r = {
-            pair_orientation: f1.get('pair_orientation'),
-          }
-
-          const s1 = f1.get('strand')
-          const s2 = f2.get('strand')
+          const { f1ref, f2ref } = getCanonicalRefs(
+            assembly,
+            f1.get('refName'),
+            f2.get('refName'),
+          )
+          const s1 = f1.get('strand')!
+          const s2 = f2.get('strand')!
           const sameRef = f1ref === f2ref
-          const checkOrientation = sameRef
-          let orientationColor = ''
-          let isAbnormal = false
-          if (checkOrientation) {
-            if (hasPaired) {
-              orientationColor = getPairedOrientationColor(r)
-              isAbnormal = isAbnormalOrientation(r)
-            } else {
-              orientationColor = getLongReadOrientationColorOrDefault(s1, s2)
-              isAbnormal = getLongReadOrientationAbnormal(s1, s2)
-            }
-          }
+          const orientation = sameRef
+            ? hasPaired
+              ? getPairedOrientation({
+                  pair_orientation: f1.get('pair_orientation'),
+                })
+              : getLongReadOrientation(s1, s2)
+            : undefined
+          const orientationColor = orientation?.color ?? ''
+          const isAbnormal = orientation?.abnormal ?? false
           const p1 = c1[s1 === -1 ? LEFT : RIGHT]
-          const sn1 = s2 === -1
-          const p2 = hasPaired ? c2[sn1 ? LEFT : RIGHT] : c2[sn1 ? RIGHT : LEFT]
-          const x1 = getPxFromCoordinate(views[level1]!, f1ref, p1)
-          const x2 = getPxFromCoordinate(views[level2]!, f2ref, p2)
-          const reversed1 = views[level1]!.pxToBp(x1).reversed
-          const reversed2 = views[level2]!.pxToBp(x2).reversed
-          const rf1 = reversed1 ? -1 : 1
-          const rf2 = reversed2 ? -1 : 1
-          const y1 =
-            yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
-            yOffset
-          const y2 =
-            yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
-            yOffset
+          const sn2 = s2 === -1
+          const p2 = hasPaired ? c2[sn2 ? LEFT : RIGHT] : c2[sn2 ? RIGHT : LEFT]
+          const x1 = getX(level1, f1ref, p1) ?? 0
+          const x2 = getX(level2, f2ref, p2) ?? 0
+          const rf1 = views[level1]!.pxToBp(x1).reversed ? -1 : 1
+          const rf2 = views[level2]!.pxToBp(x2).reversed ? -1 : 1
+          const y1 = getY(level1, c1)
+          const y2 = getY(level2, c2)
           const sameLevel = level1 === level2
           const abnormalSpecialRenderFlag = sameLevel && isAbnormal
-          const trackHeight = abnormalSpecialRenderFlag
-            ? tracks[level1].displays[0].height
-            : 0
+          const trackHeight = abnormalSpecialRenderFlag ? heights[level1]! : 0
           const pf1 = hasPaired ? -1 : 1
-          const y0 = heightFromSpecificLevel(
-            views,
-            trackId,
-            level1,
-            getTrackYPosOverride,
-          )
+          const y0 = yOffsets[level1]!
 
           const path = [
             'M',
             x1,
             y1,
             'C',
-            x1 + 200 * f1.get('strand') * rf1,
+            x1 + 200 * s1 * rf1,
             abnormalSpecialRenderFlag
-              ? Math.min(y0 - yOffset + trackHeight, y1 + trackHeight)
+              ? Math.min(y0 + trackHeight, y1 + trackHeight)
               : y1,
-            x2 - 200 * f2.get('strand') * rf2 * pf1,
+            x2 - 200 * s2 * rf2 * pf1,
             abnormalSpecialRenderFlag
-              ? Math.min(y0 - yOffset + trackHeight, y2 + trackHeight)
+              ? Math.min(y0 + trackHeight, y2 + trackHeight)
               : y2,
             x2,
             y2,
           ].join(' ')
           const id = `${f1.id()}-${f2.id()}`
-          ret.push(
+          return [
             <path
               d={path}
               key={id}
@@ -162,12 +114,8 @@ const AlignmentConnections = observer(function AlignmentConnections({
                   'breakpointAlignments',
                   {
                     featureData: {
-                      feature1: (
-                        allFeatures.get(f1.id()) || { toJSON: () => ({}) }
-                      ).toJSON(),
-                      feature2: (
-                        allFeatures.get(f2.id()) || { toJSON: () => ({}) }
-                      ).toJSON(),
+                      feature1: allFeatures?.get(f1.id())?.toJSON(),
+                      feature2: allFeatures?.get(f2.id())?.toJSON(),
                     },
                   },
                 )
@@ -180,12 +128,11 @@ const AlignmentConnections = observer(function AlignmentConnections({
                 setMouseoverElt(undefined)
               }}
             />,
-          )
-        }
-        return ret
-      })}
+          ]
+        }),
+      )}
     </g>
-  )
+  ) : null
 })
 
 export default AlignmentConnections

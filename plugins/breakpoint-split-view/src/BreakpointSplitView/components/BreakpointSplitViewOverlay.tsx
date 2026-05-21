@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -6,6 +6,43 @@ import { observer } from 'mobx-react'
 import Overlay from './Overlay.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
+
+// Polls DOM positions each animation frame. Ref reads happen inside useEffect,
+// not during render, so they're safe from React's concurrent-mode constraints.
+function useDomTrackYOffsets(
+  views: BreakpointViewModel['views'],
+  matchedTracks: BreakpointViewModel['matchedTracks'],
+) {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [offsets, setOffsets] = useState<Record<string, number[]>>({})
+
+  useEffect(() => {
+    let rafId: number
+    function measure() {
+      const svg = svgRef.current
+      if (svg) {
+        const svgTop = svg.getBoundingClientRect().top
+        const next: Record<string, number[]> = {}
+        for (const track of matchedTracks) {
+          const { trackId } = track.configuration
+          next[trackId] = views.map(
+            view =>
+              (view.trackRefs[trackId]?.getBoundingClientRect().top ?? svgTop) -
+              svgTop,
+          )
+        }
+        setOffsets(next)
+      }
+      rafId = requestAnimationFrame(measure)
+    }
+    rafId = requestAnimationFrame(measure)
+    return () => {
+      cancelAnimationFrame(rafId)
+    }
+  }, [views, matchedTracks])
+
+  return { svgRef, offsets }
+}
 
 const useStyles = makeStyles()({
   overlay: {
@@ -26,6 +63,41 @@ const useStyles = makeStyles()({
   },
 })
 
+// NOTE: These helpers mirror the zoom normalizer in
+// plugins/linear-genome-view/src/LinearGenomeView/components/useWheelScroll.ts
+// Keep them in sync if you change the zoom logic there.
+function getNormalizer(deltaY: number) {
+  const abs = Math.abs(deltaY)
+  if (abs < 6) {
+    return 25
+  }
+  if (abs > 150) {
+    return 500
+  }
+  if (abs > 30) {
+    return 150
+  }
+  return 75
+}
+
+function normalizeWheel(delta: number, mode: number) {
+  if (mode === 1) {
+    return delta * 16
+  }
+  if (mode === 2) {
+    return delta * 100
+  }
+  return delta
+}
+
+interface WheelState {
+  zoomAccum: number
+  lastClientX: number
+  lastViewIndex: number
+  rafId: number | null
+  lastRafTime: number | null
+}
+
 const BreakpointSplitViewOverlay = observer(
   function BreakpointSplitViewOverlay({
     model,
@@ -33,27 +105,129 @@ const BreakpointSplitViewOverlay = observer(
     model: BreakpointViewModel
   }) {
     const { classes } = useStyles()
-    const { matchedTracks } = model
-    const ref = useRef(null)
+    const { matchedTracks, views } = model
+    const { svgRef, offsets: domOffsetsByTrack } = useDomTrackYOffsets(
+      views,
+      matchedTracks,
+    )
+    const divRef = useRef<HTMLDivElement>(null)
+    const state = useRef<WheelState>({
+      zoomAccum: 0,
+      lastClientX: 0,
+      lastViewIndex: 0,
+      rafId: null,
+      lastRafTime: null,
+    })
+
+    useEffect(() => {
+      const div = divRef.current
+      if (!div || views.length === 0) {
+        return
+      }
+
+      const s = state.current
+
+      function handleWheel(event: WheelEvent) {
+        const target = event.target as Element
+        if (!target.closest('svg')) {
+          return
+        }
+
+        // The overlay is a CSS grid sibling of the views, not a child, so
+        // event.target doesn't identify which view was scrolled. We resolve
+        // the view by scanning all track containers and matching Y-coordinate.
+        const allContainers = document.querySelectorAll(
+          '[data-testid="tracksContainer"]',
+        )
+        if (allContainers.length === 0) {
+          return
+        }
+
+        const eventY = event.clientY
+        let viewIndex = 0
+
+        for (let i = 0; i < allContainers.length && i < views.length; i++) {
+          const container = allContainers[i] as HTMLElement
+          const rect = container.getBoundingClientRect()
+          if (eventY >= rect.top && eventY <= rect.bottom) {
+            viewIndex = i
+            break
+          }
+        }
+
+        const targetView = views[viewIndex]
+        if (!targetView?.zoomTo) {
+          return
+        }
+
+        const deltaY = normalizeWheel(event.deltaY, event.deltaMode)
+        const deltaX = normalizeWheel(event.deltaX, event.deltaMode)
+        const isCtrlZoom = event.ctrlKey || event.metaKey
+
+        if (isCtrlZoom) {
+          event.preventDefault()
+          s.zoomAccum += deltaY / getNormalizer(deltaY)
+          s.lastClientX = event.clientX
+          s.lastViewIndex = viewIndex
+        } else {
+          event.preventDefault()
+          targetView.horizontalScroll(deltaX)
+        }
+
+        s.rafId ??= requestAnimationFrame(now => {
+          const elapsed = Math.min(
+            100,
+            s.lastRafTime !== null ? now - s.lastRafTime : 16.67,
+          )
+          s.lastRafTime = now
+          const maxZoomDelta = (0.2 / 16.67) * elapsed
+          if (s.zoomAccum !== 0) {
+            const view = views[s.lastViewIndex]
+            const containers = document.querySelectorAll(
+              '[data-testid="tracksContainer"]',
+            )
+            const container = containers[s.lastViewIndex] as
+              | HTMLElement
+              | undefined
+            if (view?.zoomTo && container) {
+              const d = Math.max(
+                -maxZoomDelta,
+                Math.min(maxZoomDelta, s.zoomAccum),
+              )
+              view.zoomTo(
+                d > 0 ? view.bpPerPx * (1 + d) : view.bpPerPx / (1 - d),
+                s.lastClientX - container.getBoundingClientRect().left,
+              )
+            }
+            s.zoomAccum = 0
+          }
+          s.rafId = null
+        })
+      }
+
+      div.addEventListener('wheel', handleWheel, { passive: false })
+      return () => {
+        div.removeEventListener('wheel', handleWheel)
+        if (s.rafId !== null) {
+          cancelAnimationFrame(s.rafId)
+        }
+      }
+    }, [views])
+
     return (
-      <div className={classes.overlay}>
-        <svg ref={ref} className={classes.base}>
-          {matchedTracks.map(track => (
-            // note: we must pass ref down, because:
-            //
-            // 1. the child component needs to getBoundingClientRect on the this
-            // components SVG, and...
-            //
-            // 2. we cannot rely on using getBoundingClientRect in this component
-            // to make sure this works because if it gets shifted around by
-            // another element, this will not re-render necessarily
-            <Overlay
-              parentRef={ref}
-              key={track.configuration.trackId}
-              model={model}
-              trackId={track.configuration.trackId}
-            />
-          ))}
+      <div ref={divRef} className={classes.overlay}>
+        <svg ref={svgRef} className={classes.base}>
+          {matchedTracks.map(track => {
+            const trackId = track.configuration.trackId
+            return (
+              <Overlay
+                key={trackId}
+                model={model}
+                trackId={trackId}
+                domYOffsets={domOffsetsByTrack[trackId]}
+              />
+            )
+          })}
         </svg>
       </div>
     )
