@@ -59,28 +59,21 @@ export const specs: ScreenshotSpec[] = [
   {
     name: 'volvox_alignments',
     loc: 'ctgA:1-20000',
-    openTracks: ['volvox_alignments'],
-    settleMs: 4000,
-  },
-
-  {
-    name: 'alignments',
-    loc: 'ctgA:1-10000',
     openTracks: ['volvox_cram_alignments'],
     settleMs: 4000,
   },
 
   {
     name: 'volvox_variants',
-    loc: 'ctgA:1-50000',
-    openTracks: ['volvox_sv_test'],
+    loc: 'ctgA:5000-10000',
+    openTracks: ['volvox_test_vcf'],
     settleMs: 3000,
   },
 
   {
     name: 'variant_with_pileup',
-    loc: 'ctgA:1-10000',
-    openTracks: ['volvox_test_vcf', 'volvox_alignments'],
+    loc: 'ctgA:1500-3500',
+    openTracks: ['volvox_filtered_vcf', 'volvox_cram_alignments'],
     settleMs: 4000,
   },
 
@@ -99,23 +92,43 @@ export const specs: ScreenshotSpec[] = [
   },
 
   {
+    mode: 'url',
     name: 'bigwig/whole_genome_coverage',
-    loc: 'ctgA:1-50000',
-    openTracks: ['volvox_microarray_multi'],
-    settleMs: 4000,
+    url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-NTYME90lkA&password=G6Hkw',
+    readyText: 'COLO829',
+    readyTimeout: 60000,
+    settleMs: 12000,
   },
 
   {
     name: 'sequence_track',
-    loc: 'ctgA:1-200',
-    openTracks: ['gff3tabix_genes'],
+    loc: 'ctgA:20000-20050',
+    openTracks: ['volvox_refseq'],
     settleMs: 3000,
   },
 
   {
+    mode: 'url',
     name: 'alignments_soft_clipped',
-    loc: 'ctgA:1-10000',
-    openTracks: ['volvox_samspec_cram'],
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-10000',
+          tracks: [
+            {
+              trackId: 'volvox-long-reads-sv-bam',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                showSoftClipping: true,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
     settleMs: 4000,
   },
 
@@ -131,7 +144,10 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'volvox_sv_cram',
-              displaySnapshot: { type: 'LinearArcDisplay' },
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                pairedArcs: 'up',
+              },
             },
           ],
         },
@@ -153,7 +169,10 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'volvox_sv_cram',
-              displaySnapshot: { type: 'LinearReadCloudDisplay' },
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                pairedArcs: 'samplot',
+              },
             },
           ],
         },
@@ -166,16 +185,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'dotplot',
-    url: sessionSpec(DOTPLOT_CONFIG, {
-      views: [
-        {
-          type: 'DotplotView',
-          views: [{ assembly: 'grape' }, { assembly: 'peach' }],
-          tracks: ['dotplot_track_small'],
-        },
-      ],
-    }),
-    settleMs: 10000,
+    url: `?config=${DOTPLOT_CONFIG}&sessionName=Screenshot`,
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readyTimeout: 30000,
+    settleMs: 3000,
   },
 
   {

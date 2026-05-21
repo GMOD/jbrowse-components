@@ -71,8 +71,8 @@ fields.
 
 To see genotype patterns across many SVs at once, switch the track to the
 **Multi-sample variant display (regular)** display from the track menu. Each
-sample becomes its own row, making it easy to spot calls that are private to
-a single sample, shared within a family, or common across the cohort. See
+sample becomes its own row, making it easy to spot calls that are private to a
+single sample, shared within a family, or common across the cohort. See
 [Multi-sample variant displays](/docs/user_guides/multivariant_track) for
 details on the display modes.
 
@@ -109,12 +109,12 @@ the [Phased trio analysis](/docs/tutorials/analyze_trio) tutorial.
 The 1KGP SV callset includes a large well-studied inversion polymorphism on
 chromosome 19. Navigate to **chr19:41,700,000–42,000,000**.
 
-At this scale the variant track shows the inversion call as a wide bar
-spanning the region. Use the **Cluster by genotype** option in the track
-menu to group samples into ref/ref (0/0), het (0/1), and hom-alt (1/1) rows,
-making the population frequency of the inversion immediately visible — most
-samples are reference homozygous, with a subset carrying one or two copies of
-the inverted allele.
+At this scale the variant track shows the inversion call as a wide bar spanning
+the region. Use the **Cluster by genotype** option in the track menu to group
+samples into ref/ref (0/0), het (0/1), and hom-alt (1/1) rows, making the
+population frequency of the inversion immediately visible — most samples are
+reference homozygous, with a subset carrying one or two copies of the inverted
+allele.
 
 <Figure caption="chr19 region containing the large inversion shown in the 1KGP SV callset alongside pileup tracks from multiple samples. The dense colored variation in the alignment tracks reflects the two orientations of the inverted segment segregating in the population. The track selector panel on the right shows the 1000 Genomes track categories; enabling 1000 Genomes → Alignments adds coverage and pileup panels per sample." src="/img/multisv.png" />
 
@@ -122,9 +122,9 @@ the inverted allele.
 
 ### Read orientation evidence at the breakpoints
 
-Zoom in to one of the inversion breakpoints (approximately chr19:41,749,000
-or chr19:41,902,000) and enable pair-orientation coloring on a BAM track
-from the track menu. At the breakpoint you will see:
+Zoom in to one of the inversion breakpoints (approximately chr19:41,749,000 or
+chr19:41,902,000) and enable pair-orientation coloring on a BAM track from the
+track menu. At the breakpoint you will see:
 
 - **Teal (LL)** pairs — both mates mapping to the forward strand — and **dark
   blue (RR)** pairs — both mates mapping to the reverse strand — clustering at
@@ -134,9 +134,9 @@ from the track menu. At the breakpoint you will see:
 - **Soft-clipped reads** at the exact breakpoint edge, where reads cannot align
   through the junction sequence
 
-Switch to the Read arc display from the track menu to see long-range
-connections spanning the inversion. Arcs with
-LL/RR coloring that span the inverted interval confirm the rearrangement.
+Switch to the Read arc display from the track menu to see long-range connections
+spanning the inversion. Arcs with LL/RR coloring that span the inverted interval
+confirm the rearrangement.
 
 See the
 [SV visualization guide — Inversion section](/docs/user_guides/sv_visualization#inversion)

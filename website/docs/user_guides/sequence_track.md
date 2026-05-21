@@ -10,4 +10,4 @@ The sequence track shows the reference sequence and a six-frame translation
 "reverse complemented" so the bottom three translation frames go to the top, and
 the top frames go to the bottom.
 
-<Figure caption="The sequence track, with a positive strand gene for context, shows the start codon on the first exon in the top-three rows of the translation frame. The bottom panel shows the same view but with the view horizontally flipped, and the gene is now shown reversed and the start codon is in the bottom translation frames." src="/img/sequence_track.png" />
+<Figure caption="The sequence track showing the reference sequence (top row) and six-frame translation (three frames per strand) at single-base resolution." src="/img/sequence_track.png" />

@@ -17,6 +17,7 @@ const cliArgs = process.argv.slice(2)
 const headed = cliArgs.includes('--headed')
 const filterArg = cliArgs.find(a => a.startsWith('--filter='))
 const filter = filterArg?.split('=')[1]
+const exact = cliArgs.includes('--exact')
 const portArg = cliArgs.find(a => a.startsWith('--port='))
 const externalPort = portArg ? parseInt(portArg.split('=')[1]!, 10) : undefined
 const DEFAULT_PORT = 3334
@@ -261,6 +262,10 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
         }
       : {}
 
+  // Flush any pending WebGL frames to the compositor before capturing
+  await page.evaluate(
+    () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())),
+  )
   const png = await page.screenshot(screenshotOptions)
   const outputPath = path.join(outDir, `${spec.name}.png`)
   const outputDir = path.dirname(outputPath)
@@ -273,7 +278,7 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
 
 async function main() {
   const filteredSpecs = filter
-    ? specs.filter(s => s.name.includes(filter))
+    ? specs.filter(s => (exact ? s.name === filter : s.name.includes(filter)))
     : specs
 
   if (filteredSpecs.length === 0) {
@@ -315,12 +320,13 @@ async function main() {
   const executablePath = chromePaths.find(p => fs.existsSync(p))
 
   const launchOptions = {
-    headless: !headed,
+    headless: headed ? false : ('new' as const),
     executablePath,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-web-security',
+      '--enable-unsafe-swiftshader',
     ],
     defaultViewport: { width: 1280, height: 800, deviceScaleFactor: 2 },
   }
@@ -337,11 +343,8 @@ async function main() {
         const page = await browser.newPage()
         page.on('console', msg => {
           const t = msg.type()
-          if (
-            (t === 'error' || t === 'warning') &&
-            !msg.text().includes('favicon')
-          ) {
-            console.error(`    browser[${t}]: ${msg.text().substring(0, 200)}`)
+          if (!msg.text().includes('favicon') && !msg.text().includes('WebGL') && !msg.text().includes('GroupMarker') && !msg.text().includes('GPU stall')) {
+            console.error(`    browser[${t}]: ${msg.text().substring(0, 300)}`)
           }
         })
         await captureSpec(page, spec, port)

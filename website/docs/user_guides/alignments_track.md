@@ -21,7 +21,7 @@ as colored boxes inside the histogram bar: if 50% of the reads have a T where
 the reference has an A, the top half of the bar at that position will be red
 (for T).
 
-<Figure caption="Screenshot showing the alignments track, which contains both a coverage view at the top and a pileup view at the bottom" src="/img/alignments.png" />
+<Figure caption="Screenshot showing the alignments track, which contains both a coverage view at the top and a pileup view at the bottom" src="/img/volvox_alignments.png" />
 
 ### Show soft clipping
 

@@ -243,13 +243,7 @@ describe('scroll-zoom diagnostic — cursor bp stability across frames', () => {
     const maxDriftPx = Math.max(
       ...samples.map(s => Math.abs(s.coord - initial.coord) / s.bpPerPx),
     )
-    // eslint-disable-next-line no-console
-    console.log(
-      `[scroll-zoom-diag ${start}/${sign}] initial coord=${initial.coord} ` +
-        `maxDriftBp=${maxDriftBp.toFixed(2)} maxDriftPx=${maxDriftPx.toFixed(3)} ` +
-        `final bpPerPx=${samples.at(-1)!.bpPerPx.toFixed(3)} ` +
-        `frame_coords=${samples.map(s => s.coord).join(',')}`,
-    )
+
     // Pre-fix: monotonic drift up to ~5 px at bpPerPx=1, frame-to-frame
     // oscillation up to ~1.5 px at higher bpPerPx. With the float-offset +
     // unrounded-scrollTo fixes, residual drift is < 1 bp / sub-pixel.

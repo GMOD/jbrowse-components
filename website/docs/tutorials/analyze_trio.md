@@ -7,15 +7,16 @@ guide_category: Tutorials
 ---
 
 A **trio** is sequencing data from a mother, father, and child together. A
-**phased** VCF assigns each variant to one of the two haplotypes
-(`0|1` vs `1|0`), so you can trace which copy of the genome each variant
-came from.
+**phased** VCF assigns each variant to one of the two haplotypes (`0|1` vs
+`1|0`), so you can trace which copy of the genome each variant came from.
 
 This tutorial uses a pre-built phased VCF from the 1000 Genomes Project — the
 Kinh-Vietnamese trio HG02024 (chr1 only):
 
-- VCF: https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
-- Index: https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi
+- VCF:
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
+- Index:
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi
 
 Add the VCF to JBrowse via the CLI or the GUI. Once loaded:
 
@@ -23,16 +24,16 @@ Add the VCF to JBrowse via the CLI or the GUI. Once loaded:
 
 ## Enabling the matrix view
 
-Switch the track to the **Multi-sample variant display (matrix)** display.
-Each sample becomes a row, each variant a column, with black lines connecting
-columns back to their genomic positions.
+Switch the track to the **Multi-sample variant display (matrix)** display. Each
+sample becomes a row, each variant a column, with black lines connecting columns
+back to their genomic positions.
 
 <Figure caption="Multi-sample variant display (matrix). Each sample is a row and each variant is a column; black lines connect columns to their genome positions." src="/img/trio-matrix.png"/>
 
 ## Enabling the phased mode
 
-The matrix display has a "phased" rendering mode, available when the
-genotypes use the `0|1` (phased) separator instead of `0/1` (unphased).
+The matrix display has a "phased" rendering mode, available when the genotypes
+use the `0|1` (phased) separator instead of `0/1` (unphased).
 
 The ideal is that your variants will be "completely phased". This sometimes
 requires specialized programs like SHAPEIT

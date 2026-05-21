@@ -76,3 +76,8 @@ recombination subtrack
 
 why is renderermenuitems imported into gwas anyways, i thought we modularized it out to avoid having to use it at all in gwas
 
+
+## Wiggle
+
+Unclear if local sd autoscale working
+Multiwiggle legend not fitting on screen

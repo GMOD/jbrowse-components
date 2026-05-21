@@ -4,16 +4,16 @@ title: Embedding JBrowse
 description: Embed the linear genome view component in a custom web page
 ---
 
-This tutorial embeds a single JBrowse linear genome view into a web page using
-a `<script>` tag — no build step or React project required. For the full
-JBrowse app, see the [web quickstart](/docs/quickstart_web) instead.
+This tutorial embeds a single JBrowse linear genome view into a web page using a
+`<script>` tag — no build step or React project required. For the full JBrowse
+app, see the [web quickstart](/docs/quickstart_web) instead.
 
 <Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
 ## What you need
 
-A text editor and a local HTTP server. JBrowse won't load if you open the
-HTML file directly — it needs to be served. If you have Node.js installed,
+A text editor and a local HTTP server. JBrowse won't load if you open the HTML
+file directly — it needs to be served. If you have Node.js installed,
 `npx serve` in the directory works.
 
 ## Create a web page
@@ -36,8 +36,7 @@ world!".
 
 ## Add JBrowse
 
-Replace `index.html` with the following — a complete working linear genome
-view:
+Replace `index.html` with the following — a complete working linear genome view:
 
 ```html title="index.html"
 <!doctype html>

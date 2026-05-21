@@ -65,8 +65,9 @@ An example per-track config may look like this:
 ```
 
 See [jbrowse text-index](/docs/cli#jbrowse-text-index) for generating indexes
-via the CLI. See the [Gff3TabixAdapter config docs](/docs/config/gff3tabixadapter)
-for adapter options including CSI index support and `dontRedispatch`.
+via the CLI. See the
+[Gff3TabixAdapter config docs](/docs/config/gff3tabixadapter) for adapter
+options including CSI index support and `dontRedispatch`.
 
 ### TrixTextSearchAdapter config
 
