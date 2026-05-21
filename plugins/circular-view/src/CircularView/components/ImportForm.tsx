@@ -28,17 +28,25 @@ const ImportForm = observer(function ImportForm({
   const assemblyError = assemblyNames.length
     ? assembly?.error
     : 'No configured assemblies'
-  const regions = assembly?.regions || []
+  const regions = assembly?.regions ?? []
   const err = assemblyError || error
 
   return (
     <Container className={classes.importFormContainer}>
       {err ? (
-        <Grid container spacing={1} justifyContent="center" alignItems="center">
+        <Grid
+          container
+          spacing={1}
+          sx={{ justifyContent: 'center', alignItems: 'center' }}
+        >
           <ErrorMessage error={err} />
         </Grid>
       ) : null}
-      <Grid container spacing={1} justifyContent="center" alignItems="center">
+      <Grid
+        container
+        spacing={1}
+        sx={{ justifyContent: 'center', alignItems: 'center' }}
+      >
         <AssemblySelector
           onChange={val => {
             model.setError(undefined)

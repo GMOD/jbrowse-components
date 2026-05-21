@@ -1,5 +1,4 @@
 import {
-  assembleLocString,
   getFillProps,
   getSession,
   getStrokeProps,
@@ -34,15 +33,10 @@ function sliceArcPath(
   startBase: number,
   endBase: number,
 ) {
-  // A rx ry x-axis-rotation large-arc-flag sweep-flag x y
-  if (slice.flipped) {
-    ;[startBase, endBase] = [endBase, startBase]
-  }
   const startXY = slice.bpToXY(startBase, radiusPx)
   const endXY = slice.bpToXY(endBase, radiusPx)
   const largeArc =
     Math.abs(endBase - startBase) / slice.bpPerRadian > Math.PI ? '1' : '0'
-  const sweepFlag = '1'
   return [
     'M',
     ...startXY,
@@ -51,7 +45,7 @@ function sliceArcPath(
     radiusPx,
     '0',
     largeArc,
-    sweepFlag,
+    '1',
     ...endXY,
   ].join(' ')
 }
@@ -73,7 +67,6 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
   const endXY = polarToCartesian(radiusPx, endRadians)
   const widthPx = (endRadians - startRadians) * radiusPx
   const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
-  // TODO: draw the elision
   const centerRadians = (endRadians + startRadians) / 2
   const regionCount = `[${toLocale(region.regions.length)}]`
   return (
@@ -126,62 +119,33 @@ const RulerLabel = observer(function RulerLabel({
   color: string
 }) {
   const { classes } = useStyles()
-  const textXY = polarToCartesian(radiusPx + 5, radians)
-  if (!text) {
-    return null
-  } else if (text.length * 6.5 < maxWidthPx) {
-    // text is rotated parallel to the ruler arc
-    return (
-      <text
-        x={0}
-        y={0}
-        className={classes.rulerLabel}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        transform={`translate(${textXY}) rotate(${radToDeg(radians) + 90})`}
-        {...getFillProps(color)}
-      >
-        {text}
-        <title>{title || text}</title>
-      </text>
-    )
-  } else if (maxWidthPx > 4) {
-    // text is rotated perpendicular to the ruler arc
-    const overallRotation = radToDeg(radians + view.offsetRadians - Math.PI / 2)
-    if (overallRotation >= 180) {
-      return (
-        <text
-          x={0}
-          y={0}
-          className={classes.rulerLabel}
-          textAnchor="start"
-          dominantBaseline="middle"
-          transform={`translate(${textXY}) rotate(${radToDeg(radians)})`}
-          fill={color}
-        >
-          {text}
-          <title>{title || text}</title>
-        </text>
-      )
-    }
-    return (
-      <text
-        x={0}
-        y={0}
-        className={classes.rulerLabel}
-        textAnchor="end"
-        dominantBaseline="middle"
-        transform={`translate(${textXY}) rotate(${radToDeg(radians) + 180})`}
-        fill={color}
-      >
-        {text}
-        <title>{title || text}</title>
-      </text>
-    )
-  } else {
-    // if you get here there is no room for the text at all
+  if (!text || maxWidthPx <= 4) {
     return null
   }
+  const textXY = polarToCartesian(radiusPx + 5, radians)
+  const deg = radToDeg(radians)
+  const parallel = text.length * 6.5 < maxWidthPx
+  // parallel: text along the ruler arc, centered
+  // perpendicular: text outside the arc, with anchor flipped on the bottom half
+  // so labels stay readable rather than upside-down
+  const upsideDown =
+    !parallel && radToDeg(radians + view.offsetRadians - Math.PI / 2) >= 180
+  const textAnchor = parallel ? 'middle' : upsideDown ? 'start' : 'end'
+  const rotation = parallel ? deg + 90 : upsideDown ? deg : deg + 180
+  return (
+    <text
+      x={0}
+      y={0}
+      className={classes.rulerLabel}
+      textAnchor={textAnchor}
+      dominantBaseline="middle"
+      transform={`translate(${textXY}) rotate(${rotation})`}
+      {...getFillProps(color)}
+    >
+      {text}
+      <title>{title || text}</title>
+    </text>
+  )
 })
 
 const RegionRulerArc = observer(function RegionRulerArc({
@@ -211,7 +175,6 @@ const RegionRulerArc = observer(function RegionRulerArc({
     color = theme.palette.text.primary
   }
 
-  // TODO: slice flipping
   return (
     <>
       <RulerLabel
@@ -224,7 +187,7 @@ const RegionRulerArc = observer(function RegionRulerArc({
       />
       <path
         d={sliceArcPath(slice, radiusPx + 1, region.start, region.end)}
-        stroke={color}
+        {...getStrokeProps(color)}
         strokeWidth={2}
         fill="none"
       />
@@ -240,19 +203,9 @@ const Ruler = observer(function Ruler({
   slice: Slice
 }) {
   return slice.region.elided ? (
-    <ElisionRulerArc
-      key={assembleLocString(slice.region.regions[0]!)}
-      model={model}
-      region={slice.region}
-      slice={slice}
-    />
+    <ElisionRulerArc model={model} region={slice.region} slice={slice} />
   ) : (
-    <RegionRulerArc
-      key={assembleLocString(slice.region)}
-      region={slice.region}
-      model={model}
-      slice={slice}
-    />
+    <RegionRulerArc region={slice.region} model={model} slice={slice} />
   )
 })
 

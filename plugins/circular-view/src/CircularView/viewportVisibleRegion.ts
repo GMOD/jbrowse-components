@@ -1,49 +1,29 @@
-function findCircleIntersectionX(
-  y: number,
+// push intersection points where the circle (center cx,cy, radius r) meets a
+// horizontal line (orientation='h', y=fixed) or vertical line ('v', x=fixed)
+function findCircleIntersection(
+  orientation: 'h' | 'v',
+  fixed: number,
   cx: number,
   cy: number,
   r: number,
   resultArray: [number, number][],
 ) {
-  const d = Math.abs(y - cy)
-  if (d > r) {
-    return
+  const d = Math.abs(fixed - (orientation === 'h' ? cy : cx))
+  if (d <= r) {
+    const s = Math.sqrt(r * r - d * d)
+    const along = orientation === 'h' ? cx : cy
+    const pt = (a: number): [number, number] =>
+      orientation === 'h' ? [a, fixed] : [fixed, a]
+    if (s === 0) {
+      resultArray.push(pt(along))
+    } else {
+      resultArray.push(pt(along - s), pt(along + s))
+    }
   }
-  if (d === r) {
-    resultArray.push([cx, y])
-  }
-  const solution = Math.sqrt(r * r - d * d)
-  resultArray.push([cx - solution, y], [cx + solution, y])
-}
-
-function findCircleIntersectionY(
-  x: number,
-  cx: number,
-  cy: number,
-  r: number,
-  resultArray: [number, number][],
-) {
-  const d = Math.abs(x - cx)
-  if (d > r) {
-    return
-  }
-  if (d === r) {
-    resultArray.push([x, cy])
-  }
-  const solution = Math.sqrt(r * r - d * d)
-  resultArray.push([x, cy - solution], [x, cy + solution])
 }
 
 function cartesianToTheta(x: number, y: number) {
-  let theta = (Math.atan(y / x) + 2 * Math.PI) % (2 * Math.PI)
-  if (x < 0) {
-    if (y <= 0) {
-      theta += Math.PI
-    } else {
-      theta -= Math.PI
-    }
-  }
-  return theta
+  return (Math.atan2(y, x) + 2 * Math.PI) % (2 * Math.PI)
 }
 
 export function cartesianToPolar(x: number, y: number) {
@@ -125,83 +105,18 @@ export function viewportVisibleSection(
       theta: [0, 2 * Math.PI] as [number, number],
     }
   }
-  // const viewportCompletelyContainsCircle =
-  //   circleCenter[0] - viewL >= circleRadius &&
-  //   viewR - circleCenter[0] >= circleRadius &&
-  //   circleCenter[1] - viewT >= circleRadius &&
-  //   viewB - circleCenter[1] >= circleRadius
 
-  // if (viewportCompletelyContainsCircle) {
-  //   return [0, 2 * Math.PI]
-  // }
-
-  // const distToCenterSquared = ([x, y]) => {
-  //   const [cx, cy] = circleCenter
-  //   const sq = n => n * n
-  //   return sq(x - cx) + sq(y - cy)
-  // }
-  // const circleRadiusSquared = circleRadius * circleRadius
-
-  // const tlInside = distToCenterSquared([viewL, viewT]) <= circleRadiusSquared
-  // const trInside = distToCenterSquared([viewR, viewT]) <= circleRadiusSquared
-  // const blInside = distToCenterSquared([viewL, viewB]) <= circleRadiusSquared
-  // const brInside = distToCenterSquared([viewR, viewB]) <= circleRadiusSquared
-
-  // const noIntersection = !tlInside && !trInside && !blInside && !brInside
-  // if (noIntersection) return undefined
-
-  // const circleCompletelyContainsViewport =
-  //   tlInside && trInside && blInside && brInside
-  // if (circleCompletelyContainsViewport) {
-  //   // viewport is in the circle, but the center is not in it, so take max
-  //   // and min of thetas to the center
-  //   const thetas = [
-  //     Math.atan(viewT / viewL),
-  //     Math.atan(viewT / viewR),
-  //     Math.atan(viewB / viewL),
-  //     Math.atan(viewB / viewR),
-  //   ]
-
-  //   return [Math.min(...thetas), Math.max(...thetas)]
-  // }
-
-  // if we get here, the viewport is partly in, partly out of the circle
-
-  // const viewLIntersects = Math.abs(viewL - circleCenter[0]) <= circleRadius
-  // const viewRIntersects = Math.abs(viewR - circleCenter[0]) <= circleRadius
-  // const viewTIntersects = Math.abs(viewT - circleCenter[1]) <= circleRadius
-  // const viewBIntersects = Math.abs(viewB - circleCenter[1]) <= circleRadius
-
-  // const numIntersectingSides =
-  //   Number(viewLIntersects) +
-  //   Number(viewRIntersects) +
-  //   Number(viewTIntersects) +
-  //   Number(viewBIntersects)
-
-  // if (numIntersectingSides === 4) return [0, 2 * Math.PI]
-  // if (numIntersectingSides === 3) {
-  //   // TODO calculate the thetas of the
-  // } else if (numIntersectingSides === 2) {
-  //   // TODO calculate the thetas of the 2 intersection points
-  // } else if (numIntersectingSides === 1) {
-  //   // TODO calculate the thetas of the 1-2 intersection points of the line, and the angle between
-  // }
-
-  // make a list of vertices-of-interest that lie inside both shapes to examine
-  // to determine the range covered by their intersection
-
-  // transform coordinates to have the circle as the origin and find the intersections
-  // of the circle and the view rectangle
+  // find the intersections of the circle and the view rectangle
   const vertices: [number, number][] = [
     [viewL, viewT],
     [viewR, viewT],
     [viewL, viewB],
     [viewR, viewB],
   ]
-  findCircleIntersectionY(viewL, 0, 0, circleRadius, vertices)
-  findCircleIntersectionY(viewR, 0, 0, circleRadius, vertices)
-  findCircleIntersectionX(viewT, 0, 0, circleRadius, vertices)
-  findCircleIntersectionX(viewB, 0, 0, circleRadius, vertices)
+  findCircleIntersection('v', viewL, 0, 0, circleRadius, vertices)
+  findCircleIntersection('v', viewR, 0, 0, circleRadius, vertices)
+  findCircleIntersection('h', viewT, 0, 0, circleRadius, vertices)
+  findCircleIntersection('h', viewB, 0, 0, circleRadius, vertices)
 
   // for each edge, also look at the closest point to center if it is inside the circle
   if (-viewL < circleRadius) {
@@ -217,15 +132,7 @@ export function viewportVisibleSection(
     vertices.push([0, viewB])
   }
 
-  // const verticesOriginal = vertices.map(([x, y]) => [x + cx, y + cy])
-
-  // now convert them all to polar and take the max and min of rho and theta
-
-  // const viewportCenterTheta = cartesianToTheta(viewR + viewL, viewT + viewB)
   const reflect = viewL >= 0 ? -1 : 1
-  // viewportCenterTheta < Math.PI / 2 || viewportCenterTheta > 1.5 * Math.PI
-  //   ? -1
-  //   : 1
   let rhoMin = Number.POSITIVE_INFINITY
   let rhoMax = Number.NEGATIVE_INFINITY
   let thetaMin = Number.POSITIVE_INFINITY
