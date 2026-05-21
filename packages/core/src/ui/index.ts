@@ -8,10 +8,8 @@ export { default as CascadingMenu } from './CascadingMenu.tsx'
 export { default as CascadingMenuButton } from './CascadingMenuButton.tsx'
 export { default as Dialog } from './Dialog.tsx'
 export { default as EditableTypography } from './EditableTypography.tsx'
-export {
-  default as ErrorBanner,
-  default as ErrorMessage,
-} from './ErrorMessage.tsx'
+export { default as ErrorBanner } from './ErrorBanner.tsx'
+export { default as ErrorMessage } from './ErrorMessage.tsx'
 export { default as FatalErrorDialog } from './FatalErrorDialog.tsx'
 export { default as FileSelector } from './FileSelector/FileSelector.tsx'
 export { default as LoadingEllipses } from './LoadingEllipses.tsx'
@@ -23,4 +21,16 @@ export { default as SanitizedHTML } from './SanitizedHTML.tsx'
 export { default as BaseTooltip } from './BaseTooltip.tsx'
 export * from './Menu.tsx'
 export * from './MenuTypes.ts'
+export {
+  RefNameAutocompleteEndAdornment,
+  default as RefNameAutocomplete,
+} from './RefNameAutocomplete/index.tsx'
+export { default as ConfirmDialog } from './ConfirmDialog.tsx'
+export { default as ErrorBar } from './ErrorBar.tsx'
+export { default as ErrorOverlay } from './ErrorOverlay.tsx'
+export { default as CanvasDisplayWrapper } from './CanvasDisplayWrapper.tsx'
+export { default as LoadingOverlay } from './LoadingOverlay.tsx'
+export { default as SubmitDialog } from './SubmitDialog.tsx'
+export { default as ActionLink } from './ActionLink.tsx'
+export { default as PluggableComponent } from './PluggableComponent.tsx'
 export const VIEW_HEADER_HEIGHT = 28
