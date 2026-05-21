@@ -1,7 +1,6 @@
-import { CascadingMenuButton } from '@jbrowse/core/ui'
+import { ActionLink, CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
-import { Link } from '@mui/material'
 
 import StarIcon from '../StarIcon.tsx'
 
@@ -38,15 +37,7 @@ function SessionNameCell({
 
   return (
     <div className={classes.flexContainer}>
-      <Link
-        href="#"
-        onClick={async (event: React.MouseEvent) => {
-          event.preventDefault()
-          await launch(row.path)
-        }}
-      >
-        {value}
-      </Link>
+      <ActionLink onClick={async () => { await launch(row.path) }}>{value}</ActionLink>
       {isFavorite ? (
         <StarIcon
           isFavorite={isFavorite}

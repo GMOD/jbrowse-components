@@ -1,16 +1,11 @@
 import { useState } from 'react'
 
-import {
-  CascadingMenuButton,
-  ErrorMessage,
-  LoadingEllipses,
-} from '@jbrowse/core/ui'
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util'
-import MoreIcon from '@mui/icons-material/MoreHoriz'
-import { Link } from '@mui/material'
 
 import { useInnerDims } from '../availableGenomes/util.ts'
 import CollapsibleSection from './CollapsibleSection.tsx'
+import LinkMenuRow from './LinkMenuRow.tsx'
 import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'
 import RenameQuickstartDialog from '../dialogs/RenameQuickstartDialog.tsx'
 
@@ -51,44 +46,33 @@ export default function QuickstartPanel({
           <table>
             <tbody>
               {quickstarts.map(name => (
-                <tr key={name}>
-                  <td>
-                    <Link
-                      href="#"
-                      onClick={e => {
-                        e.preventDefault()
+                <LinkMenuRow
+                  key={name}
+                  label={name}
+                  onLinkClick={() => {
+                    launch([name])
+                  }}
+                  menuItems={[
+                    {
+                      label: 'Launch',
+                      onClick: () => {
                         launch([name])
-                      }}
-                    >
-                      {name}
-                    </Link>{' '}
-                    <CascadingMenuButton
-                      style={{ padding: 0 }}
-                      menuItems={[
-                        {
-                          label: 'Launch',
-                          onClick: () => {
-                            launch([name])
-                          },
-                        },
-                        {
-                          label: 'Delete',
-                          onClick: () => {
-                            setDeleteDialogOpen(name)
-                          },
-                        },
-                        {
-                          label: 'Rename',
-                          onClick: () => {
-                            setRenameDialogOpen(name)
-                          },
-                        },
-                      ]}
-                    >
-                      <MoreIcon />
-                    </CascadingMenuButton>
-                  </td>
-                </tr>
+                      },
+                    },
+                    {
+                      label: 'Delete',
+                      onClick: () => {
+                        setDeleteDialogOpen(name)
+                      },
+                    },
+                    {
+                      label: 'Rename',
+                      onClick: () => {
+                        setRenameDialogOpen(name)
+                      },
+                    },
+                  ]}
+                />
               ))}
             </tbody>
           </table>

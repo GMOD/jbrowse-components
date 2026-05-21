@@ -1,6 +1,5 @@
-import { CascadingMenuButton } from '@jbrowse/core/ui'
+import { ActionLink, CascadingMenuButton } from '@jbrowse/core/ui'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
-import { Link } from '@mui/material'
 
 import type { LaunchCallback } from '../types.ts'
 
@@ -43,31 +42,9 @@ export default function GenomeNameCell({
 
   return (
     <div>
-      {displayName} (
-      <Link
-        href="#"
-        onClick={e => {
-          e.preventDefault()
-          handleLaunch()
-        }}
-      >
-        launch
-      </Link>
-      ){' '}
+      {displayName} (<ActionLink onClick={handleLaunch}>launch</ActionLink>){' '}
       {jbrowseMinimalConfig ? (
-        <>
-          (
-          <Link
-            href="#"
-            onClick={e => {
-              e.preventDefault()
-              handleMinimalLaunch()
-            }}
-          >
-            minimal
-          </Link>
-          ){' '}
-        </>
+        <>(<ActionLink onClick={handleMinimalLaunch}>minimal</ActionLink>){' '}</>
       ) : null}
       {children}
       <CascadingMenuButton

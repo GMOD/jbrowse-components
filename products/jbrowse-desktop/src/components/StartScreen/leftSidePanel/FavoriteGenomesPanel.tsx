@@ -1,9 +1,7 @@
-import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import MoreHoriz from '@mui/icons-material/MoreHoriz'
-import { Link } from '@mui/material'
 
 import CollapsibleSection from './CollapsibleSection.tsx'
+import LinkMenuRow from './LinkMenuRow.tsx'
 
 import type { Fav, LaunchCallback } from '../types.ts'
 
@@ -38,48 +36,37 @@ export default function FavoriteGenomesPanel({
         <table>
           <tbody>
             {sorted.map(({ id, name, shortName, jbrowseConfig, jbrowseMinimalConfig }) => (
-              <tr key={id}>
-                <td>
-                  <Link
-                    href="#"
-                    onClick={event => {
-                      event.preventDefault()
+              <LinkMenuRow
+                key={id}
+                label={name}
+                onLinkClick={() => {
+                  launch([{ shortName, jbrowseConfig }])
+                }}
+                menuItems={[
+                  {
+                    label: 'Launch (full config)',
+                    onClick: () => {
                       launch([{ shortName, jbrowseConfig }])
-                    }}
-                  >
-                    {name}
-                  </Link>{' '}
-                  <CascadingMenuButton
-                    style={{ padding: 0 }}
-                    menuItems={[
-                      {
-                        label: 'Launch (full config)',
-                        onClick: () => {
-                          launch([{ shortName, jbrowseConfig }])
+                    },
+                  },
+                  ...(jbrowseMinimalConfig
+                    ? [
+                        {
+                          label: 'Launch (minimal config)',
+                          onClick: () => {
+                            launch([{ shortName, jbrowseConfig: jbrowseMinimalConfig }])
+                          },
                         },
-                      },
-                      ...(jbrowseMinimalConfig
-                        ? [
-                            {
-                              label: 'Launch (minimal config)',
-                              onClick: () => {
-                                launch([{ shortName, jbrowseConfig: jbrowseMinimalConfig }])
-                              },
-                            },
-                          ]
-                        : []),
-                      {
-                        label: 'Remove from favorites',
-                        onClick: () => {
-                          setFavorites(favorites.filter(fav => fav.id !== id))
-                        },
-                      },
-                    ]}
-                  >
-                    <MoreHoriz />
-                  </CascadingMenuButton>
-                </td>
-              </tr>
+                      ]
+                    : []),
+                  {
+                    label: 'Remove from favorites',
+                    onClick: () => {
+                      setFavorites(favorites.filter(fav => fav.id !== id))
+                    },
+                  },
+                ]}
+              />
             ))}
           </tbody>
         </table>
