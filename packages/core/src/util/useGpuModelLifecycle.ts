@@ -1,7 +1,15 @@
+import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { useMemo } from 'react'
 
 import { useGpuRenderer } from './useGpuRenderer.ts'
 import { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
+
+function nodeAlive(model: unknown) {
+  if (isStateTreeNode(model)) {
+    return isAlive(model)
+  }
+  return true
+}
 
 /**
  * Duck-typed shape of an MST display model that owns a GPU backend
@@ -34,17 +42,23 @@ export function useGpuModelLifecycle<BackendType extends { dispose(): void }>(
   const opts = useMemo(
     () => ({
       onReady: (backend: BackendType) => {
-        model.startGpuBackendLifecycle(backend)
+        if (nodeAlive(model)) {
+          model.startGpuBackendLifecycle(backend)
+        }
       },
       onDispose: () => {
-        model.stopGpuBackendLifecycle()
+        if (nodeAlive(model)) {
+          model.stopGpuBackendLifecycle()
+        }
       },
     }),
     [model],
   )
   const { canvas, canvasRef, error, retry } = useGpuRenderer(factory, opts)
   useTabVisibilityRerender(() => {
-    model.renderNow()
+    if (nodeAlive(model)) {
+      model.renderNow()
+    }
   })
   return { canvas, canvasRef, error, retry }
 }
