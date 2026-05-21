@@ -32,8 +32,12 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       const isCSI = indexType === 'CSI'
       const vcf = new TabixIndexedFile({
         filehandle: openLocation(vcfGzLocation, this.pluginManager),
-        csiFilehandle: isCSI ? openLocation(location, this.pluginManager) : undefined,
-        tbiFilehandle: !isCSI ? openLocation(location, this.pluginManager) : undefined,
+        csiFilehandle: isCSI
+          ? openLocation(location, this.pluginManager)
+          : undefined,
+        tbiFilehandle: !isCSI
+          ? openLocation(location, this.pluginManager)
+          : undefined,
         chunkCacheSize: 50 * 2 ** 20,
       })
       this.configured = vcf
@@ -57,12 +61,14 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
     )
   }
 
-  async getMultiRegionFeatureDensityStats(regions: Region[], opts?: BaseOptions) {
+  async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
     const { vcf } = await this.configure(opts)
     const bytes = await vcf.bytesForRegions(regions, opts)
     return { bytes, fetchSizeLimit: 1_000_000 }
   }
-
 
   public async getRefNames(opts: BaseOptions = {}) {
     const { vcf } = await this.configure(opts)

@@ -71,7 +71,10 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   // Calculate the end position (in pixels) of each displayed region
   const regionEndPx = new Map<number, number>()
   for (const block of staticBlocks.blocks) {
-    if (block.type === 'ContentBlock' && block.displayedRegionIndex !== undefined) {
+    if (
+      block.type === 'ContentBlock' &&
+      block.displayedRegionIndex !== undefined
+    ) {
       const endPx = block.offsetPx + block.widthPx
       const current = regionEndPx.get(block.displayedRegionIndex)
       if (current === undefined || endPx > current) {

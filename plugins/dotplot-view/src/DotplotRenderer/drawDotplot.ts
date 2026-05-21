@@ -1,17 +1,16 @@
+import { parseCigar } from '@jbrowse/cigar-utils'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { category10 } from '@jbrowse/core/ui/colors'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { colord } from '@jbrowse/core/util/colord'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { parseCigar } from '@jbrowse/cigar-utils'
 
 import { type Warning, clampWithWarnX, clampWithWarnY } from './clamp.ts'
 
 import type { RenderArgsDeserialized } from './DotplotRenderer.ts'
 import type { Dotplot1DViewModel } from '../DotplotView/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
 
 // Simple hash function to generate consistent colors for query names
 function hashString(str: string) {
@@ -166,7 +165,7 @@ export async function drawDotplot(
       let r = 'black'
       if (colorBy === 'identity') {
         const identity = feature.get('identity')
-        // eslint-disable-next-line unicorn/no-for-loop
+
         for (let i = 0; i < thresholds.length; i++) {
           if (identity > +thresholds[i]) {
             r = palette[i] || 'black'

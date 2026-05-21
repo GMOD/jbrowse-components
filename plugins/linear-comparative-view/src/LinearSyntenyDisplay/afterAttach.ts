@@ -1,7 +1,7 @@
+import { parseCigar } from '@jbrowse/cigar-utils'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
-import { parseCigar } from '@jbrowse/cigar-utils'
 import { autorun, reaction } from 'mobx'
 
 import {

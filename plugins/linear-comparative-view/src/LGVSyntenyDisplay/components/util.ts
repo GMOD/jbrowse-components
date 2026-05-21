@@ -5,7 +5,6 @@ import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 type LSV = LinearSyntenyViewModel
 
-
 function findPosInCigar(cigar: string[], startX: number) {
   let featX = 0
   let mateX = 0

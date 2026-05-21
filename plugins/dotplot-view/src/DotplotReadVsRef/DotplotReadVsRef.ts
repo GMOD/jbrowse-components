@@ -1,11 +1,11 @@
-import { getConf } from '@jbrowse/core/configuration'
-import { gatherOverlaps, getSession, sum } from '@jbrowse/core/util'
 import {
   featurizeSA,
   getClip,
   getLength,
   getLengthSansClipping,
 } from '@jbrowse/cigar-utils'
+import { getConf } from '@jbrowse/core/configuration'
+import { gatherOverlaps, getSession, sum } from '@jbrowse/core/util'
 
 import type { ReducedFeature } from '../util.ts'
 import type { Feature } from '@jbrowse/core/util'

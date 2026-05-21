@@ -1,10 +1,9 @@
-import { getSession } from '@jbrowse/core/util'
-
 import {
   featurizeSA,
   getClip,
   getLengthSansClipping,
 } from '@jbrowse/cigar-utils'
+import { getSession } from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

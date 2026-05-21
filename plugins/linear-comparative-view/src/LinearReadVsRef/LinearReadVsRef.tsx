@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
 
+import {
+  featurizeSA,
+  getClip,
+  getLength,
+  getLengthSansClipping,
+} from '@jbrowse/cigar-utils'
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import {
@@ -10,12 +16,6 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
-  featurizeSA,
-  getClip,
-  getLength,
-  getLengthSansClipping,
-} from '@jbrowse/cigar-utils'
-import {
   Button,
   CircularProgress,
   DialogActions,
@@ -25,7 +25,6 @@ import {
 } from '@mui/material'
 
 import type { Feature } from '@jbrowse/core/util'
-
 
 interface ReducedFeature {
   refName: string
@@ -78,7 +77,7 @@ export default function ReadVsRefDialog({
       setError(undefined)
       try {
         if (preFeature.get('flags') & 2048) {
-          const SA: string = preFeature.get('tags')['SA'] || ''
+          const SA: string = preFeature.get('tags').SA || ''
           const primaryAln = SA.split(';')[0]!
           const [saRef, saStart] = primaryAln.split(',')
           const { rpcManager } = getSession(track)
@@ -129,8 +128,8 @@ export default function ReadVsRefDialog({
       const cigar = feature.get('CIGAR') as string
       const flags = feature.get('flags') as number
       const origStrand = feature.get('strand') as number
-      const SA = (feature.get('tags')['SA'] as string) || ''
-      const readName = feature.get('name') as string
+      const SA = (feature.get('tags').SA as string) || ''
+      const readName = feature.get('name')!
       const clipLengthAtStartOfRead = getClip(cigar, 1)
 
       const readAssembly = `${readName}_assembly_${Date.now()}`

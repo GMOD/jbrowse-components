@@ -1429,7 +1429,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return this.dynamicBlocks.contentBlocks.map(
             block =>
               ({
-                // eslint-disable-next-line @typescript-eslint/no-misused-spread
                 ...block,
                 start: Math.floor(block.start),
                 end: Math.ceil(block.end),

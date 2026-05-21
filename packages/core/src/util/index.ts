@@ -42,10 +42,7 @@ import type {
 } from './types/index.ts'
 import type { Region as MUIRegion } from './types/mst.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
-import type {
-  IAnyStateTreeNode,
-  Instance,
-} from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 export * from './types/index.ts'
@@ -907,7 +904,7 @@ export function localStorageSetItem(str: string, item: string) {
 
 // Index iteration so these accept both arrays and typed arrays (e.g.
 // Float32Array) without requiring Iterable.
- 
+
 export function max(arr: ArrayLike<number>, init = Number.NEGATIVE_INFINITY) {
   let max = init
   for (const element of arr) {
@@ -931,7 +928,6 @@ export function sum(arr: ArrayLike<number>) {
   }
   return sum
 }
- 
 
 export function avg(arr: ArrayLike<number>) {
   return sum(arr) / arr.length
