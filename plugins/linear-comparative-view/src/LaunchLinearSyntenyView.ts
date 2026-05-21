@@ -28,7 +28,12 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
       session.addView('LinearSyntenyView', {
         init: {
           views,
-          tracks: isNestedTracks(tracks) ? tracks : [tracks],
+          tracks:
+            tracks.length === 0
+              ? []
+              : isNestedTracks(tracks)
+                ? tracks
+                : [tracks],
         },
       })
     },

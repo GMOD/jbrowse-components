@@ -115,8 +115,6 @@ export function getLaunchSubMenu(self: LaunchModel): MenuItem[] {
   const view = getContainingView(self) as LGV
   const track = getContainingTrack(self)
   const trackId = getConf(track, 'trackId')
-  const refAssembly = view.displayedRegions[0]?.assemblyName
-
   // Prefer a GfaTabixAdapter/GfaServerAdapter from the session for subgraph
   // extraction since the display's adapter (e.g. TabixPAFAdapter) may not
   // implement getSubgraph.
@@ -135,8 +133,10 @@ export function getLaunchSubMenu(self: LaunchModel): MenuItem[] {
   const adapterConfig = gfaTrack
     ? readConfObject(gfaTrack, 'adapter')
     : getConf(track, 'adapter')
-  const loc = view.displayedRegions[0]
-    ? `${view.displayedRegions[0].refName}:${Math.floor(view.offsetPx * view.bpPerPx)}-${Math.floor((view.offsetPx + view.width) * view.bpPerPx)}`
+  const vpRegion = regionFromViewport(view)
+  const refAssembly = vpRegion?.assemblyName
+  const loc = vpRegion
+    ? `${vpRegion.refName}:${vpRegion.start}-${vpRegion.end}`
     : undefined
 
   const items: MenuItem[] = []
@@ -148,7 +148,7 @@ export function getLaunchSubMenu(self: LaunchModel): MenuItem[] {
         onClick: () => {
           const genomes = self.displayedGenomes
           const tracks = genomes.map(() => [trackId])
-          getSession(self).addView('LinearSyntenyView', {
+          session.addView('LinearSyntenyView', {
             type: 'LinearSyntenyView',
             init: {
               views: [
@@ -163,7 +163,7 @@ export function getLaunchSubMenu(self: LaunchModel): MenuItem[] {
       {
         label: '2-way synteny with...',
         onClick: () => {
-          getSession(self).queueDialog(handleClose => [
+          session.queueDialog(handleClose => [
             LaunchPairwiseSyntenyDialog,
             {
               model: self,
@@ -183,7 +183,6 @@ export function getLaunchSubMenu(self: LaunchModel): MenuItem[] {
       label: `${label} view (local)`,
       icon,
       onClick: async () => {
-        const session = getSession(self)
         const region = regionFromViewport(view)
         if (!region) {
           console.warn(`[${viewType} launch] No displayed region found`)
@@ -199,10 +198,7 @@ export function getLaunchSubMenu(self: LaunchModel): MenuItem[] {
           )
         } catch (e) {
           console.error(`[${viewType} launch] Error:`, e)
-          session.notify(
-            `Failed to launch ${viewType}: ${e instanceof Error ? e.message : e}`,
-            'error',
-          )
+          session.notify(`Failed to launch ${viewType}: ${e}`, 'error')
         }
       },
     })
