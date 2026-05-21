@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { unzip } from '@gmod/bgzf-filehandle'
 import useMeasure from '@jbrowse/core/util/useMeasure'
@@ -17,6 +17,7 @@ import { createRoot } from 'react-dom/client'
 import { coarseStripHTML } from './coarseStripHTML.ts'
 import { colord } from './colord.ts'
 import { parseLocString } from './locString.ts'
+import { measureText } from './measureText.ts'
 import { checkStopToken } from './stopToken.ts'
 import {
   isDisplayModel,
@@ -53,7 +54,12 @@ export * from './types/index.ts'
 export * from './when.ts'
 export * from './range.ts'
 export * from './dedupe.ts'
+export * from './useFetch.ts'
+export * from './fetchJson.ts'
+export * from './sessionSharing.ts'
 export * from './coarseStripHTML.ts'
+export * from './measureText.ts'
+export * from './seqUtils.ts'
 
 export * from './offscreenCanvasPonyfill.tsx'
 export * from './offscreenCanvasUtils.tsx'
@@ -113,43 +119,6 @@ export function useWidthSetter(
   return ref
 }
 
-type Timer = ReturnType<typeof setTimeout>
-
-// https://stackoverflow.com/questions/56283920/
-export function useDebouncedCallback<T>(
-  callback: (...args: T[]) => void,
-  wait = 400,
-) {
-  // track args & timeout handle between calls
-  const argsRef = useRef<T[]>(null)
-  const timeout = useRef<Timer>(null)
-
-  // make sure our timeout gets cleared if our consuming component gets
-  // unmounted
-  useEffect(() => {
-    if (timeout.current) {
-      clearTimeout(timeout.current)
-    }
-  }, [])
-
-  return function debouncedCallback(...args: T[]) {
-    // capture latest args
-    argsRef.current = args
-
-    // clear debounce timer
-    if (timeout.current) {
-      clearTimeout(timeout.current)
-    }
-
-    // start waiting again
-    timeout.current = setTimeout(() => {
-      if (argsRef.current) {
-        callback(...argsRef.current)
-      }
-    }, wait)
-  }
-}
-
 /**
  * find the first node in the hierarchy that matches the given predicate
  */
@@ -203,8 +172,8 @@ export function springAnimate(
   function update(animation: Animation) {
     const time = performance.now()
     let position = animation.lastPosition
-    let lastTime = animation.lastTime || time
-    let velocity = animation.lastVelocity || 0
+    let lastTime = animation.lastTime ?? time
+    let velocity = animation.lastVelocity ?? 0
     // If we lost a lot of frames just jump to the end.
     if (time > lastTime + 64) {
       lastTime = time
@@ -264,22 +233,36 @@ export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   return findParentThat(node, predicate) as TypeTestedByPredicate<T>
 }
 
+function cachedParent<T extends IAnyStateTreeNode>(
+  cache: WeakMap<IAnyStateTreeNode, T>,
+  node: IAnyStateTreeNode,
+  finder: () => T,
+  errorMsg: string,
+): T {
+  const cached = cache.get(node)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
+  try {
+    const result = finder()
+    cache.set(node, result)
+    return result
+  } catch (e) {
+    throw new Error(errorMsg, { cause: e })
+  }
+}
+
 /**
  * get the current JBrowse session model, starting at any node in the state
  * tree. Results are cached for performance.
  */
 export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
-  const cached = sessionCache.get(node)
-  if (cached && isAlive(cached)) {
-    return cached
-  }
-  try {
-    const result = findParentThatIs(node, isSessionModel)
-    sessionCache.set(node, result)
-    return result
-  } catch (e) {
-    throw new Error('no session model found!', { cause: e })
-  }
+  return cachedParent(
+    sessionCache,
+    node,
+    () => findParentThatIs(node, isSessionModel),
+    'no session model found!',
+  )
 }
 
 /**
@@ -287,18 +270,12 @@ export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
  * node. Results are cached for performance.
  */
 export function getContainingView(node: IAnyStateTreeNode): AbstractViewModel {
-  const cached = containingViewCache.get(node)
-  // Validate cached result is still alive (handles re-parenting edge cases)
-  if (cached && isAlive(cached)) {
-    return cached
-  }
-  try {
-    const result = findParentThatIs(node, isViewModel)
-    containingViewCache.set(node, result)
-    return result
-  } catch (e) {
-    throw new Error('no containing view found', { cause: e })
-  }
+  return cachedParent(
+    containingViewCache,
+    node,
+    () => findParentThatIs(node, isViewModel),
+    'no containing view found',
+  )
 }
 
 /**
@@ -308,18 +285,12 @@ export function getContainingView(node: IAnyStateTreeNode): AbstractViewModel {
 export function getContainingTrack(
   node: IAnyStateTreeNode,
 ): AbstractTrackModel {
-  const cached = containingTrackCache.get(node)
-  // Validate cached result is still alive (handles re-parenting edge cases)
-  if (cached && isAlive(cached)) {
-    return cached
-  }
-  try {
-    const result = findParentThatIs(node, isTrackModel)
-    containingTrackCache.set(node, result)
-    return result
-  } catch (e) {
-    throw new Error('no containing track found', { cause: e })
-  }
+  return cachedParent(
+    containingTrackCache,
+    node,
+    () => findParentThatIs(node, isTrackModel),
+    'no containing track found',
+  )
 }
 
 /**
@@ -329,18 +300,12 @@ export function getContainingTrack(
 export function getContainingDisplay(
   node: IAnyStateTreeNode,
 ): AbstractDisplayModel {
-  const cached = containingDisplayCache.get(node)
-  // Validate cached result is still alive (handles re-parenting edge cases)
-  if (cached && isAlive(cached)) {
-    return cached
-  }
-  try {
-    const result = findParentThatIs(node, isDisplayModel)
-    containingDisplayCache.set(node, result)
-    return result
-  } catch (e) {
-    throw new Error('no containing display found', { cause: e })
-  }
+  return cachedParent(
+    containingDisplayCache,
+    node,
+    () => findParentThatIs(node, isDisplayModel),
+    'no containing display found',
+  )
 }
 
 /**
@@ -541,75 +506,19 @@ export function bpSpanPx(
   return region.reversed ? ([end, start] as const) : ([start, end] as const)
 }
 
-/**
- * Calculate layout bounds for a feature, accounting for reversed regions.
- *
- * When labels are wider than features, the layout needs extra space:
- * - Normal: extend towards higher genomic coords (visual right)
- * - Reversed: extend towards lower genomic coords (visual right when reversed)
- *
- * This ensures labels always extend towards visual right of the feature.
- *
- * @param featureStart - Feature's genomic start coordinate
- * @param featureEnd - Feature's genomic end coordinate
- * @param layoutWidthBp - Total layout width in base pairs (may include label space)
- * @param reversed - Whether the region is reversed
- * @returns [layoutStart, layoutEnd] in genomic coordinates
- */
-export function calculateLayoutBounds(
-  featureStart: number,
-  featureEnd: number,
-  layoutWidthBp: number,
-  reversed?: boolean,
-): [number, number] {
-  const featureWidthBp = featureEnd - featureStart
-  const labelOverhangBp = Math.max(0, layoutWidthBp - featureWidthBp)
-
-  // When reversed, extend towards lower genomic coords (visual right when reversed)
-  // When normal, extend towards higher genomic coords (visual right when normal)
-  return reversed
-    ? [featureStart - labelOverhangBp, featureEnd]
-    : [featureStart, featureStart + layoutWidthBp]
-}
-
 // do an array map of an iterable
 export function iterMap<T, U>(
   iter: Iterable<T>,
   func: (arg: T) => U,
   sizeHint?: number,
 ) {
-  const results = Array.from<U>({ length: sizeHint || 0 })
+  const results = Array.from<U>({ length: sizeHint ?? 0 })
   let counter = 0
   for (const item of iter) {
     results[counter] = func(item)
     counter += 1
   }
   return results
-}
-
-/**
- * Returns the index of the last element in the array where predicate is true,
- * and -1 otherwise. Based on https://stackoverflow.com/a/53187807
- *
- * @param array - The source array to search in
- *
- * @param predicate - find calls predicate once for each element of the array, in
- * descending order, until it finds one where predicate returns true.
- *
- * @returns findLastIndex returns element index where predicate is true.
- * Otherwise, findLastIndex returns -1.
- */
-export function findLastIndex<T>(
-  array: T[],
-  predicate: (value: T, index: number, obj: T[]) => boolean,
-) {
-  let l = array.length
-  while (l--) {
-    if (predicate(array[l]!, l, array)) {
-      return l
-    }
-  }
-  return -1
 }
 
 export function findLast<T>(
@@ -740,68 +649,6 @@ export const isElectron = /electron/i.test(
   typeof navigator !== 'undefined' ? navigator.userAgent : '',
 )
 
-// from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
-// generated with:
-// perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
-export const complementTable = {
-  S: 'S',
-  w: 'w',
-  T: 'A',
-  r: 'y',
-  a: 't',
-  N: 'N',
-  K: 'M',
-  x: 'x',
-  d: 'h',
-  Y: 'R',
-  V: 'B',
-  y: 'r',
-  M: 'K',
-  h: 'd',
-  k: 'm',
-  C: 'G',
-  g: 'c',
-  t: 'a',
-  A: 'T',
-  n: 'n',
-  W: 'W',
-  X: 'X',
-  m: 'k',
-  v: 'b',
-  B: 'V',
-  s: 's',
-  H: 'D',
-  c: 'g',
-  D: 'H',
-  b: 'v',
-  R: 'Y',
-  G: 'C',
-} as Record<string, string>
-
-export function revcom(str: string) {
-  const revcomped = []
-  for (let i = str.length - 1; i >= 0; i--) {
-    revcomped.push(complementTable[str[i]!] ?? str[i])
-  }
-  return revcomped.join('')
-}
-
-export function reverse(str: string) {
-  const reversed = []
-  for (let i = str.length - 1; i >= 0; i--) {
-    reversed.push(str[i]!)
-  }
-  return reversed.join('')
-}
-
-export function complement(str: string) {
-  const comp = []
-  for (let i = 0, l = str.length; i < l; i++) {
-    comp.push(complementTable[str[i]!] ?? str[i]!)
-  }
-  return comp.join('')
-}
-
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
@@ -817,132 +664,6 @@ export const rIC =
     : (cb: () => void) => {
         cb()
       }
-
-// prettier-ignore
-const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
-const avgWidth = 0.5279276315789471
-
-// xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
-export function measureText(str: unknown, fontSize = 10) {
-  const s = String(str)
-  let total = 0
-  for (let i = 0, l = s.length; i < l; i++) {
-    total += widths[s.charCodeAt(i)] ?? avgWidth
-  }
-  return total * fontSize
-}
-
-export type Frame = 1 | 2 | 3 | -1 | -2 | -3
-
-export function getFrame(
-  start: number,
-  end: number,
-  strand: 1 | -1,
-  phase: 0 | 1 | 2,
-): Frame {
-  return strand === 1
-    ? ((((start + phase) % 3) + 1) as 1 | 2 | 3)
-    : ((-1 * ((end - phase) % 3) - 1) as -1 | -2 | -3)
-}
-
-export const defaultStarts = ['ATG']
-export const defaultStops = ['TAA', 'TAG', 'TGA']
-export const defaultCodonTable = {
-  TCA: 'S',
-  TCC: 'S',
-  TCG: 'S',
-  TCT: 'S',
-  TTC: 'F',
-  TTT: 'F',
-  TTA: 'L',
-  TTG: 'L',
-  TAC: 'Y',
-  TAT: 'Y',
-  TAA: '*',
-  TAG: '*',
-  TGC: 'C',
-  TGT: 'C',
-  TGA: '*',
-  TGG: 'W',
-  CTA: 'L',
-  CTC: 'L',
-  CTG: 'L',
-  CTT: 'L',
-  CCA: 'P',
-  CCC: 'P',
-  CCG: 'P',
-  CCT: 'P',
-  CAC: 'H',
-  CAT: 'H',
-  CAA: 'Q',
-  CAG: 'Q',
-  CGA: 'R',
-  CGC: 'R',
-  CGG: 'R',
-  CGT: 'R',
-  ATA: 'I',
-  ATC: 'I',
-  ATT: 'I',
-  ATG: 'M',
-  ACA: 'T',
-  ACC: 'T',
-  ACG: 'T',
-  ACT: 'T',
-  AAC: 'N',
-  AAT: 'N',
-  AAA: 'K',
-  AAG: 'K',
-  AGC: 'S',
-  AGT: 'S',
-  AGA: 'R',
-  AGG: 'R',
-  GTA: 'V',
-  GTC: 'V',
-  GTG: 'V',
-  GTT: 'V',
-  GCA: 'A',
-  GCC: 'A',
-  GCG: 'A',
-  GCT: 'A',
-  GAC: 'D',
-  GAT: 'D',
-  GAA: 'E',
-  GAG: 'E',
-  GGA: 'G',
-  GGC: 'G',
-  GGG: 'G',
-  GGT: 'G',
-}
-
-/**
- * take CodonTable above and generate larger codon table that includes all
- * permutations of upper and lower case nucleotides
- */
-export function generateCodonTable(table: any) {
-  const tempCodonTable: Record<string, string> = {}
-  for (const codon of Object.keys(table)) {
-    const aa = table[codon]
-    const nucs: string[][] = []
-    for (let i = 0; i < 3; i++) {
-      const nuc = codon.charAt(i)
-      nucs[i] = []
-      nucs[i]![0] = nuc.toUpperCase()
-      nucs[i]![1] = nuc.toLowerCase()
-    }
-    for (let i = 0; i < 2; i++) {
-      const n0 = nucs[0]![i]!
-      for (let j = 0; j < 2; j++) {
-        const n1 = nucs[1]![j]!
-        for (let k = 0; k < 2; k++) {
-          const n2 = nucs[2]![k]!
-          const triplet = n0 + n1 + n2
-          tempCodonTable[triplet] = aa
-        }
-      }
-    }
-  }
-  return tempCodonTable
-}
 
 // call statusCallback with current status and clear when finished
 export async function updateStatus<U>(
@@ -984,7 +705,7 @@ export function hashCode(str: string) {
   return hash
 }
 
-export function objectHash(obj: Record<string, any>) {
+export function objectHash(obj: object) {
   return `${hashCode(JSON.stringify(obj))}`
 }
 
@@ -1105,16 +826,6 @@ export function getLayoutId({
   return `${sessionId}-${trackInstanceId}`
 }
 
-export function getStatsId({
-  sessionId,
-  trackInstanceId,
-}: {
-  sessionId: string
-  trackInstanceId: string
-}) {
-  return `${sessionId}-${trackInstanceId}`
-}
-
 // Hook from https://usehooks.com/useLocalStorage/
 export function useLocalStorage<T>(
   key: string,
@@ -1168,14 +879,6 @@ export function getStr(obj: unknown) {
     : String(obj)
 }
 
-// based on autolink-js, license MIT
-// https://github.com/bryanwoods/autolink-js/blob/1418049970152c56ced73d43dcc62d80b320fb71/autolink.js#L9
-export function linkify(s: string) {
-  const pattern =
-    /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[-A-Z0-9+\u0026\u2019@#/%?=()~_|!:,.;]*[-A-Z0-9+\u0026@#/%=~()_|])/gi
-  return s.replaceAll(pattern, '$1<a href=\'$2\' target="_blank">$2</a>')
-}
-
 // heuristic measurement for a column of a @mui/x-data-grid, pass in
 // values from a column
 export function measureGridWidth(
@@ -1194,7 +897,7 @@ export function measureGridWidth(
     fontSize = 12,
     maxWidth = 1000,
     stripHTML = false,
-  } = args || {}
+  } = args ?? {}
   return max(
     elements
       .map(element => getStr(element))
@@ -1204,7 +907,7 @@ export function measureGridWidth(
   )
 }
 
-export function getEnv(obj: any) {
+export function getEnv(obj: IAnyStateTreeNode) {
   return getEnvMST<{ pluginManager: PluginManager }>(obj)
 }
 
@@ -1220,47 +923,44 @@ export function localStorageSetItem(str: string, item: string) {
   }
 }
 
-export function max(arr: Iterable<number>, init = Number.NEGATIVE_INFINITY) {
+// Index iteration so these accept both arrays and typed arrays (e.g.
+// Float32Array) without requiring Iterable.
+ 
+export function max(arr: ArrayLike<number>, init = Number.NEGATIVE_INFINITY) {
   let max = init
-  for (const entry of arr) {
-    max = Math.max(entry, max)
+  for (const element of arr) {
+    max = Math.max(element!, max)
   }
   return max
 }
 
-export function min(arr: Iterable<number>, init = Number.POSITIVE_INFINITY) {
+export function min(arr: ArrayLike<number>, init = Number.POSITIVE_INFINITY) {
   let min = init
-  for (const entry of arr) {
-    min = Math.min(entry, min)
+  for (const element of arr) {
+    min = Math.min(element!, min)
   }
   return min
 }
 
-export function sum(arr: Iterable<number>) {
+export function sum(arr: ArrayLike<number>) {
   let sum = 0
-  for (const entry of arr) {
-    sum += entry
+  for (const element of arr) {
+    sum += element!
   }
   return sum
 }
+ 
 
-export function avg(arr: number[]) {
+export function avg(arr: ArrayLike<number>) {
   return sum(arr) / arr.length
 }
 
-export function groupBy<T>(
-  array: Iterable<T>,
-  predicate: (v: T) => string | undefined,
-) {
-  const result = {} as Record<string, T[]>
+export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
+  const result: Record<string, T[]> = {}
   for (const value of array) {
     const t = predicate(value)
-    if (t !== undefined) {
-      if (!result[t]) {
-        result[t] = []
-      }
-      result[t].push(value)
-    }
+    result[t] ??= []
+    result[t].push(value)
   }
   return result
 }
@@ -1278,7 +978,7 @@ export function mergeIntervals<T extends { start: number; end: number }>(
     return intervals
   }
 
-  const stack = [] as T[]
+  const stack: T[] = []
 
   // sort the intervals based on their start values
   intervals = intervals.sort((a, b) => a.start - b.start)
@@ -1316,11 +1016,9 @@ export interface BasicFeature {
 
 // returns new array non-overlapping features
 export function gatherOverlaps<T extends BasicFeature>(regions: T[], w = 5000) {
-  const memo = {} as Record<string, T[]>
+  const memo: Record<string, T[]> = {}
   for (const x of regions) {
-    if (!memo[x.refName]) {
-      memo[x.refName] = []
-    }
+    memo[x.refName] ??= []
     memo[x.refName]!.push(x)
   }
 

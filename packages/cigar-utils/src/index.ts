@@ -41,6 +41,7 @@ export {
   getLengthOnRef,
   getLengthSansClipping,
   getMismatches,
+  parseCigar,
   parseCigar2,
   parseCigar2Typed,
 } from './mismatchParser.ts'

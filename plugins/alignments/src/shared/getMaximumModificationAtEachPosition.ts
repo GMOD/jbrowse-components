@@ -1,4 +1,4 @@
-import { getNextRefPos } from '../MismatchParser/index.ts'
+import { getNextRefPos } from '@jbrowse/cigar-utils'
 import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { getModProbabilities } from '../ModificationParser/getModProbabilities.ts'
 import { getTagAlt } from '../util.ts'

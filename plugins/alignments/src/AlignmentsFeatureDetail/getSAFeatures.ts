@@ -4,7 +4,7 @@ import {
   featurizeSA,
   getClip,
   getLengthSansClipping,
-} from '../MismatchParser/index.ts'
+} from '@jbrowse/cigar-utils'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

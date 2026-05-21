@@ -1,6 +1,6 @@
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
-import { featurizeSA, getTag } from '../MismatchParser/index.ts'
+import { featurizeSA } from '@jbrowse/cigar-utils'
 import {
   type CoreFeat,
   drawVerticalLine,
@@ -252,7 +252,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
   function drawSingletonLongRead(f: Feature) {
     const allFeatures = [
       f,
-      ...featurizeSA(getTag(f, 'SA'), f.id(), f.get('strand'), f.get('name')),
+      ...featurizeSA(f.get('tags')?.['SA'], f.id(), f.get('strand'), f.get('name')),
     ].toSorted(
       (a, b) =>
         getStrandRelativeFirstClipLength(a) -

@@ -1,13 +1,15 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { gatherOverlaps, getSession, sum } from '@jbrowse/core/util'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
+import {
+  featurizeSA,
+  getClip,
+  getLength,
+  getLengthSansClipping,
+} from '@jbrowse/cigar-utils'
 
 import type { ReducedFeature } from '../util.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
-
-const { featurizeSA, getClip, getLength, getLengthSansClipping } =
-  MismatchParser
 
 export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
   const session = getSession(self)

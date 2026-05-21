@@ -11,6 +11,23 @@ import { mdToMismatches2 } from './mdToMismatches2.ts'
 const startClip = new RegExp(/(\d+)[SH]$/)
 const endClip = new RegExp(/^(\d+)([SH])/)
 
+// Parses a CIGAR string to alternating [length, op] tokens, e.g.
+// '5M3I2D' → ['5','M','3','I','2','D']
+export function parseCigar(s = '') {
+  let currLen = ''
+  const ret = []
+  for (let i = 0, l = s.length; i < l; i++) {
+    const c = s[i]!
+    if (c >= '0' && c <= '9') {
+      currLen = currLen + c
+    } else {
+      ret.push(currLen, c)
+      currLen = ''
+    }
+  }
+  return ret
+}
+
 // CIGAR operation char codes to indices (from BAM spec)
 const CIGAR_CODE_TO_INDEX: Record<number, number> = {
   77: 0, // M
