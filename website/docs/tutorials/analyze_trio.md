@@ -6,49 +6,33 @@ date: 2025-03-25
 guide_category: Tutorials
 ---
 
-## Introduction
+A **trio** is sequencing data from a mother, father, and child together. A
+**phased** VCF assigns each variant to one of the two haplotypes
+(`0|1` vs `1|0`), so you can trace which copy of the genome each variant
+came from.
 
-In some scenarios, it can be useful to gather genome sequencing data from both
-the parents and offspring, this can form a "trio" (e.g. mom, dad, and child)
+This tutorial uses a pre-built phased VCF from the 1000 Genomes Project — the
+Kinh-Vietnamese trio HG02024 (chr1 only):
 
-After doing variant calling and producing a VCF file, the VCF data can
-additionally be "phased" which tells us information about each "haplotype" of a
-VCF dataset
+- VCF: https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
+- Index: https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi
 
-For this tutorial, we will not go through the process of creating such a file,
-but will look at trio from the 1000 genomes dataset for a Kinh-Vietnamese trio
-(KHV in filename)
-
-- VCF tabix file
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
-- VCF tabix index file
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi
-
-You can either use the JBrowse CLI or GUI to add this file to JBrowse. Note that
-this file only represents chr1
-
-After adding the VCF it will look like this
+Add the VCF to JBrowse via the CLI or the GUI. Once loaded:
 
 <Figure caption="Initial load of the VCF file, showing the default display mode with simple orange boxes for each variant" src="/img/trio-basic.png"/>
 
 ## Enabling the matrix view
 
-JBrowse can show variant datasets using a specialized "display mode" called the
-"Multi-sample variant display (matrix)"
+Switch the track to the **Multi-sample variant display (matrix)** display.
+Each sample becomes a row, each variant a column, with black lines connecting
+columns back to their genomic positions.
 
-This mode produces a new visualization modality that shows all the samples at
-once, along with all the variants, in a dense "heatmap" or "matrix" style
-display
+<Figure caption="Multi-sample variant display (matrix). Each sample is a row and each variant is a column; black lines connect columns to their genome positions." src="/img/trio-matrix.png"/>
 
-<Figure caption="Navigating to the track menu, and selecting 'Multi-sample variant display (matrix) enables all the samples to be given their own row in the view. Each variant is a 'column' in this matrix, and each sample is a 'row'. Black lines connect the variants to their genome position" src="/img/trio-matrix.png"/>
+## Enabling the phased mode
 
-In the above figure, the default coloring for this matrix view is enabled.
-
-## Enabling the "phased mode" of the matrix view
-
-The matrix mode offers several options, one of which is the "phased" mode. If
-you have phased genotypes (e.g. you have genotypes with a vertical bar 0|1) for
-at least some of your variants, then this rendering mode will be available
+The matrix display has a "phased" rendering mode, available when the
+genotypes use the `0|1` (phased) separator instead of `0/1` (unphased).
 
 The ideal is that your variants will be "completely phased". This sometimes
 requires specialized programs like SHAPEIT

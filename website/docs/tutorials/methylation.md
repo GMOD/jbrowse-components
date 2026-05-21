@@ -20,10 +20,9 @@ the
 JBrowse 2 can color individual bases on each read by their modification
 probability. This works out of the box — no extra config is needed.
 
-Coloring is enabled via **Track menu → Pileup settings → Color by →
-Modifications or methylation**. Each modification type gets a distinct color;
-for 5mC/5hmC data the typical default is red (5mC) and blue (5hmC). The color
-intensity reflects the modification probability (ML tag value).
+Turn on modification or methylation coloring from the track menu. Each
+modification type renders in its own color, with intensity reflecting the
+modification probability (ML tag value).
 
 <Figure caption="Per-read 5mC and 5hmC coloring on a chr20 Nanopore BAM. Each colored mark on a read represents a modified cytosine; unmodified sites appear as the background grey read color." src="/img/methylation/per_read_mod_bam.png" />
 

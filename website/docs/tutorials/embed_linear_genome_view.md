@@ -4,40 +4,21 @@ title: Embedding JBrowse
 description: Embed the linear genome view component in a custom web page
 ---
 
-## Welcome!
+This tutorial embeds a single JBrowse linear genome view into a web page using
+a `<script>` tag — no build step or React project required. For the full
+JBrowse app, see the [web quickstart](/docs/quickstart_web) instead.
 
-This tutorial will show you how to get a JBrowse 2 linear genome view embedded
-in a website.
-
-This tutorial will set you up with just the "linear genome view" component in a
-way that you can copy and paste onto your webpage
-
-Please note: this tutorial only sets up the embedded linear genome view
-component. See our jbrowse-web [quickstart_web](/docs/quickstart_web) for the
-"full application"
-
-<Figure caption="JBrowse Linear Genome View in a web page" src="/img/embed_linear_genome_view/final.png"/>
+<Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
 ## What you need
 
-You can do most of this tutorial with a simple text editor and some way to serve
-files (just opening the HTML files we create in a browser won't work, you'll
-need a server).
+A text editor and a local HTTP server. JBrowse won't load if you open the
+HTML file directly — it needs to be served. If you have Node.js installed,
+`npx serve` in the directory works.
 
-If you have Node.js installed, you can run a simple server by opening your
-terminal in the directory you want to serve and running `npx serve` (or you can
-install it globally with `npm install -g serve` and then run `serve`).
+## Create a web page
 
-## Create a simple web page
-
-Let's get started!
-
-The first thing we're going to do is create a simple web page into which we can
-embed JBrowse Linear Genome View.
-
-First, create a folder to put the files in. Inside that folder, create a new
-file called "index.html" and open it in your preferred text editor/IDE. Paste
-the following into the file and save it:
+Create a folder, then an `index.html` inside it with this content:
 
 ```html title="index.html"
 <html>
@@ -49,28 +30,14 @@ the following into the file and save it:
 
 ## Start the server
 
-Open your terminal and navigate to the folder where you saved your "index.html".
-From there, run the command `npx serve`. It should print out a message that
-looks something like this:
+In the folder, run `npx serve`. It prints a local URL (typically
+`http://localhost:5000`). Open it in your browser — you should see "Hello
+world!".
 
-```
+## Add JBrowse
 
-   Serving!
-
-   Local:  http://localhost:5000
-
-   Copied local address to clipboard!
-
-```
-
-Now open your web browser and navigate to the url (e.g.
-[http://localhost:5000](http://localhost:5000)) You should see a web page that
-says "Hello world!"
-
-## Adding JBrowse
-
-To get right to business, here is a complete example of a working linear genome
-view, replace your index.html file with the contents below
+Replace `index.html` with the following — a complete working linear genome
+view:
 
 ```html title="index.html"
 <!doctype html>
