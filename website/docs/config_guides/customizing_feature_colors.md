@@ -47,7 +47,7 @@ Put `myplugin.js` in the same folder as your config file and reference it:
       "name": "my track",
       "assemblyNames": ["hg19"],
       "adapter": {
-        "type": "Gff3TabixAdapter",
+        "type": "Gff3Adapter",
         "gffLocation": {
           "uri": "volvox.filtered.gff"
         }

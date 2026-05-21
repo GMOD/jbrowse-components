@@ -53,7 +53,9 @@ Example VcfTabixAdapter adapter config:
 }
 ```
 
-A reduced form is also accepted; the index is inferred as `yourfile.vcf.gz.tbi`:
+A reduced form is also accepted: when only `uri` is given, the adapter assumes
+the index is at `yourfile.vcf.gz.tbi` (the data URI with `.tbi` appended). See
+the [VcfTabixAdapter config docs](/docs/config/vcftabixadapter) for all options.
 
 ```json
 { "type": "VcfTabixAdapter", "uri": "http://yourhost/file.vcf.gz" }

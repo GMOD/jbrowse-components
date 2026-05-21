@@ -82,7 +82,8 @@ Example BigWig adapter config:
 }
 ```
 
-A reduced form is also accepted:
+A reduced form is also accepted (see the
+[BigWigAdapter config docs](/docs/config/bigwigadapter) for all options):
 
 ```json
 { "type": "BigWigAdapter", "uri": "http://yourhost/file.bw" }

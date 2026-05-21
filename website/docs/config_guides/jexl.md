@@ -152,7 +152,7 @@ use the custom `jexl` function in your config callbacks as follows:
       "name": "my track",
       "assemblyNames": ["hg19"],
       "adapter": {
-        "type": "Gff3TabixAdapter",
+        "type": "Gff3Adapter",
         "gffLocation": {
           "uri": "volvox.filtered.gff"
         }

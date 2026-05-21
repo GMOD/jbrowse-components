@@ -130,8 +130,10 @@ sequence.fa.gz.fai
 The adapter config uses `fastaLocation`, `faiLocation`, and `gziLocation` as
 shown in the complete config example above.
 
-A reduced form is also accepted; the `.fai` and `.gzi` index files are inferred
-as `yourfile.fa.gz.fai` and `yourfile.fa.gz.gzi`:
+A reduced form is also accepted: when only `uri` is given, the adapter assumes
+the index files are at `yourfile.fa.gz.fai` and `yourfile.fa.gz.gzi` (the data
+URI with `.fai` and `.gzi` appended). See the
+[BgzipFastaAdapter config docs](/docs/config/bgzipfastaadapter) for all options.
 
 ```json
 {
@@ -169,7 +171,10 @@ These are loaded into an IndexedFastaAdapter as follows
 }
 ```
 
-A reduced form is also accepted; the index is inferred as `yourfile.fa.fai`:
+A reduced form is also accepted: when only `uri` is given, the adapter assumes
+the index is at `yourfile.fa.fai` (the data URI with `.fai` appended). See the
+[IndexedFastaAdapter config docs](/docs/config/indexedfastaadapter) for all
+options.
 
 ```json
 {
@@ -228,7 +233,8 @@ Optionally you can specify a .chrom.sizes file which will speed up loading the
 }
 ```
 
-A reduced form is also accepted, with an optional `chromSizes` shorthand:
+A reduced form is also accepted, with an optional `chromSizes` shorthand (see
+the [TwoBitAdapter config docs](/docs/config/twobitadapter) for all options):
 
 ```json
 {

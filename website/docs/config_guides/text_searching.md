@@ -65,7 +65,8 @@ An example per-track config may look like this:
 ```
 
 See [jbrowse text-index](/docs/cli#jbrowse-text-index) for generating indexes
-via the CLI.
+via the CLI. See the [Gff3TabixAdapter config docs](/docs/config/gff3tabixadapter)
+for adapter options including CSI index support and `dontRedispatch`.
 
 ### TrixTextSearchAdapter config
 
@@ -96,6 +97,9 @@ config automatically. Config slots:
 - `ixxFilePath` - the location of the trix ixx file
 - `metaFilePath` - the location of the metadata json file for the trix index
 
+See the [TrixTextSearchAdapter config docs](/docs/config/trixtextsearchadapter)
+for all options.
+
 ### JBrowse1TextSearchAdapter config
 
 For back-compatibility with a JBrowse1 names index created by
@@ -114,6 +118,10 @@ For back-compatibility with a JBrowse1 names index created by
 ```
 
 - `namesIndexLocation` - the location of the JBrowse1 names index data directory
+
+See the
+[JBrowse1TextSearchAdapter config docs](/docs/config/jbrowse1textsearchadapter)
+for all options.
 
 ## Troubleshooting
 

@@ -35,7 +35,8 @@ The HicAdapter currently only requires a `hicLocation`:
 }
 ```
 
-A reduced form is also accepted:
+A reduced form is also accepted (see the
+[HicAdapter config docs](/docs/config/hicadapter) for all options):
 
 ```json
 {

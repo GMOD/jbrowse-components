@@ -48,7 +48,9 @@ Example `BamAdapter` config:
 }
 ```
 
-A reduced form is also accepted; the index is inferred as `yourfile.bam.bai`:
+A reduced form is also accepted: when only `uri` is given, the adapter assumes
+the index is at `yourfile.bam.bai` (the data URI with `.bai` appended). See the
+[BamAdapter config docs](/docs/config/bamadapter) for all options.
 
 ```json
 { "type": "BamAdapter", "uri": "http://yourhost/file.bam" }
@@ -87,7 +89,9 @@ Example `CramAdapter` config:
 }
 ```
 
-A reduced form is also accepted; the index is inferred as `yourfile.cram.crai`:
+A reduced form is also accepted: when only `uri` is given, the adapter assumes
+the index is at `yourfile.cram.crai` (the data URI with `.crai` appended). See
+the [CramAdapter config docs](/docs/config/cramadapter) for all options.
 
 ```json
 { "type": "CramAdapter", "uri": "http://yourhost/file.cram" }

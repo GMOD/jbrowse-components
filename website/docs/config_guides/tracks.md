@@ -42,13 +42,51 @@ paths on desktop).
 }
 ```
 
-A reduced form is also accepted:
+A reduced form is also accepted (see the
+[BigBedAdapter config docs](/docs/config/bigbedadapter) for all options):
 
 ```json
 {
   "type": "BigBedAdapter",
   "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
 }
+```
+
+#### Gff3TabixAdapter
+
+The most common adapter for GFF3 feature tracks. Requires a bgzip-compressed,
+tabix-indexed GFF3 file:
+
+```json
+{
+  "type": "Gff3TabixAdapter",
+  "gffGzLocation": {
+    "uri": "http://yourhost/file.gff3.gz"
+  },
+  "index": {
+    "location": {
+      "uri": "http://yourhost/file.gff3.gz.tbi"
+    }
+  }
+}
+```
+
+- `gffGzLocation` - a 'file location' for the bgzip'd GFF3
+- `index` - a sub-configuration schema containing
+  - `indexType`: 'TBI' or 'CSI'. Default: 'TBI'. Use CSI for chromosomes longer
+    than 512 Mb
+  - `location`: a 'file location' for the index
+- `dontRedispatch` - array of feature types to skip re-fetching when a feature
+  extends outside the requested region. Default:
+  `["chromosome", "region", "contig"]`
+
+A reduced form is also accepted: when only `uri` is given, the adapter assumes
+the index is at `yourfile.gff3.gz.tbi` (the data URI with `.tbi` appended). See
+the [Gff3TabixAdapter config docs](/docs/config/gff3tabixadapter) for all
+options.
+
+```json
+{ "type": "Gff3TabixAdapter", "uri": "http://yourhost/file.gff3.gz" }
 ```
 
 ## The displays array

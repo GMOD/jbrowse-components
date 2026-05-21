@@ -91,3 +91,6 @@ Example:
   }
 }
 ```
+
+See the [MultiWiggleAdapter config docs](/docs/config/multiwiggleadapter) for
+all options.

@@ -60,7 +60,8 @@ Slots
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
 
-A reduced form is also accepted:
+A reduced form is also accepted (see the
+[PAFAdapter config docs](/docs/config/pafadapter) for all options):
 
 ```json
 {
@@ -97,7 +98,8 @@ Slots
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
 
-A reduced form is also accepted:
+A reduced form is also accepted (see the
+[DeltaAdapter config docs](/docs/config/deltaadapter) for all options):
 
 ```json
 {
@@ -134,7 +136,8 @@ Slots
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
 
-A reduced form is also accepted:
+A reduced form is also accepted (see the
+[ChainAdapter config docs](/docs/config/chainadapter) for all options):
 
 ```json
 {
@@ -184,7 +187,9 @@ Slots:
   whole. This would refer to the gene names on the "right" side of the .anchors
   file.
 
-A reduced form is also accepted using `uri`, `bed1`, and `bed2`:
+A reduced form is also accepted using `uri`, `bed1`, and `bed2` (see the
+[MCScanAnchorsAdapter config docs](/docs/config/mcscananchorsadapter) for all
+options):
 
 ```json
 {
@@ -237,7 +242,9 @@ Slots:
   whole. This would refer to the gene names on the "right" side of the .anchors
   file.
 
-A reduced form is also accepted using `uri`, `bed1`, and `bed2`:
+A reduced form is also accepted using `uri`, `bed1`, and `bed2` (see the
+[MCScanSimpleAnchorsAdapter config docs](/docs/config/mcscansimpleanchorsadapter)
+for all options):
 
 ```json
 {
