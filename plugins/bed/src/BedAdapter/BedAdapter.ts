@@ -84,7 +84,8 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const intervalTree = new IntervalTree<Feature>()
 
     for (let i = 0; i < lines.length; i++) {
-      const splitLine = lines[i]!.split('\t')
+      const line = lines[i]!
+      const splitLine = line!.split('\t')
       const feat = new SimpleFeature(
         featureData({
           splitLine,

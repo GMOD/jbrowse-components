@@ -145,7 +145,7 @@ const ShareDialog = observer(function ShareDialog({
             disabled={disabled}
             onClick={async () => {
               const { default: copy } = await import('copy-to-clipboard')
-              copy(shortUrl || longUrl)
+              await copy(shortUrl || longUrl)
               session.notify('Copied to clipboard', 'success')
             }}
           >

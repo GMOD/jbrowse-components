@@ -13,7 +13,10 @@ function makeSubpartsFilter(
   const ret = typeof filter === 'string' ? filter.split(/\s*,\s*/) : filter
   const lowerRet = new Set(ret.map(t => t.toLowerCase()))
 
-  return (feature: Feature) => lowerRet.has(feature.get('type').toLowerCase())
+  return (feature: Feature) => {
+    const t = feature.get('type')
+    return t !== undefined && lowerRet.has(t.toLowerCase())
+  }
 }
 
 export function filterSubpart(feature: Feature, config: AnyConfigurationModel) {
@@ -33,14 +36,14 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
   const exons = []
   for (const subpart of subparts) {
     const type = subpart.get('type')
-    if (/^cds/i.test(type)) {
+    if (type && /^cds/i.test(type)) {
       if (codeStart > subpart.get('start')) {
         codeStart = subpart.get('start')
       }
       if (codeEnd < subpart.get('end')) {
         codeEnd = subpart.get('end')
       }
-    } else if (/exon/i.test(type)) {
+    } else if (type && /exon/i.test(type)) {
       exons.push(subpart)
     } else if (isUTR(subpart)) {
       haveLeftUTR = subpart.get('start') === parent.get('start')
@@ -74,7 +77,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
         break
       }
       end = Math.min(codeStart, exon.get('end'))
-      const type = strand >= 0 ? 'five_prime_UTR' : 'three_prime_UTR'
+      const type = strand !== -1 ? 'five_prime_UTR' : 'three_prime_UTR'
       subparts.unshift(
         new SimpleFeature({
           parent,
@@ -94,7 +97,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
       }
 
       start = Math.max(codeEnd, exons[i]!.get('start'))
-      const type = strand >= 0 ? 'three_prime_UTR' : 'five_prime_UTR'
+      const type = strand !== -1 ? 'three_prime_UTR' : 'five_prime_UTR'
       subparts.push(
         new SimpleFeature({
           parent,
@@ -114,7 +117,9 @@ export function getSubparts(f: Feature, config: AnyConfigurationModel) {
     return []
   }
   const hasUTRs = c.some(child => isUTR(child))
-  const isTranscript = ['mRNA', 'transcript'].includes(f.get('type'))
+  const fType = f.get('type')
+  const isTranscript =
+    fType !== undefined && ['mRNA', 'transcript'].includes(fType)
   const impliedUTRs = !hasUTRs && isTranscript
 
   if (impliedUTRs || readConfObject(config, 'impliedUTRs')) {

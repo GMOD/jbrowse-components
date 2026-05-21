@@ -1,27 +1,30 @@
-const originalError = console.error
-const originalWarn = console.warn
+const originalError = console.error.bind(console)
+const originalWarn = console.warn.bind(console)
 
 console.error = (...args) => {
-  const r = String(args)
   if (
-    r.includes('volvox.2bit_404') ||
-    r.includes('indexedDB') ||
-    r.includes('popupState') ||
-    r.includes('Cannot update a component') ||
-    r.includes('was not wrapped in act') ||
-    r.includes('Only HTTP(S) protocols are supported')
+    typeof args[0] === 'string' &&
+    (args[0].includes('volvox.2bit_404') ||
+      args[0].includes('indexedDB') ||
+      args[0].includes('popupState') ||
+      args[0].includes('Cannot update a component') ||
+      args[0].includes('was not wrapped in act') ||
+      args[0].includes('Only HTTP(S) protocols are supported'))
   ) {
     return undefined
   }
 
-  originalError.call(console, ...args)
+  originalError(...args)
 }
 
 console.warn = (...args) => {
-  const r = String(args)
-  if (r.includes('The `anchorEl` prop provided to the component is invalid')) {
+  if (
+    typeof args[0] === 'string' &&
+    (args[0].includes('The `anchorEl` prop provided to the component is invalid') ||
+      args[0].includes('unable to determine size of file'))
+  ) {
     return undefined
   }
 
-  originalWarn.call(console, ...args)
+  originalWarn(...args)
 }

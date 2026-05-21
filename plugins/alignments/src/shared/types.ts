@@ -165,8 +165,8 @@ export type Mismatch =
   | ClipMismatch
 
 export interface ReducedFeature {
-  name: string
-  strand: number
+  name: string | undefined
+  strand: -1 | 1 | undefined
   refName: string
   start: number
   end: number

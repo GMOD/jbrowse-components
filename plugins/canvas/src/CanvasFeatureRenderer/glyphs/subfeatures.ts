@@ -11,10 +11,10 @@ const CODING_TYPES = new Set(['CDS', 'cds'])
 
 function hasCodingSubfeature(feature: Feature): boolean {
   const subfeatures = feature.get('subfeatures') || []
-  return subfeatures.some(
-    (sub: Feature) =>
-      CODING_TYPES.has(sub.get('type')) || hasCodingSubfeature(sub),
-  )
+  return subfeatures.some(sub => {
+    const t = sub.get('type')
+    return (t !== undefined && CODING_TYPES.has(t)) || hasCodingSubfeature(sub)
+  })
 }
 
 function filterByGeneGlyphMode(
@@ -26,9 +26,10 @@ function filterByGeneGlyphMode(
     return subfeatures
   }
 
-  const transcriptSubfeatures = subfeatures.filter(sub =>
-    transcriptTypes.includes(sub.get('type')),
-  )
+  const transcriptSubfeatures = subfeatures.filter(sub => {
+    const t = sub.get('type')
+    return t !== undefined && transcriptTypes.includes(t)
+  })
   let candidates =
     transcriptSubfeatures.length > 0 ? transcriptSubfeatures : subfeatures
 
@@ -58,7 +59,7 @@ export const subfeaturesGlyph: Glyph = {
     const { containerTypes } = configContext
 
     // Explicit container type
-    if (containerTypes.includes(type)) {
+    if (type !== undefined && containerTypes.includes(type)) {
       return true
     }
 
@@ -123,7 +124,8 @@ export const subfeaturesGlyph: Glyph = {
     for (let i = 0; i < subfeatures.length; i++) {
       const child = subfeatures[i]!
       const childType = child.get('type')
-      const isChildTranscript = transcriptTypes.includes(childType)
+      const isChildTranscript =
+        childType !== undefined && transcriptTypes.includes(childType)
       const childGlyph = findChildGlyph(child, configContext)
 
       // Layout child using its glyph's layout function

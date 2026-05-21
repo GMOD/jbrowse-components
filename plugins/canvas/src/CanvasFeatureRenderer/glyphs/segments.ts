@@ -24,14 +24,14 @@ export const segmentsGlyph: Glyph = {
     }
     const { transcriptTypes, containerTypes } = configContext
     // Not a coding transcript (those use ProcessedTranscript)
-    if (transcriptTypes.includes(type)) {
+    if (type !== undefined && transcriptTypes.includes(type)) {
       const hasCDS = subfeatures.some((f: Feature) => f.get('type') === 'CDS')
       if (hasCDS) {
         return false
       }
     }
     // Not a container (gene)
-    if (containerTypes.includes(type)) {
+    if (type !== undefined && containerTypes.includes(type)) {
       return false
     }
     // Not a top-level feature with nested subfeatures
@@ -55,7 +55,7 @@ export const segmentsGlyph: Glyph = {
     const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (end - start) / bpPerPx
 
-    const strand = feature.get('strand') as number
+    const strand = feature.get('strand')
     const arrowPadding = getStrandArrowPadding(strand, reversed)
 
     const subfeatures = feature.get('subfeatures') || []

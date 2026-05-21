@@ -124,7 +124,10 @@ export function drawRef(
       mainCanvas.stroke()
     }
     // Draw thick features
-    else if (doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)) {
+    else if (
+      strand !== undefined &&
+      doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)
+    ) {
       const s1 = strand
       const k1 = s1 === -1 ? x12 : x11
       const k2 = s1 === -1 ? x11 : x12

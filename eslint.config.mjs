@@ -1,6 +1,6 @@
 import eslint from '@eslint/js'
 import { defineConfig } from 'eslint/config'
-import importPlugin from 'eslint-plugin-import'
+import importPlugin from 'eslint-plugin-import-x'
 import eslintPluginReact from 'eslint-plugin-react'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
@@ -89,9 +89,9 @@ export default defineConfig(
 
     settings: {
       react: {
-        version: 'detect',
+        version: '19.2.6',
       },
-      'import/ignore': ['dockview-react'],
+      'import-x/ignore': ['dockview-react'],
     },
   },
   {
@@ -150,6 +150,7 @@ export default defineConfig(
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
 
+      'unicorn/no-for-loop': 'off',
       'unicorn/prefer-response-static-json': 'off',
       'unicorn/text-encoding-identifier-case': 'off',
       'unicorn/prefer-global-this': 'off',
@@ -162,6 +163,7 @@ export default defineConfig(
       'unicorn/no-unreadable-array-destructuring': 'off',
       'unicorn/no-abusive-eslint-disable': 'off',
       'unicorn/no-array-callback-reference': 'off',
+      'unicorn/no-array-for-each': 'off',
       'unicorn/number-literal-case': 'off',
       'unicorn/prefer-add-event-listener': 'off',
       'unicorn/prefer-top-level-await': 'off',
@@ -199,8 +201,8 @@ export default defineConfig(
       'unicorn/expiring-todo-comments': 'off',
       'unicorn/no-array-sort': 'off',
 
-      'import/no-unresolved': 'off',
-      'import/order': [
+      'import-x/no-unresolved': 'off',
+      'import-x/order': [
         'error',
         {
           named: true,
@@ -231,7 +233,7 @@ export default defineConfig(
         },
       ],
 
-      'import/extensions': ['error', 'ignorePackages'],
+      'import-x/extensions': ['error', 'ignorePackages'],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',

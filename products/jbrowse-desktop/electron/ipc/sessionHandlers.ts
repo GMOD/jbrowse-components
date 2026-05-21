@@ -47,7 +47,7 @@ async function readSession(
   try {
     return parseJson(await readFile(sessionPath, ENCODING))
   } catch (e) {
-    throw new Error(`Failed to read session ${sessionPath}: ${e}`)
+    throw new Error(`Failed to read session ${sessionPath}: ${e}`, { cause: e })
   }
 }
 

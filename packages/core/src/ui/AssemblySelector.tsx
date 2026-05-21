@@ -7,7 +7,6 @@ import { useLocalStorage } from '../util/index.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { AbstractSessionModel } from '../util/index.ts'
-import type { InputProps as IIP, TextFieldProps as TFP } from '@mui/material'
 
 const useStyles = makeStyles()({
   importFormEntry: {
@@ -20,8 +19,7 @@ const AssemblySelector = observer(function AssemblySelector({
   onChange,
   label = 'Assembly',
   selected,
-  InputProps,
-  TextFieldProps,
+  fullWidth,
   localStorageKey,
   helperText = 'Select assembly to view',
 }: {
@@ -30,9 +28,8 @@ const AssemblySelector = observer(function AssemblySelector({
   helperText?: string
   onChange: (arg: string) => void
   selected?: string
+  fullWidth?: boolean
   localStorageKey?: string
-  InputProps?: IIP
-  TextFieldProps?: TFP
 }) {
   const { classes } = useStyles()
   const { assemblyNames, assemblyManager } = session
@@ -69,19 +66,13 @@ const AssemblySelector = observer(function AssemblySelector({
       variant="outlined"
       helperText={error || helperText}
       value={selection || ''}
+      fullWidth={fullWidth}
       onChange={event => {
         setLastSelected(event.target.value)
       }}
       error={!!error}
       disabled={!!error}
       className={classes.importFormEntry}
-      {...TextFieldProps}
-      slotProps={{
-        input: InputProps,
-        htmlInput: {
-          'data-testid': 'assembly-selector',
-        },
-      }}
     >
       {assemblyNames.map(name => (
         <MenuItem key={name} value={name}>

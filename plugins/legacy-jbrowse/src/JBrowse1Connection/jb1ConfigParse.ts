@@ -13,7 +13,7 @@ export function parseJB1Json(config: Config | string, url: string): Config {
     try {
       parsedConf = JSON.parse(config)
     } catch (error) {
-      throw new Error(`${error} when parsing configuration.`)
+      throw new Error(`${error} when parsing configuration.`, { cause: error })
     }
     return regularizeConf(parsedConf, url)
   }
@@ -25,7 +25,7 @@ export function parseJB1Conf(config: string, url: string): Config {
   try {
     parsedConf = parse(config, url)
   } catch (error) {
-    throw new Error(`${error} when parsing configuration.`)
+    throw new Error(`${error} when parsing configuration.`, { cause: error })
   }
   return regularizeConf(parsedConf, url)
 }
@@ -98,6 +98,7 @@ function parse(text: string, url: string): Config {
           `syntax error${url ? ` in ${url}` : ''}${
             lineNumber ? ` at line ${lineNumber - 1}` : ''
           }`,
+          { cause: e },
         )
       }
     }

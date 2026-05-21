@@ -69,7 +69,7 @@ export function getBoxColor({
     : readCachedConfig(color1, config, 'color1', feature)
 
   const featureType: string | undefined = feature.get('type')
-  const featureStrand: -1 | 1 | undefined = feature.get('strand')
+  const featureStrand = feature.get('strand')
   const featurePhase: 0 | 1 | 2 | undefined = feature.get('phase')
 
   if (

@@ -96,7 +96,7 @@ function formatCDS(
   feats: Feature[],
   parentId: string,
   parentType: string,
-  strand: number,
+  strand: number | undefined,
   min: number,
 ) {
   if (feats.length === 0) {

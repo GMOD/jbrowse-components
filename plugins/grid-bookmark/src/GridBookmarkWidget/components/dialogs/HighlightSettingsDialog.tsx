@@ -22,7 +22,7 @@ const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
     <Dialog open onClose={onClose} title="Highlight bookmarks">
       <DialogContent>
         <Typography variant="h6">Highlight toggles</Typography>
-        <Stack direction="row" alignItems="center">
+        <Stack direction="row" sx={{ alignItems: 'center' }}>
           <Switch
             data-testid="toggle_highlight_all_switch"
             checked={model.areBookmarksHighlightedOnAllOpenViews}
@@ -34,7 +34,7 @@ const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
           />
           <Typography>Toggle bookmark highlights on all open views</Typography>
         </Stack>
-        <Stack direction="row" alignItems="center">
+        <Stack direction="row" sx={{ alignItems: 'center' }}>
           <Switch
             data-testid="toggle_highlight_label_all_switch"
             checked={model.areBookmarksHighlightLabelsOnAllOpenViews}

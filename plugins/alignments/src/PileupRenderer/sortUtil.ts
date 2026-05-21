@@ -95,9 +95,15 @@ export function sortFeature(
 
     // sorts positive strands then negative strands
     case 'Read strand': {
-      featuresInCenterLine.sort((a, b) =>
-        a.get('strand') <= b.get('strand') ? 1 : -1,
-      )
+      featuresInCenterLine.sort((a, b) => {
+        const aStrand = a.get('strand')
+        const bStrand = b.get('strand')
+        return aStrand !== undefined && bStrand !== undefined
+          ? aStrand <= bStrand
+            ? 1
+            : -1
+          : 0
+      })
       break
     }
   }

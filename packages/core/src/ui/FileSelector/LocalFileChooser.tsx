@@ -140,7 +140,7 @@ function ReloadPrompt({
   }
 
   return (
-    <Box display="flex" alignItems="center" gap={1}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <Typography color="error">(need to reload)</Typography>
       {isFileHandleLocation(location) && (
         <Button
@@ -167,7 +167,7 @@ function LocalFileChooser({
   const filename = getFilename(location)
 
   return (
-    <Box display="flex" flexDirection="row" alignItems="center">
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
       <Box>
         <FormControl fullWidth>
           <FilePickerButton setLocation={setLocation} />

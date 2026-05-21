@@ -185,10 +185,11 @@ export function getTag(feature: Feature, tag: string) {
 export function featurizeSA(
   SA: string | undefined,
   id: string,
-  strand: number,
-  readName: string,
+  strand: -1 | 1 | undefined,
+  readName: string | undefined,
   normalize?: boolean,
 ) {
+  const strandNum = strand !== undefined ? strand : 1
   return (
     SA?.split(';')
       .filter(aln => !!aln)
@@ -201,11 +202,13 @@ export function featurizeSA(
         const saLengthOnRef = getLengthOnRef(saCigar)
         const saLength = getLength(saCigar)
         const saLengthSansClipping = getLengthSansClipping(saCigar)
-        const saStrandNormalized = saStrand === '-' ? -1 : 1
-        const saClipPos = getClip(
-          saCigar,
-          (normalize ? strand : 1) * saStrandNormalized,
-        )
+        const saStrandNormalized: -1 | 1 = saStrand === '-' ? -1 : 1
+        const effectiveStrand: -1 | 1 = normalize
+          ? strandNum === saStrandNormalized
+            ? 1
+            : -1
+          : saStrandNormalized
+        const saClipPos = getClip(saCigar, effectiveStrand)
         const saRealStart = +saStart - 1
         return {
           refName: saRef,
@@ -214,7 +217,7 @@ export function featurizeSA(
           seqLength: saLength,
           clipLengthAtStartOfRead: saClipPos,
           CIGAR: saCigar,
-          strand: (normalize ? strand : 1) * saStrandNormalized,
+          strand: effectiveStrand,
           uniqueId: `${id}_SA${index}`,
           mate: {
             start: saClipPos,

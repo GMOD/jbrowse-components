@@ -168,14 +168,12 @@ function rgbToHsl(
   const d = max - min
   const s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
 
-  let h = 0
-  if (max === r) {
-    h = ((g - b) / d + (g < b ? 6 : 0)) / 6
-  } else if (max === g) {
-    h = ((b - r) / d + 2) / 6
-  } else {
-    h = ((r - g) / d + 4) / 6
-  }
+  const h =
+    max === r
+      ? ((g - b) / d + (g < b ? 6 : 0)) / 6
+      : max === g
+        ? ((b - r) / d + 2) / 6
+        : ((r - g) / d + 4) / 6
 
   return { h: h * 360, s, l }
 }

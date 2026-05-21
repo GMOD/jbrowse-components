@@ -16,7 +16,7 @@ export function drawChevron(
   y: number,
   width: number,
   height: number,
-  strand: number,
+  strand: -1 | 1 | undefined,
   color: string,
   chevronWidth: number,
   stroke?: string,

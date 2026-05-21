@@ -13,8 +13,8 @@ export default function AutocompleteTextField({
   params: AutocompleteRenderInputParams
 }) {
   const { helperText, slotProps = {} } = TextFieldProps
-  const { ref: inputRef, ...restInputProps } = params.InputProps
-  const { InputProps: _InputProps, ...restParams } = params
+  const { slotProps: paramSlotProps, ...restParams } = params
+  const { ref: inputRef, ...restInputProps } = paramSlotProps.input
   return (
     <TextField
       {...restParams}
@@ -23,6 +23,8 @@ export default function AutocompleteTextField({
       size="small"
       helperText={helperText}
       slotProps={{
+        inputLabel: paramSlotProps.inputLabel,
+        htmlInput: paramSlotProps.htmlInput,
         input: {
           ...restInputProps,
           // eslint-disable-next-line @typescript-eslint/no-misused-spread

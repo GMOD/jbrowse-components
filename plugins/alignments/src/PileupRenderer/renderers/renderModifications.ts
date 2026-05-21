@@ -156,8 +156,6 @@ export function renderModifications({
         })
         coords.push(leftPx, topPx, rightPx, bottomPx)
       }
-
-      pos++
     },
   )
 

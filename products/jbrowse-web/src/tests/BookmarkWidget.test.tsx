@@ -33,10 +33,9 @@ test('Open the bookmarks widget from the top level menu', async () => {
 test('Open the bookmarks widget from the view menu', async () => {
   const { findByTestId, findByText } = await createView()
 
-  const user = userEvent.setup()
-  await user.click(await findByTestId('view_menu_icon'))
-  await user.click(await findByText('Bookmarks/highlights'))
-  await user.click(await findByText('Open bookmark widget'))
+  fireEvent.click(await findByTestId('view_menu_icon'))
+  fireEvent.click(await findByText('Bookmarks/highlights'))
+  fireEvent.click(await findByText('Open bookmark widget'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
 }, 60000)
@@ -79,9 +78,9 @@ test('Create a bookmark using the menu button to bookmark the current region', a
 
   const user = userEvent.setup()
   await user.click(await findByTestId('tracksContainer', ...opts))
-  await user.click(await findByTestId('view_menu_icon'))
-  await user.click(await findByText('Bookmarks/highlights'))
-  await user.click(await findByText('Bookmark current region'))
+  fireEvent.click(await findByTestId('view_menu_icon'))
+  fireEvent.click(await findByText('Bookmarks/highlights'))
+  fireEvent.click(await findByText('Bookmark current region'))
 
   // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
@@ -91,10 +90,9 @@ test('Create a bookmark using the menu button to bookmark the current region', a
 test('Navigate to a bookmark using the embedded link in the widget data grid', async () => {
   const { view, session, findByTestId, findByText } = await createView()
 
-  const user = userEvent.setup()
-  await user.click(await findByTestId('view_menu_icon'))
-  await user.click(await findByText('Bookmarks/highlights'))
-  await user.click(await findByText('Open bookmark widget'))
+  fireEvent.click(await findByTestId('view_menu_icon'))
+  fireEvent.click(await findByText('Bookmarks/highlights'))
+  fireEvent.click(await findByText('Open bookmark widget'))
 
   // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
@@ -114,10 +112,9 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
 test('Navigate to a bookmark using the hotkey to navigate to the most recently created bookmark', async () => {
   const { view, session, findByTestId, findByText } = await createView()
 
-  const user = userEvent.setup()
-  await user.click(await findByTestId('view_menu_icon'))
-  await user.click(await findByText('Bookmarks/highlights'))
-  await user.click(await findByText('Open bookmark widget'))
+  fireEvent.click(await findByTestId('view_menu_icon'))
+  fireEvent.click(await findByText('Bookmarks/highlights'))
+  fireEvent.click(await findByText('Open bookmark widget'))
 
   // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')

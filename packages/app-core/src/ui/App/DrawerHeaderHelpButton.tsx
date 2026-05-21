@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import HelpOutline from '@mui/icons-material/HelpOutline'
+import HelpOutlined from '@mui/icons-material/HelpOutlined'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -31,7 +31,7 @@ const DrawerHeaderHelpButton = observer(function DrawerHeaderHelpButton({
           ])
         }}
       >
-        <HelpOutline />
+        <HelpOutlined />
       </IconButton>
     </Tooltip>
   )

@@ -22,7 +22,7 @@ export const processedTranscriptGlyph: Glyph = {
     }
     const { transcriptTypes } = configContext
     // Must be a transcript type with CDS children
-    if (!transcriptTypes.includes(type)) {
+    if (type === undefined || !transcriptTypes.includes(type)) {
       return false
     }
     const hasCDS = subfeatures.some((f: Feature) => f.get('type') === 'CDS')
@@ -39,7 +39,7 @@ export const processedTranscriptGlyph: Glyph = {
     const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (end - start) / bpPerPx
 
-    const strand = feature.get('strand') as number
+    const strand = feature.get('strand')
     const arrowPadding = getStrandArrowPadding(strand, reversed)
 
     // Get subparts with synthesized UTRs

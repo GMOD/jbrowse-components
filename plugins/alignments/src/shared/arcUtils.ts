@@ -8,7 +8,7 @@ import {
 import type { Feature } from '@jbrowse/core/util'
 
 export interface CoreFeat {
-  strand: number
+  strand: -1 | 1 | undefined
   refName: string
   start: number
   end: number
