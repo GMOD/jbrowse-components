@@ -12,17 +12,20 @@ import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
-  private async configurePre(refName: string) {
+  private configuredByRef = new Map<
+    string,
+    Promise<{ vcf: TabixIndexedFile; parser: VcfParser }>
+  >()
+
+  private buildConfigured(refName: string) {
     const indexType = this.getConf('indexType')
     const vcfGzLocation = this.getConf('vcfGzLocationMap')[refName]
-    const indexLocation = this.getConf('indexLocationMap')[refName] || {
+    const indexLocation = this.getConf('indexLocationMap')[refName] ?? {
       uri: `${vcfGzLocation.uri}.${indexType.toLowerCase()}`,
     }
-
-    const filehandle = openLocation(vcfGzLocation, this.pluginManager)
     const isCSI = indexType === 'CSI'
     const vcf = new TabixIndexedFile({
-      filehandle,
+      filehandle: openLocation(vcfGzLocation, this.pluginManager),
       csiFilehandle: isCSI
         ? openLocation(indexLocation, this.pluginManager)
         : undefined,
@@ -31,19 +34,28 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
         : undefined,
       chunkCacheSize: 50 * 2 ** 20,
     })
-
-    return {
+    return vcf.getHeader().then(header => ({
       vcf,
-      parser: new VcfParser({
-        header: await vcf.getHeader(),
-      }),
+      parser: new VcfParser({ header }),
+    }))
+  }
+
+  private configureOnce(refName: string) {
+    if (!this.configuredByRef.has(refName)) {
+      this.configuredByRef.set(
+        refName,
+        this.buildConfigured(refName).catch((e: unknown) => {
+          this.configuredByRef.delete(refName)
+          throw e
+        }),
+      )
     }
+    return this.configuredByRef.get(refName)!
   }
 
   async configure(refName: string, opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
-    return updateStatus('Downloading index', statusCallback, () =>
-      this.configurePre(refName),
+    return updateStatus('Downloading index', opts?.statusCallback, () =>
+      this.configureOnce(refName),
     )
   }
 
@@ -54,10 +66,9 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { refName, start, end } = query
-      const { statusCallback = () => {} } = opts
-      const { vcf, parser } = await this.configure(query.refName, opts)
+      const { vcf, parser } = await this.configure(refName, opts)
 
-      await updateStatus('Downloading variants', statusCallback, () =>
+      await updateStatus('Downloading variants', opts.statusCallback, () =>
         vcf.getLines(refName, start, end, {
           lineCallback: (line, fileOffset) => {
             observer.next(
@@ -80,9 +91,7 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
     const r = Object.keys(this.getConf('vcfGzLocationMap'))[0]!
     if (conf.uri === '' || conf.uri === '/path/to/samples.tsv') {
       const { parser } = await this.configure(r)
-      return parser.samples.map(name => ({
-        name,
-      }))
+      return parser.samples.map(name => ({ name }))
     } else {
       const txt = await fetchAndMaybeUnzipText(
         openLocation(conf, this.pluginManager),
