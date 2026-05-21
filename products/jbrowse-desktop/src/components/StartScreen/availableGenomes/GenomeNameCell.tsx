@@ -53,9 +53,10 @@ export default function GenomeNameCell({
       >
         launch
       </Link>
+      ){' '}
       {jbrowseMinimalConfig ? (
         <>
-          {', '}
+          (
           <Link
             href="#"
             onClick={e => {
@@ -65,9 +66,9 @@ export default function GenomeNameCell({
           >
             minimal
           </Link>
+          ){' '}
         </>
       ) : null}
-      )
       {children}
       <CascadingMenuButton
         menuItems={[
