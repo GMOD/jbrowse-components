@@ -53,7 +53,7 @@ test('fails when file does not exist', async () => {
       '--session',
       path.join(simpleDefaultSession, 'nonexist.json'),
     ])
-    expect(error?.message).toMatchSnapshot()
+    expect(error?.message).toContain('ENOTDIR')
   })
 })
 

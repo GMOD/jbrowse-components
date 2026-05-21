@@ -1,7 +1,7 @@
 import type React from 'react'
 import { Suspense, useState } from 'react'
 
-import HelpOutline from '@mui/icons-material/HelpOutline'
+import HelpOutlined from '@mui/icons-material/HelpOutlined'
 import { IconButton } from '@mui/material'
 
 import CascadingMenuHelpDialog from './CascadingMenuHelpDialog.tsx'
@@ -25,7 +25,7 @@ export default function CascadingMenuHelpIconButton({
         }}
         style={{ marginLeft: 4, padding: 4 }}
       >
-        <HelpOutline fontSize="small" />
+        <HelpOutlined fontSize="small" />
       </IconButton>
       {helpDialogOpen ? (
         <Suspense fallback={null}>
