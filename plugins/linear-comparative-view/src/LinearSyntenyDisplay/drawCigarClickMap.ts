@@ -51,6 +51,7 @@ export function drawCigarClickMap(
       doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)
     ) {
       const s1 = f.get('strand')
+      if (s1 !== undefined) {
       const k1 = s1 === -1 ? x12 : x11
       const k2 = s1 === -1 ? x11 : x12
 
@@ -131,6 +132,7 @@ export function drawCigarClickMap(
             }
           }
         }
+      }
       }
     }
   }

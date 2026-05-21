@@ -68,7 +68,8 @@ export function renderAlignmentShape({
   const e = feature.get('end')
 
   const flip = region.reversed ? -1 : 1
-  const strand = feature.get('strand') * flip
+  const featureStrand = feature.get('strand')
+  const strand = featureStrand !== undefined ? featureStrand * flip : flip
   const renderChevrons = bpPerPx < 10 && heightPx > 5
 
   ctx.fillStyle = color

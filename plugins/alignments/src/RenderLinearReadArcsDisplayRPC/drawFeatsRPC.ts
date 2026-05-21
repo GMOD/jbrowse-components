@@ -85,8 +85,8 @@ function getArcStrokeColor(params: {
   hasPaired: boolean
   colorByType: string
   k1: CoreFeat
-  s1: number
-  s2: number
+  s1: -1 | 1 | undefined
+  s2: -1 | 1 | undefined
   absrad: number
   stats?: ChainStats
 }): string {

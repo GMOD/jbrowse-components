@@ -132,10 +132,14 @@ export function drawLongReadChains({
       }
 
       const featStrand = feat.get('strand')
-      const effectiveStrand =
+      const effectiveStrand: -1 | 1 | undefined =
         isSingleton || !flipStrandLongReadChains
           ? featStrand
-          : featStrand * primaryStrand
+          : featStrand !== undefined
+            ? featStrand === primaryStrand
+              ? 1
+              : -1
+            : undefined
 
       const [featureFill, featureStroke] = isSingleton
         ? getSingletonColor(

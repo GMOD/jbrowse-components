@@ -1,9 +1,9 @@
 export interface ReducedFeatureForFlatbush {
-  name: string
+  name: string | undefined
   refName: string
   start: number
   end: number
-  strand: number
+  strand: -1 | 1 | undefined
   flags: number
   id: string
   tlen: number

@@ -152,9 +152,10 @@ function addChildrenRecursive({
   // Check for gene+transcript pattern
   const hasTranscriptChildren =
     isGene &&
-    featureLayout.children.some(child =>
-      transcriptTypes.includes(child.feature.get('type')),
-    )
+    featureLayout.children.some(child => {
+      const t = child.feature.get('type')
+      return t !== undefined && transcriptTypes.includes(t)
+    })
 
   const shouldIndexChildren = matchingGlyph || hasTranscriptChildren
   const showSubfeatureLabels = subfeatureLabels !== 'none'

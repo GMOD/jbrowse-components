@@ -27,7 +27,7 @@ export const boxGlyph: Glyph = {
     const width = (feature.get('end') - feature.get('start')) / bpPerPx
 
     const isTopLevel = !feature.parent?.()
-    const strand = feature.get('strand') as number
+    const strand = feature.get('strand')
     const arrowPadding = isTopLevel
       ? getStrandArrowPadding(strand, reversed)
       : { left: 0, right: 0 }

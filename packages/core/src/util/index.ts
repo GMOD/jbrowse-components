@@ -1248,14 +1248,19 @@ export function avg(arr: number[]) {
   return sum(arr) / arr.length
 }
 
-export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
+export function groupBy<T>(
+  array: Iterable<T>,
+  predicate: (v: T) => string | undefined,
+) {
   const result = {} as Record<string, T[]>
   for (const value of array) {
     const t = predicate(value)
-    if (!result[t]) {
-      result[t] = []
+    if (t !== undefined) {
+      if (!result[t]) {
+        result[t] = []
+      }
+      result[t].push(value)
     }
-    result[t].push(value)
   }
   return result
 }

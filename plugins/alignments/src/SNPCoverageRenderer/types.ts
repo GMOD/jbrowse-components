@@ -255,7 +255,7 @@ export interface SkipFeatureSerialized {
   refName: string
   start: number
   end: number
-  strand: number
+  strand: -1 | 1 | undefined
   score: number
   effectiveStrand: number
 }

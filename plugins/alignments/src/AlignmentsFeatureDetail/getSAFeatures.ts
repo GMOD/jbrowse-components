@@ -14,7 +14,7 @@ export interface ReducedFeature {
   start: number
   clipLengthAtStartOfRead: number
   end: number
-  strand: number
+  strand: -1 | 1 | undefined
   seqLength: number
   syntenyId?: number
   uniqueId: string
@@ -36,7 +36,7 @@ export async function getSAFeatures({
 }) {
   const { assemblyManager } = getSession(view)
   const cigar = feature.get('CIGAR') as string
-  const origStrand = feature.get('strand') as number
+  const origStrand = feature.get('strand')
   const SA = (feature.get('tags')?.SA as string) || ''
   const readName = feature.get('name') as string
   const clipLengthAtStartOfRead = getClip(cigar, 1)

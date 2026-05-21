@@ -14,9 +14,13 @@ export const STRAND_ARROW_WIDTH = 8
  * - effectiveStrand === -1: arrow points left visually (padding on visual left)
  * - effectiveStrand === 1: arrow points right visually (padding on visual right)
  */
-export function getStrandArrowPadding(strand: number, reversed: boolean) {
+export function getStrandArrowPadding(
+  strand: -1 | 1 | undefined,
+  reversed: boolean,
+) {
   const reverseFlip = reversed ? -1 : 1
-  const effectiveStrand = strand * reverseFlip
+  const effectiveStrand =
+    strand !== undefined ? strand * reverseFlip : undefined
   return {
     left: effectiveStrand === -1 ? STRAND_ARROW_WIDTH : 0,
     right: effectiveStrand === 1 ? STRAND_ARROW_WIDTH : 0,

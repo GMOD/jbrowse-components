@@ -49,7 +49,7 @@ export function renderFeatureShape({
   yPos: number
   width: number
   height: number
-  strand: number
+  strand: -1 | 1 | undefined
   fillStyle: string
   strokeStyle: string
   renderChevrons: boolean
@@ -93,7 +93,7 @@ export interface MismatchData {
   items: FlatbushItem[]
 }
 
-export function getStrandColorKey(strand: number) {
+export function getStrandColorKey(strand: -1 | 1 | undefined) {
   return strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
 }
 

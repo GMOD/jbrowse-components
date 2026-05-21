@@ -294,8 +294,8 @@ describe('CanvasFeatureRenderer', () => {
       expect(result.right).toBe(STRAND_ARROW_WIDTH)
     })
 
-    test('no strand (0) has no arrow', () => {
-      const result = getStrandArrowPadding(0, false)
+    test('no strand (undefined) has no arrow', () => {
+      const result = getStrandArrowPadding(undefined, false)
       expect(result.visualSide).toBe(null)
       expect(result.width).toBe(0)
       expect(result.left).toBe(0)

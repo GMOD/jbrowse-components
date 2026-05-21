@@ -125,7 +125,7 @@ export default function ReadVsRefDialog({
       const view = getContainingView(track)
       const cigar = feature.get('CIGAR') as string
       const flags = feature.get('flags') as number
-      const origStrand = feature.get('strand') as number
+      const origStrand = feature.get('strand')
       const SA = (getTag(feature, 'SA') as string) || ''
       const readName = feature.get('name') as string
       const clipLengthAtStartOfRead = getClip(cigar, 1)

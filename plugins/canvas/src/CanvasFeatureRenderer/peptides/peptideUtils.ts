@@ -60,10 +60,10 @@ const DEFAULT_TRANSCRIPT_TYPES = [
 ]
 
 function isTranscriptType(
-  type: string,
+  type: string | undefined,
   transcriptTypes = DEFAULT_TRANSCRIPT_TYPES,
 ) {
-  return transcriptTypes.includes(type)
+  return type !== undefined && transcriptTypes.includes(type)
 }
 
 function hasCDSSubfeatures(feature: Feature) {
