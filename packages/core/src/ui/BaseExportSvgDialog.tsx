@@ -17,7 +17,6 @@ import { useExportSvgPreference } from './useExportSvgPreference.ts'
 import { getSession } from '../util/index.ts'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { ThemeOptions } from '@mui/material'
 
 export interface BaseExportSvgOptions {
   rasterizeLayers: boolean
@@ -129,8 +128,7 @@ export default function BaseExportSvgDialog({
           >
             {Object.entries(session.allThemes()).map(([key, val]) => (
               <MenuItem key={key} value={key}>
-                {(val as ThemeOptions & { name?: string }).name ||
-                  '(Unknown name)'}
+                {val.name || '(Unknown name)'}
               </MenuItem>
             ))}
           </TextField>

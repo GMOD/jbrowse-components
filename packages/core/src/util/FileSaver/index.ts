@@ -1,6 +1,5 @@
 export function saveAs(blob: Blob | string, name?: string) {
-  const filename =
-    name || (blob instanceof Blob ? (blob as any).name : '') || 'download'
+  const filename = name || (blob instanceof File ? blob.name : '') || 'download'
   const a = document.createElement('a')
   a.download = filename
   a.rel = 'noopener'

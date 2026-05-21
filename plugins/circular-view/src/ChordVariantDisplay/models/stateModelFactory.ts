@@ -161,7 +161,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
                 const feats = await rpcManager.call(
                   sessionId,
                   'CoreGetFeatures',
-                  { adapterConfig, regions, stopToken },
+                  { sessionId, adapterConfig, regions, stopToken },
                 )
                 if (isAlive(self) && renderStopToken === stopToken) {
                   self.setFeatures(new Map(feats.map(f => [f.id(), f])))

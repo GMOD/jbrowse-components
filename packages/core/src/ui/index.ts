@@ -1,4 +1,6 @@
 export * from './theme.ts'
+export { default as BaseExportSvgDialog } from './BaseExportSvgDialog.tsx'
+export type { BaseExportSvgOptions } from './BaseExportSvgDialog.tsx'
 export { LogoFull, Logomark } from './Logo.tsx'
 export { default as AssemblySelector } from './AssemblySelector.tsx'
 export {
@@ -7,7 +9,6 @@ export {
 } from './RefNameAutocomplete/index.tsx'
 export { default as CascadingMenu } from './CascadingMenu.tsx'
 export { default as CascadingMenuButton } from './CascadingMenuButton.tsx'
-export { default as BaseExportSvgDialog } from './BaseExportSvgDialog.tsx'
 export { useExportSvgPreference } from './useExportSvgPreference.ts'
 export { default as ConfirmDialog } from './ConfirmDialog.tsx'
 export { default as Dialog } from './Dialog.tsx'
