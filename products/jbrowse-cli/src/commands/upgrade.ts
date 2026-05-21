@@ -78,7 +78,7 @@ export async function run(args: string[]) {
     args,
     allowPositionals: true,
   })
-  const argsPath = positionals[0]!
+  const argsPath = positionals[0]
   const { clean, listVersions, tag, url, branch, nightly } = runFlags
   if (runFlags.help) {
     printHelp({

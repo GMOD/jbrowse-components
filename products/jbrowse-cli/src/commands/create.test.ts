@@ -126,7 +126,7 @@ test('overwrites and succeeds in download in a non-empty directory with tag', as
 
 test('fails to download a version that does not exist', async () => {
   await runInTmpDir(async () => {
-    mockFetch({ ok: false, status: 404 })
+    mockFetch({ ok: false, status: 404, statusText: 'Not Found' })
     const { error } = await runCommand([
       'create',
       'jbrowse',

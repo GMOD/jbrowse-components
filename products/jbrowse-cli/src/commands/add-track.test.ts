@@ -16,6 +16,7 @@ const simpleBam = path.join(base, 'simple.bam')
 const simpleBai = path.join(base, 'simple.bai')
 const simpleGff = path.join(base, 'volvox.sort.gff3')
 const simpleBed = path.join(base, 'volvox.bed')
+const simpleBedGz = path.join(base, 'volvox.bed.gz')
 const simpleBedpe = path.join(base, 'volvox.bedpe')
 const simplePaf = path.join(base, 'volvox_inv_indels.paf')
 const simplePafGz = path.join(base, 'volvox_inv_indels.paf.gz')
@@ -29,16 +30,12 @@ const simpleMcScanSimple = path.join(base, 'volvox_inv_indels.anchors.simple')
 const simpleVcf = path.join(base, 'volvox.filtered.vcf')
 const simpleGtf = path.join(base, 'volvox.sorted.gtf')
 const simpleGffGz = path.join(base, 'volvox.sort.gff3.gz')
+const simpleFasta = path.join(base, 'simple.fasta')
+const simpleFastaGz = path.join(base, 'simple.fasta.gz')
 const testConfig = path.join(base, 'test_config.json')
 
 function initctx(ctx: { dir: string }) {
   return copyFile(testConfig, path.join(ctx.dir, 'config.json'))
-}
-function init2bit(ctx: { dir: string }) {
-  return copyFile(
-    path.join(base, 'simple.2bit'),
-    path.join(ctx.dir, 'simple.2bit'),
-  )
 }
 
 test('fails if no track is specified', async () => {
@@ -298,9 +295,13 @@ test('adds bam track from a url', async () => {
 test('fails multiple assemblies exist but no assemblyNames passed', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await init2bit(ctx)
 
-    await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    await runCommand([
+      'add-assembly',
+      path.join(base, 'simple.2bit'),
+      '--load',
+      'copy',
+    ])
     const { error } = await runCommand([
       'add-track',
       simpleBam,
@@ -315,9 +316,13 @@ test('fails multiple assemblies exist but no assemblyNames passed', async () => 
 test('adds track to a config with multiple assemblies', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
-    await init2bit(ctx)
 
-    await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    await runCommand([
+      'add-assembly',
+      path.join(base, 'simple.2bit'),
+      '--load',
+      'copy',
+    ])
     const { error } = await runCommand([
       'add-track',
       simpleBam,
@@ -547,5 +552,112 @@ test('adds chain file', async () => {
     ])
     expect(exists(ctxDir(ctx, 'volvox_inv_indels.chain'))).toBeTruthy()
     expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('fails with invalid --load value', async () => {
+  const { error } = await runCommand([
+    'add-track',
+    simpleBam,
+    '--load',
+    'badvalue',
+  ])
+  expect(error?.message).toMatchSnapshot()
+})
+
+test('adds bam track with --force flag (overwrite)', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand(['add-track', '/path/to/simple.bam', '--load', 'inPlace'])
+    const { error } = await runCommand([
+      'add-track',
+      '/path/to/simple.bam',
+      '--load',
+      'inPlace',
+      '--force',
+    ])
+    expect(error).toBe(undefined)
+    // config should have exactly one track (overwritten, not duplicated)
+    expect(readConf(ctx).tracks.length).toBe(1)
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds bam track with --load move', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const srcDir = ctxDir(ctx, 'source')
+    fs.mkdirSync(srcDir)
+    await copyFile(simpleBam, path.join(srcDir, 'simple.bam'))
+    await copyFile(simpleBai, path.join(srcDir, 'simple.bam.bai'))
+    await runCommand([
+      'add-track',
+      path.join(srcDir, 'simple.bam'),
+      '--load',
+      'move',
+    ])
+    expect(exists(ctxDir(ctx, 'simple.bam'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'simple.bam.bai'))).toBeTruthy()
+    expect(exists(path.join(srcDir, 'simple.bam'))).toBeFalsy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds indexed fasta track', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand(['add-track', simpleFasta, '--load', 'copy'])
+    expect(exists(ctxDir(ctx, 'simple.fasta'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'simple.fasta.fai'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds bgzip fasta track', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand(['add-track', simpleFastaGz, '--load', 'copy'])
+    expect(exists(ctxDir(ctx, 'simple.fasta.gz'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'simple.fasta.gz.fai'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'simple.fasta.gz.gzi'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('uses default BedTabixAdapter for bed.gz file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const { error } = await runCommand([
+      'add-track',
+      simpleBedGz,
+      '--load',
+      'copy',
+    ])
+    if (error) {
+      throw error
+    }
+    const conf = readConf(ctx)
+    const track = conf.tracks?.[0]
+    expect(track?.adapter?.type).toBe('BedTabixAdapter')
+  })
+})
+
+test('can override adapter type with --adapterType BedAdapter', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const { error } = await runCommand([
+      'add-track',
+      simpleBedGz,
+      '--load',
+      'copy',
+      '--adapterType',
+      'BedAdapter',
+    ])
+    if (error) {
+      throw error
+    }
+    const track = readConf(ctx).tracks[0]
+    expect(track.adapter.type).toBe('BedAdapter')
+    expect(track.adapter.bedLocation).toBeDefined()
   })
 })
