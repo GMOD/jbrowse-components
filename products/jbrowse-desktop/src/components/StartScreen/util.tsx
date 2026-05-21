@@ -1,4 +1,7 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, {
+  dedupePlugins,
+  pluginDefinitionMetadata,
+} from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { dedupe } from '@jbrowse/core/util'
@@ -14,8 +17,45 @@ import sessionModelFactory from '../../sessionModel/sessionModel.ts'
 import { fetchCJS } from '../../util.tsx'
 
 import type { JBrowseConfig } from './types.ts'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
 const { ipcRenderer } = window.require('electron')
+
+async function getGlobalPlugins() {
+  try {
+    return (await ipcRenderer.invoke('getGlobalPlugins')) as PluginDefinition[]
+  } catch {
+    return [] as PluginDefinition[]
+  }
+}
+
+async function loadRuntimePlugins(plugins: PluginDefinition[]) {
+  const pluginLoader = new PluginLoader(plugins, {
+    fetchESM: url => import(/* webpackIgnore:true */ url),
+    fetchCJS,
+  })
+  pluginLoader.installGlobalReExports(window)
+  const runtimePlugins = await pluginLoader.load(window.location.href)
+  return runtimePlugins.map(({ plugin: P, definition }) => ({
+    plugin: new P(),
+    definition,
+    metadata: pluginDefinitionMetadata(definition),
+  }))
+}
+
+export async function createStartScreenPluginManager() {
+  const globalPlugins = await getGlobalPlugins()
+  const runtimePluginEntries = await loadRuntimePlugins(globalPlugins)
+  const pluginManager = new PluginManager([
+    ...corePlugins.map(P => ({
+      plugin: new P(),
+      metadata: { isCore: true },
+    })),
+    ...runtimePluginEntries,
+  ])
+  pluginManager.createPluggableElements()
+  return pluginManager
+}
 
 export async function loadPluginManager(configPath: string) {
   const snap = await ipcRenderer.invoke('loadSession', configPath)
@@ -29,33 +69,16 @@ export async function createPluginManager(
   configSnapshot: JBrowseConfig,
   initialTimestamp = Date.now(),
 ) {
-  const pluginLoader = new PluginLoader(configSnapshot.plugins, {
-    fetchESM: url => import(/* webpackIgnore:true */ url),
-    fetchCJS,
-  })
-  pluginLoader.installGlobalReExports(window)
-  const runtimePlugins = await pluginLoader.load(window.location.href)
+  const globalPlugins = await getGlobalPlugins()
+  const sessionPlugins = configSnapshot.plugins ?? []
+  const allPlugins = dedupePlugins([...sessionPlugins, ...globalPlugins])
+  const runtimePluginEntries = await loadRuntimePlugins(allPlugins)
   const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({
       plugin: new P(),
-      metadata: {
-        isCore: true,
-      },
+      metadata: { isCore: true },
     })),
-    ...runtimePlugins.map(({ plugin: P, definition }) => ({
-      plugin: new P(),
-      definition,
-      metadata: {
-        // @ts-expect-error
-        url: definition.url,
-        // @ts-expect-error
-        esmUrl: definition.esmUrl,
-        // @ts-expect-error
-        umdUrl: definition.umdUrl,
-        // @ts-expect-error
-        cjsUrl: definition.cjsUrl,
-      },
-    })),
+    ...runtimePluginEntries,
   ])
   pluginManager.createPluggableElements()
 

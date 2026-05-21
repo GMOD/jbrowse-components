@@ -12,7 +12,6 @@ import SessionNameCell from './SessionNameCell.tsx'
 import { useInnerDims } from '../availableGenomes/util.ts'
 
 import type { RecentSessionData } from '../types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()({
   cell: {
@@ -23,18 +22,14 @@ const useStyles = makeStyles()({
 })
 
 function RecentSessionsList({
-  setError,
   sessions,
   setSelectedSessions,
   setSessionToRename,
-  setPluginManager,
   favorites,
   toggleFavorite,
   addToQuickstartList,
 }: {
-  setError: (e: unknown) => void
   setSessionToRename: (arg: RecentSessionData) => void
-  setPluginManager: (pm: PluginManager) => void
   setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
   favorites: string[]
@@ -45,7 +40,6 @@ function RecentSessionsList({
   const { height: innerHeight } = useInnerDims()
   const [now] = useState(() => Date.now())
 
-  // Memoize expensive calculations
   const rows = useMemo(() => {
     const oneDayLength = 24 * 60 * 60 * 1000
 
@@ -87,7 +81,6 @@ function RecentSessionsList({
 
   const favs = useMemo(() => new Set(favorites), [favorites])
 
-  // Memoize callback functions
   const handleRowSelectionChange = useCallback(
     (args: any) => {
       setSelectedSessions(sessions.filter(s => args.ids.has(s.path)))
@@ -95,7 +88,6 @@ function RecentSessionsList({
     [sessions, setSelectedSessions],
   )
 
-  // Memoize columns to prevent recreation on every render
   const columns = useMemo(
     () => [
       {
@@ -107,8 +99,6 @@ function RecentSessionsList({
             value={value as string}
             row={row}
             isFavorite={favs.has(row.id)}
-            setPluginManager={setPluginManager}
-            setError={setError}
             toggleFavorite={toggleFavorite}
             setSessionToRename={setSessionToRename}
             addToQuickstartList={addToQuickstartList}
@@ -137,8 +127,6 @@ function RecentSessionsList({
       widths,
       favs,
       classes,
-      setPluginManager,
-      setError,
       toggleFavorite,
       setSessionToRename,
       addToQuickstartList,

@@ -8,11 +8,11 @@ import deepmerge from 'deepmerge'
 import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
 import OpenSequencePanel from './OpenSequencePanel.tsx'
 import QuickstartPanel from './QuickstartPanel.tsx'
+import { navigateToSession } from '../../../navigation.ts'
 import defaultFavs from '../defaultFavs.ts'
-import { addRelativeUris, fetchjson, loadPluginManager } from '../util.tsx'
+import { addRelativeUris, fetchjson } from '../util.tsx'
 
 import type { Fav, JBrowseConfig } from '../types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -45,11 +45,7 @@ async function getQuickstarts(sel: string[]) {
   )
 }
 
-export default function LauncherPanel({
-  setPluginManager,
-}: {
-  setPluginManager: (arg0: PluginManager) => void
-}) {
+export default function LauncherPanel() {
   const { classes } = useStyles()
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState('')
@@ -59,34 +55,26 @@ export default function LauncherPanel({
     defaultFavs,
   )
 
-  async function initializeSession(entries: JBrowseConfig[]) {
-    try {
-      setLoading('Creating session')
-      setPluginManager(
-        await loadPluginManager(
-          await ipcRenderer.invoke('createInitialAutosaveFile', {
-            ...deepmerge.all(entries),
-            defaultSession: entries[0]?.defaultSession ?? {
-              name: `New session ${new Date().toLocaleString('en-US')}`,
-            },
-          }),
-        ),
-      )
-    } catch (e) {
-      console.error(e)
-      setError(e)
-    }
-  }
-
-  async function structuredCb(cb: () => Promise<void>) {
+  async function launch(cb: () => Promise<void>) {
     try {
       setLoading('Launching')
       await cb()
     } catch (e) {
+      console.error(e)
       setError(e)
     } finally {
       setLoading('')
     }
+  }
+
+  async function launchFromConfigs(entries: JBrowseConfig[]) {
+    const path = await ipcRenderer.invoke('createInitialAutosaveFile', {
+      ...deepmerge.all(entries),
+      defaultSession: entries[0]?.defaultSession ?? {
+        name: `New session ${new Date().toLocaleString('en-US')}`,
+      },
+    })
+    navigateToSession(path)
   }
 
   return (
@@ -97,12 +85,11 @@ export default function LauncherPanel({
       ) : (
         <>
           <OpenSequencePanel
-            setPluginManager={setPluginManager}
             favorites={favorites}
             setFavorites={setFavorites}
             launch={sel =>
-              structuredCb(async () => {
-                await initializeSession(await fetchData(sel))
+              launch(async () => {
+                await launchFromConfigs(await fetchData(sel))
               })
             }
           />
@@ -110,15 +97,15 @@ export default function LauncherPanel({
             favorites={favorites}
             setFavorites={setFavorites}
             launch={sel =>
-              structuredCb(async () => {
-                await initializeSession(await fetchData(sel))
+              launch(async () => {
+                await launchFromConfigs(await fetchData(sel))
               })
             }
           />
           <QuickstartPanel
             launch={sel =>
-              structuredCb(async () => {
-                await initializeSession(await getQuickstarts(sel))
+              launch(async () => {
+                await launchFromConfigs(await getQuickstarts(sel))
               })
             }
           />

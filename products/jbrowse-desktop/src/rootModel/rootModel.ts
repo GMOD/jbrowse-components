@@ -31,6 +31,7 @@ import OpenSequenceDialog from '../components/OpenSequenceDialog.tsx'
 import jobsModelFactory from '../indexJobsModel.ts'
 import JBrowseDesktop from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
+import { navigateToSession, navigateToStartScreen } from '../navigation.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -116,17 +117,8 @@ export default function rootModelFactory({
           MainThreadRpcDriver: {},
         },
       ),
-      openNewSessionCallback: async (_path: string) => {
-        console.error('openNewSessionCallback unimplemented')
-      },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
-        self.openNewSessionCallback = cb
-      },
       /**
        * #action
        */
@@ -135,7 +127,7 @@ export default function rootModelFactory({
         if (root.session) {
           await root.saveSession(getSaveSession(root))
         }
-        await root.openNewSessionCallback(root.sessionPath)
+        navigateToSession(root.sessionPath)
       },
     }))
     .views(self => ({
@@ -155,7 +147,7 @@ export default function rootModelFactory({
                     try {
                       const path = await ipcRenderer.invoke('promptOpenFile')
                       if (path) {
-                        await self.openNewSessionCallback(path)
+                        navigateToSession(path)
                       }
                     } catch (e) {
                       console.error(e)
@@ -251,7 +243,7 @@ export default function rootModelFactory({
                   label: 'Return to start screen',
                   icon: AppsIcon,
                   onClick: () => {
-                    self.setSession(undefined)
+                    navigateToStartScreen()
                   },
                 },
                 {

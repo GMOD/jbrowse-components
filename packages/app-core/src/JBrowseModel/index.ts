@@ -1,3 +1,4 @@
+import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { cast, getParent, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { toJS } from 'mobx'
@@ -141,20 +142,10 @@ export function JBrowseModelF({
        * #action
        */
       removePlugin(pluginDefinition: PluginDefinition) {
+        const targetUrl = pluginUrl(pluginDefinition)
         self.plugins = cast(
-          self.plugins.filter(
-            plugin =>
-              // @ts-expect-error
-              plugin.url !== pluginDefinition.url ||
-              // @ts-expect-error
-              plugin.umdUrl !== pluginDefinition.umdUrl ||
-              // @ts-expect-error
-              plugin.cjsUrl !== pluginDefinition.cjsUrl ||
-              // @ts-expect-error
-              plugin.esmUrl !== pluginDefinition.esmUrl,
-          ),
+          self.plugins.filter(plugin => pluginUrl(plugin) !== targetUrl),
         )
-
         getParent<any>(self).setPluginsUpdated(true)
       },
 

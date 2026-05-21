@@ -3,12 +3,11 @@ import { useState } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 
+import { navigateToSession } from '../../../navigation.ts'
 import OpenSequenceDialog from '../../OpenSequenceDialog.tsx'
 import AllGenomesDialog from '../availableGenomes/AvailableGenomesDialog.tsx'
-import { loadPluginManager } from '../util.tsx'
 
 import type { Fav, LaunchCallback } from '../types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -20,12 +19,10 @@ const useStyles = makeStyles()({
 })
 
 export default function OpenSequencePanel({
-  setPluginManager,
   favorites,
   setFavorites,
   launch,
 }: {
-  setPluginManager: (arg0: PluginManager) => void
   favorites: Fav[]
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
@@ -60,8 +57,6 @@ export default function OpenSequencePanel({
         <OpenSequenceDialog
           onClose={async (conf: unknown) => {
             if (conf) {
-              // note this can throw before dialog closes, but this is handled
-              // by the dialog itself
               const path = await ipcRenderer.invoke(
                 'createInitialAutosaveFile',
                 {
@@ -71,7 +66,7 @@ export default function OpenSequencePanel({
                   },
                 },
               )
-              setPluginManager(await loadPluginManager(path))
+              navigateToSession(path)
             }
             setSequenceDialogOpen(false)
           }}

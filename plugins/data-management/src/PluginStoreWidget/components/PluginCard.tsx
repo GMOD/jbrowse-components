@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import { ExternalLink } from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -46,9 +47,18 @@ const PluginCard = observer(function PluginCard({
   const session = getSession(model)
   const { pluginManager } = getEnv(model)
   const { runtimePluginDefinitions } = pluginManager
-  const isInstalled = runtimePluginDefinitions.some(
-    d => 'url' in d && d.url === plugin.url,
-  )
+  const isInstalled = runtimePluginDefinitions.some(d => {
+    if ('name' in d && d.name === plugin.name) {
+      return true
+    }
+    const url = pluginUrl(d)
+    return (
+      (plugin.url && url === plugin.url) ||
+      (plugin.umdUrl && url === plugin.umdUrl) ||
+      (plugin.esmUrl && url === plugin.esmUrl) ||
+      (plugin.cjsUrl && url === plugin.cjsUrl)
+    )
+  })
   const [tempDisabled, setTempDisabled] = useState(false)
   const { adminMode, jbrowse } = session
   const { name, authors, description } = plugin
