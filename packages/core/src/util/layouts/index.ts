@@ -1,5 +1,6 @@
 export * from './BaseLayout.ts'
 export { default as GranularRectLayout } from './GranularRectLayout.ts'
+export { placeRect } from './placeRect.ts'
 export { default as MultiLayout } from './MultiLayout.ts'
 export { default as PileupLayout } from './PileupLayout.ts'
 export type { PileupLayoutOptions, PileupRectangle } from './PileupLayout.ts'
