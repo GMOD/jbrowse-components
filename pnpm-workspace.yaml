@@ -3,6 +3,7 @@ packages:
   - 'products/*'
   - 'plugins/*'
   - 'website'
+blockExoticSubdeps: true
 allowBuilds:
   canvas: true
   core-js-pure: true
@@ -12,3 +13,9 @@ allowBuilds:
   puppeteer: true
   sharp: true
   unrs-resolver: true
+minimumReleaseAge: '1440'
+minimumReleaseAgeExclude:
+  - '@gmod/*'
+  - 'g2p_mapper'
+  - 'ixixx'
+  - 'gff-nostream'
