@@ -52,87 +52,87 @@ export function drawCigarClickMap(
     ) {
       const s1 = f.get('strand')
       if (s1 !== undefined) {
-      const k1 = s1 === -1 ? x12 : x11
-      const k2 = s1 === -1 ? x11 : x12
+        const k1 = s1 === -1 ? x12 : x11
+        const k2 = s1 === -1 ? x11 : x12
 
-      const rev1 = k1 < k2 ? 1 : -1
-      const rev2 = (x21 < x22 ? 1 : -1) * s1
+        const rev1 = k1 < k2 ? 1 : -1
+        const rev2 = (x21 < x22 ? 1 : -1) * s1
 
-      let cx1 = k1
-      let cx2 = s1 === -1 ? x22 : x21
-      if (cigar.length && drawCIGAR) {
-        let continuingFlag = false
-        let px1 = 0
-        let px2 = 0
-        const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
+        let cx1 = k1
+        let cx2 = s1 === -1 ? x22 : x21
+        if (cigar.length && drawCIGAR) {
+          let continuingFlag = false
+          let px1 = 0
+          let px2 = 0
+          const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
 
-        for (let j = 0; j < cigar.length; j += 2) {
-          const len = +cigar[j]!
-          const op = cigar[j + 1] as keyof typeof defaultCigarColors
+          for (let j = 0; j < cigar.length; j += 2) {
+            const len = +cigar[j]!
+            const op = cigar[j + 1] as keyof typeof defaultCigarColors
 
-          if (!continuingFlag) {
-            px1 = cx1
-            px2 = cx2
-          }
+            if (!continuingFlag) {
+              px1 = cx1
+              px2 = cx2
+            }
 
-          const d1 = len * bpPerPxInv0
-          const d2 = len * bpPerPxInv1
+            const d1 = len * bpPerPxInv0
+            const d2 = len * bpPerPxInv1
 
-          if (op === 'M' || op === '=' || op === 'X') {
-            cx1 += d1 * rev1
-            cx2 += d2 * rev2
-          } else if (op === 'D' || op === 'N') {
-            cx1 += d1 * rev1
-          }
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          else if (op === 'I') {
-            cx2 += d2 * rev2
-          }
+            if (op === 'M' || op === '=' || op === 'X') {
+              cx1 += d1 * rev1
+              cx2 += d2 * rev2
+            } else if (op === 'D' || op === 'N') {
+              cx1 += d1 * rev1
+            }
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            else if (op === 'I') {
+              cx2 += d2 * rev2
+            }
 
-          if (
-            !(
-              Math.max(px1, px2, cx1, cx2) < 0 ||
-              Math.min(px1, px2, cx1, cx2) > width
-            )
-          ) {
-            const isNotLast = j < cigar.length - 2
             if (
-              Math.abs(cx1 - px1) <= 1 &&
-              Math.abs(cx2 - px2) <= 1 &&
-              isNotLast
+              !(
+                Math.max(px1, px2, cx1, cx2) < 0 ||
+                Math.min(px1, px2, cx1, cx2) > width
+              )
             ) {
-              continuingFlag = true
-            } else {
-              continuingFlag = false
-              // When drawCIGARMatchesOnly is enabled, only draw match operations (M, =, X)
-              // Skip insertions (I) and deletions (D, N)
-              // Also skip very thin rectangles which tend to be glitchy
-              const shouldDraw =
-                !drawCIGARMatchesOnly ||
-                ((op === 'M' || op === '=' || op === 'X') &&
-                  Math.abs(cx1 - px1) > 1 &&
-                  Math.abs(cx2 - px2) > 1)
+              const isNotLast = j < cigar.length - 2
+              if (
+                Math.abs(cx1 - px1) <= 1 &&
+                Math.abs(cx2 - px2) <= 1 &&
+                isNotLast
+              ) {
+                continuingFlag = true
+              } else {
+                continuingFlag = false
+                // When drawCIGARMatchesOnly is enabled, only draw match operations (M, =, X)
+                // Skip insertions (I) and deletions (D, N)
+                // Also skip very thin rectangles which tend to be glitchy
+                const shouldDraw =
+                  !drawCIGARMatchesOnly ||
+                  ((op === 'M' || op === '=' || op === 'X') &&
+                    Math.abs(cx1 - px1) > 1 &&
+                    Math.abs(cx2 - px2) > 1)
 
-              if (shouldDraw) {
-                const idx = j * unitMultiplier2 + 1
-                cigarClickMapCanvas.fillStyle = makeColor(idx)
-                draw(
-                  cigarClickMapCanvas,
-                  px1,
-                  cx1,
-                  y1,
-                  cx2,
-                  px2,
-                  y2,
-                  mid,
-                  drawCurves,
-                )
-                cigarClickMapCanvas.fill()
+                if (shouldDraw) {
+                  const idx = j * unitMultiplier2 + 1
+                  cigarClickMapCanvas.fillStyle = makeColor(idx)
+                  draw(
+                    cigarClickMapCanvas,
+                    px1,
+                    cx1,
+                    y1,
+                    cx2,
+                    px2,
+                    y2,
+                    mid,
+                    drawCurves,
+                  )
+                  cigarClickMapCanvas.fill()
+                }
               }
             }
           }
         }
-      }
       }
     }
   }

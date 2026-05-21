@@ -11,7 +11,7 @@ const CODING_TYPES = new Set(['CDS', 'cds'])
 
 function hasCodingSubfeature(feature: Feature): boolean {
   const subfeatures = feature.get('subfeatures') || []
-  return subfeatures.some((sub: Feature) => {
+  return subfeatures.some(sub => {
     const t = sub.get('type')
     return (t !== undefined && CODING_TYPES.has(t)) || hasCodingSubfeature(sub)
   })

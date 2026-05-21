@@ -133,7 +133,7 @@ const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
           startIcon={<ContentCopyIcon />}
           onClick={async () => {
             const { default: copy } = await import('copy-to-clipboard')
-            copy(url)
+            await copy(url)
             session.notify('Copied to clipboard', 'success')
             onClose()
           }}

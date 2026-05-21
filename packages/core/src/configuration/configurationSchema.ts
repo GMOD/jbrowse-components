@@ -162,6 +162,7 @@ function makeConfigurationSchemaModel<
       } catch (e) {
         throw new Error(
           `invalid config slot definition for ${modelName}.${slotName}: ${e}`,
+          { cause: e },
         )
       }
     } else {

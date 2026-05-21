@@ -38,14 +38,12 @@ function parseError(str: string) {
       trim,
     )
     if (match) {
-      str = `Failed to load element at ${match[1]}...Failed element had snapshot`
       snapshotError = match[2]!
     }
 
     // case 2. element has no path
     const match2 = /.*snapshot `(.*)` is not assignable/.exec(trim)
     if (match2) {
-      str = 'Failed to load element...Failed element had snapshot'
       snapshotError = match2[1]!
     }
   }

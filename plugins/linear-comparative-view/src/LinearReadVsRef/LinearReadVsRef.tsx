@@ -127,7 +127,7 @@ export default function ReadVsRefDialog({
       const flags = feature.get('flags') as number
       const origStrand = feature.get('strand')
       const SA = (getTag(feature, 'SA') as string) || ''
-      const readName = feature.get('name') as string
+      const readName = feature.get('name')!
       const clipLengthAtStartOfRead = getClip(cigar, 1)
 
       const readAssembly = `${readName}_assembly_${Date.now()}`

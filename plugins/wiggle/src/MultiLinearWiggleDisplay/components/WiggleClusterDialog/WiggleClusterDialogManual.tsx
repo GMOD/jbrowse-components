@@ -144,7 +144,7 @@ cat(resultClusters$order,sep='\n')`
                   variant="contained"
                   onClick={async () => {
                     const { default: copy } = await import('copy-to-clipboard')
-                    copy(results || '')
+                    await copy(results || '')
                   }}
                 >
                   Copy Rscript to clipboard

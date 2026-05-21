@@ -93,8 +93,8 @@ export const repeatRegionGlyph: Glyph = {
 
     // Sort children so retrotransposons are drawn first (underneath)
     const sortedChildren = [...children].sort((a, b) => {
-      const aType = a.feature.get('type') as string
-      const bType = b.feature.get('type') as string
+      const aType = a.feature.get('type')!
+      const bType = b.feature.get('type')!
       if (aType.endsWith('_retrotransposon')) {
         return -1
       }
@@ -106,7 +106,7 @@ export const repeatRegionGlyph: Glyph = {
 
     // Draw children
     for (const childLayout of sortedChildren) {
-      const childType = childLayout.feature.get('type') as string
+      const childType = childLayout.feature.get('type')!
       const color = REPEAT_COLOR_MAP[childType] || '#000'
       const shorten = childType.endsWith('_retrotransposon')
       drawRepeatBox(ctx, childLayout, canvasWidth, color, shorten)

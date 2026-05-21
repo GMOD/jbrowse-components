@@ -30,7 +30,6 @@ export function b64PadSuffix(b64: string): string {
       num = 2
       break
     case 0:
-      num = 0
       break
     default:
       throw new Error('base64 not a valid length')

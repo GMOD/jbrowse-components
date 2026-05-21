@@ -163,7 +163,7 @@ function addChildrenRecursive({
   if (shouldIndexChildren) {
     for (const child of featureLayout.children) {
       const childFeature = child.feature
-      const childType = childFeature.get('type') as string
+      const childType = childFeature.get('type')!
 
       // For gene+transcript pattern, only index transcripts
       if (hasTranscriptChildren && !matchingGlyph) {

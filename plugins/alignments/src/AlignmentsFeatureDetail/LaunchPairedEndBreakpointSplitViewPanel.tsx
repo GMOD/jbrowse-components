@@ -31,7 +31,7 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
     refName: feature.next_ref as string,
     start: feature.next_pos as number,
     end: (feature.next_pos as number) + 1,
-    strand: feature.strand as number,
+    strand: feature.strand!,
   }
   const assemblyName = getAssemblyName(model.view)
   return assemblyName ? (

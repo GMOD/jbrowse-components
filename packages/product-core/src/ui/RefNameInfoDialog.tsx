@@ -102,7 +102,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
               variant="contained"
               onClick={async () => {
                 const { default: copy } = await import('copy-to-clipboard')
-                copy(
+                await copy(
                   names
                     .flatMap(([assemblyName, refNames]) => [
                       `--- ${assemblyName} ---`,
