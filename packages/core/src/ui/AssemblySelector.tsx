@@ -73,11 +73,6 @@ const AssemblySelector = observer(function AssemblySelector({
       error={!!error}
       disabled={!!error}
       className={classes.importFormEntry}
-      slotProps={{
-        htmlInput: {
-          'data-testid': 'assembly-selector',
-        },
-      }}
     >
       {assemblyNames.map(name => (
         <MenuItem key={name} value={name}>
