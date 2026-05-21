@@ -39,8 +39,7 @@ export default function DataGridDetails({
 }) {
   const { classes } = useStyles()
   const [checked, setChecked] = useState(false)
-  const keys = Object.keys(value[0]!).sort()
-  const unionKeys = new Set(keys)
+  const firstRowKeyCount = Object.keys(value[0]!).length
 
   // avoids key 'id' from being used in row data
   const rows = Object.entries(value).map(([k, val]) => {
@@ -52,6 +51,7 @@ export default function DataGridDetails({
     } as Entry
   })
 
+  const unionKeys = new Set<string>()
   for (const val of value) {
     for (const k of Object.keys(val)) {
       unionKeys.add(k)
@@ -67,7 +67,7 @@ export default function DataGridDetails({
     colNames = [...unionKeys]
   }
   const widths = colNames.map(e => measureGridWidth(rows.map(r => r[e])))
-  if (unionKeys.size < keys.length + 5) {
+  if (unionKeys.size < firstRowKeyCount + 5) {
     return (
       <div className={classes.margin}>
         <FieldName prefix={prefix} name={name} />

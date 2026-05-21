@@ -29,53 +29,38 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
           model.setMode(event.target.value)
         }}
       >
-        {Object.entries({
+        {[
           ...(hasCDS
-            ? {
-                cds: 'CDS',
-              }
-            : {}),
-          ...(hasCDS
-            ? {
-                protein: 'Protein',
-              }
-            : {}),
+            ? [
+                ['cds', 'CDS'],
+                ['protein', 'Protein'],
+              ]
+            : []),
           ...(hasExonOrCDS
-            ? {
-                cdna: 'cDNA',
-              }
-            : {}),
-          ...(hasExonOrCDS
-            ? {
-                gene: 'Genomic w/ full introns',
-              }
-            : {}),
-          ...(hasExonOrCDS
-            ? {
-                gene_updownstream: `Genomic w/ full introns +/- ${upDownBp}bp up+down stream`,
-              }
-            : {}),
-          ...(hasExonOrCDS
-            ? {
-                gene_collapsed_intron: `Genomic w/ ${intronBp}bp intron`,
-              }
-            : {}),
-          ...(hasExonOrCDS
-            ? {
-                gene_updownstream_collapsed_intron: `Genomic w/ ${intronBp}bp intron +/- ${upDownBp}bp up+down stream `,
-              }
-            : {}),
+            ? [
+                ['cdna', 'cDNA'],
+                ['gene', 'Genomic w/ full introns'],
+                [
+                  'gene_updownstream',
+                  `Genomic w/ full introns +/- ${upDownBp}bp up+down stream`,
+                ],
+                ['gene_collapsed_intron', `Genomic w/ ${intronBp}bp intron`],
+                [
+                  'gene_updownstream_collapsed_intron',
+                  `Genomic w/ ${intronBp}bp intron +/- ${upDownBp}bp up+down stream`,
+                ],
+              ]
+            : []),
           ...(!hasExonOrCDS
-            ? {
-                genomic: 'Genomic',
-              }
-            : {}),
-          ...(!hasExonOrCDS
-            ? {
-                genomic_sequence_updownstream: `Genomic +/- ${upDownBp}bp up+down stream`,
-              }
-            : {}),
-        }).map(([key, val]) => (
+            ? [
+                ['genomic', 'Genomic'],
+                [
+                  'genomic_sequence_updownstream',
+                  `Genomic +/- ${upDownBp}bp up+down stream`,
+                ],
+              ]
+            : []),
+        ].map(([key, val]) => (
           <MenuItem key={key} value={key}>
             {val}
           </MenuItem>

@@ -65,7 +65,7 @@ export default function ArrayValue({
           <Attributes
             key={`${JSON.stringify(val)}-${i}`}
             formatter={formatter}
-            attributes={val as Record<string, unknown>}
+            attributes={val}
             prefix={[...prefix, `${name}-${i}`]}
           />
         ))}

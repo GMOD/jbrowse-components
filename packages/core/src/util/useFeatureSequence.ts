@@ -1,122 +1,82 @@
-import { useEffect, useMemo, useState } from 'react'
-
 import { fetchSeq } from './fetchSeq.ts'
+import { useFetch } from './useFetch.ts'
 
-import type { AbstractSessionModel, Feature } from './index.ts'
+import type { AbstractSessionModel } from './index.ts'
 
 const BPLIMIT = 20_000_000
 
 export function useFeatureSequence({
   session,
-  feature,
+  start,
+  end,
+  refName,
   upDownBp,
   forceLoad,
   assemblyName,
-  shouldFetch = true,
 }: {
-  assemblyName: string
+  assemblyName: string | undefined
   session?: AbstractSessionModel
-  feature: Feature
+  start: number
+  end: number
+  refName: string
   upDownBp: number
   forceLoad: boolean
-  shouldFetch?: boolean
 }) {
-  const [sequence, setSequence] = useState<
-    | {
-        seq: string
-        upstream: string
-        downstream: string
-      }
-    | { error: string }
-  >()
-  const [error, setError] = useState<unknown>()
-  const [loading, setLoading] = useState(false)
+  const guard = session && assemblyName ? { session, assemblyName } : null
 
-  const key = useMemo(() => {
-    if (!session || !shouldFetch) {
-      return null
-    }
-
-    const start = feature.get('start')
-    const end = feature.get('end')
-    const refName = feature.get('refName')
-
-    return {
-      start,
-      end,
-      refName,
-      assemblyName,
-      upDownBp,
-      forceLoad,
-      sessionId: session.id || 'default',
-    }
-  }, [session, feature, assemblyName, upDownBp, forceLoad, shouldFetch])
-
-  useEffect(() => {
-    if (!key) {
-      setSequence(undefined)
-      setError(undefined)
-      return
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        setLoading(true)
-        setError(undefined)
-
-        const { start, end, refName, assemblyName, upDownBp, forceLoad } = key
-
-        if (!forceLoad && end - start > BPLIMIT) {
-          setSequence({
-            error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
-          })
-          return
-        }
-
-        const b = start - upDownBp
-        const e = end + upDownBp
-
-        const [seq, upstream, downstream] = await Promise.all([
-          fetchSeq({
-            start,
-            end,
-            refName,
-            assemblyName,
-            session: session!,
-          }),
-          fetchSeq({
-            start: Math.max(0, b),
-            end: start,
-            refName,
-            assemblyName,
-            session: session!,
-          }),
-          fetchSeq({
-            start: end,
-            end: e,
-            refName,
-            assemblyName,
-            session: session!,
-          }),
-        ] as const)
-
-        setSequence({
-          seq,
-          upstream,
-          downstream,
-        })
-      } catch (err) {
-        setError(err)
-      } finally {
-        setLoading(false)
-      }
-    })()
-  }, [key, session])
-
-  return {
-    sequence,
-    loading,
+  const {
+    data: sequence,
     error,
-  }
+    isLoading: loading,
+  } = useFetch(
+    guard
+      ? [
+          'featureSequence',
+          guard.assemblyName,
+          refName,
+          start,
+          end,
+          upDownBp,
+          +forceLoad,
+        ]
+      : null,
+    guard
+      ? async () => {
+          const { session: s, assemblyName: asmName } = guard
+          if (!forceLoad && end - start > BPLIMIT) {
+            return {
+              error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
+            }
+          }
+          const b = start - upDownBp
+          const e = end + upDownBp
+          const [seq, upstream, downstream] = await Promise.all([
+            fetchSeq({
+              start,
+              end,
+              refName,
+              assemblyName: asmName,
+              session: s,
+            }),
+            fetchSeq({
+              start: Math.max(0, b),
+              end: start,
+              refName,
+              assemblyName: asmName,
+              session: s,
+            }),
+            fetchSeq({
+              start: end,
+              end: e,
+              refName,
+              assemblyName: asmName,
+              session: s,
+            }),
+          ] as const)
+          return { seq, upstream, downstream }
+        }
+      : null,
+  )
+
+  return { sequence, loading, error }
 }

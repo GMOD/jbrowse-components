@@ -5,6 +5,7 @@ import Settings from '@mui/icons-material/Settings'
 import { observer } from 'mobx-react'
 
 import CascadingMenuButton from '../../../ui/CascadingMenuButton.tsx'
+import { saveAs } from '../../../util/index.ts'
 
 import type { MenuItem } from '../../../ui/index.ts'
 import type { SequenceFeatureDetailsModel } from '../model.ts'
@@ -37,7 +38,7 @@ const SequenceFeatureMenu = observer(
                 const { default: copy } = await import('copy-to-clipboard')
                 const r = ref?.current
                 if (r) {
-                  copy(r.textContent || '', { format: 'text/plain' })
+                  await copy(r.textContent || '', { format: 'text/plain' })
                 }
               },
             },
@@ -47,15 +48,13 @@ const SequenceFeatureMenu = observer(
                 const { default: copy } = await import('copy-to-clipboard')
                 const r = ref?.current
                 if (r) {
-                  copy(r.outerHTML, { format: 'text/html' })
+                  await copy(r.outerHTML, { format: 'text/html' })
                 }
               },
             },
             {
               label: 'Download plaintext',
               onClick: async () => {
-                // eslint-disable-next-line @typescript-eslint/no-deprecated
-                const { saveAs } = await import('file-saver-es')
                 const r = ref?.current
                 if (r) {
                   saveAs(
@@ -70,8 +69,6 @@ const SequenceFeatureMenu = observer(
             {
               label: 'Download HTML',
               onClick: async () => {
-                // eslint-disable-next-line @typescript-eslint/no-deprecated
-                const { saveAs } = await import('file-saver-es')
                 const r = ref?.current
                 if (r) {
                   saveAs(

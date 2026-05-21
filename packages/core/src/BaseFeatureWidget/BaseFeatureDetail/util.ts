@@ -6,8 +6,9 @@ export function isEmpty(obj: Record<string, unknown>) {
 }
 
 export function generateTitle(name: unknown, id: unknown, type: unknown) {
-  return [ellipses(`${name || id || ''}`), `${type}`]
-    .filter(f => !!f)
+  const label = name || id
+  return [label ? ellipses(`${label}`) : '', type ? `${type}` : '']
+    .filter(Boolean)
     .join(' - ')
 }
 
