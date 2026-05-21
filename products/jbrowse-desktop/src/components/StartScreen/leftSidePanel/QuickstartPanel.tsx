@@ -32,9 +32,10 @@ export default function QuickstartPanel({
   } = useFetch(
     'listQuickstarts',
     () => ipcRenderer.invoke('listQuickstarts') as Promise<string[]>,
-    // Poll so additions from the RecentSessions panel (which writes via IPC
-    // directly without notifying this component) are reflected promptly.
-    { refreshInterval: 2000 },
+    // Poll so additions from the RecentSessions panel (addToQuickstartList
+    // writes via IPC directly without notifying this component) are reflected
+    // promptly. Dialog close handlers call mutate() for immediate updates.
+    { refreshInterval: 500 },
   )
 
   return (
