@@ -6,6 +6,7 @@ import { Button } from '@mui/material'
 import OpenSequenceDialog from '../../OpenSequenceDialog.tsx'
 import AllGenomesDialog from '../availableGenomes/AvailableGenomesDialog.tsx'
 
+import type { AssemblyConf } from '../../util.ts'
 import type { Fav, JBrowseConfig, LaunchCallback } from '../types.ts'
 
 const useStyles = makeStyles()({
@@ -54,10 +55,10 @@ export default function OpenSequencePanel({
 
       {sequenceDialogOpen ? (
         <OpenSequenceDialog
-          onClose={async (conf?: unknown) => {
+          onClose={async (conf?: AssemblyConf[]) => {
             if (conf) {
               launchFromSnap({
-                assemblies: conf as JBrowseConfig['assemblies'],
+                assemblies: conf,
                 tracks: [],
                 internetAccounts: [],
                 defaultSession: {

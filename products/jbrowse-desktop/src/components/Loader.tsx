@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { ErrorMessage, createJBrowseTheme } from '@jbrowse/core/ui'
@@ -70,14 +70,13 @@ const Loader = observer(function Loader() {
 
   useConfigLoad(config, handleSetPluginManager, setError)
 
+  const theme = useMemo(
+    () => createJBrowseTheme(undefined, undefined, localStorageGetItem('themeName') || 'default'),
+    [],
+  )
+
   return (
-    <ThemeProvider
-      theme={createJBrowseTheme(
-        undefined,
-        undefined,
-        localStorageGetItem('themeName') || 'default',
-      )}
-    >
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       {error ? <ErrorMessage error={error} /> : null}
       {pluginManager?.rootModel?.session ? (

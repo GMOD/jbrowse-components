@@ -235,7 +235,7 @@ function AdvancedOptions({
 const OpenSequenceDialog = observer(function OpenSequenceDialog({
   onClose,
 }: {
-  onClose: (conf?: unknown) => Promise<void>
+  onClose: (conf?: AssemblyConf[]) => Promise<void>
 }) {
   const { classes } = useStyles()
   const [form, setForm] = useState(initialFormState)

@@ -2,22 +2,16 @@ import { useEffect, useState } from 'react'
 
 export function useInnerDims() {
   const [height, setHeight] = useState(window.innerHeight)
-  const [width, setWidth] = useState(window.innerWidth)
 
   useEffect(() => {
-    const updateWindowDimensions = () => {
-      setWidth(window.innerWidth)
+    const update = () => {
       setHeight(window.innerHeight)
     }
-
-    window.addEventListener('resize', updateWindowDimensions)
-
+    window.addEventListener('resize', update)
     return () => {
-      window.removeEventListener('resize', updateWindowDimensions)
+      window.removeEventListener('resize', update)
     }
   }, [])
-  return {
-    height,
-    width,
-  }
+
+  return { height }
 }

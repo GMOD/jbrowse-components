@@ -25,10 +25,13 @@ export default function QuickstartPanel({
   const [renameDialogOpen, setRenameDialogOpen] = useState<string>()
   const { height: innerHeight } = useInnerDims()
 
-  const { data: quickstarts, error: listError } = useFetch(
+  const {
+    data: quickstarts,
+    error: listError,
+    mutate: refetchQuickstarts,
+  } = useFetch(
     'listQuickstarts',
     () => ipcRenderer.invoke('listQuickstarts') as Promise<string[]>,
-    { refreshInterval: 500 },
   )
 
   return (
@@ -93,6 +96,7 @@ export default function QuickstartPanel({
           quickstartToDelete={deleteDialogOpen}
           onClose={() => {
             setDeleteDialogOpen(undefined)
+            refetchQuickstarts().catch((e: unknown) => { console.error(e) })
           }}
         />
       ) : null}
@@ -103,6 +107,7 @@ export default function QuickstartPanel({
           quickstartToRename={renameDialogOpen}
           onClose={() => {
             setRenameDialogOpen(undefined)
+            refetchQuickstarts().catch((e: unknown) => { console.error(e) })
           }}
         />
       ) : null}
