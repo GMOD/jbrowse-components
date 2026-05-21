@@ -30,10 +30,11 @@ export default function LaunchBreakpointSplitViewPanel({
     : []
   const session = getSession(model)
   const assemblyName = getAssemblyName(model.view)
-  return adjacentPairs.length && assemblyName ? (
+  return error ? (
+    <ErrorBanner error={error} />
+  ) : adjacentPairs.length && assemblyName ? (
     <div>
       <Typography>Launch split view</Typography>
-      {error ? <ErrorBanner error={error} /> : null}
       <ul>
         {adjacentPairs.map(([f1, f2]) => (
           <li key={`${f1.uniqueId}-${f2.uniqueId}`}>

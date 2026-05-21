@@ -1,9 +1,6 @@
-import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
 import type { TrackInit } from '../LinearGenomeView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-type LGV = LinearGenomeViewModel
 
 export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
@@ -31,8 +28,6 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
           'No assembly provided when launching linear genome view',
         )
       }
-
-      // Use the init property to let the model handle initialization
       session.addView('LinearGenomeView', {
         init: {
           assembly,
@@ -42,7 +37,7 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
           nav,
           highlight,
         },
-      }) as LGV
+      })
     },
   )
 }

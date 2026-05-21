@@ -18,7 +18,7 @@ function LocStringList({
   locStrings: string[]
   model: VariantFeatureWidgetModel
 }) {
-  return (
+  return locStrings.length ? (
     <div>
       <Typography>Navigate to breakend endpoint in linear view:</Typography>
       <ul>
@@ -39,7 +39,7 @@ function LocStringList({
         ))}
       </ul>
     </div>
-  )
+  ) : null
 }
 
 function LaunchBreakpointSplitViewPanel({

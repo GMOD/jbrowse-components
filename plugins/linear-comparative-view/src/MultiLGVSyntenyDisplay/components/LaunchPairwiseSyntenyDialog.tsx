@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   DialogActions,
@@ -12,6 +13,22 @@ import {
   TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+
+const useStyles = makeStyles()({
+  filter: {
+    marginBottom: 8,
+  },
+  list: {
+    maxHeight: 400,
+    overflow: 'auto',
+    border: '1px solid #e0e0e0',
+    borderRadius: 4,
+  },
+  emptyMessage: {
+    padding: 8,
+    color: '#999',
+  },
+})
 
 const LaunchPairwiseSyntenyDialog = observer(
   function LaunchPairwiseSyntenyDialog({
@@ -27,16 +44,17 @@ const LaunchPairwiseSyntenyDialog = observer(
     loc: string
     trackId: string
   }) {
+    const { classes } = useStyles()
     const [filter, setFilter] = useState('')
-    const genomes = model.displayedGenomes
-    const filtered = filter
-      ? genomes.filter(g => g.toLowerCase().includes(filter.toLowerCase()))
-      : genomes
+    const filterLower = filter.toLowerCase()
+    const filtered = model.displayedGenomes.filter(g =>
+      g.toLowerCase().includes(filterLower),
+    )
 
     return (
       <Dialog
         open
-        onClose={handleClose}
+        onClose={() => { handleClose() }}
         title="Launch 2-way synteny view"
         maxWidth="sm"
         fullWidth
@@ -50,18 +68,10 @@ const LaunchPairwiseSyntenyDialog = observer(
             placeholder="Filter genomes..."
             size="small"
             fullWidth
-            style={{ marginBottom: 8 }}
+            className={classes.filter}
             autoFocus
           />
-          <List
-            dense
-            style={{
-              maxHeight: 400,
-              overflow: 'auto',
-              border: '1px solid #e0e0e0',
-              borderRadius: 4,
-            }}
-          >
+          <List dense className={classes.list}>
             {filtered.map(genome => (
               <ListItemButton
                 key={genome}
@@ -85,13 +95,13 @@ const LaunchPairwiseSyntenyDialog = observer(
             {filtered.length === 0 ? (
               <ListItemText
                 primary="No genomes match filter"
-                style={{ padding: 8, color: '#999' }}
+                className={classes.emptyMessage}
               />
             ) : null}
           </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={() => { handleClose() }}>Cancel</Button>
         </DialogActions>
       </Dialog>
     )

@@ -43,7 +43,7 @@ export default function LaunchSyntenyViewDialog({
   const [windowSize, setWindowSize] = useState('1000')
   const [useRegionOfInterest, setUseRegionOfInterest] = useState(true)
   return (
-    <Dialog open title="Launch synteny view" onClose={handleClose}>
+    <Dialog open title="Launch synteny view" onClose={() => handleClose()}>
       <DialogContent>
         {view && hasCIGAR ? (
           <FormControlLabel
@@ -86,25 +86,21 @@ export default function LaunchSyntenyViewDialog({
       <DialogActions>
         <Button
           variant="contained"
+          disabled={!Number.isFinite(+windowSize)}
           onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            ;(async () => {
-              try {
-                await navToSynteny({
-                  feature,
-                  windowSize: +windowSize,
-                  horizontallyFlip,
-                  trackId,
-                  session,
-                  region: useRegionOfInterest
-                    ? view?.dynamicBlocks.contentBlocks[0]
-                    : undefined,
-                })
-              } catch (e) {
-                console.error(e)
-                session.notifyError(`${e}`, e)
-              }
-            })()
+            navToSynteny({
+              feature,
+              windowSize: +windowSize,
+              horizontallyFlip,
+              trackId,
+              session,
+              region: useRegionOfInterest
+                ? view?.dynamicBlocks.contentBlocks[0]
+                : undefined,
+            }).catch((e: unknown) => {
+              console.error(e)
+              session.notifyError(`${e}`, e)
+            })
             handleClose()
           }}
         >
@@ -113,9 +109,7 @@ export default function LaunchSyntenyViewDialog({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
+          onClick={() => handleClose()}
         >
           Cancel
         </Button>

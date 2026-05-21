@@ -1,4 +1,3 @@
-import type { DotplotViewModel } from './DotplotView/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -15,13 +14,15 @@ export default function LaunchDotplotView(pluginManager: PluginManager) {
       views: { assembly: string }[]
       tracks?: string[]
     }) => {
-      // Use the init property to let the model handle initialization
+      if (views.length < 2) {
+        throw new Error('DotplotView requires 2 views to be specified')
+      }
       session.addView('DotplotView', {
         init: {
-          views: views.map(v => ({ assembly: v.assembly })),
+          views,
           tracks,
         },
-      }) as DotplotViewModel
+      })
     },
   )
 }
