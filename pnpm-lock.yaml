@@ -342,6 +342,8 @@ importers:
         specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
 
+  packages/cigar-utils: {}
+
   packages/core:
     dependencies:
       '@emotion/react':
@@ -482,6 +484,15 @@ importers:
       react-dom:
         specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
+
+  packages/modifications-utils:
+    dependencies:
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../cigar-utils
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
 
   packages/product-core:
     dependencies:
