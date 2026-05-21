@@ -20,42 +20,36 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
     header: string
   }>
 
+  private buildConfigured() {
+    const gffGzLocation = this.getConf('gffGzLocation')
+    const indexType = this.getConf(['index', 'indexType'])
+    const loc = this.getConf(['index', 'location'])
+    const dontRedispatch = this.getConf('dontRedispatch') as string[]
+    const gff = new TabixIndexedFile({
+      filehandle: openLocation(gffGzLocation, this.pluginManager),
+      csiFilehandle:
+        indexType === 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
+      tbiFilehandle:
+        indexType !== 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
+      chunkCacheSize: 50 * 2 ** 20,
+    })
+    return gff.getHeader().then(header => ({
+      gff,
+      dontRedispatchSet: new Set(dontRedispatch),
+      header,
+    }))
+  }
+
   protected configureOnce() {
-    if (!this.configured) {
-      const gffGzLocation = this.getConf('gffGzLocation')
-      const indexType = this.getConf(['index', 'indexType'])
-      const loc = this.getConf(['index', 'location'])
-      const dontRedispatch = this.getConf('dontRedispatch') as string[]
-      const gff = new TabixIndexedFile({
-        filehandle: openLocation(gffGzLocation, this.pluginManager),
-        csiFilehandle:
-          indexType === 'CSI'
-            ? openLocation(loc, this.pluginManager)
-            : undefined,
-        tbiFilehandle:
-          indexType !== 'CSI'
-            ? openLocation(loc, this.pluginManager)
-            : undefined,
-        chunkCacheSize: 50 * 2 ** 20,
-      })
-      this.configured = gff
-        .getHeader()
-        .then(header => ({
-          gff,
-          dontRedispatchSet: new Set(dontRedispatch),
-          header,
-        }))
-        .catch((e: unknown) => {
-          this.configured = undefined
-          throw e
-        })
-    }
+    this.configured ??= this.buildConfigured().catch((e: unknown) => {
+      this.configured = undefined
+      throw e
+    })
     return this.configured
   }
 
   async configure(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
-    return updateStatus('Downloading index', statusCallback, () =>
+    return updateStatus('Downloading index', opts?.statusCallback, () =>
       this.configureOnce(),
     )
   }
@@ -71,32 +65,23 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { gff, dontRedispatchSet } = await this.configure(opts)
-      await this.getFeaturesHelper(
-        query,
-        opts,
-        gff,
-        dontRedispatchSet,
-        observer,
-        true,
-      )
+      await this.configure(opts)
+      await this.getFeaturesHelper(query, opts, observer, true)
     }, opts.stopToken)
   }
 
   private async getFeaturesHelper(
     query: Region,
     opts: BaseOptions,
-    gff: TabixIndexedFile,
-    dontRedispatchSet: Set<string>,
     observer: Observer<Feature>,
     allowRedispatch: boolean,
     originalQuery = query,
   ) {
-    const { statusCallback = () => {} } = opts
     try {
+      const { gff, dontRedispatchSet } = await this.configureOnce()
       const lines: LineRecord[] = []
 
-      await updateStatus('Downloading features', statusCallback, () =>
+      await updateStatus('Downloading features', opts.statusCallback, () =>
         gff.getLines(
           query.refName,
           query.start,
@@ -136,8 +121,6 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           await this.getFeaturesHelper(
             { ...query, start: minStart, end: maxEnd },
             opts,
-            gff,
-            dontRedispatchSet,
             observer,
             false,
             query,

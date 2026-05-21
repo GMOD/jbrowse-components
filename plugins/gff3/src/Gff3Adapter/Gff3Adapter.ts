@@ -1,22 +1,18 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { parseStringSyncJBrowse } from 'gff-nostream'
 
-import { parseGffBuffer } from './gffParser.ts'
-
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { StatusCallback } from '@jbrowse/core/util/parseLineByLine'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
-type StatusCallback = (arg: string) => void
-
 export default class Gff3Adapter extends BaseFeatureDataAdapter {
-  calculatedIntervalTreeMap: Record<string, IntervalTree<Feature>> = {}
-
-  gffFeatures?: Promise<{
+  private gffFeatures?: Promise<{
     header: string
     intervalTreeMap: Record<
       string,
@@ -25,46 +21,59 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
   }>
 
   private async loadDataP(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
     const buffer = await fetchAndMaybeUnzip(
       openLocation(this.getConf('gffLocation'), this.pluginManager),
       opts,
     )
 
-    const { header, featureMap } = parseGffBuffer(buffer, statusCallback)
+    const headerLines: string[] = []
+    const linesByRef: Record<string, string[]> = {}
+
+    parseLineByLine(
+      buffer,
+      line => {
+        if (line.startsWith('#')) {
+          headerLines.push(line)
+        } else if (line.startsWith('>')) {
+          return false // stop at embedded FASTA
+        } else {
+          const refName = line.slice(0, line.indexOf('\t'))
+          ;(linesByRef[refName] ??= []).push(line)
+        }
+        return true
+      },
+      opts?.statusCallback,
+    )
+
+    const calculatedIntervalTreeMap: Record<string, IntervalTree<Feature>> = {}
 
     const intervalTreeMap = Object.fromEntries(
-      Object.entries(featureMap).map(([refName, linesStr]) => {
-        let lines: string | null = linesStr
+      Object.entries(linesByRef).map(([refName, refLines]) => {
+        let lines: string[] | null = refLines
         return [
           refName,
-          (sc?: (arg: string) => void) => {
-            if (!this.calculatedIntervalTreeMap[refName]) {
+          (sc?: StatusCallback) => {
+            if (!calculatedIntervalTreeMap[refName]) {
               sc?.('Parsing GFF data')
               const intervalTree = new IntervalTree<Feature>()
-              const features = parseStringSyncJBrowse(lines!)
+              const features = parseStringSyncJBrowse(lines!.join('\n') + '\n')
               lines = null
               for (let i = 0; i < features.length; i++) {
                 const f = features[i]!
-                const obj = new SimpleFeature({
-                  data: f,
-                  id: `${this.id}-${refName}-${i}`,
-                })
-                intervalTree.insert([f.start, f.end], obj)
+                intervalTree.insert(
+                  [f.start, f.end],
+                  new SimpleFeature({ data: f, id: `${this.id}-${refName}-${i}` }),
+                )
               }
-
-              this.calculatedIntervalTreeMap[refName] = intervalTree
+              calculatedIntervalTreeMap[refName] = intervalTree
             }
-            return this.calculatedIntervalTreeMap[refName]
+            return calculatedIntervalTreeMap[refName]!
           },
         ]
       }),
     )
 
-    return {
-      header,
-      intervalTreeMap,
-    }
+    return { header: headerLines.join('\n'), intervalTreeMap }
   }
 
   private async loadData(opts: BaseOptions) {
@@ -72,7 +81,6 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       this.gffFeatures = undefined
       throw e
     })
-
     return this.gffFeatures
   }
 
@@ -91,11 +99,11 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       try {
         const { start, end, refName } = query
         const { intervalTreeMap } = await this.loadData(opts)
-        for (const f of intervalTreeMap[refName]?.(opts.statusCallback).search([
-          start,
-          end,
-        ]) ?? []) {
-          observer.next(f)
+        const tree = intervalTreeMap[refName]
+        if (tree) {
+          for (const f of tree(opts.statusCallback).search([start, end])) {
+            observer.next(f)
+          }
         }
         observer.complete()
       } catch (e) {
