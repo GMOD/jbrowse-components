@@ -5,7 +5,7 @@ import {
   makeIndexType,
 } from '@jbrowse/core/util/tracks'
 
-import { multiPairTypes, syntenyTypes } from '../syntenyTypes.ts'
+import { syntenyTypes } from '../syntenyTypes.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -108,11 +108,9 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
     'Core-guessTrackTypeForLocation',
     (trackTypeGuesser: TrackTypeGuesser) => {
       return (adapterName: string) =>
-        multiPairTypes.includes(adapterName)
-          ? 'MultiSyntenyTrack'
-          : syntenyTypes.includes(adapterName)
-            ? 'SyntenyTrack'
-            : trackTypeGuesser(adapterName)
+        syntenyTypes.includes(adapterName)
+          ? 'SyntenyTrack'
+          : trackTypeGuesser(adapterName)
     },
   )
 }

@@ -500,8 +500,6 @@ importers:
         specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
 
-  packages/graph-core: {}
-
   packages/modifications-utils:
     dependencies:
       '@jbrowse/cigar-utils':
@@ -1166,36 +1164,6 @@ importers:
         specifier: ^7.8.2
         version: 7.8.2
 
-  plugins/graph:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
-      '@jbrowse/graph-core':
-        specifier: workspace:^
-        version: link:../../packages/graph-core
-      '@jbrowse/mobx-state-tree':
-        specifier: ^5.6.0
-        version: 5.6.0(mobx@6.15.3)
-      '@mui/icons-material':
-        specifier: ^9.0.1
-        version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.14)(react@19.2.6)
-      '@mui/material':
-        specifier: ^9.0.1
-        version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      mobx:
-        specifier: ^6.15.3
-        version: 6.15.3
-      mobx-react:
-        specifier: ^9.2.1
-        version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      react:
-        specifier: '>=18.0.0'
-        version: 19.2.6
-      react-dom:
-        specifier: '>=18.0.0'
-        version: 19.2.6(react@19.2.6)
-
   plugins/grid-bookmark:
     dependencies:
       '@jbrowse/core':
@@ -1735,36 +1703,6 @@ importers:
       react:
         specifier: '>=18.0.0'
         version: 19.2.6
-
-  plugins/tube-map-view:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
-      '@jbrowse/graph-core':
-        specifier: workspace:^
-        version: link:../../packages/graph-core
-      '@jbrowse/mobx-state-tree':
-        specifier: ^5.6.0
-        version: 5.6.0(mobx@6.15.3)
-      '@mui/icons-material':
-        specifier: ^9.0.1
-        version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.14)(react@19.2.6)
-      '@mui/material':
-        specifier: ^9.0.1
-        version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      mobx:
-        specifier: ^6.15.3
-        version: 6.15.3
-      mobx-react:
-        specifier: ^9.2.1
-        version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      react:
-        specifier: '>=18.0.0'
-        version: 19.2.6
-      react-dom:
-        specifier: '>=18.0.0'
-        version: 19.2.6(react@19.2.6)
 
   plugins/variants:
     dependencies:
@@ -2483,9 +2421,6 @@ importers:
       '@jbrowse/plugin-gff3':
         specifier: workspace:^
         version: link:../../plugins/gff3
-      '@jbrowse/plugin-graph':
-        specifier: workspace:^
-        version: link:../../plugins/graph
       '@jbrowse/plugin-grid-bookmark':
         specifier: workspace:^
         version: link:../../plugins/grid-bookmark
@@ -2534,9 +2469,6 @@ importers:
       '@jbrowse/plugin-trix':
         specifier: workspace:^
         version: link:../../plugins/trix
-      '@jbrowse/plugin-tube-map-view':
-        specifier: workspace:^
-        version: link:../../plugins/tube-map-view
       '@jbrowse/plugin-variants':
         specifier: workspace:^
         version: link:../../plugins/variants
@@ -2603,19 +2535,6 @@ importers:
       react-dom:
         specifier: ^19.2.6
         version: 19.2.6(react@19.2.6)
-
-  tools/graph-server:
-    dependencies:
-      express:
-        specifier: ^5.2.1
-        version: 5.2.1
-    devDependencies:
-      '@types/express':
-        specifier: ^5.0.6
-        version: 5.0.6
-      '@types/node':
-        specifier: ^25.9.0
-        version: 25.9.0
 
   website:
     dependencies:

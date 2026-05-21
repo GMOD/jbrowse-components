@@ -7,8 +7,6 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { pafIdentity, parsePAFLine } from '../util.ts'
 
-import type { MultiPairFeature, PairInfo } from '../MultiPairFeature.ts'
-import type { SyriType } from '../syriUtils.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
@@ -22,8 +20,6 @@ import type { FileLocation, Region } from '@jbrowse/core/util/types'
 interface PAFOptions extends BaseOptions {
   config?: AnyConfigurationModel
 }
-
-export type { MultiPairFeature, PairInfo } from '../MultiPairFeature.ts'
 
 export default class PAFAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -315,173 +311,5 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
       observer.complete()
     })
-  }
-
-  async getPairInfo(): Promise<PairInfo> {
-    const headerData = await this.getHeaderData()
-    return {
-      pairCount: headerData.pairCount ?? 1,
-      pairs: headerData.pairs ?? new Map(),
-      splitThreshold: headerData.splitThreshold,
-      mergeGap: headerData.mergeGap,
-    }
-  }
-
-  private chooseTierPrefix(
-    idx: number,
-    refName: string,
-    perspective: 'q' | 't',
-    useStructural: boolean,
-    useSummary: boolean,
-    summaryRefs: Set<string>,
-  ) {
-    const xp = perspective === 'q' ? 'xq' : 'xt'
-    const sp = perspective === 'q' ? 'sq' : 'st'
-
-    let prefix: string
-    if (useStructural) {
-      prefix = `${xp}${idx}`
-    } else if (useSummary) {
-      prefix = `${sp}${idx}`
-    } else {
-      prefix = `${perspective}${idx}`
-    }
-
-    if (useStructural && !summaryRefs.has(prefix + refName)) {
-      prefix = `${sp}${idx}`
-      if (!summaryRefs.has(prefix + refName)) {
-        prefix = `${perspective}${idx}`
-      }
-    } else if (useSummary && !summaryRefs.has(prefix + refName)) {
-      prefix = `${perspective}${idx}`
-    }
-
-    return prefix
-  }
-
-  private async queryPairFeatures(
-    prefix: string,
-    refName: string,
-    start: number,
-    end: number,
-    queryGenome: string,
-    _opts: { stopToken?: BaseOptions['stopToken'] },
-  ) {
-    const features: MultiPairFeature[] = []
-    const isStructural = prefix.startsWith('x')
-
-    await this.pif.getLines(prefix + refName, start, end, {
-      lineCallback: (line, fileOffset) => {
-        if (isStructural) {
-          const parts = line.split('\t')
-          features.push({
-            queryGenome,
-            origRefName: refName,
-            start: +parts[2]!,
-            end: +parts[3]!,
-            strand: parts[4] === '-' ? -1 : 1,
-            mateRefName: parts[5]!,
-            mateStart: +parts[7]!,
-            mateEnd: +parts[8]!,
-            syriType: (parts[9] || 'SYN') as SyriType,
-            identity: +(parts[10] || 0),
-            featureId: `${fileOffset}`,
-            segmentId: parts[11] || undefined,
-            cigar: undefined,
-            cs: undefined,
-          })
-        } else {
-          const r = parsePAFLine(line)
-          const { strand } = r
-          const extra = r.extra
-          features.push({
-            queryGenome,
-            origRefName: refName,
-            start: r.qstart,
-            end: r.qend,
-            strand,
-            mateRefName: r.tname,
-            mateStart: r.tstart,
-            mateEnd: r.tend,
-            syriType:
-              extra.sy !== undefined ? (extra.sy as SyriType) : undefined,
-            identity: pafIdentity(extra),
-            featureId: `${fileOffset}`,
-            segmentId: (extra.sg as string) || undefined,
-            cigar: (extra.cg as string) || undefined,
-            cs: (extra.cs as string) || undefined,
-          })
-        }
-      },
-    })
-
-    return features
-  }
-
-  async getMultiPairFeatures(
-    query: Region,
-    opts: { bpPerPx?: number; stopToken?: BaseOptions['stopToken'] } = {},
-  ) {
-    const headerData = await this.getHeaderData()
-    const { splitThreshold, mergeGap, pairCount, pairs } = headerData
-    const genomeRows = new Map<string, MultiPairFeature[]>()
-
-    if (!pairCount || !pairs) {
-      return { genomeRows }
-    }
-
-    const summaryRefs = await this.getSummaryRefNames()
-    const structuralThreshold =
-      mergeGap ?? (splitThreshold ? splitThreshold * 10 : undefined)
-    const useStructural =
-      structuralThreshold !== undefined &&
-      opts.bpPerPx !== undefined &&
-      opts.bpPerPx > structuralThreshold
-    const useSummary =
-      !useStructural &&
-      splitThreshold !== undefined &&
-      opts.bpPerPx !== undefined &&
-      opts.bpPerPx > splitThreshold
-
-    const refAssembly = query.assemblyName
-
-    // Only query pairs that directly contain the reference genome.
-    // Chained pairs (where the reference is not in the pair) are skipped
-    // because transitive coordinate projection is unreliable.
-    // For chained data, use the N-way LinearSyntenyView instead, or
-    // regenerate the PIF with --all-vs-all to get direct pairs.
-    for (const [idx, [qGenome, tGenome]] of pairs) {
-      let perspective: 'q' | 't'
-      let otherGenome: string
-      if (qGenome === refAssembly) {
-        perspective = 'q'
-        otherGenome = tGenome
-      } else if (tGenome === refAssembly) {
-        perspective = 't'
-        otherGenome = qGenome
-      } else {
-        continue
-      }
-
-      const prefix = this.chooseTierPrefix(
-        idx,
-        query.refName,
-        perspective,
-        useStructural,
-        useSummary,
-        summaryRefs,
-      )
-      const features = await this.queryPairFeatures(
-        prefix,
-        query.refName,
-        query.start,
-        query.end,
-        otherGenome,
-        opts,
-      )
-      genomeRows.set(otherGenome, features)
-    }
-
-    return { genomeRows }
   }
 }
