@@ -1,7 +1,5 @@
 import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
-import { configure } from 'mobx'
-
 import { handleRequest } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 import configSnapshot from '../../test_data/grape_peach_synteny/config.json' with { type: 'json' }
@@ -11,8 +9,6 @@ setup()
 console.warn = jest.fn()
 console.error = jest.fn()
 
-// Suppress mobx reaction errors during test teardown
-configure({ disableErrorBoundaries: true })
 
 const getFile = (url: string) => {
   // Handle relative URLs from the grape_peach_synteny config

@@ -1,13 +1,9 @@
 import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
-import { configure } from 'mobx'
-
 import { handleRequest } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
 setup()
-
-configure({ disableErrorBoundaries: true })
 
 beforeEach(() => {
   jest.spyOn(console, 'warn').mockImplementation()
