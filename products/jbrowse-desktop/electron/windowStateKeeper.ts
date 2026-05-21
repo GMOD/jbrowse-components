@@ -82,23 +82,24 @@ export default function windowStateKeeper(options: Options) {
   }
 
   function updateState() {
-    if (!winRef) {
-      return
-    }
-    try {
-      const isNormal =
-        !winRef.isMaximized() && !winRef.isMinimized() && !winRef.isFullScreen()
-      if (isNormal) {
-        const bounds = winRef.getBounds()
-        state.x = bounds.x
-        state.y = bounds.y
-        state.width = bounds.width
-        state.height = bounds.height
+    if (winRef) {
+      try {
+        const isNormal =
+          !winRef.isMaximized() &&
+          !winRef.isMinimized() &&
+          !winRef.isFullScreen()
+        if (isNormal) {
+          const bounds = winRef.getBounds()
+          state.x = bounds.x
+          state.y = bounds.y
+          state.width = bounds.width
+          state.height = bounds.height
+        }
+        state.isMaximized = winRef.isMaximized()
+        state.isFullScreen = winRef.isFullScreen()
+      } catch {
+        // Window might be destroyed before state is read
       }
-      state.isMaximized = winRef.isMaximized()
-      state.isFullScreen = winRef.isFullScreen()
-    } catch {
-      // Window might be closed
     }
   }
 

@@ -343,7 +343,12 @@ async function main() {
         const page = await browser.newPage()
         page.on('console', msg => {
           const t = msg.type()
-          if (!msg.text().includes('favicon') && !msg.text().includes('WebGL') && !msg.text().includes('GroupMarker') && !msg.text().includes('GPU stall')) {
+          if (
+            !msg.text().includes('favicon') &&
+            !msg.text().includes('WebGL') &&
+            !msg.text().includes('GroupMarker') &&
+            !msg.text().includes('GPU stall')
+          ) {
             console.error(`    browser[${t}]: ${msg.text().substring(0, 300)}`)
           }
         })

@@ -78,7 +78,9 @@ export async function cleanupLegacyQuickstarts(paths: AppPaths) {
  * Initializes the file system: creates directories and sets up initial files
  */
 export async function initializeFileSystem(paths: AppPaths) {
-  await ensureDirectoriesExist(paths)
-  await initializeRecentSessionsFile(paths)
-  await cleanupLegacyQuickstarts(paths)
+  await Promise.all([
+    ensureDirectoriesExist(paths),
+    initializeRecentSessionsFile(paths),
+    cleanupLegacyQuickstarts(paths),
+  ])
 }

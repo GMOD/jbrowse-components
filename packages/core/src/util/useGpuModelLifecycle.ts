@@ -1,5 +1,6 @@
-import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { useMemo } from 'react'
+
+import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { useGpuRenderer } from './useGpuRenderer.ts'
 import { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'

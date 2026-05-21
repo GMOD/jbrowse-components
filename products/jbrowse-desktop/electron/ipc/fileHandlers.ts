@@ -25,10 +25,7 @@ export function registerFileHandlers(paths: AppPaths) {
 
   ipcMain.handle(
     'indexFasta',
-    async (
-      _event: unknown,
-      location: { uri: string } | { localPath: string },
-    ) => {
+    async (_, location: { uri: string } | { localPath: string }) => {
       const filename =
         'localPath' in location ? location.localPath : location.uri
       const faiPath = getFaiPath(
@@ -43,7 +40,7 @@ export function registerFileHandlers(paths: AppPaths) {
     },
   )
 
-  ipcMain.handle('promptOpenFile', async (_event: unknown) => {
+  ipcMain.handle('promptOpenFile', async _ => {
     const choice = await dialog.showOpenDialog({
       defaultPath: paths.jbrowseDocDir,
       filters: FILE_FILTERS,
@@ -52,7 +49,7 @@ export function registerFileHandlers(paths: AppPaths) {
     return choice.filePaths[0]
   })
 
-  ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
+  ipcMain.handle('promptSessionSaveAs', async _ => {
     const choice = await dialog.showSaveDialog({
       defaultPath: paths.defaultSavePath,
       filters: FILE_FILTERS,

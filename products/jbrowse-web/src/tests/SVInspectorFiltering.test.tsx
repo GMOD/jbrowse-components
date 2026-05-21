@@ -38,9 +38,7 @@ test('opens SVInspector and tests data grid filtering functionality', async () =
         (v: any) => v.type === 'SvInspectorView',
       ) as SvInspectorViewModel
       expect(view).toBeDefined()
-      expect(
-        view.spreadsheetView.spreadsheet!.rows!.length,
-      ).toBeGreaterThan(0)
+      expect(view.spreadsheetView.spreadsheet!.rows!.length).toBeGreaterThan(0)
     }, delay)
 
     const svInspectorView = session.views.find(
@@ -53,9 +51,7 @@ test('opens SVInspector and tests data grid filtering functionality', async () =
     expect(spreadsheet.visibleRows).toBeDefined()
     expect(spreadsheet.visibleRows!.length).toBe(initialRowCount)
 
-    const chromosomes = new Set(
-      spreadsheet.rows!.map((row: any) => row.CHROM),
-    )
+    const chromosomes = new Set(spreadsheet.rows!.map((row: any) => row.CHROM))
     expect(chromosomes.has('A')).toBe(true)
     expect(chromosomes.has('B')).toBe(true)
 
@@ -76,7 +72,9 @@ test('opens SVInspector and tests data grid filtering functionality', async () =
       expect(JSON.stringify(row).toLowerCase()).toContain('bnd_a')
     }
 
-    expect(svInspectorView.features.length).toBe(spreadsheet.visibleRows!.length)
+    expect(svInspectorView.features.length).toBe(
+      spreadsheet.visibleRows!.length,
+    )
     expect(svInspectorView.showCircularView).toBe(true)
   })
 }, 60000)
@@ -115,7 +113,9 @@ test('SVInspector filtering updates circular view accordingly', async () => {
     const spreadsheet = svInspectorView.spreadsheetView.spreadsheet!
 
     expect(svInspectorView.showCircularView).toBe(true)
-    expect(svInspectorView.features.length).toBe(spreadsheet.visibleRows?.length)
+    expect(svInspectorView.features.length).toBe(
+      spreadsheet.visibleRows?.length,
+    )
 
     const features = svInspectorView.features
     expect(features.length).toBeGreaterThan(0)
@@ -133,6 +133,7 @@ test('SVInspector filtering updates circular view accordingly', async () => {
 
     const allRows = spreadsheet.rows!
     const visibilityMap: Record<number, boolean> = {}
+    // eslint-disable-next-line unicorn/no-array-for-each
     allRows.forEach((row: any, index: number) => {
       visibilityMap[index] = row.CHROM === 'B'
     })

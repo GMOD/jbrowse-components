@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import type React from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -18,7 +19,6 @@ import { observer } from 'mobx-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ThemeOptions } from '@mui/material'
-import type React from 'react'
 
 const useStyles = makeStyles()({
   container: {
@@ -109,7 +109,13 @@ const PreferencesDialog = observer(function PreferencesDialog({
         ))}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => handleClose()}>Close</Button>
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+        >
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   )

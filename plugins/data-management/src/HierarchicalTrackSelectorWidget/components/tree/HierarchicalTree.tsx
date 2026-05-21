@@ -1,6 +1,7 @@
 import { type RefObject, useEffect, useRef, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -49,6 +50,7 @@ function useVisibleRange(
       void model.flattenedItemOffsets
       recompute()
     })
+    addDisposer(model, dispose)
     container.addEventListener('scroll', onScroll, { passive: true })
     return () => {
       dispose()

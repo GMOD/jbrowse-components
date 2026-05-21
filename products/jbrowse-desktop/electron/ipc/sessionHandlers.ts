@@ -48,72 +48,59 @@ async function readSession(
   }
 }
 
-function upsertRecentSession(
-  sessions: RecentSession[],
-  entry: RecentSession,
-): RecentSession[] {
+function upsertRecentSession(sessions: RecentSession[], entry: RecentSession) {
   const idx = sessions.findIndex(s => s.path === entry.path)
   if (idx === -1) {
     sessions.unshift(entry)
   } else {
     sessions[idx] = entry
   }
-  return sessions
 }
 
 export function registerSessionHandlers(
   paths: AppPaths,
   getMainWindow: () => Electron.BrowserWindow | null,
 ) {
-  ipcMain.handle(
-    'listSessions',
-    async (_event: unknown, showAutosaves: boolean) => {
-      const sessions = await readRecentSessions(paths.recentSessionsPath)
+  ipcMain.handle('listSessions', async (_, showAutosaves: boolean) => {
+    const sessions = await readRecentSessions(paths.recentSessionsPath)
 
-      return showAutosaves
-        ? sessions
-        : sessions.filter(f => !f.path.startsWith(paths.autosaveDir))
-    },
-  )
+    return showAutosaves
+      ? sessions
+      : sessions.filter(f => !f.path.startsWith(paths.autosaveDir))
+  })
 
-  ipcMain.handle(
-    'loadSession',
-    async (_event: unknown, sessionPath: string) => {
-      const sessionSnapshot = await readSession(sessionPath)
-      if (!sessionSnapshot.assemblies) {
-        throw new Error(
-          `File at ${sessionPath} does not appear to be a JBrowse session. It does not contain any assemblies.`,
-        )
-      }
-      return sessionSnapshot
-    },
-  )
+  ipcMain.handle('loadSession', async (_, sessionPath: string) => {
+    const sessionSnapshot = await readSession(sessionPath)
+    if (!sessionSnapshot.assemblies) {
+      throw new Error(
+        `File at ${sessionPath} does not appear to be a JBrowse session. It does not contain any assemblies.`,
+      )
+    }
+    return sessionSnapshot
+  })
 
-  ipcMain.handle(
-    'createInitialAutosaveFile',
-    async (_event: unknown, snap: SessionSnap) => {
-      const rows = await readRecentSessions(paths.recentSessionsPath)
-      const autosavePath = path.join(paths.autosaveDir, `${Date.now()}.json`)
-      const entry: RecentSession = {
-        path: autosavePath,
-        updated: Date.now(),
-        name: snap.defaultSession?.name,
-      }
+  ipcMain.handle('createInitialAutosaveFile', async (_, snap: SessionSnap) => {
+    const rows = await readRecentSessions(paths.recentSessionsPath)
+    const autosavePath = path.join(paths.autosaveDir, `${Date.now()}.json`)
+    const entry: RecentSession = {
+      path: autosavePath,
+      updated: Date.now(),
+      name: snap.defaultSession?.name,
+    }
 
-      upsertRecentSession(rows, entry)
+    upsertRecentSession(rows, entry)
 
-      await Promise.all([
-        writeFile(paths.recentSessionsPath, stringify(rows)),
-        writeFile(autosavePath, stringify(snap)),
-      ])
+    await Promise.all([
+      writeFile(paths.recentSessionsPath, stringify(rows)),
+      writeFile(autosavePath, stringify(snap)),
+    ])
 
-      return autosavePath
-    },
-  )
+    return autosavePath
+  })
 
   ipcMain.handle(
     'saveSession',
-    async (_event: unknown, sessionPath: string, snap: SessionSnap) => {
+    async (_, sessionPath: string, snap: SessionSnap) => {
       const mainWindow = getMainWindow()
       const [page, rows] = await Promise.all([
         mainWindow?.capturePage(),
@@ -137,29 +124,26 @@ export function registerSessionHandlers(
     },
   )
 
-  ipcMain.handle(
-    'deleteSessions',
-    async (_event: unknown, sessionPaths: string[]) => {
-      const sessions = await readRecentSessions(paths.recentSessionsPath)
-      const remaining = sessions.filter(s => !sessionPaths.includes(s.path))
+  ipcMain.handle('deleteSessions', async (_, sessionPaths: string[]) => {
+    const sessions = await readRecentSessions(paths.recentSessionsPath)
+    const remaining = sessions.filter(s => !sessionPaths.includes(s.path))
 
-      await Promise.all([
-        writeFile(paths.recentSessionsPath, stringify(remaining)),
-        ...sessionPaths.flatMap(sessionPath => [
-          unlink(getThumbnailPath(paths, sessionPath)).catch((e: unknown) => {
-            console.error(e)
-          }),
-          unlink(sessionPath).catch((e: unknown) => {
-            console.error(e)
-          }),
-        ]),
-      ])
-    },
-  )
+    await Promise.all([
+      writeFile(paths.recentSessionsPath, stringify(remaining)),
+      ...sessionPaths.flatMap(sessionPath => [
+        unlink(getThumbnailPath(paths, sessionPath)).catch((e: unknown) => {
+          console.error(e)
+        }),
+        unlink(sessionPath).catch((e: unknown) => {
+          console.error(e)
+        }),
+      ]),
+    ])
+  })
 
   ipcMain.handle(
     'renameSession',
-    async (_event: unknown, sessionPath: string, newName: string) => {
+    async (_, sessionPath: string, newName: string) => {
       const sessions = await readRecentSessions(paths.recentSessionsPath)
       const session = parseJson(await readFile(sessionPath, ENCODING))
       const idx = sessions.findIndex(row => row.path === sessionPath)
@@ -182,7 +166,7 @@ export function registerSessionHandlers(
     },
   )
 
-  ipcMain.handle('loadThumbnail', async (_event: unknown, name: string) => {
+  ipcMain.handle('loadThumbnail', async (_, name: string) => {
     try {
       return await readFile(getThumbnailPath(paths, name), ENCODING)
     } catch {
@@ -190,7 +174,7 @@ export function registerSessionHandlers(
     }
   })
 
-  ipcMain.handle('reset', async (_event: unknown) => {
+  ipcMain.handle('reset', async _ => {
     const [autosaveFiles, thumbnailFiles] = await Promise.all([
       fs.promises.readdir(paths.autosaveDir).catch(() => [] as string[]),
       fs.promises.readdir(paths.thumbnailDir).catch(() => [] as string[]),

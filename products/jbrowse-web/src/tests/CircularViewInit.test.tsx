@@ -1,12 +1,15 @@
 import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
+
 import { handleRequest } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
 setup()
 
-console.warn = jest.fn()
-console.error = jest.fn()
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
+})
 
 const getFile = (url: string) => {
   const cleanUrl = url.replace(/http:\/\/localhost\//, '')
@@ -27,6 +30,7 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
 afterEach(() => {
   localStorage.clear()
   sessionStorage.clear()
+  jest.restoreAllMocks()
 })
 
 async function createCircularViewWithInit(init: {

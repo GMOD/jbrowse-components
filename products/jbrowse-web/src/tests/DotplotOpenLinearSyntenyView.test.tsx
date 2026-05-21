@@ -1,13 +1,16 @@
 import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
+
 import { handleRequest } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 import configSnapshot from '../../test_data/grape_peach_synteny/config.json' with { type: 'json' }
 
 setup()
 
-console.warn = jest.fn()
-console.error = jest.fn()
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
+})
 
 const getFile = (url: string) => {
   const cleanUrl = url.replace(/http:\/\/localhost\//, '')
@@ -28,6 +31,7 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
 afterEach(() => {
   localStorage.clear()
   sessionStorage.clear()
+  jest.restoreAllMocks()
 })
 
 test('Open linear synteny view from dotplot view', async () => {

@@ -46,70 +46,67 @@ export function createPluginManager(
     adminMode: !!model.adminKey,
   })
 
-  if (model.configSnapshot) {
-    const rootModel = RootModel.create(
-      {
-        jbrowse: model.configSnapshot,
-        configPath: model.configPath,
-      },
-      { pluginManager },
-    )
+  const rootModel = RootModel.create(
+    {
+      jbrowse: model.configSnapshot,
+      configPath: model.configPath,
+    },
+    { pluginManager },
+  )
 
-    rootModel.setReloadPluginManagerCallback(reloadPluginManagerCallback)
+  rootModel.setReloadPluginManagerCallback(reloadPluginManagerCallback)
 
-    const configuredRpc = (
-      model.configSnapshot as {
-        configuration?: { rpc?: { defaultDriver?: unknown } }
-      }
-    ).configuration?.rpc?.defaultDriver
-    if (!configuredRpc) {
-      rootModel.jbrowse.configuration.rpc.defaultDriver.set(
-        'WebWorkerRpcDriver',
-      )
+  const configuredRpc = (
+    model.configSnapshot as {
+      configuration?: { rpc?: { defaultDriver?: unknown } }
     }
-
-    const { sessionError, sessionSpec, sessionSnapshot, hubSpec, sessionName } =
-      model
-    let pendingSessionInit: (() => unknown) | undefined
-
-    // in order: saves the previous autosave for recovery, tries to load the
-    // local session if session in query, or loads the default session
-    try {
-      if (sessionError) {
-        // eslint-disable-next-line @typescript-eslint/only-throw-error
-        throw sessionError
-      } else if (sessionSnapshot) {
-        rootModel.setSession(sessionSnapshot)
-      } else if (hubSpec) {
-        pendingSessionInit = () =>
-          // @ts-expect-error
-          loadHubSpec({ ...hubSpec, sessionName }, pluginManager)
-      } else if (sessionSpec) {
-        pendingSessionInit = () =>
-          // @ts-expect-error
-          loadSessionSpec({ ...sessionSpec, sessionName }, pluginManager)
-      } else {
-        rootModel.setDefaultSession()
-        if (sessionName) {
-          rootModel.renameCurrentSession(sessionName)
-        }
-      }
-    } catch (e) {
-      rootModel.setDefaultSession()
-      rootModel.session?.notifyError(
-        `${formatSessionError(e)}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
-        model.sessionError,
-        model.sessionSnapshot,
-      )
-      console.error(e)
-    }
-
-    doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
-    pluginManager.setRootModel(rootModel)
-    pluginManager.configure()
-    pendingSessionInit?.()
-    return pluginManager
-  } else {
-    return undefined
+  ).configuration?.rpc?.defaultDriver
+  if (!configuredRpc) {
+    rootModel.jbrowse.configuration.rpc.defaultDriver.set('WebWorkerRpcDriver')
   }
+
+  const { sessionError, sessionSpec, sessionSnapshot, hubSpec, sessionName } =
+    model
+
+  // hub/spec sessions need a configured pluginManager (views/tracks registered)
+  // so they are deferred until after pluginManager.configure() below
+  let initAfterConfigure: (() => unknown) | undefined
+
+  // in order: saves the previous autosave for recovery, tries to load the
+  // local session if session in query, or loads the default session
+  try {
+    if (sessionError) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
+      throw sessionError
+    } else if (sessionSnapshot) {
+      rootModel.setSession(sessionSnapshot)
+    } else if (hubSpec) {
+      initAfterConfigure = () =>
+        // @ts-expect-error
+        loadHubSpec({ ...hubSpec, sessionName }, pluginManager)
+    } else if (sessionSpec) {
+      initAfterConfigure = () =>
+        // @ts-expect-error
+        loadSessionSpec({ ...sessionSpec, sessionName }, pluginManager)
+    } else {
+      rootModel.setDefaultSession()
+      if (sessionName) {
+        rootModel.renameCurrentSession(sessionName)
+      }
+    }
+  } catch (e) {
+    rootModel.setDefaultSession()
+    rootModel.session?.notifyError(
+      `${formatSessionError(e)}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
+      model.sessionError,
+      model.sessionSnapshot,
+    )
+    console.error(e)
+  }
+
+  doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
+  pluginManager.setRootModel(rootModel)
+  pluginManager.configure()
+  initAfterConfigure?.()
+  return pluginManager
 }

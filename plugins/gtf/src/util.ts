@@ -24,7 +24,10 @@ const defaultFields = new Set([
   'strand',
 ])
 
-export function featureData(data: FeatureLoc, id?: string) {
+export function featureData(
+  data: FeatureLoc,
+  id?: string,
+): Record<string, unknown> {
   // process attributes: lowercase keys, suffix clashes with default fields,
   // unwrap single-element arrays, strip GTF double-quotes
   const processedAttrs = Object.fromEntries(
