@@ -38,9 +38,7 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
         onChange={asm => {
           setR0(asm)
         }}
-        TextFieldProps={{
-          fullWidth: true,
-        }}
+        fullWidth
       />
       <AssemblySelector
         session={session}
@@ -50,9 +48,7 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
         onChange={asm => {
           setR1(asm)
         }}
-        TextFieldProps={{
-          fullWidth: true,
-        }}
+        fullWidth
       />
       <FileSelector
         name="BED1"

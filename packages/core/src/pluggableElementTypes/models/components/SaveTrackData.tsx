@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
+import HelpOutlinedIcon from '@mui/icons-material/HelpOutlined'
 import {
   Button,
   DialogActions,
@@ -219,7 +219,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
                     }}
                     title="Show help for this format"
                   >
-                    <HelpOutlineIcon fontSize="small" />
+                    <HelpOutlinedIcon fontSize="small" />
                   </IconButton>
                 ) : null}
               </div>

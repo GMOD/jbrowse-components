@@ -102,7 +102,7 @@ const ImportSyntenyOpenCustomTrack = observer(
             setValue(event.target.value)
           }}
         >
-          <Grid container justifyContent="center">
+          <Grid container sx={{ justifyContent: 'center' }}>
             {[
               '.paf',
               '.delta',
@@ -121,7 +121,7 @@ const ImportSyntenyOpenCustomTrack = observer(
             ))}
           </Grid>
         </RadioGroup>
-        <Grid container justifyContent="center">
+        <Grid container sx={{ justifyContent: 'center' }}>
           {radioOption === '.paf' ||
           radioOption === '.out' ||
           radioOption === '.delta' ||

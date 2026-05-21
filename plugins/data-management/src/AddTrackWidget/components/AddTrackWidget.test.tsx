@@ -114,7 +114,7 @@ test('adds a track', async () => {
   })
   fireEvent.mouseDown(getByTestId('trackTypeSelect'))
   fireEvent.click(await findByText('Feature track'))
-  fireEvent.mouseDown(getByTestId('assemblyNameSelect'))
+  fireEvent.mouseDown(getByTestId('assembly-selector-textfield'))
   fireEvent.click((await findAllByText('volMyt1'))[1]!)
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
   expect(session.sessionTracks.length).toBe(2)

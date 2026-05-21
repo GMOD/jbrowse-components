@@ -27,9 +27,7 @@ const ComparativeAddTrackComponent = observer(
           onChange={asm => {
             setR0(asm)
           }}
-          TextFieldProps={{
-            fullWidth: true,
-          }}
+          fullWidth
         />
         <AssemblySelector
           session={session}
@@ -39,9 +37,7 @@ const ComparativeAddTrackComponent = observer(
           onChange={asm => {
             setR1(asm)
           }}
-          TextFieldProps={{
-            fullWidth: true,
-          }}
+          fullWidth
         />
       </>
     )

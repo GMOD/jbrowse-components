@@ -30,7 +30,7 @@ const FacetedHeader = observer(function FacetedHeader({
 
   return (
     <>
-      <Grid container alignItems="center">
+      <Grid container sx={{ alignItems: 'center' }}>
         <ClearableSearchField
           label="Search..."
           value={filterText}

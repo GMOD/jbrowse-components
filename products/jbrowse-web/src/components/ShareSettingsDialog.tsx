@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
+import HelpOutlinedIcon from '@mui/icons-material/HelpOutlined'
 import {
   DialogContent,
   DialogContentText,
@@ -45,7 +45,7 @@ export default function SettingsDialog(props: {
                 setInfoDialogOpen(true)
               }}
             >
-              <HelpOutlineIcon />
+              <HelpOutlinedIcon />
             </IconButton>
           </DialogContentText>
           <FormControl component="fieldset">

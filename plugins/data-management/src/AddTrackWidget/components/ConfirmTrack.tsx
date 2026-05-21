@@ -89,15 +89,7 @@ const ConfirmTrack = observer(function ConfirmTrack({
           onChange={asm => {
             model.setAssembly(asm)
           }}
-          TextFieldProps={{
-            fullWidth: true,
-            SelectProps: {
-              SelectDisplayProps: {
-                // @ts-expect-error
-                'data-testid': 'assemblyNameSelect',
-              },
-            },
-          }}
+          fullWidth
         />
       ),
       { model },
