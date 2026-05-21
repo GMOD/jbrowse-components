@@ -115,6 +115,20 @@ export default function GenomesDataTable({
   const [multipleSelection, setMultipleSelection] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [pageIndex, setPageIndex] = useState(0)
+
+  // Reset to first page whenever the result set changes so we don't land on an empty page
+  const setSearchQueryAndReset = (q: string) => {
+    setSearchQuery(q)
+    setPageIndex(0)
+  }
+  const setFilterOptionAndReset = (f: FilterOption) => {
+    setFilterOption(f)
+    setPageIndex(0)
+  }
+  const setTypeOptionAndReset = (t: string) => {
+    setTypeOption(t)
+    setPageIndex(0)
+  }
   const [pageSize, setPageSize] = useState(50)
   const [sorting, setSorting] = useState<{
     id: string
@@ -157,7 +171,7 @@ export default function GenomesDataTable({
         ])
       }
     },
-    [setFavorites, favorites, favs],
+    [setFavorites, favorites],
   )
 
   const { data, error } = useGenomesData({
@@ -241,14 +255,14 @@ export default function GenomesDataTable({
           </Button>
         ) : null}
 
-        <SearchField searchQuery={searchQuery} onChange={setSearchQuery} />
+        <SearchField searchQuery={searchQuery} onChange={setSearchQueryAndReset} />
 
         <CategorySelector
           categories={categories}
           typeOption={typeOption}
           categoriesLoading={categoriesLoading}
           categoriesError={categoriesError}
-          onChange={setTypeOption}
+          onChange={setTypeOptionAndReset}
         />
         <CascadingMenuButton
           menuItems={[
@@ -267,6 +281,7 @@ export default function GenomesDataTable({
               type: 'checkbox',
               onClick: () => {
                 setShowOnlyFavs(!showOnlyFavs)
+                setPageIndex(0)
               },
             },
             ...(typeOption !== 'ucsc'
@@ -288,7 +303,7 @@ export default function GenomesDataTable({
                         type: 'radio' as const,
                         checked: filterOption === 'all',
                         onClick: () => {
-                          setFilterOption('all')
+                          setFilterOptionAndReset('all')
                         },
                       },
                       {
@@ -296,7 +311,7 @@ export default function GenomesDataTable({
                         type: 'radio' as const,
                         checked: filterOption === 'refseq',
                         onClick: () => {
-                          setFilterOption('refseq')
+                          setFilterOptionAndReset('refseq')
                         },
                       },
                       {
@@ -304,7 +319,7 @@ export default function GenomesDataTable({
                         type: 'radio' as const,
                         checked: filterOption === 'genbank',
                         onClick: () => {
-                          setFilterOption('genbank')
+                          setFilterOptionAndReset('genbank')
                         },
                       },
                       {
@@ -312,7 +327,7 @@ export default function GenomesDataTable({
                         type: 'radio' as const,
                         checked: filterOption === 'designatedReference',
                         onClick: () => {
-                          setFilterOption('designatedReference')
+                          setFilterOptionAndReset('designatedReference')
                         },
                       },
                     ],

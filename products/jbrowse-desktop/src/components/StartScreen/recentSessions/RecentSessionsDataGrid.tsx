@@ -12,7 +12,6 @@ import SessionNameCell from './SessionNameCell.tsx'
 import { useInnerDims } from '../availableGenomes/util.ts'
 
 import type { RecentSessionData } from '../types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   GridRenderCellParams,
   GridRowSelectionModel,
@@ -29,18 +28,16 @@ const useStyles = makeStyles()({
 const oneDayMs = 24 * 60 * 60 * 1000
 
 function RecentSessionsList({
-  setError,
+  launch,
   sessions,
   setSelectedSessions,
   setSessionToRename,
-  setPluginManager,
   favorites,
   toggleFavorite,
   addToQuickstartList,
 }: {
-  setError: (e: unknown) => void
+  launch: (path: string) => Promise<void>
   setSessionToRename: (arg: RecentSessionData) => void
-  setPluginManager: (pm: PluginManager) => void
   setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
   favorites: string[]
@@ -64,17 +61,8 @@ function RecentSessionsList({
     return { ...session, showDateTooltip, lastModified }
   })
 
-  const widths = Object.fromEntries(
-    ['name', 'path', 'lastModified'].map(e => [
-      e,
-      e === 'path'
-        ? 200
-        : measureGridWidth(
-            rows.map(r => r[e as keyof (typeof rows)[0]]),
-            { stripHTML: true },
-          ) + 40,
-    ]),
-  )
+  const nameWidth = measureGridWidth(rows.map(r => r.name), { stripHTML: true }) + 40
+  const lastModifiedWidth = measureGridWidth(rows.map(r => r.lastModified), { stripHTML: true }) + 40
 
   const favs = new Set(favorites)
 
@@ -82,14 +70,13 @@ function RecentSessionsList({
     {
       field: 'name',
       headerName: 'Session name',
-      width: widths.name,
+      width: nameWidth,
       renderCell: ({ value, row }: GridRenderCellParams) => (
         <SessionNameCell
           value={String(value)}
           row={row}
           isFavorite={favs.has(row.path)}
-          setPluginManager={setPluginManager}
-          setError={setError}
+          launch={launch}
           toggleFavorite={toggleFavorite}
           setSessionToRename={setSessionToRename}
           addToQuickstartList={addToQuickstartList}
@@ -99,7 +86,7 @@ function RecentSessionsList({
     {
       field: 'path',
       headerName: 'Session path',
-      width: widths.path,
+      width: 200,
       renderCell: ({ value }: GridRenderCellParams) => (
         <Tooltip title={String(value)}>
           <div className={classes.cell}>{String(value)}</div>
@@ -109,7 +96,7 @@ function RecentSessionsList({
     {
       field: 'lastModified',
       headerName: 'Last modified',
-      width: widths.lastModified,
+      width: lastModifiedWidth,
       renderCell: ({ row }: GridRenderCellParams) => (
         <DateSinceLastUsed row={row} />
       ),

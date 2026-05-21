@@ -16,7 +16,7 @@ const DeleteSessionDialog = ({
   return (
     <ConfirmDialog
       open
-      title={`Delete ${sessionsToDelete.length} sessions?`}
+      title={`Delete ${sessionsToDelete.length} ${sessionsToDelete.length === 1 ? 'session' : 'sessions'}?`}
       onSubmit={async () => {
         try {
           await ipcRenderer.invoke(

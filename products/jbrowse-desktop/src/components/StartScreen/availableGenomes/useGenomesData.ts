@@ -8,7 +8,7 @@ type RawData = RawEntry[] | { ucscGenomes: Record<string, RawEntry> }
 
 function normalizeEntries(data: RawData): RawEntry[] {
   return Array.isArray(data)
-    ? data.map(r => ({ ...r, id: r.accession })).filter(r => !!r.id)
+    ? data.map(r => ({ ...r, id: r.accession })).filter(r => r.id)
     : Object.values(data.ucscGenomes)
 }
 

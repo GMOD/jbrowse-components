@@ -1,23 +1,19 @@
 import { Grid } from '@mui/material'
 
 import SessionCard from './RecentSessionCard.tsx'
-import { loadPluginManager } from '../util.tsx'
 
 import type { RecentSessionData } from '../types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function RecentSessionsCards({
   sessions,
-  setError,
   setSessionsToDelete,
   setSessionToRename,
-  setPluginManager,
+  launch,
   addToQuickstartList,
 }: {
-  setError: (e: unknown) => void
   setSessionsToDelete: (e: RecentSessionData[]) => void
   setSessionToRename: (arg: RecentSessionData) => void
-  setPluginManager: (pm: PluginManager) => void
+  launch: (path: string) => Promise<void>
   sessions: RecentSessionData[]
   addToQuickstartList: (arg: RecentSessionData) => Promise<void>
 }) {
@@ -28,13 +24,7 @@ export default function RecentSessionsCards({
           key={session.path}
           sessionData={session}
           onClick={async () => {
-            try {
-              const pm = await loadPluginManager(session.path)
-              setPluginManager(pm)
-            } catch (e) {
-              console.error(e)
-              setError(e)
-            }
+            await launch(session.path)
           }}
           onDelete={del => {
             setSessionsToDelete([del])

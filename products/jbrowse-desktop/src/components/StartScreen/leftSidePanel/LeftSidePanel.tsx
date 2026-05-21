@@ -41,7 +41,7 @@ async function getQuickstarts(sel: string[]) {
   )
 }
 
-export default function LauncherPanel({
+export default function LeftSidePanel({
   setPluginManager,
 }: {
   setPluginManager: (arg0: PluginManager) => void
