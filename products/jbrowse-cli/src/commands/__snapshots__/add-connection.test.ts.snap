@@ -61,7 +61,7 @@ exports[`can use --force to overwrite an existing connection 1`] = `
 
 exports[`fails if data directory is not an url 1`] = `
 "Error: Unknown command "add-connection ."
-Available commands: create, add-assembly, add-track, text-index, admin-server, upgrade, make-gfa-db, make-pif, sort-gff, sort-bed, add-connection, add-track-json, remove-track, set-default-session"
+Available commands: create, add-assembly, add-track, text-index, admin-server, upgrade, make-pif, sort-gff, sort-bed, add-connection, add-track-json, remove-track, set-default-session"
 `;
 
 exports[`fails if no config file 1`] = `"Error: Error: ENOENT: no such file or directory, open './config.json'"`;

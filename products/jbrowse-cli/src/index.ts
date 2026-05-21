@@ -25,10 +25,6 @@ const commands = {
   'text-index': textIndexRun,
   'admin-server': adminServerRun,
   upgrade: upgradeRun,
-  'make-gfa-db': async (args: string[]) => {
-    const { run } = await import('./commands/make-gfa-db/index.ts')
-    return run(args)
-  },
   'make-pif': makePIFRun,
   'sort-gff': sortGffRun,
   'sort-bed': sortBedRun,
@@ -122,7 +118,6 @@ COMMANDS
   text-index           Make a text-indexing file for any given track(s)
   admin-server         Start up a small admin server for JBrowse configuration
   upgrade              Upgrades JBrowse 2 to latest version
-  make-gfa-db          Converts GFA to indexed SQLite database for runtime querying
   make-pif             Creates pairwise indexed PAF (PIF), with bgzip and tabix
   sort-gff             Helper utility to sort GFF files for tabix
   sort-bed             Helper utility to sort BED files for tabix
