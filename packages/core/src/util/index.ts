@@ -53,7 +53,6 @@ export * from './fetchJson.ts'
 export * from './sessionSharing.ts'
 export * from './coarseStripHTML.ts'
 export * from './measureText.ts'
-export { IntervalTree } from './IntervalTree.ts'
 
 export * from './offscreenCanvasPonyfill.ts'
 export * from './offscreenCanvasUtils.tsx'
