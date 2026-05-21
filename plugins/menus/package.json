@@ -34,8 +34,8 @@
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@mui/icons-material": "^7.3.11",
     "@mui/material": "^7.3.11",
-    "@mui/x-data-grid": "^8.28.2",
-    "date-fns": "^4.1.0",
+    "@mui/x-data-grid": "^8.28.7",
+    "date-fns": "^4.2.1",
     "mobx": "^6.15.3",
     "mobx-react": "^9.2.1",
     "react-dropzone": "^15.0.0"

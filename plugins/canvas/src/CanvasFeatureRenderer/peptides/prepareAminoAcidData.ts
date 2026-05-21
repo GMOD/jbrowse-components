@@ -21,7 +21,6 @@ export function prepareAminoAcidData(
 ) {
   return aggregateAminos(
     protein,
-    // @ts-expect-error - g2p_mapper types
     genomeToTranscriptSeqMapping(parent.toJSON()).g2p,
     featureStart,
     featureEnd,
