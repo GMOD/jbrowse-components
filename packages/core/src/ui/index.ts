@@ -1,11 +1,16 @@
 export * from './theme.ts'
+export { default as BaseExportSvgDialog } from './BaseExportSvgDialog.tsx'
+export type { BaseExportSvgOptions } from './BaseExportSvgDialog.tsx'
 export { LogoFull, Logomark } from './Logo.tsx'
 export { default as AssemblySelector } from './AssemblySelector.tsx'
 export { default as CascadingMenu } from './CascadingMenu.tsx'
 export { default as CascadingMenuButton } from './CascadingMenuButton.tsx'
 export { default as Dialog } from './Dialog.tsx'
 export { default as EditableTypography } from './EditableTypography.tsx'
-export { default as ErrorMessage } from './ErrorMessage.tsx'
+export {
+  default as ErrorMessage,
+  default as ErrorBanner,
+} from './ErrorMessage.tsx'
 export { default as FatalErrorDialog } from './FatalErrorDialog.tsx'
 export { default as FileSelector } from './FileSelector/FileSelector.tsx'
 export { default as LoadingEllipses } from './LoadingEllipses.tsx'

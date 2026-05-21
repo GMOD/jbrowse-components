@@ -7,6 +7,7 @@ import {
   isAbortException,
   isFeature,
 } from '@jbrowse/core/util'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   getRpcSessionId,
@@ -164,7 +165,9 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
                   { adapterConfig, regions, stopToken },
                 )
                 if (isAlive(self) && renderStopToken === stopToken) {
-                  self.setFeatures(new Map(feats.map(f => [f.id(), f])))
+                  self.setFeatures(
+                    new Map((feats as SimpleFeature[]).map(f => [f.id(), f])),
+                  )
                 }
               } catch (e) {
                 if (
