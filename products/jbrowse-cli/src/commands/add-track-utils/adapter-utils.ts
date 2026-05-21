@@ -8,19 +8,313 @@ interface LocalPathLocation {
   locationType: 'LocalPathLocation'
 }
 
-export function makeLocationProtocol(protocol: string) {
-  return (location: string) => {
-    if (protocol === 'uri') {
+type Location = UriLocation | LocalPathLocation
+
+export interface Adapter {
+  type: string
+  [key: string]: unknown
+}
+
+type AdapterSpec =
+  | { kind: 'single'; adapterType: string; locField: string }
+  | { kind: 'bam' }
+  | { kind: 'cram' }
+  | { kind: 'tabix'; adapterType: string; locField: string }
+  | { kind: 'indexed-fasta' }
+  | { kind: 'bgzip-fasta' }
+  | { kind: 'anchors'; adapterType: string; locField: string }
+  | { kind: 'nclist' }
+  | { kind: 'sparql' }
+  | { kind: 'unsupported' }
+
+const formats: { regex: RegExp; spec: AdapterSpec }[] = [
+  { regex: /\.bam$/i, spec: { kind: 'bam' } },
+  { regex: /\.cram$/i, spec: { kind: 'cram' } },
+  {
+    regex: /\.gff3?\.b?gz$/i,
+    spec: {
+      kind: 'tabix',
+      adapterType: 'Gff3TabixAdapter',
+      locField: 'gffGzLocation',
+    },
+  },
+  {
+    regex: /\.gff3?$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'Gff3Adapter',
+      locField: 'gffLocation',
+    },
+  },
+  {
+    regex: /\.gtf?$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'GtfAdapter',
+      locField: 'gtfLocation',
+    },
+  },
+  {
+    regex: /\.vcf\.b?gz$/i,
+    spec: {
+      kind: 'tabix',
+      adapterType: 'VcfTabixAdapter',
+      locField: 'vcfGzLocation',
+    },
+  },
+  { regex: /\.vcf\.idx$/i, spec: { kind: 'unsupported' } },
+  {
+    regex: /\.vcf$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'VcfAdapter',
+      locField: 'vcfLocation',
+    },
+  },
+  {
+    regex: /\.bedpe(\.gz)?$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'BedpeAdapter',
+      locField: 'bedpeLocation',
+    },
+  },
+  {
+    regex: /\.bed\.b?gz$/i,
+    spec: {
+      kind: 'tabix',
+      adapterType: 'BedTabixAdapter',
+      locField: 'bedGzLocation',
+    },
+  },
+  {
+    regex: /\.pif\.b?gz$/i,
+    spec: {
+      kind: 'tabix',
+      adapterType: 'PairwiseIndexedPAFAdapter',
+      locField: 'pifGzLocation',
+    },
+  },
+  {
+    regex: /\.bed$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'BedAdapter',
+      locField: 'bedLocation',
+    },
+  },
+  {
+    regex: /\.(bb|bigbed)$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'BigBedAdapter',
+      locField: 'bigBedLocation',
+    },
+  },
+  {
+    regex: /\.(bw|bigwig)$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'BigWigAdapter',
+      locField: 'bigWigLocation',
+    },
+  },
+  { regex: /\.(fa|fasta|fna|mfa)\.b?gz$/i, spec: { kind: 'bgzip-fasta' } },
+  { regex: /\.(fa|fasta|fna|mfa)$/i, spec: { kind: 'indexed-fasta' } },
+  {
+    regex: /\.2bit$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'TwoBitAdapter',
+      locField: 'twoBitLocation',
+    },
+  },
+  { regex: /\.sizes$/i, spec: { kind: 'unsupported' } },
+  { regex: /\/trackData\.jsonz?$/i, spec: { kind: 'nclist' } },
+  { regex: /\/sparql$/i, spec: { kind: 'sparql' } },
+  {
+    regex: /\.hic$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'HicAdapter',
+      locField: 'hicLocation',
+    },
+  },
+  {
+    regex: /\.paf(\.gz)?$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'PAFAdapter',
+      locField: 'pafLocation',
+    },
+  },
+  {
+    regex: /\.out(\.gz)?$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'MashMapAdapter',
+      locField: 'outLocation',
+    },
+  },
+  {
+    regex: /\.chain(\.gz)?$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'ChainAdapter',
+      locField: 'chainLocation',
+    },
+  },
+  {
+    regex: /\.delta(\.gz)?$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'DeltaAdapter',
+      locField: 'deltaLocation',
+    },
+  },
+  {
+    regex: /\.anchors\.simple(\.gz)?$/i,
+    spec: {
+      kind: 'anchors',
+      adapterType: 'MCScanSimpleAnchorsAdapter',
+      locField: 'mcscanSimpleAnchorsLocation',
+    },
+  },
+  {
+    regex: /\.anchors(\.gz)?$/i,
+    spec: {
+      kind: 'anchors',
+      adapterType: 'MCScanAnchorsAdapter',
+      locField: 'mcscanAnchorsLocation',
+    },
+  },
+]
+
+const adapterTypeToSpec: Record<
+  string,
+  { kind: AdapterSpec['kind']; locField?: string }
+> = {}
+for (const { spec } of formats) {
+  if (
+    spec.kind === 'single' ||
+    spec.kind === 'tabix' ||
+    spec.kind === 'anchors'
+  ) {
+    adapterTypeToSpec[spec.adapterType] = {
+      kind: spec.kind,
+      locField: spec.locField,
+    }
+  }
+}
+
+function indexType(index: string | undefined, fallback: 'BAI' | 'TBI'): string {
+  return index?.toUpperCase().endsWith('CSI') ? 'CSI' : fallback
+}
+
+function specToFiles(
+  spec: AdapterSpec,
+  location: string,
+  index: string | undefined,
+  bed1: string | undefined,
+  bed2: string | undefined,
+): Record<string, string | undefined> {
+  switch (spec.kind) {
+    case 'bam':
+      return { file: location, index: index || `${location}.bai` }
+    case 'cram':
+      return { file: location, index: `${location}.crai` }
+    case 'tabix':
+      return { file: location, index: index || `${location}.tbi` }
+    case 'indexed-fasta':
+      return { file: location, index: index || `${location}.fai` }
+    case 'bgzip-fasta':
       return {
-        uri: location,
-        locationType: 'UriLocation',
-      } as UriLocation
+        file: location,
+        index: `${location}.fai`,
+        index2: `${location}.gzi`,
+      }
+    case 'anchors':
+      return { file: location, bed1, bed2 }
+    case 'single':
+    case 'nclist':
+    case 'sparql':
+      return { file: location }
+    case 'unsupported':
+      return {}
+  }
+}
+
+function specToAdapter(
+  spec: AdapterSpec,
+  location: string,
+  index: string | undefined,
+  bed1: string | undefined,
+  bed2: string | undefined,
+  makeLocation: (l: string) => Location,
+): Adapter {
+  switch (spec.kind) {
+    case 'single':
+      return { type: spec.adapterType, [spec.locField]: makeLocation(location) }
+    case 'bam':
+      return {
+        type: 'BamAdapter',
+        bamLocation: makeLocation(location),
+        index: {
+          location: makeLocation(index || `${location}.bai`),
+          indexType: indexType(index, 'BAI'),
+        },
+      }
+    case 'cram':
+      return {
+        type: 'CramAdapter',
+        cramLocation: makeLocation(location),
+        craiLocation: makeLocation(`${location}.crai`),
+      }
+    case 'tabix':
+      return {
+        type: spec.adapterType,
+        [spec.locField]: makeLocation(location),
+        index: {
+          location: makeLocation(index || `${location}.tbi`),
+          indexType: indexType(index, 'TBI'),
+        },
+      }
+    case 'indexed-fasta':
+      return {
+        type: 'IndexedFastaAdapter',
+        fastaLocation: makeLocation(location),
+        faiLocation: makeLocation(index || `${location}.fai`),
+      }
+    case 'bgzip-fasta':
+      return {
+        type: 'BgzipFastaAdapter',
+        fastaLocation: makeLocation(location),
+        faiLocation: makeLocation(`${location}.fai`),
+        gziLocation: makeLocation(`${location}.gzi`),
+      }
+    case 'anchors':
+      return {
+        type: spec.adapterType,
+        [spec.locField]: makeLocation(location),
+        bed1Location: bed1 ? makeLocation(bed1) : undefined,
+        bed2Location: bed2 ? makeLocation(bed2) : undefined,
+      }
+    case 'nclist':
+      return { type: 'NCListAdapter', rootUrlTemplate: makeLocation(location) }
+    case 'sparql':
+      return { type: 'SPARQLAdapter', endpoint: location }
+    case 'unsupported':
+      return { type: 'UNSUPPORTED' }
+  }
+}
+
+export function makeLocationProtocol(protocol: string) {
+  return (location: string): Location => {
+    if (protocol === 'uri') {
+      return { uri: location, locationType: 'UriLocation' }
     }
     if (protocol === 'localPath') {
-      return {
-        localPath: location,
-        locationType: 'LocalPathLocation',
-      } as LocalPathLocation
+      return { localPath: location, locationType: 'LocalPathLocation' }
     }
     throw new Error(`invalid protocol ${protocol}`)
   }
@@ -37,66 +331,11 @@ export function guessFileNames({
   bed1?: string
   bed2?: string
 }) {
-  if (/\.anchors(\.simple)?$/i.test(location)) {
-    return {
-      file: location,
-      bed1: bed1!,
-      bed2: bed2!,
-    }
-  } else if (/\.bam$/i.test(location)) {
-    return {
-      file: location,
-      index: index || `${location}.bai`,
-    }
-  } else if (/\.cram$/i.test(location)) {
-    return {
-      file: location,
-      index: index || `${location}.crai`,
-    }
-  } else if (
-    /\.gff3?\.b?gz$/i.test(location) ||
-    /\.vcf\.b?gz$/i.test(location) ||
-    /\.bed\.b?gz$/i.test(location) ||
-    /\.bedmethyl\.gz$/i.test(location) ||
-    /\.pif\.b?gz$/i.test(location)
-  ) {
-    return {
-      file: location,
-      index: index || `${location}.tbi`,
-    }
-  } else if (/\.(fa|fasta|fas|fna|mfa)$/i.test(location)) {
-    return {
-      file: location,
-      index: index || `${location}.fai`,
-    }
-  } else if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(location)) {
-    return {
-      file: location,
-      index: `${location}.fai`,
-      index2: `${location}.gzi`,
-    }
-  } else if (
-    /\.2bit$/i.test(location) ||
-    /\.bedpe(\.gz)?$/i.test(location) ||
-    /\/trackData.jsonz?$/i.test(location) ||
-    /\/sparql$/i.test(location) ||
-    /\.out(\.gz)?$/i.test(location) ||
-    /\.paf(\.gz)?$/i.test(location) ||
-    /\.delta(\.gz)?$/i.test(location) ||
-    /\.bed$/i.test(location) ||
-    /\.(bw|bigwig)$/i.test(location) ||
-    /\.(bb|bigbed)$/i.test(location) ||
-    /\.vcf$/i.test(location) ||
-    /\.gtf$/i.test(location) ||
-    /\.gff3?$/i.test(location) ||
-    /\.chain(\.gz)?$/i.test(location) ||
-    /\.hic$/i.test(location)
-  ) {
-    return {
-      file: location,
+  for (const { regex, spec } of formats) {
+    if (regex.test(location)) {
+      return specToFiles(spec, location, index, bed1, bed2)
     }
   }
-
   return {}
 }
 
@@ -106,183 +345,89 @@ export function guessAdapter({
   index,
   bed1,
   bed2,
+  adapterType,
 }: {
   location: string
   protocol: string
   index?: string
   bed1?: string
   bed2?: string
-}) {
+  adapterType?: string
+}): Adapter {
   const makeLocation = makeLocationProtocol(protocol)
-  if (/\.bam$/i.test(location)) {
-    return {
-      type: 'BamAdapter',
-      bamLocation: makeLocation(location),
-      index: {
-        location: makeLocation(index || `${location}.bai`),
-        indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
-      },
+
+  if (adapterType) {
+    const adapterSpec = adapterTypeToSpec[adapterType]
+    if (adapterSpec) {
+      const { kind, locField } = adapterSpec
+      if (kind === 'single' && locField) {
+        return { type: adapterType, [locField]: makeLocation(location) }
+      } else if (kind === 'tabix' && locField) {
+        return {
+          type: adapterType,
+          [locField]: makeLocation(location),
+          index: {
+            location: makeLocation(index || `${location}.tbi`),
+            indexType: indexType(index, 'TBI'),
+          },
+        }
+      } else if (kind === 'anchors' && locField) {
+        return {
+          type: adapterType,
+          [locField]: makeLocation(location),
+          bed1Location: bed1 ? makeLocation(bed1) : undefined,
+          bed2Location: bed2 ? makeLocation(bed2) : undefined,
+        }
+      }
     }
-  } else if (/\.cram$/i.test(location)) {
-    return {
-      type: 'CramAdapter',
-      cramLocation: makeLocation(location),
-      craiLocation: makeLocation(`${location}.crai`),
+
+    for (const { regex, spec } of formats) {
+      if (regex.test(location)) {
+        if (spec.kind === 'bam') {
+          return {
+            type: adapterType,
+            bamLocation: makeLocation(location),
+            index: {
+              location: makeLocation(index || `${location}.bai`),
+              indexType: indexType(index, 'BAI'),
+            },
+          }
+        } else if (spec.kind === 'cram') {
+          return {
+            type: adapterType,
+            cramLocation: makeLocation(location),
+            craiLocation: makeLocation(`${location}.crai`),
+          }
+        } else if (spec.kind === 'indexed-fasta') {
+          return {
+            type: adapterType,
+            fastaLocation: makeLocation(location),
+            faiLocation: makeLocation(index || `${location}.fai`),
+          }
+        } else if (spec.kind === 'bgzip-fasta') {
+          return {
+            type: adapterType,
+            fastaLocation: makeLocation(location),
+            faiLocation: makeLocation(`${location}.fai`),
+            gziLocation: makeLocation(`${location}.gzi`),
+          }
+        } else if (spec.kind === 'nclist') {
+          return { type: adapterType, rootUrlTemplate: makeLocation(location) }
+        } else if (spec.kind === 'sparql') {
+          return { type: adapterType, endpoint: location }
+        }
+        return { type: adapterType }
+      }
     }
-  } else if (/\.gff3?$/i.test(location)) {
-    return {
-      type: 'Gff3Adapter',
-      gffLocation: makeLocation(location),
-    }
-  } else if (/\.gff3?\.b?gz$/i.test(location)) {
-    return {
-      type: 'Gff3TabixAdapter',
-      gffGzLocation: makeLocation(location),
-      index: {
-        location: makeLocation(index || `${location}.tbi`),
-        indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
-      },
-    }
-  } else if (/\.gtf$/i.test(location)) {
-    return {
-      type: 'GtfAdapter',
-      gtfLocation: makeLocation(location),
-    }
-  } else if (/\.vcf$/i.test(location)) {
-    return {
-      type: 'VcfAdapter',
-      vcfLocation: makeLocation(location),
-    }
-  } else if (/\.vcf\.b?gz$/i.test(location)) {
-    return {
-      type: 'VcfTabixAdapter',
-      vcfGzLocation: makeLocation(location),
-      index: {
-        location: makeLocation(index || `${location}.tbi`),
-        indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
-      },
-    }
-  } else if (/\.vcf\.idx$/i.test(location)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  } else if (/\.bedpe(.gz)?$/i.test(location)) {
-    return {
-      type: 'BedpeAdapter',
-      bedpeLocation: makeLocation(location),
-    }
-  } else if (/\.bed$/i.test(location)) {
-    return {
-      type: 'BedAdapter',
-      bedLocation: makeLocation(location),
-    }
-  } else if (/\.pif\.b?gz$/i.test(location)) {
-    return {
-      type: 'PairwiseIndexedPAFAdapter',
-      pifGzLocation: makeLocation(location),
-      index: {
-        location: makeLocation(index || `${location}.tbi`),
-        indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
-      },
-    }
-  } else if (
-    /\.bedmethyl\.gz$/i.test(location) ||
-    /\.bed\.b?gz$/i.test(location)
-  ) {
-    return {
-      type: 'BedTabixAdapter',
-      bedGzLocation: makeLocation(location),
-      index: {
-        location: makeLocation(index || `${location}.tbi`),
-        indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
-      },
-    }
-  } else if (/\.(bb|bigbed)$/i.test(location)) {
-    return {
-      type: 'BigBedAdapter',
-      bigBedLocation: makeLocation(location),
-    }
-  } else if (/\.(bw|bigwig)$/i.test(location)) {
-    return {
-      type: 'BigWigAdapter',
-      bigWigLocation: makeLocation(location),
-    }
-  } else if (/\.(fa|fasta|fna|mfa)$/i.test(location)) {
-    return {
-      type: 'IndexedFastaAdapter',
-      fastaLocation: makeLocation(location),
-      faiLocation: makeLocation(index || `${location}.fai`),
-    }
-  } else if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(location)) {
-    return {
-      type: 'BgzipFastaAdapter',
-      fastaLocation: makeLocation(location),
-      faiLocation: makeLocation(`${location}.fai`),
-      gziLocation: makeLocation(`${location}.gzi`),
-    }
-  } else if (/\.2bit$/i.test(location)) {
-    return {
-      type: 'TwoBitAdapter',
-      twoBitLocation: makeLocation(location),
-    }
-  } else if (/\.sizes$/i.test(location)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  } else if (/\/trackData.jsonz?$/i.test(location)) {
-    return {
-      type: 'NCListAdapter',
-      rootUrlTemplate: makeLocation(location),
-    }
-  } else if (/\/sparql$/i.test(location)) {
-    return {
-      type: 'SPARQLAdapter',
-      endpoint: location,
-    }
-  } else if (/\.hic$/i.test(location)) {
-    return {
-      type: 'HicAdapter',
-      hicLocation: makeLocation(location),
-    }
-  } else if (/\.paf(.gz)?$/i.test(location)) {
-    return {
-      type: 'PAFAdapter',
-      pafLocation: makeLocation(location),
-    }
-  } else if (/\.out(.gz)?$/i.test(location)) {
-    return {
-      type: 'MashMapAdapter',
-      outLocation: makeLocation(location),
-    }
-  } else if (/\.chain(.gz)?$/i.test(location)) {
-    return {
-      type: 'ChainAdapter',
-      chainLocation: makeLocation(location),
-    }
-  } else if (/\.delta(.gz)?$/i.test(location)) {
-    return {
-      type: 'DeltaAdapter',
-      deltaLocation: makeLocation(location),
-    }
-  } else if (/\.anchors(\.gz)?$/i.test(location)) {
-    return {
-      type: 'MCScanAnchorsAdapter',
-      mcscanAnchorsLocation: makeLocation(location),
-      bed1Location: bed1 ? makeLocation(bed1) : undefined,
-      bed2Location: bed2 ? makeLocation(bed2) : undefined,
-    }
-  } else if (/\.anchors\.simple(\.gz)?$/i.test(location)) {
-    return {
-      type: 'MCScanSimpleAnchorsAdapter',
-      mcscanSimpleAnchorsLocation: makeLocation(location),
-      bed1Location: bed1 ? makeLocation(bed1) : undefined,
-      bed2Location: bed2 ? makeLocation(bed2) : undefined,
-    }
+    return { type: adapterType }
   }
 
-  return {
-    type: 'UNKNOWN',
+  for (const { regex, spec } of formats) {
+    if (regex.test(location)) {
+      return specToAdapter(spec, location, index, bed1, bed2, makeLocation)
+    }
   }
+  return { type: 'UNKNOWN' }
 }
 
 export const adapterTypesToTrackTypeMap: Record<string, string> = {
@@ -290,15 +435,12 @@ export const adapterTypesToTrackTypeMap: Record<string, string> = {
   CramAdapter: 'AlignmentsTrack',
   BgzipFastaAdapter: 'ReferenceSequenceTrack',
   BigWigAdapter: 'QuantitativeTrack',
-  BedGraphAdapter: 'QuantitativeTrack',
-  BedGraphTabixAdapter: 'QuantitativeTrack',
   IndexedFastaAdapter: 'ReferenceSequenceTrack',
   TwoBitAdapter: 'ReferenceSequenceTrack',
   VcfTabixAdapter: 'VariantTrack',
   VcfAdapter: 'VariantTrack',
   BedpeAdapter: 'VariantTrack',
   BedAdapter: 'FeatureTrack',
-  BedTabixAdapter: 'FeatureTrack',
   HicAdapter: 'HicTrack',
   PAFAdapter: 'SyntenyTrack',
   DeltaAdapter: 'SyntenyTrack',

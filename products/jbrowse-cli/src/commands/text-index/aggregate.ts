@@ -32,7 +32,7 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
     resolveConfigPath,
   )
 
-  const aggregateTextSearchAdapters = config.aggregateTextSearchAdapters || []
+  const aggregateTextSearchAdapters = config.aggregateTextSearchAdapters ?? []
   const asms = getAssemblyNames(config, assemblies)
 
   for (const asm of asms) {

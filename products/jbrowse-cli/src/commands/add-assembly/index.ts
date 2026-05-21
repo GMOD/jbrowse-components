@@ -1,14 +1,17 @@
+import path from 'path'
 import { parseArgs } from 'util'
 
 import {
   addAssemblyToConfig,
   enhanceAssembly,
   getAssembly,
+  isSequenceType,
   loadOrCreateConfig,
   resolveTargetPath,
-  saveConfigAndReport,
 } from './utils.ts'
 import { debug, printHelp } from '../../utils.ts'
+import { loadFile } from '../add-track-utils/file-operations.ts'
+import { saveConfigAndReport } from '../shared/config-operations.ts'
 
 export async function run(args?: string[]) {
   const options = {
@@ -83,20 +86,10 @@ export async function run(args?: string[]) {
         'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
       choices: ['copy', 'symlink', 'move', 'inPlace'],
     },
-    skipCheck: {
-      type: 'boolean',
-      description:
-        "Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory",
-    },
-    overwrite: {
-      type: 'boolean',
-      description:
-        'Overwrite existing assembly if one with the same name exists',
-    },
     force: {
       type: 'boolean',
       short: 'f',
-      description: 'Equivalent to `--skipCheck --overwrite`',
+      description: 'Overwrite existing assembly and skip file existence checks',
     },
   } as const
   const { positionals, values: runFlags } = parseArgs({
@@ -145,24 +138,41 @@ export async function run(args?: string[]) {
 
   const argsSequence = positionals[0] || ''
   const output = runFlags.target || runFlags.out || '.'
+  const flags = {
+    ...runFlags,
+    type: isSequenceType(runFlags.type) ? runFlags.type : undefined,
+  }
 
   debug(`Sequence location is: ${argsSequence}`)
 
   const target = await resolveTargetPath(output)
-  const baseAssembly = await getAssembly({ runFlags, argsSequence, target })
-  const assembly = await enhanceAssembly(baseAssembly, runFlags)
+  const { assembly: baseAssembly, filesToLoad } = await getAssembly({
+    runFlags: flags,
+    argsSequence,
+  })
+  const assembly = await enhanceAssembly(baseAssembly, flags)
 
   const configContents = await loadOrCreateConfig(target)
   const { config: updatedConfig, wasOverwritten } = await addAssemblyToConfig({
     config: configContents,
     assembly,
-    runFlags,
+    runFlags: flags,
   })
+
+  if (flags.load) {
+    const destDir = path.dirname(target)
+    await Promise.all(
+      filesToLoad.map(src =>
+        loadFile({ src, destDir, mode: flags.load!, force: flags.force }),
+      ),
+    )
+  }
 
   await saveConfigAndReport({
     config: updatedConfig,
     target,
-    assembly,
+    itemType: 'assembly',
+    itemName: assembly.name,
     wasOverwritten,
   })
 }
