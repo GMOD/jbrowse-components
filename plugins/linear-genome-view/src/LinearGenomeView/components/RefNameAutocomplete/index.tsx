@@ -89,7 +89,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
   const regions = assembly?.regions
-  const regionOptions = useMemo(
+  const regionOptions: Option[] = useMemo(
     () =>
       regions?.map(region => ({
         result: new RefSequenceResult({
@@ -98,7 +98,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
           displayString: region.refName,
           matchedAttribute: 'refName',
         }),
-      })) || [],
+      })) ?? [],
     [regions],
   )
 

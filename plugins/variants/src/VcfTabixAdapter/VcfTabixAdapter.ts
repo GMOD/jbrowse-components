@@ -13,7 +13,7 @@ import VcfFeature from '../VcfFeature/index.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { NoAssemblyRegion, Region } from '@jbrowse/core/util/types'
 
 export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames', 'exportData']

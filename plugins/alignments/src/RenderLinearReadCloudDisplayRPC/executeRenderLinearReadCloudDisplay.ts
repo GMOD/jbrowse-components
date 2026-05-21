@@ -166,7 +166,7 @@ export async function executeRenderLinearReadCloudDisplay({
         }
       }
 
-      const chainsResult = Object.values(groupBy(deduped, f => f.get('name')))
+      const chainsResult = Object.values(groupBy(deduped, f => f.get('name') ?? ''))
       return {
         chains: chainsResult,
         stats: statsResult,

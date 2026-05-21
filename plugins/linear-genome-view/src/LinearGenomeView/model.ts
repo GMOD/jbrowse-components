@@ -70,7 +70,7 @@ import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
-import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock, BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -289,7 +289,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      coarseDynamicBlocks: [] as BaseBlock[],
+      coarseDynamicBlocks: [] as ContentBlock[],
       /**
        * #volatile
        */
@@ -1431,7 +1431,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 ...block,
                 start: Math.floor(block.start),
                 end: Math.ceil(block.end),
-              }) as BaseBlock,
+              }) as ContentBlock,
           )
         },
 

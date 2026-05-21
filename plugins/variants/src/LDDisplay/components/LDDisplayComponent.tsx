@@ -290,7 +290,7 @@ const LDCanvas = observer(function LDCanvas({
 
   // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(
-    () => (flatbush ? Flatbush.from(flatbush) : null),
+    () => (flatbush ? Flatbush.from(flatbush as ArrayBuffer) : null),
     [flatbush],
   )
 

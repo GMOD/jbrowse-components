@@ -17,11 +17,13 @@ import {
   shouldDrawSNPsMuted,
 } from '../shared/util.ts'
 
+import { blockToRegion } from '@jbrowse/core/util/blockTypes'
+
 import type { FlatbushItem, LayoutFeature } from '../PileupRenderer/types.ts'
 import type { ColorBy, ModificationTypeWithColor } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
 // Get connecting line color based on theme mode
@@ -186,7 +188,7 @@ export function featureOverlapsRegion(
   featRefName: string,
   featStart: number,
   featEnd: number,
-  region: BaseBlock,
+  region: ContentBlock,
 ) {
   return (
     featRefName === region.refName &&
@@ -265,7 +267,7 @@ export function renderFeatureModifications({
   ctx: CanvasRenderingContext2D
   feat: Feature
   layoutFeat: LayoutFeature
-  region: BaseBlock
+  region: ContentBlock
   regionStartPx: number
   bpPerPx: number
   colorBy: ColorBy
@@ -281,7 +283,7 @@ export function renderFeatureModifications({
   const modRet = renderModifications({
     ctx,
     feat: layoutFeat,
-    region,
+    region: blockToRegion(region),
     bpPerPx,
     renderArgs: {
       colorBy,
@@ -310,7 +312,7 @@ export function renderFeatureMismatchesAndModifications({
   ctx: CanvasRenderingContext2D
   feat: Feature
   layoutFeat: LayoutFeature
-  region: BaseBlock
+  region: ContentBlock
   regionStartPx: number
   bpPerPx: number
   canvasWidth: number
@@ -325,7 +327,7 @@ export function renderFeatureMismatchesAndModifications({
     feat: layoutFeat,
     checkRef: true,
     bpPerPx,
-    regions: [region],
+    regions: [blockToRegion(region)],
     canvasWidth,
     ...mismatchConfig,
   })

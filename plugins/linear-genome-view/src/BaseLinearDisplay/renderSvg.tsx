@@ -7,6 +7,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
+import { blockToRegion } from '@jbrowse/core/util/blockTypes'
 
 import SVGLegend from './SVGLegend.tsx'
 import {
@@ -39,16 +40,17 @@ export async function renderBaseLinearDisplaySvg(
 
   const renderings = await Promise.all(
     roundedDynamicBlocks.map(async block => {
+      const region = blockToRegion(block)
       const blockState = BlockState.create({
         key: block.key,
-        region: block,
+        region,
       })
 
       // regionCannotBeRendered can return jsx so look for plaintext
       // version, or just get the default if none available
       const cannotBeRenderedReason =
-        self.regionCannotBeRenderedText(block) ||
-        self.regionCannotBeRendered(block)
+        self.regionCannotBeRenderedText(region) ||
+        self.regionCannotBeRendered(region)
 
       if (cannotBeRenderedReason) {
         return [

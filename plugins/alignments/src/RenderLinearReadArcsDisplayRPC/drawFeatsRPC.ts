@@ -252,7 +252,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
   function drawSingletonLongRead(f: Feature) {
     const allFeatures = [
       f,
-      ...featurizeSA(f.get('tags')?.SA, f.id(), f.get('strand'), f.get('name')),
+      ...featurizeSA(f.get('tags')?.SA, f.id(), f.get('strand') ?? 1, f.get('name') ?? ''),
     ].toSorted(
       (a, b) =>
         getStrandRelativeFirstClipLength(a) -

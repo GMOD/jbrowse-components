@@ -272,6 +272,16 @@ export async function restoreFileHandlesFromSnapshot(
   return []
 }
 
+let pendingFileHandleIds: string[] = []
+
+export function getPendingFileHandleIds() {
+  return pendingFileHandleIds
+}
+
+export function setPendingFileHandleIds(ids: string[]) {
+  pendingFileHandleIds = ids
+}
+
 // Call this from a user gesture (button click) to restore pending file handles
 export async function restorePendingFileHandles() {
   if (pendingFileHandleIds.length === 0) {

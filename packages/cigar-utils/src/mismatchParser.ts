@@ -184,7 +184,7 @@ export function featurizeSA(
           seqLength: saLength,
           clipLengthAtStartOfRead: saClipPos,
           CIGAR: saCigar,
-          strand: (normalize ? strand : 1) * saStrandNormalized,
+          strand: ((normalize ? strand : 1) * saStrandNormalized) as -1 | 1,
           uniqueId: `${id}_SA${index}`,
           mate: {
             start: saClipPos,
