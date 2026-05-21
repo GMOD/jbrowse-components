@@ -16,7 +16,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   private vcfFeatures?: Promise<{
     header: string
     parser: VcfParser
-    intervalTreeMap: Record<string, (sc?: StatusCallback) => IntervalTree<Feature>>
+    intervalTreeMap: Record<
+      string,
+      (sc?: StatusCallback) => IntervalTree<Feature>
+    >
     featureMap: Record<string, string[]>
   }>
 
@@ -64,7 +67,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
             }
             calculatedIntervalTreeMap[refName] = intervalTree
           }
-          return calculatedIntervalTreeMap[refName]!
+          return calculatedIntervalTreeMap[refName]
         },
       ]),
     )

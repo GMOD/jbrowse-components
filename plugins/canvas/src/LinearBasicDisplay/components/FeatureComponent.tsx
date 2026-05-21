@@ -419,8 +419,12 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           expanded={model.heightBeforeExpand !== undefined}
           hasOverflow={model.hasOverflow}
           scrollZoom={view.scrollZoom}
-          onExpand={() => { model.expandToFit() }}
-          onRestore={() => { model.collapseFromExpand() }}
+          onExpand={() => {
+            model.expandToFit()
+          }}
+          onRestore={() => {
+            model.collapseFromExpand()
+          }}
         />
       ) : null}
 

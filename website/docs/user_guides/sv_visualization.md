@@ -8,13 +8,13 @@ guide_category: Views
 This guide covers how to interpret structural variant (SV) signals across
 JBrowse's views. A typical workflow starts in the
 [SV inspector](/docs/user_guides/sv_inspector_view) — a combined variant table
-and whole-genome circular overview — to triage candidates, then drills into
-the alignments at each breakpoint to examine read-level evidence.
+and whole-genome circular overview — to triage candidates, then drills into the
+alignments at each breakpoint to examine read-level evidence.
 
 SV calls load as [variant tracks](/docs/user_guides/variant_track) (VCF/BCF),
-reads as [alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM).
-The [alignments track guide](/docs/user_guides/alignments_track) covers the
-general features; this page focuses on what to look for when interpreting SVs.
+reads as [alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM). The
+[alignments track guide](/docs/user_guides/alignments_track) covers the general
+features; this page focuses on what to look for when interpreting SVs.
 
 For end-to-end walkthroughs, see
 [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) (HG008

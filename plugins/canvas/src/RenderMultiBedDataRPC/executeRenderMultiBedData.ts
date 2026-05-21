@@ -58,7 +58,10 @@ export async function executeRenderMultiBedData({
   const featuresArray = await updateStatus(
     'Fetching features',
     statusCallback,
-    () => firstValueFrom(dataAdapter.getFeatures(region, fetchOpts).pipe(toArray())),
+    () =>
+      firstValueFrom(
+        dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
+      ),
   )
   checkStopToken2(stopTokenCheck)
 
@@ -101,7 +104,8 @@ export async function executeRenderMultiBedData({
     const start = feature.get('start')
     const end = feature.get('end')
     const laneVal = feature.get(laneField)
-    const laneKey = laneVal === undefined || laneVal === null ? '' : String(laneVal)
+    const laneKey =
+      laneVal === undefined || laneVal === null ? '' : String(laneVal)
     discoveredSet.add(laneKey)
 
     const fill = readConfigValue<string>(displayConfig, 'color', feature)

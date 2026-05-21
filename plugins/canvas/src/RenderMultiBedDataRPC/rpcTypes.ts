@@ -42,7 +42,9 @@ export interface MultiBedRenderResult extends FeatureDataResult {
   discoveredSources: string[]
 }
 
-export type RenderMultiBedDataResult = MultiBedRenderResult | RegionTooLargeResult
+export type RenderMultiBedDataResult =
+  | MultiBedRenderResult
+  | RegionTooLargeResult
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {

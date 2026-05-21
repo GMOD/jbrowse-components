@@ -122,7 +122,9 @@ export default function RecentSessionPanel({
           sessionToRename={sessionToRename}
           onClose={() => {
             setSessionToRename(undefined)
-            mutateSessions().catch((e: unknown) => { console.error(e) })
+            mutateSessions().catch((e: unknown) => {
+              console.error(e)
+            })
           }}
         />
       ) : null}
@@ -131,7 +133,9 @@ export default function RecentSessionPanel({
           sessionsToDelete={sessionsToDelete}
           onClose={() => {
             setSessionsToDelete(undefined)
-            mutateSessions().catch((e: unknown) => { console.error(e) })
+            mutateSessions().catch((e: unknown) => {
+              console.error(e)
+            })
           }}
         />
       ) : null}
@@ -200,7 +204,11 @@ export default function RecentSessionPanel({
         />
 
         <div className={classes.verticalCenter}>
-          <Button variant="contained" component="label" disabled={sessionLoading}>
+          <Button
+            variant="contained"
+            component="label"
+            disabled={sessionLoading}
+          >
             Open saved session (.jbrowse) file
             <input
               type="file"

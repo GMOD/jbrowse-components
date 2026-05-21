@@ -26,7 +26,11 @@ const RenameQuickstartDialog = ({
           if (quickstartNames.includes(newQuickstartName)) {
             throw new Error('quickstart with this name already exists')
           }
-          await ipcRenderer.invoke('renameQuickstart', quickstartToRename, newQuickstartName)
+          await ipcRenderer.invoke(
+            'renameQuickstart',
+            quickstartToRename,
+            newQuickstartName,
+          )
           onClose()
         } catch (e) {
           console.error(e)

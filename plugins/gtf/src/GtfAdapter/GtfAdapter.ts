@@ -89,7 +89,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
               }
               calculatedIntervalTreeMap[refName] = intervalTree
             }
-            return calculatedIntervalTreeMap[refName]!
+            return calculatedIntervalTreeMap[refName]
           },
         ]
       }),
@@ -119,7 +119,12 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
-        await this.getFeaturesHelper({ query, opts, observer, allowRedispatch: true })
+        await this.getFeaturesHelper({
+          query,
+          opts,
+          observer,
+          allowRedispatch: true,
+        })
       } catch (e) {
         observer.error(e)
       }
@@ -151,7 +156,10 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           feats,
           aggregateField,
         )
-        if (hasAnyAggregateField && (maxEnd > query.end || minStart < query.start)) {
+        if (
+          hasAnyAggregateField &&
+          (maxEnd > query.end || minStart < query.start)
+        ) {
           await this.getFeaturesHelper({
             query: {
               ...query,

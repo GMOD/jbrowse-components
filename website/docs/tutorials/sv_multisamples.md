@@ -182,7 +182,7 @@ For more on navigating the breakpoint split view, see
   the SV inspector
 - [Multi-sample variant displays](/docs/user_guides/multivariant_track) —
   regular and matrix display mode details
-- [Phased trio analysis](/docs/tutorials/analyze_trio) — SNP-level trio
-  phasing and IBD block analysis
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) —
-  end-to-end SV workflow with a cancer dataset
+- [Phased trio analysis](/docs/tutorials/analyze_trio) — SNP-level trio phasing
+  and IBD block analysis
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) — end-to-end SV
+  workflow with a cancer dataset

@@ -28,9 +28,8 @@ export default class RenderMultiBedData extends RpcMethodType {
   }
 
   async execute(args: RenderMultiBedDataArgs, _rpcDriver: string) {
-    const { executeRenderMultiBedData } = await import(
-      './executeRenderMultiBedData.ts'
-    )
+    const { executeRenderMultiBedData } =
+      await import('./executeRenderMultiBedData.ts')
     return executeRenderMultiBedData({
       pluginManager: this.pluginManager,
       args,

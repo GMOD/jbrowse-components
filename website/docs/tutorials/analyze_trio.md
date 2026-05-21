@@ -145,8 +145,7 @@ chromosome in his child
 
 For structural variant analysis with the 1000 Genomes dataset — multi-sample
 genotypes, trio inheritance of SVs, and a large chromosomal inversion — see the
-[Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
-tutorial.
+[Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) tutorial.
 
 ## Live demo
 

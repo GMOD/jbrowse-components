@@ -25,9 +25,12 @@ const defaultFields = new Set([
 ])
 
 export function featureData(data: FeatureLoc, id?: string) {
-  const f: Record<string, unknown> = { ...data }
-  f.start = data.start - 1 // convert to interbase
-  f.strand = strandMap[data.strand]
+  const f: Record<string, unknown> = {
+    ...data,
+    start: data.start - 1,
+    strand: strandMap[data.strand],
+  }
+  // convert to interbase
   f.phase = data.frame !== null ? Number(data.frame) : undefined
   f.refName = data.seq_name
   if (data.score === null) {

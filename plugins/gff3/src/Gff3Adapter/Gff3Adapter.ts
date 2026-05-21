@@ -42,18 +42,21 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
             if (!calculatedIntervalTreeMap[refName]) {
               sc?.('Parsing GFF data')
               const intervalTree = new IntervalTree<Feature>()
-              const features = parseStringSyncJBrowse(lines!.join('\n') + '\n')
+              const features = parseStringSyncJBrowse(`${lines!.join('\n')}\n`)
               lines = null
               for (let i = 0; i < features.length; i++) {
                 const f = features[i]!
                 intervalTree.insert(
                   [f.start, f.end],
-                  new SimpleFeature({ data: f, id: `${this.id}-${refName}-${i}` }),
+                  new SimpleFeature({
+                    data: f,
+                    id: `${this.id}-${refName}-${i}`,
+                  }),
                 )
               }
               calculatedIntervalTreeMap[refName] = intervalTree
             }
-            return calculatedIntervalTreeMap[refName]!
+            return calculatedIntervalTreeMap[refName]
           },
         ]
       }),

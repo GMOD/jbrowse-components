@@ -54,7 +54,9 @@ const LaunchPairwiseSyntenyDialog = observer(
     return (
       <Dialog
         open
-        onClose={() => { handleClose() }}
+        onClose={() => {
+          handleClose()
+        }}
         title="Launch 2-way synteny view"
         maxWidth="sm"
         fullWidth
@@ -101,7 +103,13 @@ const LaunchPairwiseSyntenyDialog = observer(
           </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => { handleClose() }}>Cancel</Button>
+          <Button
+            onClick={() => {
+              handleClose()
+            }}
+          >
+            Cancel
+          </Button>
         </DialogActions>
       </Dialog>
     )

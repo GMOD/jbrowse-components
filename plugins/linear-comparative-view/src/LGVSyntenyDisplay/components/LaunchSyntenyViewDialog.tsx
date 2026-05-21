@@ -43,7 +43,13 @@ export default function LaunchSyntenyViewDialog({
   const [windowSize, setWindowSize] = useState('1000')
   const [useRegionOfInterest, setUseRegionOfInterest] = useState(true)
   return (
-    <Dialog open title="Launch synteny view" onClose={() => handleClose()}>
+    <Dialog
+      open
+      title="Launch synteny view"
+      onClose={() => {
+        handleClose()
+      }}
+    >
       <DialogContent>
         {view && hasCIGAR ? (
           <FormControlLabel
@@ -106,7 +112,9 @@ export default function LaunchSyntenyViewDialog({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>

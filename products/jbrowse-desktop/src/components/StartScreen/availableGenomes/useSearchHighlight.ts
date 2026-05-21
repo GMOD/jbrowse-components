@@ -25,7 +25,7 @@ export function useSearchHighlight(
 ) {
   // No deps: must re-run after every render so paginating to a new page
   // re-applies highlights to the new DOM content (Range objects detach on removal).
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useLayoutEffect(() => {
     // generally just jest test but maybe unsupported browser
     if (typeof CSS === 'undefined') {

@@ -6,8 +6,8 @@ guide_category: Other features
 ---
 
 The in-app plugin store installs community plugins into the current session.
-Plugins can add new track types, view types, data adapters, custom menu
-items, and more.
+Plugins can add new track types, view types, data adapters, custom menu items,
+and more.
 
 Where the install persists depends on the context:
 
@@ -17,7 +17,7 @@ Where the install persists depends on the context:
 
 Some plugins (e.g. CIVIC) add their data automatically when installed. Others
 only register building blocks (a new track type, a new adapter) that need a
-matching config entry to be useful — ask an admin if you can't edit the
-config yourself.
+matching config entry to be useful — ask an admin if you can't edit the config
+yourself.
 
 <Figure caption="The plugin store inside the app." src="/img/plugin_store.png" />

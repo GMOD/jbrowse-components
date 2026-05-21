@@ -5,8 +5,8 @@ title: Creating custom view types
 
 View types are top-level "panels" that the session can contain alongside the
 built-in `LinearGenomeView`, `DotplotView`, `CircularView`, `SpreadsheetView`,
-and others. A view defines its own state model and React component — it does
-not have to display genomic tracks, though most do.
+and others. A view defines its own state model and React component — it does not
+have to display genomic tracks, though most do.
 
 ## When to add a custom view type
 
@@ -24,10 +24,9 @@ abstraction instead.
 
 ## Minimal walkthrough
 
-The [simple plugin tutorial](/docs/developer_guides/simple_plugin) walks
-through registering a "Hello world" view via
-`pluginManager.addViewType(...)` — start there for a complete scaffold and
-build setup.
+The [simple plugin tutorial](/docs/developer_guides/simple_plugin) walks through
+registering a "Hello world" view via `pluginManager.addViewType(...)` — start
+there for a complete scaffold and build setup.
 
 A view registration looks roughly like:
 
@@ -55,8 +54,8 @@ and the React component receives `{ model }` as a prop.
 
 - `plugins/linear-genome-view/src/LinearGenomeView` - the canonical genomic
   view, with displayed regions, blocks, and a track container
-- `plugins/dotplot-view/src/DotplotView` - independent X/Y axes hosting
-  synteny tracks
+- `plugins/dotplot-view/src/DotplotView` - independent X/Y axes hosting synteny
+  tracks
 - `plugins/spreadsheet-view/src/SpreadsheetView` - non-genomic tabular view
 - `plugins/circular-view/src/CircularView` - radial layout with chord tracks
 

@@ -55,11 +55,11 @@ const Loader = observer(function Loader() {
 
   const handleSetPluginManager = useCallback(
     (pm: PluginManager) => {
-      ;(pm.rootModel as DesktopRootModel | undefined)?.setOpenNewSessionCallback(
-        async (path: string) => {
-          handleSetPluginManager(await loadPluginManager(path))
-        },
-      )
+      ;(
+        pm.rootModel as DesktopRootModel | undefined
+      )?.setOpenNewSessionCallback(async (path: string) => {
+        handleSetPluginManager(await loadPluginManager(path))
+      })
 
       setPluginManager(pm)
       setError(undefined)
@@ -71,7 +71,12 @@ const Loader = observer(function Loader() {
   useConfigLoad(config, handleSetPluginManager, setError)
 
   const theme = useMemo(
-    () => createJBrowseTheme(undefined, undefined, localStorageGetItem('themeName') || 'default'),
+    () =>
+      createJBrowseTheme(
+        undefined,
+        undefined,
+        localStorageGetItem('themeName') || 'default',
+      ),
     [],
   )
 

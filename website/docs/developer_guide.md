@@ -66,7 +66,8 @@ own via pull request.
 ### Getting started
 
 - [Writing a plugin using jbrowse-plugin-template](/docs/developer_guides/simple_plugin) -
-  end-to-end walkthrough: scaffold, build, and run a plugin against a local JBrowse
+  end-to-end walkthrough: scaffold, build, and run a plugin against a local
+  JBrowse
 - [No-build plugins](/docs/developer_guides/no_build_plugin) - smaller plugins
   authored as a single JS file with no bundler
 - [Pluggable elements](/docs/developer_guides/pluggable_elements) - reference
@@ -88,8 +89,8 @@ own via pull request.
   schemas, slots, and Jexl callbacks work
 - [Extension points](/docs/developer_guides/extension_points) - catalog of every
   built-in extension point and how to register/evaluate your own
-- [Menus](/docs/developer_guides/menus) - adding entries to app, view, and
-  track menus
+- [Menus](/docs/developer_guides/menus) - adding entries to app, view, and track
+  menus
 - [Drawer widgets](/docs/developer_guides/drawer_widgets) - building widgets
   that open in the right-side drawer
 - [Renderer architecture](/docs/developer_guides/renderer_architecture) - how

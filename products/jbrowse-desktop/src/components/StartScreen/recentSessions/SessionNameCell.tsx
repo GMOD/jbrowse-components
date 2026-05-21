@@ -37,7 +37,13 @@ function SessionNameCell({
 
   return (
     <div className={classes.flexContainer}>
-      <ActionLink onClick={async () => { await launch(row.path) }}>{value}</ActionLink>
+      <ActionLink
+        onClick={async () => {
+          await launch(row.path)
+        }}
+      >
+        {value}
+      </ActionLink>
       {isFavorite ? (
         <StarIcon
           isFavorite={isFavorite}

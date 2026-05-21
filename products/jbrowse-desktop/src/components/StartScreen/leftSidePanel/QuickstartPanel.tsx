@@ -3,9 +3,9 @@ import { useState } from 'react'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util'
 
-import { useInnerDims } from '../availableGenomes/util.ts'
 import CollapsibleSection from './CollapsibleSection.tsx'
 import LinkMenuRow from './LinkMenuRow.tsx'
+import { useInnerDims } from '../availableGenomes/util.ts'
 import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'
 import RenameQuickstartDialog from '../dialogs/RenameQuickstartDialog.tsx'
 
@@ -34,7 +34,10 @@ export default function QuickstartPanel({
   )
 
   return (
-    <CollapsibleSection storageKey="startScreen-quickstartMinimized" title="Quickstart list">
+    <CollapsibleSection
+      storageKey="startScreen-quickstartMinimized"
+      title="Quickstart list"
+    >
       {listError && !quickstarts ? <ErrorMessage error={listError} /> : null}
 
       {quickstarts === undefined ? (
@@ -84,7 +87,9 @@ export default function QuickstartPanel({
           quickstartToDelete={deleteDialogOpen}
           onClose={() => {
             setDeleteDialogOpen(undefined)
-            refetchQuickstarts().catch((e: unknown) => { console.error(e) })
+            refetchQuickstarts().catch((e: unknown) => {
+              console.error(e)
+            })
           }}
         />
       ) : null}
@@ -95,7 +100,9 @@ export default function QuickstartPanel({
           quickstartToRename={renameDialogOpen}
           onClose={() => {
             setRenameDialogOpen(undefined)
-            refetchQuickstarts().catch((e: unknown) => { console.error(e) })
+            refetchQuickstarts().catch((e: unknown) => {
+              console.error(e)
+            })
           }}
         />
       ) : null}

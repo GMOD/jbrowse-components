@@ -61,8 +61,16 @@ function RecentSessionsList({
     return { ...session, showDateTooltip, lastModified }
   })
 
-  const nameWidth = measureGridWidth(rows.map(r => r.name), { stripHTML: true }) + 40
-  const lastModifiedWidth = measureGridWidth(rows.map(r => r.lastModified), { stripHTML: true }) + 40
+  const nameWidth =
+    measureGridWidth(
+      rows.map(r => r.name),
+      { stripHTML: true },
+    ) + 40
+  const lastModifiedWidth =
+    measureGridWidth(
+      rows.map(r => r.lastModified),
+      { stripHTML: true },
+    ) + 40
 
   const favs = new Set(favorites)
 

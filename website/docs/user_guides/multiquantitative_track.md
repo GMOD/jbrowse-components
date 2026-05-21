@@ -5,57 +5,53 @@ description: Multiple signal tracks displayed together
 guide_category: Track types
 ---
 
-JBrowse can show "Multi-quantitative tracks" which is a single track composed of
-multiple quantitative signals, which have their Y-scalebar synchronized.
+A multi-quantitative track combines several quantitative signals (BigWig files,
+typically) into one track with a shared Y axis. Five rendering modes are
+available, switchable from the track menu:
 
-There are 5 rendering modes for the multi-quantitative tracks.
+- **xyplot** — overlapping bar charts
+- **multirowxyplot** — one bar chart per subtrack, stacked
+- **multiline** — overlapping line plots
+- **multirowline** — one line plot per subtrack, stacked
+- **multidensity** — heatmap-style density rows
 
-- xyplot
-- multirowxyplot
-- multiline
-- multirowline
-- multidensity
+<Figure caption="The track menu lists the available renderer types." src="/img/multiwig/multi_renderer_types.png" />
 
-You can interactively change these settings through the track menu.
+In the multi-row modes (`multirowxyplot`, `multirowline`, `multidensity`) the
+subtracks keep their configured colors. In the overlapping modes (`xyplot`,
+`multiline`) the subtracks are auto-assigned colors from the palette. You can
+edit colors and ordering from the track menu.
 
-<Figure caption="Track menu for the multi-quantitative tracks showing different renderer types." src="/img/multiwig/multi_renderer_types.png" />
+<Figure caption="The color/arrangement editor lets you change subtrack colors and reorder them in the row-based layouts." src="/img/multiwig/multi_colorselect.png" />
 
-With the "multi-row" settings (multirowxyplot, multirowline, multidensity) the
-track colors are not modified. For the overlapping (xyplot, multiline), the
-tracks will be autoassigned a color from the palette. You can manually customize
-the subtrack colors from the track menu as well.
+An outlier on one subtrack can blow out the shared Y axis. "Autoscale type →
+Local +/- 3SD" clips to three standard deviations of the visible data, which
+usually gives a more readable view. You can also pin the min and max from the
+track menu.
 
-<Figure caption="The color/arrangement editor for multi-quantitative tracks lets you change individual subtrack colors, or their ordering in the row based layouts." src="/img/multiwig/multi_colorselect.png" />
+## Adding a multi-quantitative track
 
-Oftentimes, one of the outliers on one of the subtracks may affect the
-Y-scalebar too much, so it is often helpful to use the "Autoscale type → Local
-+/- 3SD" setting (3 standard deviations are displayed). Manually configuring the
-min or max scores is available via the track menu also.
+Three ways to create one:
 
-### Adding multi-quantitative tracks via the UI
+- **Add-track panel** — paste a list of BigWig URLs, or open multiple BigWig
+  files from your machine
+- **Track selector** — multi-select existing tracks and combine them into a
+  multi-wiggle track from your selection
+- **Hand-edit the config** — see the
+  [multi-quantitative track configuration](/docs/config_guides/multiquantitative_track/)
+  guide
 
-There are several ways to create multi-quantitative tracks from scratch.
-
-1. Using the add track panel to open up a list of URLs for bigwig files, or from
-   several local tracks from your machine
-2. Using the track selector to add multiple tracks to your current selection,
-   and then creating a multi-wiggle track from the tracks in your selection
-3. Hardcoding the multiwiggle track in your config file (see
-   [multi-quantitative track configuration](/docs/config_guides/multiquantitative_track/)
-   for more info)
-
-<Figure caption="Using the add track widget, you can use the select dropdown to access alternative 'add track workflows' including the multi-wiggle add track workflow. In the multiwiggle add track workflow, you can paste a list of bigWig file URLs, or open up multiple bigwig files from your computer." src="/img/multiwig/addtrack.png" />
-<Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget lets you create a multi-wiggle track from your selection." src="/img/multiwig/trackselector.png" />
+<Figure caption="The add-track widget's workflow selector lets you reach the multi-wiggle workflow, where you can paste a list of BigWig URLs or open multiple BigWig files from disk." src="/img/multiwig/addtrack.png" />
+<Figure caption="In the track selector, the '...' menu adds individual tracks or whole categories to your selection. The cart icon in the add-track widget then turns the selection into a multi-wiggle track." src="/img/multiwig/trackselector.png" />
 
 ## Loading bedMethyl as a multi-quantitative track
 
 [modkit](https://github.com/nanoporetech/modkit) pileup produces a
 [bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) file — a
 tab-separated BED format where each row reports the methylation fraction at a
-single CpG position for one modification type (e.g. 5mC or 5hmC). Because the
-format is a BED file it can be loaded with `BedTabixAdapter`, and because each
-modification type produces its own score column the file maps naturally to a
-`MultiQuantitativeTrack`.
+single CpG position for one modification type (e.g. 5mC or 5hmC). It loads as
+`BedTabixAdapter` and naturally maps to `MultiQuantitativeTrack`, with one
+subtrack per modification type.
 
 ### Generating the file
 
@@ -65,15 +61,14 @@ bgzip output.bed
 tabix -p bed output.bed.gz
 ```
 
-The `--preset traditional` flag produces 5mC calls (5hmC is combined into the
-5mC fraction). Omit it for separate 5mC and 5hmC rows.
+`--preset traditional` produces 5mC calls (5hmC is combined into the 5mC
+fraction). Omit it for separate 5mC and 5hmC rows.
 
 ### Add-track UI
 
-In the add-track dialog (`File → Open track...`), paste the URL to your
-`.bedmethyl.gz` file. JBrowse detects the `.bedmethyl.gz` extension and
-automatically selects **BedTabixAdapter** and **MultiQuantitativeTrack** — no
-manual selection needed.
+In the add-track dialog, paste the URL to your `.bedmethyl.gz` file. JBrowse
+detects the `.bedmethyl.gz` extension and selects **BedTabixAdapter** and
+**MultiQuantitativeTrack** automatically.
 
 ### Config example
 
@@ -98,8 +93,8 @@ manual selection needed.
 ```
 
 JBrowse reads the `score` column (column 11 in bedMethyl, the methylation
-fraction 0–1) and the `name` column (column 4, the modification code such as `m`
-for 5mC or `h` for 5hmC) as the subtrack source label.
+fraction 0–1) and uses the `name` column (column 4, the modification code such
+as `m` for 5mC or `h` for 5hmC) as the subtrack source label.
 
 The COLO829 tumor modkit bedMethyl file is included in the
 [demo config](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json)

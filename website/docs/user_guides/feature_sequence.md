@@ -7,32 +7,29 @@ guide_category: Track types
 
 ### Gene features
 
-If you have a track with gene or transcript level features, then the feature
-detail sidebar will automatically stitch together the sequence for that feature.
-Options include:
+For gene or transcript features, the feature detail sidebar stitches the
+sequence together for you. Options:
 
-- CDS - the coding sequences, spliced together
-- Protein - performs protein translation on the CDS using the standard genetic
-  code (NCBI table 1); note that mitochondrial genes and certain organisms use
-  alternative codon tables which are not currently supported
-- cDNA - the CDS plus UTR, or just all exons if a non-coding gene
-- Gene w/ introns - the entire gene region sequence with the introns included
-- Gene w/ 10bp of introns - the spliced gene sequence with 10bp around the
-  splice sites shown
-- Gene w/ 500 up+down stream - the entire gene region with 500bp upstream and
-  downstream (shown in light red)
-- Gene w/ 500 up+down stream + 10bp of introns - the spliced gene sequence with
-  10bp around the splice sites shown and the up/down stream shown
+- **CDS** — coding sequences, spliced
+- **Protein** — protein translation of the CDS using the standard genetic code
+  (NCBI table 1). Alternative codon tables (mitochondrial, certain organisms)
+  are not currently supported
+- **cDNA** — CDS plus UTRs (or all exons for a non-coding gene)
+- **Gene with introns** — the entire gene region including introns
+- **Gene with 10bp of introns** — spliced gene sequence with 10bp around each
+  splice site
+- **Gene with 500bp up+down stream** — the gene region plus 500bp upstream and
+  500bp downstream (shown in light red)
+- **Gene with 500bp up+down stream + 10bp of introns** — combines the
+  upstream/downstream extension with the splice-site flanks
 
-Some of the parameters such as 500bp and 10bp are arbitrarily chosen, if you are
-interested in adjusting these default parameters [let us know](/contact/).
+The 500bp and 10bp values are defaults — [let us know](/contact/) if you want
+them configurable.
 
-<Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details." src="/img/feature_detail_sequence.png" />
+<Figure caption="Sequence panel showing upstream, exonic, intronic, and downstream sequence for a selected feature." src="/img/feature_detail_sequence.png" />
 
 ### Other feature types
 
-Clicking on other types of features will have the "Feature sequence" button in
-the feature details widget, but will not automatically "stitch" together
-subfeature sequences, instead just giving the literal sequence underlying a
-feature. You can configure the number of flanking bases to include using the
-gear icon.
+For non-gene features, the "Feature sequence" button shows the literal sequence
+underlying the feature, without subfeature stitching. The number of flanking
+bases is configurable from the gear icon.

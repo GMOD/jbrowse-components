@@ -11,8 +11,12 @@ const useStyles = makeStyles()({
   },
 })
 
-function favDisplayName(fav: Pick<Fav, 'shortName' | 'description' | 'commonName'>) {
-  return [fav.shortName, fav.description, fav.commonName].filter(Boolean).join(' - ')
+function favDisplayName(
+  fav: Pick<Fav, 'shortName' | 'description' | 'commonName'>,
+) {
+  return [fav.shortName, fav.description, fav.commonName]
+    .filter(Boolean)
+    .join(' - ')
 }
 
 export default function FavoriteGenomesPanel({
@@ -31,43 +35,59 @@ export default function FavoriteGenomesPanel({
     .sort((a, b) => a.name.localeCompare(b.name))
 
   return (
-    <CollapsibleSection storageKey="startScreen-favMinimized" title="Favorite genomes">
+    <CollapsibleSection
+      storageKey="startScreen-favMinimized"
+      title="Favorite genomes"
+    >
       <div className={classes.tableContainer}>
         <table>
           <tbody>
-            {sorted.map(({ id, name, shortName, jbrowseConfig, jbrowseMinimalConfig }) => (
-              <LinkMenuRow
-                key={id}
-                label={name}
-                onLinkClick={() => {
-                  launch([{ shortName, jbrowseConfig }])
-                }}
-                menuItems={[
-                  {
-                    label: 'Launch (full config)',
-                    onClick: () => {
-                      launch([{ shortName, jbrowseConfig }])
+            {sorted.map(
+              ({
+                id,
+                name,
+                shortName,
+                jbrowseConfig,
+                jbrowseMinimalConfig,
+              }) => (
+                <LinkMenuRow
+                  key={id}
+                  label={name}
+                  onLinkClick={() => {
+                    launch([{ shortName, jbrowseConfig }])
+                  }}
+                  menuItems={[
+                    {
+                      label: 'Launch (full config)',
+                      onClick: () => {
+                        launch([{ shortName, jbrowseConfig }])
+                      },
                     },
-                  },
-                  ...(jbrowseMinimalConfig
-                    ? [
-                        {
-                          label: 'Launch (minimal config)',
-                          onClick: () => {
-                            launch([{ shortName, jbrowseConfig: jbrowseMinimalConfig }])
+                    ...(jbrowseMinimalConfig
+                      ? [
+                          {
+                            label: 'Launch (minimal config)',
+                            onClick: () => {
+                              launch([
+                                {
+                                  shortName,
+                                  jbrowseConfig: jbrowseMinimalConfig,
+                                },
+                              ])
+                            },
                           },
-                        },
-                      ]
-                    : []),
-                  {
-                    label: 'Remove from favorites',
-                    onClick: () => {
-                      setFavorites(favorites.filter(fav => fav.id !== id))
+                        ]
+                      : []),
+                    {
+                      label: 'Remove from favorites',
+                      onClick: () => {
+                        setFavorites(favorites.filter(fav => fav.id !== id))
+                      },
                     },
-                  },
-                ]}
-              />
-            ))}
+                  ]}
+                />
+              ),
+            )}
           </tbody>
         </table>
       </div>

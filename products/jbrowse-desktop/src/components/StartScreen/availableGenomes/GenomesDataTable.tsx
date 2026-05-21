@@ -255,7 +255,10 @@ export default function GenomesDataTable({
           </Button>
         ) : null}
 
-        <SearchField searchQuery={searchQuery} onChange={setSearchQueryAndReset} />
+        <SearchField
+          searchQuery={searchQuery}
+          onChange={setSearchQueryAndReset}
+        />
 
         <CategorySelector
           categories={categories}

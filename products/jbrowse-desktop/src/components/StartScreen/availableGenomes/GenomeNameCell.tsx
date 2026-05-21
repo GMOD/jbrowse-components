@@ -44,7 +44,9 @@ export default function GenomeNameCell({
     <div>
       {displayName} (<ActionLink onClick={handleLaunch}>launch</ActionLink>){' '}
       {jbrowseMinimalConfig ? (
-        <>(<ActionLink onClick={handleMinimalLaunch}>minimal</ActionLink>){' '}</>
+        <>
+          (<ActionLink onClick={handleMinimalLaunch}>minimal</ActionLink>){' '}
+        </>
       ) : null}
       {children}
       <CascadingMenuButton
