@@ -1,8 +1,5 @@
-import type { CircularViewModel } from '../CircularView/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-type CGV = CircularViewModel
 
 export default function LaunchCircularViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
@@ -23,13 +20,12 @@ export default function LaunchCircularViewF(pluginManager: PluginManager) {
         )
       }
 
-      // Use the init property to let the model handle initialization
       session.addView('CircularView', {
         init: {
           assembly,
           tracks,
         },
-      }) as CGV
+      })
     },
   )
 }

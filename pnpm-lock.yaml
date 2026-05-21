@@ -812,6 +812,9 @@ importers:
 
   plugins/circular-view:
     dependencies:
+      '@gmod/vcf':
+        specifier: ^7.0.8
+        version: 7.0.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -824,12 +827,6 @@ importers:
       '@mui/material':
         specifier: ^7.3.11
         version: 7.3.11(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@types/file-saver-es':
-        specifier: ^2.0.3
-        version: 2.0.3
-      file-saver-es:
-        specifier: ^2.0.5
-        version: 2.0.5
       mobx:
         specifier: ^6.15.3
         version: 6.15.3
@@ -3748,6 +3745,9 @@ packages:
 
   '@gmod/vcf@7.0.3':
     resolution: {integrity: sha512-/gofdSYN7PJBrOSNA93cZM6MluLgZoKSHrvkS4Zia/o5/UzEk8LWDyyfHZd+gVlL7JKTQkid2bnH2pVdeympqQ==}
+
+  '@gmod/vcf@7.0.8':
+    resolution: {integrity: sha512-ELbqMAkoCmBCtGoKyB98IHCtFeCQLWgPevhMfJUlYexA/cfSkHvXn5/7Bt85BBfP2sQIVc+QQ08T5OQ3Fu8pJQ==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -12223,6 +12223,8 @@ snapshots:
   '@gmod/ucsc-hub@2.0.4': {}
 
   '@gmod/vcf@7.0.3': {}
+
+  '@gmod/vcf@7.0.8': {}
 
   '@humanfs/core@0.19.2':
     dependencies:

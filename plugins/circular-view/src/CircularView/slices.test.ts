@@ -10,8 +10,9 @@ test('one slice', () => {
     pxPerRadian: 1000,
   }
 
-  // @ts-expect-error
-  const slices = calculateStaticSlices(view)
+  const slices = calculateStaticSlices(
+    view as unknown as Parameters<typeof calculateStaticSlices>[0],
+  )
   expect(slices.length).toBe(1)
   const [slice] = slices
   expect(slice).toMatchSnapshot()
@@ -44,8 +45,9 @@ test('two slices', () => {
     bpPerRadian: 20000 / (2 * Math.PI),
   }
 
-  // @ts-expect-error
-  const slices = calculateStaticSlices(view)
+  const slices = calculateStaticSlices(
+    view as unknown as Parameters<typeof calculateStaticSlices>[0],
+  )
   expect(slices.length).toBe(2)
   expect(slices).toMatchSnapshot()
 })
@@ -76,8 +78,9 @@ test('volvox', () => {
     bpPerRadian: totalBp / (2 * Math.PI),
   }
 
-  // @ts-expect-error
-  const slices = calculateStaticSlices(view)
+  const slices = calculateStaticSlices(
+    view as unknown as Parameters<typeof calculateStaticSlices>[0],
+  )
   expect(slices.length).toBe(2)
   expect(slices).toMatchSnapshot()
 })
