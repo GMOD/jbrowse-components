@@ -18,37 +18,36 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
     Promise<{ vcf: TabixIndexedFile; parser: VcfParser }>
   >()
 
-  private buildConfigured(refName: string) {
-    const indexType = this.getConf('indexType')
-    const vcfGzLocation = this.getConf('vcfGzLocationMap')[refName]
-    const indexLocation = this.getConf('indexLocationMap')[refName] ?? {
-      uri: `${vcfGzLocation.uri}.${indexType.toLowerCase()}`,
-    }
-    const isCSI = indexType === 'CSI'
-    const vcf = new TabixIndexedFile({
-      filehandle: openLocation(vcfGzLocation, this.pluginManager),
-      csiFilehandle: isCSI
-        ? openLocation(indexLocation, this.pluginManager)
-        : undefined,
-      tbiFilehandle: !isCSI
-        ? openLocation(indexLocation, this.pluginManager)
-        : undefined,
-      chunkCacheSize: 50 * 2 ** 20,
-    })
-    return vcf.getHeader().then(header => ({
-      vcf,
-      parser: new VcfParser({ header }),
-    }))
-  }
-
   private configureOnce(refName: string) {
     if (!this.configuredByRef.has(refName)) {
+      const indexType = this.getConf('indexType')
+      const vcfGzLocation = this.getConf('vcfGzLocationMap')[refName]
+      const indexLocation = this.getConf('indexLocationMap')[refName] ?? {
+        uri: `${vcfGzLocation.uri}.${indexType.toLowerCase()}`,
+      }
+      const isCSI = indexType === 'CSI'
+      const vcf = new TabixIndexedFile({
+        filehandle: openLocation(vcfGzLocation, this.pluginManager),
+        csiFilehandle: isCSI
+          ? openLocation(indexLocation, this.pluginManager)
+          : undefined,
+        tbiFilehandle: !isCSI
+          ? openLocation(indexLocation, this.pluginManager)
+          : undefined,
+        chunkCacheSize: 50 * 2 ** 20,
+      })
       this.configuredByRef.set(
         refName,
-        this.buildConfigured(refName).catch((e: unknown) => {
-          this.configuredByRef.delete(refName)
-          throw e
-        }),
+        vcf
+          .getHeader()
+          .then(header => ({
+            vcf,
+            parser: new VcfParser({ header }),
+          }))
+          .catch((e: unknown) => {
+            this.configuredByRef.delete(refName)
+            throw e
+          }),
       )
     }
     return this.configuredByRef.get(refName)!
