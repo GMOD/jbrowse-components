@@ -7,6 +7,36 @@ export type LineCallback = (
 ) => boolean | undefined
 
 /**
+ * Scan a tab-delimited genomic flat file (GFF3, GTF, BED, …), grouping
+ * feature lines by reference name (first tab-delimited column).
+ * Stops at an embedded FASTA section (`>`). Lines starting with `#` are
+ * collected as header lines.
+ */
+export function groupLinesByRef(
+  buffer: Uint8Array,
+  statusCallback?: StatusCallback,
+): { headerLines: string[]; linesByRef: Record<string, string[]> } {
+  const headerLines: string[] = []
+  const linesByRef: Record<string, string[]> = {}
+  parseLineByLine(
+    buffer,
+    line => {
+      if (line.startsWith('#')) {
+        headerLines.push(line)
+      } else if (line.startsWith('>')) {
+        return false
+      } else {
+        const refName = line.slice(0, line.indexOf('\t'))
+        ;(linesByRef[refName] ??= []).push(line)
+      }
+      return true
+    },
+    statusCallback,
+  )
+  return { headerLines, linesByRef }
+}
+
+/**
  * Parse buffer line by line, calling a callback for each line
  * @param buffer - The buffer to parse
  * @param lineCallback - Callback function called for each line. Return false to stop parsing.

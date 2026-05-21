@@ -1,7 +1,7 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
+import { groupLinesByRef } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { parseStringSyncJBrowse } from 'gff-nostream'
@@ -26,22 +26,8 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       opts,
     )
 
-    const headerLines: string[] = []
-    const linesByRef: Record<string, string[]> = {}
-
-    parseLineByLine(
+    const { headerLines, linesByRef } = groupLinesByRef(
       buffer,
-      line => {
-        if (line.startsWith('#')) {
-          headerLines.push(line)
-        } else if (line.startsWith('>')) {
-          return false // stop at embedded FASTA
-        } else {
-          const refName = line.slice(0, line.indexOf('\t'))
-          ;(linesByRef[refName] ??= []).push(line)
-        }
-        return true
-      },
       opts?.statusCallback,
     )
 

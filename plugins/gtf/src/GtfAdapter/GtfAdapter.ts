@@ -8,7 +8,7 @@ import {
   min,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
+import { groupLinesByRef } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { parseStringSync } from 'gtf-nostream'
 
@@ -56,22 +56,8 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       openLocation(this.getConf('gtfLocation'), this.pluginManager),
       opts,
     )
-    const headerLines: string[] = []
-    const linesByRef: Record<string, string[]> = {}
-
-    parseLineByLine(
+    const { headerLines, linesByRef } = groupLinesByRef(
       buffer,
-      line => {
-        if (line.startsWith('#')) {
-          headerLines.push(line)
-        } else if (line.startsWith('>')) {
-          return false
-        } else {
-          const refName = line.slice(0, line.indexOf('\t'))
-          ;(linesByRef[refName] ??= []).push(line)
-        }
-        return true
-      },
       opts?.statusCallback,
     )
 
