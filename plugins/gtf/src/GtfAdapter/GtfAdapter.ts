@@ -17,29 +17,47 @@ import { featureData } from '../util.ts'
 import type { FeatureLoc } from '../util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { StatusCallback } from '@jbrowse/core/util/parseLineByLine'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Observer } from 'rxjs'
 
-type StatusCallback = (arg: string) => void
-
-type SimpleFeat = SimpleFeatureSerialized
+function getRedispatchBounds(
+  feats: SimpleFeatureSerialized[],
+  aggregateField: string,
+) {
+  let minStart = Number.POSITIVE_INFINITY
+  let maxEnd = Number.NEGATIVE_INFINITY
+  let hasAnyAggregateField = false
+  for (const feat of feats) {
+    if (feat.start < minStart) {
+      minStart = feat.start
+    }
+    if (feat.end > maxEnd) {
+      maxEnd = feat.end
+    }
+    if (feat[aggregateField]) {
+      hasAnyAggregateField = true
+    }
+  }
+  return { minStart, maxEnd, hasAnyAggregateField }
+}
 
 export default class GtfAdapter extends BaseFeatureDataAdapter {
-  calculatedIntervalTreeMap: Record<string, IntervalTree<SimpleFeat>> = {}
-
-  gtfFeatures?: Promise<{
+  private gtfFeatures?: Promise<{
     header: string
     intervalTreeMap: Record<
       string,
-      (sc?: StatusCallback) => IntervalTree<SimpleFeat>
+      (sc?: StatusCallback) => IntervalTree<SimpleFeatureSerialized>
     >
   }>
 
   private async loadDataP(opts?: BaseOptions) {
-    const loc = openLocation(this.getConf('gtfLocation'), this.pluginManager)
-    const buffer = await fetchAndMaybeUnzip(loc, opts)
+    const buffer = await fetchAndMaybeUnzip(
+      openLocation(this.getConf('gtfLocation'), this.pluginManager),
+      opts,
+    )
     const headerLines: string[] = []
-    const featureMap: Record<string, string> = {}
+    const linesByRef: Record<string, string[]> = {}
 
     parseLineByLine(
       buffer,
@@ -49,45 +67,49 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
         } else if (line.startsWith('>')) {
           return false
         } else {
-          const ret = line.indexOf('\t')
-          const refName = line.slice(0, ret)
-          if (!featureMap[refName]) {
-            featureMap[refName] = ''
-          }
-          featureMap[refName] += `${line}\n`
+          const refName = line.slice(0, line.indexOf('\t'))
+          ;(linesByRef[refName] ??= []).push(line)
         }
         return true
       },
       opts?.statusCallback,
     )
 
-    const intervalTreeMap = Object.fromEntries(
-      Object.entries(featureMap).map(([refName, lines]) => [
-        refName,
-        (sc?: (arg: string) => void) => {
-          if (!this.calculatedIntervalTreeMap[refName]) {
-            sc?.('Parsing GTF data')
-            const intervalTree = new IntervalTree<SimpleFeat>()
-            for (const obj of (parseStringSync(lines) as FeatureLoc[][])
-              .flat()
-              .map((f, i) => featureData(f, `${this.id}-${refName}-${i}`))) {
-              intervalTree.insert(
-                [obj.start as number, obj.end as number],
-                obj as SimpleFeatureSerialized,
-              )
-            }
+    const calculatedIntervalTreeMap: Record<
+      string,
+      IntervalTree<SimpleFeatureSerialized>
+    > = {}
 
-            this.calculatedIntervalTreeMap[refName] = intervalTree
-          }
-          return this.calculatedIntervalTreeMap[refName]
-        },
-      ]),
+    const intervalTreeMap = Object.fromEntries(
+      Object.entries(linesByRef).map(([refName, refLines]) => {
+        let lines: string[] | null = refLines
+        return [
+          refName,
+          (sc?: StatusCallback) => {
+            if (!calculatedIntervalTreeMap[refName]) {
+              sc?.('Parsing GTF data')
+              const intervalTree = new IntervalTree<SimpleFeatureSerialized>()
+              const parsed = (
+                parseStringSync(lines!.join('\n')) as FeatureLoc[][]
+              )
+                .flat()
+                .map((f, i) => featureData(f, `${this.id}-${refName}-${i}`))
+              lines = null
+              for (const obj of parsed) {
+                intervalTree.insert(
+                  [obj.start as number, obj.end as number],
+                  obj as SimpleFeatureSerialized,
+                )
+              }
+              calculatedIntervalTreeMap[refName] = intervalTree
+            }
+            return calculatedIntervalTreeMap[refName]!
+          },
+        ]
+      }),
     )
 
-    return {
-      header: headerLines.join('\n'),
-      intervalTreeMap,
-    }
+    return { header: headerLines.join('\n'), intervalTreeMap }
   }
 
   private async loadData(opts: BaseOptions = {}) {
@@ -95,7 +117,6 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       this.gtfFeatures = undefined
       throw e
     })
-
     return this.gtfFeatures
   }
 
@@ -112,19 +133,14 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
-        await this.getFeaturesHelper({
-          query,
-          opts,
-          observer,
-          allowRedispatch: true,
-        })
+        await this.getFeaturesHelper({ query, opts, observer, allowRedispatch: true })
       } catch (e) {
         observer.error(e)
       }
     }, opts.stopToken)
   }
 
-  public async getFeaturesHelper({
+  private async getFeaturesHelper({
     query,
     opts,
     observer,
@@ -140,31 +156,16 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
     const aggregateField = this.getConf('aggregateField') as string
     const { start, end, refName } = query
     const { intervalTreeMap } = await this.loadData(opts)
-    const feats = intervalTreeMap[refName]?.(opts.statusCallback).search([
-      start,
-      end,
-    ])
-    if (feats) {
-      if (allowRedispatch && feats.length) {
-        let minStart = Number.POSITIVE_INFINITY
-        let maxEnd = Number.NEGATIVE_INFINITY
-        let hasAnyAggregateField = false
-        for (const feat of feats) {
-          if (feat.start < minStart) {
-            minStart = feat.start
-          }
-          if (feat.end > maxEnd) {
-            maxEnd = feat.end
-          }
-          if (feat[aggregateField]) {
-            hasAnyAggregateField = true
-          }
-        }
+    const tree = intervalTreeMap[refName]
+    if (tree) {
+      const feats = tree(opts.statusCallback).search([start, end])
 
-        if (
-          hasAnyAggregateField &&
-          (maxEnd > query.end || minStart < query.start)
-        ) {
+      if (allowRedispatch && feats.length) {
+        const { minStart, maxEnd, hasAnyAggregateField } = getRedispatchBounds(
+          feats,
+          aggregateField,
+        )
+        if (hasAnyAggregateField && (maxEnd > query.end || minStart < query.start)) {
           await this.getFeaturesHelper({
             query: {
               ...query,
@@ -185,17 +186,10 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       const parentAggregation: Record<string, SimpleFeatureSerialized[]> = {}
       for (const feat of feats) {
         const aggr = feat[aggregateField] as string
-        parentAggregation[aggr] ??= []
-
         if (aggr) {
-          parentAggregation[aggr].push(feat)
+          ;(parentAggregation[aggr] ??= []).push(feat)
         } else {
-          observer.next(
-            new SimpleFeature({
-              id: feat.uniqueId,
-              data: feat,
-            }),
-          )
+          observer.next(new SimpleFeature({ id: feat.uniqueId, data: feat }))
         }
       }
 
