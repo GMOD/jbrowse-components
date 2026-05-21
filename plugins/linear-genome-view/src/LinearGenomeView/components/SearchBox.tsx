@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
@@ -49,9 +51,11 @@ async function onSelect({
 const SearchBox = observer(function SearchBox({
   model,
   showHelp = true,
+  style,
 }: {
   showHelp?: boolean
   model: LinearGenomeViewModel
+  style?: React.CSSProperties
 }) {
   const { classes } = useStyles()
   const theme = useTheme()
@@ -94,6 +98,7 @@ const SearchBox = observer(function SearchBox({
         className: classes.headerRefName,
         style: {
           margin: SPACING,
+          ...style,
         },
         slotProps: {
           input: {
