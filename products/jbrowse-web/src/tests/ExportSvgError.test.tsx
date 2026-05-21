@@ -15,7 +15,7 @@ global.Blob = (content, options) => ({ content, options })
 // @ts-expect-error
 global.indexedDB = {}
 
-jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
+jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
 

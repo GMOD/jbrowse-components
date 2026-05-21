@@ -23,19 +23,14 @@ export function getMethBins(feature: Feature, cigarOps: ArrayLike<number>) {
     let probIndex = 0
 
     for (const { type, positions } of modifications) {
-      for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
-        // Skip positions outside the feature bounds
+      getNextRefPos(cigarOps, positions, (ref, idx) => {
         if (ref < 0 || ref >= flen) {
-          continue
+          return
         }
-
-        // Calculate probability index based on strand
         const isReverseStrand = fstrand === -1
         const idx2 =
           probIndex + (isReverseStrand ? positions.length - 1 - idx : idx)
         const prob = probabilities?.[idx2] || 0
-
-        // Store modification data in appropriate bins
         if (type === 'm') {
           methBins[ref] = 1
           methProbs[ref] = prob
@@ -43,7 +38,7 @@ export function getMethBins(feature: Feature, cigarOps: ArrayLike<number>) {
           hydroxyMethBins[ref] = 1
           hydroxyMethProbs[ref] = prob
         }
-      }
+      })
       probIndex += positions.length
     }
   }

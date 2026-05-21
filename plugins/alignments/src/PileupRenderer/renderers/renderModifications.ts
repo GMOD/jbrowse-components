@@ -70,17 +70,16 @@ export function renderModifications({
 
   let probIndex = 0
   for (const { type, base, strand, positions } of modifications) {
-    for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
+    getNextRefPos(cigarOps, positions, (ref, idx) => {
       const prob =
         probabilities?.[
           probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
         ] || 0
-
       if (!modsByPosition.has(ref)) {
         modsByPosition.set(ref, [])
       }
       modsByPosition.get(ref)!.push({ type, base, strand, prob })
-    }
+    })
     probIndex += positions.length
   }
 
