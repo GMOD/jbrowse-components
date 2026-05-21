@@ -2,15 +2,13 @@ import { freeAdapterResources } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
 /**
- * free up any resources (e.g. cached adapter objects)
- * that are only associated with the given track ID.
- *
- * returns number of objects deleted
+ * Drop cached data adapters associated with the given session, and tell each
+ * renderer type to free per-render-session resources (layouts, etc).
  */
 export default class CoreFreeResources extends RpcMethodType {
   name = 'CoreFreeResources'
 
-  async execute(args: Record<string, unknown>) {
+  async execute(args: { sessionId?: string }) {
     await freeAdapterResources(args)
     for (const renderer of this.pluginManager.getRendererTypes()) {
       renderer.freeResources(args)
