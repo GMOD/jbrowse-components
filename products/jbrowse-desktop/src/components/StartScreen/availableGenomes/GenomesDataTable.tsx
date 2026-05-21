@@ -152,12 +152,11 @@ export default function GenomesDataTable({
   const favs = useMemo(() => new Set(favorites.map(f => f.id)), [favorites])
   const toggleFavorite = useCallback(
     (row: Entry) => {
-      const isFavorite = favs.has(row.id)
-      if (isFavorite) {
-        setFavorites(favorites.filter(fav => fav.id !== row.id))
+      if (favs.has(row.id)) {
+        setFavorites(prev => prev.filter(fav => fav.id !== row.id))
       } else {
-        setFavorites([
-          ...favorites,
+        setFavorites(prev => [
+          ...prev,
           {
             id: row.id,
             shortName: row.name || row.ncbiAssemblyName || row.accession,
@@ -171,7 +170,7 @@ export default function GenomesDataTable({
         ])
       }
     },
-    [setFavorites, favorites],
+    [setFavorites, favs],
   )
 
   const { data, error } = useGenomesData({
