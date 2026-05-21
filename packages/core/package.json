@@ -40,13 +40,11 @@
     "./gpu/getGpuDevice": "./src/gpu/getGpuDevice.ts",
     "./gpu/GpuBackendLifecycleSlotMixin": "./src/gpu/GpuBackendLifecycleSlotMixin.ts",
     "./gpu/hal": "./src/gpu/hal/index.ts",
-    "./gpu/initGpuContext": "./src/gpu/initGpuContext.ts",
     "./gpu/installPerRegionGpuLifecycle": "./src/gpu/installPerRegionGpuLifecycle.ts",
     "./gpu/pruneRegionMap": "./src/gpu/pruneRegionMap.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
     "./gpu/slangPass": "./src/gpu/slangPass.ts",
     "./gpu/webglUtils": "./src/gpu/webglUtils.ts",
-    "./gpu/webgpuUtils": "./src/gpu/webgpuUtils.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
@@ -70,8 +68,8 @@
     "./rpc/coreRpcMethods": "./src/rpc/coreRpcMethods.ts",
     "./rpc/methods/util": "./src/rpc/methods/util.ts",
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
+    "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
     "./TextSearch/BaseResults": "./src/TextSearch/BaseResults.ts",
-    "./TextSearch/fetchResults": "./src/TextSearch/fetchResults.ts",
     "./TextSearch/TextSearchManager": "./src/TextSearch/TextSearchManager.ts",
     "./ui": "./src/ui/index.ts",
     "./ui/AppLogo": "./src/ui/AppLogo.tsx",
@@ -85,7 +83,6 @@
     "./ui/DraggableDialog": "./src/ui/DraggableDialog.tsx",
     "./ui/DropDownMenu": "./src/ui/DropDownMenu.tsx",
     "./ui/EditableTypography": "./src/ui/EditableTypography.tsx",
-    "./ui/ErrorBanner": "./src/ui/ErrorBanner.tsx",
     "./ui/ErrorBoundary": "./src/ui/ErrorBoundary.tsx",
     "./ui/ErrorMessageStackTraceDialog": "./src/ui/ErrorMessageStackTraceDialog.tsx",
     "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
@@ -143,7 +140,6 @@
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./util/nanoid": "./src/util/nanoid.ts",
     "./ReExports/list": "./src/ReExports/list.ts",
-    "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
     "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
     "./util/tss-react/types": "./src/util/tss-react/types.ts",
     "./configuration/configurationSchema": "./src/configuration/configurationSchema.ts",
@@ -173,6 +169,7 @@
     "@floating-ui/react": "^0.27.19",
     "@gmod/abortable-promise-cache": "^3.0.4",
     "@gmod/bgzf-filehandle": "^6.0.26",
+    "@gmod/http-range-fetcher": "^5.0.7",
     "@jbrowse/jexl": "^3.0.2",
     "@jbrowse/mobx-state-tree": "^5.6.0",
     "@jbrowse/quick-lru": "^7.3.5",
@@ -190,6 +187,7 @@
     "dompurify": "^3.4.5",
     "escape-html": "^1.0.3",
     "fast-deep-equal": "^3.1.3",
+    "file-saver-es": "^2.0.5",
     "generic-filehandle2": "^2.1.9",
     "idb": "^8.0.3",
     "mobx": "^6.15.3",
@@ -287,10 +285,6 @@
         "types": "./esm/gpu/hal/index.d.ts",
         "import": "./esm/gpu/hal/index.js"
       },
-      "./gpu/initGpuContext": {
-        "types": "./esm/gpu/initGpuContext.d.ts",
-        "import": "./esm/gpu/initGpuContext.js"
-      },
       "./gpu/installPerRegionGpuLifecycle": {
         "types": "./esm/gpu/installPerRegionGpuLifecycle.d.ts",
         "import": "./esm/gpu/installPerRegionGpuLifecycle.js"
@@ -310,10 +304,6 @@
       "./gpu/webglUtils": {
         "types": "./esm/gpu/webglUtils.d.ts",
         "import": "./esm/gpu/webglUtils.js"
-      },
-      "./gpu/webgpuUtils": {
-        "types": "./esm/gpu/webgpuUtils.d.ts",
-        "import": "./esm/gpu/webgpuUtils.js"
       },
       "./pluggableElementTypes": {
         "types": "./esm/pluggableElementTypes/index.d.ts",
@@ -407,13 +397,13 @@
         "types": "./esm/rpc/RpcManager.d.ts",
         "import": "./esm/rpc/RpcManager.js"
       },
+      "./rpc/RpcRegistry": {
+        "types": "./esm/rpc/RpcRegistry.d.ts",
+        "import": "./esm/rpc/RpcRegistry.js"
+      },
       "./TextSearch/BaseResults": {
         "types": "./esm/TextSearch/BaseResults.d.ts",
         "import": "./esm/TextSearch/BaseResults.js"
-      },
-      "./TextSearch/fetchResults": {
-        "types": "./esm/TextSearch/fetchResults.d.ts",
-        "import": "./esm/TextSearch/fetchResults.js"
       },
       "./TextSearch/TextSearchManager": {
         "types": "./esm/TextSearch/TextSearchManager.d.ts",
@@ -466,10 +456,6 @@
       "./ui/EditableTypography": {
         "types": "./esm/ui/EditableTypography.d.ts",
         "import": "./esm/ui/EditableTypography.js"
-      },
-      "./ui/ErrorBanner": {
-        "types": "./esm/ui/ErrorBanner.d.ts",
-        "import": "./esm/ui/ErrorBanner.js"
       },
       "./ui/ErrorBoundary": {
         "types": "./esm/ui/ErrorBoundary.d.ts",
@@ -699,10 +685,6 @@
         "types": "./esm/ReExports/list.d.ts",
         "import": "./esm/ReExports/list.js"
       },
-      "./rpc/RpcRegistry": {
-        "types": "./esm/rpc/RpcRegistry.d.ts",
-        "import": "./esm/rpc/RpcRegistry.js"
-      },
       "./util/fileHandleStore": {
         "types": "./esm/util/fileHandleStore.d.ts",
         "import": "./esm/util/fileHandleStore.js"
@@ -790,9 +772,6 @@
         "gpu/hal": [
           "esm/gpu/hal/index.d.ts"
         ],
-        "gpu/initGpuContext": [
-          "esm/gpu/initGpuContext.d.ts"
-        ],
         "gpu/installPerRegionGpuLifecycle": [
           "esm/gpu/installPerRegionGpuLifecycle.d.ts"
         ],
@@ -807,9 +786,6 @@
         ],
         "gpu/webglUtils": [
           "esm/gpu/webglUtils.d.ts"
-        ],
-        "gpu/webgpuUtils": [
-          "esm/gpu/webgpuUtils.d.ts"
         ],
         "pluggableElementTypes": [
           "esm/pluggableElementTypes/index.d.ts"
@@ -880,11 +856,11 @@
         "rpc/RpcManager": [
           "esm/rpc/RpcManager.d.ts"
         ],
+        "rpc/RpcRegistry": [
+          "esm/rpc/RpcRegistry.d.ts"
+        ],
         "TextSearch/BaseResults": [
           "esm/TextSearch/BaseResults.d.ts"
-        ],
-        "TextSearch/fetchResults": [
-          "esm/TextSearch/fetchResults.d.ts"
         ],
         "TextSearch/TextSearchManager": [
           "esm/TextSearch/TextSearchManager.d.ts"
@@ -924,9 +900,6 @@
         ],
         "ui/EditableTypography": [
           "esm/ui/EditableTypography.d.ts"
-        ],
-        "ui/ErrorBanner": [
-          "esm/ui/ErrorBanner.d.ts"
         ],
         "ui/ErrorBoundary": [
           "esm/ui/ErrorBoundary.d.ts"
@@ -1098,9 +1071,6 @@
         ],
         "ReExports/list": [
           "esm/ReExports/list.d.ts"
-        ],
-        "rpc/RpcRegistry": [
-          "esm/rpc/RpcRegistry.d.ts"
         ],
         "util/fileHandleStore": [
           "esm/util/fileHandleStore.d.ts"

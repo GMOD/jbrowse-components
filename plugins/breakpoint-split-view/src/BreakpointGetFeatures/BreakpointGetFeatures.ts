@@ -8,6 +8,8 @@ import { toArray } from 'rxjs/operators'
 import { getClip } from '../BreakpointSplitView/getClip.ts'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { RpcRegistry } from '@jbrowse/core/rpc/RpcRegistry'
 import type { RenderArgs } from '@jbrowse/core/rpc/methods/util'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'

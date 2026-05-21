@@ -14,7 +14,7 @@
     "@iconify-json/mdi": "^1.2.3",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "astro": "^6.3.5",
+    "astro": "^6.3.6",
     "astro-icon": "^1.1.5",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
