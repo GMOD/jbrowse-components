@@ -26,25 +26,6 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
         const fileName = getFileName(file)
         const indexName = index && getFileName(index)
         if (
-          testAdapter(
-            fileName,
-            /\.paf\.gz$/i,
-            adapterHint,
-            'TabixPAFAdapter',
-          ) &&
-          (index !== undefined || adapterHint === 'TabixPAFAdapter')
-        ) {
-          // a bgzipped PAF shipped with a tabix index is read directly via
-          // TabixPAFAdapter; a .paf.gz with no index is a plain gzipped PAF
-          return {
-            type: 'TabixPAFAdapter',
-            pafGzLocation: file,
-            index: {
-              location: index ?? makeIndex(file, '.tbi'),
-              indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-            },
-          }
-        } else if (
           testAdapter(fileName, /\.paf(.gz)?$/i, adapterHint, 'PAFAdapter')
         ) {
           return {

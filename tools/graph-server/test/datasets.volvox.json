@@ -1,8 +1,0 @@
-{
-  "datasets": [
-    {
-      "id": "volvox",
-      "graph": "/home/cdiesh/src/jbrowse-components/test_data/volvox/volvox_pangenome_50.gfa"
-    }
-  ]
-}

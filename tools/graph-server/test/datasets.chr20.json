@@ -1,8 +1,0 @@
-{
-  "datasets": [
-    {
-      "id": "chr20",
-      "graph": "/home/cdiesh/chr20-test/chr20.gfa"
-    }
-  ]
-}
