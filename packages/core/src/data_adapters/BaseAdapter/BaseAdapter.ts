@@ -1,10 +1,8 @@
-import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
-
 import {
   ConfigurationSchema,
   readConfObject,
 } from '../../configuration/index.ts'
-import idMaker from '../../util/idMaker.ts'
+import { getAdapterId } from './getAdapterId.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
@@ -24,12 +22,7 @@ export class BaseAdapter {
     public getSubAdapter?: getSubAdapterType,
     public pluginManager?: PluginManager,
   ) {
-    if (typeof jest === 'undefined') {
-      const data = isStateTreeNode(config) ? getSnapshot(config) : config
-      this.id = `${idMaker(data)}`
-    } else {
-      this.id = 'test'
-    }
+    this.id = getAdapterId(config)
   }
 
   /**
@@ -46,11 +39,7 @@ export class BaseAdapter {
     }
   }
 
-  /**
-   * Same as `readConfObject(this.config, arg)`.
-   * Note: Does not offer the same TS type checking as `readConfObject`,
-   * consider using that instead.
-   */
+  /** shorthand for `readConfObject(this.config, arg)` */
   getConf(arg: string | string[]) {
     return readConfObject(this.config, arg)
   }

@@ -170,10 +170,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     regions: Region[],
     opts?: BaseOptions,
   ) {
-    if (!regions.length) {
-      throw new Error('No regions supplied')
-    }
-    return this.getRegionFeatureDensityStats(regions[0]!, opts)
+    return regions[0]
+      ? this.getRegionFeatureDensityStats(regions[0], opts)
+      : { featureDensity: 0 }
   }
 
   async getSources(
