@@ -11,8 +11,6 @@ const getFile = (url: string) =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
-jest.mock('../makeWorkerInstance', () => () => {})
-
 const delay = { timeout: 20000 }
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
@@ -22,7 +20,7 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
 })
 
 test('can use a spec url for sv inspector view', async () => {
-  console.warn = jest.fn()
+  jest.spyOn(console, 'warn').mockImplementation()
   const { findByText } = render(
     <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"}]}' />,
   )

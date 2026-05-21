@@ -4,9 +4,9 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
-  findCanvasIn,
   hts,
   setup,
+  waitForRenderedCanvas,
 } from './util.tsx'
 
 setup()
@@ -20,121 +20,45 @@ function getCanvasData(canvas: Element) {
   return ctx?.getImageData(0, 0, 100, 100).data.toString()
 }
 
-test('open a bigwig track and change to green color', async () => {
-  const { view, findByTestId, findAllByTestId } = await createView()
-  view.setNewView(5, 0)
+test.each(['green', 'purple'])(
+  'open a bigwig track and change to %s color',
+  async color => {
+    const { view, findByTestId, findAllByTestId } = await createView()
+    view.setNewView(5, 0)
 
-  // Open the track
-  fireEvent.click(
-    await findByTestId(hts('volvox_microarray'), {}, { timeout: 20000 }),
-  )
+    fireEvent.click(
+      await findByTestId(hts('volvox_microarray'), {}, { timeout: 20000 }),
+    )
 
-  // Wait for the track to render
-  const displays = await findAllByTestId(
-    /^display-.*-done$/,
-    {},
-    { timeout: 20000 },
-  )
-  const canvas1 = findCanvasIn(displays[0]!)
-  expectCanvasMatch(canvas1)
+    const canvas1 = await waitForRenderedCanvas(findAllByTestId)
+    expectCanvasMatch(canvas1)
 
-  // Capture initial canvas state
-  const initialData = getCanvasData(canvas1)
+    const initialData = getCanvasData(canvas1)
+    const display = view.tracks[0]!.displays[0] as {
+      setColor: (c: string) => void
+    }
+    display.setColor(color)
 
-  // Get the display model and change color
-  const track = view.tracks[0]!
-  const display = track.displays[0] as {
-    setColor: (c: string) => void
-    color: string | undefined
-  }
+    await waitFor(
+      () => {
+        const displayEl = document.querySelector(
+          '[data-testid^="display-"][data-testid$="-done"]',
+        )
+        if (!displayEl) {
+          throw new Error('Display not found')
+        }
+        const canvas = displayEl.querySelector('canvas')
+        if (!canvas) {
+          throw new Error('Canvas not found')
+        }
+        if (getCanvasData(canvas) === initialData) {
+          throw new Error('Canvas content has not changed yet')
+        }
+      },
+      { timeout: 10000 },
+    )
 
-  // Change the color - this should trigger a re-render
-  display.setColor('green')
-
-  // Wait for the canvas content to change
-  await waitFor(
-    () => {
-      const displayEl = document.querySelector(
-        '[data-testid^="display-"][data-testid$="-done"]',
-      )
-      if (!displayEl) {
-        throw new Error('Display not found')
-      }
-      const canvas = displayEl.querySelector('canvas')
-      if (!canvas) {
-        throw new Error('Canvas not found')
-      }
-      const currentData = getCanvasData(canvas)
-      if (currentData === initialData) {
-        throw new Error('Canvas content has not changed yet')
-      }
-    },
-    { timeout: 10000 },
-  )
-
-  // Get the updated canvas and verify
-  const displays2 = await findAllByTestId(
-    /^display-.*-done$/,
-    {},
-    { timeout: 20000 },
-  )
-  expectCanvasMatch(findCanvasIn(displays2[0]!))
-}, 40000)
-
-test('open a bigwig track and change to purple color', async () => {
-  const { view, findByTestId, findAllByTestId } = await createView()
-  view.setNewView(5, 0)
-
-  // Open the track
-  fireEvent.click(
-    await findByTestId(hts('volvox_microarray'), {}, { timeout: 20000 }),
-  )
-
-  // Wait for the track to render
-  const displays = await findAllByTestId(
-    /^display-.*-done$/,
-    {},
-    { timeout: 20000 },
-  )
-  const canvas1 = findCanvasIn(displays[0]!)
-  expectCanvasMatch(canvas1)
-
-  // Capture initial canvas state
-  const initialData = getCanvasData(canvas1)
-
-  // Get the display model and change color
-  const track = view.tracks[0]!
-  const display = track.displays[0] as { setColor: (c: string) => void }
-
-  // Change the color - this should trigger a re-render
-  display.setColor('purple')
-
-  // Wait for the canvas content to change
-  await waitFor(
-    () => {
-      const displayEl = document.querySelector(
-        '[data-testid^="display-"][data-testid$="-done"]',
-      )
-      if (!displayEl) {
-        throw new Error('Display not found')
-      }
-      const canvas = displayEl.querySelector('canvas')
-      if (!canvas) {
-        throw new Error('Canvas not found')
-      }
-      const currentData = getCanvasData(canvas)
-      if (currentData === initialData) {
-        throw new Error('Canvas content has not changed yet')
-      }
-    },
-    { timeout: 10000 },
-  )
-
-  // Get the updated canvas and verify
-  const displays2 = await findAllByTestId(
-    /^display-.*-done$/,
-    {},
-    { timeout: 20000 },
-  )
-  expectCanvasMatch(findCanvasIn(displays2[0]!))
-}, 40000)
+    expectCanvasMatch(await waitForRenderedCanvas(findAllByTestId))
+  },
+  40000,
+)

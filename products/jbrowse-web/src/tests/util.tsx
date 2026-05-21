@@ -100,6 +100,19 @@ export function findCanvasIn(container: HTMLElement) {
   return canvas
 }
 
+/** Wait for a display to finish rendering and return its canvas element. */
+export async function waitForRenderedCanvas(
+  findAllByTestId: (
+    matcher: RegExp,
+    options?: object,
+    waitOptions?: object,
+  ) => Promise<HTMLElement[]>,
+  timeout = 20000,
+) {
+  const displays = await findAllByTestId(/^display-.*-done$/, {}, { timeout })
+  return findCanvasIn(displays[0]!)
+}
+
 export async function createView(args?: any, adminMode?: boolean) {
   const ret = createViewNoWait(args, adminMode)
   const { view } = ret

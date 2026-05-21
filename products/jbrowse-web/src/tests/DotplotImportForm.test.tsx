@@ -3,15 +3,15 @@ import { fireEvent, within } from '@testing-library/react'
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
 setup()
 
-jest.mock('../makeWorkerInstance', () => () => {})
-
 const delay = { timeout: 50000 }
 beforeEach(() => {
   doBeforeEach()
+  jest.spyOn(console, 'warn').mockImplementation() // onAction listener warning
 })
 
-// onAction listener warning
-console.warn = jest.fn()
+afterEach(() => {
+  jest.restoreAllMocks()
+})
 
 test('open tracklist file', async () => {
   const { session, findByTestId, findByRole, findAllByTestId, findByText } =

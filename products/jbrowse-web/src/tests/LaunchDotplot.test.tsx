@@ -17,8 +17,6 @@ const getFile = (url: string) =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
-jest.mock('../makeWorkerInstance', () => () => {})
-
 const delay = { timeout: 20000 }
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {

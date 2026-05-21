@@ -4,8 +4,6 @@ import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
 
 setup()
 
-jest.mock('../makeWorkerInstance', () => () => {})
-
 const delay = { timeout: 20000 }
 beforeEach(() => {
   doBeforeEach()

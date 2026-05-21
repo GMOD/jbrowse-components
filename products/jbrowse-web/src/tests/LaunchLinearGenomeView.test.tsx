@@ -17,8 +17,6 @@ const getFile = (url: string) =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
-jest.mock('../makeWorkerInstance', () => () => {})
-
 const delay = { timeout: 10000 }
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
@@ -51,7 +49,7 @@ test('can use a spec gene name for lgv', async () => {
 }, 60000)
 
 test('nonexist', async () => {
-  console.error = jest.fn()
+  jest.spyOn(console, 'error').mockImplementation()
   const { findByText, findByPlaceholderText } = render(
     <App search="?config=test_data/volvox/config_main_thread.json&loc=ctgA:6000-7000&assembly=volvox&tracks=volvox_bam_pileup,nonexist" />,
   )

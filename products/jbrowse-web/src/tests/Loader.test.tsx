@@ -7,17 +7,15 @@ import { App } from './loaderUtil.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-// @ts-ignore
+// @ts-expect-error
 global.nodeImage = Image
-// @ts-ignore
+// @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
 const getFile = (url: string) =>
   new LocalFile(
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
-
-jest.mock('../makeWorkerInstance', () => () => {})
 
 const delay = { timeout: 20000 }
 
@@ -58,7 +56,7 @@ afterEach(() => {
 })
 
 test('errors with config in URL that does not exist', async () => {
-  console.error = jest.fn()
+  jest.spyOn(console, 'error').mockImplementation()
   const { findByText } = render(<App search="?config=doesNotExist.json" />)
   await findByText(/HTTP 404 fetching doesNotExist.json/)
 })

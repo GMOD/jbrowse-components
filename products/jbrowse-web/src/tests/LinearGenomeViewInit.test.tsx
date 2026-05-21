@@ -7,10 +7,12 @@ import { getPluginManager, setup } from './util.tsx'
 
 setup()
 
-console.warn = jest.fn()
-console.error = jest.fn()
-
 configure({ disableErrorBoundaries: true })
+
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
+})
 
 const getFile = (url: string) => {
   const cleanUrl = url.replace(/http:\/\/localhost\//, '')
@@ -31,6 +33,7 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
 afterEach(() => {
   localStorage.clear()
   sessionStorage.clear()
+  jest.restoreAllMocks()
 })
 
 async function createLinearGenomeViewWithInit(init: {
@@ -50,10 +53,6 @@ async function createLinearGenomeViewWithInit(init: {
 
   return { view, session, rootModel, pluginManager }
 }
-
-afterEach(() => {
-  jest.restoreAllMocks()
-})
 
 test('LinearGenomeView initializes with gene name search', async () => {
   const { view } = await createLinearGenomeViewWithInit({
