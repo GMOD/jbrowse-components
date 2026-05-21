@@ -1,5 +1,4 @@
 import { promises as fsPromises } from 'fs'
-import path from 'path'
 
 import parseJSON from 'json-parse-better-errors'
 
@@ -40,44 +39,6 @@ export async function readJsonFile<T>(location: string): Promise<T> {
 export async function writeJsonFile(location: string, contents: unknown) {
   debug(`Writing JSON file to ${process.cwd()} ${location}`)
   return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))
-}
-
-export async function resolveFileLocation(
-  location: string,
-  check = true,
-  inPlace = false,
-) {
-  let locationUrl: URL | undefined
-  try {
-    locationUrl = new URL(location)
-  } catch (error) {
-    // ignore
-  }
-  if (locationUrl) {
-    if (check) {
-      const response = await fetch(locationUrl, { method: 'HEAD' })
-      if (!response.ok) {
-        throw new Error(`${locationUrl} result ${response.statusText}`)
-      }
-    }
-    return locationUrl.href
-  }
-  let locationPath: string | undefined
-  try {
-    locationPath = check ? await fsPromises.realpath(location) : location
-  } catch (e) {
-    // ignore
-  }
-  if (locationPath) {
-    const filePath = path.relative(process.cwd(), locationPath)
-    if (inPlace && filePath.startsWith('..')) {
-      console.warn(
-        `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
-      )
-    }
-    return inPlace ? location : filePath
-  }
-  throw new Error(`Could not resolve to a file or a URL: "${location}"`)
 }
 
 export async function readInlineOrFileJson<T>(inlineOrFileName: string) {

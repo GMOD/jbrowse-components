@@ -7,9 +7,7 @@ import type { Config } from '../../base.ts'
 
 export function validateLoadOption(load?: string): void {
   if (load && !['copy', 'symlink', 'move', 'inPlace'].includes(load)) {
-    throw new Error(
-      'Error: --load must be one of: copy, symlink, move, inPlace',
-    )
+    throw new Error('--load must be one of: copy, symlink, move, inPlace')
   }
 }
 
@@ -58,35 +56,11 @@ export function validateAssemblies(
   }
 }
 
-export function validateTrackId(
-  configContents: Config,
-  trackId: string,
-  force?: boolean,
-  overwrite?: boolean,
-): number {
-  if (!configContents.tracks) {
-    configContents.tracks = []
-  }
-
-  const idx = configContents.tracks.findIndex(c => c.trackId === trackId)
-
-  if (idx !== -1 && !force && !overwrite) {
-    throw new Error(
-      `Cannot add track with id ${trackId}, a track with that id already exists (use --force to override)`,
-    )
-  }
-
-  return idx
-}
-
 export function createTargetDirectory(
   configDir: string,
   subDir?: string,
 ): void {
   if (subDir) {
-    const dir = path.join(configDir, subDir)
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir)
-    }
+    fs.mkdirSync(path.join(configDir, subDir), { recursive: true })
   }
 }

@@ -1,3 +1,5 @@
+import { adapterLocationKey } from '@jbrowse/text-indexing-core'
+
 import { sanitizeNameForPath } from './config-utils.ts'
 
 import type {
@@ -35,17 +37,10 @@ export function createTrixAdapter(
   }
 }
 
-const ADAPTER_LOCATION_KEYS: Record<string, string> = {
-  Gff3TabixAdapter: 'gffGzLocation',
-  Gff3Adapter: 'gffLocation',
-  VcfAdapter: 'vcfLocation',
-  VcfTabixAdapter: 'vcfGzLocation',
-}
-
 export function getAdapterLocation(
   adapter: { type?: string; [key: string]: unknown } | undefined,
 ): UriLocation | LocalPathLocation | undefined {
-  const key = ADAPTER_LOCATION_KEYS[adapter?.type ?? '']
+  const key = adapterLocationKey[adapter?.type ?? '']
   return key
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       ((adapter?.[key] as UriLocation | LocalPathLocation) ??

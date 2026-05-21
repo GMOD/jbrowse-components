@@ -61,8 +61,7 @@ au9.g999.t1 ["Group1.36%3A165558..166984"|"au9_scaffold"|"au9.g999.t1"|"au9.g999
 exports[`indexes a local non-gz gff3 file 3`] = `113448`;
 
 exports[`indexes a local non-gz gff3 file 4`] = `
-"au9.g10000000000
-au9.g8000000BE82
+"au9.g0000000000
 "
 `;
 
@@ -144,8 +143,7 @@ au9.g999.t1 ["Group1.36%3A165558..166984"|"online_au9_scaffold"|"au9.g999.t1"|"a
 exports[`indexes a remote non-gz gff3 file 3`] = `122520`;
 
 exports[`indexes a remote non-gz gff3 file 4`] = `
-"au9.g10000000000
-au9.g8000000CDF5
+"au9.g0000000000
 "
 `;
 
