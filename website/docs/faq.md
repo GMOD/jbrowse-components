@@ -35,15 +35,18 @@ Alternatively, to boot up JBrowse Desktop, you can go to the
 `products/jbrowse-desktop` directory.
 
 For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
-use `pnpm storybook` instead of `pnpm start`.
+use `pnpm storybook` instead of `pnpm start`. (Note: the source folder names
+in `products/` do not include the trailing `2`, but the published npm packages
+do: `@jbrowse/react-linear-genome-view2`, `@jbrowse/react-app2`,
+`@jbrowse/react-circular-genome-view2`.)
 
 ## General
 
 ### What is special about JBrowse 2
 
 JBrowse 2's plugin system supports custom view types (e.g. circular, dotplot)
-alongside the built-in ones, making it a platform you can build on rather than
-just a genome browser.
+alongside the built-in ones, making it a platform for genomic visualization,
+not only a genome browser.
 
 ### What are new features in JBrowse 2
 
@@ -66,11 +69,47 @@ Note that the server that you use should support byte-range requests (e.g. the
 [Range HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range))
 so that JBrowse can get small slices of large binary data files.
 
-### BAM files do not work on my server
+### BAM (or other indexed binary files) do not work on my server
 
-If you use Apache, disable mime_magic. When enabled, the server sends
-`Content-Encoding: gzip`, which tells the browser to decompress the data — but
-JBrowse needs to handle decompression itself.
+Almost always: the server is sending `Content-Encoding: gzip` on a
+BGZF-compressed file (BAM, VCF.gz, GFF.gz, BED.gz, .fa.gz, etc.).
+
+BGZF looks like gzip to the server, so content-sniffers like Apache's
+`mod_mime_magic`, PHP's `mime_content_type`, and some CDN auto-rules add the
+header. The browser then silently decompresses the file before JavaScript
+sees it. JBrowse needs the raw bytes — it does its own BGZF decompression
+and seeks into the file using offsets from `.bai`/`.tbi`/`.csi`/`.gzi` — so
+reads fail with truncated data, "invalid BGZF block", or random gaps. Byte
+range requests break for the same reason.
+
+**The fix:** don't set `Content-Encoding` on these files. Serve them as
+opaque binary.
+
+- **Apache** — disable `mod_mime_magic`, or scope it. To keep it on
+  elsewhere, unset the header for genomic extensions:
+
+  ```apache
+  <FilesMatch "\.(bam|bai|cram|crai|vcf\.gz|tbi|csi|gff\.gz|bed\.gz|fa\.gz|gzi|fai)$">
+    Header unset Content-Encoding
+  </FilesMatch>
+  ```
+
+- **Nginx** — only `gzip` text MIME types (the default `gzip_types` is fine;
+  don't add `application/octet-stream` or `application/gzip`). Don't enable
+  `gzip_static` for genomic files.
+
+- **S3 / CloudFront** — don't upload with `--content-encoding gzip`. Fix a
+  bad upload with `aws s3 cp --content-encoding "" ...`.
+
+- **PHP / app servers** — disable auto-content-type middleware on these
+  paths.
+
+To check, open dev tools' Network tab, request the file, and confirm no
+`Content-Encoding: gzip` header on the response.
+
+Compressing `config.json` with `Content-Encoding: gzip` is fine — that's
+just a text file. The rule only applies to BGZF binary files. See also
+[Can I compress the config.json?](#can-i-compress-the-configjson-its-large-and-users-have-to-download-it).
 
 ### How can I setup JBrowse 2 on my web server
 
@@ -112,28 +151,24 @@ If you've manually downloaded jbrowse-web, the newest releases can be found
 
 ### How can I setup JBrowse 2 without the CLI tools
 
-The CLI is a convenience — it's not strictly required.
+The CLI is the easiest way to add assemblies and tracks — `jbrowse add-track`
+will figure out the track type, index files, and config entries for you — so
+we recommend it for most setups. But it is not required.
 
-For `jbrowse create`, download the latest jbrowse-web zip from the
+To set up JBrowse without the CLI, download a zip from the
 [releases page](https://github.com/GMOD/jbrowse-components/releases) and unzip
-it into your web directory.
+it into your web directory. From there you can:
 
-Checkout our [quickstart web](/docs/quickstart_web) guide for a speedy start to
-using a manually downloaded JBrowse instance.
+- edit `config.json` in a text editor — see the
+  [config guide](/docs/config_guide) and
+  [config basics](/docs/config_guides/intro)
+- use the [admin server](/docs/quickstart_adminserver), which provides a GUI
+  for editing the config
 
-For `add-assembly` and `add-track`, manually edit `config.json` — the
-[config docs](/docs/config_guide) and sample configs are useful references.
-
-To configure JBrowse via the GUI, see the
-[admin server tutorial](/docs/quickstart_adminserver).
-
-Understanding [config basics](/docs/config_guides/intro) is helpful for manual
-editing, though note that corrupt configs can produce hard-to-diagnose errors
-since the config system is strongly typed.
-
-[Contact us](/contact) or ask in the
-[discussions](https://github.com/GMOD/jbrowse-components/discussions) for
-complex configuration issues.
+The [quickstart web](/docs/quickstart_web) guide walks through both the CLI
+and the manual setup. Questions of any kind are welcome on the
+[discussions board](https://github.com/GMOD/jbrowse-components/discussions),
+or feel free to [contact us](/contact) directly.
 
 ### How do I load a track into JBrowse 2
 

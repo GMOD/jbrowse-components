@@ -5,21 +5,19 @@ description: Installing community plugins
 guide_category: Other features
 ---
 
-Users can add plugins to their session using the in-app plugin store. The plugin
-will be added to your "session" which can be shared with the share button (or if
-you are an admin running the admin-server, then it will be added to the config
-file).
+The in-app plugin store installs community plugins into the current session.
+Plugins can add new track types, view types, data adapters, custom menu
+items, and more.
 
-This can add extra functions, tracks, or many other interesting features. For
-example, if you add the CIVIC plugin, it will automatically add a track that
-contains the CIVIC cancer gene annotations to hg19.
+Where the install persists depends on the context:
 
-:::info Note
+- **web session** — saved into the session and travels with the share link
+- **admin server** — written to `config.json`, persists across sessions
+- **JBrowse Desktop** — saved into the open session file
 
-Not all plugins are directly useful from being added, and require hand-editing
-of the configuration file to be useful. If you would like to use such a plugin
-and do not have access to the configuration file, contact your administrator.
+Some plugins (e.g. CIVIC) add their data automatically when installed. Others
+only register building blocks (a new track type, a new adapter) that need a
+matching config entry to be useful — ask an admin if you can't edit the
+config yourself.
 
-:::
-
-<Figure caption="Screenshot showing the plugin store inside the app." src="/img/plugin_store.png" />
+<Figure caption="The plugin store inside the app." src="/img/plugin_store.png" />

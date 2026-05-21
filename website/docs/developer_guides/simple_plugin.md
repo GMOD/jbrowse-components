@@ -48,7 +48,7 @@ cd jbrowse-plugin-my-project
 Run:
 
 ```bash
-yarn init
+yarn init  # or: npm init
 ```
 
 You'll be asked a few questions relating to your new project.
@@ -67,7 +67,7 @@ you are going to publish to an NPM organization, we advise
 You also need to install the dependencies:
 
 ```bash
-yarn # or npm i
+yarn  # or: npm install
 ```
 
 ## Setup JBrowse 2

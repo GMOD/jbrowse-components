@@ -1,6 +1,6 @@
 ---
 id: methylation
-title: Visualizing DNA methylation
+title: DNA methylation
 description: Per-read and aggregate methylation from ONT and modkit
 guide_category: Tutorials
 ---

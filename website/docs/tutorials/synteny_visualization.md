@@ -1,6 +1,6 @@
 ---
 id: synteny_visualization
-title: Synteny visualization and genome alignment
+title: Synteny visualization
 ---
 
 This tutorial covers the dotplot view (chromosome-scale alignment overview) and

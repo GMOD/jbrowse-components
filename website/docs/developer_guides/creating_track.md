@@ -3,21 +3,47 @@ id: creating_track
 title: Creating custom track types
 ---
 
-Important note: track types are "high level concepts", and don't do a lot of
-logic: instead "display" types register themselves to a track type, to display
-data in a particular view. Then, the renderers are called by the display type on
-e.g. a per-block basis
+Tracks are deliberately thin. The track type owns the high-level identity (an
+ID, a name, a default set of displays), while **display types** do the work of
+showing the track inside a particular view, and **renderers** turn features
+into pixels.
 
-### Examples of track types
+```
+Track  ─owns→  Display(s)  ─call→  Renderer
+```
 
-For examples of custom track types, refer to things like:
+For example:
 
-- `HicTrack` - uses the `LinearHicDisplay` which calls the HicRenderer to draw
-  contact matrix
-- `VariantTrack` uses the `ChordVariantDisplay` in the `CircularView` (to render
-  VCF records as chords) and `LinearVariantDisplay` in the `LinearGenomeView`.
-  `LinearVariantDisplay` is similar to a normal feature track but has a custom
-  feature details widget via a "selectFeature" override.
-- `SyntenyTrack` - synteny tracks can be displayed in multiple view types like
-  DotplotView and LinearSyntenyView. It uses the `DotplotDisplay` or
-  `LinearSyntenyDisplay` respectively to achieve this
+- `AlignmentsTrack` owns `LinearAlignmentsDisplay`, which internally
+  combines a pileup row and an SNP-coverage row — both ways of looking at
+  BAM/CRAM data inside a `LinearGenomeView`.
+- `VariantTrack` owns `LinearVariantDisplay` (registered against
+  `LinearGenomeView`) and `ChordVariantDisplay` (registered against
+  `CircularView` by the `circular-view` plugin). The track is the same; the
+  displays are different because the views are different.
+- `SyntenyTrack` owns `DotplotDisplay` and `LinearSyntenyDisplay`, letting the
+  same underlying PIF/PAF data render in either a `DotplotView` or a
+  `LinearSyntenyView`.
+
+This factoring means: **if you're adding a new way to visualize data in an
+existing view, you almost always want a display type, not a track type.** Add
+a track type only when you need a new conceptual track category, a custom
+config schema for that category, or behavior shared across multiple displays.
+
+## Registering a track type
+
+Track types are registered with `pluginManager.addTrackType(...)` and reuse
+the base track config schema. The
+[pluggable elements](/docs/developer_guides/pluggable_elements) reference
+lists the full set of slots.
+
+For an end-to-end scaffold see the
+[simple plugin tutorial](/docs/developer_guides/simple_plugin). Useful
+in-tree references:
+
+- `plugins/alignments/src/AlignmentsTrack` - multi-display track
+- `plugins/variants/src/VariantTrack` - track shared across view types
+- `plugins/hic/src/HicTrack` - track with a single dedicated display
+
+See also [creating custom display types](/docs/developer_guides/creating_display)
+and [creating custom renderers](/docs/developer_guides/creating_renderer).

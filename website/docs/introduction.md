@@ -5,7 +5,10 @@ title: Introduction
 toplevel: true
 ---
 
-Welcome to the JBrowse 2 documentation.
+JBrowse 2 is a pluggable, open-source genome browser. It runs as a web app, a
+desktop app, and as embeddable React components, and supports linear, circular,
+dotplot, synteny, spreadsheet, and Hi-C views alongside the standard track
+types.
 
 ## Quick start guides
 
@@ -28,15 +31,15 @@ Welcome to the JBrowse 2 documentation.
 
 - [Admin server](/docs/quickstart_adminserver) - configuring JBrowse via the GUI
   with the admin-server tool
-- [Structural variant visualization (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) -
-  end-to-end walkthrough with real cancer sequencing data
-- [Synteny and genome alignment](/docs/tutorials/synteny_visualization) -
-  comparing genome assemblies with dotplot and linear synteny views
-- [Analyzing a phased trio](/docs/tutorials/analyze_trio) - inheritance patterns
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - end-to-end
+  walkthrough with real cancer sequencing data
+- [Synteny visualization](/docs/tutorials/synteny_visualization) - comparing
+  genome assemblies with dotplot and linear synteny views
+- [Phased trio analysis](/docs/tutorials/analyze_trio) - inheritance patterns
   and variant phasing in a trio dataset
-- [Methylation visualization](/docs/tutorials/methylation) - per-read and
-  aggregate methylation display
-- [Multi-sample SV visualization](/docs/tutorials/sv_multisamples) -
+- [DNA methylation](/docs/tutorials/methylation) - per-read and aggregate
+  methylation display
+- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) -
   population-level SVs, trio inspection, and chromosomal inversions
 
 ## Developers

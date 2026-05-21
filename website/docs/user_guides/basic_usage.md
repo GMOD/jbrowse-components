@@ -90,7 +90,6 @@ The following file formats are supported in core JBrowse 2:
 
 - CRAM
 - BAM
-- htsget (requires hand-edited config)
 - VCF (Tabix-indexed)
 - GFF3 (Tabix-indexed)
 - BED (Tabix-indexed)
@@ -98,7 +97,7 @@ The following file formats are supported in core JBrowse 2:
 - BigWig
 - BEDPE
 - JBrowse 1 nested containment lists (NCList)
-- .hic (Hi-C contact matrix visualization)
+- .hic (Hi-C contact matrix)
 
 #### SV inspector
 

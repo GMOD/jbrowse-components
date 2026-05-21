@@ -69,8 +69,8 @@ and autosaved ones. Click a session name to reopen it.
 
 #### Converting a saved session into a quickstart entry
 
-To add your own genome to the quickstart list, check the session in "Recently
-opened sessions" and click the playlist-add icon (☰+) next to the trash can.
+To add your own genome to the quickstart list, select a session in "Recently
+opened sessions" and click the playlist-add icon (☰+) in the action row.
 
 #### Selecting multiple entries from the quickstart panel
 

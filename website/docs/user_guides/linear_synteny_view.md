@@ -1,7 +1,7 @@
 ---
 id: linear_synteny_view
 title: Linear synteny view
-description: Linear alignment of two genomes
+description: Side-by-side alignment of two genomes
 guide_category: Views
 ---
 
@@ -18,4 +18,4 @@ guide_category: Views
 
 For a step-by-step walkthrough of loading assemblies, generating a PAF with
 minimap2, and using the dotplot and linear synteny views together, see the
-[Synteny and genome alignment tutorial](/docs/tutorials/synteny_visualization).
+[Synteny visualization](/docs/tutorials/synteny_visualization) tutorial.

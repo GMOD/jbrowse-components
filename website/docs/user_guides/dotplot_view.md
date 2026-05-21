@@ -35,4 +35,4 @@ linear synteny view with both genomes shown as tracks.
 
 For a step-by-step walkthrough of loading assemblies, generating a PAF with
 minimap2, and using the dotplot and linear synteny views together, see the
-[Synteny and genome alignment tutorial](/docs/tutorials/synteny_visualization).
+[Synteny visualization](/docs/tutorials/synteny_visualization) tutorial.

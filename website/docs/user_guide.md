@@ -29,7 +29,7 @@ title: User guides
 ## Views
 
 - [Dotplot view](/docs/user_guides/dotplot_view) - Whole-genome synteny dotplot
-- [Linear synteny view](/docs/user_guides/linear_synteny_view) - Linear
+- [Linear synteny view](/docs/user_guides/linear_synteny_view) - Side-by-side
   alignment of two genomes
 - [SV inspector view](/docs/user_guides/sv_inspector_view) - Structural variant
   spreadsheet and circular view
@@ -46,13 +46,13 @@ title: User guides
 
 ## Tutorials
 
-- [Analyzing a phased trio](/docs/tutorials/analyze_trio) - Examine inheritance
-  patterns and variant phasing in a trio dataset
-- [Cancer Genome in a Bottle (SVs)](/docs/tutorials/sv_visualization_cgiab) -
-  Load and inspect structural variants from real cancer sequencing data
-- [Methylation visualization](/docs/tutorials/methylation) - Per-read and
-  aggregate methylation display using MM-tagged BAM/CRAM files
-- [Multi-sample SV visualization](/docs/tutorials/sv_multisamples) -
+- [Phased trio analysis](/docs/tutorials/analyze_trio) - Inheritance patterns
+  and variant phasing in a trio dataset
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - Load and
+  inspect structural variants from real cancer sequencing data
+- [DNA methylation](/docs/tutorials/methylation) - Per-read and aggregate
+  methylation from MM-tagged BAM/CRAM files
+- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) -
   Population-level SVs, trio inspection, and chromosomal inversions
-- [Synteny and genome alignment](/docs/tutorials/synteny_visualization) -
-  Compare genome assemblies using dotplot and linear synteny views
+- [Synteny visualization](/docs/tutorials/synteny_visualization) - Compare
+  genome assemblies using dotplot and linear synteny views

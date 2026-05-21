@@ -5,24 +5,22 @@ description: Interpreting SV signals across display types
 guide_category: Views
 ---
 
-JBrowse 2 has several complementary views for exploring structural variants
-(SVs). SV calls are loaded as [variant tracks](/docs/user_guides/variant_track)
-(VCF/BCF); reads as [alignments tracks](/docs/user_guides/alignments_track)
-(BAM/CRAM). A typical workflow starts with the
+This guide covers how to interpret structural variant (SV) signals across
+JBrowse's views. A typical workflow starts in the
 [SV inspector](/docs/user_guides/sv_inspector_view) — a combined variant table
-and whole-genome circular overview — to triage candidates, then uses the
-alignments displays to examine read-level evidence at each breakpoint. This
-guide covers the SV-focused interpretation of those tools; see the
-[alignments track guide](/docs/user_guides/alignments_track) for general
-alignments features.
+and whole-genome circular overview — to triage candidates, then drills into
+the alignments at each breakpoint to examine read-level evidence.
 
-For an end-to-end walkthrough that loads a real cancer dataset (HG008 tumor and
-normal PacBio HiFi reads plus the C-GIAB benchmark SV/CNV call sets) and
-exercises each of the views described below, see
-[Cancer Genome in a Bottle (SVs)](/docs/tutorials/sv_visualization_cgiab). For
-population-scale SV analysis including multi-sample genotypes, trio inheritance,
-and a large chromosomal inversion, see
-[Multi-sample SV visualization with 1000 Genomes](/docs/tutorials/sv_multisamples).
+SV calls load as [variant tracks](/docs/user_guides/variant_track) (VCF/BCF),
+reads as [alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM).
+The [alignments track guide](/docs/user_guides/alignments_track) covers the
+general features; this page focuses on what to look for when interpreting SVs.
+
+For end-to-end walkthroughs, see
+[Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) (HG008
+tumor/normal PacBio HiFi + C-GIAB SV/CNV calls) and
+[Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
+(population-scale genotypes, trio inheritance, a large inversion).
 
 ## SV signals in the alignments track
 

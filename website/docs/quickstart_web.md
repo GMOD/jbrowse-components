@@ -224,17 +224,14 @@ and
 genome assemblies, but replace with your own data if applicable.
 
 Use [minimap2](https://github.com/lh3/minimap2) to create a PAF file from FASTA
-files:
+files. Pick a preset that matches how diverged your assemblies are: `asm5` for
+same-species, `asm10` for moderately diverged strains, `asm20` for cross-species
+(~5%+ divergence). When in doubt, consult the minimap2 docs.
 
 ```bash
-## Use minimap2 to create a PAF from your assemblies
-## -cx asm20 is appropriate for cross-species comparisons (~5% divergence)
-## use asm5 for same-species, asm10 for moderately diverged strains
-## consult the minimap2 docs or published protocols for your organisms
 minimap2 -cx asm20 grape.fa peach.fa > peach_vs_grape.paf
 
-## add each assembly to jbrowse config
-## the -n flag names the assemblies explicitly
+# add each assembly to jbrowse config (-n names them explicitly)
 jbrowse add-assembly grape.fa --load copy -n grape --out /var/www/html/jbrowse
 jbrowse add-assembly peach.fa --load copy -n peach --out /var/www/html/jbrowse
 ```
@@ -267,10 +264,9 @@ directly into the LGV search box.
 See the [text-index](/docs/cli#jbrowse-text-index) command docs for more info.
 Also see the [FAQ entries for text searching](/docs/faq#text-searching)
 
-## Conclusion
+## Next steps
 
 With an assembly and tracks configured, you're ready to explore your data.
-Useful next steps:
 
 - [User guides](/docs/user_guide) — track types, views, and UI features
 - [Config guide](/docs/config_guide) — advanced track and assembly configuration
@@ -278,7 +274,7 @@ Useful next steps:
   here
 - [FAQ](/docs/faq) — common questions including text searching and CORS issues
 
-## Miscellaneous tips
+## Other useful options
 
 You can use `--subDir` to organize your data directory:
 

@@ -5,46 +5,38 @@ description: Population-level variant views
 guide_category: Track types
 ---
 
-VCF files frequently contain information on multiple samples. JBrowse 2 added
-the ability to show the data from multiple samples using a custom Variant track
-"display type"
+A VCF can contain genotypes for many samples. JBrowse shows them with one of
+two displays, switchable from the track menu:
 
-There are two different display types:
+- **Multi-sample variant display (regular)** — variants drawn at their true
+  genomic positions, one row per sample
+- **Multi-sample variant display (matrix)** — variants laid out as a heatmap,
+  one row per sample and one column per variant
 
-1. "Multi-sample variant display (matrix)"
-2. "Multi-sample variant display (regular)"
+## Regular — best for full SV detail
 
-## Regular mode - optimized for showing all types of variants, including structural variants
+Each variant is drawn at its real genomic position. This is the only
+multi-sample display that renders structural variants at the right scale;
+overlapping calls use slight transparency so you can still tell them apart.
 
-In the regular mode, each variant is drawn at its proper genomic location, and
-produces multiple rows for each sample.
+If overlaps overwhelm the view, use "Edit filters" in the track menu to hide
+variants by size, name, or any Jexl expression.
 
-Notably, the regular mode is actually capable of showing structural variants,
-and if there are overlaps, it will draw each one over the other. There is a
-slight transparency, so you can distinguish small overlaps. If there are cases
-where there are too many overlaps, you can add filters to try to hide larger
-variants, or filter specific variants by name, using jexl via the "Edit filters"
-track menu item
+## Matrix — best for SNP/indel patterns
 
-## Matrix mode - optimized for showing patterns of diversity, focused on small variants and SNPs
+Each visible variant gets one column and each sample gets one row, regardless
+of how far apart the variants are on the genome. A thin black line connects
+each column to its real genomic position.
 
-In the matrix mode, each variant in the visible region is drawn into a 'matrix'
-where each row is a sample and each column is a variant.
+This packs sparse small variants into a readable layout. A 100kb region with
+one SNP per kb has ~100 variants on screen — only 1–2px wide each in the
+regular display, but ~20px each in the matrix display on a 2000px screen.
+Patterns like shared haplotypes, runs of homozygosity, and population
+structure become visible at a glance.
 
-In this case, the variants are not actually rendered at their exact genomic
-position, however a black line is drawn to connect the columns of the matrix to
-their variant position
+## Walkthroughs
 
-The matrix mode is ideal to 'densify' the sparse patterns of variation. For
-example, if there was one SNP per 1,000bp on a given genome, and you were zoomed
-out to a large genomic region of 100,000bp, then you may only see 100 variants,
-and each one would be very thin e.g. 1px in the "Multi-sample variant display
-(normal)"
-
-However, with the matrix mode, each variant would occupy e.g.
-your_screen_width/100 which for a 2000px wide screen is a nice 20px
-
-For an end-to-end example using the matrix display with a phased SNP trio, see
-[Analyzing a phased trio](/docs/tutorials/analyze_trio). For structural variant
-analysis using the regular display across a large cohort, see
-[Multi-sample SV visualization with 1000 Genomes](/docs/tutorials/sv_multisamples).
+- [Phased trio analysis](/docs/tutorials/analyze_trio) — matrix display with
+  a phased SNP trio
+- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) —
+  regular display across a large SV cohort

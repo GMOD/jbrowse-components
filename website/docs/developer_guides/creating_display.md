@@ -3,23 +3,45 @@ id: creating_display
 title: Creating custom display types
 ---
 
-Display types tell JBrowse how to "display" a given track in a particular view.
-A track might "display" itself completely different depending on whether it is
-in a dotplot or in a linear genome view. The "display" types may not actually do
-the drawing of the track data: that is often done by the renderer. The display
-will call the renderer though.
+A display type tells JBrowse how to show a given track inside a particular
+view. The same track can have several displays — one for each view it can
+appear in, or several alternative renderings inside the same view. The display
+owns view-specific state, menu items, and overlays; the
+[renderer](/docs/developer_guides/creating_renderer) it invokes does the
+per-feature drawing.
 
-Here are some reasons you might want a custom display type:
+## When to add a custom display type
 
-- Drawing custom things over the rendered content (e.g. drawing the Y-scale bar
-  in the wiggle track)
-- Implementing custom track menu items (e.g. Show soft clipping in the
-  alignments track)
-- Adding custom widgets (e.g. custom `VariantFeatureWidget` in variant track)
-- You want to bundle your renderer and adapter as a specific thing that is
-  automatically initialized rather than the `BasicTrack` (which combines any
-  adapter and renderer)
+- Drawing chrome over the rendered content (e.g. the Y-scale axis in
+  wiggle tracks, soft-clip indicators in alignments)
+- Adding track-menu items that toggle display-only state (e.g. "Show soft
+  clipping", "Color by methylation")
+- Wiring a custom widget into feature clicks (e.g. `VariantFeatureWidget`)
+- Bundling a specific adapter + renderer pair so users get the right
+  combination by default, instead of relying on the generic `BasicTrack`
 
-For a practical walkthrough of building a plugin that includes a display type,
-see the [simple plugin tutorial](/docs/developer_guides/simple_plugin) and the
-[no-build plugin tutorial](/docs/developer_guides/no_build_plugin).
+## Pairing displays with tracks and views
+
+A display registers itself as compatible with one view type. For example
+`LinearVariantDisplay` is registered against `LinearGenomeView`, while
+`ChordVariantDisplay` is registered against `CircularView` — both belong to
+the same `VariantTrack`. See
+[creating custom track types](/docs/developer_guides/creating_track) for how
+that split is intended to work.
+
+## Walkthroughs
+
+- [simple plugin tutorial](/docs/developer_guides/simple_plugin) - full
+  scaffold including a display type
+- [no-build plugin tutorial](/docs/developer_guides/no_build_plugin) - same
+  idea without a bundler
+
+In-tree references:
+
+- `plugins/wiggle/src/LinearWiggleDisplay` - adds a Y-scale overlay on top of
+  the rendered content
+- `plugins/alignments/src/LinearAlignmentsDisplay` - rich display with many
+  toggleable menu items and a custom feature widget
+- `plugins/variants/src/LinearVariantDisplay` and
+  `plugins/circular-view/src/ChordVariantDisplay` - two displays for one
+  track type, in different view types

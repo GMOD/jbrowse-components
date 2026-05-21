@@ -4,20 +4,12 @@ id: cli
 toplevel: true
 ---
 
-This document covers the CLI tools. Note: for @jbrowse/img static export tool,
-see https://www.npmjs.com/package/@jbrowse/img
+The `@jbrowse/cli` package provides the `jbrowse` command, which can download
+and upgrade JBrowse, add assemblies and tracks to a `config.json`, build text
+indexes, sort and prepare data files, and more.
 
-Note: the @jbrowse/cli may not do all types of operations, some use cases may
-best be handled by creating your own tools to manipulate a config.json by hand
-or by using a script file.
-
-A simple script that does not use @jbrowse/cli at all may just look like this
-
-```
-const config = JSON.parse(fs.readFileSync('config.json', 'utf8'))
-// do something with config.tracks, config.assemblies, etc.
-fs.writeFileSync('config.json', JSON.stringify(config, null, 2))
-```
+For the `@jbrowse/img` static export tool, see
+https://www.npmjs.com/package/@jbrowse/img.
 
 ## Installation
 
@@ -57,6 +49,7 @@ COMMANDS
   text-index           Make a text-indexing file for any given track(s)
   admin-server         Start up a small admin server for JBrowse configuration
   upgrade              Upgrades JBrowse 2 to latest version
+  make-gfa-db          Converts GFA to indexed SQLite database for runtime querying
   make-pif             Creates pairwise indexed PAF (PIF), with bgzip and tabix
   sort-gff             Helper utility to sort GFF files for tabix
   sort-bed             Helper utility to sort BED files for tabix
@@ -434,6 +427,27 @@ $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 
 # Get nightly release from main branch
 $ jbrowse upgrade --nightly
+```
+
+## jbrowse make-gfa-db
+
+```
+Converts a GFA file into an indexed SQLite database for runtime querying of graph genome paths and synteny.
+
+Usage: jbrowse make-gfa-db <gfa-file> [options]
+
+Options:
+  -h, --help
+
+      --out                  Output SQLite database path (default:
+                             <input>.gfa.db)
+
+      --assemblies           Comma-separated list of assembly/genome names to
+                             include (default: all)
+
+$ jbrowse make-gfa-db pangenome.gfa
+$ jbrowse make-gfa-db pangenome.gfa --out pangenome.db
+$ jbrowse make-gfa-db pangenome.gfa --assemblies col-0,ler,cvi
 ```
 
 ## jbrowse make-pif

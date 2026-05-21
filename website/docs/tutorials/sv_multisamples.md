@@ -1,6 +1,6 @@
 ---
 id: sv_multisamples
-title: Multi-sample SV visualization w/ 1kG
+title: Multi-sample SVs (1000 Genomes)
 description:
   Inspect population-level SVs, explore a family trio, and characterize a large
   chromosomal inversion
@@ -17,7 +17,7 @@ analyses:
 
 For SNP-level trio analysis — phased genotypes, IBD blocks, and crossing-over
 visualization — see the companion
-[Analyzing a phased trio](/docs/tutorials/analyze_trio) tutorial.
+[Phased trio analysis](/docs/tutorials/analyze_trio) tutorial.
 
 ## Dataset
 
@@ -105,7 +105,7 @@ family member's track at the SV locus. For a primer on reading these signals,
 see the [SV visualization guide](/docs/user_guides/sv_visualization).
 
 For SNP-level trio phasing and IBD block analysis with the matrix display, see
-the [Analyzing a phased trio](/docs/tutorials/analyze_trio) tutorial.
+the [Phased trio analysis](/docs/tutorials/analyze_trio) tutorial.
 
 ## The chr19 large inversion
 
@@ -182,7 +182,7 @@ For more on navigating the breakpoint split view, see
   the SV inspector
 - [Multi-sample variant displays](/docs/user_guides/multivariant_track) —
   regular and matrix display mode details
-- [Analyzing a phased trio](/docs/tutorials/analyze_trio) — SNP-level trio
+- [Phased trio analysis](/docs/tutorials/analyze_trio) — SNP-level trio
   phasing and IBD block analysis
-- [Cancer Genome in a Bottle (SVs)](/docs/tutorials/sv_visualization_cgiab) —
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) —
   end-to-end SV workflow with a cancer dataset
