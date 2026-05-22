@@ -49,7 +49,6 @@ COMMANDS
   text-index           Make a text-indexing file for any given track(s)
   admin-server         Start up a small admin server for JBrowse configuration
   upgrade              Upgrades JBrowse 2 to latest version
-  make-gfa-db          Converts GFA to indexed SQLite database for runtime querying
   make-pif             Creates pairwise indexed PAF (PIF), with bgzip and tabix
   sort-gff             Helper utility to sort GFF files for tabix
   sort-bed             Helper utility to sort BED files for tabix
@@ -427,27 +426,6 @@ $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 
 # Get nightly release from main branch
 $ jbrowse upgrade --nightly
-```
-
-## jbrowse make-gfa-db
-
-```
-Converts a GFA file into an indexed SQLite database for runtime querying of graph genome paths and synteny.
-
-Usage: jbrowse make-gfa-db <gfa-file> [options]
-
-Options:
-  -h, --help
-
-      --out                  Output SQLite database path (default:
-                             <input>.gfa.db)
-
-      --assemblies           Comma-separated list of assembly/genome names to
-                             include (default: all)
-
-$ jbrowse make-gfa-db pangenome.gfa
-$ jbrowse make-gfa-db pangenome.gfa --out pangenome.db
-$ jbrowse make-gfa-db pangenome.gfa --assemblies col-0,ler,cvi
 ```
 
 ## jbrowse make-pif
