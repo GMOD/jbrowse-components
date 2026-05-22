@@ -32,9 +32,15 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
     subfeatureInfos = [],
     onContextMenu,
   } = props
-  const flatbush2 = useMemo(() => Flatbush.from(flatbush as ArrayBuffer), [flatbush])
+  const flatbush2 = useMemo(
+    () => Flatbush.from(flatbush as ArrayBuffer),
+    [flatbush],
+  )
   const subfeatureFlatbush2 = useMemo(
-    () => (subfeatureFlatbush ? Flatbush.from(subfeatureFlatbush as ArrayBuffer) : null),
+    () =>
+      subfeatureFlatbush
+        ? Flatbush.from(subfeatureFlatbush as ArrayBuffer)
+        : null,
     [subfeatureFlatbush],
   )
 

@@ -11,6 +11,7 @@ import {
   isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { blockToRegion } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
   getParentRenderProps,
@@ -41,7 +42,6 @@ import type { LegendItem } from './components/FloatingLegend.tsx'
 import type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
-import { blockToRegion } from '@jbrowse/core/util/blockTypes'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { Theme } from '@mui/material'

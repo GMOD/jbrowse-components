@@ -105,7 +105,7 @@ export default class RpcManager {
     opts?: { rpcDriverName?: string },
   ) {
     const backendName =
-      (args['rpcDriverName'] as string | undefined) ||
+      (args.rpcDriverName as string | undefined) ||
       opts?.rpcDriverName ||
       readConfObject(this.mainConfiguration, 'defaultDriver')
 
@@ -130,7 +130,13 @@ export default class RpcManager {
       a,
       opts,
     )
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return driverForCall.call(this.pluginManager, sessionId, functionName, a, opts ?? {}) as any
+
+    return driverForCall.call(
+      this.pluginManager,
+      sessionId,
+      functionName,
+      a,
+      opts ?? {},
+    ) as any
   }
 }

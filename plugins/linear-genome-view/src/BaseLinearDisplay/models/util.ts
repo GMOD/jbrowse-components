@@ -47,6 +47,11 @@ export async function getFeatureDensityStatsPre(self: {
       {
         regions,
         adapterConfig,
+        statusCallback: (message: string) => {
+          if (isAlive(self)) {
+            self.setStatusMessage(message)
+          }
+        },
       },
       { rpcDriverName: effectiveRpcDriverName },
     )

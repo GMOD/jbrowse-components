@@ -6,8 +6,8 @@ import {
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
-import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { blockToRegion } from '@jbrowse/core/util/blockTypes'
+import CompositeMap from '@jbrowse/core/util/compositeMap'
 
 import SVGLegend from './SVGLegend.tsx'
 import {

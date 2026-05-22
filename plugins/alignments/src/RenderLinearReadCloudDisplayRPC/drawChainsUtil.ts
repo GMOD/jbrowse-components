@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { blockToRegion } from '@jbrowse/core/util/blockTypes'
 
 import { getCigarOps } from '../PileupRenderer/renderers/cigarUtil.ts'
 import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback.ts'
@@ -16,8 +17,6 @@ import {
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from '../shared/util.ts'
-
-import { blockToRegion } from '@jbrowse/core/util/blockTypes'
 
 import type { FlatbushItem, LayoutFeature } from '../PileupRenderer/types.ts'
 import type { ColorBy, ModificationTypeWithColor } from '../shared/types.ts'
