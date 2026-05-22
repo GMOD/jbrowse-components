@@ -20,13 +20,14 @@ const baseConfig = {
     'plugins/*/src/**/*.{js,jsx,ts,tsx}',
   ],
   coveragePathIgnorePatterns: [
-    '!*.d.ts',
+    '\\.d\\.ts$',
     'makeWorkerInstance.ts',
     'react-colorful.js',
     'QuickLRU.js',
   ],
   setupFiles: [
     '<rootDir>/config/jest/textEncoder.js',
+    '<rootDir>/config/jest/structuredClone.js',
     '<rootDir>/config/jest/console.js',
     '<rootDir>/config/jest/messagechannel.js',
     '<rootDir>/config/jest/setHTML.js',

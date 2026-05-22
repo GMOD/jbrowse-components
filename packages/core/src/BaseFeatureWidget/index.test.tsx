@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
 
 import { stateModelFactory } from './index.ts'
 import PluginManager from '../PluginManager.ts'
@@ -29,13 +29,15 @@ test('open up a widget', async () => {
       <BaseFeatureDetails model={model.widget} />
     </ThemeProvider>,
   )
-  model.widget.setFeatureData({
-    uniqueId: 'hello',
-    start: 2,
-    end: 102,
-    strand: 1,
-    score: 37,
-    refName: 'ctgA',
+  act(() => {
+    model.widget.setFeatureData({
+      uniqueId: 'hello',
+      start: 2,
+      end: 102,
+      strand: 1,
+      score: 37,
+      refName: 'ctgA',
+    })
   })
   expect(await findByText('ctgA:3..102 (+)')).toBeTruthy()
   expect(container).toMatchSnapshot()
