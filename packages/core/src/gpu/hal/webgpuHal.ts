@@ -10,7 +10,7 @@ import {
   glToGpuVertexFormat,
 } from '../webgpuUtils.ts'
 
-import type { BlendState, GpuHal, PassDescriptor, RegionMeta } from './types.ts'
+import type { BlendState, GpuHal, PassDescriptor } from './types.ts'
 
 class ShaderCompileError extends Error {
   constructor(passId: string, details: string) {
@@ -55,7 +55,6 @@ interface RegionPassBuffer {
 }
 
 interface RegionState {
-  meta: RegionMeta
   buffers: Map<string, RegionPassBuffer>
 }
 
@@ -384,20 +383,6 @@ export class WebGPUHal implements GpuHal {
     )
   }
 
-  setRegionMeta(regionKey: number, meta: Partial<RegionMeta>) {
-    const region = this.getOrCreateRegion(regionKey)
-    if (meta.regionStart !== undefined) {
-      region.meta.regionStart = meta.regionStart
-    }
-    if (meta.maxDepth !== undefined) {
-      region.meta.maxDepth = meta.maxDepth
-    }
-  }
-
-  getRegionMeta(regionKey: number) {
-    return this.regions.get(regionKey)?.meta
-  }
-
   getBufferCount(regionKey: number, passId: string) {
     return this.regions.get(regionKey)?.buffers.get(passId)?.count ?? 0
   }
@@ -670,10 +655,6 @@ export class WebGPUHal implements GpuHal {
     let region = this.regions.get(regionKey)
     if (!region) {
       region = {
-        meta: {
-          regionStart: 0,
-          maxDepth: 0,
-        },
         buffers: new Map(),
       }
       this.regions.set(regionKey, region)

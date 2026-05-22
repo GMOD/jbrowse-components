@@ -7,6 +7,5 @@ export type {
   GlAttributeLayout,
   GpuHal,
   PassDescriptor,
-  RegionMeta,
   TextureBinding,
 } from './types.ts'

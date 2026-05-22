@@ -46,11 +46,6 @@ export interface PassDescriptor {
   textures?: readonly TextureBinding[]
 }
 
-export interface RegionMeta {
-  regionStart: number
-  maxDepth: number
-}
-
 export interface GpuHal {
   resize(width: number, height: number): void
 
@@ -60,8 +55,6 @@ export interface GpuHal {
     data: ArrayBuffer | ArrayBufferView,
     count: number,
   ): void
-  setRegionMeta(regionKey: number, meta: Partial<RegionMeta>): void
-  getRegionMeta(regionKey: number): RegionMeta | undefined
   getBufferCount(regionKey: number, passId: string): number
   deleteBuffer(regionKey: number, passId: string): void
   deleteRegion(regionKey: number): void

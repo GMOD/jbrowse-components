@@ -1,7 +1,7 @@
 import { getDpr } from '../canvas2dUtils.ts'
 import { bindUniformBlock, createProgram } from '../webglUtils.ts'
 
-import type { BlendState, GpuHal, PassDescriptor, RegionMeta } from './types.ts'
+import type { BlendState, GpuHal, PassDescriptor } from './types.ts'
 
 // Set `DEBUG.webgl2 = true` in devtools (or `?webgl2-debug=1` in URL) to
 // enable verbose logging. Kept guarded so production builds stay quiet.
@@ -77,7 +77,6 @@ interface RegionPassBuffer {
 }
 
 interface RegionState {
-  meta: RegionMeta
   buffers: Map<string, RegionPassBuffer>
 }
 
@@ -255,20 +254,6 @@ export class WebGL2Hal implements GpuHal {
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     region.buffers.set(passId, { vbo, count })
-  }
-
-  setRegionMeta(regionKey: number, meta: Partial<RegionMeta>) {
-    const region = this.getOrCreateRegion(regionKey)
-    if (meta.regionStart !== undefined) {
-      region.meta.regionStart = meta.regionStart
-    }
-    if (meta.maxDepth !== undefined) {
-      region.meta.maxDepth = meta.maxDepth
-    }
-  }
-
-  getRegionMeta(regionKey: number) {
-    return this.regions.get(regionKey)?.meta
   }
 
   getBufferCount(regionKey: number, passId: string) {
@@ -483,7 +468,6 @@ export class WebGL2Hal implements GpuHal {
     let region = this.regions.get(regionKey)
     if (!region) {
       region = {
-        meta: { regionStart: 0, maxDepth: 0 },
         buffers: new Map(),
       }
       this.regions.set(regionKey, region)

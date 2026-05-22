@@ -395,7 +395,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         displayedRegionIndex,
         data.coveragePackedBuffer,
         numCoverageBins,
-        data.coverageMaxDepth,
       )
       r.maxDepth = data.coverageMaxDepth
       r.binSize = 1

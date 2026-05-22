@@ -1,4 +1,4 @@
-import type { GpuHal, PassDescriptor, RegionMeta } from './types.ts'
+import type { GpuHal, PassDescriptor } from './types.ts'
 
 export interface MockCall {
   method: string
@@ -10,7 +10,6 @@ export class MockHal implements GpuHal {
   passes: PassDescriptor[]
 
   private buffers = new Map<string, { data: ArrayBufferLike; count: number }>()
-  private regionMeta = new Map<number, RegionMeta>()
   private lastUniforms: ArrayBuffer | null = null
 
   constructor(passes: PassDescriptor[]) {
@@ -42,19 +41,6 @@ export class MockHal implements GpuHal {
     this.buffers.set(this.bufferKey(regionKey, passId), { data: copy, count })
   }
 
-  setRegionMeta(regionKey: number, meta: Partial<RegionMeta>) {
-    this.record('setRegionMeta', regionKey, meta)
-    const existing = this.regionMeta.get(regionKey) ?? {
-      regionStart: 0,
-      maxDepth: 0,
-    }
-    this.regionMeta.set(regionKey, { ...existing, ...meta })
-  }
-
-  getRegionMeta(regionKey: number) {
-    return this.regionMeta.get(regionKey)
-  }
-
   getBufferCount(regionKey: number, passId: string) {
     return this.buffers.get(this.bufferKey(regionKey, passId))?.count ?? 0
   }
@@ -71,13 +57,11 @@ export class MockHal implements GpuHal {
         this.buffers.delete(key)
       }
     }
-    this.regionMeta.delete(regionKey)
   }
 
   deleteAllRegions() {
     this.record('deleteAllRegions')
     this.buffers.clear()
-    this.regionMeta.clear()
   }
 
   uploadTexture(
@@ -125,7 +109,6 @@ export class MockHal implements GpuHal {
   dispose() {
     this.record('dispose')
     this.buffers.clear()
-    this.regionMeta.clear()
   }
 
   // Test helpers
@@ -166,7 +149,6 @@ export class MockHal implements GpuHal {
   reset() {
     this.calls = []
     this.buffers.clear()
-    this.regionMeta.clear()
     this.lastUniforms = null
   }
 }

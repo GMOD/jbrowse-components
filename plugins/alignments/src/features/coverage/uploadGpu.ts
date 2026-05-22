@@ -7,10 +7,8 @@ export function uploadCoverageBins(
   displayedRegionIndex: number,
   packedBuffer: ArrayBuffer,
   binCount: number,
-  maxDepth: number,
 ) {
   if (binCount > 0) {
     hal.uploadBuffer(displayedRegionIndex, PASS_COVERAGE, packedBuffer, binCount)
-    hal.setRegionMeta(displayedRegionIndex, { maxDepth })
   }
 }
