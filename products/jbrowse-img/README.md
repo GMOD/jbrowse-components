@@ -99,6 +99,20 @@ jb2export --fasta data/volvox/volvox.fa \
   --loc ctgA:609..968
 ```
 
+Other common alignment recipes:
+
+```bash
+## color by splice strand (XS tag), sort by haplotype (HP tag)
+jb2export --fasta ref.fa --bam reads.bam color:tag:XS sort:tag:HP --loc chr1:1-10000
+
+## color by base modifications (MM/ML tags) in super-compact layout
+jb2export --fasta ref.fa --bam reads.bam color:modifications featureHeight:super-compact \
+  --loc chr1:1-10000
+
+## color by insert size + orientation to highlight structural variants
+jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
+```
+
 Instead of extra `--flags`, track modifiers use a colon-based syntax that
 follows the track file argument. Full list of available modifiers:
 
@@ -113,12 +127,27 @@ follows the track file argument. Full list of available modifiers:
 
 | Modifier                         | Example                                          | Description                                                                      |
 | -------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS`                   | Color scheme                                                                     |
-| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`                     | Sort reads                                                                       |
+| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS`                   | Color scheme (see types below)                                                   |
+| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`                     | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                    |
 | `featureHeight:preset\|N`        | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (2px), `super-compact` (1px) |
 | `noSpacing:true\|false`          | `noSpacing:true`                                 | Remove gap between reads                                                         |
 | `softClipping:true\|false`       | `softClipping:true`                              | Show soft-clipped bases                                                          |
 | `snpcov`                         | `snpcov`                                         | Render only the SNP/coverage subtrack                                            |
+
+Available `color:type` values:
+
+| Type                       | Description                                                |
+| -------------------------- | ---------------------------------------------------------- |
+| `normal`                   | Default (grey reads, mismatches highlighted)               |
+| `strand`                   | Forward/reverse strand                                     |
+| `mappingQuality`           | MAPQ                                                       |
+| `perBaseQuality`           | Per-base quality overlay                                   |
+| `insertSize`               | Paired-end insert size                                     |
+| `pairOrientation`          | Paired-end orientation                                     |
+| `insertSizeAndOrientation` | Combined insert size + orientation                         |
+| `modifications`            | Base modifications via MM/ML tags                          |
+| `methylation`              | CpG methylation via MM/ML tags                             |
+| `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG`  |
 
 **BigWig tracks**
 
@@ -130,7 +159,7 @@ follows the track file argument. Full list of available modifiers:
 | `fill:true\|false`       | `fill:false`           | Fill under curve                                         |
 | `crosshatch:true\|false` | `crosshatch:true`      | Draw crosshatches                                        |
 | `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier) |
-| `color:colorname`        | `color:purple`         | Fill color                                               |
+| `color:value`            | `color:purple`         | Fill color (any CSS color — `tag:` form is BAM/CRAM only)|
 
 ### Force render a large region
 
