@@ -48,16 +48,27 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
       display.setSashimiArcs?.(val1)
     } else if (prefix === 'coverage') {
       display.setShowCoverage?.(booleanize(val1 || 'true'))
+    } else if (prefix === 'coverageHeight') {
+      if (val1) {
+        display.setCoverageHeight?.(+val1)
+      }
+    } else if (prefix === 'arcsHeight') {
+      if (val1) {
+        display.setArcsHeight?.(+val1)
+      }
+    } else if (prefix === 'lineWidth') {
+      if (val1) {
+        display.setLineWidth?.(+val1)
+      }
     } else if (prefix === 'featureHeight') {
-      if (val1 === 'normal') {
-        display.setFeatureHeight?.(7)
-        display.setNoSpacing?.(false)
-      } else if (val1 === 'compact') {
-        display.setFeatureHeight?.(2)
-        display.setNoSpacing?.(true)
-      } else if (val1 === 'super-compact') {
-        display.setFeatureHeight?.(1)
-        display.setNoSpacing?.(true)
+      if (
+        val1 === 'normal' ||
+        val1 === 'compact' ||
+        val1 === 'super-compact'
+      ) {
+        // setCompactness is the authoritative cross-display API (alignments,
+        // basic features, comparative views all implement it)
+        display.setCompactness?.(val1)
       } else if (val1) {
         const n = +val1
         if (isNaN(n)) {

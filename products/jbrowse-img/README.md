@@ -112,8 +112,9 @@ jb2export --fasta ref.fa --bam reads.bam color:modifications featureHeight:super
 ## color by insert size + orientation to highlight structural variants
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
 
-## samplot-style SV view (paired arcs in samplot mode, taller display)
-jb2export --fasta ref.fa --bam reads.bam arcs:samplot height:600 --loc chr1:1-50000
+## samplot-style SV view (large samplot panel + thicker arcs)
+jb2export --fasta ref.fa --bam reads.bam arcs:samplot arcsHeight:300 lineWidth:2 \
+  height:600 --loc chr1:1-50000
 
 ## paired-end arcs above reads
 jb2export --fasta ref.fa --bam reads.bam arcs:up --loc chr1:1-10000
@@ -137,18 +138,33 @@ follows the track file argument. Full list of available modifiers:
 
 **Alignment tracks (BAM/CRAM)**
 
-| Modifier                         | Example                                          | Description                                                                      |
-| -------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS`                   | Color scheme (see types below)                                                   |
-| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`                     | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                    |
-| `arcs:mode`                      | `arcs:samplot`, `arcs:up`                        | Paired-end arcs / samplot panel (`off`, `up`, `down`, `samplot`)                 |
-| `linkedReads:mode`               | `linkedReads:normal`                             | Linked-read chains (`off`, `normal`, `bezier`)                                   |
-| `sashimi:mode`                   | `sashimi:up`                                     | Sashimi splice-junction arcs (`off`, `up`, `down`)                               |
-| `coverage:true\|false`           | `coverage:false`                                 | Toggle coverage subtrack                                                         |
-| `featureHeight:preset\|N`        | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (2px), `super-compact` (1px) |
-| `noSpacing:true\|false`          | `noSpacing:true`                                 | Remove gap between reads                                                         |
-| `softClipping:true\|false`       | `softClipping:true`                              | Show soft-clipped bases                                                          |
-| `snpcov`                         | `snpcov`                                         | Render only the SNP/coverage subtrack                                            |
+Reads & coloring:
+
+| Modifier                         | Example                        | Description                                                   |
+| -------------------------------- | ------------------------------ | ------------------------------------------------------------- |
+| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS` | Color scheme (see types below)                                |
+| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`) |
+| `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                       |
+
+Overlays & subtracks:
+
+| Modifier               | Example          | Description                                                      |
+| ---------------------- | ---------------- | ---------------------------------------------------------------- |
+| `arcs:mode`            | `arcs:samplot`   | Paired-end arcs / samplot panel (`off`, `up`, `down`, `samplot`) |
+| `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                |
+| `sashimi:mode`         | `sashimi:up`     | Sashimi splice-junction arcs (`off`, `up`, `down`)               |
+| `coverage:true\|false` | `coverage:false` | Toggle coverage subtrack                                         |
+| `snpcov`               | `snpcov`         | Render only the SNP/coverage subtrack                            |
+
+Layout & sizing:
+
+| Modifier                  | Example                                          | Description                                                                      |
+| ------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `featureHeight:preset\|N` | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
+| `noSpacing:true\|false`   | `noSpacing:true`                                 | Remove gap between reads                                                         |
+| `coverageHeight:N`        | `coverageHeight:80`                              | Height of the coverage subtrack                                                  |
+| `arcsHeight:N`            | `arcsHeight:200`                                 | Height of the paired-arcs / samplot panel                                        |
+| `lineWidth:N`             | `lineWidth:2`                                    | Stroke width for arcs and linked-read chains                                     |
 
 Available `color:type` values:
 
