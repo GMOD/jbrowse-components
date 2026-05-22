@@ -468,3 +468,79 @@ test('BAM file with .out in filename should infer BamAdapter not MashMapAdapter'
   expect(widget.trackAdapterType).toBe('BamAdapter')
   expect(widget.trackType).toBe('AlignmentsTrack')
 })
+
+test('getTrackConfig includes default assembly names when mixinData is empty', () => {
+  const pluginManager = new PluginManager([new FakeViewPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+
+  const SessionModel = types
+    .model({
+      view: FakeViewModel,
+      widget: stateModelFactory(pluginManager),
+    })
+    .volatile(() => ({
+      rpcManager: {},
+      configuration: {},
+      // Minimal assembly mocks so getTrackConfig can proceed
+      assemblies: [{ name: 'hg38' }],
+      assemblyManager: { get: (_name: string) => ({ name: 'hg38' }) },
+    }))
+
+  const session = SessionModel.create(
+    {
+      view: { id: 'v', type: 'FakeView', assemblyNames: ['hg38'] },
+      widget: { type: 'AddTrackWidget', view: 'v' },
+    },
+    { pluginManager },
+  )
+
+  const { widget } = session
+  widget.setTrackData({
+    uri: 'https://example.com/test.paf.gz',
+    locationType: 'UriLocation',
+  })
+
+  const config = widget.getTrackConfig(Date.now())
+  expect(config?.adapter.queryAssembly).toBe('hg38')
+  expect(config?.adapter.targetAssembly).toBe('hg38')
+})
+
+test('getTrackConfig lets mixinData override default assembly names', () => {
+  const pluginManager = new PluginManager([new FakeViewPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+
+  const SessionModel = types
+    .model({
+      view: FakeViewModel,
+      widget: stateModelFactory(pluginManager),
+    })
+    .volatile(() => ({
+      rpcManager: {},
+      configuration: {},
+      assemblies: [{ name: 'hg38' }],
+      assemblyManager: { get: (_name: string) => ({ name: 'hg38' }) },
+    }))
+
+  const session = SessionModel.create(
+    {
+      view: { id: 'v', type: 'FakeView', assemblyNames: ['hg38'] },
+      widget: { type: 'AddTrackWidget', view: 'v' },
+    },
+    { pluginManager },
+  )
+
+  const { widget } = session
+  widget.setTrackData({
+    uri: 'https://example.com/test.paf.gz',
+    locationType: 'UriLocation',
+  })
+  widget.setMixinData({
+    adapter: { queryAssembly: 'mm10', targetAssembly: 'hg38' },
+  })
+
+  const config = widget.getTrackConfig(Date.now())
+  expect(config?.adapter.queryAssembly).toBe('mm10')
+  expect(config?.adapter.targetAssembly).toBe('hg38')
+})

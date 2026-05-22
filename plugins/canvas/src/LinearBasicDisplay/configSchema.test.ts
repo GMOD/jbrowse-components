@@ -138,4 +138,67 @@ describe('LinearBasicDisplay configSchema', () => {
     expect(config.color1.isCallback).toBe(true)
     expect(String(config.color1.value)).toBe(jexlExpr)
   })
+
+  // Compat: old configs stored colour/label settings under a renderer
+  // sub-config. The preProcessSnapshot lifts those props to the display level.
+  describe('SvgFeatureRenderer/CanvasFeatureRenderer compat migration', () => {
+    it('lifts color1 from renderer to display level', () => {
+      const config = schema.create(
+        {
+          displayId: 'test',
+          type: 'LinearBasicDisplay',
+          renderer: { type: 'SvgFeatureRenderer', color1: 'red' },
+        },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'color1')).toBe('red')
+      expect(readConfObject(config, 'renderer')).toBeUndefined()
+    })
+
+    it('lifts labels.description from renderer', () => {
+      const expr = "jexl:get(feature,'geneSymbol')"
+      const config = schema.create(
+        {
+          displayId: 'test',
+          type: 'LinearBasicDisplay',
+          renderer: { type: 'SvgFeatureRenderer', labels: { description: expr } },
+        },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, ['labels', 'description'])).toBe(expr)
+    })
+
+    it('display-level props take precedence over renderer props', () => {
+      const config = schema.create(
+        {
+          displayId: 'test',
+          type: 'LinearBasicDisplay',
+          color1: 'blue',
+          renderer: { type: 'SvgFeatureRenderer', color1: 'red' },
+        },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'color1')).toBe('blue')
+    })
+
+    it('works with CanvasFeatureRenderer type too', () => {
+      const config = schema.create(
+        {
+          displayId: 'test',
+          type: 'LinearBasicDisplay',
+          renderer: { type: 'CanvasFeatureRenderer', color1: 'green' },
+        },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'color1')).toBe('green')
+    })
+
+    it('no-op when renderer is absent', () => {
+      const config = schema.create(
+        { displayId: 'test', type: 'LinearBasicDisplay', color1: 'purple' },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'color1')).toBe('purple')
+    })
+  })
 })
