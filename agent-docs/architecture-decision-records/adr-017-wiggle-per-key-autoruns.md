@@ -40,7 +40,7 @@ upload: b => {
     if (!perKeyDisposers.has(key)) {
       perKeyDisposers.set(key, autorun(() => {
         const data = rpcDataMap.get(key)        // per-key value atom
-        const bCurrent = self.currentGpuBackend // tracks backend swap
+        const bCurrent = self.currentBackend // tracks backend swap
         if (data !== undefined && bCurrent !== undefined) {
           bCurrent.uploadRegion(key, encode(data))
           self.renderNow()
@@ -56,7 +56,7 @@ upload: b => {
 changes. `ObservableMap.get(existingKey)` tracks that key's `hasMap_` entry.
 Adding key K wakes the key-manager loop and that single new per-key autorun;
 existing per-key autoruns do **not** re-fire. Net cost: O(1) GPU upload per
-new region, O(N) when `gpuProps()` or `currentGpuBackend` changes.
+new region, O(N) when `gpuProps()` or `currentBackend` changes.
 
 The `encode` callback runs inside the per-key autorun, so any observable it
 reads (e.g. `self.gpuProps()`) is auto-tracked — color/scale changes correctly
@@ -92,7 +92,7 @@ N is 4–8 in realistic zooms.
 - `gpuProps` change still re-encodes every loaded region (intentional) — the
   shared encoder dep is read inside each per-key autorun.
 - Context-loss recovery works because per-key autoruns track
-  `currentGpuBackend`; when the slot mixin reassigns it on
+  `currentBackend`; when the slot mixin reassigns it on
   `attachBackend(newBackend)`, every per-key autorun fires and re-uploads
   to the new backend. Closure-capturing the outer `b` would break this.
 - `installPerRegionWiggleLifecycle.test.ts` locks in the upload-count contract

@@ -7,12 +7,7 @@ import FetchMixin from './FetchMixin.ts'
 // That mixin can't be instantiated standalone (afterAttach calls getContainingView),
 // so we compose the two source mixins here and mirror the one-liner getter.
 const TestModel = types
-  .compose(
-    'TestModel',
-    GpuLifecycleMixin(),
-    FetchMixin(),
-    types.model({}),
-  )
+  .compose('TestModel', GpuLifecycleMixin(), FetchMixin(), types.model({}))
   .views(self => ({
     get isReady() {
       return self.canvasDrawn && !self.isLoading

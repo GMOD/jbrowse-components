@@ -60,12 +60,12 @@ export function linearSyntenyViewHelperModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Typed accessor for the slot-mixin-owned `currentGpuBackend`. All
+       * Typed accessor for the slot-mixin-owned `currentBackend`. All
        * synteny displays within the level upload their geometry to the same
        * backend and render onto one canvas.
        */
       get gpuBackend(): SyntenyBackend | undefined {
-        return self.currentGpuBackend as SyntenyBackend | undefined
+        return self.currentBackend as SyntenyBackend | undefined
       },
     }))
     .actions(self => ({

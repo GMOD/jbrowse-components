@@ -104,10 +104,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   // see startBackend / stopBackend / renderNow on
   // the MultiLinearWiggleDisplay model. Sources changes trigger a full
   // re-upload via the lifecycle's `getUploadInvalidationToken`.
-  const { canvasRef, error, retry } = useGpuBackend(
-    WiggleRenderer,
-    model,
-  )
+  const { canvasRef, error, retry } = useGpuBackend(WiggleRenderer, model)
 
   const view = getContainingView(model) as LGV
 

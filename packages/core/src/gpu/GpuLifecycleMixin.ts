@@ -23,14 +23,14 @@ export interface BackendCallbacks<B> {
  * `startBackend(backend)` action. The mixin owns:
  *
  *  - `canvasDrawn` — observable flag read by test-selector `data-testid` attributes to detect first paint.
- *  - `currentGpuBackend` — the backend reference, updated on context-loss
+ *  - `currentBackend` — the backend reference, updated on context-loss
  *    recovery. Autoruns read it each tick so they re-fire against the new
  *    one without being reinstalled.
- *  - `renderBump` — counter the render autorun observes; bumped by
+ *  - `renderTick` — counter the render autorun observes; bumped by
  *    `renderNow()` (tab-visibility restore) and after every upload
  *    (ensures render re-fires when an upload happens but renderState
  *    identity stays stable).
- *  - `gpuAutorunsInstalled` — guards `attachBackend` so the autorun
+ *  - `autorunsInstalled` — guards `attachBackend` so the autorun
  *    pair is spawned once per model instance, not once per backend
  *    assignment.
  *
@@ -47,9 +47,9 @@ export function GpuLifecycleMixin() {
       canvasDrawn: false,
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      currentGpuBackend: undefined as unknown,
-      renderBump: 0,
-      gpuAutorunsInstalled: false,
+      currentBackend: undefined as unknown,
+      renderTick: 0,
+      autorunsInstalled: false,
     }))
     .actions(self => ({
       markCanvasDrawn() {
@@ -63,25 +63,25 @@ export function GpuLifecycleMixin() {
         }
       },
       stopBackend() {
-        self.currentGpuBackend = undefined
+        self.currentBackend = undefined
         self.canvasDrawn = false
       },
       renderNow() {
-        self.renderBump += 1
+        self.renderTick += 1
       },
     }))
     .actions(self => ({
       attachBackend<B>(backend: B, cbs: BackendCallbacks<B>) {
-        self.currentGpuBackend = backend
-        if (self.gpuAutorunsInstalled) {
+        self.currentBackend = backend
+        if (self.autorunsInstalled) {
           return
         }
-        self.gpuAutorunsInstalled = true
+        self.autorunsInstalled = true
         addDisposer(
           self,
           autorun(
             () => {
-              const b = self.currentGpuBackend as B | undefined
+              const b = self.currentBackend as B | undefined
               if (b === undefined) {
                 return
               }
@@ -102,8 +102,8 @@ export function GpuLifecycleMixin() {
           self,
           autorun(
             () => {
-              const b = self.currentGpuBackend as B | undefined
-              void self.renderBump
+              const b = self.currentBackend as B | undefined
+              void self.renderTick
               if (b === undefined) {
                 return
               }

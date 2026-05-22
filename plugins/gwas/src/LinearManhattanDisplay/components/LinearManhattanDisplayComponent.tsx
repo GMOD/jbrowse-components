@@ -30,10 +30,7 @@ const LinearManhattanDisplayComponent = observer(
   }: {
     model: ManhattanDisplayModel
   }) {
-    const { canvasRef, error, retry } = useGpuBackend(
-      ManhattanRenderer,
-      model,
-    )
+    const { canvasRef, error, retry } = useGpuBackend(ManhattanRenderer, model)
     const view = getContainingView(model) as LGV
     const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
 

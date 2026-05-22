@@ -66,15 +66,21 @@ function drawLines(
     if (dir !== 0) {
       ctx.lineWidth = CHEVRON_THICKNESS_PX
       const lineWidthPx = Math.abs(x2 - x1)
+      // Skip chevrons when the line is too short to host even one with
+      // reasonable margins (half the nominal spacing).
       if (lineWidthPx >= CHEVRON_SPACING_PX * 0.5) {
         const totalChevrons = Math.max(
           1,
           Math.floor(lineWidthPx / CHEVRON_SPACING_PX),
         )
+        // N chevrons with gaps at both ends ⇒ N+1 evenly-sized gaps.
         const spacing = lineWidthPx / (totalChevrons + 1)
         const minX = Math.min(x1, x2)
         for (let c = 0; c < totalChevrons; c++) {
           const cx = minX + spacing * (c + 1)
+          // Three-segment "<" or ">" centred on (cx, y). The two outer
+          // points share an x offset on the side opposite to `dir`, so
+          // flipping dir flips the chevron's apex.
           ctx.beginPath()
           ctx.moveTo(cx - CHEVRON_HALF_W * dir, y - CHEVRON_HALF_H)
           ctx.lineTo(cx + CHEVRON_HALF_W * dir, y)

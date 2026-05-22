@@ -5,10 +5,10 @@ import type { BackendCallbacks } from './GpuLifecycleMixin.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ObservableMap } from 'mobx'
 
-interface PerRegionGpuLifecycleSelf extends IAnyStateTreeNode {
+interface LifecycleHost extends IAnyStateTreeNode {
   attachBackend: <B>(b: B, cbs: BackendCallbacks<B>) => void
   renderNow: () => void
-  currentGpuBackend: unknown
+  currentBackend: unknown
 }
 
 interface UploadableBackend<Encoded> {
@@ -53,7 +53,7 @@ export function installPerRegionLifecycle<
   Encoded,
   B extends UploadableBackend<Encoded>,
 >(
-  self: PerRegionGpuLifecycleSelf,
+  self: LifecycleHost,
   rpcDataMap: ObservableMap<number, Data>,
   backend: B,
   encode: (data: Data) => Encoded | undefined,
@@ -76,8 +76,10 @@ export function installPerRegionLifecycle<
           perKeyDisposers.set(
             key,
             autorun(() => {
+              // `data` may be undefined briefly during a delete race —
+              // the outer autorun disposes this one on next tick.
               const data = rpcDataMap.get(key)
-              const bCurrent = self.currentGpuBackend as B | undefined
+              const bCurrent = self.currentBackend as B | undefined
               if (data !== undefined && bCurrent !== undefined) {
                 const encoded = encode(data)
                 if (encoded !== undefined) {

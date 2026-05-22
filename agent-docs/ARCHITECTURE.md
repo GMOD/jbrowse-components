@@ -172,14 +172,14 @@ startBackend(backend: Backend) {
 GpuLifecycleMixin
   .volatile
     canvasDrawn: boolean          set true only after render() returns true with real data
-    currentGpuBackend: unknown    stored backend; autoruns read it each tick
-    renderBump: number            bumped by renderNow() and after every upload
-    gpuAutorunsInstalled: boolean guards attachBackend (idempotent)
+    currentBackend: unknown    stored backend; autoruns read it each tick
+    renderTick: number            bumped by renderNow() and after every upload
+    autorunsInstalled: boolean guards attachBackend (idempotent)
   .actions
     markCanvasDrawn()             idempotent flip to true
     resetCanvasDrawn()            flip to false (called by clearAllRpcData)
-    stopBackend()                 clears currentGpuBackend + resets canvasDrawn → autoruns idle
-    renderNow()                   bumps renderBump → render autorun re-fires
+    stopBackend()                 clears currentBackend + resets canvasDrawn → autoruns idle
+    renderNow()                   bumps renderTick → render autorun re-fires
     attachBackend(b, cbs)         spawns upload + render autoruns (once)
 
 MultiRegionDisplayMixin  (composes GpuLifecycleMixin)
@@ -202,11 +202,11 @@ lives in the mixin.
 
 1. React hook (`useGpuBackend`) mounts, creates the HAL, resolves a
    backend, calls `model.startBackend(backend)`.
-2. Mixin sets `currentGpuBackend = backend`, spawns two autoruns via
+2. Mixin sets `currentBackend = backend`, spawns two autoruns via
    `addDisposer(self, autorun(...))`.
-3. Upload autorun fires: reads `currentGpuBackend`, calls `cbs.upload(b)`,
-   bumps `renderBump` so render re-fires after any upload.
-4. Render autorun fires: reads `currentGpuBackend` + `renderBump`, calls
+3. Upload autorun fires: reads `currentBackend`, calls `cbs.upload(b)`,
+   bumps `renderTick` so render re-fires after any upload.
+4. Render autorun fires: reads `currentBackend` + `renderTick`, calls
    `cbs.render(b)`. If it returns `true`, flips `canvasDrawn` to `true`.
    `clearAllRpcData` resets `canvasDrawn = false` so the flag is only set
    after the canvas has real content.
@@ -218,14 +218,14 @@ lives in the mixin.
 GPU contexts can be lost. `useGpuRenderer` listens for
 `webglcontextlost`/`restored` and `device.lost`, rebuilds the backend, and
 calls `model.startBackend(newBackend)`. The mixin sees
-`gpuAutorunsInstalled === true`, skips re-installation, just reassigns
-`currentGpuBackend`. Both autoruns re-fire against the new backend. No special
+`autorunsInstalled === true`, skips re-installation, just reassigns
+`currentBackend`. Both autoruns re-fire against the new backend. No special
 code path.
 
 ### Tab visibility
 
 `useTabVisibilityRerender` calls `model.renderNow()` on `visibilitychange`,
-bumping `renderBump`. WebGPU swap-chain textures are reissued by the `render`
+bumping `renderTick`. WebGPU swap-chain textures are reissued by the `render`
 callback.
 
 ---
@@ -934,7 +934,7 @@ key on a tuple of two displayedRegion indices.
   lifecycle delegate to `hal.pruneRegions(active)` rather than mirroring HAL's
   region map. See `PerRegionBackend` in `@jbrowse/core/gpu/perRegionBackend`.
 - Don't add or redefine volatiles/actions owned by the slot mixin
-  (`canvasDrawn`, `renderBump`, `currentGpuBackend`, `markCanvasDrawn`,
+  (`canvasDrawn`, `renderTick`, `currentBackend`, `markCanvasDrawn`,
   `resetCanvasDrawn`, `renderNow`, `stopBackend`, etc.) or the
   `isReady` view owned by `MultiRegionDisplayMixin`.
 - Don't hand-maintain WGSL/GLSL/offset tables next to generated modules;

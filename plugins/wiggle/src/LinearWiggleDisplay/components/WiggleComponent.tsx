@@ -31,10 +31,7 @@ const WiggleComponent = observer(function WiggleComponent({
   // see startBackend / stopBackend / renderNow on the
   // LinearWiggleDisplay model. This component is just a thin bridge that
   // plugs the canvas and the backend into those model actions.
-  const { canvasRef, error, retry } = useGpuBackend(
-    WiggleRenderer,
-    model,
-  )
+  const { canvasRef, error, retry } = useGpuBackend(WiggleRenderer, model)
 
   const view = getContainingView(model) as LGV
 

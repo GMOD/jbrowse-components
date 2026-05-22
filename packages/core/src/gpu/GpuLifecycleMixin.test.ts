@@ -53,7 +53,7 @@ test('attachBackend spawns one upload + render autorun and marks drawn', () => {
   expect(model.canvasDrawn).toBe(true)
 })
 
-test('renderNow bumps renderBump so render autorun re-fires', () => {
+test('renderNow bumps renderTick so render autorun re-fires', () => {
   const model = TestModel.create()
   const backend: FakeBackend = { uploads: [], renders: 0 }
 
@@ -136,7 +136,7 @@ test('re-calling attachBackend swaps backend without re-installing autoruns', ()
   // Context-loss recovery: install new backend.
   model.attachBackend<FakeBackend>(backend2, cbs)
 
-  // Autoruns re-fire against backend2 because currentGpuBackend changed.
+  // Autoruns re-fire against backend2 because currentBackend changed.
   expect(backend2.uploads).toEqual([0])
   expect(backend2.renders).toBeGreaterThan(0)
 })

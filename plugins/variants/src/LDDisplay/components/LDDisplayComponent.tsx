@@ -2,11 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import {
-  getContainingView,
-  max,
-  useGpuBackend,
-} from '@jbrowse/core/util'
+import { getContainingView, max, useGpuBackend } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import LDColorLegend from './LDColorLegend.tsx'

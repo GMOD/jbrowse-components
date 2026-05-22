@@ -274,7 +274,9 @@ export class WebGPUHal implements GpuHal {
     }
     const context = canvas.getContext('webgpu')
     if (!context) {
-      console.warn('[WebGPUHal] WebGPU device available but canvas context failed')
+      console.warn(
+        '[WebGPUHal] WebGPU device available but canvas context failed',
+      )
       return null
     }
     context.configure({
