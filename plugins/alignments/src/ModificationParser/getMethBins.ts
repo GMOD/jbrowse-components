@@ -12,10 +12,10 @@ export function getMethBins(feature: Feature, cigarOps: ArrayLike<number>) {
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const flen = fend - fstart
   const mm = (getTagAlt(feature, 'MM', 'Mm') as string | undefined) || ''
-  const methBins = []
-  const hydroxyMethBins = []
-  const methProbs = []
-  const hydroxyMethProbs = []
+  const methBins: number[] = []
+  const hydroxyMethBins: number[] = []
+  const methProbs: number[] = []
+  const hydroxyMethProbs: number[] = []
   const seq = feature.get('seq') as string | undefined
   if (seq) {
     const probabilities = getModProbabilities(feature)

@@ -2,7 +2,7 @@ import { getConf } from '../../../configuration/index.ts'
 import { getEnv, getSession } from '../../../util/index.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
 
-import type { Region } from '../../../util/index.ts'
+import type { Feature, Region } from '../../../util/index.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -29,21 +29,25 @@ export async function fetchTrackData(
   const regions = roundRegions(visibleRegions)
 
   if (supportsExport) {
-    const str = await session.rpcManager.call(sessionId, 'CoreGetExportData', {
-      adapterConfig,
-      regions,
-      formatType: type,
-    })
+    const str = (await session.rpcManager.call(
+      sessionId,
+      'CoreGetExportData',
+      {
+        adapterConfig,
+        regions,
+        formatType: type,
+      },
+    )) as string
     return { str, usedAdapterExport: true }
   } else {
-    const features = await session.rpcManager.call(
+    const features = (await session.rpcManager.call(
       sessionId,
       'CoreGetFeatures',
       {
         adapterConfig,
         regions,
       },
-    )
+    )) as Feature[]
     const str = await options[type]!.callback({
       features,
       session,

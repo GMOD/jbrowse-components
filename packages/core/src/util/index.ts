@@ -907,24 +907,24 @@ export function localStorageSetItem(str: string, item: string) {
 
 export function max(arr: ArrayLike<number>, init = Number.NEGATIVE_INFINITY) {
   let max = init
-  for (const element of arr) {
-    max = Math.max(element!, max)
+  for (let i = 0; i < arr.length; i++) {
+    max = Math.max(arr[i]!, max)
   }
   return max
 }
 
 export function min(arr: ArrayLike<number>, init = Number.POSITIVE_INFINITY) {
   let min = init
-  for (const element of arr) {
-    min = Math.min(element!, min)
+  for (let i = 0; i < arr.length; i++) {
+    min = Math.min(arr[i]!, min)
   }
   return min
 }
 
 export function sum(arr: ArrayLike<number>) {
   let sum = 0
-  for (const element of arr) {
-    sum += element!
+  for (let i = 0; i < arr.length; i++) {
+    sum += arr[i]!
   }
   return sum
 }
