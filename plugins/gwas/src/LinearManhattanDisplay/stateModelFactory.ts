@@ -3,7 +3,12 @@ import { lazy } from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { installPerRegionGpuLifecycle } from '@jbrowse/core/gpu/installPerRegionGpuLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -32,7 +37,7 @@ import type {
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Region } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -141,6 +146,19 @@ export function stateModelFactory(
       },
     }))
     .actions(self => ({
+      selectFeature(feature: Feature) {
+        const session = getSession(self)
+        session.setSelection(feature)
+        if (isSessionModelWithWidgets(session)) {
+          session.showWidget(
+            session.addWidget('BaseFeatureWidget', 'baseFeature', {
+              featureData: feature.toJSON(),
+              view: getContainingView(self),
+              track: getContainingTrack(self),
+            }),
+          )
+        }
+      },
       setRpcData(idx: number, data: ManhattanRpcResult) {
         self.rpcDataMap.set(idx, data)
       },
