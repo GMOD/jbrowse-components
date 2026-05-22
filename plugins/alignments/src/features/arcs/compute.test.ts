@@ -1,4 +1,8 @@
-import { arcsToRegionResult, computeArcsFromPileupData } from './compute.ts'
+import {
+  arcsToRegionResult,
+  computeArcsFromPileupData,
+  groupArcsByRef,
+} from './compute.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
@@ -515,8 +519,8 @@ describe('computeArcsFromPileupData', () => {
   })
 })
 
-describe('arcsToRegionResult', () => {
-  test('filters arcs to only matching region', () => {
+describe('groupArcsByRef', () => {
+  test('buckets arcs and lines by refName', () => {
     const arcs = [
       {
         p1: { refName: 'chr1', bp: 1100 },
@@ -537,8 +541,29 @@ describe('arcsToRegionResult', () => {
       { x: { refName: 'chr1', bp: 1200 }, colorType: 0 },
       { x: { refName: 'chr2', bp: 5500 }, colorType: 0 },
     ]
+    const { arcsByRef, linesByRef } = groupArcsByRef(arcs, lines)
+    expect(arcsByRef.get('chr1')?.length).toBe(1)
+    expect(arcsByRef.get('chr2')?.length).toBe(1)
+    expect(linesByRef.get('chr1')?.length).toBe(1)
+    expect(linesByRef.get('chr2')?.length).toBe(1)
+    expect(arcsByRef.get('chr3')).toBeUndefined()
+  })
+})
 
-    const result = arcsToRegionResult(arcs, lines, 'chr1', 200)
+describe('arcsToRegionResult', () => {
+  test('packs arcs and lines into typed arrays', () => {
+    const regionArcs = [
+      {
+        p1: { refName: 'chr1', bp: 1100 },
+        p2: { refName: 'chr1', bp: 1500 },
+        colorType: 0,
+        shapeType: 0,
+        yBp: 200,
+      },
+    ]
+    const regionLines = [{ x: { refName: 'chr1', bp: 1200 }, colorType: 0 }]
+
+    const result = arcsToRegionResult(regionArcs, regionLines, 200)
 
     expect(result.numArcs).toBe(1)
     expect(result.arcX1[0]).toBe(1100)
@@ -547,17 +572,8 @@ describe('arcsToRegionResult', () => {
     expect(result.arcLinePositions[0]).toBe(1200)
   })
 
-  test('returns empty arrays when no arcs match region', () => {
-    const arcs = [
-      {
-        p1: { refName: 'chr2', bp: 5000 },
-        p2: { refName: 'chr2', bp: 6000 },
-        colorType: 0,
-        shapeType: 0,
-        yBp: 500,
-      },
-    ]
-    const result = arcsToRegionResult(arcs, [], 'chr1', 200)
+  test('returns empty arrays for empty inputs', () => {
+    const result = arcsToRegionResult([], [], 200)
 
     expect(result.numArcs).toBe(0)
     expect(result.arcX1.length).toBe(0)
@@ -566,7 +582,7 @@ describe('arcsToRegionResult', () => {
 
   test('line Y values span 0 to height', () => {
     const lines = [{ x: { refName: 'chr1', bp: 1500 }, colorType: 0 }]
-    const result = arcsToRegionResult([], lines, 'chr1', 300)
+    const result = arcsToRegionResult([], lines, 300)
 
     expect(result.numArcLines).toBe(1)
     expect(result.arcLineYs[0]).toBe(0)

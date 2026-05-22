@@ -376,10 +376,7 @@ export function drawAlignmentBlocks(
     }
 
     drawHighlightOverlays(ctx, region, block, state)
-
-    if (state.linkedReads === 'normal') {
-      drawChainOverlays(ctx, region, block, state)
-    }
+    drawChainOverlays(ctx, region, block, state)
 
     ctx.restore() // pileup clip
 

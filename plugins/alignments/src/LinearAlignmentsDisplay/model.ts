@@ -37,6 +37,7 @@ import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import {
   arcsToRegionResult,
   computeArcsFromPileupData,
+  groupArcsByRef,
 } from '../features/arcs/compute.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
@@ -194,6 +195,21 @@ export const ColorScheme = {
   insertSizeGradient: 10,
 } as const
 
+// Material UI 200-tone palette for color-by-tag values. The first value
+// hit gets index 0, the eleventh wraps to index 0 again.
+const TAG_COLOR_PALETTE = [
+  '#90caf9',
+  '#f48fb1',
+  '#a5d6a7',
+  '#fff59d',
+  '#ffab91',
+  '#ce93d8',
+  '#80deea',
+  '#c5e1a5',
+  '#ffe082',
+  '#bcaaa4',
+]
+
 /**
  * State model factory for LinearAlignmentsDisplay
  */
@@ -322,23 +338,23 @@ export default function stateModelFactory(
           return [...self.visibleModifications.keys()]
         },
 
-        get colorBy(): ColorBy {
+        get colorBy() {
           return self.getConfWithOverride<ColorBy>('colorBy')
         },
 
-        get filterBy(): FilterBy {
+        get filterBy() {
           return self.getConfWithOverride<FilterBy>('filterBy')
         },
 
-        get featureHeightSetting(): number {
+        get featureHeightSetting() {
           return self.getConfWithOverride<number>('featureHeight')
         },
 
-        get noSpacingSetting(): boolean | undefined {
+        get noSpacingSetting() {
           return self.getOverride<boolean>('noSpacing')
         },
 
-        get featureSpacing(): number {
+        get featureSpacing() {
           const noSpacing = self.getOverride<boolean>('noSpacing')
           if (noSpacing !== undefined) {
             return noSpacing ? 0 : 2
@@ -346,7 +362,7 @@ export default function stateModelFactory(
           return self.getConfWithOverride<number>('featureSpacing')
         },
 
-        get maxHeight(): number {
+        get maxHeight() {
           return self.getConfWithOverride<number>('maxHeight')
         },
 
@@ -374,11 +390,11 @@ export default function stateModelFactory(
           return map
         },
 
-        get mismatchAlpha(): boolean {
+        get mismatchAlpha() {
           return !!self.getOverride<boolean>('mismatchAlpha')
         },
 
-        get showLegend(): boolean | undefined {
+        get showLegend() {
           return self.getOverride<boolean>('showLegend')
         },
 
@@ -430,7 +446,7 @@ export default function stateModelFactory(
           )
         },
 
-        get coverageDomain(): [number, number] | undefined {
+        get coverageDomain() {
           return this.coverageStats
             ? getNiceDomain({
                 domain: domainFromStats(
@@ -444,7 +460,7 @@ export default function stateModelFactory(
             : undefined
         },
 
-        get coverageTicks(): YScaleTicks | undefined {
+        get coverageTicks() {
           return this.coverageDomain
             ? computeCoverageTicks(
                 this.coverageDomain[1],
@@ -454,7 +470,7 @@ export default function stateModelFactory(
             : undefined
         },
 
-        get legendItems(): LegendItem[] {
+        get legendItems() {
           return getReadDisplayLegendItems(
             self.getOverride<ColorBy>('colorBy'),
             undefined,
@@ -483,21 +499,27 @@ export default function stateModelFactory(
           return max
         },
 
-        get arcsRpcDataMap(): Map<number, ArcsDataResult> {
+        // The heavy work — running `computeArcsFromPileupData` over every
+        // pileup region — is cached here so that height changes (which only
+        // affect the line-end Y values in the per-region pack) don't redo it.
+        // Arcs/lines are also pre-grouped by refName so the per-region
+        // arcsRpcDataMap lookup is O(1) instead of filtering every arc per
+        // displayed region.
+        get arcsComputed() {
           if (self.pairedArcs === 'off' || self.rpcDataMap.size === 0) {
-            return new Map()
+            return undefined
           }
-          const allRegionInfos = [...self.loadedRegions.entries()].map(
-            ([displayedRegionIndex, r]) => ({
+          const regionInfos = [...self.loadedRegions.entries()]
+            .filter(([idx]) => self.rpcDataMap.has(idx))
+            .map(([displayedRegionIndex, r]) => ({
               refName: r.refName,
               start: r.start,
               end: r.end,
               displayedRegionIndex,
-            }),
-          )
+            }))
           const { arcs, lines } = computeArcsFromPileupData(
             self.rpcDataMap,
-            allRegionInfos,
+            regionInfos,
             {
               colorByType: self.arcColorByType,
               samplot: self.pairedArcs === 'samplot',
@@ -505,14 +527,25 @@ export default function stateModelFactory(
               drawLongRange: self.drawLongRange,
             },
           )
+          return { ...groupArcsByRef(arcs, lines), regionInfos }
+        },
+
+        get arcsRpcDataMap() {
+          const computed = this.arcsComputed
+          if (!computed) {
+            return new Map()
+          }
+          const { arcsByRef, linesByRef, regionInfos } = computed
           const out = new Map<number, ArcsDataResult>()
-          for (const ri of allRegionInfos) {
-            if (self.rpcDataMap.has(ri.displayedRegionIndex)) {
-              out.set(
-                ri.displayedRegionIndex,
-                arcsToRegionResult(arcs, lines, ri.refName, self.height),
-              )
-            }
+          for (const ri of regionInfos) {
+            out.set(
+              ri.displayedRegionIndex,
+              arcsToRegionResult(
+                arcsByRef.get(ri.refName) ?? [],
+                linesByRef.get(ri.refName) ?? [],
+                self.height,
+              ),
+            )
           }
           return out
         },
@@ -525,7 +558,7 @@ export default function stateModelFactory(
         /**
          * Calculate color scheme index from colorBy setting
          */
-        get colorSchemeIndex(): number {
+        get colorSchemeIndex() {
           switch (self.colorBy.type) {
             case 'normal':
               return ColorScheme.normal
@@ -561,12 +594,12 @@ export default function stateModelFactory(
           }
         },
 
-        get showModifications(): boolean {
+        get showModifications() {
           const t = self.colorBy.type
           return t === 'modifications' || t === 'methylation'
         },
 
-        get showPerBaseQuality(): boolean {
+        get showPerBaseQuality() {
           return self.colorBy.type === 'perBaseQuality'
         },
 
@@ -591,7 +624,7 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
-        get lineWidth(): number {
+        get lineWidth() {
           return self.lineWidthSetting ?? 1
         },
 
@@ -659,7 +692,7 @@ export default function stateModelFactory(
           return self.getOverride<boolean>('showOutline') ?? self.isChainMode
         },
 
-        get visibleLabels(): VisibleLabel[] {
+        get visibleLabels() {
           const view = getContainingView(self) as LGV
           if (!view.initialized) {
             return []
@@ -747,7 +780,7 @@ export default function stateModelFactory(
           }
         },
 
-        get renderState(): AlignmentsRenderState | undefined {
+        get renderState() {
           const view = getContainingView(self) as LGV
           const palette = self.colorPalette
           if (!view.initialized || !palette) {
@@ -783,12 +816,11 @@ export default function stateModelFactory(
             flipStrandLongReadChains: self.flipStrandLongReadChains,
             arcLineWidth: self.lineWidth,
             arcsYDomainBp: this.arcsYDomainBp,
-            bpRangeX: [0, 0],
           }
         },
 
         // Floored at 1000bp to avoid near-zero division when all pairs are concordant.
-        get arcsYDomainBp(): number | undefined {
+        get arcsYDomainBp() {
           if (self.pairedArcs !== 'samplot') {
             return undefined
           }
@@ -801,7 +833,7 @@ export default function stateModelFactory(
           return Math.max(1000, maxBp)
         },
 
-        get insertSizeTicks(): YScaleTicks | undefined {
+        get insertSizeTicks() {
           const domain = this.arcsYDomainBp
           if (domain === undefined) {
             return undefined
@@ -953,25 +985,13 @@ export default function stateModelFactory(
           },
 
           updateColorTagMap(uniqueTag: string[]) {
-            const colorPalette = [
-              '#90caf9',
-              '#f48fb1',
-              '#a5d6a7',
-              '#fff59d',
-              '#ffab91',
-              '#ce93d8',
-              '#80deea',
-              '#c5e1a5',
-              '#ffe082',
-              '#bcaaa4',
-            ]
             const map = { ...self.colorTagMap }
-            let totalKeys = Object.keys(map).length
+            let next = Object.keys(map).length
             let added = false
             for (const value of uniqueTag) {
               if (!map[value]) {
-                map[value] = colorPalette[totalKeys % colorPalette.length]!
-                totalKeys++
+                map[value] = TAG_COLOR_PALETTE[next % TAG_COLOR_PALETTE.length]!
+                next++
                 added = true
               }
             }
@@ -1001,35 +1021,32 @@ export default function stateModelFactory(
           setSortedBy(type: string, tag?: string) {
             const view = getContainingView(self) as LGV
             const { centerLineInfo } = view
-            if (!centerLineInfo) {
-              return
+            if (centerLineInfo) {
+              const { refName, assemblyName, offset } = centerLineInfo
+              const centerBp = Math.round(offset)
+              if (centerBp >= 0 && refName) {
+                self.setOverride('sortedBy', {
+                  type,
+                  pos: centerBp,
+                  refName,
+                  assemblyName,
+                  tag,
+                })
+              }
             }
-            const { refName, assemblyName, offset } = centerLineInfo
-            const centerBp = Math.round(offset)
-            if (centerBp < 0 || !refName) {
-              return
-            }
-            self.setOverride('sortedBy', {
-              type,
-              pos: centerBp,
-              refName,
-              assemblyName,
-              tag,
-            })
           },
 
           setSortedByAtPosition(type: string, pos: number, refName: string) {
             const view = getContainingView(self) as LGV
             const assemblyName = view.assemblyNames[0]
-            if (!assemblyName) {
-              return
+            if (assemblyName) {
+              self.setOverride('sortedBy', {
+                type,
+                pos,
+                refName,
+                assemblyName,
+              })
             }
-            self.setOverride('sortedBy', {
-              type,
-              pos,
-              refName,
-              assemblyName,
-            })
           },
 
           clearSelected() {
@@ -1068,16 +1085,14 @@ export default function stateModelFactory(
 
           // duck-typed by LGV/BreakpointSplitView/LinearComparativeView "Compact all tracks"
           setCompactness(level: 'normal' | 'compact' | 'super-compact') {
-            if (level === 'compact') {
-              self.setOverride('featureHeight', 3)
-              self.setOverride('noSpacing', true)
-            } else if (level === 'super-compact') {
-              self.setOverride('featureHeight', 1)
-              self.setOverride('noSpacing', true)
-            } else {
-              self.setOverride('featureHeight', 7)
-              self.setOverride('noSpacing', false)
-            }
+            const COMPACTNESS = {
+              normal: { featureHeight: 7, noSpacing: false },
+              compact: { featureHeight: 3, noSpacing: true },
+              'super-compact': { featureHeight: 1, noSpacing: true },
+            } as const
+            const { featureHeight, noSpacing } = COMPACTNESS[level]
+            self.setOverride('featureHeight', featureHeight)
+            self.setOverride('noSpacing', noSpacing)
             self.currentRangeY = [0, 0]
           },
 
@@ -1150,12 +1165,18 @@ export default function stateModelFactory(
           },
 
           setLinkedReads(mode: LinkedReadsMode) {
-            const wasOff = self.linkedReads === 'off'
-            const willBeOff = mode === 'off'
+            const prev = self.linkedReads
             self.linkedReads = mode
-            if (wasOff !== willBeOff) {
+            // Chain IDs are only meaningful in 'normal' mode (chainIdMap is
+            // unpopulated otherwise). Clear when leaving so neither backend
+            // renders stale chain highlights in bezier/off.
+            if (prev === 'normal' && mode !== 'normal') {
+              self.highlightedChainIds = []
+              self.selectedChainIds = []
+            }
+            if ((prev === 'off') !== (mode === 'off')) {
               clearHoverState()
-              if (willBeOff) {
+              if (mode === 'off') {
                 self.setOverride('colorBy', { type: 'normal' })
               } else {
                 self.clearOverride('showOutline')

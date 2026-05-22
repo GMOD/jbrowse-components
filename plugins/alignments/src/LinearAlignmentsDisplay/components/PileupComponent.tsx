@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
@@ -449,6 +449,13 @@ const PileupScrollbar = observer(function PileupScrollbar({
 }) {
   const { classes } = useStyles()
   const { scrollableHeight, pileupViewportHeight, totalPileupHeight } = model
+  const dragAcRef = useRef<AbortController | null>(null)
+  useEffect(
+    () => () => {
+      dragAcRef.current?.abort()
+    },
+    [],
+  )
   if (scrollableHeight <= 0) {
     return null
   }
@@ -466,27 +473,34 @@ const PileupScrollbar = observer(function PileupScrollbar({
       onMouseDown={e => {
         e.preventDefault()
         e.stopPropagation()
+        dragAcRef.current?.abort()
+        const ac = new AbortController()
+        dragAcRef.current = ac
         const startY = e.clientY
         const startScroll = model.currentRangeY[0]
         const scrollRange = model.scrollableHeight
         const usableTrack = trackHeight - thumbHeight
-
-        const onMouseMove = (me: MouseEvent) => {
-          const dy = me.clientY - startY
-          const scrollDelta =
-            usableTrack > 0 ? (dy / usableTrack) * scrollRange : 0
-          const next = Math.max(
-            0,
-            Math.min(scrollRange, startScroll + scrollDelta),
-          )
-          model.setCurrentRangeY([next, next + model.pileupViewportHeight])
-        }
-        const onMouseUp = () => {
-          document.removeEventListener('mousemove', onMouseMove)
-          document.removeEventListener('mouseup', onMouseUp)
-        }
-        document.addEventListener('mousemove', onMouseMove)
-        document.addEventListener('mouseup', onMouseUp)
+        document.addEventListener(
+          'mousemove',
+          me => {
+            const dy = me.clientY - startY
+            const scrollDelta =
+              usableTrack > 0 ? (dy / usableTrack) * scrollRange : 0
+            const next = Math.max(
+              0,
+              Math.min(scrollRange, startScroll + scrollDelta),
+            )
+            model.setCurrentRangeY([next, next + model.pileupViewportHeight])
+          },
+          { signal: ac.signal },
+        )
+        document.addEventListener(
+          'mouseup',
+          () => {
+            ac.abort()
+          },
+          { signal: ac.signal },
+        )
       }}
     >
       <div

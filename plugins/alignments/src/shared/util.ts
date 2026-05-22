@@ -31,13 +31,9 @@ export function filterReadFlag(
   flagInclude: number,
   flagExclude: number,
 ) {
-  if ((flags & flagInclude) !== flagInclude) {
-    return true
-  } else if (flags & flagExclude) {
-    return true
-  } else {
-    return false
-  }
+  return (
+    (flags & flagInclude) !== flagInclude || (flags & flagExclude) !== 0
+  )
 }
 
 export function filterTagValue(readVal: unknown, filterVal?: string) {
@@ -57,9 +53,6 @@ export interface ParsedSamHeader {
   readGroups: string[]
 }
 
-/**
- * Parse SAM header lines into idToName, nameToId mappings and readGroups
- */
 export function parseSamHeader(samHeader: SamHeaderLine[]): ParsedSamHeader {
   const idToName: string[] = []
   const nameToId: Record<string, number> = {}
@@ -67,28 +60,18 @@ export function parseSamHeader(samHeader: SamHeaderLine[]): ParsedSamHeader {
   let refId = 0
   let rgId = 0
 
-  for (const element of samHeader) {
-    const line = element
+  for (const line of samHeader) {
     if (line.tag === 'SQ') {
-      const data = line.data
-      for (const datum of data) {
-        const item = datum
-        if (item.tag === 'SN') {
-          const refName = item.value
-          nameToId[refName] = refId
-          idToName[refId] = refName
-          break
-        }
+      const sn = line.data.find(d => d.tag === 'SN')
+      if (sn) {
+        nameToId[sn.value] = refId
+        idToName[refId] = sn.value
       }
       refId++
     } else if (line.tag === 'RG') {
-      const data = line.data
-      for (const datum of data) {
-        const item = datum
-        if (item.tag === 'ID') {
-          readGroups[rgId] = item.value
-          break
-        }
+      const id = line.data.find(d => d.tag === 'ID')
+      if (id) {
+        readGroups[rgId] = id.value
       }
       rgId++
     }

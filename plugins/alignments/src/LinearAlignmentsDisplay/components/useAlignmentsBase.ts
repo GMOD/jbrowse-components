@@ -35,27 +35,6 @@ export interface FeatureHit {
   index: number
 }
 
-function makeResizeHandler(
-  getHeight: () => number,
-  setHeight: (h: number) => void,
-) {
-  return (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const startY = e.clientY
-    const startHeight = getHeight()
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      setHeight(Math.max(20, startHeight + moveEvent.clientY - startY))
-    }
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }
-}
-
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const {
     canvas,
@@ -71,6 +50,45 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     null,
   )
   const dragRef = useRef({ isDragging: false, lastX: 0 })
+  // Tracks the currently-active drag so listeners are torn down on unmount —
+  // otherwise a track removed mid-drag leaves document handlers referencing
+  // a destroyed model.
+  const dragControllerRef = useRef<AbortController | null>(null)
+  useEffect(
+    () => () => {
+      dragControllerRef.current?.abort()
+    },
+    [],
+  )
+
+  function makeResizeHandler(
+    getHeight: () => number,
+    setHeight: (h: number) => void,
+  ) {
+    return (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      dragControllerRef.current?.abort()
+      const ac = new AbortController()
+      dragControllerRef.current = ac
+      const startY = e.clientY
+      const startHeight = getHeight()
+      document.addEventListener(
+        'mousemove',
+        me => {
+          setHeight(Math.max(20, startHeight + me.clientY - startY))
+        },
+        { signal: ac.signal },
+      )
+      document.addEventListener(
+        'mouseup',
+        () => {
+          ac.abort()
+        },
+        { signal: ac.signal },
+      )
+    }
+  }
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const theme = useTheme()

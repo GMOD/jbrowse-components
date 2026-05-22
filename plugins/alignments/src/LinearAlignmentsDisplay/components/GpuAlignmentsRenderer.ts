@@ -677,9 +677,11 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         state.canvasHeight,
         block.reversed,
       )
-    const tx = 4 / scissorW
-    const ty = 4 / state.canvasHeight
-    // 4 quads forming a 4px-wide selection frame (top + bottom + two sides).
+    // 2 CSS pixels matches Canvas2D's strokeRect(..., lineWidth=2) so the
+    // selection box looks the same when the GPU fallback fires.
+    const tx = 2 / scissorW
+    const ty = 2 / state.canvasHeight
+    // 4 quads forming a 2px-wide selection frame (top + bottom + two sides).
     const pushSelectionFrame = (
       out: number[],
       c: { sx1: number; sx2: number; syTop: number; syBot: number },

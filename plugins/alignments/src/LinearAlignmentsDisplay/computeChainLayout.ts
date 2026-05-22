@@ -139,40 +139,29 @@ export function buildChainConnectingData(
   const numChains = chainFirstReadIndices.length
 
   let numLines = 0
-  for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
-    if (chainHasMultiple[chainIdx]) {
+  for (let i = 0; i < numChains; i++) {
+    if (chainHasMultiple[i]) {
       numLines++
     }
   }
 
   const connectingLinePositions = new Uint32Array(numLines * 2)
   const connectingLineYs = new Uint16Array(numLines)
+  const chainFlatbush = numChains > 0 ? new Flatbush(numChains) : undefined
   let lineIdx = 0
-  for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
-    if (!chainHasMultiple[chainIdx]) {
-      continue
+  for (let i = 0; i < numChains; i++) {
+    const minStart = chainAbsMinStarts[i]!
+    const maxEnd = chainAbsMaxEnds[i]!
+    const y = readYs[chainFirstReadIndices[i]!]!
+    if (chainHasMultiple[i]) {
+      connectingLinePositions[lineIdx * 2] = minStart
+      connectingLinePositions[lineIdx * 2 + 1] = maxEnd
+      connectingLineYs[lineIdx] = y
+      lineIdx++
     }
-    const y = readYs[chainFirstReadIndices[chainIdx]!]!
-    connectingLinePositions[lineIdx * 2] = chainAbsMinStarts[chainIdx]!
-    connectingLinePositions[lineIdx * 2 + 1] = chainAbsMaxEnds[chainIdx]!
-    connectingLineYs[lineIdx] = y
-    lineIdx++
+    chainFlatbush?.add(minStart, y, maxEnd, y)
   }
-
-  let chainFlatbush: Flatbush | undefined
-  if (numChains > 0) {
-    chainFlatbush = new Flatbush(numChains)
-    for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
-      const y = readYs[chainFirstReadIndices[chainIdx]!]!
-      chainFlatbush.add(
-        chainAbsMinStarts[chainIdx]!,
-        y,
-        chainAbsMaxEnds[chainIdx],
-        y,
-      )
-    }
-    chainFlatbush.finish()
-  }
+  chainFlatbush?.finish()
 
   return {
     connectingLinePositions,
@@ -225,10 +214,9 @@ function attachLinkedReadLines(
 /**
  * Build a laid-out chain-mode pileup map from raw fetched data.
  *
- * Pass-through for entries with no reads. For a single region the layout
- * uses `computeChainLayout`; for multiple regions `computeMultiRegionChainLayout`
+ * Pass-through for entries with no reads. `computeMultiRegionChainLayout`
  * assigns a shared rowMap keyed by chain name so mates across region
- * boundaries share a row.
+ * boundaries share a row; that path is correct for one region too.
  */
 export function buildLaidOutChainMap(
   dataMap: ReadonlyMap<number, PileupDataResult>,
@@ -246,16 +234,10 @@ export function buildLaidOutChainMap(
   if (withReads.length === 0) {
     return out
   }
-  if (withReads.length === 1) {
-    const [idx, data] = withReads[0]!
-    const { readYs, maxY } = computeChainLayout(data)
+  const { rowMap, maxY } = computeMultiRegionChainLayout(withReads)
+  for (const [idx, data] of withReads) {
+    const readYs = readYsFromRowMap(data, rowMap)
     out.set(idx, cloneWithChainLayout(data, readYs, maxY))
-  } else {
-    const { rowMap, maxY } = computeMultiRegionChainLayout(withReads)
-    for (const [idx, data] of withReads) {
-      const readYs = readYsFromRowMap(data, rowMap)
-      out.set(idx, cloneWithChainLayout(data, readYs, maxY))
-    }
   }
   return linkedReads === 'bezier' ? attachLinkedReadLines(out) : out
 }

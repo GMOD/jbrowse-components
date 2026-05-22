@@ -21,7 +21,6 @@ export function buildReadIdToIndex(ids: string[], n: number) {
 }
 
 export interface RenderState {
-  bpRangeX: [number, number] // absolute genomic positions
   rangeY: [number, number]
   colorScheme: number
   featureHeight: number

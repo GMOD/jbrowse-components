@@ -228,7 +228,7 @@ interface ArcEndpoint {
   bp: number
 }
 
-interface ComputedArc {
+export interface ComputedArc {
   p1: ArcEndpoint
   p2: ArcEndpoint
   colorType: number
@@ -236,7 +236,7 @@ interface ComputedArc {
   yBp: number
 }
 
-interface ComputedLine {
+export interface ComputedLine {
   x: ArcEndpoint
   colorType: number
 }
@@ -580,13 +580,38 @@ export function computeArcsFromPileupData(
   return { arcs, lines }
 }
 
+// Group computed arcs and lines by the refName they belong to so callers
+// can look up the per-region subset in O(1) instead of filtering the full
+// array once per displayed region.
+export function groupArcsByRef(arcs: ComputedArc[], lines: ComputedLine[]) {
+  const arcsByRef = new Map<string, ComputedArc[]>()
+  for (const arc of arcs) {
+    const ref = arc.p1.refName
+    let bucket = arcsByRef.get(ref)
+    if (!bucket) {
+      bucket = []
+      arcsByRef.set(ref, bucket)
+    }
+    bucket.push(arc)
+  }
+  const linesByRef = new Map<string, ComputedLine[]>()
+  for (const line of lines) {
+    const ref = line.x.refName
+    let bucket = linesByRef.get(ref)
+    if (!bucket) {
+      bucket = []
+      linesByRef.set(ref, bucket)
+    }
+    bucket.push(line)
+  }
+  return { arcsByRef, linesByRef }
+}
+
 export function arcsToRegionResult(
-  arcs: ComputedArc[],
-  lines: ComputedLine[],
-  regionRefName: string,
+  regionArcs: ComputedArc[],
+  regionLines: ComputedLine[],
   height: number,
 ): ArcsDataResult {
-  const regionArcs = arcs.filter(a => a.p1.refName === regionRefName)
   const arcX1 = new Uint32Array(regionArcs.length)
   const arcX2 = new Uint32Array(regionArcs.length)
   const arcColorTypes = new Uint8Array(regionArcs.length)
@@ -608,7 +633,6 @@ export function arcsToRegionResult(
     }
   }
 
-  const regionLines = lines.filter(l => l.x.refName === regionRefName)
   const arcLinePositions = new Uint32Array(regionLines.length * 2)
   const arcLineYs = new Float32Array(regionLines.length * 2)
   const arcLineColorTypes = new Uint8Array(regionLines.length * 2)
