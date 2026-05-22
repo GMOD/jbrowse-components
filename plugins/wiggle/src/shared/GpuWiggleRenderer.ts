@@ -42,13 +42,11 @@ export class GpuWiggleRenderer
 {
   private uniformF32: Float32Array
   private uniformI32: Int32Array
-  private uniformU32: Uint32Array
 
   constructor(hal: GpuHal) {
     super(hal, wiggleShader.UNIFORMS_SIZE_BYTES)
     this.uniformF32 = new Float32Array(this.uniformData)
     this.uniformI32 = new Int32Array(this.uniformData)
-    this.uniformU32 = new Uint32Array(this.uniformData)
   }
 
   uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]) {

@@ -8,6 +8,8 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import { ConfigOverrideMixin } from '@jbrowse/plugin-linear-genome-view'
 
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
 // Score/scale/color config and isCacheValid for wiggle-family displays.
 // Does NOT include rpcDataMap or autoscale domain computation — those live in
 // WiggleCommonMixin, which composes this. Displays that own their own rpcDataMap
@@ -27,7 +29,7 @@ export function WiggleScoreConfigMixin() {
     }))
     .views(self => ({
       get scalebarOverlapLeft() {
-        const view = getContainingView(self) as { trackLabelsSetting?: string }
+        const view = getContainingView(self) as LinearGenomeViewModel
         if (view.trackLabelsSetting === 'overlapping') {
           const track = getContainingTrack(self)
           return measureText(getConf(track, 'name'), 12.8) + 100
@@ -109,7 +111,7 @@ export function WiggleScoreConfigMixin() {
         if (self.loadedBpPerPx === undefined) {
           return true
         }
-        const view = getContainingView(self) as unknown as { bpPerPx: number }
+        const view = getContainingView(self) as LinearGenomeViewModel
         return view.bpPerPx === self.loadedBpPerPx
       },
     }))

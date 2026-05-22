@@ -1,12 +1,12 @@
-import { openFeatureWidget } from './openFeatureWidget.ts'
 import * as utilIndex from './index.ts'
+import { openFeatureWidget } from './openFeatureWidget.ts'
 import * as typesIndex from './types/index.ts'
 
 import type { Widget } from './types/index.ts'
 
 interface MockSession {
   configuration: object
-  setSelection: (f: unknown) => void
+  setSelection: jest.Mock<void, [unknown]>
   addWidget: jest.Mock<Widget, [string, string, Record<string, unknown>?]>
   showWidget: jest.Mock<void, [Widget]>
 }
@@ -15,9 +15,11 @@ function makeSession(): MockSession {
   const widget: Widget = { type: 'BaseFeatureWidget', id: 'baseFeature' }
   return {
     configuration: {},
-    setSelection: jest.fn(),
-    addWidget: jest.fn(() => widget),
-    showWidget: jest.fn(),
+    setSelection: jest.fn<void, [unknown]>(),
+    addWidget: jest.fn<Widget, [string, string, Record<string, unknown>?]>(
+      () => widget,
+    ),
+    showWidget: jest.fn<void, [Widget]>(),
   }
 }
 
@@ -69,7 +71,12 @@ test('returns undefined when the session does not host widgets', () => {
   const session = makeSession()
   jest.spyOn(utilIndex, 'getSession').mockReturnValue(session as never)
   jest.spyOn(typesIndex, 'isSessionModelWithWidgets').mockReturnValue(false)
-  const widget = openFeatureWidget(node, { uniqueId: 'x' })
+  const widget = openFeatureWidget(node, {
+    uniqueId: 'x',
+    refName: '1',
+    start: 0,
+    end: 1,
+  })
   expect(widget).toBeUndefined()
   expect(session.addWidget).not.toHaveBeenCalled()
   expect(session.showWidget).not.toHaveBeenCalled()
@@ -78,19 +85,16 @@ test('returns undefined when the session does not host widgets', () => {
 test('honors widget override and extra initialState', () => {
   const session = makeSession()
   mockEnv(session)
-  openFeatureWidget(
-    node,
-    { uniqueId: 'x' },
-    {
-      widget: { type: 'AlignmentsFeatureWidget', id: 'alignmentFeature' },
-      extra: { descriptions: { score: 'p-value' } },
-    },
-  )
+  const featureData = { uniqueId: 'x', refName: '1', start: 0, end: 1 }
+  openFeatureWidget(node, featureData, {
+    widget: { type: 'AlignmentsFeatureWidget', id: 'alignmentFeature' },
+    extra: { descriptions: { score: 'p-value' } },
+  })
   expect(session.addWidget).toHaveBeenCalledWith(
     'AlignmentsFeatureWidget',
     'alignmentFeature',
     {
-      featureData: { uniqueId: 'x' },
+      featureData,
       view,
       track,
       descriptions: { score: 'p-value' },
