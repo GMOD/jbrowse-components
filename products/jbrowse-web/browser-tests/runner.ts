@@ -27,7 +27,7 @@ const runAuthTests = args.includes('--auth')
 const filterArg = args.find(a => a.startsWith('--filter='))
 const filter = filterArg ? filterArg.split('=')[1]!.toLowerCase() : ''
 // --smoke is the full local smoke test: runs every suite, including the
-// requiresRemote ones (grape/peach + hs1/mm39 synteny, graph-server).
+// requiresRemote ones (grape/peach + hs1/mm39 synteny).
 // Those tests fetch data straight from S3/UCSC at runtime — so it works on any machine online.
 const smoke = args.includes('--smoke')
 const includeRemote = args.includes('--include-remote') || smoke

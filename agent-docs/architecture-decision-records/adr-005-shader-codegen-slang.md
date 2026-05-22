@@ -14,7 +14,7 @@ fallback — and hand-maintain a third parallel declaration in TypeScript for th
 byte offsets and strides used to pack per-instance buffers
 (`interleaveBuffers.ts`, `GlAttributeLayout[]` arrays in `PassDescriptor`).
 There are ~16 shader sets across the canvas, wiggle, variants, synteny, HiC,
-dotplot, graph, and LD plugins.
+dotplot and LD plugins.
 
 ### The underlying architectural issue
 
@@ -274,7 +274,7 @@ field was renamed/removed. Stride drift is no longer expressible.
 3. **Canvas feature shaders**: migrate `rect` first as the end-to-end proof of
    the new pipeline. Then `line`, `chevron`, `arrow`.
 4. **Remaining vertex shaders**: wiggle, dotplot, HiC, synteny (two), variant
-   (three), LD, graph.
+   (three), LD.
 5. **Compute shaders**: LD compute, LD phased compute. WGSL-only, fastest.
 6. **Cleanup**: delete `*Shaders.ts` / `*GlslShaders.ts` / `HP_*_CORE` once all
    shaders are migrated.

@@ -94,15 +94,6 @@ clearing (compact-zoom pixel geometry is viewport-baked). Preserving arcs while
 pileup is blank would show arc curves floating over empty space — worse than a
 clean flash.
 
-**MultiLGVSyntenyDisplay.** `SyntenyRegionData` is bp-space (genomeFeatures,
-snpPositions as bp offsets) — data is viewport-agnostic. Not done: the pattern
-would only help during settings-driven refetch. Settings refetch fires only on
-`resolution` changes (rare, deliberate). Panning already doesn't clear data —
-`FetchVisibleRegions` only appends new regions. The dominant clear trigger is
-chromosome navigation (`DisplayedRegionsChange` autorun), which is a correctness
-scenario where clearing is correct. Net benefit too small to justify splitting
-`rpcDataMap` → `rawRpcDataMap` + derived view.
-
 **MultiSampleVariantDisplay.** `clearDisplaySpecificData` is the base no-op.
 Nothing to change.
 
