@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
@@ -30,6 +30,8 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+const defaultConf = { attributes: ['Name', 'ID'], exclude: ['CDS', 'exon'] }
+
 const TextIndexingConfig = observer(function TextIndexingConfig({
   model,
 }: {
@@ -38,27 +40,23 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
   const { classes } = useStyles()
   const [attributeInput, setAttributeInput] = useState('')
   const [excludeInput, setExcludeInput] = useState('')
-  const [attributes, setAttributes] = useState(['Name', 'ID'])
-  const [exclude, setExclude] = useState(['CDS', 'exon'])
+  const conf = model.textIndexingConf ?? defaultConf
   const sections = [
     {
       label: 'Indexing attributes',
-      values: attributes,
-      setValues: setAttributes,
+      key: 'attributes' as const,
+      values: conf.attributes,
       inputValue: attributeInput,
       setInputValue: setAttributeInput,
     },
     {
       label: 'Feature types to exclude',
-      values: exclude,
-      setValues: setExclude,
+      key: 'exclude' as const,
+      values: conf.exclude,
       inputValue: excludeInput,
       setInputValue: setExcludeInput,
     },
   ]
-  useEffect(() => {
-    model.setTextIndexingConf({ attributes, exclude })
-  }, [model, attributes, exclude])
 
   return (
     <Paper className={classes.paper}>
@@ -79,9 +77,12 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
                           <InputAdornment position="end">
                             <IconButton
                               onClick={() => {
-                                section.setValues(
-                                  section.values.filter((_, i) => i !== idx),
-                                )
+                                model.setTextIndexingConf({
+                                  ...conf,
+                                  [section.key]: section.values.filter(
+                                    (_, i) => i !== idx,
+                                  ),
+                                })
                               }}
                             >
                               <DeleteIcon />
@@ -106,10 +107,13 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
                         <InputAdornment position="end">
                           <IconButton
                             onClick={() => {
-                              section.setValues([
-                                ...section.values,
-                                section.inputValue,
-                              ])
+                              model.setTextIndexingConf({
+                                ...conf,
+                                [section.key]: [
+                                  ...section.values,
+                                  section.inputValue,
+                                ],
+                              })
                               section.setInputValue('')
                             }}
                             disabled={section.inputValue === ''}

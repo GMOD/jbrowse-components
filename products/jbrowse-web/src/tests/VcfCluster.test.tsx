@@ -15,9 +15,8 @@ setup()
 beforeEach(() => {
   doBeforeEach()
 })
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
 
+import './svgExportMocks'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 const delay = { timeout: 60000 }

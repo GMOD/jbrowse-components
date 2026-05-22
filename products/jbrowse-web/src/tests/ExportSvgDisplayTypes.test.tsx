@@ -7,9 +7,8 @@ import { createCanvas as nodeCreateCanvas } from 'canvas'
 
 import { createView, doBeforeEach, hts, setup } from './util.tsx'
 
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
 
+import './svgExportMocks'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()

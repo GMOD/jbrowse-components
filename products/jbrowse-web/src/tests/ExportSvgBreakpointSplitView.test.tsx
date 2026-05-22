@@ -7,9 +7,8 @@ import {
 } from './util.tsx'
 import breakpointConfig from '../../test_data/breakpoint/config.json' with { type: 'json' }
 
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
 
+import './svgExportMocks'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
