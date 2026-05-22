@@ -55,8 +55,7 @@ async function fetchFeatures(track: IAnyStateTreeNode, regions: Region[]) {
   return rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
     regions,
-    sessionId,
-  }) as Promise<Feature[]>
+  })
 }
 
 function roundRegions(regions: Region[]) {
@@ -119,16 +118,15 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         if (supportsExport) {
           const { rpcManager } = session
           const sessionId = getRpcSessionId(model)
-          const exportResult = (await rpcManager.call(
+          const exportResult = await rpcManager.call(
             'getExportData',
             'CoreGetExportData',
             {
               adapterConfig,
               regions,
               formatType: type,
-              sessionId,
             },
-          )) as string | undefined
+          )
 
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (cancelled) {
