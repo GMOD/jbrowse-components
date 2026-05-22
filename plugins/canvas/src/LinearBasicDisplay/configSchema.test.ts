@@ -152,7 +152,8 @@ describe('LinearBasicDisplay configSchema', () => {
         { pluginManager: pm },
       )
       expect(readConfObject(config, 'color1')).toBe('red')
-      expect(readConfObject(config, 'renderer')).toBeUndefined()
+      // renderer slot was removed — snapshot should not have it
+      expect('renderer' in config).toBe(false)
     })
 
     it('lifts labels.description from renderer', () => {
@@ -165,7 +166,9 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, ['labels', 'description'])).toBe(expr)
+      // Check raw slot value to avoid evaluating JEXL without a feature context
+      expect(String(config.labels.description.value)).toBe(expr)
+      expect(config.labels.description.isCallback).toBe(true)
     })
 
     it('display-level props take precedence over renderer props', () => {
