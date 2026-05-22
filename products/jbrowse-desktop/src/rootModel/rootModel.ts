@@ -319,6 +319,7 @@ export default function rootModelFactory({
                         PreferencesDialog,
                         {
                           session: self.session,
+                          pluginManager,
                           handleClose,
                         },
                       ])

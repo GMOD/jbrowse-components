@@ -221,12 +221,14 @@ export async function exportAndVerifySvg({
   filename,
   delay,
   findAllByText,
+  beforeSubmit,
 }: {
   findByTestId: any
   findByText: any
   filename: string
   delay?: { timeout: number }
   findAllByText?: any
+  beforeSubmit?: () => Promise<void>
 }) {
   const actualDelay = delay ?? { timeout: 40000 }
   const opts = [{}, actualDelay]
@@ -237,6 +239,8 @@ export async function exportAndVerifySvg({
   } else {
     fireEvent.click(await findByText('Export SVG', ...opts))
   }
+
+  await beforeSubmit?.()
 
   fireEvent.click(await findByText('Submit', ...opts))
 

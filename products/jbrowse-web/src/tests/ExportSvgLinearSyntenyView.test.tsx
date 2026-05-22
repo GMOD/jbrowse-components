@@ -1,8 +1,4 @@
-import fs from 'fs'
-import path from 'path'
-
-import { saveAs } from '@jbrowse/core/util'
-import { fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent } from '@testing-library/react'
 
 import {
   createView,
@@ -14,7 +10,7 @@ import {
 import volvoxConfig from '../../test_data/volvox/config.json' with { type: 'json' }
 
 
-import './svgExportMocks'
+import './svgExportMocks.ts'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
@@ -173,12 +169,9 @@ test('export svg of synteny', async () => {
       defaultSession: syntenySession,
     })
 
-    fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-    fireEvent.click((await findAllByText('Export SVG', ...opts))[0]!)
-    fireEvent.click(await findByText('Submit', ...opts))
-
     await exportAndVerifySvg({
       findByTestId,
+      findAllByText,
       findByText,
       filename: 'synteny',
       delay,
@@ -193,26 +186,15 @@ test('export svg of synteny with gridlines', async () => {
       defaultSession: syntenySession,
     })
 
-    fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-    fireEvent.click((await findAllByText('Export SVG', ...opts))[0]!)
-
-    // Enable gridlines checkbox
-    fireEvent.click(await findByText('Show gridlines', ...opts))
-
-    fireEvent.click(await findByText('Submit', ...opts))
-
-    await waitFor(() => {
-      expect(saveAs).toHaveBeenCalled()
-    }, delay)
-
-    // @ts-expect-error
-
-    const svg = saveAs.mock.calls[0][0].content[0]
-    const dir = path.dirname(module.filename)
-    fs.writeFileSync(
-      `${dir}/__image_snapshots__/synteny_gridlines_snapshot.svg`,
-      svg,
-    )
-    expect(svg).toMatchSnapshot()
+    await exportAndVerifySvg({
+      findByTestId,
+      findAllByText,
+      findByText,
+      filename: 'synteny_gridlines',
+      delay,
+      beforeSubmit: async () => {
+        fireEvent.click(await findByText('Show gridlines', ...opts))
+      },
+    })
   })
 }, 45000)
