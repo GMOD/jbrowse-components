@@ -31,9 +31,6 @@ const pifInsPath =
   require.resolve('../../../../test_data/volvox/volvox_ins.pif.gz')
 const pifDelPath =
   require.resolve('../../../../test_data/volvox/volvox_del.pif.gz')
-const pifMultiPath =
-  require.resolve('../../../../test_data/volvox/volvox_multi.pif.gz')
-
 describe('PairwiseIndexedPAFAdapter', () => {
   describe('coordinate extraction from PIF format', () => {
     it('fetches features from query assembly perspective (q-lines)', async () => {

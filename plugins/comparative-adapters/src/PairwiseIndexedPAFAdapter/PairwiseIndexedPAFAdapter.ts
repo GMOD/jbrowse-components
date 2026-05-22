@@ -267,7 +267,13 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               const r = parsePAFLine(line)
               const { strand } = r
               const extra = r.extra
-              const { numMatches = 0, blockLen = 1, cg, sy: _sy, ...rest } = extra
+              const {
+                numMatches = 0,
+                blockLen = 1,
+                cg,
+                sy: _sy,
+                ...rest
+              } = extra
 
               const start = r.qstart
               const end = r.qend

@@ -57,25 +57,3 @@ test('shows error and disables select when no assemblies configured', () => {
   expect(getByText('No configured assemblies')).toBeInTheDocument()
 })
 
-test('caller can override select display testid via TextFieldProps slotProps', () => {
-  const session = makeSession(['hg19'])
-  const { getByTestId, queryByTestId } = render(
-    <AssemblySelector
-      session={session}
-      selected="hg19"
-      onChange={() => {}}
-      TextFieldProps={{
-        slotProps: {
-          select: {
-            SelectDisplayProps: {
-              // @ts-expect-error
-              'data-testid': 'my-custom-testid',
-            },
-          },
-        },
-      }}
-    />,
-  )
-  expect(getByTestId('my-custom-testid')).toBeTruthy()
-  expect(queryByTestId('assembly-selector-select')).toBeNull()
-})

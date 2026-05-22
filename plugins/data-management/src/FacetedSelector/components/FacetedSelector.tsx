@@ -58,7 +58,6 @@ export function HighlightText({
   return <SanitizedHTML html={highlighted} className={className} />
 }
 
-
 const frac = 0.75
 
 const FacetedSelector = observer(function FacetedSelector({

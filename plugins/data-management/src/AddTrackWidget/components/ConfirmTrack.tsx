@@ -53,17 +53,7 @@ const DefaultAddTrackExtensionComponent = observer(
         onChange={asm => {
           model.setAssembly(asm)
         }}
-        TextFieldProps={{
-          fullWidth: true,
-          slotProps: {
-            select: {
-              SelectDisplayProps: {
-                // @ts-expect-error
-                'data-testid': 'assemblyNameSelect',
-              },
-            },
-          },
-        }}
+        fullWidth
       />
     )
   },

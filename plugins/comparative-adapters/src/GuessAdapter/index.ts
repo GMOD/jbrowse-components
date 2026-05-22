@@ -25,9 +25,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
       ) => {
         const fileName = getFileName(file)
         const indexName = index && getFileName(index)
-        if (
-          testAdapter(fileName, /\.paf(.gz)?$/i, adapterHint, 'PAFAdapter')
-        ) {
+        if (testAdapter(fileName, /\.paf(.gz)?$/i, adapterHint, 'PAFAdapter')) {
           return {
             type: 'PAFAdapter',
             pafLocation: file,

@@ -138,11 +138,11 @@ export function getClip(cigar: string, strand: number) {
 export function featurizeSA(
   SA: string | undefined,
   id: string,
-  strand: -1 | 1 | undefined,
+  strand: number | undefined,
   readName: string | undefined,
   normalize?: boolean,
 ) {
-  const strandNum = strand !== undefined ? strand : 1
+  const strandNum = strand ?? 1
   return (
     SA?.split(';')
       .filter(aln => !!aln)
