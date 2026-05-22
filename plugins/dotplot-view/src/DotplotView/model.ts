@@ -39,7 +39,7 @@ import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
@@ -69,7 +69,7 @@ function stringLenPx(a: string) {
 }
 
 function pxWidthForBlocks(
-  blocks: ContentBlock[],
+  blocks: BaseBlock[],
   bpPerPx: number,
   hide: Set<string>,
 ) {
@@ -683,7 +683,8 @@ export default function stateModelFactory(pm: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGDotplotView.tsx')
         const html = await renderToSvg(self as DotplotViewModel, opts)
-        const { saveAs } = await import('@jbrowse/core/util')
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const { saveAs } = await import('file-saver-es')
 
         if (opts.format === 'png') {
           const img = new Image()

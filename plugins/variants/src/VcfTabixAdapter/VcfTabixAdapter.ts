@@ -13,7 +13,7 @@ import VcfFeature from '../VcfFeature/index.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-import type { NoAssemblyRegion, Region } from '@jbrowse/core/util/types'
+import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
@@ -21,63 +21,58 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
   private configured?: Promise<{
     vcf: TabixIndexedFile
     parser: VcfParser
-    header: string
   }>
 
-  private configureOnce() {
-    if (!this.configured) {
-      const vcfGzLocation = this.getConf('vcfGzLocation')
-      const location = this.getConf(['index', 'location'])
-      const indexType = this.getConf(['index', 'indexType'])
-      const isCSI = indexType === 'CSI'
-      const vcf = new TabixIndexedFile({
-        filehandle: openLocation(vcfGzLocation, this.pluginManager),
-        csiFilehandle: isCSI
-          ? openLocation(location, this.pluginManager)
-          : undefined,
-        tbiFilehandle: !isCSI
-          ? openLocation(location, this.pluginManager)
-          : undefined,
-        chunkCacheSize: 50 * 2 ** 20,
-      })
-      this.configured = vcf
-        .getHeader()
-        .then(header => ({
-          vcf,
-          parser: new VcfParser({ header }),
-          header,
-        }))
-        .catch((e: unknown) => {
-          this.configured = undefined
-          throw e
-        })
+  private async configurePre(_opts?: BaseOptions) {
+    const vcfGzLocation = this.getConf('vcfGzLocation')
+    const location = this.getConf(['index', 'location'])
+    const indexType = this.getConf(['index', 'indexType'])
+
+    const filehandle = openLocation(vcfGzLocation, this.pluginManager)
+    const isCSI = indexType === 'CSI'
+    const vcf = new TabixIndexedFile({
+      filehandle,
+      csiFilehandle: isCSI
+        ? openLocation(location, this.pluginManager)
+        : undefined,
+      tbiFilehandle: !isCSI
+        ? openLocation(location, this.pluginManager)
+        : undefined,
+      chunkCacheSize: 50 * 2 ** 20,
+    })
+
+    return {
+      vcf,
+      parser: new VcfParser({
+        header: await vcf.getHeader(),
+      }),
     }
-    return this.configured!
+  }
+
+  protected async configurePre2() {
+    if (!this.configured) {
+      this.configured = this.configurePre().catch((e: unknown) => {
+        this.configured = undefined
+        throw e
+      })
+    }
+    return this.configured
   }
 
   async configure(opts?: BaseOptions) {
-    return updateStatus('Downloading index', opts?.statusCallback, () =>
-      this.configureOnce(),
+    const { statusCallback = () => {} } = opts || {}
+    return updateStatus('Downloading index', statusCallback, () =>
+      this.configurePre2(),
     )
   }
-
-  async getMultiRegionFeatureDensityStats(
-    regions: Region[],
-    opts?: BaseOptions,
-  ) {
-    const { vcf } = await this.configure(opts)
-    const bytes = await vcf.bytesForRegions(regions, opts)
-    return { bytes, fetchSizeLimit: 1_000_000 }
-  }
-
   public async getRefNames(opts: BaseOptions = {}) {
     const { vcf } = await this.configure(opts)
     return vcf.getReferenceSequenceNames(opts)
   }
 
   async getHeader(opts?: BaseOptions) {
-    const { header } = await this.configure(opts)
-    return header
+    const { vcf } = await this.configure(opts)
+    return vcf.getHeader()
   }
 
   async getMetadata(opts?: BaseOptions) {
@@ -94,18 +89,27 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       return undefined
     }
 
-    const { vcf, header } = await this.configure(opts)
-    const exportLines: string[] = header.split('\n').filter(Boolean)
+    const { statusCallback = () => {} } = opts || {}
+    const { vcf } = await this.configure(opts)
+    const headerText = await vcf.getHeader()
+    const exportLines: string[] = headerText.split('\n').filter(Boolean)
 
     for (const region of regions) {
-      await updateStatus('Exporting variants', opts?.statusCallback, () =>
-        vcf.getLines(region.refName, region.start, region.end, {
+      const { refName, start, end } = region
+      const regionLines: string[] = []
+
+      await updateStatus('Exporting variants', statusCallback, () =>
+        vcf.getLines(refName, start, end, {
           lineCallback: (line: string) => {
-            exportLines.push(line)
+            regionLines.push(line)
           },
           ...opts,
         }),
       )
+
+      for (const line of regionLines) {
+        exportLines.push(line)
+      }
     }
 
     return exportLines.join('\n')
@@ -114,9 +118,10 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { refName, start, end } = query
+      const { statusCallback = () => {} } = opts
       const { vcf, parser } = await this.configure(opts)
 
-      await updateStatus('Downloading variants', opts.statusCallback, () =>
+      await updateStatus('Downloading variants', statusCallback, () =>
         vcf.getLines(refName, start, end, {
           lineCallback: (line, fileOffset) => {
             observer.next(
@@ -138,7 +143,9 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
     const conf = this.getConf('samplesTsvLocation')
     if (conf.uri === '' || conf.uri === '/path/to/samples.tsv') {
       const { parser } = await this.configure()
-      return parser.samples.map(name => ({ name }))
+      return parser.samples.map(name => ({
+        name,
+      }))
     } else {
       const txt = await fetchAndMaybeUnzipText(
         openLocation(conf, this.pluginManager),

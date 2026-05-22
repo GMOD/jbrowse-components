@@ -1,17 +1,34 @@
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+
 import {
   BlockSet,
-  makeContentBlock,
-  makeElidedBlock,
-  makeInterRegionPaddingBlock,
+  ContentBlock,
+  ElidedBlock,
+  InterRegionPaddingBlock,
 } from './blockTypes.ts'
+import { assembleLocStringFast } from './index.ts'
 import { intersection2 } from './range.ts'
 
 import type { Base1DViewModel } from './calculateStaticBlocks.ts'
 
 /**
- * Returns a BlockSet covering only the regions currently visible in the view.
- * Used by tracks where static blocks are not feasible. start/end/offsetPx may
- * be fractional.
+ * returns a BlockSet of which the `blocks` attribute is an array of 'dynamic
+ * blocks', which are blocks representing only the regions that are visible in
+ * the view right now. these are mostly used by tracks for which static blocks
+ * are not feasible.
+ *
+ * each block is a plain JS object like:
+ *   `{ refName, start, end, offsetPx, reversed? }`
+ *
+ * start and end are in bp, and start is always less than end, but if reversed
+ * is true, startBp will be on the right side of the visible region.
+ *
+ * offsetPx is the number of pixels from the left edge of the view to the left
+ * edge of the region
+ *
+ * NOTE: start, end, and offsetPx may all be fractional!
+ *
+ * @returns BlockSet of `{ refName, startBp, end, offset, reversed? }`
  */
 export default function calculateDynamicBlocks(
   model: Base1DViewModel,
@@ -31,25 +48,31 @@ export default function calculateDynamicBlocks(
     throw new Error('view has no width, cannot calculate displayed blocks')
   }
 
+  // Pre-calculate inverse to avoid repeated divisions
   const invBpPerPx = 1 / bpPerPx
   const blocks = new BlockSet()
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
   for (
-    let displayedRegionIndex = 0;
-    displayedRegionIndex < displayedRegions.length;
-    displayedRegionIndex++
+    let regionNumber = 0;
+    regionNumber < displayedRegions.length;
+    regionNumber++
   ) {
+    const region = displayedRegions[regionNumber]
     const {
       assemblyName,
       refName,
       start: regionStart,
       end: regionEnd,
       reversed,
-    } = displayedRegions[displayedRegionIndex]!
+    } = region!
+    const displayedRegionRightPx =
+      displayedRegionLeftPx + (regionEnd - regionStart) * invBpPerPx
+
     const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
-    const displayedRegionRightPx = displayedRegionLeftPx + regionWidthPx
+    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
+
     const [leftPx, rightPx] = intersection2(
       windowLeftPx,
       windowRightPx,
@@ -57,12 +80,11 @@ export default function calculateDynamicBlocks(
       displayedRegionRightPx,
     )
     if (leftPx !== undefined && rightPx !== undefined) {
-      // Pixel comparisons avoid the bpPerPx round-trip float drift that can
-      // make end !== regionEnd even when the full region is in view.
-      const isLeftEndOfDisplayedRegion = leftPx <= displayedRegionLeftPx
-      const isRightEndOfDisplayedRegion = rightPx >= displayedRegionRightPx
+      // this displayed region overlaps the view, so make a record for it
       let start: number
       let end: number
+      let isLeftEndOfDisplayedRegion: boolean
+      let isRightEndOfDisplayedRegion: boolean
       let blockOffsetPx: number
       if (reversed) {
         start = Math.max(
@@ -70,6 +92,8 @@ export default function calculateDynamicBlocks(
           regionEnd - (rightPx - displayedRegionLeftPx) * bpPerPx,
         )
         end = regionEnd - (leftPx - displayedRegionLeftPx) * bpPerPx
+        isLeftEndOfDisplayedRegion = end === regionEnd
+        isRightEndOfDisplayedRegion = start === regionStart
         blockOffsetPx = displayedRegionLeftPx + (regionEnd - end) * invBpPerPx
       } else {
         start = (leftPx - displayedRegionLeftPx) * bpPerPx + regionStart
@@ -77,81 +101,84 @@ export default function calculateDynamicBlocks(
           regionEnd,
           (rightPx - displayedRegionLeftPx) * bpPerPx + regionStart,
         )
+        isLeftEndOfDisplayedRegion = start === regionStart
+        isRightEndOfDisplayedRegion = end === regionEnd
         blockOffsetPx =
           displayedRegionLeftPx + (start - regionStart) * invBpPerPx
       }
       const widthPx = (end - start) * invBpPerPx
-      const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
-
-      if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
-        blocks.push(
-          makeInterRegionPaddingBlock({
-            key: `${key}-beforeFirstRegion`,
-            widthPx: -offsetPx,
-            offsetPx: blockOffsetPx + offsetPx,
-            variant: 'boundary',
-          }),
-        )
-      }
-
-      const data = {
+      const blockData = {
         assemblyName,
         refName,
         start,
         end,
         reversed,
         offsetPx: blockOffsetPx,
-        displayedRegionIndex,
+        parentRegion,
+        regionNumber,
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
-        key,
+        key: `${assembleLocStringFast({
+          assemblyName,
+          refName,
+          start,
+          end,
+          reversed,
+        })}-${regionNumber}${reversed ? '-reversed' : ''}`,
       }
-      blocks.push(
-        elision && regionWidthPx < minimumBlockWidth
-          ? makeElidedBlock(data)
-          : makeContentBlock(data),
-      )
+
+      if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-beforeFirstRegion`,
+            widthPx: -offsetPx,
+            offsetPx: blockData.offsetPx + offsetPx,
+            variant: 'boundary',
+          }),
+        )
+      }
+
+      if (elision && regionWidthPx < minimumBlockWidth) {
+        blocks.push(new ElidedBlock(blockData))
+      } else {
+        blocks.push(new ContentBlock(blockData))
+      }
 
       if (padding) {
+        // insert a inter-region padding block if we are crossing a displayed region
         if (
           regionWidthPx >= minimumBlockWidth &&
-          isRightEndOfDisplayedRegion &&
-          displayedRegionIndex < displayedRegions.length - 1
+          blockData.isRightEndOfDisplayedRegion &&
+          regionNumber < displayedRegions.length - 1
         ) {
           blocks.push(
-            makeInterRegionPaddingBlock({
-              key: `${key}-rightpad`,
+            new InterRegionPaddingBlock({
+              key: `${blockData.key}-rightpad`,
               widthPx: interRegionPaddingWidth,
-              offsetPx: blockOffsetPx + widthPx,
+              offsetPx: blockData.offsetPx + blockData.widthPx,
             }),
           )
+          displayedRegionLeftPx += interRegionPaddingWidth
         }
 
         if (
-          displayedRegionIndex === displayedRegions.length - 1 &&
-          isRightEndOfDisplayedRegion
+          regionNumber === displayedRegions.length - 1 &&
+          blockData.isRightEndOfDisplayedRegion
         ) {
-          const afterOffsetPx = blockOffsetPx + widthPx
+          blockOffsetPx = blockData.offsetPx + blockData.widthPx
           blocks.push(
-            makeInterRegionPaddingBlock({
-              key: `${key}-afterLastRegion`,
-              widthPx: width - afterOffsetPx + offsetPx,
-              offsetPx: afterOffsetPx,
+            new InterRegionPaddingBlock({
+              key: `${blockData.key}-afterLastRegion`,
+              widthPx: width - blockOffsetPx + offsetPx,
+              offsetPx: blockOffsetPx,
               variant: 'boundary',
             }),
           )
         }
       }
     }
-    if (
-      padding &&
-      regionWidthPx >= minimumBlockWidth &&
-      displayedRegionIndex < displayedRegions.length - 1
-    ) {
-      displayedRegionLeftPx += interRegionPaddingWidth
-    }
-    displayedRegionLeftPx += regionWidthPx
+    displayedRegionLeftPx += (regionEnd - regionStart) * invBpPerPx
   }
   return blocks
 }

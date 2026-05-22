@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 
 import type { BpOffset } from '../types.ts'
+import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
 export async function fetchSequence(
@@ -38,5 +39,6 @@ export async function fetchSequence(
   return rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
     regions,
-  })
+    sessionId,
+  }) as Promise<Feature[]>
 }

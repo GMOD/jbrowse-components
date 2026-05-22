@@ -87,19 +87,31 @@ export type getSubAdapterType = (
   adapterConfigSnap: ConfigSnap,
 ) => ReturnType<typeof getAdapter>
 
-export async function freeAdapterResources(args: { sessionId?: string }) {
-  // drop any adapters that were only associated with this session. (the
-  // previous per-region branch is gone — no in-tree adapter overrode
-  // freeResources to do anything per-region.)
-  const { sessionId } = args
-  if (!sessionId) {
-    return
-  }
-  for (const [cacheKey, cacheEntryP] of Object.entries(adapterCache)) {
-    const cacheEntry = await cacheEntryP
-    cacheEntry.sessionIds.delete(sessionId)
-    if (cacheEntry.sessionIds.size === 0) {
-      delete adapterCache[cacheKey]
+export async function freeAdapterResources(args: Record<string, any>) {
+  const specKeys = Object.keys(args)
+
+  // TODO: little hacky...should make it an explicit command but:
+  // if we don't specify a range, delete any adapters that are only associated
+  // with that session
+  if (specKeys.length === 1 && specKeys[0] === 'sessionId') {
+    const { sessionId } = args
+    for (const [cacheKey, cacheEntryP] of Object.entries(adapterCache)) {
+      const cacheEntry = await cacheEntryP
+      cacheEntry.sessionIds.delete(sessionId)
+      if (cacheEntry.sessionIds.size === 0) {
+        delete adapterCache[cacheKey]
+      }
+    }
+  } else {
+    // otherwise call freeResources on all the cached data adapters
+    for (const cacheEntryP of Object.values(adapterCache)) {
+      const cacheEntry = await cacheEntryP
+      const regions = args.regions || (args.region ? [args.region] : [])
+      for (const region of regions) {
+        if (region.refName !== undefined) {
+          cacheEntry.dataAdapter.freeResources(region)
+        }
+      }
     }
   }
 }

@@ -22,33 +22,28 @@ export default class CompositeMap<T, U> {
   }
 
   *values() {
-    const seen = new Set<T>()
-    for (const submap of this.submaps.values()) {
-      for (const [key, value] of submap) {
-        if (!seen.has(key)) {
-          seen.add(key)
-          yield value
-        }
-      }
+    for (const key of this.keys()) {
+      yield this.get(key) as U
     }
   }
 
   *keys() {
-    const seen = new Set<T>()
+    const keys = new Set<T>()
     for (const submap of this.submaps.values()) {
       for (const key of submap.keys()) {
-        if (!seen.has(key)) {
-          seen.add(key)
-          yield key
-        }
+        keys.add(key)
       }
+    }
+    for (const key of keys) {
+      yield key
     }
   }
 
-  find(f: (arg0: U) => boolean): U | undefined {
+  find<V>(f: (arg0: U) => V) {
     for (const submap of this.submaps.values()) {
       for (const value of submap.values()) {
-        if (f(value)) {
+        const found = f(value)
+        if (found) {
           return value
         }
       }
@@ -57,18 +52,14 @@ export default class CompositeMap<T, U> {
   }
 
   *[Symbol.iterator]() {
-    yield* this.entries()
+    for (const key of this.keys()) {
+      yield [key, this.get(key)] as const
+    }
   }
 
   *entries() {
-    const seen = new Set<T>()
-    for (const submap of this.submaps.values()) {
-      for (const [key, value] of submap) {
-        if (!seen.has(key)) {
-          seen.add(key)
-          yield [key, value] as const
-        }
-      }
+    for (const k of this.keys()) {
+      yield [k, this.get(k)] as const
     }
   }
 }

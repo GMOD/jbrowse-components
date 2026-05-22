@@ -21,7 +21,7 @@ import type {
 } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LastStopTokenCheck } from '@jbrowse/core/util'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
 export function drawPairChains({
@@ -54,7 +54,7 @@ export function drawPairChains({
   computedChains: ComputedChain[]
   config: AnyConfigurationModel
   theme: ThemeOptions
-  region: ContentBlock
+  region: BaseBlock
   regionStartPx: number
   bpPerPx: number
   colorBy: ColorBy

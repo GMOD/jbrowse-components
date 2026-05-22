@@ -87,7 +87,7 @@ const RenderedVerticalGuides = observer(function RenderedVerticalGuides({
           return <RenderedBlockLines key={k} block={block} bpPerPx={bpPerPx} />
         } else if (block.type === 'ElidedBlock') {
           return <ElidedBlockComponent key={k} width={block.widthPx} />
-        } else {
+        } else if (block.type === 'InterRegionPaddingBlock') {
           return (
             <InterRegionPaddingBlockComponent
               key={k}

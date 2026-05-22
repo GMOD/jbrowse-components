@@ -18,9 +18,6 @@ export default class AdapterType extends PluggableElementBase {
 
   adapterMetadata?: AdapterMetadata
 
-  // `AdapterClass` is retained for backward compatibility with third-party
-  // plugins that pass an eager class reference; new code should prefer
-  // `getAdapterClass` for code splitting.
   constructor(
     stuff: {
       name: string
@@ -29,15 +26,19 @@ export default class AdapterType extends PluggableElementBase {
       adapterCapabilities?: string[]
       adapterMetadata?: AdapterMetadata
     } & (
-      | { getAdapterClass: () => Promise<AnyAdapter> }
-      | { AdapterClass: AnyAdapter }
+      | {
+          AdapterClass: AnyAdapter
+        }
+      | {
+          getAdapterClass: () => Promise<AnyAdapter>
+        }
     ),
   ) {
     super(stuff)
     this.getAdapterClass =
-      'getAdapterClass' in stuff
-        ? stuff.getAdapterClass
-        : async () => stuff.AdapterClass
+      'AdapterClass' in stuff
+        ? async () => stuff.AdapterClass
+        : stuff.getAdapterClass
     this.configSchema = stuff.configSchema
     this.adapterCapabilities = stuff.adapterCapabilities || []
     this.adapterMetadata = stuff.adapterMetadata

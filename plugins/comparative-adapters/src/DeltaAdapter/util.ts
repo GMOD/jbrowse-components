@@ -1,6 +1,6 @@
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter/types'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter/BaseOptions'
 
 /* paf2delta from paftools.js in the minimap2 repository, license reproduced below
  *

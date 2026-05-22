@@ -1,8 +1,8 @@
-import { getLengthOnRef } from '@jbrowse/cigar-utils'
 import { toLocale } from '@jbrowse/core/util'
 import { Link, Typography } from '@mui/material'
 
 import { navToLoc } from './util.ts'
+import { getLengthOnRef } from '../MismatchParser/index.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 

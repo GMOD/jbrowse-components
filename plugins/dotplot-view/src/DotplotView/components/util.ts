@@ -1,7 +1,7 @@
 import { toLocale } from '@jbrowse/core/util'
 
 import type { Dotplot1DViewModel } from '../model.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 export function locstr(
   px: number,
@@ -16,7 +16,7 @@ export function locstr(
 }
 
 export function getBlockLabelKeysToHide(
-  blocks: ContentBlock[],
+  blocks: BaseBlock[],
   length: number,
   viewOffsetPx: number,
 ) {
@@ -89,7 +89,7 @@ export function chooseGridPitch(
 }
 
 export function makeTicks(
-  regions: ContentBlock[],
+  regions: BaseBlock[],
   bpPerPx: number,
   emitMajor = true,
   emitMinor = true,

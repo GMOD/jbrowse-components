@@ -4,6 +4,8 @@ import SimpleFeature from './simpleFeature.ts'
 import { calcStdFromSums, rectifyStats, scoresToStats } from './stats.ts'
 import { aggregateQuantitativeStats } from '../data_adapters/BaseAdapter/stats.ts'
 
+import type { UnrectifiedQuantitativeStats } from './stats.ts'
+
 test('calc std', () => {
   const s = [1, 2, 3]
   const sum = s.reduce((a, b) => a + b)
@@ -14,28 +16,25 @@ test('calc std', () => {
   expect(calcStdFromSums(100000, 100, 5)).toEqual(0) // fake thing where sumSq probably wrong
 })
 
-const baseStats = {
-  scoreMin: 0,
-  scoreMax: 0,
-  scoreSum: 0,
-  scoreSumSquares: 0,
-  basesCovered: 0,
-}
-
 test('test rectify', () => {
-  expect(rectifyStats(baseStats).scoreMean).toEqual(0)
+  // mean of 0 bases covered = 0
+  expect(
+    rectifyStats({ basesCovered: 0 } as UnrectifiedQuantitativeStats).scoreMean,
+  ).toEqual(0)
+  const s = rectifyStats({
+    featureCount: 10,
+    scoreSum: 1000,
+  } as UnrectifiedQuantitativeStats)
 
-  const s = rectifyStats({ ...baseStats, featureCount: 10, scoreSum: 1000 })
   expect(s.scoreMean).toEqual(100)
   expect(s.featureCount).toEqual(10)
 
   expect(
     rectifyStats({
-      ...baseStats,
       featureCount: 3,
       scoreSum: 6,
       scoreSumSquares: 14,
-    }).scoreStdDev,
+    } as UnrectifiedQuantitativeStats).scoreStdDev,
   ).toEqual(1) // calculated from a webapp about sample standard deviations
 })
 

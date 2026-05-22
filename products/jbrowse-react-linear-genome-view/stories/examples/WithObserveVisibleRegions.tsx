@@ -5,12 +5,10 @@ import { observer } from 'mobx-react'
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, useCreateViewState } from '../../src/index.ts'
 
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { Region } from '@jbrowse/core/util'
 
-function loc(r: BaseBlock) {
-  return r.type === 'ContentBlock'
-    ? `${r.refName}:${Math.floor(r.start)}-${Math.floor(r.end)}`
-    : ''
+function loc(r: Region) {
+  return `${r.refName}:${Math.floor(r.start)}-${Math.floor(r.end)}`
 }
 
 type ViewState = ReturnType<typeof useCreateViewState>

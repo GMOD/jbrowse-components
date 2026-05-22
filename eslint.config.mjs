@@ -163,6 +163,7 @@ export default defineConfig(
       'unicorn/no-unreadable-array-destructuring': 'off',
       'unicorn/no-abusive-eslint-disable': 'off',
       'unicorn/no-array-callback-reference': 'off',
+      'unicorn/no-array-for-each': 'off',
       'unicorn/number-literal-case': 'off',
       'unicorn/prefer-add-event-listener': 'off',
       'unicorn/prefer-top-level-await': 'off',

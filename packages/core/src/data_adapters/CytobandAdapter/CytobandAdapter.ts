@@ -2,7 +2,7 @@ import { SimpleFeature, fetchAndMaybeUnzipText } from '../../util/index.ts'
 import { openLocation } from '../../util/io/index.ts'
 import { BaseAdapter } from '../BaseAdapter/index.ts'
 
-import type { BaseOptions } from '../BaseAdapter/types.ts'
+import type { BaseOptions } from '../BaseAdapter/BaseOptions.ts'
 
 export default class CytobandAdapter extends BaseAdapter {
   async getData(opts?: BaseOptions) {

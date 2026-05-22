@@ -1,6 +1,6 @@
-import { getNextRefPos } from '@jbrowse/cigar-utils'
 import { colord } from '@jbrowse/core/util/colord'
 
+import { getNextRefPos } from '../../MismatchParser/index.ts'
 import { getModPositions } from '../../ModificationParser/getModPositions.ts'
 import { getModProbabilities } from '../../ModificationParser/getModProbabilities.ts'
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
@@ -70,16 +70,17 @@ export function renderModifications({
 
   let probIndex = 0
   for (const { type, base, strand, positions } of modifications) {
-    getNextRefPos(cigarOps, positions, (ref, idx) => {
+    for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
       const prob =
         probabilities?.[
           probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
         ] || 0
+
       if (!modsByPosition.has(ref)) {
         modsByPosition.set(ref, [])
       }
       modsByPosition.get(ref)!.push({ type, base, strand, prob })
-    })
+    }
     probIndex += positions.length
   }
 

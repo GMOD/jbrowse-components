@@ -1,7 +1,7 @@
 import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 /**
  * Expand a region by a grow factor, adding padding on each side.
@@ -219,7 +219,7 @@ export function parseLocStrings(
   }
 }
 
-export function calculateVisibleLocStrings(contentBlocks: ContentBlock[]) {
+export function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
   if (!contentBlocks.length) {
     return ''
   } else {

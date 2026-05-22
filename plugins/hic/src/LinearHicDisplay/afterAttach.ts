@@ -95,7 +95,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
             }
           },
         },
-      )) as unknown as RenderResult
+      )) as RenderResult
 
       if (result.imageData) {
         self.setRenderingImageData(result.imageData)

@@ -4,7 +4,8 @@ import { toArray } from 'rxjs/operators'
 import { max, min, sum } from '../../util/index.ts'
 import { rectifyStats } from '../../util/stats.ts'
 
-import type { BaseOptions, FeatureDensityStats } from './types.ts'
+import type { BaseOptions } from './BaseOptions.ts'
+import type { FeatureDensityStats } from './types.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { RectifiedQuantitativeStats } from '../../util/stats.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
@@ -23,7 +24,7 @@ export function aggregateQuantitativeStats(
     scoreMin: min(stats.map(s => s.scoreMin)),
     scoreSum: sum(stats.map(s => s.scoreSum)),
     scoreSumSquares: sum(stats.map(s => s.scoreSumSquares)),
-    featureCount: sum(stats.map(s => s.featureCount ?? 0)),
+    featureCount: sum(stats.map(s => s.featureCount)),
     basesCovered: sum(stats.map(s => s.basesCovered)),
     ...(meanMins.length > 0 ? { scoreMeanMin: min(meanMins) } : {}),
     ...(meanMaxs.length > 0 ? { scoreMeanMax: max(meanMaxs) } : {}),
@@ -59,12 +60,9 @@ export async function calculateFeatureDensityStats(
   let interval = DENSITY_SAMPLE_INITIAL_INTERVAL
   let expansionTime = 0
   let lastTime = performance.now()
-  const t0 = lastTime
-  let rounds = 0
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
-    rounds++
     const features = await sampleFeaturesForInterval(
       region,
       interval,
@@ -79,11 +77,7 @@ export async function calculateFeatureDensityStats(
 
     if (expansionTime > DENSITY_SAMPLE_TIMEOUT_MS) {
       console.warn(
-        "[calculateFeatureDensityStats] timeout, or didn't get enough features",
-        {
-          totalRounds: rounds,
-          totalElapsed: `${(performance.now() - t0).toFixed(0)}ms`,
-        },
+        "Stats estimation reached timeout, or didn't get enough features",
       )
       return { featureDensity: Number.POSITIVE_INFINITY }
     }

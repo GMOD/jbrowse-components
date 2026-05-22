@@ -1,4 +1,4 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { bpToPx, moveTo, pxToBp } from './Base1DUtils.ts'
 import calculateDynamicBlocks from './calculateDynamicBlocks.ts'
@@ -54,7 +54,7 @@ const Base1DView = types
      * #action
      */
     setDisplayedRegions(regions: IRegion[]) {
-      self.displayedRegions = regions
+      self.displayedRegions = cast(regions)
     },
     /**
      * #action
@@ -133,7 +133,7 @@ const Base1DView = types
      * #getter
      */
     get currBp() {
-      return sum(this.dynamicBlocks.contentBlocks.map(a => a.end - a.start))
+      return sum(this.dynamicBlocks.map(a => a.end - a.start))
     },
   }))
   .views(self => ({
@@ -150,13 +150,13 @@ const Base1DView = types
     bpToPx({
       refName,
       coord,
-      displayedRegionIndex,
+      regionNumber,
     }: {
       refName: string
       coord: number
-      displayedRegionIndex?: number
+      regionNumber?: number
     }) {
-      return bpToPx({ refName, coord, displayedRegionIndex, self })?.offsetPx
+      return bpToPx({ refName, coord, regionNumber, self })?.offsetPx
     },
   }))
   .actions(self => ({
@@ -233,20 +233,16 @@ const Base1DView = types
     /**
      * #action
      */
-    centerAt(
-      coord: number,
-      refName: string | undefined,
-      displayedRegionIndex: number,
-    ) {
+    centerAt(coord: number, refName: string | undefined, regionNumber: number) {
       if (!refName) {
         return
       }
       const centerPx = self.bpToPx({
         refName,
         coord,
-        displayedRegionIndex,
+        regionNumber,
       })
-      if (centerPx !== undefined) {
+      if (centerPx) {
         this.scrollTo(Math.round(centerPx - self.width / 2))
       }
     },

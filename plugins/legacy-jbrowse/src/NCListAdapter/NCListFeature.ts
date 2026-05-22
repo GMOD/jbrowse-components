@@ -12,11 +12,14 @@ const jb1ToJb2 = { seq_id: 'refName' }
  */
 export default class NCListFeature implements Feature {
   private parentHandle?: Feature
-  private uniqueId: string
-  private ncFeature: any
 
-  constructor(ncFeature: any, parent?: Feature, id?: string) {
-    this.ncFeature = ncFeature
+  private uniqueId: string
+
+  constructor(
+    private ncFeature: any,
+    parent?: Feature,
+    id?: string,
+  ) {
     this.uniqueId = id || ncFeature.id()
     this.parentHandle = parent
   }

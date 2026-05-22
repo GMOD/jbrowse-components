@@ -11,7 +11,6 @@ import {
   isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { blockToRegion } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
   getParentRenderProps,
@@ -42,7 +41,7 @@ import type { LegendItem } from './components/FloatingLegend.tsx'
 import type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { Theme } from '@mui/material'
 
@@ -319,10 +318,10 @@ function stateModelFactory() {
       /**
        * #action
        */
-      addBlock(key: string, block: ContentBlock) {
+      addBlock(key: string, block: BaseBlock) {
         const blockInstance = BlockState.create({
           key,
-          region: blockToRegion(block),
+          region: block.toRegion(),
         })
         // Set cached display BEFORE adding to map - afterAttach fires when
         // the block is added, so cachedDisplay must be set first

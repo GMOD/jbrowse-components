@@ -53,7 +53,8 @@ export async function downloadBookmarkFile(
       ? bookmarksWithValidAssemblies
       : selectedBookmarks
 
-  const { saveAs } = await import('@jbrowse/core/util')
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const { saveAs } = await import('file-saver-es')
 
   if (fileFormat === 'BED') {
     const fileHeader = ''

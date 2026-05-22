@@ -36,9 +36,10 @@ const VisibleFeatures = observer(function VisibleFeatures({
       const sessionId = getRpcSessionId(track)
       const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
         adapterConfig,
+        sessionId,
         regions: view.coarseDynamicBlocks,
       })
-      setFeatures(feats)
+      setFeatures(feats as Feature[])
     })()
   }, [rpcManager, view.initialized, view.coarseDynamicBlocks, view.tracks])
   return (

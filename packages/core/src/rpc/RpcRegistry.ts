@@ -51,7 +51,6 @@ export interface RpcRegistry {
       regions: RegionLike[]
       stopToken?: StopToken
       headers?: Record<string, string>
-      statusCallback?: (arg: string) => void
     }
     return: FeatureDensityStats
   }

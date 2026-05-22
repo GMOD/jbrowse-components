@@ -1,7 +1,7 @@
-import { parseCigar2 } from '@jbrowse/cigar-utils'
 import { max, sum } from '@jbrowse/core/util'
 
 import { createEmptyBin, incWithProbabilities } from './util.ts'
+import { parseCigar2 } from '../MismatchParser/index.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
 
 import type { ColorBy, PreBaseCoverageBin } from '../shared/types.ts'

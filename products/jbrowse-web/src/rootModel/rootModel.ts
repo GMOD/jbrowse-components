@@ -482,7 +482,8 @@ export default function RootModel({
                   icon: GetAppIcon,
                   onClick: async () => {
                     if (self.session) {
-                      const { saveAs } = await import('@jbrowse/core/util')
+                      // eslint-disable-next-line @typescript-eslint/no-deprecated
+                      const { saveAs } = await import('file-saver-es')
 
                       saveAs(
                         new Blob(
@@ -496,6 +497,7 @@ export default function RootModel({
                           { type: 'text/plain;charset=utf-8' },
                         ),
                         'session.json',
+                        { autoBom: false },
                       )
                     }
                   },

@@ -2,10 +2,8 @@ const baseConfig = {
   moduleNameMapper: {
     '^@jbrowse/core/util/useMeasure$':
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
-    '^.*/AutoSizer\\.tsx$': '<rootDir>/packages/__mocks__/AutoSizer.ts',
     '^@jbrowse/text-indexing-core$':
       '<rootDir>/packages/text-indexing-core/src/index.ts',
-    '^swr$': '<rootDir>/packages/__mocks__/swr.ts',
   },
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.cjs',
@@ -16,9 +14,7 @@ const baseConfig = {
     '\\.module\\.(css|sass|scss)$',
   ],
   collectCoverageFrom: [
-    'packages/*/src/**/*.{js,jsx,ts,tsx}',
-    'products/*/src/**/*.{js,jsx,ts,tsx}',
-    'plugins/*/src/**/*.{js,jsx,ts,tsx}',
+    '{packages,products,plugins}/*/src/**/*.{js,jsx,ts,tsx}',
   ],
   coveragePathIgnorePatterns: [
     '!*.d.ts',
@@ -38,7 +34,6 @@ const baseConfig = {
 }
 
 export default {
-  maxWorkers: '25%',
   projects: [
     {
       // Root-level integration test
@@ -59,9 +54,7 @@ export default {
       // All other tests use jsdom with jest-fetch-mock
       displayName: 'default',
       testMatch: [
-        '<rootDir>/packages/**/*.test.{ts,tsx,js,jsx}',
-        '<rootDir>/products/**/*.test.{ts,tsx,js,jsx}',
-        '<rootDir>/plugins/**/*.test.{ts,tsx,js,jsx}',
+        '<rootDir>/{packages,products,plugins}/**/*.test.{ts,tsx,js,jsx}',
       ],
       testPathIgnorePatterns: [
         '/dist/',
@@ -70,10 +63,7 @@ export default {
         '<rootDir>/products/jbrowse-img/',
       ],
       testEnvironment: 'jsdom',
-      setupFilesAfterEnv: [
-        '<rootDir>/config/jest/fetchMockAfterEnv.js',
-        '<rootDir>/config/jest/deterministicIds.js',
-      ],
+      setupFilesAfterEnv: ['<rootDir>/config/jest/fetchMockAfterEnv.js'],
       ...baseConfig,
     },
   ],

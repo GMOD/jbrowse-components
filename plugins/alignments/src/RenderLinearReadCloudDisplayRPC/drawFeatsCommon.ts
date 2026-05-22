@@ -21,7 +21,7 @@ import type {
 } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
 interface ViewForDrawing {
@@ -294,7 +294,7 @@ export interface DrawFeatsParams {
   trackMaxHeight?: number
   config: AnyConfigurationModel
   theme: ThemeOptions
-  regions: ContentBlock[]
+  regions: BaseBlock[]
   bpPerPx: number
   canvasWidth: number
   stopTokenCheck?: LastStopTokenCheck

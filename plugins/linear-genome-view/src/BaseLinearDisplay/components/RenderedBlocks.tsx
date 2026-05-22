@@ -36,7 +36,7 @@ const RenderedBlocks = observer(function RenderedBlocks({
       )
     } else if (block.type === 'ElidedBlock') {
       return <ElidedBlockComponent key={key} width={block.widthPx} />
-    } else {
+    } else if (block.type === 'InterRegionPaddingBlock') {
       return (
         <InterRegionPaddingBlockComponent
           key={key}

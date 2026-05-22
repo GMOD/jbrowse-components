@@ -4,17 +4,12 @@ import { getEnv } from '../util/index.ts'
 import { stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
 
-import type {
-  IAnyComplexType,
-  IAnyModelType,
-  IAnyType,
-} from '@jbrowse/mobx-state-tree'
+import type { IAnyComplexType, IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 function isValidColorString(_str: string) {
-  // placeholder — all strings accepted; real CSS validation can be added later
   return true
 }
-const typeModels: Record<string, IAnyType> = {
+const typeModels: Record<string, any> = {
   stringArray: types.array(types.string),
   stringArrayMap: types.map(types.array(types.string)),
   numberMap: types.map(types.number),
@@ -29,7 +24,7 @@ const typeModels: Record<string, IAnyType> = {
 }
 
 // default values we use if the defaultValue is malformed or does not work
-const fallbackDefaults: Record<string, unknown> = {
+const fallbackDefaults: Record<string, any> = {
   stringArray: [],
   stringArrayMap: {},
   numberMap: {},
@@ -43,7 +38,7 @@ const fallbackDefaults: Record<string, unknown> = {
   frozen: {},
 }
 
-const literalJSON = (self: { value: unknown }) => ({
+const literalJSON = (self: { value: any }) => ({
   views: {
     get valueJSON() {
       return self.value
@@ -51,7 +46,7 @@ const literalJSON = (self: { value: unknown }) => ({
   },
 })
 
-const objectJSON = (self: { value: unknown }) => ({
+const objectJSON = (self: { value: any }) => ({
   views: {
     get valueJSON() {
       return JSON.stringify(self.value)
@@ -92,7 +87,7 @@ const typeModelExtensions: Record<string, (self: any) => any> = {
       },
     },
     actions: {
-      add(key: string, val: string[]) {
+      add(key: string, val: any) {
         self.value.set(key, val)
       },
       remove(key: string) {
@@ -138,6 +133,12 @@ const typeModelExtensions: Record<string, (self: any) => any> = {
   }),
 }
 
+// const FunctionStringType = types.refinement(
+//   'FunctionString',
+//   types.string,
+//   str => functionRegexp.test(str),
+// )
+
 const JexlStringType = types.refinement('JexlString', types.string, str =>
   str.startsWith('jexl:'),
 )
@@ -152,7 +153,7 @@ export interface ConfigSlotDefinition {
   /** name of the type of slot, e.g. "string", "number", "stringArray" */
   type: string
   /** default value of the slot */
-  defaultValue: unknown
+  defaultValue: any
   /** parameter names of the function callback */
   contextVariable?: string[]
 }
@@ -176,7 +177,9 @@ export default function ConfigSlot(
   if (!type) {
     throw new Error('type name required')
   }
-  model ??= typeModels[type]
+  if (!model) {
+    model = typeModels[type]
+  }
   if (!model) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
@@ -197,10 +200,6 @@ export default function ConfigSlot(
     })
     .volatile(() => ({
       contextVariable,
-      // editor-mode override: 'callback' or 'value' once the user has
-      // explicitly toggled or started typing. undefined means "follow
-      // isCallback" (i.e. derive from the value's prefix on first read).
-      editorModeOverride: undefined as 'callback' | 'value' | undefined,
     }))
     .views(self => ({
       get isCallback() {
@@ -208,38 +207,34 @@ export default function ConfigSlot(
       },
     }))
     .views(self => ({
-      get editorIsCallback() {
-        return self.editorModeOverride === undefined
-          ? self.isCallback
-          : self.editorModeOverride === 'callback'
-      },
       get expr() {
-        const code = String(self.value)
-        return self.isCallback && code.length > 'jexl:'.length
-          ? stringToJexlExpression(code, getEnv(self).pluginManager.jexl)
+        return self.isCallback
+          ? stringToJexlExpression(
+              String(self.value),
+              getEnv(self).pluginManager.jexl,
+            )
           : {
-              eval: (_arg?: unknown) => self.value,
+              eval: () => self.value,
             }
       },
 
       // JS representation of the value of this slot, suitable
       // for embedding in either JSON or a JS function string.
       // many of the data types override this in typeModelExtensions
-      get valueJSON():
-        | unknown[]
-        | Record<string, unknown>
-        | string
-        | undefined {
+      get valueJSON(): any[] | Record<string, any> | string | undefined {
         return self.isCallback ? undefined : json(self.value)
       },
     }))
     .views(self => ({
+      // Resolve the slot value, evaluating jexl if needed
       getValue(args: Record<string, unknown> = {}) {
-        return self.isCallback ? self.expr.eval(args) : self.value
+        const v = self.value
+        return typeof v === 'string' && v.startsWith('jexl:')
+          ? self.expr.eval(args)
+          : v
       },
     }))
     .preProcessSnapshot(val =>
-      // already the full slot shape (e.g. loaded from saved session)
       typeof val === 'object' && val.name === slotName
         ? val
         : {
@@ -258,26 +253,19 @@ export default function ConfigSlot(
       return snap.value !== defaultValue ? snap.value : undefined
     })
     .actions(self => ({
-      set(newVal: unknown) {
-        // pin the editor mode on first user input so that typing a "jexl:"
-        // prefix into a value field doesn't auto-swap to the callback editor
-        self.editorModeOverride ??= self.isCallback ? 'callback' : 'value'
+      set(newVal: any) {
         self.value = newVal
       },
       reset() {
         self.value = defaultValue
-        self.editorModeOverride = undefined
       },
       convertToCallback() {
-        self.editorModeOverride = 'callback'
         if (self.isCallback) {
           return
         }
-        // ?? not || so that falsy values like false/0 are preserved
-        self.value = `jexl:${self.valueJSON ?? "''"}`
+        self.value = `jexl:${self.valueJSON || "''"}`
       },
       convertToValue() {
-        self.editorModeOverride = 'value'
         if (!self.isCallback) {
           return
         }
@@ -292,17 +280,13 @@ export default function ConfigSlot(
           /* ignore */
         }
         self.value = defaultValue
-        // if defaultValue is also a jexl callback, fall back to the
-        // hardcoded type default
-        if (
-          typeof defaultValue === 'string' &&
-          defaultValue.startsWith('jexl:')
-        ) {
-          if (!(type in fallbackDefaults)) {
-            throw new Error(`no fallbackDefault defined for type ${type}`)
-          }
-          self.value = fallbackDefaults[type]
+        // if it is still a callback (happens if the defaultValue is a
+        // callback), then use the last-resort fallback default
+        // if defaultValue has jexl: string, run this part
+        if (!(type in fallbackDefaults)) {
+          throw new Error(`no fallbackDefault defined for type ${type}`)
         }
+        self.value = fallbackDefaults[type]
       },
     }))
 

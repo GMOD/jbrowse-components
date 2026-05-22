@@ -194,7 +194,8 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         </Button>
         <Button
           onClick={async () => {
-            const { saveAs } = await import('@jbrowse/core/util')
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
+            const { saveAs } = await import('file-saver-es')
             saveAs(
               new Blob([sequence || ''], {
                 type: 'text/x-fasta;charset=utf-8',

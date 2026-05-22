@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -9,12 +9,21 @@ const NumberEditor = observer(function NumberEditor({
 }: {
   slot: {
     name?: string
-    value: number
+    value: string
     description?: string
     set: (val: number) => void
+    reset?: () => void
   }
 }) {
-  const [val, setVal] = useState(String(slot.value))
+  const [val, setVal] = useState(slot.value)
+  useEffect(() => {
+    const num = Number.parseFloat(val)
+    if (Number.isNaN(num)) {
+      slot.reset?.()
+    } else {
+      slot.set(num)
+    }
+  }, [slot, val])
   return (
     <ConfigurationTextField
       label={slot.name}
@@ -22,12 +31,7 @@ const NumberEditor = observer(function NumberEditor({
       value={val}
       type="number"
       onChange={evt => {
-        const v = evt.target.value
-        setVal(v)
-        const num = Number.parseFloat(v)
-        if (!Number.isNaN(num)) {
-          slot.set(num)
-        }
+        setVal(evt.target.value)
       }}
     />
   )

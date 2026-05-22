@@ -212,6 +212,9 @@ export async function storeFileHandleLocation(
   }
 }
 
+// Helper to restore file handles from a list of handleIds
+// Call this on app startup or when restoring a session
+// Returns an array of { handleId, success, error? } results
 export async function restoreFileHandles(
   handleIds: string[],
   requestPermission = false,
@@ -228,6 +231,7 @@ export async function restoreFileHandles(
   return results
 }
 
+// Recursively find all FileHandleLocation handleIds in a session snapshot
 export function findFileHandleIds(
   obj: unknown,
   handleIds = new Set<string>(),
@@ -261,6 +265,8 @@ export function findFileHandleIds(
   return handleIds
 }
 
+// Restore all file handles found in a session snapshot
+// Call this before setSession to ensure files are available
 export async function restoreFileHandlesFromSnapshot(
   sessionSnapshot: unknown,
   requestPermission = false,
@@ -272,6 +278,7 @@ export async function restoreFileHandlesFromSnapshot(
   return []
 }
 
+// Track pending file handle IDs that failed to restore and need user gesture
 let pendingFileHandleIds: string[] = []
 
 export function getPendingFileHandleIds() {
@@ -280,6 +287,10 @@ export function getPendingFileHandleIds() {
 
 export function setPendingFileHandleIds(ids: string[]) {
   pendingFileHandleIds = ids
+}
+
+export function clearPendingFileHandleIds() {
+  pendingFileHandleIds = []
 }
 
 // Call this from a user gesture (button click) to restore pending file handles

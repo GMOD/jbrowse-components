@@ -4,6 +4,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export function getDisplayStr(totalBytes: number) {
   if (Math.floor(totalBytes / 1000000) > 0) {
@@ -40,19 +41,16 @@ export async function getFeatureDensityStatsPre(self: {
   } else {
     const sessionId = getRpcSessionId(self)
 
-    return rpcManager.call(
+    return rpcManager.call(sessionId, 'CoreGetFeatureDensityStats', {
       sessionId,
-      'CoreGetFeatureDensityStats',
-      {
-        regions,
-        adapterConfig,
-        statusCallback: (message: string) => {
-          if (isAlive(self)) {
-            self.setStatusMessage(message)
-          }
-        },
+      regions,
+      adapterConfig,
+      rpcDriverName: effectiveRpcDriverName,
+      statusCallback: (message: string) => {
+        if (isAlive(self)) {
+          self.setStatusMessage(message)
+        }
       },
-      { rpcDriverName: effectiveRpcDriverName },
-    )
+    }) as Promise<FeatureDensityStats>
   }
 }

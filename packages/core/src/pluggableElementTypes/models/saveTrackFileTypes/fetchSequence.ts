@@ -20,7 +20,8 @@ export async function fetchSequence({
     adapterConfig: getConf(assembly, ['sequence', 'adapter']),
     region: {
       ...region,
-      refName: assembly.getCanonicalRefName2(region.refName),
+      refName: assembly.getCanonicalRefName(region.refName),
     },
-  })
+    sessionId,
+  }) as Promise<string | undefined>
 }

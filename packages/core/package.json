@@ -31,10 +31,9 @@
     "./BaseFeatureWidget/BaseFeatureDetail/SimpleField": "./src/BaseFeatureWidget/BaseFeatureDetail/SimpleField.tsx",
     "./configuration": "./src/configuration/index.ts",
     "./data_adapters/BaseAdapter": "./src/data_adapters/BaseAdapter/index.ts",
+    "./data_adapters/BaseAdapter/BaseOptions": "./src/data_adapters/BaseAdapter/BaseOptions.ts",
     "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
-    "./data_adapters/BaseAdapter/types": "./src/data_adapters/BaseAdapter/types.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
-    "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
@@ -100,11 +99,9 @@
     "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
     "./util/calculateStaticBlocks": "./src/util/calculateStaticBlocks.ts",
     "./util/color": "./src/util/color/index.ts",
-    "./util/colorBits": "./src/util/colorBits.ts",
     "./util/colord": "./src/util/colord.ts",
     "./util/compositeMap": "./src/util/compositeMap.ts",
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
-    "./util/FileSaver": "./src/util/FileSaver/index.ts",
     "./util/flatbush": "./src/util/flatbush/index.ts",
     "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
     "./util/io": "./src/util/io/index.ts",
@@ -129,15 +126,14 @@
     "./util/tss-react": "./src/util/tss-react/index.ts",
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
-    "./util/useGpuModelLifecycle": "./src/util/useGpuModelLifecycle.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./util/nanoid": "./src/util/nanoid.ts",
     "./ReExports/list": "./src/ReExports/list.ts",
     "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
+    "./util/FileSaver": "./src/util/FileSaver/index.ts",
     "./util/tss-react/types": "./src/util/tss-react/types.ts",
-    "./configuration/configurationSchema": "./src/configuration/configurationSchema.ts",
-    "./data_adapters/BaseAdapter/getAdapterId": "./src/data_adapters/BaseAdapter/getAdapterId.ts"
+    "./configuration/configurationSchema": "./src/configuration/configurationSchema.ts"
   },
   "files": [
     "esm"
@@ -189,8 +185,6 @@
     "react-draggable": "^4.5.0",
     "rxjs": "^7.8.2",
     "source-map-js": "^1.2.1",
-    "base64-js": "^1.5.1",
-    "pako-esm2": "^2.0.2",
     "swr": "^2.4.1"
   },
   "peerDependencies": {
@@ -244,21 +238,17 @@
         "types": "./esm/data_adapters/BaseAdapter/index.d.ts",
         "import": "./esm/data_adapters/BaseAdapter/index.js"
       },
+      "./data_adapters/BaseAdapter/BaseOptions": {
+        "types": "./esm/data_adapters/BaseAdapter/BaseOptions.d.ts",
+        "import": "./esm/data_adapters/BaseAdapter/BaseOptions.js"
+      },
       "./data_adapters/BaseAdapter/stats": {
         "types": "./esm/data_adapters/BaseAdapter/stats.d.ts",
         "import": "./esm/data_adapters/BaseAdapter/stats.js"
       },
-      "./data_adapters/BaseAdapter/types": {
-        "types": "./esm/data_adapters/BaseAdapter/types.d.ts",
-        "import": "./esm/data_adapters/BaseAdapter/types.js"
-      },
       "./data_adapters/dataAdapterCache": {
         "types": "./esm/data_adapters/dataAdapterCache.d.ts",
         "import": "./esm/data_adapters/dataAdapterCache.js"
-      },
-      "./gpu/renderBlock": {
-        "types": "./esm/gpu/renderBlock.d.ts",
-        "import": "./esm/gpu/renderBlock.js"
       },
       "./pluggableElementTypes": {
         "types": "./esm/pluggableElementTypes/index.d.ts",
@@ -520,10 +510,6 @@
         "types": "./esm/util/color/index.d.ts",
         "import": "./esm/util/color/index.js"
       },
-      "./util/colorBits": {
-        "types": "./esm/util/colorBits.d.ts",
-        "import": "./esm/util/colorBits.js"
-      },
       "./util/colord": {
         "types": "./esm/util/colord.d.ts",
         "import": "./esm/util/colord.js"
@@ -535,10 +521,6 @@
       "./util/convertCodingSequenceToPeptides": {
         "types": "./esm/util/convertCodingSequenceToPeptides.d.ts",
         "import": "./esm/util/convertCodingSequenceToPeptides.js"
-      },
-      "./util/FileSaver": {
-        "types": "./esm/util/FileSaver/index.d.ts",
-        "import": "./esm/util/FileSaver/index.js"
       },
       "./util/flatbush": {
         "types": "./esm/util/flatbush/index.d.ts",
@@ -636,10 +618,6 @@
         "types": "./esm/util/types/mst.d.ts",
         "import": "./esm/util/types/mst.js"
       },
-      "./util/useGpuModelLifecycle": {
-        "types": "./esm/util/useGpuModelLifecycle.d.ts",
-        "import": "./esm/util/useGpuModelLifecycle.js"
-      },
       "./util/useMeasure": {
         "types": "./esm/util/useMeasure.d.ts",
         "import": "./esm/util/useMeasure.js"
@@ -660,6 +638,10 @@
         "types": "./esm/util/fileHandleStore.d.ts",
         "import": "./esm/util/fileHandleStore.js"
       },
+      "./util/FileSaver": {
+        "types": "./esm/util/FileSaver/index.d.ts",
+        "import": "./esm/util/FileSaver/index.js"
+      },
       "./util/tss-react/types": {
         "types": "./esm/util/tss-react/types.d.ts",
         "import": "./esm/util/tss-react/types.js"
@@ -667,10 +649,6 @@
       "./configuration/configurationSchema": {
         "types": "./esm/configuration/configurationSchema.d.ts",
         "import": "./esm/configuration/configurationSchema.js"
-      },
-      "./data_adapters/BaseAdapter/getAdapterId": {
-        "types": "./esm/data_adapters/BaseAdapter/getAdapterId.d.ts",
-        "import": "./esm/data_adapters/BaseAdapter/getAdapterId.js"
       }
     },
     "typesVersions": {
@@ -708,17 +686,14 @@
         "data_adapters/BaseAdapter": [
           "esm/data_adapters/BaseAdapter/index.d.ts"
         ],
+        "data_adapters/BaseAdapter/BaseOptions": [
+          "esm/data_adapters/BaseAdapter/BaseOptions.d.ts"
+        ],
         "data_adapters/BaseAdapter/stats": [
           "esm/data_adapters/BaseAdapter/stats.d.ts"
         ],
-        "data_adapters/BaseAdapter/types": [
-          "esm/data_adapters/BaseAdapter/types.d.ts"
-        ],
         "data_adapters/dataAdapterCache": [
           "esm/data_adapters/dataAdapterCache.d.ts"
-        ],
-        "gpu/renderBlock": [
-          "esm/gpu/renderBlock.d.ts"
         ],
         "pluggableElementTypes": [
           "esm/pluggableElementTypes/index.d.ts"
@@ -915,9 +890,6 @@
         "util/color": [
           "esm/util/color/index.d.ts"
         ],
-        "util/colorBits": [
-          "esm/util/colorBits.d.ts"
-        ],
         "util/colord": [
           "esm/util/colord.d.ts"
         ],
@@ -926,9 +898,6 @@
         ],
         "util/convertCodingSequenceToPeptides": [
           "esm/util/convertCodingSequenceToPeptides.d.ts"
-        ],
-        "util/FileSaver": [
-          "esm/util/FileSaver/index.d.ts"
         ],
         "util/flatbush": [
           "esm/util/flatbush/index.d.ts"
@@ -1002,9 +971,6 @@
         "util/types/mst": [
           "esm/util/types/mst.d.ts"
         ],
-        "util/useGpuModelLifecycle": [
-          "esm/util/useGpuModelLifecycle.d.ts"
-        ],
         "util/useMeasure": [
           "esm/util/useMeasure.d.ts"
         ],
@@ -1020,14 +986,14 @@
         "util/fileHandleStore": [
           "esm/util/fileHandleStore.d.ts"
         ],
+        "util/FileSaver": [
+          "esm/util/FileSaver/index.d.ts"
+        ],
         "util/tss-react/types": [
           "esm/util/tss-react/types.d.ts"
         ],
         "configuration/configurationSchema": [
           "esm/configuration/configurationSchema.d.ts"
-        ],
-        "data_adapters/BaseAdapter/getAdapterId": [
-          "esm/data_adapters/BaseAdapter/getAdapterId.d.ts"
         ]
       }
     }

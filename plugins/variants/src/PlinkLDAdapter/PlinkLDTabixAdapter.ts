@@ -215,4 +215,8 @@ export default class PlinkLDTabixAdapter extends BaseAdapter {
       mafB,
     }
   }
+
+  public freeResources(): void {
+    // nothing to free
+  }
 }

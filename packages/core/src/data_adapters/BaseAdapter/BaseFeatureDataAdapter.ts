@@ -6,11 +6,11 @@ import {
   aggregateQuantitativeStats,
   calculateFeatureDensityStats,
 } from './stats.ts'
+import { ObservableCreate } from '../../util/rxjs.ts'
 import { blankStats, scoresToStats } from '../../util/stats.ts'
 
-import type { BaseOptions } from './types.ts'
+import type { BaseOptions } from './BaseOptions.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
-import type { RectifiedQuantitativeStats } from '../../util/stats.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
 
 /**
@@ -78,28 +78,39 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   }
 
   /**
-   * Alias for getFeatures, retained because it is called from many sites
-   * across the codebase. Previously did an upfront hasDataForRefName check
-   * before fetching, but every modern indexed adapter (BigWig, Tabix, BAM,
-   * CRAM, etc.) already returns nothing for missing ref names, so the extra
-   * await per region just doubled the metadata round-trips.
+   * Checks if the store has data for the given assembly and reference
+   * sequence, and then gets the features in the region if it does.
    */
-  public getFeaturesInRegion(
-    region: Region,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
-    return this.getFeatures(region, opts)
+  public getFeaturesInRegion(region: Region, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async observer => {
+      const hasData = await this.hasDataForRefName(region.refName, opts)
+      if (!hasData) {
+        observer.complete()
+      } else {
+        this.getFeatures(region, opts).subscribe(observer)
+      }
+    })
   }
 
   /**
-   * Adapters that are frequently called on multiple regions simultaneously
-   * may want to implement a more efficient custom version of this method.
+   * Checks if the store has data for the given assembly and reference
+   * sequence, and then gets the features in the region if it does.
+   *
+   * Currently this just calls getFeatureInRegion for each region. Adapters that
+   * are frequently called on multiple regions simultaneously may want to
+   * implement a more efficient custom version of this method.
+   *
+   * @param regions - Regions
+   * @param opts - Feature adapter options
+   * @returns Observable of Feature objects in the regions
    */
   public getFeaturesInMultipleRegions(
     regions: Region[],
     opts: BaseOptions = {},
   ) {
-    return merge(...regions.map(region => this.getFeatures(region, opts)))
+    return merge(
+      ...regions.map(region => this.getFeaturesInRegion(region, opts)),
+    )
   }
 
   /**
@@ -110,16 +121,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   public async hasDataForRefName(refName: string, opts: BaseOptions = {}) {
     const refNames = await this.getRefNames(opts)
     return refNames.includes(refName)
-  }
-
-  /**
-   * Calculates global statistics across the entire dataset.
-   * Adapters with precomputed global stats (e.g. BigWig) should override this.
-   */
-  public async getGlobalStats(
-    _opts?: BaseOptions,
-  ): Promise<Partial<RectifiedQuantitativeStats> | undefined> {
-    return undefined
   }
 
   /**
@@ -181,9 +182,10 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     regions: Region[],
     opts?: BaseOptions,
   ) {
-    return regions[0]
-      ? this.getRegionFeatureDensityStats(regions[0], opts)
-      : { featureDensity: 0 }
+    if (!regions.length) {
+      throw new Error('No regions supplied')
+    }
+    return this.getRegionFeatureDensityStats(regions[0]!, opts)
   }
 
   async getSources(

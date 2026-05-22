@@ -116,7 +116,7 @@ const HicCanvas = observer(function HicCanvas({
 
   // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(
-    () => (flatbush ? Flatbush.from(flatbush as ArrayBuffer) : null),
+    () => (flatbush ? Flatbush.from(flatbush) : null),
     [flatbush],
   )
 

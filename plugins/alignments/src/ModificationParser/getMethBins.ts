@@ -1,7 +1,6 @@
-import { getNextRefPos } from '@jbrowse/cigar-utils'
-
 import { getModPositions } from './getModPositions.ts'
 import { getModProbabilities } from './getModProbabilities.ts'
+import { getNextRefPos } from '../MismatchParser/index.ts'
 import { getTagAlt } from '../util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -12,10 +11,10 @@ export function getMethBins(feature: Feature, cigarOps: ArrayLike<number>) {
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const flen = fend - fstart
   const mm = (getTagAlt(feature, 'MM', 'Mm') as string | undefined) || ''
-  const methBins: number[] = []
-  const hydroxyMethBins: number[] = []
-  const methProbs: number[] = []
-  const hydroxyMethProbs: number[] = []
+  const methBins = []
+  const hydroxyMethBins = []
+  const methProbs = []
+  const hydroxyMethProbs = []
   const seq = feature.get('seq') as string | undefined
   if (seq) {
     const probabilities = getModProbabilities(feature)
@@ -23,14 +22,19 @@ export function getMethBins(feature: Feature, cigarOps: ArrayLike<number>) {
     let probIndex = 0
 
     for (const { type, positions } of modifications) {
-      getNextRefPos(cigarOps, positions, (ref, idx) => {
+      for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
+        // Skip positions outside the feature bounds
         if (ref < 0 || ref >= flen) {
-          return
+          continue
         }
+
+        // Calculate probability index based on strand
         const isReverseStrand = fstrand === -1
         const idx2 =
           probIndex + (isReverseStrand ? positions.length - 1 - idx : idx)
         const prob = probabilities?.[idx2] || 0
+
+        // Store modification data in appropriate bins
         if (type === 'm') {
           methBins[ref] = 1
           methProbs[ref] = prob
@@ -38,7 +42,7 @@ export function getMethBins(feature: Feature, cigarOps: ArrayLike<number>) {
           hydroxyMethBins[ref] = 1
           hydroxyMethProbs[ref] = prob
         }
-      })
+      }
       probIndex += positions.length
     }
   }

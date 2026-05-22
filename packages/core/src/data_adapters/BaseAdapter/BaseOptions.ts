@@ -5,9 +5,9 @@ export interface BaseOptions {
   bpPerPx?: number
   sessionId?: string
   trackInstanceId?: string
-  signal?: AbortSignal
   statusCallback?: (message: string) => void
   headers?: Record<string, string>
+  statsEstimationMode?: boolean
 }
 
 export type SearchType = 'full' | 'prefix' | 'exact'
@@ -18,10 +18,4 @@ export interface BaseTextSearchArgs {
   stopToken?: StopToken
   limit?: number
   pageNumber?: number
-}
-
-export interface FeatureDensityStats {
-  featureDensity?: number
-  fetchSizeLimit?: number
-  bytes?: number
 }

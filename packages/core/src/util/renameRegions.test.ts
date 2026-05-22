@@ -33,17 +33,10 @@ async function renameRegion(
   seqAdapterRefNameMap?: Record<string, string>,
 ) {
   const result = await renameRegionsIfNeeded(
-    mockAssemblyManager({
-      refNameMap,
-      seqAdapterRefNameMap,
-    }),
-    {
-      adapterConfig: {},
-      sessionId: 'test',
-      regions: [region],
-    },
+    mockAssemblyManager({ refNameMap, seqAdapterRefNameMap }),
+    { adapterConfig: {}, sessionId: 'test', regions: [region] },
   )
-  return result.regions[0]!
+  return result.regions[0]! as Region & { originalRefName?: string }
 }
 
 test('renameRegionIfNeeded renames refName and stores original', () => {

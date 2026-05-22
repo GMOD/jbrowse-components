@@ -54,7 +54,7 @@ describe('block calculation', () => {
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
     })
-    expect(blockSet.blocks).toEqual([])
+    expect(blockSet.getBlocks()).toEqual([])
   })
 
   it('can calculate some blocks (should be empty because offscreen to the left)', () => {
@@ -69,7 +69,7 @@ describe('block calculation', () => {
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
     })
-    expect(blockSet.blocks).toEqual([])
+    expect(blockSet.getBlocks()).toEqual([])
   })
 
   it('can calculate some blocks 5', () => {
@@ -215,29 +215,35 @@ describe('reversed displayed regions', () => {
     expect(blocks).toMatchSnapshot()
   })
   test('with elided region', () => {
-    const blocks = calculateBlocks({
-      bpPerPx: 1,
-      width: 800,
-      offsetPx: 0,
-      minimumBlockWidth: 2,
-      displayedRegions: [
-        {
-          assemblyName: 'test',
-          refName: 'ctgA',
-          start: 0,
-          end: 1,
-          reversed: true,
-        },
-        {
-          assemblyName: 'test',
-          refName: 'ctgA',
-          start: 0,
-          end: 10000,
-          reversed: true,
-        },
-      ],
-      interRegionPaddingWidth: 2,
-    })
+    const blocks = calculateBlocks(
+      {
+        bpPerPx: 1,
+        width: 800,
+        offsetPx: 0,
+        minimumBlockWidth: 2,
+        displayedRegions: [
+          {
+            assemblyName: 'test',
+            refName: 'ctgA',
+            start: 0,
+            end: 1,
+            reversed: true,
+          },
+          {
+            assemblyName: 'test',
+            refName: 'ctgA',
+            start: 0,
+            end: 10000,
+            reversed: true,
+          },
+        ],
+        interRegionPaddingWidth: 2,
+      },
+      true,
+      true,
+      1,
+      800,
+    )
     expect(blocks).toMatchSnapshot()
   })
 })

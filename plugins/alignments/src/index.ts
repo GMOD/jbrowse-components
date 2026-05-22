@@ -54,3 +54,4 @@ export {
   linearPileupDisplayStateModelFactory,
 } from './LinearPileupDisplay/index.ts'
 export { type LinearPileupDisplayModel } from './LinearPileupDisplay/model.ts'
+export * as MismatchParser from './MismatchParser/index.ts'

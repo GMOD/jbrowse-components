@@ -1,5 +1,4 @@
-import { getNextRefPos } from '@jbrowse/cigar-utils'
-
+import { getNextRefPos } from '../MismatchParser/index.ts'
 import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { getModProbabilities } from '../ModificationParser/getModProbabilities.ts'
 import { getTagAlt } from '../util.ts'
@@ -26,7 +25,7 @@ export function getMaxProbModAtEachPosition(
 
     let probIndex = 0
     for (const { type, positions } of modifications) {
-      getNextRefPos(ops, positions, (ref, idx) => {
+      for (const { ref, idx } of getNextRefPos(ops, positions)) {
         const prob =
           probabilities?.[
             probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
@@ -45,7 +44,7 @@ export function getMaxProbModAtEachPosition(
             type: old.prob > prob ? old.type : type,
           }
         }
-      })
+      }
       probIndex += positions.length
     }
     return maxProbModForPosition

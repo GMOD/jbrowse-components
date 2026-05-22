@@ -44,12 +44,14 @@ export default function SVGHeader({
   const last = visibleRegions.at(-1)!
   const firstOverviewPx =
     overview.bpToPx({
+      // eslint-disable-next-line @typescript-eslint/no-misused-spread
       ...first,
       coord: first.reversed ? first.end : first.start,
     }) || 0
 
   const lastOverviewPx =
     overview.bpToPx({
+      // eslint-disable-next-line @typescript-eslint/no-misused-spread
       ...last,
       coord: last.reversed ? last.start : last.end,
     }) || 0

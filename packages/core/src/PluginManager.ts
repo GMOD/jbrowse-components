@@ -385,7 +385,8 @@ export default class PluginManager {
   ) {
     const pluggableTypes = this.getElementTypeRecord(groupName)
       .all()
-      .map(t => (t as unknown as Record<string, unknown>)[fieldName])
+      // @ts-expect-error
+      .map(t => t[fieldName])
       .filter(t => isType(t) && isModelType(t)) as IAnyType[]
 
     // try to smooth over the case when no types are registered, mostly
@@ -406,7 +407,8 @@ export default class PluginManager {
   ) {
     const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
-      .map(t => (t as unknown as Record<string, unknown>)[fieldName])
+      // @ts-expect-error
+      .map(t => t[fieldName])
       .filter(t => isBareConfigurationSchemaType(t)) as IAnyType[]
 
     if (pluggableTypes.length === 0) {

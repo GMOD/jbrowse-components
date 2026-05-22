@@ -47,7 +47,7 @@ export default class Flatbush {
   byteOffset: number
   ArrayType: TypedArrayConstructor
   IndexArrayType: Uint16ArrayConstructor | Uint32ArrayConstructor
-  data: ArrayBuffer
+  data: ArrayBufferLike
   minX: number
   minY: number
   maxX: number
@@ -59,9 +59,9 @@ export default class Flatbush {
   private _queue: FlatQueue<number>
 
   /**
-   * Recreate a Flatbush index from raw `ArrayBuffer` data.
+   * Recreate a Flatbush index from raw `ArrayBuffer` or `SharedArrayBuffer` data.
    */
-  static from(data: ArrayBuffer, byteOffset = 0): Flatbush {
+  static from(data: ArrayBufferLike, byteOffset = 0): Flatbush {
     if (byteOffset % 8 !== 0) {
       throw new Error('byteOffset must be 8-byte aligned.')
     }
@@ -106,8 +106,10 @@ export default class Flatbush {
     numItems: number,
     nodeSize = 16,
     ArrayType: TypedArrayConstructor = Float64Array,
-    ArrayBufferType: ArrayBufferConstructor = ArrayBuffer,
-    data?: ArrayBuffer,
+    ArrayBufferType:
+      | ArrayBufferConstructor
+      | SharedArrayBufferConstructor = ArrayBuffer,
+    data?: ArrayBufferLike,
     byteOffset = 0,
   ) {
     if (isNaN(numItems) || numItems <= 0) {
@@ -141,9 +143,13 @@ export default class Flatbush {
 
     if (data) {
       this.data = data
-      this._boxes = new ArrayType(data, byteOffset + 8, numNodes * 4)
+      this._boxes = new ArrayType(
+        data as ArrayBuffer,
+        byteOffset + 8,
+        numNodes * 4,
+      ) as TypedArray
       this._indices = new this.IndexArrayType(
-        data,
+        data as ArrayBuffer,
         byteOffset + 8 + nodesByteSize,
         numNodes,
       )
@@ -157,9 +163,13 @@ export default class Flatbush {
       const newData = (this.data = new ArrayBufferType(
         8 + nodesByteSize + numNodes * this.IndexArrayType.BYTES_PER_ELEMENT,
       ))
-      this._boxes = new ArrayType(newData, 8, numNodes * 4)
+      this._boxes = new ArrayType(
+        newData as ArrayBuffer,
+        8,
+        numNodes * 4,
+      ) as TypedArray
       this._indices = new this.IndexArrayType(
-        newData,
+        newData as ArrayBuffer,
         8 + nodesByteSize,
         numNodes,
       )

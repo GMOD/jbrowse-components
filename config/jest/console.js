@@ -20,9 +20,7 @@ console.error = (...args) => {
 console.warn = (...args) => {
   if (
     typeof args[0] === 'string' &&
-    (args[0].includes(
-      'The `anchorEl` prop provided to the component is invalid',
-    ) ||
+    (args[0].includes('The `anchorEl` prop provided to the component is invalid') ||
       args[0].includes('unable to determine size of file'))
   ) {
     return undefined

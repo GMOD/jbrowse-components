@@ -1,15 +1,15 @@
 import fs from 'fs'
 import path from 'path'
 
-import { saveAs } from '@jbrowse/core/util/FileSaver'
 import { screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import { saveAs } from 'file-saver-es'
 
 import { createView, doBeforeEach, hts, setup } from './util.tsx'
 
-jest.mock('@jbrowse/core/util/FileSaver', () => {
+jest.mock('file-saver-es', () => {
   return {
-    ...jest.requireActual('@jbrowse/core/util/FileSaver'),
+    ...jest.requireActual('file-saver-es'),
     saveAs: jest.fn(),
   }
 })
@@ -18,6 +18,8 @@ setup()
 
 beforeEach(() => {
   doBeforeEach()
+  // this is a false positive
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   ;(saveAs as unknown as jest.Mock).mockClear()
 })
 
@@ -77,9 +79,13 @@ test.each([
     await user.click(await screen.findByText('Download'))
 
     await waitFor(() => {
+      // this is a false positive
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(saveAs).toHaveBeenCalled()
     }, delay)
 
+    // this is a false positive
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const call = (saveAs as unknown as jest.Mock).mock.calls[0]
     const blob = call[0] as Blob
     const filename = call[1] as string

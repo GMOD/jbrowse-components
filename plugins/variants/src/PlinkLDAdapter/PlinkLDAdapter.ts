@@ -209,4 +209,8 @@ export default class PlinkLDAdapter extends BaseAdapter {
       mafB,
     }
   }
+
+  public freeResources(): void {
+    // nothing to free
+  }
 }

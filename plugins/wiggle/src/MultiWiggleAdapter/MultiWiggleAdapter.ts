@@ -132,7 +132,8 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     const adapters = await this.getAdapters()
     const stats = (
       (await Promise.all(
-        adapters.map(adp => adp.dataAdapter.getGlobalStats(opts)),
+        // @ts-expect-error
+        adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
       )) as MaybeStats[]
     ).filter(f => !!f)
     return {
