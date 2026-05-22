@@ -1,7 +1,7 @@
 /// <reference types="@webgpu/types" />
 
 import { getDpr } from '../canvas2dUtils.ts'
-import { initGpuContext } from '../initGpuContext.ts'
+import { getGpuDevice } from '../getGpuDevice.ts'
 import {
   STANDARD_BLEND_STATE,
   createUniformOnlyBindGroup,
@@ -20,9 +20,12 @@ class ShaderCompileError extends Error {
 }
 
 // Maximum number of writeUniforms() calls per frame. Each call occupies one
-// aligned slot in the uniform ring buffer. 512 slots × 256-byte alignment =
-// 128 KB — negligible GPU memory for eliminating per-draw command submissions.
-const MAX_UNIFORM_SLOTS = 512
+// aligned slot in the uniform ring buffer. 2048 slots × 256-byte alignment =
+// 512 KB — trivial GPU memory, generous headroom (busy alignments tracks do
+// ~50 writes/frame). Exhausting it would silently drop draws; if we ever
+// hit the cap, switch to a dynamic-growth buffer (recreate buffer + every
+// region's bind group) rather than just bumping the constant again.
+const MAX_UNIFORM_SLOTS = 2048
 // Set to 1 to disable MSAA (e.g. to debug Firefox compositor stalls).
 // All render-pass, texture, and pipeline setup is conditioned on this value,
 // so changing it will not cause a mismatch.
@@ -211,8 +214,7 @@ export class WebGPUHal implements GpuHal {
   // dynamic offsets, enabling a single command encoder + submit per frame.
   private alignedUniformSize: number
   private uniformRingBuffer: GPUBuffer
-  private uniformStaging: ArrayBuffer
-  private uniformStagingU8: Uint8Array
+  private uniformStaging: Uint8Array
   private uniformSlot = 0
 
   // MSAA resolve texture — 4x multisampled render target
@@ -258,8 +260,7 @@ export class WebGPUHal implements GpuHal {
       size: ringSize,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
-    this.uniformStaging = new ArrayBuffer(ringSize)
-    this.uniformStagingU8 = new Uint8Array(this.uniformStaging)
+    this.uniformStaging = new Uint8Array(ringSize)
   }
 
   static async create(
@@ -267,20 +268,26 @@ export class WebGPUHal implements GpuHal {
     descriptors: PassDescriptor[],
     uniformByteSize: number,
   ) {
-    const result = await initGpuContext(canvas, { alphaMode: 'premultiplied' })
-    if (!result) {
+    const device = await getGpuDevice()
+    if (!device) {
       return null
     }
-    const layoutState = createLayoutState(result.device)
-    const pipelines = await compilePipelines(
-      result.device,
-      descriptors,
-      layoutState,
-    )
+    const context = canvas.getContext('webgpu')
+    if (!context) {
+      console.warn('[WebGPUHal] WebGPU device available but canvas context failed')
+      return null
+    }
+    context.configure({
+      device,
+      format: navigator.gpu.getPreferredCanvasFormat(),
+      alphaMode: 'premultiplied',
+    })
+    const layoutState = createLayoutState(device)
+    const pipelines = await compilePipelines(device, descriptors, layoutState)
     return new WebGPUHal(
-      result.device,
+      device,
       canvas,
-      result.context,
+      context,
       descriptors,
       uniformByteSize,
       pipelines,
@@ -493,12 +500,17 @@ export class WebGPUHal implements GpuHal {
       // Inside a frame: stage data at the current slot for batched upload
       if (this.uniformSlot >= MAX_UNIFORM_SLOTS) {
         console.error(
-          '[WebGPUHal] uniform ring buffer exhausted — increase MAX_UNIFORM_SLOTS',
+          `[WebGPUHal] uniform ring buffer exhausted at ${MAX_UNIFORM_SLOTS} ` +
+            `writeUniforms calls in one frame — subsequent draws will use ` +
+            `stale uniform data. This indicates a renderer doing far more ` +
+            `per-frame uniform writes than expected; investigate the call ` +
+            `site before raising the cap (and consider switching to a ` +
+            `dynamic-growth ring buffer).`,
         )
         return
       }
       const offset = this.uniformSlot * this.alignedUniformSize
-      this.uniformStagingU8.set(new Uint8Array(data), offset)
+      this.uniformStaging.set(new Uint8Array(data), offset)
       this.uniformSlot++
     } else {
       // Outside a frame: write directly to slot 0

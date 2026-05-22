@@ -119,29 +119,16 @@ export class MockHal implements GpuHal {
 
   // Test helpers
 
-  getLastUniforms() {
-    return this.lastUniforms
-  }
-
   getLastUniformsF32() {
-    if (!this.lastUniforms) {
-      return null
-    }
-    return new Float32Array(this.lastUniforms)
+    return this.lastUniforms ? new Float32Array(this.lastUniforms) : null
   }
 
   getLastUniformsU32() {
-    if (!this.lastUniforms) {
-      return null
-    }
-    return new Uint32Array(this.lastUniforms)
+    return this.lastUniforms ? new Uint32Array(this.lastUniforms) : null
   }
 
   getLastUniformsI32() {
-    if (!this.lastUniforms) {
-      return null
-    }
-    return new Int32Array(this.lastUniforms)
+    return this.lastUniforms ? new Int32Array(this.lastUniforms) : null
   }
 
   getBuffer(regionKey: number, passId: string) {

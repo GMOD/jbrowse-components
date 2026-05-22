@@ -1,4 +1,16 @@
-import { splitPositionWithFrac } from './webglUtils.ts'
+// hp-math split: factor a bp position into a (hi, lo) pair safe to feed
+// shaders as float32 (cumulative-bp coordinates can exceed 2^31, so a plain
+// `intValue & 0xfff` would wrap). Float64 modulo handles the full 2^53
+// safe range. Matches the shader-side `splitPositionWithFrac` in
+// shaders/hpmath.slang — renderer-side uniform writes use this to mirror.
+export function splitPositionWithFrac(value: number): [number, number] {
+  const intValue = Math.floor(value)
+  const frac = value - intValue
+  const loInt = intValue - Math.floor(intValue / 4096) * 4096
+  const hi = intValue - loInt
+  const lo = loInt + frac
+  return [hi, lo]
+}
 
 interface ClipBlock {
   screenStartPx: number

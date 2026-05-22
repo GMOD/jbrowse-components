@@ -163,19 +163,8 @@ async function runTests(
         await page.goto('about:blank')
         await test.fn(page, browser)
 
-        // Clean up any GPU resources after test completes, before we navigate again
-        try {
-          await page.evaluate(() => {
-            const w = window as typeof window & {
-              __jbrowseCleanupGpuBackends?: () => void
-            }
-            if (w.__jbrowseCleanupGpuBackends) {
-              w.__jbrowseCleanupGpuBackends()
-            }
-          })
-        } catch {
-          // Cleanup might fail if page has been navigated away, that's ok
-        }
+        // GPU backends clean up via the per-component `pagehide` listener in
+        // useGpuRenderer when the next test's page.goto navigates away.
 
         const duration = performance.now() - start
         passed++

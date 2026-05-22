@@ -1,5 +1,5 @@
+import { splitPositionWithFrac } from '@jbrowse/core/gpu/blockClipUtils'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
-import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 
 import { interleaveInstances } from './instanceInterleave.ts'
 import * as syntenyEdgeShader from './shaders/syntenyEdge.generated.ts'

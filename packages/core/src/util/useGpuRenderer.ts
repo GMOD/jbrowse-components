@@ -27,24 +27,11 @@ interface UseGpuRendererOptions<R> {
  *
  * For displays with model-driven autoruns, pass onReady/onDispose callbacks to
  * stash the backend in an MST volatile so autoruns can observe it.
+ *
+ * Cleanup paths: React unmount disposes via the effect cleanup;
+ * page navigation fires `pagehide` on every mounted component, which
+ * disposes that component's backend. No global tracking needed.
  */
-let allBackends: { dispose(): void }[] = []
-
-if (typeof window !== 'undefined') {
-  ;(
-    window as typeof window & { __jbrowseCleanupGpuBackends?: () => void }
-  ).__jbrowseCleanupGpuBackends = () => {
-    for (const backend of allBackends) {
-      try {
-        backend.dispose()
-      } catch (e) {
-        console.error('[useGpuRenderer] Error disposing backend:', e)
-      }
-    }
-    allBackends = []
-  }
-}
-
 export function useGpuRenderer<R extends { dispose(): void }>(
   factory: (canvas: HTMLCanvasElement) => Promise<R>,
   opts?: UseGpuRendererOptions<R>,
@@ -109,7 +96,6 @@ export function useGpuRenderer<R extends { dispose(): void }>(
         }
         backend = r
         rendererRef.current = r
-        allBackends.push(r)
         setReady(true)
         opts?.onReady?.(r)
       })
@@ -121,13 +107,7 @@ export function useGpuRenderer<R extends { dispose(): void }>(
 
     return () => {
       cancelled = true
-      if (backend) {
-        backend.dispose()
-        const idx = allBackends.indexOf(backend)
-        if (idx !== -1) {
-          allBackends.splice(idx, 1)
-        }
-      }
+      backend?.dispose()
       rendererRef.current = null
       setReady(false)
       opts?.onDispose?.()

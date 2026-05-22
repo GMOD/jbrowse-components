@@ -43,10 +43,8 @@
     "./gpu/installPerRegionGpuLifecycle": "./src/gpu/installPerRegionGpuLifecycle.ts",
     "./gpu/monolithicBackend": "./src/gpu/monolithicBackend.ts",
     "./gpu/perRegionBackend": "./src/gpu/perRegionBackend.ts",
-    "./gpu/pruneRegionMap": "./src/gpu/pruneRegionMap.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
     "./gpu/slangPass": "./src/gpu/slangPass.ts",
-    "./gpu/webglUtils": "./src/gpu/webglUtils.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
@@ -299,10 +297,6 @@
         "types": "./esm/gpu/perRegionBackend.d.ts",
         "import": "./esm/gpu/perRegionBackend.js"
       },
-      "./gpu/pruneRegionMap": {
-        "types": "./esm/gpu/pruneRegionMap.d.ts",
-        "import": "./esm/gpu/pruneRegionMap.js"
-      },
       "./gpu/renderBlock": {
         "types": "./esm/gpu/renderBlock.d.ts",
         "import": "./esm/gpu/renderBlock.js"
@@ -310,10 +304,6 @@
       "./gpu/slangPass": {
         "types": "./esm/gpu/slangPass.d.ts",
         "import": "./esm/gpu/slangPass.js"
-      },
-      "./gpu/webglUtils": {
-        "types": "./esm/gpu/webglUtils.d.ts",
-        "import": "./esm/gpu/webglUtils.js"
       },
       "./pluggableElementTypes": {
         "types": "./esm/pluggableElementTypes/index.d.ts",
@@ -791,17 +781,11 @@
         "gpu/perRegionBackend": [
           "esm/gpu/perRegionBackend.d.ts"
         ],
-        "gpu/pruneRegionMap": [
-          "esm/gpu/pruneRegionMap.d.ts"
-        ],
         "gpu/renderBlock": [
           "esm/gpu/renderBlock.d.ts"
         ],
         "gpu/slangPass": [
           "esm/gpu/slangPass.d.ts"
-        ],
-        "gpu/webglUtils": [
-          "esm/gpu/webglUtils.d.ts"
         ],
         "pluggableElementTypes": [
           "esm/pluggableElementTypes/index.d.ts"

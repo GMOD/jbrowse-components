@@ -66,7 +66,7 @@ export function getGpuOverride() {
   return gpuOverride
 }
 
-export default function getGpuDevice() {
+export function getGpuDevice() {
   const override = getGpuOverride()
   if (
     override === 'webgl' ||

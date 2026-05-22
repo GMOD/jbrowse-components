@@ -1,7 +1,6 @@
+import { splitPositionWithFrac } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
-import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
@@ -332,6 +331,9 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
   }
 
   sync(sources: AlignmentsSources) {
+    // `active` must union both maps' keys before pruning: arcs can arrive
+    // for a region whose pileup hasn't loaded yet, and pruning by pileup-only
+    // would deleteRegion the arc data we just uploaded (or are about to).
     const active: number[] = []
     for (const [idx, data] of sources.laidOutPileupMap) {
       active.push(idx)
@@ -360,12 +362,19 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         uploadLinkedReadLines(this.hal, idx, data)
       }
     }
-    pruneRegionMap(this.regions, active, n => {
-      this.hal.deleteRegion(n)
-    })
     for (const [idx, data] of sources.arcsRpcDataMap) {
+      if (!sources.laidOutPileupMap.has(idx)) {
+        active.push(idx)
+      }
       ensureRegion(this.regions, idx, emptyRegion)
       uploadArcs(this.hal, idx, data)
+    }
+    const activeSet = new Set(active)
+    for (const idx of this.regions.keys()) {
+      if (!activeSet.has(idx)) {
+        this.hal.deleteRegion(idx)
+        this.regions.delete(idx)
+      }
     }
   }
 
