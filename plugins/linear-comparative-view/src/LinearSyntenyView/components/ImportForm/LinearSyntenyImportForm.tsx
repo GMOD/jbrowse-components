@@ -3,18 +3,11 @@ import { useState } from 'react'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Container,
-  Tab,
-  Tabs,
-  ToggleButton,
-  ToggleButtonGroup,
-} from '@mui/material'
+import { Container, Tab, Tabs } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea.tsx'
 import PairwisePanel from './PairwisePanel.tsx'
-import PangenomePanel from './PangenomePanel.tsx'
 import QuickImportPanel from './QuickImportPanel.tsx'
 import { doSubmit } from './doSubmit.tsx'
 
@@ -53,9 +46,6 @@ const LinearSyntenyViewImportForm = observer(
     ])
     const [error, setError] = useState<unknown>()
     const [importMode, setImportMode] = useState(0)
-    const [viewMode, setViewMode] = useState<'pairwise' | 'pangenome'>(
-      'pairwise',
-    )
 
     const handleLaunch = async () => {
       try {
@@ -70,66 +60,45 @@ const LinearSyntenyViewImportForm = observer(
       }
     }
 
-    const isPairwise = viewMode === 'pairwise'
-
     return (
       <Container className={classes.importFormContainer}>
         {error ? <ErrorBanner error={error} /> : null}
 
-        <ToggleButtonGroup
-          value={viewMode}
-          exclusive
-          onChange={(_, v: 'pairwise' | 'pangenome') => {
-            setViewMode(v)
+        <Tabs
+          value={importMode}
+          onChange={(_, val) => {
+            setImportMode(val)
           }}
-          size="small"
           sx={{ mb: 2 }}
         >
-          <ToggleButton value="pairwise">Pairwise synteny</ToggleButton>
-          <ToggleButton value="pangenome">Pangenome / multi-way</ToggleButton>
-        </ToggleButtonGroup>
+          <Tab label="Manual setup" />
+          <Tab label="Quick import" />
+        </Tabs>
 
-        {isPairwise ? (
-          <>
-            <Tabs
-              value={importMode}
-              onChange={(_, val) => {
-                setImportMode(val)
-              }}
-              sx={{ mb: 2 }}
-            >
-              <Tab label="Manual setup" />
-              <Tab label="Quick import" />
-            </Tabs>
-
-            {importMode === 1 ? (
-              <QuickImportPanel model={model} />
-            ) : (
-              <div className={classes.flex}>
-                <div className={classes.leftPanel}>
-                  <PairwisePanel
-                    model={model}
-                    selectedAssemblyNames={selectedAssemblyNames}
-                    setSelectedAssemblyNames={setSelectedAssemblyNames}
-                    onLaunch={() => {
-                      void handleLaunch()
-                    }}
-                  />
-                </div>
-                <div className={classes.rightPanel}>
-                  <div>Configure synteny data</div>
-                  <ImportSyntenyTrackSelector
-                    model={model}
-                    selectedRow={0}
-                    assembly1={selectedAssemblyNames[0]!}
-                    assembly2={selectedAssemblyNames[1]!}
-                  />
-                </div>
-              </div>
-            )}
-          </>
+        {importMode === 1 ? (
+          <QuickImportPanel model={model} />
         ) : (
-          <PangenomePanel model={model} />
+          <div className={classes.flex}>
+            <div className={classes.leftPanel}>
+              <PairwisePanel
+                model={model}
+                selectedAssemblyNames={selectedAssemblyNames}
+                setSelectedAssemblyNames={setSelectedAssemblyNames}
+                onLaunch={() => {
+                  void handleLaunch()
+                }}
+              />
+            </div>
+            <div className={classes.rightPanel}>
+              <div>Configure synteny data</div>
+              <ImportSyntenyTrackSelector
+                model={model}
+                selectedRow={0}
+                assembly1={selectedAssemblyNames[0]!}
+                assembly2={selectedAssemblyNames[1]!}
+              />
+            </div>
+          </div>
         )}
       </Container>
     )
