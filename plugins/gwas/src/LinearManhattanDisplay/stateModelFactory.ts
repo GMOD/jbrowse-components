@@ -21,8 +21,8 @@ import {
 } from '@jbrowse/plugin-wiggle'
 import {
   YSCALEBAR_LABEL_OFFSET,
+  computeYTicks,
   getNiceDomain,
-  getScale,
 } from '@jbrowse/wiggle-core'
 import { observable } from 'mobx'
 
@@ -98,26 +98,12 @@ export function stateModelFactory(
     }))
     .views(self => ({
       get ticks() {
-        const { height, domain, scaleType } = self
-        if (!domain) {
-          return undefined
-        }
-        const yTop = YSCALEBAR_LABEL_OFFSET
-        const yBottom = height - YSCALEBAR_LABEL_OFFSET - 1
-        const scale = getScale({
-          scaleType,
-          domain,
-          range: [yBottom, yTop],
-          inverted: false,
+        return computeYTicks({
+          height: self.height,
+          domain: self.domain,
+          scaleType: self.scaleType,
+          minimalTicks: self.getConfWithOverride<boolean>('minimalTicks'),
         })
-        const minimalTicks = self.getConfWithOverride<boolean>('minimalTicks')
-        const values =
-          height < 100 || minimalTicks ? (domain as number[]) : scale.ticks(4)
-        return {
-          ticks: values.map(v => ({ value: v, y: scale(v) })),
-          yTop,
-          yBottom,
-        }
       },
       // SettingsInvalidate watches this shape — only `color` triggers a
       // refetch (the worker bakes per-feature color into the result).
@@ -127,6 +113,10 @@ export function stateModelFactory(
       // Manhattan data is pre-transformed (-log10 p values) and zoom-
       // independent. MultiRegionDisplayMixin's default isCacheValid is `true`,
       // so no override is needed.
+      // canvasHeight is the inner canvas (between top/bottom YScaleBar
+      // label offsets) — this is the area both the GPU renderer and
+      // findManhattanHit work in. Using self.height directly causes the
+      // hit-test and hover circle to drift from rendered points.
       manhattanRenderState(): ManhattanRenderState | undefined {
         if (!self.domain) {
           return undefined
@@ -135,7 +125,7 @@ export function stateModelFactory(
         return {
           domainY: self.domain,
           canvasWidth: view.trackWidthPx,
-          canvasHeight: self.height,
+          canvasHeight: self.height - 2 * YSCALEBAR_LABEL_OFFSET,
         }
       },
       // Manhattan menu: just the shared Score submenu and cross-hatch toggle.
@@ -165,14 +155,8 @@ export function stateModelFactory(
       setManhattanHit(hit: ManhattanHit | undefined) {
         self.manhattanHit = hit
       },
-      setColor(color?: string) {
-        self.setOverride('color', color)
-      },
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
-      },
-      reload() {
-        self.clearAllRpcData()
       },
     }))
     .actions(self => ({

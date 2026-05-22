@@ -12,6 +12,7 @@ interface LDModel {
   regionTooLarge: boolean
   rpcProps(): Record<string, unknown>
   userByteSizeLimit: number | undefined
+  reloadCounter: number
   performLDFetch(): void
 }
 
@@ -36,8 +37,10 @@ export function doAfterAttach(self: LDModel) {
         }
         // rpcProps IS the full RPC payload; any field change refires the
         // autorun. Viewport reads above already retrigger on pan/zoom.
+        // reloadCounter retriggers on user-initiated reload.
         void self.rpcProps()
         void self.userByteSizeLimit
+        void self.reloadCounter
         self.performLDFetch()
       },
       {

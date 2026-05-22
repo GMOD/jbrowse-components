@@ -7,15 +7,17 @@ import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
+import {
+  CrossHatches,
+  YSCALEBAR_LABEL_OFFSET,
+  YScaleBarOverlay,
+} from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import { ManhattanRenderer } from '../ManhattanRenderer.ts'
 import { findManhattanHit } from '../findManhattanHit.ts'
-import CrossHatches from './CrossHatches.tsx'
 import HoverHighlight from './HoverHighlight.tsx'
 import TooltipComponent from './TooltipComponent.tsx'
-import YScaleBarOverlay from './YScaleBarOverlay.tsx'
 
 import type { ManhattanDisplayModel } from './manhattanDisplayTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

@@ -12,8 +12,15 @@ export function renderBases(
   startBp: number,
   rowTop: number,
 ) {
-  const { ctx, scale, h, palette, showAllLetters, mismatchRendering, bpToCellLeftPx } =
-    context
+  const {
+    ctx,
+    scale,
+    h,
+    palette,
+    showAllLetters,
+    mismatchRendering,
+    bpToCellLeftPx,
+  } = context
   const cellW = scale + GAP_STROKE_OFFSET
   const cfg = {
     colorForBase: palette.colorForBase,

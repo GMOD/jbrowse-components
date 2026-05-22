@@ -84,6 +84,11 @@ export default function sharedModelFactory(
        * #volatile
        */
       rpcData: null as LDDataResult | null,
+      /**
+       * #volatile
+       * Bumped by `reload()` to retrigger the fetch autorun.
+       */
+      reloadCounter: 0,
     }))
     .actions(self => ({
       setRpcData(data: LDDataResult | null) {
@@ -685,8 +690,7 @@ export default function sharedModelFactory(
        */
       reload() {
         self.setError(undefined)
-        // TODO should just auto-rerun via 'some state resetting' rather than manually call here
-        void self.performLDFetch()
+        self.reloadCounter += 1
       },
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises

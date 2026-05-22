@@ -29,7 +29,8 @@ export function renderInsertions(
   rowTop: number,
   bpPerPx: number,
 ) {
-  const { ctx, scale, h, rowHeight, reversed, palette, bpToCellLeftPx } = context
+  const { ctx, scale, h, rowHeight, reversed, palette, bpToCellLeftPx } =
+    context
   const insertionFill = palette.insertionColor
 
   for (let i = 0, genomicOffset = 0; i < alignment.length; i++) {

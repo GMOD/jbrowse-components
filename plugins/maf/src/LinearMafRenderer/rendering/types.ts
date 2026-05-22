@@ -1,8 +1,3 @@
-import {
-  LONG_INSERTION_MIN_LENGTH,
-  MIN_HEIGHT_FOR_TEXT,
-} from '@jbrowse/alignments-core'
-
 import type { MafColorPalette } from '../util.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -17,8 +12,7 @@ export const INSERTION_PADDING = 2
 // Reuse alignments-core's "long insertion" threshold + minimum-text-row-height
 // so MAF and BAM/CRAM agree on when to switch insertion glyphs / draw label
 // borders. Keep MAF aliases for call-site readability.
-export const LARGE_INSERTION_THRESHOLD = LONG_INSERTION_MIN_LENGTH
-export const MIN_ROW_HEIGHT_FOR_BORDERS = MIN_HEIGHT_FOR_TEXT
+
 // MAF-specific zoom thresholds; named relative to bpPerPx (canvas2d only).
 export const HIGH_ZOOM_THRESHOLD = 0.2
 export const HIGH_BP_PER_PX_THRESHOLD = 10
@@ -36,3 +30,8 @@ export interface RenderingContext {
   /** bp → screen-px LEFT edge of the cell containing that bp (handles reversed). */
   bpToCellLeftPx: (bp: number) => number
 }
+
+export {
+  LONG_INSERTION_MIN_LENGTH as LARGE_INSERTION_THRESHOLD,
+  MIN_HEIGHT_FOR_TEXT as MIN_ROW_HEIGHT_FOR_BORDERS,
+} from '@jbrowse/alignments-core'

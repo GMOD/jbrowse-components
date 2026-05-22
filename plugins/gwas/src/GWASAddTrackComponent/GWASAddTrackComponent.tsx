@@ -9,13 +9,16 @@ interface GWASAddTrackComponentProps {
   }
 }
 
+// Default lives in the GWASAdapter schema so accepting defaults still
+// produces a working track. This input only matters when the user wants to
+// override the column name — mixinData is only pushed once they actually
+// change it.
 const DEFAULT_SCORE_COLUMN = 'neg_log_pvalue'
 
 const GWASAddTrackComponent = observer(function ({
   model,
 }: GWASAddTrackComponentProps) {
   const [scoreColumn, setScoreColumn] = useState(DEFAULT_SCORE_COLUMN)
-
   return (
     <TextField
       label="Score column"

@@ -50,15 +50,13 @@ export async function renderSvg(
 
   const totalWidth = view.totalWidthPx
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  const drawHeight = height - 2 * YSCALEBAR_LABEL_OFFSET
-  const state = {
-    ...renderState,
-    canvasWidth: totalWidth,
-    canvasHeight: drawHeight,
-  }
+  // SVG export spans all visible regions side-by-side, so canvasWidth is
+  // overridden to the full bp window width — canvasHeight is the same as
+  // on-screen.
+  const state = { ...renderState, canvasWidth: totalWidth }
   const manhattanNode = (
     <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
-      {paintLayer(totalWidth, drawHeight, opts, ctx => {
+      {paintLayer(totalWidth, renderState.canvasHeight, opts, ctx => {
         drawManhattanBlocks(ctx, rpcDataMap, renderBlocks, state)
       })}
     </g>

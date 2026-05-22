@@ -1,8 +1,8 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-import type { Sample } from '../types.ts'
 import type { MafRegionData } from '../LinearMafRenderer/mafBackendTypes.ts'
+import type { Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'

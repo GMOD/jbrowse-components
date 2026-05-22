@@ -1576,9 +1576,6 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
-        reload() {
-          self.clearAllRpcData()
-        },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self as LinearAlignmentsDisplayModel, opts)

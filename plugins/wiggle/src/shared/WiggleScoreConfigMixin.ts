@@ -86,6 +86,9 @@ export function WiggleScoreConfigMixin() {
       setScaleType(scaleType: string) {
         self.setOverride('scaleType', scaleType)
       },
+      setColor(color?: string) {
+        self.setOverride('color', color)
+      },
       setMinScore(val?: number) {
         self.setOverride('minScore', val)
       },

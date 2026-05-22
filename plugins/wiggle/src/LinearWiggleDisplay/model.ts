@@ -10,6 +10,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import { computeYTicks } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
@@ -24,7 +25,6 @@ import {
 import {
   SINGLE_WIGGLE_SOURCE_NAME,
   YSCALEBAR_LABEL_OFFSET,
-  getScale,
   isDefaultBicolor,
 } from '../util.ts'
 
@@ -101,27 +101,12 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       get ticks() {
-        const { height } = self
-        const domain = self.domain
-        if (!domain) {
-          return undefined
-        }
-        const yTop = YSCALEBAR_LABEL_OFFSET
-        const yBottom = height - YSCALEBAR_LABEL_OFFSET - 1
-        const scale = getScale({
+        return computeYTicks({
+          height: self.height,
+          domain: self.domain,
           scaleType: self.scaleType,
-          domain,
-          range: [yBottom, yTop],
-          inverted: false,
+          minimalTicks: self.getConfWithOverride<boolean>('minimalTicks'),
         })
-        const minimalTicks = self.getConfWithOverride<boolean>('minimalTicks')
-        const values =
-          height < 100 || minimalTicks ? (domain as number[]) : scale.ticks(4)
-        return {
-          ticks: values.map(v => ({ value: v, y: scale(v) })),
-          yTop,
-          yBottom,
-        }
       },
 
       get renderState() {
@@ -192,16 +177,6 @@ export default function stateModelFactory(
     .actions(self => ({
       setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
         self.rpcDataMap.set(displayedRegionIndex, data)
-      },
-
-      // clearAllRpcData comes from MultiRegionDisplayMixin, not WiggleCommonMixin,
-      // so this can't move to the mixin without a type cast.
-      reload() {
-        self.clearAllRpcData()
-      },
-
-      setColor(color?: string) {
-        self.setOverride('color', color)
       },
 
       setPosColor(color?: string) {

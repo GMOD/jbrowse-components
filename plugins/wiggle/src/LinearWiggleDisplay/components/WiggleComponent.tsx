@@ -6,7 +6,11 @@ import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
+import {
+  CrossHatches,
+  YSCALEBAR_LABEL_OFFSET,
+  YScaleBarOverlay,
+} from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import WiggleTooltip from './WiggleTooltip.tsx'
@@ -121,42 +125,14 @@ const WiggleComponent = observer(function WiggleComponent({
           />
         </svg>
       ) : model.ticks ? (
-        <svg
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: scalebarLeft || 50,
-            pointerEvents: 'none',
-            height,
-            width: 70,
-          }}
-        >
-          <YScaleBar ticks={model.ticks} orientation="right" />
-        </svg>
+        <YScaleBarOverlay
+          ticks={model.ticks}
+          height={height}
+          scalebarLeft={scalebarLeft}
+        />
       ) : null}
       {model.displayCrossHatches && model.ticks ? (
-        <svg
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-            height,
-            width,
-          }}
-        >
-          {model.ticks.ticks.map(({ value, y }) => (
-            <line
-              key={value}
-              x1={0}
-              x2={width}
-              y1={y}
-              y2={y}
-              stroke="rgba(200,200,200,0.8)"
-              strokeWidth={1}
-            />
-          ))}
-        </svg>
+        <CrossHatches ticks={model.ticks} width={width} height={height} />
       ) : null}
       <WiggleTooltip
         model={model}

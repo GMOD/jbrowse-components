@@ -88,6 +88,11 @@ export default function stateModelFactory(
        * #volatile
        */
       availableResolutions: undefined as number[] | undefined,
+      /**
+       * #volatile
+       * Bumped by `reload()` to retrigger the fetch autorun.
+       */
+      reloadCounter: 0,
     }))
 
     .preProcessSnapshot((snap: any) => {
@@ -608,8 +613,7 @@ export default function stateModelFactory(
        */
       reload() {
         self.setError(undefined)
-        // TODO find way to avoid manually triggering fetch here instead just bumping a redraw counter or something
-        void self.performHicFetch()
+        self.reloadCounter += 1
       },
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -662,8 +666,9 @@ export default function stateModelFactory(
 
               // rpcProps IS the full RPC payload; any field change refires
               // the autorun. The viewport read above already retriggers on
-              // pan/zoom.
+              // pan/zoom. reloadCounter retriggers on user-initiated reload.
               void self.rpcProps()
+              void self.reloadCounter
               void self.performHicFetch()
             },
             {

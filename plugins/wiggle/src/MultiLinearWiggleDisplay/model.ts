@@ -306,12 +306,6 @@ export default function stateModelFactory(
         )
       },
 
-      // clearAllRpcData comes from MultiRegionDisplayMixin, not WiggleCommonMixin,
-      // so this can't move to the mixin without a type cast.
-      reload() {
-        self.clearAllRpcData()
-      },
-
       setSources(sources: SourceInfo[]) {
         self.sourcesVolatile = sources
       },

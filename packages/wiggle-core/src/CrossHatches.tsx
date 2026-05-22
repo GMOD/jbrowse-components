@@ -1,6 +1,6 @@
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
+import type { YScaleTicks } from './index.ts'
 
-// Horizontal guide lines at each YScaleBar tick. Pointer-events disabled so
+// Horizontal guide lines at each Y-scale tick. Pointer-events disabled so
 // the underlying canvas still receives mouse events.
 export default function CrossHatches({
   ticks,

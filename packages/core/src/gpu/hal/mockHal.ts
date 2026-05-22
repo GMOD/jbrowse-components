@@ -13,6 +13,7 @@ export class MockHal implements GpuHal {
 
   // Parameter kept for parity with WebGL2Hal / WebGPUHal constructors so
   // tests can swap implementations; pass list isn't needed in the mock.
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(_passes: PassDescriptor[]) {}
 
   private bufferKey(regionKey: number, passId: string) {

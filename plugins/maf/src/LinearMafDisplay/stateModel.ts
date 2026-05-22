@@ -22,7 +22,6 @@ import { getMsaHighlights } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 
 import type { HoveredInfo } from './util.ts'
-import type { Sample } from '../types.ts'
 import type {
   MafBackend,
   MafGPURenderState,
@@ -30,6 +29,7 @@ import type {
   MafRegionData,
 } from '../LinearMafRenderer/mafBackendTypes.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
+import type { Sample } from '../types.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -486,7 +486,7 @@ export default function stateModelFactory(
           return renderSvg(self as LinearMafDisplayModel, opts)
         },
         async afterAttach() {
-          superAfterAttach?.()
+          superAfterAttach()
           try {
             const { setupTreeDrawingAutorun } =
               await import('@jbrowse/tree-sidebar')

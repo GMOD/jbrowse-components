@@ -1,9 +1,11 @@
-import { YScaleBar } from '@jbrowse/wiggle-core'
+import YScaleBar from './YScaleBar.tsx'
 
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
+import type { YScaleTicks } from './index.ts'
 
-// Y-axis tick labels, pinned to a position that follows the left edge of
-// visible track content (scalebarOverlapLeft).
+// Y-axis tick labels positioned absolutely. `scalebarLeft` tracks the left
+// edge of visible track content (non-zero only when track labels overlap or
+// the view is scrolled before the genome start); falls back to 50px when 0
+// so the labels stay readable in the default layout.
 export default function YScaleBarOverlay({
   ticks,
   height,

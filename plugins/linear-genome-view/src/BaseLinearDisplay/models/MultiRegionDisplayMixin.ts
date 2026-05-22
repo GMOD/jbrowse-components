@@ -70,6 +70,12 @@ export default function MultiRegionDisplayMixin() {
         self.resetCanvasDrawn()
       },
 
+      // Default reload: full reset. Subclasses with extra teardown can
+      // override (and chain to `clearAllRpcData` directly if needed).
+      reload() {
+        this.clearAllRpcData()
+      },
+
       invalidateLoadedRegions() {
         self.cancelFetch()
         self.loadedRegions.clear()

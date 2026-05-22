@@ -72,9 +72,13 @@ export class GpuManhattanRenderer extends GpuPerRegionBackend<
       this.uniformF32[U.domainYMin] = domainY[0]
       this.uniformF32[U.domainYMax] = domainY[1]
       this.uniformF32[U.zero] = 0
-      this.uniformF32[U.viewportWidth] = clip.pxW
+      // viewportWidth + pointRadius stay in CSS units to match canvasHeight
+      // (per CLAUDE.md GPU conventions). Mixing DPR-scaled radius with
+      // CSS-scaled canvasHeight produces vertically-stretched ellipses on
+      // hi-DPI displays.
+      this.uniformF32[U.viewportWidth] = clip.scissorW
       this.uniformF32[U.reversed] = block.reversed ? 1 : 0
-      this.uniformF32[U.pointRadius] = POINT_RADIUS_PX * dpr
+      this.uniformF32[U.pointRadius] = POINT_RADIUS_PX
 
       this.hal.writeUniforms(this.uniformData)
       this.hal.drawPass(PASS, block.displayedRegionIndex)

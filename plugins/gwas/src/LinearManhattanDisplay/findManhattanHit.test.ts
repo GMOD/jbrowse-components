@@ -1,8 +1,25 @@
+import Flatbush from '@jbrowse/core/util/flatbush'
+
 import { findManhattanHit } from './findManhattanHit.ts'
 
 import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+
+function buildFlatbush(
+  positions: number[],
+  scores: number[],
+): ArrayBuffer | undefined {
+  if (positions.length === 0) {
+    return undefined
+  }
+  const fb = new Flatbush(positions.length, undefined, Float64Array)
+  for (let i = 0; i < positions.length; i++) {
+    fb.add(positions[i]!, scores[i]!, positions[i], scores[i])
+  }
+  fb.finish()
+  return fb.data
+}
 
 // One block covering bp 0..1000 across 100 screen px (10 bp/px).
 const block: RenderBlock = {
@@ -37,6 +54,7 @@ function mkData(
         scoreMax: 0,
         scoreSum: 0,
         scoreSumSq: 0,
+        flatbushData: buildFlatbush(positions, scores),
       },
     ],
   ])
@@ -92,4 +110,35 @@ test('respects reversed block direction', () => {
     refNames,
   )
   expect(hit?.start).toBe(900)
+})
+
+test('finds the right point in a dense array via Flatbush', () => {
+  // 1001 evenly-spaced features bp=0..1000 — hit-window around mouseX=50
+  // should pick the bp=500 point (screen x=50), not bp=0 or bp=1000.
+  const positions = Array.from({ length: 1001 }, (_, i) => i)
+  const scores = positions.map(() => 5)
+  const hit = findManhattanHit(
+    50,
+    50,
+    [block],
+    mkData(positions, scores),
+    state,
+    refNames,
+  )
+  expect(hit?.start).toBe(500)
+})
+
+test('Flatbush Y-prune rejects same-X point at a far-off score', () => {
+  // Two features at bp=500 (same screen x=50): score=5 (y=50) and score=10
+  // (y=0). Mouse at (50, 50) is on top of the score=5 point and >>HIT_RADIUS
+  // away in Y from score=10 — Y prune must reject the latter and pick score=5.
+  const hit = findManhattanHit(
+    50,
+    50,
+    [block],
+    mkData([500, 500], [5, 10]),
+    state,
+    refNames,
+  )
+  expect(hit?.score).toBe(5)
 })

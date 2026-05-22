@@ -17,6 +17,7 @@ function mkData(
     scoreMax: Math.max(...scores),
     scoreSum: 0,
     scoreSumSq: 0,
+    flatbushData: undefined,
   }
 }
 

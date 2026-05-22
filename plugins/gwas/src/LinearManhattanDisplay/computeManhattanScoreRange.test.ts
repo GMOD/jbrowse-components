@@ -16,6 +16,7 @@ function region(
     scoreMax,
     scoreSum: 0,
     scoreSumSq: 0,
+    flatbushData: undefined,
   }
 }
 

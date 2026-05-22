@@ -1,5 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -72,6 +73,18 @@ export async function executeGetManhattanData({
     colors[i] = evalColor(f)
   }
 
+  let flatbushData: ArrayBuffer | undefined
+  if (n > 0) {
+    const fb = new Flatbush(n, undefined, Float64Array)
+    for (let i = 0; i < n; i++) {
+      const p = positions[i]!
+      const s = scores[i]!
+      fb.add(p, s, p, s)
+    }
+    fb.finish()
+    flatbushData = fb.data
+  }
+
   const result: ManhattanRpcResult = {
     positions,
     scores,
@@ -81,10 +94,15 @@ export async function executeGetManhattanData({
     scoreMax: n === 0 ? 0 : scoreMax,
     scoreSum,
     scoreSumSq,
+    flatbushData,
   }
-  return rpcResult(result, [
+  const transferables: ArrayBuffer[] = [
     positions.buffer,
     scores.buffer,
     colors.buffer,
-  ]) as unknown as ManhattanRpcResult
+  ]
+  if (flatbushData) {
+    transferables.push(flatbushData)
+  }
+  return rpcResult(result, transferables) as unknown as ManhattanRpcResult
 }

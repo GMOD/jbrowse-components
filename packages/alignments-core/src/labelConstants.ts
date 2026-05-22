@@ -4,7 +4,7 @@ export const MIN_HEIGHT_FOR_TEXT = 5
 
 export const MISMATCH_COLOR = '#f00'
 const DELETION_COLOR = '#888'
-const INSERTION_COLOR = '#c000c0'
+export const INSERTION_COLOR = '#c000c0'
 const BASE_A_COLOR = '#00bf00'
 const BASE_C_COLOR = '#4747ff'
 const BASE_G_COLOR = '#d5bb04'

@@ -1,4 +1,7 @@
-import { clipBlockForCanvas, makeBpMapper } from '@jbrowse/core/gpu/canvas2dUtils'
+import {
+  clipBlockForCanvas,
+  makeBpMapper,
+} from '@jbrowse/core/gpu/canvas2dUtils'
 
 import { renderBases } from './rendering/bases.ts'
 import { renderInsertions } from './rendering/insertions.ts'
@@ -73,7 +76,13 @@ export function drawMafBlocks(
       for (const row of mafBlock.rows) {
         const alignment = decoder.decode(row.alignmentBytes)
         const rowTop = offset + rowHeight * row.rowIndex
-        renderBases(renderingContext, alignment, refSeq, mafBlock.startBp, rowTop)
+        renderBases(
+          renderingContext,
+          alignment,
+          refSeq,
+          mafBlock.startBp,
+          rowTop,
+        )
         renderInsertions(
           renderingContext,
           alignment,
