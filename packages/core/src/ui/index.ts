@@ -33,16 +33,4 @@ export { default as BaseTooltip } from './BaseTooltip.tsx'
 export { default as PluggableComponent } from './PluggableComponent.tsx'
 export * from './Menu.tsx'
 export * from './MenuTypes.ts'
-export {
-  RefNameAutocompleteEndAdornment,
-  default as RefNameAutocomplete,
-} from './RefNameAutocomplete/index.tsx'
-export { default as ConfirmDialog } from './ConfirmDialog.tsx'
-export { default as ErrorBar } from './ErrorBar.tsx'
-export { default as ErrorOverlay } from './ErrorOverlay.tsx'
-export { default as CanvasDisplayWrapper } from './CanvasDisplayWrapper.tsx'
-export { default as LoadingOverlay } from './LoadingOverlay.tsx'
-export { default as SubmitDialog } from './SubmitDialog.tsx'
-export { default as ActionLink } from './ActionLink.tsx'
-export { default as PluggableComponent } from './PluggableComponent.tsx'
 export const VIEW_HEADER_HEIGHT = 28
