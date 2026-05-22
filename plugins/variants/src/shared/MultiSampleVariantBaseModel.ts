@@ -5,10 +5,9 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { set1 } from '@jbrowse/core/ui/colors'
 import {
   SimpleFeature,
-  getContainingTrack,
   getContainingView,
   getSession,
-  isSessionModelWithWidgets,
+  openFeatureWidget,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -49,7 +48,7 @@ import type {
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ByteEstimateConfig,
   FetchContext,
@@ -84,42 +83,43 @@ function encodeGenotype(gt: string) {
   return uncalledCount === alleles.length ? -1 : nonRefCount
 }
 
-// Module-local helper for the variant cell data RPC call. Kept here (not an
-// MST action) so the RPC payload shape is easy to read at the call site. self
-// is typed structurally because cellDataMode is defined on each subclass
-// (MultiVariantDisplay = 'regular', MultiVariantMatrixDisplay = 'matrix').
-async function callMultiSampleVariantCellData(
-  self: {
-    adapterConfig: AnyConfigurationModel
-    cellDataMode: 'regular' | 'matrix'
-    rpcProps(): {
-      sources: ProcessedSource[]
-      minorAlleleFrequencyFilter: number
-      lengthCutoffFilter: number
-      renderingMode: string
-      referenceDrawingMode: string
-    }
-    setStatusMessage: (msg?: string) => void
-  },
-  ctx: FetchContext,
-) {
-  const view = getContainingView(self) as LinearGenomeViewModel
+// Module-local helper for the variant cell data RPC call. Takes the resolved
+// rpcProps object (rather than `self`) so TS infers the payload shape from
+// the model's rpcProps view without a structural cast. `mode` is plumbed in
+// explicitly because cellDataMode is defined per-subclass and not visible
+// here on the base self.
+async function callMultiSampleVariantCellData(args: {
+  node: IAnyStateTreeNode
+  adapterConfig: AnyConfigurationModel
+  rpcProps: {
+    sources: ProcessedSource[]
+    minorAlleleFrequencyFilter: number
+    lengthCutoffFilter: number
+    renderingMode: string
+    referenceDrawingMode: string
+  }
+  mode: 'regular' | 'matrix'
+  setStatusMessage: (msg?: string) => void
+  ctx: FetchContext
+}) {
+  const { node, adapterConfig, rpcProps, mode, setStatusMessage, ctx } = args
+  const view = getContainingView(node) as LinearGenomeViewModel
   const allBuffered = view.bufferedVisibleRegions
-  const sessionId = getRpcSessionId(self)
-  return getSession(self).rpcManager.call(
+  const sessionId = getRpcSessionId(node)
+  return getSession(node).rpcManager.call(
     sessionId,
     'MultiSampleVariantGetCellData',
     {
       regions: allBuffered.map(r => r.region),
       displayedRegionIndices: allBuffered.map(r => r.displayedRegionIndex),
-      ...self.rpcProps(),
-      mode: self.cellDataMode,
+      ...rpcProps,
+      mode,
       sessionId,
-      adapterConfig: self.adapterConfig,
+      adapterConfig,
       stopToken: ctx.stopToken,
       statusCallback: (msg: string) => {
-        if (isAlive(self)) {
-          self.setStatusMessage(msg)
+        if (isAlive(node)) {
+          setStatusMessage(msg)
         }
       },
     },
@@ -313,32 +313,22 @@ export default function MultiSampleVariantBaseModelF(
        */
       selectFeature(feature: Feature) {
         const session = getSession(self)
-        session.setSelection(feature)
-        if (isSessionModelWithWidgets(session)) {
-          const { type, id } = self.featureWidgetType
-          const track = getContainingTrack(self)
-          const view = getContainingView(self)
-          session.rpcManager
-            .call(getRpcSessionId(self), 'CoreGetMetadata', {
-              adapterConfig: self.adapterConfig,
-            })
-            .then(descriptions => {
-              if (isAlive(self)) {
-                session.showWidget(
-                  session.addWidget(type, id, {
-                    featureData: feature.toJSON(),
-                    view,
-                    track,
-                    descriptions,
-                  }),
-                )
-              }
-            })
-            .catch((e: unknown) => {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            })
-        }
+        session.rpcManager
+          .call(getRpcSessionId(self), 'CoreGetMetadata', {
+            adapterConfig: self.adapterConfig,
+          })
+          .then(descriptions => {
+            if (isAlive(self)) {
+              openFeatureWidget(self, feature.toJSON(), {
+                widget: self.featureWidgetType,
+                extra: { descriptions },
+              })
+            }
+          })
+          .catch((e: unknown) => {
+            console.error(e)
+            session.notifyError(`${e}`, e)
+          })
       },
       /**
        * #action
@@ -997,12 +987,26 @@ export default function MultiSampleVariantBaseModelF(
         if (allBuffered.length === 0) {
           return
         }
-        // cellDataMode is defined per-subclass; cast widens self structurally
-        const helperSelf = self as unknown as Parameters<
-          typeof callMultiSampleVariantCellData
-        >[0]
+        const sources = self.sourcesBase
+        if (!sources) {
+          return
+        }
+        // cellDataMode is defined per-subclass and not visible on the base
+        // self; read it via a narrow view interface and pass to the RPC
+        // helper as an explicit parameter.
+        const { cellDataMode } = self as unknown as {
+          cellDataMode: 'regular' | 'matrix'
+        }
+        const rpcProps = { ...self.rpcProps(), sources }
         await self.fetchRegions(allBuffered, async (ctx: FetchContext) => {
-          const result = await callMultiSampleVariantCellData(helperSelf, ctx)
+          const result = await callMultiSampleVariantCellData({
+            node: self,
+            adapterConfig: self.adapterConfig,
+            rpcProps,
+            mode: cellDataMode,
+            setStatusMessage: self.setStatusMessage,
+            ctx,
+          })
           if (!ctx.isStale() && isAlive(self)) {
             self.setCellData(result)
           }

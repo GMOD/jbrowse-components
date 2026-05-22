@@ -11,7 +11,7 @@ export function parseSamplesTsv(txt: string, vcfSamples: string[]) {
       const [name, ...rest] = line.split('\t')
       return {
         ...Object.fromEntries(
-          header.slice(1).map((col, idx) => [col, rest[idx] || ''] as const),
+          header.slice(1).map((col, idx) => [col, rest[idx] ?? ''] as const),
         ),
         name: name!,
       }

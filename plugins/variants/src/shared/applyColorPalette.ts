@@ -33,7 +33,7 @@ export function applyColorPalette(sources: Source[], attribute: string) {
   const colorMap = Object.fromEntries(
     [...counts.entries()]
       .sort((a, b) => a[1] - b[1])
-      .map(([key], idx) => [key, set1[idx] || randomColor(key)]),
+      .map(([key], idx) => [key, set1[idx] ?? randomColor(key)]),
   )
 
   return sources.map((source, i) => ({

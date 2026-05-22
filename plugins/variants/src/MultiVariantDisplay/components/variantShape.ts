@@ -17,6 +17,11 @@ interface ShapePath {
   fill(): void
 }
 
+// Extra px applied to each side of a TRI_DOWN (insertion) glyph so that very
+// narrow insertions stay visible. Matches `widthExtend` in variant.slang
+// (6/canvasWidth in clip space = 3 px each side).
+const INSERTION_WIDTH_EXTEND_PX = 3
+
 // Draws one variant glyph into `ctx`. Shape 0 is a plain rect; 1/2 are
 // horizontal triangles (inversions); 3 is a down-pointing triangle
 // (insertions). Degenerate insertions (width < 1 px) fall back to a rect
@@ -47,10 +52,12 @@ export function drawVariantShape(
     ctx.closePath?.()
     ctx.fill()
   } else if (effective === SHAPE_TRI_DOWN) {
+    const ex = x - INSERTION_WIDTH_EXTEND_PX
+    const ew = w + 2 * INSERTION_WIDTH_EXTEND_PX
     ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.lineTo(x + w, y)
-    ctx.lineTo(x + w / 2, y + h)
+    ctx.moveTo(ex, y)
+    ctx.lineTo(ex + ew, y)
+    ctx.lineTo(ex + ew / 2, y + h)
     ctx.closePath?.()
     ctx.fill()
   }

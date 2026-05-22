@@ -16,7 +16,6 @@ Object.defineProperty(globalThis, 'devicePixelRatio', {
 
 function makeUploadData(): VariantUploadData {
   return {
-    regionStart: 5000,
     cellPositions: new Uint32Array([100, 200, 300, 400]),
     cellRowIndices: new Uint32Array([0, 1]),
     // ABGR-packed u32 per cell (R=255 G=0 B=0 A=255) → 0xff0000ff;
@@ -114,15 +113,11 @@ describe('GpuVariantRenderer', () => {
     )
 
     const f32 = hal.getLastUniformsF32()!
-    const u32 = hal.getLastUniformsU32()!
-    // region_start at slot 3
-    expect(u32[3]).toBe(5000)
-    // canvas_height at slot 4
-    expect(f32[4]).toBe(600)
-    // row_height at slot 6
-    expect(f32[6]).toBe(20)
-    // scroll_top at slot 7
-    expect(f32[7]).toBe(50)
+    // canvas_height at slot 3, row_height at slot 5, scroll_top at slot 6
+    // (see UNIFORM_OFFSET_F32 in shaders/variant.generated.ts)
+    expect(f32[3]).toBe(600)
+    expect(f32[5]).toBe(20)
+    expect(f32[6]).toBe(50)
   })
 
   it('prunes stale regions via hal.pruneRegions', () => {

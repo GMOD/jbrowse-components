@@ -34,7 +34,9 @@ export interface FeatureGenotypeInfo {
 }
 
 export interface VariantCellData {
-  regionStart: number
+  // Absolute genomic positions in uint32 (start, renderEnd) interleaved.
+  // The renderer + shader split via hpSplitUint against the per-block
+  // bpRangeX; no region origin is shipped separately.
   cellPositions: Uint32Array
   cellRowIndices: Uint32Array
   cellColors: Uint32Array
@@ -111,14 +113,6 @@ export function computeVariantCells({
   const sourceNameList = sources.map(s => s.name)
   const featureIdList: string[] = []
 
-  let regionStart = mafs[0]?.feature.get('start') ?? 0
-  for (const { feature } of mafs) {
-    const s = feature.get('start')
-    if (s < regionStart) {
-      regionStart = s
-    }
-  }
-
   const featureGenotypeMap: Record<string, FeatureGenotypeInfo> = {}
   let cellCount = 0
   let numRefCells = 0
@@ -134,8 +128,10 @@ export function computeVariantCells({
     featureIdx: number,
   ) {
     const ci = cellCount
-    positions[ci * 2] = genomicStart - regionStart
-    positions[ci * 2 + 1] = renderEnd - regionStart
+    // Absolute uint32 genomic positions — the shader hp-splits these
+    // against the per-block bpRangeX (no region origin in the uniform).
+    positions[ci * 2] = genomicStart
+    positions[ci * 2 + 1] = renderEnd
     rowIndices[ci] = rowIndex
     colors[ci] = colorAbgr
     shapeTypes[ci] = shape
@@ -518,7 +514,6 @@ export function computeVariantCells({
   flatbush.finish()
 
   return {
-    regionStart,
     cellPositions: outPositions,
     cellRowIndices: outRowIndices,
     cellColors: outColors,

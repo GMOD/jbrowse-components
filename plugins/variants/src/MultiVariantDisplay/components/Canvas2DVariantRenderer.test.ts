@@ -57,7 +57,6 @@ function makeBlock(
 const DEFAULT_COLOR = 0xffffffff
 
 function makeRegionData(overrides?: {
-  regionStart?: number
   numCells?: number
   cellPositions?: number[]
   cellRowIndices?: number[]
@@ -66,7 +65,6 @@ function makeRegionData(overrides?: {
 }): VariantUploadData {
   const numCells = overrides?.numCells ?? 1
   return {
-    regionStart: overrides?.regionStart ?? 0,
     cellPositions: new Uint32Array(
       overrides?.cellPositions ?? new Array(numCells * 2).fill(0),
     ),
@@ -270,9 +268,11 @@ describe('Canvas2DVariantRenderer', () => {
 
       renderer.renderBlocks([makeBlock()], regions, DEFAULT_STATE)
 
+      // Insertion (TRI_DOWN) glyph is extended by 3px on each side to match
+      // the shader's widthExtend; cell spans px 0..80 → drawn 0-3..80+3.
       const moveOp = pathOps.find(op => op.startsWith('moveTo'))
-      expect(moveOp).toBe('moveTo(0,0)')
-      expect(pathOps).toContain('lineTo(80,0)')
+      expect(moveOp).toBe('moveTo(-3,0)')
+      expect(pathOps).toContain('lineTo(83,0)')
       expect(pathOps).toContain('lineTo(40,10)')
       expect(pathOps).toContain('fill')
     })

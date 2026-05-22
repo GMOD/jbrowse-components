@@ -77,7 +77,6 @@ export class GpuVariantRenderer extends GpuPerRegionBackend<
       this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
       writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
-      this.uniformU32[U.regionStart] = Math.floor(region.regionStart)
       this.uniformF32[U.canvasHeight] = canvasHeight
       this.uniformF32[U.canvasWidth] = clip.scissorW
       this.uniformF32[U.rowHeight] = state.rowHeight

@@ -60,8 +60,8 @@ export function drawVariantBlocks(
         continue
       }
 
-      const startBp = region.cellPositions[i * 2]! + region.regionStart
-      const endBp = region.cellPositions[i * 2 + 1]! + region.regionStart
+      const startBp = region.cellPositions[i * 2]!
+      const endBp = region.cellPositions[i * 2 + 1]!
 
       const frac1 = (startBp - block.bpRangeX[0]) / bpLength
       const frac2 = (endBp - block.bpRangeX[0]) / bpLength

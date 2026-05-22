@@ -18,7 +18,6 @@ struct CellInstance {
 
 struct Uniforms {
   float3 bpRangeX;
-  uint   regionStart;
   float  canvasHeight;
   float  canvasWidth;
   float  rowHeight;
@@ -41,10 +40,10 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
-  uint absStart = inst.startEnd.x + u.regionStart;
-  uint absEnd   = inst.startEnd.y + u.regionStart;
-  float clipX1 = hpToClipX(hpSplitUint(absStart), u.bpRangeX, u.zero);
-  float clipX2 = hpToClipX(hpSplitUint(absEnd),   u.bpRangeX, u.zero);
+  // startEnd is absolute genomic uint32; hpSplitUint preserves float32
+  // precision against the per-block bpRangeX.
+  float clipX1 = hpToClipX(hpSplitUint(inst.startEnd.x), u.bpRangeX, u.zero);
+  float clipX2 = hpToClipX(hpSplitUint(inst.startEnd.y), u.bpRangeX, u.zero);
 
   float pxSize = 2.0 / u.canvasWidth;
   float cx1 = floor(clipX1 / pxSize + 0.5) * pxSize;

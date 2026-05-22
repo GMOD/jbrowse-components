@@ -77,5 +77,5 @@ export function getColorAlleleCount(
     const l = NO_CALL_COLOR.replace(')', `,${alpha})`).replace('hsl', 'hsla')
     a1 = a1 ? a1.mix(l) : colord(l)
   }
-  return a1?.toHex() || 'black'
+  return a1?.toHex() ?? 'black'
 }
