@@ -161,6 +161,19 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
     {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      // Lift renderer sub-config properties to display level for old configs
+      // that used renderer: { type: "SvgFeatureRenderer"|"CanvasFeatureRenderer",
+      // color1: ..., labels: ... }. The renderer concept was removed in the GPU
+      // rewrite; these properties now live directly on the display config.
+      preProcessSnapshot: (snap: Record<string, unknown>) => {
+        if (!snap.renderer || typeof snap.renderer !== 'object') {
+          return snap
+        }
+        const { type: _type, ...rendererProps } =
+          snap.renderer as Record<string, unknown>
+        const { renderer: _renderer, ...rest } = snap
+        return { ...rendererProps, ...rest }
+      },
     },
   )
 }

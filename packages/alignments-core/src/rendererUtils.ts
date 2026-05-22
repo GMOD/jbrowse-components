@@ -23,7 +23,7 @@ import {
 import type { CigarOpDrawColors } from './labelConstants.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
-export interface NoncovDrawColors {
+interface NoncovDrawColors {
   insertion: string
   softclip: string
   hardclip: string
@@ -33,22 +33,6 @@ type Ctx = CanvasRenderingContext2D | SvgCanvas
 
 export function getDevicePixelRatio() {
   return typeof window !== 'undefined' ? window.devicePixelRatio : 2
-}
-
-export function resizeCanvas(
-  canvas: HTMLCanvasElement,
-  width: number,
-  height: number,
-) {
-  const dpr = getDevicePixelRatio()
-  const pw = Math.round(width * dpr)
-  const ph = Math.round(height * dpr)
-  const changed = canvas.width !== pw || canvas.height !== ph
-  if (changed) {
-    canvas.width = pw
-    canvas.height = ph
-  }
-  return { pw, ph, changed }
 }
 
 export function coverageLayout(coverageHeight: number) {

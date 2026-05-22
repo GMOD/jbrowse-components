@@ -49,12 +49,6 @@ class WebWorkerHandle {
   }
 }
 
-let canvasIdCounter = 0
-
-export function getNextCanvasId() {
-  return canvasIdCounter++
-}
-
 export default class WebWorkerRpcDriver extends BaseRpcDriver {
   name = 'WebWorkerRpcDriver'
 
@@ -115,9 +109,4 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     })
   }
 
-  async getGpuWorker() {
-    const pool = this.getWorkerPool()
-    const handle = (await pool[0]!.getWorker()) as WebWorkerHandle
-    return handle.worker
-  }
 }

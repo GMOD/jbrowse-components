@@ -126,11 +126,11 @@ export class WebGL2Hal implements GpuHal {
     this.debug = debugEnabled()
     totalCreated += 1
     this.instanceId = totalCreated
-    // Always log lifecycle — the context-leak class of bugs needs this even
-    // outside debug mode, which is why these use warn instead of log.
-    console.warn(
-      `[WebGL2Hal #${this.instanceId}] init (live=${totalCreated - totalDisposed}/${totalCreated}, passes=${descriptors.length})`,
-    )
+    if (this.debug) {
+      console.warn(
+        `[WebGL2Hal #${this.instanceId}] init (live=${totalCreated - totalDisposed}/${totalCreated}, passes=${descriptors.length})`,
+      )
+    }
     const onContextLost = (e: Event) => {
       const ev = e as WebGLContextEvent
       console.error(
@@ -434,21 +434,22 @@ export class WebGL2Hal implements GpuHal {
   }
 
   dispose() {
-    console.error(
-      `[WebGL2Hal #${this.instanceId}] dispose() CALLED, already disposed=${this.disposed}`,
-    )
     if (this.disposed) {
-      console.warn(
-        `[WebGL2Hal #${this.instanceId}] dispose() called but already disposed, returning`,
-      )
+      if (this.debug) {
+        console.warn(
+          `[WebGL2Hal #${this.instanceId}] dispose() called but already disposed`,
+        )
+      }
       return
     }
     this.disposed = true
     const gl = this.gl
     totalDisposed += 1
-    console.warn(
-      `[WebGL2Hal #${this.instanceId}] DISPOSING context (live=${totalCreated - totalDisposed}/${totalCreated})`,
-    )
+    if (this.debug) {
+      console.warn(
+        `[WebGL2Hal #${this.instanceId}] DISPOSING context (live=${totalCreated - totalDisposed}/${totalCreated})`,
+      )
+    }
 
     // Remove canvas event listeners to prevent closure references from keeping
     // the context alive after disposal. This is critical for test suites where

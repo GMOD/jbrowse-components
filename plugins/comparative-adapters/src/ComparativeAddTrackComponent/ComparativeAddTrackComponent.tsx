@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -14,6 +14,13 @@ const ComparativeAddTrackComponent = observer(
     const defaultAsm = session.assemblies[0]?.name ?? ''
     const [queryAssembly, setQueryAssembly] = useState(defaultAsm)
     const [targetAssembly, setTargetAssembly] = useState(defaultAsm)
+    // Initialize mixinData on mount so the default assemblies are set even
+    // if the user never touches the selectors before confirming.
+    useEffect(() => {
+      model.setMixinData({
+        adapter: { queryAssembly: defaultAsm, targetAssembly: defaultAsm },
+      })
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
     return (
       <>
         <AssemblySelector
