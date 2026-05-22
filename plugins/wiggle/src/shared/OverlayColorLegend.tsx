@@ -18,7 +18,7 @@ export default function OverlayColorLegend({
   }
   labelWidth += 10
   const totalWidth = labelWidth + 14
-  const x = canvasWidth - totalWidth - 4
+  const x = Math.max(0, canvasWidth - totalWidth - 4)
   return (
     <g transform={`translate(${x} 0)`}>
       {sources.map((source, idx) => {

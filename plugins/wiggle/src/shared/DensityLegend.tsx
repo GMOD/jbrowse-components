@@ -14,7 +14,7 @@ function DensityLegend({
   const [minScore, maxScore] = domain
   const legend = `[${formatScore(minScore)}-${formatScore(maxScore)}]${scaleType === 'log' ? ' (log)' : ''}`
   const len = measureText(legend, 12)
-  const x = canvasWidth - len - 10
+  const x = Math.max(0, canvasWidth - len - 10)
   return (
     <g>
       <rect

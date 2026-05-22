@@ -229,6 +229,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           top: 0,
           left: 0,
           pointerEvents: 'none',
+          overflow: 'hidden',
           height,
           width: totalWidth,
         }}
