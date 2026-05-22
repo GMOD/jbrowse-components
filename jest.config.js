@@ -26,6 +26,7 @@ const baseConfig = {
     'QuickLRU.js',
   ],
   setupFiles: [
+    '<rootDir>/config/jest/textEncoder.js',
     '<rootDir>/config/jest/console.js',
     '<rootDir>/config/jest/messagechannel.js',
     '<rootDir>/config/jest/setHTML.js',

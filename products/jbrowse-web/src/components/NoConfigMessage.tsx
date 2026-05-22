@@ -183,14 +183,6 @@ const syntenyConfigs: {
     label: 'Multi-genome volvox',
   },
   {
-    config: 'test_data/hprc/config_hprc_chrM.json',
-    label: 'HPRC chrM (44 haps)',
-  },
-  {
-    config: 'test_data/hprc/config_hprc_chr20.json',
-    label: 'HPRC chr20 (90 haps)',
-  },
-  {
     config: 'test_data/hs1_vs_mm39/config.json',
     label: 'hs1 vs mm39',
   },
