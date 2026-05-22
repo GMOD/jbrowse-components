@@ -1,5 +1,5 @@
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { PerRegionGpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import type { PerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
 
 export type { RenderBlock as FeatureRenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
@@ -9,7 +9,7 @@ export interface RenderState {
   canvasHeight: number
 }
 
-export type CanvasFeatureBackend = PerRegionGpuBackend<
+export type CanvasFeatureBackend = PerRegionBackend<
   RegionRenderData,
   RenderState
 >

@@ -1,4 +1,4 @@
-import type { PerRegionGpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import type { PerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 export type MafRenderBlock = RenderBlock
@@ -34,7 +34,7 @@ export interface MafRegionData {
 // Inputs to `buildInstanceBuffer` — derived from theme + user toggles on
 // the main thread. Changes here re-encode (without refetching). The
 // instance buffer itself is built in the per-region encode autorun
-// installed by `startGpuBackendLifecycle`, so color/style settings never
+// installed by `startBackend`, so color/style settings never
 // round-trip through the worker.
 export interface MafGpuProps {
   colorForBase: Record<string, string>
@@ -54,7 +54,7 @@ export interface MafUploadPayload {
 // directly from the model's `rpcDataMap` (so Canvas2D can draw them and
 // GPU can check presence). RenderData diverges from UploadData here —
 // every other per-region plugin keeps the default `RenderData = UploadData`.
-export type MafBackend = PerRegionGpuBackend<
+export type MafBackend = PerRegionBackend<
   MafUploadPayload,
   MafGPURenderState,
   MafRenderBlock,

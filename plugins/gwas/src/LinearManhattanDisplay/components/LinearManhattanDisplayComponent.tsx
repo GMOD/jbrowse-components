@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import { SimpleFeature, getContainingView } from '@jbrowse/core/util'
-import { useGpuModelLifecycle } from '@jbrowse/core/util/useGpuModelLifecycle'
+import { useGpuBackend } from '@jbrowse/core/util/useGpuBackend'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
@@ -30,7 +30,7 @@ const LinearManhattanDisplayComponent = observer(
   }: {
     model: ManhattanDisplayModel
   }) {
-    const { canvasRef, error, retry } = useGpuModelLifecycle(
+    const { canvasRef, error, retry } = useGpuBackend(
       ManhattanRenderer,
       model,
     )

@@ -382,8 +382,8 @@ export default function sharedModelFactory(
        * the same rpcData object, so a single identity-diffed slot handles
        * both uploads.
        */
-      startGpuBackendLifecycle(backend: LDBackend) {
-        self.installGpuDisplay<LDBackend>(backend, {
+      startBackend(backend: LDBackend) {
+        self.attachBackend<LDBackend>(backend, {
           upload: b => {
             const d = self.rpcData
             if (!d) {

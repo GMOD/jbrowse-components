@@ -1,6 +1,6 @@
 /// <reference types="@webgpu/types" />
 
-import { getGpuDevice, onDeviceLost } from '@jbrowse/core/gpu/getGpuDevice'
+import { getGpuDevice, onDeviceLost } from '@jbrowse/core/gpu/gpuDevice'
 
 import { ldComputeShader } from './ldComputeShader.ts'
 import { ldPhasedComputeShader } from './ldPhasedComputeShader.ts'

@@ -189,14 +189,14 @@ export function linearSyntenyViewHelperModelFactory(
       /**
        * #action
        */
-      startGpuBackendLifecycle(backend: SyntenyBackend) {
+      startBackend(backend: SyntenyBackend) {
         // renderInstanceData is MST-cached; its reference is stable while
         // upstream deps are unchanged. Track what we last uploaded per
         // key so an upload-autorun re-fire from one display doesn't push
         // identical bytes back to the GPU for the others.
         const lastUploaded = new Map<number, SyntenyInstanceData>()
         let prevUploadBackend: SyntenyBackend | undefined
-        self.installGpuDisplay<SyntenyBackend>(backend, {
+        self.attachBackend<SyntenyBackend>(backend, {
           upload: b => {
             // When the backend instance changes (e.g. canvas remounted after
             // context loss or Suspense), the new backend has no geometry —

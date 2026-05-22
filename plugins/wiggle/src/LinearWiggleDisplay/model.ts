@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { installPerRegionGpuLifecycle } from '@jbrowse/core/gpu/installPerRegionGpuLifecycle'
+import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -306,8 +306,8 @@ export default function stateModelFactory(
         const { renderSvg } = await import('./renderSvg.tsx')
         return renderSvg(self as LinearWiggleDisplayModel, opts)
       },
-      startGpuBackendLifecycle(backend: WiggleBackend) {
-        installPerRegionGpuLifecycle(
+      startBackend(backend: WiggleBackend) {
+        installPerRegionLifecycle(
           self,
           self.rpcDataMap,
           backend,

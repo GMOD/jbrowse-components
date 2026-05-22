@@ -542,8 +542,8 @@ export default function baseStateModelFactory(
           }
         },
 
-        startGpuBackendLifecycle(backend: CanvasFeatureBackend) {
-          self.installGpuDisplay<CanvasFeatureBackend>(backend, {
+        startBackend(backend: CanvasFeatureBackend) {
+          self.attachBackend<CanvasFeatureBackend>(backend, {
             upload: b => {
               const active: number[] = []
               for (const [displayedRegionIndex, data] of self.laidOutDataMap) {

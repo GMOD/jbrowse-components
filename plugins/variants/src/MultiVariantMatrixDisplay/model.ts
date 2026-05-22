@@ -75,8 +75,8 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      startGpuBackendLifecycle(backend: VariantMatrixBackend) {
-        self.installGpuDisplay<VariantMatrixBackend>(backend, {
+      startBackend(backend: VariantMatrixBackend) {
+        self.attachBackend<VariantMatrixBackend>(backend, {
           upload: b => {
             const { cellData } = self
             if (cellData?.mode === 'matrix') {

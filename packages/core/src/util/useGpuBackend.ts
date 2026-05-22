@@ -18,8 +18,8 @@ function nodeAlive(model: unknown) {
  * model; the hook only touches these three actions.
  */
 export interface GpuLifecycleModel<BackendType> {
-  startGpuBackendLifecycle: (backend: BackendType) => void
-  stopGpuBackendLifecycle: () => void
+  startBackend: (backend: BackendType) => void
+  stopBackend: () => void
   renderNow: () => void
 }
 
@@ -28,15 +28,15 @@ export interface GpuLifecycleModel<BackendType> {
  * used to repeat:
  *
  *     const { canvasRef, error, retry } = useGpuRenderer(Factory, {
- *       onReady: backend => model.startGpuBackendLifecycle(backend),
- *       onDispose: () => model.stopGpuBackendLifecycle(),
+ *       onReady: backend => model.startBackend(backend),
+ *       onDispose: () => model.stopBackend(),
  *     })
  *     useTabVisibilityRerender(() => model.renderNow())
  *
  * The model argument is duck-typed to the slot mixin's contract — the
  * three actions are all the hook touches.
  */
-export function useGpuModelLifecycle<BackendType extends { dispose(): void }>(
+export function useGpuBackend<BackendType extends { dispose(): void }>(
   factory: (canvas: HTMLCanvasElement) => Promise<BackendType>,
   model: GpuLifecycleModel<BackendType>,
 ) {
@@ -44,12 +44,12 @@ export function useGpuModelLifecycle<BackendType extends { dispose(): void }>(
     () => ({
       onReady: (backend: BackendType) => {
         if (nodeAlive(model)) {
-          model.startGpuBackendLifecycle(backend)
+          model.startBackend(backend)
         }
       },
       onDispose: () => {
         if (nodeAlive(model)) {
-          model.stopGpuBackendLifecycle()
+          model.stopBackend()
         }
       },
     }),

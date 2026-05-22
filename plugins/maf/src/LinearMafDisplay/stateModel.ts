@@ -1,5 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { installPerRegionGpuLifecycle } from '@jbrowse/core/gpu/installPerRegionGpuLifecycle'
+import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
@@ -544,14 +544,14 @@ export default function stateModelFactory(
           self.rowHeight = Math.max(1, Math.floor(newHeight / sampleCount))
         }
       },
-      startGpuBackendLifecycle(backend: MafBackend) {
+      startBackend(backend: MafBackend) {
         // Per-region streamed upload. The encode callback builds the GPU
         // instance buffer on the main thread from raw region data + gpuProps,
         // so theme / showAllLetters / mismatchRendering changes re-encode
         // without an RPC roundtrip. Returning undefined while gpuProps isn't
         // ready (theme not yet pushed in by the React bridge) holds the
-        // upload until it is — see installPerRegionGpuLifecycle.
-        installPerRegionGpuLifecycle(
+        // upload until it is — see installPerRegionLifecycle.
+        installPerRegionLifecycle(
           self,
           self.rpcDataMap,
           backend,

@@ -1,4 +1,4 @@
-import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
+import { createBackend } from '@jbrowse/core/gpu/createBackend'
 
 import { Canvas2DFeatureRenderer } from './Canvas2DFeatureRenderer.ts'
 import {
@@ -12,7 +12,7 @@ export { type FeatureRenderBlock } from './canvasFeatureBackendTypes.ts'
 import type { CanvasFeatureBackend } from './canvasFeatureBackendTypes.ts'
 
 export function CanvasFeatureRenderer(canvas: HTMLCanvasElement) {
-  return initDualBackend<CanvasFeatureBackend>(
+  return createBackend<CanvasFeatureBackend>(
     canvas,
     CANVAS_FEATURE_PASSES,
     CANVAS_FEATURE_UNIFORM_BYTE_SIZE,

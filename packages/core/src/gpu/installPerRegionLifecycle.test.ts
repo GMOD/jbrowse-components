@@ -2,7 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction } from 'mobx'
 
 import { GpuLifecycleMixin } from './GpuLifecycleMixin.ts'
-import { installPerRegionGpuLifecycle } from './installPerRegionGpuLifecycle.ts'
+import { installPerRegionLifecycle } from './installPerRegionLifecycle.ts'
 
 const TestModel = types
   .compose('TestModel', GpuLifecycleMixin(), types.model({}))
@@ -47,7 +47,7 @@ test('N sequential region arrivals trigger N uploads, not N²', () => {
   const { backend, uploads } = makeFakeBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionGpuLifecycle(
+  installPerRegionLifecycle(
     model,
     data,
     backend,
@@ -70,7 +70,7 @@ test('encode-tracked observable change re-fires every per-key autorun', () => {
   const data = observable.map<number, string>(undefined, { deep: false })
   const markerBox = observable.box(0)
 
-  installPerRegionGpuLifecycle(
+  installPerRegionLifecycle(
     model,
     data,
     backend,
@@ -104,7 +104,7 @@ test('only the changed key re-uploads when its value mutates', () => {
   const { backend, uploads } = makeFakeBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionGpuLifecycle(
+  installPerRegionLifecycle(
     model,
     data,
     backend,
@@ -132,7 +132,7 @@ test('removing a key disposes its autorun and prunes from active set', () => {
   const { backend, uploads, prunes } = makeFakeBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionGpuLifecycle(
+  installPerRegionLifecycle(
     model,
     data,
     backend,
@@ -169,7 +169,7 @@ test('backend swap (context-loss recovery) routes uploads to new backend', () =>
   const b = makeFakeBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionGpuLifecycle(
+  installPerRegionLifecycle(
     model,
     data,
     a.backend,
@@ -185,7 +185,7 @@ test('backend swap (context-loss recovery) routes uploads to new backend', () =>
   expect(a.uploads.map(u => u.key)).toEqual([0, 1])
   expect(b.uploads).toHaveLength(0)
 
-  model.installGpuDisplay<FakeBackend>(b.backend, {
+  model.attachBackend<FakeBackend>(b.backend, {
     upload: () => {},
     render: () => false,
   })
@@ -199,7 +199,7 @@ test('render callback receives the cached encoded map', () => {
   const data = observable.map<number, number>(undefined, { deep: false })
   let lastEncoded: ReadonlyMap<number, FakeEncoded> | undefined
 
-  installPerRegionGpuLifecycle(
+  installPerRegionLifecycle(
     model,
     data,
     backend,
@@ -233,7 +233,7 @@ test('encode returning undefined leaves the cached encoded entry untouched', () 
   const ready = observable.box(true)
   let lastEncoded: ReadonlyMap<number, FakeEncoded> | undefined
 
-  installPerRegionGpuLifecycle(
+  installPerRegionLifecycle(
     model,
     data,
     backend,

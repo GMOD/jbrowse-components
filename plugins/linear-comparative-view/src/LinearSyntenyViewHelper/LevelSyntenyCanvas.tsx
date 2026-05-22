@@ -7,7 +7,7 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
-  useGpuModelLifecycle,
+  useGpuBackend,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -107,7 +107,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     canvasRef,
     error: gpuError,
     retry,
-  } = useGpuModelLifecycle(SyntenyRendererFactory, model)
+  } = useGpuBackend(SyntenyRendererFactory, model)
 
   // One banner per level so GPU lifecycle errors and per-display fetch errors
   // (e.g. PAF 404) never stack visually

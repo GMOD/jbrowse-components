@@ -13,9 +13,9 @@ export interface VariantMatrixUploadData {
   numFeatures: number
 }
 
-import type { MonolithicGpuBackend } from '@jbrowse/core/gpu/monolithicBackend'
+import type { MonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
 
-export type VariantMatrixBackend = MonolithicGpuBackend<
+export type VariantMatrixBackend = MonolithicBackend<
   VariantMatrixUploadData,
   MatrixRenderState
 >

@@ -1,4 +1,4 @@
-import type { MonolithicGpuBackend } from '@jbrowse/core/gpu/monolithicBackend'
+import type { MonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
 
 export interface HicRenderState {
   binWidth: number
@@ -19,7 +19,7 @@ export interface HicUploadData {
 
 // HiC adds `uploadColorRamp` for its color-mapped texture; otherwise
 // follows the standard monolithic shape (one bulk uploadData, one render).
-export interface HicBackend extends MonolithicGpuBackend<
+export interface HicBackend extends MonolithicBackend<
   HicUploadData,
   HicRenderState
 > {

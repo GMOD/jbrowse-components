@@ -4,7 +4,7 @@ import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
-  useGpuModelLifecycle,
+  useGpuBackend,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -29,8 +29,8 @@ const useStyles = makeStyles()(scrollbarStyles)
 export interface VariantMatrixDisplayModel extends VariantDisplayModelBase {
   cellData: MatrixCellData | undefined
   canvasDrawn: boolean
-  startGpuBackendLifecycle: (backend: VariantMatrixBackend) => void
-  stopGpuBackendLifecycle: () => void
+  startBackend: (backend: VariantMatrixBackend) => void
+  stopBackend: () => void
   renderNow: () => void
 }
 
@@ -53,7 +53,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
 }) {
   const { classes } = useStyles()
 
-  const { canvas, canvasRef, error, retry } = useGpuModelLifecycle(
+  const { canvas, canvasRef, error, retry } = useGpuBackend(
     VariantMatrixRenderer,
     model,
   )

@@ -2,7 +2,7 @@ import { createGpuHal } from './hal/index.ts'
 
 import type { GpuHal, PassDescriptor } from './hal/types.ts'
 
-export async function initDualBackend<TBackend>(
+export async function createBackend<TBackend>(
   canvas: HTMLCanvasElement,
   passes: PassDescriptor[],
   uniformByteSize: number,

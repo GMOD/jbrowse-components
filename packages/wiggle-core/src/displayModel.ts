@@ -1,7 +1,7 @@
 import type { WiggleBackend } from './backendTypes.ts'
 import type { WiggleDataResult } from './dataTypes.ts'
 import type { YScaleTicks } from './index.ts'
-import type { GpuLifecycleModel } from '@jbrowse/core/util/useGpuModelLifecycle'
+import type { GpuLifecycleModel } from '@jbrowse/core/util/useGpuBackend'
 
 // Intersection contract every wiggle-style GPU display model exposes to its
 // React component. Backend-typed for narrowing.

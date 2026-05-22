@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { setGpuOverride } from '@jbrowse/core/gpu/gpuDevice'
 import { ErrorMessage, createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
 import { CssBaseline, ThemeProvider } from '@mui/material'

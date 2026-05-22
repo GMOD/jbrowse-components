@@ -1,4 +1,4 @@
-import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
+import { createBackend } from '@jbrowse/core/gpu/createBackend'
 
 import { Canvas2DManhattanRenderer } from './Canvas2DManhattanRenderer.ts'
 import {
@@ -10,7 +10,7 @@ import * as shader from './shaders/manhattan.generated.ts'
 import type { ManhattanBackend } from './manhattanBackendTypes.ts'
 
 export function ManhattanRenderer(canvas: HTMLCanvasElement) {
-  return initDualBackend<ManhattanBackend>(
+  return createBackend<ManhattanBackend>(
     canvas,
     MANHATTAN_PASSES,
     shader.UNIFORMS_SIZE_BYTES,

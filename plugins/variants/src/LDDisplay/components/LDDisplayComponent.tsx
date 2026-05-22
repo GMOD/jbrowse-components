@@ -5,7 +5,7 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingView,
   max,
-  useGpuModelLifecycle,
+  useGpuBackend,
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -259,7 +259,7 @@ const LDCanvas = observer(function LDCanvas({
     y: number
   }>()
 
-  const { canvasRef, error, retry } = useGpuModelLifecycle(LDRenderer, model)
+  const { canvasRef, error, retry } = useGpuBackend(LDRenderer, model)
 
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx

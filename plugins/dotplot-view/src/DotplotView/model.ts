@@ -433,11 +433,11 @@ export default function stateModelFactory(pm: PluginManager) {
       // per-display geometry from `geometryByTrackIndex` and runs both upload
       // and render against the shared backend.
       .actions(self => ({
-        startGpuBackendLifecycle(backend: DotplotBackend) {
+        startBackend(backend: DotplotBackend) {
           // Previously-uploaded keys, so we can fire deleteGeometry for
           // entries that disappear between autorun ticks.
           const lastKeys = new Set<number>()
-          self.installGpuDisplay<DotplotBackend>(backend, {
+          self.attachBackend<DotplotBackend>(backend, {
             upload: b => {
               const currentKeys = new Set<number>()
               for (const [key, data] of self.geometryByTrackIndex) {

@@ -7,7 +7,7 @@
  */
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 
-import { setGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import { setGpuOverride } from '@jbrowse/core/gpu/gpuDevice'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { destroy, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'

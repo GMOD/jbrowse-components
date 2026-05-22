@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 
 import { ErrorOverlay } from '@jbrowse/core/ui'
-import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
+import { getContainingView, useGpuBackend } from '@jbrowse/core/util'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
@@ -90,8 +90,8 @@ export interface MultiWiggleDisplayModel {
   ) => void
   canvasDrawn: boolean
   isReady: boolean
-  startGpuBackendLifecycle: (backend: WiggleBackend) => void
-  stopGpuBackendLifecycle: () => void
+  startBackend: (backend: WiggleBackend) => void
+  stopBackend: () => void
   renderNow: () => void
 }
 
@@ -101,10 +101,10 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   model: MultiWiggleDisplayModel
 }) {
   // The model owns the upload/render autorun and the GPU backend lifecycle —
-  // see startGpuBackendLifecycle / stopGpuBackendLifecycle / renderNow on
+  // see startBackend / stopBackend / renderNow on
   // the MultiLinearWiggleDisplay model. Sources changes trigger a full
   // re-upload via the lifecycle's `getUploadInvalidationToken`.
-  const { canvasRef, error, retry } = useGpuModelLifecycle(
+  const { canvasRef, error, retry } = useGpuBackend(
     WiggleRenderer,
     model,
   )

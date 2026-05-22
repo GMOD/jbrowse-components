@@ -1,4 +1,4 @@
-import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
+import { createBackend } from '@jbrowse/core/gpu/createBackend'
 
 import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
 import {
@@ -10,7 +10,7 @@ import {
 import type { SyntenyBackend } from './syntenyBackendTypes.ts'
 
 export function SyntenyRendererFactory(canvas: HTMLCanvasElement) {
-  return initDualBackend<SyntenyBackend>(
+  return createBackend<SyntenyBackend>(
     canvas,
     SYNTENY_PASSES,
     SYNTENY_UNIFORM_BYTE_SIZE,

@@ -1,7 +1,7 @@
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-export interface InstallGpuDisplayCallbacks<B> {
+export interface BackendCallbacks<B> {
   upload: (backend: B) => void
   /**
    * Issue draw calls for the current frame. Return `true` if something was
@@ -19,8 +19,8 @@ export interface InstallGpuDisplayCallbacks<B> {
  *
  * Plugins compose this mixin (directly or via `MultiRegionDisplayMixin` /
  * `GlobalDataDisplayMixin`) and call
- * `self.installGpuDisplay(backend, { upload, render })` from their own
- * `startGpuBackendLifecycle(backend)` action. The mixin owns:
+ * `self.attachBackend(backend, { upload, render })` from their own
+ * `startBackend(backend)` action. The mixin owns:
  *
  *  - `canvasDrawn` — observable flag read by test-selector `data-testid` attributes to detect first paint.
  *  - `currentGpuBackend` — the backend reference, updated on context-loss
@@ -30,7 +30,7 @@ export interface InstallGpuDisplayCallbacks<B> {
  *    `renderNow()` (tab-visibility restore) and after every upload
  *    (ensures render re-fires when an upload happens but renderState
  *    identity stays stable).
- *  - `gpuAutorunsInstalled` — guards `installGpuDisplay` so the autorun
+ *  - `gpuAutorunsInstalled` — guards `attachBackend` so the autorun
  *    pair is spawned once per model instance, not once per backend
  *    assignment.
  *
@@ -62,7 +62,7 @@ export function GpuLifecycleMixin() {
           self.canvasDrawn = false
         }
       },
-      stopGpuBackendLifecycle() {
+      stopBackend() {
         self.currentGpuBackend = undefined
         self.canvasDrawn = false
       },
@@ -71,7 +71,7 @@ export function GpuLifecycleMixin() {
       },
     }))
     .actions(self => ({
-      installGpuDisplay<B>(backend: B, cbs: InstallGpuDisplayCallbacks<B>) {
+      attachBackend<B>(backend: B, cbs: BackendCallbacks<B>) {
         self.currentGpuBackend = backend
         if (self.gpuAutorunsInstalled) {
           return

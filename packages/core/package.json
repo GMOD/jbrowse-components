@@ -36,11 +36,11 @@
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
     "./gpu/blockClipUtils": "./src/gpu/blockClipUtils.ts",
     "./gpu/canvas2dUtils": "./src/gpu/canvas2dUtils.ts",
-    "./gpu/createDualRenderer": "./src/gpu/createDualRenderer.ts",
-    "./gpu/getGpuDevice": "./src/gpu/getGpuDevice.ts",
+    "./gpu/createBackend": "./src/gpu/createBackend.ts",
+    "./gpu/gpuDevice": "./src/gpu/gpuDevice.ts",
     "./gpu/GpuLifecycleMixin": "./src/gpu/GpuLifecycleMixin.ts",
     "./gpu/hal": "./src/gpu/hal/index.ts",
-    "./gpu/installPerRegionGpuLifecycle": "./src/gpu/installPerRegionGpuLifecycle.ts",
+    "./gpu/installPerRegionLifecycle": "./src/gpu/installPerRegionLifecycle.ts",
     "./gpu/monolithicBackend": "./src/gpu/monolithicBackend.ts",
     "./gpu/perRegionBackend": "./src/gpu/perRegionBackend.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
@@ -135,6 +135,7 @@
     "./util/tss-react": "./src/util/tss-react/index.ts",
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
+    "./util/useGpuBackend": "./src/util/useGpuBackend.ts",
     "./util/useGpuModelLifecycle": "./src/util/useGpuModelLifecycle.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
@@ -269,13 +270,13 @@
         "types": "./esm/gpu/canvas2dUtils.d.ts",
         "import": "./esm/gpu/canvas2dUtils.js"
       },
-      "./gpu/createDualRenderer": {
-        "types": "./esm/gpu/createDualRenderer.d.ts",
-        "import": "./esm/gpu/createDualRenderer.js"
+      "./gpu/createBackend": {
+        "types": "./esm/gpu/createBackend.d.ts",
+        "import": "./esm/gpu/createBackend.js"
       },
-      "./gpu/getGpuDevice": {
-        "types": "./esm/gpu/getGpuDevice.d.ts",
-        "import": "./esm/gpu/getGpuDevice.js"
+      "./gpu/gpuDevice": {
+        "types": "./esm/gpu/gpuDevice.d.ts",
+        "import": "./esm/gpu/gpuDevice.js"
       },
       "./gpu/GpuLifecycleMixin": {
         "types": "./esm/gpu/GpuLifecycleMixin.d.ts",
@@ -285,9 +286,9 @@
         "types": "./esm/gpu/hal/index.d.ts",
         "import": "./esm/gpu/hal/index.js"
       },
-      "./gpu/installPerRegionGpuLifecycle": {
-        "types": "./esm/gpu/installPerRegionGpuLifecycle.d.ts",
-        "import": "./esm/gpu/installPerRegionGpuLifecycle.js"
+      "./gpu/installPerRegionLifecycle": {
+        "types": "./esm/gpu/installPerRegionLifecycle.d.ts",
+        "import": "./esm/gpu/installPerRegionLifecycle.js"
       },
       "./gpu/monolithicBackend": {
         "types": "./esm/gpu/monolithicBackend.d.ts",
@@ -665,6 +666,10 @@
         "types": "./esm/util/types/mst.d.ts",
         "import": "./esm/util/types/mst.js"
       },
+      "./util/useGpuBackend": {
+        "types": "./esm/util/useGpuBackend.d.ts",
+        "import": "./esm/util/useGpuBackend.js"
+      },
       "./util/useGpuModelLifecycle": {
         "types": "./esm/util/useGpuModelLifecycle.d.ts",
         "import": "./esm/util/useGpuModelLifecycle.js"
@@ -760,11 +765,11 @@
         "gpu/canvas2dUtils": [
           "esm/gpu/canvas2dUtils.d.ts"
         ],
-        "gpu/createDualRenderer": [
-          "esm/gpu/createDualRenderer.d.ts"
+        "gpu/createBackend": [
+          "esm/gpu/createBackend.d.ts"
         ],
-        "gpu/getGpuDevice": [
-          "esm/gpu/getGpuDevice.d.ts"
+        "gpu/gpuDevice": [
+          "esm/gpu/gpuDevice.d.ts"
         ],
         "gpu/GpuLifecycleMixin": [
           "esm/gpu/GpuLifecycleMixin.d.ts"
@@ -772,8 +777,8 @@
         "gpu/hal": [
           "esm/gpu/hal/index.d.ts"
         ],
-        "gpu/installPerRegionGpuLifecycle": [
-          "esm/gpu/installPerRegionGpuLifecycle.d.ts"
+        "gpu/installPerRegionLifecycle": [
+          "esm/gpu/installPerRegionLifecycle.d.ts"
         ],
         "gpu/monolithicBackend": [
           "esm/gpu/monolithicBackend.d.ts"
@@ -1056,6 +1061,9 @@
         ],
         "util/types/mst": [
           "esm/util/types/mst.d.ts"
+        ],
+        "util/useGpuBackend": [
+          "esm/util/useGpuBackend.d.ts"
         ],
         "util/useGpuModelLifecycle": [
           "esm/util/useGpuModelLifecycle.d.ts"

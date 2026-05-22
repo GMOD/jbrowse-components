@@ -1243,8 +1243,8 @@ export default function stateModelFactory(
         }
       })
       .actions(self => ({
-        startGpuBackendLifecycle(backend: AlignmentsBackend) {
-          self.installGpuDisplay<AlignmentsBackend>(backend, {
+        startBackend(backend: AlignmentsBackend) {
+          self.attachBackend<AlignmentsBackend>(backend, {
             upload: b => {
               b.sync({
                 laidOutPileupMap: self.laidOutPileupMap,

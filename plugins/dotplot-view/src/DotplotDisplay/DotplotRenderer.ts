@@ -1,4 +1,4 @@
-import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
+import { createBackend } from '@jbrowse/core/gpu/createBackend'
 
 import { Canvas2DDotplotRenderer } from './Canvas2DDotplotRenderer.ts'
 import {
@@ -10,7 +10,7 @@ import {
 import type { DotplotBackend } from './dotplotBackendTypes.ts'
 
 export function createDotplotRenderer(canvas: HTMLCanvasElement) {
-  return initDualBackend<DotplotBackend>(
+  return createBackend<DotplotBackend>(
     canvas,
     DOTPLOT_PASSES,
     DOTPLOT_UNIFORM_BYTE_SIZE,

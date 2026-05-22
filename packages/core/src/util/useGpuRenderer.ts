@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { onDeviceLost } from '../gpu/getGpuDevice.ts'
+import { onDeviceLost } from '../gpu/gpuDevice.ts'
 
 interface UseGpuRendererOptions<R> {
   onReady?: (renderer: R) => void

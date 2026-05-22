@@ -4,7 +4,7 @@ import { ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
-  useGpuModelLifecycle,
+  useGpuBackend,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -36,8 +36,8 @@ export interface VariantDisplayModel extends VariantDisplayModelBase {
   isDisplayLoading: boolean
   statusMessage?: string
   canvasDrawn: boolean
-  startGpuBackendLifecycle: (backend: VariantBackend) => void
-  stopGpuBackendLifecycle: () => void
+  startBackend: (backend: VariantBackend) => void
+  stopBackend: () => void
   renderNow: () => void
   visibleRegions: {
     refName: string
@@ -145,7 +145,7 @@ const VariantComponent = observer(function VariantComponent({
   const flatbushCacheRef = useRef(new WeakMap<ArrayBuffer, Flatbush>())
   const { classes } = useStyles()
 
-  const { canvas, canvasRef, error, retry } = useGpuModelLifecycle(
+  const { canvas, canvasRef, error, retry } = useGpuBackend(
     VariantRenderer,
     model,
   )

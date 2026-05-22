@@ -281,12 +281,12 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * Called by the React hook (`useGpuModelLifecycle`) when the HAL
+       * Called by the React hook (`useGpuBackend`) when the HAL
        * resolves. Wires the backend into the mixin-owned autorun pair via
-       * `installGpuDisplay`.
+       * `attachBackend`.
        */
-      startGpuBackendLifecycle(backend: HicBackend) {
-        self.installGpuDisplay<HicBackend>(backend, {
+      startBackend(backend: HicBackend) {
+        self.attachBackend<HicBackend>(backend, {
           upload: b => {
             const data = self.rpcData
             if (data) {

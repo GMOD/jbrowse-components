@@ -1,4 +1,4 @@
-import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
+import { createBackend } from '@jbrowse/core/gpu/createBackend'
 
 import { Canvas2DVariantMatrixRenderer } from './Canvas2DVariantMatrixRenderer.ts'
 import {
@@ -15,7 +15,7 @@ export type {
 } from './variantMatrixBackendTypes.ts'
 
 export function VariantMatrixRenderer(canvas: HTMLCanvasElement) {
-  return initDualBackend<VariantMatrixBackend>(
+  return createBackend<VariantMatrixBackend>(
     canvas,
     VARIANT_MATRIX_PASSES,
     VARIANT_MATRIX_UNIFORM_BYTE_SIZE,

@@ -92,8 +92,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
-      startGpuBackendLifecycle(backend: VariantBackend) {
-        self.installGpuDisplay<VariantBackend>(backend, {
+      startBackend(backend: VariantBackend) {
+        self.attachBackend<VariantBackend>(backend, {
           upload: b => {
             const active: number[] = []
             for (const [n, v] of self.perRegionCellMap) {

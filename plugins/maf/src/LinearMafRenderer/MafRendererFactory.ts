@@ -1,4 +1,4 @@
-import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
+import { createBackend } from '@jbrowse/core/gpu/createBackend'
 
 import { Canvas2DMafRenderer } from './Canvas2DMafRenderer.ts'
 import { GpuMafRenderer, MAF_PASSES } from './GpuMafRenderer.ts'
@@ -9,7 +9,7 @@ import type { MafBackend } from './mafBackendTypes.ts'
 export function MafRendererFactory(
   canvas: HTMLCanvasElement,
 ): Promise<MafBackend> {
-  return initDualBackend<MafBackend>(
+  return createBackend<MafBackend>(
     canvas,
     MAF_PASSES,
     UNIFORMS_SIZE_BYTES,

@@ -1,4 +1,4 @@
-import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
+import { createBackend } from '@jbrowse/core/gpu/createBackend'
 
 import { Canvas2DLDRenderer } from './Canvas2DLDRenderer.ts'
 import {
@@ -12,7 +12,7 @@ export { generateLDColorRamp } from './ldColorRamp.ts'
 import type { LDBackend } from './ldBackendTypes.ts'
 
 export function LDRenderer(canvas: HTMLCanvasElement) {
-  return initDualBackend<LDBackend>(
+  return createBackend<LDBackend>(
     canvas,
     LD_PASSES,
     LD_UNIFORM_BYTE_SIZE,

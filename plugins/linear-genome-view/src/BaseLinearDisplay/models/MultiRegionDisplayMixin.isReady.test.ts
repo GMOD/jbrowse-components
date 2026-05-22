@@ -59,7 +59,7 @@ describe('isReady: loading overlay invariant', () => {
 
   test('true only after canvas drawn AND no active fetch', () => {
     const m = TestModel.create()
-    m.installGpuDisplay(
+    m.attachBackend(
       { renders: 0 },
       {
         upload: () => {},
@@ -76,7 +76,7 @@ describe('isReady: loading overlay invariant', () => {
 
   test('resets to false after resetCanvasDrawn (simulates clearAllRpcData)', () => {
     const m = TestModel.create()
-    m.installGpuDisplay(
+    m.attachBackend(
       { renders: 0 },
       {
         upload: () => {},
@@ -111,7 +111,7 @@ describe('isReady: loading overlay invariant', () => {
     expect(m.isReady).toBe(false)
 
     // Phase 4: GPU backend installs and renders first frame
-    m.installGpuDisplay(
+    m.attachBackend(
       { renders: 0 },
       {
         upload: () => {},

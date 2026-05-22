@@ -4,7 +4,7 @@ import { Menu } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
-  useGpuModelLifecycle,
+  useGpuBackend,
 } from '@jbrowse/core/util'
 import {
   DisplayErrorBar,
@@ -36,7 +36,7 @@ const LinearMafDisplay = observer(function (props: {
   const theme = useTheme()
   const session = getSession(model)
 
-  const { canvasRef } = useGpuModelLifecycle(MafRendererFactory, model)
+  const { canvasRef } = useGpuBackend(MafRendererFactory, model)
 
   // Push theme-derived base colors into the model. Drives `gpuProps()`, so
   // theme changes re-encode on the main thread (no RPC refetch).

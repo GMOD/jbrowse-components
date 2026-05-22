@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { installPerRegionGpuLifecycle } from '@jbrowse/core/gpu/installPerRegionGpuLifecycle'
+import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 import {
@@ -289,8 +289,8 @@ export default function stateModelFactory(
         }
       },
 
-      startGpuBackendLifecycle(backend: WiggleBackend) {
-        installPerRegionGpuLifecycle(
+      startBackend(backend: WiggleBackend) {
+        installPerRegionLifecycle(
           self,
           self.rpcDataMap,
           backend,

@@ -1,4 +1,4 @@
-import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
+import { createBackend } from '@jbrowse/core/gpu/createBackend'
 
 import { Canvas2DHicRenderer } from './Canvas2DHicRenderer.ts'
 import {
@@ -12,7 +12,7 @@ export { generateColorRamp } from './colorRamp.ts'
 import type { HicBackend } from './hicBackendTypes.ts'
 
 export function HicRenderer(canvas: HTMLCanvasElement) {
-  return initDualBackend<HicBackend>(
+  return createBackend<HicBackend>(
     canvas,
     HIC_PASSES,
     HIC_UNIFORM_BYTE_SIZE,

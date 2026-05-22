@@ -19,7 +19,7 @@ import type { RenderBlock } from './renderBlock.ts'
  * push bytes into HAL buffers, and `pruneRegions` to delegate region
  * lifecycle to HAL via `hal.pruneRegions(active)`.
  */
-export interface PerRegionGpuBackend<
+export interface PerRegionBackend<
   UploadData,
   RenderState,
   Block = RenderBlock,
@@ -36,7 +36,7 @@ export interface PerRegionGpuBackend<
 }
 
 /**
- * Canvas2D-side base for `PerRegionGpuBackend` implementations. Owns the
+ * Canvas2D-side base for `PerRegionBackend` implementations. Owns the
  * `canvas` + 2D context; stubs the upload/prune/dispose hooks the backend
  * shape requires but Canvas2D doesn't need (everything comes through
  * `renderBlocks` from the model's data map). Subclasses implement
@@ -47,7 +47,7 @@ export abstract class Canvas2DPerRegionBackend<
   RenderState,
   Block = RenderBlock,
   RenderData = UploadData,
-> implements PerRegionGpuBackend<UploadData, RenderState, Block, RenderData> {
+> implements PerRegionBackend<UploadData, RenderState, Block, RenderData> {
   protected canvas: HTMLCanvasElement
   protected ctx: CanvasRenderingContext2D
 
@@ -72,7 +72,7 @@ export abstract class Canvas2DPerRegionBackend<
 }
 
 /**
- * GPU-side base for `PerRegionGpuBackend` implementations. Owns the `hal`
+ * GPU-side base for `PerRegionBackend` implementations. Owns the `hal`
  * reference and a pre-allocated uniform scratch `ArrayBuffer` reused across
  * frames. Provides the shared `pruneRegions` (delegates to HAL) and
  * `dispose` (also delegates) so subclasses implement only `uploadRegion`
@@ -83,7 +83,7 @@ export abstract class GpuPerRegionBackend<
   RenderState,
   Block = RenderBlock,
   RenderData = UploadData,
-> implements PerRegionGpuBackend<UploadData, RenderState, Block, RenderData> {
+> implements PerRegionBackend<UploadData, RenderState, Block, RenderData> {
   protected hal: GpuHal
   protected uniformData: ArrayBuffer
 

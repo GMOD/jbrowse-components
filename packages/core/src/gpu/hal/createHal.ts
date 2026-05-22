@@ -1,4 +1,4 @@
-import { getGpuOverride } from '../getGpuDevice.ts'
+import { getGpuOverride } from '../gpuDevice.ts'
 import { WebGL2Hal } from './webgl2Hal.ts'
 import { WebGPUHal } from './webgpuHal.ts'
 

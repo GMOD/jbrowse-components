@@ -1,12 +1,12 @@
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { InstallGpuDisplayCallbacks } from './GpuLifecycleMixin.ts'
+import type { BackendCallbacks } from './GpuLifecycleMixin.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ObservableMap } from 'mobx'
 
 interface PerRegionGpuLifecycleSelf extends IAnyStateTreeNode {
-  installGpuDisplay: <B>(b: B, cbs: InstallGpuDisplayCallbacks<B>) => void
+  attachBackend: <B>(b: B, cbs: BackendCallbacks<B>) => void
   renderNow: () => void
   currentGpuBackend: unknown
 }
@@ -46,9 +46,9 @@ export type PerRegionRender<B, Encoded> = (
  * ignore the second arg.
  *
  * `render` owns the per-frame draw call and returns whether anything was
- * actually drawn (gates the `canvasDrawn` flag — see InstallGpuDisplayCallbacks).
+ * actually drawn (gates the `canvasDrawn` flag — see BackendCallbacks).
  */
-export function installPerRegionGpuLifecycle<
+export function installPerRegionLifecycle<
   Data,
   Encoded,
   B extends UploadableBackend<Encoded>,
@@ -67,7 +67,7 @@ export function installPerRegionGpuLifecycle<
     }
   })
 
-  self.installGpuDisplay<B>(backend, {
+  self.attachBackend<B>(backend, {
     upload: b => {
       const active: number[] = []
       for (const key of rpcDataMap.keys()) {

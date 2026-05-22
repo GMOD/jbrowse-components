@@ -6,7 +6,7 @@ import type {
 } from '../manhattanBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Feature } from '@jbrowse/core/util'
-import type { GpuLifecycleModel } from '@jbrowse/core/util/useGpuModelLifecycle'
+import type { GpuLifecycleModel } from '@jbrowse/core/util/useGpuBackend'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 // Component-facing slice of LinearManhattanDisplayModel. Hand-rolled to

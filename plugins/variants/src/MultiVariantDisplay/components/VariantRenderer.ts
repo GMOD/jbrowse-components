@@ -1,4 +1,4 @@
-import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
+import { createBackend } from '@jbrowse/core/gpu/createBackend'
 
 import { Canvas2DVariantRenderer } from './Canvas2DVariantRenderer.ts'
 import {
@@ -10,7 +10,7 @@ import {
 import type { VariantBackend } from './variantBackendTypes.ts'
 
 export function VariantRenderer(canvas: HTMLCanvasElement) {
-  return initDualBackend<VariantBackend>(
+  return createBackend<VariantBackend>(
     canvas,
     VARIANT_PASSES,
     VARIANT_UNIFORM_BYTE_SIZE,

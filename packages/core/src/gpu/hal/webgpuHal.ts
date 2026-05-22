@@ -1,7 +1,7 @@
 /// <reference types="@webgpu/types" />
 
 import { getDpr } from '../canvas2dUtils.ts'
-import { getGpuDevice } from '../getGpuDevice.ts'
+import { getGpuDevice } from '../gpuDevice.ts'
 import {
   STANDARD_BLEND_STATE,
   createUniformOnlyBindGroup,

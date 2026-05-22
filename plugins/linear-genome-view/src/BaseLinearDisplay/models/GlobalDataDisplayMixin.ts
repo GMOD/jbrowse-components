@@ -11,7 +11,7 @@ export type { FetchContext } from './FetchMixin.ts'
  * HiC contact matrix, LD triangle, variant matrix, etc.
  *
  * Composes:
- *   - GpuLifecycleMixin (installGpuDisplay, renderNow, …)
+ *   - GpuLifecycleMixin (attachBackend, renderNow, …)
  *   - RegionTooLargeMixin (regionTooLarge, regionCannotBeRendered, …)
  *   - FetchMixin (runFetch, cancelFetch, isLoading, error, statusMessage,
  *                 fetchGeneration)

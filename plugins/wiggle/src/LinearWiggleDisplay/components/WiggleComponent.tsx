@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 
 import { ErrorOverlay } from '@jbrowse/core/ui'
-import { getContainingView, useGpuModelLifecycle } from '@jbrowse/core/util'
+import { getContainingView, useGpuBackend } from '@jbrowse/core/util'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
@@ -28,10 +28,10 @@ const WiggleComponent = observer(function WiggleComponent({
   model: WiggleDisplayModel
 }) {
   // The model owns the upload/render autorun and the GPU backend lifecycle —
-  // see startGpuBackendLifecycle / stopGpuBackendLifecycle / renderNow on the
+  // see startBackend / stopBackend / renderNow on the
   // LinearWiggleDisplay model. This component is just a thin bridge that
   // plugs the canvas and the backend into those model actions.
-  const { canvasRef, error, retry } = useGpuModelLifecycle(
+  const { canvasRef, error, retry } = useGpuBackend(
     WiggleRenderer,
     model,
   )

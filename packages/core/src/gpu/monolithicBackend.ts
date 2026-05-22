@@ -11,21 +11,21 @@ import type { GpuHal } from './hal/types.ts'
  * extend this interface with their own upload methods (e.g.
  * `uploadColorRamp`); the base contract stays minimal.
  */
-export interface MonolithicGpuBackend<UploadData, RenderState> {
+export interface MonolithicBackend<UploadData, RenderState> {
   uploadData(data: UploadData): void
   render(data: UploadData | null, state: RenderState): void
   dispose(): void
 }
 
 /**
- * Canvas2D-side base for `MonolithicGpuBackend` implementations. Owns the
+ * Canvas2D-side base for `MonolithicBackend` implementations. Owns the
  * `canvas` + 2D context; stubs `uploadData` (no-op — data flows through
  * `render`). Subclasses implement `render` and nothing else.
  */
 export abstract class Canvas2DMonolithicBackend<
   UploadData,
   RenderState,
-> implements MonolithicGpuBackend<UploadData, RenderState> {
+> implements MonolithicBackend<UploadData, RenderState> {
   protected canvas: HTMLCanvasElement
   protected ctx: CanvasRenderingContext2D
 
@@ -45,7 +45,7 @@ export abstract class Canvas2DMonolithicBackend<
 }
 
 /**
- * GPU-side base for `MonolithicGpuBackend` implementations. Owns the
+ * GPU-side base for `MonolithicBackend` implementations. Owns the
  * `hal` reference and a pre-allocated uniform scratch buffer. Default
  * `dispose()` delegates to `hal.dispose()`. Subclasses implement
  * `uploadData` (push bytes to HAL) and `render`.
@@ -53,7 +53,7 @@ export abstract class Canvas2DMonolithicBackend<
 export abstract class GpuMonolithicBackend<
   UploadData,
   RenderState,
-> implements MonolithicGpuBackend<UploadData, RenderState> {
+> implements MonolithicBackend<UploadData, RenderState> {
   protected hal: GpuHal
   protected uniformData: ArrayBuffer
 

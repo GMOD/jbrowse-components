@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { installPerRegionGpuLifecycle } from '@jbrowse/core/gpu/installPerRegionGpuLifecycle'
+import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
@@ -216,8 +216,8 @@ export function stateModelFactory(
         return renderSvg(self as LinearManhattanDisplayModel, opts)
       },
       // Identity encode — RPC result is the upload payload.
-      startGpuBackendLifecycle(backend: ManhattanBackend) {
-        installPerRegionGpuLifecycle(
+      startBackend(backend: ManhattanBackend) {
+        installPerRegionLifecycle(
           self,
           self.rpcDataMap,
           backend,

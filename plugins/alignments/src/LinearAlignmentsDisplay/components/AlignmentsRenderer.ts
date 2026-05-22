@@ -1,4 +1,4 @@
-import { initDualBackend } from '@jbrowse/core/gpu/createDualRenderer'
+import { createBackend } from '@jbrowse/core/gpu/createBackend'
 
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
 import {
@@ -12,7 +12,7 @@ export type { ColorPalette, RGBColor, RenderState } from './rendererTypes.ts'
 import type { AlignmentsBackend } from './rendererTypes.ts'
 
 export function AlignmentsRenderer(canvas: HTMLCanvasElement) {
-  return initDualBackend<AlignmentsBackend>(
+  return createBackend<AlignmentsBackend>(
     canvas,
     ALIGNMENTS_PASSES,
     UNIFORMS_SIZE_BYTES,
