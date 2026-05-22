@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 
-import { Menu } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
@@ -11,17 +10,18 @@ import {
   DisplayLoadingOverlay,
 } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
-import { alpha, useTheme } from '@mui/material'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
+import DragSelectionRect from './DragSelectionRect.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
 import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
+import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { useDragSelection } from './useDragSelection.ts'
 import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
 import { getMafColorPalette } from '../../LinearMafRenderer/util.ts'
-import { openSubsequenceWidget } from '../openSubsequenceWidget.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -160,82 +160,23 @@ const LinearMafDisplay = observer(function (props: {
       dragEndX !== undefined &&
       dragStartY !== undefined &&
       dragEndY !== undefined ? (
-        <div
-          style={{
-            position: 'absolute',
-            left: Math.min(dragStartX, dragEndX),
-            top: Math.min(dragStartY, dragEndY) + scrollTop,
-            width: Math.abs(dragEndX - dragStartX),
-            height: Math.abs(dragEndY - dragStartY),
-            backgroundColor: alpha(theme.palette.primary.main, 0.2),
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
-            pointerEvents: 'none',
-          }}
+        <DragSelectionRect
+          dragStartX={dragStartX}
+          dragEndX={dragEndX}
+          dragStartY={dragStartY}
+          dragEndY={dragEndY}
+          scrollTop={scrollTop}
         />
       ) : null}
-      <Menu
-        open={Boolean(contextCoord)}
-        onMenuItemClick={(_, callback) => {
-          callback()
-          setContextCoord(undefined)
-        }}
-        onClose={() => {
-          setContextCoord(undefined)
-        }}
-        slotProps={{
-          transition: {
-            onExit: () => {
-              setContextCoord(undefined)
-            },
-          },
-        }}
-        anchorReference="anchorPosition"
-        anchorPosition={
-          contextCoord
-            ? { top: contextCoord.coord[1], left: contextCoord.coord[0] }
-            : undefined
-        }
-        style={{
-          zIndex: theme.zIndex.tooltip,
-        }}
-        menuItems={[
-          {
-            label: 'View subsequences (all rows)',
-            onClick: () => {
-              if (contextCoord && samples) {
-                openSubsequenceWidget(
-                  session,
-                  model,
-                  view,
-                  contextCoord.startX,
-                  contextCoord.endX,
-                  samples,
-                )
-              }
-              setContextCoord(undefined)
-            },
-          },
-          {
-            label: 'View subsequences (selected rows)',
-            onClick: () => {
-              if (contextCoord && samples) {
-                const minY = Math.min(contextCoord.startY, contextCoord.endY)
-                const maxY = Math.max(contextCoord.startY, contextCoord.endY)
-                const startRow = Math.floor((minY + scrollTop) / rowHeight)
-                const endRow = Math.ceil((maxY + scrollTop) / rowHeight)
-                openSubsequenceWidget(
-                  session,
-                  model,
-                  view,
-                  contextCoord.startX,
-                  contextCoord.endX,
-                  samples.slice(startRow, endRow),
-                )
-              }
-              setContextCoord(undefined)
-            },
-          },
-        ]}
+      <SubsequenceContextMenu
+        session={session}
+        model={model}
+        view={view}
+        samples={samples}
+        rowHeight={rowHeight}
+        scrollTop={scrollTop}
+        contextCoord={contextCoord}
+        setContextCoord={setContextCoord}
       />
     </div>
   )

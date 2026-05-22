@@ -1,8 +1,8 @@
 import React from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
@@ -24,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
-    background: colord(theme.palette.primary.main).alpha(0.4).toRgbString(),
+    background: alpha(theme.palette.primary.main, 0.4),
     borderLeft: `2px solid ${theme.palette.primary.main}`,
     borderRight: `2px solid ${theme.palette.primary.main}`,
     pointerEvents: 'none',

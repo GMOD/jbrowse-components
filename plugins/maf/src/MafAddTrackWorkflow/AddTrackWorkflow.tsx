@@ -19,6 +19,15 @@ import {
   TextField,
 } from '@mui/material'
 
+import {
+  buildAdapterConfig,
+  parseSampleNames,
+} from './buildAdapterConfig.ts'
+
+import type {
+  AdapterTypeOptions,
+  IndexTypeOptions,
+} from './buildAdapterConfig.ts'
 import type { AbstractRootModel, FileLocation } from '@jbrowse/core/util'
 import type { AddTrackModel } from '@jbrowse/plugin-data-management'
 
@@ -33,12 +42,6 @@ const useStyles = makeStyles()(theme => ({
     display: 'block',
   },
 }))
-
-type AdapterTypeOptions =
-  | 'BigMafAdapter'
-  | 'MafTabixAdapter'
-  | 'BgzipTaffyAdapter'
-type IndexTypeOptions = 'TBI' | 'CSI'
 
 export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
   const { classes } = useStyles()
@@ -185,71 +188,27 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
         onClick={() => {
           try {
             const session = getSession(model)
-            // Accept either a JSON array (must actually be an array — strings
-            // and numbers parse as valid JSON but aren't sample lists) or
-            // newline-separated names. Regex matches CRLF, CR, and LF so
-            // pasted Windows/Mac line endings don't leave a trailing \r on
-            // each name.
-            let sampleNames: string[]
-            try {
-              const parsed: unknown = JSON.parse(samples)
-              if (!Array.isArray(parsed)) {
-                throw new Error('not an array')
-              }
-              sampleNames = parsed.map(String)
-            } catch (e) {
-              sampleNames = samples
-                .split(/\r\n|[\r\n]/)
-                .map(s => s.trim())
-                .filter(Boolean)
-            }
-
+            const sampleNames = parseSampleNames(samples)
             const trackId = [
               `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
               session.adminMode ? '' : '-sessionTrack',
             ].join('')
 
             if (isSessionWithAddTracks(session)) {
-              let adapter
-              switch (fileTypeChoice) {
-                case 'BigMafAdapter':
-                  adapter = {
-                    type: fileTypeChoice,
-                    bigBedLocation: loc,
-                    samples: sampleNames,
-                    nhLocation: nhLoc,
-                  }
-                  break
-                case 'MafTabixAdapter':
-                  adapter = {
-                    type: fileTypeChoice,
-                    bedGzLocation: loc,
-                    nhLocation: nhLoc,
-                    index: {
-                      indexType: indexTypeChoice,
-                      location: indexLoc,
-                    },
-                    samples: sampleNames,
-                  }
-                  break
-                case 'BgzipTaffyAdapter':
-                  adapter = {
-                    type: fileTypeChoice,
-                    tafGzLocation: loc,
-                    taiLocation: indexLoc,
-                    nhLocation: nhLoc,
-                    samples: sampleNames,
-                  }
-                  break
-              }
               session.addTrackConf({
                 trackId,
                 type: 'MafTrack',
                 name: trackName,
                 assemblyNames: [model.assembly],
-                adapter,
+                adapter: buildAdapterConfig({
+                  fileTypeChoice,
+                  indexTypeChoice,
+                  loc,
+                  indexLoc,
+                  nhLoc,
+                  sampleNames,
+                }),
               })
-
               model.view?.showTrack(trackId)
             }
             model.clearData()
