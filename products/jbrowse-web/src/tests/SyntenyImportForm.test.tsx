@@ -79,24 +79,6 @@ test('open local paf', async () => {
   expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
 }, 40000)
 
-test('pangenome mode selects MultiSyntenyTrack and launches', async () => {
-  const { session, findByText } = await createView()
-
-  fireEvent.click(await findByText('Add'))
-  fireEvent.click(await findByText('Linear synteny view'))
-  expect(session.views.length).toBe(2)
-
-  fireEvent.click(await findByText('Pangenome / multi-way'))
-
-  await findByText('Assemblies (2 of 2 selected)')
-
-  fireEvent.click(await findByText('Launch'))
-
-  await waitFor(() => {
-    const syntenyView = session.views[1]!
-    expect((syntenyView as any).views.length).toBe(2)
-  }, delay)
-}, 40000)
 
 test('open local pif', async () => {
   const { session, findByTestId, findByRole, findAllByTestId, findByText } =

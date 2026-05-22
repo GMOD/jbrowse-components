@@ -1,4 +1,4 @@
-import { ErrorBanner, LoadingOverlay } from '@jbrowse/core/ui'
+import { LoadingOverlay } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
@@ -6,20 +6,18 @@ import SyntenyTooltip from './SyntenyTooltip.tsx'
 
 import type { LinearSyntenyDisplayModel } from '../model.ts'
 
-// Overlay-only view of a synteny display. The canvas is owned by the
-// containing level (LevelSyntenyCanvas); this component layers tooltip /
-// context menu / loading UI on top.
+// Per-display overlays. Canvas and unified ErrorBanner live in
+// LevelSyntenyCanvas.
 const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   model,
 }: {
   model: LinearSyntenyDisplayModel
 }) {
-  const { tooltipText, statusMessage, ready, error, contextMenuAnchor } = model
+  const { tooltipText, statusMessage, loading, contextMenuAnchor } = model
 
   return (
     <>
-      {error ? <ErrorBanner error={error} /> : null}
-      <LoadingOverlay statusMessage={statusMessage} isVisible={!ready} />
+      <LoadingOverlay statusMessage={statusMessage} isVisible={loading} />
       {tooltipText ? <SyntenyTooltip title={tooltipText} /> : null}
       {contextMenuAnchor ? (
         <SyntenyContextMenu

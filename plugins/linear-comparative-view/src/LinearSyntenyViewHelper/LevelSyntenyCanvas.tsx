@@ -102,10 +102,19 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const zoomScheduled = useRef(false)
   const lastZoomClientX = useRef(0)
 
-  const { canvas, canvasRef, error, retry } = useGpuModelLifecycle(
-    SyntenyRendererFactory,
-    model,
-  )
+  const {
+    canvas,
+    canvasRef,
+    error: gpuError,
+    retry,
+  } = useGpuModelLifecycle(SyntenyRendererFactory, model)
+
+  // One banner per level so GPU lifecycle errors and per-display fetch errors
+  // (e.g. PAF 404) never stack visually
+  const errors = [gpuError, ...model.linearSyntenyDisplays.map(d => d.error)]
+    .filter(e => e != null)
+    .map(e => `${e}`)
+  const combinedError = errors.length > 0 ? errors.join('\n') : undefined
 
   function canvasCoords(evt: { clientX: number; clientY: number }) {
     const rect = canvas?.getBoundingClientRect()
@@ -298,7 +307,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         className={classes.canvas}
         style={{ width, height }}
       />
-      {error ? <ErrorBanner error={error} onReset={retry} /> : null}
+      {combinedError ? (
+        <ErrorBanner error={combinedError} onReset={gpuError ? retry : undefined} />
+      ) : null}
     </div>
   )
 })

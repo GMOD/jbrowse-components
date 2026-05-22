@@ -25,21 +25,12 @@
   },
   "tracks": [
     {
-      "type": "MultiSyntenyTrack",
-      "trackId": "hprc_chr20_gfa_synteny",
-      "name": "HPRC chr20 pangenome synteny (90 haplotypes, minigraph-cactus v1.1)",
-      "category": ["Synteny"],
-      "adapter": {
-        "type": "GfaTabixAdapter",
-        "prefix": "https://s3.amazonaws.com/jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20"
-      },
-      "assemblyNames": ["GRCh38#0"]
-    },
-    {
       "type": "VariantTrack",
       "trackId": "hprc_chr20_vcf",
       "name": "HPRC chr20 variants (vg deconstruct)",
-      "category": ["Variants"],
+      "category": [
+        "Variants"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -53,7 +44,9 @@
           }
         }
       },
-      "assemblyNames": ["GRCh38#0"]
+      "assemblyNames": [
+        "GRCh38#0"
+      ]
     }
   ],
   "defaultSession": {

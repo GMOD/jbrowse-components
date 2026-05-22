@@ -207,6 +207,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * Fetch in-flight. Excludes error so error UI and loading UI never
+       * show simultaneously.
+       */
+      get loading() {
+        return !this.ready && !self.error
+      },
+      /**
+       * #getter
        */
       get colorSchemeConfig() {
         const key = (getContainingView(self) as LinearSyntenyViewModel).colorBy
