@@ -154,23 +154,22 @@ export function makeTrackConfig(
   if (!trackType || !adapter) {
     return undefined
   }
-  return {
+  const trackConfig: Track = {
     type: trackType,
     trackId: path.basename(file),
     name: path.basename(file),
     assemblyNames: [assembly.name],
     adapter,
-    ...(opts.includes('snpcov')
-      ? {
-          displays: [
-            {
-              type: 'LinearSNPCoverageDisplay',
-              displayId: `${path.basename(file)}-${Math.random()}`,
-            },
-          ],
-        }
-      : {}),
   }
+  if (opts.includes('snpcov')) {
+    trackConfig.displays = [
+      {
+        type: 'LinearSNPCoverageDisplay',
+        displayId: `${path.basename(file)}-${Math.random()}`,
+      },
+    ]
+  }
+  return trackConfig
 }
 
 export function readData({
@@ -285,7 +284,7 @@ export function readData({
   for (const track of trackList) {
     const [type, opts] = track
     const [file, ...rest] = opts
-    const index = rest.find(r => r.startsWith('index:'))?.replace('index:', '')
+    const index = rest.find(r => r.startsWith('index:'))?.slice('index:'.length)
     if (!file) {
       throw new Error('no file specified')
     }

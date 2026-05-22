@@ -1,7 +1,8 @@
 export type Entry = [string, string[]]
 
-export function parseArgv(argv: string[]) {
+export function parseArgv(rawArgv: string[]) {
   const map: Entry[] = []
+  let argv = rawArgv
   while (argv.length) {
     const val = argv[0]!.slice(2)
     argv = argv.slice(1)

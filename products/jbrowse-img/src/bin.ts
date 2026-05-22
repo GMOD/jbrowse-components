@@ -123,7 +123,7 @@ async function main() {
   if (!outFile) {
     console.log(result)
   } else if (outFile.endsWith('.png')) {
-    convert(result, { out: outFile, pngwidth: String(argv.width || 2048) })
+    convert(result, { out: outFile, pngwidth: String(argv.width) })
   } else {
     fs.writeFileSync(outFile, result)
   }

@@ -15,135 +15,79 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export type { Opts } from './readData.ts'
 export { makeTrackConfig, readData } from './readData.ts'
 
-function applyTrackOpts(
-  trackEntry: Entry,
-  view: LinearGenomeViewModel,
-  extra: (arg: string) => string = c => c,
-) {
+function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
   const [, [track, ...opts]] = trackEntry
   if (!track) {
     throw new Error('invalid command line args')
   }
-  const currentTrack = view.showTrack(extra(track))
+  const currentTrack = view.showTrack(path.basename(track))
   const display = currentTrack.displays[0]
   for (const opt of opts) {
-    // apply height to any track
-    if (opt.startsWith('height:')) {
-      const [, height] = opt.split(':')
-      if (height) {
-        display.setHeight(+height)
-      }
-    }
+    const [prefix, val1 = '', val2] = opt.split(':')
 
-    // apply sort to pileup
-    else if (opt.startsWith('sort:')) {
-      if (display.PileupDisplay) {
-        const [, type, tag] = opt.split(':')
-        display.PileupDisplay.setSortedBy(type, tag)
+    if (prefix === 'height') {
+      if (val1) {
+        display.setHeight(+val1)
       }
-    }
-
-    // apply color scheme to pileup
-    else if (opt.startsWith('color:')) {
-      const [, type, tag] = opt.split(':')
+    } else if (prefix === 'sort') {
+      display.PileupDisplay?.setSortedBy(val1, val2)
+    } else if (prefix === 'color') {
       if (display.PileupDisplay) {
-        display.PileupDisplay.setColorScheme({ type, tag })
+        display.PileupDisplay.setColorScheme({ type: val1, tag: val2 })
       } else {
-        display.setColor(type)
+        display.setColor(val1)
       }
-    }
-
-    // apply feature height to pileup (supports normal/compact/super-compact or a number)
-    else if (opt.startsWith('featureHeight:')) {
-      const [, val] = opt.split(':')
-      if (val) {
-        const pileup = display.PileupDisplay ?? display
-        if (val === 'normal') {
-          pileup.setFeatureHeight(7)
-          pileup.setNoSpacing(false)
-        } else if (val === 'compact') {
-          pileup.setFeatureHeight(2)
-          pileup.setNoSpacing(true)
-        } else if (val === 'super-compact') {
-          pileup.setFeatureHeight(1)
-          pileup.setNoSpacing(true)
-        } else {
-          const n = +val
-          if (isNaN(n)) {
-            throw new Error(
-              `Invalid featureHeight "${val}". Use normal, compact, super-compact, or a number.`,
-            )
-          }
-          pileup.setFeatureHeight(n)
+    } else if (prefix === 'featureHeight') {
+      const pileup = display.PileupDisplay ?? display
+      if (val1 === 'normal') {
+        pileup.setFeatureHeight(7)
+        pileup.setNoSpacing(false)
+      } else if (val1 === 'compact') {
+        pileup.setFeatureHeight(2)
+        pileup.setNoSpacing(true)
+      } else if (val1 === 'super-compact') {
+        pileup.setFeatureHeight(1)
+        pileup.setNoSpacing(true)
+      } else if (val1) {
+        const n = +val1
+        if (isNaN(n)) {
+          throw new Error(
+            `Invalid featureHeight "${val1}". Use normal, compact, super-compact, or a number.`,
+          )
         }
+        pileup.setFeatureHeight(n)
       }
-    }
-
-    // remove spacing between pileup features
-    else if (opt.startsWith('noSpacing:')) {
-      const [, val = 'true'] = opt.split(':')
+    } else if (prefix === 'noSpacing') {
       const pileup = display.PileupDisplay ?? display
-      pileup.setNoSpacing(booleanize(val))
-    }
-
-    // show soft clipping on pileup
-    else if (opt.startsWith('softClipping:')) {
-      const [, val = 'true'] = opt.split(':')
+      pileup.setNoSpacing(booleanize(val1 || 'true'))
+    } else if (prefix === 'softClipping') {
       const pileup = display.PileupDisplay ?? display
-      if (booleanize(val) !== pileup.showSoftClipping) {
+      if (booleanize(val1 || 'true') !== pileup.showSoftClipping) {
         pileup.toggleSoftClipping()
       }
-    }
-
-    // force track to render even if maxbpperpx limit hit...
-    else if (opt.startsWith('force:')) {
-      const [, force] = opt.split(':')
-      if (force) {
+    } else if (prefix === 'force') {
+      if (booleanize(val1 || 'true')) {
         display.setFeatureDensityStatsLimit({ bytes: Number.MAX_VALUE })
       }
-    }
-
-    // apply wiggle autoscale
-    else if (opt.startsWith('autoscale:')) {
-      const [, autoscale] = opt.split(':')
-      display.setAutoscale(autoscale)
-    }
-
-    // apply min and max score to wiggle
-    else if (opt.startsWith('minmax:')) {
-      const [, min, max] = opt.split(':')
-      if (min) {
-        display.setMinScore(+min)
+    } else if (prefix === 'autoscale') {
+      display.setAutoscale(val1)
+    } else if (prefix === 'minmax') {
+      if (val1) {
+        display.setMinScore(+val1)
       }
-      if (max) {
-        display.setMaxScore(+max)
+      if (val2) {
+        display.setMaxScore(+val2)
       }
-    }
-
-    // apply linear or log scale to wiggle
-    else if (opt.startsWith('scaletype:')) {
-      const [, scaletype] = opt.split(':')
-      display.setScaleType(scaletype)
-    }
-
-    // draw crosshatches on wiggle
-    else if (opt.startsWith('crosshatch:')) {
-      const [, val = 'false'] = opt.split(':')
-      display.setCrossHatches(booleanize(val))
-    }
-
-    // turn off fill on bigwig with fill:false
-    else if (opt.startsWith('fill:')) {
-      const [, val = 'true'] = opt.split(':')
-      display.setFill(booleanize(val))
-    }
-
-    // set resolution:superfine to use finer bigwig bin size
-    else if (opt.startsWith('resolution:')) {
-      const [, rawVal] = opt.split(':')
+    } else if (prefix === 'scaletype') {
+      display.setScaleType(val1)
+    } else if (prefix === 'crosshatch') {
+      display.setCrossHatches(booleanize(val1 || 'false'))
+    } else if (prefix === 'fill') {
+      display.setFill(booleanize(val1 || 'true'))
+    } else if (prefix === 'resolution') {
       const val =
-        rawVal === 'fine' ? 10 : rawVal === 'superfine' ? 100 : Number(rawVal)
-      display.setResolution(val || 1)
+        val1 === 'fine' ? 10 : val1 === 'superfine' ? 100 : Number(val1)
+      display.setResolution(Number.isNaN(val) ? 1 : val)
     }
   }
 }
@@ -174,11 +118,14 @@ export async function renderRegion(opts: Opts) {
       await view.navToLocString(loc, name)
     }
   } else if (!sessionParam && !defaultSession) {
-    console.warn('No loc specified')
+    throw new Error(
+      'No --loc specified (e.g. --loc chr1:1-10000 or --loc all). ' +
+        'Alternatively pass --session or --defaultSession.',
+    )
   }
 
   for (const track of trackList) {
-    applyTrackOpts(track, view, extra => path.basename(extra))
+    applyTrackOpts(track, view)
   }
 
   const result = await renderToSvg(view, {
