@@ -49,11 +49,10 @@ export async function fetchChains(self: LinearArcDisplayModel) {
   }
 
   self.setLoading(true)
-  const ret = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
-    sessionId,
+  const ret = await rpcManager.call(sessionId, 'CoreGetFeatures', {
     regions: view.staticBlocks.contentBlocks,
     adapterConfig: self.adapterConfig,
-  })) as Feature[]
+  })
 
   self.setFeatures(dedupe(ret, r => r.id()))
   self.setLoading(false)

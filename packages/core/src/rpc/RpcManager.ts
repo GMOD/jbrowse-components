@@ -101,10 +101,12 @@ export default class RpcManager {
   async getDriverForCall(
     _sessionId: string,
     _functionName: string,
-    args: { rpcDriverName?: string },
+    args: Record<string, unknown>,
+    opts?: { rpcDriverName?: string },
   ) {
     const backendName =
-      args.rpcDriverName ||
+      (args['rpcDriverName'] as string | undefined) ||
+      opts?.rpcDriverName ||
       readConfObject(this.mainConfiguration, 'defaultDriver')
 
     return this.getDriver(backendName)
@@ -116,16 +118,19 @@ export default class RpcManager {
     args: M extends RpcMethodName
       ? RpcArgs<M & RpcMethodName>
       : Record<string, unknown>,
-    opts = {},
+    opts?: { rpcDriverName?: string } & Record<string, unknown>,
   ): Promise<M extends RpcMethodName ? RpcReturn<M & RpcMethodName> : unknown> {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
     const a = { ...args, sessionId } as Record<string, unknown>
-    const driverForCall = await this.getDriverForCall(sessionId, functionName, {
-      rpcDriverName: a['rpcDriverName'] as string | undefined,
-    })
+    const driverForCall = await this.getDriverForCall(
+      sessionId,
+      functionName,
+      a,
+      opts,
+    )
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return driverForCall.call(this.pluginManager, sessionId, functionName, a, opts) as any
+    return driverForCall.call(this.pluginManager, sessionId, functionName, a, opts ?? {}) as any
   }
 }

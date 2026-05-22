@@ -84,17 +84,18 @@ export default function ReadVsRefDialog({
           const adapterConfig = getConf(track, 'adapter')
           const sessionId = getRpcSessionId(track)
 
-          const feats = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
+          const [asm] = getConf(track, 'assemblyNames') as string[]
+          const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
             adapterConfig,
-            sessionId,
             regions: [
               {
-                refName: saRef,
+                refName: saRef!,
                 start: +saStart! - 1,
                 end: +saStart!,
+                assemblyName: asm ?? '',
               },
             ],
-          })) as Feature[]
+          })
 
           const result = feats.find(
             f =>
