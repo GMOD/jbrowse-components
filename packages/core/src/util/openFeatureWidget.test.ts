@@ -4,24 +4,17 @@ import * as typesIndex from './types/index.ts'
 
 import type { Widget } from './types/index.ts'
 
-interface MockSession {
-  configuration: object
-  setSelection: jest.Mock<void, [unknown]>
-  addWidget: jest.Mock<Widget, [string, string, Record<string, unknown>?]>
-  showWidget: jest.Mock<void, [Widget]>
-}
-
-function makeSession(): MockSession {
+function makeSession() {
   const widget: Widget = { type: 'BaseFeatureWidget', id: 'baseFeature' }
   return {
     configuration: {},
-    setSelection: jest.fn<void, [unknown]>(),
-    addWidget: jest.fn<Widget, [string, string, Record<string, unknown>?]>(
-      () => widget,
-    ),
-    showWidget: jest.fn<void, [Widget]>(),
+    setSelection: jest.fn(),
+    addWidget: jest.fn(() => widget),
+    showWidget: jest.fn(),
   }
 }
+
+type MockSession = ReturnType<typeof makeSession>
 
 const node = {} as object
 const view = { id: 'v1' }

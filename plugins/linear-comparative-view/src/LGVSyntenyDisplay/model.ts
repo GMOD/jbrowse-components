@@ -69,19 +69,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
        * #action
        */
       selectFeature(feature: Feature) {
-        // For nested synteny views, prefer the parent LinearComparativeView
-        // as the widget's `view` context so cross-track navigation lands on
-        // the right view. Falls through to the default (immediate containing
-        // view) when this display already sits at the top level.
-        let view = getContainingView(self)
-        try {
-          view = getContainingView(view)
-        } catch (_e) {
-          /* already at top-level */
-        }
         openFeatureWidget(self, feature.toJSON(), {
           widget: self.featureWidgetType,
-          extra: { view },
         })
       },
       afterCreate() {
