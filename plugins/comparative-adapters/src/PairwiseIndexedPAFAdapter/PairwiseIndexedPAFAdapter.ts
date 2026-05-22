@@ -240,7 +240,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               const mateName = parts[5]!
               const mateStart = +parts[7]!
               const mateEnd = +parts[8]!
-              const syriType = parts[9] || 'SYN'
               const meanIdentity = +(parts[10] || 0)
 
               observer.next(
@@ -252,7 +251,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                   type: 'match',
                   refName,
                   strand,
-                  syriType,
                   syntenyId: fileOffset,
                   identity: meanIdentity,
                   numMatches: 0,
@@ -269,7 +267,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               const r = parsePAFLine(line)
               const { strand } = r
               const extra = r.extra
-              const { numMatches = 0, blockLen = 1, cg, sy, ...rest } = extra
+              const { numMatches = 0, blockLen = 1, cg, sy: _sy, ...rest } = extra
 
               const start = r.qstart
               const end = r.qend
@@ -291,7 +289,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                   strand,
                   ...rest,
                   CIGAR,
-                  ...(sy ? { syriType: sy } : {}),
                   syntenyId: fileOffset,
                   identity: pafIdentity(extra),
                   numMatches: +numMatches,

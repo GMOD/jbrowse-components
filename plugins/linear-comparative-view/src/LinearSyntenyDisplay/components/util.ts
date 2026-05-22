@@ -1,10 +1,6 @@
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
 
 import type { FeatPos } from '../model.ts'
-import type {
-  DupConflict,
-  SyriType,
-} from '@jbrowse/plugin-comparative-adapters'
 
 export interface ClickCoord {
   clientX: number
@@ -12,11 +8,7 @@ export interface ClickCoord {
   feature: FeatPos
 }
 
-export function getTooltip(
-  feat: FeatPos,
-  syriType?: SyriType,
-  dupConflict?: DupConflict,
-) {
+export function getTooltip(feat: FeatPos) {
   const l1 = feat.end - feat.start
   const l2 = feat.mate.end - feat.mate.start
   return [
@@ -27,10 +19,6 @@ export function getTooltip(
     `Target len: ${toLocale(l2)}`,
     feat.identity !== undefined
       ? `Identity: ${feat.identity.toPrecision(2)}`
-      : '',
-    syriType ? `SyRI type: ${syriType}` : '',
-    dupConflict
-      ? `Overlaps (target): ${assembleLocString({ refName: dupConflict.tname, start: dupConflict.tstart, end: dupConflict.tend })}`
       : '',
     feat.name ? `Name: ${feat.name}` : '',
   ]

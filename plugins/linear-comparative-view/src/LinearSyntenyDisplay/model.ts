@@ -2,7 +2,6 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
-import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
 import { applyAlpha, colorSchemes, getQueryColor } from '@jbrowse/synteny-core'
 
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
@@ -14,11 +13,6 @@ import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.t
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  AlignmentRecord,
-  DupConflict,
-  SyriType,
-} from '@jbrowse/plugin-comparative-adapters'
 import type { ColorScheme } from '@jbrowse/synteny-core'
 
 export interface SyntenyFeatureData {
@@ -36,11 +30,6 @@ export interface SyntenyFeatureData {
   names: string[]
   refNames: string[]
   assemblyNames: string[]
-  // Per-feature SyRI type precomputed by structural-tier adapters. Populated
-  // for every feature (undefined where the adapter didn't provide one) so
-  // main-thread colorBy='syri' can short-circuit to precomputed values
-  // without a worker round-trip.
-  syriTypes: (string | undefined)[]
   // Mate fields packed as parallel arrays. Uint32 buffers are RPC-transferable
   // and match the bp coord convention used elsewhere in the codebase.
   // mate.name was always undefined (no adapter sets it) so it's dropped.
@@ -282,66 +271,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * Full SyRI classification (types + DUP conflict locations). Only
-       * computed when colorBy='syri'. Uses adapter-precomputed values when
-       * present; adapter path has no conflict info so dupConflicts is all
-       * undefined in that case.
-       */
-      get syriClassification() {
-        if (
-          (getContainingView(self) as LinearSyntenyViewModel).colorBy !== 'syri'
-        ) {
-          return undefined
-        }
-        const { featureData } = self
-        if (!featureData) {
-          return undefined
-        }
-        const {
-          syriTypes,
-          names,
-          starts,
-          ends,
-          mateStarts,
-          mateEnds,
-          mateRefNames,
-          strands,
-        } = featureData
-        const n = names.length
-        if (syriTypes.some(t => t !== undefined)) {
-          const types = new Array<SyriType>(n)
-          for (let i = 0; i < n; i++) {
-            types[i] = (syriTypes[i] ?? 'SYN') as SyriType
-          }
-          return {
-            types,
-            dupConflicts: new Array<DupConflict | undefined>(n).fill(undefined),
-          }
-        }
-        const input = new Array<AlignmentRecord>(n)
-        for (let i = 0; i < n; i++) {
-          input[i] = {
-            qname: names[i]!,
-            qstart: starts[i]!,
-            qend: ends[i]!,
-            tname: mateRefNames[i]!,
-            tstart: mateStarts[i]!,
-            tend: mateEnds[i]!,
-            strand: strands[i]!,
-          }
-        }
-        return computeSyriTypes(input)
-      },
-      /**
-       * #getter
-       * SyRI types array aligned with featureData. Only computed when
-       * colorBy='syri'; otherwise undefined so computedColors skips the work.
-       */
-      get syriTypesForColoring() {
-        return this.syriClassification?.types
-      },
-      /**
-       * #getter
        * Main-thread-computed per-instance colors. Recomputes whenever
        * colorBy, featureData, or instanceData descriptors change — this is
        * the gpuProps half of the rpcProps/gpuProps split. colorBy changes
@@ -359,7 +288,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           featureData,
           colorBy,
           opacityByIdentity,
-          syriTypes: this.syriTypesForColoring,
         })
       },
       /**
@@ -387,12 +315,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         if (featureIdx >= featureData.featureIds.length) {
           return ''
         }
-        const sc = this.syriClassification
-        return getTooltip(
-          getFeatureAtIndex(featureData, featureIdx),
-          sc?.types[featureIdx],
-          sc?.dupConflicts[featureIdx],
-        )
+        return getTooltip(getFeatureAtIndex(featureData, featureIdx))
       },
       /**
        * #getter
@@ -437,7 +360,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           bpPerPx0: v0.bpPerPx,
           bpPerPx1: v1.bpPerPx,
           drawCurves: view.drawCurves,
-          isSyriMode: view.colorBy === 'syri',
         }
       },
     }))

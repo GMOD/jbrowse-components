@@ -5,8 +5,6 @@ import {
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 
-export type SyriType = 'SYN' | 'INV' | 'TRANS' | 'DUP'
-
 export function hashString(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
@@ -45,14 +43,6 @@ export const strandCigarColors = {
   M: '#f00',
   '=': '#f00',
 }
-
-// SyRI structural type colors matching plotsr defaults exactly
-export const syriColors = {
-  SYN: '#DEDEDE',
-  INV: '#FFA500',
-  TRANS: '#9ACD32',
-  DUP: '#00BBFF',
-} satisfies Record<SyriType, string>
 
 // Color scheme configuration. `query` and `syri` reuse the default CIGAR
 // palette; only `strand` differs (indels in purple instead of blue/green, plus

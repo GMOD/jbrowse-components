@@ -166,11 +166,6 @@ export async function executeSyntenyFeaturesAndPositions({
   const mateRefNames: string[] = []
   const mateAssemblyNames: string[] = []
   const parsedCigars: Uint32Array[] = []
-  // Always collect syriType; main-thread colorBy='syri' reads this directly
-  // so the RPC doesn't refetch on a color-scheme change. Undefined entries
-  // fall back to main-thread computeSyriTypes when the scheme is active.
-  const precomputedSyriTypes: (string | undefined)[] = []
-
   // Viewport culling: skip features entirely outside the visible area in
   // both views. A synteny parallelogram is visible when at least one of its
   // edges (top=view1, bottom=view2) overlaps the viewport.
@@ -281,7 +276,6 @@ export async function executeSyntenyFeaturesAndPositions({
     const willNeedCigar =
       !!cigarStr && drawCIGAR && Math.max(widthPx0, widthPx1) >= 4
     parsedCigars.push(willNeedCigar ? parseCigar2Typed(cigarStr) : EMPTY_CIGAR)
-    precomputedSyriTypes.push(f.get('syriType') as string | undefined)
 
     validCount++
   }
@@ -307,17 +301,15 @@ export async function executeSyntenyFeaturesAndPositions({
     names,
     refNames,
     assemblyNames,
-    syriTypes: precomputedSyriTypes,
     mateStarts: mateStartsArray.subarray(0, validCount),
     mateEnds: mateEndsArray.subarray(0, validCount),
     mateRefNames,
     mateAssemblyNames,
   }
 
-  // colorBy lives on the main thread now; the worker always emits
-  // geometry + per-instance `kinds`/`instanceFeatureIdx` descriptors, and
-  // the display model recomputes `colors` on colorBy change. SyRI types
-  // are likewise computed on the main thread when needed.
+  // colorBy lives on the main thread; the worker emits geometry +
+  // per-instance `kinds`/`instanceFeatureIdx` descriptors, and the display
+  // model recomputes `colors` on colorBy change without an RPC round-trip.
 
   const instanceData = await updateStatus(
     'Computing synteny layout',

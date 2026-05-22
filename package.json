@@ -91,7 +91,7 @@
     "cors": "^2.8.6",
     "cross-spawn": "^7.0.6",
     "css-loader": "^7.1.4",
-    "electron": "^42.1.0",
+    "electron": "^42.2.0",
     "eslint": "^10.4.0",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-baseline-js": "^0.6.2",

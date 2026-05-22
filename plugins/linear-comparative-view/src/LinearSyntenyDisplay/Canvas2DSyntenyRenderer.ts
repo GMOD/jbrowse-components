@@ -1,6 +1,3 @@
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { syriColors } from '@jbrowse/synteny-core'
-
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import {
   buildFeaturePath,
@@ -20,8 +17,6 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 
 export type { CanvasLike } from './syntenyPickEngine.ts'
 
-const PACKED_SYN = cssColorToABGR(syriColors.SYN)
-
 function drawInstances(
   ctx: CanvasLike,
   data: SyntenyInstanceData,
@@ -35,17 +30,12 @@ function drawInstances(
   leftLimit: number,
   rightLimit: number,
   fillStyleCache: Map<number, string>,
-  synOnly: boolean | undefined,
 ) {
   for (let i = 0; i < data.instanceCount; i++) {
     if (data.queryTotalLengths[i]! < minAlignmentLength) {
       continue
     }
     const packed = data.colors[i]!
-    const isSyn = packed === PACKED_SYN
-    if (synOnly !== undefined && isSyn !== synOnly) {
-      continue
-    }
     const a = ((packed >>> 24) & 0xff) / 255
     if (a < 0.01) {
       continue
@@ -128,7 +118,6 @@ export function drawSyntenyTrack(
     hoveredFeatureId,
     clickedFeatureId,
     drawCurves,
-    isSyriMode,
   } = params
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
@@ -153,13 +142,7 @@ export function drawSyntenyTrack(
     fillStyleCache,
   ] as const
 
-  if (isSyriMode) {
-    // plotsr draws SYN first so that INV/TRANS/DUP ribbons appear on top
-    drawInstances(ctx, ...args, true)
-    drawInstances(ctx, ...args, false)
-  } else {
-    drawInstances(ctx, ...args, undefined)
-  }
+  drawInstances(ctx, ...args)
 }
 
 export class Canvas2DSyntenyRenderer implements SyntenyBackend {

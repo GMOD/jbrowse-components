@@ -8,9 +8,7 @@ import {
   packAbgr,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
-import { colorSchemes, hashString, syriColors } from '@jbrowse/synteny-core'
-
-import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
+import { colorSchemes, hashString } from '@jbrowse/synteny-core'
 
 // Per-instance kind tag. Determines how the color for an instance is derived
 // from the parent feature's strand/refName/featureIdx and the current colorBy
@@ -60,13 +58,6 @@ function lutLookup(lut: Uint32Array, value: number, max = 1) {
   return lut[Math.round(norm * 255)]!
 }
 
-const syriColorMap: Record<SyriType, number> = {
-  SYN: cssColorToABGR(syriColors.SYN),
-  INV: cssColorToABGR(syriColors.INV),
-  TRANS: cssColorToABGR(syriColors.TRANS),
-  DUP: cssColorToABGR(syriColors.DUP),
-}
-
 interface ColorInputs {
   strands: Int8Array
   refNames: readonly string[]
@@ -78,11 +69,7 @@ interface ColorInputs {
 function createColorFunction(
   colorBy: string,
   d: ColorInputs,
-  syriTypes: readonly SyriType[] | undefined,
 ): (index: number) => number {
-  if (colorBy === 'syri' && syriTypes) {
-    return index => syriColorMap[syriTypes[index]!]
-  }
   if (colorBy === 'identity') {
     return index => lutLookup(IDENTITY_LUT, d.identities[index]!)
   }
@@ -143,16 +130,14 @@ export function computeSyntenyColors({
   featureData,
   colorBy,
   opacityByIdentity,
-  syriTypes,
 }: {
   instanceData: InstanceInputs
   featureData: ColorInputs
   colorBy: string
   opacityByIdentity?: boolean
-  syriTypes?: readonly SyriType[]
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData
-  const colorFn = createColorFunction(colorBy, featureData, syriTypes)
+  const colorFn = createColorFunction(colorBy, featureData)
   const indelColors = buildIndelColors(colorBy)
   const colorI = indelColors[CIGAR_I] ?? DEFAULT_COLOR
   const colorD = indelColors[CIGAR_D] ?? DEFAULT_COLOR

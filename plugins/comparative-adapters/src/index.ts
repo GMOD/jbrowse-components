@@ -11,14 +11,7 @@ import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
 import MashMapAdapterF from './MashMapAdapter/index.ts'
 import PAFAdapterF from './PAFAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
-export { computeSyriTypes } from './syriUtils.ts'
 export { csToCigar, flipCs } from './csUtils.ts'
-export type {
-  AlignmentRecord,
-  DupConflict,
-  SyriClassification,
-  SyriType,
-} from './syriUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

@@ -76,8 +76,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * Fade alignment blocks by per-feature identity (lower identity = more
-         * transparent). Orthogonal to colorBy — combines with strand/query/syri
-         * to surface identity-dropoff zones without consuming the color channel.
+         * transparent). Orthogonal to colorBy — surfaces identity-dropoff zones
+         * without consuming the color channel.
          */
         opacityByIdentity: types.optional(types.boolean, false),
         /**
