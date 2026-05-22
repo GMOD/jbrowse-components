@@ -8,12 +8,11 @@ import {
   mockConsole,
   setup,
 } from './util.tsx'
-
+import './svgExportMocks'
 
 // @ts-expect-error
 global.indexedDB = {}
 
-import './svgExportMocks'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
