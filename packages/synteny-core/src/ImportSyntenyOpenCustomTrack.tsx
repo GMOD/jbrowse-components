@@ -20,7 +20,6 @@ const ImportSyntenyOpenCustomTrack = observer(
   function ImportSyntenyOpenCustomTrack({
     assembly1,
     assembly2,
-    selectedRow,
     extensionPoint,
     baseFormats,
     pluginManager,
@@ -28,11 +27,10 @@ const ImportSyntenyOpenCustomTrack = observer(
   }: {
     assembly1: string
     assembly2: string
-    selectedRow: number
     extensionPoint: string
     baseFormats: SyntenyFileFormatOption[]
     pluginManager: PluginManager
-    onSetTrack: (row: number, val: ImportFormSyntenyTrack) => void
+    onSetTrack: (val: ImportFormSyntenyTrack) => void
   }) {
     const [radioOption, setRadioOption] = useState('')
 
@@ -54,7 +52,7 @@ const ImportSyntenyOpenCustomTrack = observer(
           value={radioOption}
           onChange={event => {
             setRadioOption(event.target.value)
-            onSetTrack(selectedRow, { type: 'none' })
+            onSetTrack({ type: 'none' })
           }}
         >
           <Grid container sx={{ justifyContent: 'center' }}>
@@ -77,7 +75,7 @@ const ImportSyntenyOpenCustomTrack = observer(
               onAdapterChange={result => {
                 if (result) {
                   const trackId = `${result.name}-${Date.now()}-sessionTrack`
-                  onSetTrack(selectedRow, {
+                  onSetTrack({
                     type: 'userOpened',
                     value: {
                       trackId,
@@ -88,7 +86,7 @@ const ImportSyntenyOpenCustomTrack = observer(
                     },
                   })
                 } else {
-                  onSetTrack(selectedRow, { type: 'none' })
+                  onSetTrack({ type: 'none' })
                 }
               }}
             />

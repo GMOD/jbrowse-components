@@ -22,12 +22,11 @@ const DotplotImportSyntenyOpenCustomTrack = observer(
       <ImportSyntenyOpenCustomTrack
         assembly1={assembly1}
         assembly2={assembly2}
-        selectedRow={0}
         extensionPoint="DotplotView-SyntenyFileFormats"
         baseFormats={defaultSyntenyFileFormats}
         pluginManager={pluginManager}
-        onSetTrack={(row, val) => {
-          model.setImportFormSyntenyTrack(row, val)
+        onSetTrack={val => {
+          model.setImportFormSyntenyTrack(0, val)
         }}
       />
     )

@@ -12,12 +12,10 @@ import type { LinearSyntenyViewModel } from '../../model.ts'
 const ImportSyntenyTrackSelector = observer(
   function ImportSyntenyTrackSelector({
     model,
-    selectedRow,
     assembly1,
     assembly2,
   }: {
     model: LinearSyntenyViewModel
-    selectedRow: number
     assembly1: string
     assembly2: string
   }) {
@@ -33,7 +31,7 @@ const ImportSyntenyTrackSelector = observer(
     const resetTrack = filteredTracks[0]?.trackId ?? ''
     const [value, setValue] = useState(resetTrack)
     useEffect(() => {
-      model.setImportFormSyntenyTrack(selectedRow, {
+      model.setImportFormSyntenyTrack(0, {
         type: 'preConfigured',
         value: resetTrack,
       })
@@ -52,7 +50,7 @@ const ImportSyntenyTrackSelector = observer(
             onChange={event => {
               const v = event.target.value
               setValue(v)
-              model.setImportFormSyntenyTrack(selectedRow, {
+              model.setImportFormSyntenyTrack(0, {
                 type: 'preConfigured',
                 value: v,
               })

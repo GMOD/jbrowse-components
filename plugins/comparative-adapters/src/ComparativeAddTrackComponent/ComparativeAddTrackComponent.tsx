@@ -11,12 +11,9 @@ interface TrackModel {
 const ComparativeAddTrackComponent = observer(
   function ComparativeAddTrackComponent({ model }: { model: TrackModel }) {
     const session = getSession(model)
-    const [queryAssembly, setQueryAssembly] = useState(() => {
-      const asm = session.assemblies[0]?.name ?? ''
-      model.setMixinData({ adapter: { queryAssembly: asm, targetAssembly: asm } })
-      return asm
-    })
-    const [targetAssembly, setTargetAssembly] = useState(queryAssembly)
+    const defaultAsm = session.assemblies[0]?.name ?? ''
+    const [queryAssembly, setQueryAssembly] = useState(defaultAsm)
+    const [targetAssembly, setTargetAssembly] = useState(defaultAsm)
     return (
       <>
         <AssemblySelector

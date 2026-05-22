@@ -50,7 +50,7 @@
     }
   ],
   "defaultSession": {
-    "name": "HPRC chr20 pangenome",
+    "name": "HPRC chr20 variants",
     "views": [
       {
         "type": "LinearGenomeView",

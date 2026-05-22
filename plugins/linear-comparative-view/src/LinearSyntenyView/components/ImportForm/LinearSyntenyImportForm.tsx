@@ -93,7 +93,6 @@ const LinearSyntenyViewImportForm = observer(
               <div>Configure synteny data</div>
               <ImportSyntenyTrackSelector
                 model={model}
-                selectedRow={0}
                 assembly1={selectedAssemblyNames[0]!}
                 assembly2={selectedAssemblyNames[1]!}
               />

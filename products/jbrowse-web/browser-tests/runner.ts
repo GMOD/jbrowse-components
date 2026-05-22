@@ -27,7 +27,7 @@ const runAuthTests = args.includes('--auth')
 const filterArg = args.find(a => a.startsWith('--filter='))
 const filter = filterArg ? filterArg.split('=')[1]!.toLowerCase() : ''
 // --smoke is the full local smoke test: runs every suite, including the
-// requiresRemote ones (chr20/chrM pangenome, grape/peach + hs1/mm39 synteny,
+// requiresRemote ones (chr20/chrM HPRC variants, grape/peach + hs1/mm39 synteny,
 // graph-server). The chr20 untangle PAF is committed, the rest fetch their
 // data straight from S3/UCSC at runtime — so it works on any machine online.
 const smoke = args.includes('--smoke')

@@ -67,7 +67,6 @@ export function buildSyntenyGeometry({
   viewOff0,
   viewOff1,
   viewWidth,
-  syriTypes,
 }: {
   p11_cumBp: Float64Array
   p12_cumBp: Float64Array
@@ -88,7 +87,6 @@ export function buildSyntenyGeometry({
   viewOff0: number
   viewOff1: number
   viewWidth: number
-  syriTypes?: (string | undefined)[]
 }): SyntenyGeometry {
   const featureCount = p11_cumBp.length
 
@@ -267,11 +265,8 @@ export function buildSyntenyGeometry({
     }
   }
 
-  // First loop: emit whole-polygon instances, SYN features first so that
-  // INV/TRANS/DUP ribbons render on top in the GPU path (painter's order).
-  // When syriTypes is absent (non-SyRI data) the single pass is unchanged.
-  // Features with CIGAR detail use KIND_BASE_HIDDEN (alpha-zero in the fill
-  // pass but still drawn by the edge/outline pass).
+  // Emit whole-polygon instances. Features with CIGAR detail use
+  // KIND_BASE_HIDDEN (alpha-zero fill, but edge/outline pass still draws them).
   function emitNonCigarFeature(i: number) {
     const x11 = p11_cumBp[i]!
     const x12 = p12_cumBp[i]!
@@ -303,21 +298,8 @@ export function buildSyntenyGeometry({
     }
   }
 
-  if (syriTypes) {
-    for (let i = 0; i < featureCount; i++) {
-      if (syriTypes[i] === 'SYN') {
-        emitNonCigarFeature(i)
-      }
-    }
-    for (let i = 0; i < featureCount; i++) {
-      if (syriTypes[i] !== 'SYN') {
-        emitNonCigarFeature(i)
-      }
-    }
-  } else {
-    for (let i = 0; i < featureCount; i++) {
-      emitNonCigarFeature(i)
-    }
+  for (let i = 0; i < featureCount; i++) {
+    emitNonCigarFeature(i)
   }
 
   const nonCigarInstanceCount = idx

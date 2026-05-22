@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -14,10 +14,7 @@ const DEFAULT_SCORE_COLUMN = 'neg_log_pvalue'
 const GWASAddTrackComponent = observer(function ({
   model,
 }: GWASAddTrackComponentProps) {
-  const [scoreColumn, setScoreColumn] = useState(() => {
-    model.setMixinData({ adapter: { scoreColumn: DEFAULT_SCORE_COLUMN } })
-    return DEFAULT_SCORE_COLUMN
-  })
+  const [scoreColumn, setScoreColumn] = useState(DEFAULT_SCORE_COLUMN)
 
   return (
     <TextField
