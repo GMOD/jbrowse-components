@@ -127,13 +127,13 @@ Read `PRD.md` first for invariants and active priorities.
 ## One-liner
 
 Each GPU display is an MST model that composes `GpuLifecycleMixin`
-and calls `self.installGpuDisplay(backend, { upload, render })` in its
-`startGpuBackendLifecycle(backend)` action. The mixin spawns two autoruns tied
+and calls `self.attachBackend(backend, { upload, render })` in its
+`startBackend(backend)` action. The mixin spawns two autoruns tied
 to the model's lifetime — one that runs `upload(backend)`, one that runs
 `render(backend)`. MobX auto-tracks every observable read inside each callback,
 so changes re-fire the right autorun with no manual dependency declarations.
 React components are thin bridges: create a canvas, hand the backend to the
-model via `useGpuModelLifecycle`, render JSX.
+model via `useGpuBackend`, render JSX.
 
 ---
 
@@ -146,8 +146,8 @@ interface Backend {
 }
 
 // In the plugin's MST model:
-startGpuBackendLifecycle(backend: Backend) {
-  self.installGpuDisplay<Backend>(backend, {
+startBackend(backend: Backend) {
+  self.attachBackend<Backend>(backend, {
     upload: b => {
       // Read plugin observables, push bytes to the GPU.
       // Re-fires on any observable change.
@@ -174,13 +174,13 @@ GpuLifecycleMixin
     canvasDrawn: boolean          set true only after render() returns true with real data
     currentGpuBackend: unknown    stored backend; autoruns read it each tick
     renderBump: number            bumped by renderNow() and after every upload
-    gpuAutorunsInstalled: boolean guards installGpuDisplay (idempotent)
+    gpuAutorunsInstalled: boolean guards attachBackend (idempotent)
   .actions
     markCanvasDrawn()             idempotent flip to true
     resetCanvasDrawn()            flip to false (called by clearAllRpcData)
-    stopGpuBackendLifecycle()     clears currentGpuBackend + resets canvasDrawn → autoruns idle
+    stopBackend()                 clears currentGpuBackend + resets canvasDrawn → autoruns idle
     renderNow()                   bumps renderBump → render autorun re-fires
-    installGpuDisplay(b, cbs)     spawns upload + render autoruns (once)
+    attachBackend(b, cbs)         spawns upload + render autoruns (once)
 
 MultiRegionDisplayMixin  (composes GpuLifecycleMixin)
   .views
@@ -190,7 +190,7 @@ MultiRegionDisplayMixin  (composes GpuLifecycleMixin)
 Loading overlays read `!model.isReady`. This keeps the overlay visible from
 the moment the track opens (before GPU init and the 600ms `FetchVisibleRegions`
 debounce) through the entire fetch cycle, hiding exactly once when the first
-real frame is painted. `stopGpuBackendLifecycle` resets `canvasDrawn` so the
+real frame is painted. `stopBackend` resets `canvasDrawn` so the
 overlay reappears correctly during WebGL context-loss recovery.
 
 All backend-specific plumbing lives in the plugin. All reactivity plumbing
@@ -200,8 +200,8 @@ lives in the mixin.
 
 ## Life of a frame
 
-1. React hook (`useGpuModelLifecycle`) mounts, creates the HAL, resolves a
-   backend, calls `model.startGpuBackendLifecycle(backend)`.
+1. React hook (`useGpuBackend`) mounts, creates the HAL, resolves a
+   backend, calls `model.startBackend(backend)`.
 2. Mixin sets `currentGpuBackend = backend`, spawns two autoruns via
    `addDisposer(self, autorun(...))`.
 3. Upload autorun fires: reads `currentGpuBackend`, calls `cbs.upload(b)`,
@@ -217,7 +217,7 @@ lives in the mixin.
 
 GPU contexts can be lost. `useGpuRenderer` listens for
 `webglcontextlost`/`restored` and `device.lost`, rebuilds the backend, and
-calls `model.startGpuBackendLifecycle(newBackend)`. The mixin sees
+calls `model.startBackend(newBackend)`. The mixin sees
 `gpuAutorunsInstalled === true`, skips re-installation, just reassigns
 `currentGpuBackend`. Both autoruns re-fire against the new backend. No special
 code path.
@@ -237,7 +237,7 @@ a GPU or Canvas 2D implementation:
 
 ```ts
 export function XxxRenderer(canvas: HTMLCanvasElement) {
-  return initDualBackend<XxxBackend>(
+  return createBackend<XxxBackend>(
     canvas,
     XXX_PASSES,
     XXX_UNIFORM_BYTE_SIZE,
@@ -247,7 +247,7 @@ export function XxxRenderer(canvas: HTMLCanvasElement) {
 }
 ```
 
-`initDualBackend` calls `createGpuHal`; if a HAL is returned, the GPU backend
+`createBackend` calls `createGpuHal`; if a HAL is returned, the GPU backend
 is constructed, otherwise Canvas 2D.
 
 ### Shared per-region streamed contract
@@ -258,7 +258,7 @@ classes in `@jbrowse/core/gpu/perRegionBackend`:
 
 ```ts
 // Plugin specializes the interface (used in model + React code):
-export type XxxBackend = PerRegionGpuBackend<XxxUploadData, XxxRenderState>
+export type XxxBackend = PerRegionBackend<XxxUploadData, XxxRenderState>
 
 // Plugin's GPU renderer extends GpuPerRegionBackend, implements uploadRegion + renderBlocks:
 export class GpuXxxRenderer extends GpuPerRegionBackend<XxxUploadData, XxxRenderState> {
@@ -293,7 +293,7 @@ Two invariants make the renderer implementations small and uniform:
 
 For MAF, the upload payload (`MafUploadPayload`) wraps a pre-encoded GPU
 buffer AND the raw `MafRegionData`; only the latter is needed at render
-time. `PerRegionGpuBackend` has an optional fourth type param `RenderData`
+time. `PerRegionBackend` has an optional fourth type param `RenderData`
 (defaults to `UploadData`) to support this split.
 
 Whole-map synced (alignments, multi-LGV-synteny) and monolithic (HiC, LD,
@@ -344,7 +344,7 @@ the data shape, not the one your neighbour copied:
 MAF is **per-region streamed** (like canvas/wiggle), not whole-map synced like
 alignments. MAF blocks are independent — no main-thread Y-layout couples
 adjacent regions — so each region's upload re-encodes in isolation via
-`installPerRegionGpuLifecycle`. Alignments' whole-map sync exists *only*
+`installPerRegionLifecycle`. Alignments' whole-map sync exists *only*
 because pileup Y-rows must be assigned consistently across multiple
 `displayedRegions` (a read spanning a region boundary needs the same Y row in
 both regions), forcing the upload to rebuild the whole map whenever any
@@ -353,10 +353,10 @@ region's input changes. If a future MAF feature added cross-region coupling
 move to whole-map synced — until then, per-region streamed is the right
 shape.
 
-All three patterns expose the same lifecycle (`installGpuDisplay({ upload,
+All three patterns expose the same lifecycle (`attachBackend({ upload,
 render })`); the difference is how the upload callback shovels bytes.
 
-#### Per-region streamed: per-key autoruns (`installPerRegionGpuLifecycle`)
+#### Per-region streamed: per-key autoruns (`installPerRegionLifecycle`)
 
 **Plain English:** The naive implementation re-uploads every chromosome to the
 GPU each time any chromosome finishes loading — 300 uploads instead of 24 for
@@ -371,14 +371,14 @@ entire map, every `rpcDataMap.set(key, data)` call re-fires the autorun and
 re-uploads all N regions — O(N²) total GPU uploads when N regions arrive
 sequentially.
 
-**The fix lives in `@jbrowse/core/gpu/installPerRegionGpuLifecycle`** and is
+**The fix lives in `@jbrowse/core/gpu/installPerRegionLifecycle`** and is
 used by every per-region plugin (wiggle, multi-wiggle, manhattan, MAF,
-multi-variant, multi-variant-matrix). Each plugin's `startGpuBackendLifecycle`
+multi-variant, multi-variant-matrix). Each plugin's `startBackend`
 action collapses to a single call:
 
 ```ts
-startGpuBackendLifecycle(backend: XxxBackend) {
-  installPerRegionGpuLifecycle(
+startBackend(backend: XxxBackend) {
+  installPerRegionLifecycle(
     self,
     self.rpcDataMap,
     backend,
@@ -884,8 +884,8 @@ key on a tuple of two displayedRegion indices.
 
 - **Types** — `MyData`, `MyRenderState`, `MyBackend`.
 - **Shader** — author `my.slang`; `pnpm gen:shaders` emits `my.generated.ts`.
-- **Renderers + factory** — `initDualBackend<MyBackend>` from
-  `packages/core/src/gpu/createDualRenderer.ts`. Use `slangPass()` to build
+- **Renderers + factory** — `createBackend<MyBackend>` from
+  `packages/core/src/gpu/createBackend.ts`. Use `slangPass()` to build
   the `PassDescriptor`.
 - **MST model:**
   - Compose `MultiRegionDisplayMixin()` for LGV-family per-region displays
@@ -901,13 +901,13 @@ key on a tuple of two displayedRegion indices.
   - Compose `GpuLifecycleMixin()` directly only when neither
     fetch surface is needed (rare — most GPU displays fetch something).
   - Add a cached `renderState` view.
-  - Define `startGpuBackendLifecycle(backend)` calling
-    `self.installGpuDisplay(backend, { upload, render })`.
+  - Define `startBackend(backend)` calling
+    `self.attachBackend(backend, { upload, render })`.
   - Expose `rpcProps()`; add `gpuProps()` only when main thread encodes GPU
     buffers from settings.
 - **React component** — `observer()`:
   ```tsx
-  const { canvasRef, error, retry } = useGpuModelLifecycle(MyRenderer, model)
+  const { canvasRef, error, retry } = useGpuBackend(MyRenderer, model)
   return <>{error && <ErrorBar action={retry} …/>}<canvas ref={canvasRef}/></>
   ```
   For FetchMixin status, mount `DisplayErrorBar` + `DisplayLoadingOverlay`
@@ -924,7 +924,7 @@ key on a tuple of two displayedRegion indices.
 ## What NOT to do
 
 - Don't put upload/render logic in React `useEffect`/`useLayoutEffect` —
-  it belongs in the MST autorun pair spawned by `installGpuDisplay`.
+  it belongs in the MST autorun pair spawned by `attachBackend`.
 - Don't destructure model methods; call on the model.
 - Don't use `useMemo` for observable-dependent values; use a cached MST view.
 - Don't mutate per-region values in place; emit fresh objects.
@@ -932,10 +932,10 @@ key on a tuple of two displayedRegion indices.
   The model's `rpcDataMap` / `laidOutDataMap` is the single source of truth;
   pass it into `renderBlocks(blocks, regions, state)` instead. For GPU buffer
   lifecycle delegate to `hal.pruneRegions(active)` rather than mirroring HAL's
-  region map. See `PerRegionGpuBackend` in `@jbrowse/core/gpu/perRegionBackend`.
+  region map. See `PerRegionBackend` in `@jbrowse/core/gpu/perRegionBackend`.
 - Don't add or redefine volatiles/actions owned by the slot mixin
   (`canvasDrawn`, `renderBump`, `currentGpuBackend`, `markCanvasDrawn`,
-  `resetCanvasDrawn`, `renderNow`, `stopGpuBackendLifecycle`, etc.) or the
+  `resetCanvasDrawn`, `renderNow`, `stopBackend`, etc.) or the
   `isReady` view owned by `MultiRegionDisplayMixin`.
 - Don't hand-maintain WGSL/GLSL/offset tables next to generated modules;
   consume the generated constants.

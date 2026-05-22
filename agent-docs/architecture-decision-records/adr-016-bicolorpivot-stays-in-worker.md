@@ -20,7 +20,7 @@ performance analysis.
 
 ## Problem with main-thread split
 
-The upload autorun (spawned by `GpuBackendLifecycleSlotMixin.installGpuDisplay`)
+The upload autorun (spawned by `GpuLifecycleMixin.attachBackend`)
 fires when **any** entry in `rpcDataMap` changes — i.e., whenever any region
 finishes loading. When it fires it iterates all current entries and calls
 `buildSourceRenderData` for each. Moving the split there means the autorun

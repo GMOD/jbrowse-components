@@ -1,6 +1,15 @@
 # RFC-001: Community plugin API for the WebGPU/WebGL2/Canvas2D era
 
-**Status:** Draft, pending review
+**Status:** Historical proposal. The mixin/lifecycle rename pass in §4
+was adopted with different names than this RFC proposed. As-shipped
+mapping (RFC → adopted): `GpuBackendLifecycleSlotMixin` →
+`GpuLifecycleMixin` (kept "Gpu" prefix); `installGpuDisplay` →
+`attachBackend`; `stopGpuBackendLifecycle` → `stopBackend`;
+`useGpuModelLifecycle` → `useGpuBackend`; `initDualBackend` →
+`createBackend`. The Canvas2D-as-first-class proposal (§3, §4) is not
+yet implemented — current Canvas2D paths use the same
+`attachBackend({ upload, render })` shape as GPU.
+
 **Branch:** `webgl-poc`
 **Scope:** Core, plugin-linear-genome-view, plugin-wiggle, plugin-canvas, all built-in LGV-family plugins still using `FeatureRendererType`. Linear Genome View only — circular, dotplot-shape, and custom views are out of scope.
 

@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-`GpuBackendLifecycleSlotMixin.installGpuDisplay` spawns one `upload` autorun
+`GpuLifecycleMixin.attachBackend` spawns one `upload` autorun
 that re-fires whenever any observable it reads changes. The natural shape for a
 per-region streamed display (`uploadRegion(idx, data) + pruneRegions(active)`)
 is to iterate the whole `rpcDataMap` inside the upload callback:
@@ -87,13 +87,13 @@ N is 4–8 in realistic zooms.
 ## Consequences
 
 - Wiggle whole-genome load: 24 uploads instead of 576. Perceptible perf win.
-- Wiggle's `startGpuBackendLifecycle` body is 4 lines; the autorun bookkeeping
+- Wiggle's `startBackend` body is 4 lines; the autorun bookkeeping
   lives in the shared helper.
 - `gpuProps` change still re-encodes every loaded region (intentional) — the
   shared encoder dep is read inside each per-key autorun.
 - Context-loss recovery works because per-key autoruns track
   `currentGpuBackend`; when the slot mixin reassigns it on
-  `installGpuDisplay(newBackend)`, every per-key autorun fires and re-uploads
+  `attachBackend(newBackend)`, every per-key autorun fires and re-uploads
   to the new backend. Closure-capturing the outer `b` would break this.
 - `installPerRegionWiggleLifecycle.test.ts` locks in the upload-count contract
   and the dep-tracking shape (5 tests covering O(N) arrivals, encoder dep

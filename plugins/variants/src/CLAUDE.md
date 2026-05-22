@@ -21,7 +21,7 @@ This applies specifically to:
 - `computeVariantCells.ts` (per-feature loop, lines ~168+, each iterating
   per-sample at ~256-308-362-434)
 - `computeVariantMatrixCells.ts` (matrix equivalent)
-- Anything called from `installGpuDisplay`'s `upload`/`render` callback bodies
+- Anything called from `attachBackend`'s `upload`/`render` callback bodies
   _that touches per-cell data_
 
 ## What is NOT in scope
