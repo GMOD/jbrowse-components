@@ -30,24 +30,34 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
         display.setHeight(+val1)
       }
     } else if (prefix === 'sort') {
-      display.PileupDisplay?.setSortedBy(val1, val2)
+      display.setSortedBy?.(val1, val2)
     } else if (prefix === 'color') {
-      if (display.PileupDisplay) {
-        display.PileupDisplay.setColorScheme({ type: val1, tag: val2 })
+      if (display.setColorScheme) {
+        display.setColorScheme({ type: val1, tag: val2 })
       } else {
-        display.setColor(val1)
+        display.setColor?.(val1)
       }
+    } else if (prefix === 'arcs') {
+      // 'off' | 'up' | 'down' | 'samplot' — paired-end arcs / samplot view
+      display.setPairedArcs?.(val1)
+    } else if (prefix === 'linkedReads') {
+      // 'off' | 'normal' | 'bezier' — 10x/linked-read chain overlay
+      display.setLinkedReads?.(val1)
+    } else if (prefix === 'sashimi') {
+      // 'off' | 'up' | 'down' — splice-junction arcs
+      display.setSashimiArcs?.(val1)
+    } else if (prefix === 'coverage') {
+      display.setShowCoverage?.(booleanize(val1 || 'true'))
     } else if (prefix === 'featureHeight') {
-      const pileup = display.PileupDisplay ?? display
       if (val1 === 'normal') {
-        pileup.setFeatureHeight(7)
-        pileup.setNoSpacing(false)
+        display.setFeatureHeight?.(7)
+        display.setNoSpacing?.(false)
       } else if (val1 === 'compact') {
-        pileup.setFeatureHeight(2)
-        pileup.setNoSpacing(true)
+        display.setFeatureHeight?.(2)
+        display.setNoSpacing?.(true)
       } else if (val1 === 'super-compact') {
-        pileup.setFeatureHeight(1)
-        pileup.setNoSpacing(true)
+        display.setFeatureHeight?.(1)
+        display.setNoSpacing?.(true)
       } else if (val1) {
         const n = +val1
         if (isNaN(n)) {
@@ -55,15 +65,13 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
             `Invalid featureHeight "${val1}". Use normal, compact, super-compact, or a number.`,
           )
         }
-        pileup.setFeatureHeight(n)
+        display.setFeatureHeight?.(n)
       }
     } else if (prefix === 'noSpacing') {
-      const pileup = display.PileupDisplay ?? display
-      pileup.setNoSpacing(booleanize(val1 || 'true'))
+      display.setNoSpacing?.(booleanize(val1 || 'true'))
     } else if (prefix === 'softClipping') {
-      const pileup = display.PileupDisplay ?? display
-      if (booleanize(val1 || 'true') !== pileup.showSoftClipping) {
-        pileup.toggleSoftClipping()
+      if (booleanize(val1 || 'true') !== display.showSoftClipping) {
+        display.toggleSoftClipping?.()
       }
     } else if (prefix === 'force') {
       if (booleanize(val1 || 'true')) {

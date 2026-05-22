@@ -111,6 +111,18 @@ jb2export --fasta ref.fa --bam reads.bam color:modifications featureHeight:super
 
 ## color by insert size + orientation to highlight structural variants
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
+
+## samplot-style SV view (paired arcs in samplot mode, taller display)
+jb2export --fasta ref.fa --bam reads.bam arcs:samplot height:600 --loc chr1:1-50000
+
+## paired-end arcs above reads
+jb2export --fasta ref.fa --bam reads.bam arcs:up --loc chr1:1-10000
+
+## 10x linked-read chains (bezier mode)
+jb2export --fasta ref.fa --bam linked.bam linkedReads:bezier --loc chr1:1-50000
+
+## sashimi splice-junction arcs over an RNA-seq pileup
+jb2export --fasta ref.fa --bam rnaseq.bam sashimi:up --loc chr1:1-50000
 ```
 
 Instead of extra `--flags`, track modifiers use a colon-based syntax that
@@ -129,6 +141,10 @@ follows the track file argument. Full list of available modifiers:
 | -------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
 | `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS`                   | Color scheme (see types below)                                                   |
 | `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`                     | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                    |
+| `arcs:mode`                      | `arcs:samplot`, `arcs:up`                        | Paired-end arcs / samplot panel (`off`, `up`, `down`, `samplot`)                 |
+| `linkedReads:mode`               | `linkedReads:normal`                             | Linked-read chains (`off`, `normal`, `bezier`)                                   |
+| `sashimi:mode`                   | `sashimi:up`                                     | Sashimi splice-junction arcs (`off`, `up`, `down`)                               |
+| `coverage:true\|false`           | `coverage:false`                                 | Toggle coverage subtrack                                                         |
 | `featureHeight:preset\|N`        | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (2px), `super-compact` (1px) |
 | `noSpacing:true\|false`          | `noSpacing:true`                                 | Remove gap between reads                                                         |
 | `softClipping:true\|false`       | `softClipping:true`                              | Show soft-clipped bases                                                          |
