@@ -44,9 +44,6 @@ export const strandCigarColors = {
   '=': '#f00',
 }
 
-// Color scheme configuration. `query` and `syri` reuse the default CIGAR
-// palette; only `strand` differs (indels in purple instead of blue/green, plus
-// strand-aware feature colors).
 export const colorSchemes = {
   default: {
     cigarColors: defaultCigarColors,

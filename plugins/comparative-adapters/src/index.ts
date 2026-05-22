@@ -11,7 +11,6 @@ import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
 import MashMapAdapterF from './MashMapAdapter/index.ts'
 import PAFAdapterF from './PAFAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
-export { csToCigar, flipCs } from './csUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

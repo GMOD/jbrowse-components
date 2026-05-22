@@ -29,7 +29,6 @@ RendererType (base)
     │   ├── WiggleBaseRenderer (canvas)
     │   ├── MultiVariantBaseRenderer (canvas)
     │   └── BoxRendererType (layout management)
-    │       ├── LollipopRenderer
     │       ├── SvgFeatureRenderer
     │       ├── PileupRenderer (canvas)
     │       └── CanvasFeatureRenderer (canvas)

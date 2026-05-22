@@ -31,7 +31,7 @@ the geometry before it reaches any renderer:
 
 So the worker-computed colors are overwritten before they ever reach a draw
 call. This pattern exists deliberately so that `colorBy` changes (strand,
-query, syri, default) re-upload geometry without an RPC round-trip — the
+default) re-upload geometry without an RPC round-trip — the
 display reads `renderInstanceData` from `geometryByDisplayKey`, which is a
 main-thread getter.
 

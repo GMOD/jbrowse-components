@@ -410,7 +410,6 @@ Any LGV plugin with a numeric y-axis (Manhattan, custom score tracks, methylatio
 
 | Plugin | File | Pattern |
 |---|---|---|
-| lollipop | `plugins/lollipop/src/LollipopRenderer/LollipopRenderer.ts` | `extends FeatureRendererType {}` (empty subclass) |
 | arc | `plugins/arc/src/ArcRenderer/ArcRenderer.ts` | `extends FeatureRendererType {}` (empty subclass) |
 | variants/LD | `plugins/variants/src/LDRenderer/LDRenderer.tsx` | `extends ServerSideRendererType` (with overrides) |
 
@@ -421,7 +420,7 @@ Plus the core class hierarchy itself:
 
 ### 9b. Migration plan per plugin
 
-- **lollipop, arc**: empty subclasses haven't been migrated to the GPU lifecycle yet. Each gets ported: define an RPC method, define a display model that composes `MultiRegionDisplayMixin`, write a render callback. Both are simple enough for the Canvas2D path; neither has performance pressure that demands GPU.
+- **arc**: empty subclass hasn't been migrated to the GPU lifecycle yet. Port: define an RPC method, define a display model that composes `MultiRegionDisplayMixin`, write a render callback. Simple enough for the Canvas2D path; no performance pressure that demands GPU.
 - **variants/LD**: extends `ServerSideRendererType` with non-trivial overrides. LD already has a GPU compute path on webgl-poc (`ldComputeShader.ts`); the *render* still goes through `LDRenderer.tsx`. Migration: compute output feeds a new `installGpuDisplay` lifecycle.
 - **CircularChordRendererType**: out of scope per RFC scope (LGV only). After audit confirms no active LGV-family use, retire the class entirely along with the rest of the renderer hierarchy.
 
@@ -492,16 +491,15 @@ Same RPC, same MST model, same fetch, same hit-test pattern. Differences are loc
 | **4. Wiggle refactor** | Extract `ScaleAxisMixin`, update wiggle public surface | ~2 days |
 | **5. API stability ADR** | ADR-024 documenting §7 | ~half-day |
 | **6. Reference plugin in-tree** | Small example display in both Canvas2D and GPU paths, mirroring GWAS shape; doubles as documentation | ~3-4 days |
-| **7. Migrate lollipop** | RPC method + MST model + Canvas2D render; delete old renderer | ~3-5 days |
-| **8. Migrate arc** | Same | ~3-5 days |
-| **9. Migrate variants/LD render** | Audit, port render to `installGpuDisplay` | ~3-5 days |
-| **10. Delete legacy renderer classes** | Remove `ServerSideRendererType`, `FeatureRendererType`, `BoxRendererType`, `CircularChordRendererType`; update ReExports | ~half-day |
-| **11. Port jbrowse-plugin-gwas** | External plugin against new API; both paths (Canvas2D and GPU) | ~3-5 days |
-| **12. Port jbrowse-plugin-mafviewer** | External plugin against new API; Canvas2D path only (text rendering); validates multi-RPC data flows | ~5-7 days (more complex than GWAS — phylogenetic tree, multi-flow fetch, row-based layout) |
+| **7. Migrate arc** | RPC method + MST model + Canvas2D render; delete old renderer | ~3-5 days |
+| **8. Migrate variants/LD render** | Audit, port render to `installGpuDisplay` | ~3-5 days |
+| **9. Delete legacy renderer classes** | Remove `ServerSideRendererType`, `FeatureRendererType`, `BoxRendererType`, `CircularChordRendererType`; update ReExports | ~half-day |
+| **10. Port jbrowse-plugin-gwas** | External plugin against new API; both paths (Canvas2D and GPU) | ~3-5 days |
+| **11. Port jbrowse-plugin-mafviewer** | External plugin against new API; Canvas2D path only (text rendering); validates multi-RPC data flows | ~5-7 days (more complex than GWAS — phylogenetic tree, multi-flow fetch, row-based layout) |
 
 Total estimate: **~7-9 weeks calendar** of focused work for one engineer. The estimates are order-of-magnitude and assume the wiggle split, mixin rename, and visual regression all behave; any of those can balloon individually.
 
-Steps 1-5 unblock 6-12. Within 6-12, the migrations (7, 8, 9, 11, 12) can run in parallel since they touch different plugins.
+Steps 1-5 unblock 6-11. Within 6-11, the migrations (7, 8, 10, 11) can run in parallel since they touch different plugins.
 
 ---
 

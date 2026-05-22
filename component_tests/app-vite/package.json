@@ -39,7 +39,6 @@
     "@jbrowse/plugin-legacy-jbrowse": "file:./packed/jbrowse-plugin-legacy-jbrowse.tgz",
     "@jbrowse/plugin-linear-comparative-view": "file:./packed/jbrowse-plugin-linear-comparative-view.tgz",
     "@jbrowse/plugin-linear-genome-view": "file:./packed/jbrowse-plugin-linear-genome-view.tgz",
-    "@jbrowse/plugin-lollipop": "file:./packed/jbrowse-plugin-lollipop.tgz",
     "@jbrowse/plugin-menus": "file:./packed/jbrowse-plugin-menus.tgz",
     "@jbrowse/plugin-rdf": "file:./packed/jbrowse-plugin-rdf.tgz",
     "@jbrowse/plugin-sequence": "file:./packed/jbrowse-plugin-sequence.tgz",

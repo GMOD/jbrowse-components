@@ -8,7 +8,7 @@ import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapte
  * Shared mixin owning "region too large" state and force-load UI.
  *
  * Composed by both FeatureDensityMixin (block-based server-side rendered
- * displays like LinearBasicDisplay, LinearArcDisplay, LinearLollipopDisplay)
+ * displays like LinearBasicDisplay, LinearArcDisplay)
  * and MultiRegionDisplayMixin (canvas/GPU displays like
  * LinearAlignmentsDisplay, LinearWiggleDisplay, LinearBasicDisplay).
  *

@@ -298,8 +298,6 @@ export default defineConfig(
       'products/jbrowse-desktop/sign.cjs',
       'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',
-      'tools/graph-server/**/*',
-      'tools/graph-truth-extractor/**/*',
     ],
     languageOptions: {
       globals: {

@@ -1455,27 +1455,6 @@ importers:
         specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
 
-  plugins/lollipop:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
-      '@jbrowse/mobx-state-tree':
-        specifier: ^5.6.0
-        version: 5.6.0(mobx@6.15.3)
-      '@jbrowse/plugin-linear-genome-view':
-        specifier: workspace:^
-        version: link:../linear-genome-view
-      mobx:
-        specifier: ^6.15.3
-        version: 6.15.3
-      mobx-react:
-        specifier: ^9.2.1
-        version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      react:
-        specifier: '>=18.0.0'
-        version: 19.2.6
-
   plugins/maf:
     dependencies:
       '@gmod/bgzf-filehandle':
@@ -1949,9 +1928,6 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
-      '@jbrowse/plugin-lollipop':
-        specifier: workspace:^
-        version: link:../../plugins/lollipop
       '@jbrowse/plugin-maf':
         specifier: workspace:^
         version: link:../../plugins/maf
@@ -2172,9 +2148,6 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
-      '@jbrowse/plugin-lollipop':
-        specifier: workspace:^
-        version: link:../../plugins/lollipop
       '@jbrowse/plugin-maf':
         specifier: workspace:^
         version: link:../../plugins/maf
@@ -2454,9 +2427,6 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
-      '@jbrowse/plugin-lollipop':
-        specifier: workspace:^
-        version: link:../../plugins/lollipop
       '@jbrowse/plugin-maf':
         specifier: workspace:^
         version: link:../../plugins/maf

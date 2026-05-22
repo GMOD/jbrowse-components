@@ -126,7 +126,7 @@ properties. Old configs work without migration.
 - **Canvas** (LinearFeatureDisplay, LinearBasicDisplay, LinearVariantDisplay):
   fully adopted
 - **Wiggle, alignments, multi-variant**: direct config slots, main-thread render
-- **Arc, lollipop, chord, HiC, dotplot**: still using ServerSideRendererType —
+- **Arc, chord, HiC, dotplot**: still using ServerSideRendererType —
   adopt on GPU migration
 
 ## Reference resolution (the other config concern)
