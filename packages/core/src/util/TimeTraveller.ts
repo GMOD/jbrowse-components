@@ -47,10 +47,6 @@ const TimeTraveller = types
         if (self.notTrackingUndo) {
           return
         }
-        if (skipNextUndoState) {
-          skipNextUndoState = false
-          return
-        }
         self.history.splice(self.undoIdx + 1)
         self.history.push(snapshot)
         if (self.history.length > MAX_HISTORY_LENGTH) {
@@ -77,15 +73,23 @@ const TimeTraveller = types
         }
 
         snapshotDisposer = onSnapshot(targetStore, snapshot => {
-          // Early exit if not tracking - avoid timer operations entirely
-          if (self.notTrackingUndo || skipNextUndoState) {
+          if (self.notTrackingUndo) {
             return
           }
 
-          // Store latest snapshot for when timer fires
-          pendingSnapshot = snapshot
+          // undo/redo sets skipNextUndoState before calling applySnapshot.
+          // Reset the flag here and cancel any pending debounce so the
+          // applied snapshot is never recorded as an undoable action.
+          if (skipNextUndoState) {
+            skipNextUndoState = false
+            if (debounceTimer) {
+              clearTimeout(debounceTimer)
+              debounceTimer = undefined
+            }
+            return
+          }
 
-          // Debounce: reset timer on each change to wait for inactivity
+          pendingSnapshot = snapshot
           if (debounceTimer) {
             clearTimeout(debounceTimer)
           }

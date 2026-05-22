@@ -1,7 +1,7 @@
+import { parseCigar } from '@jbrowse/cigar-utils'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 
 import {
@@ -176,7 +176,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             p21,
             p22,
             f,
-            cigar: MismatchParser.parseCigar(cigar),
+            cigar: parseCigar(cigar),
           })
         }
 

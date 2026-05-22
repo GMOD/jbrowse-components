@@ -11,7 +11,7 @@ type LGV = LinearGenomeViewModel
 interface MenuState {
   anchorEl: HTMLElement
   refName: string
-  regionNumber: number
+  displayedRegionIndex: number
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -71,11 +71,14 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   // Calculate the end position (in pixels) of each displayed region
   const regionEndPx = new Map<number, number>()
   for (const block of staticBlocks.blocks) {
-    if (block.type === 'ContentBlock' && block.regionNumber !== undefined) {
+    if (
+      block.type === 'ContentBlock' &&
+      block.displayedRegionIndex !== undefined
+    ) {
       const endPx = block.offsetPx + block.widthPx
-      const current = regionEndPx.get(block.regionNumber)
+      const current = regionEndPx.get(block.displayedRegionIndex)
       if (current === undefined || endPx > current) {
-        regionEndPx.set(block.regionNumber, endPx)
+        regionEndPx.set(block.displayedRegionIndex, endPx)
       }
     }
   }
@@ -92,12 +95,14 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
           key,
           type,
           refName,
-          regionNumber,
+          displayedRegionIndex,
         } = block
         const last = index === lastLeftBlock
         // Calculate max width to clip label at the displayed region boundary
         const regEndPx =
-          regionNumber !== undefined ? regionEndPx.get(regionNumber) : undefined
+          displayedRegionIndex !== undefined
+            ? regionEndPx.get(displayedRegionIndex)
+            : undefined
         const labelStartPx = last ? offsetPx : blockOffsetPx
         const maxWidth =
           regEndPx !== undefined ? regEndPx - labelStartPx - 2 : undefined
@@ -128,7 +133,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
               setMenuState({
                 anchorEl: event.currentTarget,
                 refName,
-                regionNumber: regionNumber!,
+                displayedRegionIndex: displayedRegionIndex!,
               })
             }}
           >
@@ -160,7 +165,7 @@ function RefNameMenu({
   onClose: () => void
 }) {
   const { displayedRegions } = model
-  const { refName, regionNumber } = menuState
+  const { refName, displayedRegionIndex } = menuState
   const numRegions = displayedRegions.length
 
   function moveRegion(fromIndex: number, toIndex: number) {
@@ -176,42 +181,42 @@ function RefNameMenu({
   }
 
   const actionItems = [
-    ...(regionNumber > 0
+    ...(displayedRegionIndex > 0
       ? [
           {
             label: 'Move left',
             onClick: () => {
-              moveRegion(regionNumber, regionNumber - 1)
+              moveRegion(displayedRegionIndex, displayedRegionIndex - 1)
             },
           },
         ]
       : []),
-    ...(regionNumber < numRegions - 1
+    ...(displayedRegionIndex < numRegions - 1
       ? [
           {
             label: 'Move right',
             onClick: () => {
-              moveRegion(regionNumber, regionNumber + 1)
+              moveRegion(displayedRegionIndex, displayedRegionIndex + 1)
             },
           },
         ]
       : []),
-    ...(numRegions > 2 && regionNumber > 0
+    ...(numRegions > 2 && displayedRegionIndex > 0
       ? [
           {
             label: 'Move to far left',
             onClick: () => {
-              moveRegion(regionNumber, 0)
+              moveRegion(displayedRegionIndex, 0)
             },
           },
         ]
       : []),
-    ...(numRegions > 2 && regionNumber < numRegions - 1
+    ...(numRegions > 2 && displayedRegionIndex < numRegions - 1
       ? [
           {
             label: 'Move to far right',
             onClick: () => {
-              moveRegion(regionNumber, numRegions - 1)
+              moveRegion(displayedRegionIndex, numRegions - 1)
             },
           },
         ]
@@ -219,7 +224,7 @@ function RefNameMenu({
     {
       label: 'Remove this region from view',
       onClick: () => {
-        removeRegion(regionNumber)
+        removeRegion(displayedRegionIndex)
       },
     },
   ]

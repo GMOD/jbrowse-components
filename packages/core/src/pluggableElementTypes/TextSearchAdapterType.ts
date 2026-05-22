@@ -10,19 +10,17 @@ export default class TextSearchAdapterType extends PluggableElementBase {
 
   description?: string
 
+  // `AdapterClass` is retained for backward compatibility with third-party
+  // plugins; new code should prefer `getAdapterClass` for code splitting.
   constructor(
     stuff: {
       name: string
+      configSchema: AnyConfigurationSchemaType
       displayName?: string
       description?: string
-      configSchema: AnyConfigurationSchemaType
     } & (
-      | {
-          AdapterClass: AnyAdapter
-        }
-      | {
-          getAdapterClass: () => Promise<AnyAdapter>
-        }
+      | { getAdapterClass: () => Promise<AnyAdapter> }
+      | { AdapterClass: AnyAdapter }
     ),
   ) {
     super(stuff)

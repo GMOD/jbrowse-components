@@ -342,6 +342,8 @@ importers:
         specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
 
+  packages/cigar-utils: {}
+
   packages/core:
     dependencies:
       '@emotion/react':
@@ -395,6 +397,9 @@ importers:
       '@types/file-saver-es':
         specifier: ^2.0.3
         version: 2.0.3
+      base64-js:
+        specifier: ^1.5.1
+        version: 1.5.1
       canvas-sequencer-ts:
         specifier: ^3.1.3
         version: 3.1.3
@@ -437,6 +442,9 @@ importers:
       mobx-react:
         specifier: ^9.2.1
         version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      pako-esm2:
+        specifier: ^2.0.2
+        version: 2.0.2
       react:
         specifier: '>=18.0.0'
         version: 19.2.6
@@ -482,6 +490,15 @@ importers:
       react-dom:
         specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
+
+  packages/modifications-utils:
+    dependencies:
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../cigar-utils
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
 
   packages/product-core:
     dependencies:
@@ -543,6 +560,27 @@ importers:
         specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
 
+  packages/synteny-core:
+    dependencies:
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../cigar-utils
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
+      '@jbrowse/mobx-state-tree':
+        specifier: ^5.6.0
+        version: 5.6.0(mobx@6.15.3)
+      '@mui/icons-material':
+        specifier: ^9.0.1
+        version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
+      '@mui/material':
+        specifier: ^9.0.1
+        version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      mobx-react:
+        specifier: ^9.2.1
+        version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+
   packages/text-indexing:
     dependencies:
       '@jbrowse/core':
@@ -562,6 +600,33 @@ importers:
         version: 19.2.6(react@19.2.6)
 
   packages/text-indexing-core: {}
+
+  packages/tree-sidebar:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
+      '@jbrowse/mobx-state-tree':
+        specifier: ^5.6.0
+        version: 5.6.0(mobx@6.15.3)
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:^
+        version: link:../../plugins/linear-genome-view
+      '@mui/material':
+        specifier: ^9.0.1
+        version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      mobx:
+        specifier: ^6.15.3
+        version: 6.15.3
+      mobx-react:
+        specifier: ^9.2.1
+        version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react:
+        specifier: '>=18.0.0'
+        version: 19.2.6
+      react-dom:
+        specifier: '>=18.0.0'
+        version: 19.2.6(react@19.2.6)
 
   packages/web-core:
     dependencies:
@@ -604,6 +669,9 @@ importers:
       '@gmod/cram':
         specifier: ^8.2.6
         version: 8.2.6
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -842,6 +910,9 @@ importers:
       '@gmod/tabix':
         specifier: ^3.3.8
         version: 3.3.8
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -951,6 +1022,9 @@ importers:
 
   plugins/dotplot-view:
     dependencies:
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1209,6 +1283,9 @@ importers:
 
   plugins/linear-comparative-view:
     dependencies:
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

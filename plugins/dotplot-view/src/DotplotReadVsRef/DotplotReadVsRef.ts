@@ -1,13 +1,15 @@
+import {
+  featurizeSA,
+  getClip,
+  getLength,
+  getLengthSansClipping,
+} from '@jbrowse/cigar-utils'
 import { getConf } from '@jbrowse/core/configuration'
 import { gatherOverlaps, getSession, sum } from '@jbrowse/core/util'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 import type { ReducedFeature } from '../util.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
-
-const { featurizeSA, getClip, getLength, getLengthSansClipping } =
-  MismatchParser
 
 export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
   const session = getSession(self)
@@ -16,7 +18,7 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     const clipLengthAtStartOfRead = getClip(cigar, 1)
     const flags = feature.get('flags')
     const strand = feature.get('strand')
-    const readName = feature.get('name')
+    const readName: string = feature.get('name') ?? ''
     const readAssembly = `${readName}_assembly_${Date.now()}`
     const { parentTrack } = self
     const [trackAssembly] = getConf(parentTrack, 'assemblyNames')
@@ -24,7 +26,7 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     const trackId = `track-${Date.now()}`
     const trackName = `${readName}_vs_${trackAssembly}`
     const SA = feature.get('tags')?.SA as string
-    const SA2 = featurizeSA(SA, feature.id(), strand, readName, true)
+    const SA2 = featurizeSA(SA, feature.id(), strand ?? 1, readName, true)
 
     // if secondary alignment or supplementary, calculate length from SA[0]'s
     // CIGAR which is the primary alignments. otherwise it is the primary

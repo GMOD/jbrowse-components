@@ -1,10 +1,9 @@
-import { getSession } from '@jbrowse/core/util'
-
 import {
   featurizeSA,
   getClip,
   getLengthSansClipping,
-} from '../MismatchParser/index.ts'
+} from '@jbrowse/cigar-utils'
+import { getSession } from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -49,7 +48,13 @@ export async function getSAFeatures({
     throw new Error('assembly not found')
   }
 
-  const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName, true)
+  const suppAlns = featurizeSA(
+    SA,
+    feature.id(),
+    origStrand ?? 1,
+    readName,
+    true,
+  )
 
   const feat = {
     ...feature.toJSON(),

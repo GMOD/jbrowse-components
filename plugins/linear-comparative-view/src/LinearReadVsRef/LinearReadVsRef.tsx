@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
 
+import {
+  featurizeSA,
+  getClip,
+  getLength,
+  getLengthSansClipping,
+} from '@jbrowse/cigar-utils'
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import {
@@ -9,7 +15,6 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   Button,
   CircularProgress,
@@ -20,9 +25,6 @@ import {
 } from '@mui/material'
 
 import type { Feature } from '@jbrowse/core/util'
-
-const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
-  MismatchParser
 
 interface ReducedFeature {
   refName: string
@@ -75,24 +77,25 @@ export default function ReadVsRefDialog({
       setError(undefined)
       try {
         if (preFeature.get('flags') & 2048) {
-          const SA: string = getTag(preFeature, 'SA') || ''
+          const SA: string = preFeature.get('tags').SA || ''
           const primaryAln = SA.split(';')[0]!
           const [saRef, saStart] = primaryAln.split(',')
           const { rpcManager } = getSession(track)
           const adapterConfig = getConf(track, 'adapter')
           const sessionId = getRpcSessionId(track)
 
-          const feats = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
+          const [asm] = getConf(track, 'assemblyNames') as string[]
+          const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
             adapterConfig,
-            sessionId,
             regions: [
               {
-                refName: saRef,
+                refName: saRef!,
                 start: +saStart! - 1,
                 end: +saStart!,
+                assemblyName: asm ?? '',
               },
             ],
-          })) as Feature[]
+          })
 
           const result = feats.find(
             f =>
@@ -125,8 +128,8 @@ export default function ReadVsRefDialog({
       const view = getContainingView(track)
       const cigar = feature.get('CIGAR') as string
       const flags = feature.get('flags') as number
-      const origStrand = feature.get('strand')
-      const SA = (getTag(feature, 'SA') as string) || ''
+      const origStrand = feature.get('strand') as number
+      const SA = (feature.get('tags').SA as string) || ''
       const readName = feature.get('name')!
       const clipLengthAtStartOfRead = getClip(cigar, 1)
 

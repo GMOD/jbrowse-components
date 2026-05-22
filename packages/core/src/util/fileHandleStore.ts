@@ -20,15 +20,13 @@ interface FileHandleDB extends DBSchema {
 let dbPromise: Promise<IDBPDatabase<FileHandleDB>> | undefined
 
 function getDB() {
-  if (!dbPromise) {
-    dbPromise = openDB<FileHandleDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME)
-        }
-      },
-    })
-  }
+  dbPromise ??= openDB<FileHandleDB>(DB_NAME, DB_VERSION, {
+    upgrade(db) {
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME)
+      }
+    },
+  })
   return dbPromise
 }
 

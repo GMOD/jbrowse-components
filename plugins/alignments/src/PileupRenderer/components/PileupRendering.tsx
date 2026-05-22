@@ -50,7 +50,10 @@ const PileupRendering = observer(function PileupRendering(props: {
     featureNames = {},
   } = props
   const { refName } = regions[0]!
-  const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
+  const flatbush2 = useMemo(
+    () => Flatbush.from(flatbush as ArrayBuffer),
+    [flatbush],
+  )
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
     displayModel
 

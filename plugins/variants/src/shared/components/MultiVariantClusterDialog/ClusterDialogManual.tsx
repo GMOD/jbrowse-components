@@ -131,8 +131,7 @@ cat(resultClusters$order,sep='\n')`
               <Button
                 variant="contained"
                 onClick={async () => {
-                  // eslint-disable-next-line @typescript-eslint/no-deprecated
-                  const { saveAs } = await import('file-saver-es')
+                  const { saveAs } = await import('@jbrowse/core/util')
                   saveAs(
                     new Blob([results || ''], {
                       type: 'text/plain;charset=utf-8',
@@ -157,8 +156,7 @@ cat(resultClusters$order,sep='\n')`
               <Button
                 variant="contained"
                 onClick={async () => {
-                  // eslint-disable-next-line @typescript-eslint/no-deprecated
-                  const { saveAs } = await import('file-saver-es')
+                  const { saveAs } = await import('@jbrowse/core/util')
                   saveAs(
                     new Blob([resultsTsv || ''], {
                       type: 'text/plain;charset=utf-8',

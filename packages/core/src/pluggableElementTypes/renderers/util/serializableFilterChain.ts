@@ -1,5 +1,7 @@
 import { stringToJexlExpression } from '../../../util/jexlStrings.ts'
 
+import type { JexlInstance } from '../../../util/jexlStrings.ts'
+
 type FilterExpression = (...args: Record<string, any>[] | any[]) => boolean
 
 interface Filter {
@@ -17,7 +19,7 @@ export default class SerializableFilterChain {
     jexl,
   }: {
     filters: SerializedFilterChain
-    jexl?: unknown
+    jexl?: JexlInstance
   }) {
     this.filterChain = filters
       .map(f => f.trim())
@@ -27,7 +29,7 @@ export default class SerializableFilterChain {
           const expr = stringToJexlExpression(
             inputFilter,
             jexl,
-          ) as FilterExpression
+          ) as unknown as FilterExpression
           return { expr, string: inputFilter }
         }
         throw new Error(`invalid inputFilter string "${inputFilter}"`)

@@ -1,6 +1,15 @@
 import createJexlInstance from './jexl.ts'
 
-const compilationCache: Record<string, any> = {}
+export interface JexlExpression {
+  eval(context?: Record<string, unknown>): unknown
+  _exprStr?: string
+}
+
+export interface JexlInstance {
+  compile(code: string): JexlExpression
+}
+
+const compilationCache: Record<string, JexlExpression> = {}
 
 // revert function strings back to main, create a different file for
 // jexlStrings.ts pass the jexl property of the pluginManager as a param
@@ -11,19 +20,17 @@ const compilationCache: Record<string, any> = {}
  * @param str - string of code like `jexl:...`
  * @param options -
  */
-export function stringToJexlExpression(str: string, jexl?: any) {
-  const cacheKey = `nosig|${str}`
-  if (!compilationCache[cacheKey]) {
-    const match = str.startsWith('jexl:')
-    if (!match) {
+export function stringToJexlExpression(str: string, jexl?: JexlInstance) {
+  if (!compilationCache[str]) {
+    if (!str.startsWith('jexl:')) {
       throw new Error('string does not appear to be in jexl format')
     }
-    const code = str.split('jexl:')[1]!
+    const code = str.slice('jexl:'.length)
     const compiled = jexl
       ? jexl.compile(code)
       : createJexlInstance().compile(code)
-    compilationCache[cacheKey] = compiled
+    compilationCache[str] = compiled
   }
 
-  return compilationCache[cacheKey]
+  return compilationCache[str]
 }

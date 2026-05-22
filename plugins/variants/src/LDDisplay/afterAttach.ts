@@ -96,7 +96,7 @@ export function doAfterAttach(self: SharedLDModel) {
             }
           },
         },
-      )) as RenderResult
+      )) as unknown as RenderResult
 
       if (result.imageData) {
         self.setRenderingImageData(result.imageData)

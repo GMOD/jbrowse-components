@@ -43,7 +43,7 @@ function getEnd(variant: Variant) {
     const lens = []
     if (info.SVLEN && !isTRA) {
       const svlens = info.SVLEN as string[]
-      // eslint-disable-next-line unicorn/no-for-loop
+
       for (let i = 0; i < svlens.length; i++) {
         const svlen = svlens[i]!
         if (ALT[i]?.startsWith('<INS')) {

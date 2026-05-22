@@ -1,10 +1,10 @@
+import { parseCigar } from '@jbrowse/cigar-utils'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { flipCigar, parsePAFLine, swapIndelCigar } from '../util.ts'
@@ -15,8 +15,6 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-
-const { parseCigar } = MismatchParser
 
 interface PAFOptions extends BaseOptions {
   config?: AnyConfigurationModel
@@ -108,7 +106,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         observer.complete()
       }
 
-      // eslint-disable-next-line unicorn/no-for-loop
       for (let i = 0; i < pafRecords.length; i++) {
         const r = pafRecords[i]!
         let start: number

@@ -1,12 +1,9 @@
-import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
-
 import {
   BlockSet,
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
+  makeContentBlock,
+  makeElidedBlock,
+  makeInterRegionPaddingBlock,
 } from './blockTypes.ts'
-import { assembleLocStringFast } from './index.ts'
 
 import type { Region } from './types/index.ts'
 import type { Region as RegionModel } from './types/mst.ts'
@@ -21,12 +18,12 @@ export interface Base1DViewModel {
   interRegionPaddingWidth: number
 }
 
+const blockSizeCssPx = 800
+
 export default function calculateStaticBlocks(
   model: Base1DViewModel,
   padding = true,
   elision = true,
-  extra = 0,
-  width = 800,
 ) {
   const {
     offsetPx,
@@ -39,138 +36,126 @@ export default function calculateStaticBlocks(
 
   const windowLeftBp = offsetPx * bpPerPx
   const windowRightBp = (offsetPx + modelWidth) * bpPerPx
-  const blockSizePx = width
-  const blockSizeBp = Math.ceil(blockSizePx * bpPerPx)
+  const blockSizeBp = Math.ceil(blockSizeCssPx * bpPerPx)
 
-  // Pre-calculate inverse values to avoid repeated divisions
   const invBpPerPx = 1 / bpPerPx
   const invBlockSizeBp = 1 / blockSizeBp
-  // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
   for (
-    let regionNumber = 0;
-    regionNumber < displayedRegions.length;
-    regionNumber++
+    let displayedRegionIndex = 0;
+    displayedRegionIndex < displayedRegions.length;
+    displayedRegionIndex++
   ) {
-    const region = displayedRegions[regionNumber]!
     const {
       assemblyName,
       refName,
       start: regionStart,
       end: regionEnd,
       reversed,
-    } = region
+    } = displayedRegions[displayedRegionIndex]!
 
     const regionBlockCount = Math.ceil(
       (regionEnd - regionStart) * invBlockSizeBp,
     )
-    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
-    let windowRightBlockNum =
-      Math.floor((windowRightBp - regionBpOffset) * invBlockSizeBp) + extra
-    if (windowRightBlockNum >= regionBlockCount) {
-      windowRightBlockNum = regionBlockCount - 1
-    }
-
-    let windowLeftBlockNum =
-      Math.floor((windowLeftBp - regionBpOffset) * invBlockSizeBp) - extra
-    if (windowLeftBlockNum < 0) {
-      windowLeftBlockNum = 0
-    }
+    const windowRightBlockNum = Math.min(
+      Math.floor((windowRightBp - regionBpOffset) * invBlockSizeBp),
+      regionBlockCount - 1,
+    )
+    const windowLeftBlockNum = Math.max(
+      Math.floor((windowLeftBp - regionBpOffset) * invBlockSizeBp),
+      0,
+    )
 
     const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
 
     for (
       let blockNum = windowLeftBlockNum;
       blockNum <= windowRightBlockNum;
-      blockNum += 1
+      blockNum++
     ) {
+      const isLeftEndOfDisplayedRegion = blockNum === 0
+      const isRightEndOfDisplayedRegion = blockNum === regionBlockCount - 1
       let start: number
       let end: number
-      let isLeftEndOfDisplayedRegion: boolean
-      let isRightEndOfDisplayedRegion: boolean
       if (reversed) {
         start = Math.max(regionStart, regionEnd - (blockNum + 1) * blockSizeBp)
         end = regionEnd - blockNum * blockSizeBp
-        isLeftEndOfDisplayedRegion = end === regionEnd
-        isRightEndOfDisplayedRegion = start === regionStart
       } else {
         start = regionStart + blockNum * blockSizeBp
         end = Math.min(regionEnd, regionStart + (blockNum + 1) * blockSizeBp)
-        isLeftEndOfDisplayedRegion = start === regionStart
-        isRightEndOfDisplayedRegion = end === regionEnd
       }
       const widthPx = (end - start) * invBpPerPx
-      const blockData = {
-        assemblyName,
-        refName,
-        start,
-        end,
-        reversed,
-        offsetPx: (regionBpOffset + blockNum * blockSizeBp) * invBpPerPx,
-        parentRegion,
-        regionNumber,
-        widthPx,
-        isLeftEndOfDisplayedRegion,
-        isRightEndOfDisplayedRegion,
-        key: `${assembleLocStringFast({
-          assemblyName,
-          refName,
-          start,
-          end,
-          reversed,
-        })}-${regionNumber}${reversed ? '-reversed' : ''}`,
-      }
+      const blockOffsetPx =
+        (regionBpOffset + blockNum * blockSizeBp) * invBpPerPx
+      const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
 
-      if (padding && regionNumber === 0 && blockNum === 0) {
+      if (padding && displayedRegionIndex === 0 && blockNum === 0) {
         blocks.push(
-          new InterRegionPaddingBlock({
-            key: `${blockData.key}-beforeFirstRegion`,
-            widthPx: width,
-            offsetPx: blockData.offsetPx - width,
+          makeInterRegionPaddingBlock({
+            key: `${key}-beforeFirstRegion`,
+            widthPx: blockSizeCssPx,
+            offsetPx: blockOffsetPx - blockSizeCssPx,
             variant: 'boundary',
           }),
         )
       }
 
-      if (elision && regionWidthPx < minimumBlockWidth) {
-        blocks.push(new ElidedBlock(blockData))
-      } else {
-        blocks.push(new ContentBlock(blockData))
+      const data = {
+        assemblyName,
+        refName,
+        start,
+        end,
+        reversed,
+        offsetPx: blockOffsetPx,
+        displayedRegionIndex,
+        widthPx,
+        isLeftEndOfDisplayedRegion,
+        isRightEndOfDisplayedRegion,
+        key,
       }
+      blocks.push(
+        elision && regionWidthPx < minimumBlockWidth
+          ? makeElidedBlock(data)
+          : makeContentBlock(data),
+      )
 
       if (padding) {
-        // insert a inter-region padding block if we are crossing a displayed region
         if (
           regionWidthPx >= minimumBlockWidth &&
-          blockData.isRightEndOfDisplayedRegion &&
-          regionNumber < displayedRegions.length - 1
+          isRightEndOfDisplayedRegion &&
+          displayedRegionIndex < displayedRegions.length - 1
         ) {
-          regionBpOffset += interRegionPaddingWidth * bpPerPx
           blocks.push(
-            new InterRegionPaddingBlock({
-              key: `${blockData.key}-rightpad`,
+            makeInterRegionPaddingBlock({
+              key: `${key}-rightpad`,
               widthPx: interRegionPaddingWidth,
-              offsetPx: blockData.offsetPx + blockData.widthPx,
+              offsetPx: blockOffsetPx + widthPx,
             }),
           )
         }
         if (
-          regionNumber === displayedRegions.length - 1 &&
-          blockData.isRightEndOfDisplayedRegion
+          displayedRegionIndex === displayedRegions.length - 1 &&
+          isRightEndOfDisplayedRegion
         ) {
-          regionBpOffset += interRegionPaddingWidth * bpPerPx
           blocks.push(
-            new InterRegionPaddingBlock({
-              key: `${blockData.key}-afterLastRegion`,
-              widthPx: width,
-              offsetPx: blockData.offsetPx + blockData.widthPx,
+            makeInterRegionPaddingBlock({
+              key: `${key}-afterLastRegion`,
+              widthPx: blockSizeCssPx,
+              offsetPx: blockOffsetPx + widthPx,
               variant: 'boundary',
             }),
           )
         }
       }
+    }
+    if (
+      padding &&
+      regionWidthPx >= minimumBlockWidth &&
+      displayedRegionIndex < displayedRegions.length - 1
+    ) {
+      regionBpOffset += interRegionPaddingWidth * bpPerPx
     }
     regionBpOffset += regionEnd - regionStart
   }

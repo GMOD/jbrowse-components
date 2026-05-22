@@ -13,10 +13,13 @@ const RB_TREE_COLOR_BLACK = 0
 type NodeColor = typeof RB_TREE_COLOR_RED | typeof RB_TREE_COLOR_BLACK
 
 class Interval {
-  constructor(
-    public low: number,
-    public high: number,
-  ) {}
+  low: number
+  high: number
+
+  constructor(low: number, high: number) {
+    this.low = low
+    this.high = high
+  }
 
   lessThan(other: Interval) {
     return (

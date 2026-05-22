@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { InputLabel, TextField } from '@mui/material'
@@ -15,15 +15,15 @@ const useStyles = makeStyles()(theme => ({
     color: 'red',
     fontSize: '0.8em',
   },
-  callbackEditor: {
+  jsonEditor: {
     fontFamily,
     fontSize,
     background: theme.palette.background.default,
-    width: 800,
+    width: '100%',
     marginTop: '16px',
     border: '1px solid rgba(0,0,0,0.42)',
   },
-  callbackContainer: {
+  jsonContainer: {
     width: '100%',
     overflowX: 'auto',
   },
@@ -44,33 +44,35 @@ const JsonEditor = observer(function JsonEditor({
 }) {
   const { classes } = useStyles()
   const [contents, setContents] = useState(JSON.stringify(slot.value, null, 2))
-  const [error, setError] = useState<unknown>()
 
-  useEffect(() => {
-    try {
-      setError(undefined)
-      slot.set(JSON.parse(contents))
-    } catch (e) {
-      console.error({ e })
-      setError(e)
-    }
-  }, [contents, slot])
+  let error: unknown
+  try {
+    JSON.parse(contents)
+  } catch (e) {
+    error = e
+  }
 
   return (
     <>
       {error ? <p className={classes.error}>{`${error}`}</p> : null}
-      <div className={classes.callbackContainer}>
+      <div className={classes.jsonContainer}>
         <InputLabel shrink htmlFor="json-editor">
           {slot.name}
         </InputLabel>
         <TextField
           id="json-editor"
-          className={classes.callbackEditor}
+          className={classes.jsonEditor}
           value={contents}
           helperText={slot.description}
           multiline
           onChange={event => {
-            setContents(event.target.value)
+            const val = event.target.value
+            setContents(val)
+            try {
+              slot.set(JSON.parse(val))
+            } catch {
+              // invalid JSON, error displayed via computed error above
+            }
           }}
           style={{ background: error ? '#fdd' : undefined }}
           slotProps={{

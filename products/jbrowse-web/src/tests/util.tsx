@@ -4,11 +4,10 @@ import path from 'path'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { saveAs } from '@jbrowse/core/util'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
-import { saveAs } from 'file-saver-es'
-import { saveAs as coreSaveAs } from '@jbrowse/core/util/FileSaver'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
@@ -213,18 +212,11 @@ export async function exportAndVerifySvg({
   fireEvent.click(await findByText('Submit', ...opts))
 
   await waitFor(() => {
-    const coreCalls =
-      (coreSaveAs as unknown as jest.Mock).mock?.calls?.length ?? 0
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const fileSaverCalls = (saveAs as unknown as jest.Mock).mock?.calls?.length ?? 0
-    expect(coreCalls + fileSaverCalls).toBeGreaterThan(0)
+    expect(saveAs).toHaveBeenCalled()
   }, actualDelay)
 
-  const svg = (
-    ((coreSaveAs as unknown as jest.Mock).mock?.calls[0] ??
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      (saveAs as unknown as jest.Mock).mock?.calls[0])!
-  )[0].content[0]
+  // @ts-expect-error
+  const svg = saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
   expect(svg).toMatchSnapshot()

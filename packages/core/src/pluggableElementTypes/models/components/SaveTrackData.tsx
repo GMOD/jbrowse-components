@@ -18,17 +18,21 @@ import {
   TextField,
 } from '@mui/material'
 import copy from 'copy-to-clipboard'
-import { saveAs } from 'file-saver-es'
 import { observer } from 'mobx-react'
 
 import { getConf } from '../../../configuration/index.ts'
 import { Dialog, ErrorMessage } from '../../../ui/index.ts'
-import { getContainingView, getEnv, getSession } from '../../../util/index.ts'
+import {
+  getContainingView,
+  getEnv,
+  getSession,
+  saveAs,
+} from '../../../util/index.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
-import type { Feature, Region } from '../../../util/index.ts'
+import type { Region } from '../../../util/index.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -51,8 +55,7 @@ async function fetchFeatures(track: IAnyStateTreeNode, regions: Region[]) {
   return rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
     regions,
-    sessionId,
-  }) as Promise<Feature[]>
+  })
 }
 
 function roundRegions(regions: Region[]) {
@@ -114,24 +117,22 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         const regions = roundRegions(visibleRegions)
         if (supportsExport) {
           const { rpcManager } = session
-          const sessionId = getRpcSessionId(model)
-          const exportResult = (await rpcManager.call(
-            'getExportData',
+          const exportResult = await rpcManager.call(
+            getRpcSessionId(model),
             'CoreGetExportData',
             {
               adapterConfig,
               regions,
               formatType: type,
-              sessionId,
             },
-          )) as string | undefined
+          )
 
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (cancelled) {
             return
           }
           setUsedAdapterExport(true)
-          setStr(exportResult ?? '')
+          setStr(exportResult)
         } else {
           const features = await fetchFeatures(model, regions)
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -269,7 +270,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             const ext = options[type!]!.extension
             const blob = new Blob([str], { type: 'text/plain;charset=utf-8' })
 
-            saveAs(blob, `jbrowse_track_data.${ext}`, { autoBom: false })
+            saveAs(blob, `jbrowse_track_data.${ext}`)
           }}
           startIcon={<GetAppIcon />}
         >

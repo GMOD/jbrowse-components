@@ -1,5 +1,6 @@
+import { parseCigar2 } from '@jbrowse/cigar-utils'
+
 import { createEmptyBin, incWithProbabilities } from './util.ts'
-import { parseCigar2 } from '../MismatchParser/index.ts'
 import { getMethBins } from '../ModificationParser/getMethBins.ts'
 import { DELETION_TYPE } from '../shared/forEachMismatchTypes.ts'
 

@@ -1,14 +1,11 @@
-import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
-
+import { getAdapterId } from './getAdapterId.ts'
 import {
   ConfigurationSchema,
   readConfObject,
 } from '../../configuration/index.ts'
-import idMaker from '../../util/idMaker.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
-import type { AugmentedRegion as Region } from '../../util/types/index.ts'
 import type { getSubAdapterType } from '../dataAdapterCache.ts'
 
 const EmptyConfig = ConfigurationSchema('empty', {})
@@ -25,36 +22,25 @@ export class BaseAdapter {
     public getSubAdapter?: getSubAdapterType,
     public pluginManager?: PluginManager,
   ) {
-    if (typeof jest === 'undefined') {
-      const data = isStateTreeNode(config) ? getSnapshot(config) : config
-      this.id = `${idMaker(data)}`
-    } else {
-      this.id = 'test'
-    }
+    this.id = getAdapterId(config)
   }
 
   /**
    * Sets the sequence adapter configuration for adapters that need reference
-   * sequence data (e.g., CRAM adapters). Wrapper adapters like SNPCoverageAdapter
-   * can override this to propagate to their subadapters.
+   * sequence data (e.g., CRAM adapters). Wrapper adapters like
+   * SNPCoverageAdapter can override this to propagate to their subadapters.
+   *
+   * No-op if a sequence adapter config is already set or the argument is
+   * undefined, so callers don't need to guard.
    */
-  setSequenceAdapterConfig(config: Record<string, unknown>) {
-    this.sequenceAdapterConfig = config
+  setSequenceAdapterConfig(config: Record<string, unknown> | undefined) {
+    if (config && !this.sequenceAdapterConfig) {
+      this.sequenceAdapterConfig = config
+    }
   }
 
-  /**
-   * Same as `readConfObject(this.config, arg)`.
-   * Note: Does not offer the same TS type checking as `readConfObject`,
-   * consider using that instead.
-   */
+  /** shorthand for `readConfObject(this.config, arg)` */
   getConf(arg: string | string[]) {
     return readConfObject(this.config, arg)
   }
-
-  /**
-   * Called to provide a hint that data tied to a certain region will not be
-   * needed for the foreseeable future and can be purged from caches, etc
-   * @param region - Region
-   */
-  freeResources(_region: Region) {}
 }
