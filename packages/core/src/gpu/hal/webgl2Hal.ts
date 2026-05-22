@@ -489,19 +489,18 @@ export class WebGL2Hal implements GpuHal {
     // Remove canvas event listeners to prevent closure references from keeping
     // the context alive after disposal. This is critical for test suites where
     // multiple contexts are created in sequence (e.g. Puppeteer page navigation).
+    // Double-dispose is short-circuited above, so listeners are guaranteed set.
     if (this.contextLostListener) {
       this.canvas.removeEventListener(
         'webglcontextlost',
         this.contextLostListener,
       )
-      this.contextLostListener = null
     }
     if (this.contextRestoredListener) {
       this.canvas.removeEventListener(
         'webglcontextrestored',
         this.contextRestoredListener,
       )
-      this.contextRestoredListener = null
     }
 
     this.deleteAllRegions()

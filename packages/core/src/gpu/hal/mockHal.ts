@@ -7,14 +7,13 @@ export interface MockCall {
 
 export class MockHal implements GpuHal {
   calls: MockCall[] = []
-  passes: PassDescriptor[]
 
   private buffers = new Map<string, { data: ArrayBufferLike; count: number }>()
   private lastUniforms: ArrayBuffer | null = null
 
-  constructor(passes: PassDescriptor[]) {
-    this.passes = passes
-  }
+  // Parameter kept for parity with WebGL2Hal / WebGPUHal constructors so
+  // tests can swap implementations; pass list isn't needed in the mock.
+  constructor(_passes: PassDescriptor[]) {}
 
   private bufferKey(regionKey: number, passId: string) {
     return `${regionKey}:${passId}`
