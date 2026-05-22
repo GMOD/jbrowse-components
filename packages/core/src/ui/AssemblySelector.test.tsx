@@ -20,20 +20,20 @@ function makeSession(
 
 test('renders assembly names as menu items', async () => {
   const session = makeSession(['hg19', 'hg38'])
-  const { getByTestId, findByText } = render(
+  const { getByRole, findByText } = render(
     <AssemblySelector session={session} selected="hg19" onChange={() => {}} />,
   )
-  fireEvent.mouseDown(getByTestId('assembly-selector-select'))
+  fireEvent.mouseDown(getByRole('combobox'))
   expect(await findByText('hg38')).toBeTruthy()
 })
 
 test('calls onChange when user selects an assembly', async () => {
   const session = makeSession(['hg19', 'hg38'])
   const onChange = jest.fn()
-  const { getByTestId, findAllByText } = render(
+  const { getByRole, findAllByText } = render(
     <AssemblySelector session={session} selected="hg19" onChange={onChange} />,
   )
-  fireEvent.mouseDown(getByTestId('assembly-selector-select'))
+  fireEvent.mouseDown(getByRole('combobox'))
   fireEvent.click((await findAllByText('hg38'))[0]!)
   expect(onChange).toHaveBeenCalledWith('hg38')
 })
@@ -48,13 +48,9 @@ test('shows displayName when available', () => {
 
 test('shows error and disables select when no assemblies configured', () => {
   const session = makeSession([])
-  const { getByTestId, getByText } = render(
+  const { getByRole, getByText } = render(
     <AssemblySelector session={session} onChange={() => {}} />,
   )
-  expect(getByTestId('assembly-selector-select')).toHaveAttribute(
-    'aria-disabled',
-    'true',
-  )
+  expect(getByRole('combobox')).toHaveAttribute('aria-disabled', 'true')
   expect(getByText('No configured assemblies')).toBeInTheDocument()
 })
-
