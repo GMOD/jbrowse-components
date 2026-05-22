@@ -905,31 +905,31 @@ export function localStorageSetItem(str: string, item: string) {
 // Index iteration so these accept both arrays and typed arrays (e.g.
 // Float32Array) without requiring Iterable.
 
-export function max(arr: ArrayLike<number>, init = Number.NEGATIVE_INFINITY) {
+export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
   let max = init
-  for (let i = 0; i < arr.length; i++) {
-    max = Math.max(arr[i]!, max)
+  for (const element of arr) {
+    max = Math.max(element, max)
   }
   return max
 }
 
-export function min(arr: ArrayLike<number>, init = Number.POSITIVE_INFINITY) {
+export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
   let min = init
-  for (let i = 0; i < arr.length; i++) {
-    min = Math.min(arr[i]!, min)
+  for (const element of arr) {
+    min = Math.min(element, min)
   }
   return min
 }
 
-export function sum(arr: ArrayLike<number>) {
+export function sum(arr: number[]) {
   let sum = 0
-  for (let i = 0; i < arr.length; i++) {
-    sum += arr[i]!
+  for (const element of arr) {
+    sum += element
   }
   return sum
 }
 
-export function avg(arr: ArrayLike<number>) {
+export function avg(arr: number[]) {
   return sum(arr) / arr.length
 }
 

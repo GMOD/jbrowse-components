@@ -32,7 +32,7 @@ import { getRpcSessionId } from '../../../util/tracks.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
-import type { Feature, Region } from '../../../util/index.ts'
+import type { Region } from '../../../util/index.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -117,9 +117,8 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         const regions = roundRegions(visibleRegions)
         if (supportsExport) {
           const { rpcManager } = session
-          const sessionId = getRpcSessionId(model)
           const exportResult = await rpcManager.call(
-            'getExportData',
+            getRpcSessionId(model),
             'CoreGetExportData',
             {
               adapterConfig,
@@ -133,7 +132,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             return
           }
           setUsedAdapterExport(true)
-          setStr(exportResult ?? '')
+          setStr(exportResult)
         } else {
           const features = await fetchFeatures(model, regions)
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
