@@ -4,7 +4,7 @@ import net from 'net'
 import browserslist from 'browserslist'
 import chalk from 'chalk'
 import webpack from 'webpack'
-// eslint-disable-next-line import/default
+// eslint-disable-next-line import-x/default
 import WebpackDevServer from 'webpack-dev-server'
 
 import { createCompiler } from '../WebpackDevServerUtils.ts'

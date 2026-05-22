@@ -140,7 +140,6 @@ function stateModelFactory(pluginManager: PluginManager) {
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       volatileError: undefined as unknown,
       panX: 0,
       panY: 0,

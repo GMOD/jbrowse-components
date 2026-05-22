@@ -21,6 +21,7 @@ import type {
 } from '../../CircularView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { ThemeOptions } from '@mui/material'
 
