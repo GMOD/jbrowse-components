@@ -187,7 +187,6 @@ export const INDICATOR_TRIANGLE_H = 4.5
 
 /**
  * Draw a single downward-pointing indicator triangle on a Canvas2D context.
- * Shared between LinearAlignmentsDisplay and MultiLGVSyntenyDisplay.
  */
 export function drawIndicatorTriangle(ctx: DrawCtx, cx: number) {
   ctx.beginPath()

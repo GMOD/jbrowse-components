@@ -40,12 +40,6 @@ Uniforms struct/UBO layout must match byte offsets in
 is float64 — use plain `bp - bpStart`. Hi/lo recombination in `.ts` outside
 shader-uniform writes is a bug.
 
-## Large file generation (tools/gfa-to-tabix)
-
-The `/tmp` partition is small (16 GB, often >50% full). Set `TMPDIR=~/tmpdir`
-before any `gfa-to-tabix` run. Clean stale `/tmp/hprc-*`, `/tmp/volvox*`, etc.
-before long runs.
-
 ## rpcProps vs gpuProps — what stays in the worker
 
 `installGpuDisplay` fires for **every** `rpcDataMap` change and re-runs
