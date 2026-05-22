@@ -13,6 +13,10 @@ export interface BaseOptions {
   statusCallback?: (message: string) => void
   headers?: Record<string, string>
   statsEstimationMode?: boolean
+  // Used by synteny/comparative adapters (PAF, MCScan*, BLAST,
+  // PairwiseIndexedPAF) in getRefNames to pick which side of the pairing to
+  // return refnames for. Single-assembly adapters ignore it.
+  assemblyName?: string
 }
 
 export interface BaseOptionsWithRegions extends BaseOptions {

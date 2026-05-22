@@ -33,7 +33,6 @@ export interface DisplayConfig {
     nameColor: string
     description: string
     descriptionColor: string
-    fontSize: number
   }
 }
 

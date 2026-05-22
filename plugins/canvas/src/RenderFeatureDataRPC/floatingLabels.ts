@@ -1,23 +1,17 @@
 import { measureText } from '@jbrowse/core/util'
 
-import { readConfigValue } from './renderConfig.ts'
+import { LABEL_FONT_SIZE } from './constants.ts'
 import { hasVisibleText, truncateLabel } from './util.ts'
-import { LABEL_FONT_SIZE } from '../LinearBasicDisplay/components/sharedRendererConstants.ts'
 
-import type { DisplayConfig } from './renderConfig.ts'
 import type { LabelItem } from './rpcTypes.ts'
-import type { Feature } from '@jbrowse/core/util'
+
 const FEATURE_NAME_COLOR = 'black'
 const FEATURE_DESCRIPTION_COLOR = 'blue'
 
 export function createFeatureFloatingLabels({
-  feature,
-  config,
   name: rawName,
   description: rawDescription,
 }: {
-  feature: Feature
-  config: DisplayConfig
   name: string | undefined
   description: string | undefined
 }) {
@@ -26,10 +20,6 @@ export function createFeatureFloatingLabels({
 
   const shouldShowLabel = hasVisibleText(name)
   const shouldShowDescription = hasVisibleText(description)
-
-  const fontSize = shouldShowLabel
-    ? readConfigValue<number>(config, ['labels', 'fontSize'], feature)
-    : 0
 
   const nameLabel: LabelItem | undefined = shouldShowLabel
     ? {
@@ -43,7 +33,7 @@ export function createFeatureFloatingLabels({
   const descriptionLabel: LabelItem | undefined = shouldShowDescription
     ? {
         text: description,
-        relativeY: fontSize,
+        relativeY: shouldShowLabel ? LABEL_FONT_SIZE : 0,
         color: FEATURE_DESCRIPTION_COLOR,
         textWidth: measureText(description, LABEL_FONT_SIZE),
       }

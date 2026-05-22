@@ -22,7 +22,6 @@ export function mockDisplayConfig(
       nameColor: '#f0f',
       description: '',
       descriptionColor: 'blue',
-      fontSize: 12,
     },
     ...overrides,
   }

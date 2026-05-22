@@ -1,5 +1,7 @@
-// Label rendering
-export const LABEL_FONT_SIZE = 11
+// Re-export so display-side modules can import label dimensions from one place.
+// Lives in RenderFeatureDataRPC so the worker can read it without depending on
+// the display module.
+export { LABEL_FONT_SIZE } from '../../RenderFeatureDataRPC/constants.ts'
 
 // Instancing limits
 export const MAX_VISIBLE_CHEVRONS_PER_LINE = 128

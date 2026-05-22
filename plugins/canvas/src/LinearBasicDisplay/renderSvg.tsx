@@ -27,6 +27,8 @@ export interface RenderSvgModel {
   error: unknown
   regionTooLarge: boolean
   laidOutDataMap: Map<number, FeatureDataResult>
+  showLabels: boolean
+  effectiveShowDescriptions: boolean
 }
 
 // Labels and amino-acid overlays are rendered as DOM/React overlays
@@ -37,6 +39,7 @@ function renderLabels(
   ctx: Ctx2D,
   data: FeatureDataResult,
   vr: SvgRegionBounds,
+  visibility: { showLabels: boolean; showDescriptions: boolean },
 ) {
   const { floatingLabelsData } = data
   const toScreen = makeBpMapper(vr)
@@ -89,11 +92,17 @@ function renderLabels(
       ctx.fillText(label.text, labelX, labelY + LABEL_FONT_SIZE)
     }
 
-    if (labelData.nameLabel) {
+    if (labelData.nameLabel && visibility.showLabels) {
       emitLabel(labelData.nameLabel, 2)
     }
-    if (labelData.descriptionLabel) {
-      emitLabel(labelData.descriptionLabel, 2)
+    if (labelData.descriptionLabel && visibility.showDescriptions) {
+      // Match the DOM overlay: when name is hidden, the description collapses
+      // up to fill the vacated row.
+      const nameRendered = !!labelData.nameLabel && visibility.showLabels
+      const desc = nameRendered
+        ? labelData.descriptionLabel
+        : { ...labelData.descriptionLabel, relativeY: 0 }
+      emitLabel(desc, 2)
     }
     if (labelData.subfeatureLabel) {
       emitLabel(labelData.subfeatureLabel, 0)
@@ -176,6 +185,10 @@ export async function renderSvg(
       canvasHeight: height,
     })
   })
+  const visibility = {
+    showLabels: model.showLabels,
+    showDescriptions: model.effectiveShowDescriptions,
+  }
   // Labels + peptides always vector — text should remain crisp even when
   // rasterizeLayers is on.
   const textNode = paintLayer(totalWidth, height, undefined, ctx => {
@@ -184,7 +197,7 @@ export async function renderSvg(
       if (!data) {
         continue
       }
-      renderLabels(ctx, data, vr)
+      renderLabels(ctx, data, vr, visibility)
       if (renderPeptidesFlag) {
         renderPeptides(ctx, data, vr)
       }

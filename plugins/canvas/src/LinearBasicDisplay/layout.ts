@@ -1,5 +1,6 @@
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
+import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 import { STRAND_ARROW_WIDTH } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
@@ -21,7 +22,6 @@ interface LayoutInputs {
   regionKeys: Map<number, string>
   showLabels: boolean
   showDescriptions: boolean
-  labelFontSize?: number
   reversedRegions?: ReadonlySet<number>
 }
 
@@ -43,14 +43,8 @@ export function computeLaidOutData(
   rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
   inputs: LayoutInputs,
 ): Map<number, FeatureDataResult> {
-  const {
-    bpPerPx,
-    regionKeys,
-    showLabels,
-    showDescriptions,
-    labelFontSize = 12,
-    reversedRegions,
-  } = inputs
+  const { bpPerPx, regionKeys, showLabels, showDescriptions, reversedRegions } =
+    inputs
 
   const out = new Map<number, FeatureDataResult>()
   // Empty regions need no layout mutations — share the raw object rather than
@@ -79,7 +73,6 @@ export function computeLaidOutData(
       bpPerPx,
       showLabels,
       showDescriptions,
-      labelFontSize,
       reversedRegions,
     )
     for (const [, data] of regions) {
@@ -90,7 +83,7 @@ export function computeLaidOutData(
   return out
 }
 
-function cloneMutableFields(raw: FeatureDataResult): FeatureDataResult {
+function cloneMutableFields(raw: FeatureDataResult) {
   const floatingLabelsData: Record<string, FeatureLabelData> = {}
   for (const [k, v] of Object.entries(raw.floatingLabelsData)) {
     floatingLabelsData[k] = { ...v }
@@ -112,7 +105,6 @@ function packRef(
   bpPerPx: number,
   showLabels: boolean,
   showDescriptions: boolean,
-  labelFontSize: number,
   reversedRegions: ReadonlySet<number> | undefined,
 ) {
   const layout = new GranularRectLayout({ displayMode: 'normal' })
@@ -182,10 +174,10 @@ function packRef(
       let height = item.featureHeightPx + LAYOUT_Y_PADDING
       const labelInfo = labelInfoByFeatureId.get(item.featureId)
       if (showLabels && labelInfo?.hasName) {
-        height += labelFontSize
+        height += LABEL_FONT_SIZE
       }
       if (showDescriptions && labelInfo?.hasDescription) {
-        height += labelFontSize
+        height += LABEL_FONT_SIZE
       }
 
       allFeatures.set(item.featureId, {

@@ -1,8 +1,11 @@
 import { useEffect } from 'react'
 
+import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-interface ScrollSyncModel {
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+interface ScrollSyncModel extends IAnyStateTreeNode {
   scrollTop: number
   hasOverflow: boolean
   setScrollTop: (top: number) => void
@@ -15,7 +18,8 @@ interface ScrollSyncView {
 // Two-way scroll sync between model.scrollTop (MST) and the DOM container.
 //
 // 1. model → DOM via autorun (catches programmatic resets like
-// clearDisplaySpecificData).
+// clearDisplaySpecificData). Registered with addDisposer so MST teardown
+// disposes the autorun even if the React unmount hasn't fired yet.
 //
 // 2. DOM → model via a rAF-coalesced scroll listener.
 //
@@ -32,13 +36,14 @@ export function useScrollSync(
     if (!el) {
       return
     }
-
-    return autorun(() => {
+    const dispose = autorun(() => {
       const target = model.scrollTop
       if (el.scrollTop !== target) {
         el.scrollTop = target
       }
     })
+    addDisposer(model, dispose)
+    return dispose
   }, [containerRef, model])
 
   useEffect(() => {

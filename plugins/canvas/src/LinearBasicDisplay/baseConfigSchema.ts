@@ -150,12 +150,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           defaultValue: 'blue',
           contextVariable: ['feature'],
         },
-        fontSize: {
-          type: 'number',
-          description: 'font size in pixels for names and descriptions',
-          defaultValue: 12,
-          contextVariable: ['feature'],
-        },
       }),
     },
     {

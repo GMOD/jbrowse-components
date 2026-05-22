@@ -12,6 +12,7 @@ export default class CoreGetRefNames extends RpcMethodType {
       sessionId: string
       stopToken?: StopToken
       adapterConfig: Record<string, unknown>
+      assemblyName?: string
       sequenceAdapter?: Record<string, unknown>
     },
     rpcDriver: string,

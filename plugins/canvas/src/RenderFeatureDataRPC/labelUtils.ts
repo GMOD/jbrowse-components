@@ -1,3 +1,4 @@
+import { LABEL_FONT_SIZE } from './constants.ts'
 import { isLabelAllowed, readConfigValue } from './renderConfig.ts'
 import { hasVisibleText, truncateLabel } from './util.ts'
 
@@ -23,7 +24,7 @@ export function applyLabelDimensions(
     isNested: boolean
     isTranscriptChild: boolean
   },
-): void {
+) {
   const { feature, config, isNested, isTranscriptChild } = args
   const { subfeatureLabels } = config
   const showSubfeatureLabels = subfeatureLabels !== 'none'
@@ -45,12 +46,7 @@ export function applyLabelDimensions(
 
     const isOverlayMode = isTranscriptChild && subfeatureLabels === 'overlay'
     if (!isOverlayMode && labelCount > 0) {
-      const fontSize = readConfigValue<number>(
-        config,
-        ['labels', 'fontSize'],
-        feature,
-      )
-      layout.totalLayoutHeight = layout.height + labelCount * fontSize
+      layout.totalLayoutHeight = layout.height + labelCount * LABEL_FONT_SIZE
     }
   }
 }

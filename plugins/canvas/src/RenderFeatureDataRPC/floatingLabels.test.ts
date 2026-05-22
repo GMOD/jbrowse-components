@@ -1,22 +1,13 @@
+import { LABEL_FONT_SIZE } from './constants.ts'
 import {
   createFeatureFloatingLabels,
   createTranscriptFloatingLabel,
 } from './floatingLabels.ts'
-import { mockDisplayConfig } from './testUtils.ts'
-
-const mockFeature = {
-  get: () => 'test',
-  id: () => 'test-id',
-} as any
-
-const baseConfig = mockDisplayConfig()
 
 describe('floatingLabels', () => {
   describe('createFeatureFloatingLabels', () => {
     it('creates both name and description labels when text is present', () => {
       const result = createFeatureFloatingLabels({
-        feature: mockFeature,
-        config: baseConfig,
         name: 'Gene1',
         description: 'A gene',
       })
@@ -28,8 +19,6 @@ describe('floatingLabels', () => {
 
     it('returns no labels when name and description are whitespace-only', () => {
       const result = createFeatureFloatingLabels({
-        feature: mockFeature,
-        config: baseConfig,
         name: '   ',
         description: '   ',
       })
@@ -37,21 +26,17 @@ describe('floatingLabels', () => {
       expect(result.descriptionLabel).toBeUndefined()
     })
 
-    it('positions description below name using fontSize from config', () => {
+    it('positions description below name by LABEL_FONT_SIZE', () => {
       const result = createFeatureFloatingLabels({
-        feature: mockFeature,
-        config: baseConfig,
         name: 'Gene1',
         description: 'A gene',
       })
       expect(result.nameLabel!.relativeY).toBe(0)
-      expect(result.descriptionLabel!.relativeY).toBe(12)
+      expect(result.descriptionLabel!.relativeY).toBe(LABEL_FONT_SIZE)
     })
 
     it('includes textWidth for each label', () => {
       const result = createFeatureFloatingLabels({
-        feature: mockFeature,
-        config: baseConfig,
         name: 'Gene1',
         description: 'A gene',
       })
@@ -61,8 +46,6 @@ describe('floatingLabels', () => {
 
     it('returns only name label when description is empty', () => {
       const result = createFeatureFloatingLabels({
-        feature: mockFeature,
-        config: baseConfig,
         name: 'Gene1',
         description: '',
       })
@@ -72,8 +55,6 @@ describe('floatingLabels', () => {
 
     it('returns only description label when name is empty', () => {
       const result = createFeatureFloatingLabels({
-        feature: mockFeature,
-        config: baseConfig,
         name: '',
         description: 'A gene',
       })

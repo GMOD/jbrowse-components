@@ -402,8 +402,6 @@ function processFeatureRecord(
   const name = getFeatureName(feature)
   const description = getFeatureDescription(feature)
   const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
-    feature,
-    config: ctx.config,
     name,
     description,
   })

@@ -16,10 +16,7 @@ import { getWeightedMeans } from './util.ts'
 
 import type { PAFRecord } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type {
-  BaseOptions,
-  BaseOptionsWithRegions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 

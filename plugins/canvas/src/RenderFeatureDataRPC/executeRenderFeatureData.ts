@@ -66,30 +66,41 @@ export async function executeRenderFeatureData({
   checkStopToken2(stopTokenCheck)
 
   if (showOnlyGenes) {
+    const geneLikeTypes = new Set<string>([
+      ...displayConfig.transcriptTypes,
+      ...displayConfig.containerTypes,
+      'gene',
+      'pseudogene',
+      'CDS',
+    ])
     featuresArray = featuresArray.filter(f =>
-      ['gene', 'mRNA', 'transcript', 'CDS'].includes(f.get('type') ?? ''),
+      geneLikeTypes.has(f.get('type') ?? ''),
     )
-  }
-
-  if (maxFeatureDensity !== undefined && requestedBpPerPx) {
-    const regionWidthPx = (region.end - region.start) / requestedBpPerPx
-    const featureDensity = featuresArray.length / regionWidthPx
-    if (featureDensity > maxFeatureDensity) {
-      return {
-        regionTooLarge: true,
-        featureCount: featuresArray.length,
-      }
-    }
   }
 
   const regionStart = Math.floor(region.start)
   const regionWidth = Math.ceil(region.end - region.start)
 
+  // Dedup before density-gating: multiple adapter passes can yield the same
+  // feature id, and the returned featureCount is the dedup'd size — the gate
+  // must use the same count it reports so main-thread and worker decisions stay
+  // in sync.
   const features = new Map<string, Feature>()
   for (const f of featuresArray) {
     const id = f.id()
     if (!features.has(id)) {
       features.set(id, f)
+    }
+  }
+
+  if (maxFeatureDensity !== undefined) {
+    const regionWidthPx = regionWidth / requestedBpPerPx
+    const featureDensity = features.size / regionWidthPx
+    if (featureDensity > maxFeatureDensity) {
+      return {
+        regionTooLarge: true,
+        featureCount: features.size,
+      }
     }
   }
 

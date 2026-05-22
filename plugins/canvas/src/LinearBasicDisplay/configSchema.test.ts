@@ -106,13 +106,12 @@ describe('LinearBasicDisplay configSchema', () => {
       {
         displayId: 'test',
         type: 'LinearBasicDisplay',
-        labels: { fontSize: 14, nameColor: 'red' },
+        labels: { nameColor: 'red' },
       },
       { pluginManager: pm },
     )
     const snap = readConfObject(config)
     expect(snap.labels).toBeDefined()
-    expect(snap.labels.fontSize).toBe(14)
     expect(snap.labels.nameColor).toBe('red')
   })
 
@@ -126,7 +125,6 @@ describe('LinearBasicDisplay configSchema', () => {
       'transcript',
       'primary_transcript',
     ])
-    expect(readConfObject(config, ['labels', 'fontSize'])).toBe(12)
   })
 
   it('JEXL callback slot exposes isCallback and raw value', () => {

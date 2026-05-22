@@ -28,23 +28,15 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
 const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 
-function bpMapper(block: Canvas2DRenderBlock) {
-  return makeBpMapper({
-    start: block.bpRangeX[0],
-    end: block.bpRangeX[1],
-    screenStartPx: block.screenStartPx,
-    screenEndPx: block.screenEndPx,
-    reversed: block.reversed,
-  })
-}
+type BpToScreen = (bp: number) => number
 
 function drawLines(
   ctx: Ctx2D,
   region: RegionRenderData,
   block: Canvas2DRenderBlock,
+  toX: BpToScreen,
   scrollY: number,
 ) {
-  const toX = bpMapper(block)
   for (let i = 0; i < region.lineYs.length; i++) {
     const startBp = region.linePositions[i * 2]!
     const endBp = region.linePositions[i * 2 + 1]!
