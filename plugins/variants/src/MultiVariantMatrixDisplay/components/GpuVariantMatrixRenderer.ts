@@ -51,10 +51,7 @@ export class GpuVariantMatrixRenderer extends GpuMonolithicBackend<
     this.hal.beginFrame(0, 0, 0, 0)
 
     const numFeatures = data?.numFeatures ?? 0
-    if (
-      numFeatures > 0 &&
-      this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0
-    ) {
+    if (numFeatures > 0 && this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0) {
       this.uniformF32[U.numFeatures] = numFeatures
       this.uniformF32[U.canvasWidth] = canvasWidth
       this.uniformF32[U.canvasHeight] = canvasHeight

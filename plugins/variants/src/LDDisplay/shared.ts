@@ -385,7 +385,7 @@ export default function sharedModelFactory(
       startGpuBackendLifecycle(backend: LDBackend) {
         self.installGpuDisplay<LDBackend>(backend, {
           upload: b => {
-            const d = self.rpcData as LDDataResult | undefined
+            const d = self.rpcData
             if (!d) {
               return
             }
@@ -400,10 +400,10 @@ export default function sharedModelFactory(
           },
           render: b => {
             const state = self.renderState
-            const d = self.rpcData as LDDataResult | undefined
             if (!state) {
               return false
             }
+            const d = self.rpcData
             b.render(
               d
                 ? {

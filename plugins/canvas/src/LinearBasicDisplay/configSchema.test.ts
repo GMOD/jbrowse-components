@@ -162,7 +162,10 @@ describe('LinearBasicDisplay configSchema', () => {
         {
           displayId: 'test',
           type: 'LinearBasicDisplay',
-          renderer: { type: 'SvgFeatureRenderer', labels: { description: expr } },
+          renderer: {
+            type: 'SvgFeatureRenderer',
+            labels: { description: expr },
+          },
         },
         { pluginManager: pm },
       )

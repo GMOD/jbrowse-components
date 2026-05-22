@@ -22,9 +22,10 @@ export interface MonolithicGpuBackend<UploadData, RenderState> {
  * `canvas` + 2D context; stubs `uploadData` (no-op — data flows through
  * `render`). Subclasses implement `render` and nothing else.
  */
-export abstract class Canvas2DMonolithicBackend<UploadData, RenderState>
-  implements MonolithicGpuBackend<UploadData, RenderState>
-{
+export abstract class Canvas2DMonolithicBackend<
+  UploadData,
+  RenderState,
+> implements MonolithicGpuBackend<UploadData, RenderState> {
   protected canvas: HTMLCanvasElement
   protected ctx: CanvasRenderingContext2D
 
@@ -49,9 +50,10 @@ export abstract class Canvas2DMonolithicBackend<UploadData, RenderState>
  * `dispose()` delegates to `hal.dispose()`. Subclasses implement
  * `uploadData` (push bytes to HAL) and `render`.
  */
-export abstract class GpuMonolithicBackend<UploadData, RenderState>
-  implements MonolithicGpuBackend<UploadData, RenderState>
-{
+export abstract class GpuMonolithicBackend<
+  UploadData,
+  RenderState,
+> implements MonolithicGpuBackend<UploadData, RenderState> {
   protected hal: GpuHal
   protected uniformData: ArrayBuffer
 

@@ -2,7 +2,7 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
 
 import {
   RENDERING_TYPE_DENSITY,
@@ -17,12 +17,12 @@ import {
 } from './wiggleDrawFunctions.ts'
 import { computeNumRows } from './wiggleInstanceBuffer.ts'
 
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   SourceRenderData,
   WiggleBackend,
   WiggleGPURenderState,
-  WiggleRenderBlock,
 } from '@jbrowse/wiggle-core'
 
 // Pure draw entry point per ARCHITECTURE.md "SVG export pipeline". Paints
@@ -30,7 +30,7 @@ import type {
 export function drawWiggleBlocks(
   ctx: Ctx2D,
   regions: ReadonlyMap<number, SourceRenderData[]>,
-  blocks: WiggleRenderBlock[],
+  blocks: RenderBlock[],
   state: WiggleGPURenderState,
 ) {
   const { canvasWidth, canvasHeight, renderingType, scaleType, domainY } = state
@@ -111,7 +111,7 @@ export function drawWiggleToCtx<Data>(
     rpcDataMap: ReadonlyMap<number, Data>
     encode: (data: Data) => SourceRenderData[]
   },
-  blocks: WiggleRenderBlock[],
+  blocks: RenderBlock[],
   state: WiggleGPURenderState,
 ) {
   const regions = new Map<number, SourceRenderData[]>()
@@ -125,18 +125,14 @@ export function drawWiggleToCtx<Data>(
 }
 
 // Stateless on-screen backend. The encoded sources map lives in the
-// per-region wiggle lifecycle closure (see installPerRegionWiggleLifecycle)
-// and is passed to renderBlocks each frame.
+// per-region lifecycle closure (see installPerRegionGpuLifecycle) and is
+// passed to renderBlocks each frame.
 export class Canvas2DWiggleRenderer
-  extends Canvas2DBackend<
-    SourceRenderData[],
-    WiggleGPURenderState,
-    WiggleRenderBlock
-  >
+  extends Canvas2DPerRegionBackend<SourceRenderData[], WiggleGPURenderState>
   implements WiggleBackend
 {
   renderBlocks(
-    blocks: WiggleRenderBlock[],
+    blocks: RenderBlock[],
     regions: ReadonlyMap<number, SourceRenderData[]>,
     state: WiggleGPURenderState,
   ) {

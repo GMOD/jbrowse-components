@@ -13,7 +13,8 @@ import {
   SCALE_TYPE_LOG,
 } from './wiggleComponentUtils.ts'
 
-import type { SourceRenderData, WiggleRenderBlock } from '@jbrowse/wiggle-core'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {
   value: 1,
@@ -32,7 +33,7 @@ function makeSource(overrides?: Partial<SourceRenderData>): SourceRenderData {
   }
 }
 
-function makeBlock(overrides?: Partial<WiggleRenderBlock>): WiggleRenderBlock {
+function makeBlock(overrides?: Partial<RenderBlock>): RenderBlock {
   return {
     displayedRegionIndex: 0,
     bpRangeX: [0, 1000],
@@ -111,7 +112,11 @@ describe('GpuWiggleRenderer', () => {
     const source = makeSource()
 
     renderer.uploadRegion(0, [source])
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), DEFAULT_STATE)
+    renderer.renderBlocks(
+      [makeBlock()],
+      new Map([[0, [source]]]),
+      DEFAULT_STATE,
+    )
 
     const methods = hal.calls.map(c => c.method)
     expect(methods).toContain('resize')
@@ -141,7 +146,11 @@ describe('GpuWiggleRenderer', () => {
     const source = makeSource()
 
     renderer.uploadRegion(0, [source])
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), DEFAULT_STATE)
+    renderer.renderBlocks(
+      [makeBlock()],
+      new Map([[0, [source]]]),
+      DEFAULT_STATE,
+    )
 
     const f32 = hal.getLastUniformsF32()!
     const i32 = hal.getLastUniformsI32()!
@@ -162,11 +171,10 @@ describe('GpuWiggleRenderer', () => {
     const source = makeSource()
 
     renderer.uploadRegion(0, [source])
-    renderer.renderBlocks(
-      [makeBlock()],
-      new Map([[0, [source]]]),
-      { ...DEFAULT_STATE, renderingType: RENDERING_TYPE_LINE },
-    )
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_LINE,
+    })
 
     const drawCalls = hal.callsOf('drawPass')
     expect(drawCalls.length).toBe(1)
@@ -181,7 +189,11 @@ describe('GpuWiggleRenderer', () => {
     const source = makeSource()
 
     renderer.uploadRegion(0, [source])
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), DEFAULT_STATE)
+    renderer.renderBlocks(
+      [makeBlock()],
+      new Map([[0, [source]]]),
+      DEFAULT_STATE,
+    )
 
     const drawCalls = hal.callsOf('drawPass')
     expect(drawCalls.length).toBe(1)
@@ -298,11 +310,11 @@ describe('GpuWiggleRenderer', () => {
     const source = makeSource()
 
     renderer.uploadRegion(0, [source])
-    renderer.renderBlocks(
-      [makeBlock()],
-      new Map([[0, [source]]]),
-      { ...DEFAULT_STATE, scaleType: SCALE_TYPE_LOG, domainY: [1, 1000] },
-    )
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+      ...DEFAULT_STATE,
+      scaleType: SCALE_TYPE_LOG,
+      domainY: [1, 1000],
+    })
 
     const i32 = hal.getLastUniformsI32()!
     expect(i32[U.scaleType]).toBe(SCALE_TYPE_LOG)

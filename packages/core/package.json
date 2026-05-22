@@ -38,7 +38,7 @@
     "./gpu/canvas2dUtils": "./src/gpu/canvas2dUtils.ts",
     "./gpu/createDualRenderer": "./src/gpu/createDualRenderer.ts",
     "./gpu/getGpuDevice": "./src/gpu/getGpuDevice.ts",
-    "./gpu/GpuBackendLifecycleSlotMixin": "./src/gpu/GpuBackendLifecycleSlotMixin.ts",
+    "./gpu/GpuLifecycleMixin": "./src/gpu/GpuLifecycleMixin.ts",
     "./gpu/hal": "./src/gpu/hal/index.ts",
     "./gpu/installPerRegionGpuLifecycle": "./src/gpu/installPerRegionGpuLifecycle.ts",
     "./gpu/monolithicBackend": "./src/gpu/monolithicBackend.ts",
@@ -279,9 +279,9 @@
         "types": "./esm/gpu/getGpuDevice.d.ts",
         "import": "./esm/gpu/getGpuDevice.js"
       },
-      "./gpu/GpuBackendLifecycleSlotMixin": {
-        "types": "./esm/gpu/GpuBackendLifecycleSlotMixin.d.ts",
-        "import": "./esm/gpu/GpuBackendLifecycleSlotMixin.js"
+      "./gpu/GpuLifecycleMixin": {
+        "types": "./esm/gpu/GpuLifecycleMixin.d.ts",
+        "import": "./esm/gpu/GpuLifecycleMixin.js"
       },
       "./gpu/hal": {
         "types": "./esm/gpu/hal/index.d.ts",
@@ -776,8 +776,8 @@
         "gpu/getGpuDevice": [
           "esm/gpu/getGpuDevice.d.ts"
         ],
-        "gpu/GpuBackendLifecycleSlotMixin": [
-          "esm/gpu/GpuBackendLifecycleSlotMixin.d.ts"
+        "gpu/GpuLifecycleMixin": [
+          "esm/gpu/GpuLifecycleMixin.d.ts"
         ],
         "gpu/hal": [
           "esm/gpu/hal/index.d.ts"

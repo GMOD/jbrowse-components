@@ -2,7 +2,7 @@ import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
 
 import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 export interface ManhattanHit {
   refName: string
@@ -19,7 +19,7 @@ const HIT_RADIUS_PX = 8
 export function findManhattanHit(
   mouseX: number,
   mouseY: number,
-  blocks: WiggleRenderBlock[],
+  blocks: RenderBlock[],
   regionData: ReadonlyMap<number, ManhattanRpcResult>,
   state: ManhattanRenderState,
   refNames: Map<number, string>,

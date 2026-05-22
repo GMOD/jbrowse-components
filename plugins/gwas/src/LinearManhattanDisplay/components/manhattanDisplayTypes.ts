@@ -4,9 +4,10 @@ import type {
   ManhattanBackend,
   ManhattanRenderState,
 } from '../manhattanBackendTypes.ts'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Feature } from '@jbrowse/core/util'
 import type { GpuLifecycleModel } from '@jbrowse/core/util/useGpuModelLifecycle'
-import type { WiggleRenderBlock, YScaleTicks } from '@jbrowse/wiggle-core'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 // Component-facing slice of LinearManhattanDisplayModel. Hand-rolled to
 // avoid a circular type between stateModelFactory.ts (lazy-imports the
@@ -15,7 +16,7 @@ import type { WiggleRenderBlock, YScaleTicks } from '@jbrowse/wiggle-core'
 // wiggleDisplayTypes.ts.
 export interface ManhattanDisplayModel extends GpuLifecycleModel<ManhattanBackend> {
   rpcDataMap: ReadonlyMap<number, ManhattanRpcResult>
-  renderBlocks: WiggleRenderBlock[]
+  renderBlocks: RenderBlock[]
   manhattanRenderState(): ManhattanRenderState | undefined
   height: number
   canvasDrawn: boolean

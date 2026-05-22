@@ -1,4 +1,4 @@
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
+import { GpuLifecycleMixin } from '@jbrowse/core/gpu/GpuLifecycleMixin'
 import {
   hideTrackGeneric,
   showTrackGeneric,
@@ -31,7 +31,7 @@ export function linearSyntenyViewHelperModelFactory(
   return types
     .compose(
       'LinearSyntenyViewHelper',
-      GpuBackendLifecycleSlotMixin(),
+      GpuLifecycleMixin(),
       types.model({
         /**
          * #property

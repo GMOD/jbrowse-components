@@ -8,8 +8,9 @@ import {
   makeScoreNormalizer,
 } from '../util.ts'
 
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { SourceRenderData, WiggleRenderBlock } from '@jbrowse/wiggle-core'
+import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 function makeScoreToY(
   rowHeight: number,
@@ -27,7 +28,7 @@ function makeScoreToY(
 export function drawXYPlot(
   ctx: Ctx2D,
   source: SourceRenderData,
-  block: WiggleRenderBlock,
+  block: RenderBlock,
   rowHeight: number,
   rowTop: number,
   domainY: [number, number],
@@ -73,7 +74,7 @@ export function drawXYPlot(
 export function drawDensity(
   ctx: Ctx2D,
   source: SourceRenderData,
-  block: WiggleRenderBlock,
+  block: RenderBlock,
   rowHeight: number,
   rowTop: number,
   domainY: [number, number],
@@ -127,7 +128,7 @@ export function drawDensity(
 export function drawLine(
   ctx: Ctx2D,
   source: SourceRenderData,
-  block: WiggleRenderBlock,
+  block: RenderBlock,
   rowHeight: number,
   rowTop: number,
   domainY: [number, number],
@@ -191,7 +192,7 @@ export function drawLine(
 export function drawScatter(
   ctx: Ctx2D,
   source: SourceRenderData,
-  block: WiggleRenderBlock,
+  block: RenderBlock,
   rowHeight: number,
   rowTop: number,
   domainY: [number, number],

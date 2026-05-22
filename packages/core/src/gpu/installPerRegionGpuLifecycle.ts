@@ -1,7 +1,7 @@
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { InstallGpuDisplayCallbacks } from './GpuBackendLifecycleSlotMixin.ts'
+import type { InstallGpuDisplayCallbacks } from './GpuLifecycleMixin.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ObservableMap } from 'mobx'
 
@@ -17,6 +17,19 @@ interface UploadableBackend<Encoded> {
 }
 
 /**
+ * Render callback signature for per-region lifecycles. The second argument
+ * is the latest encoded-output map kept by the helper — wiggle reads from
+ * it because its renderer is stateless and needs the encoded form per
+ * frame; plugins whose renderer reads `rpcDataMap` directly (manhattan,
+ * MAF, variants) ignore the second argument. Return `true` if anything was
+ * drawn (flips `canvasDrawn` — see GpuLifecycle).
+ */
+export type PerRegionRender<B, Encoded> = (
+  backend: B,
+  encoded: ReadonlyMap<number, Encoded>,
+) => boolean
+
+/**
  * Per-region streamed upload for any GPU display whose data is keyed by
  * displayedRegionIndex. Each `rpcDataMap` key gets its own autorun, so a new
  * region's arrival re-uploads only that region (O(1)) while an encoding-input
@@ -27,9 +40,13 @@ interface UploadableBackend<Encoded> {
  * upload for this tick — the autorun stays subscribed and re-fires once the
  * missing input (e.g. a theme-derived encoder param) becomes available.
  *
- * `render` is forwarded as-is to `installGpuDisplay`; it owns the per-frame
- * draw call and returns whether anything was actually drawn (gates the
- * `canvasDrawn` flag — see InstallGpuDisplayCallbacks).
+ * Successful encode results are cached in an internal map and passed to
+ * `render` so stateless renderers (wiggle) can draw from it without
+ * re-encoding per frame. Renderers that read `rpcDataMap` directly can
+ * ignore the second arg.
+ *
+ * `render` owns the per-frame draw call and returns whether anything was
+ * actually drawn (gates the `canvasDrawn` flag — see InstallGpuDisplayCallbacks).
  */
 export function installPerRegionGpuLifecycle<
   Data,
@@ -40,8 +57,9 @@ export function installPerRegionGpuLifecycle<
   rpcDataMap: ObservableMap<number, Data>,
   backend: B,
   encode: (data: Data) => Encoded | undefined,
-  render: InstallGpuDisplayCallbacks<B>['render'],
+  render: PerRegionRender<B, Encoded>,
 ) {
+  const encodedRegions = new Map<number, Encoded>()
   const perKeyDisposers = new Map<number, () => void>()
   addDisposer(self, () => {
     for (const dispose of perKeyDisposers.values()) {
@@ -63,6 +81,7 @@ export function installPerRegionGpuLifecycle<
               if (data !== undefined && bCurrent !== undefined) {
                 const encoded = encode(data)
                 if (encoded !== undefined) {
+                  encodedRegions.set(key, encoded)
                   bCurrent.uploadRegion(key, encoded)
                   self.renderNow()
                 }
@@ -76,10 +95,11 @@ export function installPerRegionGpuLifecycle<
         if (!activeSet.has(key)) {
           dispose()
           perKeyDisposers.delete(key)
+          encodedRegions.delete(key)
         }
       }
       b.pruneRegions(active)
     },
-    render,
+    render: b => render(b, encodedRegions),
   })
 }

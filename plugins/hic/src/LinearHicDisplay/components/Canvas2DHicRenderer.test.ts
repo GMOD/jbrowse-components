@@ -1,9 +1,6 @@
 import { Canvas2DHicRenderer } from './Canvas2DHicRenderer.ts'
 
-import type {
-  HicRenderState,
-  HicUploadData,
-} from './hicBackendTypes.ts'
+import type { HicRenderState, HicUploadData } from './hicBackendTypes.ts'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 

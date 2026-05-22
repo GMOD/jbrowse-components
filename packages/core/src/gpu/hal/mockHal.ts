@@ -62,7 +62,7 @@ export class MockHal implements GpuHal {
   pruneRegions(active: Iterable<number>) {
     const activeSet = new Set(active)
     this.record('pruneRegions', [...activeSet])
-    for (const key of [...this.buffers.keys()]) {
+    for (const key of this.buffers.keys()) {
       const regionKey = Number(key.slice(0, key.indexOf(':')))
       if (!activeSet.has(regionKey)) {
         this.buffers.delete(key)

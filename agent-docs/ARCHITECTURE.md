@@ -126,7 +126,7 @@ Read `PRD.md` first for invariants and active priorities.
 
 ## One-liner
 
-Each GPU display is an MST model that composes `GpuBackendLifecycleSlotMixin`
+Each GPU display is an MST model that composes `GpuLifecycleMixin`
 and calls `self.installGpuDisplay(backend, { upload, render })` in its
 `startGpuBackendLifecycle(backend)` action. The mixin spawns two autoruns tied
 to the model's lifetime — one that runs `upload(backend)`, one that runs
@@ -169,7 +169,7 @@ startGpuBackendLifecycle(backend: Backend) {
 ## What the mixin owns
 
 ```
-GpuBackendLifecycleSlotMixin
+GpuLifecycleMixin
   .volatile
     canvasDrawn: boolean          set true only after render() returns true with real data
     currentGpuBackend: unknown    stored backend; autoruns read it each tick
@@ -182,7 +182,7 @@ GpuBackendLifecycleSlotMixin
     renderNow()                   bumps renderBump → render autorun re-fires
     installGpuDisplay(b, cbs)     spawns upload + render autoruns (once)
 
-MultiRegionDisplayMixin  (composes GpuBackendLifecycleSlotMixin)
+MultiRegionDisplayMixin  (composes GpuLifecycleMixin)
   .views
     isReady: boolean              canvasDrawn && !isLoading — drives loading overlay
 ```
@@ -260,27 +260,27 @@ classes in `@jbrowse/core/gpu/perRegionBackend`:
 // Plugin specializes the interface (used in model + React code):
 export type XxxBackend = PerRegionGpuBackend<XxxUploadData, XxxRenderState>
 
-// Plugin's GPU renderer extends GpuBackend, implements uploadRegion + renderBlocks:
-export class GpuXxxRenderer extends GpuBackend<XxxUploadData, XxxRenderState> {
+// Plugin's GPU renderer extends GpuPerRegionBackend, implements uploadRegion + renderBlocks:
+export class GpuXxxRenderer extends GpuPerRegionBackend<XxxUploadData, XxxRenderState> {
   constructor(hal: GpuHal) { super(hal, XXX_UNIFORM_BYTE_SIZE) }
   uploadRegion(idx, data) { … }
   renderBlocks(blocks, regions, state) { … }
 }
 
-// Plugin's Canvas2D renderer extends Canvas2DBackend, implements renderBlocks only:
-export class Canvas2DXxxRenderer extends Canvas2DBackend<XxxUploadData, XxxRenderState> {
+// Plugin's Canvas2D renderer extends Canvas2DPerRegionBackend, implements renderBlocks only:
+export class Canvas2DXxxRenderer extends Canvas2DPerRegionBackend<XxxUploadData, XxxRenderState> {
   renderBlocks(blocks, regions, state) { … }
 }
 ```
 
 The bases own everything that's truly shared:
 
-- `Canvas2DBackend` — owns `canvas` + `ctx` (constructor throws if 2D
-  context unavailable), stubs `uploadRegion` / `pruneRegions` / `dispose`
-  as no-ops since the source of truth is the `regions` map.
-- `GpuBackend` — owns the `hal` reference and a pre-allocated uniform
-  scratch `ArrayBuffer`. Default `pruneRegions(active)` delegates to
-  `hal.pruneRegions(active)`; default `dispose()` calls `hal.dispose()`.
+- `Canvas2DPerRegionBackend` — owns `canvas` + `ctx` (constructor throws
+  if 2D context unavailable), stubs `uploadRegion` / `pruneRegions` /
+  `dispose` as no-ops since the source of truth is the `regions` map.
+- `GpuPerRegionBackend` — owns the `hal` reference and a pre-allocated
+  uniform scratch `ArrayBuffer`. Default `pruneRegions(active)` delegates
+  to `hal.pruneRegions(active)`; default `dispose()` calls `hal.dispose()`.
 
 Two invariants make the renderer implementations small and uniform:
 
@@ -356,7 +356,7 @@ shape.
 All three patterns expose the same lifecycle (`installGpuDisplay({ upload,
 render })`); the difference is how the upload callback shovels bytes.
 
-#### Per-region streamed: per-key autoruns (wiggle only)
+#### Per-region streamed: per-key autoruns (`installPerRegionGpuLifecycle`)
 
 **Plain English:** The naive implementation re-uploads every chromosome to the
 GPU each time any chromosome finishes loading — 300 uploads instead of 24 for
@@ -371,52 +371,56 @@ entire map, every `rpcDataMap.set(key, data)` call re-fires the autorun and
 re-uploads all N regions — O(N²) total GPU uploads when N regions arrive
 sequentially.
 
-**Fix (wiggle, multi-wiggle):** replace the single full-map loop with a
-key-manager that spawns one per-key autorun per `rpcDataMap` entry:
+**The fix lives in `@jbrowse/core/gpu/installPerRegionGpuLifecycle`** and is
+used by every per-region plugin (wiggle, multi-wiggle, manhattan, MAF,
+multi-variant, multi-variant-matrix). Each plugin's `startGpuBackendLifecycle`
+action collapses to a single call:
 
 ```ts
-upload: b => {
-  // keys() tracks structural changes (add/remove) but NOT value changes.
-  const active: number[] = []
-  for (const key of self.rpcDataMap.keys()) {
-    active.push(key)
-    if (!perKeyDisposers.has(key)) {
-      perKeyDisposers.set(key, autorun(() => {
-        const data = self.rpcDataMap.get(key)   // per-key value atom
-        const props = self.gpuProps()
-        const bCurrent = self.currentGpuBackend as WiggleBackend | undefined
-        if (data !== undefined && bCurrent !== undefined) {
-          bCurrent.uploadRegion(key, buildSourceRenderData(data, props))
-          self.renderNow()
-        }
-      }))
-    }
-  }
-  const activeSet = new Set(active)
-  for (const [key, dispose] of perKeyDisposers) {
-    if (!activeSet.has(key)) { dispose(); perKeyDisposers.delete(key) }
-  }
-  b.pruneRegions(active)
+startGpuBackendLifecycle(backend: XxxBackend) {
+  installPerRegionGpuLifecycle(
+    self,
+    self.rpcDataMap,
+    backend,
+    data => encode(data, self.gpuProps()),       // optional encode step
+    (b, encoded) => {                            // render callback
+      const state = self.xxxRenderState
+      if (!state) return false
+      b.renderBlocks(self.renderBlocks, /* rpcDataMap or `encoded` */, state)
+      return true
+    },
+  )
 }
 ```
 
-Key MobX fact: `ObservableMap.get(existingKey)`
-tracks `hasMap_.get(key)` (per-key existence atom), not `keysAtom_`. Adding a
-new key fires `keysAtom_` (waking the key-manager only) and that new key's
-`hasMap_` entry. Existing per-key autoruns are **not** re-fired. Net result:
-O(1) GPU upload per new region, O(N) when `gpuProps()` or backend changes.
+The helper spawns one autorun per `rpcDataMap` key. When a new key arrives
+only its autorun fires (O(1) upload). When an encoder-tracked observable
+changes (theme, color, scale), all per-key autoruns fire (O(N) re-encode) —
+which is the right behavior.
 
-Use `addDisposer(self, () => { for (const d of perKeyDisposers.values()) d() })`
-to clean up per-key autoruns when the MST node is destroyed.
+Key MobX fact: `ObservableMap.get(existingKey)` tracks `hasMap_.get(key)`
+(per-key existence atom), not `keysAtom_`. Adding a new key fires
+`keysAtom_` (waking the key-manager only) and that new key's `hasMap_`
+entry. Existing per-key autoruns are **not** re-fired.
 
-**Plain English on why the wiggle fix doesn't apply here:** Wiggle uploads
-each chromosome independently — chromosome 5's data has nothing to do with
-chromosome 1's. Canvas and alignments lay out features into Y-rows across all
-loaded regions together (so a gene spanning two adjacent regions ends up on
-the same row in both). That means any new arrival could in principle change
-the layout of everything already loaded, so the code recomputes and re-uploads
-everything. In practice this cross-region coupling rarely matters (different
-chromosomes never share Y-rows), but the architecture doesn't exploit that yet.
+The helper also caches successful encode outputs in a `Map<number, Encoded>`
+and passes it to the render callback — wiggle's renderer reads from this
+map because its renderer is stateless; other callers ignore the arg and
+read `rpcDataMap` directly. Cleanup is automatic via `addDisposer(self, …)`.
+
+**Plain English on why the helper doesn't apply to canvas / alignments:**
+Wiggle uploads each chromosome independently — chromosome 5's data has
+nothing to do with chromosome 1's. Canvas and alignments lay out features
+into Y-rows across all loaded regions together (so a gene spanning two
+adjacent regions ends up on the same row in both). That means any new
+arrival could in principle change the layout of everything already loaded,
+so the code recomputes and re-uploads everything. Cross-region coupling is
+load-bearing in practice — collapsed-intron views split a single chromosome
+into many small displayed regions, and a long gene spanning those chunks
+must hold the same Y-row in each one. The same view pattern is also why
+the layout step runs on the main thread instead of inside the worker: row
+assignment needs the union of all visible regions' features, which only
+the main thread sees.
 
 **Canvas and alignments have the same O(N²) structure** — both route through a
 whole-map MobX computed (`laidOutDataMap` / `laidOutPileupMap`) that invalidates
@@ -429,13 +433,14 @@ re-fire on every new arrival.
 The practical difference is N:
 
 - **Canvas** is commonly shown as a whole-genome gene track with N=24
-  chromosomes → N²=576 uploads vs. 24. Perceptible. Fix: make
-  `computeLaidOutData` incremental — return stable references for entries whose
-  input data didn't change, so per-key autoruns can detect no-ops.
+  chromosomes (or many more in collapsed-intron views) → N² grows fast.
+  Fix would be making `computeLaidOutData` incremental — return stable
+  references for entries whose input data didn't change, so per-key
+  autoruns can detect no-ops.
 - **Alignments/synteny** are never shown at whole-genome scale (data density
   forces gene-level zoom, or synteny is pairwise). N is typically 4–8 buffered
-  regions → N²=16–64. Not perceptible in practice. Same fix would apply if N
-  ever grew.
+  regions in normal views, more in collapsed-intron. Same fix would apply if
+  the perceived cost grew.
 
 ---
 
@@ -884,7 +889,7 @@ key on a tuple of two displayedRegion indices.
   the `PassDescriptor`.
 - **MST model:**
   - Compose `MultiRegionDisplayMixin()` for LGV-family per-region displays
-    (brings in `GpuBackendLifecycleSlotMixin`, `FetchMixin`,
+    (brings in `GpuLifecycleMixin`, `FetchMixin`,
     `RegionTooLargeMixin`, the four fetch autoruns, and `rpcProps()`→refetch
     wiring).
   - Compose `GlobalDataDisplayMixin()` for displays that hold a single
@@ -893,7 +898,7 @@ key on a tuple of two displayedRegion indices.
     **no** fetch autoruns — each display installs its own `afterAttach`
     autorun expressing its trigger conditions (e.g. HiC: viewport change;
     LD: viewport + `showLDTriangle` + …).
-  - Compose `GpuBackendLifecycleSlotMixin()` directly only when neither
+  - Compose `GpuLifecycleMixin()` directly only when neither
     fetch surface is needed (rare — most GPU displays fetch something).
   - Add a cached `renderState` view.
   - Define `startGpuBackendLifecycle(backend)` calling

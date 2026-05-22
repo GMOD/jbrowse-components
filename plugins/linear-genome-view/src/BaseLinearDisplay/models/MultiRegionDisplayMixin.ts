@@ -1,4 +1,4 @@
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
+import { GpuLifecycleMixin } from '@jbrowse/core/gpu/GpuLifecycleMixin'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import {
   getContainingTrack,
@@ -27,7 +27,7 @@ export default function MultiRegionDisplayMixin() {
     .compose(
       'MultiRegionDisplayMixin',
       RegionTooLargeMixin(),
-      GpuBackendLifecycleSlotMixin(),
+      GpuLifecycleMixin(),
       FetchMixin(),
       types.model({}),
     )

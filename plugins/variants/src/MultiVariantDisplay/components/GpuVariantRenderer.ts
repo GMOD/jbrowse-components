@@ -3,7 +3,7 @@ import {
   writeBpRangeUniforms,
 } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { GpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { GpuPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as variantShader from './shaders/variant.generated.ts'
@@ -30,10 +30,9 @@ export const VARIANT_PASSES: PassDescriptor[] = [
 
 export { UNIFORMS_SIZE_BYTES as VARIANT_UNIFORM_BYTE_SIZE }
 
-export class GpuVariantRenderer extends GpuBackend<
+export class GpuVariantRenderer extends GpuPerRegionBackend<
   VariantUploadData,
-  VariantRenderState,
-  VariantRenderBlock
+  VariantRenderState
 > {
   private uniformF32: Float32Array
   private uniformU32: Uint32Array

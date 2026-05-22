@@ -1,11 +1,11 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction } from 'mobx'
 
-import { GpuBackendLifecycleSlotMixin } from './GpuBackendLifecycleSlotMixin.ts'
+import { GpuLifecycleMixin } from './GpuLifecycleMixin.ts'
 
 const TestModel = types.compose(
   'TestModel',
-  GpuBackendLifecycleSlotMixin(),
+  GpuLifecycleMixin(),
   types.model({}),
 )
 

@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { installPerRegionGpuLifecycle } from '@jbrowse/core/gpu/installPerRegionGpuLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 import {
@@ -23,7 +24,6 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
-import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import {
   getRowHeight,
@@ -290,8 +290,19 @@ export default function stateModelFactory(
       },
 
       startGpuBackendLifecycle(backend: WiggleBackend) {
-        installPerRegionWiggleLifecycle(self, self.rpcDataMap, backend, data =>
-          buildSourceRenderData(data, self.gpuProps()),
+        installPerRegionGpuLifecycle(
+          self,
+          self.rpcDataMap,
+          backend,
+          data => buildSourceRenderData(data, self.gpuProps()),
+          (b, encoded) => {
+            const state = self.renderState
+            if (!state) {
+              return false
+            }
+            b.renderBlocks(self.renderBlocks, encoded, state)
+            return true
+          },
         )
       },
 

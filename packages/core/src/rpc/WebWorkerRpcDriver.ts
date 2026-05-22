@@ -108,5 +108,4 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
       instance.addEventListener('message', listener)
     })
   }
-
 }

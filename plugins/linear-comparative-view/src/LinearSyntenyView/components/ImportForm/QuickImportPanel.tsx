@@ -96,7 +96,10 @@ const QuickImportPanel = observer(function QuickImportPanel({
             },
           },
         })
-        await doSubmit({ selectedAssemblyNames: assemblyNames.slice(0, 2), model })
+        await doSubmit({
+          selectedAssemblyNames: assemblyNames.slice(0, 2),
+          model,
+        })
       }
     } catch (e) {
       console.error(e)

@@ -3,13 +3,13 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 
 import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
 
 const TWO_PI = Math.PI * 2
 const POINT_RADIUS_PX = 2
@@ -25,7 +25,7 @@ function abgrToCss(abgr: number) {
 export function drawManhattanBlocks(
   ctx: Ctx2D,
   regions: ReadonlyMap<number, ManhattanRpcResult>,
-  blocks: WiggleRenderBlock[],
+  blocks: RenderBlock[],
   state: ManhattanRenderState,
 ) {
   const { canvasWidth, canvasHeight, domainY } = state
@@ -81,13 +81,12 @@ export function drawManhattanBlocks(
   }
 }
 
-export class Canvas2DManhattanRenderer extends Canvas2DBackend<
+export class Canvas2DManhattanRenderer extends Canvas2DPerRegionBackend<
   ManhattanRpcResult,
-  ManhattanRenderState,
-  WiggleRenderBlock
+  ManhattanRenderState
 > {
   renderBlocks(
-    blocks: WiggleRenderBlock[],
+    blocks: RenderBlock[],
     regions: ReadonlyMap<number, ManhattanRpcResult>,
     state: ManhattanRenderState,
   ) {

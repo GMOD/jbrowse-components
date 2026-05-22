@@ -1,6 +1,6 @@
 import { bpRangeXTuple, clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { GpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { GpuPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import {
@@ -82,10 +82,9 @@ function drawRegionBlock(
   hal.drawPass(PASS_ARROW, block.displayedRegionIndex)
 }
 
-export class GpuCanvasFeatureRenderer extends GpuBackend<
+export class GpuCanvasFeatureRenderer extends GpuPerRegionBackend<
   RegionRenderData,
-  RenderState,
-  FeatureRenderBlock
+  RenderState
 > {
   constructor(hal: GpuHal) {
     super(hal, CANVAS_FEATURE_UNIFORM_BYTE_SIZE)
@@ -151,5 +150,4 @@ export class GpuCanvasFeatureRenderer extends GpuBackend<
     this.hal.clearViewport()
     this.hal.endFrame()
   }
-
 }

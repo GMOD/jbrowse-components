@@ -19,7 +19,9 @@ export interface HicUploadData {
 
 // HiC adds `uploadColorRamp` for its color-mapped texture; otherwise
 // follows the standard monolithic shape (one bulk uploadData, one render).
-export interface HicBackend
-  extends MonolithicGpuBackend<HicUploadData, HicRenderState> {
+export interface HicBackend extends MonolithicGpuBackend<
+  HicUploadData,
+  HicRenderState
+> {
   uploadColorRamp(colors: Uint8Array): void
 }

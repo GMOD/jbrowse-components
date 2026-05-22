@@ -1,6 +1,5 @@
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { PerRegionGpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
-import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
 
 export interface ManhattanRenderState {
   domainY: [number, number]
@@ -13,6 +12,5 @@ export interface ManhattanRenderState {
 // backend contract directly on `ManhattanRpcResult`.
 export type ManhattanBackend = PerRegionGpuBackend<
   ManhattanRpcResult,
-  ManhattanRenderState,
-  WiggleRenderBlock
+  ManhattanRenderState
 >

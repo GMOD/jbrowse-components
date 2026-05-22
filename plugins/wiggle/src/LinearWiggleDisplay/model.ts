@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { installPerRegionGpuLifecycle } from '@jbrowse/core/gpu/installPerRegionGpuLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -13,7 +14,6 @@ import PaletteIcon from '@mui/icons-material/Palette'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
-import { installPerRegionWiggleLifecycle } from '../shared/installPerRegionWiggleLifecycle.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import { rendererMenuItems } from '../shared/rendererMenuItems.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
@@ -307,8 +307,19 @@ export default function stateModelFactory(
         return renderSvg(self as LinearWiggleDisplayModel, opts)
       },
       startGpuBackendLifecycle(backend: WiggleBackend) {
-        installPerRegionWiggleLifecycle(self, self.rpcDataMap, backend, data =>
-          buildSourceRenderData(data, self.gpuProps()),
+        installPerRegionGpuLifecycle(
+          self,
+          self.rpcDataMap,
+          backend,
+          data => buildSourceRenderData(data, self.gpuProps()),
+          (b, encoded) => {
+            const state = self.renderState
+            if (!state) {
+              return false
+            }
+            b.renderBlocks(self.renderBlocks, encoded, state)
+            return true
+          },
         )
       },
     }))

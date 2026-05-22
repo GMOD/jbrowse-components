@@ -311,7 +311,10 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         style={{ width, height }}
       />
       {combinedError ? (
-        <ErrorBanner error={combinedError} onReset={gpuError ? retry : undefined} />
+        <ErrorBanner
+          error={combinedError}
+          onReset={gpuError ? retry : undefined}
+        />
       ) : null}
     </div>
   )

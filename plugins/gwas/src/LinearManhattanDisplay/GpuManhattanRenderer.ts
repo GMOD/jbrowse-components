@@ -3,7 +3,7 @@ import {
   writeBpRangeUniforms,
 } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { GpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { GpuPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as shader from './shaders/manhattan.generated.ts'
@@ -11,7 +11,7 @@ import * as shader from './shaders/manhattan.generated.ts'
 import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
-import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 const PASS = 'point'
 const U = shader.UNIFORM_OFFSET_F32
@@ -21,10 +21,9 @@ export const MANHATTAN_PASSES: PassDescriptor[] = [
   slangPass({ id: PASS, mod: shader, topology: 'triangle-list' }),
 ]
 
-export class GpuManhattanRenderer extends GpuBackend<
+export class GpuManhattanRenderer extends GpuPerRegionBackend<
   ManhattanRpcResult,
-  ManhattanRenderState,
-  WiggleRenderBlock
+  ManhattanRenderState
 > {
   private uniformF32: Float32Array
 
@@ -47,7 +46,7 @@ export class GpuManhattanRenderer extends GpuBackend<
   }
 
   renderBlocks(
-    blocks: WiggleRenderBlock[],
+    blocks: RenderBlock[],
     regions: ReadonlyMap<number, ManhattanRpcResult>,
     state: ManhattanRenderState,
   ) {

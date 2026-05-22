@@ -471,7 +471,10 @@ test('BAM file with .out in filename should infer BamAdapter not MashMapAdapter'
 
 function makeHg38Session() {
   // Includes Alignments so BAM is guessable; assembly mocks make getTrackConfig non-undefined
-  const pluginManager = new PluginManager([new FakeViewPlugin(), new Alignments()])
+  const pluginManager = new PluginManager([
+    new FakeViewPlugin(),
+    new Alignments(),
+  ])
   pluginManager.createPluggableElements()
   pluginManager.configure()
 

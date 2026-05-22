@@ -2,7 +2,7 @@ import type React from 'react'
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
+import { GpuLifecycleMixin } from '@jbrowse/core/gpu/GpuLifecycleMixin'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -104,7 +104,7 @@ export default function stateModelFactory(pm: PluginManager) {
       .compose(
         'DotplotView',
         BaseViewModel,
-        GpuBackendLifecycleSlotMixin(),
+        GpuLifecycleMixin(),
         types.model({
           /**
            * #property

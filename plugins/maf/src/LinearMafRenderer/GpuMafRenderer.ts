@@ -1,6 +1,6 @@
 import { bpRangeXTuple, clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { GpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { GpuPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as mafShader from './shaders/maf.generated.ts'
@@ -10,7 +10,6 @@ import {
 } from './shaders/maf.generated.ts'
 
 import type {
-  MafBackend,
   MafGPURenderState,
   MafRegionData,
   MafRenderBlock,
@@ -26,7 +25,7 @@ export const MAF_PASSES: PassDescriptor[] = [
 
 const U = UNIFORM_OFFSET_F32
 
-export class GpuMafRenderer extends GpuBackend<
+export class GpuMafRenderer extends GpuPerRegionBackend<
   MafUploadPayload,
   MafGPURenderState,
   MafRenderBlock,

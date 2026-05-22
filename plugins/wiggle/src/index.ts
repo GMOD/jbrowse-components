@@ -60,5 +60,4 @@ export type {
   SourceRenderData,
   WiggleBackend,
   WiggleGPURenderState,
-  WiggleRenderBlock,
 } from '@jbrowse/wiggle-core'

@@ -169,8 +169,10 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         if (!snap.renderer || typeof snap.renderer !== 'object') {
           return snap
         }
-        const { type: _type, ...rendererProps } =
-          snap.renderer as Record<string, unknown>
+        const { type: _type, ...rendererProps } = snap.renderer as Record<
+          string,
+          unknown
+        >
         const { renderer: _renderer, ...rest } = snap
         return { ...rendererProps, ...rest }
       },

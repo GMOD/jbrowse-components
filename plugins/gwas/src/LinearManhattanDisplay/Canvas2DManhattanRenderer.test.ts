@@ -2,7 +2,7 @@ import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 
 import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 // Minimal Canvas2D mock recording the fillStyle/arc calls so we can assert
 // per-feature colors are switched correctly.
@@ -35,7 +35,7 @@ function mockCtx() {
   return { ctx, calls }
 }
 
-const block: WiggleRenderBlock = {
+const block: RenderBlock = {
   displayedRegionIndex: 0,
   bpRangeX: [0, 1000],
   screenStartPx: 0,

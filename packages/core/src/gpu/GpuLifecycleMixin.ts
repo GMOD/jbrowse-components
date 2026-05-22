@@ -40,9 +40,9 @@ export interface InstallGpuDisplayCallbacks<B> {
  * backend actually painted content (flips `canvasDrawn`), `false` to skip
  * this tick (e.g. `renderState` not yet computed or no regions loaded).
  */
-export function GpuBackendLifecycleSlotMixin() {
+export function GpuLifecycleMixin() {
   return types
-    .model('GpuBackendLifecycleSlot', {})
+    .model('GpuLifecycle', {})
     .volatile(() => ({
       canvasDrawn: false,
 
@@ -95,7 +95,7 @@ export function GpuBackendLifecycleSlotMixin() {
               // shifts a render dep.
               self.renderNow()
             },
-            { name: 'GpuBackendLifecycleSlot:upload' },
+            { name: 'GpuLifecycle:upload' },
           ),
         )
         addDisposer(
@@ -111,7 +111,7 @@ export function GpuBackendLifecycleSlotMixin() {
                 self.markCanvasDrawn()
               }
             },
-            { name: 'GpuBackendLifecycleSlot:render' },
+            { name: 'GpuLifecycle:render' },
           ),
         )
       },

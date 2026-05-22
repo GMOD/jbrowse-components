@@ -1,4 +1,4 @@
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
+import { GpuLifecycleMixin } from '@jbrowse/core/gpu/GpuLifecycleMixin'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import FetchMixin from './FetchMixin.ts'
@@ -9,7 +9,7 @@ import FetchMixin from './FetchMixin.ts'
 const TestModel = types
   .compose(
     'TestModel',
-    GpuBackendLifecycleSlotMixin(),
+    GpuLifecycleMixin(),
     FetchMixin(),
     types.model({}),
   )

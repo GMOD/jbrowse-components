@@ -2,7 +2,7 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import { drawVariantShape } from './variantShape.ts'
@@ -106,10 +106,9 @@ export function drawVariantsToCtx(
   drawVariantBlocks(ctx, regions, blocks, state)
 }
 
-export class Canvas2DVariantRenderer extends Canvas2DBackend<
+export class Canvas2DVariantRenderer extends Canvas2DPerRegionBackend<
   VariantUploadData,
-  VariantRenderState,
-  VariantRenderBlock
+  VariantRenderState
 > {
   renderBlocks(
     blocks: VariantRenderBlock[],

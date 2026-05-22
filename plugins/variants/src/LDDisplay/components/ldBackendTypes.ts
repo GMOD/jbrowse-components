@@ -19,7 +19,9 @@ export interface LDUploadData {
 
 import type { MonolithicGpuBackend } from '@jbrowse/core/gpu/monolithicBackend'
 
-export interface LDBackend
-  extends MonolithicGpuBackend<LDUploadData, LDRenderState> {
+export interface LDBackend extends MonolithicGpuBackend<
+  LDUploadData,
+  LDRenderState
+> {
   uploadColorRamp(colors: Uint8Array): void
 }

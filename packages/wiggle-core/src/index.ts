@@ -27,7 +27,6 @@ export type {
   SourceRenderData,
   WiggleBackend,
   WiggleGPURenderState,
-  WiggleRenderBlock,
   WiggleRenderingType,
 } from './backendTypes.ts'
 

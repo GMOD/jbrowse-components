@@ -47,6 +47,5 @@ export default class LinearComparativeViewPlugin extends Plugin {
         },
       })
     }
-
   }
 }

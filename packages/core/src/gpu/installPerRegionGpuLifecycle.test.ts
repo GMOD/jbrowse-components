@@ -1,54 +1,40 @@
-import { GpuBackendLifecycleSlotMixin } from '@jbrowse/core/gpu/GpuBackendLifecycleSlotMixin'
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction } from 'mobx'
 
-import { installPerRegionWiggleLifecycle } from './installPerRegionWiggleLifecycle.ts'
-
-import type {
-  SourceRenderData,
-  WiggleBackend,
-  WiggleGPURenderState,
-  WiggleRenderBlock,
-} from '@jbrowse/wiggle-core'
+import { GpuLifecycleMixin } from './GpuLifecycleMixin.ts'
+import { installPerRegionGpuLifecycle } from './installPerRegionGpuLifecycle.ts'
 
 const TestModel = types
-  .compose('TestModel', GpuBackendLifecycleSlotMixin(), types.model({}))
-  .volatile(() => ({
-    renderState: undefined as WiggleGPURenderState | undefined,
-    renderBlocks: [] as WiggleRenderBlock[],
-  }))
+  .compose('TestModel', GpuLifecycleMixin(), types.model({}))
+  .volatile(() => ({}))
+
+interface FakeEncoded {
+  value: number
+  marker: number
+}
 
 interface UploadCall {
   key: number
-  payload: SourceRenderData[]
+  payload: FakeEncoded
+}
+
+interface FakeBackend {
+  uploadRegion(key: number, payload: FakeEncoded): void
+  pruneRegions(active: number[]): void
 }
 
 function makeFakeBackend() {
   const uploads: UploadCall[] = []
   const prunes: number[][] = []
-  const backend: WiggleBackend = {
+  const backend: FakeBackend = {
     uploadRegion(key, payload) {
       uploads.push({ key, payload })
     },
     pruneRegions(active) {
       prunes.push([...active])
     },
-    renderBlocks() {},
-    dispose() {},
   }
   return { backend, uploads, prunes }
-}
-
-function makeSourceRenderData(rowIndex: number): SourceRenderData[] {
-  return [
-    {
-      featurePositions: new Uint32Array(0),
-      featureScores: new Float32Array(0),
-      numFeatures: 0,
-      color: [0, 0, 0],
-      rowIndex,
-    },
-  ]
 }
 
 beforeEach(() => {
@@ -61,8 +47,12 @@ test('N sequential region arrivals trigger N uploads, not N²', () => {
   const { backend, uploads } = makeFakeBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionWiggleLifecycle(model, data, backend, value =>
-    makeSourceRenderData(value),
+  installPerRegionGpuLifecycle(
+    model,
+    data,
+    backend,
+    value => ({ value, marker: 0 }),
+    () => true,
   )
 
   for (let key = 0; key < 5; key++) {
@@ -78,17 +68,15 @@ test('encode-tracked observable change re-fires every per-key autorun', () => {
   const model = TestModel.create()
   const { backend, uploads } = makeFakeBackend()
   const data = observable.map<number, string>(undefined, { deep: false })
-  const colorBox = observable.box(0)
+  const markerBox = observable.box(0)
 
-  installPerRegionWiggleLifecycle(model, data, backend, () => [
-    {
-      featurePositions: new Uint32Array(0),
-      featureScores: new Float32Array(0),
-      numFeatures: 0,
-      color: [colorBox.get(), 0, 0],
-      rowIndex: 0,
-    },
-  ])
+  installPerRegionGpuLifecycle(
+    model,
+    data,
+    backend,
+    () => ({ value: 0, marker: markerBox.get() }),
+    () => true,
+  )
 
   runInAction(() => {
     data.set(0, 'a')
@@ -99,10 +87,9 @@ test('encode-tracked observable change re-fires every per-key autorun', () => {
   expect(uploads).toHaveLength(3)
 
   runInAction(() => {
-    colorBox.set(1)
+    markerBox.set(1)
   })
 
-  // All three per-key autoruns re-fire on the encoder dep change.
   expect(uploads).toHaveLength(6)
   expect(
     uploads
@@ -117,8 +104,12 @@ test('only the changed key re-uploads when its value mutates', () => {
   const { backend, uploads } = makeFakeBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionWiggleLifecycle(model, data, backend, value =>
-    makeSourceRenderData(value),
+  installPerRegionGpuLifecycle(
+    model,
+    data,
+    backend,
+    value => ({ value, marker: 0 }),
+    () => true,
   )
 
   runInAction(() => {
@@ -136,13 +127,17 @@ test('only the changed key re-uploads when its value mutates', () => {
   expect(uploads[uploads.length - 1]!.key).toBe(1)
 })
 
-test('removing a key disposes its autorun and prune lists active set', () => {
+test('removing a key disposes its autorun and prunes from active set', () => {
   const model = TestModel.create()
   const { backend, uploads, prunes } = makeFakeBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionWiggleLifecycle(model, data, backend, value =>
-    makeSourceRenderData(value),
+  installPerRegionGpuLifecycle(
+    model,
+    data,
+    backend,
+    value => ({ value, marker: 0 }),
+    () => true,
   )
 
   runInAction(() => {
@@ -174,8 +169,12 @@ test('backend swap (context-loss recovery) routes uploads to new backend', () =>
   const b = makeFakeBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionWiggleLifecycle(model, data, a.backend, value =>
-    makeSourceRenderData(value),
+  installPerRegionGpuLifecycle(
+    model,
+    data,
+    a.backend,
+    value => ({ value, marker: 0 }),
+    () => true,
   )
 
   runInAction(() => {
@@ -186,12 +185,78 @@ test('backend swap (context-loss recovery) routes uploads to new backend', () =>
   expect(a.uploads.map(u => u.key)).toEqual([0, 1])
   expect(b.uploads).toHaveLength(0)
 
-  // Swap backend — same as context-loss recovery path.
-  model.installGpuDisplay<WiggleBackend>(b.backend, {
+  model.installGpuDisplay<FakeBackend>(b.backend, {
     upload: () => {},
     render: () => false,
   })
 
-  // Per-key autoruns track currentGpuBackend; both fire and push to b.
   expect(b.uploads.map(u => u.key).sort()).toEqual([0, 1])
+})
+
+test('render callback receives the cached encoded map', () => {
+  const model = TestModel.create()
+  const { backend } = makeFakeBackend()
+  const data = observable.map<number, number>(undefined, { deep: false })
+  let lastEncoded: ReadonlyMap<number, FakeEncoded> | undefined
+
+  installPerRegionGpuLifecycle(
+    model,
+    data,
+    backend,
+    value => ({ value, marker: 0 }),
+    (_b, encoded) => {
+      lastEncoded = encoded
+      return true
+    },
+  )
+
+  runInAction(() => {
+    data.set(0, 100)
+    data.set(1, 200)
+  })
+
+  expect(lastEncoded?.get(0)).toEqual({ value: 100, marker: 0 })
+  expect(lastEncoded?.get(1)).toEqual({ value: 200, marker: 0 })
+
+  runInAction(() => {
+    data.delete(0)
+  })
+
+  expect(lastEncoded?.has(0)).toBe(false)
+  expect(lastEncoded?.has(1)).toBe(true)
+})
+
+test('encode returning undefined leaves the cached encoded entry untouched', () => {
+  const model = TestModel.create()
+  const { backend, uploads } = makeFakeBackend()
+  const data = observable.map<number, number>(undefined, { deep: false })
+  const ready = observable.box(true)
+  let lastEncoded: ReadonlyMap<number, FakeEncoded> | undefined
+
+  installPerRegionGpuLifecycle(
+    model,
+    data,
+    backend,
+    value => (ready.get() ? { value, marker: 0 } : undefined),
+    (_b, encoded) => {
+      lastEncoded = encoded
+      return true
+    },
+  )
+
+  runInAction(() => {
+    data.set(0, 10)
+  })
+  expect(uploads).toHaveLength(1)
+  expect(lastEncoded?.get(0)).toEqual({ value: 10, marker: 0 })
+
+  // Toggle ready -> false; the autorun re-runs but encode returns undefined.
+  // Existing cached value stays, no new upload.
+  const baseline = uploads.length
+  runInAction(() => {
+    ready.set(false)
+    data.set(0, 99)
+  })
+  expect(uploads.length).toBe(baseline)
+  expect(lastEncoded?.get(0)).toEqual({ value: 10, marker: 0 })
 })

@@ -79,7 +79,6 @@ test('open local paf', async () => {
   expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
 }, 40000)
 
-
 test('open local pif', async () => {
   const { session, findByTestId, findByRole, findAllByTestId, findByText } =
     await createView()

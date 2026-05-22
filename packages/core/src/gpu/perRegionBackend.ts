@@ -42,13 +42,12 @@ export interface PerRegionGpuBackend<
  * `renderBlocks` from the model's data map). Subclasses implement
  * `renderBlocks` and nothing else.
  */
-export abstract class Canvas2DBackend<
+export abstract class Canvas2DPerRegionBackend<
   UploadData,
   RenderState,
   Block = RenderBlock,
   RenderData = UploadData,
-> implements PerRegionGpuBackend<UploadData, RenderState, Block, RenderData>
-{
+> implements PerRegionGpuBackend<UploadData, RenderState, Block, RenderData> {
   protected canvas: HTMLCanvasElement
   protected ctx: CanvasRenderingContext2D
 
@@ -79,13 +78,12 @@ export abstract class Canvas2DBackend<
  * `dispose` (also delegates) so subclasses implement only `uploadRegion`
  * and `renderBlocks`.
  */
-export abstract class GpuBackend<
+export abstract class GpuPerRegionBackend<
   UploadData,
   RenderState,
   Block = RenderBlock,
   RenderData = UploadData,
-> implements PerRegionGpuBackend<UploadData, RenderState, Block, RenderData>
-{
+> implements PerRegionGpuBackend<UploadData, RenderState, Block, RenderData> {
   protected hal: GpuHal
   protected uniformData: ArrayBuffer
 
@@ -102,10 +100,7 @@ export abstract class GpuBackend<
     this.hal.dispose()
   }
 
-  abstract uploadRegion(
-    displayedRegionIndex: number,
-    data: UploadData,
-  ): void
+  abstract uploadRegion(displayedRegionIndex: number, data: UploadData): void
 
   abstract renderBlocks(
     blocks: Block[],

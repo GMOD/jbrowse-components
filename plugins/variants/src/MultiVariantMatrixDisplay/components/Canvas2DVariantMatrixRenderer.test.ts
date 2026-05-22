@@ -109,10 +109,7 @@ describe('Canvas2DVariantMatrixRenderer', () => {
     const { canvas, fillRectCalls } = createMockCanvas()
     const renderer = new Canvas2DVariantMatrixRenderer(canvas)
 
-    renderer.render(
-      makeData({ cellRowIndices: new Uint32Array([50]) }),
-      STATE,
-    )
+    renderer.render(makeData({ cellRowIndices: new Uint32Array([50]) }), STATE)
 
     expect(fillRectCalls.length).toBe(0)
   })

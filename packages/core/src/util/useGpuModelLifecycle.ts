@@ -14,7 +14,7 @@ function nodeAlive(model: unknown) {
 
 /**
  * Duck-typed shape of an MST display model that owns a GPU backend
- * lifecycle via `GpuBackendLifecycleSlotMixin`. Plugins pass their own
+ * lifecycle via `GpuLifecycleMixin`. Plugins pass their own
  * model; the hook only touches these three actions.
  */
 export interface GpuLifecycleModel<BackendType> {

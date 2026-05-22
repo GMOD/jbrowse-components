@@ -2,10 +2,10 @@ import { findManhattanHit } from './findManhattanHit.ts'
 
 import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 // One block covering bp 0..1000 across 100 screen px (10 bp/px).
-const block: WiggleRenderBlock = {
+const block: RenderBlock = {
   displayedRegionIndex: 0,
   bpRangeX: [0, 1000],
   screenStartPx: 0,
