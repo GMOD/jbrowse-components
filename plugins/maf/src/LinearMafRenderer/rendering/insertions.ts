@@ -16,15 +16,21 @@ import type { RenderingContext } from './types.ts'
 
 const CHAR_HEIGHT = measureText('M') - 2
 
+/**
+ * Draw insertion markers between bp positions. The position just *before*
+ * (in alignment iteration order) the post-insertion base is at the cell's
+ * incoming edge — left edge in non-reversed, right edge when reversed.
+ */
 export function renderInsertions(
   context: RenderingContext,
   alignment: string,
   seq: string,
-  leftPx: number,
+  startBp: number,
   rowTop: number,
   bpPerPx: number,
 ) {
-  const { ctx, scale, h, rowHeight } = context
+  const { ctx, scale, h, rowHeight, reversed, palette, bpToCellLeftPx } = context
+  const insertionFill = palette.insertionColor
 
   for (let i = 0, genomicOffset = 0; i < alignment.length; i++) {
     let insLen = 0
@@ -36,8 +42,10 @@ export function renderInsertions(
       i++
     }
     if (insLen > 0) {
-      const xPos = leftPx + scale * genomicOffset - INSERTION_LINE_WIDTH
-      ctx.fillStyle = 'purple'
+      const cellLeft = bpToCellLeftPx(startBp + genomicOffset)
+      const anchorX = reversed ? cellLeft + scale : cellLeft
+      const xPos = anchorX - INSERTION_LINE_WIDTH
+      ctx.fillStyle = insertionFill
 
       if (insLen > LARGE_INSERTION_THRESHOLD) {
         const lengthText = `${insLen}`

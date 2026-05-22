@@ -597,7 +597,7 @@ describe('BgzipTaffyAdapter integration tests', () => {
 
     const result = await adapter.getSamples()
 
-    expect(result.tree).toBeDefined()
+    expect(result.treeNewick).toBeDefined()
   })
 
   test('adapter can fetch features from a larger region', async () => {

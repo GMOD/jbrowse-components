@@ -1,6 +1,5 @@
 import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 import { drawMafBlocks } from './drawMafBlocks.ts'
 
@@ -23,6 +22,6 @@ export class Canvas2DMafRenderer extends Canvas2DPerRegionBackend<
     state: MafGPURenderState,
   ) {
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
-    drawMafBlocks(this.ctx, regions, blocks, state, createJBrowseTheme())
+    drawMafBlocks(this.ctx, regions, blocks, state)
   }
 }

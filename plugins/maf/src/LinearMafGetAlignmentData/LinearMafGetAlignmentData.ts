@@ -12,12 +12,11 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { NewickNode } from '@jbrowse/tree-sidebar'
 
 type MafAdapter = BaseFeatureDataAdapter & {
   getSamples: () => Promise<{
     samples: Sample[]
-    tree: NewickNode | undefined
+    treeNewick: string | undefined
   }>
 }
 
@@ -40,7 +39,7 @@ export interface LinearMafGetAlignmentDataArgs {
 
 export interface LinearMafGetAlignmentDataResult {
   samples: Sample[]
-  tree: NewickNode | undefined
+  treeNewick: string | undefined
   regionData: MafRegionData
 }
 
@@ -74,7 +73,7 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
 
     // Server is authoritative for samples + tree (derived from track config).
     // Shipping them with every region response avoids a separate setup RPC.
-    const { samples, tree } = await adapter.getSamples()
+    const { samples, treeNewick } = await adapter.getSamples()
 
     const enc = new TextEncoder()
     const sampleToRow = new Map(samples.map((s, i) => [s.id, i]))
@@ -101,6 +100,6 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       },
     )
 
-    return { samples, tree, regionData: { blocks } }
+    return { samples, treeNewick, regionData: { blocks } }
   }
 }

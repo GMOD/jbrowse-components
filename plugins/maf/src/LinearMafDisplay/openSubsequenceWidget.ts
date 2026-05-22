@@ -1,7 +1,7 @@
 import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
-import type { Sample } from './types.ts'
+import type { Sample } from '../types.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

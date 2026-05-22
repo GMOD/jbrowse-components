@@ -1,3 +1,4 @@
+import type { MafColorPalette } from './util.ts'
 import type { PerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
@@ -10,7 +11,12 @@ export interface MafGPURenderState {
   rowProportion: number
   showAllLetters: boolean
   mismatchRendering: boolean
-  colorForBase: Record<string, string>
+  /**
+   * Full theme-derived color set (base palette + match/gap/mismatch/unknown/
+   * insertion). Consumed by the Canvas2D fallback's `drawMafBlocks` so that
+   * theme changes flow into rendering without hardcoded fallbacks.
+   */
+  palette: MafColorPalette
 }
 
 // One MAF "block" is a single ungapped alignment stanza emitted by the
@@ -37,7 +43,7 @@ export interface MafRegionData {
 // installed by `startBackend`, so color/style settings never
 // round-trip through the worker.
 export interface MafGpuProps {
-  colorForBase: Record<string, string>
+  palette: MafColorPalette
   showAllLetters: boolean
   mismatchRendering: boolean
 }

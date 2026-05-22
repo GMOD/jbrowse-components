@@ -6,32 +6,30 @@ import {
   getContainingView,
   getEnv,
   getSession,
-  max,
-  measureText,
 } from '@jbrowse/core/util'
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { clusterTree, leafNameMap, leaves } from '@jbrowse/tree-sidebar'
-import deepEqual from 'fast-deep-equal'
+import { TreeSidebarMixin, clusterLayout } from '@jbrowse/tree-sidebar'
 import { observable } from 'mobx'
 
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { fetchMafAlignmentData } from './fetchMafAlignmentData.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
-import { getMsaHighlights, layoutMafTree } from './util.ts'
+import { getMsaHighlights } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 
-import type { HierarchyNode, MafTreeNode, Sample } from './types.ts'
 import type { HoveredInfo } from './util.ts'
+import type { Sample } from '../types.ts'
 import type {
   MafBackend,
   MafGPURenderState,
   MafGpuProps,
   MafRegionData,
 } from '../LinearMafRenderer/mafBackendTypes.ts'
+import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -43,20 +41,29 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
+/**
+ * Per-row metadata stored in `sourcesVolatile` and reordered through the
+ * TreeSidebarMixin `layout`. `name` is the sample id (matches the canonical
+ * `Sample.id`); `label`/`color` are display-only.
+ */
+export interface MafSource {
+  name: string
+  label?: string
+  color?: string
+}
+
 const DEFAULTS = {
   rowHeight: 15,
   rowProportion: 0.8,
   showAllLetters: false,
   mismatchRendering: true,
-  showBranchLen: false,
-  treeAreaWidth: 80,
   showAsUpperCase: true,
-  showSidebar: true,
+  showTree: true,
 } as const
 
 /**
  * #stateModel LinearMafDisplay
- * extends BaseDisplay + TrackHeightMixin + MultiRegionDisplayMixin
+ * extends BaseDisplay + TrackHeightMixin + MultiRegionDisplayMixin + TreeSidebarMixin
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -67,6 +74,7 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      TreeSidebarMixin<MafSource>(),
       types.model({
         /**
          * #property
@@ -95,23 +103,11 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        showBranchLen: DEFAULTS.showBranchLen,
-        /**
-         * #property
-         */
-        treeAreaWidth: DEFAULTS.treeAreaWidth,
-        /**
-         * #property
-         */
         showAsUpperCase: DEFAULTS.showAsUpperCase,
         /**
          * #property
          */
-        showSidebar: DEFAULTS.showSidebar,
-        /**
-         * #property
-         */
-        subtreeFilter: types.maybe(types.array(types.string)),
+        showTree: DEFAULTS.showTree,
       }),
     )
     .volatile(() => ({
@@ -129,35 +125,21 @@ export default function stateModelFactory(
       prefersOffset: true,
       /**
        * #volatile
+       * Canonical row metadata received from the worker. Reordering /
+       * recoloring lives in TreeSidebarMixin's `layout`; this volatile
+       * holds the unfiltered authoritative set so the merged `sources` view
+       * can fall back when `layout` is empty.
        */
-      volatileSamples: undefined as Sample[] | undefined,
+      sourcesVolatile: [] as MafSource[],
       /**
        * #volatile
+       * Theme-derived color palette (per-base colors + match/gap/mismatch/
+       * unknown/insertion). Pushed in from the React component via
+       * `setColorPalette`. Read by `gpuProps()` and `renderState`, so theme
+       * changes trigger a main-thread re-encode but never an RPC refetch.
+       * Mirrors the `ColorPalette` pattern in plugin-alignments.
        */
-      volatileTree: undefined as MafTreeNode | undefined,
-      /**
-       * #volatile
-       */
-      highlightedRowNames: undefined as string[] | undefined,
-      /**
-       * #volatile
-       */
-      hoveredTreeNode: undefined as { x: number; y: number } | undefined,
-      /**
-       * #volatile
-       */
-      treeMenuAnchor: undefined as
-        | { x: number; y: number; names: string[] }
-        | undefined,
-      /**
-       * #volatile
-       * Theme-derived per-base color map (lowercase keys: a/c/g/t/n).
-       * Pushed in from the React component via `setColorForBase`. Read by
-       * `gpuProps()` and `mafRenderState`, so theme changes trigger a
-       * main-thread re-encode but never an RPC refetch. Mirrors the
-       * `ColorPalette` pattern in plugin-alignments.
-       */
-      colorForBase: undefined as Record<string, string> | undefined,
+      colorPalette: undefined as MafColorPalette | undefined,
     }))
     .actions(self => ({
       /**
@@ -192,28 +174,34 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * Push theme-derived base colors in from the React layer. Callers
-       * useMemo by theme so the reference is stable across renders.
+       * Push the theme-derived color palette in from the React layer.
+       * Callers useMemo by theme so the reference is stable across renders.
        */
-      setColorForBase(c: Record<string, string>) {
-        self.colorForBase = c
+      setColorPalette(p: MafColorPalette) {
+        self.colorPalette = p
       },
       /**
        * #action
+       * Receive worker-authoritative `samples` + serialized Newick tree.
+       * Goes through TreeSidebarMixin's `setLayoutAndClusterTree` so the
+       * mixin's `root` getter re-parses on change; `sourcesVolatile` carries
+       * the full pre-filter set used as the fallback in the merged `sources`
+       * view.
        */
       setSamples({
         samples,
-        tree,
+        treeNewick,
       }: {
         samples: Sample[]
-        tree: MafTreeNode | undefined
+        treeNewick: string | undefined
       }) {
-        if (!deepEqual(samples, self.volatileSamples)) {
-          self.volatileSamples = samples
-        }
-        if (!deepEqual(tree, self.volatileTree)) {
-          self.volatileTree = tree
-        }
+        const next = samples.map(s => ({
+          name: s.id,
+          label: s.label,
+          color: s.color,
+        }))
+        self.sourcesVolatile = next
+        self.setLayoutAndClusterTree(next, treeNewick)
       },
       /**
        * #action
@@ -224,36 +212,8 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setTreeAreaWidth(width: number) {
-        self.treeAreaWidth = width
-      },
-      /**
-       * #action
-       */
-      setShowSidebar(arg: boolean) {
-        self.showSidebar = arg
-      },
-      /**
-       * #action
-       */
-      setHighlightedRowNames(
-        names?: string[],
-        nodePosition?: { x: number; y: number },
-      ) {
-        self.highlightedRowNames = names
-        self.hoveredTreeNode = nodePosition
-      },
-      /**
-       * #action
-       */
-      setSubtreeFilter(names?: string[]) {
-        self.subtreeFilter = cast(names)
-      },
-      /**
-       * #action
-       */
-      setTreeMenuAnchor(anchor?: { x: number; y: number; names: string[] }) {
-        self.treeMenuAnchor = anchor
+      setShowTree(arg: boolean) {
+        self.showTree = arg
       },
       /**
        * #action
@@ -316,97 +276,66 @@ export default function stateModelFactory(
         )
       },
     }))
-
     .views(self => ({
       /**
        * #getter
+       * Merged row set: prefer the persisted `layout` when present (carries
+       * any user reordering / recoloring) and fall back to the worker's
+       * `sourcesVolatile`. Subtree filter narrows in both cases.
        */
-      get root() {
-        return self.volatileTree
-          ? clusterTree(self.volatileTree, self.subtreeFilter)
-          : undefined
+      get sources(): MafSource[] | undefined {
+        const base = self.layout.length ? self.layout : self.sourcesVolatile
+        if (base.length === 0) {
+          return undefined
+        }
+        if (self.subtreeFilter?.length) {
+          const filterSet = new Set(self.subtreeFilter)
+          return base.filter(s => filterSet.has(s.name))
+        }
+        return [...base]
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * generates a new tree that is clustered with x,y positions
+       * Sample list keyed by sample id (alias of `sources` mapped to the
+       * project's canonical `{ id, label, color }` shape). Consumed by
+       * MafSequenceWidget, color legend, etc.
        */
-      get hierarchy(): HierarchyNode | undefined {
-        const r = self.root
-        if (!r) {
-          return undefined
-        }
-        layoutMafTree(r, self.treeAreaWidth, self.rowHeight)
-        return r
+      get samples(): Sample[] | undefined {
+        return self.sources?.map(s => ({
+          id: s.name,
+          label: s.label ?? s.name,
+          color: s.color,
+        }))
       },
-      /**
-       * #getter
-       */
-      get samples() {
-        let samples: Sample[] | undefined
-        if (this.rowNames) {
-          const volatileSamplesMap = self.volatileSamples
-            ? Object.fromEntries(self.volatileSamples.map(e => [e.id, e]))
-            : undefined
-          samples = this.rowNames.map(id => ({
-            id,
-            label: volatileSamplesMap?.[id]?.label ?? id,
-            color: volatileSamplesMap?.[id]?.color,
-          }))
-        } else {
-          samples = self.volatileSamples
-        }
-
-        if (samples && self.subtreeFilter) {
-          const filterSet = new Set(self.subtreeFilter)
-          return samples.filter(s => filterSet.has(s.id))
-        }
-        return samples
-      },
-
       /**
        * #getter
        */
       get totalHeight() {
-        return this.samples ? this.samples.length * self.rowHeight : 1
+        return self.sources ? self.sources.length * self.rowHeight : 1
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        * Override BaseLinearDisplay.height so the track container matches the
        * rendering canvas height exactly (samples × rowHeight).
        */
       get height() {
-        return this.totalHeight
+        return self.totalHeight
       },
       /**
        * #getter
+       * Positioned tree hierarchy. Coordinates are computed against
+       * `(totalHeight, treeAreaWidth)` so leaf rows align with row tops.
        */
-      get leaves() {
-        return self.root ? leaves(self.root) : undefined
-      },
-      /**
-       * #getter
-       */
-      get leafMap() {
-        return new Map(this.leaves?.map(leaf => [leaf.data.name, leaf]))
-      },
-      /**
-       * #getter
-       * Precomputed map from hierarchy node to its descendant leaf names
-       */
-      get nodeDescendantNames() {
-        if (this.hierarchy) {
-          return leafNameMap(this.hierarchy)
+      get hierarchy() {
+        const r = self.root
+        if (!r || !self.sources?.length) {
+          return undefined
         }
-        return new Map<HierarchyNode, string[]>()
-      },
-      /**
-       * #getter
-       */
-      get rowNames(): string[] | undefined {
-        // MAF tree leaves are samples — name is always present at runtime
-        return this.leaves?.map(n => n.data.name!)
+        return clusterLayout(r, self.totalHeight, self.treeAreaWidth)
       },
     }))
     .views(self => ({
@@ -414,9 +343,9 @@ export default function stateModelFactory(
        * #getter
        * Render state passed to GPU/Canvas2D backend each frame.
        */
-      get mafRenderState(): MafGPURenderState | undefined {
+      get renderState(): MafGPURenderState | undefined {
         const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view.initialized || !self.samples || !self.colorForBase) {
+        if (!view.initialized || !self.sources || !self.colorPalette) {
           return undefined
         }
         return {
@@ -426,7 +355,7 @@ export default function stateModelFactory(
           rowProportion: self.rowProportion,
           showAllLetters: self.showAllLetters,
           mismatchRendering: self.mismatchRendering,
-          colorForBase: self.colorForBase,
+          palette: self.colorPalette,
         }
       },
       /**
@@ -438,11 +367,11 @@ export default function stateModelFactory(
        * uniforms).
        */
       gpuProps(): MafGpuProps | undefined {
-        if (!self.colorForBase) {
+        if (!self.colorPalette) {
           return undefined
         }
         return {
-          colorForBase: self.colorForBase,
+          palette: self.colorPalette,
           showAllLetters: self.showAllLetters,
           mismatchRendering: self.mismatchRendering,
         }
@@ -454,7 +383,7 @@ export default function stateModelFactory(
        */
       get visibleLabels() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view.initialized || !self.samples) {
+        if (!view.initialized || !self.sources) {
           return []
         }
         return computeVisibleLabels({
@@ -470,12 +399,6 @@ export default function stateModelFactory(
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
-        /**
-         * #getter
-         */
-        get treeWidth() {
-          return self.hierarchy ? self.treeAreaWidth : 0
-        },
         /**
          * #method
          */
@@ -495,36 +418,6 @@ export default function stateModelFactory(
           getContainingView(self).id,
         )
       },
-      /**
-       * #getter
-       */
-      get svgFontSize() {
-        return Math.min(Math.max(self.rowHeight, 8), 14)
-      },
-      /**
-       * #getter
-       */
-      get canDisplayLabel() {
-        return self.rowHeight >= 7
-      },
-      /**
-       * #getter
-       */
-      get labelWidth() {
-        const minWidth = 20
-        return max(
-          self.samples
-            ?.map(s => measureText(s.label, this.svgFontSize))
-            .map(width => (this.canDisplayLabel ? width : minWidth)) ?? [],
-          0,
-        )
-      },
-      /**
-       * #getter
-       */
-      get sidebarWidth() {
-        return self.showSidebar ? this.labelWidth + 5 + self.treeWidth : 0
-      },
     }))
     .actions(self => ({
       setRpcData(regionIndex: number, data: MafRegionData) {
@@ -539,7 +432,7 @@ export default function stateModelFactory(
       // Override base setHeight: distribute the new total height across rows so
       // the resize handle and programmatic setHeight both work.
       setHeight(newHeight: number) {
-        const sampleCount = self.samples?.length
+        const sampleCount = self.sources?.length
         if (sampleCount) {
           self.rowHeight = Math.max(1, Math.floor(newHeight / sampleCount))
         }
@@ -567,7 +460,7 @@ export default function stateModelFactory(
             return { instanceBuffer: buffer, instanceCount: count }
           },
           b => {
-            const state = self.mafRenderState
+            const state = self.renderState
             if (!state) {
               return false
             }
@@ -582,37 +475,54 @@ export default function stateModelFactory(
         return fetchMafAlignmentData(self, needed)
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      async renderSvg(opts: ExportSvgDisplayOptions) {
-        const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self as LinearMafDisplayModel, opts)
-      },
-    }))
+    .actions(self => {
+      const superAfterAttach = self.afterAttach
+      return {
+        /**
+         * #action
+         */
+        async renderSvg(opts: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self as LinearMafDisplayModel, opts)
+        },
+        async afterAttach() {
+          superAfterAttach?.()
+          try {
+            const { setupTreeDrawingAutorun } =
+              await import('@jbrowse/tree-sidebar')
+            if (isAlive(self)) {
+              setupTreeDrawingAutorun(self)
+            }
+          } catch (e) {
+            console.error(e)
+          }
+        },
+      }
+    })
     .postProcessSnapshot(snap => {
       const {
         rowHeight,
         rowProportion,
         showAllLetters,
         mismatchRendering,
-        showBranchLen,
         treeAreaWidth,
         showAsUpperCase,
-        showSidebar,
+        showTree,
         subtreeFilter,
+        layout,
+        clusterTree,
         ...rest
       } = snap as typeof snap & {
         rowHeight?: number
         rowProportion?: number
         showAllLetters?: boolean
         mismatchRendering?: boolean
-        showBranchLen?: boolean
         treeAreaWidth?: number
         showAsUpperCase?: boolean
-        showSidebar?: boolean
+        showTree?: boolean
         subtreeFilter?: string[]
+        layout?: unknown[]
+        clusterTree?: string
       }
       return {
         ...(rest as Omit<typeof rest, symbol>),
@@ -624,13 +534,14 @@ export default function stateModelFactory(
         ...(mismatchRendering !== DEFAULTS.mismatchRendering
           ? { mismatchRendering }
           : {}),
-        ...(showBranchLen !== DEFAULTS.showBranchLen ? { showBranchLen } : {}),
-        ...(treeAreaWidth !== DEFAULTS.treeAreaWidth ? { treeAreaWidth } : {}),
+        ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(showAsUpperCase !== DEFAULTS.showAsUpperCase
           ? { showAsUpperCase }
           : {}),
-        ...(showSidebar !== DEFAULTS.showSidebar ? { showSidebar } : {}),
+        ...(showTree !== DEFAULTS.showTree ? { showTree } : {}),
         ...(subtreeFilter && subtreeFilter.length > 0 ? { subtreeFilter } : {}),
+        // layout/clusterTree intentionally not persisted — they're rebuilt
+        // from worker output on every fetch.
       }
     })
 }

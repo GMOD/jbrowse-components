@@ -1,5 +1,4 @@
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseNewick } from '@jbrowse/tree-sidebar'
 
 import type { Sample } from '../types.ts'
 
@@ -29,7 +28,7 @@ export async function getSamplesFromConfig(getConf: (key: string) => unknown) {
     'uri' in nhLoc &&
     nhLoc.uri === '/path/to/my.nh'
 
-  const nh = isDefaultPath
+  const treeNewick = isDefaultPath
     ? undefined
     : await openLocation(nhLoc as Parameters<typeof openLocation>[0]).readFile(
         'utf8',
@@ -37,6 +36,6 @@ export async function getSamplesFromConfig(getConf: (key: string) => unknown) {
 
   return {
     samples: normalizeSamples(getConf('samples') as SampleConfig),
-    tree: nh ? parseNewick(nh) : undefined,
+    treeNewick,
   }
 }

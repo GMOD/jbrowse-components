@@ -1,14 +1,11 @@
-import { clipBlockForCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import { clipBlockForCanvas, makeBpMapper } from '@jbrowse/core/gpu/canvas2dUtils'
 
 import { renderBases } from './rendering/bases.ts'
-import { renderGaps } from './rendering/gaps.ts'
 import { renderInsertions } from './rendering/insertions.ts'
-import { getColorBaseMap } from './util.ts'
 
 import type { MafGPURenderState, MafRegionData } from './mafBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { Theme } from '@mui/material'
 
 const decoder = new TextDecoder()
 
@@ -17,7 +14,6 @@ export function drawMafBlocks(
   regions: { get(key: number): MafRegionData | undefined },
   renderBlocks: RenderBlock[],
   state: MafGPURenderState,
-  theme: Theme,
 ) {
   const {
     canvasWidth,
@@ -26,8 +22,8 @@ export function drawMafBlocks(
     rowProportion,
     showAllLetters,
     mismatchRendering,
+    palette,
   } = state
-  const colorForBase = getColorBaseMap(theme)
   const h = rowHeight * rowProportion
   const offset = (rowHeight - h) / 2
 
@@ -42,14 +38,29 @@ export function drawMafBlocks(
     }
     const bpPerPx = clip.bpLength / clip.fullBlockWidth
     const scale = 1 / bpPerPx
+    const { reversed } = renderBlock
+    const bpToPx = makeBpMapper({
+      start: renderBlock.bpRangeX[0],
+      end: renderBlock.bpRangeX[1],
+      screenStartPx: renderBlock.screenStartPx,
+      screenEndPx: renderBlock.screenEndPx,
+      reversed,
+    })
+    // For non-reversed, bpToPx(bp) is the LEFT edge of the cell at bp.
+    // For reversed, bpToPx(bp) is the RIGHT edge — subtract one cell width.
+    const bpToCellLeftPx = reversed
+      ? (bp: number) => bpToPx(bp) - scale
+      : bpToPx
     const renderingContext = {
       ctx,
       scale,
       rowHeight,
       h,
-      colorForBase,
+      palette,
       showAllLetters,
       mismatchRendering,
+      reversed,
+      bpToCellLeftPx,
     }
 
     ctx.save()
@@ -58,20 +69,16 @@ export function drawMafBlocks(
     ctx.clip()
 
     for (const mafBlock of regionData.blocks) {
-      const leftPx =
-        renderBlock.screenStartPx +
-        (mafBlock.startBp - renderBlock.bpRangeX[0]) / bpPerPx
       const refSeq = decoder.decode(mafBlock.refSeqBytes)
       for (const row of mafBlock.rows) {
         const alignment = decoder.decode(row.alignmentBytes)
         const rowTop = offset + rowHeight * row.rowIndex
-        renderGaps(renderingContext, alignment, refSeq, leftPx, rowTop)
-        renderBases(renderingContext, alignment, refSeq, leftPx, rowTop)
+        renderBases(renderingContext, alignment, refSeq, mafBlock.startBp, rowTop)
         renderInsertions(
           renderingContext,
           alignment,
           refSeq,
-          leftPx,
+          mafBlock.startBp,
           rowTop,
           bpPerPx,
         )

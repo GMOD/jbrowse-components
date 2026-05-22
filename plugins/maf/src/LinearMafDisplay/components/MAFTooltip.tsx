@@ -21,7 +21,7 @@ const MAFTooltip = observer(function ({
 }) {
   const { hoveredInfo } = model
   const view = getContainingView(model) as LinearGenomeViewModel
-  const p1 = origMouseX ? view.pxToBp(origMouseX) : undefined
+  const p1 = origMouseX !== undefined ? view.pxToBp(origMouseX) : undefined
   const p2 = view.pxToBp(mouseX)
 
   return hoveredInfo ? (

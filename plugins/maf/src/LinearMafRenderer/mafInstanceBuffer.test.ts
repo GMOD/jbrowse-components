@@ -45,12 +45,19 @@ function block(
 }
 
 const args = {
-  colorForBase: {
-    a: '#ff0000',
-    c: '#00ff00',
-    g: '#0000ff',
-    t: '#ffff00',
-    n: '#888',
+  palette: {
+    colorForBase: {
+      a: '#ff0000',
+      c: '#00ff00',
+      g: '#0000ff',
+      t: '#ffff00',
+      n: '#888',
+    },
+    matchColor: '#d3d3d3',
+    gapColor: '#1e1e1e',
+    mismatchOffColor: '#ffa500',
+    unknownBaseColor: '#000000',
+    insertionColor: '#800080',
   },
   showAllLetters: false,
   mismatchRendering: true,

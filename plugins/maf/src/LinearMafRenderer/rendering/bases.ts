@@ -9,13 +9,21 @@ export function renderBases(
   context: RenderingContext,
   alignment: string,
   seq: string,
-  leftPx: number,
+  startBp: number,
   rowTop: number,
 ) {
-  const { ctx, scale, h, showAllLetters, mismatchRendering, colorForBase } =
+  const { ctx, scale, h, palette, showAllLetters, mismatchRendering, bpToCellLeftPx } =
     context
   const cellW = scale + GAP_STROKE_OFFSET
-  const cfg = { colorForBase, showAllLetters, mismatchRendering }
+  const cfg = {
+    colorForBase: palette.colorForBase,
+    matchColor: palette.matchColor,
+    gapColor: palette.gapColor,
+    mismatchOffColor: palette.mismatchOffColor,
+    unknownBaseColor: palette.unknownBaseColor,
+    showAllLetters,
+    mismatchRendering,
+  }
   const len = alignment.length
 
   for (let i = 0, genomicOffset = 0; i < len; i++) {
@@ -27,7 +35,7 @@ export function renderBases(
     const css = resolveCellColor(refByte, alignment.charCodeAt(i), cfg)
     if (css !== undefined) {
       ctx.fillStyle = css
-      ctx.fillRect(leftPx + scale * genomicOffset, rowTop, cellW, h)
+      ctx.fillRect(bpToCellLeftPx(startBp + genomicOffset), rowTop, cellW, h)
     }
     genomicOffset++
   }

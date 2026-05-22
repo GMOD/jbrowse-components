@@ -27,17 +27,26 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
 
   useEffect(() => {
     const canvas = canvasRef.current
-    const ctx = canvas?.getContext('2d')
-    if (canvas && ctx) {
-      const dpr = window.devicePixelRatio
-      canvas.width = width * dpr
-      canvas.height = height * dpr
-      ctx.scale(dpr, dpr)
-      drawMafLabels(ctx, labels, contrastForBase, mismatchRendering)
+    if (!canvas) {
+      return
     }
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      return
+    }
+    const dpr = window.devicePixelRatio
+    canvas.width = width * dpr
+    canvas.height = height * dpr
+    ctx.scale(dpr, dpr)
+    ctx.clearRect(0, 0, width, height)
+    drawMafLabels(ctx, labels, contrastForBase, mismatchRendering)
   }, [labels, width, height, mismatchRendering, contrastForBase])
 
-  return labels.length === 0 ? null : (
+  if (labels.length === 0) {
+    return null
+  }
+
+  return (
     <canvas
       ref={canvasRef}
       style={{

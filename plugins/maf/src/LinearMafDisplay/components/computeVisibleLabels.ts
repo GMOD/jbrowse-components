@@ -15,7 +15,9 @@ interface LabelView {
   visibleRegions: {
     displayedRegionIndex: number
     start: number
+    end: number
     screenStartPx: number
+    reversed?: boolean
   }[]
   bpPerPx: number
 }
@@ -57,8 +59,14 @@ export function computeVisibleLabels(
     if (!regionData) {
       continue
     }
+    const reversed = vr.reversed ?? false
+    const bpEdge = reversed ? vr.end : vr.start
+    // Center of the cell at bp = bpEdge ± offset, switching pivot for reversed
+    // so labels land in the middle of their cell in either orientation.
+    const bpCenterToPx = reversed
+      ? (bp: number) => vr.screenStartPx + (bpEdge - bp) * scale - halfScale
+      : (bp: number) => vr.screenStartPx + (bp - bpEdge) * scale + halfScale
     for (const block of regionData.blocks) {
-      const leftPx = vr.screenStartPx + (block.startBp - vr.start) * scale
       const refSeq = decoder.decode(block.refSeqBytes)
 
       for (const row of block.rows) {
@@ -76,7 +84,7 @@ export function computeVisibleLabels(
               alignChar !== '-'
             ) {
               labels.push({
-                x: leftPx + scale * genomicOffset + halfScale,
+                x: bpCenterToPx(block.startBp + genomicOffset),
                 y: yPos,
                 text: showAsUpperCase ? alignChar.toUpperCase() : alignChar,
                 lowerBase: alignChar.toLowerCase(),

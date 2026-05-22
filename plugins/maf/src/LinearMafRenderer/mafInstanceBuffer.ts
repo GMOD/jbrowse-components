@@ -6,7 +6,7 @@ import {
 } from './shaders/maf.generated.ts'
 
 import type { MafBlock } from './mafBackendTypes.ts'
-import type { MafCellColorConfig } from './resolveCellColor.ts'
+import type { MafColorPalette } from './util.ts'
 
 // Pack RGBA (0-255 each) into a single ABGR uint32 — the shader unpacks
 // via unpackRGBA (see packages/core/src/gpu/shaders/colorPack.slang).
@@ -36,13 +36,8 @@ function hexToPackedRGBA(hex: string): number {
 }
 
 // Memoized resolver. CSS color strings come from a small set (theme bases +
-// 4 hardcoded constants), so the cache stays tiny and hot.
-const colorCache = new Map<string, number>([
-  ['lightgrey', packRGBA(211, 211, 211)],
-  ['lightblue', packRGBA(173, 216, 230)],
-  ['orange', packRGBA(255, 165, 0)],
-  ['black', packRGBA(0, 0, 0)],
-])
+// theme match/gap/mismatch/unknown), so the cache stays small and hot.
+const colorCache = new Map<string, number>()
 
 function cssToPackedABGR(css: string): number {
   let packed = colorCache.get(css)
@@ -53,8 +48,11 @@ function cssToPackedABGR(css: string): number {
   return packed
 }
 
-export interface BuildInstancesArgs extends MafCellColorConfig {
+export interface BuildInstancesArgs {
   blocks: MafBlock[]
+  palette: MafColorPalette
+  showAllLetters: boolean
+  mismatchRendering: boolean
 }
 
 interface Run {
@@ -80,7 +78,16 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
   buffer: ArrayBuffer
   count: number
 } {
-  const { blocks, ...cfg } = args
+  const { blocks, palette, showAllLetters, mismatchRendering } = args
+  const cfg = {
+    colorForBase: palette.colorForBase,
+    matchColor: palette.matchColor,
+    gapColor: palette.gapColor,
+    mismatchOffColor: palette.mismatchOffColor,
+    unknownBaseColor: palette.unknownBaseColor,
+    showAllLetters,
+    mismatchRendering,
+  }
   const runs: Run[] = []
 
   for (const block of blocks) {

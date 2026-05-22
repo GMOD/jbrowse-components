@@ -1,43 +1,4 @@
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
-import {
-  assignDepthY,
-  eachAfter,
-  leaves,
-  maxLength,
-  setBrLength,
-} from '@jbrowse/tree-sidebar'
-
-import type { HierarchyNode } from '@jbrowse/tree-sidebar'
-
-/**
- * Compute both depth-based (`.y`) and branch-length-based (`.len`) x positions
- * on a MAF tree. The view toggles between the two via `showBranchLen`.
- *
- * Leaves are placed at fixed `rowHeight` multiples (matching the renderer's
- * row positioning); internal-node x is the midpoint of first/last child.
- */
-export function layoutMafTree<T extends { length?: number }>(
-  root: HierarchyNode<T>,
-  width: number,
-  rowHeight: number,
-) {
-  assignDepthY(root, width)
-
-  const leafNodes = leaves(root)
-  for (let i = 0; i < leafNodes.length; i++) {
-    leafNodes[i]!.x = (i + 0.5) * rowHeight
-  }
-  eachAfter(root, node => {
-    if (node.children?.length) {
-      const first = node.children[0]!.x!
-      const last = node.children[node.children.length - 1]!.x!
-      node.x = (first + last) / 2
-    }
-  })
-
-  root.data.length = 0
-  setBrLength(root, 0, width / maxLength(root))
-}
 
 export interface HoveredInfo {
   sampleId: string

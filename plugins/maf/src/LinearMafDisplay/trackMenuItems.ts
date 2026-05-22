@@ -13,14 +13,14 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showAllLetters: boolean
   mismatchRendering: boolean
   showAsUpperCase: boolean
-  showSidebar: boolean
+  showTree: boolean
   subtreeFilter?: readonly string[]
   setRowHeight: (n: number) => void
   setRowProportion: (n: number) => void
   setShowAllLetters: (f: boolean) => void
   setMismatchRendering: (f: boolean) => void
   setShowAsUpperCase: (f: boolean) => void
-  setShowSidebar: (f: boolean) => void
+  setShowTree: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
 }
 
@@ -86,9 +86,9 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
         {
           label: 'Sidebar with tree and labels',
           type: 'checkbox',
-          checked: self.showSidebar,
+          checked: self.showTree,
           onClick: () => {
-            self.setShowSidebar(!self.showSidebar)
+            self.setShowTree(!self.showTree)
           },
         },
       ],

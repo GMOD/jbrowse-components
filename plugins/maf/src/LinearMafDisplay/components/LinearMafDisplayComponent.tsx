@@ -10,18 +10,17 @@ import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
 } from '@jbrowse/plugin-linear-genome-view'
+import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
 import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
-import ColorLegend from './Sidebar/ColorLegend.tsx'
-import SvgWrapper from './Sidebar/SvgWrapper.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { useDragSelection } from './useDragSelection.ts'
 import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
-import { getColorBaseMap } from '../../LinearMafRenderer/util.ts'
+import { getMafColorPalette } from '../../LinearMafRenderer/util.ts'
 import { openSubsequenceWidget } from '../openSubsequenceWidget.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
@@ -31,19 +30,30 @@ const LinearMafDisplay = observer(function (props: {
   model: LinearMafDisplayModel
 }) {
   const { model } = props
-  const { height, scrollTop, rowHeight, sidebarWidth, samples: sources } = model
+  const {
+    height,
+    scrollTop,
+    rowHeight,
+    showTree,
+    treeAreaWidth,
+    hierarchy,
+    sources,
+    samples,
+  } = model
   const ref = useRef<HTMLDivElement>(null)
   const theme = useTheme()
   const session = getSession(model)
 
   const { canvasRef } = useGpuBackend(MafRendererFactory, model)
 
-  // Push theme-derived base colors into the model. Drives `gpuProps()`, so
-  // theme changes re-encode on the main thread (no RPC refetch).
-  const colorForBase = useMemo(() => getColorBaseMap(theme), [theme])
+  // Push theme-derived color palette into the model. Drives `gpuProps()`,
+  // so theme changes re-encode on the main thread (no RPC refetch). The
+  // palette also flows through `renderState` to the Canvas2D path so MAF
+  // colors stay in lockstep with the user's theme.
+  const palette = useMemo(() => getMafColorPalette(theme), [theme])
   useEffect(() => {
-    model.setColorForBase(colorForBase)
-  }, [model, colorForBase])
+    model.setColorPalette(palette)
+  }, [model, palette])
 
   const {
     isDragging,
@@ -65,6 +75,9 @@ const LinearMafDisplay = observer(function (props: {
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const { width } = view
+
+  const treeShowing = showTree && !!hierarchy
+  const sidebarOffset = treeShowing ? treeAreaWidth : 0
 
   return (
     <div
@@ -97,18 +110,35 @@ const LinearMafDisplay = observer(function (props: {
         height={height}
         mismatchRendering={model.mismatchRendering}
       />
-      {model.showSidebar ? (
-        <SvgWrapper model={model}>
-          <ColorLegend model={model} />
-        </SvgWrapper>
+      {showTree && sources?.length ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width,
+            height,
+            pointerEvents: 'none',
+            zIndex: 2,
+          }}
+        >
+          <SvgRowLabels
+            sources={sources}
+            rowHeight={rowHeight}
+            labelOffset={sidebarOffset}
+            scrollTop={scrollTop}
+            availableHeight={height}
+          />
+        </svg>
       ) : null}
+      <TreeSidebar model={model} />
       <MsaHighlightOverlay model={model} view={view} height={height} />
       <DisplayErrorBar model={model} />
       <DisplayLoadingOverlay model={model} />
       {mouseY !== undefined &&
       mouseX !== undefined &&
-      mouseX > sidebarWidth &&
-      sources &&
+      mouseX > sidebarOffset &&
+      samples &&
       !contextCoord ? (
         <div style={{ position: 'relative' }}>
           <Crosshairs
@@ -172,14 +202,14 @@ const LinearMafDisplay = observer(function (props: {
           {
             label: 'View subsequences (all rows)',
             onClick: () => {
-              if (contextCoord && sources) {
+              if (contextCoord && samples) {
                 openSubsequenceWidget(
                   session,
                   model,
                   view,
                   contextCoord.startX,
                   contextCoord.endX,
-                  sources,
+                  samples,
                 )
               }
               setContextCoord(undefined)
@@ -188,7 +218,7 @@ const LinearMafDisplay = observer(function (props: {
           {
             label: 'View subsequences (selected rows)',
             onClick: () => {
-              if (contextCoord && sources) {
+              if (contextCoord && samples) {
                 const minY = Math.min(contextCoord.startY, contextCoord.endY)
                 const maxY = Math.max(contextCoord.startY, contextCoord.endY)
                 const startRow = Math.floor((minY + scrollTop) / rowHeight)
@@ -199,7 +229,7 @@ const LinearMafDisplay = observer(function (props: {
                   view,
                   contextCoord.startX,
                   contextCoord.endX,
-                  sources.slice(startRow, endRow),
+                  samples.slice(startRow, endRow),
                 )
               }
               setContextCoord(undefined)
