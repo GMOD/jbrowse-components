@@ -420,7 +420,7 @@ export class WebGPUHal implements GpuHal {
     }
   }
 
-  deleteAllRegions() {
+  private deleteAllRegions() {
     if (this.currentEncoder) {
       console.warn(
         '[WebGPUHal] deleteAllRegions called mid-frame — ' +
@@ -433,6 +433,15 @@ export class WebGPUHal implements GpuHal {
       }
     }
     this.regions.clear()
+  }
+
+  pruneRegions(active: Iterable<number>) {
+    const activeSet = new Set(active)
+    for (const regionKey of this.regions.keys()) {
+      if (!activeSet.has(regionKey)) {
+        this.deleteRegion(regionKey)
+      }
+    }
   }
 
   uploadTexture(

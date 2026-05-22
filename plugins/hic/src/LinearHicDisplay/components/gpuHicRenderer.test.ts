@@ -89,7 +89,7 @@ describe('GpuHicRenderer', () => {
       numContacts: 1,
     })
 
-    renderer.render(makeRenderState())
+    renderer.render(null, makeRenderState())
 
     const f32 = hal.getLastUniformsF32()!
     const u32 = hal.getLastUniformsU32()!
@@ -113,7 +113,7 @@ describe('GpuHicRenderer', () => {
       numContacts: 1,
     })
 
-    renderer.render(makeRenderState({ useLogScale: true }))
+    renderer.render(null, makeRenderState({ useLogScale: true }))
 
     const u32 = hal.getLastUniformsU32()!
     expect(u32[7]).toBe(1)
@@ -123,7 +123,7 @@ describe('GpuHicRenderer', () => {
     const hal = new MockHal(HIC_PASSES)
     const renderer = new GpuHicRenderer(hal)
 
-    renderer.render(makeRenderState())
+    renderer.render(null, makeRenderState())
 
     expect(hal.callsOf('drawPass').length).toBe(0)
     expect(hal.callsOf('beginFrame').length).toBe(1)
@@ -140,7 +140,7 @@ describe('GpuHicRenderer', () => {
       numContacts: 1,
     })
 
-    renderer.render(makeRenderState())
+    renderer.render(null, makeRenderState())
 
     const methods = hal.calls
       .filter(c =>

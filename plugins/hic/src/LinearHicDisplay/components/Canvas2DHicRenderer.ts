@@ -2,18 +2,16 @@ import {
   makeRampFillStyleLut,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import { Canvas2DMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
 
 import { lookupColorRamp, mapHicCount } from './colorRamp.ts'
 
-import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
+import type {
+  HicBackend,
+  HicRenderState,
+  HicUploadData,
+} from './hicBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-
-export interface HicData {
-  positions: Float32Array
-  counts: Float32Array
-  numContacts: number
-}
 
 /**
  * Pure draw entry point. Paints the hic contact-matrix as axis-aligned
@@ -24,7 +22,7 @@ export interface HicData {
  */
 export function drawHicBlocks(
   ctx: Ctx2D,
-  data: HicData,
+  data: HicUploadData,
   colorRamp: Uint8Array,
   state: HicRenderState,
 ) {
@@ -66,54 +64,21 @@ export function drawHicBlocks(
   ctx.restore()
 }
 
-export class Canvas2DHicRenderer implements HicBackend {
-  private ctx: Ctx2D
-  private canvas: HTMLCanvasElement | null = null
-  private data: HicData = {
-    positions: new Float32Array(0),
-    counts: new Float32Array(0),
-    numContacts: 0,
-  }
+export class Canvas2DHicRenderer
+  extends Canvas2DMonolithicBackend<HicUploadData, HicRenderState>
+  implements HicBackend
+{
   private colorRamp: Uint8Array | null = null
-
-  constructor(canvasOrCtx: HTMLCanvasElement | SvgCanvas) {
-    if (canvasOrCtx instanceof SvgCanvas) {
-      this.ctx = canvasOrCtx
-    } else {
-      this.canvas = canvasOrCtx
-      this.ctx = canvasOrCtx.getContext('2d')!
-    }
-  }
-
-  uploadData(data: HicData) {
-    this.data = data
-  }
 
   uploadColorRamp(colors: Uint8Array) {
     this.colorRamp = colors
   }
 
-  render(state: HicRenderState) {
-    if (this.canvas) {
-      prepareCanvas(
-        this.canvas,
-        this.ctx as CanvasRenderingContext2D,
-        state.canvasWidth,
-        state.canvasHeight,
-      )
-    }
-    if (!this.colorRamp) {
+  render(data: HicUploadData | null, state: HicRenderState) {
+    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    if (!data || !this.colorRamp) {
       return
     }
-    drawHicBlocks(this.ctx, this.data, this.colorRamp, state)
-  }
-
-  dispose() {
-    this.data = {
-      positions: new Float32Array(0),
-      counts: new Float32Array(0),
-      numContacts: 0,
-    }
-    this.colorRamp = null
+    drawHicBlocks(this.ctx, data, this.colorRamp, state)
   }
 }

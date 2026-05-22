@@ -95,49 +95,29 @@ describe('GpuSyntenyRenderer CPU pick', () => {
     restore = stubOffscreenIsPointInPath(true)
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    const state = makeState([[0, makeParams()]])
     renderer.uploadGeometry(0, makeInstanceData())
-    renderer.render(makeState([[0, makeParams()]]))
 
-    expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 0 })
+    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, featureIndex: 0 })
   })
 
   test('pick returns undefined when the path does not match', () => {
     restore = stubOffscreenIsPointInPath(false)
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    const state = makeState([[0, makeParams()]])
     renderer.uploadGeometry(0, makeInstanceData())
-    renderer.render(makeState([[0, makeParams()]]))
 
-    expect(renderer.pick(50, 50)).toBeUndefined()
+    expect(renderer.pick(50, 50, state)).toBeUndefined()
   })
 
   test('off-canvas Y returns undefined without consulting the path', () => {
     restore = stubOffscreenIsPointInPath(true)
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
-    renderer.uploadGeometry(0, makeInstanceData())
-    renderer.render(makeState([[0, makeParams()]]))
-
-    expect(renderer.pick(50, 9999)).toBeUndefined()
-  })
-
-  test('pick before render returns undefined', () => {
-    restore = stubOffscreenIsPointInPath(true)
-    const hal = new MockHal(SYNTENY_PASSES)
-    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    const state = makeState([[0, makeParams()]])
     renderer.uploadGeometry(0, makeInstanceData())
 
-    expect(renderer.pick(50, 50)).toBeUndefined()
-  })
-
-  test('pick after dispose returns undefined', () => {
-    restore = stubOffscreenIsPointInPath(true)
-    const hal = new MockHal(SYNTENY_PASSES)
-    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
-    renderer.uploadGeometry(0, makeInstanceData())
-    renderer.render(makeState([[0, makeParams()]]))
-    renderer.dispose()
-
-    expect(renderer.pick(50, 50)).toBeUndefined()
+    expect(renderer.pick(50, 9999, state)).toBeUndefined()
   })
 })

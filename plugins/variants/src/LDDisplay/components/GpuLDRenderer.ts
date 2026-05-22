@@ -1,3 +1,4 @@
+import { GpuMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as ldGenomicShader from './shaders/ldGenomic.generated.ts'
@@ -63,14 +64,17 @@ export const LD_PASSES: PassDescriptor[] = [
 
 export { UNIFORMS_SIZE_BYTES as LD_UNIFORM_BYTE_SIZE }
 
-export class GpuLDRenderer implements LDBackend {
-  private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
-  private uniformF32 = new Float32Array(this.uniformData)
-  private uniformU32 = new Uint32Array(this.uniformData)
+export class GpuLDRenderer
+  extends GpuMonolithicBackend<LDUploadData, LDRenderState>
+  implements LDBackend
+{
+  private uniformF32: Float32Array
+  private uniformU32: Uint32Array
 
   constructor(hal: GpuHal) {
-    this.hal = hal
+    super(hal, UNIFORMS_SIZE_BYTES)
+    this.uniformF32 = new Float32Array(this.uniformData)
+    this.uniformU32 = new Uint32Array(this.uniformData)
   }
 
   uploadData(data: LDUploadData) {
@@ -105,7 +109,7 @@ export class GpuLDRenderer implements LDBackend {
     this.hal.uploadTexture(PASS_GENOMIC, colors, 256, 1)
   }
 
-  render(state: LDRenderState) {
+  render(_data: LDUploadData | null, state: LDRenderState) {
     const { canvasWidth, canvasHeight } = state
 
     this.hal.resize(canvasWidth, canvasHeight)
@@ -133,9 +137,5 @@ export class GpuLDRenderer implements LDBackend {
     }
 
     this.hal.endFrame()
-  }
-
-  dispose() {
-    this.hal.dispose()
   }
 }

@@ -1,5 +1,7 @@
 import { Canvas2DVariantMatrixRenderer } from './Canvas2DVariantMatrixRenderer.ts'
 
+import type { VariantMatrixUploadData } from './variantMatrixBackendTypes.ts'
+
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 
 function createMockCanvas() {
@@ -35,190 +37,114 @@ function createMockCanvas() {
   return { canvas, ctx, fillRectCalls, pathOps }
 }
 
-describe('Canvas2DVariantMatrixRenderer', () => {
-  describe('uploadCellData', () => {
-    test('stores cell data for rendering', () => {
-      const { canvas, fillRectCalls } = createMockCanvas()
-      const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+const STATE = {
+  canvasWidth: 400,
+  canvasHeight: 300,
+  rowHeight: 10,
+  scrollTop: 0,
+}
 
-      renderer.uploadCellData({
+function makeData(
+  overrides?: Partial<VariantMatrixUploadData>,
+): VariantMatrixUploadData {
+  return {
+    cellFeatureIndices: new Float32Array([0]),
+    cellRowIndices: new Uint32Array([0]),
+    cellColors: new Uint32Array([0xff0000ff]),
+    numCells: 1,
+    numFeatures: 4,
+    ...overrides,
+  }
+}
+
+describe('Canvas2DVariantMatrixRenderer', () => {
+  test('renders rectangles for uploaded cells', () => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+
+    renderer.render(
+      makeData({
         cellFeatureIndices: new Float32Array([0, 1]),
         cellRowIndices: new Uint32Array([0, 1]),
         cellColors: new Uint32Array([0xff0000ff, 0xff00ff00]),
         numCells: 2,
-        numFeatures: 4,
-      })
+      }),
+      STATE,
+    )
 
-      renderer.render({
-        canvasWidth: 400,
-        canvasHeight: 300,
-        rowHeight: 10,
-        scrollTop: 0,
-      })
-
-      expect(fillRectCalls.length).toBe(2)
-    })
+    expect(fillRectCalls.length).toBe(2)
   })
 
-  describe('render', () => {
-    test('draws rectangles at correct positions', () => {
-      const { canvas, fillRectCalls } = createMockCanvas()
-      const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+  test('draws rectangles at correct positions', () => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
 
-      renderer.uploadCellData({
+    renderer.render(
+      makeData({
         cellFeatureIndices: new Float32Array([2]),
         cellRowIndices: new Uint32Array([3]),
         cellColors: new Uint32Array([0xff204080]),
-        numCells: 1,
-        numFeatures: 4,
-      })
+      }),
+      { ...STATE, canvasHeight: 600, rowHeight: 20 },
+    )
 
-      renderer.render({
-        canvasWidth: 400,
-        canvasHeight: 600,
-        rowHeight: 20,
-        scrollTop: 0,
-      })
-
-      expect(fillRectCalls.length).toBe(1)
-      const [x, y, w, h] = fillRectCalls[0]!
-      // featureIdx=2, cellWidth=400/4=100, so x=200
-      expect(x).toBeCloseTo(200)
-      // rowIdx=3, rowHeight=20, scrollTop=0, so y=60
-      expect(y).toBeCloseTo(60)
-      expect(w).toBeCloseTo(100)
-      expect(h).toBe(20)
-    })
-
-    test('skips cells above viewport', () => {
-      const { canvas, fillRectCalls } = createMockCanvas()
-      const renderer = new Canvas2DVariantMatrixRenderer(canvas)
-
-      renderer.uploadCellData({
-        cellFeatureIndices: new Float32Array([0]),
-        cellRowIndices: new Uint32Array([0]),
-        cellColors: new Uint32Array([0xff0000ff]),
-        numCells: 1,
-        numFeatures: 4,
-      })
-
-      // scrollTop=100 means y = 0*10 - 100 = -100, y+rowHeight = -90 < 0
-      renderer.render({
-        canvasWidth: 400,
-        canvasHeight: 300,
-        rowHeight: 10,
-        scrollTop: 100,
-      })
-
-      expect(fillRectCalls.length).toBe(0)
-    })
-
-    test('skips cells below viewport', () => {
-      const { canvas, fillRectCalls } = createMockCanvas()
-      const renderer = new Canvas2DVariantMatrixRenderer(canvas)
-
-      renderer.uploadCellData({
-        cellFeatureIndices: new Float32Array([0]),
-        cellRowIndices: new Uint32Array([50]),
-        cellColors: new Uint32Array([0xff0000ff]),
-        numCells: 1,
-        numFeatures: 4,
-      })
-
-      // y = 50*10 - 0 = 500 > 300
-      renderer.render({
-        canvasWidth: 400,
-        canvasHeight: 300,
-        rowHeight: 10,
-        scrollTop: 0,
-      })
-
-      expect(fillRectCalls.length).toBe(0)
-    })
-
-    test('renders nothing with empty data', () => {
-      const { canvas, fillRectCalls, ctx } = createMockCanvas()
-      const renderer = new Canvas2DVariantMatrixRenderer(canvas)
-
-      renderer.render({
-        canvasWidth: 400,
-        canvasHeight: 300,
-        rowHeight: 10,
-        scrollTop: 0,
-      })
-
-      expect(fillRectCalls.length).toBe(0)
-      expect(ctx.clearRect).toHaveBeenCalled()
-    })
-
-    test('renders nothing when numFeatures is 0', () => {
-      const { canvas, fillRectCalls } = createMockCanvas()
-      const renderer = new Canvas2DVariantMatrixRenderer(canvas)
-
-      renderer.uploadCellData({
-        cellFeatureIndices: new Float32Array([0]),
-        cellRowIndices: new Uint32Array([0]),
-        cellColors: new Uint32Array([0xff0000ff]),
-        numCells: 1,
-        numFeatures: 0,
-      })
-
-      renderer.render({
-        canvasWidth: 400,
-        canvasHeight: 300,
-        rowHeight: 10,
-        scrollTop: 0,
-      })
-
-      expect(fillRectCalls.length).toBe(0)
-    })
-
-    test('sets correct fillStyle from color data', () => {
-      const { canvas, ctx } = createMockCanvas()
-      const renderer = new Canvas2DVariantMatrixRenderer(canvas)
-
-      renderer.uploadCellData({
-        cellFeatureIndices: new Float32Array([0]),
-        cellRowIndices: new Uint32Array([0]),
-        cellColors: new Uint32Array([0x7f204080]),
-        numCells: 1,
-        numFeatures: 4,
-      })
-
-      renderer.render({
-        canvasWidth: 400,
-        canvasHeight: 300,
-        rowHeight: 10,
-        scrollTop: 0,
-      })
-
-      expect(ctx.fillStyle).toBe(`rgba(128,64,32,${127 / 255})`)
-    })
+    expect(fillRectCalls.length).toBe(1)
+    const [x, y, w, h] = fillRectCalls[0]!
+    expect(x).toBeCloseTo(200)
+    expect(y).toBeCloseTo(60)
+    expect(w).toBeCloseTo(100)
+    expect(h).toBe(20)
   })
 
-  describe('dispose', () => {
-    test('clears stored data', () => {
-      const { canvas, fillRectCalls } = createMockCanvas()
-      const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+  test('skips cells above viewport', () => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
 
-      renderer.uploadCellData({
-        cellFeatureIndices: new Float32Array([0]),
-        cellRowIndices: new Uint32Array([0]),
-        cellColors: new Uint32Array([0xff0000ff]),
-        numCells: 1,
-        numFeatures: 4,
-      })
+    renderer.render(makeData(), { ...STATE, scrollTop: 100 })
 
-      renderer.dispose()
+    expect(fillRectCalls.length).toBe(0)
+  })
 
-      renderer.render({
-        canvasWidth: 400,
-        canvasHeight: 300,
-        rowHeight: 10,
-        scrollTop: 0,
-      })
+  test('skips cells below viewport', () => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
 
-      expect(fillRectCalls.length).toBe(0)
-    })
+    renderer.render(
+      makeData({ cellRowIndices: new Uint32Array([50]) }),
+      STATE,
+    )
+
+    expect(fillRectCalls.length).toBe(0)
+  })
+
+  test('renders nothing with null data', () => {
+    const { canvas, fillRectCalls, ctx } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+
+    renderer.render(null, STATE)
+
+    expect(fillRectCalls.length).toBe(0)
+    expect(ctx.clearRect).toHaveBeenCalled()
+  })
+
+  test('renders nothing when numFeatures is 0', () => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+
+    renderer.render(makeData({ numFeatures: 0 }), STATE)
+
+    expect(fillRectCalls.length).toBe(0)
+  })
+
+  test('sets correct fillStyle from color data', () => {
+    const { canvas, ctx } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+
+    renderer.render(
+      makeData({ cellColors: new Uint32Array([0x7f204080]) }),
+      STATE,
+    )
+
+    expect(ctx.fillStyle).toBe(`rgba(128,64,32,${127 / 255})`)
   })
 })

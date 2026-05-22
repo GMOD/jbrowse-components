@@ -48,8 +48,6 @@ function createMockCanvas() {
   return { canvas, ctx, pathOps }
 }
 
-// Helper: cum-bp positions are stored as hi/lo Float32 split. The test
-// values are well under 4096 so lo holds the full value and hi=0.
 function bpHiLo(values: number[]) {
   const hi = new Float32Array(values.length)
   const lo = new Float32Array(values)
@@ -158,8 +156,6 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.uploadGeometry(0, makeInstanceData(1))
     renderer.render(makeState([[0, makeParams({ drawCurves: true })]]))
 
-    // Two bezier strokes per ribbon (one per curved edge), exactly equivalent
-    // to the 16-segment hermite tessellation (see buildFeaturePath).
     const bezierCount = pathOps.filter(op =>
       op.startsWith('bezierCurveTo'),
     ).length
@@ -267,19 +263,6 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(2)
   })
 
-  test('pick returns undefined with no state', () => {
-    const { canvas } = createMockCanvas()
-    const renderer = new Canvas2DSyntenyRenderer(canvas)
-    expect(renderer.pick(100, 50)).toBeUndefined()
-  })
-
-  test('pick returns undefined before render is called', () => {
-    const { canvas } = createMockCanvas()
-    const renderer = new Canvas2DSyntenyRenderer(canvas)
-    renderer.uploadGeometry(0, makeInstanceData(1))
-    expect(renderer.pick(50, 50)).toBeUndefined()
-  })
-
   test('pick returns hit with key + featureIndex', () => {
     const { canvas, ctx } = createMockCanvas()
     canvas.width = 800
@@ -288,8 +271,8 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(1))
-    renderer.render(makeState([[0, makeParams()]]))
-    expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 0 })
+    const state = makeState([[0, makeParams()]])
+    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, featureIndex: 0 })
   })
 
   test('pick returns undefined when isPointInPath does not match', () => {
@@ -300,8 +283,8 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(1))
-    renderer.render(makeState([[0, makeParams()]]))
-    expect(renderer.pick(50, 50)).toBeUndefined()
+    const state = makeState([[0, makeParams()]])
+    expect(renderer.pick(50, 50, state)).toBeUndefined()
   })
 
   test('pick returns last feature when multiple overlap (top-most wins)', () => {
@@ -312,8 +295,8 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(3))
-    renderer.render(makeState([[0, makeParams()]]))
-    expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 2 })
+    const state = makeState([[0, makeParams()]])
+    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, featureIndex: 2 })
   })
 
   test('pick prefers later track when multiple overlap', () => {
@@ -325,13 +308,11 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 200)
     renderer.uploadGeometry(0, makeInstanceData(1))
     renderer.uploadGeometry(1, makeInstanceData(1))
-    renderer.render(
-      makeState([
-        [0, makeParams({ yTop: 0, height: 200 })],
-        [1, makeParams({ yTop: 0, height: 200 })],
-      ]),
-    )
-    expect(renderer.pick(50, 50)?.key).toBe(1)
+    const state = makeState([
+      [0, makeParams({ yTop: 0, height: 200 })],
+      [1, makeParams({ yTop: 0, height: 200 })],
+    ])
+    expect(renderer.pick(50, 50, state)?.key).toBe(1)
   })
 
   test('pick respects per-track yTop range', () => {
@@ -343,16 +324,14 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 200)
     renderer.uploadGeometry(0, makeInstanceData(1))
     renderer.uploadGeometry(1, makeInstanceData(1))
-    renderer.render(
-      makeState([
-        [0, makeParams({ yTop: 0, height: 100 })],
-        [1, makeParams({ yTop: 100, height: 100 })],
-      ]),
-    )
+    const state = makeState([
+      [0, makeParams({ yTop: 0, height: 100 })],
+      [1, makeParams({ yTop: 100, height: 100 })],
+    ])
     // y=50 is within track 0 only
-    expect(renderer.pick(50, 50)?.key).toBe(0)
+    expect(renderer.pick(50, 50, state)?.key).toBe(0)
     // y=150 is within track 1 only
-    expect(renderer.pick(50, 150)?.key).toBe(1)
+    expect(renderer.pick(50, 150, state)?.key).toBe(1)
   })
 
   test('pick skips features below minAlignmentLength', () => {
@@ -366,8 +345,8 @@ describe('Canvas2DSyntenyRenderer', () => {
       0,
       makeInstanceData(1, { queryTotalLengths: new Float32Array([100]) }),
     )
-    renderer.render(makeState([[0, makeParams({ minAlignmentLength: 500 })]]))
-    expect(renderer.pick(50, 50)).toBeUndefined()
+    const state = makeState([[0, makeParams({ minAlignmentLength: 500 })]])
+    expect(renderer.pick(50, 50, state)).toBeUndefined()
     expect(ctx.isPointInPath).not.toHaveBeenCalled()
   })
 
@@ -382,8 +361,8 @@ describe('Canvas2DSyntenyRenderer', () => {
       0,
       makeInstanceData(1, { colors: new Uint32Array([0x00808080]) }),
     )
-    renderer.render(makeState([[0, makeParams()]]))
-    expect(renderer.pick(50, 50)).toBeUndefined()
+    const state = makeState([[0, makeParams()]])
+    expect(renderer.pick(50, 50, state)).toBeUndefined()
     expect(ctx.isPointInPath).not.toHaveBeenCalled()
   })
 
@@ -395,12 +374,12 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(1))
-    renderer.render(makeState([[0, makeParams({ drawCurves: true })]]))
-    expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 0 })
+    const state = makeState([[0, makeParams({ drawCurves: true })]])
+    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, featureIndex: 0 })
     expect(ctx.bezierCurveTo.mock.calls.length).toBeGreaterThan(0)
   })
 
-  test('pick returns undefined after dispose', () => {
+  test('pick after dispose returns undefined (cache cleared)', () => {
     const { canvas, ctx } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
@@ -408,9 +387,9 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(1))
-    renderer.render(makeState([[0, makeParams()]]))
     renderer.dispose()
-    expect(renderer.pick(50, 50)).toBeUndefined()
+    const state = makeState([[0, makeParams()]])
+    expect(renderer.pick(50, 50, state)).toBeUndefined()
   })
 
   test('pick handles selective matching across multiple features', () => {
@@ -425,8 +404,8 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(3))
-    renderer.render(makeState([[0, makeParams()]]))
-    expect(renderer.pick(50, 50)).toEqual({ key: 0, featureIndex: 1 })
+    const state = makeState([[0, makeParams()]])
+    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, featureIndex: 1 })
   })
 
   test('dispose cleans up data', () => {

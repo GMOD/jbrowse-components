@@ -1,8 +1,13 @@
+import { GpuMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as hicShader from './shaders/hic.generated.ts'
 
-import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
+import type {
+  HicBackend,
+  HicRenderState,
+  HicUploadData,
+} from './hicBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_MAIN = 'main'
@@ -26,11 +31,7 @@ export {
   UNIFORMS_SIZE_BYTES as HIC_UNIFORM_BYTE_SIZE,
 }
 
-function interleaveHicInstances(data: {
-  positions: Float32Array
-  counts: Float32Array
-  numContacts: number
-}) {
+function interleaveHicInstances(data: HicUploadData) {
   const count = data.numContacts
   const buf = new ArrayBuffer(count * STRIDE_BYTES)
   const f32 = new Float32Array(buf)
@@ -43,26 +44,24 @@ function interleaveHicInstances(data: {
   return buf
 }
 
-export class GpuHicRenderer implements HicBackend {
-  private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
-  private uniformF32 = new Float32Array(this.uniformData)
-  private uniformU32 = new Uint32Array(this.uniformData)
+export class GpuHicRenderer
+  extends GpuMonolithicBackend<HicUploadData, HicRenderState>
+  implements HicBackend
+{
+  private uniformF32: Float32Array
+  private uniformU32: Uint32Array
 
   constructor(hal: GpuHal) {
-    this.hal = hal
+    super(hal, UNIFORMS_SIZE_BYTES)
+    this.uniformF32 = new Float32Array(this.uniformData)
+    this.uniformU32 = new Uint32Array(this.uniformData)
   }
 
-  uploadData(data: {
-    positions: Float32Array
-    counts: Float32Array
-    numContacts: number
-  }) {
+  uploadData(data: HicUploadData) {
     if (data.numContacts === 0) {
       this.hal.deleteRegion(REGION_KEY)
       return
     }
-
     const buf = interleaveHicInstances(data)
     this.hal.uploadBuffer(REGION_KEY, PASS_MAIN, buf, data.numContacts)
   }
@@ -71,7 +70,7 @@ export class GpuHicRenderer implements HicBackend {
     this.hal.uploadTexture(PASS_MAIN, colors, 256, 1)
   }
 
-  render(state: HicRenderState) {
+  render(_data: HicUploadData | null, state: HicRenderState) {
     const { canvasWidth, canvasHeight } = state
 
     this.hal.resize(canvasWidth, canvasHeight)
@@ -92,9 +91,5 @@ export class GpuHicRenderer implements HicBackend {
     }
 
     this.hal.endFrame()
-  }
-
-  dispose() {
-    this.hal.dispose()
   }
 }

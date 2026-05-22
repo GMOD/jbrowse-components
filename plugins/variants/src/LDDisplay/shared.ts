@@ -400,10 +400,22 @@ export default function sharedModelFactory(
           },
           render: b => {
             const state = self.renderState
+            const d = self.rpcData as LDDataResult | undefined
             if (!state) {
               return false
             }
-            b.render(state)
+            b.render(
+              d
+                ? {
+                    ldValues: d.ldValues,
+                    boundaries: d.boundaries,
+                    numCells: d.numCells,
+                    positions: d.positions,
+                    cellSizes: d.cellSizes,
+                  }
+                : null,
+              state,
+            )
             return true
           },
         })

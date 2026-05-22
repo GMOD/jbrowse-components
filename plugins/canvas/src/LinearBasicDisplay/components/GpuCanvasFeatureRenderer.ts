@@ -1,6 +1,6 @@
 import { bpRangeXTuple, clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { GpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import {
@@ -15,7 +15,6 @@ import * as rectShader from './shaders/rect.generated.ts'
 import { MAX_VISIBLE_CHEVRONS_PER_LINE } from './sharedRendererConstants.ts'
 
 import type {
-  CanvasFeatureBackend,
   FeatureRenderBlock,
   RenderState,
 } from './canvasFeatureBackendTypes.ts'
@@ -44,18 +43,11 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
   slangPass({ id: PASS_ARROW, mod: arrowShader }),
 ]
 
-interface RegionMeta {
-  hasRects: boolean
-  hasLines: boolean
-  hasArrows: boolean
-  outlineColor: number
-}
-
 function drawRegionBlock(
   hal: GpuHal,
   uniformData: ArrayBuffer,
   block: FeatureRenderBlock,
-  meta: RegionMeta,
+  region: RegionRenderData,
   state: RenderState,
   dpr: number,
 ) {
@@ -76,51 +68,33 @@ function drawRegionBlock(
     bpPerPx: clip.bpPerPx,
     zero: 0,
     reversed: block.reversed ? 1 : 0,
-    outlineColor: meta.outlineColor,
+    outlineColor: region.outlineColor,
   })
 
   hal.writeUniforms(uniformData)
 
-  if (meta.hasLines) {
-    hal.drawPass(PASS_LINE, block.displayedRegionIndex)
-    hal.drawPass(PASS_CHEVRON, block.displayedRegionIndex, PASS_LINE)
-  }
-  if (meta.hasRects) {
-    hal.drawPass(PASS_RECT, block.displayedRegionIndex)
-  }
-  if (meta.hasArrows) {
-    hal.drawPass(PASS_ARROW, block.displayedRegionIndex)
-  }
+  // HAL.drawPass short-circuits when the region has no buffer for that pass,
+  // so we can issue all three unconditionally instead of caching has-rects /
+  // has-lines / has-arrows flags on the renderer.
+  hal.drawPass(PASS_LINE, block.displayedRegionIndex)
+  hal.drawPass(PASS_CHEVRON, block.displayedRegionIndex, PASS_LINE)
+  hal.drawPass(PASS_RECT, block.displayedRegionIndex)
+  hal.drawPass(PASS_ARROW, block.displayedRegionIndex)
 }
 
-export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
-  private hal: GpuHal
-  private uniformData = new ArrayBuffer(CANVAS_FEATURE_UNIFORM_BYTE_SIZE)
-  private regions = new Map<number, RegionMeta>()
-
+export class GpuCanvasFeatureRenderer extends GpuBackend<
+  RegionRenderData,
+  RenderState,
+  FeatureRenderBlock
+> {
   constructor(hal: GpuHal) {
-    this.hal = hal
+    super(hal, CANVAS_FEATURE_UNIFORM_BYTE_SIZE)
   }
 
   uploadRegion(displayedRegionIndex: number, data: RegionRenderData) {
     this.hal.deleteRegion(displayedRegionIndex)
-    this.regions.delete(displayedRegionIndex)
 
     const numRects = data.rectYs.length
-    const numLines = data.lineYs.length
-    const numArrows = data.arrowYs.length
-
-    if (numRects === 0 && numLines === 0 && numArrows === 0) {
-      return
-    }
-
-    this.regions.set(displayedRegionIndex, {
-      hasRects: numRects > 0,
-      hasLines: numLines > 0,
-      hasArrows: numArrows > 0,
-      outlineColor: data.outlineColor,
-    })
-
     if (numRects > 0) {
       const buf = interleaveRects(
         data.rectPositions,
@@ -132,6 +106,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       this.hal.uploadBuffer(displayedRegionIndex, PASS_RECT, buf, numRects)
     }
 
+    const numLines = data.lineYs.length
     if (numLines > 0) {
       const buf = interleaveLines(
         data.linePositions,
@@ -143,6 +118,7 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
       this.hal.uploadBuffer(displayedRegionIndex, PASS_LINE, buf, numLines)
     }
 
+    const numArrows = data.arrowYs.length
     if (numArrows > 0) {
       const buf = interleaveArrows(
         data.arrowXs,
@@ -155,16 +131,20 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
     }
   }
 
-  renderBlocks(blocks: FeatureRenderBlock[], state: RenderState) {
+  renderBlocks(
+    blocks: FeatureRenderBlock[],
+    regions: ReadonlyMap<number, RegionRenderData>,
+    state: RenderState,
+  ) {
     const dpr = getDpr()
     this.hal.resize(state.canvasWidth, state.canvasHeight)
     // Always pair beginFrame/endFrame so the canvas clears to transparent
     // even when all regions are pruned (e.g. after a density-gate reset).
     this.hal.beginFrame(0, 0, 0, 0)
     for (const block of blocks) {
-      const meta = this.regions.get(block.displayedRegionIndex)
-      if (meta) {
-        drawRegionBlock(this.hal, this.uniformData, block, meta, state, dpr)
+      const region = regions.get(block.displayedRegionIndex)
+      if (region) {
+        drawRegionBlock(this.hal, this.uniformData, block, region, state, dpr)
       }
     }
     this.hal.clearScissor()
@@ -172,14 +152,4 @@ export class GpuCanvasFeatureRenderer implements CanvasFeatureBackend {
     this.hal.endFrame()
   }
 
-  pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regions, activeRegions, n => {
-      this.hal.deleteRegion(n)
-    })
-  }
-
-  dispose() {
-    this.regions.clear()
-    this.hal.dispose()
-  }
 }

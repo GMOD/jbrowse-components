@@ -1,3 +1,4 @@
+import { GpuMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as variantMatrixShader from './shaders/variantMatrix.generated.ts'
@@ -5,7 +6,6 @@ import { interleaveMatrixInstances } from './variantMatrixShaders.ts'
 
 import type {
   MatrixRenderState,
-  VariantMatrixBackend,
   VariantMatrixUploadData,
 } from './variantMatrixBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
@@ -25,38 +25,37 @@ export const VARIANT_MATRIX_PASSES: PassDescriptor[] = [
 
 export { UNIFORMS_SIZE_BYTES as VARIANT_MATRIX_UNIFORM_BYTE_SIZE }
 
-export class GpuVariantMatrixRenderer implements VariantMatrixBackend {
-  private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
-  private uniformF32 = new Float32Array(this.uniformData)
-  private numFeatures = 0
+export class GpuVariantMatrixRenderer extends GpuMonolithicBackend<
+  VariantMatrixUploadData,
+  MatrixRenderState
+> {
+  private uniformF32: Float32Array
 
   constructor(hal: GpuHal) {
-    this.hal = hal
+    super(hal, UNIFORMS_SIZE_BYTES)
+    this.uniformF32 = new Float32Array(this.uniformData)
   }
 
-  uploadCellData(data: VariantMatrixUploadData) {
-    this.numFeatures = data.numFeatures
+  uploadData(data: VariantMatrixUploadData) {
     if (data.numCells === 0) {
       this.hal.deleteRegion(REGION_KEY)
       return
     }
-
     const buf = interleaveMatrixInstances(data)
     this.hal.uploadBuffer(REGION_KEY, PASS_MAIN, buf, data.numCells)
   }
 
-  render(state: MatrixRenderState) {
+  render(data: VariantMatrixUploadData | null, state: MatrixRenderState) {
     const { canvasWidth, canvasHeight } = state
-
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
 
+    const numFeatures = data?.numFeatures ?? 0
     if (
-      this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0 &&
-      this.numFeatures > 0
+      numFeatures > 0 &&
+      this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0
     ) {
-      this.uniformF32[U.numFeatures] = this.numFeatures
+      this.uniformF32[U.numFeatures] = numFeatures
       this.uniformF32[U.canvasWidth] = canvasWidth
       this.uniformF32[U.canvasHeight] = canvasHeight
       this.uniformF32[U.rowHeight] = state.rowHeight
@@ -67,9 +66,5 @@ export class GpuVariantMatrixRenderer implements VariantMatrixBackend {
     }
 
     this.hal.endFrame()
-  }
-
-  dispose() {
-    this.hal.dispose()
   }
 }

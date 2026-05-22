@@ -17,9 +17,9 @@ export interface LDUploadData {
   cellSizes?: Float32Array
 }
 
-export interface LDBackend {
-  uploadData(data: LDUploadData): void
+import type { MonolithicGpuBackend } from '@jbrowse/core/gpu/monolithicBackend'
+
+export interface LDBackend
+  extends MonolithicGpuBackend<LDUploadData, LDRenderState> {
   uploadColorRamp(colors: Uint8Array): void
-  render(state: LDRenderState): void
-  dispose(): void
 }

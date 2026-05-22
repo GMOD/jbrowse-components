@@ -43,6 +43,14 @@ function makeBlock(overrides?: Partial<WiggleRenderBlock>): WiggleRenderBlock {
   }
 }
 
+const DEFAULT_STATE = {
+  canvasWidth: 800,
+  canvasHeight: 400,
+  renderingType: RENDERING_TYPE_XYPLOT,
+  scaleType: SCALE_TYPE_LINEAR,
+  domainY: [0, 20] as [number, number],
+}
+
 describe('GpuWiggleRenderer', () => {
   it('uploads region data as interleaved buffer', () => {
     const hal = new MockHal(WIGGLE_PASSES)
@@ -92,9 +100,6 @@ describe('GpuWiggleRenderer', () => {
 
     renderer.pruneRegions([0, 2])
 
-    expect(hal.callsOf('deleteRegion')).toEqual([
-      { method: 'deleteRegion', args: [1] },
-    ])
     expect(hal.getBufferCount(0, 'fill')).toBe(2)
     expect(hal.getBufferCount(1, 'fill')).toBe(0)
     expect(hal.getBufferCount(2, 'fill')).toBe(2)
@@ -103,16 +108,10 @@ describe('GpuWiggleRenderer', () => {
   it('renders blocks with correct frame lifecycle', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource()
 
-    renderer.uploadRegion(0, [makeSource()])
-
-    renderer.renderBlocks([makeBlock()], {
-      canvasWidth: 800,
-      canvasHeight: 400,
-      renderingType: RENDERING_TYPE_XYPLOT,
-      scaleType: SCALE_TYPE_LINEAR,
-      domainY: [0, 20],
-    })
+    renderer.uploadRegion(0, [source])
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), DEFAULT_STATE)
 
     const methods = hal.calls.map(c => c.method)
     expect(methods).toContain('resize')
@@ -125,15 +124,12 @@ describe('GpuWiggleRenderer', () => {
     expect(methods).toContain('clearViewport')
     expect(methods).toContain('endFrame')
 
-    // resize before beginFrame
     expect(methods.indexOf('resize')).toBeLessThan(
       methods.indexOf('beginFrame'),
     )
-    // beginFrame before drawPass
     expect(methods.indexOf('beginFrame')).toBeLessThan(
       methods.indexOf('drawPass'),
     )
-    // drawPass before endFrame
     expect(methods.indexOf('drawPass')).toBeLessThan(
       methods.indexOf('endFrame'),
     )
@@ -142,16 +138,10 @@ describe('GpuWiggleRenderer', () => {
   it('writes correct uniforms for XY plot', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource()
 
-    renderer.uploadRegion(0, [makeSource()])
-
-    renderer.renderBlocks([makeBlock()], {
-      canvasWidth: 800,
-      canvasHeight: 400,
-      renderingType: RENDERING_TYPE_XYPLOT,
-      scaleType: SCALE_TYPE_LINEAR,
-      domainY: [0, 20],
-    })
+    renderer.uploadRegion(0, [source])
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), DEFAULT_STATE)
 
     const f32 = hal.getLastUniformsF32()!
     const i32 = hal.getLastUniformsI32()!
@@ -169,20 +159,17 @@ describe('GpuWiggleRenderer', () => {
   it('uses line pass for LINE rendering type', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource()
 
-    renderer.uploadRegion(0, [makeSource()])
-
-    renderer.renderBlocks([makeBlock()], {
-      canvasWidth: 800,
-      canvasHeight: 400,
-      renderingType: RENDERING_TYPE_LINE,
-      scaleType: SCALE_TYPE_LINEAR,
-      domainY: [0, 20],
-    })
+    renderer.uploadRegion(0, [source])
+    renderer.renderBlocks(
+      [makeBlock()],
+      new Map([[0, [source]]]),
+      { ...DEFAULT_STATE, renderingType: RENDERING_TYPE_LINE },
+    )
 
     const drawCalls = hal.callsOf('drawPass')
     expect(drawCalls.length).toBe(1)
-    // passId='line', regionKey=0, bufferPassId='fill'
     expect(drawCalls[0]!.args[0]).toBe('line')
     expect(drawCalls[0]!.args[1]).toBe(0)
     expect(drawCalls[0]!.args[2]).toBe('fill')
@@ -191,33 +178,25 @@ describe('GpuWiggleRenderer', () => {
   it('uses fill pass for XY plot rendering type', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource()
 
-    renderer.uploadRegion(0, [makeSource()])
-
-    renderer.renderBlocks([makeBlock()], {
-      canvasWidth: 800,
-      canvasHeight: 400,
-      renderingType: RENDERING_TYPE_XYPLOT,
-      scaleType: SCALE_TYPE_LINEAR,
-      domainY: [0, 20],
-    })
+    renderer.uploadRegion(0, [source])
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), DEFAULT_STATE)
 
     const drawCalls = hal.callsOf('drawPass')
     expect(drawCalls.length).toBe(1)
     expect(drawCalls[0]!.args[0]).toBe('fill')
   })
 
-  it('skips blocks with no uploaded data', () => {
+  it('skips blocks with no region in the map', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
 
-    renderer.renderBlocks([makeBlock({ displayedRegionIndex: 99 })], {
-      canvasWidth: 800,
-      canvasHeight: 400,
-      renderingType: RENDERING_TYPE_XYPLOT,
-      scaleType: SCALE_TYPE_LINEAR,
-      domainY: [0, 20],
-    })
+    renderer.renderBlocks(
+      [makeBlock({ displayedRegionIndex: 99 })],
+      new Map(),
+      DEFAULT_STATE,
+    )
 
     expect(hal.callsOf('drawPass').length).toBe(0)
     expect(hal.callsOf('beginFrame').length).toBe(1)
@@ -227,9 +206,11 @@ describe('GpuWiggleRenderer', () => {
   it('renders multiple blocks in one frame', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
+    const s0 = makeSource()
+    const s1 = makeSource()
 
-    renderer.uploadRegion(0, [makeSource()])
-    renderer.uploadRegion(1, [makeSource()])
+    renderer.uploadRegion(0, [s0])
+    renderer.uploadRegion(1, [s1])
 
     renderer.renderBlocks(
       [
@@ -245,13 +226,11 @@ describe('GpuWiggleRenderer', () => {
           bpRangeX: [1000, 2000],
         }),
       ],
-      {
-        canvasWidth: 800,
-        canvasHeight: 400,
-        renderingType: RENDERING_TYPE_XYPLOT,
-        scaleType: SCALE_TYPE_LINEAR,
-        domainY: [0, 20],
-      },
+      new Map([
+        [0, [s0]],
+        [1, [s1]],
+      ]),
+      DEFAULT_STATE,
     )
 
     expect(hal.callsOf('drawPass').length).toBe(2)
@@ -264,16 +243,14 @@ describe('GpuWiggleRenderer', () => {
   it('handles reversed blocks', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource()
 
-    renderer.uploadRegion(0, [makeSource()])
-
-    renderer.renderBlocks([makeBlock({ reversed: true })], {
-      canvasWidth: 800,
-      canvasHeight: 400,
-      renderingType: RENDERING_TYPE_XYPLOT,
-      scaleType: SCALE_TYPE_LINEAR,
-      domainY: [0, 20],
-    })
+    renderer.uploadRegion(0, [source])
+    renderer.renderBlocks(
+      [makeBlock({ reversed: true })],
+      new Map([[0, [source]]]),
+      DEFAULT_STATE,
+    )
 
     const f32 = hal.getLastUniformsF32()!
     expect(f32[U.reversed]).toBe(1)
@@ -318,15 +295,14 @@ describe('GpuWiggleRenderer', () => {
   it('handles log scale type in uniforms', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource()
 
-    renderer.uploadRegion(0, [makeSource()])
-    renderer.renderBlocks([makeBlock()], {
-      canvasWidth: 800,
-      canvasHeight: 400,
-      renderingType: RENDERING_TYPE_XYPLOT,
-      scaleType: SCALE_TYPE_LOG,
-      domainY: [1, 1000],
-    })
+    renderer.uploadRegion(0, [source])
+    renderer.renderBlocks(
+      [makeBlock()],
+      new Map([[0, [source]]]),
+      { ...DEFAULT_STATE, scaleType: SCALE_TYPE_LOG, domainY: [1, 1000] },
+    )
 
     const i32 = hal.getLastUniformsI32()!
     expect(i32[U.scaleType]).toBe(SCALE_TYPE_LOG)

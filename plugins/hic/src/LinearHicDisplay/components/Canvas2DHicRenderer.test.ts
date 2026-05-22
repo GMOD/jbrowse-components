@@ -1,6 +1,9 @@
 import { Canvas2DHicRenderer } from './Canvas2DHicRenderer.ts'
 
-import type { HicRenderState } from './hicBackendTypes.ts'
+import type {
+  HicRenderState,
+  HicUploadData,
+} from './hicBackendTypes.ts'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 
@@ -35,6 +38,15 @@ function makeColorRamp() {
   return ramp
 }
 
+function makeData(overrides?: Partial<HicUploadData>): HicUploadData {
+  return {
+    positions: new Float32Array([10, 20]),
+    counts: new Float32Array([50]),
+    numContacts: 1,
+    ...overrides,
+  }
+}
+
 function makeRenderState(overrides?: Partial<HicRenderState>): HicRenderState {
   return {
     binWidth: 10,
@@ -53,15 +65,9 @@ describe('Canvas2DHicRenderer', () => {
   test('renders fillRects for uploaded contacts', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
-
-    renderer.uploadData({
-      positions: new Float32Array([10, 20]),
-      counts: new Float32Array([50]),
-      numContacts: 1,
-    })
     renderer.uploadColorRamp(makeColorRamp())
 
-    renderer.render(makeRenderState())
+    renderer.render(makeData(), makeRenderState())
 
     expect(ctx.fillRect).toHaveBeenCalledTimes(1)
     expect(ctx.fillRect).toHaveBeenCalledWith(10, 20, 10, 10)
@@ -70,15 +76,10 @@ describe('Canvas2DHicRenderer', () => {
   test('applies viewport transform via ctx stack', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
-
-    renderer.uploadData({
-      positions: new Float32Array([0, 0]),
-      counts: new Float32Array([50]),
-      numContacts: 1,
-    })
     renderer.uploadColorRamp(makeColorRamp())
 
     renderer.render(
+      makeData({ positions: new Float32Array([0, 0]) }),
       makeRenderState({ viewScale: 2, viewOffsetX: 100, yScalar: 0.5 }),
     )
 
@@ -89,11 +90,11 @@ describe('Canvas2DHicRenderer', () => {
     expect(ctx.restore).toHaveBeenCalled()
   })
 
-  test('does nothing with empty data', () => {
+  test('does nothing with null data', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
 
-    renderer.render(makeRenderState())
+    renderer.render(null, makeRenderState())
 
     expect(ctx.fillRect).not.toHaveBeenCalled()
     expect(ctx.clearRect).toHaveBeenCalled()
@@ -103,13 +104,7 @@ describe('Canvas2DHicRenderer', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
 
-    renderer.uploadData({
-      positions: new Float32Array([10, 20]),
-      counts: new Float32Array([50]),
-      numContacts: 1,
-    })
-
-    renderer.render(makeRenderState())
+    renderer.render(makeData(), makeRenderState())
 
     expect(ctx.fillRect).not.toHaveBeenCalled()
   })
@@ -120,15 +115,15 @@ describe('Canvas2DHicRenderer', () => {
 
     const ramp = makeColorRamp()
     ramp[3] = 0
-
-    renderer.uploadData({
-      positions: new Float32Array([0, 0]),
-      counts: new Float32Array([0]),
-      numContacts: 1,
-    })
     renderer.uploadColorRamp(ramp)
 
-    renderer.render(makeRenderState())
+    renderer.render(
+      makeData({
+        positions: new Float32Array([0, 0]),
+        counts: new Float32Array([0]),
+      }),
+      makeRenderState(),
+    )
 
     expect(ctx.fillRect).not.toHaveBeenCalled()
   })
@@ -136,15 +131,16 @@ describe('Canvas2DHicRenderer', () => {
   test('renders multiple contacts', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
-
-    renderer.uploadData({
-      positions: new Float32Array([0, 0, 10, 10, 20, 20]),
-      counts: new Float32Array([50, 75, 90]),
-      numContacts: 3,
-    })
     renderer.uploadColorRamp(makeColorRamp())
 
-    renderer.render(makeRenderState())
+    renderer.render(
+      makeData({
+        positions: new Float32Array([0, 0, 10, 10, 20, 20]),
+        counts: new Float32Array([50, 75, 90]),
+        numContacts: 3,
+      }),
+      makeRenderState(),
+    )
 
     expect(ctx.fillRect).toHaveBeenCalledTimes(3)
   })
@@ -153,41 +149,21 @@ describe('Canvas2DHicRenderer', () => {
     const { canvas, ctx } = createMockCanvas()
 
     const linearRenderer = new Canvas2DHicRenderer(canvas)
-    linearRenderer.uploadData({
-      positions: new Float32Array([0, 0]),
-      counts: new Float32Array([50]),
-      numContacts: 1,
-    })
     linearRenderer.uploadColorRamp(makeColorRamp())
-    linearRenderer.render(makeRenderState({ useLogScale: false }))
+    linearRenderer.render(
+      makeData({ positions: new Float32Array([0, 0]) }),
+      makeRenderState({ useLogScale: false }),
+    )
     const linearColor = ctx.fillStyle
 
     const logRenderer = new Canvas2DHicRenderer(canvas)
-    logRenderer.uploadData({
-      positions: new Float32Array([0, 0]),
-      counts: new Float32Array([50]),
-      numContacts: 1,
-    })
     logRenderer.uploadColorRamp(makeColorRamp())
-    logRenderer.render(makeRenderState({ useLogScale: true }))
+    logRenderer.render(
+      makeData({ positions: new Float32Array([0, 0]) }),
+      makeRenderState({ useLogScale: true }),
+    )
     const logColor = ctx.fillStyle
 
     expect(linearColor).not.toBe(logColor)
-  })
-
-  test('dispose clears data', () => {
-    const { canvas, ctx } = createMockCanvas()
-    const renderer = new Canvas2DHicRenderer(canvas)
-
-    renderer.uploadData({
-      positions: new Float32Array([10, 20]),
-      counts: new Float32Array([50]),
-      numContacts: 1,
-    })
-    renderer.uploadColorRamp(makeColorRamp())
-    renderer.dispose()
-
-    renderer.render(makeRenderState())
-    expect(ctx.fillRect).not.toHaveBeenCalled()
   })
 })

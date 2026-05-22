@@ -1,9 +1,9 @@
 import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import { Canvas2DMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import type {
   MatrixRenderState,
-  VariantMatrixBackend,
   VariantMatrixUploadData,
 } from './variantMatrixBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -38,32 +38,14 @@ export function drawVariantMatrixBlocks(
   }
 }
 
-export class Canvas2DVariantMatrixRenderer implements VariantMatrixBackend {
-  private ctx: CanvasRenderingContext2D
-  private canvas: HTMLCanvasElement
-  private data: VariantMatrixUploadData | undefined
-
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
-    this.ctx = ctx
-  }
-
-  uploadCellData(data: VariantMatrixUploadData) {
-    this.data = data.numCells === 0 ? undefined : data
-  }
-
-  render(state: MatrixRenderState) {
+export class Canvas2DVariantMatrixRenderer extends Canvas2DMonolithicBackend<
+  VariantMatrixUploadData,
+  MatrixRenderState
+> {
+  render(data: VariantMatrixUploadData | null, state: MatrixRenderState) {
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
-    if (this.data) {
-      drawVariantMatrixBlocks(this.ctx, this.data, state)
+    if (data && data.numCells > 0) {
+      drawVariantMatrixBlocks(this.ctx, data, state)
     }
-  }
-
-  dispose() {
-    this.data = undefined
   }
 }

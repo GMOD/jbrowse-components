@@ -1,3 +1,5 @@
+import type { MonolithicGpuBackend } from '@jbrowse/core/gpu/monolithicBackend'
+
 export interface HicRenderState {
   binWidth: number
   yScalar: number
@@ -9,13 +11,15 @@ export interface HicRenderState {
   viewOffsetX: number
 }
 
-export interface HicBackend {
-  uploadData(data: {
-    positions: Float32Array
-    counts: Float32Array
-    numContacts: number
-  }): void
+export interface HicUploadData {
+  positions: Float32Array
+  counts: Float32Array
+  numContacts: number
+}
+
+// HiC adds `uploadColorRamp` for its color-mapped texture; otherwise
+// follows the standard monolithic shape (one bulk uploadData, one render).
+export interface HicBackend
+  extends MonolithicGpuBackend<HicUploadData, HicRenderState> {
   uploadColorRamp(colors: Uint8Array): void
-  render(state: HicRenderState): void
-  dispose(): void
 }

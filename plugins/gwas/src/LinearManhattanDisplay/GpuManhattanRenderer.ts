@@ -3,15 +3,12 @@ import {
   writeBpRangeUniforms,
 } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { GpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as shader from './shaders/manhattan.generated.ts'
 
-import type {
-  ManhattanBackend,
-  ManhattanRenderState,
-} from './manhattanBackendTypes.ts'
+import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
@@ -24,20 +21,21 @@ export const MANHATTAN_PASSES: PassDescriptor[] = [
   slangPass({ id: PASS, mod: shader, topology: 'triangle-list' }),
 ]
 
-export class GpuManhattanRenderer implements ManhattanBackend {
-  private hal: GpuHal
-  private uniformData = new ArrayBuffer(shader.UNIFORMS_SIZE_BYTES)
-  private uniformF32 = new Float32Array(this.uniformData)
-  private regionCount = new Map<number, number>()
+export class GpuManhattanRenderer extends GpuBackend<
+  ManhattanRpcResult,
+  ManhattanRenderState,
+  WiggleRenderBlock
+> {
+  private uniformF32: Float32Array
 
   constructor(hal: GpuHal) {
-    this.hal = hal
+    super(hal, shader.UNIFORMS_SIZE_BYTES)
+    this.uniformF32 = new Float32Array(this.uniformData)
   }
 
   uploadRegion(displayedRegionIndex: number, data: ManhattanRpcResult) {
     if (data.numFeatures === 0) {
       this.hal.deleteRegion(displayedRegionIndex)
-      this.regionCount.delete(displayedRegionIndex)
       return
     }
     this.hal.uploadBuffer(
@@ -46,23 +44,20 @@ export class GpuManhattanRenderer implements ManhattanBackend {
       buildInstanceBuffer(data),
       data.numFeatures,
     )
-    this.regionCount.set(displayedRegionIndex, data.numFeatures)
   }
 
-  pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regionCount, activeRegions, n => {
-      this.hal.deleteRegion(n)
-    })
-  }
-
-  renderBlocks(blocks: WiggleRenderBlock[], state: ManhattanRenderState) {
+  renderBlocks(
+    blocks: WiggleRenderBlock[],
+    regions: ReadonlyMap<number, ManhattanRpcResult>,
+    state: ManhattanRenderState,
+  ) {
     const { canvasWidth, canvasHeight, domainY } = state
     const dpr = getDpr()
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
 
     for (const block of blocks) {
-      if (this.hal.getBufferCount(block.displayedRegionIndex, PASS) === 0) {
+      if (!regions.has(block.displayedRegionIndex)) {
         continue
       }
       const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
@@ -89,11 +84,6 @@ export class GpuManhattanRenderer implements ManhattanBackend {
     this.hal.clearScissor()
     this.hal.clearViewport()
     this.hal.endFrame()
-  }
-
-  dispose() {
-    this.regionCount.clear()
-    this.hal.dispose()
   }
 }
 

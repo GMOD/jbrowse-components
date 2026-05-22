@@ -1,6 +1,6 @@
 import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { GpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as wiggleShader from './shaders/wiggle.generated.ts'
@@ -36,20 +36,23 @@ export const WIGGLE_PASSES: PassDescriptor[] = [
   }),
 ]
 
-interface RegionInfo {
-  numRows: number
-}
-
-export class GpuWiggleRenderer implements WiggleBackend {
-  private hal: GpuHal
-  private uniformData = new ArrayBuffer(wiggleShader.UNIFORMS_SIZE_BYTES)
-  private uniformF32 = new Float32Array(this.uniformData)
-  private uniformI32 = new Int32Array(this.uniformData)
-  private uniformU32 = new Uint32Array(this.uniformData)
-  private regionInfo = new Map<number, RegionInfo>()
+export class GpuWiggleRenderer
+  extends GpuBackend<
+    SourceRenderData[],
+    WiggleGPURenderState,
+    WiggleRenderBlock
+  >
+  implements WiggleBackend
+{
+  private uniformF32: Float32Array
+  private uniformI32: Int32Array
+  private uniformU32: Uint32Array
 
   constructor(hal: GpuHal) {
-    this.hal = hal
+    super(hal, wiggleShader.UNIFORMS_SIZE_BYTES)
+    this.uniformF32 = new Float32Array(this.uniformData)
+    this.uniformI32 = new Int32Array(this.uniformData)
+    this.uniformU32 = new Uint32Array(this.uniformData)
   }
 
   uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]) {
@@ -59,24 +62,18 @@ export class GpuWiggleRenderer implements WiggleBackend {
     }
     if (totalFeatures === 0) {
       this.hal.deleteRegion(displayedRegionIndex)
-      this.regionInfo.delete(displayedRegionIndex)
       return
     }
     const buf = interleaveInstances(sources, totalFeatures)
     // Upload once to PASS_FILL; PASS_LINE shares the same buffer via drawPass
     this.hal.uploadBuffer(displayedRegionIndex, PASS_FILL, buf, totalFeatures)
-    this.regionInfo.set(displayedRegionIndex, {
-      numRows: computeNumRows(sources),
-    })
   }
 
-  pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regionInfo, activeRegions, n => {
-      this.hal.deleteRegion(n)
-    })
-  }
-
-  renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
+  renderBlocks(
+    blocks: WiggleRenderBlock[],
+    regions: ReadonlyMap<number, SourceRenderData[]>,
+    state: WiggleGPURenderState,
+  ) {
     const { canvasWidth, canvasHeight } = state
     const dpr = getDpr()
 
@@ -87,13 +84,8 @@ export class GpuWiggleRenderer implements WiggleBackend {
       state.renderingType === RENDERING_TYPE_LINE ? PASS_LINE : PASS_FILL
 
     for (const block of blocks) {
-      if (
-        this.hal.getBufferCount(block.displayedRegionIndex, PASS_FILL) === 0
-      ) {
-        continue
-      }
-      const info = this.regionInfo.get(block.displayedRegionIndex)
-      if (!info) {
+      const sources = regions.get(block.displayedRegionIndex)
+      if (!sources) {
         continue
       }
       const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
@@ -110,7 +102,7 @@ export class GpuWiggleRenderer implements WiggleBackend {
       this.uniformF32[U.canvasHeight] = canvasHeight
       this.uniformI32[U.scaleType] = state.scaleType
       this.uniformI32[U.renderingType] = state.renderingType
-      this.uniformF32[U.numRows] = info.numRows
+      this.uniformF32[U.numRows] = computeNumRows(sources)
       this.uniformF32[U.domainYMin] = state.domainY[0]
       this.uniformF32[U.domainYMax] = state.domainY[1]
       // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
@@ -125,10 +117,5 @@ export class GpuWiggleRenderer implements WiggleBackend {
     this.hal.clearScissor()
     this.hal.clearViewport()
     this.hal.endFrame()
-  }
-
-  dispose() {
-    this.regionInfo.clear()
-    this.hal.dispose()
   }
 }

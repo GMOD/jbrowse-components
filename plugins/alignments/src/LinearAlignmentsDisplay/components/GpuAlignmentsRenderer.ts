@@ -275,7 +275,6 @@ function emptyRegion(): LocalRegion {
     readIdToIndex: new Map(),
     readPositions: new Uint32Array(0),
     readYs: new Uint16Array(0),
-    readStrands: new Int8Array(0),
     maxDepth: 0,
     binSize: 1,
     noncovMaxCount: 0,
@@ -298,7 +297,6 @@ interface BlockFrame {
 // Per-region data not tracked by the HAL. Extends ChainBoundsRegion so
 // `getChainBounds` accepts it directly.
 interface LocalRegion extends ChainBoundsRegion {
-  readStrands: Int8Array
   insertSizeStats?: { upper: number; lower: number }
   maxDepth: number
   binSize: number
@@ -376,7 +374,6 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     r.insertSizeStats = data.insertSizeStats
     r.readPositions = data.readPositions
     r.readYs = data.readYs
-    r.readStrands = data.readStrands
     r.readIdToIndex = buildReadIdToIndex(data.readIds, data.readIds.length)
     this.regions.set(displayedRegionIndex, r)
     uploadReadSegments(this.hal, displayedRegionIndex, data)

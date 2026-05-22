@@ -67,6 +67,15 @@ Tune color schemes and default display options for common interspecies compariso
 **CIGAR draw toggles via gpuProps**
 Add shader uniform bit flags to gate `drawCIGAR` / `drawCIGARMatchesOnly` / `drawLocationMarkers`; worker always emits full geometry, flags control visibility. Only worth it if users toggle these frequently.
 
+**Dotplot short-segment rendering (point sprites)**
+Short alignments (sub-pixel `len < lineWidth`) currently render as thin
+slivers because the degenerate fallback expands the quad only vertically.
+A square-cap displacement along the tangent was tried and reverted (odd
+polygons on normal segments). Better options: (a) emit `gl_PointSize`
+sprites for sub-threshold segments in a separate draw call;
+(b) round caps via SDF in the fragment shader, passing along-tangent
+distance as a varying and discarding outside `lineWidth/2` at each end.
+
 ---
 
 ## Data Formats

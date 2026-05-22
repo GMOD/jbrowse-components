@@ -35,6 +35,13 @@ export interface SyntenyBackend {
   uploadGeometry(key: number, data: SyntenyInstanceData): void
   deleteGeometry(key: number): void
   render(state: SyntenyRenderState): boolean
-  pick(x: number, y: number): SyntenyPickResult | undefined
+  // Pick takes the current render state explicitly — no stale-snapshot
+  // coupling with the last render() call. Callers read state from the model
+  // (the same getter that feeds render) and pass it in.
+  pick(
+    x: number,
+    y: number,
+    state: SyntenyRenderState,
+  ): SyntenyPickResult | undefined
   dispose(): void
 }

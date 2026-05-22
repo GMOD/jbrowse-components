@@ -3,7 +3,7 @@ import {
   makeBpMapper,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { Canvas2DBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import {
@@ -18,7 +18,6 @@ import {
 } from './sharedRendererConstants.ts'
 
 import type {
-  CanvasFeatureBackend,
   FeatureRenderBlock,
   RenderState,
 } from './canvasFeatureBackendTypes.ts'
@@ -191,34 +190,17 @@ export function drawFeatureBlocks(
   }
 }
 
-export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
-  private canvas: HTMLCanvasElement
-  private ctx: CanvasRenderingContext2D
-  private regions = new Map<number, RegionRenderData>()
-
-  constructor(canvas: HTMLCanvasElement) {
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
-    this.canvas = canvas
-    this.ctx = ctx
-  }
-
-  uploadRegion(displayedRegionIndex: number, data: RegionRenderData) {
-    this.regions.set(displayedRegionIndex, data)
-  }
-
-  renderBlocks(blocks: FeatureRenderBlock[], state: RenderState) {
+export class Canvas2DFeatureRenderer extends Canvas2DBackend<
+  RegionRenderData,
+  RenderState,
+  FeatureRenderBlock
+> {
+  renderBlocks(
+    blocks: FeatureRenderBlock[],
+    regions: ReadonlyMap<number, RegionRenderData>,
+    state: RenderState,
+  ) {
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
-    drawFeatureBlocks(this.ctx, this.regions, blocks, state)
-  }
-
-  pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regions, activeRegions)
-  }
-
-  dispose() {
-    this.regions.clear()
+    drawFeatureBlocks(this.ctx, regions, blocks, state)
   }
 }

@@ -3,7 +3,7 @@ import {
   makeRampFillStyleLut,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import { Canvas2DMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
 
 import { mapLDValue } from './ldColorRamp.ts'
 
@@ -52,8 +52,6 @@ export function drawLDBlocks(
         continue
       }
 
-      // Inline the -45° rotation and viewport transform for the 4 diamond
-      // vertices, avoiding a per-cell array allocation and inner loop.
       const leftX = (px + py) * s + viewOffsetX
       const centerY = (-px + py) * s * yScalar
       const halfW = cw * s
@@ -71,54 +69,21 @@ export function drawLDBlocks(
   }
 }
 
-export class Canvas2DLDRenderer implements LDBackend {
-  private ctx: Ctx2D
-  private canvas: HTMLCanvasElement | null = null
-  private data: LDUploadData = {
-    ldValues: new Float32Array(0),
-    boundaries: new Float32Array(0),
-    numCells: 0,
-  }
+export class Canvas2DLDRenderer
+  extends Canvas2DMonolithicBackend<LDUploadData, LDRenderState>
+  implements LDBackend
+{
   private colorRamp: Uint8Array | null = null
-
-  constructor(canvasOrCtx: HTMLCanvasElement | SvgCanvas) {
-    if (canvasOrCtx instanceof SvgCanvas) {
-      this.ctx = canvasOrCtx
-    } else {
-      this.canvas = canvasOrCtx
-      this.ctx = canvasOrCtx.getContext('2d')!
-    }
-  }
-
-  uploadData(data: LDUploadData) {
-    this.data = data
-  }
 
   uploadColorRamp(colors: Uint8Array) {
     this.colorRamp = colors
   }
 
-  render(state: LDRenderState) {
-    if (this.canvas) {
-      prepareCanvas(
-        this.canvas,
-        this.ctx as CanvasRenderingContext2D,
-        state.canvasWidth,
-        state.canvasHeight,
-      )
-    }
-    if (!this.colorRamp) {
+  render(data: LDUploadData | null, state: LDRenderState) {
+    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    if (!data || !this.colorRamp) {
       return
     }
-    drawLDBlocks(this.ctx, this.data, this.colorRamp, state)
-  }
-
-  dispose() {
-    this.data = {
-      ldValues: new Float32Array(0),
-      boundaries: new Float32Array(0),
-      numCells: 0,
-    }
-    this.colorRamp = null
+    drawLDBlocks(this.ctx, data, this.colorRamp, state)
   }
 }

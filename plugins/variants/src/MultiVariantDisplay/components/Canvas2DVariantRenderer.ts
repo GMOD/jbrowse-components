@@ -2,13 +2,12 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { Canvas2DBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import { drawVariantShape } from './variantShape.ts'
 
 import type {
-  VariantBackend,
   VariantRenderBlock,
   VariantRenderState,
   VariantUploadData,
@@ -107,38 +106,17 @@ export function drawVariantsToCtx(
   drawVariantBlocks(ctx, regions, blocks, state)
 }
 
-export class Canvas2DVariantRenderer implements VariantBackend {
-  private canvas: HTMLCanvasElement
-  private ctx: CanvasRenderingContext2D
-  private regions = new Map<number, VariantUploadData>()
-
-  constructor(canvas: HTMLCanvasElement) {
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
-    this.canvas = canvas
-    this.ctx = ctx
-  }
-
-  uploadRegion(displayedRegionIndex: number, data: VariantUploadData) {
-    if (data.numCells === 0) {
-      this.regions.delete(displayedRegionIndex)
-    } else {
-      this.regions.set(displayedRegionIndex, data)
-    }
-  }
-
-  pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regions, activeRegions)
-  }
-
-  renderBlocks(blocks: VariantRenderBlock[], state: VariantRenderState) {
+export class Canvas2DVariantRenderer extends Canvas2DBackend<
+  VariantUploadData,
+  VariantRenderState,
+  VariantRenderBlock
+> {
+  renderBlocks(
+    blocks: VariantRenderBlock[],
+    regions: ReadonlyMap<number, VariantUploadData>,
+    state: VariantRenderState,
+  ) {
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
-    drawVariantBlocks(this.ctx, this.regions, blocks, state)
-  }
-
-  dispose() {
-    this.regions.clear()
+    drawVariantBlocks(this.ctx, regions, blocks, state)
   }
 }

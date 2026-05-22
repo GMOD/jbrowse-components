@@ -1,4 +1,4 @@
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { PerRegionGpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
 
 export type { RenderBlock as VariantRenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
@@ -18,9 +18,7 @@ export interface VariantRenderState {
   scrollTop: number
 }
 
-export interface VariantBackend {
-  uploadRegion(displayedRegionIndex: number, data: VariantUploadData): void
-  pruneRegions(activeRegions: number[]): void
-  renderBlocks(blocks: RenderBlock[], state: VariantRenderState): void
-  dispose(): void
-}
+export type VariantBackend = PerRegionGpuBackend<
+  VariantUploadData,
+  VariantRenderState
+>

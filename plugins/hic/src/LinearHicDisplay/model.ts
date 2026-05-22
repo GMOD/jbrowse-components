@@ -303,7 +303,7 @@ export default function stateModelFactory(
             if (!state) {
               return false
             }
-            b.render(state)
+            b.render(self.rpcData, state)
             return true
           },
         })

@@ -32,10 +32,10 @@ export const SYNTENY_PASSES: PassDescriptor[] = [
   }),
 ]
 
-// Lazily-allocated 1x1 offscreen 2D context used solely to evaluate
-// isPointInPath during CPU pick — the path is rebuilt per candidate and never
-// composited, so size doesn't matter.
-function makePickCtx() {
+// 1×1 offscreen 2D context used solely to evaluate isPointInPath during CPU
+// pick — the path is rebuilt per candidate and never composited, so size
+// doesn't matter. Lazily created on first pick.
+function makePickCtx(): CanvasRenderingContext2D | undefined {
   if (typeof OffscreenCanvas !== 'undefined') {
     const ctx = new OffscreenCanvas(1, 1).getContext('2d')
     if (ctx) {
@@ -55,9 +55,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   private uniformF32 = new Float32Array(this.uniformData)
 
   private cache = new SyntenyGeometryCache()
-  private lastState: SyntenyRenderState | undefined
   private pickCtx: CanvasRenderingContext2D | undefined
-  private disposed = false
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
     this.hal = hal
@@ -86,10 +84,6 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   }
 
   render(state: SyntenyRenderState) {
-    if (this.disposed) {
-      return false
-    }
-    this.lastState = state
     if (this.cache.regions.size === 0) {
       return false
     }
@@ -109,14 +103,10 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     return true
   }
 
-  pick(x: number, y: number) {
-    if (this.disposed) {
-      return undefined
-    }
-    const state = this.lastState
+  pick(x: number, y: number, state: SyntenyRenderState) {
     this.pickCtx ??= makePickCtx()
     const ctx = this.pickCtx
-    if (!state || !ctx) {
+    if (!ctx) {
       return undefined
     }
     const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
@@ -132,10 +122,7 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   }
 
   dispose() {
-    this.disposed = true
     this.cache.clear()
-    this.lastState = undefined
-    this.pickCtx = undefined
     this.hal.dispose()
   }
 

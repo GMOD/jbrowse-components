@@ -149,7 +149,6 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
   private cache = new SyntenyGeometryCache()
-  private lastState: SyntenyRenderState | undefined
 
   private get dpr() {
     return typeof window !== 'undefined' ? window.devicePixelRatio : 1
@@ -183,7 +182,6 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   }
 
   render(state: SyntenyRenderState) {
-    this.lastState = state
     if (this.cache.regions.size === 0) {
       return false
     }
@@ -210,11 +208,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
     return true
   }
 
-  pick(x: number, y: number) {
-    const state = this.lastState
-    if (!state) {
-      return undefined
-    }
+  pick(x: number, y: number, state: SyntenyRenderState) {
     return pickFeatureAtPoint({
       ctx: this.ctx,
       state,
@@ -228,6 +222,5 @@ export class Canvas2DSyntenyRenderer implements SyntenyBackend {
 
   dispose() {
     this.cache.clear()
-    this.lastState = undefined
   }
 }

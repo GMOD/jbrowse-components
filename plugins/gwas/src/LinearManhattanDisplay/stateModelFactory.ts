@@ -225,7 +225,7 @@ export function stateModelFactory(
           b => {
             const state = self.manhattanRenderState()
             if (state) {
-              b.renderBlocks(self.renderBlocks, state)
+              b.renderBlocks(self.renderBlocks, self.rpcDataMap, state)
               return true
             }
             return false

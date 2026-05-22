@@ -1,3 +1,4 @@
+import type { PerRegionGpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 export type MafRenderBlock = RenderBlock
@@ -42,16 +43,20 @@ export interface MafGpuProps {
 }
 
 // Payload the per-region autorun ships to the backend each time `gpuProps`
-// or the underlying `regionData` changes.
+// or the underlying `regionData` changes. Pre-encoded on the main thread
+// because encoding depends on theme + user toggles (`MafGpuProps`).
 export interface MafUploadPayload {
   instanceBuffer: ArrayBuffer
   instanceCount: number
-  regionData: MafRegionData
 }
 
-export interface MafBackend {
-  uploadRegion(displayedRegionIndex: number, data: MafUploadPayload): void
-  pruneRegions(active: number[]): void
-  renderBlocks(blocks: MafRenderBlock[], state: MafGPURenderState): void
-  dispose(): void
-}
+// MAF uploads a pre-encoded GPU buffer; the render-side reads raw blocks
+// directly from the model's `rpcDataMap` (so Canvas2D can draw them and
+// GPU can check presence). RenderData diverges from UploadData here —
+// every other per-region plugin keeps the default `RenderData = UploadData`.
+export type MafBackend = PerRegionGpuBackend<
+  MafUploadPayload,
+  MafGPURenderState,
+  MafRenderBlock,
+  MafRegionData
+>

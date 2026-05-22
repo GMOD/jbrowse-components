@@ -232,8 +232,8 @@ callback.
 
 ## Backend interfaces per plugin
 
-Each plugin defines its own `Backend` interface and a factory that produces
-either a GPU or Canvas 2D implementation:
+Each plugin defines its own `Backend` type and a factory that produces either
+a GPU or Canvas 2D implementation:
 
 ```ts
 export function XxxRenderer(canvas: HTMLCanvasElement) {
@@ -249,6 +249,56 @@ export function XxxRenderer(canvas: HTMLCanvasElement) {
 
 `initDualBackend` calls `createGpuHal`; if a HAL is returned, the GPU backend
 is constructed, otherwise Canvas 2D.
+
+### Shared per-region streamed contract
+
+Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle)
+specialize one generic type and inherit from one of two abstract base
+classes in `@jbrowse/core/gpu/perRegionBackend`:
+
+```ts
+// Plugin specializes the interface (used in model + React code):
+export type XxxBackend = PerRegionGpuBackend<XxxUploadData, XxxRenderState>
+
+// Plugin's GPU renderer extends GpuBackend, implements uploadRegion + renderBlocks:
+export class GpuXxxRenderer extends GpuBackend<XxxUploadData, XxxRenderState> {
+  constructor(hal: GpuHal) { super(hal, XXX_UNIFORM_BYTE_SIZE) }
+  uploadRegion(idx, data) { … }
+  renderBlocks(blocks, regions, state) { … }
+}
+
+// Plugin's Canvas2D renderer extends Canvas2DBackend, implements renderBlocks only:
+export class Canvas2DXxxRenderer extends Canvas2DBackend<XxxUploadData, XxxRenderState> {
+  renderBlocks(blocks, regions, state) { … }
+}
+```
+
+The bases own everything that's truly shared:
+
+- `Canvas2DBackend` — owns `canvas` + `ctx` (constructor throws if 2D
+  context unavailable), stubs `uploadRegion` / `pruneRegions` / `dispose`
+  as no-ops since the source of truth is the `regions` map.
+- `GpuBackend` — owns the `hal` reference and a pre-allocated uniform
+  scratch `ArrayBuffer`. Default `pruneRegions(active)` delegates to
+  `hal.pruneRegions(active)`; default `dispose()` calls `hal.dispose()`.
+
+Two invariants make the renderer implementations small and uniform:
+
+- `renderBlocks` receives the model's data map as its second argument — the
+  renderer holds no `Map<number, ...>` field of its own. GPU buffer lifecycle
+  delegates to `hal.pruneRegions(active)`; Canvas2D backends inherit no-op
+  upload/prune and read everything from `regions` at render time.
+- `hal.drawPass` short-circuits when the region has no buffer for that pass,
+  so GPU renderers issue draws unconditionally — no per-region flag cache.
+
+For MAF, the upload payload (`MafUploadPayload`) wraps a pre-encoded GPU
+buffer AND the raw `MafRegionData`; only the latter is needed at render
+time. `PerRegionGpuBackend` has an optional fourth type param `RenderData`
+(defaults to `UploadData`) to support this split.
+
+Whole-map synced (alignments, multi-LGV-synteny) and monolithic (HiC, LD,
+multi-variant-matrix, dotplot) plugins still define their own backend
+interfaces because their upload shapes differ — see "Three upload patterns".
 
 ### Wiggle-family contract
 
@@ -610,12 +660,47 @@ createGpuHal(canvas, passes, uniformByteSize): Promise<GpuHal | null>
 ```
 
 **Key methods:** `uploadBuffer(regionKey, passId, data, count)`,
-`drawPass(passId, regionKey, bufferPassId?)`, `writeUniforms(data)`,
-`setScissor`, `setViewport`, `setRegionMeta` / `getRegionMeta`, `dispose()`.
+`getBufferCount(regionKey, passId)`, `drawPass(passId, regionKey, bufferPassId?)`,
+`writeUniforms(data)`, `setScissor`, `setViewport`, `deleteRegion(key)`,
+`pruneRegions(active)`, `dispose()`.
+
+`drawPass` short-circuits when the region has no buffer for that pass (or
+count is zero), so callers can issue draws unconditionally without tracking
+which regions have data — HAL already knows.
 
 **Implementations:** `WebGPUHal` (4× MSAA, device-lost recovery),
 `WebGL2Hal` (`antialias: true`, VAO + UBO, context-loss recovery),
 `MockHal` (tests).
+
+### Renderers stay stateless
+
+GPU renderer classes own only what is intrinsically per-instance:
+
+- the `GpuHal` reference
+- pre-allocated uniform scratch buffers (`ArrayBuffer` + typed views) reused
+  across frames to avoid per-frame GC churn
+- save/restore UBO scratch where a pass mutates uniforms (alignments arc/overlay)
+
+What does NOT belong as renderer instance state:
+
+- **Region-lifecycle bookkeeping** — call `hal.pruneRegions(active)` instead
+  of mirroring HAL's region map in a renderer-side `Map<number, ...>`. HAL
+  is the authoritative owner of "which regions have GPU buffers."
+- **Per-region metadata derivable from `rpcDataMap`** — `hasRects` /
+  `hasLines` / `outlineColor` style fields. `drawPass` skips missing buffers
+  so the boolean flags aren't needed; per-region scalars used in uniforms
+  should be passed into `renderBlocks` from the MST model rather than cached
+  on the renderer. See `GpuCanvasFeatureRenderer` for the canonical shape:
+  `renderBlocks(blocks, regions, state)` where `regions` is the model's
+  `laidOutDataMap` / `rpcDataMap` passed through verbatim.
+- **Write-only mirror copies of upload data** — if a value lives in
+  `rpcDataMap[idx].foo`, do not also store it as `LocalRegion.foo` "just in
+  case." Read it from the upload data path that needs it.
+
+The rule of thumb: anything the upload callback already knows from observable
+inputs can be looked up at render time too — don't snapshot it onto the
+renderer instance. Less local state means fewer divergence points when the
+source of truth shifts.
 
 **Backend override** (query param `?renderer=`): `webgpu` / `webgl` /
 `canvas2d` / `canvas`; omitted → auto-detect WebGPU → WebGL2 → Canvas 2D.
@@ -838,6 +923,11 @@ key on a tuple of two displayedRegion indices.
 - Don't destructure model methods; call on the model.
 - Don't use `useMemo` for observable-dependent values; use a cached MST view.
 - Don't mutate per-region values in place; emit fresh objects.
+- Don't cache per-region data on a renderer class (`private regions = new Map<number, ...>()`).
+  The model's `rpcDataMap` / `laidOutDataMap` is the single source of truth;
+  pass it into `renderBlocks(blocks, regions, state)` instead. For GPU buffer
+  lifecycle delegate to `hal.pruneRegions(active)` rather than mirroring HAL's
+  region map. See `PerRegionGpuBackend` in `@jbrowse/core/gpu/perRegionBackend`.
 - Don't add or redefine volatiles/actions owned by the slot mixin
   (`canvasDrawn`, `renderBump`, `currentGpuBackend`, `markCanvasDrawn`,
   `resetCanvasDrawn`, `renderNow`, `stopGpuBackendLifecycle`, etc.) or the

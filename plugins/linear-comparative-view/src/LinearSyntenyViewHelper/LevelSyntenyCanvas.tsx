@@ -191,10 +191,11 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
 
   function dispatchHoverPick(coords: { x: number; y: number }) {
     const backend = model.gpuBackend
-    if (!backend) {
+    const state = model.syntenyRenderState
+    if (!backend || !state) {
       return
     }
-    const hit = backend.pick(coords.x, coords.y)
+    const hit = backend.pick(coords.x, coords.y, state)
     const hitDisplay = hit ? model.displaysByKey.get(hit.key) : undefined
     transaction(() => {
       for (const display of model.linearSyntenyDisplays) {
@@ -252,10 +253,11 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       return
     }
     const backend = model.gpuBackend
-    if (!backend) {
+    const state = model.syntenyRenderState
+    if (!backend || !state) {
       return
     }
-    const hit = backend.pick(coords.x, coords.y)
+    const hit = backend.pick(coords.x, coords.y, state)
     transaction(() => {
       for (const display of model.linearSyntenyDisplays) {
         const isHit = hit && model.displaysByKey.get(hit.key) === display
@@ -269,7 +271,8 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
 
   function handleContextMenu(event: React.MouseEvent<HTMLCanvasElement>) {
     const backend = model.gpuBackend
-    if (!backend) {
+    const state = model.syntenyRenderState
+    if (!backend || !state) {
       return
     }
     event.preventDefault()
@@ -277,7 +280,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     if (!coords) {
       return
     }
-    const hit = backend.pick(coords.x, coords.y)
+    const hit = backend.pick(coords.x, coords.y, state)
     if (!hit) {
       return
     }

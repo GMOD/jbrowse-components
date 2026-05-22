@@ -1,6 +1,6 @@
 import { bpRangeXTuple, clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { GpuBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as mafShader from './shaders/maf.generated.ts'
@@ -12,6 +12,7 @@ import {
 import type {
   MafBackend,
   MafGPURenderState,
+  MafRegionData,
   MafRenderBlock,
   MafUploadPayload,
 } from './mafBackendTypes.ts'
@@ -25,21 +26,23 @@ export const MAF_PASSES: PassDescriptor[] = [
 
 const U = UNIFORM_OFFSET_F32
 
-export class GpuMafRenderer implements MafBackend {
-  private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
-  private uniformF32 = new Float32Array(this.uniformData)
-  private regionCount = new Map<number, number>()
+export class GpuMafRenderer extends GpuBackend<
+  MafUploadPayload,
+  MafGPURenderState,
+  MafRenderBlock,
+  MafRegionData
+> {
+  private uniformF32: Float32Array
 
   constructor(hal: GpuHal) {
-    this.hal = hal
+    super(hal, UNIFORMS_SIZE_BYTES)
+    this.uniformF32 = new Float32Array(this.uniformData)
   }
 
   uploadRegion(displayedRegionIndex: number, data: MafUploadPayload) {
     const { instanceBuffer, instanceCount } = data
     if (instanceCount === 0) {
       this.hal.deleteRegion(displayedRegionIndex)
-      this.regionCount.delete(displayedRegionIndex)
     } else {
       // Buffer is pre-encoded on the main thread by the per-region encode autorun.
       // The shader unpacks absolute genomic coords + rowIndex + color.
@@ -49,17 +52,14 @@ export class GpuMafRenderer implements MafBackend {
         instanceBuffer,
         instanceCount,
       )
-      this.regionCount.set(displayedRegionIndex, instanceCount)
     }
   }
 
-  pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regionCount, activeRegions, n => {
-      this.hal.deleteRegion(n)
-    })
-  }
-
-  renderBlocks(blocks: MafRenderBlock[], state: MafGPURenderState) {
+  renderBlocks(
+    blocks: MafRenderBlock[],
+    regions: ReadonlyMap<number, MafRegionData>,
+    state: MafGPURenderState,
+  ) {
     const { canvasWidth, canvasHeight, rowHeight, rowProportion } = state
     const dpr = getDpr()
 
@@ -67,14 +67,10 @@ export class GpuMafRenderer implements MafBackend {
     this.hal.beginFrame(0, 0, 0, 0)
 
     for (const block of blocks) {
-      const bufCount = this.hal.getBufferCount(
-        block.displayedRegionIndex,
-        PASS_RECT,
-      )
-      const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
-      if (bufCount === 0) {
+      if (!regions.has(block.displayedRegionIndex)) {
         continue
       }
+      const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
       if (!clip) {
         continue
       }
@@ -100,10 +96,5 @@ export class GpuMafRenderer implements MafBackend {
     this.hal.clearScissor()
     this.hal.clearViewport()
     this.hal.endFrame()
-  }
-
-  dispose() {
-    this.regionCount.clear()
-    this.hal.dispose()
   }
 }

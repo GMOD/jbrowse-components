@@ -80,15 +80,16 @@ export default function stateModelFactory(
           upload: b => {
             const { cellData } = self
             if (cellData?.mode === 'matrix') {
-              b.uploadCellData(cellData)
+              b.uploadData(cellData)
             }
           },
           render: b => {
             const state = self.renderState
+            const { cellData } = self
             if (!state) {
               return false
             }
-            b.render(state)
+            b.render(cellData?.mode === 'matrix' ? cellData : null, state)
             return true
           },
         })

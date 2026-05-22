@@ -556,7 +556,11 @@ export default function baseStateModelFactory(
               if (self.laidOutDataMap.size === 0) {
                 return false
               }
-              b.renderBlocks(self.renderBlocks, self.renderState)
+              b.renderBlocks(
+                self.renderBlocks,
+                self.laidOutDataMap,
+                self.renderState,
+              )
               return true
             },
           })
@@ -939,6 +943,25 @@ export default function baseStateModelFactory(
                   self.clearHeightBeforeExpand()
                 },
                 { name: 'CanvasClearDensityOnDisplayedRegions' },
+              ),
+            )
+
+            // Clear hover when the viewport moves under a stationary cursor
+            // (pan, zoom, internal vertical scroll). The canvas is sticky, so
+            // the cursor can stay over it while content shifts underneath — no
+            // mousemove/mouseleave fires, and without this the previously
+            // hovered feature's tooltip stays pinned at the cursor.
+            addDisposer(
+              self,
+              autorun(
+                () => {
+                  const view = getContainingView(self) as LGV
+                  void self.scrollTop
+                  void view.bpPerPx
+                  void view.offsetPx
+                  self.clearHover()
+                },
+                { name: 'CanvasClearHoverOnViewportChange' },
               ),
             )
           },

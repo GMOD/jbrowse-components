@@ -281,13 +281,22 @@ export class WebGL2Hal implements GpuHal {
     }
   }
 
-  deleteAllRegions() {
+  private deleteAllRegions() {
     for (const region of this.regions.values()) {
       for (const buf of region.buffers.values()) {
         this.gl.deleteBuffer(buf.vbo)
       }
     }
     this.regions.clear()
+  }
+
+  pruneRegions(active: Iterable<number>) {
+    const activeSet = new Set(active)
+    for (const regionKey of this.regions.keys()) {
+      if (!activeSet.has(regionKey)) {
+        this.deleteRegion(regionKey)
+      }
+    }
   }
 
   uploadTexture(

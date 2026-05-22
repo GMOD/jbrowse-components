@@ -58,7 +58,11 @@ export interface GpuHal {
   getBufferCount(regionKey: number, passId: string): number
   deleteBuffer(regionKey: number, passId: string): void
   deleteRegion(regionKey: number): void
-  deleteAllRegions(): void
+  // Delete every region whose key is not in `active`. Callers pass the set
+  // of currently-needed regions; HAL prunes the rest. Lets renderers stop
+  // mirroring HAL's region-tracking map for the sole purpose of computing
+  // which regions to discard.
+  pruneRegions(active: Iterable<number>): void
 
   uploadTexture(
     passId: string,

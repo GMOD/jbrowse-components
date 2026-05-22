@@ -65,39 +65,23 @@ describe('Canvas2DWiggleRenderer', () => {
     )
   })
 
-  test('uploadRegion stores data and deletes on empty', () => {
-    const { canvas } = createMockCanvas()
-    const renderer = new Canvas2DWiggleRenderer(canvas)
-    const source = makeSource([5], [0], [100])
-
-    renderer.uploadRegion(0, [source])
-    // Render to verify data is present (should not throw)
-    renderer.renderBlocks(
-      [
-        {
-          displayedRegionIndex: 0,
-          bpRangeX: [0, 1000],
-          screenStartPx: 0,
-          screenEndPx: 800,
-          reversed: false,
-        },
-      ],
-      {
-        domainY: [0, 10],
-        scaleType: SCALE_TYPE_LINEAR,
-        renderingType: RENDERING_TYPE_XYPLOT,
-        canvasWidth: 800,
-        canvasHeight: 200,
-      },
-    )
-
-    // Upload empty source list → should remove region
-    renderer.uploadRegion(0, [])
-  })
+  const defaultBlock = {
+    displayedRegionIndex: 0,
+    bpRangeX: [0, 1000] as [number, number],
+    screenStartPx: 0,
+    screenEndPx: 800,
+    reversed: false,
+  }
+  const defaultState = {
+    domainY: [0, 10] as [number, number],
+    scaleType: SCALE_TYPE_LINEAR,
+    renderingType: RENDERING_TYPE_XYPLOT,
+    canvasWidth: 800,
+    canvasHeight: 200,
+  }
 
   test('renderBlocks draws XY plot rectangles', () => {
     const { canvas, ctx, fillRectCalls } = createMockCanvas()
-    // Mock devicePixelRatio
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
@@ -106,24 +90,10 @@ describe('Canvas2DWiggleRenderer', () => {
     const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5, 8], [0, 500], [500, 1000])
 
-    renderer.uploadRegion(0, [source])
     renderer.renderBlocks(
-      [
-        {
-          displayedRegionIndex: 0,
-          bpRangeX: [0, 1000],
-          screenStartPx: 0,
-          screenEndPx: 800,
-          reversed: false,
-        },
-      ],
-      {
-        domainY: [0, 10],
-        scaleType: SCALE_TYPE_LINEAR,
-        renderingType: RENDERING_TYPE_XYPLOT,
-        canvasWidth: 800,
-        canvasHeight: 200,
-      },
+      [defaultBlock],
+      new Map([[0, [source]]]),
+      defaultState,
     )
 
     expect(ctx.setTransform).toHaveBeenCalledWith(1, 0, 0, 1, 0, 0)
@@ -143,22 +113,9 @@ describe('Canvas2DWiggleRenderer', () => {
 
     const renderer = new Canvas2DWiggleRenderer(canvas)
     renderer.renderBlocks(
-      [
-        {
-          displayedRegionIndex: 99,
-          bpRangeX: [0, 1000],
-          screenStartPx: 0,
-          screenEndPx: 800,
-          reversed: false,
-        },
-      ],
-      {
-        domainY: [0, 10],
-        scaleType: SCALE_TYPE_LINEAR,
-        renderingType: RENDERING_TYPE_XYPLOT,
-        canvasWidth: 800,
-        canvasHeight: 200,
-      },
+      [{ ...defaultBlock, displayedRegionIndex: 99 }],
+      new Map(),
+      defaultState,
     )
 
     expect(ctx.save).not.toHaveBeenCalled()
@@ -174,25 +131,10 @@ describe('Canvas2DWiggleRenderer', () => {
     const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5], [0], [1000])
 
-    renderer.uploadRegion(0, [source])
-    renderer.renderBlocks(
-      [
-        {
-          displayedRegionIndex: 0,
-          bpRangeX: [0, 1000],
-          screenStartPx: 0,
-          screenEndPx: 800,
-          reversed: false,
-        },
-      ],
-      {
-        domainY: [0, 10],
-        scaleType: SCALE_TYPE_LINEAR,
-        renderingType: RENDERING_TYPE_DENSITY,
-        canvasWidth: 800,
-        canvasHeight: 200,
-      },
-    )
+    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+      ...defaultState,
+      renderingType: RENDERING_TYPE_DENSITY,
+    })
 
     expect(fillRectCalls.length).toBe(1)
   })
@@ -207,25 +149,10 @@ describe('Canvas2DWiggleRenderer', () => {
     const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5, 8], [0, 500], [500, 1000])
 
-    renderer.uploadRegion(0, [source])
-    renderer.renderBlocks(
-      [
-        {
-          displayedRegionIndex: 0,
-          bpRangeX: [0, 1000],
-          screenStartPx: 0,
-          screenEndPx: 800,
-          reversed: false,
-        },
-      ],
-      {
-        domainY: [0, 10],
-        scaleType: SCALE_TYPE_LINEAR,
-        renderingType: RENDERING_TYPE_LINE,
-        canvasWidth: 800,
-        canvasHeight: 200,
-      },
-    )
+    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+      ...defaultState,
+      renderingType: RENDERING_TYPE_LINE,
+    })
 
     expect(ctx.beginPath).toHaveBeenCalled()
     expect(ctx.stroke).toHaveBeenCalled()
@@ -241,77 +168,12 @@ describe('Canvas2DWiggleRenderer', () => {
     const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5], [0], [1000])
 
-    renderer.uploadRegion(0, [source])
-    renderer.renderBlocks(
-      [
-        {
-          displayedRegionIndex: 0,
-          bpRangeX: [0, 1000],
-          screenStartPx: 0,
-          screenEndPx: 800,
-          reversed: false,
-        },
-      ],
-      {
-        domainY: [0, 10],
-        scaleType: SCALE_TYPE_LINEAR,
-        renderingType: RENDERING_TYPE_SCATTER,
-        canvasWidth: 800,
-        canvasHeight: 200,
-      },
-    )
-
-    expect(fillRectCalls.length).toBe(1)
-  })
-
-  test('pruneRegions removes inactive regions', () => {
-    const { canvas, fillRectCalls } = createMockCanvas()
-    Object.defineProperty(window, 'devicePixelRatio', {
-      value: 1,
-      writable: true,
+    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+      ...defaultState,
+      renderingType: RENDERING_TYPE_SCATTER,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
-    renderer.uploadRegion(0, [makeSource([5], [0], [1000])])
-    renderer.uploadRegion(1, [makeSource([8], [0], [1000])])
-
-    renderer.pruneRegions([0])
-
-    renderer.renderBlocks(
-      [
-        {
-          displayedRegionIndex: 0,
-          bpRangeX: [0, 1000],
-          screenStartPx: 0,
-          screenEndPx: 400,
-          reversed: false,
-        },
-        {
-          displayedRegionIndex: 1,
-          bpRangeX: [1000, 2000],
-          screenStartPx: 400,
-          screenEndPx: 800,
-          reversed: false,
-        },
-      ],
-      {
-        domainY: [0, 10],
-        scaleType: SCALE_TYPE_LINEAR,
-        renderingType: RENDERING_TYPE_XYPLOT,
-        canvasWidth: 800,
-        canvasHeight: 200,
-      },
-    )
-
-    // Only region 0 should render (region 1 was pruned)
     expect(fillRectCalls.length).toBe(1)
-  })
-
-  test('dispose clears all regions', () => {
-    const { canvas } = createMockCanvas()
-    const renderer = new Canvas2DWiggleRenderer(canvas)
-    renderer.uploadRegion(0, [makeSource([5], [0], [1000])])
-    renderer.dispose()
   })
 
   test('multi-row sources render at correct vertical offsets', () => {
@@ -325,24 +187,10 @@ describe('Canvas2DWiggleRenderer', () => {
     const source0 = { ...makeSource([5], [0], [1000]), rowIndex: 0 }
     const source1 = { ...makeSource([8], [0], [1000]), rowIndex: 1 }
 
-    renderer.uploadRegion(0, [source0, source1])
     renderer.renderBlocks(
-      [
-        {
-          displayedRegionIndex: 0,
-          bpRangeX: [0, 1000],
-          screenStartPx: 0,
-          screenEndPx: 800,
-          reversed: false,
-        },
-      ],
-      {
-        domainY: [0, 10],
-        scaleType: SCALE_TYPE_LINEAR,
-        renderingType: RENDERING_TYPE_XYPLOT,
-        canvasWidth: 800,
-        canvasHeight: 200,
-      },
+      [defaultBlock],
+      new Map([[0, [source0, source1]]]),
+      defaultState,
     )
 
     expect(fillRectCalls.length).toBe(2)

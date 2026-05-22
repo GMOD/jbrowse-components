@@ -3,13 +3,10 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { pruneRegionMap } from '@jbrowse/core/gpu/pruneRegionMap'
+import { Canvas2DBackend } from '@jbrowse/core/gpu/perRegionBackend'
 import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 
-import type {
-  ManhattanBackend,
-  ManhattanRenderState,
-} from './manhattanBackendTypes.ts'
+import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { WiggleRenderBlock } from '@jbrowse/wiggle-core'
@@ -84,39 +81,17 @@ export function drawManhattanBlocks(
   }
 }
 
-// Streaming on-screen backend.
-export class Canvas2DManhattanRenderer implements ManhattanBackend {
-  private canvas: HTMLCanvasElement
-  private ctx: CanvasRenderingContext2D
-  private regions = new Map<number, ManhattanRpcResult>()
-
-  constructor(canvas: HTMLCanvasElement) {
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
-    this.canvas = canvas
-    this.ctx = ctx
-  }
-
-  uploadRegion(displayedRegionIndex: number, data: ManhattanRpcResult) {
-    if (data.numFeatures === 0) {
-      this.regions.delete(displayedRegionIndex)
-    } else {
-      this.regions.set(displayedRegionIndex, data)
-    }
-  }
-
-  renderBlocks(blocks: WiggleRenderBlock[], state: ManhattanRenderState) {
+export class Canvas2DManhattanRenderer extends Canvas2DBackend<
+  ManhattanRpcResult,
+  ManhattanRenderState,
+  WiggleRenderBlock
+> {
+  renderBlocks(
+    blocks: WiggleRenderBlock[],
+    regions: ReadonlyMap<number, ManhattanRpcResult>,
+    state: ManhattanRenderState,
+  ) {
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
-    drawManhattanBlocks(this.ctx, this.regions, blocks, state)
-  }
-
-  pruneRegions(activeRegions: number[]) {
-    pruneRegionMap(this.regions, activeRegions)
-  }
-
-  dispose() {
-    this.regions.clear()
+    drawManhattanBlocks(this.ctx, regions, blocks, state)
   }
 }

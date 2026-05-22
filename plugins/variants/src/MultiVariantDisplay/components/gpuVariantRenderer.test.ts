@@ -3,7 +3,10 @@ import { MockHal } from '@jbrowse/core/gpu/hal'
 import { GpuVariantRenderer, VARIANT_PASSES } from './GpuVariantRenderer.ts'
 import { INSTANCE_STRIDE_F32 as INSTANCE_STRIDE } from './shaders/variant.generated.ts'
 
-import type { VariantRenderBlock } from './variantBackendTypes.ts'
+import type {
+  VariantRenderBlock,
+  VariantUploadData,
+} from './variantBackendTypes.ts'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {
   value: 1,
@@ -11,7 +14,7 @@ Object.defineProperty(globalThis, 'devicePixelRatio', {
   configurable: true,
 })
 
-function makeUploadData() {
+function makeUploadData(): VariantUploadData {
   return {
     regionStart: 5000,
     cellPositions: new Uint32Array([100, 200, 300, 400]),
@@ -35,6 +38,13 @@ function makeBlock(
     reversed: false,
     ...overrides,
   }
+}
+
+const DEFAULT_STATE = {
+  canvasWidth: 800,
+  canvasHeight: 600,
+  rowHeight: 20,
+  scrollTop: 0,
 }
 
 describe('GpuVariantRenderer', () => {
@@ -84,13 +94,11 @@ describe('GpuVariantRenderer', () => {
   it('renders with correct frame lifecycle and uniforms', () => {
     const hal = new MockHal(VARIANT_PASSES)
     const renderer = new GpuVariantRenderer(hal)
+    const data = makeUploadData()
 
-    renderer.uploadRegion(0, makeUploadData())
-
-    renderer.renderBlocks([makeBlock()], {
-      canvasWidth: 800,
-      canvasHeight: 600,
-      rowHeight: 20,
+    renderer.uploadRegion(0, data)
+    renderer.renderBlocks([makeBlock()], new Map([[0, data]]), {
+      ...DEFAULT_STATE,
       scrollTop: 50,
     })
 
@@ -117,7 +125,7 @@ describe('GpuVariantRenderer', () => {
     expect(f32[7]).toBe(50)
   })
 
-  it('prunes stale regions', () => {
+  it('prunes stale regions via hal.pruneRegions', () => {
     const hal = new MockHal(VARIANT_PASSES)
     const renderer = new GpuVariantRenderer(hal)
 
@@ -132,16 +140,15 @@ describe('GpuVariantRenderer', () => {
     expect(hal.getBufferCount(2, 'main')).toBe(0)
   })
 
-  it('skips blocks with no buffer', () => {
+  it('skips blocks with no region in the map', () => {
     const hal = new MockHal(VARIANT_PASSES)
     const renderer = new GpuVariantRenderer(hal)
 
-    renderer.renderBlocks([makeBlock({ displayedRegionIndex: 99 })], {
-      canvasWidth: 800,
-      canvasHeight: 600,
-      rowHeight: 20,
-      scrollTop: 0,
-    })
+    renderer.renderBlocks(
+      [makeBlock({ displayedRegionIndex: 99 })],
+      new Map(),
+      DEFAULT_STATE,
+    )
 
     expect(hal.callsOf('drawPass').length).toBe(0)
   })
@@ -149,9 +156,10 @@ describe('GpuVariantRenderer', () => {
   it('renders multiple blocks', () => {
     const hal = new MockHal(VARIANT_PASSES)
     const renderer = new GpuVariantRenderer(hal)
+    const data = makeUploadData()
 
-    renderer.uploadRegion(0, makeUploadData())
-    renderer.uploadRegion(1, makeUploadData())
+    renderer.uploadRegion(0, data)
+    renderer.uploadRegion(1, data)
 
     renderer.renderBlocks(
       [
@@ -166,12 +174,11 @@ describe('GpuVariantRenderer', () => {
           screenEndPx: 800,
         }),
       ],
-      {
-        canvasWidth: 800,
-        canvasHeight: 600,
-        rowHeight: 20,
-        scrollTop: 0,
-      },
+      new Map([
+        [0, data],
+        [1, data],
+      ]),
+      DEFAULT_STATE,
     )
 
     expect(hal.callsOf('drawPass').length).toBe(2)

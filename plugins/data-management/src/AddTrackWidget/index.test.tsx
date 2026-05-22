@@ -504,8 +504,10 @@ test('getTrackConfig includes default assembly names when mixinData is empty', (
   })
 
   const config = widget.getTrackConfig(Date.now())
-  expect(config?.adapter.queryAssembly).toBe('hg38')
-  expect(config?.adapter.targetAssembly).toBe('hg38')
+  expect(config?.adapter).toMatchObject({
+    queryAssembly: 'hg38',
+    targetAssembly: 'hg38',
+  })
 })
 
 test('getTrackConfig lets mixinData override default assembly names', () => {
@@ -519,6 +521,8 @@ test('getTrackConfig lets mixinData override default assembly names', () => {
   })
 
   const config = widget.getTrackConfig(Date.now())
-  expect(config?.adapter.queryAssembly).toBe('mm10')
-  expect(config?.adapter.targetAssembly).toBe('hg38')
+  expect(config?.adapter).toMatchObject({
+    queryAssembly: 'mm10',
+    targetAssembly: 'hg38',
+  })
 })

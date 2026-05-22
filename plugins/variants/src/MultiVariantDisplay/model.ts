@@ -5,7 +5,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
-import type { VariantBackend } from './components/variantBackendTypes.ts'
+import type {
+  VariantBackend,
+  VariantUploadData,
+} from './components/variantBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -73,18 +76,29 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .views(self => ({
+      // Map view of perRegionCellData for renderBlocks. Object.entries every
+      // render is cheap (typical view shows 1-3 regions); MobX caches the
+      // computed so only cellData changes invalidate it.
+      get perRegionCellMap() {
+        const { cellData } = self
+        const out = new Map<number, VariantUploadData>()
+        if (cellData?.mode === 'regular') {
+          for (const k in cellData.perRegionCellData) {
+            out.set(Number(k), cellData.perRegionCellData[k]!)
+          }
+        }
+        return out
+      },
+    }))
     .actions(self => ({
       startGpuBackendLifecycle(backend: VariantBackend) {
         self.installGpuDisplay<VariantBackend>(backend, {
           upload: b => {
-            const { cellData } = self
             const active: number[] = []
-            if (cellData?.mode === 'regular') {
-              for (const [k, v] of Object.entries(cellData.perRegionCellData)) {
-                const n = Number(k)
-                b.uploadRegion(n, v)
-                active.push(n)
-              }
+            for (const [n, v] of self.perRegionCellMap) {
+              b.uploadRegion(n, v)
+              active.push(n)
             }
             b.pruneRegions(active)
           },
@@ -93,7 +107,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             if (!state) {
               return false
             }
-            b.renderBlocks(self.renderBlocks, state)
+            b.renderBlocks(self.renderBlocks, self.perRegionCellMap, state)
             return true
           },
         })

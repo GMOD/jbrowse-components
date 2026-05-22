@@ -564,18 +564,14 @@ export default function stateModelFactory(
               blocks: regionData.blocks,
               ...props,
             })
-            return {
-              instanceBuffer: buffer,
-              instanceCount: count,
-              regionData,
-            }
+            return { instanceBuffer: buffer, instanceCount: count }
           },
           b => {
             const state = self.mafRenderState
             if (!state) {
               return false
             }
-            b.renderBlocks(self.renderBlocks, state)
+            b.renderBlocks(self.renderBlocks, self.rpcDataMap, state)
             return true
           },
         )

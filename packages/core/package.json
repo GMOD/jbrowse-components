@@ -41,6 +41,8 @@
     "./gpu/GpuBackendLifecycleSlotMixin": "./src/gpu/GpuBackendLifecycleSlotMixin.ts",
     "./gpu/hal": "./src/gpu/hal/index.ts",
     "./gpu/installPerRegionGpuLifecycle": "./src/gpu/installPerRegionGpuLifecycle.ts",
+    "./gpu/monolithicBackend": "./src/gpu/monolithicBackend.ts",
+    "./gpu/perRegionBackend": "./src/gpu/perRegionBackend.ts",
     "./gpu/pruneRegionMap": "./src/gpu/pruneRegionMap.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
     "./gpu/slangPass": "./src/gpu/slangPass.ts",
@@ -288,6 +290,14 @@
       "./gpu/installPerRegionGpuLifecycle": {
         "types": "./esm/gpu/installPerRegionGpuLifecycle.d.ts",
         "import": "./esm/gpu/installPerRegionGpuLifecycle.js"
+      },
+      "./gpu/monolithicBackend": {
+        "types": "./esm/gpu/monolithicBackend.d.ts",
+        "import": "./esm/gpu/monolithicBackend.js"
+      },
+      "./gpu/perRegionBackend": {
+        "types": "./esm/gpu/perRegionBackend.d.ts",
+        "import": "./esm/gpu/perRegionBackend.js"
       },
       "./gpu/pruneRegionMap": {
         "types": "./esm/gpu/pruneRegionMap.d.ts",
@@ -774,6 +784,12 @@
         ],
         "gpu/installPerRegionGpuLifecycle": [
           "esm/gpu/installPerRegionGpuLifecycle.d.ts"
+        ],
+        "gpu/monolithicBackend": [
+          "esm/gpu/monolithicBackend.d.ts"
+        ],
+        "gpu/perRegionBackend": [
+          "esm/gpu/perRegionBackend.d.ts"
         ],
         "gpu/pruneRegionMap": [
           "esm/gpu/pruneRegionMap.d.ts"
