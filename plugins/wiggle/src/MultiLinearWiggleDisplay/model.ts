@@ -5,11 +5,9 @@ import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLif
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 import {
-  SimpleFeature,
-  getContainingTrack,
   getContainingView,
   getSession,
-  isSessionModelWithWidgets,
+  openFeatureWidget,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -323,29 +321,16 @@ export default function stateModelFactory(
       },
 
       selectFeature(feat: NonNullable<typeof self.featureUnderMouse>) {
-        const session = getSession(self)
-        if (!isSessionModelWithWidgets(session)) {
-          return
-        }
-        const track = getContainingTrack(self)
-        const view = getContainingView(self)
         const sources = feat.allSources
           ? Object.fromEntries(feat.allSources.map(s => [s.source, s.score]))
           : { [feat.source]: feat.score }
-        const feature = new SimpleFeature({
+        openFeatureWidget(self, {
           uniqueId: `wiggle-${feat.refName}-${feat.start}-${feat.end}`,
           refName: feat.refName,
           start: feat.start,
           end: feat.end,
           sources,
         })
-        session.showWidget(
-          session.addWidget('BaseFeatureWidget', 'baseFeature', {
-            featureData: feature.toJSON(),
-            view,
-            track,
-          }),
-        )
       },
     }))
     .actions(self => {

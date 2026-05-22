@@ -16,7 +16,8 @@ import {
 } from './tafParsing.ts'
 import VirtualOffset from './virtualOffset.ts'
 import MafFeature from '../MafFeature.ts'
-import { getSamplesFromConfig } from '../util/getSamples.ts'
+import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
+import { lazyInit } from '../util/loadSubAdapter.ts'
 
 import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
 import type { IndexData } from './types.ts'
@@ -140,11 +141,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   }
 
   setupPre() {
-    this.setupP ??= this.doSetup().catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
+    return lazyInit(this, () => this.doSetup())
   }
 
   setup(opts?: BaseOptions) {
@@ -222,10 +219,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       try {
         const { index, runLengthEncodeBases } = await this.setup(opts)
-
-        const sampleFilter = opts?.samples
-          ? new Set(opts.samples.map(s => s.id))
-          : undefined
+        const sampleFilter = buildSampleFilter(opts)
 
         // Get byte range for this query
         const records = index[query.refName]
@@ -270,7 +264,9 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
             ? nextOffset
             : buffer.length
 
-        const slice = buffer.slice(startOffset, endOffset)
+        // subarray (not slice) — TextDecoder.decode handles either, and
+        // subarray avoids a Uint8Array copy of what can be a sizable chunk.
+        const slice = buffer.subarray(startOffset, endOffset)
 
         // Stream features using generator - no caching, immediate GC eligible
         for (const feat of this.parseTafBlocksStreaming(

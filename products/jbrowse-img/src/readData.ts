@@ -146,7 +146,6 @@ export function makeTrackConfig(
   type: string,
   file: string,
   index: string | undefined,
-  opts: string[],
   assembly: Assembly,
 ): Track | undefined {
   const trackType = trackTypeMap[type]
@@ -154,22 +153,13 @@ export function makeTrackConfig(
   if (!trackType || !adapter) {
     return undefined
   }
-  const trackConfig: Track = {
+  return {
     type: trackType,
     trackId: path.basename(file),
     name: path.basename(file),
     assemblyNames: [assembly.name],
     adapter,
   }
-  if (opts.includes('snpcov')) {
-    trackConfig.displays = [
-      {
-        type: 'LinearSNPCoverageDisplay',
-        displayId: `${path.basename(file)}-${Math.random()}`,
-      },
-    ]
-  }
-  return trackConfig
 }
 
 export function readData({
@@ -288,13 +278,7 @@ export function readData({
     if (!file) {
       throw new Error('no file specified')
     }
-    const trackConfig = makeTrackConfig(
-      type,
-      file,
-      index,
-      opts,
-      configData.assembly,
-    )
+    const trackConfig = makeTrackConfig(type, file, index, configData.assembly)
     if (trackConfig) {
       configData.tracks.push(trackConfig)
     }

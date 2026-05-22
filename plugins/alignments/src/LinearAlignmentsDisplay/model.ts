@@ -14,8 +14,8 @@ import {
   getRpcSessionId,
   getSession,
   isFeature,
-  isSessionModelWithWidgets,
   measureText,
+  openFeatureWidget,
 } from '@jbrowse/core/util'
 import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -1248,18 +1248,9 @@ export default function stateModelFactory(
           },
 
           selectFeature(feature: Feature) {
-            const session = getSession(self)
-            session.setSelection(feature)
-            if (isSessionModelWithWidgets(session)) {
-              const { type, id } = self.featureWidgetType
-              session.showWidget(
-                session.addWidget(type, id, {
-                  featureData: feature.toJSON(),
-                  view: getContainingView(self),
-                  track: getContainingTrack(self),
-                }),
-              )
-            }
+            openFeatureWidget(self, feature.toJSON(), {
+              widget: self.featureWidgetType,
+            })
           },
         }
       })
@@ -1558,20 +1549,12 @@ export default function stateModelFactory(
                 label: 'Open feature details',
                 icon: MenuOpenIcon,
                 onClick: () => {
-                  const session = getSession(self)
-                  if (isSessionModelWithWidgets(session)) {
-                    const featureWidget = session.addWidget(
-                      'AlignmentsFeatureWidget',
-                      'alignmentFeature',
-                      {
-                        featureData: feat.toJSON(),
-                        view: getContainingView(self),
-                        track: getContainingTrack(self),
-                      },
-                    )
-                    session.showWidget(featureWidget)
-                    session.setSelection(feat)
-                  }
+                  openFeatureWidget(self, feat.toJSON(), {
+                    widget: {
+                      type: 'AlignmentsFeatureWidget',
+                      id: 'alignmentFeature',
+                    },
+                  })
                 },
               },
               {

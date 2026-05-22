@@ -1,3 +1,5 @@
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+
 import { resolveCellColor } from './resolveCellColor.ts'
 import {
   FIELD_OFFSET_F32,
@@ -8,33 +10,6 @@ import {
 import type { MafBlock } from './mafBackendTypes.ts'
 import type { MafColorPalette } from './util.ts'
 
-// Pack RGBA (0-255 each) into a single ABGR uint32 — the shader unpacks
-// via unpackRGBA (see packages/core/src/gpu/shaders/colorPack.slang).
-function packRGBA(r: number, g: number, b: number, a = 255): number {
-  return (
-    ((a & 0xff) * 0x1000000) |
-    ((b & 0xff) << 16) |
-    ((g & 0xff) << 8) |
-    (r & 0xff)
-  )
-}
-
-function hexToPackedRGBA(hex: string): number {
-  const h = hex.startsWith('#') ? hex.slice(1) : hex
-  if (h.length === 3) {
-    return packRGBA(
-      parseInt(h[0]! + h[0]!, 16),
-      parseInt(h[1]! + h[1]!, 16),
-      parseInt(h[2]! + h[2]!, 16),
-    )
-  }
-  return packRGBA(
-    parseInt(h.slice(0, 2), 16),
-    parseInt(h.slice(2, 4), 16),
-    parseInt(h.slice(4, 6), 16),
-  )
-}
-
 // Memoized resolver. CSS color strings come from a small set (theme bases +
 // theme match/gap/mismatch/unknown), so the cache stays small and hot.
 const colorCache = new Map<string, number>()
@@ -42,7 +17,7 @@ const colorCache = new Map<string, number>()
 function cssToPackedABGR(css: string): number {
   let packed = colorCache.get(css)
   if (packed === undefined) {
-    packed = hexToPackedRGBA(css)
+    packed = cssColorToABGR(css)
     colorCache.set(css, packed)
   }
   return packed
@@ -79,15 +54,7 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
   count: number
 } {
   const { blocks, palette, showAllLetters, mismatchRendering } = args
-  const cfg = {
-    colorForBase: palette.colorForBase,
-    matchColor: palette.matchColor,
-    gapColor: palette.gapColor,
-    mismatchOffColor: palette.mismatchOffColor,
-    unknownBaseColor: palette.unknownBaseColor,
-    showAllLetters,
-    mismatchRendering,
-  }
+  const cfg = { ...palette, showAllLetters, mismatchRendering }
   const runs: Run[] = []
 
   for (const block of blocks) {

@@ -1,17 +1,8 @@
 import type { Theme } from '@mui/material'
 
-interface BasePalette {
-  A: { main: string; contrastText: string }
-  C: { main: string; contrastText: string }
-  G: { main: string; contrastText: string }
-  T: { main: string; contrastText: string }
-}
+type BaseKey = 'A' | 'C' | 'G' | 'T'
 
-function getBases(theme: Theme): BasePalette | undefined {
-  return theme.palette.bases
-}
-
-function getBaseKey(base: string): keyof BasePalette | undefined {
+function getBaseKey(base: string): BaseKey | undefined {
   switch (base.toUpperCase()) {
     case 'A':
       return 'A'
@@ -28,47 +19,11 @@ function getBaseKey(base: string): keyof BasePalette | undefined {
 }
 
 export function getBaseColor(base: string, theme: Theme): string {
-  const bases = getBases(theme)
   const key = getBaseKey(base)
-
-  if (!key) {
-    return theme.palette.grey[500]
-  }
-
-  if (bases) {
-    return bases[key].main
-  }
-
-  switch (key) {
-    case 'A':
-      return '#6dbf6d'
-    case 'C':
-      return '#6c6cff'
-    case 'G':
-      return '#ffb347'
-    case 'T':
-      return '#ff6b6b'
-  }
+  return key ? theme.palette.bases[key].main : theme.palette.grey[500]
 }
 
 export function getContrastText(base: string, theme: Theme): string {
-  const bases = getBases(theme)
   const key = getBaseKey(base)
-
-  if (!key) {
-    return theme.palette.common.white
-  }
-
-  if (bases) {
-    return bases[key].contrastText
-  }
-
-  switch (key) {
-    case 'A':
-    case 'C':
-    case 'T':
-      return '#fff'
-    case 'G':
-      return '#000'
-  }
+  return key ? theme.palette.bases[key].contrastText : theme.palette.common.white
 }

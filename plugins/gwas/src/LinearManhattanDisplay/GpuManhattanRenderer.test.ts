@@ -15,8 +15,6 @@ function mkData(
     numFeatures: positions.length,
     scoreMin: Math.min(...scores),
     scoreMax: Math.max(...scores),
-    scoreSum: 0,
-    scoreSumSq: 0,
     flatbushData: undefined,
   }
 }

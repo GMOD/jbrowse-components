@@ -52,8 +52,6 @@ function mkData(
         numFeatures: positions.length,
         scoreMin: 0,
         scoreMax: 0,
-        scoreSum: 0,
-        scoreSumSq: 0,
         flatbushData: buildFlatbush(positions, scores),
       },
     ],

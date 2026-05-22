@@ -24,7 +24,7 @@ const configSchema = ConfigurationSchema(
       type: 'fileLocation',
       description: 'bgzip taffy file',
       defaultValue: {
-        uri: '/path/to/my.taf',
+        uri: '/path/to/my.taf.gz',
         locationType: 'UriLocation',
       },
     },

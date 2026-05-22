@@ -14,6 +14,60 @@ import { makeColorEvaluator } from './makeColorEvaluator.ts'
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
+
+// Pure reducer: features → ManhattanRpcResult. Extracted so it can be unit-
+// tested without the RPC/adapter/jexl plumbing.
+export function buildManhattanResult(
+  features: Feature[],
+  evalColor: (f: Feature) => number,
+): ManhattanRpcResult {
+  const n = features.length
+  const positions = new Uint32Array(n)
+  const scores = new Float32Array(n)
+  const colors = new Uint32Array(n)
+  let scoreMin = Infinity
+  let scoreMax = -Infinity
+
+  for (let i = 0; i < n; i++) {
+    const f = features[i]!
+    // Uint32Array assignment coerces via ToUint32 (handles full 32-bit bp
+    // space); a `| 0` here would silently sign-extend bp ≥ 2^31 — wrong for
+    // T2T-scale cumulative coordinates.
+    positions[i] = f.get('start')
+    const score = f.get('score') as number
+    scores[i] = score
+    if (score < scoreMin) {
+      scoreMin = score
+    }
+    if (score > scoreMax) {
+      scoreMax = score
+    }
+    colors[i] = evalColor(f)
+  }
+
+  let flatbushData: ArrayBuffer | undefined
+  if (n > 0) {
+    const fb = new Flatbush(n, undefined, Float64Array)
+    for (let i = 0; i < n; i++) {
+      const p = positions[i]!
+      const s = scores[i]!
+      fb.add(p, s, p, s)
+    }
+    fb.finish()
+    flatbushData = fb.data
+  }
+
+  return {
+    positions,
+    scores,
+    colors,
+    numFeatures: n,
+    scoreMin,
+    scoreMax,
+    flatbushData,
+  }
+}
 
 // GWAS data is 1:1 features → points and is conventionally pre-transformed
 // (e.g. neg_log_pvalue). Per-feature jexl color eval happens here on the
@@ -46,63 +100,18 @@ export async function executeGetManhattanData({
 
   checkStopToken2(stopTokenCheck)
 
-  const evalColor = makeColorEvaluator(color, pluginManager.jexl)
+  const result = buildManhattanResult(
+    features,
+    makeColorEvaluator(color, pluginManager.jexl),
+  )
 
-  const n = features.length
-  const positions = new Uint32Array(n)
-  const scores = new Float32Array(n)
-  const colors = new Uint32Array(n)
-  let scoreMin = Infinity
-  let scoreMax = -Infinity
-  let scoreSum = 0
-  let scoreSumSq = 0
-
-  for (let i = 0; i < n; i++) {
-    const f = features[i]!
-    positions[i] = f.get('start') | 0
-    const score = f.get('score') as number
-    scores[i] = score
-    if (score < scoreMin) {
-      scoreMin = score
-    }
-    if (score > scoreMax) {
-      scoreMax = score
-    }
-    scoreSum += score
-    scoreSumSq += score * score
-    colors[i] = evalColor(f)
-  }
-
-  let flatbushData: ArrayBuffer | undefined
-  if (n > 0) {
-    const fb = new Flatbush(n, undefined, Float64Array)
-    for (let i = 0; i < n; i++) {
-      const p = positions[i]!
-      const s = scores[i]!
-      fb.add(p, s, p, s)
-    }
-    fb.finish()
-    flatbushData = fb.data
-  }
-
-  const result: ManhattanRpcResult = {
-    positions,
-    scores,
-    colors,
-    numFeatures: n,
-    scoreMin: n === 0 ? 0 : scoreMin,
-    scoreMax: n === 0 ? 0 : scoreMax,
-    scoreSum,
-    scoreSumSq,
-    flatbushData,
-  }
-  const transferables: ArrayBuffer[] = [
-    positions.buffer,
-    scores.buffer,
-    colors.buffer,
+  const transferables: Transferable[] = [
+    result.positions.buffer,
+    result.scores.buffer,
+    result.colors.buffer,
   ]
-  if (flatbushData) {
-    transferables.push(flatbushData)
+  if (result.flatbushData) {
+    transferables.push(result.flatbushData)
   }
   return rpcResult(result, transferables) as unknown as ManhattanRpcResult
 }

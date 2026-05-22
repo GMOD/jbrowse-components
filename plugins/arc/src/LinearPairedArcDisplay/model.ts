@@ -2,12 +2,7 @@ import type React from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
@@ -77,18 +72,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       selectFeature(feature: Feature) {
-        const session = getSession(self)
-        session.setSelection(feature)
-        if (isSessionModelWithWidgets(session)) {
-          const { type, id } = self.featureWidgetType
-          session.showWidget(
-            session.addWidget(type, id, {
-              featureData: feature.toJSON(),
-              view: getContainingView(self),
-              track: getContainingTrack(self),
-            }),
-          )
-        }
+        openFeatureWidget(self, feature.toJSON(), {
+          widget: self.featureWidgetType,
+        })
       },
       /**
        * #action

@@ -1,20 +1,21 @@
 import React from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { MsaHighlight } from '../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   highlight: {
     position: 'absolute',
     top: 0,
-    backgroundColor: 'rgba(255, 165, 0, 0.4)',
-    border: '1px solid rgba(255, 165, 0, 0.8)',
+    backgroundColor: alpha(theme.palette.highlight.main, 0.4),
+    border: `1px solid ${alpha(theme.palette.highlight.main, 0.8)}`,
     pointerEvents: 'none',
   },
-})
+}))
 
 function highlightBox(
   view: LinearGenomeViewModel,

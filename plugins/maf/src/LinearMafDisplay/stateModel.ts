@@ -2,10 +2,10 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
-  getContainingTrack,
   getContainingView,
   getEnv,
   getSession,
+  openFeatureWidget,
 } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -34,7 +34,7 @@ import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
-import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -225,29 +225,18 @@ export default function stateModelFactory(
         pos: number
       }) {
         const { sequence, sampleLabel, chr, pos } = insertionData
-        const session = getSession(self) as SessionWithWidgets
-        const featureWidget = session.addWidget(
-          'BaseFeatureWidget',
-          'baseFeature',
-          {
-            featureData: {
-              uniqueId: `insertion-${chr}-${pos}-${sampleLabel}`,
-              type: 'insertion',
-              refName: chr,
-              start: pos,
-              end: pos + 1,
-              sample: sampleLabel,
-              insertionLength: sequence.length,
-              sequence: self.showAsUpperCase
-                ? sequence.toUpperCase()
-                : sequence.toLowerCase(),
-            },
-            view: getContainingView(self),
-            track: getContainingTrack(self),
-          },
-        )
-
-        session.showWidget(featureWidget)
+        openFeatureWidget(self, {
+          uniqueId: `insertion-${chr}-${pos}-${sampleLabel}`,
+          type: 'insertion',
+          refName: chr,
+          start: pos,
+          end: pos + 1,
+          sample: sampleLabel,
+          insertionLength: sequence.length,
+          sequence: self.showAsUpperCase
+            ? sequence.toUpperCase()
+            : sequence.toLowerCase(),
+        })
       },
     }))
     .views(self => ({
@@ -500,6 +489,9 @@ export default function stateModelFactory(
       }
     })
     .postProcessSnapshot(snap => {
+      // layout/clusterTree intentionally dropped — both are rebuilt from
+      // worker output on every fetch. The remaining defaults are stripped to
+      // keep saved sessions small.
       const {
         rowHeight,
         rowProportion,
@@ -509,39 +501,22 @@ export default function stateModelFactory(
         showAsUpperCase,
         showTree,
         subtreeFilter,
-        layout,
-        clusterTree,
+        layout: _layout,
+        clusterTree: _clusterTree,
         ...rest
-      } = snap as typeof snap & {
-        rowHeight?: number
-        rowProportion?: number
-        showAllLetters?: boolean
-        mismatchRendering?: boolean
-        treeAreaWidth?: number
-        showAsUpperCase?: boolean
-        showTree?: boolean
-        subtreeFilter?: string[]
-        layout?: unknown[]
-        clusterTree?: string
-      }
+      } = snap as Omit<typeof snap, symbol>
       return {
-        ...(rest as Omit<typeof rest, symbol>),
-        ...(rowHeight !== DEFAULTS.rowHeight ? { rowHeight } : {}),
-        ...(rowProportion !== DEFAULTS.rowProportion ? { rowProportion } : {}),
-        ...(showAllLetters !== DEFAULTS.showAllLetters
-          ? { showAllLetters }
-          : {}),
-        ...(mismatchRendering !== DEFAULTS.mismatchRendering
-          ? { mismatchRendering }
-          : {}),
-        ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
-        ...(showAsUpperCase !== DEFAULTS.showAsUpperCase
-          ? { showAsUpperCase }
-          : {}),
-        ...(showTree !== DEFAULTS.showTree ? { showTree } : {}),
-        ...(subtreeFilter && subtreeFilter.length > 0 ? { subtreeFilter } : {}),
-        // layout/clusterTree intentionally not persisted — they're rebuilt
-        // from worker output on every fetch.
+        ...rest,
+        ...(rowHeight !== DEFAULTS.rowHeight && { rowHeight }),
+        ...(rowProportion !== DEFAULTS.rowProportion && { rowProportion }),
+        ...(showAllLetters !== DEFAULTS.showAllLetters && { showAllLetters }),
+        ...(mismatchRendering !== DEFAULTS.mismatchRendering && {
+          mismatchRendering,
+        }),
+        ...(treeAreaWidth !== 80 && { treeAreaWidth }),
+        ...(showAsUpperCase !== DEFAULTS.showAsUpperCase && { showAsUpperCase }),
+        ...(showTree !== DEFAULTS.showTree && { showTree }),
+        ...(subtreeFilter?.length && { subtreeFilter }),
       }
     })
 }

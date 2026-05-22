@@ -72,8 +72,6 @@ function data(
     numFeatures: positions.length,
     scoreMin: Math.min(...scores),
     scoreMax: Math.max(...scores),
-    scoreSum: 0,
-    scoreSumSq: 0,
     flatbushData: undefined,
   }
 }
@@ -115,7 +113,20 @@ test('switches fillStyle per unique per-feature color', () => {
     )
     .map(c => c.value)
   // Initial red → switch to blue once (covers both blue points).
-  expect(fills).toEqual(['rgb(255,0,0)', 'rgb(0,0,255)'])
+  expect(fills).toEqual(['rgba(255,0,0,1)', 'rgba(0,0,255,1)'])
+})
+
+test('preserves alpha so semi-transparent points match GPU output', () => {
+  const { ctx, calls } = mockCtx()
+  const halfRed = abgr(255, 0, 0, 128)
+  drawManhattanBlocks(
+    ctx as unknown as CanvasRenderingContext2D,
+    new Map([[0, data([100], [5], [halfRed])]]),
+    [block],
+    state,
+  )
+  const fills = calls.flatMap(c => (c.kind === 'fillStyle' ? [c.value] : []))
+  expect(fills).toEqual([`rgba(255,0,0,${128 / 255})`])
 })
 
 test('skips regions with no data', () => {

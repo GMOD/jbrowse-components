@@ -1,10 +1,9 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import MafFeature from '../MafFeature.ts'
-import { getSamplesFromConfig } from '../util/getSamples.ts'
+import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
+import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import {
   parseAssemblyAndChr,
@@ -18,29 +17,10 @@ import type { Feature, Region } from '@jbrowse/core/util'
 export default class MafTabixAdapter extends BaseFeatureDataAdapter {
   public setupP?: Promise<{ adapter: BaseFeatureDataAdapter }>
 
-  async setup() {
-    if (!this.getSubAdapter) {
-      throw new Error('no getSubAdapter available')
-    }
-    return {
-      adapter: (
-        await this.getSubAdapter({
-          ...getSnapshot(this.config),
-          type: 'BedTabixAdapter',
-        })
-      ).dataAdapter as BaseFeatureDataAdapter,
-    }
-  }
-
-  async setupPre(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
-    this.setupP ??= updateStatus('Downloading index', statusCallback, () =>
-      this.setup(),
-    ).catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
+  async setupPre(
+    opts?: BaseOptions,
+  ): Promise<{ adapter: BaseFeatureDataAdapter }> {
+    return lazyInit(this, () => loadSubAdapter(this, 'BedTabixAdapter', opts))
   }
 
   async getRefNames(opts?: BaseOptions) {
@@ -58,10 +38,7 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter {
       const { adapter } = await this.setupPre(opts)
       let firstAssemblyNameFound = ''
       const refAssemblyName = this.getConf('refAssemblyName')
-
-      const sampleFilter = opts?.samples
-        ? new Set(opts.samples.map(s => s.id))
-        : undefined
+      const sampleFilter = buildSampleFilter(opts)
 
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
         const data = (feature.get('field5') as string).split(',')

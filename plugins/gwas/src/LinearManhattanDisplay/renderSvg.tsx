@@ -30,7 +30,7 @@ export async function renderSvg(
   const scalebarLeft = Math.max(-offsetPx, 0)
   const height = model.height
   const { ticks, rpcDataMap } = model
-  const renderState = model.manhattanRenderState()
+  const { renderState } = model
 
   if (model.error) {
     return (

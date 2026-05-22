@@ -5,8 +5,6 @@ export interface WiggleDisplayModel
   extends WiggleGpuDisplayModel, WiggleGpuProps {
   domain: [number, number] | undefined
   scaleType: string
-  displayCrossHatches: boolean
-  scalebarOverlapLeft: number
   featureUnderMouse?: {
     refName: string
     start: number

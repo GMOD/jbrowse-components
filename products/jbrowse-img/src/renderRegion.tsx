@@ -109,6 +109,15 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
       display.setResolution(Number.isNaN(val) ? 1 : val)
     }
   }
+  // snpcov is a "show only coverage" pseudo-mode. The unified
+  // LinearAlignmentsDisplay has no explicit coverage-only flag — pileup
+  // viewport height = display.height - coverageHeight, so we make coverage
+  // fill the whole track. Done after the main loop so the user's height: or
+  // coverageHeight: settings flow through first.
+  if (opts.includes('snpcov') && display.setCoverageHeight && display.height) {
+    display.setShowCoverage?.(true)
+    display.setCoverageHeight(display.height)
+  }
 }
 
 export async function renderRegion(opts: Opts) {

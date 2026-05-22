@@ -107,49 +107,52 @@ export function processFeaturesToFasta({
 }
 
 /**
- * Expand sequences to include insertions: at each insertion position, find the
- * max insertion length across samples, then splice that many columns into
- * every row (filled with the sample's own insertion or `-` for samples with
- * no insertion). Right-to-left iteration so earlier positions remain valid.
+ * Expand sequences to include insertions: at each insertion position, every
+ * row gains `maxLen` characters (the sample's own insertion padded with `-`,
+ * or all `-` for samples without one). Walks each row once in order rather
+ * than repeatedly splicing — splice-in-loop was O(n²) per row.
  */
 function expandWithInsertions(
   outputRowsArrays: string[][],
   insertionsAtPosition: Map<number, InsertionInfo[]>,
   numSamples: number,
 ) {
-  const sortedPositions = [...insertionsAtPosition.keys()].sort((a, b) => b - a)
-
+  const sortedPositions = [...insertionsAtPosition.keys()].sort((a, b) => a - b)
+  const maxLenByPos = new Map<number, number>()
+  const insBySampleAndPos: Map<number, string>[] = []
+  for (let i = 0; i < numSamples; i++) {
+    insBySampleAndPos.push(new Map())
+  }
   for (const pos of sortedPositions) {
-    const insertions = insertionsAtPosition.get(pos)!
-
     let maxLen = 0
-    for (const ins of insertions) {
+    for (const ins of insertionsAtPosition.get(pos)!) {
       if (ins.sequence.length > maxLen) {
         maxLen = ins.sequence.length
       }
+      insBySampleAndPos[ins.sampleIndex]!.set(pos, ins.sequence)
     }
-
-    const sampleInsertions = new Map<number, string>()
-    for (const ins of insertions) {
-      sampleInsertions.set(ins.sampleIndex, ins.sequence)
-    }
-
-    for (let sampleIdx = 0; sampleIdx < numSamples; sampleIdx++) {
-      const rowArray = outputRowsArrays[sampleIdx]!
-      const insertionSeq = sampleInsertions.get(sampleIdx)
-
-      if (insertionSeq) {
-        const paddedInsertion = insertionSeq.padEnd(maxLen, '-')
-        for (let k = paddedInsertion.length - 1; k >= 0; k--) {
-          rowArray.splice(pos, 0, paddedInsertion[k]!)
-        }
-      } else {
-        for (let k = 0; k < maxLen; k++) {
-          rowArray.splice(pos, 0, '-')
-        }
-      }
-    }
+    maxLenByPos.set(pos, maxLen)
   }
 
-  return outputRowsArrays.map(arr => arr.join(''))
+  const result: string[] = []
+  for (let s = 0; s < numSamples; s++) {
+    const row = outputRowsArrays[s]!
+    const myIns = insBySampleAndPos[s]!
+    const out: string[] = []
+    let pi = 0
+    for (let i = 0; i <= row.length; i++) {
+      while (pi < sortedPositions.length && sortedPositions[pi] === i) {
+        const pos = sortedPositions[pi]!
+        const maxLen = maxLenByPos.get(pos)!
+        const insSeq = myIns.get(pos)
+        out.push(insSeq ? insSeq.padEnd(maxLen, '-') : '-'.repeat(maxLen))
+        pi++
+      }
+      if (i < row.length) {
+        out.push(row[i]!)
+      }
+    }
+    result.push(out.join(''))
+  }
+  return result
 }

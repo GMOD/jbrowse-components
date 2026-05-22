@@ -28,6 +28,4 @@ export default class MafViewerPlugin extends Plugin {
     MafGetSequencesF(pluginManager)
     MafSequenceWidgetF(pluginManager)
   }
-
-  configure(_pluginManager: PluginManager) {}
 }

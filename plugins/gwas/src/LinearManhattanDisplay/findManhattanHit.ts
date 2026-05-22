@@ -30,17 +30,18 @@ function getFlatbush(buffer: ArrayBuffer): Flatbush {
 }
 
 // 2D hit test. The Flatbush index over (bp, score) is built worker-side per
-// region; here we derive an (bp, score) query box from the mouse position +
+// region; here we derive a (bp, score) query box from the mouse position +
 // current view and only check exact pixel distance for points inside that
-// box. Falls back to a linear scan when the worker emitted no index (legacy
-// data path; should not happen in practice).
+// box. Edge-clamped points (out-of-domain scores pinned to the canvas top/
+// bottom) are still catchable because the query window is widened to ±Inf
+// in score when the mouse is within hit-radius of the canvas edge.
 export function findManhattanHit(
   mouseX: number,
   mouseY: number,
   blocks: RenderBlock[],
   regionData: ReadonlyMap<number, ManhattanRpcResult>,
   state: ManhattanRenderState,
-  refNames: Map<number, string>,
+  refNames: ReadonlyMap<number, string>,
 ): ManhattanHit | undefined {
   const { domainY, canvasHeight } = state
   const [domainMin, domainMax] = domainY
@@ -52,7 +53,7 @@ export function findManhattanHit(
   for (const block of blocks) {
     const data = regionData.get(block.displayedRegionIndex)
     const refName = refNames.get(block.displayedRegionIndex)
-    if (!data || !refName || data.numFeatures === 0) {
+    if (!data?.flatbushData || !refName) {
       continue
     }
     const [bpStart, bpEnd] = block.bpRangeX
@@ -72,9 +73,6 @@ export function findManhattanHit(
       continue
     }
 
-    // Convert mouseY back into a score-space query window. Expand to ±Infinity
-    // when the mouse is at the canvas edge so clamped (out-of-domain) features
-    // visually pinned to the edge are still candidates.
     const halfScore = HIT_RADIUS_PX * (range / canvasHeight)
     const mouseScore = domainMax - (mouseY / canvasHeight) * range
     const candScoreMin =
@@ -84,15 +82,13 @@ export function findManhattanHit(
     const candScoreMax =
       mouseY <= HIT_RADIUS_PX ? Infinity : mouseScore + halfScore
 
-    const { positions, scores, numFeatures, flatbushData } = data
-    const candidates = flatbushData
-      ? getFlatbush(flatbushData).search(
-          candBpMin,
-          candScoreMin,
-          candBpMax,
-          candScoreMax,
-        )
-      : linearCandidates(positions, numFeatures, candBpMin, candBpMax)
+    const { positions, scores } = data
+    const candidates = getFlatbush(data.flatbushData).search(
+      candBpMin,
+      candScoreMin,
+      candBpMax,
+      candScoreMax,
+    )
 
     for (const i of candidates) {
       const pos = positions[i]!
@@ -125,32 +121,4 @@ export function findManhattanHit(
   }
 
   return best
-}
-
-// Fallback for results that lack a flatbush index (e.g. legacy fixtures in
-// tests). Sorted-positions binary search bounds candidates by bp window.
-function linearCandidates(
-  positions: Uint32Array,
-  numFeatures: number,
-  candBpMin: number,
-  candBpMax: number,
-): number[] {
-  let lo = 0
-  let hi = numFeatures
-  while (lo < hi) {
-    const mid = (lo + hi) >> 1
-    if (positions[mid]! < candBpMin) {
-      lo = mid + 1
-    } else {
-      hi = mid
-    }
-  }
-  const out: number[] = []
-  for (let i = lo; i < numFeatures; i++) {
-    if (positions[i]! > candBpMax) {
-      break
-    }
-    out.push(i)
-  }
-  return out
 }

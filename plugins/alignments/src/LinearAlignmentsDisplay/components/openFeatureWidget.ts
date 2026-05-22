@@ -1,9 +1,4 @@
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { openFeatureWidget as showWidget } from '@jbrowse/core/util'
 
 import { CIGAR_TYPE_LABELS } from './alignmentComponentUtils.ts'
 import { getTooltipBin, pct } from './tooltipUtils.ts'
@@ -11,26 +6,8 @@ import { getTooltipBin, pct } from './tooltipUtils.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-function showWidget(
-  model: IAnyStateTreeNode,
-  featureData: Record<string, unknown>,
-) {
-  const session = getSession(model)
-  if (isSessionModelWithWidgets(session)) {
-    const featureWidget = session.addWidget(
-      'BaseFeatureWidget',
-      'baseFeature',
-      {
-        featureData,
-        view: getContainingView(model),
-        track: getContainingTrack(model),
-      },
-    )
-    session.showWidget(featureWidget)
-  }
-}
 
 export function openIndicatorWidget(
   model: IAnyStateTreeNode,
@@ -43,7 +20,7 @@ export function openIndicatorWidget(
     return
   }
 
-  const featureData: Record<string, unknown> = {
+  const featureData: SimpleFeatureSerialized = {
     uniqueId: `indicator-${indicatorHit.indicatorType}-${refName}-${indicatorHit.position}`,
     name: `Coverage ${CIGAR_TYPE_LABELS[indicatorHit.indicatorType] ?? indicatorHit.indicatorType}`,
     type: indicatorHit.indicatorType,
@@ -81,7 +58,7 @@ export function openCoverageWidget(
     return
   }
 
-  const featureData: Record<string, unknown> = {
+  const featureData: SimpleFeatureSerialized = {
     uniqueId: `coverage-${refName}-${position}`,
     name: 'Coverage',
     type: 'coverage',
@@ -131,7 +108,7 @@ export function openSashimiWidget(
     start: arc.start,
     end: arc.end,
     score: arc.score,
-    strand: arc.strand === 1 ? '+' : arc.strand === -1 ? '-' : '.',
+    strand: arc.strand,
   })
 }
 
@@ -140,7 +117,7 @@ export function openCigarWidget(
   cigarHit: CigarHitResult,
   refName: string,
 ) {
-  const featureData: Record<string, unknown> = {
+  const featureData: SimpleFeatureSerialized = {
     uniqueId: `${cigarHit.type}-${refName}-${cigarHit.position}`,
     name: CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type,
     type: cigarHit.type,

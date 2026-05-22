@@ -8,7 +8,7 @@ import {
   getContainingView,
   getSession,
   isFeature,
-  isSessionModelWithWidgets,
+  openFeatureWidget,
 } from '@jbrowse/core/util'
 import { BlockSet, blockToRegion } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
@@ -334,31 +334,21 @@ function stateModelFactory() {
        */
       selectFeature(feature: Feature) {
         const session = getSession(self)
-        session.setSelection(feature)
-        if (isSessionModelWithWidgets(session)) {
-          const { type, id } = self.featureWidgetType
-          const track = getContainingTrack(self)
-          const view = getContainingView(self)
-          const adapterConfig = getConf(track, 'adapter')
-          session.rpcManager
-            .call(getRpcSessionId(self), 'CoreGetMetadata', { adapterConfig })
-            .then(descriptions => {
-              if (isAlive(self)) {
-                session.showWidget(
-                  session.addWidget(type, id, {
-                    featureData: feature.toJSON(),
-                    view,
-                    track,
-                    descriptions,
-                  }),
-                )
-              }
-            })
-            .catch((e: unknown) => {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            })
-        }
+        const adapterConfig = getConf(getContainingTrack(self), 'adapter')
+        session.rpcManager
+          .call(getRpcSessionId(self), 'CoreGetMetadata', { adapterConfig })
+          .then(descriptions => {
+            if (isAlive(self)) {
+              openFeatureWidget(self, feature.toJSON(), {
+                widget: self.featureWidgetType,
+                extra: { descriptions },
+              })
+            }
+          })
+          .catch((e: unknown) => {
+            console.error(e)
+            session.notifyError(`${e}`, e)
+          })
       },
 
       /**

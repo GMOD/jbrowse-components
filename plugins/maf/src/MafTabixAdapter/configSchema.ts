@@ -22,7 +22,7 @@ const configSchema = ConfigurationSchema(
     bedGzLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my.bed.gz.tbi',
+        uri: '/path/to/my.bed.gz',
         locationType: 'UriLocation',
       },
     },

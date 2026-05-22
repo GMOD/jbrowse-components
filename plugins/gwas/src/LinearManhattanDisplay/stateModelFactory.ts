@@ -4,10 +4,9 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
-  getContainingTrack,
   getContainingView,
   getSession,
-  isSessionModelWithWidgets,
+  openFeatureWidget,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -27,7 +26,6 @@ import {
 import { observable } from 'mobx'
 
 import TooltipComponent from './components/TooltipComponent.tsx'
-import { computeManhattanScoreRange } from './computeManhattanScoreRange.ts'
 
 import type { ManhattanHit } from './findManhattanHit.ts'
 import type {
@@ -37,7 +35,7 @@ import type {
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -72,7 +70,7 @@ export function stateModelFactory(
       // 1:1 points keyed by displayedRegionIndex.
       rpcDataMap: observable.map<number, ManhattanRpcResult>(),
       // Currently hovered point — drives the hover circle + tooltip.
-      manhattanHit: undefined as ManhattanHit | undefined,
+      featureUnderMouse: undefined as ManhattanHit | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -85,23 +83,38 @@ export function stateModelFactory(
         return self.getConfWithOverride<string>('color')
       },
       get domain(): [number, number] | undefined {
-        const range = computeManhattanScoreRange(self.rpcDataMap.values())
-        if (!range) {
+        let scoreMin = Infinity
+        let scoreMax = -Infinity
+        for (const d of self.rpcDataMap.values()) {
+          if (d.numFeatures === 0) {
+            continue
+          }
+          if (d.scoreMin < scoreMin) {
+            scoreMin = d.scoreMin
+          }
+          if (d.scoreMax > scoreMax) {
+            scoreMax = d.scoreMax
+          }
+        }
+        if (!Number.isFinite(scoreMin)) {
           return undefined
         }
         return getNiceDomain({
-          domain: range,
+          domain: [scoreMin, scoreMax],
           bounds: [self.minScoreConfig, self.maxScoreConfig],
           scaleType: 'linear',
         })
       },
     }))
     .views(self => ({
+      // Manhattan plots are linear-only (pre-transformed -log10 p values);
+      // the inherited scaleType config is intentionally ignored here so the
+      // axis ticks stay consistent with the linear `domain` above.
       get ticks() {
         return computeYTicks({
           height: self.height,
           domain: self.domain,
-          scaleType: self.scaleType,
+          scaleType: 'linear',
           minimalTicks: self.getConfWithOverride<boolean>('minimalTicks'),
         })
       },
@@ -110,23 +123,34 @@ export function stateModelFactory(
       rpcProps(): { color: string } {
         return { color: self.color }
       },
-      // Manhattan data is pre-transformed (-log10 p values) and zoom-
-      // independent. MultiRegionDisplayMixin's default isCacheValid is `true`,
-      // so no override is needed.
       // canvasHeight is the inner canvas (between top/bottom YScaleBar
       // label offsets) — this is the area both the GPU renderer and
-      // findManhattanHit work in. Using self.height directly causes the
-      // hit-test and hover circle to drift from rendered points.
-      manhattanRenderState(): ManhattanRenderState | undefined {
-        if (!self.domain) {
+      // findManhattanHit work in. Using self.height directly would drift
+      // the hit-test off the rendered points.
+      get renderState(): ManhattanRenderState | undefined {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const canvasWidth = view.trackWidthPx
+        const canvasHeight = self.height - 2 * YSCALEBAR_LABEL_OFFSET
+        if (self.domain) {
+          return { domainY: self.domain, canvasWidth, canvasHeight }
+        }
+        // No domain ≡ either (a) no fetch has completed — keep undefined so
+        // the loading overlay stays, or (b) fetch completed with zero
+        // features — return a stub state so render runs, the canvas clears,
+        // and canvasDrawn flips. Domain is arbitrary; nothing will draw.
+        if (self.rpcDataMap.size === 0) {
           return undefined
         }
+        return { domainY: [0, 1], canvasWidth, canvasHeight }
+      },
+      // displayedRegionIndex → refName lookup. Hit-testing reads this on
+      // every mousemove; MobX caches the view so visibleRegions changes
+      // invalidate it once rather than rebuilding per event.
+      get regionRefNames(): ReadonlyMap<number, string> {
         const view = getContainingView(self) as LinearGenomeViewModel
-        return {
-          domainY: self.domain,
-          canvasWidth: view.trackWidthPx,
-          canvasHeight: self.height - 2 * YSCALEBAR_LABEL_OFFSET,
-        }
+        return new Map(
+          view.visibleRegions.map(r => [r.displayedRegionIndex, r.refName]),
+        )
       },
       // Manhattan menu: just the shared Score submenu and cross-hatch toggle.
       // Rendering type / Resolution / Scale type don't apply to single-point
@@ -136,24 +160,20 @@ export function stateModelFactory(
       },
     }))
     .actions(self => ({
-      selectFeature(feature: Feature) {
-        const session = getSession(self)
-        session.setSelection(feature)
-        if (isSessionModelWithWidgets(session)) {
-          session.showWidget(
-            session.addWidget('BaseFeatureWidget', 'baseFeature', {
-              featureData: feature.toJSON(),
-              view: getContainingView(self),
-              track: getContainingTrack(self),
-            }),
-          )
-        }
+      selectFeature(hit: ManhattanHit) {
+        openFeatureWidget(self, {
+          uniqueId: `manhattan-${hit.refName}-${hit.start}`,
+          refName: hit.refName,
+          start: hit.start,
+          end: hit.end,
+          score: hit.score,
+        })
       },
       setRpcData(idx: number, data: ManhattanRpcResult) {
         self.rpcDataMap.set(idx, data)
       },
-      setManhattanHit(hit: ManhattanHit | undefined) {
-        self.manhattanHit = hit
+      setFeatureUnderMouse(hit: ManhattanHit | undefined) {
+        self.featureUnderMouse = hit
       },
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
@@ -207,7 +227,7 @@ export function stateModelFactory(
           backend,
           data => data,
           b => {
-            const state = self.manhattanRenderState()
+            const state = self.renderState
             if (state) {
               b.renderBlocks(self.renderBlocks, self.rpcDataMap, state)
               return true

@@ -3,10 +3,8 @@ import { useEffect, useRef } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
 import {
-  getContainingTrack,
   getContainingView,
-  getSession,
-  isSessionModelWithWidgets,
+  openFeatureWidget,
   useGpuBackend,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -52,7 +50,7 @@ interface ParentViewDuck {
   scrollZoom: boolean
 }
 
-function openFeatureWidget(
+function openSyntenyFeatureWidget(
   display: LinearSyntenyDisplayModel,
   featureIndex: number,
 ) {
@@ -60,27 +58,23 @@ function openFeatureWidget(
   if (!feat) {
     return
   }
-  const session = getSession(display)
-  if (!isSessionModelWithWidgets(session)) {
-    return
-  }
-  session.showWidget(
-    session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
-      view: getContainingView(display),
-      track: getContainingTrack(display),
-      featureData: {
-        uniqueId: feat.id,
-        start: feat.start,
-        end: feat.end,
-        strand: feat.strand,
-        refName: feat.refName,
-        name: feat.name,
-        assemblyName: feat.assemblyName,
-        mate: feat.mate,
-        identity: feat.identity,
-      },
-      level: display.level,
-    }),
+  openFeatureWidget(
+    display,
+    {
+      uniqueId: feat.id,
+      start: feat.start,
+      end: feat.end,
+      strand: feat.strand,
+      refName: feat.refName,
+      name: feat.name,
+      assemblyName: feat.assemblyName,
+      mate: feat.mate,
+      identity: feat.identity,
+    },
+    {
+      widget: { type: 'SyntenyFeatureWidget', id: 'syntenyFeature' },
+      extra: { level: display.level },
+    },
   )
 }
 
@@ -263,7 +257,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         const isHit = hit && model.displaysByKey.get(hit.key) === display
         display.setClickedFeatureIdx(isHit ? hit.featureIndex : -1)
         if (isHit) {
-          openFeatureWidget(display, hit.featureIndex)
+          openSyntenyFeatureWidget(display, hit.featureIndex)
         }
       }
     })

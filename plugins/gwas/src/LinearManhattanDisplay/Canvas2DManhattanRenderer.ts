@@ -4,7 +4,7 @@ import {
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
-import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -13,10 +13,6 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const TWO_PI = Math.PI * 2
 const POINT_RADIUS_PX = 2
-
-function abgrToCss(abgr: number) {
-  return `rgb(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)})`
-}
 
 // Pure draw entry point — used both by on-screen streaming render and SVG
 // export. No per-region builder layer (the rpcDataMap entries are already
@@ -52,14 +48,14 @@ export function drawManhattanBlocks(
 
     // Batch by color to amortize fillStyle changes.
     let currentAbgr = colors[0]!
-    ctx.fillStyle = abgrToCss(currentAbgr)
+    ctx.fillStyle = abgrToCssRgba(currentAbgr)
     ctx.beginPath()
     for (let i = 0; i < numFeatures; i++) {
       const abgr = colors[i]!
       if (abgr !== currentAbgr) {
         ctx.fill()
         currentAbgr = abgr
-        ctx.fillStyle = abgrToCss(currentAbgr)
+        ctx.fillStyle = abgrToCssRgba(currentAbgr)
         ctx.beginPath()
       }
       const x = bpToScreenPx(

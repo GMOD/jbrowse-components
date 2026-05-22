@@ -11,7 +11,7 @@ import {
   DisplayLoadingOverlay,
 } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
-import { useTheme } from '@mui/material'
+import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
@@ -167,8 +167,8 @@ const LinearMafDisplay = observer(function (props: {
             top: Math.min(dragStartY, dragEndY) + scrollTop,
             width: Math.abs(dragEndX - dragStartX),
             height: Math.abs(dragEndY - dragStartY),
-            backgroundColor: 'rgba(0, 0, 255, 0.2)',
-            border: '1px solid rgba(0, 0, 255, 0.5)',
+            backgroundColor: alpha(theme.palette.primary.main, 0.2),
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
             pointerEvents: 'none',
           }}
         />

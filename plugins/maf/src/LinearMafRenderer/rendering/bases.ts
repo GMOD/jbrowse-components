@@ -22,16 +22,11 @@ export function renderBases(
     bpToCellLeftPx,
   } = context
   const cellW = scale + GAP_STROKE_OFFSET
-  const cfg = {
-    colorForBase: palette.colorForBase,
-    matchColor: palette.matchColor,
-    gapColor: palette.gapColor,
-    mismatchOffColor: palette.mismatchOffColor,
-    unknownBaseColor: palette.unknownBaseColor,
-    showAllLetters,
-    mismatchRendering,
-  }
-  const len = alignment.length
+  const cfg = { ...palette, showAllLetters, mismatchRendering }
+  // Defensive min() — `seq.charCodeAt(i)` returns NaN past the end and the
+  // bitwise match check in resolveCellColor would silently mis-classify
+  // those cells (NaN | 0x20 === 0x20 collides with everything).
+  const len = Math.min(alignment.length, seq.length)
 
   for (let i = 0, genomicOffset = 0; i < len; i++) {
     const refByte = seq.charCodeAt(i)

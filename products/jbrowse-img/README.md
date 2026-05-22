@@ -112,9 +112,11 @@ jb2export --fasta ref.fa --bam reads.bam color:modifications featureHeight:super
 ## color by insert size + orientation to highlight structural variants
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
 
-## samplot-style SV view (large samplot panel + thicker arcs)
-jb2export --fasta ref.fa --bam reads.bam arcs:samplot arcsHeight:300 lineWidth:2 \
-  height:600 --loc chr1:1-50000
+## samplot-style SV view — samplot overlays the coverage band, so use
+## coverageHeight to make the panel tall (NOT arcsHeight, which only sizes
+## the regular up/down arcs panel). Samplot disappears if coverage:false.
+jb2export --fasta ref.fa --bam reads.bam arcs:samplot coverageHeight:300 \
+  lineWidth:2 height:600 --loc chr1:1-50000
 
 ## paired-end arcs above reads
 jb2export --fasta ref.fa --bam reads.bam arcs:up --loc chr1:1-10000
@@ -154,7 +156,7 @@ Overlays & subtracks:
 | `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                |
 | `sashimi:mode`         | `sashimi:up`     | Sashimi splice-junction arcs (`off`, `up`, `down`)               |
 | `coverage:true\|false` | `coverage:false` | Toggle coverage subtrack                                         |
-| `snpcov`               | `snpcov`         | Render only the SNP/coverage subtrack                            |
+| `snpcov`               | `snpcov`         | Coverage-only view — resizes the coverage band to fill the track |
 
 Layout & sizing:
 
@@ -162,8 +164,8 @@ Layout & sizing:
 | ------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
 | `featureHeight:preset\|N` | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
 | `noSpacing:true\|false`   | `noSpacing:true`                                 | Remove gap between reads                                                         |
-| `coverageHeight:N`        | `coverageHeight:80`                              | Height of the coverage subtrack                                                  |
-| `arcsHeight:N`            | `arcsHeight:200`                                 | Height of the paired-arcs / samplot panel                                        |
+| `coverageHeight:N`        | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the samplot overlay)         |
+| `arcsHeight:N`            | `arcsHeight:120`                                 | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`        |
 | `lineWidth:N`             | `lineWidth:2`                                    | Stroke width for arcs and linked-read chains                                     |
 
 Available `color:type` values:
@@ -204,10 +206,12 @@ jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
 
 ### Render only the SNPCoverage track of an alignments track
 
-Renders only the snpcov subtrack at height 600 for file.bam
+`snpcov` collapses the alignments display down to coverage-only by sizing the
+coverage band to fill the whole track. Combine with `height:N` (overall track
+height) to get a coverage-only render at the size you want.
 
 ```bash
-jb2export --bam file.bam snpcov height:600
+jb2export --bam file.bam snpcov height:200 --fasta hg19.fa
 ```
 
 ### Render the sequence track

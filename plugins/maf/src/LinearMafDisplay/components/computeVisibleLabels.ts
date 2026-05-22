@@ -73,8 +73,12 @@ export function computeVisibleLabels(
         const alignment = decoder.decode(row.alignmentBytes)
         const rowTop = offset + rowHeight * row.rowIndex
         const yPos = Math.round(hp2 + rowTop)
+        // refSeq/alignment should be same length per MAF spec; defensive
+        // min() mirrors mafInstanceBuffer.ts so a malformed file doesn't
+        // crash on `undefined.toLowerCase()`.
+        const len = Math.min(alignment.length, refSeq.length)
 
-        for (let i = 0, genomicOffset = 0; i < alignment.length; i++) {
+        for (let i = 0, genomicOffset = 0; i < len; i++) {
           const refChar = refSeq[i]!
           if (refChar !== '-') {
             const alignChar = alignment[i]!

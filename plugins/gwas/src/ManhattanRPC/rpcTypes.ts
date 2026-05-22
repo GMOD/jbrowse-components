@@ -24,8 +24,6 @@ export interface ManhattanRpcResult {
   numFeatures: number
   scoreMin: number
   scoreMax: number
-  scoreSum: number
-  scoreSumSq: number
   // Flatbush 2D R-tree index over (bp, score) for hit testing — built on the
   // worker, transferred zero-copy, wrapped on demand via Flatbush.from. Empty
   // when numFeatures === 0 (Flatbush rejects zero-item indexes).

@@ -75,13 +75,7 @@ describe('standardizeArgv', () => {
 
 describe('makeTrackConfig', () => {
   test('bam track', () => {
-    const config = makeTrackConfig(
-      'bam',
-      'reads.bam',
-      undefined,
-      [],
-      fakeAssembly,
-    )
+    const config = makeTrackConfig('bam', 'reads.bam', undefined, fakeAssembly)
     expect(config).toMatchObject({
       type: 'AlignmentsTrack',
       trackId: 'reads.bam',
@@ -100,25 +94,10 @@ describe('makeTrackConfig', () => {
       'bam',
       'reads.bam',
       'reads.bam.csi',
-      [],
       fakeAssembly,
     )
     expect(config?.adapter).toMatchObject({
       index: { indexType: 'CSI' },
-    })
-  })
-
-  test('bam track with snpcov display', () => {
-    const config = makeTrackConfig(
-      'bam',
-      'reads.bam',
-      undefined,
-      ['snpcov'],
-      fakeAssembly,
-    )
-    expect(config?.displays).toHaveLength(1)
-    expect(config?.displays?.[0]).toMatchObject({
-      type: 'LinearSNPCoverageDisplay',
     })
   })
 
@@ -127,7 +106,6 @@ describe('makeTrackConfig', () => {
       'cram',
       'reads.cram',
       undefined,
-      [],
       fakeAssembly,
     )
     expect(config).toMatchObject({
@@ -144,7 +122,6 @@ describe('makeTrackConfig', () => {
       'bigwig',
       'signal.bw',
       undefined,
-      [],
       fakeAssembly,
     )
     expect(config).toMatchObject({
@@ -161,7 +138,6 @@ describe('makeTrackConfig', () => {
       'vcfgz',
       'variants.vcf.gz',
       undefined,
-      [],
       fakeAssembly,
     )
     expect(config).toMatchObject({
@@ -181,7 +157,6 @@ describe('makeTrackConfig', () => {
       'vcfgz',
       'variants.vcf.gz',
       'variants.vcf.gz.csi',
-      [],
       fakeAssembly,
     )
     expect(config?.adapter).toMatchObject({ index: { indexType: 'CSI' } })
@@ -192,7 +167,6 @@ describe('makeTrackConfig', () => {
       'gffgz',
       'genes.gff.gz',
       undefined,
-      [],
       fakeAssembly,
     )
     expect(config).toMatchObject({
@@ -206,7 +180,6 @@ describe('makeTrackConfig', () => {
       'hic',
       'matrix.hic',
       undefined,
-      [],
       fakeAssembly,
     )
     expect(config).toMatchObject({
@@ -220,7 +193,6 @@ describe('makeTrackConfig', () => {
       'bigbed',
       'features.bb',
       undefined,
-      [],
       fakeAssembly,
     )
     expect(config).toMatchObject({
@@ -234,7 +206,6 @@ describe('makeTrackConfig', () => {
       'bedgz',
       'regions.bed.gz',
       undefined,
-      [],
       fakeAssembly,
     )
     expect(config).toMatchObject({
@@ -248,7 +219,6 @@ describe('makeTrackConfig', () => {
       'unknown',
       'file.txt',
       undefined,
-      [],
       fakeAssembly,
     )
     expect(config).toBeUndefined()
@@ -259,7 +229,6 @@ describe('makeTrackConfig', () => {
       'bigwig',
       'https://example.com/signal.bw',
       undefined,
-      [],
       fakeAssembly,
     )
     expect(config?.adapter).toMatchObject({

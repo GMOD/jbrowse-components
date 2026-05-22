@@ -13,7 +13,7 @@ import {
   getContainingView,
   getSession,
   isFeature,
-  isSessionModelWithWidgets,
+  openFeatureWidget,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -632,18 +632,9 @@ export default function baseStateModelFactory(
       }))
       .actions(self => ({
         selectFeature(feature: Feature) {
-          const session = getSession(self)
-          session.setSelection(feature)
-          if (isSessionModelWithWidgets(session)) {
-            const { type, id } = self.featureWidgetType
-            session.showWidget(
-              session.addWidget(type, id, {
-                featureData: feature.toJSON(),
-                view: getContainingView(self),
-                track: getContainingTrack(self),
-              }),
-            )
-          }
+          openFeatureWidget(self, feature.toJSON(), {
+            widget: self.featureWidgetType,
+          })
         },
 
         clearSelection() {

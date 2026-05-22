@@ -185,11 +185,23 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
         onClick={() => {
           try {
             const session = getSession(model)
+            // Accept either a JSON array (must actually be an array — strings
+            // and numbers parse as valid JSON but aren't sample lists) or
+            // newline-separated names. Regex matches CRLF, CR, and LF so
+            // pasted Windows/Mac line endings don't leave a trailing \r on
+            // each name.
             let sampleNames: string[]
             try {
-              sampleNames = JSON.parse(samples)
+              const parsed: unknown = JSON.parse(samples)
+              if (!Array.isArray(parsed)) {
+                throw new Error('not an array')
+              }
+              sampleNames = parsed.map(String)
             } catch (e) {
-              sampleNames = samples.split(/\n|\r\n|\r/)
+              sampleNames = samples
+                .split(/\r\n|[\r\n]/)
+                .map(s => s.trim())
+                .filter(Boolean)
             }
 
             const trackId = [
