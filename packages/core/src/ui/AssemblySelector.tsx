@@ -73,6 +73,12 @@ const AssemblySelector = observer(function AssemblySelector({
       error={!!error}
       disabled={!!error}
       className={classes.importFormEntry}
+      slotProps={{
+        select: {
+          // @ts-expect-error
+          SelectDisplayProps: { 'data-testid': 'assembly-selector-select' },
+        },
+      }}
     >
       {assemblyNames.map(name => (
         <MenuItem key={name} value={name}>

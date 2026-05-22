@@ -12,7 +12,8 @@ function makeSession(
   return {
     assemblyNames,
     assemblyManager: {
-      getDisplayName: (name: string) => displayNames?.[name] ?? name,
+      get: (name: string) =>
+        displayNames ? { displayName: displayNames[name] } : undefined,
     },
   } as unknown as AbstractSessionModel
 }
