@@ -49,6 +49,9 @@ export function WiggleScoreConfigMixin() {
       get autoscaleType() {
         return self.getConfWithOverride<string>('autoscale')
       },
+      get numStdDev() {
+        return self.getConfWithOverride<number>('numStdDev')
+      },
       get summaryScoreMode() {
         return self.getConfWithOverride<string>('summaryScoreMode')
       },

@@ -22,7 +22,7 @@ export function WiggleCommonMixin() {
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return undefined
         }
-        const numStdDev = self.getConfWithOverride<number>('numStdDev')
+        const numStdDev = self.numStdDev
         // Use coarseDynamicBlocks (500ms debounced) instead of visibleRegions
         // so autoscale doesn't recompute on every animation frame during zoom.
         const visibleEntries = view.coarseDynamicBlocks.flatMap(block => {

@@ -20,6 +20,7 @@ import sessionModelFactory from '../sessionModel/index.ts'
 
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { RenderResult } from '@testing-library/react'
 
 type LGV = LinearGenomeViewModel
 
@@ -222,12 +223,10 @@ export async function exportAndVerifySvg({
   delay,
   findAllByText,
   beforeSubmit,
-}: {
-  findByTestId: any
-  findByText: any
+}: Pick<RenderResult, 'findByTestId' | 'findByText'> & {
   filename: string
   delay?: { timeout: number }
-  findAllByText?: any
+  findAllByText?: RenderResult['findAllByText']
   beforeSubmit?: () => Promise<void>
 }) {
   const actualDelay = delay ?? { timeout: 40000 }
@@ -235,7 +234,7 @@ export async function exportAndVerifySvg({
   fireEvent.click(await findByTestId('view_menu_icon', ...opts))
 
   if (findAllByText) {
-    fireEvent.click((await findAllByText('Export SVG'))[0])
+    fireEvent.click((await findAllByText('Export SVG'))[0]!)
   } else {
     fireEvent.click(await findByText('Export SVG', ...opts))
   }
