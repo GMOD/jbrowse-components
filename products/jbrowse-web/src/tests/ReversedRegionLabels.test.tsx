@@ -9,7 +9,7 @@ import {
 } from './util.tsx'
 
 
-import './svgExportMocks'
+import './svgExportMocks.ts'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()

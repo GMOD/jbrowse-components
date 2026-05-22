@@ -2,7 +2,7 @@ import { createView, doBeforeEach, exportAndVerifySvg, setup } from './util.tsx'
 import volvoxConfig from '../../test_data/volvox/config.json' with { type: 'json' }
 
 
-import './svgExportMocks'
+import './svgExportMocks.ts'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()

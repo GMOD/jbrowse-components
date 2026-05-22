@@ -8,7 +8,7 @@ import { createCanvas as nodeCreateCanvas } from 'canvas'
 import { createView, doBeforeEach, hts, setup } from './util.tsx'
 
 
-import './svgExportMocks'
+import './svgExportMocks.ts'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
