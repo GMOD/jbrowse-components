@@ -12,7 +12,7 @@ import { observer } from 'mobx-react'
 import InstalledPluginsList from './InstalledPluginsList.tsx'
 import PluginCard from './PluginCard.tsx'
 import { useFetchPlugins } from './util.ts'
-import ClearableSearchField from '../../HierarchicalTrackSelectorWidget/components/ClearableSearchField.tsx'
+import ClearableSearchField from '../../shared/ClearableSearchField.tsx'
 
 import type { PluginStoreModel } from '../model.ts'
 

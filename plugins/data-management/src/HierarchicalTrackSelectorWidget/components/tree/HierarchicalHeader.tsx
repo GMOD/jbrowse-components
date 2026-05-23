@@ -1,7 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import ClearableSearchField from '../ClearableSearchField.tsx'
+import ClearableSearchField from '../../../shared/ClearableSearchField.tsx'
 import ShoppingCart from '../ShoppingCart.tsx'
 import FavoriteTracks from './FavoriteTracks.tsx'
 import HamburgerMenu from './HamburgerMenu.tsx'

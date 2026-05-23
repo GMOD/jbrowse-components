@@ -59,8 +59,6 @@ export function facetedStateTreeF() {
       /**
        * #volatile
        */
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       visible: {} as Record<string, boolean>,
       /**
        * #volatile
@@ -159,11 +157,9 @@ export function facetedStateTreeF() {
               name: getTrackName(track, session),
               category: readConfObject(track, 'category')?.join(', '),
               adapter: (track.adapter as { type?: string } | undefined)?.type,
-
               description: readConfObject(track, 'description') as
                 | string
                 | undefined,
-
               metadata: (readConfObject(track, 'metadata') ?? {}) as Record<
                 string,
                 unknown

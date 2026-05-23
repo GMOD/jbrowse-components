@@ -7,16 +7,9 @@ import { observer } from 'mobx-react'
 
 import SharedTooltip from './SharedTooltip.tsx'
 import TreeItem from './TreeItem.tsx'
-import { useSearchHighlight } from '../../../useSearchHighlight.ts'
+import { useSearchHighlight } from '../../../shared/useSearchHighlight.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-
-interface Range {
-  startIndex: number
-  endIndex: number
-  totalHeight: number
-  itemOffsets: number[]
-}
 
 // Subscribes to container scroll + MST offset changes and exposes the current
 // visible range; only re-renders when start/end actually change.
@@ -24,7 +17,7 @@ function useVisibleRange(
   containerRef: RefObject<HTMLDivElement | null>,
   model: HierarchicalTrackSelectorModel,
   height: number,
-): Range {
+) {
   const [range, setRange] = useState(() => model.itemOffsets(height, 0))
   useEffect(() => {
     const container = containerRef.current
@@ -32,9 +25,8 @@ function useVisibleRange(
       return
     }
     let rafId: number | undefined
-    const recompute = () => {
+    const applyRange = (next: ReturnType<typeof model.itemOffsets>) => {
       rafId = undefined
-      const next = model.itemOffsets(height, container.scrollTop)
       setRange(prev =>
         next.startIndex === prev.startIndex &&
         next.endIndex === prev.endIndex &&
@@ -44,11 +36,14 @@ function useVisibleRange(
       )
     }
     const onScroll = () => {
-      rafId ??= requestAnimationFrame(recompute)
+      rafId ??= requestAnimationFrame(() => {
+        applyRange(model.itemOffsets(height, container.scrollTop))
+      })
     }
+    // addDisposer guards against the model being unmounted first; the React
+    // cleanup handles the common case of unmounting while the model lives
     const dispose = autorun(() => {
-      void model.flattenedItemOffsets
-      recompute()
+      applyRange(model.itemOffsets(height, container.scrollTop))
     })
     addDisposer(model, dispose)
     container.addEventListener('scroll', onScroll, { passive: true })

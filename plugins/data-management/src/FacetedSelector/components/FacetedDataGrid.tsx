@@ -7,7 +7,7 @@ import { alpha, darken, lighten } from '@mui/material/styles'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { useSearchHighlight } from '../../useSearchHighlight.ts'
+import { useSearchHighlight } from '../../shared/useSearchHighlight.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
@@ -200,7 +200,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   const visibleColumns = columns.filter(col => visible[col.id] !== false)
 
   const [overrides, setOverrides] = useState<Record<string, number>>({})
-  const colWidths: Record<string, number> = { ...initialWidths, ...overrides }
+  const colWidths = { ...initialWidths, ...overrides }
 
   const onResizeStart = (colId: string, e: React.MouseEvent) => {
     e.preventDefault()

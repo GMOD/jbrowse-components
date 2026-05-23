@@ -39,7 +39,7 @@ const HierarchicalTrackSelectorContainer = observer(
       </>
     )
     return overrideDimensions ? (
-      <div style={{ ...overrideDimensions }}>{inner}</div>
+      <div style={overrideDimensions}>{inner}</div>
     ) : (
       inner
     )
