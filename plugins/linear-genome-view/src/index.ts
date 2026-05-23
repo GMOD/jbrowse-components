@@ -13,7 +13,6 @@ import BasicTrackF from './BasicTrack/index.ts'
 import FeatureTrackF from './FeatureTrack/index.ts'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView/index.ts'
 import LinearBareDisplayF from './LinearBareDisplay/index.ts'
-import LinearBasicDisplayF from './LinearBasicDisplay/index.ts'
 import ZoomControls from './LinearGenomeView/components/HeaderZoomControls.tsx'
 import LinearGenomeViewF, {
   LinearGenomeView,
@@ -56,7 +55,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     FeatureTrackF(pluginManager)
     BasicTrackF(pluginManager)
-    LinearBasicDisplayF(pluginManager)
     LinearGenomeViewF(pluginManager)
     LinearBareDisplayF(pluginManager)
     LaunchLinearGenomeViewF(pluginManager)
@@ -79,9 +77,12 @@ export type {
   BaseLinearDisplayModel,
   BlockModel,
   ExportSvgDisplayOptions,
+  FeatureLabelData,
   FloatingLabelData,
   LayoutFeatureMetadata,
+  LayoutRecord,
   LegendItem,
+  RenderedProps,
 } from './BaseLinearDisplay/index.ts'
 
 export {
@@ -92,23 +93,37 @@ export {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
   BlockMsg,
+  ConfigOverrideMixin,
+  DisplayErrorBar,
+  DisplayLoadingOverlay,
   FeatureDensityMixin,
   FloatingLegend,
-  NonBlockCanvasDisplayComponent,
-  NonBlockCanvasDisplayMixin,
+  GlobalDataDisplayMixin,
+  MultiRegionDisplayMixin,
   SVGLegend,
+  StaleViewportRescaleMixin,
   TooLargeMessage,
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
   calculateSvgLegendWidth,
+  computeRenderTransform,
   createSubfeatureLabelMetadata,
   drawCanvasImageData,
+  getDisplayStr,
+  migrateOldSettingSnapshots,
+  onDisplayedRegionsChange,
 } from './BaseLinearDisplay/index.ts'
 export type {
-  NonBlockCanvasDisplayMixinType,
-  NonBlockCanvasDisplayModel,
+  ByteEstimateConfig,
+  FetchContext,
+  GlobalDataDisplayMixinType,
+  MultiRegionDisplayMixinType,
+  RenderTransform,
+  RenderTransformInputs,
+  StaleViewportRescaleMixinType,
 } from './BaseLinearDisplay/index.ts'
 export {
+  AUTO_FORCE_LOAD_BP,
   HighlightBand,
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,
@@ -130,17 +145,5 @@ export {
   SVGTracks,
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
+export { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/svgExport'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util.ts'
-export {
-  configSchema as linearBasicDisplayConfigSchemaFactory,
-  modelFactory as linearBasicDisplayModelFactory,
-} from './LinearBasicDisplay/index.ts'
-export {
-  configSchema as linearFeatureDisplayConfigSchemaFactory,
-  modelFactory as linearFeatureDisplayModelFactory,
-} from './LinearFeatureDisplay/index.ts'
-export type {
-  LinearFeatureDisplayModel,
-  LinearFeatureDisplayStateModel,
-} from './LinearFeatureDisplay/index.ts'
-export { default as LinearBasicDisplayComponent } from './LinearBasicDisplay/components/LinearBasicDisplayComponent.tsx'

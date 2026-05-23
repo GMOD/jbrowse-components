@@ -1,6 +1,6 @@
 import { lazy, useEffect, useState } from 'react'
 
-import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import {
   type AbstractSessionModel,
   localStorageGetItem,
@@ -109,7 +109,7 @@ const ShareDialog = observer(function ShareDialog({
 
           {currentSetting === 'short' ? (
             error ? (
-              <ErrorBanner
+              <ErrorMessage
                 error={error}
                 onReset={() => {
                   setError(undefined)

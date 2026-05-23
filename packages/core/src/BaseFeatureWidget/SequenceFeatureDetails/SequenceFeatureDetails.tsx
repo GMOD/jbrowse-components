@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector.tsx'
-import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts'
+import { ErrorMessage, LoadingEllipses } from '../../ui/index.ts'
 import { getSession } from '../../util/index.ts'
 import { useFeatureSequence } from '../../util/useFeatureSequence.ts'
 
@@ -80,7 +80,7 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
             </Typography>
           ) : null}
           {error ? (
-            <ErrorBanner error={error} />
+            <ErrorMessage error={error} />
           ) : !sequence ? (
             <LoadingEllipses />
           ) : 'error' in sequence ? (

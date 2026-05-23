@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
   getEnv,
@@ -45,9 +46,13 @@ export default function SearchResultsTable({
     throw new Error(`assembly ${assemblyName} regions not loaded`)
   }
 
+  const tracksById = session.getTracksById()
+
   function getTrackName(trackId: string | undefined) {
-    return trackId !== undefined ? session.getTracksById()[trackId]?.name : ''
+    const conf = trackId !== undefined ? tracksById[trackId] : undefined
+    return conf ? (readConfObject(conf, 'name') as string) : ''
   }
+
   async function handleClick(result: BaseResult) {
     if (result.hasLocation()) {
       await navToOption({
@@ -95,7 +100,9 @@ export default function SearchResultsTable({
                     assembly.isValidRefName(refName),
                   )
                 : undefined
-            } catch (e) {}
+            } catch (e) {
+              console.warn('failed to parse location string', locString, e)
+            }
             return (
               <TableRow key={result.getId()}>
                 <TableCell component="th" scope="row">

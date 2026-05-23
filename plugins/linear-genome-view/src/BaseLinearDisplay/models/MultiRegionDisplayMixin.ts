@@ -1,0 +1,326 @@
+import { GpuLifecycleMixin } from '@jbrowse/core/gpu/GpuLifecycleMixin'
+import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
+import {
+  getContainingTrack,
+  getContainingView,
+  getRpcSessionId,
+  getSession,
+} from '@jbrowse/core/util'
+import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { autorun, observable, untracked } from 'mobx'
+
+import FetchMixin from './FetchMixin.ts'
+import { checkByteEstimate } from './fetchHelpers.ts'
+import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
+
+import type { FetchContext } from './FetchMixin.ts'
+import type { ByteEstimateConfig } from './fetchHelpers.ts'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
+import type { Region } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+export type { ByteEstimateConfig } from './fetchHelpers.ts'
+export type { FetchContext } from './FetchMixin.ts'
+
+export default function MultiRegionDisplayMixin() {
+  return types
+    .compose(
+      'MultiRegionDisplayMixin',
+      RegionTooLargeMixin(),
+      GpuLifecycleMixin(),
+      FetchMixin(),
+      types.model({}),
+    )
+    .volatile(() => ({
+      loadedRegions: observable.map<number, Region>(),
+    }))
+    .views(self => ({
+      get isReady() {
+        return self.canvasDrawn && !self.isLoading
+      },
+
+      // Shared cached view for every LGV-based GPU display. A single
+      // displayedRegion may produce multiple render blocks (shared GPU
+      // buffer, different scissor clips on screen). Plugins that want to
+      // suppress rendering in certain states (e.g. no domain yet) can
+      // override this getter to return [] — the autorun lifecycle will
+      // then issue an empty-blocks render that clears the canvas.
+      get renderBlocks() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return buildRenderBlocks(view.visibleRegions)
+      },
+    }))
+    .actions(self => ({
+      // Action wrapper so callers after async boundaries stay in MST strict mode.
+      setLoadedRegion(displayedRegionIndex: number, region: Region) {
+        self.loadedRegions.set(displayedRegionIndex, region)
+      },
+
+      clearDisplaySpecificData() {
+        // no-op base — subclasses override to clear rpcDataMap etc.
+      },
+    }))
+    .actions(self => ({
+      clearAllRpcData() {
+        self.cancelFetch()
+        self.setError(undefined)
+        self.setRegionTooLarge(false)
+        self.loadedRegions.clear()
+        self.clearDisplaySpecificData()
+        self.resetCanvasDrawn()
+      },
+
+      // Default reload: full reset. Subclasses with extra teardown can
+      // override (and chain to `clearAllRpcData` directly if needed).
+      reload() {
+        this.clearAllRpcData()
+      },
+
+      invalidateLoadedRegions() {
+        self.cancelFetch()
+        self.loadedRegions.clear()
+      },
+    }))
+    .actions(_self => ({
+      // Overridable hooks — subclasses override these
+      fetchNeeded(_needed: { region: Region; displayedRegionIndex: number }[]) {
+        // no-op base
+      },
+
+      isCacheValid(_displayedRegionIndex: number): boolean {
+        // can be overridden by derived classes
+        return true
+      },
+
+      getByteEstimateConfig(): ByteEstimateConfig | null {
+        return null
+      },
+    }))
+    .actions(self => ({
+      // Run a per-region fetch with byte-estimate gating. Marks regions
+      // as loaded only AFTER the work callback has populated display-
+      // specific data (rpcDataMap, cellData, etc) so the GPU upload
+      // autorun sees committed data when it observes loadedRegions.
+      async fetchRegions(
+        needed: { region: Region; displayedRegionIndex: number }[],
+        work: (ctx: FetchContext) => Promise<void>,
+      ) {
+        await self.runFetch(async ctx => {
+          const byteEstimateConfig = self.getByteEstimateConfig()
+          if (byteEstimateConfig) {
+            const session = getSession(self)
+            const result = await checkByteEstimate(
+              session.rpcManager,
+              getRpcSessionId(self),
+              needed.map(r => r.region),
+              byteEstimateConfig,
+              ctx,
+            )
+            if (ctx.isStale()) {
+              return
+            }
+            if (result) {
+              self.setFeatureDensityStats(result.stats)
+              if (result.tooLarge) {
+                self.setRegionTooLarge(true, result.reason)
+                return
+              }
+            }
+          }
+          self.setRegionTooLarge(false)
+          await work(ctx)
+          if (!ctx.isStale()) {
+            for (const { displayedRegionIndex, region } of needed) {
+              self.setLoadedRegion(displayedRegionIndex, region)
+            }
+          }
+        })
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // Clear loaded data whenever the displayed-regions list
+        // changes. `displayedRegions` is a frozen array on the LGV
+        // model, so any mutation replaces the reference and the
+        // autorun re-fires on the bare read below. Fires once at
+        // mount as a harmless no-op (nothing loaded yet).
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              const view = getContainingView(self) as LinearGenomeViewModel
+              if (!view.initialized) {
+                return
+              }
+              void view.displayedRegions
+              self.clearAllRpcData()
+            },
+            { name: 'DisplayedRegionsChange' },
+          ),
+        )
+
+        // Autorun: fetch data when the visible viewport isn't covered
+        // by loaded data. Fetches with an explicit buffer for smooth
+        // scrolling without blank gaps.
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              const view = getContainingView(self) as LinearGenomeViewModel
+              void self.fetchGeneration
+              if (!view.initialized || self.error || self.regionTooLarge) {
+                return
+              }
+
+              // perf guard: isLoading flip would re-fire this autorun mid-fetch;
+              // fetchGeneration (bumped after fetch) is the real re-trigger.
+              if (untracked(() => self.isLoading)) {
+                return
+              }
+
+              const { assemblyManager } = getSession(self)
+              const trackAssemblyNames = getTrackAssemblyNames(
+                getContainingTrack(self),
+              )
+              const visibleRegions = view.visibleRegions
+              for (const block of visibleRegions) {
+                const regionAsm = block.assemblyName
+                if (
+                  !trackAssemblyNames.includes(regionAsm) &&
+                  !trackAssemblyNames.some(name =>
+                    assemblyManager.get(name)?.hasName(regionAsm),
+                  )
+                ) {
+                  self.setError(
+                    new Error(
+                      `region assembly (${regionAsm}) does not match track assemblies (${trackAssemblyNames})`,
+                    ),
+                  )
+                  return
+                }
+              }
+
+              const bufferedByIndex = new Map(
+                view.bufferedVisibleRegions.map(b => [
+                  b.displayedRegionIndex,
+                  b,
+                ]),
+              )
+              const needed: {
+                region: Region
+                displayedRegionIndex: number
+              }[] = []
+              for (const block of visibleRegions) {
+                // perf guard: loadedRegions population would re-fire this autorun;
+                // fetchGeneration bump after setLoadedRegion is the real signal.
+                const loaded = untracked(() =>
+                  self.loadedRegions.get(block.displayedRegionIndex),
+                )
+                const boundsValid =
+                  loaded?.refName === block.refName &&
+                  Math.floor(block.start) >= loaded.start &&
+                  Math.ceil(block.end) <= loaded.end
+
+                if (
+                  boundsValid &&
+                  self.isCacheValid(block.displayedRegionIndex)
+                ) {
+                  continue
+                }
+                const buffered = bufferedByIndex.get(block.displayedRegionIndex)
+                if (buffered) {
+                  needed.push(buffered)
+                }
+              }
+              if (needed.length > 0) {
+                self.fetchNeeded(needed)
+              }
+            },
+            {
+              name: 'FetchVisibleRegions',
+              delay: 600,
+            },
+          ),
+        )
+
+        // Re-fetch when track config changes. Each subclass defines its own
+        // typed rpcProps() — reading it once tracks every param as a cache
+        // key. Looked up dynamically because the mixin doesn't declare the
+        // method on its public interface (subclasses keep their narrow
+        // return types unwidened by a base default).
+        const rpcProps = (self as { rpcProps?: () => unknown }).rpcProps
+        if (rpcProps) {
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const view = getContainingView(self) as LinearGenomeViewModel
+                if (!view.initialized) {
+                  return
+                }
+                void rpcProps.call(self)
+                self.clearAllRpcData()
+              },
+              { name: 'SettingsInvalidate' },
+            ),
+          )
+        }
+
+        // When zoom or viewport position changes while regionTooLarge
+        // or error is set, clear so the fetch autorun retries. Reads
+        // error/regionTooLarge untracked so setting them doesn't
+        // trigger this autorun to immediately wipe them — only the
+        // viewport read should fire it.
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              const view = getContainingView(self) as LinearGenomeViewModel
+              if (!view.initialized) {
+                return
+              }
+              void view.visibleRegions
+              if (untracked(() => self.regionTooLarge || self.error)) {
+                self.clearAllRpcData()
+              }
+            },
+            { name: 'ClearBlockingStateOnViewportChange' },
+          ),
+        )
+      },
+    }))
+}
+
+export type MultiRegionDisplayMixinType = ReturnType<
+  typeof MultiRegionDisplayMixin
+>
+
+// Run `clear` whenever the containing view's `displayedRegions` reference
+// changes (chromosome navigation, region reorder, etc). Use for state keyed
+// by `displayedRegionIndex` that intentionally survives `clearAllRpcData` —
+// chromosome navigation reuses indices, so an entry left over from chr1
+// would silently apply to chr2 (canvas's `densityStatsPerRegion` is the
+// canonical case). Plugins whose entire per-region data clears through
+// `clearDisplaySpecificData` don't need this — the mixin's own
+// `DisplayedRegionsChange` autorun already covers them.
+export function onDisplayedRegionsChange(
+  self: IAnyStateTreeNode,
+  clear: () => void,
+  name = 'OnDisplayedRegionsChange',
+) {
+  addDisposer(
+    self,
+    autorun(
+      () => {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
+        void view.displayedRegions
+        clear()
+      },
+      { name },
+    ),
+  )
+}

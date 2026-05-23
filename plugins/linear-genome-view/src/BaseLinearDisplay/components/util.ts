@@ -58,8 +58,7 @@ function calculateFeatureLeftPx(
 
   if (leftBpPx !== undefined) {
     // Use Math.min to handle reversed regions where genomic left maps to visual right
-    const rightEstimate =
-      rightBpPx !== undefined ? rightBpPx : leftBpPx + (right - left) / bpPerPx
+    const rightEstimate = rightBpPx ?? leftBpPx + (right - left) / bpPerPx
     return Math.min(leftBpPx, rightEstimate)
   } else if (rightBpPx !== undefined) {
     const leftEstimate = rightBpPx - (right - left) / bpPerPx
@@ -109,11 +108,7 @@ function calculateMultiRegionLeftPx(
     }
   }
 
-  if (minLeftPx === Infinity) {
-    return undefined
-  }
-
-  return minLeftPx
+  return minLeftPx === Infinity ? undefined : minLeftPx
 }
 
 function getFeatureLeftPx(

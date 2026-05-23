@@ -46,13 +46,13 @@ export default function SVGHeader({
     overview.bpToPx({
       ...first,
       coord: first.reversed ? first.end : first.start,
-    }) || 0
+    }) ?? 0
 
   const lastOverviewPx =
     overview.bpToPx({
       ...last,
       coord: last.reversed ? last.start : last.end,
-    }) || 0
+    }) ?? 0
   const y = +showCytobands * cytobandHeight
   return (
     <g id="header">

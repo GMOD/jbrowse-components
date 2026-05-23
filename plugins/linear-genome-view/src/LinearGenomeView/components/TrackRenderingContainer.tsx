@@ -4,6 +4,8 @@ import { LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { MINIMIZED_TRACK_HEIGHT } from '../consts.ts'
+
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -40,7 +42,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   const { classes } = useStyles()
   const display = track.displays[0]
   const { height, RenderingComponent, DisplayBlurb } = display
-  const { trackRefs, id, scaleFactor } = model
+  const { trackRefs, id } = model
   const trackId = track.trackId
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
@@ -58,21 +60,14 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
     <div
       className={classes.trackRenderingContainer}
       style={{
-        height: minimized ? 20 : height,
+        height: minimized ? MINIMIZED_TRACK_HEIGHT : height,
       }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
       data-testid={`trackRenderingContainer-${id}-${trackId}`}
     >
       {!minimized ? (
         <>
-          <div
-            ref={ref}
-            className={classes.renderingComponentContainer}
-            style={{
-              transform:
-                scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
-            }}
-          >
+          <div ref={ref} className={classes.renderingComponentContainer}>
             <Suspense fallback={<LoadingEllipses />}>
               <RenderingComponent
                 model={display}
