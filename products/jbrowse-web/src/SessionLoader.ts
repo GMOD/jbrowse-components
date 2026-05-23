@@ -458,7 +458,7 @@ const SessionLoader = types
           sessionSnapshot,
         } = self
         if (sessionSnapshot) {
-          await this.loadSessionPluginsIfNeeded(sessionSnapshot)
+          await this.loadSessionPluginsIfNeeded()
         } else if (isSharedSession) {
           await this.fetchSharedSession()
         } else if (isSpecSession) {
@@ -490,15 +490,13 @@ const SessionLoader = types
     },
     /**
      * #action
-     * Called when configSnapshot already exists (e.g., from HMR or plugin reload)
+     * Called when configSnapshot already exists (e.g., from HMR or plugin
+     * reload). The snapshot is already URI-stamped; only plugins need loading.
      */
     async setUpConfig() {
-      const configPath = self.resolvedConfigPath
-      const configUri = new URL(configPath, window.location.href)
-      const config = structuredClone(self.configSnapshot!)
-      addRelativeUris(config, configUri)
-      self.setConfigSnapshot(config)
-      await this.fetchPlugins(config as { plugins?: PluginDefinition[] })
+      await this.fetchPlugins(
+        self.configSnapshot as { plugins?: PluginDefinition[] },
+      )
     },
     /**
      * #action
@@ -558,10 +556,10 @@ const SessionLoader = types
      * When sessionSnapshot is provided during .create() (e.g., from HMR or
      * plugin reload), plugins haven't been loaded yet. This loads them.
      */
-    async loadSessionPluginsIfNeeded(sessionSnapshot: Record<string, unknown>) {
-      if (!self.sessionPlugins) {
+    async loadSessionPluginsIfNeeded() {
+      if (!self.sessionPlugins && self.sessionSnapshot) {
         await this.loadSession(
-          sessionSnapshot as {
+          self.sessionSnapshot as {
             sessionPlugins?: PluginDefinition[]
             id: string
           },

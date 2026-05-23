@@ -25,6 +25,10 @@ jest.mock('idb', () => ({
   openDB: jest.fn(),
 }))
 
+jest.mock('./createPluginManager', () => ({
+  createPluginManager: jest.fn(),
+}))
+
 describe('SessionLoader', () => {
   beforeEach(() => {
     jest.clearAllMocks()
