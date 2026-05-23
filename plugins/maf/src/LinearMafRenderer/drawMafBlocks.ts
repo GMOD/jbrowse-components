@@ -42,13 +42,7 @@ export function drawMafBlocks(
     const bpPerPx = clip.bpLength / clip.fullBlockWidth
     const scale = 1 / bpPerPx
     const { reversed } = renderBlock
-    const bpToPx = makeBpMapper({
-      start: renderBlock.bpRangeX[0],
-      end: renderBlock.bpRangeX[1],
-      screenStartPx: renderBlock.screenStartPx,
-      screenEndPx: renderBlock.screenEndPx,
-      reversed,
-    })
+    const bpToPx = makeBpMapper(renderBlock)
     // For non-reversed, bpToPx(bp) is the LEFT edge of the cell at bp.
     // For reversed, bpToPx(bp) is the RIGHT edge — subtract one cell width.
     const bpToCellLeftPx = reversed

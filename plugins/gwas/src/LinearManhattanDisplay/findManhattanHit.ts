@@ -56,20 +56,19 @@ export function findManhattanHit(
     if (!data?.flatbushData || !refName) {
       continue
     }
-    const [bpStart, bpEnd] = block.bpRangeX
-    const { screenStartPx, screenEndPx, reversed } = block
+    const { screenStartPx, screenEndPx, reversed, start, end } = block
     const blockWidthPx = screenEndPx - screenStartPx
     if (blockWidthPx <= 0) {
       continue
     }
-    const bpPerPx = (bpEnd - bpStart) / blockWidthPx
+    const bpPerPx = (end - start) / blockWidthPx
     const mouseBp = reversed
-      ? bpStart + (screenEndPx - mouseX) * bpPerPx
-      : bpStart + (mouseX - screenStartPx) * bpPerPx
+      ? start + (screenEndPx - mouseX) * bpPerPx
+      : start + (mouseX - screenStartPx) * bpPerPx
     const halfBp = HIT_RADIUS_PX * bpPerPx
     const candBpMin = mouseBp - halfBp
     const candBpMax = mouseBp + halfBp
-    if (candBpMax < bpStart || candBpMin > bpEnd) {
+    if (candBpMax < start || candBpMin > end) {
       continue
     }
 
@@ -95,8 +94,8 @@ export function findManhattanHit(
       const score = scores[i]!
       const ptX = bpToScreenPx(
         pos,
-        bpStart,
-        bpEnd,
+        start,
+        end,
         screenStartPx,
         screenEndPx,
         reversed,

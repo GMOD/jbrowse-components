@@ -40,22 +40,21 @@ export function drawXYPlot(
   const originY = scoreToY(0) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
-  const [bpStart, bpEnd] = block.bpRangeX
-  const { screenStartPx, screenEndPx, reversed } = block
+  const { screenStartPx, screenEndPx, reversed, start, end } = block
   const n = source.numFeatures
   for (let i = 0; i < n; i++) {
     const x1 = bpToScreenPx(
       positions[i * 2]!,
-      bpStart,
-      bpEnd,
+      start,
+      end,
       screenStartPx,
       screenEndPx,
       reversed,
     )
     const x2 = bpToScreenPx(
       positions[i * 2 + 1]!,
-      bpStart,
-      bpEnd,
+      start,
+      end,
       screenStartPx,
       screenEndPx,
       reversed,
@@ -93,22 +92,21 @@ export function drawDensity(
   )
   const positions = source.featurePositions
   const scores = source.featureScores
-  const [bpStart, bpEnd] = block.bpRangeX
-  const { screenStartPx, screenEndPx, reversed } = block
+  const { screenStartPx, screenEndPx, reversed, start, end } = block
   const n = source.numFeatures
   for (let i = 0; i < n; i++) {
     const x1 = bpToScreenPx(
       positions[i * 2]!,
-      bpStart,
-      bpEnd,
+      start,
+      end,
       screenStartPx,
       screenEndPx,
       reversed,
     )
     const x2 = bpToScreenPx(
       positions[i * 2 + 1]!,
-      bpStart,
-      bpEnd,
+      start,
+      end,
       screenStartPx,
       screenEndPx,
       reversed,
@@ -145,8 +143,7 @@ export function drawLine(
   const zeroY = scoreToY(0) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
-  const [bpStart, bpEnd] = block.bpRangeX
-  const { screenStartPx, screenEndPx, reversed } = block
+  const { screenStartPx, screenEndPx, reversed, start, end } = block
 
   let inRun = false
   for (let i = 0; i < n; i++) {
@@ -154,16 +151,16 @@ export function drawLine(
     const endBp = positions[i * 2 + 1]!
     const x1 = bpToScreenPx(
       startBp,
-      bpStart,
-      bpEnd,
+      start,
+      end,
       screenStartPx,
       screenEndPx,
       reversed,
     )
     const x2 = bpToScreenPx(
       endBp,
-      bpStart,
-      bpEnd,
+      start,
+      end,
       screenStartPx,
       screenEndPx,
       reversed,
@@ -203,22 +200,21 @@ export function drawScatter(
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const positions = source.featurePositions
   const scores = source.featureScores
-  const [bpStart, bpEnd] = block.bpRangeX
-  const { screenStartPx, screenEndPx, reversed } = block
+  const { screenStartPx, screenEndPx, reversed, start, end } = block
   const n = source.numFeatures
   for (let i = 0; i < n; i++) {
     const x1 = bpToScreenPx(
       positions[i * 2]!,
-      bpStart,
-      bpEnd,
+      start,
+      end,
       screenStartPx,
       screenEndPx,
       reversed,
     )
     const x2 = bpToScreenPx(
       positions[i * 2 + 1]!,
-      bpStart,
-      bpEnd,
+      start,
+      end,
       screenStartPx,
       screenEndPx,
       reversed,

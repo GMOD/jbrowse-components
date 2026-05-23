@@ -31,7 +31,8 @@ function makeBlock(
 ): VariantRenderBlock {
   return {
     displayedRegionIndex: 0,
-    bpRangeX: [0, 10000],
+    start: 0,
+    end: 10000,
     screenStartPx: 0,
     screenEndPx: 800,
     reversed: false,

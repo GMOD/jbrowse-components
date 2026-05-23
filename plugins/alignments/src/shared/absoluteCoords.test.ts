@@ -7,13 +7,14 @@ describe('absolute coords → pixel mapping, forward vs reversed', () => {
   // Canvas2D: identical shape to Canvas2DAlignmentsRenderer.bpToScreenX
   function canvas2dBpToScreenX(
     absBp: number,
-    bpRangeX: [number, number],
+    start: number,
+    end: number,
     screenStartPx: number,
     fullBlockWidth: number,
     reversed: boolean,
   ) {
-    const bpLen = bpRangeX[1] - bpRangeX[0]
-    const bpEdge = reversed ? bpRangeX[1] : bpRangeX[0]
+    const bpLen = end - start
+    const bpEdge = reversed ? end : start
     const offset = reversed ? bpEdge - absBp : absBp - bpEdge
     return screenStartPx + (offset / bpLen) * fullBlockWidth
   }
@@ -29,19 +30,20 @@ describe('absolute coords → pixel mapping, forward vs reversed', () => {
     return reversed ? -clip : clip
   }
 
-  const bpRange: [number, number] = [1000, 2000]
+  const bpStart = 1000
+  const bpEnd = 2000
   const blockWidth = 200 // screen px
 
   test('forward region: start → left edge, end → right edge', () => {
-    expect(canvas2dBpToScreenX(1000, bpRange, 0, blockWidth, false)).toBe(0)
-    expect(canvas2dBpToScreenX(2000, bpRange, 0, blockWidth, false)).toBe(200)
-    expect(canvas2dBpToScreenX(1500, bpRange, 0, blockWidth, false)).toBe(100)
+    expect(canvas2dBpToScreenX(1000, bpStart, bpEnd, 0, blockWidth, false)).toBe(0)
+    expect(canvas2dBpToScreenX(2000, bpStart, bpEnd, 0, blockWidth, false)).toBe(200)
+    expect(canvas2dBpToScreenX(1500, bpStart, bpEnd, 0, blockWidth, false)).toBe(100)
   })
 
   test('reversed region: start → right edge, end → left edge', () => {
-    expect(canvas2dBpToScreenX(1000, bpRange, 0, blockWidth, true)).toBe(200)
-    expect(canvas2dBpToScreenX(2000, bpRange, 0, blockWidth, true)).toBe(0)
-    expect(canvas2dBpToScreenX(1500, bpRange, 0, blockWidth, true)).toBe(100)
+    expect(canvas2dBpToScreenX(1000, bpStart, bpEnd, 0, blockWidth, true)).toBe(200)
+    expect(canvas2dBpToScreenX(2000, bpStart, bpEnd, 0, blockWidth, true)).toBe(0)
+    expect(canvas2dBpToScreenX(1500, bpStart, bpEnd, 0, blockWidth, true)).toBe(100)
   })
 
   test('GPU clip-x: forward maps start→-1, end→+1', () => {
@@ -60,9 +62,9 @@ describe('absolute coords → pixel mapping, forward vs reversed', () => {
     for (const reversed of [false, true]) {
       for (const bp of [1100, 1500, 1900]) {
         const canvasFrac =
-          canvas2dBpToScreenX(bp, bpRange, 0, blockWidth, reversed) / blockWidth
+          canvas2dBpToScreenX(bp, bpStart, bpEnd, 0, blockWidth, reversed) / blockWidth
         const gpuFrac =
-          (gpuClipX(bp, bpRange[0], bpRange[1] - bpRange[0], reversed) + 1) / 2
+          (gpuClipX(bp, bpStart, bpEnd - bpStart, reversed) + 1) / 2
         expect(canvasFrac).toBeCloseTo(gpuFrac)
       }
     }
@@ -70,8 +72,8 @@ describe('absolute coords → pixel mapping, forward vs reversed', () => {
 
   test('absolute bp beyond region maps outside block in both orientations', () => {
     // bp=500 is 500 before start
-    const fwd = canvas2dBpToScreenX(500, bpRange, 0, blockWidth, false)
-    const rev = canvas2dBpToScreenX(500, bpRange, 0, blockWidth, true)
+    const fwd = canvas2dBpToScreenX(500, bpStart, bpEnd, 0, blockWidth, false)
+    const rev = canvas2dBpToScreenX(500, bpStart, bpEnd, 0, blockWidth, true)
     expect(fwd).toBeLessThan(0)
     expect(rev).toBeGreaterThan(blockWidth)
   })

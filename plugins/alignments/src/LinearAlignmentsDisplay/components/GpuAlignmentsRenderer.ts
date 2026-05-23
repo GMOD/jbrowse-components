@@ -182,7 +182,7 @@ interface ArcFrame {
 function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   const { block, state, scissorX, scissorW, arcViewportH, dpr, covOffset } = a
   const blockW = block.screenEndPx - block.screenStartPx
-  const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
+  const [hi, lo] = splitPositionWithFrac(block.start)
   f[U.covOffset] = covOffset
   f[U.canvasH] = arcViewportH / dpr
   f[U.canvasW] = scissorW
@@ -190,14 +190,14 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   f[U.blockWidth] = blockW
   f[U.bpHi] = hi
   f[U.bpLo] = lo
-  f[U.bpLen] = block.bpRangeX[1] - block.bpRangeX[0]
+  f[U.bpLen] = block.end - block.start
   f[U.lineWidthPx] = state.arcLineWidth ?? 1
   f[U.pairedArcsDown] = state.pairedArcs === 'down' ? 1 : 0
   // Samplot picks its own domain (autoscaled |tlen|); arc mode defaults to
   // the bp-span that fits availH at the current zoom, reproducing the prior
   // `yBp * pxPerBp` math.
   const availH = a.arcViewportH / dpr - ARC_HEIGHT_MARGIN
-  const pxPerBp = blockW / (block.bpRangeX[1] - block.bpRangeX[0])
+  const pxPerBp = blockW / (block.end - block.start)
   f[U.pxPerBp] = pxPerBp
   f[U.arcsYDomainBp] =
     state.arcsYDomainBp ?? (pxPerBp > 0 ? availH / pxPerBp : 1)
@@ -470,14 +470,12 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const bpPerPx =
-        fullBlockWidth > 0
-          ? (block.bpRangeX[1] - block.bpRangeX[0]) / fullBlockWidth
-          : 1
+        fullBlockWidth > 0 ? (block.end - block.start) / fullBlockWidth : 1
 
       const pxFromEdge = block.reversed
         ? block.screenEndPx - scissorEnd
         : scissorX - block.screenStartPx
-      const clippedBpStart = block.bpRangeX[0] + pxFromEdge * bpPerPx
+      const clippedBpStart = block.start + pxFromEdge * bpPerPx
       const clippedBpEnd = clippedBpStart + scissorW * bpPerPx
       const [bpHi, bpLo] = splitPositionWithFrac(clippedBpStart)
       const frame: BlockFrame = {

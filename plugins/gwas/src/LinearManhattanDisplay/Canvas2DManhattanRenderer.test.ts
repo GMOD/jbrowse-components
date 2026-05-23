@@ -37,7 +37,8 @@ function mockCtx() {
 
 const block: RenderBlock = {
   displayedRegionIndex: 0,
-  bpRangeX: [0, 1000],
+  start: 0,
+  end: 1000,
   screenStartPx: 0,
   screenEndPx: 100,
   reversed: false,

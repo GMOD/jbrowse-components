@@ -70,7 +70,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
                   config,
                   'adapter',
                 ),
-                regions: [{ assemblyName }],
+                assemblyName,
               }),
             ] as const,
         ),

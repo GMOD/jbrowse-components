@@ -16,7 +16,7 @@ export interface RpcRegistry {
     args: {
       adapterConfig: Record<string, unknown>
       sequenceAdapter?: Record<string, unknown>
-      regions?: { assemblyName: string }[]
+      assemblyName?: string
       stopToken?: StopToken
     }
     return: string[]

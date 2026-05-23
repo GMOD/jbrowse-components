@@ -15,7 +15,8 @@ export function splitPositionWithFrac(value: number): [number, number] {
 interface ClipBlock {
   screenStartPx: number
   screenEndPx: number
-  bpRangeX: [number, number]
+  start: number
+  end: number
 }
 
 export interface BlockClipResult {
@@ -76,12 +77,12 @@ export function clipBlock(
   const pxH = Math.round(canvasHeight * dpr)
 
   const fullBlockWidth = block.screenEndPx - block.screenStartPx
-  const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
+  const regionLengthBp = block.end - block.start
   const bpPerPx = regionLengthBp / fullBlockWidth
   const clippedBpStart =
-    block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
+    block.start + (scissorX - block.screenStartPx) * bpPerPx
   const clippedBpEnd =
-    block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+    block.start + (scissorEnd - block.screenStartPx) * bpPerPx
   const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
   const [bpEndHi, bpEndLo] = splitPositionWithFrac(clippedBpEnd)
 

@@ -98,7 +98,7 @@ test('adapter can fetch features from peach_grape.paf', async () => {
 test('getRefNames returns query ref names for query assembly', async () => {
   const adapter = makeAdapter()
   const refNames = await adapter.getRefNames({
-    regions: [{ assemblyName: 'peach', refName: '', start: 0, end: 0 }],
+    assemblyName: 'peach',
   })
   expect(refNames).toContain('Pp01')
 })
@@ -106,7 +106,7 @@ test('getRefNames returns query ref names for query assembly', async () => {
 test('getRefNames returns target ref names for target assembly', async () => {
   const adapter = makeAdapter()
   const refNames = await adapter.getRefNames({
-    regions: [{ assemblyName: 'grape', refName: '', start: 0, end: 0 }],
+    assemblyName: 'grape',
   })
   expect(refNames).toContain('chr1')
 })
@@ -114,7 +114,7 @@ test('getRefNames returns target ref names for target assembly', async () => {
 test('getRefNames returns empty for unknown assembly', async () => {
   const adapter = makeAdapter()
   const refNames = await adapter.getRefNames({
-    regions: [{ assemblyName: 'unknown', refName: '', start: 0, end: 0 }],
+    assemblyName: 'unknown',
   })
   expect(refNames).toEqual([])
 })

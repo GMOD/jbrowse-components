@@ -62,8 +62,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  async getRefNames(opts: BaseOptions & { regions?: Region[] } = {}) {
-    const r1 = opts.regions?.[0]?.assemblyName
+  async getRefNames(opts: BaseOptions = {}) {
+    const r1 = opts.assemblyName
     if (!r1) {
       throw new Error('no assembly name provided')
     }

@@ -1,6 +1,9 @@
 import { ARC_SHAPE_FLAT, ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { bpToScreenX } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import {
+  bpToScreenX,
+  type DrawBlock,
+} from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import {
   ARC_HEIGHT_MARGIN,
   arcLineColorPalette,
@@ -90,7 +93,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
 export function drawArcs(
   ctx: Ctx2D,
   region: ArcsUploadData,
-  block: { bpRangeX: [number, number]; screenStartPx: number },
+  block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
   state: RenderState,

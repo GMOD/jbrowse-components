@@ -87,10 +87,9 @@ function drawLines(
 function drawRects(
   ctx: Ctx2D,
   region: RegionRenderData,
-  block: Canvas2DRenderBlock,
+  toX: BpToScreen,
   scrollY: number,
 ) {
-  const toX = bpMapper(block)
   for (let i = 0; i < region.rectYs.length; i++) {
     const startBp = region.rectPositions[i * 2]!
     const endBp = region.rectPositions[i * 2 + 1]!
@@ -117,9 +116,9 @@ function drawArrows(
   ctx: Ctx2D,
   region: RegionRenderData,
   block: Canvas2DRenderBlock,
+  toX: BpToScreen,
   scrollY: number,
 ) {
-  const toX = bpMapper(block)
   for (let i = 0; i < region.arrowYs.length; i++) {
     const xBp = region.arrowXs[i]!
     const cx = toX(xBp)
@@ -180,9 +179,10 @@ export function drawFeatureBlocks(
     ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
     ctx.clip()
 
-    drawLines(ctx, region, block, scrollY)
-    drawRects(ctx, region, block, scrollY)
-    drawArrows(ctx, region, block, scrollY)
+    const toX = makeBpMapper(block)
+    drawLines(ctx, region, block, toX, scrollY)
+    drawRects(ctx, region, toX, scrollY)
+    drawArrows(ctx, region, block, toX, scrollY)
 
     ctx.restore()
   }

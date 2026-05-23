@@ -37,8 +37,7 @@ export function drawManhattanBlocks(
     if (!clip) {
       continue
     }
-    const [bpStart, bpEnd] = block.bpRangeX
-    const { screenStartPx, screenEndPx, reversed } = block
+    const { screenStartPx, screenEndPx, reversed, start, end } = block
     const { positions, scores, colors, numFeatures } = data
 
     ctx.save()
@@ -60,8 +59,8 @@ export function drawManhattanBlocks(
       }
       const x = bpToScreenPx(
         positions[i]!,
-        bpStart,
-        bpEnd,
+        start,
+        end,
         screenStartPx,
         screenEndPx,
         reversed,

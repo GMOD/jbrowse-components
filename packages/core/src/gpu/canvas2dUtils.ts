@@ -1,7 +1,8 @@
 export interface Canvas2DRenderBlock {
   screenStartPx: number
   screenEndPx: number
-  bpRangeX: [number, number]
+  start: number
+  end: number
   reversed?: boolean
 }
 
@@ -50,7 +51,7 @@ export function clipBlockForCanvas(
     scissorX,
     scissorW,
     fullBlockWidth: block.screenEndPx - block.screenStartPx,
-    bpLength: block.bpRangeX[1] - block.bpRangeX[0],
+    bpLength: block.end - block.start,
   }
 }
 
@@ -118,7 +119,7 @@ export interface BpRegionBounds {
 // Closure-style bp→screen-px mapper bound to one region. Consumers that walk
 // many bp positions inside one block (label/peptide overlays, rect/line draws)
 // want a 1-arg call instead of repeating 6 args at every site.
-export function makeBpMapper(bounds: BpRegionBounds) {
+export function makeBpMapper(bounds: BpRegionBounds | Canvas2DRenderBlock) {
   const { start, end, screenStartPx, screenEndPx, reversed } = bounds
   const span = end - start
   const w = screenEndPx - screenStartPx

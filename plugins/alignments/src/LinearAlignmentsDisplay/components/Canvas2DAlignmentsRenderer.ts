@@ -9,6 +9,7 @@ import {
   computeBlockHeights,
   interbaseRangeEnds,
   pileupRowY,
+  type DrawBlock,
 } from './rendererTypes.ts'
 import { drawArcs } from '../../features/arcs/drawCanvas.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
@@ -407,7 +408,7 @@ export function drawAlignmentBlocks(
 function drawCoverage(
   ctx: Ctx2D,
   region: Canvas2DRegionData,
-  block: { bpRangeX: [number, number]; screenStartPx: number },
+  block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
   state: RenderState,
@@ -429,9 +430,11 @@ interface OverlayBounds {
 }
 
 interface OverlayBlock {
-  bpRangeX: [number, number]
+  start: number
+  end: number
   screenStartPx: number
   screenEndPx: number
+  reversed?: boolean
 }
 
 function paintOverlayBox(
@@ -441,7 +444,7 @@ function paintOverlayBox(
   state: RenderState,
   style: 'highlight' | 'selection' | 'chainHighlight',
 ) {
-  const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
+  const bpLength = block.end - block.start
   const fullBlockWidth = block.screenEndPx - block.screenStartPx
   const x1 = bpToScreenX(bounds.startBp, block, bpLength, fullBlockWidth)
   const x2 = bpToScreenX(bounds.endBp, block, bpLength, fullBlockWidth)

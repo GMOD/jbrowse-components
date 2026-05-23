@@ -70,8 +70,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return assemblyNames
   }
 
-  async getRefNames(opts: BaseOptionsWithRegions = {}) {
-    const r1 = opts.regions?.[0]?.assemblyName
+  async getRefNames(opts: BaseOptions = {}) {
+    const r1 = opts.assemblyName
     const feats = await this.setup(opts)
 
     const idx = r1 === undefined ? -1 : this.getAssemblyNames().indexOf(r1)

@@ -53,7 +53,6 @@ function renderLabels(
     if (featureEndBp < vr.start || featureStartBp > vr.end) {
       continue
     }
-
     const px1 = toScreen(featureStartBp)
     const px2 = toScreen(featureEndBp)
     const featureLeftPx = Math.min(px1, px2)

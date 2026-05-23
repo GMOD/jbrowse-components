@@ -186,9 +186,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
     it('returns query reference names for query assembly', async () => {
       const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])
       const refNames = await adapter.getRefNames({
-        regions: [
-          { assemblyName: 'volvox_ins', refName: '', start: 0, end: 0 },
-        ],
+        assemblyName: 'volvox_ins',
       })
       expect(refNames).toContain('ctgA')
     })
@@ -196,7 +194,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
     it('returns target reference names for target assembly', async () => {
       const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])
       const refNames = await adapter.getRefNames({
-        regions: [{ assemblyName: 'volvox', refName: '', start: 0, end: 0 }],
+        assemblyName: 'volvox',
       })
       expect(refNames).toContain('ctgA')
     })

@@ -285,7 +285,8 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const covH = 100
     const block = {
       displayedRegionIndex: 0,
-      bpRangeX: [REGION_START, REGION_START + 20] as [number, number],
+      start: REGION_START,
+      end: REGION_START + 20,
       screenStartPx: 0,
       screenEndPx: 200,
       reversed: false,
@@ -320,7 +321,8 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       highlightedChainIds: [],
       selectedChainIds: [],
       showInterbaseIndicators: false,
-      bpRangeX: [REGION_START, REGION_START + 20] as [number, number],
+      start: REGION_START,
+      end: REGION_START + 20,
       rangeY: [0, 200] as [number, number],
       colorScheme: 0,
       coverageMaxDepth: 50,

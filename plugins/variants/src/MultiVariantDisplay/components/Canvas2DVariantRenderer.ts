@@ -1,5 +1,6 @@
 import {
   clipBlockForCanvas,
+  makeBpMapper,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
@@ -50,6 +51,7 @@ export function drawVariantBlocks(
     ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
     ctx.clip()
 
+    const toX = makeBpMapper(block)
     let prevColor = -1
     for (let i = 0; i < region.numCells; i++) {
       // Y-cull first: y depends only on rowIndex + scroll, so off-screen
@@ -63,16 +65,10 @@ export function drawVariantBlocks(
       const startBp = region.cellPositions[i * 2]!
       const endBp = region.cellPositions[i * 2 + 1]!
 
-      const frac1 = (startBp - block.bpRangeX[0]) / bpLength
-      const frac2 = (endBp - block.bpRangeX[0]) / bpLength
-      const rawX1 = block.reversed
-        ? block.screenEndPx - frac1 * fullBlockWidth
-        : block.screenStartPx + frac1 * fullBlockWidth
-      const rawX2 = block.reversed
-        ? block.screenEndPx - frac2 * fullBlockWidth
-        : block.screenStartPx + frac2 * fullBlockWidth
-      const x1 = Math.min(rawX1, rawX2)
-      const w = Math.max(2, Math.max(rawX1, rawX2) - x1)
+      const x1_raw = toX(startBp)
+      const x2_raw = toX(endBp)
+      const x1 = Math.min(x1_raw, x2_raw)
+      const w = Math.max(2, Math.abs(x2_raw - x1_raw))
 
       const color = region.cellColors[i]!
       if (color !== prevColor) {

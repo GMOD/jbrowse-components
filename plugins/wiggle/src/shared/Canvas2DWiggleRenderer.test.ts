@@ -67,8 +67,8 @@ describe('Canvas2DWiggleRenderer', () => {
 
   const defaultBlock = {
     displayedRegionIndex: 0,
-    bpRangeX: [0, 1000] as [number, number],
-    screenStartPx: 0,
+    start: 0,
+    end: 1000,    screenStartPx: 0,
     screenEndPx: 800,
     reversed: false,
   }
@@ -204,8 +204,8 @@ describe('Canvas2DWiggleRenderer', () => {
 // x = bp * 0.8, scoreY = (1 - score/10) * 200, zeroY = 200.
 const lineBlock = {
   displayedRegionIndex: 0,
-  bpRangeX: [0, 1000] as [number, number],
-  screenStartPx: 0,
+  start: 0,
+  end: 1000,  screenStartPx: 0,
   screenEndPx: 800,
   reversed: false,
 }

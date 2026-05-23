@@ -42,19 +42,18 @@ export function buildTextColors(
 }
 
 function bpRangeToScreen(block: RenderBlock, absBp: number, bpWidth: number) {
-  const [bpStart, bpEnd] = block.bpRangeX
   const x1 = bpToScreenPx(
     absBp,
-    bpStart,
-    bpEnd,
+    block.start,
+    block.end,
     block.screenStartPx,
     block.screenEndPx,
     block.reversed,
   )
   const x2 = bpToScreenPx(
     absBp + bpWidth,
-    bpStart,
-    bpEnd,
+    block.start,
+    block.end,
     block.screenStartPx,
     block.screenEndPx,
     block.reversed,
@@ -74,9 +73,8 @@ function drawBaseRow(
   palette: ColorPalette,
   textColors: TextColors,
 ) {
-  const [bpStart, bpEnd] = block.bpRangeX
-  const iStart = Math.max(0, Math.floor(bpStart - seqStart))
-  const iEnd = Math.min(seq.length, Math.ceil(bpEnd - seqStart))
+  const iStart = Math.max(0, Math.floor(block.start - seqStart))
+  const iEnd = Math.min(seq.length, Math.ceil(block.end - seqStart))
   const isDna = sequenceType === 'dna'
 
   for (let i = iStart; i < iEnd; i++) {
@@ -113,7 +111,6 @@ function drawTranslationRow(
 ) {
   const bg = palette.frames.get(frame) ?? palette.fallback
   const { frameShift, sliceEnd } = frameShiftBounds(seq, seqStart, frame)
-  const [bpStart, bpEnd] = block.bpRangeX
 
   ctx.fillStyle = bg.style
   if (showBorders) {
@@ -131,8 +128,8 @@ function drawTranslationRow(
     ctx.fillRect(x, y, w, rowHeight)
   }
 
-  const clipStart = Math.max(0, Math.floor(bpStart - seqStart) - 3)
-  const clipEnd = Math.min(seq.length, Math.ceil(bpEnd - seqStart) + 3)
+  const clipStart = Math.max(0, Math.floor(block.start - seqStart) - 3)
+  const clipEnd = Math.min(seq.length, Math.ceil(block.end - seqStart) + 3)
   const rawStart = Math.max(frameShift, clipStart)
   const codonAlignedStart = rawStart - ((rawStart - frameShift) % 3)
 

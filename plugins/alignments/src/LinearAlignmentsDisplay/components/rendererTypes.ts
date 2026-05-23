@@ -107,7 +107,8 @@ export function pileupRowY(yRow: number, state: RenderState) {
 // the shape here breaks an otherwise-cyclic dependency between the per-
 // feature drawCanvas modules and Canvas2DAlignmentsRenderer.
 export interface DrawBlock {
-  bpRangeX: [number, number]
+  start: number
+  end: number
   screenStartPx: number
   reversed?: boolean
 }
@@ -120,7 +121,7 @@ export function bpToScreenX(
   bpLength: number,
   fullBlockWidth: number,
 ) {
-  const bpEdge = block.reversed ? block.bpRangeX[1] : block.bpRangeX[0]
+  const bpEdge = block.reversed ? block.end : block.start
   const offset = block.reversed ? bpEdge - absBp : absBp - bpEdge
   return block.screenStartPx + (offset / bpLength) * fullBlockWidth
 }

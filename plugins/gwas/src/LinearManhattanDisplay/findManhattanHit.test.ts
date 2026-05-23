@@ -24,7 +24,8 @@ function buildFlatbush(
 // One block covering bp 0..1000 across 100 screen px (10 bp/px).
 const block: RenderBlock = {
   displayedRegionIndex: 0,
-  bpRangeX: [0, 1000],
+  start: 0,
+  end: 1000,
   screenStartPx: 0,
   screenEndPx: 100,
   reversed: false,

@@ -8,7 +8,6 @@ import SyntenyFeature from '../SyntenyFeature/index.ts'
 
 import type {
   BaseOptions,
-  BaseOptionsWithRegions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -246,8 +245,8 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
     return assemblyNames
   }
 
-  async getRefNames(opts: BaseOptionsWithRegions = {}) {
-    const r1 = opts.regions?.[0]?.assemblyName
+  async getRefNames(opts: BaseOptions = {}) {
+    const r1 = opts.assemblyName
     const feats = await this.setup(opts)
 
     const idx = r1 === undefined ? -1 : this.getAssemblyNames().indexOf(r1)
