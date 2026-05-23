@@ -23,6 +23,88 @@ type ReloadPluginManagerCallback = (
   sessionSnapshot: Record<string, unknown>,
 ) => void
 
+type Snap = Record<string, unknown>
+
+// --- Pure / IO helpers -----------------------------------------------------
+
+async function loadPluginRecords(defs: PluginDefinition[]) {
+  const loader = new PluginLoader(defs, {
+    fetchESM: url => import(/* webpackIgnore:true */ url),
+  })
+  loader.installGlobalReExports(window)
+  return [...(await loader.load(window.location.href))]
+}
+
+export function readSessionFromStorage(query: string) {
+  const str = sessionStorage.getItem('current')
+  if (str) {
+    const snap = JSON.parse(str).session ?? {}
+    if (query === snap.id) {
+      return snap as Snap
+    }
+  }
+  return undefined
+}
+
+export async function readSessionFromIDB(query: string) {
+  try {
+    const db = await openDB<SessionDB>('sessionsDB', 2, {
+      upgrade(db) {
+        db.createObjectStore('metadata')
+        db.createObjectStore('sessions')
+      },
+    })
+    return await db.get('sessions', query)
+  } catch (e) {
+    console.error(e)
+    return undefined
+  }
+}
+
+async function fetchRemoteConfig(configPath: string) {
+  const text = await openLocation({
+    uri:
+      configPath +
+      // @ts-expect-error
+      (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
+    locationType: 'UriLocation',
+  }).readFile('utf8')
+  const config = JSON.parse(text)
+  const configUri = new URL(configPath, window.location.href)
+  addRelativeUris(config, configUri)
+  return { config, configUri }
+}
+
+function buildJb1SessionSpec(args: {
+  loc?: string
+  tracks?: string
+  assembly?: string
+  tracklist?: boolean
+  nav?: boolean
+  highlight?: string
+  sessionTracks: unknown
+}) {
+  return {
+    sessionTracks: args.sessionTracks,
+    views: [
+      {
+        type: 'LinearGenomeView',
+        tracks: args.tracks?.split(','),
+        sessionTracks: args.sessionTracks,
+        loc: args.loc,
+        assembly: args.assembly,
+        tracklist: args.tracklist,
+        nav: args.nav,
+        highlight: args.highlight?.split(' '),
+      },
+    ],
+  }
+}
+
+const stripPrefix = (s: string) => s.replace(/^(share|spec|encoded|json|local)-/, '')
+
+// --- Model ----------------------------------------------------------------
+
 const SessionLoader = types
   .model({
     /**
@@ -77,7 +159,6 @@ const SessionLoader = types
      * #property
      */
     initialTimestamp: types.number,
-
     /**
      * #property
      */
@@ -85,15 +166,11 @@ const SessionLoader = types
     /**
      * #property
      */
-    configSnapshot: types.frozen<Record<string, unknown> | undefined>(
-      undefined,
-    ),
+    configSnapshot: types.frozen<Snap | undefined>(undefined),
     /**
      * #property
      */
-    sessionSnapshot: types.frozen<Record<string, unknown> | undefined>(
-      undefined,
-    ),
+    sessionSnapshot: types.frozen<Snap | undefined>(undefined),
   })
   .volatile(() => ({
     /**
@@ -103,11 +180,11 @@ const SessionLoader = types
     /**
      * #volatile
      */
-    sessionSpec: undefined as Record<string, unknown> | undefined,
+    sessionSpec: undefined as Snap | undefined,
     /**
      * #volatile
      */
-    hubSpec: undefined as Record<string, unknown> | undefined,
+    hubSpec: undefined as Snap | undefined,
     /**
      * #volatile
      */
@@ -203,11 +280,12 @@ const SessionLoader = types
      * #getter
      */
     get pluginsLoaded() {
-      if (self.sessionError || self.blankSession || self.sessionSpec) {
-        // don't need session plugins for these cases
-        return Boolean(self.runtimePlugins)
-      }
-      return Boolean(self.runtimePlugins && self.sessionPlugins)
+      // session-plugins are only needed when we're loading from a snapshot
+      const needSessionPlugins =
+        !self.sessionError && !self.blankSession && !self.sessionSpec
+      return Boolean(
+        self.runtimePlugins && (!needSessionPlugins || self.sessionPlugins),
+      )
     },
     /**
      * #getter
@@ -267,7 +345,7 @@ const SessionLoader = types
     /**
      * #action
      */
-    setConfigSnapshot(snap: Record<string, unknown>) {
+    setConfigSnapshot(snap: Snap) {
       self.configSnapshot = snap
     },
     /**
@@ -285,7 +363,7 @@ const SessionLoader = types
     /**
      * #action
      */
-    setSessionSnapshot(snap: Record<string, unknown>) {
+    setSessionSnapshot(snap: Snap) {
       self.sessionSnapshot = snap
     },
     /**
@@ -338,22 +416,12 @@ const SessionLoader = types
     },
   }))
   .actions(self => ({
-    async loadPluginsFromDefinitions(plugins: PluginDefinition[]) {
-      const pluginLoader = new PluginLoader(plugins, {
-        fetchESM: url => import(/* webpackIgnore:true */ url),
-      })
-      pluginLoader.installGlobalReExports(window)
-      return pluginLoader.load(window.location.href)
-    },
     /**
      * #action
      */
     async fetchPlugins(config: { plugins?: PluginDefinition[] }) {
       try {
-        const runtimePlugins = await this.loadPluginsFromDefinitions(
-          config.plugins ?? [],
-        )
-        self.setRuntimePlugins([...runtimePlugins])
+        self.setRuntimePlugins(await loadPluginRecords(config.plugins ?? []))
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
@@ -362,30 +430,14 @@ const SessionLoader = types
     /**
      * #action
      */
-    async fetchSessionPlugins(snap: { sessionPlugins?: PluginDefinition[] }) {
-      try {
-        const plugins = await this.loadPluginsFromDefinitions(
-          snap.sessionPlugins ?? [],
-        )
-        self.setSessionPlugins([...plugins])
-      } catch (e) {
-        console.error(e)
-        self.setSessionError(e)
-      }
-    },
-
-    /**
-     * #action
-     */
     async loadSession(
       snap: { sessionPlugins?: PluginDefinition[]; id: string },
       userAcceptedConfirmation?: boolean,
     ) {
       try {
-        const { sessionPlugins = [] } = snap
-        const sessionPluginsAllowed = await checkPlugins(sessionPlugins)
-        if (sessionPluginsAllowed || userAcceptedConfirmation) {
-          await this.fetchSessionPlugins(snap)
+        const sessionPlugins = snap.sessionPlugins ?? []
+        if ((await checkPlugins(sessionPlugins)) || userAcceptedConfirmation) {
+          self.setSessionPlugins(await loadPluginRecords(sessionPlugins))
           self.setSessionSnapshot(snap)
         } else {
           self.setSessionTriaged({
@@ -404,77 +456,135 @@ const SessionLoader = types
      */
     async fetchConfig() {
       const configPath = self.resolvedConfigPath
-      const shouldFetchConfig = configPath !== 'none'
-
-      // if ?config=none then we will not load the config, which is useful for
-      // ?hubURL which may not need a config
-      //
-      // however, in the rare case that you want hubs and a config (e.g. your
-      // config has plugins to load) then you can still have this too
-      if (shouldFetchConfig) {
-        const text = await openLocation({
-          uri:
-            configPath +
-            // @ts-expect-error
-            (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
-          locationType: 'UriLocation',
-        }).readFile('utf8')
-        const config = JSON.parse(text)
-        const configUri = new URL(configPath, window.location.href)
-        addRelativeUris(config, configUri)
-
-        // cross origin config check
-        if (configUri.hostname !== window.location.hostname) {
-          const configPlugins = config.plugins ?? []
-          const configPluginsAllowed = await checkPlugins(configPlugins)
-          if (!configPluginsAllowed) {
-            self.setSessionTriaged({
-              snap: config,
-              origin: 'config',
-              reason: configPlugins,
-            })
-            return
-          }
-        }
-        await this.fetchPlugins(config)
-        self.setConfigSnapshot(config)
-      } else {
+      // ?config=none skips loading; useful for ?hubURL which may not need a
+      // config (but can still be combined with one if e.g. config has plugins)
+      if (configPath === 'none') {
         self.setConfigSnapshot({})
+      } else {
+        const { config, configUri } = await fetchRemoteConfig(configPath)
+        const configPlugins = config.plugins ?? []
+        const isCrossOrigin = configUri.hostname !== window.location.hostname
+        if (isCrossOrigin && !(await checkPlugins(configPlugins))) {
+          self.setSessionTriaged({
+            snap: config,
+            origin: 'config',
+            reason: configPlugins,
+          })
+        } else {
+          await this.fetchPlugins(config)
+          self.setConfigSnapshot(config)
+        }
+      }
+    },
+    /**
+     * #action
+     * Helper to load a decoded session with a fresh ID. New IDs prevent
+     * conflicts when the same session is open in multiple tabs.
+     */
+    async loadDecodedSession(session: Snap) {
+      await this.loadSession({ ...session, id: createElementId() })
+    },
+    /**
+     * #action
+     * Tries sessionStorage (current) then IndexedDB (autosaved).
+     */
+    async fetchLocalSession() {
+      const query = stripPrefix(self.sessionQuery!)
+      const snap =
+        readSessionFromStorage(query) ?? (await readSessionFromIDB(query))
+      if (snap) {
+        await this.loadDecodedSession(snap)
+      } else {
+        throw new Error('Local session not found')
       }
     },
     /**
      * #action
      */
+    async fetchSharedSession() {
+      const defaultURL = 'https://share.jbrowse.org/api/v1/'
+      const decrypted = await readSessionFromDynamo(
+        `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
+        self.sessionQuery ?? '',
+        self.password ?? '',
+      )
+      await this.loadDecodedSession(JSON.parse(await fromUrlSafeB64(decrypted)))
+    },
+    /**
+     * #action
+     */
+    async decodeEncodedUrlSession() {
+      const session = JSON.parse(
+        await fromUrlSafeB64(stripPrefix(self.sessionQuery!)),
+      )
+      await this.loadDecodedSession(session)
+    },
+    /**
+     * #action
+     */
+    async decodeJsonUrlSession() {
+      const { session } = JSON.parse(stripPrefix(self.sessionQuery!))
+      await this.loadDecodedSession(session)
+    },
+    /**
+     * #action
+     */
+    decodeSessionSpec() {
+      self.sessionSpec = JSON.parse(stripPrefix(self.sessionQuery!))
+    },
+    /**
+     * #action
+     */
+    decodeJb1StyleSession() {
+      self.sessionSpec = buildJb1SessionSpec({
+        loc: self.loc,
+        tracks: self.tracks,
+        assembly: self.assembly,
+        tracklist: self.tracklist,
+        nav: self.nav,
+        highlight: self.highlight,
+        sessionTracks: self.sessionTracksParsed,
+      })
+    },
+    /**
+     * #action
+     */
+    decodeHubSpec() {
+      self.hubSpec = { hubURL: self.hubURL }
+    },
+  }))
+  .actions(self => ({
+    /**
+     * #action
+     */
     async loadSessionByType() {
       try {
-        const {
-          isLocalSession,
-          isEncodedSession,
-          isSpecSession,
-          isSharedSession,
-          isJsonSession,
-          isJb1StyleSession,
-          isHubSession,
-          sessionSnapshot,
-        } = self
-        if (sessionSnapshot) {
-          await this.loadSessionPluginsIfNeeded()
-        } else if (isSharedSession) {
-          await this.fetchSharedSession()
-        } else if (isSpecSession) {
-          this.decodeSessionSpec()
-        } else if (isJb1StyleSession) {
-          this.decodeJb1StyleSession()
-        } else if (isEncodedSession) {
-          await this.decodeEncodedUrlSession()
-        } else if (isJsonSession) {
-          await this.decodeJsonUrlSession()
-        } else if (isLocalSession) {
-          await this.fetchLocalSession()
-        } else if (isHubSession) {
-          // later in priority: a local session in the URL takes precedence over
-          // a hub spec since hub is left in URL even when a local session exists
-          this.decodeHubSpec()
+        if (self.sessionSnapshot) {
+          // HMR / reload path: snapshot pre-set, just load plugins if needed
+          if (!self.sessionPlugins) {
+            await self.loadSession(
+              self.sessionSnapshot as {
+                sessionPlugins?: PluginDefinition[]
+                id: string
+              },
+            )
+          }
+        } else if (self.isSharedSession) {
+          await self.fetchSharedSession()
+        } else if (self.isSpecSession) {
+          self.decodeSessionSpec()
+        } else if (self.isJb1StyleSession) {
+          self.decodeJb1StyleSession()
+        } else if (self.isEncodedSession) {
+          await self.decodeEncodedUrlSession()
+        } else if (self.isJsonSession) {
+          await self.decodeJsonUrlSession()
+        } else if (self.isLocalSession) {
+          await self.fetchLocalSession()
+        } else if (self.isHubSession) {
+          // lower priority than local session: hubURL is left in URL even
+          // when a local session exists
+          self.decodeHubSpec()
           self.setBlankSession(true)
         } else if (self.sessionQuery) {
           throw new Error(
@@ -489,176 +599,19 @@ const SessionLoader = types
       }
     },
     /**
-     * #action
-     * Called when configSnapshot already exists (e.g., from HMR or plugin
-     * reload). The snapshot is already URI-stamped; only plugins need loading.
-     */
-    async setUpConfig() {
-      await this.fetchPlugins(
-        self.configSnapshot as { plugins?: PluginDefinition[] },
-      )
-    },
-    /**
-     * #action
-     */
-    async fetchSessionFromSessionStorage(query: string) {
-      const sessionStr = sessionStorage.getItem('current')
-      if (sessionStr) {
-        const sessionSnap = JSON.parse(sessionStr).session ?? {}
-        if (query === sessionSnap.id) {
-          // Assign new ID to avoid conflicts when same session is opened in
-          // multiple tabs (each tab gets its own copy with unique ID)
-          await this.loadDecodedSession(sessionSnap)
-          return true
-        }
-      }
-      return false
-    },
-    /**
-     * #action
-     */
-    async fetchSessionFromIndexedDB(query: string) {
-      try {
-        const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
-          upgrade(db) {
-            db.createObjectStore('metadata')
-            db.createObjectStore('sessions')
-          },
-        })
-        const sessionSnap = await sessionDB.get('sessions', query)
-        if (sessionSnap) {
-          // Assign new ID to avoid conflicts when same session is opened in
-          // multiple tabs (each tab gets its own copy with unique ID)
-          await this.loadDecodedSession(sessionSnap)
-          return true
-        }
-      } catch (e) {
-        console.error(e)
-      }
-      return false
-    },
-    /**
-     * #action
-     * Tries to load a local session from multiple sources in order:
-     * 1. sessionStorage (current session)
-     * 2. IndexedDB (autosaved sessions)
-     */
-    async fetchLocalSession() {
-      const query = self.sessionQuery!.replace('local-', '')
-      if (!(await this.fetchSessionFromSessionStorage(query))) {
-        if (!(await this.fetchSessionFromIndexedDB(query))) {
-          throw new Error('Local session not found')
-        }
-      }
-    },
-    /**
-     * #action
-     * When sessionSnapshot is provided during .create() (e.g., from HMR or
-     * plugin reload), plugins haven't been loaded yet. This loads them.
-     */
-    async loadSessionPluginsIfNeeded() {
-      if (!self.sessionPlugins && self.sessionSnapshot) {
-        await this.loadSession(
-          self.sessionSnapshot as {
-            sessionPlugins?: PluginDefinition[]
-            id: string
-          },
-        )
-      }
-    },
-    /**
-     * #action
-     * Helper to load a decoded session with a fresh ID
-     */
-    async loadDecodedSession(session: Record<string, unknown>) {
-      await this.loadSession({
-        ...session,
-        id: createElementId(),
-      })
-    },
-    /**
-     * #action
-     */
-    async fetchSharedSession() {
-      const defaultURL = 'https://share.jbrowse.org/api/v1/'
-      const decryptedSession = await readSessionFromDynamo(
-        `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
-        self.sessionQuery ?? '',
-        self.password ?? '',
-      )
-
-      const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
-      await this.loadDecodedSession(session)
-    },
-    /**
-     * #action
-     */
-    async decodeEncodedUrlSession() {
-      // sessionQuery is guaranteed to exist when isEncodedSession is true
-      const session = JSON.parse(
-        await fromUrlSafeB64(self.sessionQuery!.replace('encoded-', '')),
-      )
-      await this.loadDecodedSession(session)
-    },
-    /**
-     * #action
-     */
-    decodeSessionSpec() {
-      // sessionQuery is guaranteed to exist when isSpecSession is true
-      self.sessionSpec = JSON.parse(self.sessionQuery!.replace('spec-', ''))
-    },
-    /**
-     * #action
-     * Called when isJb1StyleSession is true (loc or assembly exists)
-     */
-    decodeJb1StyleSession() {
-      const {
-        loc,
-        tracks,
-        assembly,
-        tracklist,
-        nav,
-        highlight,
-        sessionTracksParsed: sessionTracks,
-      } = self
-      self.sessionSpec = {
-        sessionTracks,
-        views: [
-          {
-            type: 'LinearGenomeView',
-            tracks: tracks?.split(','),
-            sessionTracks,
-            loc,
-            assembly,
-            tracklist,
-            nav,
-            highlight: highlight?.split(' '),
-          },
-        ],
-      }
-    },
-
-    /**
-     * #action
-     */
-    decodeHubSpec() {
-      self.hubSpec = { hubURL: self.hubURL }
-    },
-    /**
-     * #action
-     */
-    async decodeJsonUrlSession() {
-      // sessionQuery is guaranteed to exist when isJsonSession is true
-      const { session } = JSON.parse(self.sessionQuery!.replace(/^json-/, ''))
-      await this.loadDecodedSession(session)
-    },
-    /**
      * #aftercreate
      */
     afterCreate() {
       void (async () => {
         try {
-          await (self.configSnapshot ? this.setUpConfig() : this.fetchConfig())
+          if (self.configSnapshot) {
+            // HMR / reload: snapshot already URI-stamped, just load plugins
+            await self.fetchPlugins(
+              self.configSnapshot as { plugins?: PluginDefinition[] },
+            )
+          } else {
+            await self.fetchConfig()
+          }
           await this.loadSessionByType()
         } catch (e) {
           console.error(e)

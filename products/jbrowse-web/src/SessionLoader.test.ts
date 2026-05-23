@@ -1,7 +1,7 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
-import SessionLoader from './SessionLoader.ts'
+import SessionLoader, { readSessionFromStorage } from './SessionLoader.ts'
 
 // Mock dependencies
 jest.mock('@jbrowse/core/util/io', () => ({
@@ -323,50 +323,26 @@ describe('SessionLoader', () => {
     })
   })
 
-  describe('fetchSessionFromSessionStorage', () => {
-    it('loads session when query matches session id in storage', async () => {
+  describe('readSessionFromStorage', () => {
+    it('returns the snapshot when query matches session id in storage', () => {
       const sessionSnap = { id: 'test-session-id', name: 'Test' }
       sessionStorage.setItem(
         'current',
         JSON.stringify({ session: sessionSnap }),
       )
-
-      const loader = SessionLoader.create({
-        sessionQuery: 'local-test-session-id',
-        configSnapshot: {},
-        initialTimestamp: Date.now(),
-      })
-      loader.setRuntimePlugins([])
-
-      const result =
-        await loader.fetchSessionFromSessionStorage('test-session-id')
-      expect(result).toBe(true)
+      expect(readSessionFromStorage('test-session-id')).toEqual(sessionSnap)
     })
 
-    it('returns false when query does not match', async () => {
-      const sessionSnap = { id: 'different-id', name: 'Test' }
+    it('returns undefined when query does not match', () => {
       sessionStorage.setItem(
         'current',
-        JSON.stringify({ session: sessionSnap }),
+        JSON.stringify({ session: { id: 'different-id', name: 'Test' } }),
       )
-
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-
-      const result =
-        await loader.fetchSessionFromSessionStorage('test-session-id')
-      expect(result).toBe(false)
+      expect(readSessionFromStorage('test-session-id')).toBeUndefined()
     })
 
-    it('returns false when sessionStorage is empty', async () => {
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-
-      const result =
-        await loader.fetchSessionFromSessionStorage('test-session-id')
-      expect(result).toBe(false)
+    it('returns undefined when sessionStorage is empty', () => {
+      expect(readSessionFromStorage('test-session-id')).toBeUndefined()
     })
   })
 
@@ -411,7 +387,7 @@ describe('SessionLoader', () => {
       expect(loader.blankSession).toBe(true)
     })
 
-    it('uses setUpConfig when configSnapshot is pre-set (HMR/plugin reload path)', async () => {
+    it('skips config fetch when configSnapshot is pre-set (HMR/plugin reload path)', async () => {
       const loader = SessionLoader.create({
         configSnapshot: { assemblies: [] },
         initialTimestamp: Date.now(),
