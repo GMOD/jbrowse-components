@@ -176,12 +176,7 @@ describe('makeTrackConfig', () => {
   })
 
   test('hic track', () => {
-    const config = makeTrackConfig(
-      'hic',
-      'matrix.hic',
-      undefined,
-      fakeAssembly,
-    )
+    const config = makeTrackConfig('hic', 'matrix.hic', undefined, fakeAssembly)
     expect(config).toMatchObject({
       type: 'HicTrack',
       adapter: { type: 'HicAdapter' },

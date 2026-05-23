@@ -37,6 +37,7 @@ export {
   type FetchContext,
   type MultiRegionDisplayMixinType,
   default as MultiRegionDisplayMixin,
+  onDisplayedRegionsChange,
 } from './models/MultiRegionDisplayMixin.ts'
 export {
   type GlobalDataDisplayMixinType,

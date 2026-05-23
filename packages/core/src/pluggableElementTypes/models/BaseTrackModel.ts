@@ -139,7 +139,8 @@ export function createBaseTrackModel(
         const { sessionTracks, adminMode } = session
         return (
           isSessionModelWithConfigEditing(session) &&
-          (adminMode === true || !!sessionTracks?.find(t => t.trackId === this.trackId))
+          (adminMode === true ||
+            !!sessionTracks?.find(t => t.trackId === this.trackId))
         )
       },
     }))

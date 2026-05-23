@@ -19,10 +19,7 @@ import {
   TextField,
 } from '@mui/material'
 
-import {
-  buildAdapterConfig,
-  parseSampleNames,
-} from './buildAdapterConfig.ts'
+import { buildAdapterConfig, parseSampleNames } from './buildAdapterConfig.ts'
 
 import type {
   AdapterTypeOptions,

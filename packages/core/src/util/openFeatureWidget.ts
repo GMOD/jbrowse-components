@@ -1,8 +1,4 @@
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-} from './index.ts'
+import { getContainingTrack, getContainingView, getSession } from './index.ts'
 import SimpleFeature from './simpleFeature.ts'
 import { isSessionModelWithWidgets } from './types/index.ts'
 

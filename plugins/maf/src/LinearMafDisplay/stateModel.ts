@@ -514,7 +514,9 @@ export default function stateModelFactory(
           mismatchRendering,
         }),
         ...(treeAreaWidth !== 80 && { treeAreaWidth }),
-        ...(showAsUpperCase !== DEFAULTS.showAsUpperCase && { showAsUpperCase }),
+        ...(showAsUpperCase !== DEFAULTS.showAsUpperCase && {
+          showAsUpperCase,
+        }),
         ...(showTree !== DEFAULTS.showTree && { showTree }),
         ...(subtreeFilter?.length && { subtreeFilter }),
       }

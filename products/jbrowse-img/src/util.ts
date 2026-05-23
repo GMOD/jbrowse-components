@@ -12,7 +12,11 @@ export function convert(
   args: { out: string; pngwidth?: string },
   spawnArgs: string[] = [],
 ) {
-  const { name } = tmp.fileSync({ mode: 0o644, prefix: 'jbrowse-img-', postfix: '.svg' })
+  const { name } = tmp.fileSync({
+    mode: 0o644,
+    prefix: 'jbrowse-img-',
+    postfix: '.svg',
+  })
   const { pngwidth = '2048', out } = args
   fs.writeFileSync(name, result)
   const a = ['-w', pngwidth, name, '-o', out, ...spawnArgs]

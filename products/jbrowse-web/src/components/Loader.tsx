@@ -133,8 +133,13 @@ const Renderer = observer(function Renderer({
     sessionSnapshot: Record<string, unknown>,
   ) => void
 }) {
-  const { configError, pluginManager, pluginManagerError, ready, sessionTriaged } =
-    loader
+  const {
+    configError,
+    pluginManager,
+    pluginManagerError,
+    ready,
+    sessionTriaged,
+  } = loader
 
   useEffect(() => {
     if (ready) {

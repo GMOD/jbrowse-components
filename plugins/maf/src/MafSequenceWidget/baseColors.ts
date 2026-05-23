@@ -25,5 +25,7 @@ export function getBaseColor(base: string, theme: Theme): string {
 
 export function getContrastText(base: string, theme: Theme): string {
   const key = getBaseKey(base)
-  return key ? theme.palette.bases[key].contrastText : theme.palette.common.white
+  return key
+    ? theme.palette.bases[key].contrastText
+    : theme.palette.common.white
 }

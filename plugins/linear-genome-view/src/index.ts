@@ -111,6 +111,7 @@ export {
   drawCanvasImageData,
   getDisplayStr,
   migrateOldSettingSnapshots,
+  onDisplayedRegionsChange,
 } from './BaseLinearDisplay/index.ts'
 export type {
   ByteEstimateConfig,

@@ -31,9 +31,7 @@ export function filterReadFlag(
   flagInclude: number,
   flagExclude: number,
 ) {
-  return (
-    (flags & flagInclude) !== flagInclude || (flags & flagExclude) !== 0
-  )
+  return (flags & flagInclude) !== flagInclude || (flags & flagExclude) !== 0
 }
 
 export function filterTagValue(readVal: unknown, filterVal?: string) {

@@ -150,13 +150,13 @@ Reads & coloring:
 
 Overlays & subtracks:
 
-| Modifier               | Example          | Description                                                      |
-| ---------------------- | ---------------- | ---------------------------------------------------------------- |
-| `arcs:mode`            | `arcs:samplot`   | Paired-end arcs / samplot panel (`off`, `up`, `down`, `samplot`) |
-| `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                |
-| `sashimi:mode`         | `sashimi:up`     | Sashimi splice-junction arcs (`off`, `up`, `down`)               |
-| `coverage:true\|false` | `coverage:false` | Toggle coverage subtrack                                         |
-| `snpcov`               | `snpcov`         | Coverage-only view — resizes the coverage band to fill the track |
+| Modifier               | Example              | Description                                                      |
+| ---------------------- | -------------------- | ---------------------------------------------------------------- |
+| `arcs:mode`            | `arcs:samplot`       | Paired-end arcs / samplot panel (`off`, `up`, `down`, `samplot`) |
+| `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                   |
+| `sashimi:mode`         | `sashimi:up`         | Sashimi splice-junction arcs (`off`, `up`, `down`)               |
+| `coverage:true\|false` | `coverage:false`     | Toggle coverage subtrack                                         |
+| `snpcov`               | `snpcov`             | Coverage-only view — resizes the coverage band to fill the track |
 
 Layout & sizing:
 
@@ -170,30 +170,30 @@ Layout & sizing:
 
 Available `color:type` values:
 
-| Type                       | Description                                                |
-| -------------------------- | ---------------------------------------------------------- |
-| `normal`                   | Default (grey reads, mismatches highlighted)               |
-| `strand`                   | Forward/reverse strand                                     |
-| `mappingQuality`           | MAPQ                                                       |
-| `perBaseQuality`           | Per-base quality overlay                                   |
-| `insertSize`               | Paired-end insert size                                     |
-| `pairOrientation`          | Paired-end orientation                                     |
-| `insertSizeAndOrientation` | Combined insert size + orientation                         |
-| `modifications`            | Base modifications via MM/ML tags                          |
-| `methylation`              | CpG methylation via MM/ML tags                             |
-| `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG`  |
+| Type                       | Description                                               |
+| -------------------------- | --------------------------------------------------------- |
+| `normal`                   | Default (grey reads, mismatches highlighted)              |
+| `strand`                   | Forward/reverse strand                                    |
+| `mappingQuality`           | MAPQ                                                      |
+| `perBaseQuality`           | Per-base quality overlay                                  |
+| `insertSize`               | Paired-end insert size                                    |
+| `pairOrientation`          | Paired-end orientation                                    |
+| `insertSizeAndOrientation` | Combined insert size + orientation                        |
+| `modifications`            | Base modifications via MM/ML tags                         |
+| `methylation`              | CpG methylation via MM/ML tags                            |
+| `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG` |
 
 **BigWig tracks**
 
-| Modifier                 | Example                | Description                                              |
-| ------------------------ | ---------------------- | -------------------------------------------------------- |
-| `autoscale:mode`         | `autoscale:localsd`    | Autoscale mode (`local`, `global`, `localsd`)            |
-| `minmax:min:max`         | `minmax:0:100`         | Manual score range                                       |
-| `scaletype:type`         | `scaletype:log`        | Scale type (`linear` or `log`)                           |
-| `fill:true\|false`       | `fill:false`           | Fill under curve                                         |
-| `crosshatch:true\|false` | `crosshatch:true`      | Draw crosshatches                                        |
-| `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier) |
-| `color:value`            | `color:purple`         | Fill color (any CSS color — `tag:` form is BAM/CRAM only)|
+| Modifier                 | Example                | Description                                               |
+| ------------------------ | ---------------------- | --------------------------------------------------------- |
+| `autoscale:mode`         | `autoscale:localsd`    | Autoscale mode (`local`, `global`, `localsd`)             |
+| `minmax:min:max`         | `minmax:0:100`         | Manual score range                                        |
+| `scaletype:type`         | `scaletype:log`        | Scale type (`linear` or `log`)                            |
+| `fill:true\|false`       | `fill:false`           | Fill under curve                                          |
+| `crosshatch:true\|false` | `crosshatch:true`      | Draw crosshatches                                         |
+| `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier)  |
+| `color:value`            | `color:purple`         | Fill color (any CSS color — `tag:` form is BAM/CRAM only) |
 
 ### Force render a large region
 

@@ -15,10 +15,7 @@ function feature(uniqueId: string, start: number, score: number): Feature {
   })
 }
 
-const constColor =
-  (c: number) =>
-  () =>
-    c
+const constColor = (c: number) => () => c
 
 test('flattens features into typed arrays at matching indexes', () => {
   const r = buildManhattanResult(

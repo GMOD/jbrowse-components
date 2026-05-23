@@ -18,6 +18,7 @@ import type { FetchContext } from './FetchMixin.ts'
 import type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export type { ByteEstimateConfig } from './fetchHelpers.ts'
 export type { FetchContext } from './FetchMixin.ts'
@@ -140,9 +141,10 @@ export default function MultiRegionDisplayMixin() {
     .actions(self => ({
       afterAttach() {
         // Clear loaded data whenever the displayed-regions list
-        // changes. Tracks refName/start/end of every entry; MobX
-        // re-fires on any change. Fires once at mount as a harmless
-        // no-op (nothing loaded yet).
+        // changes. `displayedRegions` is a frozen array on the LGV
+        // model, so any mutation replaces the reference and the
+        // autorun re-fires on the bare read below. Fires once at
+        // mount as a harmless no-op (nothing loaded yet).
         addDisposer(
           self,
           autorun(
@@ -151,11 +153,7 @@ export default function MultiRegionDisplayMixin() {
               if (!view.initialized) {
                 return
               }
-              for (const r of view.displayedRegions) {
-                void r.refName
-                void r.start
-                void r.end
-              }
+              void view.displayedRegions
               self.clearAllRpcData()
             },
             { name: 'DisplayedRegionsChange' },
@@ -297,3 +295,32 @@ export default function MultiRegionDisplayMixin() {
 export type MultiRegionDisplayMixinType = ReturnType<
   typeof MultiRegionDisplayMixin
 >
+
+// Run `clear` whenever the containing view's `displayedRegions` reference
+// changes (chromosome navigation, region reorder, etc). Use for state keyed
+// by `displayedRegionIndex` that intentionally survives `clearAllRpcData` —
+// chromosome navigation reuses indices, so an entry left over from chr1
+// would silently apply to chr2 (canvas's `densityStatsPerRegion` is the
+// canonical case). Plugins whose entire per-region data clears through
+// `clearDisplaySpecificData` don't need this — the mixin's own
+// `DisplayedRegionsChange` autorun already covers them.
+export function onDisplayedRegionsChange(
+  self: IAnyStateTreeNode,
+  clear: () => void,
+  name = 'OnDisplayedRegionsChange',
+) {
+  addDisposer(
+    self,
+    autorun(
+      () => {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
+        void view.displayedRegions
+        clear()
+      },
+      { name },
+    ),
+  )
+}

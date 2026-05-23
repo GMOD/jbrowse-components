@@ -10,8 +10,10 @@ import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 // Component-facing slice of LinearManhattanDisplayModel. Hand-rolled to avoid
 // a circular type between stateModelFactory.ts (lazy-imports the component)
 // and the component (which would otherwise import the inferred model type).
-export interface ManhattanDisplayModel
-  extends WiggleGpuDisplayModel<ManhattanBackend, ManhattanRpcResult> {
+export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
+  ManhattanBackend,
+  ManhattanRpcResult
+> {
   renderBlocks: RenderBlock[]
   regionRefNames: ReadonlyMap<number, string>
   renderState: ManhattanRenderState | undefined

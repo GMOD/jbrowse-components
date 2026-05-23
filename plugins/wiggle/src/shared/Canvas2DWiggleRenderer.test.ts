@@ -68,7 +68,8 @@ describe('Canvas2DWiggleRenderer', () => {
   const defaultBlock = {
     displayedRegionIndex: 0,
     start: 0,
-    end: 1000,    screenStartPx: 0,
+    end: 1000,
+    screenStartPx: 0,
     screenEndPx: 800,
     reversed: false,
   }
@@ -205,7 +206,8 @@ describe('Canvas2DWiggleRenderer', () => {
 const lineBlock = {
   displayedRegionIndex: 0,
   start: 0,
-  end: 1000,  screenStartPx: 0,
+  end: 1000,
+  screenStartPx: 0,
   screenEndPx: 800,
   reversed: false,
 }

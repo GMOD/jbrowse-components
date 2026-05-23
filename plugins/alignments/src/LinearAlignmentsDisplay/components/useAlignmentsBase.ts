@@ -61,7 +61,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     [],
   )
 
-
   const view = getContainingView(model) as LinearGenomeViewModel
   const theme = useTheme()
   const colorPalette = useMemo(() => buildColorPaletteFromTheme(theme), [theme])
@@ -176,7 +175,13 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       },
       { signal: ac.signal },
     )
-    document.addEventListener('mouseup', () => { ac.abort() }, { signal: ac.signal })
+    document.addEventListener(
+      'mouseup',
+      () => {
+        ac.abort()
+      },
+      { signal: ac.signal },
+    )
   }
 
   const handleArcsResizeMouseDown = (e: React.MouseEvent) => {
@@ -194,7 +199,13 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       },
       { signal: ac.signal },
     )
-    document.addEventListener('mouseup', () => { ac.abort() }, { signal: ac.signal })
+    document.addEventListener(
+      'mouseup',
+      () => {
+        ac.abort()
+      },
+      { signal: ac.signal },
+    )
   }
 
   const handleSashimiArcsResizeMouseDown = (e: React.MouseEvent) => {
@@ -208,11 +219,19 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     document.addEventListener(
       'mousemove',
       me => {
-        model.setSashimiArcsHeight(Math.max(20, startHeight + me.clientY - startY))
+        model.setSashimiArcsHeight(
+          Math.max(20, startHeight + me.clientY - startY),
+        )
       },
       { signal: ac.signal },
     )
-    document.addEventListener('mouseup', () => { ac.abort() }, { signal: ac.signal })
+    document.addEventListener(
+      'mouseup',
+      () => {
+        ac.abort()
+      },
+      { signal: ac.signal },
+    )
   }
 
   function handleContextMenu(e: React.MouseEvent) {

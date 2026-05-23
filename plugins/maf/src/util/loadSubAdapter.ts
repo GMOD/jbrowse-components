@@ -1,7 +1,10 @@
 import { updateStatus } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import type { BaseFeatureDataAdapter, BaseOptions  } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 
 /**
  * BigMafAdapter and MafTabixAdapter both wrap a sub-adapter (BigBed /

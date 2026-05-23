@@ -37,11 +37,15 @@ test('opens BaseFeatureWidget by default with view/track context', () => {
   const featureData = { uniqueId: 'x', refName: '1', start: 0, end: 10 }
   const widget = openFeatureWidget(node, featureData)
   expect(widget).toBeDefined()
-  expect(session.addWidget).toHaveBeenCalledWith('BaseFeatureWidget', 'baseFeature', {
-    featureData,
-    view,
-    track,
-  })
+  expect(session.addWidget).toHaveBeenCalledWith(
+    'BaseFeatureWidget',
+    'baseFeature',
+    {
+      featureData,
+      view,
+      track,
+    },
+  )
   expect(session.showWidget).toHaveBeenCalledWith(widget)
 })
 

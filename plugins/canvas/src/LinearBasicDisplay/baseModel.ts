@@ -23,6 +23,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   getDisplayStr,
+  onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -924,17 +925,17 @@ export default function baseStateModelFactory(
             // displayedRegionIndex which gets reused across chromosomes —
             // stale entries would otherwise gate the derived regionTooLarge
             // banner against the wrong region's stats and block refetch.
-            addDisposer(
+            // densityStatsPerRegion + featureDensityStats intentionally
+            // survive viewport-change clearAllRpcData calls so the banner
+            // doesn't flicker; this hook is the one path that does clear
+            // them, scoped to actual region-list mutation.
+            onDisplayedRegionsChange(
               self,
-              autorun(
-                () => {
-                  const view = getContainingView(self) as LGV
-                  void view.displayedRegions
-                  self.clearStaleDensityState()
-                  self.clearHeightBeforeExpand()
-                },
-                { name: 'CanvasClearDensityOnDisplayedRegions' },
-              ),
+              () => {
+                self.clearStaleDensityState()
+                self.clearHeightBeforeExpand()
+              },
+              'CanvasClearDensityOnDisplayedRegions',
             )
 
             // Clear hover when the viewport moves under a stationary cursor

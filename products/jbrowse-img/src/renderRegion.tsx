@@ -61,11 +61,7 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
         display.setLineWidth?.(+val1)
       }
     } else if (prefix === 'featureHeight') {
-      if (
-        val1 === 'normal' ||
-        val1 === 'compact' ||
-        val1 === 'super-compact'
-      ) {
+      if (val1 === 'normal' || val1 === 'compact' || val1 === 'super-compact') {
         // setCompactness is the authoritative cross-display API (alignments,
         // basic features, comparative views all implement it)
         display.setCompactness?.(val1)

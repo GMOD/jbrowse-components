@@ -14,8 +14,8 @@ import {
 } from './util.ts'
 
 import type { SessionDB, SessionTriagedInfo } from './types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 type ReloadPluginManagerCallback = (
@@ -101,7 +101,8 @@ function buildJb1SessionSpec(args: {
   }
 }
 
-const stripPrefix = (s: string) => s.replace(/^(share|spec|encoded|json|local)-/, '')
+const stripPrefix = (s: string) =>
+  s.replace(/^(share|spec|encoded|json|local)-/, '')
 
 // --- Model ----------------------------------------------------------------
 
@@ -604,6 +605,7 @@ const SessionLoader = types
     afterCreate() {
       void (async () => {
         try {
+          // eslint-disable-next-line unicorn/prefer-ternary
           if (self.configSnapshot) {
             // HMR / reload: snapshot already URI-stamped, just load plugins
             await self.fetchPlugins(
