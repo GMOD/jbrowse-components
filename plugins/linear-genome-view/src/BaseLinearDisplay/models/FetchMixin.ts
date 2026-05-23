@@ -40,7 +40,6 @@ export default function FetchMixin() {
       activeStopToken: undefined as StopToken | undefined,
       fetchGeneration: 0,
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
 
       statusMessage: undefined as string | undefined,

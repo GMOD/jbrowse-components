@@ -34,11 +34,11 @@
   "dependencies": {
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.6.9",
+    "@jbrowse/mobx-state-tree": "^5.8.6",
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "dockview-core": "^6.4.0",
+    "dockview-core": "^6.5.0",
     "mobx": "^6.15.3"
   },
   "peerDependencies": {
