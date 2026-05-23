@@ -1,8 +1,9 @@
 import { ARC_SHAPE_FLAT, ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
-  bpToScreenX,
   type DrawBlock,
+  type RenderState,
+  bpToScreenX,
 } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import {
   ARC_HEIGHT_MARGIN,
@@ -11,7 +12,6 @@ import {
 } from '../../shaders/palettes.ts'
 
 import type { ArcsUploadData } from './types.ts'
-import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import type { RGBColor } from '../../shaders/colors.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 

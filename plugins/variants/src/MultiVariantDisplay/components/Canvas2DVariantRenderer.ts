@@ -44,8 +44,6 @@ export function drawVariantBlocks(
       continue
     }
 
-    const { fullBlockWidth, bpLength } = clip
-
     ctx.save()
     ctx.beginPath()
     ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)

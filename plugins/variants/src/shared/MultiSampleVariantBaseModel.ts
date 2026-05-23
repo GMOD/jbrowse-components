@@ -988,9 +988,6 @@ export default function MultiSampleVariantBaseModelF(
           return
         }
         const sources = self.sourcesBase
-        if (!sources) {
-          return
-        }
         // cellDataMode is defined per-subclass and not visible on the base
         // self; read it via a narrow view interface and pass to the RPC
         // helper as an explicit parameter.

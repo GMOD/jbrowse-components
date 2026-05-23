@@ -61,34 +61,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     [],
   )
 
-  function makeResizeHandler(
-    getHeight: () => number,
-    setHeight: (h: number) => void,
-  ) {
-    return (e: React.MouseEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      dragControllerRef.current?.abort()
-      const ac = new AbortController()
-      dragControllerRef.current = ac
-      const startY = e.clientY
-      const startHeight = getHeight()
-      document.addEventListener(
-        'mousemove',
-        me => {
-          setHeight(Math.max(20, startHeight + me.clientY - startY))
-        },
-        { signal: ac.signal },
-      )
-      document.addEventListener(
-        'mouseup',
-        () => {
-          ac.abort()
-        },
-        { signal: ac.signal },
-      )
-    }
-  }
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const theme = useTheme()
@@ -189,26 +161,59 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     }
   }
 
-  const handleResizeMouseDown = makeResizeHandler(
-    () => coverageHeight,
-    h => {
-      model.setCoverageHeight(h)
-    },
-  )
+  const handleResizeMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragControllerRef.current?.abort()
+    const ac = new AbortController()
+    dragControllerRef.current = ac
+    const startY = e.clientY
+    const startHeight = coverageHeight
+    document.addEventListener(
+      'mousemove',
+      me => {
+        model.setCoverageHeight(Math.max(20, startHeight + me.clientY - startY))
+      },
+      { signal: ac.signal },
+    )
+    document.addEventListener('mouseup', () => { ac.abort() }, { signal: ac.signal })
+  }
 
-  const handleArcsResizeMouseDown = makeResizeHandler(
-    () => arcsHeight,
-    h => {
-      model.setArcsHeight(h)
-    },
-  )
+  const handleArcsResizeMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragControllerRef.current?.abort()
+    const ac = new AbortController()
+    dragControllerRef.current = ac
+    const startY = e.clientY
+    const startHeight = arcsHeight
+    document.addEventListener(
+      'mousemove',
+      me => {
+        model.setArcsHeight(Math.max(20, startHeight + me.clientY - startY))
+      },
+      { signal: ac.signal },
+    )
+    document.addEventListener('mouseup', () => { ac.abort() }, { signal: ac.signal })
+  }
 
-  const handleSashimiArcsResizeMouseDown = makeResizeHandler(
-    () => model.sashimiArcsHeight,
-    h => {
-      model.setSashimiArcsHeight(h)
-    },
-  )
+  const handleSashimiArcsResizeMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragControllerRef.current?.abort()
+    const ac = new AbortController()
+    dragControllerRef.current = ac
+    const startY = e.clientY
+    const startHeight = model.sashimiArcsHeight
+    document.addEventListener(
+      'mousemove',
+      me => {
+        model.setSashimiArcsHeight(Math.max(20, startHeight + me.clientY - startY))
+      },
+      { signal: ac.signal },
+    )
+    document.addEventListener('mouseup', () => { ac.abort() }, { signal: ac.signal })
+  }
 
   function handleContextMenu(e: React.MouseEvent) {
     const coords = getCanvasCoords(e, canvas, canvasRectRef)

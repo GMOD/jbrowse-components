@@ -5,11 +5,16 @@ import {
 
 import { getChainBounds } from './chainOverlayUtils.ts'
 import {
+  type AlignmentsBackend,
+  type AlignmentsSources,
+  type CigarUploadData,
+  type DrawBlock,
+  type RenderBlock,
+  type RenderState,
   bpToScreenX,
   computeBlockHeights,
   interbaseRangeEnds,
   pileupRowY,
-  type DrawBlock,
 } from './rendererTypes.ts'
 import { drawArcs } from '../../features/arcs/drawCanvas.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
@@ -37,13 +42,6 @@ import { drawSnpSegmentsCanvas } from '../../features/snpCoverage/drawCanvas.ts'
 import { drawSoftclipBases } from '../../features/softclip/drawBases.ts'
 import { drawHardclips, drawSoftclips } from '../../shared/drawClipBars.ts'
 
-import type {
-  AlignmentsBackend,
-  AlignmentsSources,
-  CigarUploadData,
-  RenderBlock,
-  RenderState,
-} from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ConnectingLinesUploadData } from '../../features/connectingLines/types.ts'

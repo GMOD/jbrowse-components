@@ -59,7 +59,7 @@ export function facetedStateTreeF() {
       /**
        * #volatile
        */
-      visible: {} as Record<string, boolean>,
+      visible: {},
       /**
        * #volatile
        */

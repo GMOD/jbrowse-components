@@ -56,11 +56,7 @@ import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 
-import type {
-  ColorPalette,
-  RenderState as AlignmentsRenderState,
-} from './components/AlignmentsRenderer.ts'
-import type { VisibleLabel } from './components/computeVisibleLabels.ts'
+import type { ColorPalette } from './components/AlignmentsRenderer.ts'
 import type {
   ArcDirection,
   LinkedReadsMode,
@@ -72,7 +68,6 @@ import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { ArcsDataResult } from '../features/arcs/compute.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
-import type { LegendItem } from '../shared/legendUtils.ts'
 import type {
   ArcColorByType,
   ColorBy,
@@ -90,7 +85,6 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 type LGV = LinearGenomeViewModel
 
