@@ -11,6 +11,9 @@ import type { LinearGenomeViewModel } from './model.ts'
  * - Ctrl/Cmd + ArrowDown: zoom out
  */
 export function setupKeyboardHandler(self: LinearGenomeViewModel) {
+  if (typeof document === 'undefined') {
+    return
+  }
   function handler(e: KeyboardEvent) {
     const session = getSession(self)
     if (session.focusedViewId === self.id && (e.ctrlKey || e.metaKey)) {

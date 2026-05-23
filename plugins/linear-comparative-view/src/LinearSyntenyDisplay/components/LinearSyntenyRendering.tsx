@@ -83,17 +83,11 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       event.preventDefault()
       if (event.ctrlKey) {
         delta.current += event.deltaY / 500
-        for (const v of view.views) {
-          v.setScaleFactor(
-            delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
-          )
-        }
         if (timeout.current) {
           clearTimeout(timeout.current)
         }
         timeout.current = setTimeout(() => {
           for (const v of view.views) {
-            v.setScaleFactor(1)
             v.zoomTo(
               delta.current > 0
                 ? v.bpPerPx * (1 + delta.current)

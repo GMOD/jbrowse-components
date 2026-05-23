@@ -8,10 +8,9 @@ import {
   getContainingView,
   getSession,
   isFeature,
-  isSelectionContainer,
-  isSessionModelWithWidgets,
+  openFeatureWidget,
 } from '@jbrowse/core/util'
-import { blockToRegion } from '@jbrowse/core/util/blockTypes'
+import { BlockSet, blockToRegion } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
   getParentRenderProps,
@@ -19,23 +18,17 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
-import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
 
 import { calculateSvgLegendWidth } from './calculateSvgLegendWidth.ts'
 import { deduplicateFeatureLabels } from './components/util.ts'
-import FeatureDensityMixin from './models/FeatureDensityMixin.tsx'
+import FeatureDensityMixin from '../shared/FeatureDensityMixin.tsx'
 import TrackHeightMixin from './models/TrackHeightMixin.tsx'
 import configSchema from './models/configSchema.ts'
 import BlockState from './models/serverSideRenderedBlock.ts'
-import {
-  fetchFeatureByIdRpc,
-  findSubfeatureById,
-  getTranscripts,
-  hasIntrons,
-} from './util.ts'
+import { fetchFeatureByIdRpc, findSubfeatureById } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
 import type { LegendItem } from './components/FloatingLegend.tsx'
@@ -48,9 +41,6 @@ import type { Theme } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
-const CollapseIntronsDialog = lazy(
-  () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
-)
 
 type LGV = LinearGenomeViewModel
 
@@ -127,6 +117,11 @@ function stateModelFactory() {
        * #getter
        */
       get blockDefinitions() {
+        // Return empty when minimized so the blockDefinitionsAutorun's normal
+        // "delete stale" loop clears all blocks without needing special casing
+        if (self.isMinimized) {
+          return new BlockSet()
+        }
         const view = getContainingView(self) as LGV
         if (!view.initialized) {
           throw new Error('view not initialized yet')
@@ -255,9 +250,7 @@ function stateModelFactory() {
       get layoutFeatures() {
         const featureMaps = []
         for (const block of self.blockState.values()) {
-          if (block.layout?.getRectangles) {
-            // Use getRectangles() to get consistent tuple format [left, top, right, bottom, data]
-            // This works for both GranularRectLayout (raw) and PrecomputedLayout (serialized)
+          if (block.layout) {
             featureMaps.push(block.layout.getRectangles())
           }
         }
@@ -341,35 +334,21 @@ function stateModelFactory() {
        */
       selectFeature(feature: Feature) {
         const session = getSession(self)
-        if (isSelectionContainer(session)) {
-          session.setSelection(feature)
-        }
-        if (isSessionModelWithWidgets(session)) {
-          const { rpcManager } = session
-          const sessionId = getRpcSessionId(self)
-          const track = getContainingTrack(self)
-          const view = getContainingView(self)
-          const adapterConfig = getConf(track, 'adapter')
-          const { type, id } = self.featureWidgetType
-          rpcManager
-            .call(sessionId, 'CoreGetMetadata', { adapterConfig })
-            .then(descriptions => {
-              if (isAlive(self)) {
-                session.showWidget(
-                  session.addWidget(type, id, {
-                    featureData: feature.toJSON(),
-                    view,
-                    track,
-                    descriptions,
-                  }),
-                )
-              }
-            })
-            .catch((e: unknown) => {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            })
-        }
+        const adapterConfig = getConf(getContainingTrack(self), 'adapter')
+        session.rpcManager
+          .call(getRpcSessionId(self), 'CoreGetMetadata', { adapterConfig })
+          .then(descriptions => {
+            if (isAlive(self)) {
+              openFeatureWidget(self, feature.toJSON(), {
+                widget: self.featureWidgetType,
+                extra: { descriptions },
+              })
+            }
+          })
+          .catch((e: unknown) => {
+            console.error(e)
+            session.notifyError(`${e}`, e)
+          })
       },
 
       /**
@@ -448,32 +427,24 @@ function stateModelFactory() {
       }
     })
 
-    .actions(self => ({
-      /**
-       * #action
-       * Select a feature by ID, looking up in features map and subfeatures.
-       * Falls back to RPC if not found locally (e.g., for canvas renderer).
-       * @param featureId - The ID of the feature to select
-       * @param parentFeatureId - The immediate parent's ID for subfeature lookup
-       * @param topLevelFeatureId - The top-level feature ID for RPC lookup
-       */
-      selectFeatureById: flow(function* (
+    .actions(self => {
+      // Looks up a feature locally first, then falls back to RPC.
+      // Used by both selectFeatureById and setContextMenuFeatureById.
+      async function lookupFeatureById(
         featureId: string,
         parentFeatureId?: string,
         topLevelFeatureId?: string,
       ) {
-        const feature = self.getFeatureById(featureId, parentFeatureId)
-        if (feature) {
-          self.selectFeature(feature)
-          return
-        }
-        const rpcParentId =
-          topLevelFeatureId && topLevelFeatureId !== featureId
-            ? topLevelFeatureId
-            : parentFeatureId
-        try {
+        const localFeature = self.getFeatureById(featureId, parentFeatureId)
+        if (localFeature) {
+          return localFeature
+        } else {
+          const rpcParentId =
+            topLevelFeatureId && topLevelFeatureId !== featureId
+              ? topLevelFeatureId
+              : parentFeatureId
           const session = getSession(self)
-          const f = yield fetchFeatureByIdRpc({
+          return fetchFeatureByIdRpc({
             rpcManager: session.rpcManager,
             sessionId: getRpcSessionId(self),
             trackId: getContainingTrack(self).id,
@@ -481,55 +452,60 @@ function stateModelFactory() {
             featureId,
             parentFeatureId: rpcParentId,
           })
-          if (f && isAlive(self)) {
-            self.selectFeature(f)
+        }
+      }
+
+      return {
+        /**
+         * #action
+         * Select a feature by ID, looking up in features map and subfeatures.
+         * Falls back to RPC if not found locally (e.g., for canvas renderer).
+         */
+        selectFeatureById: flow(function* (
+          featureId: string,
+          parentFeatureId?: string,
+          topLevelFeatureId?: string,
+        ) {
+          try {
+            const f = yield lookupFeatureById(
+              featureId,
+              parentFeatureId,
+              topLevelFeatureId,
+            )
+            if (f && isAlive(self)) {
+              self.selectFeature(f)
+            }
+          } catch (e) {
+            console.error(e)
+            getSession(self).notifyError(`${e}`, e)
           }
-        } catch (e) {
-          console.error(e)
-          getSession(self).notifyError(`${e}`, e)
-        }
-      }),
-      /**
-       * #action
-       * Set context menu feature by ID, looking up in features map and subfeatures.
-       * Falls back to RPC if not found locally (e.g., for canvas renderer).
-       * @param featureId - The ID of the feature to set
-       * @param parentFeatureId - The immediate parent's ID for subfeature lookup
-       * @param topLevelFeatureId - The top-level feature ID for RPC lookup
-       */
-      setContextMenuFeatureById: flow(function* (
-        featureId: string,
-        parentFeatureId?: string,
-        topLevelFeatureId?: string,
-      ) {
-        const feature = self.getFeatureById(featureId, parentFeatureId)
-        if (feature) {
-          self.setContextMenuFeature(feature)
-          return
-        }
-        const rpcParentId =
-          topLevelFeatureId && topLevelFeatureId !== featureId
-            ? topLevelFeatureId
-            : parentFeatureId
-        try {
-          const session = getSession(self)
-          const f = yield fetchFeatureByIdRpc({
-            rpcManager: session.rpcManager,
-            sessionId: getRpcSessionId(self),
-            trackId: getContainingTrack(self).id,
-            rendererType: self.rendererTypeName,
-            featureId,
-            parentFeatureId: rpcParentId,
-          })
-          if (f && isAlive(self)) {
-            self.setContextMenuFeature(f)
+        }),
+        /**
+         * #action
+         * Set context menu feature by ID, looking up in features map and subfeatures.
+         * Falls back to RPC if not found locally (e.g., for canvas renderer).
+         */
+        setContextMenuFeatureById: flow(function* (
+          featureId: string,
+          parentFeatureId?: string,
+          topLevelFeatureId?: string,
+        ) {
+          try {
+            const f = yield lookupFeatureById(
+              featureId,
+              parentFeatureId,
+              topLevelFeatureId,
+            )
+            if (f && isAlive(self)) {
+              self.setContextMenuFeature(f)
+            }
+          } catch (e) {
+            console.error(e)
+            getSession(self).notifyError(`${e}`, e)
           }
-        } catch (e) {
-          console.error(e)
-          getSession(self).notifyError(`${e}`, e)
-        }
-      }),
-    }))
+        }),
+      }
+    })
 
     .views(self => ({
       /**
@@ -544,8 +520,6 @@ function stateModelFactory() {
        */
       contextMenuItems(): MenuItem[] {
         const feat = self.contextMenuFeature
-        const transcripts = getTranscripts(feat)
-
         return feat
           ? [
               {
@@ -573,32 +547,6 @@ function stateModelFactory() {
                   session.notify('Copied to clipboard', 'success')
                 },
               },
-              ...(hasIntrons(transcripts)
-                ? [
-                    {
-                      label: 'Collapse introns',
-                      icon: CloseFullscreenIcon,
-                      onClick: () => {
-                        const view = getContainingView(self) as LGV
-                        const { assemblyManager } = getSession(self)
-                        const assembly = assemblyManager.get(
-                          view.assemblyNames[0]!,
-                        )
-                        if (assembly) {
-                          getSession(self).queueDialog(handleClose => [
-                            CollapseIntronsDialog,
-                            {
-                              view,
-                              transcripts,
-                              handleClose,
-                              assembly,
-                            },
-                          ])
-                        }
-                      },
-                    },
-                  ]
-                : []),
             ]
           : []
       },
@@ -664,7 +612,7 @@ function stateModelFactory() {
           autorun(
             function blockDefinitionsAutorun() {
               try {
-                if (!isAlive(self) || self.isMinimized) {
+                if (!isAlive(self)) {
                   return
                 }
                 const view = getContainingView(self) as LGV
@@ -705,10 +653,8 @@ function stateModelFactory() {
       if (!snap) {
         return snap
       }
-      // rewrite "height" from older snapshots to "heightPreConfig", this allows
-      // us to maintain a height "getter" going forward
-      // @ts-expect-error
-      const { height, ...rest } = snap
+      // rewrite "height" from older snapshots to "heightPreConfig"
+      const { height, ...rest } = snap as typeof snap & { height?: number }
       return { heightPreConfig: height, ...rest }
     })
     .postProcessSnapshot(snap => {

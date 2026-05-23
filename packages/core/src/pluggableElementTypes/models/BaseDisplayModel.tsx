@@ -3,6 +3,7 @@ import type React from 'react'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration/index.ts'
+import { getEffectiveTrackConfig } from '../../util/getConfigOverrides.ts'
 import {
   getContainingTrack,
   getContainingView,
@@ -129,6 +130,14 @@ function stateModelFactory() {
         } catch {
           return undefined
         }
+      },
+
+      /**
+       * #getter
+       */
+      get effectiveTrackConfig() {
+        const track = getContainingTrack(self)
+        return getEffectiveTrackConfig(track.configuration, self)
       },
     }))
     .views(self => ({

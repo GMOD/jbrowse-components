@@ -20,29 +20,27 @@ export default function SVGTrackLabel({
   const yoff = trackLabels === 'offset' ? 5 : 0
   const name = coarseStripHTML(trackName)
   return trackLabels !== 'none' ? (
-    <g>
-      {trackLabels === 'left' ? (
-        <text
-          x={trackLabelOffset - 40}
-          y={20}
-          fill={fill}
-          fontSize={fontSize}
-          dominantBaseline="hanging"
-          textAnchor="end"
-        >
-          {name}
-        </text>
-      ) : (
-        <text
-          x={x + xoff}
-          y={yoff}
-          fill={fill}
-          fontSize={fontSize}
-          dominantBaseline="hanging"
-        >
-          {name}
-        </text>
-      )}
-    </g>
+    trackLabels === 'left' ? (
+      <text
+        x={trackLabelOffset - 40}
+        y={20}
+        fill={fill}
+        fontSize={fontSize}
+        dominantBaseline="hanging"
+        textAnchor="end"
+      >
+        {name}
+      </text>
+    ) : (
+      <text
+        x={x + xoff}
+        y={yoff}
+        fill={fill}
+        fontSize={fontSize}
+        dominantBaseline="hanging"
+      >
+        {name}
+      </text>
+    )
   ) : null
 }

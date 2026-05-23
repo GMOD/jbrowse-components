@@ -1,13 +1,19 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
 const minDisplayHeight = 20
 
 /**
  * #stateModel TrackHeightMixin
  * #category display
  */
-export default function TrackHeightMixin() {
+export default function TrackHeightMixin<
+  TConf extends { configuration: AnyConfigurationModel } = {
+    configuration: AnyConfigurationModel
+  },
+>() {
   return types
     .model({
       /**
@@ -29,8 +35,10 @@ export default function TrackHeightMixin() {
     }))
     .views(self => ({
       get height() {
-        // @ts-expect-error
-        return self.heightPreConfig ?? (getConf(self, 'height') as number)
+        return (
+          self.heightPreConfig ??
+          (getConf(self as unknown as TConf, 'height') as number)
+        )
       },
     }))
     .actions(self => ({

@@ -3,69 +3,70 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import RegionTooLargeMixin from './RegionTooLargeMixin.tsx'
+import TooLargeMessage from './TooLargeMessage.tsx'
 import autorunFeatureDensityStats from './autorunFeatureDensityStats.ts'
-import { getDisplayStr, getFeatureDensityStatsPre } from './util.ts'
-import TooLargeMessage from '../components/TooLargeMessage.tsx'
+import {
+  getDisplayStr,
+  getFeatureDensityStatsPre,
+} from './featureDensityUtils.ts'
+import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
+import type { FeatureDensityModel } from './autorunFeatureDensityStats.ts'
+import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util/types'
 
 type LGV = LinearGenomeViewModel
 
-type AutorunSelf = Parameters<typeof autorunFeatureDensityStats>[0]
 type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
 
+interface WithConfiguration {
+  configuration: AnyConfigurationModel
+}
 /**
- * #stateModel FeatureDensityMixin
- * #category display
+ * Block-based display mixin that adds reactive density-stats checking
+ * on top of RegionTooLargeMixin.
+ *
+ * Runs autorunFeatureDensityStats to RPC for density stats, then computes
+ * regionTooLarge reactively from bytes/density thresholds.
+ *
+ * For canvas/GPU displays, use MultiRegionDisplayMixin instead (which
+ * also composes RegionTooLargeMixin but uses an imperative check path).
  */
 export default function FeatureDensityMixin() {
   return types
-    .model({
-      /**
-       * #property
-       */
-      userBpPerPxLimit: types.maybe(types.number),
-      /**
-       * #property
-       */
-
-      userByteSizeLimit: types.maybe(types.number),
-    })
+    .compose(
+      'FeatureDensityMixin',
+      RegionTooLargeMixin(),
+      types.model({
+        userBpPerPxLimit: types.maybe(types.number),
+      }),
+    )
     .volatile(() => ({
       featureDensityStatsP: undefined as
         | undefined
         | Promise<FeatureDensityStats>,
-      featureDensityStats: undefined as undefined | FeatureDensityStats,
       currStatsBpPerPx: 0,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
       get currentBytesRequested() {
-        return self.featureDensityStats?.bytes || 0
+        return self.featureDensityStats?.bytes ?? 0
       },
 
-      /**
-       * #getter
-       */
       get currentFeatureScreenDensity() {
         const view = getContainingView(self) as LGV
-        return (self.featureDensityStats?.featureDensity || 0) * view.bpPerPx
+        return (self.featureDensityStats?.featureDensity ?? 0) * view.bpPerPx
       },
 
-      /**
-       * #getter
-       */
       get maxFeatureScreenDensity() {
-        // @ts-expect-error
-        return getConf(self, 'maxFeatureScreenDensity')
+        return getConf(
+          self as unknown as WithConfiguration,
+          'maxFeatureScreenDensity',
+        )
       },
-      /**
-       * #getter
-       */
+
       get featureDensityStatsReady() {
         const view = getContainingView(self) as LGV
         return (
@@ -74,15 +75,14 @@ export default function FeatureDensityMixin() {
         )
       },
 
-      /**
-       * #getter
-       */
       get maxAllowableBytes() {
         return (
-          self.userByteSizeLimit ||
-          self.featureDensityStats?.fetchSizeLimit ||
-          // @ts-expect-error
-          (getConf(self, 'fetchSizeLimit') as number)
+          self.userByteSizeLimit ??
+          self.featureDensityStats?.fetchSizeLimit ??
+          (getConf(
+            self as unknown as WithConfiguration,
+            'fetchSizeLimit',
+          ) as number)
         )
       },
     }))
@@ -91,21 +91,18 @@ export default function FeatureDensityMixin() {
         addDisposer(
           self,
           autorun(() =>
-            autorunFeatureDensityStats(self as unknown as AutorunSelf),
+            autorunFeatureDensityStats(self as unknown as FeatureDensityModel),
           ),
         )
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
       setCurrStatsBpPerPx(n: number) {
         self.currStatsBpPerPx = n
       },
-      /**
-       * #action
-       */
+
+      // Override RegionTooLargeMixin's setFeatureDensityStatsLimit to also
+      // handle bpPerPx-based limits for density-based "too large" detection
       setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
         const view = getContainingView(self) as LGV
         if (stats?.bytes) {
@@ -113,59 +110,38 @@ export default function FeatureDensityMixin() {
         } else {
           self.userBpPerPxLimit = view.bpPerPx
         }
+        self.setRegionTooLarge(false)
       },
-      /**
-       * #action
-       */
+
       getFeatureDensityStats() {
-        if (!self.featureDensityStatsP) {
-          self.featureDensityStatsP = getFeatureDensityStatsPre(
-            self as unknown as FeatureDensityStatsSelf,
-          ).catch((e: unknown) => {
-            if (isAlive(self)) {
-              this.setFeatureDensityStatsP(undefined)
-            }
-            throw e
-          })
-        }
+        self.featureDensityStatsP ??= getFeatureDensityStatsPre(
+          self as unknown as FeatureDensityStatsSelf,
+        ).catch((e: unknown) => {
+          if (isAlive(self)) {
+            this.setFeatureDensityStatsP(undefined)
+          }
+          throw e
+        })
         return self.featureDensityStatsP
       },
 
-      /**
-       * #action
-       */
-      setFeatureDensityStatsP(arg: any) {
+      setFeatureDensityStatsP(arg: Promise<FeatureDensityStats> | undefined) {
         self.featureDensityStatsP = arg
       },
 
-      /**
-       * #action
-       */
-      setFeatureDensityStats(featureDensityStats?: FeatureDensityStats) {
-        self.featureDensityStats = featureDensityStats
-      },
-      /**
-       * #action
-       */
       clearFeatureDensityStats() {
         self.featureDensityStatsP = undefined
-        self.featureDensityStats = undefined
+        self.setFeatureDensityStats(undefined)
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * region is too large if:
-       * - stats are ready
-       * - region is greater than 20kb (don't warn when zoomed in less than that)
-       * - and bytes is greater than max allowed bytes or density greater than max
-       *   density
-       */
+      // Override RegionTooLargeMixin's imperative regionTooLarge with a
+      // reactive computation from density stats
       get regionTooLarge() {
         const view = getContainingView(self) as LGV
         if (
           !self.featureDensityStatsReady ||
-          view.dynamicBlocks.totalBp < 20_000
+          view.visibleBp < AUTO_FORCE_LOAD_BP
         ) {
           return false
         }
@@ -177,11 +153,6 @@ export default function FeatureDensityMixin() {
         )
       },
 
-      /**
-       * #getter
-       * only shows a message of bytes requested is defined, the feature density
-       * based stats don't produce any helpful message besides to zoom in
-       */
       get regionTooLargeReason() {
         const req = self.currentBytesRequested
         const max = self.maxAllowableBytes
@@ -192,29 +163,15 @@ export default function FeatureDensityMixin() {
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
       get featureDensityStatsReadyAndRegionNotTooLarge() {
         return self.featureDensityStatsReady && !self.regionTooLarge
       },
-      /**
-       * #method
-       */
+
       regionCannotBeRenderedText(_region: Region) {
         return self.regionTooLarge ? 'Force load to see features' : ''
       },
 
-      /**
-       * #method
-       * @param region -
-       * @returns falsy if the region is fine to try rendering. Otherwise,
-       *  return a react node + string of text.
-       *  string of text describes why it cannot be rendered
-       *  react node allows user to force load at current setting
-       */
       regionCannotBeRendered(_region: Region) {
-        // @ts-expect-error
         return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
       },
     }))

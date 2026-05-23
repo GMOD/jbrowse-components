@@ -123,6 +123,13 @@ export function createBaseTrackModel(
       /**
        * #getter
        */
+      get activeDisplay() {
+        return self.displays[0]
+      },
+
+      /**
+       * #getter
+       */
       get viewMenuActions(): MenuItem[] {
         return self.displays.flatMap(d => d.viewMenuActions)
       },

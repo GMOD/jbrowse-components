@@ -1,6 +1,5 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -18,7 +17,12 @@ export function getDisplayStr(totalBytes: number) {
 // stabilize clipid under test for snapshot
 export function getId(id: string, index: string | number) {
   const notJest = typeof jest === 'undefined'
-  return ['clip', notJest ? id : 'jest', index, notJest ? Math.random() : '']
+  return [
+    'clip',
+    notJest ? id : 'jest',
+    String(index),
+    notJest ? Math.random() : '',
+  ]
     .filter(f => !!f)
     .join('-')
 }
@@ -46,11 +50,6 @@ export async function getFeatureDensityStatsPre(self: {
       {
         regions,
         adapterConfig,
-        statusCallback: (message: string) => {
-          if (isAlive(self)) {
-            self.setStatusMessage(message)
-          }
-        },
       },
       { rpcDriverName: effectiveRpcDriverName },
     )

@@ -1,6 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import {
+  AssemblySelector,
+  ErrorBanner,
+  RefNameAutocomplete,
+} from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
@@ -13,11 +18,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete.tsx'
-import { handleSelectedRegion, navToOption } from '../../searchUtils.ts'
+import { fetchResults, navigateToSelectedOption } from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -37,7 +40,8 @@ const LinearGenomeViewImportForm = observer(
   function LinearGenomeViewImportForm({ model }: { model: LGV }) {
     const { classes } = useStyles()
     const session = getSession(model)
-    const { assemblyNames, assemblyManager } = session
+    const { assemblyNames, assemblyManager, textSearchManager } = session
+    const { rankSearchResults } = model
     const { initialized, error } = model
     const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
     const [option, setOption] = useState<BaseResult>()
@@ -46,26 +50,16 @@ const LinearGenomeViewImportForm = observer(
       ? assembly?.error
       : 'No configured assemblies'
     const displayError = assemblyError || error
-    const [value, setValue] = useState('')
+    const [userValue, setUserValue] = useState<string | null>(null)
     const regions = assembly?.regions
     const assemblyLoaded = !!regions
-    const r0 = regions ? regions[0]?.refName || '' : ''
+    const r0 = regions?.[0]?.refName ?? ''
+    const value = userValue ?? r0
+    const searchScope = model.searchScope(selectedAsm)
 
-    // useEffect resets to an "initial state" of displaying first region from
-    // assembly after assembly change. needs to react to selectedAsm as well as
-    // r0 because changing assembly will run setValue('') and then r0 may not
-    // change if assembly names are the same across assemblies, but it still
-    // needs to be reset
-    /* biome-ignore lint/correctness/useExhaustiveDependencies: */
-    useEffect(() => {
-      setValue(r0)
-    }, [r0, selectedAsm])
-
-    // implementation notes:
-    // having this wrapped in a form allows intuitive use of enter key to submit
     return (
       <div className={classes.container}>
-        {displayError ? <ErrorMessage error={displayError} /> : null}
+        {displayError ? <ErrorBanner error={displayError} /> : null}
         {initialized ? (
           <Container className={classes.importFormContainer}>
             <form
@@ -73,30 +67,12 @@ const LinearGenomeViewImportForm = observer(
                 event.preventDefault()
                 model.setError(undefined)
                 if (value) {
-                  // has it's own error handling
                   try {
-                    if (
-                      option?.getDisplayString() === value &&
-                      option.hasLocation()
-                    ) {
-                      await navToOption({
-                        option,
-                        model,
-                        assemblyName: selectedAsm,
-                      })
-                    } else if (option?.results?.length) {
-                      model.setSearchResults(
-                        option.results,
-                        option.getLabel(),
-                        selectedAsm,
-                      )
-                    } else if (assembly) {
-                      await handleSelectedRegion({
-                        input: value,
-                        assembly,
-                        model,
-                      })
-                    }
+                    await navigateToSelectedOption({
+                      option: option ?? new BaseResult({ label: value }),
+                      model,
+                      assemblyName: selectedAsm,
+                    })
                   } catch (e) {
                     console.error(e)
                     session.notify(`${e}`, 'warning')
@@ -113,6 +89,8 @@ const LinearGenomeViewImportForm = observer(
                   <AssemblySelector
                     onChange={val => {
                       setSelectedAsm(val)
+                      setUserValue(null)
+                      setOption(undefined)
                     }}
                     localStorageKey="lgv"
                     session={session}
@@ -124,12 +102,29 @@ const LinearGenomeViewImportForm = observer(
                     <CloseIcon style={{ color: 'red' }} />
                   ) : assemblyLoaded ? (
                     <FormControl>
-                      <ImportFormRefNameAutocomplete
+                      <RefNameAutocomplete
+                        fetchResults={queryString =>
+                          fetchResults({
+                            queryString,
+                            assembly,
+                            textSearchManager,
+                            rankSearchResults,
+                            searchScope,
+                          })
+                        }
+                        session={session}
+                        assemblyName={selectedAsm}
                         value={value}
-                        setValue={setValue}
-                        selectedAsm={selectedAsm}
-                        setOption={setOption}
-                        model={model}
+                        minWidth={270}
+                        onChange={v => {
+                          setUserValue(v)
+                          setOption(undefined)
+                        }}
+                        onSelect={opt => {
+                          setOption(opt)
+                          setUserValue(opt.getDisplayString())
+                        }}
+                        helperText="Enter sequence name, feature name, or location"
                       />
                     </FormControl>
                   ) : (

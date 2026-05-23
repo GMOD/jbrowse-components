@@ -62,7 +62,8 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       get assemblies(): { sequence: { trackId: string } }[] {
         return self.jbrowse.assemblies
       },
-
+    }))
+    .views(self => ({
       /**
        * #method
        * Method to get tracks by ID. Includes tracks from connections if present.
@@ -87,7 +88,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             return [hydrated.trackId, hydrated]
           }),
           // Include assembly sequence tracks so they can be resolved by trackId
-          ...this.assemblies.map(a => [a.sequence.trackId, a.sequence]),
+          ...self.assemblies.map(a => [a.sequence.trackId, a.sequence]),
           // Include temporary assembly sequence tracks
           ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
           // Include connection tracks

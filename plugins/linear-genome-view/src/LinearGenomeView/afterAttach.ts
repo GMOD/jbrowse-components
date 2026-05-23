@@ -56,10 +56,7 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
               if (!asm) {
                 throw new Error('Assembly not found')
               }
-              await self.navToSearchString({
-                input: init.loc,
-                assembly: asm,
-              })
+              await self.navToLocString(init.loc, init.assembly)
             } else {
               self.showAllRegionsInAssembly(init.assembly)
             }
@@ -69,7 +66,7 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
           }
 
           if (init.tracks) {
-            const idsNotFound = [] as string[]
+            const idsNotFound: string[] = []
             for (const t of init.tracks) {
               try {
                 if (typeof t === 'string') {
@@ -179,7 +176,7 @@ export function setupCoarseDynamicBlocksAutorun(self: LinearGenomeViewModel) {
     autorun(
       function coarseDynamicBlocksAutorun() {
         if (self.initialized) {
-          self.setCoarseDynamicBlocks(self.dynamicBlocks)
+          self.setCoarseDynamicBlocks(self.dynamicBlocks, self.bpPerPx)
         }
       },
       { delay: 500, name: 'LGVCoarseDynamicBlocks' },
@@ -202,12 +199,14 @@ export function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
           colorByCDS,
           showTrackOutlines,
           trackLabels,
+          scrollZoom,
         } = self
         localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
         localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
         localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
         localStorageSetItem('lgv-showTrackOutlines', s(showTrackOutlines))
         localStorageSetItem('lgv-trackLabels', trackLabels)
+        localStorageSetItem('lgv-scrollZoom', s(scrollZoom))
       },
       { name: 'LGVLocalStorage' },
     ),
