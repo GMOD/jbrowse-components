@@ -1,4 +1,4 @@
-import { fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 
 import {
   createView,
@@ -40,12 +40,8 @@ test('export svg of reversed region with gene labels', async () => {
   // Open gff3tabix_genes track which has labels
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
 
-  // Wait for the canvas to render first
-  await findByTestId(
-    'prerendered_canvas_{volvox}ctgA:4138..11781[rev]-0-reversed_done',
-    {},
-    { timeout: 30000 },
-  )
+  // Wait for at least one canvas block to finish rendering
+  await screen.findAllByTestId(/prerendered_canvas.*done/, {}, { timeout: 30000 })
 
   await exportAndVerifySvg({
     findByTestId,

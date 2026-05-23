@@ -79,6 +79,7 @@ async function loadRefNameMap(
     'CoreGetRefNames',
     {
       adapterConfig: adapterConfig as Record<string, unknown>,
+      assemblyName: assembly.name,
       sequenceAdapter: sequenceAdapter as Record<string, unknown> | undefined,
       stopToken,
     },

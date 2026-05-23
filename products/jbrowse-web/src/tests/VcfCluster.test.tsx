@@ -46,7 +46,6 @@ test('opens a vcf track and clusters genotypes', async () => {
   await waitFor(() => {
     expect(view.tracks[0].displays[0].hierarchy).toBeTruthy()
   }, delay)
-  fireEvent.click((await findAllByText('Force load', ...opts))[0]!)
 
   expectCanvasMatch(
     (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,

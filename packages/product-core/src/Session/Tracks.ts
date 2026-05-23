@@ -1,4 +1,4 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { getEnv, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
 import { ReferenceManagementSessionMixin } from './ReferenceManagement.ts'
@@ -9,6 +9,29 @@ import type {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+
+// Hydration cache for frozen track configs (jbrowse.tracks is types.frozen for
+// large-tracklist performance). Keyed by the frozen object itself so the entry
+// is dropped when the ref is replaced (e.g. updateTrackConf).
+const hydrationCache = new WeakMap<object, AnyConfigurationModel>()
+
+function hydrateTrack(
+  t: AnyConfigurationModel | object,
+  pluginManager: PluginManager,
+  env: unknown,
+) {
+  if (isStateTreeNode(t)) {
+    return t as AnyConfigurationModel
+  }
+  let inst = hydrationCache.get(t)
+  if (!inst) {
+    inst = pluginManager
+      .pluggableConfigSchemaType('track')
+      .create(t, env) as AnyConfigurationModel
+    hydrationCache.set(t, inst)
+  }
+  return inst
+}
 
 /**
  * #stateModel TracksManagerSessionMixin
@@ -57,8 +80,12 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
               }[])
             : []
 
+        const env = getEnv(self)
         return Object.fromEntries([
-          ...this.tracks.map(t => [t.trackId, t]),
+          ...self.tracks.map(t => {
+            const hydrated = hydrateTrack(t, pluginManager, env)
+            return [hydrated.trackId, hydrated]
+          }),
           // Include assembly sequence tracks so they can be resolved by trackId
           ...this.assemblies.map(a => [a.sequence.trackId, a.sequence]),
           // Include temporary assembly sequence tracks
@@ -68,6 +95,16 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             c.tracks.map(t => [t.trackId, t]),
           ),
         ])
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * MobX-cached map of trackId → config for all tracks, assemblies, and
+       * connections. Recomputes only when dependencies change.
+       */
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return self.getTracksById()
       },
     }))
     .actions(self => ({
