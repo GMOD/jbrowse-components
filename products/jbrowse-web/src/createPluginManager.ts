@@ -8,8 +8,25 @@ import { loadSessionSpec } from './loadSessionSpec.ts'
 import JBrowseRootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
-import type { SessionLoaderModel } from './SessionLoader.ts'
 import type { PluginRecord } from '@jbrowse/core/PluginLoader'
+
+// Structural read-only view of SessionLoader. Kept narrow so it can be
+// satisfied both by an Instance<SessionLoader> and by `self` inside an MST
+// action chain (which doesn't yet expose the full action set).
+export interface PluginManagerSource {
+  readonly runtimePlugins?: readonly PluginRecord[]
+  readonly sessionPlugins?: readonly PluginRecord[]
+  readonly configSnapshot?: Record<string, unknown>
+  readonly configPath?: string
+  readonly adminKey?: string
+  readonly sessionError: unknown
+  readonly sessionSpec?: Record<string, unknown>
+  readonly sessionSnapshot?: Record<string, unknown>
+  readonly hubSpec?: Record<string, unknown>
+  readonly sessionName?: string
+  readonly initialTimestamp: number
+  readonly sessionQuery?: string
+}
 
 function asPluginRecord({ plugin: P, definition }: PluginRecord) {
   return {
@@ -28,7 +45,7 @@ function formatSessionError(e: unknown) {
 }
 
 export function createPluginManager(
-  model: SessionLoaderModel,
+  model: PluginManagerSource,
   reloadPluginManagerCallback: (
     configSnapshot: Record<string, unknown>,
     sessionSnapshot: Record<string, unknown>,

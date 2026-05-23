@@ -1,9 +1,10 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
 import { createElementId } from '@jbrowse/core/util/types/mst'
-import { types } from '@jbrowse/mobx-state-tree'
+import { destroy, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { openDB } from 'idb'
 
+import { createPluginManager } from './createPluginManager.ts'
 import { readSessionFromDynamo } from './sessionSharing.ts'
 import {
   addRelativeUris,
@@ -13,8 +14,14 @@ import {
 } from './util.ts'
 
 import type { SessionDB, SessionTriagedInfo } from './types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+type ReloadPluginManagerCallback = (
+  configSnapshot: Record<string, unknown>,
+  sessionSnapshot: Record<string, unknown>,
+) => void
 
 const SessionLoader = types
   .model({
@@ -125,6 +132,16 @@ const SessionLoader = types
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     configError: undefined as unknown,
+    /**
+     * #volatile
+     */
+    pluginManager: undefined as PluginManager | undefined,
+    /**
+     * #volatile
+     */
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    pluginManagerError: undefined as unknown,
   }))
   .views(self => ({
     /**
@@ -270,6 +287,54 @@ const SessionLoader = types
      */
     setSessionSnapshot(snap: Record<string, unknown>) {
       self.sessionSnapshot = snap
+    },
+    /**
+     * #action
+     */
+    setPluginManager(pm: PluginManager | undefined) {
+      self.pluginManager = pm
+    },
+    /**
+     * #action
+     */
+    setPluginManagerError(error: unknown) {
+      self.pluginManagerError = error
+    },
+    /**
+     * #action
+     * Builds the pluginManager (and rootModel) from the loaded config/session.
+     * Idempotent: a second call while one already exists is a no-op.
+     */
+    buildPluginManager(reloadCallback: ReloadPluginManagerCallback) {
+      if (self.pluginManager) {
+        return
+      }
+      try {
+        self.pluginManager = createPluginManager(self, reloadCallback)
+      } catch (e) {
+        console.error(e)
+        self.pluginManagerError = e
+      }
+    },
+    /**
+     * #action
+     * Tears down the rootModel. Saves the live session snapshot back to the
+     * loader first so HMR (which reuses this loader) can restore it.
+     */
+    disposePluginManager() {
+      const pm = self.pluginManager
+      if (pm?.rootModel) {
+        const { rootModel } = pm
+        const { session } = rootModel
+        // isAlive check crucial because if not a 'dead' session is
+        // snapshotted and the safeReference in activeWidgets is stripped from
+        // the snapshot (xref #5414)
+        if (session && isAlive(session)) {
+          self.sessionSnapshot = getSnapshot(session)
+        }
+        destroy(rootModel)
+      }
+      self.pluginManager = undefined
     },
   }))
   .actions(self => ({

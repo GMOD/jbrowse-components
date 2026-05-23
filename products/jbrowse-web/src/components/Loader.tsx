@@ -1,16 +1,17 @@
 /**
- * The pluginManager/rootModel can be destroyed and recreated without a full
- * page reload. Plugin install passes the session explicitly via the
- * reloadPluginManager callback. HMR uses a different mechanism: the useEffect
- * cleanup saves the current session to the loader before destroying, so
- * createPluginManager can restore it.
+ * pluginManager/rootModel lifecycle: the SessionLoader MST model owns build
+ * and dispose. React just kicks off the build when the loader becomes ready
+ * and disposes on unmount. reloadPluginManager swaps the loader instance; the
+ * key on Renderer changes, React remounts, and the new loader builds cleanly.
+ * HMR reuses the same loader — disposePluginManager writes the live session
+ * back to the loader so the next build can restore it.
  */
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 
 import { setGpuOverride } from '@jbrowse/core/gpu/gpuDevice'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { destroy, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import '@fontsource/roboto'
@@ -18,31 +19,16 @@ import '@fontsource/roboto'
 import JBrowse from './JBrowse.tsx'
 import Loading from './Loading.tsx'
 import SessionLoader from '../SessionLoader.ts'
-import { createPluginManager } from '../createPluginManager.ts'
 import factoryReset from '../factoryReset.ts'
 import { deleteQueryParams, readQueryParams } from '../useQueryParam.ts'
 
 import type { SessionLoaderModel } from '../SessionLoader.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 
 setGpuOverride(
   new URLSearchParams(window.location.search).get('renderer') ?? null,
 )
 
 const isJest = typeof jest !== 'undefined'
-
-function createReloadedLoader(
-  loader: SessionLoaderModel,
-  configSnapshot: Record<string, unknown>,
-  sessionSnapshot: Record<string, unknown>,
-) {
-  return SessionLoader.create({
-    ...getSnapshot(loader),
-    initialTimestamp: Date.now(),
-    configSnapshot,
-    sessionSnapshot,
-  })
-}
 
 const SessionTriaged = lazy(() => import('./SessionTriaged.tsx'))
 const LoaderErrorBanner = lazy(() => import('./LoaderErrorBanner.tsx'))
@@ -65,7 +51,7 @@ export function Loader({
 }: {
   initialTimestamp?: number
 }) {
-  const [loader] = useState(() => {
+  const [loader, setLoader] = useState(() => {
     const {
       config,
       session,
@@ -114,68 +100,54 @@ export function Loader({
     })
   })
 
-  return <Renderer loader={loader} />
+  const reloadPluginManager = (
+    configSnapshot: Record<string, unknown>,
+    sessionSnapshot: Record<string, unknown>,
+  ) => {
+    setLoader(prev =>
+      SessionLoader.create({
+        ...getSnapshot(prev),
+        initialTimestamp: Date.now(),
+        configSnapshot,
+        sessionSnapshot,
+      }),
+    )
+  }
+
+  return (
+    <Renderer
+      key={loader.initialTimestamp}
+      loader={loader}
+      reloadPluginManager={reloadPluginManager}
+    />
+  )
 }
 
 const Renderer = observer(function Renderer({
-  loader: firstLoader,
+  loader,
+  reloadPluginManager,
 }: {
   loader: SessionLoaderModel
+  reloadPluginManager: (
+    configSnapshot: Record<string, unknown>,
+    sessionSnapshot: Record<string, unknown>,
+  ) => void
 }) {
-  // Store loader in state so reloadPluginManager can replace it
-  const [loader, setLoader] = useState(firstLoader)
-  const [pluginManager, setPluginManager] = useState<PluginManager | undefined>(
-    undefined,
-  )
-
-  // Called by rootModel when plugins are installed/removed. Creates a new
-  // loader with the updated config and current session, triggering a full
-  // pluginManager recreation.
-  const reloadPluginManager = useCallback(
-    (
-      configSnapshot: Record<string, unknown>,
-      sessionSnapshot: Record<string, unknown>,
-    ) => {
-      setLoader(createReloadedLoader(loader, configSnapshot, sessionSnapshot))
-      setPluginManager(undefined)
-    },
-    [loader],
-  )
-  const { configError, ready, sessionTriaged } = loader
-  const [error, setError] = useState<unknown>()
+  const { configError, pluginManager, pluginManagerError, ready, sessionTriaged } =
+    loader
 
   useEffect(() => {
-    let pm: PluginManager | undefined
     if (ready) {
-      try {
-        pm = createPluginManager(loader, reloadPluginManager)
-        setPluginManager(pm)
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      }
+      loader.buildPluginManager(reloadPluginManager)
     }
     return () => {
-      if (pm?.rootModel && !isJest) {
-        const { rootModel } = pm
-        const session = rootModel.session
-        // Note: isAlive check crucial because if not a 'dead' session is
-        // snapshotted and the safeReference in activeWidgets is stripped from
-        // the snapshot (xref #5414)
-        if (session && isAlive(session)) {
-          // Save session before destroying so it can be restored on next
-          // effect run. This is essential for HMR where the same loader is
-          // reused. For plugin reload via reloadPluginManagerCallback, this
-          // writes to the old loader (captured in this closure) which is
-          // discarded - the new loader already has sessionSnapshot pre-set.
-          loader.setSessionSnapshot(getSnapshot(session))
-        }
-        destroy(rootModel)
+      if (!isJest) {
+        loader.disposePluginManager()
       }
     }
   }, [ready, loader, reloadPluginManager])
 
-  const err = configError || error
+  const err = configError || pluginManagerError
   if (err) {
     return (
       <Suspense fallback={null}>
