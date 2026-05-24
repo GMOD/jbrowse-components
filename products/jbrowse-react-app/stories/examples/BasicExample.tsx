@@ -67,6 +67,7 @@ export const BasicExample = () => {
                 assembly: 'volvox',
                 loc: 'ctgA:1..50000',
                 tracks: ['volvox_cram'],
+                tracklist: true,
               },
             },
           ],
