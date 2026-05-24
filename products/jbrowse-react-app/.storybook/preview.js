@@ -1,3 +1,5 @@
+import 'dockview-react/dist/styles/dockview.css'
+
 export const parameters = {
   options: {
     storySort: {

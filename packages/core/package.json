@@ -131,7 +131,6 @@
     "./util/tss-react": "./src/util/tss-react/index.ts",
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
-    "./util/useGpuModelLifecycle": "./src/util/useGpuModelLifecycle.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./util/nanoid": "./src/util/nanoid.ts",
@@ -165,7 +164,7 @@
     "@gmod/bgzf-filehandle": "^6.0.26",
     "@gmod/http-range-fetcher": "^5.0.7",
     "@jbrowse/jexl": "^3.0.2",
-    "@jbrowse/mobx-state-tree": "^5.8.6",
+    "@jbrowse/mobx-state-tree": "^5.8.7",
     "@jbrowse/quick-lru": "^7.3.5",
     "@leeoniya/ufuzzy": "^1.0.19",
     "@mui/icons-material": "^9.0.1",
@@ -646,10 +645,6 @@
         "types": "./esm/util/types/mst.d.ts",
         "import": "./esm/util/types/mst.js"
       },
-      "./util/useGpuModelLifecycle": {
-        "types": "./esm/util/useGpuModelLifecycle.d.ts",
-        "import": "./esm/util/useGpuModelLifecycle.js"
-      },
       "./util/useMeasure": {
         "types": "./esm/util/useMeasure.d.ts",
         "import": "./esm/util/useMeasure.js"
@@ -1017,9 +1012,6 @@
         ],
         "util/types/mst": [
           "esm/util/types/mst.d.ts"
-        ],
-        "util/useGpuModelLifecycle": [
-          "esm/util/useGpuModelLifecycle.d.ts"
         ],
         "util/useMeasure": [
           "esm/util/useMeasure.d.ts"

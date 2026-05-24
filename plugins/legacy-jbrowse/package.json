@@ -32,7 +32,7 @@
   "dependencies": {
     "@gmod/nclist": "^3.0.10",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.8.6",
+    "@jbrowse/mobx-state-tree": "^5.8.7",
     "generic-filehandle2": "^2.1.9",
     "mobx": "^6.15.3",
     "rxjs": "^7.8.2",

@@ -10,6 +10,15 @@ This site contains the [Storybook](https://storybook.js.org/) docs for the
 The component makes it possible to embed the full JBrowse 2 application in any
 React application.
 
+## Required CSS import
+
+The component uses [dockview](https://dockview.dev/) for its layout. You must
+import its stylesheet in your app's entry point:
+
+```js
+import 'dockview-react/dist/styles/dockview.css'
+```
+
 ## Using the docs
 
 This is an example of using the @jbrowse/react-app2 as a component:

@@ -32,7 +32,7 @@
   "dependencies": {
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.8.6",
+    "@jbrowse/mobx-state-tree": "^5.8.7",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@mui/icons-material": "^9.0.1",

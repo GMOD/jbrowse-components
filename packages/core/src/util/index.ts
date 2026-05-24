@@ -3,11 +3,7 @@ import { useEffect, useState } from 'react'
 
 import { unzip } from '@gmod/bgzf-filehandle'
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import {
-  getSnapshot,
-  isAlive,
-  isStateTreeNode,
-} from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
@@ -21,13 +17,10 @@ import { isUriLocation } from './types/index.ts'
 import type { ParsedLocString } from './locString.ts'
 import type { Feature } from './simpleFeature.ts'
 import type { StopToken } from './stopToken.ts'
-import type {
-  AssemblyManager,
-  Region,
-} from './types/index.ts'
+import type { AssemblyManager, Region } from './types/index.ts'
 import type { Region as MUIRegion } from './types/mst.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 export * from './types/index.ts'
