@@ -19,80 +19,60 @@ import its stylesheet in your app's entry point:
 import 'dockview-react/dist/styles/dockview.css'
 ```
 
-## Using the docs
-
-This is an example of using the @jbrowse/react-app2 as a component:
+## Live example
 
 <Story of={BasicExample} />
 
-You can open tracks and interact with it as you would in your app. Click the
-code button on the bottom right to see the source for the story being viewed.
+Click the code button on the bottom right to see the source for this story.
 
-## An overview of the @jbrowse/react-app2 API
-
-The @jbrowse/react-app2 component relies on the same
-[configuration](https://jbrowse.org/jb2/docs/config_guide) as the main JB2 app.
-
-The `createViewState` constructor accepts a config object in the same format as
-a `config.json` for `@jbrowse/web`. Unlike `@jbrowse/web`, it does not fetch
-`config.json` automatically; you must fetch it manually if needed.
-
-Config structure:
-
-```json
-{
-  "configuration": {
-    /* global configs here, e.g. theme */
-  },
-  "assemblies": [
-    /* list of assembly configurations */
-  ],
-  "tracks": [
-    /* track configurations */
-  ],
-  "defaultSession": {
-    /* optional: which views and tracks to open on load */
-  }
-}
-```
-
-## Opening a location on startup with `init`
+## Quick start with `init`
 
 The `defaultSession.views[*].init` shorthand is the recommended way to open a
-specific location with tracks on startup. It avoids constructing the verbose
-internal session format:
+specific location with tracks on startup:
 
 ```js
-defaultSession: {
-  name: 'My session',
-  views: [{
-    id: 'view1',
-    type: 'LinearGenomeView',
-    init: {
-      assembly: 'hg38',
-      loc: 'chr1:1,000,000-1,100,000',
-      tracks: ['my_genes_track'],
+import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
+
+const state = createViewState({
+  config: {
+    assemblies: [
+      /* ... */
+    ],
+    tracks: [
+      /* ... */
+    ],
+    defaultSession: {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          init: {
+            assembly: 'hg38',
+            loc: 'chr1:1,000,000-1,100,000',
+            tracks: ['my_genes_track'],
+          },
+        },
+      ],
     },
-  }],
-},
+  },
+})
+
+return <JBrowseApp viewState={state} />
 ```
 
-This works for all view types: `LinearSyntenyView`, `DotplotView`, etc., with
-their own `init` fields (see the
-[Synteny Views](?path=/docs/synteny-views--docs) story for an example).
+This works for all view types — see
+[Synteny Views](?path=/docs/synteny-views--docs) for a `LinearSyntenyView`
+example. The full list of `createViewState` options is in the
+[API Reference](?path=/docs/api-reference--docs).
 
-## Additional resources
-
-Check out the rest of the stories to get a better feel for what the component
-can do:
+## More examples
 
 - [API Reference](?path=/docs/api-reference--docs) — all `createViewState`
   options and state methods
+- [Real Data: Human GRCh38](?path=/docs/real-data-human-grch38--docs)
 - [Synteny Views](?path=/docs/synteny-views--docs) — linear synteny and dotplot
 - [Adding Tracks Programmatically](?path=/docs/adding-tracks-programmatically--docs)
 - [Using Plugins](?path=/docs/using-plugins--docs)
 - [Theming](?path=/docs/theming--docs) — dark mode and custom colors
-- [Real Data: Human GRCh38](?path=/docs/real-data-human-grch38--docs)
 - [Importing config.json files](?path=/docs/importing-config-json-files--docs)
 - [Launching Views via Extension Points](?path=/docs/launching-views-via-extension-points--docs)
 - [Source code for all storybook examples](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-app/stories)

@@ -110,6 +110,7 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-refresh": "^0.18.0",
+    "remark-gfm": "^4.0.1",
     "rimraf": "^6.1.3",
     "rxjs": "^7.8.2",
     "semver": "^7.8.1",
