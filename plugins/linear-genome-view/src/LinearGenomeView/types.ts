@@ -23,6 +23,7 @@ export interface ExportSvgOptions {
   trackLabels?: string
   themeName?: string
   showGridlines?: boolean
+  createCanvas?: (width: number, height: number) => HTMLCanvasElement
 }
 
 export interface HighlightType {

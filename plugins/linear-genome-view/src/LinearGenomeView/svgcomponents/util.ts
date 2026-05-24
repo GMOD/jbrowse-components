@@ -7,6 +7,8 @@ interface Track {
   displays: Display[]
 }
 
+export const trackSpacing = 2
+
 export function totalHeight(
   tracks: Track[],
   textHeight: number,
@@ -16,7 +18,8 @@ export function totalHeight(
     tracks.map(
       t =>
         t.displays[0]!.height +
-        (['none', 'left'].includes(trackLabels) ? 0 : textHeight),
+        (['none', 'left'].includes(trackLabels) ? 0 : textHeight) +
+        trackSpacing,
     ),
   )
 }

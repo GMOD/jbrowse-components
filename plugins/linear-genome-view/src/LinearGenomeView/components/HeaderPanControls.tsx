@@ -3,7 +3,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import { Button, alpha } from '@mui/material'
 
-import { SPACING } from '../consts.ts'
+import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -11,7 +11,7 @@ type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
   panButton: {
     background: alpha(theme.palette.background.paper, 0.8),
-    color: theme.palette.text.primary,
+    height: WIDGET_HEIGHT,
     margin: SPACING,
   },
 }))

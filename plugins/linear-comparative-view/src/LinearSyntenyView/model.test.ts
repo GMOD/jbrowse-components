@@ -29,6 +29,14 @@ describe('LinearSyntenyViewInit type', () => {
     expect(init.views[0]?.tracks).toEqual(['genes', 'repeats'])
   })
 
+  test('init type accepts flat string[] shorthand for level-0 tracks', () => {
+    const init: LinearSyntenyViewInit = {
+      views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],
+      tracks: ['hg38_vs_mm39_synteny'],
+    }
+    expect(init.tracks).toEqual(['hg38_vs_mm39_synteny'])
+  })
+
   test('init type accepts synteny tracks at top level (per-level)', () => {
     const init: LinearSyntenyViewInit = {
       views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],

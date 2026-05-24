@@ -23,6 +23,7 @@ type LGV = LinearGenomeViewModel
 // use initializer function to avoid having console.warn jest.fn in a global
 function initialize() {
   console.warn = jest.fn()
+  console.error = jest.fn()
   // a stub linear genome view state model that only accepts base track types.
   // used in unit tests.
   const stubManager = new PluginManager()
@@ -66,6 +67,7 @@ function initialize() {
     .volatile(() => ({
       regions: volvoxDisplayedRegions,
       initialized: true,
+      allRefNamesWithLowerCase: new Set(['ctgA', 'ctgB', 'ctga', 'ctgb']),
     }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
@@ -80,6 +82,16 @@ function initialize() {
     .model({
       assemblies: types.map(Assembly),
     })
+    .views(self => ({
+      get assemblyNameMap() {
+        return Object.fromEntries(
+          [...self.assemblies.entries()].map(([name, assembly]) => [
+            name,
+            assembly,
+          ]),
+        )
+      },
+    }))
     .actions(self => ({
       isValidRefName(str: string) {
         return str === 'ctgA' || str === 'ctgB'
@@ -108,6 +120,14 @@ function initialize() {
         },
       }),
     })
+    .views(() => ({
+      getTracksById() {
+        return {}
+      },
+      get tracksById() {
+        return this.getTracksById()
+      },
+    }))
     .actions(self => ({
       setView(view: LGV) {
         self.view = view
@@ -120,6 +140,115 @@ function initialize() {
 
   return { Session, LinearGenomeModel, Assembly }
 }
+
+// Multi-region zoom: inter-region padding contributes paddingWidth * bpPerPx
+// of virtual-bp per gutter, so the naive (offsetPx + cursor_x) * bpPerPx zoom
+// anchor drifts ~numPaddings * paddingWidth * Δ(bpPerPx) bp per zoom step.
+// Bug isn't flipped-specific — flipping just makes it visible.
+describe.each([
+  { name: 'unflipped', reversed: false },
+  { name: 'flipped', reversed: true },
+])(
+  'zoomTo anchors on cursor bp in multi-region view ($name)',
+  ({ reversed }) => {
+    it('preserves bp under cursor across zoom steps', () => {
+      const { Session, LinearGenomeModel } = initialize()
+      const model = Session.create({ configuration: {} }).setView(
+        LinearGenomeModel.create({
+          id: `testMultiZoom-${reversed}`,
+          type: 'LinearGenomeView',
+          tracks: [{ name: 'foo', type: 'BasicTrack' }],
+        }),
+      )
+      model.setWidth(800)
+      model.setDisplayedRegions([
+        {
+          assemblyName: 'volvox',
+          refName: 'ctgA',
+          start: 0,
+          end: 1e6,
+          reversed,
+        },
+        {
+          assemblyName: 'volvox',
+          refName: 'ctgB',
+          start: 0,
+          end: 1e6,
+          reversed,
+        },
+        {
+          assemblyName: 'volvox',
+          refName: 'ctgA',
+          start: 0,
+          end: 1e6,
+          reversed,
+        },
+      ])
+      model.setNewView(500, 1000)
+
+      const before = model.pxToBp(600)
+      expect(before.oob).toBe(false)
+      for (const d of [-0.05, -0.05, -0.05, -0.05]) {
+        model.zoomTo(model.bpPerPx / (1 - d), 600)
+      }
+      const after = model.pxToBp(600)
+      expect(after.refName).toEqual(before.refName)
+      expect(after.index).toEqual(before.index)
+      expect(Math.abs(after.coord - before.coord)).toBeLessThan(model.bpPerPx)
+    })
+  },
+)
+
+// Diagnostic: simulate a 30-frame scroll-zoom burst at a fixed cursor offset
+// and dump the cursor's bp position each frame. Used to characterize the
+// per-frame judder the user reports — fails if drift exceeds a tight bound,
+// so the numbers show up in the failure output.
+describe('scroll-zoom diagnostic — cursor bp stability across frames', () => {
+  it.each([
+    { name: 'single-region zoom-in at bpPerPx=10', start: 10, sign: 1 },
+    { name: 'single-region zoom-out at bpPerPx=10', start: 10, sign: -1 },
+    { name: 'single-region zoom-in at bpPerPx=1', start: 1, sign: 1 },
+    { name: 'multi-region zoom-in at bpPerPx=500', start: 500, sign: 1 },
+  ])('$name', ({ start, sign }) => {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        id: `diag-${start}-${sign}`,
+        type: 'LinearGenomeView',
+        tracks: [{ name: 'foo', type: 'BasicTrack' }],
+      }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1e6 },
+      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1e6 },
+    ])
+    model.setNewView(start, 1000)
+
+    const cursorPx = 600
+    const initial = model.pxToBp(cursorPx)
+    const samples: { bpPerPx: number; coord: number }[] = []
+
+    // mimic wheel handler: zoomAccum capped at MAX_ZOOM_RATE_PER_MS * 16.67 ≈ 0.2
+    const d = sign * 0.05
+    const ratio = d > 0 ? 1 + d : 1 / (1 - d)
+    for (let frame = 0; frame < 30; frame++) {
+      model.zoomTo(model.bpPerPx * ratio, cursorPx)
+      samples.push({
+        bpPerPx: model.bpPerPx,
+        coord: model.pxToBp(cursorPx).coord,
+      })
+    }
+
+    const maxDriftPx = Math.max(
+      ...samples.map(s => Math.abs(s.coord - initial.coord) / s.bpPerPx),
+    )
+    // Pre-fix: monotonic drift up to ~5 px at bpPerPx=1, frame-to-frame
+    // oscillation up to ~1.5 px at higher bpPerPx. With the float-offset +
+    // unrounded-scrollTo fixes, residual drift is < 1 bp / sub-pixel.
+    expect(maxDriftPx).toBeLessThan(0.2)
+  })
+})
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const { Session, LinearGenomeModel } = initialize()
@@ -526,7 +655,7 @@ test('can instantiate a model that >2 regions', () => {
   expect(model.offsetPx).toEqual(
     10000 / model.bpPerPx + model.interRegionPaddingWidth,
   )
-  // 3 regions = 2 paddings (4px), displayedRegionsTotalPx includes padding
+  // 3 regions = 2 paddings, displayedRegionsTotalPx includes padding
   expect(model.displayedRegionsTotalPx).toBeCloseTo(
     30000 / model.bpPerPx + 2 * model.interRegionPaddingWidth,
   )
@@ -761,7 +890,7 @@ describe('get sequence for selected displayed regions', () => {
     expect(singleRegion[0]!.start).toEqual(0)
     expect(singleRegion[0]!.end).toEqual(800)
   })
-  it('handles when start or end offsets are out of bounds of displayed regions', () => {
+  it('handles when both offsets are before the start of all regions', () => {
     model.setOffsets(
       {
         refName: 'ctgA',
@@ -786,12 +915,29 @@ describe('get sequence for selected displayed regions', () => {
         index: 0,
       },
     )
-    const outOfBounds = model.getSelectedRegions(
-      model.leftOffset,
-      model.rightOffset,
-    )
+    const result = model.getSelectedRegions(model.leftOffset, model.rightOffset)
+    expect(result.length).toEqual(1)
+    expect(result[0]!.refName).toEqual('ctgA')
+    expect(result[0]!.start).toEqual(0)
+  })
 
-    expect(outOfBounds.length).toEqual(1)
+  it('handles when both offsets are past the end of all regions', () => {
+    const oobAfter = {
+      refName: 'ctgB',
+      start: 0,
+      end: 6079,
+      reversed: false as const,
+      assemblyName: 'volvox',
+      oob: true,
+      index: 1,
+    }
+    const result = model.getSelectedRegions(
+      { ...oobAfter, offset: 7000, coord: 7001 },
+      { ...oobAfter, offset: 8000, coord: 8001 },
+    )
+    expect(result.length).toEqual(1)
+    expect(result[0]!.refName).toEqual('ctgB')
+    expect(result[0]!.end).toEqual(6079)
   })
 
   it('selects multiple regions with a region in between', () => {
@@ -1092,6 +1238,7 @@ test('showLoading is true when init is set and becomes false after initializatio
   await waitFor(() => {
     expect(model.initialized).toBe(true)
   })
+  expect(console.error).not.toHaveBeenCalled()
 })
 
 test('showAllRegions accounts for inter-region padding when centering', () => {
@@ -1373,6 +1520,9 @@ describe('TrackInit with display configuration', () => {
       .views(() => ({
         getTracksById() {
           return trackConfigs
+        },
+        get tracksById() {
+          return this.getTracksById()
         },
       }))
       .actions(self => ({

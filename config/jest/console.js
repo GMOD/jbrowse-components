@@ -1,32 +1,40 @@
-const originalError = console.error.bind(console)
-const originalWarn = console.warn.bind(console)
+const originalLog = console.log
+const originalError = console.error
+const originalWarn = console.warn
+
+console.log = (...args) => {
+  const r = String(args)
+  if (r.includes('SharedArrayBuffer available, using fast atomic abort')) {
+    return undefined
+  }
+  originalLog.call(console, ...args)
+}
 
 console.error = (...args) => {
+  const r = String(args)
   if (
-    typeof args[0] === 'string' &&
-    (args[0].includes('volvox.2bit_404') ||
-      args[0].includes('indexedDB') ||
-      args[0].includes('popupState') ||
-      args[0].includes('Cannot update a component') ||
-      args[0].includes('was not wrapped in act') ||
-      args[0].includes('Only HTTP(S) protocols are supported'))
+    r.includes('volvox.2bit_404') ||
+    r.includes('indexedDB') ||
+    r.includes('popupState') ||
+    r.includes('Cannot update a component') ||
+    r.includes('was not wrapped in act') ||
+    r.includes('Only HTTP(S) protocols are supported')
   ) {
     return undefined
   }
-
-  originalError(...args)
+  originalError.call(console, ...args)
 }
 
 console.warn = (...args) => {
+  const r = String(args)
   if (
-    typeof args[0] === 'string' &&
-    (args[0].includes(
-      'The `anchorEl` prop provided to the component is invalid',
-    ) ||
-      args[0].includes('unable to determine size of file'))
+    r.includes('The `anchorEl` prop provided to the component is invalid') ||
+    r.includes('[GPU] WebGPU initialization failed') ||
+    r.includes('[GPU] WebGL2 unavailable, falling back to Canvas2D') ||
+    r.includes('[GPU] WebGPU not supported in this browser') ||
+    r.includes('] init (live=')
   ) {
     return undefined
   }
-
-  originalWarn(...args)
+  originalWarn.call(console, ...args)
 }

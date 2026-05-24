@@ -1,4 +1,4 @@
-import { SimpleFeature, mergeIntervals } from '@jbrowse/core/util'
+import { SimpleFeature } from '@jbrowse/core/util'
 
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -24,7 +24,7 @@ export async function fetchFeatureByIdRpc({
 }): Promise<Feature | undefined> {
   // Fetch the feature (or parent if looking for subfeature)
   const lookupId = parentFeatureId || featureId
-  const { feature: featureData } = (await rpcManager.call(
+  const { feature: featureData } = await rpcManager.call(
     sessionId,
     'CoreGetFeatureDetails',
     {
@@ -33,15 +33,13 @@ export async function fetchFeatureByIdRpc({
       trackInstanceId: trackId,
       rendererType,
     },
-  )) as { feature: Record<string, unknown> | undefined }
+  )
 
   if (!featureData) {
     return undefined
   }
 
-  const feature = new SimpleFeature(
-    featureData as Parameters<typeof SimpleFeature.fromJSON>[0],
-  )
+  const feature = new SimpleFeature(featureData)
 
   // If looking for a subfeature, find it within the parent
   if (parentFeatureId) {
@@ -71,45 +69,6 @@ export function findSubfeatureById(
     }
   }
   return undefined
-}
-
-export function featureHasExonsOrCDS(feature: Feature) {
-  const subs = feature.get('subfeatures') ?? []
-  return subs.some(
-    (f: Feature) => f.get('type') === 'exon' || f.get('type') === 'CDS',
-  )
-}
-
-export function hasExonsOrCDS(transcripts: Feature[]) {
-  return transcripts.some(t => featureHasExonsOrCDS(t))
-}
-
-export function hasIntrons(transcripts: Feature[]) {
-  const subs = transcripts.flatMap(
-    transcript =>
-      transcript
-        .get('subfeatures')
-        ?.filter(
-          (f: Feature) => f.get('type') === 'exon' || f.get('type') === 'CDS',
-        ) ?? [],
-  )
-  if (subs.length < 2) {
-    return false
-  }
-  const merged = mergeIntervals(
-    subs.map((f: Feature) => ({ start: f.get('start'), end: f.get('end') })),
-    0,
-  )
-  return merged.length > 1
-}
-
-export function getTranscripts(feature?: Feature): Feature[] {
-  if (!feature) {
-    return []
-  }
-  return featureHasExonsOrCDS(feature)
-    ? [feature]
-    : (feature.get('subfeatures') ?? [])
 }
 
 /**

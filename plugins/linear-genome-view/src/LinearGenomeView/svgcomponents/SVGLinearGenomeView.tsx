@@ -11,7 +11,6 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import { isReadyOrHasError } from '../svgExportUtil.ts'
 import SVGBackground from './SVGBackground.tsx'
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHeader from './SVGHeader.tsx'
@@ -42,25 +41,32 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
 
   const theme = allThemes?.()[themeName]
   const jbrowseTheme = createJBrowseTheme(theme)
-  const { width, pinnedTracks, unpinnedTracks, tracks, showCytobands } = model
+  const { width, pinnedTracks, unpinnedTracks, showCytobands } = model
+  const visibleTracks = [...pinnedTracks, ...unpinnedTracks].filter(
+    t => !t.minimized,
+  )
   const shift = 50
   const c = +showCytobands * cytobandHeight
   const offset = headerHeight + rulerHeight + c + 10
-  const height = totalHeight(tracks, textHeight, trackLabels) + offset + 100
+  const height =
+    totalHeight(visibleTracks, textHeight, trackLabels) + offset + 100
 
   // Calculate maximum legend width across all displays
   const legendWidth = max(
-    [...pinnedTracks, ...unpinnedTracks].map(track => {
+    visibleTracks.map(track => {
       const display = track.displays[0]
       return display?.svgLegendWidth?.(jbrowseTheme) ?? 0
     }),
     0,
   )
 
+  // Every display's `renderSvg` owns its own readiness wait — block
+  // renderers await their feature-density stats inside
+  // `renderBaseLinearDisplaySvg`, GPU renderers await their data/layout
+  // inside their own `renderSvg` implementations.
   const displayResults = await Promise.all(
-    [...pinnedTracks, ...unpinnedTracks].map(async track => {
+    visibleTracks.map(async track => {
       const display = track.displays[0]
-      await when(() => isReadyOrHasError(display))
       return {
         track,
         result: await display.renderSvg({ ...opts, theme, legendWidth }),
@@ -69,18 +75,18 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   )
   const trackLabelMaxLen =
     max(
-      tracks.map(t =>
+      visibleTracks.map(t =>
         measureText(getTrackName(t.configuration, session), fontSize),
       ),
       0,
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset + legendWidth
-  const tracksHeight = totalHeight(tracks, textHeight, trackLabels)
+  const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(theme)}>
+    <ThemeProvider theme={jbrowseTheme}>
       <Wrapper>
         <svg
           width={w}
@@ -112,6 +118,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
                 displayResults={displayResults}
                 trackLabels={trackLabels}
                 trackLabelOffset={trackLabelOffset}
+                leftBuffer={shift}
               />
             </g>
           </g>

@@ -17,8 +17,13 @@ import {
   springAnimate,
   sum,
 } from '@jbrowse/core/util'
-import { bpToPx, moveTo, pxToBp } from '@jbrowse/core/util/Base1DUtils'
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import {
+  bpToPx,
+  computeMoveToLayout,
+  moveTo,
+  offsetBpToPx,
+  pxToBp,
+} from '@jbrowse/core/util/Base1DUtils'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import {
@@ -40,6 +45,7 @@ import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
   INTER_REGION_PADDING_WIDTH,
+  MINIMIZED_TRACK_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from './consts.ts'
@@ -48,13 +54,13 @@ import {
   buildMenuItems,
   buildRubberBandMenuItems,
   buildRubberbandClickMenuItems,
+  cloneMenuItems,
   rewriteOnClicks,
 } from './menuItems.ts'
 import {
   calculateVisibleLocStrings,
   expandRegion,
   generateLocations,
-  parseLocStrings,
 } from './util.ts'
 
 import type {
@@ -67,7 +73,6 @@ import type {
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
 import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -94,6 +99,8 @@ function getCenteredOffsetPx(contentPx: number, viewportPx: number) {
  * extends
  * - [BaseViewModel](../baseviewmodel)
  */
+export const AUTO_FORCE_LOAD_BP = 20_000
+
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
@@ -190,7 +197,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         trackLabels: types.optional(
           types.string,
-          () => localStorageGetItem('lgv-trackLabels') || '',
+          () => localStorageGetItem('lgv-trackLabels') ?? '',
         ),
 
         /**
@@ -235,6 +242,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
         showTrackOutlines: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-showTrackOutlines', true),
         ),
+
+        /**
+         * #property
+         * enable scroll-to-zoom on WebGL tracks
+         */
+        scrollZoom: types.optional(types.boolean, () =>
+          localStorageGetBoolean('lgv-scrollZoom', false),
+        ),
+        /**
+         * #property
+         * when true, only the header and coordinate scalebar are rendered
+         */
+        scalebarOnly: types.optional(types.boolean, false),
         /**
          * #property
          * this is a non-serialized property that can be used for loading the
@@ -271,20 +291,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      volatileError: undefined as unknown,
 
+      volatileError: undefined as unknown,
       /**
        * #volatile
        */
-      scaleFactor: 1,
-      /**
-       * #volatile
-       * target bpPerPx during zoom animation, used for immediate UI feedback
-       */
-      targetBpPerPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
+
       trackRefs: {} as Record<string, HTMLDivElement>,
       /**
        * #volatile
@@ -294,6 +306,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       coarseTotalBp: 0,
+      /**
+       * #volatile
+       */
+      coarseBpPerPx: 0,
       /**
        * #volatile
        */
@@ -354,6 +370,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * width minus track outline borders (1px each side when shown)
+       */
+      get trackWidthPx(): number {
+        return this.width - (self.showTrackOutlines ? 2 : 0)
+      },
+      /**
+       * #getter
        */
       get interRegionPaddingWidth() {
         return INTER_REGION_PADDING_WIDTH
@@ -370,9 +393,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyDisplayNames() {
         const { assemblyManager } = getSession(self)
-        return this.assemblyNames.map(
-          a => assemblyManager.get(a)?.displayName ?? a,
-        )
+        return this.assemblyNames.map(a => assemblyManager.getDisplayName(a))
       },
       /**
        * #getter
@@ -420,7 +441,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       scalebarDisplayPrefix() {
-        return getParent<any>(self, 2).type === 'LinearSyntenyView'
+        return getParent<{ type: string }>(self, 2).type === 'LinearSyntenyView'
           ? self.assemblyDisplayNames[0]
           : ''
       },
@@ -446,8 +467,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assembliesNotFound() {
         const { assemblyManager } = getSession(self)
         const r0 = self.assemblyNames
-          .map(a => (!assemblyManager.get(a) ? a : undefined))
-          .filter(f => !!f)
+          .filter(a => !assemblyManager.assemblyNameMap[a])
           .join(',')
         return r0 ? `Assemblies ${r0} not found` : undefined
       },
@@ -458,8 +478,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
         return self.assemblyNames
-          .map(a => assemblyManager.get(a)?.error)
-          .filter(f => !!f)
+          .map(name => assemblyManager.get(name)?.error)
+          .filter(e => !!e)
           .join(', ')
       },
 
@@ -469,7 +489,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assembliesInitialized() {
         const { assemblyManager } = getSession(self)
         return self.assemblyNames.every(
-          a => assemblyManager.get(a)?.initialized,
+          name => assemblyManager.get(name)?.initialized,
         )
       },
 
@@ -550,7 +570,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get trackHeights() {
-        return sum(self.tracks.map(t => t.displays[0].height))
+        return sum(
+          self.tracks.map(t => (t.minimized ? 0 : t.displays[0].height)),
+        )
       },
 
       /**
@@ -564,11 +586,48 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get height() {
+        if (self.scalebarOnly) {
+          return this.headerHeight + this.scalebarHeight
+        }
         return (
           this.trackHeightsWithResizeHandles +
           this.headerHeight +
           this.scalebarHeight
         )
+      },
+
+      /**
+       * #method
+       * Y offset (in pixels, from the top of the view) where a track's
+       * rendering container starts. Walks tracks in DOM render order (pinned
+       * first, then unpinned), matching TrackContainer's layout and using the
+       * same constants it renders with. Returns `undefined` if the track is
+       * not present in the view.
+       */
+      getTrackYOffset(trackId: string) {
+        let y = this.headerHeight + this.scalebarHeight
+        let found = false
+        for (const t of self.pinnedTracks) {
+          if (t.configuration.trackId === trackId) {
+            found = true
+            break
+          }
+          y +=
+            (t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height) +
+            RESIZE_HANDLE_HEIGHT
+        }
+        if (!found) {
+          for (const t of self.unpinnedTracks) {
+            if (t.configuration.trackId === trackId) {
+              found = true
+              break
+            }
+            y +=
+              (t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height) +
+              RESIZE_HANDLE_HEIGHT
+          }
+        }
+        return found ? y : undefined
       },
 
       /**
@@ -651,11 +710,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (self.init) {
           const { assemblyManager } = getSession(self)
           const asm = assemblyManager.get(self.init.assembly)
-          if (asm?.error) {
-            return asm.error
-          }
           if (!asm) {
             return `Assembly ${self.init.assembly} not found`
+          }
+          if (asm.error) {
+            return asm.error
           }
         }
         return undefined
@@ -746,7 +805,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         for (const track of self.tracks) {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
-            const viewMenuActions = structuredClone(track.viewMenuActions)
+            const viewMenuActions = cloneMenuItems(track.viewMenuActions)
             rewriteOnClicks(
               self as LinearGenomeViewModel,
               track.type,
@@ -765,6 +824,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setShowTrackOutlines(arg: boolean) {
         self.showTrackOutlines = arg
+      },
+      /**
+       * #action
+       */
+      setScrollZoom(flag: boolean) {
+        self.scrollZoom = flag
       },
       /**
        * #action
@@ -813,6 +878,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setHideHeaderOverview(b: boolean) {
         self.hideHeaderOverview = b
+      },
+      /**
+       * #action
+       */
+      setScalebarOnly(b: boolean) {
+        self.scalebarOnly = b
       },
       /**
        * #action
@@ -884,26 +955,36 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      zoomTo(bpPerPx: number, offset = self.width / 2, centerAtOffset = false) {
+      zoomTo(bpPerPx: number, offset = self.width / 2) {
         const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
-        if (newBpPerPx === self.bpPerPx) {
-          return newBpPerPx
-        }
         const oldBpPerPx = self.bpPerPx
-
         if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
-          console.warn('zoomTo bpPerPx rounding error')
           return oldBpPerPx
         }
-        self.bpPerPx = newBpPerPx
+        if (!self.displayedRegions.length) {
+          self.bpPerPx = newBpPerPx
+          return newBpPerPx
+        }
 
-        // tweak the offset so that the center of the view remains at the same
-        // coordinate
-        const newOffsetPx = Math.round(
-          ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
-            (centerAtOffset ? self.width / 2 : offset),
-        )
-        this.scrollTo(newOffsetPx)
+        // Anchor on the cursor's raw within-region bp offset (float,
+        // padding-aware). Round-tripping through bpToPx using pxToBp's `coord`
+        // loses up to 1 bp per call because regionCoord floors+1 (1-based)
+        // while bpToPx treats coord-r.start as a 0-based offset — visible as
+        // ~5 px judder during rapid scroll-zoom at small bpPerPx. The legacy
+        // (offsetPx + cursor_x) * bpPerPx is also unstable in multi-region
+        // because inter-region padding contributes paddingWidth * bpPerPx of
+        // virtual-bp that scales with bpPerPx. Fall back to the legacy formula
+        // when the cursor is over empty space (oob).
+        const anchor = pxToBp(self, offset)
+        self.bpPerPx = newBpPerPx
+        const targetPx = anchor.oob
+          ? ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx
+          : offsetBpToPx(self, anchor.index, anchor.offset)
+        // Don't round here: rounding offsetPx every frame loses up to 0.5 px
+        // per step, which (at high bpPerPx) becomes 0.5 * bpPerPx of cursor
+        // bp drift and compounds frame-to-frame during a scroll-zoom burst.
+        // Fractional offsetPx is harmless — downstream block math handles it.
+        this.scrollTo(targetPx - offset)
         return newBpPerPx
       },
 
@@ -1096,16 +1177,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @returns array of Region[]
        */
       getSelectedRegions(leftOffset?: BpOffset, rightOffset?: BpOffset) {
+        if (!leftOffset || !rightOffset) {
+          return []
+        }
         const snap = getSnapshot(self)
-        const simView = Base1DView.create({
+        const snapWithLayout = {
           ...snap,
+          width: self.width,
           interRegionPaddingWidth: self.interRegionPaddingWidth,
-        })
-
-        simView.setVolatileWidth(self.width)
-        simView.moveTo(leftOffset, rightOffset)
-
-        return simView.dynamicBlocks.contentBlocks.map(region => ({
+          minimumBlockWidth: self.minimumBlockWidth,
+        }
+        const { bpPerPx, offsetPx: rawOffsetPx } = computeMoveToLayout(
+          snapWithLayout,
+          leftOffset,
+          rightOffset,
+        )
+        // mirror Base1DView.scrollTo clamping: raw offsetPx can be far outside
+        // the valid range when both offsets are oob on the same side
+        const offsetPx = clamp(
+          rawOffsetPx,
+          self.minOffset,
+          self.totalBp / bpPerPx + self.getInterRegionPaddingPx(bpPerPx) - 10,
+        )
+        return calculateDynamicBlocks({
+          ...snapWithLayout,
+          bpPerPx,
+          offsetPx,
+        }).contentBlocks.map(region => ({
           assemblyName: region.assemblyName,
           refName: region.refName,
           start: Math.floor(region.start),
@@ -1127,7 +1225,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showAllRegions() {
-        self.bpPerPx = clamp(self.maxBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        self.bpPerPx = self.maxBpPerPx
         self.scrollTo(
           getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
         )
@@ -1175,20 +1273,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setLastTrackDragY(y: number) {
         self.lastTrackDragY = y
-      },
-
-      /**
-       * #action
-       */
-      setScaleFactor(factor: number) {
-        self.scaleFactor = factor
-      },
-
-      /**
-       * #action
-       */
-      setTargetBpPerPx(target: number | undefined) {
-        self.targetBpPerPx = target
       },
 
       /**
@@ -1294,44 +1378,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
       function zoom(targetBpPerPx: number) {
         cancelLastAnimation()
 
-        // Calculate the zoom factor the caller intended (e.g., 2 for zoom out, 0.5 for zoom in)
-        const intendedFactor = targetBpPerPx / self.bpPerPx
-
-        // Apply that factor to the pending target (if mid-animation) or current bpPerPx
-        // This allows rapid clicks to accumulate
-        const effectiveBase = self.targetBpPerPx ?? self.bpPerPx
-        let effectiveTarget = effectiveBase * intendedFactor
-
         // Clamp to zoom limits
-        effectiveTarget = Math.max(
+        const effectiveTarget = clamp(
+          targetBpPerPx,
           self.minBpPerPx,
-          Math.min(self.maxBpPerPx, effectiveTarget),
+          self.maxBpPerPx,
         )
 
-        const currentTarget = self.targetBpPerPx ?? self.bpPerPx
-
         // If already at limit (or effectively no change), do nothing
-        if (effectiveTarget === currentTarget) {
+        if (effectiveTarget === self.bpPerPx) {
           return
         }
 
-        // Set target immediately for UI feedback
-        self.setTargetBpPerPx(effectiveTarget)
-
-        // Calculate target scale factor relative to committed bpPerPx
-        // Don't update bpPerPx until animation completes - keeps blocks stable
-        const targetScaleFactor = self.bpPerPx / effectiveTarget
-
-        // Animate from current scaleFactor to target (smooth continuation on rapid clicks)
+        // Animate bpPerPx directly from current to target
         const [animate, cancelAnimation] = springAnimate(
-          self.scaleFactor,
-          targetScaleFactor,
-          self.setScaleFactor,
-          () => {
-            self.zoomTo(effectiveTarget)
-            self.setScaleFactor(1)
-            self.setTargetBpPerPx(undefined)
-          },
+          self.bpPerPx,
+          effectiveTarget,
+          self.zoomTo,
+          undefined,
           0,
           1000,
           50,
@@ -1387,6 +1451,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let currentBlockKeys: string | undefined
+      let coverageLeftPx = 0
+      let coverageRightPx = 0
+      let prevBpPerPx: number | undefined
+      let prevWidth: number | undefined
+      let prevDisplayedRegions: typeof self.displayedRegions | undefined
       return {
         /**
          * #getter
@@ -1397,18 +1466,49 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * blocks to render their data for the region represented by the block
          */
         get staticBlocks() {
+          const { offsetPx, bpPerPx, width, displayedRegions } = self
+
+          // Fast path: if only offsetPx changed and viewport is still within
+          // the coverage range of existing blocks, skip the expensive
+          // calculateStaticBlocks call entirely
+          if (
+            currentlyCalculatedStaticBlocks !== undefined &&
+            bpPerPx === prevBpPerPx &&
+            width === prevWidth &&
+            displayedRegions === prevDisplayedRegions &&
+            offsetPx >= coverageLeftPx &&
+            offsetPx + width <= coverageRightPx
+          ) {
+            return currentlyCalculatedStaticBlocks
+          }
+
           const newBlocks = calculateStaticBlocks(self)
           const newKeys = newBlocks.blocks.map(b => b.key).join(',')
           if (
             currentlyCalculatedStaticBlocks === undefined ||
-            currentBlockKeys !== newKeys
+            currentBlockKeys !== newKeys ||
+            bpPerPx !== prevBpPerPx ||
+            width !== prevWidth
           ) {
             currentlyCalculatedStaticBlocks = newBlocks
             currentBlockKeys = newKeys
-            return currentlyCalculatedStaticBlocks
-          } else {
-            return currentlyCalculatedStaticBlocks
           }
+
+          // Update coverage range from content block extent only.
+          // Using all blocks (including padding) would inflate the range
+          // and let the fast path return stale blocks when the viewport
+          // scrolls into the padding area where no content blocks exist.
+          const cBlocks = currentlyCalculatedStaticBlocks.contentBlocks
+          if (cBlocks.length > 0) {
+            const last = cBlocks[cBlocks.length - 1]!
+            coverageLeftPx = cBlocks[0]!.offsetPx
+            coverageRightPx = last.offsetPx + last.widthPx
+          }
+
+          prevBpPerPx = bpPerPx
+          prevWidth = width
+          prevDisplayedRegions = displayedRegions
+          return currentlyCalculatedStaticBlocks
         },
         /**
          * #getter
@@ -1422,17 +1522,106 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
         /**
          * #getter
+         * Max right-edge pixel position for each displayedRegionIndex, derived
+         * from staticBlocks geometry. staticBlocks caches a stable reference
+         * when only offsetPx changes, so this getter is also stable during
+         * normal scroll — avoiding a Map rebuild every frame.
+         * Used by ScalebarRefNameLabels to clip chromosome name labels.
+         */
+        get scalebarRegionEndPx() {
+          const m = new Map<number, number>()
+          for (const block of this.staticBlocks.blocks) {
+            if (
+              block.type === 'ContentBlock' &&
+              block.displayedRegionIndex !== undefined
+            ) {
+              const endPx = block.offsetPx + block.widthPx
+              const cur = m.get(block.displayedRegionIndex)
+              if (cur === undefined || endPx > cur) {
+                m.set(block.displayedRegionIndex, endPx)
+              }
+            }
+          }
+          return m
+        },
+        /**
+         * #getter
+         * Integer-rounded sum of all visible block widths. Slightly less than
+         * view.width when the genome ends before the right edge; use view.width
+         * for SVG clip rects (display boundary) and this for paint canvas sizing
+         * (actual content width).
+         */
+        get totalWidthPx(): number {
+          return Math.round(this.dynamicBlocks.totalWidthPx)
+        },
+        /**
+         * #getter
+         * Like totalWidthPx but excluding inter-region boundary blocks. Used
+         * when column layout divides the canvas width by feature count.
+         */
+        get totalWidthPxWithoutBorders(): number {
+          return Math.round(this.dynamicBlocks.totalWidthPxWithoutBorders)
+        },
+        /**
+         * #getter
+         */
+        get visibleBp() {
+          return this.dynamicBlocks.totalBp
+        },
+        /**
+         * #getter
          * rounded dynamic blocks are dynamic blocks without fractions of bp
          */
         get roundedDynamicBlocks() {
-          return this.dynamicBlocks.contentBlocks.map(
-            block =>
-              ({
-                ...block,
-                start: Math.floor(block.start),
-                end: Math.ceil(block.end),
-              }) as ContentBlock,
-          )
+          return this.dynamicBlocks.contentBlocks.map(block => ({
+            ...block,
+            start: Math.floor(block.start),
+            end: Math.ceil(block.end),
+          }))
+        },
+
+        /**
+         * #getter
+         * Returns the currently visible content blocks with screen pixel
+         * positions and displayedRegionIndex guaranteed.
+         * Used by WebGL displays for per-region data fetching and rendering.
+         */
+        get visibleRegions() {
+          return this.dynamicBlocks.contentBlocks.map(block => ({
+            refName: block.refName,
+            start: block.start,
+            end: block.end,
+            assemblyName: block.assemblyName,
+            reversed: block.reversed,
+            displayedRegionIndex: block.displayedRegionIndex!,
+            offsetPx: block.offsetPx,
+            widthPx: block.widthPx,
+            screenStartPx: block.offsetPx - self.offsetPx,
+            screenEndPx: block.offsetPx - self.offsetPx + block.widthPx,
+          }))
+        },
+
+        /**
+         * #getter
+         * visibleRegions expanded by a half-screen buffer on each side,
+         * clamped to displayedRegion bounds, with integer-rounded coordinates.
+         * Use this when fetching data that should extend slightly beyond the
+         * viewport for smooth scrolling.
+         */
+        get bufferedVisibleRegions() {
+          const bufferBp = Math.ceil(self.width * self.bpPerPx * 0.5)
+          return this.visibleRegions.map(vr => {
+            const dr = self.displayedRegions[vr.displayedRegionIndex]!
+            return {
+              region: {
+                refName: vr.refName,
+                start: Math.max(dr.start, Math.floor(vr.start) - bufferBp),
+                end: Math.min(dr.end, Math.ceil(vr.end) + bufferBp),
+                assemblyName: vr.assemblyName,
+              },
+              displayedRegionIndex: vr.displayedRegionIndex,
+            }
+          })
         },
 
         /**
@@ -1446,7 +1635,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * same as visibleLocStrings, but only updated every 300ms
+         * same as visibleLocStrings, but only updated every 500ms
          */
         get coarseVisibleLocStrings() {
           return calculateVisibleLocStrings(self.coarseDynamicBlocks)
@@ -1461,23 +1650,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * effective bpPerPx accounting for pending zoom target
          */
         get effectiveBpPerPx() {
-          return self.targetBpPerPx ?? self.bpPerPx
+          return self.bpPerPx
         },
 
         /**
          * #getter
-         * total bp based on effective bpPerPx (updates immediately on zoom click)
          */
         get effectiveTotalBp() {
-          return this.effectiveBpPerPx * self.width
+          return self.bpPerPx * self.width
         },
 
         /**
          * #getter
-         * display string for effective total bp (updates immediately on zoom click)
          */
         get effectiveTotalBpDisplayStr() {
           return getBpDisplayStr(this.effectiveTotalBp)
@@ -1488,9 +1674,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setCoarseDynamicBlocks(blocks: BlockSet) {
+      setCoarseDynamicBlocks(blocks: BlockSet, bpPerPx: number) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp
+        self.coarseBpPerPx = bpPerPx
       },
     }))
     .actions(self => ({
@@ -1523,37 +1710,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         grow?: number,
       ) {
         const { assemblyNames } = self
-        const { assemblyManager } = getSession(self)
+        const session = getSession(self)
+        const { assemblyManager } = session
         const assemblyName = optAssemblyName || assemblyNames[0]!
         if (assemblyName) {
           await assemblyManager.waitForAssembly(assemblyName)
         }
-
-        return this.navToLocations(
-          parseLocStrings(input, assemblyName, (ref, asm) =>
-            assemblyManager.isValidRefName(ref, asm),
-          ),
-          assemblyName,
-          grow,
-        )
-      },
-
-      /**
-       * #action
-       * Performs a text index search, and navigates to it immediately if a
-       * single result is returned. Will pop up a search dialog if multiple
-       * results are returned
-       */
-      async navToSearchString({
-        input,
-        assembly,
-      }: {
-        input: string
-        assembly: Assembly
-      }) {
         await handleSelectedRegion({
           input,
-          assembly,
+          assemblyName,
+          grow,
           model: self as LinearGenomeViewModel,
         })
       },
@@ -1731,18 +1897,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
 
         // Calculate coordinates, using region bounds if not specified
-        let firstStart =
-          firstLocation.start === undefined
-            ? firstRegion.start
-            : firstLocation.start
-        let firstEnd =
-          firstLocation.end === undefined ? firstRegion.end : firstLocation.end
-        let lastStart =
-          lastLocation.start === undefined
-            ? lastRegion.start
-            : lastLocation.start
-        let lastEnd =
-          lastLocation.end === undefined ? lastRegion.end : lastLocation.end
+        let firstStart = firstLocation.start ?? firstRegion.start
+        let firstEnd = firstLocation.end ?? firstRegion.end
+        let lastStart = lastLocation.start ?? lastRegion.start
+        let lastEnd = lastLocation.end ?? lastRegion.end
 
         // Apply grow factor to add padding around the region
         if (grow) {
@@ -1899,10 +2057,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ? this.pxToBp(self.width / 2)
           : undefined
       },
-
-      get visibleRegions() {
-        return self.dynamicBlocks.contentBlocks
-      },
     }))
     .views(self => ({
       /**
@@ -1913,6 +2067,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self as LinearGenomeViewModel,
           clickOffset,
         )
+      },
+
+      /**
+       * #method
+       * returns menu items for a highlight context menu. plugins can extend
+       * this via Core-extendPluggableElement to add their own items
+       */
+      highlightMenuItems(_highlight: HighlightType): MenuItem[] {
+        return []
       },
     }))
     .actions(self => ({
@@ -1959,6 +2122,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         trackLabels,
         colorByCDS,
         showTrackOutlines,
+        scrollZoom,
         highlightsVisible,
         labelsVisible,
         ...rest
@@ -1981,6 +2145,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
         ...(!showTrackOutlines ? { showTrackOutlines } : {}),
+        ...(scrollZoom ? { scrollZoom } : {}),
         ...(!highlightsVisible ? { highlightsVisible } : {}),
         ...(!labelsVisible ? { labelsVisible } : {}),
       } as typeof snap
@@ -1995,7 +2160,8 @@ export {
   default as ReactComponent,
 } from './components/LinearGenomeView.tsx'
 
-export { default as RefNameAutocomplete } from './components/RefNameAutocomplete/index.tsx'
+// RefNameAutocomplete moved to @jbrowse/core/ui; re-exported for back-compat.
+export { RefNameAutocomplete } from '@jbrowse/core/ui'
 export { default as SearchBox } from './components/SearchBox.tsx'
 
 export { renderToSvg } from './svgcomponents/SVGLinearGenomeView.tsx'

@@ -24,7 +24,7 @@
     "esm"
   ],
   "scripts": {
-    "build:esm": "tsgo -p tsconfig.build.esm.json",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
     "build": "pnpm build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/tree-sidebar",
     "clean": "rimraf esm *.tsbuildinfo",
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.6.0",
+    "@jbrowse/mobx-state-tree": "^5.8.7",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@mui/material": "^9.0.1",
     "mobx": "^6.15.3",

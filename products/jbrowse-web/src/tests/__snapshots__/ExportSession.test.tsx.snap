@@ -20,6 +20,7 @@ exports[`export session with alignments and gff tracks 1`] = `
           },
         ],
         "id": "integration_test",
+        "scalebarOnly": false,
         "tracks": [
           {
             "configuration": "volvox_alignments_pileup_coverage",

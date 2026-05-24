@@ -79,9 +79,12 @@ export type {
   BaseLinearDisplayModel,
   BlockModel,
   ExportSvgDisplayOptions,
+  FeatureLabelData,
   FloatingLabelData,
   LayoutFeatureMetadata,
+  LayoutRecord,
   LegendItem,
+  RenderedProps,
 } from './BaseLinearDisplay/index.ts'
 
 export {
@@ -92,23 +95,41 @@ export {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
   BlockMsg,
+  ConfigOverrideMixin,
+  DisplayErrorBar,
+  DisplayLoadingOverlay,
   FeatureDensityMixin,
   FloatingLegend,
+  GlobalDataDisplayMixin,
+  MultiRegionDisplayMixin,
   NonBlockCanvasDisplayComponent,
   NonBlockCanvasDisplayMixin,
   SVGLegend,
+  StaleViewportRescaleMixin,
   TooLargeMessage,
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
   calculateSvgLegendWidth,
+  computeRenderTransform,
   createSubfeatureLabelMetadata,
   drawCanvasImageData,
+  getDisplayStr,
+  migrateOldSettingSnapshots,
+  onDisplayedRegionsChange,
 } from './BaseLinearDisplay/index.ts'
 export type {
+  ByteEstimateConfig,
+  FetchContext,
+  GlobalDataDisplayMixinType,
+  MultiRegionDisplayMixinType,
   NonBlockCanvasDisplayMixinType,
   NonBlockCanvasDisplayModel,
+  RenderTransform,
+  RenderTransformInputs,
+  StaleViewportRescaleMixinType,
 } from './BaseLinearDisplay/index.ts'
 export {
+  AUTO_FORCE_LOAD_BP,
   HighlightBand,
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,
@@ -130,6 +151,7 @@ export {
   SVGTracks,
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
+export { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/svgExport'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util.ts'
 export {
   configSchema as linearBasicDisplayConfigSchemaFactory,

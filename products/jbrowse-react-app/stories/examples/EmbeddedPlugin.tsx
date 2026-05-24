@@ -14,7 +14,6 @@ import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 const configPath = 'test_data/volvox/config.json'
 addRelativeUris(config, new URL(configPath, window.location.href).href)
 
-// Define a plugin inline — no build step required
 class HighlightRegionPlugin extends Plugin {
   name = 'HighlightRegionPlugin'
 
@@ -66,16 +65,5 @@ export const EmbeddedPlugin = () => {
     }),
   )
 
-  return (
-    <div>
-      <p>
-        Click and drag on the linear genome view ruler to see the custom rubber
-        band menu item added by the embedded plugin.
-      </p>
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/EmbeddedPlugin.tsx">
-        Source code
-      </a>
-      <JBrowseApp viewState={state} />
-    </div>
-  )
+  return <JBrowseApp viewState={state} />
 }

@@ -10,7 +10,7 @@ import {
   storeFileHandle,
   verifyPermission,
 } from './fileHandleStore.ts'
-import { getEnv, getSession, objectHash } from './index.ts'
+import { getEnv, getSession, objectHash } from './mstUtils.ts'
 import { readConfObject } from '../configuration/index.ts'
 
 import type {

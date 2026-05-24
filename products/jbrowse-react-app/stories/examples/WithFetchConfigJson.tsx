@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 // replace with this in your code:
-// import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
+// import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
 import { addRelativeUris } from './util.ts'
 import { JBrowseApp, createViewState } from '../../src/index.ts'
 
@@ -18,21 +18,10 @@ export const WithFetchConfigJson = () => {
         throw new Error(`HTTP ${response.status} fetching config ${url}`)
       }
       const config = await response.json()
-      const configPath = 'test_data/volvox/config.json'
-      addRelativeUris(config, new URL(configPath, window.location.href).href)
-      const state = createViewState({
-        config,
-      })
-      setState(state)
+      addRelativeUris(config, new URL(url, window.location.href).href)
+      setState(createViewState({ config }))
     })()
   }, [])
 
-  return !state ? null : (
-    <div>
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/WithFetchConfigJson.tsx">
-        Source code
-      </a>
-      <JBrowseApp viewState={state} />
-    </div>
-  )
+  return state ? <JBrowseApp viewState={state} /> : null
 }

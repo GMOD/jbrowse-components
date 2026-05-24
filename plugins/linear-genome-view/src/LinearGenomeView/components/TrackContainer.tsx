@@ -1,6 +1,4 @@
-import { useRef } from 'react'
-
-import { ErrorMessage, ResizeHandle } from '@jbrowse/core/ui'
+import { ErrorBanner, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -15,7 +13,7 @@ import { shouldSwapTracks } from './util.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   root: {
     marginTop: 2,
     overflow: 'hidden',
@@ -29,12 +27,8 @@ const useStyles = makeStyles()(theme => ({
     height: 4,
     boxSizing: 'border-box',
     position: 'relative',
-    background: 'transparent',
-    '&:hover': {
-      background: theme.palette.divider,
-    },
   },
-}))
+})
 
 type LGV = LinearGenomeViewModel
 
@@ -48,20 +42,11 @@ const TrackContainer = observer(function TrackContainer({
   const { classes } = useStyles()
   const display = track.displays[0]
   const { draggingTrackId, showTrackOutlines } = model
-  const ref = useRef<HTMLDivElement>(null)
-
   return (
     <Paper
-      ref={ref}
       className={cx(classes.root, track.pinned ? null : classes.unpinnedTrack)}
       variant={showTrackOutlines ? 'outlined' : undefined}
       elevation={showTrackOutlines ? undefined : 0}
-      onClick={event => {
-        if (event.detail === 2 && !display.featureIdUnderMouse) {
-          const left = ref.current?.getBoundingClientRect().left || 0
-          model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
-        }
-      }}
       onDragOver={event => {
         if (
           isAlive(display) &&
@@ -85,7 +70,7 @@ const TrackContainer = observer(function TrackContainer({
       {/* offset 1px since for left track border */}
       {track.pinned ? <Gridlines model={model} offset={1} /> : null}
       <TrackLabelContainer track={track} view={model} />
-      <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
+      <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
         <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>
       <ResizeHandle

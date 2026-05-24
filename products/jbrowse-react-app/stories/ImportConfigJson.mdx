@@ -8,11 +8,10 @@ import {
 
 # Importing config.json files
 
-The jbrowse-web app fetches a config.json from the current directory (or
-wherever the `?config=` URL parameter points). `@jbrowse/react-app2` makes no
-assumptions about URL parameters, so you must supply the config yourself.
+`@jbrowse/react-app2` doesn't fetch a config automatically — pass it to
+`createViewState` directly. Two common patterns:
 
-## Using static JSON imports
+## Static JSON import
 
 <Story of={WithImportConfigJson} />
 

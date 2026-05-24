@@ -67,6 +67,7 @@ export const BasicExample = () => {
                 assembly: 'volvox',
                 loc: 'ctgA:1..50000',
                 tracks: ['volvox_cram'],
+                tracklist: true,
               },
             },
           ],
@@ -75,12 +76,5 @@ export const BasicExample = () => {
     }),
   )
 
-  return (
-    <div>
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/BasicExample.tsx">
-        Source code
-      </a>
-      <JBrowseApp viewState={state} />
-    </div>
-  )
+  return <JBrowseApp viewState={state} />
 }

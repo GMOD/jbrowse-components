@@ -1,21 +1,26 @@
 import { getContainingView, isAbortException } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
-import type { BaseLinearDisplayModel } from '../model.ts'
+import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
+import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-// stats estimation autorun calls getFeatureDensityStats against the data
-// adapter which by default uses featureDensity, but can also respond with a
-// byte size estimate and fetch size limit (data adapter can define what is too
-// much data)
+export interface FeatureDensityModel {
+  currStatsBpPerPx: number
+  error: unknown
+  featureDensityStats?: FeatureDensityStats
+  setCurrStatsBpPerPx: (n: number) => void
+  clearFeatureDensityStats: () => void
+  getFeatureDensityStats: () => Promise<FeatureDensityStats>
+  setFeatureDensityStats: (stats?: FeatureDensityStats) => void
+  setError: (error: unknown) => void
+}
+
 export default async function autorunFeatureDensityStats(
-  self: BaseLinearDisplayModel,
+  self: FeatureDensityModel,
 ) {
   try {
     const view = getContainingView(self) as LinearGenomeViewModel
 
-    // extra check for contentBlocks.length
-    // https://github.com/GMOD/jbrowse-components/issues/2694
     if (
       !view.initialized ||
       !view.staticBlocks.contentBlocks.length ||
@@ -25,9 +30,9 @@ export default async function autorunFeatureDensityStats(
       return
     }
 
-    // don't re-estimate featureDensity even if zoom level changes,
+    // don't re-estimate even if zoom level changes,
     // jbrowse 1-style assume it's sort of representative
-    if (self.featureDensityStats?.featureDensity !== undefined) {
+    if (self.featureDensityStats) {
       self.setCurrStatsBpPerPx(view.bpPerPx)
       return
     }

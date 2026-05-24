@@ -97,7 +97,8 @@ const FloatingLabels = observer(function FloatingLabels({
   const { offsetPx } = view
   const featureLabels = model.floatingLabelData
 
-  // @ts-expect-error
+  // @ts-expect-error LinearFeatureDisplay's renderingProps override
+  // adds these callbacks but TS view-chain inheritance loses them
   const { onFeatureClick, onFeatureContextMenu, onMouseMove } =
     model.renderingProps()
 

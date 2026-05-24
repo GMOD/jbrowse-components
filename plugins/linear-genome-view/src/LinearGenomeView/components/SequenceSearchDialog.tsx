@@ -59,7 +59,7 @@ const SequenceSearchDialog = observer(function SequenceSearchDialog({
           onChange={e => {
             setValue(e.target.value)
           }}
-          helperText="Sequence search pattern"
+          label="Sequence search pattern"
         />
         <FormGroup>
           <FormControlLabel
@@ -142,7 +142,7 @@ const SequenceSearchDialog = observer(function SequenceSearchDialog({
           variant="contained"
           color="secondary"
         >
-          Close
+          Cancel
         </Button>
       </DialogActions>
     </Dialog>

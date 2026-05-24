@@ -84,7 +84,8 @@ const convertBlockKey = (str: string) =>
     /\{(\w+)\}(\w+):(\d+)\.\.(\d+)-(\d+)/,
     (_, asm, ref, s, e, i) => `${asm}:${ref}:${Number(s) - 1}:${e}:${i}`,
   )
-export const pc = (str: string) => `prerendered_canvas_${convertBlockKey(str)}_done`
+export const pc = (str: string) =>
+  `prerendered_canvas_${convertBlockKey(str)}_done`
 export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
 
 export async function createView(args?: any, adminMode?: boolean) {

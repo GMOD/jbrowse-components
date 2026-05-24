@@ -3,31 +3,26 @@ import { WithWebWorker } from './JBrowseReactApp.stories'
 
 <Meta title="Using WebWorker RPC" />
 
-## Web Worker RPC
+# Web Worker RPC
 
-Developers can configure their instance of `@jbrowse/react-app2` to use web
-workers. By importing `makeWorkerInstance` and adding the `WebWorkerRpcDriver`
-configuration to `createViewState`, the app will use the WebWorker RPC.
+Using WebWorker RPC reduces main-thread blocking when browsing BAM/CRAM data.
+Import `makeWorkerInstance` and pass it to `createViewState`:
 
-Using WebWorker RPC can greatly reduce "hanging" of the main thread when
-browsing alignment datasets like BAM / CRAM.
+```js
+import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
+import makeWorkerInstance from '@jbrowse/react-app2/esm/makeWorkerInstance'
 
-[See our create-react-app v5 demo project for example using web worker](https://jbrowse.org/jb2/docs/embedded_components/)
-
-## Example
+const state = createViewState({
+  config: {
+    ...config,
+    configuration: { rpc: { defaultDriver: 'WebWorkerRpcDriver' } },
+  },
+  makeWorkerInstance,
+})
+```
 
 <Story of={WithWebWorker} />
 
-## Webpack: publicPath
-
-If web workers don't resolve correctly in create-react-app, set
-`"publicPath":"auto"` in your webpack config
+If workers don't resolve correctly in webpack, set `"publicPath":"auto"` in your
+webpack config
 [(see this issue)](https://github.com/webpack/webpack/issues/13791#issuecomment-897579223).
-
-## Why web workers aren't enabled by default
-
-Web workers require the bundler to support the `new Worker` construct, which not
-all bundlers do. We recommend enabling it when possible since it improves speed
-and user experience. See
-[webpack's guide](https://webpack.js.org/guides/web-workers/) for `new Worker`
-syntax support.

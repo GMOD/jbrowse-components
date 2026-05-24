@@ -137,9 +137,6 @@ export const WithLaunchLinearGenomeView = () => {
 
   return (
     <>
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/WithLaunchLinearGenomeView.tsx">
-        Source code
-      </a>
       {error ? <div style={{ color: 'red' }}>{`${error}`}</div> : null}
       <JBrowseApp viewState={viewState} />
     </>

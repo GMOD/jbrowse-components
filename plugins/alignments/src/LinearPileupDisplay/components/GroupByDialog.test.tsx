@@ -6,9 +6,17 @@ import { ThemeProvider } from '@mui/material'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-// Import the actual functions we'll spy on
 import GroupByDialog from './GroupByDialog.tsx'
 import * as getUniqueTagsModule from '../../shared/getUniqueTags.ts'
+
+// Named re-exports from @jbrowse/core/util compile to non-configurable getters,
+// so jest.spyOn fails. Mock only the functions used by GroupByDialog.
+jest.mock('@jbrowse/core/util', () => ({
+  getSession: jest.fn(),
+  getContainingTrack: jest.fn(),
+  getContainingView: jest.fn(),
+  useDebounce: jest.fn((value: unknown) => value),
+}))
 
 // mock for wrapping in act
 // https://github.com/mui/material-ui/issues/14352
@@ -63,12 +71,11 @@ describe('GroupByDialog', () => {
 
     handleClose = jest.fn()
 
-    // Setup spies
-    jest.spyOn(coreUtil, 'getSession').mockReturnValue(mockSession)
-    jest.spyOn(coreUtil, 'getContainingTrack').mockReturnValue(mockTrack)
-    jest.spyOn(coreUtil, 'getContainingView').mockReturnValue(mockView)
+    jest.mocked(coreUtil.getSession).mockReturnValue(mockSession)
+    jest.mocked(coreUtil.getContainingTrack).mockReturnValue(mockTrack)
+    jest.mocked(coreUtil.getContainingView).mockReturnValue(mockView)
     jest
-      .spyOn(coreUtil, 'useDebounce')
+      .mocked(coreUtil.useDebounce)
       .mockImplementation((value: unknown) => value)
     // Default mock for getUniqueTags - individual tests can override
     getUniqueTagsSpy = jest
@@ -77,7 +84,7 @@ describe('GroupByDialog', () => {
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    jest.clearAllMocks()
   })
 
   function renderDialog() {

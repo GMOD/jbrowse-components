@@ -1,15 +1,9 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import {
-  ContentBlock as ContentBlockComponent,
-  ElidedBlock as ElidedBlockComponent,
-  InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
-} from '../../BaseLinearDisplay/components/Block.tsx'
 import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
@@ -21,11 +15,15 @@ const useStyles = makeStyles()(theme => ({
     width: '100%',
     pointerEvents: 'none',
   },
-  verticalGuidesContainer: {
+  innerContainer: {
     position: 'absolute',
     height: '100%',
     pointerEvents: 'none',
-    display: 'flex',
+  },
+  absoluteFill: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
   },
   tick: {
     position: 'absolute',
@@ -38,66 +36,91 @@ const useStyles = makeStyles()(theme => ({
   minorTick: {
     background: theme.palette.divider,
   },
+  block: {
+    position: 'absolute',
+    height: '100%',
+  },
+  boundaryBlock: {
+    background: theme.palette.action.disabledBackground,
+  },
+  textDisabledBlock: {
+    background: theme.palette.text.disabled,
+  },
+  elided: {
+    backgroundColor: '#999',
+    backgroundImage:
+      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+  },
 }))
 
-function RenderedBlockLines({
-  block,
-  bpPerPx,
-}: {
-  block: ContentBlock
-  bpPerPx: number
-}) {
-  const { classes } = useStyles()
-  const { start, end, reversed } = block
-  const ticks = makeTicks(start, end, bpPerPx)
-  const majorTickClass = `${classes.tick} ${classes.majorTick}`
-  const minorTickClass = `${classes.tick} ${classes.minorTick}`
-
-  return (
-    <ContentBlockComponent block={block}>
-      {ticks.map(({ type, base }) => {
-        const x = (reversed ? end - base : base - start) / bpPerPx
-        return (
-          <div
-            key={base}
-            className={
-              type === 'major' || type === 'labeledMajor'
-                ? majorTickClass
-                : minorTickClass
-            }
-            style={{ left: x }}
-          />
-        )
-      })}
-    </ContentBlockComponent>
-  )
-}
-
-const RenderedVerticalGuides = observer(function RenderedVerticalGuides({
+// Reads only staticBlocks + bpPerPx. Re-renders on zoom or region change,
+// not on per-frame offsetPx changes — those move the outer transform only.
+const GridlinesContent = observer(function GridlinesContent({
   model,
 }: {
   model: LGV
 }) {
+  const { classes, cx } = useStyles()
   const { staticBlocks, bpPerPx } = model
+  const blocks = staticBlocks.blocks
+  const firstBlockOffset = blocks[0]?.offsetPx ?? 0
+
+  const ticks: { key: string; x: number; major: boolean }[] = []
+  for (const block of blocks) {
+    if (block.type !== 'ContentBlock') {
+      continue
+    }
+    const { start, end, reversed, widthPx } = block
+    const blockLeft = block.offsetPx - firstBlockOffset
+    for (const { type, base } of makeTicks(start, end, bpPerPx)) {
+      const x = blockLeft + (reversed ? end - base : base - start) / bpPerPx
+      if (x >= blockLeft && x <= blockLeft + widthPx) {
+        ticks.push({
+          key: `${block.key}-${base}`,
+          x,
+          major: type === 'major' || type === 'labeledMajor',
+        })
+      }
+    }
+  }
+
   return (
     <>
-      {staticBlocks.map((block, index) => {
-        const k = `${block.key}-${index}`
-        if (block.type === 'ContentBlock') {
-          return <RenderedBlockLines key={k} block={block} bpPerPx={bpPerPx} />
-        } else if (block.type === 'ElidedBlock') {
-          return <ElidedBlockComponent key={k} width={block.widthPx} />
-        } else {
+      <div className={classes.absoluteFill}>
+        {blocks.map(block => {
+          if (block.type === 'ContentBlock') {
+            return null
+          }
+          const bgClass =
+            block.type === 'ElidedBlock'
+              ? classes.elided
+              : block.variant === 'boundary'
+                ? classes.boundaryBlock
+                : classes.textDisabledBlock
           return (
-            <InterRegionPaddingBlockComponent
-              key={k}
-              width={block.widthPx}
-              boundary={block.variant === 'boundary'}
+            <div
+              key={block.key}
+              className={cx(classes.block, bgClass)}
+              style={{
+                transform: `translateX(${block.offsetPx - firstBlockOffset}px)`,
+                width: block.widthPx,
+              }}
             />
           )
-        }
-        return null
-      })}
+        })}
+      </div>
+      <div className={classes.absoluteFill}>
+        {ticks.map(({ key, x, major }) => (
+          <div
+            key={key}
+            className={cx(
+              classes.tick,
+              major ? classes.majorTick : classes.minorTick,
+            )}
+            style={{ transform: `translateX(${x}px)` }}
+          />
+        ))}
+      </div>
     </>
   )
 })
@@ -110,23 +133,18 @@ const Gridlines = observer(function Gridlines({
   offset?: number
 }) {
   const { classes } = useStyles()
-  const { staticBlocks, scaleFactor, offsetPx } = model
-  const offsetLeft = staticBlocks.offsetPx - offsetPx
+  const { staticBlocks, offsetPx } = model
+
   return (
-    <div
-      className={classes.verticalGuidesZoomContainer}
-      style={{
-        transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
-      }}
-    >
+    <div className={classes.verticalGuidesZoomContainer}>
       <div
-        className={classes.verticalGuidesContainer}
+        className={classes.innerContainer}
         style={{
-          left: offsetLeft - offset,
+          transform: `translateX(${staticBlocks.offsetPx - offsetPx - offset}px)`,
           width: staticBlocks.totalWidthPx,
         }}
       >
-        <RenderedVerticalGuides model={model} />
+        <GridlinesContent model={model} />
       </div>
     </div>
   )

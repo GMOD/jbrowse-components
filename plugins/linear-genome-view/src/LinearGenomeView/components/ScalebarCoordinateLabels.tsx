@@ -5,18 +5,25 @@ import { observer } from 'mobx-react'
 import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
-  block: {
+  container: {
+    display: 'flex',
+  },
+  wrapper: {
     position: 'relative',
     flexShrink: 0,
     overflow: 'hidden',
     height: 13,
   },
-  elidedBlock: {
+  spacer: {
+    flexShrink: 0,
+    height: 13,
+  },
+  elided: {
     backgroundColor: '#999',
     backgroundImage:
       'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
@@ -28,16 +35,16 @@ const useStyles = makeStyles()(theme => ({
     justifyContent: 'center',
     pointerEvents: 'none',
   },
-  label: {
+  tickLabel: {
     fontSize: 11,
     zIndex: 1,
-    background: theme.palette.background.paper,
     lineHeight: 'normal',
     pointerEvents: 'none',
+    background: theme.palette.background.paper,
   },
 }))
 
-function ContentBlockLabels({
+const ContentBlockTicks = observer(function ContentBlockTicks({
   block,
   bpPerPx,
 }: {
@@ -45,25 +52,42 @@ function ContentBlockLabels({
   bpPerPx: number
 }) {
   const { classes } = useStyles()
-  const ticks = makeTicks(block.start, block.end, bpPerPx, true, false)
+  const { start, end, reversed, widthPx } = block
 
+  if (widthPx < 20) {
+    return <div className={classes.wrapper} style={{ width: widthPx }} />
+  }
+
+  const ticks = makeTicks(start, end, bpPerPx, true, false)
   return (
-    <div className={classes.block} style={{ width: block.widthPx }}>
-      {ticks.map(({ type, base }) => {
-        if (type !== 'major') {
-          return null
-        }
-        const x =
-          (block.reversed ? block.end - base : base - block.start) / bpPerPx
-        return (
-          <div key={base} className={classes.tick} style={{ left: x }}>
-            <div className={classes.label}>
-              {getTickDisplayStr(base + 1, bpPerPx)}
-            </div>
+    <div className={classes.wrapper} style={{ width: widthPx }}>
+      {ticks.map(({ base }) => (
+        <div
+          key={base}
+          className={classes.tick}
+          style={{
+            transform: `translateX(${(reversed ? end - base : base - start) / bpPerPx}px)`,
+          }}
+        >
+          <div className={classes.tickLabel}>
+            {getTickDisplayStr(base + 1, bpPerPx)}
           </div>
-        )
-      })}
+        </div>
+      ))}
     </div>
+  )
+})
+
+function NonContentSpacer({ block }: { block: BaseBlock }) {
+  const { classes, cx } = useStyles()
+  return (
+    <div
+      className={cx(
+        classes.spacer,
+        block.type === 'ElidedBlock' && classes.elided,
+      )}
+      style={{ width: block.widthPx }}
+    />
   )
 }
 
@@ -72,35 +96,18 @@ const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
 }: {
   model: LGV
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const { staticBlocks, bpPerPx } = model
 
   return (
-    <div style={{ display: 'flex' }}>
-      {staticBlocks.map((block, index) => {
-        const key = `${block.key}-${index}`
-        if (block.type === 'ContentBlock') {
-          return (
-            <ContentBlockLabels key={key} block={block} bpPerPx={bpPerPx} />
-          )
-        } else if (block.type === 'ElidedBlock') {
-          return (
-            <div
-              key={key}
-              className={cx(classes.block, classes.elidedBlock)}
-              style={{ width: block.widthPx }}
-            />
-          )
-        }
-        // InterRegionPaddingBlock renders as empty div
-        return (
-          <div
-            key={key}
-            className={classes.block}
-            style={{ width: block.widthPx }}
-          />
-        )
-      })}
+    <div className={classes.container}>
+      {staticBlocks.blocks.map(block =>
+        block.type === 'ContentBlock' ? (
+          <ContentBlockTicks key={block.key} block={block} bpPerPx={bpPerPx} />
+        ) : (
+          <NonContentSpacer key={block.key} block={block} />
+        ),
+      )}
     </div>
   )
 })
