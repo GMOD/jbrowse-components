@@ -436,11 +436,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   }),
                 )
 
-                // Show synteny tracks. tracks is string[][] — outer index is
-                // the level (between views[i] and views[i+1]).
+                // Show synteny tracks. Normalize string[] shorthand to
+                // string[][] (all tracks at level 0).
                 if (init.tracks) {
-                  for (let i = 0; i < init.tracks.length; i++) {
-                    const ids = init.tracks[i]
+                  const trackLevels: string[][] =
+                    init.tracks.length > 0 &&
+                    typeof init.tracks[0] === 'string'
+                      ? [init.tracks as string[]]
+                      : (init.tracks as string[][])
+                  for (let i = 0; i < trackLevels.length; i++) {
+                    const ids = trackLevels[i]
                     if (!ids) {
                       continue
                     }
