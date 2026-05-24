@@ -387,7 +387,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               const { assemblyManager } = session
 
               try {
-                // Wait for all assemblies to be ready and get their regions
                 const assemblies = await Promise.all(
                   init.views.map(async v => {
                     const asm = await assemblyManager.waitForAssembly(
@@ -400,7 +399,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   }),
                 )
 
-                // Set up the views with displayed regions (not using init)
                 self.setViews(
                   assemblies.map(asm => ({
                     type: 'LinearGenomeView' as const,
@@ -411,12 +409,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   })),
                 )
 
-                // Wait for child views to initialize
                 await Promise.all(
                   self.views.map(view => when(() => view.initialized)),
                 )
 
-                // Navigate to locations and show tracks on child views
                 await Promise.all(
                   init.views.map(async (viewInit, idx) => {
                     const view = self.views[idx]
@@ -436,26 +432,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   }),
                 )
 
-                // Show synteny tracks. Normalize string[] shorthand to
-                // string[][] (all tracks at level 0).
                 if (init.tracks) {
+                  // string[] is shorthand for level-0 tracks; string[][] is per-level
                   const trackLevels: string[][] =
-                    init.tracks.length > 0 &&
                     typeof init.tracks[0] === 'string'
                       ? [init.tracks as string[]]
                       : (init.tracks as string[][])
-                  for (let i = 0; i < trackLevels.length; i++) {
-                    const ids = trackLevels[i]
-                    if (!ids) {
-                      continue
-                    }
+                  for (const [i, ids] of trackLevels.entries()) {
                     for (const trackId of ids) {
                       self.showTrack(trackId, i)
                     }
                   }
                 }
 
-                // Clear init state
                 self.setInit(undefined)
               } catch (e) {
                 console.error(e)

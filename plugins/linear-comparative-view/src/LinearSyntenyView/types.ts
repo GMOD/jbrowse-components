@@ -17,8 +17,7 @@ export interface LinearSyntenyViewInit {
     tracks?: string[]
   }[]
   // synteny track ids per level: tracks[i] is shown between views[i] and
-  // views[i+1]. 2-way view has one entry; 3-way has two; etc.
-  // string[] shorthand loads all tracks at level 0
+  // views[i+1]. string[] shorthand is treated as a single level-0 entry
   tracks?: string[] | string[][]
 }
 

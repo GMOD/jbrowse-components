@@ -6,7 +6,20 @@ import { WithWebWorker } from './JBrowseReactApp.stories'
 # Web Worker RPC
 
 Using WebWorker RPC reduces main-thread blocking when browsing BAM/CRAM data.
-Pass a `makeWorkerInstance` factory to `createViewState`:
+Import `makeWorkerInstance` and pass it to `createViewState`:
+
+```js
+import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
+import makeWorkerInstance from '@jbrowse/react-app2/esm/makeWorkerInstance'
+
+const state = createViewState({
+  config: {
+    ...config,
+    configuration: { rpc: { defaultDriver: 'WebWorkerRpcDriver' } },
+  },
+  makeWorkerInstance,
+})
+```
 
 <Story of={WithWebWorker} />
 

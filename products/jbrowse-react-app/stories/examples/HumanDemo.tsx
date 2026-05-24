@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 // replace with this in your code:
-// import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
+// import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
 import { JBrowseApp, createViewState } from '../../src/index.ts'
 
 export const HumanDemo = () => {
@@ -76,7 +76,6 @@ export const HumanDemo = () => {
             adapter: {
               type: 'CramAdapter',
               uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-
               sequenceAdapter: {
                 type: 'BgzipFastaAdapter',
                 uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
@@ -129,12 +128,5 @@ export const HumanDemo = () => {
     }),
   )
 
-  return (
-    <>
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/HumanDemo.tsx">
-        Source code
-      </a>
-      <JBrowseApp viewState={viewState} />
-    </>
-  )
+  return <JBrowseApp viewState={viewState} />
 }
