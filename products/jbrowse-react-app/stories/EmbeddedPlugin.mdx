@@ -5,50 +5,27 @@ import { EmbeddedPlugin } from './JBrowseReactApp.stories'
 
 # Using Plugins
 
-Embedded apps can use plugins by passing a `plugins` array to `createViewState`.
-This is different from the jbrowse-web no-build plugin approach (which uses a
-`plugins.json` file): embedded apps receive plugin classes directly.
-
-## Defining a plugin inline
-
-You can define a plugin class in your application code with no build step or
-separate file:
+Pass plugin classes directly to `createViewState`:
 
 ```js
 import Plugin from '@jbrowse/core/Plugin'
-import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
 
 class MyPlugin extends Plugin {
   name = 'MyPlugin'
-
-  install(pluginManager) {
-    // add extension points, track types, etc.
-  }
-
+  install(pluginManager) { /* add track types, extension points, etc. */ }
   configure() {}
 }
 
-const state = createViewState({
-  config,
-  plugins: [MyPlugin],
-})
+const state = createViewState({ config, plugins: [MyPlugin] })
 ```
 
-## Installing a plugin from NPM
-
-For NPM-published plugins, import the plugin class and pass it in the same way:
+For NPM-published plugins, import and pass the class the same way:
 
 ```js
 import GWASPlugin from 'jbrowse-plugin-gwas'
-
-const state = createViewState({
-  config,
-  plugins: [GWASPlugin],
-})
+const state = createViewState({ config, plugins: [GWASPlugin] })
 ```
 
-The live example below adds a custom rubber band menu item by extending the
-`LinearGenomeView` state model. Click and drag on the ruler to see the new
-option.
+This example adds a custom rubber band menu item — click and drag on the ruler to see it:
 
 <Story of={EmbeddedPlugin} />

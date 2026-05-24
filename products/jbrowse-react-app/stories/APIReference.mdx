@@ -25,61 +25,47 @@ createViewState({
   configuration: { /* global settings, e.g. theme */ },
   assemblies: [ /* assembly configs */ ],
   tracks: [ /* track configs */ ],
-  defaultSession: { /* optional: views and widgets to open on load */ },
+  defaultSession: {
+    views: [{
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'hg38',
+        loc: 'chr1:1,000,000-1,100,000',
+        tracks: ['trackId1'],
+        tracklist: true,  // open track selector drawer on load
+      },
+    }],
+  },
 }
 ```
 
-### `defaultSession.views[*].init` shorthand
-
-```js
-defaultSession: {
-  name: 'My session',
-  views: [{
-    id: 'view1',
-    type: 'LinearGenomeView',
-    init: {
-      assembly: 'hg38',
-      loc: 'chr1:1,000,000-1,100,000',
-      tracks: ['trackId1', 'trackId2'],
-      tracklist: true,  // open track selector drawer on load
-    },
-  }],
-}
-```
-
-Works for all view types — `LinearSyntenyView`, `DotplotView`, etc. each have their own `init` shape.
+The `init` shorthand works for all view types — `LinearSyntenyView`, `DotplotView`, etc.
 
 ---
 
 ## State object
 
 ```js
-// Register a track config at runtime (call from an event handler, not during render)
-state.jbrowse.addTrackConf(trackConf)
-
-// Views
-state.session.views                              // array of open view models
+state.jbrowse.addTrackConf(trackConf)           // register a track at runtime (event handler only)
 state.session.views[0].showTrack(trackId)
 state.session.views[0].hideTrack(trackId)
 await state.session.views[0].navToLocString(loc, assemblyName)
-
-// Plugin manager
-import { getEnv } from '@jbrowse/core/util'
-const { pluginManager } = getEnv(state)
 ```
 
-### Launching views via extension points
+### Extension points
 
 ```js
+import { getEnv } from '@jbrowse/core/util'
+const { pluginManager } = getEnv(state)
+
 await pluginManager.evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView', {
   session: state.session,
   assembly: 'hg38',
   loc: 'chr1:1-100000',
   tracks: ['trackId1'],
 })
+// also: LaunchView-LinearSyntenyView, LaunchView-DotplotView
 ```
-
-Other extension points: `LaunchView-LinearSyntenyView`, `LaunchView-DotplotView`.
 
 ---
 
