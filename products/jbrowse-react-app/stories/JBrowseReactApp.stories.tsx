@@ -11,4 +11,9 @@ export {
   WithWebWorker,
 } from './examples/index.ts'
 
-export default { title: 'Source code for examples' }
+export default {
+  title: 'Source code for examples',
+  parameters: {
+    layout: 'fullscreen',
+  },
+}

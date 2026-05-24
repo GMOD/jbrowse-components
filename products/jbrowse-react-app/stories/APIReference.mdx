@@ -4,49 +4,32 @@ import { Meta } from '@storybook/addon-docs/blocks'
 
 # API Reference
 
-> This is the API for `@jbrowse/react-app2`. For the lightweight linear-only
-> component, see the
+> For the lightweight linear-only component, see the
 > [@jbrowse/react-linear-genome-view2 API Reference](https://jbrowse.org/storybook/lgv/main/?path=/docs/api-reference--docs).
 
 ## `createViewState(options)`
 
-Creates the root state object for the app component. Returns a state tree that
-is passed to `<JBrowseApp viewState={state} />`.
+```js
+createViewState({
+  config,             // required — full app config (same format as jbrowse-web config.json)
+  plugins,            // PluginConstructor[] — inline or imported plugin classes
+  makeWorkerInstance, // () => Worker — web worker factory for WebWorker RPC
+  onChange,           // (patch, reversePatch) => void — called on every MST patch
+})
+```
 
-### Options
-
-| Option               | Type                            | Default  | Description                                                              |
-| -------------------- | ------------------------------- | -------- | ------------------------------------------------------------------------ |
-| `config`             | object                          | required | Full app config — same format as a jbrowse-web `config.json` (see below) |
-| `plugins`            | PluginConstructor[]             | `[]`     | Inline or imported plugin classes                                        |
-| `makeWorkerInstance` | `() => Worker`                  | —        | Web worker factory for WebWorker RPC                                     |
-| `onChange`           | `(patch, reversePatch) => void` | —        | Called on every MST patch, useful for session persistence                |
-
-### Config structure
-
-`config` accepts the same keys as jbrowse-web's `config.json`:
+### Config shape
 
 ```js
 {
-  configuration: {
-    /* global settings, e.g. theme */
-  },
-  assemblies: [
-    /* assembly configs */
-  ],
-  tracks: [
-    /* track configs */
-  ],
-  defaultSession: {
-    /* optional: views and tracks to open on load */
-  },
+  configuration: { /* global settings, e.g. theme */ },
+  assemblies: [ /* assembly configs */ ],
+  tracks: [ /* track configs */ ],
+  defaultSession: { /* optional: views and widgets to open on load */ },
 }
 ```
 
 ### `defaultSession.views[*].init` shorthand
-
-The `init` field is the recommended way to open a specific location with tracks
-on startup without constructing the verbose internal session format:
 
 ```js
 defaultSession: {
@@ -58,35 +41,36 @@ defaultSession: {
       assembly: 'hg38',
       loc: 'chr1:1,000,000-1,100,000',
       tracks: ['trackId1', 'trackId2'],
+      tracklist: true,  // open track selector drawer on load
     },
   }],
 }
 ```
 
-This works for all view types — `LinearSyntenyView`, `DotplotView`, etc. each
-have their own `init` shape.
+Works for all view types — `LinearSyntenyView`, `DotplotView`, etc. each have their own `init` shape.
 
 ---
 
 ## State object
 
-`createViewState` returns a MST model. Key members:
+```js
+// Register a track config at runtime (call from an event handler, not during render)
+state.jbrowse.addTrackConf(trackConf)
 
-| Member                                                     | Description                                                                                                                                   |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `state.jbrowse.addTrackConf(trackConf)`                    | Register a new track config at runtime. Format is identical to a track entry in `config.json`. Call from an event handler, not during render. |
-| `state.session.views`                                      | Array of open view models                                                                                                                     |
-| `state.session.views[0].showTrack(trackId)`                | Open a track by trackId in the first view                                                                                                     |
-| `state.session.views[0].hideTrack(trackId)`                | Hide a track by trackId                                                                                                                       |
-| `state.session.views[0].navToLocString(loc, assemblyName)` | Navigate to a locstring (async, can throw)                                                                                                    |
-| `getEnv(state).pluginManager`                              | Plugin manager — use to call extension points                                                                                                 |
+// Views
+state.session.views                              // array of open view models
+state.session.views[0].showTrack(trackId)
+state.session.views[0].hideTrack(trackId)
+await state.session.views[0].navToLocString(loc, assemblyName)
+
+// Plugin manager
+import { getEnv } from '@jbrowse/core/util'
+const { pluginManager } = getEnv(state)
+```
 
 ### Launching views via extension points
 
 ```js
-import { getEnv } from '@jbrowse/core/util'
-
-const { pluginManager } = getEnv(state)
 await pluginManager.evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView', {
   session: state.session,
   assembly: 'hg38',
@@ -95,14 +79,11 @@ await pluginManager.evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView', {
 })
 ```
 
-Other extension points: `LaunchView-LinearSyntenyView`,
-`LaunchView-DotplotView`.
+Other extension points: `LaunchView-LinearSyntenyView`, `LaunchView-DotplotView`.
 
 ---
 
-## `loadPlugins(definitions, args?)`
-
-Asynchronously loads plugins from external URLs:
+## `loadPlugins(definitions)`
 
 ```js
 import { loadPlugins, createViewState } from '@jbrowse/react-app2'

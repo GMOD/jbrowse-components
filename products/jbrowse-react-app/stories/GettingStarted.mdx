@@ -3,55 +3,37 @@ import { BasicExample } from './JBrowseReactApp.stories'
 
 <Meta title="Getting Started" />
 
-# Welcome!
+# @jbrowse/react-app2
 
-This site contains the [Storybook](https://storybook.js.org/) docs for the
-[JBrowse 2 React App Component](https://www.npmjs.com/package/@jbrowse/react-app2).
-The component makes it possible to embed the full JBrowse 2 application in any
-React application.
+```sh
+npm install @jbrowse/react-app2
+```
 
-## Required CSS import
-
-The component uses [dockview](https://dockview.dev/) for its layout. You must
-import its stylesheet in your app's entry point:
+Import the dockview stylesheet in your app entry point:
 
 ```js
 import 'dockview-react/dist/styles/dockview.css'
 ```
 
-## Live example
-
 <Story of={BasicExample} />
-
-Click the code button on the bottom right to see the source for this story.
-
-## Quick start with `init`
-
-The `defaultSession.views[*].init` shorthand is the recommended way to open a
-specific location with tracks on startup:
 
 ```js
 import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
 
 const state = createViewState({
   config: {
-    assemblies: [
-      /* ... */
-    ],
-    tracks: [
-      /* ... */
-    ],
+    assemblies: [{ name: 'hg38', sequence: { /* ... */ } }],
+    tracks: [{ trackId: 'my_track', type: 'FeatureTrack', /* ... */ }],
     defaultSession: {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          init: {
-            assembly: 'hg38',
-            loc: 'chr1:1,000,000-1,100,000',
-            tracks: ['my_genes_track'],
-          },
+      views: [{
+        type: 'LinearGenomeView',
+        init: {
+          assembly: 'hg38',
+          loc: 'chr1:1,000,000-1,100,000',
+          tracks: ['my_track'],
+          tracklist: true,  // open track selector on load
         },
-      ],
+      }],
     },
   },
 })
@@ -59,24 +41,18 @@ const state = createViewState({
 return <JBrowseApp viewState={state} />
 ```
 
-This works for all view types — see
-[Synteny Views](?path=/docs/synteny-views--docs) for a `LinearSyntenyView`
-example. The full list of `createViewState` options is in the
-[API Reference](?path=/docs/api-reference--docs).
+## Runtime API
 
-## More examples
+```js
+// add a track at runtime (from an event handler, not during render)
+state.jbrowse.addTrackConf({ trackId: 'new_track', type: 'FeatureTrack', assemblyNames: ['hg38'], /* ... */ })
+state.session.views[0]?.showTrack('new_track')
 
-- [API Reference](?path=/docs/api-reference--docs) — all `createViewState`
-  options and state methods
-- [Real Data: Human GRCh38](?path=/docs/real-data-human-grch38--docs)
-- [Synteny Views](?path=/docs/synteny-views--docs) — linear synteny and dotplot
-- [Adding Tracks Programmatically](?path=/docs/adding-tracks-programmatically--docs)
-- [Using Plugins](?path=/docs/using-plugins--docs)
-- [Theming](?path=/docs/theming--docs) — dark mode and custom colors
-- [Importing config.json files](?path=/docs/importing-config-json-files--docs)
-- [Launching Views via Extension Points](?path=/docs/launching-views-via-extension-points--docs)
-- [Source code for all storybook examples](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-app/stories)
-- [Embedded components overview](https://jbrowse.org/jb2/docs/embedded_components/)
+// navigate
+await state.session.views[0]?.navToLocString('chr1:1-100000', 'hg38')
+```
 
-If you only need a linear genome view without the full app shell, see the
-[@jbrowse/react-linear-genome-view2 storybook](https://jbrowse.org/storybook/lgv/main).
+See the [API Reference](?path=/docs/api-reference--docs) for the full `createViewState` options.
+
+For a linear-only embed without the full app shell, see
+[@jbrowse/react-linear-genome-view2](https://jbrowse.org/storybook/lgv/main).
