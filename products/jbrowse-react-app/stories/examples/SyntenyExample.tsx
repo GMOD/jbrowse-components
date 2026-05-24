@@ -22,7 +22,7 @@ export const SyntenyExample = () => {
               type: 'LinearSyntenyView',
               init: {
                 views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
-                tracks: ['volvox_del.paf'],
+                tracks: [['volvox_del.paf']],
               },
             },
           ],
