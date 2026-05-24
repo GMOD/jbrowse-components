@@ -101,7 +101,8 @@ function getOutputPath(entry) {
 }
 
 // Find all imports and add preserved exports
-const imports = [...new Set([...findAllImports(), ...preservedExports])]
+// Sort using JS string comparison (consistent across locales, unlike shell sort -u)
+const imports = [...new Set([...findAllImports(), ...preservedExports])].sort()
 console.log(`Found ${imports.length} unique @jbrowse/core import paths`)
 
 // Generate dev exports (pointing to src)
