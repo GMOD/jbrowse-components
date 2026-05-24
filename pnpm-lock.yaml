@@ -10120,8 +10120,8 @@ packages:
     resolution: {integrity: sha512-Ae3OVUqifDw0wBriIBS7yVaW44Dp6eSHQcyq4Igc7eN2TJH/2YsicswaW+J/OuMvhpDPOKEgpAZCjkb4hpoyeA==}
     engines: {node: ^16.14.0 || >= 17.3.0}
 
-  tinyexec@1.1.2:
-    resolution: {integrity: sha512-dAqSqE/RabpBKI8+h26GfLq6Vb3JVXs30XYQjdMjaj/c2tS8IYYMbIzP599KtRj7c57/wYApb3QjgRgXmrCukA==}
+  tinyexec@1.2.2:
+    resolution: {integrity: sha512-M/Q0B2cp4K7kynaT/vnED1j8TlLY+Pp7C6Wl2bl/7u/F0mUVwdyOpwomQb8JpYLitHUssAJRmLZdMCGsrx7i+g==}
     engines: {node: '>=18'}
 
   tinyglobby@0.2.16:
@@ -10139,15 +10139,15 @@ packages:
   tldts-core@6.1.86:
     resolution: {integrity: sha512-Je6p7pkk+KMzMv2XXKmAE3McmolOQFdxkKw0R8EYNr7sELW46JqnNeTX8ybPiQgvg1ymCoF8LXs5fzFaZvJPTA==}
 
-  tldts-core@7.0.30:
-    resolution: {integrity: sha512-uiHN8PIB1VmWyS98eZYja4xzlYqeFZVjb4OuYlJQnZAuJhMw4PbKQOKgHKhBdJR3FE/t5mUQ1Kd80++B+qhD1Q==}
+  tldts-core@7.0.32:
+    resolution: {integrity: sha512-GbSw6chU2HsHIB/NAyBJYxXQKpcqhtgY6bvWi90OarpbuMia+Z4Gw5BYiW4hJo1DzQ/6k9coba7FU/ijcgVLLw==}
 
   tldts@6.1.86:
     resolution: {integrity: sha512-WMi/OQ2axVTf/ykqCQgXiIct+mSQDFdH2fkwhPwgEwvJ1kSzZRiinb0zF2Xb8u4+OqPChmyI6MEu4EezNJz+FQ==}
     hasBin: true
 
-  tldts@7.0.30:
-    resolution: {integrity: sha512-ELrFxuqsDdHUwoh0XxDbxuLD3Wnz49Z57IFvTtvWy1hJdcMZjXLIuonjilCiWHlT2GbE4Wlv1wKVTzDFnXH1aw==}
+  tldts@7.0.32:
+    resolution: {integrity: sha512-5eDV0tK2NhLAAqBeXDAQ36+EwuStd1HbsSOnGsp+JbExITnExcALLL5M1kTH8gjDYN5QvwmUWimE3GoMZ2A7xQ==}
     hasBin: true
 
   tmp@0.2.5:
@@ -10840,7 +10840,7 @@ snapshots:
   '@antfu/install-pkg@1.1.0':
     dependencies:
       package-manager-detector: 1.6.0
-      tinyexec: 1.1.2
+      tinyexec: 1.2.2
 
   '@antfu/utils@8.1.1': {}
 
@@ -14539,7 +14539,7 @@ snapshots:
       smol-toml: 1.6.1
       svgo: 4.0.1
       tinyclip: 0.1.12
-      tinyexec: 1.1.2
+      tinyexec: 1.2.2
       tinyglobby: 0.2.16
       ultrahtml: 1.6.0
       unifont: 0.7.4
@@ -19863,7 +19863,7 @@ snapshots:
 
   tinyclip@0.1.12: {}
 
-  tinyexec@1.1.2: {}
+  tinyexec@1.2.2: {}
 
   tinyglobby@0.2.16:
     dependencies:
@@ -19876,15 +19876,15 @@ snapshots:
 
   tldts-core@6.1.86: {}
 
-  tldts-core@7.0.30: {}
+  tldts-core@7.0.32: {}
 
   tldts@6.1.86:
     dependencies:
       tldts-core: 6.1.86
 
-  tldts@7.0.30:
+  tldts@7.0.32:
     dependencies:
-      tldts-core: 7.0.30
+      tldts-core: 7.0.32
 
   tmp@0.2.5: {}
 
@@ -19908,7 +19908,7 @@ snapshots:
 
   tough-cookie@6.0.1:
     dependencies:
-      tldts: 7.0.30
+      tldts: 7.0.32
 
   tr46@0.0.3: {}
 
