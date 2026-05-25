@@ -11,13 +11,18 @@ import type { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema.
 import type { UriLocation } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+// metadataOnly: signals getFetcher to request ?fields=size instead of ?alt=media,
+// used by GoogleDriveFile constructor to pre-fetch file size for stat()
 export interface RequestInitWithMetadata extends RequestInit {
   metadataOnly?: boolean
 }
 
 function getUri(str: string) {
   const urlId = /[-\w]{25,}/.exec(str)
-  return `https://www.googleapis.com/drive/v3/files/${urlId}`
+  if (!urlId) {
+    throw new Error(`Could not extract Google Drive file ID from URL: ${str}`)
+  }
+  return `https://www.googleapis.com/drive/v3/files/${urlId[0]}`
 }
 
 /**
@@ -61,6 +66,8 @@ export default function stateModelFactory(
         return async (input: RequestInfo, init?: RequestInitWithMetadata) => {
           const driveUrl = new URL(getUri(String(input)))
           const searchParams = new URLSearchParams()
+          // metadataOnly: private flag used by GoogleDriveFile constructor to
+          // pre-fetch just the file size for stat() without downloading content
           if (init?.metadataOnly) {
             searchParams.append('fields', 'size')
           } else {
@@ -94,10 +101,7 @@ export default function stateModelFactory(
        */
       async validateToken(token: string, location: UriLocation) {
         const response = await fetch(getUri(location.uri), {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
+          headers: { Authorization: `Bearer ${token}` },
         })
         if (!response.ok) {
           throw new Error(

@@ -68,7 +68,7 @@ export function HTTPBasicLoginForm({
           <Button
             variant="contained"
             color="secondary"
-            type="submit"
+            type="button"
             onClick={() => {
               handleClose()
             }}

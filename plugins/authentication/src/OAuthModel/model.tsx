@@ -1,29 +1,27 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { isElectron } from '@jbrowse/core/util'
+import { isElectron, sha256Base64Url, toBase64Url } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import {
-  generateChallenge,
-  processError,
-  processTokenResponse,
-  toBase64Url,
-} from './util.ts'
 import { getResponseError } from '../util.ts'
 
 import type { OAuthInternetAccountConfigModel } from './configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-interface OAuthData {
-  client_id: string
-  redirect_uri: string
-  response_type: 'token' | 'code'
-  scope?: string
-  code_challenge?: string
-  code_challenge_method?: string
-  token_access_type?: string
-  state?: string
+function parseOAuthError(text: string) {
+  try {
+    const { error, error_description } = JSON.parse(text) as {
+      error?: string
+      error_description?: string
+    }
+    return {
+      isInvalidGrant: error === 'invalid_grant',
+      statusText: error_description ?? text,
+    }
+  } catch {
+    return { isInvalidGrant: false, statusText: text }
+  }
 }
 
 /**
@@ -42,6 +40,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       configuration: ConfigurationReference(configSchema),
     })
     .views(() => {
+      // Closure variable rather than MST state so it survives model re-renders
+      // without being serialized to the snapshot.
       let codeVerifier: string | undefined = undefined
       return {
         /**
@@ -135,18 +135,16 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        * #action
        */
       async exchangeAuthorizationForAccessToken(
-        token: string,
+        code: string,
         redirectUri: string,
       ) {
-        const params = new URLSearchParams(
-          Object.entries({
-            code: token,
-            grant_type: 'authorization_code',
-            client_id: self.clientId,
-            redirect_uri: redirectUri,
-            ...(self.needsPKCE ? { code_verifier: self.codeVerifierPKCE } : {}),
-          }),
-        )
+        const params = new URLSearchParams({
+          code,
+          grant_type: 'authorization_code',
+          client_id: self.clientId,
+          redirect_uri: redirectUri,
+          ...(self.needsPKCE ? { code_verifier: self.codeVerifierPKCE } : {}),
+        })
 
         const response = await fetch(self.tokenEndpoint, {
           method: 'POST',
@@ -163,10 +161,14 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           )
         }
 
-        const data = await response.json()
-        return processTokenResponse(data, token => {
-          this.storeRefreshToken(token)
-        })
+        const data = (await response.json()) as {
+          refresh_token?: string
+          access_token: string
+        }
+        if (data.refresh_token) {
+          this.storeRefreshToken(data.refresh_token)
+        }
+        return data.access_token
       },
       /**
        * #action
@@ -175,36 +177,38 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         const response = await fetch(self.tokenEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams(
-            Object.entries({
-              grant_type: 'refresh_token',
-              refresh_token: refreshToken,
-              client_id: self.clientId,
-            }),
-          ).toString(),
+          body: new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: refreshToken,
+            client_id: self.clientId,
+          }).toString(),
         })
 
         if (!response.ok) {
           self.removeToken()
-          const text = await response.text()
-          throw new Error(
-            await getResponseError({
-              response,
-              statusText: processError(text, () => {
-                this.removeRefreshToken()
-              }),
-            }),
+          const { isInvalidGrant, statusText } = parseOAuthError(
+            await response.text(),
           )
+          if (isInvalidGrant) {
+            this.removeRefreshToken()
+          }
+          throw new Error(await getResponseError({ response, statusText }))
         }
-        const data = await response.json()
-        return processTokenResponse(data, token => {
-          this.storeRefreshToken(token)
-        })
+        const data = (await response.json()) as {
+          refresh_token?: string
+          access_token: string
+        }
+        if (data.refresh_token) {
+          this.storeRefreshToken(data.refresh_token)
+        }
+        return data.access_token
       },
     }))
     .actions(self => {
-      let listener: (event: MessageEvent) => undefined
-      let exchangedTokenPromise: Promise<string> | undefined = undefined
+      let listener: (event: MessageEvent) => void
+      // Shared across concurrent validateToken calls so parallel 401s all wait
+      // on the same refresh request rather than each triggering a separate one.
+      let exchangedTokenPromise: Promise<string> | undefined
       return {
         /**
          * #action
@@ -214,10 +218,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           resolve: (token: string) => void,
           reject: (error: Error) => void,
         ) {
-          listener = event => {
-            // this should probably get better handling, but ignored for now
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.finishOAuthWindow(event, resolve, reject)
+          listener = async event => {
+            try {
+              const token = await this.finishOAuthWindow(event)
+              if (token !== undefined) {
+                resolve(token)
+              }
+            } catch (e: unknown) {
+              reject(e instanceof Error ? e : new Error(String(e)))
+            }
           }
           window.addEventListener('message', listener)
         },
@@ -229,99 +238,72 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         },
         /**
          * #action
+         * Returns the token if the event completes the flow, undefined if the
+         * event name doesn't match. Throws on any OAuth error.
          */
-        async finishOAuthWindow(
-          event: MessageEvent,
-          resolve: (token: string) => void,
-          reject: (error: Error) => void,
-        ) {
+        async finishOAuthWindow(event: MessageEvent) {
           if (
             event.data.name !== `JBrowseAuthWindow-${self.internetAccountId}`
           ) {
-            this.deleteMessageChannel()
-            return
+            return undefined
           }
-          const redirectUriWithInfo = event.data.redirectUri
-          const fixedQueryString = redirectUriWithInfo.replace('#', '?')
-          const redirectUrl = new URL(fixedQueryString)
-          const queryStringSearch = redirectUrl.search
-          const urlParams = new URLSearchParams(queryStringSearch)
-          if (urlParams.has('access_token')) {
-            const token = urlParams.get('access_token')
-            if (!token) {
-              reject(new Error('Error with token endpoint'))
-              return
-            }
-            self.storeToken(token)
-            resolve(token)
-            return
-          }
-          if (urlParams.has('code')) {
-            const code = urlParams.get('code')
-            if (!code) {
-              reject(new Error('Error with authorization endpoint'))
-              return
-            }
-            try {
-              const token = await self.exchangeAuthorizationForAccessToken(
-                code,
-                redirectUrl.origin + redirectUrl.pathname,
-              )
-              self.storeToken(token)
-              resolve(token)
-              return
-            } catch (e) {
-              if (e instanceof Error) {
-                reject(e)
-              } else {
-                reject(new Error(String(e)))
-              }
-              return
-            }
-          }
-          if (redirectUriWithInfo.includes('access_denied')) {
-            reject(new Error('OAuth flow was cancelled'))
-            return
-          }
-          if (redirectUriWithInfo.includes('error')) {
-            reject(new Error(`OAuth flow error: ${queryStringSearch}`))
-            return
-          }
+          // Remove listener before any branching so it fires exactly once.
           this.deleteMessageChannel()
+          const redirectUrl = new URL(event.data.redirectUri.replace('#', '?'))
+          const urlParams = new URLSearchParams(redirectUrl.search)
+          const expectedState = self.state()
+          if (expectedState && urlParams.get('state') !== expectedState) {
+            throw new Error('OAuth state mismatch — possible CSRF attack')
+          }
+          const accessToken = urlParams.get('access_token')
+          if (accessToken) {
+            self.storeToken(accessToken)
+            return accessToken
+          }
+          const code = urlParams.get('code')
+          if (code) {
+            const token = await self.exchangeAuthorizationForAccessToken(
+              code,
+              redirectUrl.origin + redirectUrl.pathname,
+            )
+            self.storeToken(token)
+            return token
+          }
+          const error = urlParams.get('error')
+          if (error === 'access_denied') {
+            throw new Error('OAuth flow was cancelled')
+          }
+          if (error) {
+            throw new Error(`OAuth flow error: ${error}`)
+          }
+          return undefined
         },
         /**
          * #action
          * opens external OAuth flow, popup for web and new browser window for
          * desktop
          */
-        async useEndpointForAuthorization(
-          resolve: (token: string) => void,
-          reject: (error: Error) => void,
-        ) {
+        async useEndpointForAuthorization(resolve: (token: string) => void) {
           const redirectUri = isElectron
             ? 'http://localhost/auth'
             : window.location.origin + window.location.pathname
-          const data: OAuthData = {
+          const state = self.state()
+          const codeChallenge = self.needsPKCE
+            ? await sha256Base64Url(self.codeVerifierPKCE)
+            : undefined
+          const data: Record<string, string> = {
             client_id: self.clientId,
             redirect_uri: redirectUri,
             response_type: self.responseType,
             token_access_type: 'offline',
+            ...(state ? { state } : {}),
+            ...(self.scopes ? { scope: self.scopes } : {}),
+            ...(codeChallenge
+              ? { code_challenge: codeChallenge, code_challenge_method: 'S256' }
+              : {}),
           }
 
-          if (self.state()) {
-            data.state = self.state()
-          }
-
-          if (self.scopes) {
-            data.scope = self.scopes
-          }
-
-          if (self.needsPKCE) {
-            data.code_challenge = await generateChallenge(self.codeVerifierPKCE)
-            data.code_challenge_method = 'S256'
-          }
-
-          const params = new URLSearchParams(Object.entries(data))
+          const params = new URLSearchParams(data)
 
           const url = new URL(self.authEndpoint)
           url.search = params.toString()
@@ -337,11 +319,12 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             })
 
             const eventFromDesktop = new MessageEvent('message', {
-              data: { name: eventName, redirectUri: redirectUri },
+              data: { name: eventName, redirectUri },
             })
-            // may want to improve handling
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.finishOAuthWindow(eventFromDesktop, resolve, reject)
+            const token = await this.finishOAuthWindow(eventFromDesktop)
+            if (token !== undefined) {
+              resolve(token)
+            }
           } else {
             window.open(url, eventName, 'width=500,height=600,left=0,top=0')
           }
@@ -354,26 +337,23 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           reject: (error: Error) => void,
         ) {
           const refreshToken = self.retrieveRefreshToken()
-          let doUserFlow = true
-
-          // if there is a refresh token, then try it out, and only if that
-          // refresh token succeeds, set doUserFlow to false
+          let refreshSucceeded = false
           if (refreshToken) {
             try {
-              const token =
-                await self.exchangeRefreshForAccessToken(refreshToken)
-              resolve(token)
-              doUserFlow = false
+              resolve(await self.exchangeRefreshForAccessToken(refreshToken))
+              refreshSucceeded = true
             } catch (e) {
               console.error(e)
               self.removeRefreshToken()
             }
           }
-          if (doUserFlow) {
+          if (!refreshSucceeded) {
             this.addMessageChannel(resolve, reject)
-            // may want to improve handling
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.useEndpointForAuthorization(resolve, reject)
+            try {
+              await this.useEndpointForAuthorization(resolve)
+            } catch (e: unknown) {
+              reject(e instanceof Error ? e : new Error(String(e)))
+            }
           }
         },
         /**
@@ -387,16 +367,14 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             const refreshToken = self.retrieveRefreshToken()
             if (refreshToken) {
               try {
-                if (!exchangedTokenPromise) {
-                  exchangedTokenPromise =
-                    self.exchangeRefreshForAccessToken(refreshToken)
-                }
-                const newToken = await exchangedTokenPromise
-                exchangedTokenPromise = undefined
-                return newToken
+                exchangedTokenPromise ??=
+                  self.exchangeRefreshForAccessToken(refreshToken)
+                return await exchangedTokenPromise
               } catch (err) {
                 console.error('Token could not be refreshed', err)
                 // let original error be thrown
+              } finally {
+                exchangedTokenPromise = undefined
               }
             }
 
@@ -411,30 +389,19 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         },
       }
     })
-    .actions(self => {
-      const superGetFetcher = self.getFetcher
-      return {
-        /**
-         * #action
-         * Get a fetch method that will add any needed authentication headers
-         * to the request before sending it. If location is provided, it will
-         * be checked to see if it includes a token in it's pre-auth
-         * information.
-         *
-         * @param loc - UriLocation of the resource
-         * @returns A function that can be used to fetch
-         */
-        getFetcher(loc?: UriLocation) {
-          const fetcher = superGetFetcher(loc)
-          return async (input: RequestInfo, init?: RequestInit) => {
-            if (loc) {
-              await self.validateToken(await self.getToken(loc), loc)
-            }
-            return fetcher(input, init)
-          }
-        },
-      }
-    })
+    .actions(self => ({
+      /**
+       * #action
+       */
+      getFetcher(loc?: UriLocation) {
+        return async (input: RequestInfo, init?: RequestInit) => {
+          const token = loc
+            ? await self.validateToken(await self.getToken(loc), loc)
+            : await self.getToken()
+          return fetch(input, self.addAuthHeaderToInit(init, token))
+        }
+      },
+    }))
 }
 
 export default stateModelFactory
