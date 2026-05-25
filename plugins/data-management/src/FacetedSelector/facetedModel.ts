@@ -59,7 +59,8 @@ export function facetedStateTreeF() {
       /**
        * #volatile
        */
-      visible: {},
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      visible: {} as Record<string, boolean>,
       /**
        * #volatile
        */
