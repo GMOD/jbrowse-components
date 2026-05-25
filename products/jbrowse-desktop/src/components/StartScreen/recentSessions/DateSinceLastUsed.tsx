@@ -8,19 +8,20 @@ const useStyles = makeStyles()({
     textOverflow: 'ellipsis',
   },
 })
+
 export default function DateSinceLastUsed({
   row,
 }: {
   row: { updated?: number; showDateTooltip: boolean; lastModified: string }
 }) {
-  const { updated = 0, lastModified } = row
-  const date = new Date(updated)
+  const { updated, lastModified, showDateTooltip } = row
   const { classes } = useStyles()
-  return row.showDateTooltip ? (
-    <Tooltip title={date.toLocaleString('en-US')}>
-      <div className={classes.cell}>{lastModified}</div>
+  const content = <div className={classes.cell}>{lastModified}</div>
+  return showDateTooltip && updated !== undefined ? (
+    <Tooltip title={new Date(updated).toLocaleString('en-US')}>
+      {content}
     </Tooltip>
   ) : (
-    <div className={classes.cell}>{lastModified}</div>
+    content
   )
 }

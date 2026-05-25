@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
-import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
+import { ConfirmDialog, ErrorMessage } from '@jbrowse/core/ui'
 import { DialogContentText, Input } from '@mui/material'
 const { ipcRenderer } = window.require('electron')
 
@@ -11,19 +10,17 @@ const RenameQuickstartDialog = ({
   onClose,
 }: {
   quickstartNames: string[]
-  quickstartToRename?: string
-  onClose: (arg0: boolean) => void
+  quickstartToRename: string
+  onClose: () => void
 }) => {
-  const [newQuickstartName, setNewQuickstartName] = useState('')
+  const [newQuickstartName, setNewQuickstartName] = useState(quickstartToRename)
   const [error, setError] = useState<unknown>()
 
   return (
     <ConfirmDialog
       open
       title="Rename quickstart"
-      onCancel={() => {
-        onClose(false)
-      }}
+      onCancel={onClose}
       onSubmit={async () => {
         try {
           if (quickstartNames.includes(newQuickstartName)) {
@@ -34,7 +31,7 @@ const RenameQuickstartDialog = ({
             quickstartToRename,
             newQuickstartName,
           )
-          onClose(true)
+          onClose()
         } catch (e) {
           console.error(e)
           setError(e)
@@ -42,16 +39,16 @@ const RenameQuickstartDialog = ({
       }}
     >
       <DialogContentText>
-        Please enter a new name for the session:
+        Please enter a new name for the quickstart:
       </DialogContentText>
       {quickstartNames.includes(newQuickstartName) ? (
         <DialogContentText color="error">
-          There is already a session named &quot;{newQuickstartName}&quot;
+          There is already a quickstart named &quot;{newQuickstartName}&quot;
         </DialogContentText>
       ) : null}
       <Input
         autoFocus
-        defaultValue={quickstartToRename}
+        value={newQuickstartName}
         onChange={event => {
           setNewQuickstartName(event.target.value)
         }}

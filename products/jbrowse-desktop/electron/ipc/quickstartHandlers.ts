@@ -8,7 +8,7 @@ import { getDeletedMarkerPath, getQuickstartPath } from '../paths.ts'
 
 import type { AppPaths } from '../paths.ts'
 
-const { readFile, copyFile, readdir } = fs.promises
+const { readFile, copyFile, readdir, rename, unlink, writeFile } = fs.promises
 const ENCODING = 'utf8'
 
 async function readQuickstart(quickstartPath: string): Promise<unknown> {
@@ -22,7 +22,7 @@ async function readQuickstart(quickstartPath: string): Promise<unknown> {
 }
 
 export function registerQuickstartHandlers(paths: AppPaths) {
-  ipcMain.handle('listQuickstarts', async (_event: unknown) => {
+  ipcMain.handle('listQuickstarts', async _ => {
     return (await readdir(paths.quickstartDir))
       .filter(f => path.extname(f) === '.json')
       .map(f => decodeURIComponent(path.basename(f, '.json')))
@@ -30,31 +30,31 @@ export function registerQuickstartHandlers(paths: AppPaths) {
 
   ipcMain.handle(
     'addToQuickstartList',
-    async (_event: unknown, sessionPath: string, sessionName: string) => {
+    async (_, sessionPath: string, sessionName: string) => {
       await copyFile(sessionPath, getQuickstartPath(paths, sessionName))
     },
   )
 
-  ipcMain.handle('getQuickstart', async (_event: unknown, name: string) => {
+  ipcMain.handle('getQuickstart', async (_, name: string) => {
     return readQuickstart(getQuickstartPath(paths, name))
   })
 
-  ipcMain.handle('deleteQuickstart', async (_event: unknown, name: string) => {
+  ipcMain.handle('deleteQuickstart', async (_, name: string) => {
     const quickstartPath = getQuickstartPath(paths, name)
     const deletedMarkerPath = getDeletedMarkerPath(paths, name)
 
-    await fs.promises.unlink(quickstartPath)
+    await unlink(quickstartPath)
 
     // Add a gravestone '.deleted' file when we delete a session, so that if it
     // comes from the https://jbrowse.org/genomes/sessions.json, we don't
     // recreate it
-    await fs.promises.writeFile(deletedMarkerPath, '', ENCODING)
+    await writeFile(deletedMarkerPath, '', ENCODING)
   })
 
   ipcMain.handle(
     'renameQuickstart',
-    async (_event: unknown, oldName: string, newName: string) => {
-      await fs.promises.rename(
+    async (_, oldName: string, newName: string) => {
+      await rename(
         getQuickstartPath(paths, oldName),
         getQuickstartPath(paths, newName),
       )

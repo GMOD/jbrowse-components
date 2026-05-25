@@ -7,13 +7,6 @@ const useStyles = makeStyles()({
   starIcon: {
     marginLeft: 4,
     fontSize: 16,
-    color: 'darkorange',
-    cursor: 'pointer',
-  },
-  starIconEmpty: {
-    marginLeft: 4,
-    fontSize: 16,
-    color: 'black',
     cursor: 'pointer',
   },
 })
@@ -26,13 +19,14 @@ export default function StarIcon({
   onClick: () => void
 }) {
   const { classes } = useStyles()
+  const Icon = isFavorite ? Star : StarBorder
   return (
     <Tooltip title="Favorite">
-      {isFavorite ? (
-        <Star className={classes.starIcon} onClick={onClick} />
-      ) : (
-        <StarBorder className={classes.starIconEmpty} onClick={onClick} />
-      )}
+      <Icon
+        className={classes.starIcon}
+        style={{ color: isFavorite ? 'darkorange' : 'black' }}
+        onClick={onClick}
+      />
     </Tooltip>
   )
 }

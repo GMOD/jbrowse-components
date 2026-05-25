@@ -1,6 +1,7 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { when } from 'mobx'
 
-import SessionLoader from './SessionLoader.ts'
+import SessionLoader, { readSessionFromStorage } from './SessionLoader.ts'
 
 // Mock dependencies
 jest.mock('@jbrowse/core/util/io', () => ({
@@ -22,6 +23,10 @@ jest.mock('./util', () => ({
 
 jest.mock('idb', () => ({
   openDB: jest.fn(),
+}))
+
+jest.mock('./createPluginManager', () => ({
+  createPluginManager: jest.fn(),
 }))
 
 describe('SessionLoader', () => {
@@ -318,50 +323,26 @@ describe('SessionLoader', () => {
     })
   })
 
-  describe('fetchSessionFromSessionStorage', () => {
-    it('loads session when query matches session id in storage', async () => {
+  describe('readSessionFromStorage', () => {
+    it('returns the snapshot when query matches session id in storage', () => {
       const sessionSnap = { id: 'test-session-id', name: 'Test' }
       sessionStorage.setItem(
         'current',
         JSON.stringify({ session: sessionSnap }),
       )
-
-      const loader = SessionLoader.create({
-        sessionQuery: 'local-test-session-id',
-        configSnapshot: {},
-        initialTimestamp: Date.now(),
-      })
-      loader.setRuntimePlugins([])
-
-      const result =
-        await loader.fetchSessionFromSessionStorage('test-session-id')
-      expect(result).toBe(true)
+      expect(readSessionFromStorage('test-session-id')).toEqual(sessionSnap)
     })
 
-    it('returns false when query does not match', async () => {
-      const sessionSnap = { id: 'different-id', name: 'Test' }
+    it('returns undefined when query does not match', () => {
       sessionStorage.setItem(
         'current',
-        JSON.stringify({ session: sessionSnap }),
+        JSON.stringify({ session: { id: 'different-id', name: 'Test' } }),
       )
-
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-
-      const result =
-        await loader.fetchSessionFromSessionStorage('test-session-id')
-      expect(result).toBe(false)
+      expect(readSessionFromStorage('test-session-id')).toBeUndefined()
     })
 
-    it('returns false when sessionStorage is empty', async () => {
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-
-      const result =
-        await loader.fetchSessionFromSessionStorage('test-session-id')
-      expect(result).toBe(false)
+    it('returns undefined when sessionStorage is empty', () => {
+      expect(readSessionFromStorage('test-session-id')).toBeUndefined()
     })
   })
 
@@ -393,6 +374,105 @@ describe('SessionLoader', () => {
       loader.setConfigError(configErr)
       loader.setSessionError(sessionErr)
       expect(loader.error).toBe(configErr)
+    })
+  })
+
+  // afterCreate is async, so these tests use `when` to wait for the loader to
+  // settle. They verify the full config-load → session-dispatch pipeline.
+  describe('afterCreate integration', () => {
+    it('fetches config and sets blank session when no session query', async () => {
+      const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+      await when(() => loader.isSessionLoaded, { timeout: 5000 })
+      expect(loader.configSnapshot).toBeDefined()
+      expect(loader.blankSession).toBe(true)
+    })
+
+    it('skips config fetch when configSnapshot is pre-set (HMR/plugin reload path)', async () => {
+      const loader = SessionLoader.create({
+        configSnapshot: { assemblies: [] },
+        initialTimestamp: Date.now(),
+      })
+      await when(() => loader.isSessionLoaded, { timeout: 5000 })
+      expect(loader.blankSession).toBe(true)
+      expect(loader.runtimePlugins).toBeDefined()
+    })
+
+    it('restores pre-set sessionSnapshot and loads plugins (plugin reload path)', async () => {
+      const sessionSnapshot = { id: 'restored-id', name: 'Restored' }
+      const loader = SessionLoader.create({
+        configSnapshot: {},
+        sessionSnapshot,
+        initialTimestamp: Date.now(),
+      })
+      await when(() => loader.ready, { timeout: 5000 })
+      expect(loader.sessionSnapshot).toMatchObject({ name: 'Restored' })
+      expect(loader.sessionPlugins).toBeDefined()
+    })
+
+    it('sets configError and skips session loading when config fetch fails', async () => {
+      const { openLocation } = jest.requireMock('@jbrowse/core/util/io')
+      openLocation.mockReturnValueOnce({
+        readFile: jest.fn().mockRejectedValue(new Error('Network error')),
+      })
+      const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+      await when(() => !!loader.configError, { timeout: 5000 })
+      expect(loader.configError).toBeDefined()
+      expect(loader.blankSession).toBe(false)
+    })
+
+    it('dispatches spec session', async () => {
+      const spec = { views: [{ type: 'LinearGenomeView' }] }
+      const loader = SessionLoader.create({
+        sessionQuery: `spec-${JSON.stringify(spec)}`,
+        initialTimestamp: Date.now(),
+      })
+      await when(() => loader.isSessionLoaded, { timeout: 5000 })
+      expect(loader.sessionSpec).toEqual(spec)
+    })
+
+    it('dispatches JB1-style session (loc + assembly)', async () => {
+      const loader = SessionLoader.create({
+        loc: 'chr1:1-1000',
+        assembly: 'hg38',
+        tracks: 'track1,track2',
+        initialTimestamp: Date.now(),
+      })
+      await when(() => loader.isSessionLoaded, { timeout: 5000 })
+      expect(loader.sessionSpec).toMatchObject({
+        views: [
+          expect.objectContaining({ loc: 'chr1:1-1000', assembly: 'hg38' }),
+        ],
+      })
+    })
+
+    it('dispatches hub session — sets hubSpec and blankSession', async () => {
+      const loader = SessionLoader.create({
+        hubURL: ['https://example.com/hub.txt'],
+        initialTimestamp: Date.now(),
+      })
+      await when(() => loader.isSessionLoaded, { timeout: 5000 })
+      expect(loader.hubSpec).toMatchObject({
+        hubURL: ['https://example.com/hub.txt'],
+      })
+      expect(loader.blankSession).toBe(true)
+    })
+
+    it('sets sessionError for unrecognized session format', async () => {
+      const loader = SessionLoader.create({
+        sessionQuery: 'unrecognized-format-xyz',
+        initialTimestamp: Date.now(),
+      })
+      await when(() => loader.isSessionLoaded, { timeout: 5000 })
+      expect(loader.sessionError).toBeDefined()
+    })
+
+    it('sets sessionError when a session loader throws', async () => {
+      const loader = SessionLoader.create({
+        sessionQuery: 'local-nonexistent',
+        initialTimestamp: Date.now(),
+      })
+      await when(() => loader.isSessionLoaded, { timeout: 5000 })
+      expect(loader.sessionError).toBeDefined()
     })
   })
 

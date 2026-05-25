@@ -1,48 +1,39 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-import {
-  getPendingFileHandleIds,
-  restorePendingFileHandles,
-} from '@jbrowse/core/util/tracks'
 import { Alert, Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function FileHandleRestoreBanner() {
-  const [pendingCount, setPendingCount] = useState(0)
+import { reloadPage } from '../util.ts'
+
+import type { WebSessionModel } from '../sessionModel/index.ts'
+
+const FileHandleRestoreBanner = observer(function FileHandleRestoreBanner({
+  session,
+}: {
+  session: WebSessionModel
+}) {
   const [restoring, setRestoring] = useState(false)
+  const { pendingFileHandleIds } = session
 
-  useEffect(() => {
-    const checkPending = () => {
-      const ids = getPendingFileHandleIds()
-      setPendingCount(ids.length)
-    }
-    checkPending()
-    const interval = setInterval(checkPending, 1000)
-    return () => {
-      clearInterval(interval)
-    }
-  }, [])
+  if (pendingFileHandleIds.length === 0) {
+    return null
+  }
+
+  const count = pendingFileHandleIds.length
 
   const handleRestore = async () => {
     setRestoring(true)
     try {
-      const results = await restorePendingFileHandles()
-      const successCount = results.filter(r => r.success).length
-      const stillPending = getPendingFileHandleIds().length
-      setPendingCount(stillPending)
-
-      if (successCount > 0) {
-        // Reload to re-render tracks with restored files
-        window.location.reload()
+      const before = count
+      await session.restorePendingFileHandles()
+      if (session.pendingFileHandleIds.length < before) {
+        reloadPage()
       }
     } catch (e) {
       console.error('Error restoring file handles:', e)
     } finally {
       setRestoring(false)
     }
-  }
-
-  if (pendingCount === 0) {
-    return null
   }
 
   return (
@@ -59,8 +50,10 @@ export default function FileHandleRestoreBanner() {
         </Button>
       }
     >
-      {pendingCount} local file{pendingCount > 1 ? 's' : ''} need
-      {pendingCount === 1 ? 's' : ''} permission to be restored.
+      {count} local file{count > 1 ? 's' : ''} need{count === 1 ? 's' : ''}{' '}
+      permission to be restored.
     </Alert>
   )
-}
+})
+
+export default FileHandleRestoreBanner

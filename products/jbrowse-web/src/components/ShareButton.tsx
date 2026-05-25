@@ -41,7 +41,7 @@ const ShareButton = observer(function ShareButton(props: {
         color="inherit"
         startIcon={<ShareIcon />}
         classes={{ root: classes.shareButton }}
-        onClick={async () => {
+        onClick={() => {
           setOpen(true)
         }}
       >

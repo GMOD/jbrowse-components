@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 
-import { useLocalStorage } from '@jbrowse/core/util'
+import { useFetch, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ListIcon from '@mui/icons-material/List'
@@ -8,19 +8,20 @@ import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import {
   Button,
+  Checkbox,
   FormControl,
+  FormControlLabel,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
   Typography,
 } from '@mui/material'
 
-import Checkbox2 from '../Checkbox2.tsx'
 import RecentSessionsCards from './RecentSessionsCards.tsx'
 import RecentSessionsList from './RecentSessionsDataGrid.tsx'
+import { useLoadSession } from './useLoadSession.ts'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
-import { loadPluginManager } from '../util.tsx'
 
 import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -60,11 +61,13 @@ export default function RecentSessionPanel({
   setPluginManager: (pm: PluginManager) => void
 }) {
   const { classes } = useStyles()
+  const { launch, loading: sessionLoading } = useLoadSession({
+    setPluginManager,
+    setError,
+  })
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
-  const [sessions, setSessions] = useState<RecentSessions>([])
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
-  const [updateSessionsList, setUpdateSessionsList] = useState(0)
-  const [selectedSessions, setSelectedSessions] = useState<RecentSessions>()
+  const [selectedSessions, setSelectedSessions] = useState<RecentSessions>([])
   const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
   const [showAutosaves, setShowAutosaves] = useLocalStorage(
     'showAutosaves',
@@ -74,41 +77,44 @@ export default function RecentSessionPanel({
     'showFavoritesOnly',
     false,
   )
-
-  const sortedSessions = useMemo(
-    () => sessions.sort((a, b) => (b.updated || 0) - (a.updated || 0)),
-    [sessions],
-  )
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        const sessions = await ipcRenderer.invoke('listSessions', showAutosaves)
-        setSessions(sessions)
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      }
-    })()
-  }, [setError, updateSessionsList, showAutosaves])
-
-  async function addToQuickstartList(arg: RecentSessionData[]) {
-    await Promise.all(
-      arg.map(s => ipcRenderer.invoke('addToQuickstartList', s.path, s.name)),
-    )
-  }
-
   const [favorites, setFavorites] = useLocalStorage(
     'startScreen-favoriteSessions',
     [] as string[],
   )
 
-  const favs = new Set(favorites)
-
-  const filteredSessions = sortedSessions.filter(f =>
-    showFavoritesOnly ? favs.has(f.path) : true,
+  const { data: sessions = [], mutate: mutateSessions } = useFetch(
+    ['listSessions', showAutosaves],
+    () =>
+      ipcRenderer.invoke('listSessions', showAutosaves) as Promise<
+        RecentSessionData[]
+      >,
+    {
+      onError: e => {
+        console.error(e)
+        setError(e)
+      },
+    },
   )
+
+  async function addToQuickstartList(arg: RecentSessionData[]) {
+    try {
+      await Promise.all(
+        arg.map(s => ipcRenderer.invoke('addToQuickstartList', s.path, s.name)),
+      )
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    }
+  }
+
+  const favs = new Set(favorites)
+  const sortedSessions = sessions.toSorted(
+    (a, b) => (b.updated ?? 0) - (a.updated ?? 0),
+  )
+  const filteredSessions = sortedSessions.filter(
+    f => !showFavoritesOnly || favs.has(f.path),
+  )
+
   return (
     <div>
       {sessionToRename ? (
@@ -116,17 +122,20 @@ export default function RecentSessionPanel({
           sessionToRename={sessionToRename}
           onClose={() => {
             setSessionToRename(undefined)
-            setUpdateSessionsList(s => s + 1)
+            mutateSessions().catch((e: unknown) => {
+              console.error(e)
+            })
           }}
         />
       ) : null}
       {sessionsToDelete ? (
         <DeleteSessionDialog
-          setError={setError}
           sessionsToDelete={sessionsToDelete}
           onClose={() => {
             setSessionsToDelete(undefined)
-            setUpdateSessionsList(s => s + 1)
+            mutateSessions().catch((e: unknown) => {
+              console.error(e)
+            })
           }}
         />
       ) : null}
@@ -152,7 +161,7 @@ export default function RecentSessionPanel({
             <ToggleButtonWithTooltip
               value="delete"
               title="Delete sessions"
-              disabled={!selectedSessions?.length}
+              disabled={!selectedSessions.length}
               onClick={() => {
                 setSessionsToDelete(selectedSessions)
               }}
@@ -162,52 +171,53 @@ export default function RecentSessionPanel({
             <ToggleButtonWithTooltip
               value="quickstart"
               title="Add sessions to quickstart list"
-              disabled={!selectedSessions?.length}
+              disabled={!selectedSessions.length}
               onClick={async () => {
-                try {
-                  await addToQuickstartList(selectedSessions || [])
-                } catch (e) {
-                  setError(e)
-                  console.error(e)
-                }
+                await addToQuickstartList(selectedSessions)
               }}
             >
               <PlaylistAddIcon />
             </ToggleButtonWithTooltip>
           </ToggleButtonGroup>
         </FormControl>
-        <Checkbox2
+        <FormControlLabel
           label="Show autosaves"
-          checked={showAutosaves}
-          onChange={() => {
-            setShowAutosaves(!showAutosaves)
-          }}
+          control={
+            <Checkbox
+              checked={showAutosaves}
+              onChange={() => {
+                setShowAutosaves(!showAutosaves)
+              }}
+            />
+          }
         />
-        <Checkbox2
+        <FormControlLabel
           label="Show favorites only"
-          checked={showFavoritesOnly}
-          onChange={() => {
-            setShowFavoritesOnly(!showFavoritesOnly)
-          }}
+          control={
+            <Checkbox
+              checked={showFavoritesOnly}
+              onChange={() => {
+                setShowFavoritesOnly(!showFavoritesOnly)
+              }}
+            />
+          }
         />
 
         <div className={classes.verticalCenter}>
-          <Button variant="contained" component="label" onClick={() => {}}>
+          <Button
+            variant="contained"
+            component="label"
+            disabled={sessionLoading}
+          >
             Open saved session (.jbrowse) file
             <input
               type="file"
               hidden
               onChange={async event => {
-                try {
-                  const file = event.target.files?.[0]
-                  if (file) {
-                    const { webUtils } = window.require('electron')
-                    const path = webUtils.getPathForFile(file)
-                    setPluginManager(await loadPluginManager(path))
-                  }
-                } catch (e) {
-                  console.error(e)
-                  setError(e)
+                const file = event.target.files?.[0]
+                if (file) {
+                  const { webUtils } = window.require('electron')
+                  await launch(webUtils.getPathForFile(file))
                 }
               }}
             />
@@ -217,23 +227,17 @@ export default function RecentSessionPanel({
 
       {!sortedSessions.length ? (
         <Typography>No sessions available</Typography>
-      ) : null}
-
-      {sortedSessions.length > 0 && displayMode === 'grid' ? (
+      ) : displayMode === 'grid' ? (
         <RecentSessionsCards
-          addToQuickstartList={entry => addToQuickstartList([entry])}
-          setPluginManager={setPluginManager}
+          launch={launch}
+          addToQuickstartList={async entry => addToQuickstartList([entry])}
           sessions={filteredSessions}
-          setError={setError}
           setSessionsToDelete={setSessionsToDelete}
           setSessionToRename={setSessionToRename}
         />
-      ) : null}
-
-      {sortedSessions.length > 0 && displayMode === 'list' ? (
+      ) : (
         <RecentSessionsList
-          setPluginManager={setPluginManager}
-          setError={setError}
+          launch={launch}
           setSelectedSessions={setSelectedSessions}
           setSessionToRename={setSessionToRename}
           sessions={filteredSessions}
@@ -247,7 +251,7 @@ export default function RecentSessionPanel({
           }}
           addToQuickstartList={entry => addToQuickstartList([entry])}
         />
-      ) : null}
+      )}
     </div>
   )
 }

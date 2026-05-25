@@ -10,14 +10,7 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable, DNA } from '@jbrowse/core/ui/Icons'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  getType,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
@@ -26,7 +19,6 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import ExtensionIcon from '@mui/icons-material/Extension'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import RedoIcon from '@mui/icons-material/Redo'
@@ -35,21 +27,19 @@ import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StarIcon from '@mui/icons-material/Star'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
-import { formatDistanceToNow } from 'date-fns'
-import { openDB } from 'idb'
-import { autorun } from 'mobx'
 
 import packageJSON from '../../package.json' with { type: 'json' }
 import jbrowseWebFactory from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
-import { filterSessionInPlace } from '../util.ts'
+import { setupSessionDB, setupSessionStorageAutosave } from './persistence.ts'
+import { buildSessionListSubmenu } from './sessionMenus.ts'
 
 import type { SessionDB, SessionMetadata } from '../types.ts'
 import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
+import type { BaseSession } from '@jbrowse/product-core'
+import type { WebRootModelInterface } from '@jbrowse/web-core'
 import type { IDBPDatabase } from 'idb'
 
 // lazies
@@ -128,7 +118,7 @@ export default function RootModel({
       /**
        * #volatile
        */
-      version: packageJSON.version,
+      version: `${packageJSON.version} (${process.env.BUILD_GIT_HASH ?? 'dev'})`,
       /**
        * #volatile
        */
@@ -155,6 +145,7 @@ export default function RootModel({
       /**
        * #volatile
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       /**
        * #volatile
@@ -183,7 +174,7 @@ export default function RootModel({
           const ret = await self.sessionDB.getAll('metadata')
           this.setSavedSessionMetadata(
             ret
-              .filter(f => f.configPath === (self.configPath || ''))
+              .filter(f => f.configPath === (self.configPath ?? ''))
               .sort((a, b) => +b.createdAt - +a.createdAt),
           )
         }
@@ -200,138 +191,16 @@ export default function RootModel({
        * #aftercreate
        */
       afterCreate() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          // IndexedDB setup for session persistence
-          if (typeof indexedDB !== 'undefined') {
-            try {
-              const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
-                upgrade(db) {
-                  db.createObjectStore('metadata')
-                  db.createObjectStore('sessions')
-                },
-              })
-              self.setSessionDB(sessionDB)
-
-              addDisposer(
-                self,
-                autorun(
-                  async () => {
-                    if (self.session) {
-                      try {
-                        // careful not to access self.savedSessionMetadata in
-                        // here, or else it can create an infinite loop
-                        const s = self.session
-
-                        // step 1. update the idb data according to whatever
-                        // triggered the autorun
-                        if (self.sessionDB) {
-                          await sessionDB.put('sessions', getSnapshot(s), s.id)
-                          if (!isAlive(self)) {
-                            return
-                          }
-
-                          const ret = await self.sessionDB.get('metadata', s.id)
-                          await sessionDB.put(
-                            'metadata',
-                            {
-                              ...ret,
-                              favorite: ret?.favorite || false,
-                              name: s.name,
-                              id: s.id,
-                              createdAt: new Date(),
-                              configPath: self.configPath || '',
-                            },
-                            s.id,
-                          )
-                        }
-                        // step 2. refetch the metadata
-                        await self.fetchSessionMetadata()
-                      } catch (e) {
-                        console.error(e)
-                        self.session?.notifyError(`${e}`, e)
-                      }
-                    }
-                  },
-                  { delay: 400 },
-                ),
-              )
-            } catch (e) {
-              console.error(e)
-              self.session?.notifyError(`${e}`, e)
-            }
-          }
-
-          let savingFailed = false
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                if (self.session) {
-                  const s = self.session as AbstractSessionModel
-                  const sessionSnap = getSnapshot(s)
-                  try {
-                    sessionStorage.setItem(
-                      'current',
-                      JSON.stringify({
-                        session: sessionSnap,
-                        createdAt: new Date(),
-                      }),
-                    )
-                    if (savingFailed) {
-                      savingFailed = false
-                      s.notify('Auto-saving restored', 'info')
-                    }
-
-                    // this check is not able to be modularized into it's own
-                    // autorun at current time because it depends on session
-                    // storage snapshot being set above
-                    if (self.pluginsUpdated) {
-                      self.reloadPluginManagerCallback(
-                        structuredClone(getSnapshot(self.jbrowse)),
-                        structuredClone(sessionSnap),
-                      )
-                    }
-                  } catch (e) {
-                    console.error(e)
-                    const msg = `${e}`
-                    if (!savingFailed) {
-                      savingFailed = true
-                      if (msg.includes('quota')) {
-                        s.notifyError(
-                          'Unable to auto-save session, exceeded sessionStorage quota. This may be because a very large feature was stored in session',
-                          e,
-                        )
-                      } else {
-                        s.notifyError(msg, e)
-                      }
-                    }
-                  }
-                }
-              },
-              { delay: 400 },
-            ),
-          )
-        })()
-      },
-      /**
-       * #action
-       */
-      setSession(sessionSnapshot: SnapshotIn<BaseSessionType>) {
-        const oldSession = self.session
-        self.session = cast(sessionSnapshot)
-        if (self.session) {
-          // validate all references in the session snapshot
-          try {
-            filterSessionInPlace(self.session, getType(self.session))
-          } catch (error) {
-            // throws error if session filtering failed
-            self.session = oldSession
-            throw error
-          }
+        // Cast: self here is the partial type at this point in the MST chain
+        // and doesn't yet include actions defined later in this same block,
+        // but the helpers only touch fields/actions already composed in.
+        const model = self as unknown as WebRootModel
+        setupSessionStorageAutosave(model)
+        if (typeof indexedDB !== 'undefined') {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          setupSessionDB(model)
         }
       },
-
       /**
        * #action
        */
@@ -354,7 +223,7 @@ export default function RootModel({
        */
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
-        this.setSession({
+        self.setSession({
           ...defaultSession,
           name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
         })
@@ -365,7 +234,7 @@ export default function RootModel({
       async activateSession(id: string) {
         const ret = await self.sessionDB?.get('sessions', id)
         if (ret) {
-          this.setSession(ret)
+          self.setSession(ret)
         } else {
           self.session?.notifyError('Session not found')
         }
@@ -373,39 +242,13 @@ export default function RootModel({
       /**
        * #action
        */
-      async favoriteSavedSession(id: string) {
+      async setSavedSessionFavorite(id: string, favorite: boolean) {
         if (self.sessionDB) {
-          const ret = self.savedSessionMetadata!.find(f => f.id === id)
+          const ret = self.savedSessionMetadata?.find(f => f.id === id)
           if (ret) {
-            await self.sessionDB.put(
-              'metadata',
-              {
-                ...ret,
-                favorite: true,
-              },
-              ret.id,
-            )
+            await self.sessionDB.put('metadata', { ...ret, favorite }, ret.id)
             await self.fetchSessionMetadata()
           }
-        }
-      },
-      /**
-       * #action
-       */
-      async unfavoriteSavedSession(id: string) {
-        if (self.sessionDB) {
-          const ret = self.savedSessionMetadata!.find(f => f.id === id)
-          if (ret) {
-            await self.sessionDB.put(
-              'metadata',
-              {
-                ...ret,
-                favorite: false,
-              },
-              ret.id,
-            )
-          }
-          await self.fetchSessionMetadata()
         }
       },
       /**
@@ -418,16 +261,6 @@ export default function RootModel({
           await self.fetchSessionMetadata()
         }
       },
-      /**
-       * #action
-       */
-      renameCurrentSession(sessionName: string) {
-        this.setSession({
-          ...getSnapshot(self.session),
-          name: sessionName,
-        })
-      },
-
       /**
        * #action
        */
@@ -455,6 +288,21 @@ export default function RootModel({
               const rest = self.savedSessionMetadata
                 ?.filter(f => !f.favorite)
                 .slice(0, 5)
+              const sessionMenuActions = {
+                activate: (id: string) => self.activateSession(id),
+                notifyError: (msg: string, e: unknown) => {
+                  self.session?.notifyError(msg, e)
+                },
+                showMore: () => {
+                  const widget = self.session?.addWidget(
+                    'SessionManager',
+                    'sessionManager',
+                  )
+                  if (widget) {
+                    self.session?.showWidget(widget)
+                  }
+                },
+              }
 
               return [
                 {
@@ -530,73 +378,24 @@ export default function RootModel({
                   ? [
                       {
                         label: 'Favorite sessions...',
-                        subMenu: [
-                          ...favs.slice(0, 5).map(r => ({
-                            label: `${r.name} (${r.id === self.session?.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
-                            disabled: r.id === self.session?.id,
-                            icon: StarIcon,
-                            onClick: () => {
-                              // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                              ;(async () => {
-                                try {
-                                  await self.activateSession(r.id)
-                                } catch (e) {
-                                  self.session?.notifyError(`${e}`, e)
-                                }
-                              })()
-                            },
-                          })),
-                          {
-                            label: 'More...',
-                            icon: FolderOpenIcon,
-                            onClick: () => {
-                              const widget = self.session?.addWidget(
-                                'SessionManager',
-                                'sessionManager',
-                              )
-                              if (widget) {
-                                self.session?.showWidget(widget)
-                              }
-                            },
-                          },
-                        ],
+                        subMenu: buildSessionListSubmenu({
+                          sessions: favs,
+                          currentSessionId: self.session?.id,
+                          actions: sessionMenuActions,
+                          itemIcon: StarIcon,
+                        }),
                       },
                     ]
                   : []),
                 {
                   label: 'Recent sessions...',
                   type: 'subMenu',
-                  subMenu: rest?.length
-                    ? [
-                        ...rest.map(r => ({
-                          label: `${r.name} (${r.id === self.session?.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
-                          disabled: r.id === self.session?.id,
-                          onClick: () => {
-                            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                            ;(async () => {
-                              try {
-                                await self.activateSession(r.id)
-                              } catch (e) {
-                                self.session?.notifyError(`${e}`, e)
-                              }
-                            })()
-                          },
-                        })),
-                        {
-                          label: 'More...',
-                          icon: FolderOpenIcon,
-                          onClick: () => {
-                            const widget = self.session?.addWidget(
-                              'SessionManager',
-                              'sessionManager',
-                            )
-                            if (widget) {
-                              self.session?.showWidget(widget)
-                            }
-                          },
-                        },
-                      ]
-                    : [{ label: 'No autosaves found', onClick: () => {} }],
+                  subMenu: buildSessionListSubmenu({
+                    sessions: rest,
+                    currentSessionId: self.session?.id,
+                    actions: sessionMenuActions,
+                    emptyLabel: 'No autosaves found',
+                  }),
                 },
                 { type: 'divider' },
                 {
@@ -721,15 +520,15 @@ export default function RootModel({
                 icon: SettingsIcon,
                 onClick: () => {
                   if (self.session) {
-                    ;(self.session as SessionWithDialogs).queueDialog(
-                      handleClose => [
-                        PreferencesDialog,
-                        {
-                          session: self.session,
-                          handleClose,
-                        },
-                      ],
-                    )
+                    const session = self.session as BaseSession
+                    session.queueDialog(handleClose => [
+                      PreferencesDialog,
+                      {
+                        session: self.session,
+                        pluginManager,
+                        handleClose,
+                      },
+                    ])
                   }
                 },
               },
@@ -755,3 +554,10 @@ export default function RootModel({
 
 export type WebRootModelType = ReturnType<typeof RootModel>
 export type WebRootModel = Instance<WebRootModelType>
+
+// Verify WebRootModel satisfies WebRootModelInterface at compile time.
+// If this errors, the root model is missing something BaseWebSession expects.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _checkWebRootModel(m: WebRootModel): WebRootModelInterface {
+  return m
+}

@@ -1,18 +1,11 @@
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { SessionMetadata } from '@jbrowse/web-core'
 import type { DBSchema } from 'idb'
 
 export interface Session {
   name: string
   id: string
   [key: string]: unknown
-}
-
-export interface SessionMetadata {
-  id: string
-  name: string
-  createdAt: Date
-  configPath: string
-  favorite: boolean
 }
 
 export interface SessionDB extends DBSchema {
@@ -74,7 +67,9 @@ export interface LayoutNode {
 }
 
 export interface SessionTriagedInfo {
-  snap: unknown
+  snap: Record<string, unknown>
   origin: string
   reason: PluginDefinition[]
 }
+
+export { type SessionMetadata } from '@jbrowse/web-core'

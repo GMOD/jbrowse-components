@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { App } from '@jbrowse/app-core'
 import { onSnapshot } from '@jbrowse/mobx-state-tree'
@@ -17,11 +17,9 @@ const JBrowse = observer(function JBrowse({
 }: {
   pluginManager: PluginManager
 }) {
-  const {
-    adminKey,
-    adminServer,
-    config: configPath,
-  } = readQueryParams(['adminKey', 'adminServer', 'config'])
+  const [{ adminKey, adminServer, config: configPath }] = useState(() =>
+    readQueryParams(['adminKey', 'adminServer', 'config']),
+  )
   const { rootModel } = pluginManager
   const { error, jbrowse, session: s } = rootModel!
   const session = s as WebSessionModel
@@ -29,9 +27,7 @@ const JBrowse = observer(function JBrowse({
 
   useEffect(() => {
     setQueryParams({ session: `local-${id}` })
-    // @ts-expect-error
     window.JBrowseRootModel = rootModel
-    // @ts-expect-error
     window.JBrowseSession = session
   }, [id, rootModel, session])
 
@@ -67,7 +63,7 @@ const JBrowse = observer(function JBrowse({
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <FileHandleRestoreBanner />
+      <FileHandleRestoreBanner session={session} />
       {/* key={id} forces React to remount App when session changes (e.g.
           duplicate session) preventing stale references to old session views */}
       <App

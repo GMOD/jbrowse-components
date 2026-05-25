@@ -1,15 +1,12 @@
 import { JBrowseModelF } from '@jbrowse/app-core'
 import { getSnapshot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
-
-import { removeAttr } from './util.ts'
+import { removeAttr } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 // poke some things for testing (this stuff will eventually be removed)
-// @ts-expect-error
 window.getSnapshot = getSnapshot
-// @ts-expect-error
 window.resolveIdentifier = resolveIdentifier
 
 /**
@@ -33,8 +30,13 @@ export default function JBrowseWeb({
       adminMode,
     }),
     {
-      postProcessor(snapshot: Record<string, any>) {
-        return removeAttr(structuredClone(snapshot), 'baseUri')
+      // strip the synthetic baseUri keys added by addRelativeUris when
+      // serializing config back out (e.g. for the admin "Save config" flow)
+      postProcessor(snapshot) {
+        return removeAttr(
+          structuredClone(snapshot) as unknown as Record<string, unknown>,
+          'baseUri',
+        )
       },
     },
   )

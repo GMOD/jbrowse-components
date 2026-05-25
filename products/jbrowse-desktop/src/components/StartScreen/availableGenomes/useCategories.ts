@@ -1,9 +1,7 @@
-import useSWR from 'swr'
-
-import { fetchjson } from '../util.tsx'
+import { fetchJson as fetchjson, useFetch } from '@jbrowse/core/util'
 
 export default function useCategories() {
-  const { data, error, isLoading } = useSWR('categories', () =>
+  const { data, error, isLoading } = useFetch('categories', () =>
     fetchjson('https://jbrowse.org/hubs/categories.json'),
   )
 

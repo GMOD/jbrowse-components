@@ -24,18 +24,20 @@ export default function ConfigWarningDialog({
           unknown plugins:
           <ul>
             {reason.map(r => (
-              <li key={JSON.stringify(r)}>
+              <li key={pluginUrl(r)}>
                 {pluginDescriptionString(r)} - ({pluginUrl(r)})
               </li>
             ))}
           </ul>
           Please ensure you trust the source of this link.{' '}
           <Button
+            type="button"
+            size="small"
             onClick={() => {
               setShow(!show)
             }}
           >
-            Why am I seeing this?
+            {show ? 'Hide details' : 'Why am I seeing this?'}
           </Button>
           {show ? (
             <div>

@@ -6,18 +6,17 @@ const useStyles = makeStyles()({
   root: {
     margin: 0,
     marginLeft: 10,
+    minWidth: 200,
   },
 })
-
-interface SearchFieldProps {
-  searchQuery: string
-  onChange: (value: string) => void
-}
 
 export default function SearchField({
   searchQuery,
   onChange,
-}: SearchFieldProps) {
+}: {
+  searchQuery: string
+  onChange: (value: string) => void
+}) {
   const { classes } = useStyles()
 
   return (
@@ -31,7 +30,6 @@ export default function SearchField({
       variant="outlined"
       size="small"
       className={classes.root}
-      style={{ minWidth: 200 }}
       slotProps={{
         input: {
           startAdornment: (

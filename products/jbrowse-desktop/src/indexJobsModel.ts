@@ -7,24 +7,24 @@ import {
   type Track,
   createTextSearchConf,
   findTrackConfigsToIndex,
+  type indexType,
 } from '@jbrowse/text-indexing'
 import { autorun, observable, toJS } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { JobsListModel } from '@jbrowse/plugin-jobs-management'
 
 const { ipcRenderer } = window.require('electron')
 
-const ONE_HOUR = 60 * 60 * 1000
-
 interface TrackTextIndexing {
   attributes: string[]
   exclude: string[]
   assemblies: string[]
   tracks: string[] // trackIds
-  indexType: string
+  indexType: indexType
   timestamp?: string
   name?: string
 }
@@ -73,7 +73,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #getter
        */
       get rpcManager() {
-        return getParent<any>(self).jbrowse.rpcManager
+        return getParent<{ jbrowse: { rpcManager: RpcManager } }>(self).jbrowse
+          .rpcManager
       },
       /**
        * #getter
@@ -93,9 +94,11 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #getter
        */
       get aggregateTextSearchAdapters() {
-        return getParent<any>(self).jbrowse.aggregateTextSearchAdapters as {
-          textSearchAdapterId: string
-        }[]
+        return getParent<{
+          jbrowse: {
+            aggregateTextSearchAdapters: { textSearchAdapterId: string }[]
+          }
+        }>(self).jbrowse.aggregateTextSearchAdapters
       },
     }))
     .actions(self => ({
@@ -106,9 +109,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         const { session } = self
         const { widgets } = session
         let jobStatusWidget = widgets.get('JobsList')
-        if (!jobStatusWidget) {
-          jobStatusWidget = session.addWidget('JobsListWidget', 'JobsList')
-        }
+        jobStatusWidget ??= session.addWidget('JobsListWidget', 'JobsList')
         return jobStatusWidget as JobsListModel
       },
     }))
@@ -181,7 +182,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             name,
             statusMessage,
             progressPct,
-            cancelCallback: cancelCallback!,
+            cancelCallback: cancelCallback ?? (() => {}),
             setStatusMessage: () => {},
           })
         }
@@ -221,7 +222,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
         const trackConfigs = findTrackConfigsToIndex(self.tracks, trackIds).map(
-          c => JSON.parse(JSON.stringify(toJS(c))),
+          c => structuredClone(toJS(c)),
         )
         try {
           this.setRunning(true)
@@ -244,7 +245,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             statusCallback: (message: string) => {
               this.setProgressPct(message)
             },
-            timeout: 1000 * ONE_HOUR,
           })
           if (indexType === 'perTrack') {
             for (const trackId of trackIds) {
@@ -295,9 +295,9 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 current
               jobStatusWidget.addFinishedJob({
                 name,
-                statusMessage: statusMessage || 'done',
-                progressPct: progressPct || 100,
-                cancelCallback: cancelCallback!,
+                statusMessage: statusMessage ?? 'done',
+                progressPct: progressPct ?? 100,
+                cancelCallback: cancelCallback ?? (() => {}),
                 setStatusMessage: () => {},
               })
             }
@@ -338,9 +338,9 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               firstIndexingJob
             jobStatusWidget.addJob({
               name,
-              statusMessage: statusMessage || '',
-              progressPct: progressPct || 0,
-              cancelCallback: cancelCallback!,
+              statusMessage: statusMessage ?? '',
+              progressPct: progressPct ?? 0,
+              cancelCallback: cancelCallback ?? (() => {}),
               setStatusMessage: () => {},
             })
             jobStatusWidget.removeQueuedJob(name)

@@ -1,5 +1,5 @@
 import path from 'path'
-import url, { pathToFileURL } from 'url'
+import { pathToFileURL } from 'url'
 
 import electron, { BrowserWindow, Menu, app, shell } from 'electron'
 
@@ -15,22 +15,9 @@ const DEFAULT_WINDOW_SIZE = {
 const DEFAULT_DEV_SERVER_URL = 'http://localhost:3000'
 
 function getAppUrl(devServerUrl: URL): URL {
-  if (app.isPackaged) {
-    // When packaged with @electron/packager, the build directory IS the app root
-    return pathToFileURL(path.join(app.getAppPath(), 'index.html'))
-  }
-  return devServerUrl
-}
-
-function setupWindowHandlers(mainWindow: BrowserWindow) {
-  mainWindow.webContents.setWindowOpenHandler(edata => {
-    shell.openExternal(edata.url).catch((e: unknown) => {
-      console.error(e)
-    })
-    return {
-      action: 'deny',
-    }
-  })
+  return app.isPackaged
+    ? pathToFileURL(path.join(app.getAppPath(), 'index.html'))
+    : devServerUrl
 }
 
 function createMenu(autoUpdater: AppUpdater) {
@@ -102,15 +89,17 @@ export async function createMainWindow(
     appUrl.searchParams.append('config', lastArg)
   }
 
-  await mainWindow.loadURL(url.format(appUrl))
+  await mainWindow.loadURL(appUrl.href)
 
-  setupWindowHandlers(mainWindow)
+  mainWindow.webContents.setWindowOpenHandler(edata => {
+    shell.openExternal(edata.url).catch((e: unknown) => {
+      console.error(e)
+    })
+    return { action: 'deny' }
+  })
 
-  const mainMenu = createMenu(autoUpdater)
-  const isMac = process.platform === 'darwin'
-
-  if (isMac) {
-    Menu.setApplicationMenu(mainMenu)
+  if (process.platform === 'darwin') {
+    Menu.setApplicationMenu(createMenu(autoUpdater))
   } else {
     Menu.setApplicationMenu(null)
   }
@@ -127,8 +116,8 @@ export function createAuthWindow(params: {
     width: 1000,
     height: 600,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
     },
   })
 
@@ -140,7 +129,7 @@ export function createAuthWindow(params: {
 
   return new Promise(resolve => {
     win.webContents.on(
-      // @ts-expect-error unclear why this is needed
+      // @ts-expect-error - 'will-redirect' is missing from Electron's WebContents event types
       'will-redirect',
       (event: Event, redirectUrl: string) => {
         if (redirectUrl.startsWith(params.data.redirect_uri)) {
@@ -150,5 +139,6 @@ export function createAuthWindow(params: {
         }
       },
     )
+    win.on('closed', () => resolve(undefined))
   })
 }

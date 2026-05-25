@@ -1,29 +1,20 @@
-import {
-  AppFocusMixin,
-  DockviewLayoutMixin,
-  SessionAssembliesMixin,
-  TemporaryAssembliesMixin,
-} from '@jbrowse/app-core'
+import { AssembliesMixin, DockviewLayoutMixin } from '@jbrowse/app-core'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   ConnectionManagementSessionMixin,
-  DialogQueueSessionMixin,
-  DrawerWidgetSessionMixin,
   MultipleViewsSessionMixin,
   ReferenceManagementSessionMixin,
   ThemeManagerSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
 
-import { DesktopSessionFactory } from './DesktopSession.ts'
 import { DesktopSessionTrackMenuMixin } from './TrackMenu.ts'
 
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -32,18 +23,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * composed of
  * - ReferenceManagementSessionMixin
  * - ConnectionManagementSessionMixin
- * - DrawerWidgetSessionMixin
- * - DialogQueueSessionMixin
  * - ThemeManagerSessionMixin
  * - TracksManagerSessionMixin
  * - MultipleViewsSessionMixin
- * - DesktopSessionMixin
- * - SessionAssembliesMixin
- * - TemporaryAssembliesMixin
+ * - AssembliesMixin
  * - DesktopSessionTrackMenuMixin
  * - DockviewLayoutMixin
  * - SnackbarModel
- * - AppFocusMixin
  *
  */
 export default function sessionModelFactory({
@@ -59,18 +45,13 @@ export default function sessionModelFactory({
       types.compose(
         ReferenceManagementSessionMixin(pluginManager),
         ConnectionManagementSessionMixin(pluginManager),
-        DrawerWidgetSessionMixin(pluginManager),
-        DialogQueueSessionMixin(pluginManager),
         ThemeManagerSessionMixin(pluginManager),
         TracksManagerSessionMixin(pluginManager),
         MultipleViewsSessionMixin(pluginManager),
-        DesktopSessionFactory(pluginManager),
       ),
-      SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
-      TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
+      AssembliesMixin(pluginManager, assemblyConfigSchema),
       DesktopSessionTrackMenuMixin(pluginManager),
       DockviewLayoutMixin(),
-      AppFocusMixin(),
       SnackbarModel(),
     )
     .views(self => ({
@@ -93,12 +74,6 @@ export default function sessionModelFactory({
        */
       renameCurrentSession(sessionName: string) {
         self.root.renameCurrentSession(sessionName)
-      },
-      /**
-       * #action
-       */
-      editTrackConfiguration(configuration: BaseTrackConfig) {
-        self.editConfiguration(configuration)
       },
     }))
     .views(self => ({
@@ -151,17 +126,13 @@ export default function sessionModelFactory({
 
   return types.snapshotProcessor(extendedSessionModel, {
     // @ts-expect-error
-    preProcessor(snapshot) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (snapshot) {
-        // @ts-expect-error
-        const { connectionInstances, ...rest } = snapshot
-        // connectionInstances schema changed from object to an array, so any old
-        // connectionInstances as object is in snapshot, filter it out
-        // https://github.com/GMOD/jbrowse-components/issues/1903
-        if (!Array.isArray(connectionInstances)) {
-          return rest
-        }
+    preProcessor(snapshot: Record<string, unknown> | undefined) {
+      // connectionInstances schema changed from object to an array, so any old
+      // connectionInstances as object in snapshot should be filtered out
+      // https://github.com/GMOD/jbrowse-components/issues/1903
+      if (snapshot && !Array.isArray(snapshot.connectionInstances)) {
+        const { connectionInstances: _, ...rest } = snapshot
+        return rest
       }
       return snapshot
     },

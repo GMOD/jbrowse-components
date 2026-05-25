@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
@@ -15,11 +15,14 @@ import SkeletonLoader from './SkeletonLoader.tsx'
 import TablePagination from './TablePagination.tsx'
 import { getColumnDefinitions } from './getColumnDefinitions.tsx'
 import { useGenomesData } from './useGenomesData.ts'
+import { useSearchHighlight } from './useSearchHighlight.ts'
 import defaultFavs from '../defaultFavs.ts'
 import useCategories from './useCategories.ts'
 
 import type { Entry, GenomeColumn } from './getColumnDefinitions.tsx'
 import type { Fav, LaunchCallback } from '../types.ts'
+import type { FilterOption } from './useGenomesData.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()(theme => {
   const borderColor =
@@ -87,12 +90,20 @@ const checkboxSx = {
 }
 
 function defaultSort(a: Entry, b: Entry, col: GenomeColumn) {
-  if (col.sortFn) {
-    return col.sortFn(a, b)
-  }
   const aVal = `${a[col.id] ?? ''}`
   const bVal = `${b[col.id] ?? ''}`
-  return aVal.localeCompare(bVal)
+  return col.sortFn ? col.sortFn(a, b) : aVal.localeCompare(bVal)
+}
+
+function rowToFav(row: Entry): Fav {
+  return {
+    id: row.id,
+    shortName: row.name || row.ncbiAssemblyName || row.accession,
+    commonName: row.commonName,
+    description: row.description || row.commonName,
+    jbrowseConfig: row.jbrowseConfig,
+    jbrowseMinimalConfig: row.jbrowseMinimalConfig,
+  }
 }
 
 export default function GenomesDataTable({
@@ -106,24 +117,36 @@ export default function GenomesDataTable({
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
 }) {
-  'use no memo'
-  const [selected, setSelected] = useState(new Set())
+  const [selected, setSelected] = useState(new Set<string>())
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
-  const [filterOption, setFilterOption] = useState('all')
+  const [filterOption, setFilterOption] = useState<FilterOption>('all')
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)
   const [multipleSelection, setMultipleSelection] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize, setPageSize] = useState(50)
-  const [sorting, setSorting] = useState<{
-    id: string
-    desc: boolean
-  }>()
+  const [sorting, setSorting] = useState<{ id: string; desc: boolean }>()
   const [typeOption, setTypeOption] = useLocalStorage(
     'startScreen-genArkChoice',
     'ucsc',
   )
   const [showAllColumns, setShowAllColumns] = useState(false)
+
+  // Reset to first page whenever the result set changes so we don't land on an empty page
+  const setSearchQueryAndReset = (q: string) => {
+    setSearchQuery(q)
+    setPageIndex(0)
+  }
+  const setFilterOptionAndReset = (f: FilterOption) => {
+    setFilterOption(f)
+    setPageIndex(0)
+  }
+  const setTypeOptionAndReset = (t: string) => {
+    setTypeOption(t)
+    setPageIndex(0)
+  }
+  const tableRef = useRef<HTMLDivElement>(null)
+  useSearchHighlight(tableRef, searchQuery)
   const { classes } = useStyles()
   const {
     categories,
@@ -132,30 +155,14 @@ export default function GenomesDataTable({
   } = useCategories()
   const url = categories?.categories.find(f => f.key === typeOption)?.url
 
-  const favs = useMemo(() => new Set(favorites.map(f => f.id)), [favorites])
-  const toggleFavorite = useCallback(
-    (row: Entry) => {
-      const isFavorite = favs.has(row.id)
-      if (isFavorite) {
-        setFavorites(favorites.filter(fav => fav.id !== row.id))
-      } else {
-        setFavorites([
-          ...favorites,
-          {
-            id: row.id,
-            shortName: row.name || row.ncbiAssemblyName || row.accession,
-            commonName: row.commonName,
-            description: row.description || row.commonName,
-            jbrowseConfig: row.jbrowseConfig,
-            ...(row.jbrowseMinimalConfig && {
-              jbrowseMinimalConfig: row.jbrowseMinimalConfig,
-            }),
-          },
-        ])
-      }
-    },
-    [setFavorites, favorites, favs],
-  )
+  const favs = new Set(favorites.map(f => f.id))
+  const toggleFavorite = (row: Entry) => {
+    if (favs.has(row.id)) {
+      setFavorites(favorites.filter(fav => fav.id !== row.id))
+    } else {
+      setFavorites([...favorites, rowToFav(row)])
+    }
+  }
 
   const { data, error } = useGenomesData({
     searchQuery,
@@ -166,44 +173,26 @@ export default function GenomesDataTable({
     url,
   })
 
-  const columns = useMemo(
-    () =>
-      getColumnDefinitions({
-        typeOption,
-        favs,
-        toggleFavorite,
-        launch,
-        onClose,
-        searchQuery,
-        showAllColumns,
-      }),
-    [
-      typeOption,
-      favs,
-      launch,
-      onClose,
-      toggleFavorite,
-      searchQuery,
-      showAllColumns,
-    ],
+  const columns = getColumnDefinitions({
+    typeOption,
+    favs,
+    toggleFavorite,
+    launch,
+    onClose,
+    showAllColumns,
+  })
+
+  const sortingCol =
+    sorting !== undefined ? columns.find(c => c.id === sorting.id) : undefined
+  const dir = sorting?.desc ? -1 : 1
+  const sortedData = sortingCol
+    ? [...data].sort((a, b) => dir * defaultSort(a, b, sortingCol))
+    : data
+
+  const pageRows = sortedData.slice(
+    pageIndex * pageSize,
+    pageIndex * pageSize + pageSize,
   )
-
-  const sortedData = useMemo(() => {
-    if (!sorting) {
-      return data
-    }
-    const col = columns.find(c => c.id === sorting.id)
-    if (!col) {
-      return data
-    }
-    const dir = sorting.desc ? -1 : 1
-    return [...data].sort((a, b) => dir * defaultSort(a, b, col))
-  }, [data, sorting, columns])
-
-  const pageRows = useMemo(() => {
-    const start = pageIndex * pageSize
-    return sortedData.slice(start, start + pageSize)
-  }, [sortedData, pageIndex, pageSize])
 
   const toggleSort = (colId: string) => {
     if (sorting?.id === colId) {
@@ -231,35 +220,36 @@ export default function GenomesDataTable({
             variant="contained"
             disabled={selected.size === 0}
             onClick={() => {
-              if (selected.size > 0) {
-                const selectedRows = [...selected]
-                  .map(id => data.find(row => row.id === id))
-                  .filter(notEmpty)
-                  .map(r => ({
-                    jbrowseConfig: r.jbrowseConfig,
-                    shortName: r.accession,
-                  }))
+              const selectedRows = [...selected]
+                .map(id => data.find(row => row.id === id))
+                .filter(notEmpty)
+                .map(r => ({
+                  jbrowseConfig: r.jbrowseConfig,
+                  shortName: r.accession,
+                }))
 
-                launch(selectedRows)
-                onClose()
-              }
+              launch(selectedRows)
+              onClose()
             }}
           >
             Go
           </Button>
         ) : null}
 
-        <SearchField searchQuery={searchQuery} onChange={setSearchQuery} />
+        <SearchField
+          searchQuery={searchQuery}
+          onChange={setSearchQueryAndReset}
+        />
 
         <CategorySelector
           categories={categories}
           typeOption={typeOption}
           categoriesLoading={categoriesLoading}
           categoriesError={categoriesError}
-          onChange={setTypeOption}
+          onChange={setTypeOptionAndReset}
         />
         <CascadingMenuButton
-          menuItems={[
+          menuItems={() => [
             {
               label: 'Enable multiple selection',
               checked: multipleSelection,
@@ -275,13 +265,14 @@ export default function GenomesDataTable({
               type: 'checkbox',
               onClick: () => {
                 setShowOnlyFavs(!showOnlyFavs)
+                setPageIndex(0)
               },
             },
             ...(typeOption !== 'ucsc'
-              ? [
+              ? ([
                   {
                     label: 'Show all columns',
-                    type: 'checkbox' as const,
+                    type: 'checkbox',
                     checked: showAllColumns,
                     onClick: () => {
                       setShowAllColumns(!showAllColumns)
@@ -289,47 +280,46 @@ export default function GenomesDataTable({
                   },
                   {
                     label: 'Filter by NCBI status',
-                    type: 'subMenu' as const,
+                    type: 'subMenu',
                     subMenu: [
                       {
                         label: 'All',
-                        type: 'radio' as const,
+                        type: 'radio',
                         checked: filterOption === 'all',
                         onClick: () => {
-                          setFilterOption('all')
+                          setFilterOptionAndReset('all')
                         },
                       },
                       {
                         label: 'RefSeq only',
-                        type: 'radio' as const,
+                        type: 'radio',
                         checked: filterOption === 'refseq',
                         onClick: () => {
-                          setFilterOption('refseq')
+                          setFilterOptionAndReset('refseq')
                         },
                       },
                       {
                         label: 'GenBank only',
-                        type: 'radio' as const,
+                        type: 'radio',
                         checked: filterOption === 'genbank',
                         onClick: () => {
-                          setFilterOption('genbank')
+                          setFilterOptionAndReset('genbank')
                         },
                       },
                       {
                         label: 'Designated reference genome only',
-                        type: 'radio' as const,
+                        type: 'radio',
                         checked: filterOption === 'designatedReference',
                         onClick: () => {
-                          setFilterOption('designatedReference')
+                          setFilterOptionAndReset('designatedReference')
                         },
                       },
                     ],
                   },
-                ]
+                ] satisfies MenuItem[])
               : []),
             {
               label: 'Reset favorites list to defaults',
-              type: 'normal' as const,
               onClick: () => {
                 setFavorites(defaultFavs)
               },
@@ -352,12 +342,10 @@ export default function GenomesDataTable({
 
       {error ? <ErrorMessage error={error} /> : null}
 
-      {categoriesLoading ? (
-        <SkeletonLoader />
-      ) : data.length === 0 && !url ? (
+      {categoriesLoading || (data.length === 0 && !url) ? (
         <SkeletonLoader />
       ) : (
-        <div>
+        <div ref={tableRef}>
           <table className={classes.table}>
             <thead>
               <tr>

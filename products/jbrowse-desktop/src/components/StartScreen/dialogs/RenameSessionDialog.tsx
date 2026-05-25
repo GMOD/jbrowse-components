@@ -9,26 +9,24 @@ const RenameSessionDialog = ({
   sessionToRename,
   onClose,
 }: {
-  sessionToRename?: { path: string; name: string }
-  onClose: (arg0: boolean) => void
+  sessionToRename: { path: string; name: string }
+  onClose: () => void
 }) => {
-  const [newSessionName, setNewSessionName] = useState('')
+  const [newSessionName, setNewSessionName] = useState(sessionToRename.name)
   const [error, setError] = useState<unknown>()
 
   return (
     <ConfirmDialog
       open
-      onCancel={() => {
-        onClose(false)
-      }}
+      onCancel={onClose}
       onSubmit={async () => {
         try {
           await ipcRenderer.invoke(
             'renameSession',
-            sessionToRename?.path,
+            sessionToRename.path,
             newSessionName,
           )
-          onClose(true)
+          onClose()
         } catch (e) {
           console.error(e)
           setError(e)
@@ -41,7 +39,7 @@ const RenameSessionDialog = ({
       </DialogContentText>
       <Input
         autoFocus
-        defaultValue={sessionToRename?.name}
+        value={newSessionName}
         onChange={event => {
           setNewSessionName(event.target.value)
         }}

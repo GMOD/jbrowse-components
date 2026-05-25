@@ -1,14 +1,57 @@
-import { useMemo } from 'react'
-
-import useSWR from 'swr'
-
-import { fetchjson } from '../util.tsx'
+import { fetchJson, useFetch } from '@jbrowse/core/util'
 
 import type { Entry } from './getColumnDefinitions.tsx'
 import type { Fav } from '../types.ts'
 
-interface RawEntry extends Entry {
-  orderKey: number
+type RawEntry = Entry & { orderKey?: number }
+type RawData = RawEntry[] | { ucscGenomes: Record<string, RawEntry> }
+
+function normalizeEntries(data: RawData): RawEntry[] {
+  return Array.isArray(data)
+    ? data.map(r => ({ ...r, id: r.accession })).filter(r => r.id)
+    : Object.values(data.ucscGenomes)
+}
+
+function matchesSearch(row: RawEntry, query: string) {
+  return [
+    row.commonName,
+    row.accession,
+    row.scientificName,
+    row.ncbiAssemblyName,
+    row.organism,
+    row.description,
+    row.name,
+  ]
+    .join(' ')
+    .toLowerCase()
+    .includes(query)
+}
+
+function byOrderKey(a: RawEntry, b: RawEntry) {
+  return a.orderKey !== undefined && b.orderKey !== undefined
+    ? a.orderKey - b.orderKey
+    : 0
+}
+
+export type FilterOption = 'all' | 'refseq' | 'genbank' | 'designatedReference'
+type TypeOption = string
+
+function applyFilter(
+  rows: RawEntry[],
+  filterOption: FilterOption,
+  typeOption: TypeOption,
+): RawEntry[] {
+  let filtered = rows
+  if (typeOption !== 'mainGenomes') {
+    if (filterOption === 'refseq') {
+      filtered = rows.filter(r => r.ncbiName.startsWith('GCF_'))
+    } else if (filterOption === 'genbank') {
+      filtered = rows.filter(r => r.ncbiName.startsWith('GCA_'))
+    } else if (filterOption === 'designatedReference') {
+      filtered = rows.filter(r => r.ncbiRefSeqCategory === 'reference genome')
+    }
+  }
+  return filtered
 }
 
 export function useGenomesData({
@@ -17,93 +60,34 @@ export function useGenomesData({
   typeOption,
   showOnlyFavs,
   favorites,
-  url = '',
+  url,
 }: {
   searchQuery: string
-  filterOption: string
-  typeOption: string
+  filterOption: FilterOption
+  typeOption: TypeOption
   showOnlyFavs: boolean
   favorites: Fav[]
   url?: string
-}) {
-  const { data, error: dataError } = useSWR(url, () =>
-    url
-      ? (fetchjson(url) as Promise<
-          RawEntry[] | { ucscGenomes: Record<string, RawEntry> }
-        >)
-      : undefined,
+}): { data: RawEntry[]; error: unknown } {
+  const { data, error } = useFetch<RawData>(url, (u: string) =>
+    fetchJson<RawData>(u),
   )
 
-  const preRows = useMemo(() => {
-    if (!data) {
-      return undefined
-    }
-    // Handle both array format and object format with ucscGenomes key
-    if (Array.isArray(data)) {
-      return data
-        .map(r => ({
-          ...r,
-          id: r.accession,
-        }))
-        .filter(f => !!f.id)
-    } else if ('ucscGenomes' in data) {
-      return Object.values(data.ucscGenomes)
-    }
-    return undefined
-  }, [data])
+  const rows = data
+    ? applyFilter(normalizeEntries(data), filterOption, typeOption).sort(
+        byOrderKey,
+      )
+    : undefined
 
-  const rows = useMemo(() => {
-    return (function () {
-      if (typeOption === 'mainGenomes') {
-        return preRows
-      } else if (filterOption === 'refseq') {
-        return preRows?.filter(
-          r => 'ncbiName' in r && r.ncbiName.startsWith('GCF_'),
-        )
-      } else if (filterOption === 'genbank') {
-        return preRows?.filter(
-          r => 'ncbiName' in r && r.ncbiName.startsWith('GCA_'),
-        )
-      } else if (filterOption === 'designatedReference') {
-        return preRows?.filter(
-          r =>
-            'ncbiRefSeqCategory' in r &&
-            r.ncbiRefSeqCategory === 'reference genome',
-        )
-      } else {
-        return preRows
-      }
-    })()?.sort((a, b) =>
-      'orderKey' in a && 'orderKey' in b ? a.orderKey - b.orderKey : 0,
-    )
-  }, [filterOption, preRows, typeOption])
+  const query = searchQuery.toLowerCase().trim()
+  const searchFilteredRows = query
+    ? rows?.filter(row => matchesSearch(row, query))
+    : rows
 
-  const favs = new Set(favorites.map(r => r.id))
-  const searchFilteredRows = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim()
-    return !query
-      ? rows
-      : rows?.filter(row =>
-          [
-            row.commonName,
-            row.accession,
-            'scientificName' in row ? row.scientificName : '',
-            'ncbiAssemblyName' in row ? row.ncbiAssemblyName : '',
-            'organism' in row ? row.organism : '',
-            'description' in row ? row.description : '',
-            'name' in row ? row.name : '',
-          ]
-            .join(' ')
-            .toLowerCase()
-            .includes(query),
-        ) || []
-  }, [rows, searchQuery])
+  const favSet = new Set(favorites.map(r => r.id))
+  const result = showOnlyFavs
+    ? searchFilteredRows?.filter(row => favSet.has(row.id))
+    : searchFilteredRows
 
-  return {
-    data: showOnlyFavs
-      ? searchFilteredRows?.filter(row => favs.has(row.id)) || []
-      : searchFilteredRows || [],
-    error: dataError,
-    favs,
-  }
+  return { data: result ?? [], error }
 }

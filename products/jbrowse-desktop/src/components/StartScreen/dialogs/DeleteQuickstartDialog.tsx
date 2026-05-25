@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
+import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
-import { DialogContentText, Typography } from '@mui/material'
+import { DialogContentText } from '@mui/material'
 const { ipcRenderer } = window.require('electron')
 
 const DeleteSessionDialog = ({
@@ -9,20 +10,18 @@ const DeleteSessionDialog = ({
   onClose,
 }: {
   quickstartToDelete: string
-  onClose: (arg0: boolean) => void
+  onClose: () => void
 }) => {
   const [error, setError] = useState<unknown>()
   return (
     <ConfirmDialog
       open
       title={`Delete "${quickstartToDelete}"?`}
-      onCancel={() => {
-        onClose(false)
-      }}
+      onCancel={onClose}
       onSubmit={async () => {
         try {
           await ipcRenderer.invoke('deleteQuickstart', quickstartToDelete)
-          onClose(true)
+          onClose()
         } catch (e) {
           console.error(e)
           setError(e)
@@ -30,7 +29,7 @@ const DeleteSessionDialog = ({
       }}
     >
       <DialogContentText>This action cannot be undone</DialogContentText>
-      {error ? <Typography color="error">{`${error}`}</Typography> : null}
+      {error ? <ErrorMessage error={error} /> : null}
     </ConfirmDialog>
   )
 }

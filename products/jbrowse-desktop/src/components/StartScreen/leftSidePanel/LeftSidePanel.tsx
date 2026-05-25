@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { useLocalStorage } from '@jbrowse/core/util'
+import { fetchJson as fetchjson, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import deepmerge from 'deepmerge'
 
@@ -9,7 +9,7 @@ import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
 import OpenSequencePanel from './OpenSequencePanel.tsx'
 import QuickstartPanel from './QuickstartPanel.tsx'
 import defaultFavs from '../defaultFavs.ts'
-import { addRelativeUris, fetchjson, loadPluginManager } from '../util.tsx'
+import { addRelativeUris, loadPluginManager } from '../util.tsx'
 
 import type { Fav, JBrowseConfig } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -28,13 +28,9 @@ const useStyles = makeStyles()(theme => ({
 async function fetchData(sel: { shortName: string; jbrowseConfig: string }[]) {
   return Promise.all(
     sel.map(async r => {
-      const ret = (await fetchjson(r.jbrowseConfig)) as JBrowseConfig
-      addRelativeUris(
-        // @ts-expect-error
-        ret as Record<string, unknown>,
-        new URL(r.jbrowseConfig),
-      )
-      return ret
+      const ret = await fetchjson(r.jbrowseConfig)
+      addRelativeUris(ret as Record<string, unknown>, new URL(r.jbrowseConfig))
+      return ret as JBrowseConfig
     }),
   )
 }
@@ -45,7 +41,7 @@ async function getQuickstarts(sel: string[]) {
   )
 }
 
-export default function LauncherPanel({
+export default function LeftSidePanel({
   setPluginManager,
 }: {
   setPluginManager: (arg0: PluginManager) => void
@@ -59,9 +55,10 @@ export default function LauncherPanel({
     defaultFavs,
   )
 
-  async function initializeSession(entries: JBrowseConfig[]) {
+  async function launchSession(getEntries: () => Promise<JBrowseConfig[]>) {
     try {
-      setLoading('Creating session')
+      setLoading('Loading session')
+      const entries = await getEntries()
       setPluginManager(
         await loadPluginManager(
           await ipcRenderer.invoke('createInitialAutosaveFile', {
@@ -75,19 +72,17 @@ export default function LauncherPanel({
     } catch (e) {
       console.error(e)
       setError(e)
-    }
-  }
-
-  async function structuredCb(cb: () => Promise<void>) {
-    try {
-      setLoading('Launching')
-      await cb()
-    } catch (e) {
-      setError(e)
     } finally {
       setLoading('')
     }
   }
+
+  const launchFromConfig = (
+    sel: { shortName: string; jbrowseConfig: string }[],
+  ) => launchSession(() => fetchData(sel))
+
+  const launchFromSnap = (snap: JBrowseConfig) =>
+    launchSession(async () => [snap])
 
   return (
     <div className={classes.form}>
@@ -97,30 +92,18 @@ export default function LauncherPanel({
       ) : (
         <>
           <OpenSequencePanel
-            setPluginManager={setPluginManager}
             favorites={favorites}
             setFavorites={setFavorites}
-            launch={sel =>
-              structuredCb(async () => {
-                await initializeSession(await fetchData(sel))
-              })
-            }
+            launch={launchFromConfig}
+            launchFromSnap={launchFromSnap}
           />
           <FavoriteGenomesPanel
             favorites={favorites}
             setFavorites={setFavorites}
-            launch={sel =>
-              structuredCb(async () => {
-                await initializeSession(await fetchData(sel))
-              })
-            }
+            launch={launchFromConfig}
           />
           <QuickstartPanel
-            launch={sel =>
-              structuredCb(async () => {
-                await initializeSession(await getQuickstarts(sel))
-              })
-            }
+            launch={sel => launchSession(() => getQuickstarts(sel))}
           />
         </>
       )}

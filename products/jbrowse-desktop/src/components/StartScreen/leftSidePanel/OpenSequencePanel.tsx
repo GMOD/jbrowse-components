@@ -5,12 +5,9 @@ import { Button } from '@mui/material'
 
 import OpenSequenceDialog from '../../OpenSequenceDialog.tsx'
 import AllGenomesDialog from '../availableGenomes/AvailableGenomesDialog.tsx'
-import { loadPluginManager } from '../util.tsx'
 
-import type { Fav, LaunchCallback } from '../types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
-
-const { ipcRenderer } = window.require('electron')
+import type { AssemblyConf } from '../../util.ts'
+import type { Fav, JBrowseConfig, LaunchCallback } from '../types.ts'
 
 const useStyles = makeStyles()({
   button: {
@@ -20,15 +17,15 @@ const useStyles = makeStyles()({
 })
 
 export default function OpenSequencePanel({
-  setPluginManager,
   favorites,
   setFavorites,
   launch,
+  launchFromSnap,
 }: {
-  setPluginManager: (arg0: PluginManager) => void
   favorites: Fav[]
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
+  launchFromSnap: (snap: JBrowseConfig) => void
 }) {
   const { classes } = useStyles()
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
@@ -58,20 +55,16 @@ export default function OpenSequencePanel({
 
       {sequenceDialogOpen ? (
         <OpenSequenceDialog
-          onClose={async (conf: unknown) => {
+          onClose={async (conf?: AssemblyConf[]) => {
             if (conf) {
-              // note this can throw before dialog closes, but this is handled
-              // by the dialog itself
-              const path = await ipcRenderer.invoke(
-                'createInitialAutosaveFile',
-                {
-                  assemblies: conf,
-                  defaultSession: {
-                    name: `New Session ${new Date().toLocaleString('en-US')}`,
-                  },
+              launchFromSnap({
+                assemblies: conf,
+                tracks: [],
+                internetAccounts: [],
+                defaultSession: {
+                  name: `New Session ${new Date().toLocaleString('en-US')}`,
                 },
-              )
-              setPluginManager(await loadPluginManager(path))
+              })
             }
             setSequenceDialogOpen(false)
           }}

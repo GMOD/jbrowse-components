@@ -14,14 +14,16 @@ import sessionModelFactory from '../../sessionModel/sessionModel.ts'
 import { fetchCJS } from '../../util.tsx'
 
 import type { JBrowseConfig } from './types.ts'
+import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
+
+export { addRelativeUris } from '@jbrowse/product-core'
 
 const { ipcRenderer } = window.require('electron')
 
 export async function loadPluginManager(configPath: string) {
   const snap = await ipcRenderer.invoke('loadSession', configPath)
   const pm = await createPluginManager(snap)
-  // @ts-expect-error
-  pm.rootModel?.setSessionPath(configPath)
+  ;(pm.rootModel as DesktopRootModel | undefined)?.setSessionPath(configPath)
   return pm
 }
 
@@ -46,14 +48,10 @@ export async function createPluginManager(
       plugin: new P(),
       definition,
       metadata: {
-        // @ts-expect-error
-        url: definition.url,
-        // @ts-expect-error
-        esmUrl: definition.esmUrl,
-        // @ts-expect-error
-        umdUrl: definition.umdUrl,
-        // @ts-expect-error
-        cjsUrl: definition.cjsUrl,
+        url: 'url' in definition ? definition.url : undefined,
+        esmUrl: 'esmUrl' in definition ? definition.esmUrl : undefined,
+        umdUrl: 'umdUrl' in definition ? definition.umdUrl : undefined,
+        cjsUrl: 'cjsUrl' in definition ? definition.cjsUrl : undefined,
       },
     })),
   ])
@@ -112,27 +110,4 @@ export async function createPluginManager(
   rootModel.setDefaultSession()
 
   return pluginManager
-}
-
-export async function fetchjson(url: string) {
-  const res = await fetch(url, { cache: 'no-cache' })
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} fetching ${url}`)
-  }
-  return res.json() as Promise<unknown>
-}
-
-export function addRelativeUris(
-  config: Record<string, unknown> | null,
-  base: URL,
-) {
-  if (typeof config === 'object' && config !== null) {
-    for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object' && config[key] !== null) {
-        addRelativeUris(config[key] as Record<string, unknown>, base)
-      } else if (key === 'uri') {
-        config.baseUri = base.href
-      }
-    }
-  }
 }

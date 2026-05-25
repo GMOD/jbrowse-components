@@ -18,7 +18,7 @@ export async function fetchCJS(url: string): Promise<LoadedPlugin> {
     const response = await fetch(url, { cache: 'no-cache' })
     if (!response.ok) {
       throw new Error(
-        `HTTP ${response.status} ${response.statusText} when fetching plugin: ${url})`,
+        `HTTP ${response.status} ${response.statusText} when fetching plugin: ${url}`,
       )
     }
     const pluginText = await response.text()

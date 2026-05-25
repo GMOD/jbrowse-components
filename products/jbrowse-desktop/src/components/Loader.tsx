@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import { setGpuOverride } from '@jbrowse/core/gpu/gpuDevice'
+import { ErrorMessage, createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -11,7 +11,42 @@ import { useQueryParam } from '../useQueryParam.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
 import { loadPluginManager } from './StartScreen/util.tsx'
 
+import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
+
+// Loads a plugin manager from a URL-provided config path. Cancels stale results
+// if config changes while a previous load is still in flight.
+function useConfigLoad(
+  config: string | undefined,
+  onLoad: (pm: PluginManager) => void,
+  onError: (e: unknown) => void,
+) {
+  useEffect(() => {
+    let cancelled = false
+    if (config) {
+      void (async () => {
+        try {
+          const pm = await loadPluginManager(config)
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (!cancelled) {
+            onLoad(pm)
+          }
+        } catch (e) {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (!cancelled) {
+            console.error(e)
+            onError(e)
+          }
+        }
+      })()
+    }
+    return () => {
+      cancelled = true
+    }
+  }, [config, onLoad, onError])
+}
 
 const Loader = observer(function Loader() {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
@@ -20,8 +55,9 @@ const Loader = observer(function Loader() {
 
   const handleSetPluginManager = useCallback(
     (pm: PluginManager) => {
-      // @ts-expect-error
-      pm.rootModel?.setOpenNewSessionCallback(async (path: string) => {
+      ;(
+        pm.rootModel as DesktopRootModel | undefined
+      )?.setOpenNewSessionCallback(async (path: string) => {
         handleSetPluginManager(await loadPluginManager(path))
       })
 
@@ -32,27 +68,20 @@ const Loader = observer(function Loader() {
     [setConfig],
   )
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      if (config) {
-        try {
-          handleSetPluginManager(await loadPluginManager(config))
-        } catch (e) {
-          console.error(e)
-          setError(e)
-        }
-      }
-    })()
-  }, [config, handleSetPluginManager])
-  return (
-    <ThemeProvider
-      theme={createJBrowseTheme(
+  useConfigLoad(config, handleSetPluginManager, setError)
+
+  const theme = useMemo(
+    () =>
+      createJBrowseTheme(
         undefined,
         undefined,
         localStorageGetItem('themeName') || 'default',
-      )}
-    >
+      ),
+    [],
+  )
+
+  return (
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       {error ? <ErrorMessage error={error} /> : null}
       {pluginManager?.rootModel?.session ? (

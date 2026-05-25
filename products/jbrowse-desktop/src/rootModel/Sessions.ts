@@ -62,6 +62,7 @@ export function DesktopSessionManagementMixin(_pluginManager: PluginManager) {
                   await self.saveSession(getSaveSession(self))
                 } catch (e) {
                   console.error(e)
+                  self.session?.notifyError(`${e}`, e)
                 }
               },
               { delay: 1000 },

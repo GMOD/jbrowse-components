@@ -5,6 +5,8 @@ import 'dockview-react/dist/styles/dockview.css'
 
 import InitialLoad from './InitialLoad.tsx'
 
+import 'dockview-core/dist/styles/dockview.css'
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <InitialLoad />
