@@ -1,8 +1,7 @@
+export { default as RpcClient } from '../rpc/RpcClient.ts'
+export { default as RpcServer, rpcResult } from '../rpc/RpcServer.ts'
+export type { RpcResult } from '../rpc/RpcServer.ts'
 export {
-  RpcClient,
-  RpcServer,
   deserializeError,
-  rpcResult,
   serializeError,
-} from 'librpc-web-mod'
-export type { RpcResult } from 'librpc-web-mod'
+} from '../rpc/serializeError/index.ts'

@@ -1,14 +1,30 @@
 import { readConfObject } from '../configuration/index.ts'
 import { isElectron } from '../util/index.ts'
 
-type AnalyticsObj = Record<string, any>
+import type { AnyConfigurationModel } from '../configuration/index.ts'
 
-interface Track {
-  type: string
+type StatValue = string | number | boolean | undefined
+type AnalyticsObj = Record<string, StatValue>
+
+// MST config models expose slot getters; tracks have a 'type' slot
+type TrackConfig = AnyConfigurationModel & { type: string }
+
+interface AnalyticsRootModel {
+  jbrowse: {
+    tracks: TrackConfig[]
+    assemblies: unknown[]
+    plugins?: { name?: string }[]
+    configuration: AnyConfigurationModel
+  }
+  session?: {
+    sessionTracks: TrackConfig[]
+    views: unknown[]
+  }
+  version: string
 }
 
 export async function writeAWSAnalytics(
-  rootModel: any,
+  rootModel: AnalyticsRootModel,
   initialTimeStamp: number,
   sessionQuery?: string | null,
 ) {
@@ -16,7 +32,7 @@ export async function writeAWSAnalytics(
     const url = 'https://analytics.jbrowse.org/api/v1'
 
     const multiAssemblyTracks = rootModel.jbrowse.tracks.filter(
-      (track: any) => (readConfObject(track, 'assemblyNames') || []).length > 1,
+      track => (readConfObject(track, 'assemblyNames') || []).length > 1,
     ).length
 
     const savedSessionCount = Object.keys(localStorage).filter(name =>
@@ -29,12 +45,12 @@ export async function writeAWSAnalytics(
     // stats to be recorded in db
     const stats: AnalyticsObj = {
       ver,
-      'plugins-count': plugins?.length || 0,
-      'plugin-names': plugins?.map((p: any) => p.name).join(','),
+      'plugins-count': plugins?.length ?? 0,
+      'plugin-names': plugins?.map(p => p.name).join(','),
       'assemblies-count': assemblies.length,
       'tracks-count': tracks.length,
-      'session-tracks-count': session?.sessionTracks.length || 0,
-      'open-views': session?.views.length || 0,
+      'session-tracks-count': session?.sessionTracks.length ?? 0,
+      'open-views': session?.views.length ?? 0,
       'synteny-tracks-count': multiAssemblyTracks,
       'saved-sessions-count': savedSessionCount,
 
@@ -55,18 +71,16 @@ export async function writeAWSAnalytics(
     }
 
     // stringifies the track type counts, gets processed in lambda
-    // eslint-disable-next-line unicorn/no-array-for-each
-    tracks.forEach((track: Track) => {
+    for (const track of tracks) {
       const key = `track-types-${track.type}`
-      stats[key] = stats[key] + 1 || 1
-    })
+      stats[key] = ((stats[key] as number | undefined) ?? 0) + 1
+    }
 
     // stringifies the session track type counts, gets processed in lambda
-    // eslint-disable-next-line unicorn/no-array-for-each
-    session?.sessionTracks.forEach((track: Track) => {
+    for (const track of session?.sessionTracks ?? []) {
       const key = `sessionTrack-types-${track.type}`
-      stats[key] = stats[key] + 1 || 1
-    })
+      stats[key] = ((stats[key] as number | undefined) ?? 0) + 1
+    }
 
     // put stats into a query string for get request
     const qs = Object.keys(stats)
@@ -80,7 +94,7 @@ export async function writeAWSAnalytics(
 }
 
 export async function writeGAAnalytics(
-  rootModel: any,
+  rootModel: AnalyticsRootModel,
   initialTimestamp: number,
 ) {
   const jbrowseUser = 'UA-7115575-5'
@@ -89,20 +103,8 @@ export async function writeGAAnalytics(
     ver: rootModel.version,
     electron: isElectron,
     loadTime: Date.now() - initialTimestamp,
-    pluginNames:
-      rootModel.jbrowse.plugins?.map((plugin: any) => plugin.name) || '',
+    pluginNames: rootModel.jbrowse.plugins?.map(p => p.name).join(',') || '',
   }
-
-  // create script
-  let analyticsScript =
-    "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){"
-  analyticsScript +=
-    '(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),'
-  analyticsScript +=
-    'm=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)'
-  analyticsScript +=
-    "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');"
-  analyticsScript += `ga('create', '${jbrowseUser}', 'auto', 'jbrowseTracker');`
 
   const gaData: AnalyticsObj = {}
   const googleDimensions = 'tracks-count ver electron loadTime pluginNames'
@@ -111,11 +113,15 @@ export async function writeGAAnalytics(
     gaData[`dimension${index + 1}`] = stats[key]
   }
 
-  gaData.metric1 = Math.round(stats.loadTime)
+  gaData.metric1 = Math.round(stats.loadTime as number)
 
-  analyticsScript += `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(
-    gaData,
-  )});`
+  const analyticsScript =
+    "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){" +
+    '(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),' +
+    'm=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)' +
+    "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');" +
+    `ga('create', '${jbrowseUser}', 'auto', 'jbrowseTracker');` +
+    `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(gaData)});`
 
   const analyticsScriptNode = document.createElement('script')
   analyticsScriptNode.innerHTML = analyticsScript
@@ -124,7 +130,7 @@ export async function writeGAAnalytics(
 }
 
 export function doAnalytics(
-  rootModel: any,
+  rootModel: AnalyticsRootModel | undefined,
   initialTimestamp: number,
   initialSessionQuery: string | null | undefined,
 ) {

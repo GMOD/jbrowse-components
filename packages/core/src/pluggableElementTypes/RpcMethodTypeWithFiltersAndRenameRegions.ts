@@ -2,6 +2,7 @@ import RpcMethodType from './RpcMethodType.ts'
 import { renameRegionsIfNeeded } from '../util/index.ts'
 import SerializableFilterChain from './renderers/util/serializableFilterChain.ts'
 
+import type { StopToken } from '../util/stopToken.ts'
 import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 
 export default abstract class RpcMethodTypeWithFiltersAndRenameRegions extends RpcMethodType {
@@ -23,7 +24,7 @@ export default abstract class RpcMethodTypeWithFiltersAndRenameRegions extends R
 
   async serializeArguments(
     args: RenderArgs & {
-      stopToken?: string
+      stopToken?: StopToken
       statusCallback?: (arg: string) => void
     },
     rpcDriverClassName: string,

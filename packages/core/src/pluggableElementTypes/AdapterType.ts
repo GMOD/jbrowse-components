@@ -39,7 +39,7 @@ export default class AdapterType extends PluggableElementBase {
         ? stuff.getAdapterClass
         : async () => stuff.AdapterClass
     this.configSchema = stuff.configSchema
-    this.adapterCapabilities = stuff.adapterCapabilities || []
+    this.adapterCapabilities = stuff.adapterCapabilities ?? []
     this.adapterMetadata = stuff.adapterMetadata
   }
 }

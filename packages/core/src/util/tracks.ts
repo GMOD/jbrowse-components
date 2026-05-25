@@ -272,27 +272,6 @@ export async function restoreFileHandlesFromSnapshot(
   return []
 }
 
-let pendingFileHandleIds: string[] = []
-
-export function getPendingFileHandleIds() {
-  return pendingFileHandleIds
-}
-
-export function setPendingFileHandleIds(ids: string[]) {
-  pendingFileHandleIds = ids
-}
-
-// Call this from a user gesture (button click) to restore pending file handles
-export async function restorePendingFileHandles() {
-  if (pendingFileHandleIds.length === 0) {
-    return []
-  }
-  const results = await restoreFileHandles(pendingFileHandleIds, true)
-  const stillFailed = results.filter(r => !r.success).map(r => r.handleId)
-  pendingFileHandleIds = stillFailed
-  return results
-}
-
 /**
  * creates a new location from the provided location including the appropriate
  * suffix and location type
@@ -513,16 +492,16 @@ export function showTrackGeneric(
     return found
   }
 
-  const rawConf = session.getTracksById()[trackId]
+  const rawConf = session.tracksById[trackId]
   if (!rawConf) {
     throw new Error(`Could not resolve identifier "${trackId}"`)
   }
 
   // Allow plugins to preprocess the track config (e.g. to add default displays)
   // Use getSnapshot for MST models, structuredClone for plain objects
-  const confSnapshot = isStateTreeNode(rawConf)
-    ? getSnapshot(rawConf)
-    : structuredClone(rawConf)
+  const confSnapshot = structuredClone(
+    isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
+  )
   const conf = pluginManager.evaluateExtensionPoint(
     'Core-preProcessTrackConfig',
     confSnapshot,

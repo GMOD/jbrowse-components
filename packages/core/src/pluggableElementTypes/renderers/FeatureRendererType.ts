@@ -100,7 +100,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
       {
         ...result,
         features: deserializedFeatures,
-      } as ServerSideResultsSerialized,
+      },
       args,
     )
     return {

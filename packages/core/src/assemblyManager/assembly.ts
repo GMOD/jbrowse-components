@@ -1,11 +1,5 @@
 import AbortablePromiseCache from '@gmod/abortable-promise-cache'
-import {
-  addDisposer,
-  getParent,
-  getSnapshot,
-  types,
-} from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/util.ts'
@@ -21,6 +15,7 @@ import type {
 } from '../data_adapters/BaseAdapter/index.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { Feature, Region } from '../util/index.ts'
+import type { StopToken } from '../util/stopToken.ts'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
@@ -67,15 +62,18 @@ async function loadRefNameMap(
   assembly: Assembly,
   adapterConfig: unknown,
   options: BaseOptions & { sequenceAdapter?: unknown },
-  stopToken?: string,
+  stopToken?: StopToken,
 ) {
   const { sessionId, sequenceAdapter } = options
+  if (!sessionId) {
+    throw new Error('sessionId is required for loadRefNameMap')
+  }
   await when(() => !!(assembly.regions && assembly.refNameAliases), {
     name: 'when assembly ready',
   })
 
   const refNames = await assembly.rpcManager.call(
-    sessionId || 'assemblyRpc',
+    sessionId,
     'CoreGetRefNames',
     {
       adapterConfig: adapterConfig as Record<string, unknown>,
@@ -91,11 +89,11 @@ async function loadRefNameMap(
     throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)
   }
 
+  for (const name of refNames) {
+    checkRefName(name)
+  }
   const refNameMap = Object.fromEntries(
-    refNames.map(name => {
-      checkRefName(name)
-      return [assembly.getCanonicalRefName(name), name]
-    }),
+    refNames.map(name => [assembly.getCanonicalRefName(name), name]),
   )
 
   return {
@@ -151,7 +149,7 @@ export default function assemblyFactory(
     // TODO:ABORT (possible? desirable??)
     async fill(
       args: CacheData,
-      _stopToken?: string,
+      _stopToken?: StopToken,
       statusCallback?: (arg: string) => void,
     ) {
       const { adapterConf, self, options } = args
@@ -183,6 +181,8 @@ export default function assemblyFactory(
       /**
        * #volatile
        */
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       /**
        * #volatile
@@ -210,6 +210,18 @@ export default function assemblyFactory(
        * #volatile
        */
       cytobands: undefined as Feature[] | undefined,
+      /**
+       * #volatile
+       * Precomputed in loadPre to avoid expensive synchronous computation
+       * when MobX triggers the autorun after setLoaded
+       */
+      lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
+      /**
+       * #volatile
+       * Precomputed in loadPre to avoid expensive synchronous computation
+       * when MobX triggers the autorun after setLoaded
+       */
+      allRefNamesWithLowerCase: undefined as Set<string> | undefined,
     }))
     .views(self => ({
       /**
@@ -217,18 +229,6 @@ export default function assemblyFactory(
        */
       getConf(arg: string) {
         return self.configuration ? getConf(self, arg) : undefined
-      },
-      /**
-       * #getter
-       */
-      get lowerCaseRefNameAliases() {
-        return self.refNameAliases
-          ? Object.fromEntries(
-              Object.entries(self.refNameAliases).map(([key, val]) => {
-                return [key.toLowerCase(), val]
-              }),
-            )
-          : undefined
       },
     }))
     .views(self => ({
@@ -263,7 +263,7 @@ export default function assemblyFactory(
        * #getter
        */
       get aliases(): string[] {
-        return self.getConf('aliases') || []
+        return self.getConf('aliases') ?? []
       },
 
       /**
@@ -300,23 +300,6 @@ export default function assemblyFactory(
       /**
        * #getter
        */
-      get lowerCaseRefNames() {
-        return !self.lowerCaseRefNameAliases
-          ? undefined
-          : Object.keys(self.lowerCaseRefNameAliases)
-      },
-
-      /**
-       * #getter
-       */
-      get allRefNamesWithLowerCase() {
-        return this.allRefNames && this.lowerCaseRefNames
-          ? [...new Set([...this.allRefNames, ...this.lowerCaseRefNames])]
-          : undefined
-      },
-      /**
-       * #getter
-       */
       get rpcManager(): RpcManager {
         return getParent<any>(self, 2).rpcManager
       },
@@ -324,7 +307,7 @@ export default function assemblyFactory(
        * #getter
        */
       get refNameColors() {
-        const colors: string[] = self.getConf('refNameColors') || []
+        const colors: string[] = self.getConf('refNameColors') ?? []
         return colors.length === 0 ? refNameColors : colors
       },
     }))
@@ -437,6 +420,18 @@ export default function assemblyFactory(
       /**
        * #action
        */
+      setLowerCaseRefNameAliases(aliases: RefNameAliases) {
+        self.lowerCaseRefNameAliases = aliases
+      },
+      /**
+       * #action
+       */
+      setAllRefNamesWithLowerCase(names: Set<string>) {
+        self.allRefNamesWithLowerCase = names
+      },
+      /**
+       * #action
+       */
       setCytobands(cytobands: Feature[]) {
         self.cytobands = cytobands
       },
@@ -456,12 +451,10 @@ export default function assemblyFactory(
        * #action
        */
       load() {
-        if (!self.loadingP) {
-          self.loadingP = this.loadPre().catch((e: unknown) => {
-            this.setLoadingP(undefined)
-            this.setError(e)
-          })
-        }
+        self.loadingP ??= this.loadPre().catch((e: unknown) => {
+          this.setLoadingP(undefined)
+          this.setError(e)
+        })
         return self.loadingP
       },
       /**
@@ -482,7 +475,7 @@ export default function assemblyFactory(
         for (const r of regions) {
           checkRefName(r.refName)
         }
-        const refNameAliases = {} as Record<string, string>
+        const refNameAliases: Record<string, string> = {}
 
         const refNameAliasCollection = await getRefNameAliases({
           config: refNameAliasesAdapterConf,
@@ -501,30 +494,35 @@ export default function assemblyFactory(
             refNameAliases[refName] = refName
           }
         }
-        // add identity to the refNameAliases list
+        // Build lowercase aliases, combined name set, and sparse canonical
+        // mapping in a single pass over regions + refNameAliases
+        const lowerCaseAliases: Record<string, string> = {}
+        const nameSet = new Set<string>()
+        const canonicalToSeqAdapterRefNames: Record<string, string> = {}
         for (const region of regions) {
-          // this ||= means that if the refNameAliasAdapter already set a
-          // mapping for the primary region to be an alias
-          refNameAliases[region.refName] ||= region.refName
-        }
+          // add identity mapping (??= so refNameAliasAdapter can override)
+          refNameAliases[region.refName] ??= region.refName
 
-        // Build sparse mapping from canonical names to sequence adapter names.
-        // Only stores entries where the names differ (for performance with large
-        // assemblies). getSeqAdapterRefName() falls back to input if not found.
-        const canonicalToSeqAdapterRefNames = {} as Record<string, string>
-        for (const region of regions) {
-          const canonicalName = refNameAliases[region.refName] || region.refName
+          const canonicalName = refNameAliases[region.refName] ?? region.refName
           if (canonicalName !== region.refName) {
             canonicalToSeqAdapterRefNames[canonicalName] = region.refName
           }
         }
+        for (const key of Object.keys(refNameAliases)) {
+          nameSet.add(key)
+          const lower = key.toLowerCase()
+          lowerCaseAliases[lower] = refNameAliases[key]!
+          nameSet.add(lower)
+        }
         this.setCanonicalToSeqAdapterRefNames(canonicalToSeqAdapterRefNames)
+        this.setLowerCaseRefNameAliases(lowerCaseAliases)
+        this.setAllRefNamesWithLowerCase(nameSet)
 
         this.setLoaded({
           refNameAliases,
           regions: regions.map(r => ({
             ...r,
-            refName: refNameAliases[r.refName] || r.refName,
+            refName: refNameAliases[r.refName] ?? r.refName,
             assemblyName,
           })),
           cytobands: await getCytobands({
@@ -585,26 +583,17 @@ export default function assemblyFactory(
         const map = await this.getAdapterMapEntry(adapterConf, opts)
         return map.reverseMap
       },
-      afterCreate() {
-        addDisposer(
-          self,
-          autorun(
-            function assemblyRefNamesAutorun() {
-              // force getter not to go stale. helps with very fragmented
-              // assemblies e.g. 1,000,000 scaffolds to avoid recomputing
-              //
-              // xref solution https://github.com/mobxjs/mobx/issues/266#issuecomment-222007278
-              // xref problem https://github.com/GMOD/react-msaview/issues/75
-              // eslint-disable-next-line  @typescript-eslint/no-unused-expressions
-              self.allRefNamesWithLowerCase
-            },
-            {
-              name: 'AssemblyRefNames',
-            },
-          ),
-        )
-      },
     }))
+}
+
+async function instantiateAdapter(
+  config: AnyConfigurationModel,
+  pluginManager: PluginManager,
+) {
+  const CLASS = await pluginManager
+    .getAdapterType(config.type)!
+    .getAdapterClass()
+  return new CLASS(config, undefined, pluginManager)
 }
 
 async function getRefNameAliases({
@@ -614,15 +603,12 @@ async function getRefNameAliases({
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
-  stopToken?: string
+  stopToken?: StopToken
 }) {
-  const type = pluginManager.getAdapterType(config.type)!
-  const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(
+  const adapter = (await instantiateAdapter(
     config,
-    undefined,
     pluginManager,
-  ) as BaseRefNameAliasAdapter
+  )) as BaseRefNameAliasAdapter
   return adapter.getRefNameAliases({ stopToken })
 }
 
@@ -633,10 +619,7 @@ async function getCytobands({
   config: AnyConfigurationModel
   pluginManager: PluginManager
 }) {
-  const type = pluginManager.getAdapterType(config.type)!
-  const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(config, undefined, pluginManager)
-
+  const adapter = await instantiateAdapter(config, pluginManager)
   // @ts-expect-error
   return adapter.getData()
 }
@@ -648,11 +631,12 @@ async function getAssemblyRegions({
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
-  stopToken?: string
+  stopToken?: StopToken
 }) {
-  const type = pluginManager.getAdapterType(config.type)!
-  const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(config, undefined, pluginManager) as RegionsAdapter
+  const adapter = (await instantiateAdapter(
+    config,
+    pluginManager,
+  )) as RegionsAdapter
   return adapter.getRegions({ stopToken })
 }
 

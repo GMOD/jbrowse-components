@@ -67,6 +67,7 @@ export function SequenceFeatureDetailsF() {
        * #volatile
        */
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       mode: '' as SequenceDisplayMode,
     }))
     .actions(self => ({

@@ -12,10 +12,10 @@ const srcDir = join(packageRoot, 'src')
 const preservedExports = [
   '@jbrowse/core/util/nanoid',
   '@jbrowse/core/ReExports/list',
+  '@jbrowse/core/rpc/RpcRegistry',
   '@jbrowse/core/util/fileHandleStore',
   '@jbrowse/core/util/tss-react/types',
   '@jbrowse/core/configuration/configurationSchema',
-  '@jbrowse/core/rpc/RpcRegistry',
   // Referenced as string literals in ReExports runtime module registry
   '@jbrowse/core/pluggableElementTypes/renderers/RendererType',
   '@jbrowse/core/util/layouts',

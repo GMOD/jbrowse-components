@@ -63,3 +63,83 @@ test('can convert a slot with a default function value to a scalar value', () =>
   expect(instance.value).toBe('')
   expect(instance.expr.eval()).toEqual('')
 })
+
+test('convertToCallback preserves falsy values (false, 0)', () => {
+  // regression: || instead of ?? caused false/0 to become jexl:'' instead of
+  // jexl:false / jexl:0
+  const boolModel = ConfigSlot('tester', {
+    type: 'boolean',
+    defaultValue: true,
+  })
+  const boolInstance = boolModel.create(undefined, { pluginManager })
+  boolInstance.set(false)
+  boolInstance.convertToCallback()
+  expect(boolInstance.value).toBe('jexl:false')
+
+  const numModel = ConfigSlot('tester', { type: 'number', defaultValue: 1 })
+  const numInstance = numModel.create(undefined, { pluginManager })
+  numInstance.set(0)
+  numInstance.convertToCallback()
+  expect(numInstance.value).toBe('jexl:0')
+})
+
+test('typing "jexl:" into a value field does not flip the editor mode (#4181)', () => {
+  const model = ConfigSlot('tester', { type: 'color', defaultValue: 'red' })
+  const instance = model.create(undefined, { pluginManager })
+  expect(instance.editorIsCallback).toBe(false)
+  instance.set('jexl:')
+  // value-prefix detection still works for runtime eval, but the editor
+  // dispatch should not auto-swap mid-typing
+  expect(instance.isCallback).toBe(true)
+  expect(instance.editorIsCallback).toBe(false)
+})
+
+test('expr falls back to literal value when jexl body is empty (#4181)', () => {
+  const model = ConfigSlot('tester', { type: 'color', defaultValue: 'red' })
+  const instance = model.create(undefined, { pluginManager })
+  instance.set('jexl:')
+  // would otherwise throw inside stringToJexlExpression and crash the
+  // track render with "TypeError: e is null"
+  expect(() => instance.expr.eval()).not.toThrow()
+  expect(instance.expr.eval()).toBe('jexl:')
+})
+
+test('convertToCallback / convertToValue pin the editor mode explicitly', () => {
+  const model = ConfigSlot('tester', {
+    type: 'string',
+    defaultValue: 'foo',
+    contextVariable: ['feature'],
+  })
+  const instance = model.create(undefined, { pluginManager })
+  expect(instance.editorIsCallback).toBe(false)
+  instance.convertToCallback()
+  expect(instance.editorIsCallback).toBe(true)
+  instance.convertToValue()
+  expect(instance.editorIsCallback).toBe(false)
+})
+
+test('a saved jexl callback opens in callback mode by default', () => {
+  // sanity: editorModeOverride is undefined on a freshly loaded slot, so
+  // editorIsCallback defers to the prefix-derived isCallback
+  const model = ConfigSlot('tester', {
+    type: 'string',
+    defaultValue: 'jexl:get(feature,"foo")',
+  })
+  const instance = model.create(undefined, { pluginManager })
+  expect(instance.isCallback).toBe(true)
+  expect(instance.editorIsCallback).toBe(true)
+})
+
+test('convertToValue uses defaultValue when eval returns undefined, not type fallback', () => {
+  // regression: convertToValue was unconditionally overwriting defaultValue with
+  // fallbackDefaults[type]; should only do so when defaultValue is itself jexl
+  const model = ConfigSlot('tester', {
+    type: 'string',
+    defaultValue: 'myDefault',
+  })
+  const instance = model.create(undefined, { pluginManager })
+  // 'jexl:undeclaredVar' evaluates to undefined with no context args
+  instance.set('jexl:undeclaredVar')
+  instance.convertToValue()
+  expect(instance.value).toBe('myDefault') // not '' (the string type fallback)
+})

@@ -250,6 +250,8 @@ export default function ConfigSlot(
           },
     )
     .postProcessSnapshot(snap => {
+      // omit the value when it equals the default so snapshots stay minimal;
+      // JSON.stringify comparison handles object/array defaults
       if (typeof snap.value === 'object') {
         return JSON.stringify(snap.value) !== JSON.stringify(defaultValue)
           ? snap.value

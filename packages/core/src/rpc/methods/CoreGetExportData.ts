@@ -4,18 +4,13 @@ import { renameRegionsIfNeeded } from '../../util/index.ts'
 
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
+import type { RpcArgs } from '../RpcRegistry.ts'
 
 export default class CoreGetExportData extends RpcMethodType {
   name = 'CoreGetExportData'
 
   async serializeArguments(
-    args: {
-      sessionId: string
-      regions: Region[]
-      adapterConfig: Record<string, unknown>
-      formatType: string
-      opts?: any
-    },
+    args: RpcArgs<'CoreGetExportData'> & { sessionId: string },
     rpcDriver: string,
   ) {
     const { rootModel } = this.pluginManager
@@ -30,7 +25,7 @@ export default class CoreGetExportData extends RpcMethodType {
       regions: Region[]
       adapterConfig: Record<string, unknown>
       formatType: string
-      opts?: any
+      opts?: Record<string, unknown>
     },
     rpcDriver: string,
   ) {
@@ -41,7 +36,6 @@ export default class CoreGetExportData extends RpcMethodType {
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    const result = await dataAdapter.getExportData(regions, formatType, opts)
-    return result || ''
+    return (await dataAdapter.getExportData(regions, formatType, opts)) ?? ''
   }
 }

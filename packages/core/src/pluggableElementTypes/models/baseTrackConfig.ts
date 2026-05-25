@@ -12,6 +12,8 @@ interface BasicTrack {
   displays?: {
     type: string
     displayId?: string
+    renderer?: { type: string; height?: unknown; [key: string]: unknown }
+    [key: string]: unknown
   }[]
 }
 
@@ -196,13 +198,58 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
             )
           }
         }
+        const displayElements = pluginManager.getDisplayElements()
+        const knownDisplayTypes = new Set(displayElements.map(d => d.name))
+        // Map of legacy display type → canonical name, built from each
+        // DisplayType's `aliases` declaration. Lets each display "own" its
+        // renames without a central migration file.
+        const displayAliasMap = new Map<string, string>()
+        for (const d of displayElements) {
+          if (d.aliases) {
+            for (const alias of d.aliases) {
+              displayAliasMap.set(alias, d.name)
+            }
+          }
+        }
+        const knownRendererTypes = new Set(
+          pluginManager.getRendererTypes().map(r => r.name),
+        )
         return {
           ...snap,
-          displays: displays.map(d => ({
-            ...d,
-            // synthesize displayId if none provided
-            displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
-          })),
+          displays: displays
+            .map(d => {
+              const canonical = displayAliasMap.get(d.type)
+              return canonical ? { ...d, type: canonical } : d
+            })
+            .filter(d => knownDisplayTypes.has(d.type))
+            .map(d => {
+              const { renderer, ...rest } = d
+              if (renderer?.type && knownRendererTypes.has(renderer.type)) {
+                return {
+                  ...d,
+                  displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
+                }
+              } else if (renderer) {
+                const {
+                  type: _rendererType,
+                  height: rendererHeight,
+                  ...rendererProps
+                } = renderer
+                return {
+                  ...rendererProps,
+                  ...(rendererHeight !== undefined
+                    ? { featureHeight: rendererHeight }
+                    : undefined),
+                  ...rest,
+                  displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
+                }
+              } else {
+                return {
+                  ...rest,
+                  displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
+                }
+              }
+            }),
         }
       },
       /**
@@ -215,10 +262,10 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         addDisplayConf(conf: { type: string; displayId: string }) {
           const { type } = conf
           if (!type) {
-            throw new Error(`unknown display type ${type}`)
+            throw new Error('display type not specified')
           }
           const display = self.displays.find(
-            (d: any) => d?.displayId === conf.displayId,
+            (d: { displayId?: string }) => d.displayId === conf.displayId,
           )
           if (display) {
             return display

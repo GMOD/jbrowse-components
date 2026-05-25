@@ -5,7 +5,6 @@ const useStyles = makeStyles()(theme => ({
     padding: 4,
     margin: 4,
     overflow: 'auto',
-    maxHeight: 200,
     background: theme.palette.mode === 'dark' ? '#833' : '#f88',
     border: `1px solid ${theme.palette.divider}`,
   },

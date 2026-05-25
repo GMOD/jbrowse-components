@@ -1,5 +1,6 @@
 import type PluginManager from './PluginManager.ts'
 import type { AnyConfigurationSchemaType } from './configuration/index.ts'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 /**
  * base class for a JBrowse plugin
@@ -15,6 +16,8 @@ export default abstract class Plugin {
 
   configure(_pluginManager: PluginManager): void {}
 
+  uninstall(_pluginManager: PluginManager): void {}
+
   // this is put into configuration.YourPluginName.configSlot
   configurationSchema?: AnyConfigurationSchemaType
 
@@ -24,7 +27,7 @@ export default abstract class Plugin {
   // this is spread into the root config, just configSlot
   rootConfigurationSchema?: (
     arg: PluginManager,
-  ) => Record<string, AnyConfigurationSchemaType>
+  ) => Record<string, AnyConfigurationSchemaType | IAnyType>
 }
 
 export type PluginConstructor = new (...args: unknown[]) => Plugin

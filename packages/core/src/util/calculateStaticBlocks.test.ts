@@ -1,3 +1,4 @@
+import { makeDisplayedRegionKey } from './blockTypes.ts'
 import calculateBlocks from './calculateStaticBlocks.ts'
 
 describe('block calculation', () => {
@@ -185,6 +186,54 @@ describe('reverse block calculation', () => {
     })
     expect(blocks).toMatchSnapshot()
   })
+
+  test('isLeftEnd/isRightEnd flags are correct for reversed multi-block region', () => {
+    const blocks = calculateBlocks({
+      bpPerPx: 1,
+      width: 2400,
+      offsetPx: 0,
+      displayedRegions: [
+        {
+          assemblyName: 'test',
+          refName: 'ctgA',
+          start: 0,
+          end: 2400,
+          reversed: true,
+        },
+      ],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
+    })
+    const content = blocks.contentBlocks
+    expect(content).toHaveLength(3)
+    expect(content[0]!.isLeftEndOfDisplayedRegion).toBe(true)
+    expect(content[0]!.isRightEndOfDisplayedRegion).toBe(false)
+    expect(content[1]!.isLeftEndOfDisplayedRegion).toBe(false)
+    expect(content[1]!.isRightEndOfDisplayedRegion).toBe(false)
+    expect(content[2]!.isLeftEndOfDisplayedRegion).toBe(false)
+    expect(content[2]!.isRightEndOfDisplayedRegion).toBe(true)
+  })
+
+  test('isLeftEnd/isRightEnd flags are correct for forward multi-block region', () => {
+    const blocks = calculateBlocks({
+      bpPerPx: 1,
+      width: 2400,
+      offsetPx: 0,
+      displayedRegions: [
+        { assemblyName: 'test', refName: 'ctgA', start: 0, end: 2400 },
+      ],
+      minimumBlockWidth: 20,
+      interRegionPaddingWidth: 2,
+    })
+    const content = blocks.contentBlocks
+    expect(content).toHaveLength(3)
+    expect(content[0]!.isLeftEndOfDisplayedRegion).toBe(true)
+    expect(content[0]!.isRightEndOfDisplayedRegion).toBe(false)
+    expect(content[1]!.isLeftEndOfDisplayedRegion).toBe(false)
+    expect(content[1]!.isRightEndOfDisplayedRegion).toBe(false)
+    expect(content[2]!.isLeftEndOfDisplayedRegion).toBe(false)
+    expect(content[2]!.isRightEndOfDisplayedRegion).toBe(true)
+  })
 })
 
 describe('reversed displayed regions', () => {
@@ -239,5 +288,162 @@ describe('reversed displayed regions', () => {
       interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
+  })
+})
+
+describe('off-screen region padding in regionBpOffset', () => {
+  it('includes padding for off-screen regions when scrolled far right', () => {
+    const regions = [
+      { assemblyName: 'test', refName: 'chr1', start: 0, end: 1000 },
+      { assemblyName: 'test', refName: 'chr2', start: 0, end: 1000 },
+      { assemblyName: 'test', refName: 'chr3', start: 0, end: 1000 },
+      { assemblyName: 'test', refName: 'chr4', start: 0, end: 1000 },
+      { assemblyName: 'test', refName: 'chr5', start: 0, end: 1000 },
+    ]
+    const blockSet = calculateBlocks({
+      bpPerPx: 1,
+      width: 800,
+      offsetPx: 4008,
+      displayedRegions: regions,
+      minimumBlockWidth: 3,
+      interRegionPaddingWidth: 2,
+    })
+    const chr5Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr5')
+    expect(chr5Blocks.length).toBeGreaterThan(0)
+    expect(chr5Blocks[0]!.offsetPx).toBe(4008)
+  })
+
+  it('block offsetPx matches displayedRegionsTotalPx coordinate space', () => {
+    const regions = [
+      { assemblyName: 'test', refName: 'chr1', start: 0, end: 500 },
+      { assemblyName: 'test', refName: 'chr2', start: 0, end: 500 },
+      { assemblyName: 'test', refName: 'chr3', start: 0, end: 500 },
+    ]
+    const bpPerPx = 1
+    const interRegionPaddingWidth = 2
+    const minimumBlockWidth = 3
+
+    const totalGenomic = 1500
+    const nonElidedCount = 3
+    const totalPadding = (nonElidedCount - 1) * interRegionPaddingWidth
+    const displayedRegionsTotalPx = totalGenomic / bpPerPx + totalPadding
+
+    const blockSetEnd = calculateBlocks({
+      bpPerPx,
+      width: 800,
+      offsetPx: displayedRegionsTotalPx - 800,
+      displayedRegions: regions,
+      minimumBlockWidth,
+      interRegionPaddingWidth,
+    })
+
+    const lastContentBlock =
+      blockSetEnd.contentBlocks[blockSetEnd.contentBlocks.length - 1]!
+    expect(lastContentBlock.refName).toBe('chr3')
+    const blockEndPx = lastContentBlock.offsetPx + lastContentBlock.widthPx
+    expect(blockEndPx).toBe(displayedRegionsTotalPx)
+  })
+
+  it('positions are consistent whether region is on-screen or off-screen', () => {
+    const regions = [
+      { assemblyName: 'test', refName: 'chr1', start: 0, end: 1000 },
+      { assemblyName: 'test', refName: 'chr2', start: 0, end: 1000 },
+      { assemblyName: 'test', refName: 'chr3', start: 0, end: 1000 },
+    ]
+
+    const atStart = calculateBlocks({
+      bpPerPx: 1,
+      width: 800,
+      offsetPx: 0,
+      displayedRegions: regions,
+      minimumBlockWidth: 3,
+      interRegionPaddingWidth: 2,
+    })
+
+    const scrolledRight = calculateBlocks({
+      bpPerPx: 1,
+      width: 800,
+      offsetPx: 2004,
+      displayedRegions: regions,
+      minimumBlockWidth: 3,
+      interRegionPaddingWidth: 2,
+    })
+
+    const chr3AtStart = atStart.contentBlocks.filter(b => b.refName === 'chr3')
+    const chr3Scrolled = scrolledRight.contentBlocks.filter(
+      b => b.refName === 'chr3',
+    )
+
+    if (chr3AtStart.length > 0 && chr3Scrolled.length > 0) {
+      const matchingBlock = chr3Scrolled.find(
+        b => b.start === chr3AtStart[0]!.start,
+      )
+      if (matchingBlock) {
+        expect(matchingBlock.offsetPx).toBe(chr3AtStart[0]!.offsetPx)
+      }
+    }
+  })
+
+  it('padding is not added for elided regions', () => {
+    const regions = [
+      { assemblyName: 'test', refName: 'chr1', start: 0, end: 1000 },
+      { assemblyName: 'test', refName: 'chr2', start: 0, end: 1 },
+      { assemblyName: 'test', refName: 'chr3', start: 0, end: 1000 },
+    ]
+    const blockSet = calculateBlocks({
+      bpPerPx: 1,
+      width: 800,
+      offsetPx: 1002,
+      displayedRegions: regions,
+      minimumBlockWidth: 3,
+      interRegionPaddingWidth: 2,
+    })
+    const chr3Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr3')
+    expect(chr3Blocks.length).toBeGreaterThan(0)
+    expect(chr3Blocks[0]!.offsetPx).toBe(1003)
+  })
+})
+
+describe('makeDisplayedRegionKey', () => {
+  test('produces key from region coordinates', () => {
+    const key = makeDisplayedRegionKey({
+      assemblyName: 'hg38',
+      refName: 'chr1',
+      start: 0,
+      end: 248956422,
+    })
+    expect(key).toBe('hg38:chr1:0:248956422')
+  })
+
+  test('includes reversed suffix', () => {
+    const key = makeDisplayedRegionKey({
+      assemblyName: 'hg38',
+      refName: 'chr1',
+      start: 1000,
+      end: 2000,
+      reversed: true,
+    })
+    expect(key).toBe('hg38:chr1:1000:2000:rev')
+  })
+
+  test('same coordinates produce same key', () => {
+    const r = { assemblyName: 'mm39', refName: 'chr5', start: 500, end: 1000 }
+    expect(makeDisplayedRegionKey(r)).toBe(makeDisplayedRegionKey(r))
+  })
+
+  test('different regions produce different keys', () => {
+    const a = makeDisplayedRegionKey({
+      assemblyName: 'hg38',
+      refName: 'chr1',
+      start: 0,
+      end: 1000,
+    })
+    const b = makeDisplayedRegionKey({
+      assemblyName: 'hg38',
+      refName: 'chr1',
+      start: 0,
+      end: 2000,
+    })
+    expect(a).not.toBe(b)
   })
 })

@@ -1,7 +1,7 @@
 import { CanvasSequence } from 'canvas-sequencer-ts'
 
 import { blobToDataURL } from './blobToDataURL.ts'
-import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill.tsx'
+import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill.ts'
 
 interface ExportSVGOptions {
   rasterizeLayers?: boolean
@@ -45,7 +45,7 @@ export async function renderToAbstractCanvas<T extends object | undefined>(
         canvasRecordedData: fakeCtx.toJSON() as Record<string, unknown>,
       } as unknown as Result
     } else {
-      const s = exportSVG.scale || highResolutionScaling
+      const s = exportSVG.scale ?? highResolutionScaling
       const canvas = createCanvas(
         Math.ceil(safeWidth * s),
         Math.ceil(safeHeight * s),

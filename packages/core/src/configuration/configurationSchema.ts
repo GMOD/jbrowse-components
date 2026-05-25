@@ -1,4 +1,5 @@
 import {
+  getEnv,
   getRoot,
   getSnapshot,
   isLateType,
@@ -283,13 +284,20 @@ export function ConfigurationSchema<
   return schemaType
 }
 
+// Lazy hydration cache for frozen track configs. jbrowse.tracks is
+// types.frozen (plain objects) for large-tracklist performance; this WeakMap
+// converts each frozen object to an MST node on first reference access.
+// Keyed by the frozen object itself, so the entry is GC'd when updateTrackConf
+// replaces the snapshot and nothing else holds the old reference.
+const frozenTrackCache = new WeakMap<object, unknown>()
+
 /**
  * Reference to a track configuration. Snapshot output is the trackId string.
  *
  * Two load-bearing complications, both for views that hold ephemeral track
  * configs without registering them in `session.tracks`:
  *
- * 1. **`get` falls back from `getTracksById()` to MST `resolveIdentifier`.**
+ * 1. **`get` falls back from `tracksById` to MST `resolveIdentifier`.**
  *    Required by `LinearSyntenyView.viewTrackConfigs` (LinearReadVsRef);
  *    `ReadVsRef.test.tsx` is the canary.
  *
@@ -298,6 +306,9 @@ export function ConfigurationSchema<
  *    synthesized configs as full MST instances. `SVInspector.test.tsx` is the
  *    canary.
  *
+ * Simplifying either requires first migrating view-local configs into the
+ * session.
+ *
  * NOTE: don't add `as SCHEMATYPE` to the return value. It narrows SnapshotIn
  * to just the object branch, forcing callers to wrap string ids in
  * `@ts-expect-error`. The inferred union SnapshotIn is `string | SnapshotIn<schema>`.
@@ -305,14 +316,24 @@ export function ConfigurationSchema<
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
-      const ret =
-        getSession(parent).getTracksById()[id] ??
+      let ret: unknown =
+        getSession(parent).tracksById[id] ??
         // @ts-expect-error -- schemaType is IAnyType so resolveIdentifier's
         // generic can't narrow. Tree-wide MST identifier lookup; see the
         // function-level JSDoc for why this fallback is required.
         (resolveIdentifier(schemaType, getRoot(parent), id) as unknown)
       if (!ret) {
         throw new Error(`Could not resolve trackId "${id}"`)
+      }
+      if (!isStateTreeNode(ret)) {
+        const cached = frozenTrackCache.get(ret)
+        if (cached) {
+          ret = cached
+        } else {
+          const model = schemaType.create(ret, getEnv(parent))
+          frozenTrackCache.set(ret, model)
+          ret = model
+        }
       }
       return ret
     },
@@ -354,8 +375,8 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
 export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
-      // track.configuration is already a hydrated MST node, so its displays
-      // array contains MST display-config nodes directly.
+      // track.configuration is a hydrated MST node (hydrated lazily via
+      // TrackConfigurationReference), so its displays array contains MST nodes.
       const track = getContainingTrack(parent)
       const displays = track.configuration.displays
       let ret = displays.find((d: { displayId: string }) => d.displayId === id)
@@ -364,7 +385,9 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       // baseTrackConfig.preProcessSnapshot injects a display entry for every
       // registered displayType for the track, so id-mismatch (e.g. an old
       // session with a different displayId convention) finds a same-type
-      // entry here.
+      // entry here. The `if (displayType)` guard prevents an undefined
+      // parent.type from silently matching a display whose `.type` is also
+      // undefined.
       if (!ret) {
         const displayType = (parent as { type?: string }).type
         if (displayType) {
@@ -400,7 +423,7 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
 
 /**
  * Dispatch by the schema's identifier: `trackId` → track-ref (resolves through
- * `session.getTracksById()`), `displayId` → display-ref (resolves through the
+ * `session.tracksById`), `displayId` → display-ref (resolves through the
  * parent track's displays array), anything else → plain reference.
  *
  * Display schemas must declare `explicitIdentifier: 'displayId'` (directly or

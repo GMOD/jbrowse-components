@@ -31,14 +31,20 @@ export type RpcDriverFactory = (
 export default class RpcManager {
   static configSchema = rpcConfigSchema
 
+  pluginManager: PluginManager
+  mainConfiguration: AnyConfigurationModel
+  backendConfigurations: BackendConfigurations
   driverObjects: Map<string, DriverClass>
   driverFactories: Map<string, RpcDriverFactory>
 
   constructor(
-    public pluginManager: PluginManager,
-    public mainConfiguration: AnyConfigurationModel,
-    public backendConfigurations: BackendConfigurations,
+    pluginManager: PluginManager,
+    mainConfiguration: AnyConfigurationModel,
+    backendConfigurations: BackendConfigurations,
   ) {
+    this.pluginManager = pluginManager
+    this.mainConfiguration = mainConfiguration
+    this.backendConfigurations = backendConfigurations
     this.driverObjects = new Map()
     this.driverFactories = new Map()
 
@@ -92,7 +98,9 @@ export default class RpcManager {
       throw new Error(`RPC driver "${backendName}" is missing configuration`)
     }
 
-    const config = this.mainConfiguration.drivers.get('WebWorkerRpcDriver')
+    const config =
+      this.mainConfiguration.drivers.get(backendName) ??
+      this.mainConfiguration.drivers.get('WebWorkerRpcDriver')
     const newDriver = factory(config, backendConfig, this.pluginManager)
     this.driverObjects.set(backendName, newDriver)
     return newDriver
@@ -118,7 +126,7 @@ export default class RpcManager {
     args: M extends RpcMethodName
       ? RpcArgs<M & RpcMethodName>
       : Record<string, unknown>,
-    opts?: { rpcDriverName?: string } & Record<string, unknown>,
+    opts?: Record<string, unknown>,
   ): Promise<M extends RpcMethodName ? RpcReturn<M & RpcMethodName> : unknown> {
     if (!sessionId) {
       throw new Error('sessionId is required')
@@ -130,7 +138,6 @@ export default class RpcManager {
       a,
       opts,
     )
-
     return driverForCall.call(
       this.pluginManager,
       sessionId,

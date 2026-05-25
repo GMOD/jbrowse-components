@@ -15,7 +15,6 @@ import { checkStopToken } from './stopToken.ts'
 import { isUriLocation } from './types/index.ts'
 
 import type { ParsedLocString } from './locString.ts'
-import type { Feature } from './simpleFeature.ts'
 import type { StopToken } from './stopToken.ts'
 import type { AssemblyManager, Region } from './types/index.ts'
 import type { Region as MUIRegion } from './types/mst.ts'
@@ -32,9 +31,8 @@ export * from './fetchJson.ts'
 export * from './sessionSharing.ts'
 export * from './coarseStripHTML.ts'
 export * from './measureText.ts'
-export * from './seqUtils.ts'
 
-export * from './offscreenCanvasPonyfill.tsx'
+export * from './offscreenCanvasPonyfill.ts'
 export * from './offscreenCanvasUtils.tsx'
 export * from './rpc.ts'
 export * from './crypto.ts'
@@ -348,14 +346,6 @@ interface MinimalRegion {
   reversed?: boolean
 }
 
-export function featureSpanPx(
-  feature: Feature,
-  region: MinimalRegion,
-  bpPerPx: number,
-) {
-  return bpSpanPx(feature.get('start'), feature.get('end'), region, bpPerPx)
-}
-
 export function bpSpanPx(
   leftBp: number,
   rightBp: number,
@@ -421,7 +411,7 @@ export async function renameRegionsIfNeeded<
   ARGTYPE extends {
     assemblyName?: string
     regions?: Region[]
-    stopToken?: string
+    stopToken?: StopToken
     adapterConfig: Record<string, unknown>
     sessionId: string
     statusCallback?: (arg: string) => void
@@ -509,6 +499,8 @@ export function stringify(
 export const isElectron = /electron/i.test(
   typeof navigator !== 'undefined' ? navigator.userAgent : '',
 )
+
+export * from './seqUtils.ts'
 
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
@@ -749,32 +741,33 @@ export function localStorageSetItem(str: string, item: string) {
 
 // Index iteration so these accept both arrays and typed arrays (e.g.
 // Float32Array) without requiring Iterable.
-
-export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
+/* eslint-disable @typescript-eslint/prefer-for-of */
+export function max(arr: ArrayLike<number>, init = Number.NEGATIVE_INFINITY) {
   let max = init
-  for (const element of arr) {
-    max = Math.max(element, max)
+  for (let i = 0; i < arr.length; i++) {
+    max = Math.max(arr[i]!, max)
   }
   return max
 }
 
-export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
+export function min(arr: ArrayLike<number>, init = Number.POSITIVE_INFINITY) {
   let min = init
-  for (const element of arr) {
-    min = Math.min(element, min)
+  for (let i = 0; i < arr.length; i++) {
+    min = Math.min(arr[i]!, min)
   }
   return min
 }
 
-export function sum(arr: number[]) {
+export function sum(arr: ArrayLike<number>) {
   let sum = 0
-  for (const element of arr) {
-    sum += element
+  for (let i = 0; i < arr.length; i++) {
+    sum += arr[i]!
   }
   return sum
 }
+/* eslint-enable @typescript-eslint/prefer-for-of */
 
-export function avg(arr: number[]) {
+export function avg(arr: ArrayLike<number>) {
   return sum(arr) / arr.length
 }
 
@@ -960,12 +953,22 @@ export {
 } from './simpleFeature.ts'
 
 export { blobToDataURL } from './blobToDataURL.ts'
+export { saveAs } from './FileSaver/index.ts'
 export { makeAbortableReaction } from './makeAbortableReaction.ts'
 export * from './aborting.ts'
 export * from './linkify.ts'
 export * from './locString.ts'
+export * from './openFeatureWidget.ts'
 export * from './stopToken.ts'
 export * from './tracks.ts'
 export * from './fileHandleStore.ts'
 export { IntervalTree } from './IntervalTree.ts'
-export { saveAs } from './FileSaver/index.ts'
+export { useGpuBackend } from './useGpuBackend.ts'
+export { useGpuRenderer } from './useGpuRenderer.ts'
+export { makeDisplayedRegionKey } from './blockTypes.ts'
+export {
+  type AlignmentData,
+  type DiagonalizationResult,
+  type DiagonalizeTick,
+  diagonalizeRegions,
+} from './diagonalizeRegions.ts'

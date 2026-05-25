@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react'
+import { forwardRef, useRef, useState } from 'react'
 
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { InputBase, Typography, useTheme } from '@mui/material'
@@ -47,12 +47,12 @@ const EditableTypography = forwardRef<HTMLDivElement, Props>(
     const { value, setValue, variant, ...other } = props
     const [ref2, { width }] = useMeasure()
     const [editedValue, setEditedValue] = useState<string>()
-    const [inputNode, setInputNode] = useState<HTMLInputElement | null>(null)
+    const inputRef = useRef<HTMLInputElement | null>(null)
 
     const { classes } = useStyles(props, { props })
     const theme = useTheme()
 
-    const val = editedValue === undefined ? value : editedValue
+    const val = editedValue ?? value
 
     return (
       <div {...other} ref={ref}>
@@ -67,16 +67,16 @@ const EditableTypography = forwardRef<HTMLDivElement, Props>(
           </Typography>
         </div>
         <InputBase
-          inputRef={node => {
-            setInputNode(node)
-          }}
+          inputRef={inputRef}
           className={classes.inputBase}
-          inputProps={{
-            style: {
-              width,
-              ...(variant && variant !== 'inherit'
-                ? theme.typography[variant]
-                : {}),
+          slotProps={{
+            input: {
+              style: {
+                width,
+                ...(variant && variant !== 'inherit'
+                  ? theme.typography[variant]
+                  : {}),
+              },
             },
           }}
           classes={{
@@ -90,14 +90,14 @@ const EditableTypography = forwardRef<HTMLDivElement, Props>(
           }}
           onKeyDown={event => {
             if (event.key === 'Enter') {
-              inputNode?.blur()
+              inputRef.current?.blur()
             } else if (event.key === 'Escape') {
               setEditedValue(undefined)
-              inputNode?.blur()
+              inputRef.current?.blur()
             }
           }}
           onBlur={() => {
-            setValue(editedValue || value || '')
+            setValue(editedValue ?? value)
             setEditedValue(undefined)
           }}
         />

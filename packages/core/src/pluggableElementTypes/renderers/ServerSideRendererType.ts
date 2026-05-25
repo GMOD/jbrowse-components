@@ -15,14 +15,14 @@ import type { RenderProps, RenderResults } from './RendererType.tsx'
 import type { SerializedFilterChain } from './util/serializableFilterChain.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
-import type { LastStopTokenCheck } from '../../util/stopToken.ts'
+import type { LastStopTokenCheck, StopToken } from '../../util/stopToken.ts'
 import type { SnapshotIn, SnapshotOrInstance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
 interface BaseRenderArgs extends RenderProps {
   sessionId: string
   trackInstanceId: string
-  stopToken?: string
+  stopToken?: StopToken
   theme: ThemeOptions
   exportSVG?: {
     rasterizeLayers?: boolean
@@ -93,14 +93,14 @@ export default class ServerSideRenderer extends RendererType {
 
     const config = isStateTreeNode(args.config)
       ? args.config
-      : this.configSchema.create(args.config || {}, {
+      : this.configSchema.create(args.config ?? {}, {
           pluginManager: this.pluginManager,
         })
 
     const results = await this.render({
       ...rest,
       config,
-    } as RenderArgsDeserialized)
+    })
 
     if (isRpcResult(results)) {
       return this.deserializeResultsInClient(
@@ -112,10 +112,7 @@ export default class ServerSideRenderer extends RendererType {
     const { reactElement, ...resultRest } = results
     return {
       ...resultRest,
-      reactElement: this.createReactElement(
-        resultRest as ResultsSerialized,
-        args,
-      ),
+      reactElement: this.createReactElement(resultRest, args),
     }
   }
 
@@ -143,7 +140,7 @@ export default class ServerSideRenderer extends RendererType {
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
     return {
       ...args,
-      config: this.configSchema.create(args.config || {}, {
+      config: this.configSchema.create(args.config ?? {}, {
         pluginManager: this.pluginManager,
       }),
       filters: args.filters
@@ -160,19 +157,15 @@ export default class ServerSideRenderer extends RendererType {
     _args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const { reactElement, ...rest } = results
-    return rest as ResultsSerialized
+    return rest
   }
 
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const results = (await rpcManager.call(
-      args.sessionId,
-      'CoreRender',
-      args,
-    )) as ResultsSerialized
+    const results = await rpcManager.call(args.sessionId, 'CoreRender', args)
 
     if (isCanvasRecordedSvgExport(results)) {
       const { reactElement, ...rest } = results
-      return { ...rest, html: await getSerializedSvg(results) }
+      return { ...rest, html: getSerializedSvg(results) }
     }
     return results
   }

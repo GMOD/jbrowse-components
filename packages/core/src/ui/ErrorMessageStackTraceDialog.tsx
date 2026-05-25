@@ -13,6 +13,11 @@ import { SourceMapConsumer } from 'source-map-js'
 
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
+import {
+  availableRenderers,
+  preferredRenderer,
+} from './getGraphicsCapabilities.ts'
+import { useGraphicsCapabilities } from './useGraphicsCapabilities.ts'
 
 async function myfetchtext(uri: string) {
   const res = await fetch(uri)
@@ -99,21 +104,33 @@ export default function ErrorMessageStackTraceDialog({
   const [mappedStackTrace, setMappedStackTrace] = useState<string>()
   const [secondaryError, setSecondaryError] = useState<unknown>()
   const [clicked, setClicked] = useState(false)
+  const graphicsCapabilities = useGraphicsCapabilities()
   const errorText = error ? `${error}` : ''
   const stackTrace = stripMessage(getStackTrace(error), errorText)
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        setMappedStackTrace(await mapStackTrace(stackTrace))
-      } catch (e) {
+    let cancelled = false
+    mapStackTrace(stackTrace)
+      .then(result => {
+        if (!cancelled) {
+          setMappedStackTrace(result)
+        }
+      })
+      .catch((e: unknown) => {
         console.error(e)
-        setMappedStackTrace(stackTrace)
-        setSecondaryError(e)
-      }
-    })()
+        if (!cancelled) {
+          setMappedStackTrace(stackTrace)
+          setSecondaryError(e)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
   }, [stackTrace])
+
+  const graphicsInfo = graphicsCapabilities
+    ? `Graphics: ${preferredRenderer(graphicsCapabilities)} (${availableRenderers(graphicsCapabilities).join(', ')})`
+    : ''
 
   // @ts-expect-error
   const version = window.JBrowseSession?.version
@@ -126,6 +143,7 @@ export default function ErrorMessageStackTraceDialog({
       : errorText,
     mappedStackTrace || 'No stack trace available',
     version ? `JBrowse ${version}` : '',
+    graphicsInfo,
   ]
     .filter(Boolean)
     .join('\n')

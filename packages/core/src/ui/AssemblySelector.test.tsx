@@ -1,0 +1,56 @@
+import '@testing-library/jest-dom'
+import { fireEvent, render } from '@testing-library/react'
+
+import AssemblySelector from './AssemblySelector.tsx'
+
+import type { AbstractSessionModel } from '../util/index.ts'
+
+function makeSession(
+  assemblyNames: string[],
+  displayNames?: Record<string, string>,
+) {
+  return {
+    assemblyNames,
+    assemblyManager: {
+      get: (name: string) =>
+        displayNames ? { displayName: displayNames[name] } : undefined,
+    },
+  } as unknown as AbstractSessionModel
+}
+
+test('renders assembly names as menu items', async () => {
+  const session = makeSession(['hg19', 'hg38'])
+  const { getByRole, findByText } = render(
+    <AssemblySelector session={session} selected="hg19" onChange={() => {}} />,
+  )
+  fireEvent.mouseDown(getByRole('combobox'))
+  expect(await findByText('hg38')).toBeTruthy()
+})
+
+test('calls onChange when user selects an assembly', async () => {
+  const session = makeSession(['hg19', 'hg38'])
+  const onChange = jest.fn()
+  const { getByRole, findAllByText } = render(
+    <AssemblySelector session={session} selected="hg19" onChange={onChange} />,
+  )
+  fireEvent.mouseDown(getByRole('combobox'))
+  fireEvent.click((await findAllByText('hg38'))[0]!)
+  expect(onChange).toHaveBeenCalledWith('hg38')
+})
+
+test('shows displayName when available', () => {
+  const session = makeSession(['hg19'], { hg19: 'Human (hg19)' })
+  const { getByText } = render(
+    <AssemblySelector session={session} selected="hg19" onChange={() => {}} />,
+  )
+  expect(getByText('Human (hg19)')).toBeInTheDocument()
+})
+
+test('shows error and disables select when no assemblies configured', () => {
+  const session = makeSession([])
+  const { getByRole, getByText } = render(
+    <AssemblySelector session={session} onChange={() => {}} />,
+  )
+  expect(getByRole('combobox')).toHaveAttribute('aria-disabled', 'true')
+  expect(getByText('No configured assemblies')).toBeInTheDocument()
+})

@@ -1,25 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useEvent } from './useEvent.ts'
 import { cx, makeStyles } from '../util/tss-react/index.ts'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   horizontalHandle: {
     cursor: 'row-resize',
     width: '100%',
+    '&:hover': { background: theme.palette.divider },
   },
   verticalHandle: {
     cursor: 'col-resize',
     height: '100%',
+    '&:hover': { background: theme.palette.divider },
   },
   flexbox_verticalHandle: {
     cursor: 'col-resize',
     alignSelf: 'stretch', // the height: 100% is actually unable to function inside flexbox
+    '&:hover': { background: theme.palette.divider },
   },
   flexbox_horizontalHandle: {
     cursor: 'row-resize',
     alignSelf: 'stretch', // similar to above
+    '&:hover': { background: theme.palette.divider },
   },
-})
+}))
 
 function ResizeHandle({
   onDrag,
@@ -43,8 +48,9 @@ function ResizeHandle({
   const initialPosition = useRef(0)
   const prevPos = useRef(0)
   const { classes } = useStyles()
+  const onDragStable = useEvent(onDrag)
 
-  const getPosition = useCallback(
+  const getPos = useCallback(
     (event: MouseEvent | React.MouseEvent) =>
       vertical ? event.clientX : event.clientY,
     [vertical],
@@ -57,11 +63,11 @@ function ResizeHandle({
 
     function mouseMove(event: MouseEvent) {
       event.preventDefault()
-      const pos = getPosition(event)
+      const pos = getPos(event)
       const totalDistance = initialPosition.current - pos
       const lastFrameDistance = pos - prevPos.current
       prevPos.current = pos
-      onDrag(lastFrameDistance, totalDistance)
+      onDragStable(lastFrameDistance, totalDistance)
     }
 
     function mouseUp() {
@@ -74,18 +80,18 @@ function ResizeHandle({
       window.removeEventListener('mousemove', mouseMove, true)
       window.removeEventListener('mouseup', mouseUp, true)
     }
-  }, [mouseDragging, onDrag, getPosition])
+  }, [mouseDragging, onDragStable, getPos])
 
   const handleMouseDown = useCallback(
     (event: React.MouseEvent) => {
       event.preventDefault()
-      const pos = getPosition(event)
+      const pos = getPos(event)
       initialPosition.current = pos
       prevPos.current = pos
       setMouseDragging(true)
       onMouseDown?.(event)
     },
-    [getPosition, onMouseDown],
+    [getPos, onMouseDown],
   )
 
   const className = flexbox

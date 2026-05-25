@@ -39,5 +39,6 @@ export function mergeClasses<T extends string, U extends string>(
     out[ruleName] = className
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   return out as Record<T, string> & Partial<Record<Exclude<U, T>, string>>
 }

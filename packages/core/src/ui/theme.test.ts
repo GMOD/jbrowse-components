@@ -50,13 +50,13 @@ test('allows adding a custom override', () => {
 
 test('allows modifying a default override', () => {
   const muiButtonStyle = {
-    styleOverrides: { contained: 'orange' },
+    styleOverrides: { root: 'orange' },
   }
   const theme = createJBrowseTheme({
     components: { MuiButton: muiButtonStyle },
   })
-  expect(theme.components?.MuiButton?.styleOverrides?.contained).toEqual(
-    muiButtonStyle.styleOverrides.contained,
+  expect(theme.components?.MuiButton?.styleOverrides?.root).toEqual(
+    muiButtonStyle.styleOverrides.root,
   )
 })
 
@@ -76,4 +76,16 @@ test('allows modifying a prop override', () => {
   expect(theme.components?.MuiButton?.defaultProps).toEqual(
     muiButtonProps.defaultProps,
   )
+})
+
+test('default theme has coverage color', () => {
+  const theme = createJBrowseTheme()
+  expect(theme.palette.coverage).toBeDefined()
+  expect(typeof theme.palette.coverage).toBe('string')
+})
+
+test('dark theme has different coverage color', () => {
+  const light = createJBrowseTheme()
+  const dark = createJBrowseTheme({}, undefined, 'darkStock')
+  expect(light.palette.coverage).not.toBe(dark.palette.coverage)
 })

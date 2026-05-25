@@ -108,6 +108,33 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
 }
 
 /**
+ * Get a plain-object snapshot of a configuration model that includes ALL
+ * values, even defaults. Unlike getSnapshot() which strips default values
+ * via postProcessSnapshot, this returns every slot's current value so the
+ * result can be sent to an RPC worker as a self-contained config object.
+ *
+ * For JEXL callback slots, the raw "jexl:..." string is included so the
+ * worker can evaluate it per-feature.
+ */
+export function getConfSnapshot(confObject: AnyConfigurationModel) {
+  const result: Record<string, unknown> = {}
+  for (const key of Object.keys(confObject)) {
+    const slot = confObject[key]
+    if (isConfigSlot(slot)) {
+      result[key] = slot.isCallback ? String(slot.value) : slot.getValue()
+    } else if (
+      slot &&
+      typeof slot === 'object' &&
+      isStateTreeNode(slot) &&
+      isConfigurationModel(slot)
+    ) {
+      result[key] = getConfSnapshot(slot)
+    }
+  }
+  return result
+}
+
+/**
  * helper method for readConfObject, reads the config from a mst model
  *
  * @param model - object containing a 'configuration' member
@@ -120,7 +147,6 @@ export function getConf<CONFMODEL extends AnyConfigurationModel>(
   slotPath?: Parameters<typeof readConfObject<CONFMODEL>>[1],
   args?: Parameters<typeof readConfObject<CONFMODEL>>[2],
 ) {
-  // Trust TypeScript types - the generic constraint ensures configuration is valid
   return readConfObject(model.configuration, slotPath, args)
 }
 
@@ -233,33 +259,6 @@ export function isConfigurationSlotType(thing: unknown) {
     thing !== null &&
     'isJBrowseConfigurationSlot' in thing
   )
-}
-
-/**
- * Get a plain-object snapshot of a configuration model that includes ALL
- * values, even defaults. Unlike getSnapshot() which strips default values
- * via postProcessSnapshot, this returns every slot's current value so the
- * result can be sent to an RPC worker as a self-contained config object.
- *
- * For JEXL callback slots, the raw "jexl:..." string is included so the
- * worker can evaluate it per-feature.
- */
-export function getConfSnapshot(confObject: AnyConfigurationModel) {
-  const result: Record<string, unknown> = {}
-  for (const key of Object.keys(confObject)) {
-    const slot = confObject[key]
-    if (isConfigSlot(slot)) {
-      result[key] = slot.isCallback ? String(slot.value) : slot.getValue()
-    } else if (
-      slot &&
-      typeof slot === 'object' &&
-      isStateTreeNode(slot) &&
-      isConfigurationModel(slot)
-    ) {
-      result[key] = getConfSnapshot(slot)
-    }
-  }
-  return result
 }
 
 function resolveConfigValue(

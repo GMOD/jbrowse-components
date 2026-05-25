@@ -45,5 +45,5 @@ export default class RendererType extends PluggableElementBase {
     }
   }
 
-  freeResources(_args: any) {}
+  freeResources(_args: unknown) {}
 }

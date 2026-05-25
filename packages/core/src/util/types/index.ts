@@ -95,7 +95,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   hovered: unknown
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void
-  allThemes?: () => Record<string, ThemeOptions>
+  allThemes?: () => Record<string, ThemeOptions & { name?: string }>
   setSelection: (feature: Feature) => void
   setSession?: (arg: { name: string; [key: string]: unknown }) => void
   clearSelection: () => void
@@ -119,8 +119,14 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     effectiveConfig?: Record<string, unknown>,
     view?: { showTrack: (id: string) => void },
   ) => MenuItem[]
-  getTrackActions?: (arg: AnyConfigurationModel) => MenuItem[]
-  getTrackListMenuItems?: (arg: AnyConfigurationModel) => MenuItem[]
+  getTrackActions?: (
+    arg: AnyConfigurationModel,
+    view?: { showTrack: (id: string) => void },
+  ) => MenuItem[]
+  getTrackListMenuItems?: (
+    arg: AnyConfigurationModel,
+    view?: { showTrack: (id: string) => void },
+  ) => MenuItem[]
   addAssembly?: (conf: Record<string, unknown>) => void
   removeAssembly?: (name: string) => void
   textSearchManager?: TextSearchManager
@@ -191,6 +197,16 @@ export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
     // @ts-expect-error
     isSessionModel(t) && 'addTrackConf' in t && !t.disableAddTracks
   )
+}
+
+/** abstract interface for a session that allows deleting track configs */
+export interface SessionWithDeleteTrackConf extends AbstractSessionModel {
+  deleteTrackConf(configuration: AnyConfigurationModel): void
+}
+export function isSessionWithDeleteTrackConf(
+  t: unknown,
+): t is SessionWithDeleteTrackConf {
+  return isSessionModel(t) && 'deleteTrackConf' in t
 }
 
 /** abstract interface for a session allows adding tracks */
@@ -352,13 +368,12 @@ export interface AbstractDisplayModel {
   cannotBeRenderedReason?: string
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
-  return (
-    typeof thing === 'object' &&
-    thing !== null &&
-    'configuration' in thing &&
+  if (typeof thing === 'object' && thing !== null && 'configuration' in thing) {
     // @ts-expect-error
-    thing.configuration.displayId
-  )
+    const { displayId } = thing.configuration
+    return !!displayId
+  }
+  return false
 }
 
 export interface TrackViewModel extends AbstractViewModel {
@@ -511,11 +526,11 @@ export function isFileHandleLocation(
   )
 }
 export class AuthNeededError extends Error {
-  constructor(
-    public message: string,
-    public url: string,
-  ) {
+  url: string
+
+  constructor(message: string, url: string) {
     super(message)
+    this.url = url
     this.name = 'AuthNeededError'
 
     Object.setPrototypeOf(this, AuthNeededError.prototype)
@@ -523,11 +538,11 @@ export class AuthNeededError extends Error {
 }
 
 export class RetryError extends Error {
-  constructor(
-    public message: string,
-    public internetAccountId: string,
-  ) {
+  internetAccountId: string
+
+  constructor(message: string, internetAccountId: string) {
     super(message)
+    this.internetAccountId = internetAccountId
     this.name = 'RetryError'
   }
 }

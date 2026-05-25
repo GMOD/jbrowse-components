@@ -99,6 +99,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
           }
           case 'error': {
             reject(deserializeError(e.data.error))
+            instance.removeEventListener('message', listener)
             break
           }
           // No default

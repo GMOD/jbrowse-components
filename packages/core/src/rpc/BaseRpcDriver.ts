@@ -41,12 +41,10 @@ class LazyWorker {
   constructor(public driver: BaseRpcDriver) {}
 
   async getWorker() {
-    if (!this.workerP) {
-      this.workerP = this.driver.makeWorker().catch((e: unknown) => {
-        this.workerP = undefined
-        throw e
-      })
-    }
+    this.workerP ??= this.driver.makeWorker().catch((e: unknown) => {
+      this.workerP = undefined
+      throw e
+    })
     return this.workerP
   }
 }
@@ -130,12 +128,7 @@ export default abstract class BaseRpcDriver {
   }
 
   getWorkerPool() {
-    if (!this.workerPool) {
-      const res = this.createWorkerPool()
-      this.workerPool = res
-      return res // making this several steps makes TS happy
-    }
-    return this.workerPool
+    return (this.workerPool ??= this.createWorkerPool())
   }
 
   async getWorker(sessionId: string): Promise<WorkerHandle> {
@@ -163,9 +156,6 @@ export default abstract class BaseRpcDriver {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
-
-    // // eslint-disable-next-line no-console
-    // console.log(`[RPC] ${this.name}: ${functionName} (worker)`)
 
     const unextendedWorker = await this.getWorker(sessionId)
     const worker = pluginManager.evaluateExtensionPoint(
