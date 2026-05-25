@@ -24,6 +24,7 @@ import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 import type { Source } from '../util.ts'
 import type {
   ClusterHierarchyNode,
+  ClusterNodeData,
   HoveredTreeNode,
 } from './components/treeTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -424,8 +425,8 @@ export function stateModelFactory(
           return undefined
         }
         const tree = fromNewick(newick)
-        let root = hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
-        sum(root, (d: ClusterHierarchyNode) => (d.children ? 0 : 1))
+        let root = hierarchy(tree, (d: ClusterNodeData) => d.children)
+        sum(root, (d: ClusterNodeData) => (d.children ? 0 : 1))
         sort(root, (a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
           ascending(a.data.height || 1, b.data.height || 1),
         )

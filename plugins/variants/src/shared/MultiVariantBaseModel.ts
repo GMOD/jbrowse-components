@@ -34,6 +34,7 @@ import { hierarchy, sum, sort, clusterLayout } from '@jbrowse/tree-sidebar'
 
 import type {
   ClusterHierarchyNode,
+  ClusterNodeData,
   HoveredTreeNode,
 } from './components/types.ts'
 import type { SampleInfo, Source } from './types.ts'
@@ -500,8 +501,8 @@ export default function MultiVariantBaseModelF(
           return undefined
         }
         const tree = fromNewick(newick)
-        let root = hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
-        sum(root, (d: ClusterHierarchyNode) => (d.children ? 0 : 1))
+        let root = hierarchy(tree, (d: ClusterNodeData) => d.children)
+        sum(root, (d: ClusterNodeData) => (d.children ? 0 : 1))
         sort(root, (a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
           ascending(a.data.height || 1, b.data.height || 1),
         )

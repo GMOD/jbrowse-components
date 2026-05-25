@@ -1,18 +1,16 @@
 import type { Source } from '../types.ts'
-import type { HierarchyNode } from 'd3-hierarchy'
+import type { HierarchyNode, HoveredTreeNode as TreeSidebarHoveredTreeNode } from '@jbrowse/tree-sidebar'
 
 export interface ClusterNodeData {
   name: string
-  height: number
+  height?: number
+  length?: number
   children?: ClusterNodeData[]
 }
 
 export type ClusterHierarchyNode = HierarchyNode<ClusterNodeData>
 
-export interface HoveredTreeNode {
-  node: ClusterHierarchyNode
-  descendantNames: string[]
-}
+export type HoveredTreeNode = TreeSidebarHoveredTreeNode
 
 export interface TreeSidebarModel {
   totalHeight: number
