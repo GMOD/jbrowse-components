@@ -62,7 +62,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end } = region
 
     return ObservableCreate<Feature>(async observer => {
-      const features = this.features.get(refName) || []
+      const features = this.features.get(refName) ?? []
       for (const f of features) {
         if (f.get('end') > start && f.get('start') < end) {
           observer.next(f)

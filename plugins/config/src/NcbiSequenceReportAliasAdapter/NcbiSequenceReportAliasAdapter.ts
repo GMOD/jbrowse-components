@@ -19,7 +19,7 @@ export default class NcbiSequenceReportAliasAdapter
       .filter(f => !!f.trim())
       .map(row => row.split('\t'))
 
-    const r = lines[0] || []
+    const r = lines[0] ?? []
     const genBankIdx = r.indexOf('GenBank seq accession')
     const refSeqIdx = r.indexOf('RefSeq seq accession')
     const ucscIdx = r.indexOf('UCSC style name')

@@ -8,7 +8,8 @@ export const useSlotEditorStyles = makeStyles()(theme => ({
     position: 'relative',
   },
   paperContent: {
-    width: '100%',
+    flex: 1,
+    minWidth: 0,
   },
   slotModeSwitch: {
     width: 24,

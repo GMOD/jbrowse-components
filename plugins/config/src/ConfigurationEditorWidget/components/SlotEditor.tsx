@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { FileSelector } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
@@ -84,18 +84,12 @@ const IntegerEditor = observer(function IntegerEditor({
 }: {
   slot: {
     name: string
-    value: string
+    value: number
     description: string
     set: (num: number) => void
   }
 }) {
-  const [val, setVal] = useState(slot.value)
-  useEffect(() => {
-    const num = Number.parseInt(val, 10)
-    if (!Number.isNaN(num)) {
-      slot.set(num)
-    }
-  }, [slot, val])
+  const [val, setVal] = useState(String(slot.value))
   return (
     <ConfigurationTextField
       label={slot.name}
@@ -103,7 +97,12 @@ const IntegerEditor = observer(function IntegerEditor({
       value={val}
       type="number"
       onChange={evt => {
-        setVal(evt.target.value)
+        const v = evt.target.value
+        setVal(v)
+        const num = Number.parseInt(v, 10)
+        if (!Number.isNaN(num)) {
+          slot.set(num)
+        }
       }}
     />
   )
@@ -188,36 +187,40 @@ const SlotEditor = observer(function SlotEditor({
 }) {
   const { classes } = useSlotEditorStyles()
   const { type } = slot
-  let ValueComponent = slot.isCallback
-    ? CallbackEditor
-    : // @ts-expect-error
-      valueComponents[type]
-  if (!ValueComponent) {
+  const TypedComponent = (
+    valueComponents as Record<string, React.ComponentType<any>>
+  )[type]
+  if (!slot.editorIsCallback && !TypedComponent) {
     console.warn(`no slot editor defined for ${type}, editing as string`)
-    ValueComponent = StringEditor
   }
-  if (!(type in valueComponents)) {
-    console.warn(`SlotEditor needs to implement ${type}`)
-  }
+  const ValueComponent: React.ComponentType<any> = slot.editorIsCallback
+    ? CallbackEditor
+    : (TypedComponent ?? StringEditor)
   return (
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>
         <ValueComponent slot={slot} slotSchema={slotSchema} />
       </div>
-      <div className={classes.slotModeSwitch}>
-        {slot.contextVariable.length ? (
+      {slot.contextVariable.length ? (
+        <div className={classes.slotModeSwitch}>
           <IconButton
             onClick={() =>
-              slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
+              slot.editorIsCallback
+                ? slot.convertToValue()
+                : slot.convertToCallback()
             }
             title={`convert to ${
-              slot.isCallback ? 'regular value' : 'callback'
+              slot.editorIsCallback ? 'regular value' : 'callback'
             }`}
           >
-            {slot.isCallback ? <SvgCheckbox /> : <RadioButtonUncheckedIcon />}
+            {slot.editorIsCallback ? (
+              <SvgCheckbox />
+            ) : (
+              <RadioButtonUncheckedIcon />
+            )}
           </IconButton>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </Paper>
   )
 })

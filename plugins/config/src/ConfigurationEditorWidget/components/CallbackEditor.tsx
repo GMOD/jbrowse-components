@@ -36,17 +36,18 @@ function validateAndSetCode(
   slot: { set: (arg: string) => void },
   setCodeError: (e: unknown) => void,
 ) {
+  // empty buffer is "in progress", not invalid — don't commit and don't warn
+  if (code.trim() === '' || code.trim() === 'jexl:') {
+    setCodeError(undefined)
+    return
+  }
   try {
     const jexlCode = code.startsWith('jexl:') ? code : `jexl:${code}`
-
-    if (jexlCode === 'jexl:') {
-      throw new Error('Empty jexl expression is not valid')
-    }
     stringToJexlExpression(jexlCode, getEnv(slot).pluginManager?.jexl)
     slot.set(jexlCode)
     setCodeError(undefined)
   } catch (e) {
-    console.error({ e })
+    console.error(e)
     setCodeError(e)
   }
 }
@@ -77,7 +78,7 @@ const CallbackEditor = observer(function CallbackEditor({
         <TextField
           multiline
           className={classes.callbackEditor}
-          value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
+          value={code}
           onChange={event => {
             const value = event.target.value
             setCode(value)

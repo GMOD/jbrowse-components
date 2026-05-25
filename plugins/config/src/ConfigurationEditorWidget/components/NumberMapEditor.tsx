@@ -28,7 +28,7 @@ const NumberMapEditor = observer(function NumberMapEditor({
 }: {
   slot: {
     name: string
-    value: Map<string, string>
+    value: Map<string, number>
     remove: (key: string) => void
     add: (key: string, val: number) => void
     description: string

@@ -1,10 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-// @ts-expect-error
-import Alignments from '@jbrowse/plugin-alignments'
-// @ts-expect-error
-import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
@@ -95,20 +91,6 @@ test('renders all the different types of built-in slots', () => {
   expect(container).toMatchSnapshot()
 })
 
-test('renders with defaults of the PileupTrack schema', () => {
-  const pm = new PluginManager([new Alignments()])
-  pm.createPluggableElements()
-  pm.configure()
-  const PileupDisplaySchema = linearBasicDisplayConfigSchemaFactory(pm)
-  const { container } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <ConfigurationEditor
-        model={{
-          target: PileupDisplaySchema.create(undefined, { pluginManager: pm }),
-        }}
-      />
-      ,
-    </ThemeProvider>,
-  )
-  expect(container).toMatchSnapshot()
-})
+// Removed: PileupTrack schema test — Alignments plugin no longer registers
+// renderers (moved to GPU pipeline), so baseLinearDisplayConfigSchema
+// with only Alignments produces an empty renderer union.

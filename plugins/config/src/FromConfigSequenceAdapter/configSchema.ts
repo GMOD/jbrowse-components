@@ -17,7 +17,6 @@ const sequenceConfigSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
-    implicitIdentifier: 'adapterId',
   },
 )
 
