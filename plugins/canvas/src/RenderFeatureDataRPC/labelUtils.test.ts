@@ -1,4 +1,5 @@
 import { applyLabelDimensions } from './labelUtils.ts'
+import { LABEL_FONT_SIZE } from './constants.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
 import type { FeatureLayout } from './types.ts'
@@ -39,7 +40,7 @@ describe('applyLabelDimensions', () => {
         isNested: true,
         isTranscriptChild: true,
       })
-      expect(layout.totalLayoutHeight).toBe(10 + 12)
+      expect(layout.totalLayoutHeight).toBe(10 + LABEL_FONT_SIZE)
     })
 
     it('falls back to feature id when name is empty', () => {
@@ -50,7 +51,7 @@ describe('applyLabelDimensions', () => {
         isNested: true,
         isTranscriptChild: true,
       })
-      expect(layout.totalLayoutHeight).toBe(10 + 12)
+      expect(layout.totalLayoutHeight).toBe(10 + LABEL_FONT_SIZE)
     })
 
     it('does not change totalLayoutHeight when both name and id are empty', () => {

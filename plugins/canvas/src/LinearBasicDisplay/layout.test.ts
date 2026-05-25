@@ -1,4 +1,5 @@
-import { computeLaidOutData } from './layout.ts'
+import { computeLaidOutData, LAYOUT_Y_PADDING } from './layout.ts'
+import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
@@ -344,20 +345,24 @@ test('showLabels adds label height to the feature row', () => {
   }
 
   const keys = new Map([[0, 'v:ctgA']])
+  const featureHeight = 10
   const withLabels = layout(new Map([[0, mk()]]), keys, 1, true, true)
-  // height 10 + 5 padding + 12 name + 12 description = 39
-  expect(withLabels.get(0)!.flatbushItems[0]!.bottomPx).toBe(39)
+  expect(withLabels.get(0)!.flatbushItems[0]!.bottomPx).toBe(
+    featureHeight + LAYOUT_Y_PADDING + LABEL_FONT_SIZE * 2,
+  )
 
   const withoutLabels = layout(new Map([[0, mk()]]), keys, 1, false, false)
-  // height 10 + 5 padding = 15
-  expect(withoutLabels.get(0)!.flatbushItems[0]!.bottomPx).toBe(15)
+  expect(withoutLabels.get(0)!.flatbushItems[0]!.bottomPx).toBe(
+    featureHeight + LAYOUT_Y_PADDING,
+  )
 
   // showLabels=false but showDescriptions=true: description is collapsed up
   // into the vacated name row at relativeY=0 (see useOverlayElements), so it
   // still occupies one row of height below the feature.
   const descOnly = layout(new Map([[0, mk()]]), keys, 1, false, true)
-  // height 10 + 5 padding + 12 description = 27
-  expect(descOnly.get(0)!.flatbushItems[0]!.bottomPx).toBe(27)
+  expect(descOnly.get(0)!.flatbushItems[0]!.bottomPx).toBe(
+    featureHeight + LAYOUT_Y_PADDING + LABEL_FONT_SIZE,
+  )
 })
 
 test('strand arrow padding prevents adjacent stranded features from sharing a row', () => {

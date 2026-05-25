@@ -1,4 +1,5 @@
 import { layoutSubfeatures } from './subfeatures.ts'
+import { LABEL_FONT_SIZE } from '../constants.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -73,7 +74,7 @@ describe('layoutSubfeatures layout', () => {
       })
 
       const featureHeight = 10
-      const fontHeight = 12
+      const fontHeight = LABEL_FONT_SIZE
       const expectedTranscriptTotalHeight = featureHeight + fontHeight
 
       expect(layout.children).toHaveLength(2)
@@ -99,7 +100,7 @@ describe('layoutSubfeatures layout', () => {
       })
 
       const featureHeight = 10
-      const fontHeight = 12
+      const fontHeight = LABEL_FONT_SIZE
       expect(layout.height).toBe(featureHeight + fontHeight)
     })
   })
@@ -163,7 +164,7 @@ describe('layoutSubfeatures layout', () => {
       })
 
       expect(belowLayout.height).toBeGreaterThan(noneLayout.height)
-      const fontHeight = 12
+      const fontHeight = LABEL_FONT_SIZE
       expect(belowLayout.height - noneLayout.height).toBe(fontHeight * 3)
     })
   })

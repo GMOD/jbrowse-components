@@ -10,7 +10,7 @@ import type {
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 const LABEL_PADDING_PX = 8
-const LAYOUT_Y_PADDING = 5
+export const LAYOUT_Y_PADDING = 5
 
 // Y offset applied to features that overflow GranularRectLayout's maxHeight.
 // Pushes them far above the visible area so the renderer/hit-test drops them
