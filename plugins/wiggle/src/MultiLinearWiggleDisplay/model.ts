@@ -16,7 +16,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
 
-import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
+import { hierarchy, sum, sort, clusterLayout } from '@jbrowse/tree-sidebar'
 import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
@@ -425,10 +425,10 @@ export function stateModelFactory(
         }
         const tree = fromNewick(newick)
         let root = hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
-          .sum((d: ClusterHierarchyNode) => (d.children ? 0 : 1))
-          .sort((a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
-            ascending(a.data.height || 1, b.data.height || 1),
-          )
+        sum(root, (d: ClusterHierarchyNode) => (d.children ? 0 : 1))
+        sort(root, (a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
+          ascending(a.data.height || 1, b.data.height || 1),
+        )
 
         // If subtree filter is active, find the matching subtree
         if (self.subtreeFilter?.length) {
@@ -482,11 +482,7 @@ export function stateModelFactory(
         if (!r || !self.sources?.length) {
           return undefined
         }
-        const clust = cluster()
-        clust.size([self.rowHeight * self.sources.length, self.treeAreaWidth])
-        clust.separation(() => 1)
-        clust(r)
-        return r
+        return clusterLayout(r, self.height, self.treeAreaWidth)
       },
     }))
     .views(self => {

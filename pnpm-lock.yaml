@@ -1416,27 +1416,6 @@ importers:
         specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
 
-  plugins/lollipop:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
-      '@jbrowse/mobx-state-tree':
-        specifier: ^5.8.7
-        version: 5.8.7(mobx@6.15.3)
-      '@jbrowse/plugin-linear-genome-view':
-        specifier: workspace:^
-        version: link:../linear-genome-view
-      mobx:
-        specifier: ^6.15.3
-        version: 6.15.3
-      mobx-react:
-        specifier: ^9.2.1
-        version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      react:
-        specifier: '>=18.0.0'
-        version: 19.2.6
-
   plugins/menus:
     dependencies:
       '@jbrowse/core':
@@ -1658,6 +1637,9 @@ importers:
       '@jbrowse/sv-core':
         specifier: workspace:^
         version: link:../../packages/sv-core
+      '@jbrowse/tree-sidebar':
+        specifier: workspace:^
+        version: link:../../packages/tree-sidebar
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
@@ -1718,6 +1700,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@jbrowse/tree-sidebar':
+        specifier: workspace:^
+        version: link:../../packages/tree-sidebar
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
