@@ -141,6 +141,15 @@ export default defineConfig(
   {
     rules: {
       'no-restricted-globals': ['error', 'Buffer'],
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector:
+            'JSXAttribute[name.name=/^on[A-Z]/] > JSXExpressionContainer > :matches(Identifier, MemberExpression)',
+          message:
+            'Wrap handler in arrow: onClick={() => handler()} not onClick={handler}. Prevents unexpected event args from being passed.',
+        },
+      ],
       'no-empty': 'off',
       'no-console': [
         'error',
@@ -362,6 +371,12 @@ export default defineConfig(
           selector: "JSXOpeningElement[name.name='clipPath']",
           message:
             'Use <SvgClipRect> from @jbrowse/plugin-linear-genome-view instead of hand-rolling <defs><clipPath><rect>. See agent-docs/ARCHITECTURE.md "SVG export pipeline".',
+        },
+        {
+          selector:
+            'JSXAttribute[name.name=/^on[A-Z]/] > JSXExpressionContainer > :matches(Identifier, MemberExpression)',
+          message:
+            'Wrap handler in arrow: onClick={() => handler()} not onClick={handler}. Prevents unexpected event args from being passed.',
         },
       ],
     },
