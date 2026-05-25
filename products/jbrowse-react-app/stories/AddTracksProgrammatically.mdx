@@ -13,7 +13,10 @@ state.jbrowse.addTrackConf({
   trackId: 'my_genes',
   name: 'My Genes',
   assemblyNames: ['hg38'],
-  adapter: { type: 'Gff3TabixAdapter', uri: 'https://example.com/genes.gff.gz' },
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    uri: 'https://example.com/genes.gff.gz',
+  },
 })
 state.session.views[0]?.showTrack('my_genes')
 ```

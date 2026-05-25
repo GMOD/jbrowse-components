@@ -45,7 +45,7 @@ export function GpuLifecycleMixin() {
     .model('GpuLifecycle', {})
     .volatile(() => ({
       canvasDrawn: false,
-      currentBackend: undefined as unknown,
+      currentBackend: undefined,
       renderTick: 0,
       autorunsInstalled: false,
     }))

@@ -44,7 +44,12 @@ export const AddTracksProgrammatically = () => {
 
   return (
     <div>
-      <button disabled={added} onClick={() => { addTrack() }}>
+      <button
+        disabled={added}
+        onClick={() => {
+          addTrack()
+        }}
+      >
         {added ? 'Genes track added' : 'Add genes track'}
       </button>
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/AddTracksProgrammatically.tsx">

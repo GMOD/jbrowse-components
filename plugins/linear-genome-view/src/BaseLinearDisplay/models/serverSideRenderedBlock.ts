@@ -103,8 +103,7 @@ const blockState = types
      * #volatile
      */
 
-
-    error: undefined as unknown,
+    error: undefined,
     /**
      * #volatile
      */

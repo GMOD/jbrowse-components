@@ -1,4 +1,5 @@
 import {
+  getEnv,
   getRoot,
   getSnapshot,
   isLateType,
@@ -283,6 +284,13 @@ export function ConfigurationSchema<
   return schemaType
 }
 
+// Lazy hydration cache for frozen track configs. jbrowse.tracks is
+// types.frozen (plain objects) for large-tracklist performance; this WeakMap
+// converts each frozen object to an MST node on first reference access.
+// Keyed by the frozen object itself, so the entry is GC'd when updateTrackConf
+// replaces the snapshot and nothing else holds the old reference.
+const frozenTrackCache = new WeakMap<object, unknown>()
+
 /**
  * Reference to a track configuration. Snapshot output is the trackId string.
  *
@@ -308,7 +316,7 @@ export function ConfigurationSchema<
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
-      const ret =
+      let ret: unknown =
         getSession(parent).tracksById[id] ??
         // @ts-expect-error -- schemaType is IAnyType so resolveIdentifier's
         // generic can't narrow. Tree-wide MST identifier lookup; see the
@@ -316,6 +324,16 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
         (resolveIdentifier(schemaType, getRoot(parent), id) as unknown)
       if (!ret) {
         throw new Error(`Could not resolve trackId "${id}"`)
+      }
+      if (!isStateTreeNode(ret)) {
+        const cached = frozenTrackCache.get(ret)
+        if (cached) {
+          ret = cached
+        } else {
+          const model = schemaType.create(ret, getEnv(parent))
+          frozenTrackCache.set(ret, model)
+          ret = model
+        }
       }
       return ret
     },
@@ -357,9 +375,8 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
 export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
-      // track.configuration is already a hydrated MST node (see
-      // TracksManagerSessionMixin.tracksById), so its displays array contains
-      // MST display-config nodes directly.
+      // track.configuration is a hydrated MST node (hydrated lazily via
+      // TrackConfigurationReference), so its displays array contains MST nodes.
       const track = getContainingTrack(parent)
       const displays = track.configuration.displays
       let ret = displays.find((d: { displayId: string }) => d.displayId === id)

@@ -292,14 +292,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
 
-
-      volatileError: undefined as unknown,
+      volatileError: undefined,
       /**
        * #volatile
        */
 
-
-      trackRefs: {} as Record<string, HTMLDivElement>,
+      trackRefs: {},
       /**
        * #volatile
        */

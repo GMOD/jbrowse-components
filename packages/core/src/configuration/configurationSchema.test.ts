@@ -1,4 +1,4 @@
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf, readConfObject } from './index.ts'
 import PluginManager from '../PluginManager.ts'
@@ -419,6 +419,81 @@ describe('ConfigurationReference', () => {
         { pluginManager },
       )
       expect(getSnapshot(session.holder)).toEqual({ ref: 'aaa' })
+    })
+  })
+
+  describe('TrackConfigurationReference with frozen tracks', () => {
+    // Session where tracksById returns plain frozen objects, not MST nodes.
+    // This is the real production path: jbrowse.tracks is types.frozen.
+    function buildFrozenTrackEnv() {
+      const TrackConfig = ConfigurationSchema(
+        'TestFrozenTrack',
+        { name: { type: 'string', defaultValue: '' } },
+        { explicitIdentifier: 'trackId' },
+      )
+      const Holder = types.model('FrozenHolder', {
+        ref: ConfigurationReference(TrackConfig),
+      })
+      const Session = types
+        .model('FrozenSession', {
+          rpcManager: types.frozen({}),
+          configuration: types.frozen({}),
+          _tracks: types.frozen<{ trackId: string; name?: string }[]>([]),
+          holder: Holder,
+        })
+        .views(self => ({
+          get tracksById() {
+            return Object.fromEntries(self._tracks.map(t => [t.trackId, t]))
+          },
+        }))
+        .actions(self => ({
+          setTracks(tracks: { trackId: string; name?: string }[]) {
+            self._tracks = tracks
+          },
+        }))
+      return { TrackConfig, Session }
+    }
+
+    test('tracksById entry is a plain object before any reference is resolved', () => {
+      const { Session } = buildFrozenTrackEnv()
+      const session = Session.create(
+        { _tracks: [{ trackId: 'f1', name: 'frozen' }], holder: { ref: 'f1' } },
+        { pluginManager },
+      )
+      expect(isStateTreeNode(session.tracksById['f1'])).toBe(false)
+    })
+
+    test('resolves and hydrates a frozen plain object to an MST node', () => {
+      const { Session } = buildFrozenTrackEnv()
+      const session = Session.create(
+        { _tracks: [{ trackId: 'f1', name: 'frozen' }], holder: { ref: 'f1' } },
+        { pluginManager },
+      )
+      const resolved = session.holder.ref
+      expect(isStateTreeNode(resolved)).toBe(true)
+      expect(readConfObject(resolved, 'name')).toBe('frozen')
+    })
+
+    test('returns the same MST instance across reads for a frozen track', () => {
+      const { Session } = buildFrozenTrackEnv()
+      const session = Session.create(
+        { _tracks: [{ trackId: 'f1', name: 'frozen' }], holder: { ref: 'f1' } },
+        { pluginManager },
+      )
+      expect(session.holder.ref).toBe(session.holder.ref)
+    })
+
+    test('produces a new MST instance when the frozen snapshot is replaced', () => {
+      const { Session } = buildFrozenTrackEnv()
+      const session = Session.create(
+        { _tracks: [{ trackId: 'f1', name: 'first' }], holder: { ref: 'f1' } },
+        { pluginManager },
+      )
+      const before = session.holder.ref
+      session.setTracks([{ trackId: 'f1', name: 'updated' }])
+      const after = session.holder.ref
+      expect(after).not.toBe(before)
+      expect(readConfObject(after, 'name')).toBe('updated')
     })
   })
 

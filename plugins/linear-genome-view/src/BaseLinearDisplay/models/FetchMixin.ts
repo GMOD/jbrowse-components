@@ -40,7 +40,7 @@ export default function FetchMixin() {
       activeStopToken: undefined as StopToken | undefined,
       fetchGeneration: 0,
 
-      error: undefined as unknown,
+      error: undefined,
 
       statusMessage: undefined as string | undefined,
     }))

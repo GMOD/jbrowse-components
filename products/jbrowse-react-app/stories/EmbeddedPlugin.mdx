@@ -12,7 +12,9 @@ import Plugin from '@jbrowse/core/Plugin'
 
 class MyPlugin extends Plugin {
   name = 'MyPlugin'
-  install(pluginManager) { /* add track types, extension points, etc. */ }
+  install(pluginManager) {
+    /* add track types, extension points, etc. */
+  }
   configure() {}
 }
 
@@ -26,6 +28,7 @@ import GWASPlugin from 'jbrowse-plugin-gwas'
 const state = createViewState({ config, plugins: [GWASPlugin] })
 ```
 
-This example adds a custom rubber band menu item — click and drag on the ruler to see it:
+This example adds a custom rubber band menu item — click and drag on the ruler
+to see it:
 
 <Story of={EmbeddedPlugin} />

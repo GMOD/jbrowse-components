@@ -11,7 +11,7 @@ function createMockDisplayModel() {
   const state = observable({
     fetchGeneration: 0,
 
-    error: undefined as unknown,
+    error: undefined,
     regionTooLargeState: false,
     loadedRegions: new Map<number, Region>(),
     loadedBpPerPx: undefined as number | undefined,

@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 import { autorun } from 'mobx'
@@ -50,6 +51,18 @@ async function setupView(trackIds: string[]) {
   )
   return { rootModel, session, view }
 }
+
+// This is the regression test for eager hydration: accessing tracksById must
+// NOT create MST models for all frozen tracks. If hydrateTrack-style eager
+// initialization were re-introduced in getTracksById(), this test would fail
+// because the entry would be an MST node instead of a plain frozen object.
+test('session.tracksById does not eagerly hydrate frozen tracks', () => {
+  const { rootModel } = getPluginManager()
+  const session = rootModel.session!
+  const conf = session.tracksById['volvox_gc']
+  expect(isStateTreeNode(conf)).toBe(false)
+  expect(conf?.trackId).toBe('volvox_gc')
+})
 
 test('track.configuration returns the same MST instance across reads', async () => {
   const { view } = await setupView(['volvox_gc'])

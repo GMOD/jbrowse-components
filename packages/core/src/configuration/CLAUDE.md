@@ -18,9 +18,8 @@ shapes — the type error is the signal.
 ## Frozen tracks + hydration + `ConfigurationReference`
 
 The biggest piece of subtlety. Read this before changing any of:
-`TrackConfigurationReference`, `DisplayConfigurationReference`,
-`ConfigurationReference` dispatch, or the hydration cache in
-`product-core/src/Session/Tracks.ts`.
+`TrackConfigurationReference`, `DisplayConfigurationReference`, or
+`ConfigurationReference` dispatch.
 
 ### Why frozen
 
@@ -30,16 +29,18 @@ prohibitive; freezing keeps load fast and memory small.
 
 ### Hydration
 
-Track configs only become MST nodes lazily, through `session.tracksById`
-(`TracksManagerSessionMixin`). The hydration cache is a
-`WeakMap<frozenObj, MstNode>`, so:
+Track configs become MST nodes **lazily**, only when a track is actually opened.
+Hydration happens inside `TrackConfigurationReference.get()` via
+`frozenTrackCache` (a `WeakMap<frozenObj, MstNode>` in
+`configurationSchema.ts`):
 
-- The same frozen object always maps to the same MST node (identity-stable
-  across reads).
-- When `updateTrackConf` replaces the frozen entry, the WeakMap entry is dropped
-  naturally, and the next read produces a _new_ MST instance.
-- Unchanged sibling tracks keep their identity because their frozen reference is
-  unchanged.
+- `session.tracksById` returns plain frozen objects for `jbrowse.tracks`.
+- On first reference access the resolver calls `schemaType.create(frozen, env)`
+  and caches the result keyed by the frozen object.
+- The same frozen object always maps to the same MST node (identity-stable).
+- When `updateTrackConf` replaces the frozen entry the old WeakMap entry is
+  dropped naturally; the next access creates a fresh MST instance.
+- Tracks that are never opened are never hydrated.
 
 ### Reference resolution
 
