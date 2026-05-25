@@ -118,6 +118,7 @@ export default defineConfig(
   ...tseslint.configs.stylisticTypeChecked,
   ...tseslint.configs.strictTypeChecked,
   importX.flatConfigs.recommended,
+  importX.flatConfigs.typescript,
   eslintPluginReact.configs.flat.recommended,
   {
     files: ['**/*.{js,ts,jsx,tsx}'],
