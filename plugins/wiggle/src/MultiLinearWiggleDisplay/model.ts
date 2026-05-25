@@ -483,7 +483,7 @@ export function stateModelFactory(
         if (!r || !self.sources?.length) {
           return undefined
         }
-        return clusterLayout(r, self.height, self.treeAreaWidth)
+        return clusterLayout(r, self.height, self.treeAreaWidth) as ClusterHierarchyNode
       },
     }))
     .views(self => {

@@ -45,7 +45,7 @@ const useStyles = makeStyles()(theme => ({
 
 function getDescendantNames(node: ClusterHierarchyNode): string[] {
   if (!node.children?.length) {
-    return [node.data.name]
+    return node.data.name ? [node.data.name] : []
   }
   return node.children.flatMap(child => getDescendantNames(child))
 }
@@ -72,7 +72,7 @@ const TreeSidebar = observer(function TreeSidebar({
   const [nodeData, setNodeData] = useState<ClusterHierarchyNode[]>([])
   const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null)
 
-  const { hierarchy, treeAreaWidth, height, scrollTop, showTree, sources } =
+  const { hierarchy, treeAreaWidth, height, scrollTop = 0, showTree, sources } =
     model
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:

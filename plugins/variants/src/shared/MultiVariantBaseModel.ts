@@ -588,7 +588,7 @@ export default function MultiVariantBaseModelF(
           if (!r || !self.sources?.length) {
             return undefined
           }
-          return clusterLayout(r, this.availableHeight, self.treeAreaWidth)
+          return clusterLayout(r, this.availableHeight, self.treeAreaWidth) as ClusterHierarchyNode
         },
         /**
          * #method
