@@ -1,2 +1,2 @@
 // default re-export for react lazy
-export { AboutDialog as default } from '@jbrowse/product-core'
+export { default } from '@jbrowse/product-core/src/ui/AboutDialog'

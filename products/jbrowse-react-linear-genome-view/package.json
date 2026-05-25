@@ -22,9 +22,7 @@
     "./esm/makeWorkerInstance": "./src/makeWorkerInstance.ts",
     "./esm/makeWorkerInstance.js": "./src/makeWorkerInstance.ts",
     "./esm/rpcWorker": "./src/rpcWorker.ts",
-    "./esm/rpcWorker.js": "./src/rpcWorker.ts",
-    "./esm/workerPolyfill": "./src/workerPolyfill.js",
-    "./esm/workerPolyfill.js": "./src/workerPolyfill.js"
+    "./esm/rpcWorker.js": "./src/rpcWorker.ts"
   },
   "files": [
     "esm",
@@ -99,12 +97,6 @@
       "./esm/rpcWorker.js": {
         "types": "./esm/rpcWorker.d.ts",
         "import": "./esm/rpcWorker.js"
-      },
-      "./esm/workerPolyfill": {
-        "import": "./esm/workerPolyfill.js"
-      },
-      "./esm/workerPolyfill.js": {
-        "import": "./esm/workerPolyfill.js"
       }
     }
   },

@@ -1,5 +1,7 @@
 export const GENOTYPE_SPLITTER = /[/|]/
 
+export const f2 = 0.3
+
 // Sidebar and label background opacity
 export const SIDEBAR_BACKGROUND_OPACITY = 0.8
 
@@ -8,9 +10,8 @@ export const REFERENCE_COLOR = '#ccc'
 export const NO_CALL_COLOR = 'hsl(50,50%,50%)'
 export const UNPHASED_COLOR = 'black'
 
-// Pre-packed ABGR for the unphased "black" fill used as a GPU/canvas color.
-// Matches UNPHASED_COLOR after going through getCachedABGR, but stored
-// directly so the hot per-cell loop can skip the colord cache lookup.
+// Pre-packed ABGR for the unphased "black" fill — lets the hot per-cell loop
+// skip the colord cache lookup.
 export const BLACK_ABGR = 0xff000000
 
 // Allele count mode colors (HSL values)

@@ -1,10 +1,10 @@
 import { getNextRefPos } from '@jbrowse/cigar-utils'
-import { getModProbabilities, modProbAt  } from '@jbrowse/modifications-utils'
+import { getModProbabilities, modProbAt } from '@jbrowse/modifications-utils'
 
 import { getTagAlt } from '../util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
-import type { getModPositions} from '@jbrowse/modifications-utils'
+import type { getModPositions } from '@jbrowse/modifications-utils'
 
 interface MaximumProbabilityMod {
   type: string
