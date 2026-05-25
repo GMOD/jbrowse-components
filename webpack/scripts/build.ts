@@ -47,7 +47,15 @@ export default function buildWebpack(config: webpack.Configuration) {
   fs.cpSync(appPublic, appBuild, {
     recursive: true,
     dereference: true,
-    filter: file => file !== appHtml,
+    filter: file => {
+      if (file === appHtml) return false
+      try {
+        fs.statSync(file)
+        return true
+      } catch {
+        return false
+      }
+    },
   })
   return (
     build(config)

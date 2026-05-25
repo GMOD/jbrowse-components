@@ -1,17 +1,13 @@
 import fs from 'fs'
+import net from 'net'
 
 import browserslist from 'browserslist'
 import chalk from 'chalk'
-import open from 'open'
 import webpack from 'webpack'
 // eslint-disable-next-line import-x/default
 import WebpackDevServer from 'webpack-dev-server'
 
-import {
-  choosePort,
-  createCompiler,
-  prepareUrls,
-} from '../WebpackDevServerUtils.ts'
+import { createCompiler } from '../WebpackDevServerUtils.ts'
 
 process.on('unhandledRejection', err => {
   throw err
@@ -28,36 +24,61 @@ if (browserslist.loadConfig({ path: process.cwd() }) == null) {
   process.exit(1)
 }
 
-const DEFAULT_PORT = Number.parseInt(process.env.PORT || '3000', 10) || 3000
 const HOST = process.env.HOST || '0.0.0.0'
 
-export default function startWebpack(config: webpack.Configuration) {
-  return choosePort(HOST, DEFAULT_PORT)
-    .then(port => {
-      if (port == null) {
-        return
-      }
-
-      const protocol = process.env.HTTPS === 'true' ? 'https' : 'http'
-      const appName = JSON.parse(fs.readFileSync('package.json', 'utf8')).name
-
-      const urls = prepareUrls(protocol, HOST, port)
-
-      const compiler = createCompiler({
-        appName,
-        config,
-        urls,
-      })
-
-      const devServer = new WebpackDevServer({ host: HOST, port }, compiler)
-      devServer.startCallback(() => {
-        open(urls.localUrlForBrowser).catch(() => {})
-      })
+function isPortFree(port: number) {
+  return new Promise<boolean>(resolve => {
+    const server = net.createServer()
+    server.once('error', () => resolve(false))
+    server.once('listening', () => {
+      server.close()
+      resolve(true)
     })
-    .catch(err => {
-      if (err?.message) {
-        console.log(err.message)
-      }
+    server.listen(port)
+  })
+}
+
+export default async function startWebpack(config: webpack.Configuration) {
+  const appName = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+    .name as string
+  const wsProtocol = process.env.HTTPS === 'true' ? 'wss' : 'ws'
+  const compiler = createCompiler({ config })
+
+  const devServer = new WebpackDevServer(
+    {
+      host: HOST,
+      port: process.env.PORT
+        ? Number.parseInt(process.env.PORT, 10)
+        : (await isPortFree(3000))
+          ? 3000
+          : 'auto',
+      hot: false,
+      open: true,
+      client: {
+        webSocketURL: {
+          hostname: 'localhost',
+          pathname: '/ws',
+          protocol: wsProtocol,
+        },
+      },
+      static: {
+        serveIndex: true,
+        staticOptions: { dotfiles: 'allow' },
+      },
+    },
+    compiler,
+  )
+  devServer.startCallback(err => {
+    if (err) {
+      console.log(err.message)
       process.exit(1)
-    })
+      return
+    }
+    const addr = devServer.server?.address()
+    if (typeof addr === 'object' && addr) {
+      console.log(
+        `You can view ${chalk.bold(appName)} at http://localhost:${chalk.bold(addr.port)}`,
+      )
+    }
+  })
 }

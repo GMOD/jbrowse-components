@@ -1,6 +1,5 @@
 import { execSync } from 'child_process'
 
-import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import webpack from 'webpack'
@@ -12,7 +11,6 @@ import {
   appSrc,
   moduleFileExtensions,
 } from './paths.ts'
-import InlineChunkHtmlPlugin from '../InlineChunkHtmlPlugin.ts'
 
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
@@ -20,7 +18,8 @@ const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
 function getWorkspaces() {
   const workspacesStr = execSync('pnpm recursive list --json --depth=-1', {
     cwd: process.cwd(),
-  }).toString()
+    encoding: 'utf8',
+  })
   return Object.values(
     JSON.parse(workspacesStr) as Record<string, { path: string }>,
   ).map(e => e.path)
@@ -29,8 +28,6 @@ function getWorkspaces() {
 export default function webpackBuilder(): webpack.Configuration {
   const isEnvDevelopment = process.env.NODE_ENV === 'development'
   const isEnvProduction = process.env.NODE_ENV === 'production'
-
-  const shouldUseReactRefresh = process.env.FAST_REFRESH !== 'false'
 
   const getStyleLoaders = (cssOptions: Record<string, unknown>) => {
     return [
@@ -44,19 +41,19 @@ export default function webpackBuilder(): webpack.Configuration {
   }
 
   return {
-    target: ['browserslist'],
     stats: 'errors-warnings',
     mode: isEnvProduction ? 'production' : 'development',
     bail: isEnvProduction,
+    cache: { type: 'memory' },
     devtool: isEnvProduction
       ? shouldUseSourceMap
         ? 'source-map'
         : false
-      : ('eval' as const),
+      : undefined,
     entry: appIndexJs,
     output: {
       path: appBuild,
-      pathinfo: isEnvDevelopment,
+      publicPath: 'auto',
       filename: isEnvProduction
         ? 'static/js/[name].[contenthash:8].js'
         : 'static/js/bundle.js',
@@ -72,13 +69,15 @@ export default function webpackBuilder(): webpack.Configuration {
     module: {
       strictExportPresence: true,
       rules: [
-        shouldUseSourceMap
-          ? {
-              enforce: 'pre' as const,
-              test: /\.(js|mjs|jsx|ts|tsx|css)$/,
-              loader: 'source-map-loader',
-            }
-          : false,
+        ...(shouldUseSourceMap && isEnvProduction
+          ? [
+              {
+                enforce: 'pre' as const,
+                test: /\.(js|mjs|jsx|ts|tsx|css)$/,
+                loader: 'source-map-loader',
+              },
+            ]
+          : []),
         {
           oneOf: [
             {
@@ -98,9 +97,7 @@ export default function webpackBuilder(): webpack.Configuration {
               exclude: /\.module\.css$/,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
+                sourceMap: isEnvDevelopment || shouldUseSourceMap,
                 modules: { mode: 'icss' },
               }),
               sideEffects: true,
@@ -109,9 +106,7 @@ export default function webpackBuilder(): webpack.Configuration {
               test: /\.module\.css$/,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
+                sourceMap: isEnvDevelopment || shouldUseSourceMap,
                 modules: { mode: 'local' },
               }),
             },
@@ -121,9 +116,12 @@ export default function webpackBuilder(): webpack.Configuration {
             },
           ],
         },
-      ].filter(Boolean) as webpack.RuleSetRule[],
+      ],
     },
     plugins: [
+      new webpack.DefinePlugin({
+        'process.env.ENABLE_TYPE_CHECK': '"true"',
+      }),
       new HtmlWebpackPlugin({
         inject: true,
         template: appHtml,
@@ -144,24 +142,18 @@ export default function webpackBuilder(): webpack.Configuration {
             }
           : {}),
       }),
-      isEnvProduction &&
-        new InlineChunkHtmlPlugin(
-          HtmlWebpackPlugin as unknown as InlineChunkHtmlPlugin['htmlWebpackPlugin'],
-          [/runtime-.+[.]js/],
-        ),
-      isEnvDevelopment &&
-        shouldUseReactRefresh &&
-        new ReactRefreshWebpackPlugin({ overlay: false }),
-      isEnvProduction &&
-        new MiniCssExtractPlugin({
-          filename: 'static/css/[name].[contenthash:8].css',
-          chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
-        }),
-    ].filter(Boolean),
+      ...(isEnvProduction
+        ? [
+            new MiniCssExtractPlugin({
+              filename: 'static/css/[name].[contenthash:8].css',
+              chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
+            }),
+          ]
+        : []),
+    ],
     performance: false,
     optimization: {
       minimize: isEnvProduction && shouldMinimize,
-      ...(shouldMinimize ? {} : { minimizer: [] }),
     },
   }
 }
