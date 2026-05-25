@@ -1,7 +1,7 @@
 import { spawnSync } from 'child_process'
 import fs from 'fs'
 
-import tmp from 'tmp'
+import { fileSync } from 'tmp'
 
 export function booleanize(str: string) {
   return str === 'false' ? false : !!str
@@ -12,7 +12,7 @@ export function convert(
   args: { out: string; pngwidth?: string },
   spawnArgs: string[] = [],
 ) {
-  const { name } = tmp.fileSync({
+  const { name } = fileSync({
     mode: 0o644,
     prefix: 'jbrowse-img-',
     postfix: '.svg',

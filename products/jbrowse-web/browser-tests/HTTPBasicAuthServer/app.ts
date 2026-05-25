@@ -3,7 +3,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import cors from 'cors'
-import express from 'express'
+import express, { static as serveStatic } from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
 const app = express()
@@ -26,7 +26,7 @@ app.use(
       admin: 'password',
     },
   }),
-  express.static(dataPath),
+  serveStatic(dataPath),
 )
 
 app.use(
@@ -36,7 +36,7 @@ app.use(
       alice: 'public123',
     },
   }),
-  express.static(dataPath),
+  serveStatic(dataPath),
 )
 
 app.use(
@@ -46,7 +46,7 @@ app.use(
       bob: 'private456',
     },
   }),
-  express.static(dataPath),
+  serveStatic(dataPath),
 )
 
 console.log('HTTP BasicAuth Server listening on port', port)

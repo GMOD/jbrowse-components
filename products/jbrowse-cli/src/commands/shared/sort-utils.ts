@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import { parseArgs } from 'util'
 
-import tmp from 'tmp'
+import { fileSync } from 'tmp'
 
 import { printHelp } from '../../utils.ts'
 import { waitForProcessClose } from '../process-utils.ts'
@@ -53,7 +53,7 @@ function getMinimalEnvironment(): NodeJS.ProcessEnv {
 }
 
 function createSortCommandForStdin(sortColumn: number): string {
-  const tmpFile = tmp.fileSync({ prefix: 'jbrowse-sort' }).name
+  const tmpFile = fileSync({ prefix: 'jbrowse-sort' }).name
   const sortCmd = `sort -t"\`printf '\\t'\`" -k1,1 -k${sortColumn},${sortColumn}n`
   return `cat > ${tmpFile} && (grep "^#" ${tmpFile}; grep -v "^#" ${tmpFile} | ${sortCmd}) && rm -f ${tmpFile}`
 }

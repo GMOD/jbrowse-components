@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import spawn from 'cross-spawn'
+import { sync as spawnSync } from 'cross-spawn'
 
 const subDirs = [
   'cgv-vite',
@@ -33,7 +33,7 @@ for (const dir of workspaceDirs) {
         // Use --config.ignore-scripts=false to ensure prepack hooks run,
         // even if user has ignore-scripts=true in their .npmrc (which is
         // useful to avoid postinstall scripts but would otherwise block prepack)
-        const { signal, status } = spawn.sync(
+        const { signal, status } = spawnSync(
           'pnpm',
           ['--config.ignore-scripts=false', 'pack'],
           {

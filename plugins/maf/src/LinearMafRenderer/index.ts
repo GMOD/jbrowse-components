@@ -1,4 +1,4 @@
-import React from 'react'
+import { Fragment, createElement } from 'react'
 
 import LinearMafRenderer from './LinearMafRenderer.ts'
 import configSchema from './configSchema.ts'
@@ -6,7 +6,7 @@ import configSchema from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // Stub component — block rendering is bypassed by the GPU backend
-const NullComponent = () => React.createElement(React.Fragment, null)
+const NullComponent = () => createElement(Fragment, null)
 
 export default function LinearMafRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(

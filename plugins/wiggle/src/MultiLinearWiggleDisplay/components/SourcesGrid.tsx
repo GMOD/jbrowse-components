@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { SanitizedHTML } from '@jbrowse/core/ui'
-import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
+import { ColorPicker, ColorPopover } from '@jbrowse/core/ui/ColorPicker'
 import { getStr, measureGridWidth } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'

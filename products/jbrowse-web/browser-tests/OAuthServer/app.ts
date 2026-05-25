@@ -4,13 +4,13 @@ import { fileURLToPath } from 'url'
 
 import bodyParser from 'body-parser'
 import cors from 'cors'
-import express from 'express'
+import express, { Router, static as serveStatic } from 'express'
 
 import oauthServer from './oauth/server.ts'
 
 import type { Request } from 'express'
 
-const router = express.Router()
+const router = Router()
 
 const filePath = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -67,7 +67,7 @@ app.use('/oauth', router) // routes to access the auth stuff
 app.use(
   '/data',
   oauthServer.authenticate(),
-  express.static(
+  serveStatic(
     path.join(
       path.dirname(fileURLToPath(import.meta.url)),
       '..',

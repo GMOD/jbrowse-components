@@ -4,7 +4,7 @@ import path from 'path'
 import { parseArgs } from 'util'
 
 import cors from 'cors'
-import express from 'express'
+import express, { json, static as serveStatic } from 'express'
 
 import {
   generateKey,
@@ -64,9 +64,9 @@ export async function run(args?: string[]) {
   const port = parsePort({ portStr: flags.port })
   const app = express()
 
-  app.use(express.static(baseDir))
+  app.use(serveStatic(baseDir))
   app.use(cors())
-  app.use(express.json({ limit: bodySizeLimit }))
+  app.use(json({ limit: bodySizeLimit }))
 
   app.use((err: unknown, _req: Request, res: Response, next: () => void) => {
     if (err) {

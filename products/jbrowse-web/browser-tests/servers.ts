@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 
 import OAuthServer from '@node-oauth/express-oauth-server'
 import cors from 'cors'
-import express from 'express'
+import express, { Router, json, static as serveStatic, urlencoded } from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
 import type {
@@ -124,7 +124,7 @@ export function startOAuthServer(
       },
     })
 
-    const router = express.Router()
+    const router = Router()
 
     router.get('/', (_req, res) => {
       res.send(`
@@ -183,10 +183,10 @@ export function startOAuthServer(
 
     const app = express()
     app.use(cors())
-    app.use(express.urlencoded({ extended: false }))
-    app.use(express.json())
+    app.use(urlencoded({ extended: false }))
+    app.use(json())
     app.use('/oauth', router)
-    app.use('/data', oauthServer.authenticate(), express.static(dataPath))
+    app.use('/data', oauthServer.authenticate(), serveStatic(dataPath))
 
     const server = app.listen(port, () => {
       console.log(`OAuth Server listening on port ${port}`)
@@ -206,7 +206,7 @@ export function startBasicAuthServer(
     app.use(
       '/data',
       expressBasicAuth({ users: { admin: 'password' } }),
-      express.static(dataPath),
+      serveStatic(dataPath),
     )
 
     const server = app.listen(port, () => {

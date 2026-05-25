@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 
 const extractConfigFromHref = (h: string) => {
   const params = new URLSearchParams(h.split('?')[1] || '')
@@ -17,7 +17,7 @@ function LinkList({
   }[]
   buildUrl?: (config: string, params?: Record<string, string>) => string
 }) {
-  const [hoveredBadge, setHoveredBadge] = React.useState<string | null>(null)
+  const [hoveredBadge, setHoveredBadge] = useState<string | null>(null)
 
   return (
     <ul>

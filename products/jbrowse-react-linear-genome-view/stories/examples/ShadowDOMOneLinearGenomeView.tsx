@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { createElement, useEffect, useRef, useState } from 'react'
 
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
@@ -101,7 +101,7 @@ const ShadowComponent = () => {
 }
 
 const JBrowseCustom = () => {
-  return React.createElement(ShadowComponent, null, null)
+  return createElement(ShadowComponent, null, null)
 }
 
 export const ShadowDOMOneLinearGenomeView = () => {

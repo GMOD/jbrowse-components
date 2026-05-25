@@ -1,4 +1,4 @@
-import ColorPicker from '@jbrowse/core/ui/ColorPicker'
+import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import {
   assembleLocString,
