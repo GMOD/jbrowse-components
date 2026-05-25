@@ -24,6 +24,22 @@ const CIGAR_CODE_TO_INDEX: Record<number, number> = {
   88: 8, // X
 }
 
+// Parses CIGAR string to alternating [length, op, ...] string array
+export function parseCigar(s = '') {
+  let currLen = ''
+  const ret: string[] = []
+  for (let i = 0, l = s.length; i < l; i++) {
+    const c = s[i]!
+    if (c >= '0' && c <= '9') {
+      currLen = currLen + c
+    } else {
+      ret.push(currLen, c)
+      currLen = ''
+    }
+  }
+  return ret
+}
+
 // Parses CIGAR string to packed number array where each value is (length << 4) | opIndex
 export function parseCigar2(s = '') {
   let currLen = 0
