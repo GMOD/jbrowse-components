@@ -1,6 +1,8 @@
 ---
 id: plugins
 title: Configuring plugins
+description: Adding first- and third-party plugins via config.json
+guide_category: Core configuration
 ---
 
 In jbrowse-web and jbrowse-desktop, plugins are added via `config.json`.

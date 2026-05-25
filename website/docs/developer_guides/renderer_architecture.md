@@ -1,6 +1,8 @@
 ---
 id: renderer_architecture
 title: Renderer architecture
+description: How canvas-based track rendering runs in a web worker via RPC
+guide_category: Core concepts
 ---
 
 :::caution

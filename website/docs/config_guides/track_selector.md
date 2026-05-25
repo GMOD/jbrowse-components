@@ -1,34 +1,32 @@
 ---
 id: track_selector
 title: Hierarchical track selector
+description: Track grouping and display options for the hierarchical selector
+guide_category: Other features
 ---
 
-In v2.6.3 several options were added for configuring the hierarchical track
-selector.
+By default, tracks appear in the order defined in config.json. The following
+options control sorting and default collapse behavior.
 
-By default, the order of the tracks in the track selector tries to follow the
-order of the tracks in the config.json.
+- `hierarchical.sort.trackNames` - boolean - sort track names alphabetically.
+  default: false
 
-- `hierarchical.sort.trackNames` - boolean - sort the track names
-  alphabetically. default: false
+- `hierarchical.sort.categories` - boolean - sort categories alphabetically
+  (independent of track name sorting). default: false
 
-- `hierarchical.sort.categories` - boolean - sort the categories alphabetically.
-  this is separate from the track names sorting since conceptually you can sort
-  the categories and track names separately. default: false
+- `hierarchical.defaultCollapsed.categoryNames` - string array - category names
+  to collapse at startup. For nested categories, use a comma-joined path (e.g.
+  `"Wiggle,Wiggle Rendering Styles"`).
 
-- `hierarchical.defaultCollapsed.categoryNames` - string array - array of
-  category names to collapse at startup (comma-joined list of subcategory names
-  if subcategories are used)
-
-- `hierarchical.defaultCollapsed.topLevelCategories` - boolean - all the "top
-  level categories" can be collapsed by default if true. default: false
+- `hierarchical.defaultCollapsed.topLevelCategories` - boolean - collapse all
+  top-level categories by default. default: false
 
 - `hierarchical.defaultCollapsed.subCategories` - boolean - collapse all
   sub-categories by default. default: false
 
 <Figure caption="Example showing all the top-level categories collapsed" src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
 
-<Figure caption="Example showing all the sub-categories collapsed. This can be useful to show all the sub-categories that are available without hiding them" src="/img/hierarchical/collapse_subcategories-fs8.png"/>
+<Figure caption="Example showing all the sub-categories collapsed. The sub-category names remain visible as headers even when collapsed." src="/img/hierarchical/collapse_subcategories-fs8.png"/>
 
 <Figure caption="Screenshot showing that the end-user can toggle these options as well" src="/img/hierarchical/hierarchical_user_menu-fs8.png"/>
 
@@ -43,17 +41,17 @@ Example config.json with examples of these hierarchical settings:
         "categories": true
       },
       "defaultCollapsed": {
-        "categoryNames": ["VCF"], // only collapse some categories on initial startup
-        "topLevelCategories": true, // collapse all top level categories on initial startup
-        "subCategories": true // collapse all subcategories on initial startup
+        "categoryNames": ["VCF"],
+        "topLevelCategories": true,
+        "subCategories": true
       }
     }
   }
 }
 ```
 
-Note: The `defaultCollapsed` options only apply to the "initial startup",
-afterwards, the "users preference" (their settings in their session) apply
+Note: `defaultCollapsed` options only apply on initial startup — afterwards the
+user's preference is preserved in their session.
 
 ## Folder categories (supertracks)
 
@@ -81,13 +79,12 @@ Example config.json:
 }
 ```
 
-The category ID used internally is `Tracks-{categoryPath}`, where `categoryPath`
-is the full comma-joined path of category names. This is the value you match
-against in the `TrackSelector-folderDialog` extension point (see developer
-docs).
-
 Note: Like `defaultCollapsed`, `defaultFolderCategories` only applies on initial
 startup — afterwards the user's preference is preserved in their session.
 
-See https://jbrowse.org/jb2/docs/config/hierarchicalconfigschema/ for more
-auto-generated config schema docs
+For plugin developers: the category ID used internally is `Tracks-{categoryPath}`
+(the full comma-joined path), which is the value matched against in the
+`TrackSelector-folderDialog` extension point.
+
+See the [hierarchical config schema docs](https://jbrowse.org/jb2/docs/config/hierarchicalconfigschema/)
+for the full auto-generated reference.

@@ -1,6 +1,8 @@
 ---
 id: alignments_track
 title: Alignments track configuration
+description: BAM/CRAM track config with BamAdapter and CramAdapter options
+guide_category: Track types
 ---
 
 Example `AlignmentsTrack` config:

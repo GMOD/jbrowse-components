@@ -1,6 +1,8 @@
 ---
 id: from_config
 title: FromConfig adapters
+description: Inline data adapters for embedding small datasets directly in config
+guide_category: Callbacks and customization
 ---
 
 There are two useful adapter types that can be used for more advanced use cases,

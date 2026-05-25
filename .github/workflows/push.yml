@@ -127,6 +127,8 @@ jobs:
             git diff packages/core/package.json
             exit 1
           fi
+      - name: Check guide indexes are up to date
+        run: node --experimental-strip-types website/scripts/generate-guide-indexes.ts --check
       - name: Lint codebase
         run: NODE_OPTIONS='--max-old-space-size=7000' pnpm lint
 
@@ -150,6 +152,19 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Check codebase format
         run: pnpm prettier --check .
+
+  check_docs_links:
+    name: Check docs links
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Check documentation links
+        run: bash website/check-links.sh
+        working-directory: website
 
   spellcheck:
     name: Spell check

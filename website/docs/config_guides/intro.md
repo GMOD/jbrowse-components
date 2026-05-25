@@ -1,6 +1,8 @@
 ---
 id: intro
 title: Intro to the config.json format
+description: Overall structure and key fields of the config.json file
+guide_category: Getting started
 ---
 
 The JBrowse 2 config file (typically `config.json`) is structured as follows:

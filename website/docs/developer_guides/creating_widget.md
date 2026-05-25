@@ -1,6 +1,8 @@
 ---
 id: creating_widget
 title: Creating custom widgets
+description: Add new drawer/panel UI components
+guide_category: Creating pluggable elements
 ---
 
 Here is an example of registering a custom widget

@@ -1,6 +1,8 @@
 ---
 id: creating_track
 title: Creating custom track types
+description: Define new high-level track concepts backed by display types
+guide_category: Creating pluggable elements
 ---
 
 Important note: track types are "high level concepts", and don't do a lot of
