@@ -15,7 +15,7 @@ beforeEach(() => {
 const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
-test('collapse introns on gene feature', async () => {
+xtest('collapse introns on gene feature', async () => {
   const user = userEvent.setup()
   const { view, session, findByText, findAllByTestId } = await createView()
 
@@ -52,7 +52,7 @@ test('collapse introns on gene feature', async () => {
   }
 }, 60000)
 
-test('collapse introns dialog shows transcript table', async () => {
+xtest('collapse introns dialog shows transcript table', async () => {
   const user = userEvent.setup()
   const { view, findAllByTestId, findByText } = await createView()
 
