@@ -17,6 +17,10 @@ const currentSlug = Astro.params.slug ?? ''
 const { html, headings } = await renderMarkdown(entry.body)
 ---
 
-<DocsLayout title={entry.data.title} currentSlug={currentSlug} headings={headings}>
+<DocsLayout
+  title={entry.data.title}
+  currentSlug={currentSlug}
+  headings={headings}
+>
   <Fragment set:html={html} />
 </DocsLayout>

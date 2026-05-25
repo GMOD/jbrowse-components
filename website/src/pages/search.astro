@@ -53,7 +53,13 @@ const q = Astro.url.searchParams.get('q') ?? ''
   let debounce
   let lastResults = []
 
-  const CATEGORY_PRIORITY = { user: 0, config: 1, developer: 2, autogen: 3, other: 4 }
+  const CATEGORY_PRIORITY = {
+    user: 0,
+    config: 1,
+    developer: 2,
+    autogen: 3,
+    other: 4,
+  }
 
   function getCategory(url) {
     const path = new URL(url, location.href).pathname
@@ -142,11 +148,18 @@ const q = Astro.url.searchParams.get('q') ?? ''
     const items = await Promise.all(found.slice(0, 40).map(r => r.data()))
     lastResults = items
       .map(item => ({ ...item, category: getCategory(item.url) }))
-      .sort((a, b) => CATEGORY_PRIORITY[a.category] - CATEGORY_PRIORITY[b.category])
+      .sort(
+        (a, b) => CATEGORY_PRIORITY[a.category] - CATEGORY_PRIORITY[b.category],
+      )
     renderResults()
   }
 
-  for (const checkbox of [filterUser, filterConfig, filterDeveloper, filterAutogen]) {
+  for (const checkbox of [
+    filterUser,
+    filterConfig,
+    filterDeveloper,
+    filterAutogen,
+  ]) {
     checkbox.addEventListener('change', renderResults)
   }
 

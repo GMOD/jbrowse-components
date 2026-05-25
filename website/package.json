@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "pagefind": "^1.5.2",
+    "prettier-plugin-astro": "^0.14.1",
     "rimraf": "^6.1.3"
   }
 }

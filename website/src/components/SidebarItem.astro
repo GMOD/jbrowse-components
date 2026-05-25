@@ -9,25 +9,27 @@ interface Props {
 const { item, currentSlug } = Astro.props
 ---
 
-{item.type === 'link' ? (
-  <li>
-    <a
-      href={item.href}
-      class:list={[{ active: item.slug === currentSlug }]}
-      aria-current={item.slug === currentSlug ? 'page' : undefined}
-    >
-      {item.label}
-    </a>
-  </li>
-) : (
-  <li>
-    <details>
-      <summary>{item.label}</summary>
-      <ul>
-        {item.items.map(child => (
-          <SidebarItem item={child} currentSlug={currentSlug} />
-        ))}
-      </ul>
-    </details>
-  </li>
-)}
+{
+  item.type === 'link' ? (
+    <li>
+      <a
+        href={item.href}
+        class:list={[{ active: item.slug === currentSlug }]}
+        aria-current={item.slug === currentSlug ? 'page' : undefined}
+      >
+        {item.label}
+      </a>
+    </li>
+  ) : (
+    <li>
+      <details>
+        <summary>{item.label}</summary>
+        <ul>
+          {item.items.map(child => (
+            <SidebarItem item={child} currentSlug={currentSlug} />
+          ))}
+        </ul>
+      </details>
+    </li>
+  )
+}

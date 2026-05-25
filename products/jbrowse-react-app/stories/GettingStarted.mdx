@@ -45,14 +45,26 @@ const state = createViewState({
       /* global app config (theme, RPC driver, etc.) */
     },
     assemblies: [
-      /* one or more assemblies — multiple is supported here,
-         unlike the LGV component which takes a single assembly */
+      {
+        name: 'hg38',
+        sequence: {
+          /* ... */
+        },
+      },
     ],
-    tracks: [
-      /* track configs, each scoped to one or more assemblies */
-    ],
+    tracks: [{ trackId: 'my_track', type: 'FeatureTrack' /* ... */ }],
     defaultSession: {
-      /* optional starting session — views, opened tracks, layout */
+      views: [
+        {
+          type: 'LinearGenomeView',
+          init: {
+            assembly: 'hg38',
+            loc: 'chr1:1,000,000-1,100,000',
+            tracks: ['my_track'],
+            tracklist: true, // open track selector on load
+          },
+        },
+      ],
     },
   },
 })
@@ -63,13 +75,28 @@ Unlike JBrowse Web, the embedded component does **not** automatically fetch a
 yourself and pass the result to `createViewState` — see
 [Importing config.json](?path=/docs/importing-config-json-files--docs).
 
-## A real human genome example
+## Adding tracks at runtime
+
+```js
+// add a track at runtime (from an event handler, not during render)
+state.jbrowse.addTrackConf({
+  trackId: 'new_track',
+  type: 'FeatureTrack',
+  assemblyNames: ['hg38'] /* ... */,
+})
+state.session.views[0]?.showTrack('new_track')
+>>>>>>> origin/main
 
 GRCh38 with NCBI RefSeq genes, repeats, a CRAM exome alignment, 1000 Genomes
 variants, and phyloP conservation. The `defaultSession` opens the alignment and
 conservation tracks in a `LinearGenomeView` at a specific locus:
 
+<<<<<<< HEAD
 <Story of={HumanDemo} />
+=======
+See the [API Reference](?path=/docs/api-reference--docs) for the full
+`createViewState` options.
+>>>>>>> origin/main
 
 ## More
 

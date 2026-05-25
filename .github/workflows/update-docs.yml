@@ -43,6 +43,6 @@ jobs:
         working-directory: website
       - name: Upload to S3 and invalidate CloudFront cache
         run: |
-          aws s3 sync --delete build s3://jbrowse.org/jb2/
+          aws s3 sync --delete dist s3://jbrowse.org/jb2/
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/jb2/*"
         working-directory: website

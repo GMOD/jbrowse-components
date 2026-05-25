@@ -116,6 +116,7 @@
     "mobx-react": "^9.2.1",
     "open": "^11.0.0",
     "prettier": "^3.8.3",
+    "prettier-plugin-astro": "^0.14.1",
     "puppeteer": "^25.0.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
