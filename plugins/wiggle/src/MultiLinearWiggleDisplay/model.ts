@@ -424,11 +424,11 @@ export function stateModelFactory(
         if (!newick) {
           return undefined
         }
-        const tree = fromNewick(newick)
-        let root = hierarchy(tree, (d: ClusterNodeData) => d.children)
+        const tree = fromNewick(newick) as any
+        let root = hierarchy(tree, (d: ClusterNodeData) => d.children) as any
         sum(root, (d: ClusterNodeData) => (d.children ? 0 : 1))
-        sort(root, (a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
-          ascending(a.data.height || 1, b.data.height || 1),
+        sort(root, ((a: any, b: any) =>
+          ascending(a.data.height || 1, b.data.height || 1)) as any,
         )
 
         // If subtree filter is active, find the matching subtree
@@ -436,7 +436,7 @@ export function stateModelFactory(
           const filterSet = new Set(self.subtreeFilter)
           const getLeafNames = (node: ClusterHierarchyNode): string[] => {
             if (!node.children?.length) {
-              return [node.data.name]
+              return node.data.name ? [node.data.name] : []
             }
             return node.children.flatMap(child => getLeafNames(child))
           }
