@@ -14,12 +14,8 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
 
 const useStyles = makeStyles()(theme => ({
-  root: {
-    margin: theme.spacing(1),
-  },
   paper: {
-    display: 'flex',
-    flexDirection: 'column',
+    margin: theme.spacing(1),
   },
   dropZone: {
     textAlign: 'center',
@@ -57,14 +53,15 @@ const ImportSessionWidget = observer(function ImportSessionWidget({
 }) {
   const [error, setError] = useState<unknown>()
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    // @ts-expect-error
-    accept: 'application/json',
+    accept: { 'application/json': ['.json'] },
     maxSize: MAX_FILE_SIZE,
     multiple: false,
     onDrop: async (acceptedFiles, rejectedFiles) => {
       try {
         if (rejectedFiles.length > 0) {
-          throw new Error(rejectedFiles[0]!.errors.map(e => `${e}`).join(', '))
+          throw new Error(
+            rejectedFiles[0]!.errors.map(e => e.message).join(', '),
+          )
         }
         const sessionText = await acceptedFiles[0]!.text()
         getSession(model).setSession?.(JSON.parse(sessionText).session)
@@ -78,7 +75,7 @@ const ImportSessionWidget = observer(function ImportSessionWidget({
   const { classes, cx } = useStyles()
 
   return (
-    <div className={classes.root}>
+    <>
       <Paper className={classes.paper}>
         <div
           {...getRootProps({
@@ -90,10 +87,10 @@ const ImportSessionWidget = observer(function ImportSessionWidget({
         >
           <input {...getInputProps()} />
           <CloudUploadIcon className={classes.uploadIcon} fontSize="large" />
-          <Typography color="textSecondary" align="center" variant="body1">
+          <Typography color="text.secondary" align="center" variant="body1">
             Drag and drop files here
           </Typography>
-          <Typography color="textSecondary" align="center" variant="body2">
+          <Typography color="text.secondary" align="center" variant="body2">
             or
           </Typography>
           <Button color="primary" variant="contained">
@@ -102,7 +99,7 @@ const ImportSessionWidget = observer(function ImportSessionWidget({
         </div>
       </Paper>
       {error ? <ImportError error={error} /> : null}
-    </div>
+    </>
   )
 })
 

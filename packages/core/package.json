@@ -95,7 +95,9 @@
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
     "./ui/colors": "./src/ui/colors.ts",
+    "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
     "./ui/theme": "./src/ui/theme.ts",
+    "./ui/useGraphicsCapabilities": "./src/ui/useGraphicsCapabilities.ts",
     "./util": "./src/util/index.ts",
     "./util/Base1DUtils": "./src/util/Base1DUtils.ts",
     "./util/Base1DViewModel": "./src/util/Base1DViewModel.ts",
@@ -500,9 +502,17 @@
         "types": "./esm/ui/colors.d.ts",
         "import": "./esm/ui/colors.js"
       },
+      "./ui/getGraphicsCapabilities": {
+        "types": "./esm/ui/getGraphicsCapabilities.d.ts",
+        "import": "./esm/ui/getGraphicsCapabilities.js"
+      },
       "./ui/theme": {
         "types": "./esm/ui/theme.d.ts",
         "import": "./esm/ui/theme.js"
+      },
+      "./ui/useGraphicsCapabilities": {
+        "types": "./esm/ui/useGraphicsCapabilities.d.ts",
+        "import": "./esm/ui/useGraphicsCapabilities.js"
       },
       "./util": {
         "types": "./esm/util/index.d.ts",
@@ -912,8 +922,14 @@
         "ui/colors": [
           "esm/ui/colors.d.ts"
         ],
+        "ui/getGraphicsCapabilities": [
+          "esm/ui/getGraphicsCapabilities.d.ts"
+        ],
         "ui/theme": [
           "esm/ui/theme.d.ts"
+        ],
+        "ui/useGraphicsCapabilities": [
+          "esm/ui/useGraphicsCapabilities.d.ts"
         ],
         "util": [
           "esm/util/index.d.ts"

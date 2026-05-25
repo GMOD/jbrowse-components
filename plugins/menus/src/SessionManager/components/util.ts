@@ -8,20 +8,9 @@ export interface SessionMetadata {
   favorite: boolean
 }
 
-export interface SessionSnap {
-  createdAt: Date
-  session: {
-    name: string
-    id: string
-    views?: { tracks?: unknown[] }[]
-    [key: string]: unknown
-  }
-}
-
 export interface SessionModel extends AbstractSessionModel {
   savedSessionMetadata?: SessionMetadata[]
-  removeSavedSession: (arg: SessionSnap) => void
-  activateSession: (arg: string) => void
-  loadAutosaveSession: () => void
-  previousAutosaveId: string
+  activateSession: (id: string) => void
+  deleteSavedSession: (id: string) => void
+  setSavedSessionFavorite: (id: string, favorite: boolean) => void
 }
