@@ -714,6 +714,9 @@ importers:
       '@gmod/cram':
         specifier: ^8.2.6
         version: 8.2.6
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -735,6 +738,9 @@ importers:
       '@jbrowse/sv-core':
         specifier: workspace:^
         version: link:../../packages/sv-core
+      '@jbrowse/wiggle-core':
+        specifier: workspace:^
+        version: link:../../packages/wiggle-core
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
