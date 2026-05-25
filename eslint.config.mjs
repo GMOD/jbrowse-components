@@ -61,9 +61,6 @@ export default defineConfig(
 
       'packages/core/src/util/p-limit.ts',
 
-      // Worker polyfills (plain JS files)
-      '**/workerPolyfill.js',
-
       // AWS Lambda functions
       'products/jbrowse-aws-lambda-functions',
 
@@ -319,14 +316,6 @@ export default defineConfig(
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
-    },
-  },
-  {
-    files: ['**/workerPolyfill.js'],
-    languageOptions: {
-      globals: {
-        ...globals.worker,
-      },
     },
   },
   {
