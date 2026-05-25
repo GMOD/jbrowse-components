@@ -28,12 +28,10 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   async setup(opts: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
   async setupPre(opts: BaseOptions) {
@@ -78,17 +76,11 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  getAssemblyNames() {
-    const assemblyNames = this.getConf('assemblyNames') as string[]
-    return assemblyNames
-  }
-
   async getRefNames(opts: BaseOptions = {}) {
-    // @ts-expect-error
-    const r1 = opts.regions?.[0].assemblyName
-    const { feats } = await this.setup(opts)
+    const r1 = opts.assemblyName
+    const { feats, assemblyNames } = await this.setup(opts)
 
-    const idx = this.getAssemblyNames().indexOf(r1)
+    const idx = r1 === undefined ? -1 : assemblyNames.indexOf(r1)
     if (idx !== -1) {
       const set = new Set<string>()
       for (const feat of feats) {
@@ -96,7 +88,6 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       }
       return [...set]
     }
-    console.warn('Unable to do ref renaming on adapter')
     return []
   }
 
@@ -140,10 +131,4 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the foreseeable future and can be purged
-   * from caches, etc
-   */
 }

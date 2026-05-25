@@ -92,7 +92,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
             type: 'PairwiseIndexedPAFAdapter',
             pifGzLocation: file,
             index: {
-              location: index || makeIndex(file, '.tbi'),
+              location: index ?? makeIndex(file, '.tbi'),
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
             },
           }

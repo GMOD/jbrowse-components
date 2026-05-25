@@ -1,4 +1,3 @@
-import { parseCigar } from '@jbrowse/cigar-utils'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -7,7 +6,12 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { flipCigar, parsePAFLine, swapIndelCigar } from '../util.ts'
+import {
+  flipCigar,
+  pafIdentity,
+  parsePAFLine,
+  swapIndelCigar,
+} from '../util.ts'
 import { getWeightedMeans } from './util.ts'
 
 import type { PAFRecord } from './util.ts'
@@ -26,17 +30,15 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   async setup(opts?: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
   async setupPre(opts?: BaseOptions) {
-    const lines = [] as PAFRecord[]
+    const lines: PAFRecord[] = []
     parseLineByLine(
       await fetchAndMaybeUnzip(
         openLocation(this.getConf('pafLocation'), this.pluginManager),
@@ -69,11 +71,10 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   async getRefNames(opts: BaseOptions = {}) {
-    // @ts-expect-error
-    const r1 = opts.regions?.[0].assemblyName
+    const r1 = opts.assemblyName
     const feats = await this.setup(opts)
 
-    const idx = this.getAssemblyNames().indexOf(r1)
+    const idx = r1 === undefined ? -1 : this.getAssemblyNames().indexOf(r1)
     if (idx !== -1) {
       const set = new Set<string>()
       for (const feat of feats) {
@@ -81,7 +82,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       }
       return [...set]
     }
-    console.warn('Unable to do ref renaming on adapter')
     return []
   }
 
@@ -108,6 +108,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
       for (let i = 0; i < pafRecords.length; i++) {
         const r = pafRecords[i]!
+
         let start: number
         let end: number
         let refName: string
@@ -134,12 +135,12 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
           const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
 
-          let CIGAR = extra.cg
-          if (extra.cg) {
+          let CIGAR = cg
+          if (cg) {
             if (flip && strand === -1) {
-              CIGAR = flipCigar(parseCigar(extra.cg)).join('')
+              CIGAR = flipCigar(cg)
             } else if (flip) {
-              CIGAR = swapIndelCigar(extra.cg)
+              CIGAR = swapIndelCigar(cg)
             }
           }
 
@@ -155,7 +156,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               ...rest,
               CIGAR,
               syntenyId: i,
-              identity: numMatches / blockLen,
+              identity: pafIdentity(extra),
               numMatches,
               blockLen,
               mate: {

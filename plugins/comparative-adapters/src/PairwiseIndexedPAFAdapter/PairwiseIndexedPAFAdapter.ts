@@ -5,7 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { parsePAFLine } from '../util.ts'
+import { pafIdentity, parsePAFLine } from '../util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -42,7 +42,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     })
   }
   async getHeader(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     return updateStatus('Downloading header', statusCallback, () =>
       this.pif.getHeader(),
     )
@@ -139,7 +139,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                 ...rest,
                 CIGAR,
                 syntenyId: fileOffset,
-                identity: numMatches / blockLen,
+                identity: pafIdentity(extra),
                 numMatches,
                 blockLen,
                 mate: {

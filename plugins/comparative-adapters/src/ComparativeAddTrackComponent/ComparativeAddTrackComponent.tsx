@@ -1,31 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+interface TrackModel {
+  setMixinData: (data: Record<string, unknown>) => void
+}
+
 const ComparativeAddTrackComponent = observer(
-  function ComparativeAddTrackComponent({ model }: any) {
+  function ComparativeAddTrackComponent({ model }: { model: TrackModel }) {
     const session = getSession(model)
-    const [r0, setR0] = useState(session.assemblies[0]?.name)
-    const [r1, setR1] = useState(session.assemblies[0]?.name)
-    useEffect(() => {
-      model.setMixinData({
-        adapter: {
-          queryAssembly: r0,
-          targetAssembly: r1,
-        },
-      })
-    }, [model, r0, r1])
+    const defaultAsm = session.assemblies[0]?.name ?? ''
+    const [queryAssembly, setQueryAssembly] = useState(defaultAsm)
+    const [targetAssembly, setTargetAssembly] = useState(defaultAsm)
     return (
       <>
         <AssemblySelector
           session={session}
           label="Query assembly"
           helperText=""
-          selected={r0}
+          selected={queryAssembly}
           onChange={asm => {
-            setR0(asm)
+            setQueryAssembly(asm)
+            model.setMixinData({
+              adapter: { queryAssembly: asm, targetAssembly },
+            })
           }}
           fullWidth
         />
@@ -33,9 +33,12 @@ const ComparativeAddTrackComponent = observer(
           session={session}
           label="Target assembly"
           helperText=""
-          selected={r1}
+          selected={targetAssembly}
           onChange={asm => {
-            setR1(asm)
+            setTargetAssembly(asm)
+            model.setMixinData({
+              adapter: { queryAssembly, targetAssembly: asm },
+            })
           }}
           fullWidth
         />
