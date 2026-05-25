@@ -175,10 +175,6 @@ const syntenyConfigs: {
     label: 'Yeast synteny',
   },
   {
-    config: 'test_data/config_synteny_nway.json',
-    label: '3-way volvox synteny',
-  },
-  {
     config: 'test_data/hs1_vs_mm39/config.json',
     label: 'hs1 vs mm39',
   },
