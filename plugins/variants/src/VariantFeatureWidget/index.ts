@@ -13,7 +13,7 @@ export default function VariantFeatureWidgetF(pluginManager: PluginManager) {
       new WidgetType({
         name: 'VariantFeatureWidget',
         heading: 'Feature details',
-        configSchema: configSchema,
+        configSchema,
         stateModel: stateModelFactory(pluginManager),
         ReactComponent: lazy(() => import('./VariantFeatureWidget.tsx')),
       }),

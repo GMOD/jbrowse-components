@@ -67,7 +67,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
       view: {
         ...view,
         displayedRegions: result.regions,
-      } as typeof view,
+      },
     }
   }
 
@@ -76,7 +76,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
       args as unknown as RenderLinearReadArcsDisplayArgs,
     )
     return super.serializeArguments(
-      renamed as unknown as Record<string, unknown>,
+      renamed,
       rpcDriver,
     )
   }

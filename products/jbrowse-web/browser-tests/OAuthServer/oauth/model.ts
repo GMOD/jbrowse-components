@@ -39,8 +39,8 @@ const model: MyModel = {
       accessTokenExpiresAt: token.accessTokenExpiresAt,
       refreshToken: token.refreshToken,
       refreshTokenExpiresAt: token.refreshTokenExpiresAt,
-      client: client,
-      user: user,
+      client,
+      user,
     }
     return db.token
   },
@@ -75,8 +75,8 @@ const model: MyModel = {
     db.authorizationCode = {
       authorizationCode: code.authorizationCode,
       expiresAt: code.expiresAt,
-      client: client,
-      user: user,
+      client,
+      user,
       redirectUri: code.redirectUri,
     }
     return db.authorizationCode

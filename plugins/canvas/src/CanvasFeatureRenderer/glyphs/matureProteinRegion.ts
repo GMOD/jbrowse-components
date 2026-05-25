@@ -162,7 +162,7 @@ function drawMatureProteinBox(
   ctx.lineWidth = 1
   ctx.strokeRect(left, boxTop, width, boxHeight)
 
-  const strand = feature.get('strand') as number
+  const strand = feature.get('strand')!
   if (strand) {
     const centerY = boxTop + boxHeight / 2
     drawStrandArrowAtPosition(

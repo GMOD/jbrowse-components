@@ -13,6 +13,7 @@ import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { clusterLayout, hierarchy, sum } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
@@ -29,7 +30,6 @@ import {
 } from './constants.ts'
 import { getSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
-import { hierarchy, sum, clusterLayout } from '@jbrowse/tree-sidebar'
 
 import type {
   ClusterHierarchyNode,
@@ -592,7 +592,7 @@ export default function MultiVariantBaseModelF(
             r,
             this.availableHeight,
             self.treeAreaWidth,
-          ) as ClusterHierarchyNode
+          )
         },
         /**
          * #method

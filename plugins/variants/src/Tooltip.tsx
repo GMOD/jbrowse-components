@@ -59,7 +59,7 @@ const Tooltip = observer(function Tooltip({
         className={classes.hoverVertical}
         style={{
           left: offsetMouseCoord[0],
-          height: height,
+          height,
         }}
       />
     </>

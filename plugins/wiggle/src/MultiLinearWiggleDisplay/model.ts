@@ -11,11 +11,11 @@ import {
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { clusterLayout, hierarchy, sum } from '@jbrowse/tree-sidebar'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
-import { hierarchy, sum, clusterLayout } from '@jbrowse/tree-sidebar'
 import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
@@ -487,7 +487,7 @@ export function stateModelFactory(
           r,
           self.height,
           self.treeAreaWidth,
-        ) as ClusterHierarchyNode
+        )
       },
     }))
     .views(self => {

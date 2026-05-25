@@ -2,8 +2,8 @@ import type { RenderConfigContext } from './renderConfig.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, LastStopTokenCheck, Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Theme } from '@mui/material'
 
 export interface SequenceData {

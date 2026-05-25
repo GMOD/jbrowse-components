@@ -1,6 +1,6 @@
+import { links } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import { links } from '@jbrowse/tree-sidebar'
 import type { LegendBarModel } from './treeTypes.ts'
 
 const SvgTree = observer(function SvgTree({
@@ -15,10 +15,10 @@ const SvgTree = observer(function SvgTree({
   if (hierarchy) {
     for (const link of links(hierarchy)) {
       const { source, target } = link
-      const sy = source.x!
-      const ty = target.x!
-      const tx = target.y!
-      const sx = source.y!
+      const sy = source.x
+      const ty = target.x
+      const tx = target.y
+      const sx = source.y
 
       // Vertical line
       svg.push(

@@ -519,7 +519,7 @@ export function SharedLinearPileupDisplayMixin(
                       rendererType: 'PileupRenderer',
                       rpcDriverName: self.effectiveRpcDriverName,
                     },
-                  )) as { feature: SimpleFeatureSerialized | undefined }
+                  ))
 
                   if (isAlive(self) && feature) {
                     self.selectFeature(new SimpleFeature(feature))
@@ -554,7 +554,7 @@ export function SharedLinearPileupDisplayMixin(
                       rendererType: 'PileupRenderer',
                       rpcDriverName: self.effectiveRpcDriverName,
                     },
-                  )) as { feature: SimpleFeatureSerialized | undefined }
+                  ))
 
                   if (feature) {
                     self.setContextMenuFeature(new SimpleFeature(feature))

@@ -4,8 +4,8 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Menu, MenuItem, alpha } from '@mui/material'
 import { descendants } from '@jbrowse/tree-sidebar'
+import { Menu, MenuItem, alpha } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -122,8 +122,8 @@ const TreeSidebar = observer(function TreeSidebar({
         const hitRadius = 8
 
         for (const node of nodes) {
-          const x = node.y!
-          const y = node.x!
+          const x = node.y
+          const y = node.x
           index.add(x - hitRadius, y - hitRadius, x + hitRadius, y + hitRadius)
         }
 

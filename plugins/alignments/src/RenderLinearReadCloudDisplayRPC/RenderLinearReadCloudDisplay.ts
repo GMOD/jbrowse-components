@@ -66,7 +66,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       view: {
         ...view,
         displayedRegions: result.regions,
-      } as typeof view,
+      },
     }
   }
 
@@ -84,7 +84,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       args as unknown as RenderLinearReadCloudDisplayArgs,
     )
     return super.serializeArguments(
-      renamed as unknown as Record<string, unknown>,
+      renamed,
       rpcDriver,
     )
   }

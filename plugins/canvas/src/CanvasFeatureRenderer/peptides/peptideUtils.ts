@@ -135,7 +135,7 @@ async function fetchTranscriptPeptides(
       return undefined
     }
 
-    const strand = transcript.get('strand') as number
+    const strand = transcript.get('strand')!
     let cds = extractCDSRegions(transcript)
     if (cds.length === 0) {
       return undefined

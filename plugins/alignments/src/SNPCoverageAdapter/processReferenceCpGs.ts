@@ -6,8 +6,8 @@ import {
 } from '@jbrowse/modifications-utils'
 
 import { createEmptyBin, incWithProbabilities } from './util.ts'
-import { getTagAlt } from '../util.ts'
 import { DELETION_TYPE } from '../shared/forEachMismatchTypes.ts'
+import { getTagAlt } from '../util.ts'
 
 import type {
   FeatureWithMismatchIterator,

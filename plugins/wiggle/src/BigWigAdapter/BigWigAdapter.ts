@@ -153,7 +153,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   public async getGlobalStats(opts?: BaseOptions) {
     const { header } = await this.setup(opts)
-    return rectifyStats(header.totalSummary as UnrectifiedQuantitativeStats)
+    return rectifyStats(header.totalSummary)
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {

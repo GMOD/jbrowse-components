@@ -173,7 +173,7 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #volatile
        */
-      volatileError: undefined as unknown,
+      volatileError: undefined,
 
       /**
        * #volatile

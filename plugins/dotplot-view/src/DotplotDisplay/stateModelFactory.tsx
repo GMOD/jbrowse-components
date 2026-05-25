@@ -78,7 +78,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * #volatile
            */
           ReactComponent2:
-            ServerSideRenderedBlockContent as unknown as React.FC<any>,
+            ServerSideRenderedBlockContent,
           /**
            * #volatile
            * alpha transparency value for synteny drawing (0-1)

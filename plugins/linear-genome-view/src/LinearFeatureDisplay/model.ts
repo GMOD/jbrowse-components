@@ -271,9 +271,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       trackInstanceId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
-                  )) as {
-                    feature: SimpleFeatureSerialized | undefined
-                  }
+                  ))
 
                   if (isAlive(self) && feature) {
                     self.selectFeature(new SimpleFeature(feature))
@@ -302,9 +300,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       trackInstanceId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
-                  )) as {
-                    feature: SimpleFeatureSerialized | undefined
-                  }
+                  ))
 
                   if (isAlive(self) && feature) {
                     self.setContextMenuFeature(new SimpleFeature(feature))
@@ -444,9 +440,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     trackInstanceId: parentTrack.id,
                     rendererType: self.rendererTypeName,
                   },
-                )) as {
-                  feature: SimpleFeatureSerialized | undefined
-                }
+                ))
 
                 // Only set if still alive and feature ID hasn't changed
                 if (

@@ -1,12 +1,12 @@
 import type { Source } from '../../util.ts'
 import type {
   ClusterHierarchyNode,
-  ClusterNodeData,
-  HoveredTreeNode,
+  
+  
   TreeSidebarModel as TreeSidebarModelBase,
 } from '@jbrowse/tree-sidebar'
 
-export type { ClusterHierarchyNode, ClusterNodeData, HoveredTreeNode }
+
 
 export interface TreeSidebarModel extends TreeSidebarModelBase {
   sources?: Source[]
@@ -25,3 +25,5 @@ export interface LegendBarModel {
   sources?: Source[]
   showTree: boolean
 }
+
+export { type ClusterHierarchyNode,type ClusterNodeData, type HoveredTreeNode} from '@jbrowse/tree-sidebar'

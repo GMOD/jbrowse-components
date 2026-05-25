@@ -56,7 +56,7 @@ export const cdsGlyph: Glyph = {
 
     const featureStart = feature.get('start')
     const featureEnd = feature.get('end')
-    const strand = feature.get('strand') as number
+    const strand = feature.get('strand')!
     const width = layout.width
     const left = layout.x
     const top = layout.y

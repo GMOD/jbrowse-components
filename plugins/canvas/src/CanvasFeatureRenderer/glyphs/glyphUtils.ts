@@ -152,7 +152,7 @@ export function drawStrandArrow(
     return
   }
 
-  const strand = feature.get('strand') as number
+  const strand = feature.get('strand')!
   if (!strand) {
     return
   }
@@ -198,7 +198,7 @@ export function drawSegmentedFeature(
 
   // Draw chevrons if enabled
   if (displayDirectionalChevrons) {
-    const strand = feature.get('strand') as number
+    const strand = feature.get('strand')!
     if (strand) {
       const effectiveStrand = reversed ? -strand : strand
       drawChevrons(

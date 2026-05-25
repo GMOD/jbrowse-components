@@ -10,7 +10,7 @@ export default function DotplotRendererF(pluginManager: PluginManager) {
     () =>
       new DotplotRenderer({
         name: 'DotplotRenderer',
-        configSchema: configSchema,
+        configSchema,
         ReactComponent: lazy(() => import('./components/DotplotRendering.tsx')),
         pluginManager,
       }),
