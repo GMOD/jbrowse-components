@@ -31,6 +31,5 @@ export { default as ExternalLink } from './ExternalLink.tsx'
 export { default as SanitizedHTML } from './SanitizedHTML.tsx'
 export { default as BaseTooltip } from './BaseTooltip.tsx'
 export { default as PluggableComponent } from './PluggableComponent.tsx'
-export * from './Menu.tsx'
 export * from './MenuTypes.ts'
 export const VIEW_HEADER_HEIGHT = 28

@@ -13,7 +13,9 @@ import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // lazies
-const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
+const SetMinMaxDialog = lazy(() =>
+  import('@jbrowse/wiggle-core').then(m => ({ default: m.SetMinMaxDialog })),
+)
 
 /**
  * #stateModel SharedWiggleMixin
@@ -330,6 +332,24 @@ export default function SharedWiggleMixin(
       get minScore() {
         return self.constraints.min ?? (getConf(self, 'minScore') as number)
       },
+
+      /**
+       * #getter
+       * Returns undefined when the config sentinel (MIN_VALUE) means "unset"
+       */
+      get minScoreConfig() {
+        const val = self.constraints.min ?? (getConf(self, 'minScore') as number)
+        return val === Number.MIN_VALUE ? undefined : val
+      },
+
+      /**
+       * #getter
+       * Returns undefined when the config sentinel (MAX_VALUE) means "unset"
+       */
+      get maxScoreConfig() {
+        const val = self.constraints.max ?? (getConf(self, 'maxScore') as number)
+        return val === Number.MAX_VALUE ? undefined : val
+      },
     }))
     .views(self => ({
       /**
@@ -384,7 +404,7 @@ export default function SharedWiggleMixin(
          * #getter
          */
         get domain() {
-          const { stats, scaleType, minScore, maxScore, rendererConfig } = self
+          const { stats, scaleType, minScoreConfig, maxScoreConfig, rendererConfig } = self
           if (!stats) {
             return undefined
           }
@@ -401,7 +421,7 @@ export default function SharedWiggleMixin(
 
           const ret = getNiceDomain({
             domain: [domainMin, domainMax],
-            bounds: [minScore, maxScore],
+            bounds: [minScoreConfig, maxScoreConfig],
             scaleType,
           })
 

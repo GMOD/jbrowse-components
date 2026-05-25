@@ -3,13 +3,13 @@ import { lazy } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import { YSCALEBAR_LABEL_OFFSET, computeYTicks } from '@jbrowse/wiggle-core'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
+
 import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
-import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
-import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -133,27 +133,12 @@ function stateModelFactory(
          * #getter
          */
         get ticks() {
-          const { inverted, scaleType, domain, height } = self
-          const minimalTicks = getConf(self, 'minimalTicks')
-          if (domain) {
-            const ticks = axisPropsFromTickScale(
-              getScale({
-                scaleType,
-                domain,
-                range: [
-                  height - YSCALEBAR_LABEL_OFFSET,
-                  YSCALEBAR_LABEL_OFFSET,
-                ],
-                inverted,
-              }),
-              4,
-            )
-            return height < 100 || minimalTicks
-              ? { ...ticks, values: domain }
-              : ticks
-          } else {
-            return undefined
-          }
+          return computeYTicks({
+            height: self.height,
+            domain: self.domain as [number, number] | undefined,
+            scaleType: self.scaleType,
+            minimalTicks: getConf(self, 'minimalTicks') as boolean,
+          })
         },
       }
     })

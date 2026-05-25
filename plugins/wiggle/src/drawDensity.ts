@@ -13,6 +13,7 @@ import type {
   LastStopTokenCheck,
   StopToken,
 } from '@jbrowse/core/util/stopToken'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 const fudgeFactor = 0.3
 const clipHeight = 2
@@ -25,7 +26,7 @@ export function drawDensity(
     bpPerPx: number
     scaleOpts: ScaleOpts
     height: number
-    ticks: { values: number[] }
+    ticks: YScaleTicks | undefined
     displayCrossHatches: boolean
     config: AnyConfigurationModel
     stopToken?: StopToken

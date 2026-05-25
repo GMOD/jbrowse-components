@@ -15,6 +15,7 @@ import type {
   Region,
   StopToken,
 } from '@jbrowse/core/util'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 export function drawLine(
   ctx: CanvasRenderingContext2D,
@@ -24,7 +25,7 @@ export function drawLine(
     bpPerPx: number
     scaleOpts: ScaleOpts
     height: number
-    ticks: { values: number[] }
+    ticks: YScaleTicks | undefined
     displayCrossHatches: boolean
     colorCallback: (f: Feature, score: number) => string
     config: AnyConfigurationModel
@@ -41,7 +42,7 @@ export function drawLine(
     bpPerPx,
     scaleOpts,
     height: unadjustedHeight,
-    ticks: { values },
+    ticks,
     displayCrossHatches,
     colorCallback,
     config,
@@ -215,10 +216,10 @@ export function drawLine(
   if (displayCrossHatches) {
     ctx.lineWidth = 1
     ctx.strokeStyle = 'rgba(200,200,200,0.5)'
-    for (const tick of values) {
+    for (const { value } of ticks?.ticks ?? []) {
       ctx.beginPath()
-      ctx.moveTo(0, Math.round(toY(tick)))
-      ctx.lineTo(width, Math.round(toY(tick)))
+      ctx.moveTo(0, Math.round(toY(value)))
+      ctx.lineTo(width, Math.round(toY(value)))
       ctx.stroke()
     }
   }

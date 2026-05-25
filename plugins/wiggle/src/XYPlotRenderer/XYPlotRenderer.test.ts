@@ -34,7 +34,7 @@ test('several features', async () => {
     bpPerPx: 3,
     highResolutionScaling: 1,
     height: 100,
-    ticks: { values: [0, 100] },
+    ticks: undefined,
     displayCrossHatches: false,
     inverted: false,
     colorCallback: () => 'blue',

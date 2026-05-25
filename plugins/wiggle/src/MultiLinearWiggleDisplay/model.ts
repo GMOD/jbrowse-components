@@ -16,7 +16,6 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
-import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
 import type { Source } from '../util.ts'
@@ -460,22 +459,25 @@ export function stateModelFactory(
         get ticks() {
           const { scaleType, domain, isMultiRow, rowHeight, useMinimalTicks } =
             self
-
           if (!domain) {
             return undefined
           }
-
           const offset = isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET
-          const ticks = axisPropsFromTickScale(
-            getScale({
-              scaleType,
-              domain,
-              range: [rowHeight - offset, offset],
-              inverted: getConf(self, 'inverted') as boolean,
-            }),
-            4,
-          )
-          return useMinimalTicks ? { ...ticks, values: domain } : ticks
+          const scale = getScale({
+            scaleType,
+            domain,
+            range: [rowHeight - offset, offset],
+            inverted: false,
+          })
+          const values =
+            rowHeight < 100 || useMinimalTicks
+              ? (domain)
+              : scale.ticks(4)
+          return {
+            ticks: values.map(v => ({ value: v, y: scale(v) })),
+            yTop: offset,
+            yBottom: rowHeight - offset,
+          }
         },
 
         /**

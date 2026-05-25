@@ -56,7 +56,7 @@ export const repeatRegionGlyph: Glyph = {
     const strand = feature.get('strand') as -1 | 1 | undefined
     const arrowPadding = getStrandArrowPadding(strand, reversed)
 
-    const subfeatures = feature.get('subfeatures') || []
+    const subfeatures = feature.get('subfeatures') ?? []
     const children = subfeatures.map(child => layoutChild(child, feature, args))
 
     return {

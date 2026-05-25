@@ -1,8 +1,8 @@
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import ColorLegend from './ColorLegend.tsx'
 import ScoreLegend from './ScoreLegend.tsx'
-import YScaleBar from '../../shared/YScaleBar.tsx'
 
 import type { WiggleDisplayModel } from '../model.ts'
 
@@ -12,7 +12,7 @@ const IndividualScaleBars = observer(function IndividualScaleBars({
   exportSVG,
 }: {
   model: WiggleDisplayModel
-  orientation?: string
+  orientation?: 'left' | 'right'
   exportSVG?: boolean
 }) {
   const {
@@ -46,7 +46,7 @@ const IndividualScaleBars = observer(function IndividualScaleBars({
             transform={`translate(0 ${rowHeight * idx})`}
             key={`${JSON.stringify(ticks)}-${idx}`}
           >
-            <YScaleBar model={model} orientation={orientation} />
+            <YScaleBar ticks={model.ticks} orientation={orientation} />
           </g>
         ))
       )}

@@ -1,9 +1,9 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import ColorLegend from './ColorLegend.tsx'
 import { getOffset } from './util.ts'
-import YScaleBar from '../../shared/YScaleBar.tsx'
 
 import type { WiggleDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -14,7 +14,7 @@ const FullHeightScaleBar = observer(function FullHeightScaleBar({
   exportSVG,
 }: {
   model: WiggleDisplayModel
-  orientation?: string
+  orientation?: 'left' | 'right'
   exportSVG?: boolean
 }) {
   const { labelWidth } = model
@@ -22,7 +22,7 @@ const FullHeightScaleBar = observer(function FullHeightScaleBar({
   return (
     <>
       <g transform={`translate(${!exportSVG ? getOffset(model) : 0},0)`}>
-        <YScaleBar model={model} orientation={orientation} />
+        <YScaleBar ticks={model.ticks} orientation={orientation} />
       </g>
       <g transform={`translate(${viewWidth - labelWidth - 100},0)`}>
         <ColorLegend exportSVG={exportSVG} model={model} rowHeight={12} />

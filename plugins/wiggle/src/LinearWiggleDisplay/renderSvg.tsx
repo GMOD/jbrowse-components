@@ -1,7 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
-import YScaleBar from '../shared/YScaleBar.tsx'
 import { isReadyOrHasError } from '../svgExportUtil.ts'
 
 import type { WiggleDisplayModel } from './model.ts'
@@ -23,7 +23,7 @@ export async function renderSvg(
       <g>{await superRenderSvg(opts)}</g>
       {graphType && stats ? (
         <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-          <YScaleBar model={self} orientation="left" />
+          <YScaleBar ticks={self.ticks} orientation="left" />
         </g>
       ) : null}
     </>

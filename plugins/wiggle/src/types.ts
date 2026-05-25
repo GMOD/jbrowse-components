@@ -1,6 +1,7 @@
 import type { ScaleOpts, Source } from './util.ts'
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { Feature } from '@jbrowse/core/util'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 import type { ThemeOptions } from '@mui/material'
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
@@ -9,7 +10,7 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   highResolutionScaling: number
   scaleOpts: ScaleOpts
   displayCrossHatches: boolean
-  ticks: { values: number[] }
+  ticks: YScaleTicks | undefined
   inverted: boolean
   themeOptions: ThemeOptions
   statusCallback?: (arg: string) => void

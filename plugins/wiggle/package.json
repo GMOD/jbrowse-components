@@ -33,6 +33,7 @@
     "@gmod/bbi": "^9.0.17",
     "@gmod/hclust": "3.0.14",
     "@jbrowse/core": "workspace:^",
+    "@jbrowse/wiggle-core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.8.7",
     "@jbrowse/plugin-data-management": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",

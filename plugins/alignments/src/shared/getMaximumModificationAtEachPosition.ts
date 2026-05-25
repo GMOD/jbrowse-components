@@ -32,7 +32,7 @@ export function getMaxProbModAtEachPosition(
         const prob =
           probabilities?.[
             probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
-          ] || 0
+          ] ?? 0
         if (!maxProbModForPosition[ref]) {
           maxProbModForPosition[ref] = {
             type,

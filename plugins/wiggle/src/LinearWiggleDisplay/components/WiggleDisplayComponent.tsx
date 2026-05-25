@@ -5,9 +5,9 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import YScaleBar from '../../shared/YScaleBar.tsx'
 
 import type { WiggleDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -40,7 +40,7 @@ const LinearWiggleDisplay = observer(function LinearWiggleDisplay(props: {
             width: 50,
           }}
         >
-          <YScaleBar model={model} />
+          <YScaleBar ticks={model.ticks} />
         </svg>
       ) : null}
     </div>

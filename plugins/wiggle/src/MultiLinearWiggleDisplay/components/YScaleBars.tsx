@@ -8,7 +8,7 @@ import type { WiggleDisplayModel } from '../model.ts'
 
 const YScaleBars = observer(function YScaleBars(props: {
   model: WiggleDisplayModel
-  orientation?: string
+  orientation?: 'left' | 'right'
   exportSVG?: boolean
 }) {
   const { model, orientation, exportSVG } = props
