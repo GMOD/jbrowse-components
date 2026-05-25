@@ -67,7 +67,7 @@ function getTabDisplayName(
       // @ts-expect-error
       view.assemblyNames
         // @ts-expect-error
-        ?.map(r => session.assemblyManager.get(r)?.displayName)
+        ?.map(r => session.assemblyManager.getDisplayName(r))
         .join(',') ||
       'View'
     )

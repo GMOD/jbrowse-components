@@ -65,6 +65,12 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       /**
        * #method
        */
+      getDisplayName(asmName: string) {
+        return self.assemblyNameMap[asmName]?.displayName || asmName
+      },
+      /**
+       * #method
+       */
       get(asmName: string) {
         if (asmName) {
           const assembly = self.assemblyNameMap[asmName]

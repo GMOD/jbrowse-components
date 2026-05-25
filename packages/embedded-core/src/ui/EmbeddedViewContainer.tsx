@@ -14,8 +14,12 @@ const useStyles = makeStyles()(theme => ({
   // https://css-tricks.com/almanac/properties/a/all/
   avoidParentStyle: {
     all: 'initial',
+    display: 'block',
+    width: '100%',
+    height: '100%',
   },
   viewContainer: {
+    width: '100%',
     overflow: 'hidden',
     background: theme.palette.secondary.main,
     margin: theme.spacing(0.5),

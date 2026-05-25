@@ -1,6 +1,5 @@
 import {
   clearPendingMoveAction,
-  getPendingMoveAction,
   peekPendingMoveAction,
   setPendingMoveToNewTab,
   setPendingMoveToSplitRight,
@@ -20,10 +19,6 @@ describe('DockviewContext pending move actions', () => {
   describe('when no pending action exists', () => {
     it('peekPendingMoveAction returns null', () => {
       expect(peekPendingMoveAction()).toBeNull()
-    })
-
-    it('getPendingMoveAction returns null', () => {
-      expect(getPendingMoveAction()).toBeNull()
     })
   })
 
@@ -47,18 +42,6 @@ describe('DockviewContext pending move actions', () => {
         type: 'newTab',
         viewId: 'view-123',
       })
-    })
-
-    it('getPendingMoveAction consumes the action', () => {
-      setPendingMoveToNewTab('view-123')
-
-      // First call returns the action
-      expect(getPendingMoveAction()).toEqual({
-        type: 'newTab',
-        viewId: 'view-123',
-      })
-      // Second call returns null (action was consumed)
-      expect(getPendingMoveAction()).toBeNull()
     })
 
     it('clearPendingMoveAction clears the action', () => {

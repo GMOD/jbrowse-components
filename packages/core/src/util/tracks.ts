@@ -149,28 +149,6 @@ export function storeBlobLocation(
 // This allows openLocation to remain synchronous while FileHandle access is async
 let fileHandleCache: Record<string, File> = {}
 
-// Handle IDs that exist in IndexedDB but haven't been granted permission yet
-const pendingFileHandleIds = new Set<string>()
-
-export function addPendingFileHandleId(id: string) {
-  pendingFileHandleIds.add(id)
-}
-
-export function getPendingFileHandleIds() {
-  return [...pendingFileHandleIds]
-}
-
-export async function restorePendingFileHandles() {
-  const ids = [...pendingFileHandleIds]
-  const results = await restoreFileHandles(ids, true)
-  for (const result of results) {
-    if (result.success) {
-      pendingFileHandleIds.delete(result.handleId)
-    }
-  }
-  return results
-}
-
 export function getFileFromCache(handleId: string) {
   return fileHandleCache[handleId]
 }

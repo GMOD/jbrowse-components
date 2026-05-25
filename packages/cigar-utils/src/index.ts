@@ -43,7 +43,6 @@ export {
   getMismatches,
   parseCigar2,
   parseCigar2Typed,
-  parseCigar,
 } from './mismatchParser.ts'
 export type {
   ClipMismatch,

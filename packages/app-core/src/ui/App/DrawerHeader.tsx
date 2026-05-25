@@ -45,7 +45,7 @@ const DrawerHeader = observer(function DrawerHeader({
   const widgetType = visibleWidget
     ? pluginManager.getWidgetType(visibleWidget.type)
     : undefined
-  const { helpText } = widgetType || {}
+  const { helpText } = widgetType ?? {}
 
   return (
     <AppBar
@@ -56,7 +56,7 @@ const DrawerHeader = observer(function DrawerHeader({
           : classes.headerUnfocused
       }
       ref={ref => {
-        setToolbarHeight(ref?.getBoundingClientRect().height || 0)
+        setToolbarHeight(ref?.getBoundingClientRect().height ?? 0)
       }}
     >
       <Toolbar disableGutters>

@@ -1,12 +1,10 @@
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import {
-  cast,
-  getSnapshot,
-  isStateTreeNode,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, getType, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+
+import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
+import { filterSessionInPlace } from '../sessionUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
@@ -75,6 +73,7 @@ export function BaseRootModelFactory({
       /**
        * #volatile
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       /**
        * #volatile
@@ -94,9 +93,27 @@ export function BaseRootModelFactory({
       },
       /**
        * #action
+       * Sets the active session. Remaps any legacy display type names
+       * (e.g. LinearPileupDisplay → LinearAlignmentsDisplay), then walks the
+       * resulting MST tree to drop undefined references in arrays/maps so
+       * shared sessions still load when referencing tracks/widgets that no
+       * longer exist. If filtering throws, the previous session is restored.
        */
       setSession(sessionSnapshot?: SnapshotIn<IAnyType>) {
-        self.session = cast(sessionSnapshot)
+        const oldSession = self.session
+        const migrated =
+          sessionSnapshot && typeof sessionSnapshot === 'object'
+            ? migrateSessionSnapshot(sessionSnapshot as Record<string, unknown>)
+            : sessionSnapshot
+        self.session = cast(migrated)
+        if (self.session) {
+          try {
+            filterSessionInPlace(self.session, getType(self.session))
+          } catch (error) {
+            self.session = oldSession
+            throw error
+          }
+        }
       },
       /**
        * #action
@@ -114,12 +131,12 @@ export function BaseRootModelFactory({
        * #action
        */
       renameCurrentSession(newName: string) {
-        if (self.session) {
-          this.setSession({
-            ...getSnapshot(self.session),
-            name: newName,
-          })
-        }
+        // Every concrete session model is composed from BaseSessionModel, which
+        // provides setName — avoid a full setSession rebuild here since the
+        // only field changing is `name`.
+        ;(
+          self.session as { setName?: (s: string) => void } | undefined
+        )?.setName?.(newName)
       },
     }))
 }

@@ -11,23 +11,6 @@ import { mdToMismatches2 } from './mdToMismatches2.ts'
 const startClip = new RegExp(/(\d+)[SH]$/)
 const endClip = new RegExp(/^(\d+)([SH])/)
 
-// Parses a CIGAR string to alternating [length, op] tokens, e.g.
-// '5M3I2D' → ['5','M','3','I','2','D']
-export function parseCigar(s = '') {
-  let currLen = ''
-  const ret = []
-  for (let i = 0, l = s.length; i < l; i++) {
-    const c = s[i]!
-    if (c >= '0' && c <= '9') {
-      currLen = currLen + c
-    } else {
-      ret.push(currLen, c)
-      currLen = ''
-    }
-  }
-  return ret
-}
-
 // CIGAR operation char codes to indices (from BAM spec)
 const CIGAR_CODE_TO_INDEX: Record<number, number> = {
   77: 0, // M
@@ -155,10 +138,11 @@ export function getClip(cigar: string, strand: number) {
 export function featurizeSA(
   SA: string | undefined,
   id: string,
-  strand: number,
-  readName: string,
+  strand: number | undefined,
+  readName: string | undefined,
   normalize?: boolean,
 ) {
+  const strandNum = strand ?? 1
   return (
     SA?.split(';')
       .filter(aln => !!aln)
@@ -171,11 +155,13 @@ export function featurizeSA(
         const saLengthOnRef = getLengthOnRef(saCigar)
         const saLength = getLength(saCigar)
         const saLengthSansClipping = getLengthSansClipping(saCigar)
-        const saStrandNormalized = saStrand === '-' ? -1 : 1
-        const saClipPos = getClip(
-          saCigar,
-          (normalize ? strand : 1) * saStrandNormalized,
-        )
+        const saStrandNormalized: -1 | 1 = saStrand === '-' ? -1 : 1
+        const effectiveStrand: -1 | 1 = normalize
+          ? strandNum === saStrandNormalized
+            ? 1
+            : -1
+          : saStrandNormalized
+        const saClipPos = getClip(saCigar, effectiveStrand)
         const saRealStart = +saStart - 1
         return {
           refName: saRef,
@@ -184,7 +170,7 @@ export function featurizeSA(
           seqLength: saLength,
           clipLengthAtStartOfRead: saClipPos,
           CIGAR: saCigar,
-          strand: ((normalize ? strand : 1) * saStrandNormalized) as -1 | 1,
+          strand: effectiveStrand,
           uniqueId: `${id}_SA${index}`,
           mate: {
             start: saClipPos,

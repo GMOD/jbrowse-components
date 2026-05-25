@@ -37,7 +37,7 @@ const ViewContainerTitle = observer(function ViewContainerTitle({
         value={
           view.displayName ||
           // @ts-expect-error
-          `${view.assemblyNames?.map(r => assemblyManager.get(r)?.displayName).join(',') || 'Untitled view'}${
+          `${view.assemblyNames?.map(r => assemblyManager.getDisplayName(r)).join(',') || 'Untitled view'}${
             view.minimized ? ' (minimized)' : ''
           }`
         }

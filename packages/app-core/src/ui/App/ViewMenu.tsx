@@ -13,14 +13,16 @@ import { observer } from 'mobx-react'
 
 import { useDockview } from './DockviewContext.tsx'
 import { renameIds } from './copyView.ts'
-import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
+import {
+  type SessionWithDockviewLayout,
+  isSessionWithDockviewLayout,
+} from '../../DockviewLayout/index.ts'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type {
-  IconButtonProps as IconButtonPropsType,
-  SvgIconProps,
-} from '@mui/material'
+import type { SessionWithMultipleViews } from '@jbrowse/product-core'
+import type { SvgIconProps } from '@mui/material'
+
+type ViewMenuSession = SessionWithMultipleViews & SessionWithDockviewLayout
 
 function getPanelViewCount(session: unknown, viewId: string) {
   if (!isSessionWithDockviewLayout(session)) {
@@ -39,21 +41,9 @@ const ViewMenu = observer(function ViewMenu({
   IconProps,
 }: {
   model: IBaseViewModel
-  IconButtonProps?: IconButtonPropsType
   IconProps: SvgIconProps
 }) {
-  const session = getSession(model) as AbstractSessionModel & {
-    moveViewDown: (arg: string) => void
-    moveViewUp: (arg: string) => void
-    moveViewToBottom: (arg: string) => void
-    moveViewToTop: (arg: string) => void
-    moveViewUpInPanel: (arg: string) => void
-    moveViewDownInPanel: (arg: string) => void
-    moveViewToTopInPanel: (arg: string) => void
-    moveViewToBottomInPanel: (arg: string) => void
-    useWorkspaces: boolean
-    setUseWorkspaces: (arg: boolean) => void
-  }
+  const session = getSession(model) as unknown as ViewMenuSession
 
   const { moveViewToNewTab, moveViewToSplitRight } = useDockview()
   const usePanel = session.useWorkspaces && isSessionWithDockviewLayout(session)

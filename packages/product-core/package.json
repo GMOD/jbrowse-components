@@ -35,6 +35,7 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.8.7",
+    "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
     "copy-to-clipboard": "^4.0.2",
     "librpc-web-mod": "^2.1.1",

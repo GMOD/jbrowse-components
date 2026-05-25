@@ -8,9 +8,8 @@ export {
   getQueryColor,
   hashString,
   strandCigarColors,
-  syriColors,
 } from './colorUtils.ts'
-export type { ColorScheme, SyriType } from './colorUtils.ts'
+export type { ColorScheme } from './colorUtils.ts'
 export { default as SliderTooltip } from './SliderTooltip.tsx'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export { default as ImportSyntenyOpenCustomTrack } from './ImportSyntenyOpenCustomTrack.tsx'

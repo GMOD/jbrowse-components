@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, PluggableComponent } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import CloseIcon from '@mui/icons-material/Close'
@@ -36,9 +36,11 @@ const DrawerAppBar = observer(function DrawerAppBar({
   if (!visibleWidget) {
     return null
   }
-  const { HeadingComponent, heading } = pluginManager.getWidgetType(
-    visibleWidget.type,
-  )
+  const widgetType = pluginManager.getWidgetType(visibleWidget.type)
+  if (!widgetType) {
+    throw new Error(`unknown widget type ${visibleWidget.type}`)
+  }
+  const { HeadingComponent, heading } = widgetType
 
   return (
     <AppBar position="static">
@@ -70,15 +72,11 @@ const ModalWidget = observer(function ModalWidget({
   if (!visibleWidget) {
     return null
   }
-  const { ReactComponent } = pluginManager.getWidgetType(visibleWidget.type)
-  const Component = pluginManager.evaluateExtensionPoint(
-    'Core-replaceWidget',
-    ReactComponent,
-    {
-      session,
-      model: visibleWidget,
-    },
-  ) as React.FC<any> | undefined
+  const widgetType = pluginManager.getWidgetType(visibleWidget.type)
+  if (!widgetType) {
+    throw new Error(`unknown widget type ${visibleWidget.type}`)
+  }
+  const { ReactComponent } = widgetType
   return (
     <Dialog
       open
@@ -86,16 +84,21 @@ const ModalWidget = observer(function ModalWidget({
       maxWidth="xl"
       header={<DrawerAppBar onClose={onClose} session={session} />}
     >
-      {Component ? (
+      {ReactComponent ? (
         <Suspense fallback={<div>Loading...</div>}>
           <Paper className={classes.paper}>
-            <Component
-              model={visibleWidget}
-              session={session}
-              modal={true}
-              overrideDimensions={{
-                height: (window.innerHeight * 5) / 8,
-                width: 800,
+            <PluggableComponent
+              pluginManager={pluginManager}
+              name="Core-replaceWidget"
+              component={ReactComponent}
+              props={{
+                model: visibleWidget,
+                session,
+                modal: true,
+                overrideDimensions: {
+                  height: (window.innerHeight * 5) / 8,
+                  width: 800,
+                },
               }}
             />
           </Paper>

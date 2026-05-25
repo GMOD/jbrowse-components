@@ -57,19 +57,29 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         let hostUri: string | undefined
 
         try {
-          hostUri = new URL(url).origin
+          const urlObj = new URL(url)
+          const pathname = urlObj.pathname
+          const lastSlash = pathname.lastIndexOf('/')
+          const dirPath =
+            lastSlash !== -1
+              ? pathname.slice(0, Math.max(0, lastSlash + 1))
+              : '/'
+          hostUri = `${urlObj.origin}${dirPath}`
         } catch (e) {
           // ignore
         }
         const internetAccountSplit = internetAccountId.split('-')
         const configuration = {
           type: internetAccountSplit[0]!,
-          internetAccountId: internetAccountId,
+          internetAccountId,
           name: internetAccountSplit.slice(1).join('-'),
           description: '',
           domains: hostUri ? [hostUri] : [],
         }
-        const type = pluginManager.getInternetAccountType(configuration.type)!
+        const type = pluginManager.getInternetAccountType(configuration.type)
+        if (!type) {
+          throw new Error(`unknown internet account type ${configuration.type}`)
+        }
         const internetAccount = type.stateModel.create({
           ...initialSnapshot,
           type: configuration.type,
@@ -115,7 +125,14 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
             function internetAccountsAutorun() {
               const { jbrowse } = self as typeof self & BaseRootModel
               for (const internetAccount of jbrowse.internetAccounts) {
-                self.initializeInternetAccount(internetAccount)
+                if (
+                  !self.internetAccounts.some(
+                    a =>
+                      a.internetAccountId === internetAccount.internetAccountId,
+                  )
+                ) {
+                  self.initializeInternetAccount(internetAccount)
+                }
               }
             },
             { name: 'InternetAccounts' },

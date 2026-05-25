@@ -1,6 +1,5 @@
 export * from './ui/index.ts'
 export * from './HistoryManagement/index.ts'
-export * from './AppFocus/index.ts'
 export * from './JBrowseConfig/index.ts'
 export * from './JBrowseModel/index.ts'
 export * from './Assemblies/index.ts'

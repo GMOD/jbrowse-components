@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
-
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import { useFetch } from '@jbrowse/core/util'
 
 import { readConf } from './util.ts'
 
@@ -18,40 +17,31 @@ export default function FileInfoPanel({
   config: AnyConfigurationModel | Record<string, unknown>
   session: AbstractSessionModel
 }) {
-  const [error, setError] = useState<unknown>()
-  const [info, setInfo] = useState<FileInfo>()
   const { rpcManager } = session
-  const trackId = readConf(config, 'trackId') as string
+  const trackId = readConf<string>(config, 'trackId')
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        const adapterConfig = readConf(config, 'adapter')
-        const result = await rpcManager.call(trackId, 'CoreGetInfo', {
-          adapterConfig,
-        })
-        setInfo(result as FileInfo)
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      }
-    })()
-  }, [config, rpcManager, trackId])
+  const { data: info, error } = useFetch(
+    ['CoreGetInfo', trackId],
+    async () =>
+      (await rpcManager.call(trackId, 'CoreGetInfo', {
+        adapterConfig: readConf<Record<string, unknown>>(config, 'adapter'),
+      })) as FileInfo,
+  )
 
   const details =
     typeof info === 'string'
       ? {
           header: `<pre>${info
+            .replaceAll('&', '&amp;')
             .replaceAll('<', '&lt;')
             .replaceAll('>', '&gt;')}</pre>`,
         }
-      : info || {}
+      : (info ?? {})
 
   return (
     <BaseCard title="File info">
       {error ? (
-        <ErrorMessage error={error} />
+        <ErrorBanner error={error} />
       ) : info === undefined ? (
         <LoadingEllipses message="Loading file data" />
       ) : (

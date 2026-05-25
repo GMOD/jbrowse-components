@@ -10,9 +10,7 @@ import AppToolbar from './AppToolbar.tsx'
 import DialogQueue from './DialogQueue.tsx'
 import ViewsContainer from './ViewsContainer.tsx'
 
-import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui'
-import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
+import type { AppSession } from './types.ts'
 
 // lazies
 const DrawerWidget = lazy(() => import('./DrawerWidget.tsx'))
@@ -37,19 +35,9 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-interface Menu {
-  label: string
-  menuItems: JBMenuItem[]
-}
-
 interface Props {
   HeaderButtons?: React.ReactElement
-  session: SessionWithFocusedViewAndDrawerWidgets & {
-    menus: () => Menu[]
-    snackbarMessages: SnackbarMessage[]
-    renameCurrentSession: (arg: string) => void
-    popSnackbarMessage: () => unknown
-  }
+  session: AppSession
 }
 
 const LazyDrawerWidget = observer(function LazyDrawerWidget(props: Props) {
@@ -67,8 +55,8 @@ const App = observer(function App(props: Props) {
   const { minimized, visibleWidget, drawerWidth, drawerPosition } = session
   const drawerVisible = visibleWidget && !minimized
   const d = drawerVisible ? `[drawer] ${drawerWidth}px` : undefined
-  const grid =
-    drawerPosition === 'right' ? ['[main] 1fr', d] : [d, '[main] 1fr']
+  const main = '[main] minmax(0, 1fr)'
+  const grid = drawerPosition === 'right' ? [main, d] : [d, main]
 
   return (
     <div

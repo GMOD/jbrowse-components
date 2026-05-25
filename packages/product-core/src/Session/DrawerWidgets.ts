@@ -16,6 +16,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 const minDrawerWidth = 128
+const minMainWidth = 150
 
 /**
  * #stateModel DrawerWidgetSessionMixin
@@ -63,7 +64,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       get visibleWidget() {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
-          return [...self.activeWidgets.values()][self.activeWidgets.size - 1]
+          return [...self.activeWidgets.values()].at(-1)
         }
         return undefined
       },
@@ -74,22 +75,15 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        */
       setDrawerPosition(arg: string) {
         self.drawerPosition = arg
-        localStorage.setItem('drawerPosition', arg)
       },
 
       /**
        * #action
        */
       updateDrawerWidth(drawerWidth: number) {
-        if (drawerWidth === self.drawerWidth) {
-          return self.drawerWidth
-        }
-        let newDrawerWidth = drawerWidth
-        if (newDrawerWidth < minDrawerWidth) {
-          newDrawerWidth = minDrawerWidth
-        }
-        self.drawerWidth = newDrawerWidth
-        return newDrawerWidth
+        const max = window.innerWidth - minMainWidth
+        self.drawerWidth = Math.min(Math.max(drawerWidth, minDrawerWidth), max)
+        return self.drawerWidth
       },
 
       /**
@@ -136,13 +130,6 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         }
         self.activeWidgets.set(widget.id, widget)
         self.minimized = false
-      },
-
-      /**
-       * #action
-       */
-      hasWidget(widget: WidgetStateModel) {
-        return self.activeWidgets.has(widget.id)
       },
 
       /**

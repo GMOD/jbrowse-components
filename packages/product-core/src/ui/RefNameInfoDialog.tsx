@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import { useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogContent } from '@mui/material'
+import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
 import { readConf } from './util.ts'
@@ -24,6 +26,22 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+function formatRefNames(
+  data: readonly (readonly [string, string[]])[],
+  truncate: boolean,
+) {
+  return data
+    .flatMap(([assemblyName, names]) => [
+      `--- ${assemblyName} ---`,
+      ...(truncate ? names.slice(0, MAX_REF_NAMES) : names),
+      truncate && names.length > MAX_REF_NAMES
+        ? `\nToo many refNames to show in browser for ${assemblyName}, use "Copy ref names" button to copy to clipboard`
+        : '',
+    ])
+    .filter(s => s !== '')
+    .join('\n')
+}
+
 const RefNameInfoDialog = observer(function RefNameInfoDialog({
   config,
   session,
@@ -34,50 +52,30 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   onClose: () => void
 }) {
   const { classes } = useStyles()
-  const [error, setError] = useState<unknown>()
-  const [refNames, setRefNames] = useState<Record<string, string[]>>()
   const [copied, setCopied] = useState(false)
   const { rpcManager } = session
-  const trackId = readConf(config, 'trackId') as string
-  const assemblyNames = readConf(config, 'assemblyNames') as string[]
+  const trackId = readConf<string>(config, 'trackId')
+  const assemblyNames = readConf<string[]>(config, 'assemblyNames')
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        const map = await Promise.all(
-          [...new Set(assemblyNames)].map(async assemblyName => {
-            const adapterConfig = readConf(config, 'adapter')
-            return [
+  const { data: refNames, error } = useFetch(
+    ['CoreGetRefNames', trackId, JSON.stringify(assemblyNames)],
+    () =>
+      Promise.all(
+        [...new Set(assemblyNames)].map(
+          async assemblyName =>
+            [
               assemblyName,
-              (await rpcManager.call(trackId, 'CoreGetRefNames', {
-                adapterConfig,
+              await rpcManager.call(trackId, 'CoreGetRefNames', {
+                adapterConfig: readConf<Record<string, unknown>>(
+                  config,
+                  'adapter',
+                ),
                 assemblyName,
-              })) as string[],
-            ] as const
-          }),
-        )
-        setRefNames(Object.fromEntries(map))
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      }
-    })()
-  }, [config, rpcManager, trackId, assemblyNames])
-
-  const names = refNames ? Object.entries(refNames) : []
-  const result = names
-    .flatMap(([assemblyName, refNames]) => {
-      return [
-        `--- ${assemblyName} ---`,
-        ...refNames.slice(0, MAX_REF_NAMES),
-        refNames.length > MAX_REF_NAMES
-          ? `\nToo many refNames to show in browser for ${assemblyName}, use "Copy ref names" button to copy to clipboard`
-          : '',
-      ]
-    })
-    .filter(f => !!f)
-    .join('\n')
+              }),
+            ] as const,
+        ),
+      ),
+  )
 
   return (
     <Dialog
@@ -88,7 +86,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
     >
       <DialogContent className={classes.container}>
         {error ? (
-          <ErrorMessage error={error} />
+          <ErrorBanner error={error} />
         ) : refNames === undefined ? (
           <LoadingEllipses message="Loading refNames" />
         ) : (
@@ -96,16 +94,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
             <Button
               variant="contained"
               onClick={async () => {
-                const { default: copy } = await import('copy-to-clipboard')
-                await copy(
-                  names
-                    .flatMap(([assemblyName, refNames]) => [
-                      `--- ${assemblyName} ---`,
-                      ...refNames,
-                    ])
-                    .filter(f => !!f)
-                    .join('\n'),
-                )
+                await copy(formatRefNames(refNames, false))
                 setCopied(true)
                 setTimeout(() => {
                   setCopied(false)
@@ -115,7 +104,9 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
               {copied ? 'Copied to clipboard!' : 'Copy ref names'}
             </Button>
 
-            <pre className={classes.refNames}>{result}</pre>
+            <pre className={classes.refNames}>
+              {formatRefNames(refNames, true)}
+            </pre>
           </>
         )}
       </DialogContent>

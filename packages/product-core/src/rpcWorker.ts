@@ -100,6 +100,7 @@ export async function initializeWorker(
     )
 
     self.rpcServer = new RpcServer(rpcConfig)
+
     postMessage({ message: 'ready' })
   } catch (e) {
     postMessage({ message: 'error', error: serializeError(e) })
