@@ -9,9 +9,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export default function createModel({
   runtimePlugins,
-  makeWorkerInstance = () => {
-    throw new Error('no makeWorkerInstance supplied')
-  },
+  makeWorkerInstance,
 }: {
   runtimePlugins: PluginConstructor[]
   makeWorkerInstance?: () => Worker

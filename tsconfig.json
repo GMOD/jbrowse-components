@@ -31,6 +31,7 @@
     "**/embedded_demos/",
     "**/component_tests/",
     "**/website",
-    "products/jbrowse-desktop/test"
+    "products/jbrowse-desktop/test",
+    "products/jbrowse-desktop/electron"
   ]
 }

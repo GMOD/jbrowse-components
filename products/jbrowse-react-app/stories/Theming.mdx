@@ -7,7 +7,11 @@ import { DarkTheme } from './JBrowseReactApp.stories'
 
 Configure via `configuration.theme` in the config object, following
 [MUI theme palette](https://mui.com/material-ui/customization/theming/)
-conventions:
+conventions. See the
+[theming guide](https://jbrowse.org/jb2/docs/config_guides/theme/) for the full
+set of options including DNA base colors:
+
+> > > > > > > origin/main
 
 ```js
 createViewState({
@@ -15,7 +19,7 @@ createViewState({
     configuration: {
       theme: {
         palette: {
-          mode: 'dark', // dark mode
+          mode: 'dark',
           primary: { main: '#4d9221' },
           secondary: { main: '#c51b7d' },
         },

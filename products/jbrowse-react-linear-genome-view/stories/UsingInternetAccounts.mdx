@@ -1,17 +1,19 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks'
 import { WithInternetAccounts } from './JBrowseLinearGenomeView.stories'
 
-<Meta title="Using InternetAccounts" />
+<Meta title="Internet Accounts" />
 
 # Internet accounts
 
-"Internet accounts" are used to access authenticated resources or override the
-fetch behavior of the app. Available since v2.2.1 of
-`@jbrowse/react-linear-genome-view2`.
+_Internet accounts_ are JBrowse's mechanism for accessing authenticated
+resources or otherwise overriding `fetch` behavior on a per-track basis.
 
-## Using InternetAccounts
+The most common use case is supplying a bearer token for protected files (Google
+Drive, S3 with signed URLs, internal endpoints behind auth). Track configs
+reference an account by `internetAccountId`, and the matching account decorates
+outgoing requests.
 
-InternetAccount configurations are passed to `createViewState` like this:
+## Configuration
 
 ```js
 const state = createViewState({
@@ -30,26 +32,23 @@ const state = createViewState({
 })
 ```
 
-Then any file location in your tracks that specifies an `internetAccountId` of
-"manualGoogleEntry" will use the specified InternetAccount.
+Any track with `internetAccountId: 'manualGoogleEntry'` on its file locations
+will route through this account, which prompts the user for a token and adds an
+`Authorization: Bearer <token>` header to each request.
 
 <Story of={WithInternetAccounts} />
 
-The above example lets the user manually enter a token already retrieved
-elsewhere. An "Authorization" header is then set on any request to that resource
-with a value of `Bearer <token>`.
+## OAuth and embedded mode
 
-## Notes
+`DropboxOAuthInternetAccount` and `GoogleDriveOAuthInternetAccount` are **not
+supported** in the embedded LGV — they require the app-level control over
+redirects and popups that only the full JBrowse Web app provides. If you need
+OAuth in an embedded context, run the auth flow in your host app and pass the
+resulting token to `ExternalTokenInternetAccount`.
 
-Normally, internet accounts are used for external third-party resources. For
-internal authenticated resources you'll more likely be authenticated via
-cookies.
+## Beyond authentication
 
-Note that JBrowse's `DropboxOAuthInternetAccount` and
-`GoogleDriveOAuthInternetAccount` won't work here because
-`@jbrowse/react-linear-genome-view2` lacks the app-level control needed to
-execute an OAuth 2.0 login flow.
-
-InternetAccounts can also be useful for non-external resources — for example, a
-custom InternetAccount can override the `fetch` behavior of a track to control
-where and how data is retrieved.
+Although the name suggests external services, internet accounts are a general
+way to override `fetch`. A custom account type can rewrite URLs, add caching
+layers, or proxy requests through your own backend — useful any time a
+particular track needs different network behavior than the rest.

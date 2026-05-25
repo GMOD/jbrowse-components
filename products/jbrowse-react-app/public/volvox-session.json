@@ -28,54 +28,13 @@
               {
                 "id": "CGblPB7sB0",
                 "type": "LinearAlignmentsDisplay",
-                "PileupDisplay": {
-                  "id": "-e5dnsVVio",
-                  "type": "LinearPileupDisplay",
-                  "height": 100,
-                  "configuration": {
-                    "type": "LinearPileupDisplay",
-                    "displayId": "volvox-long-reads-sv-bam-LinearAlignmentsDisplay_pileup_xyz",
-                    "renderers": {
-                      "PileupRenderer": {
-                        "type": "PileupRenderer"
-                      },
-                      "SvgFeatureRenderer": {
-                        "type": "SvgFeatureRenderer"
-                      }
-                    }
-                  },
-                  "showSoftClipping": false,
-                  "filterBy": {
-                    "flagInclude": 0,
-                    "flagExclude": 1536
-                  }
-                },
-                "SNPCoverageDisplay": {
-                  "id": "0VBrBd-Eh2",
-                  "type": "LinearSNPCoverageDisplay",
-                  "height": 45,
-                  "configuration": {
-                    "type": "LinearSNPCoverageDisplay",
-                    "displayId": "volvox-long-reads-sv-bam-LinearAlignmentsDisplay_snpcoverage_xyz",
-                    "renderers": {
-                      "SNPCoverageRenderer": {
-                        "type": "SNPCoverageRenderer"
-                      }
-                    }
-                  },
-                  "selectedRendering": "",
-                  "resolution": 1,
-                  "constraints": {},
-                  "filterBy": {
-                    "flagInclude": 0,
-                    "flagExclude": 1536
-                  }
-                },
-                "snpCovHeight": 45,
                 "configuration": "volvox-long-reads-sv-bam-LinearAlignmentsDisplay",
                 "height": 250,
                 "showCoverage": true,
-                "showPileup": true
+                "filterBySetting": {
+                  "flagInclude": 0,
+                  "flagExclude": 1536
+                }
               }
             ]
           }

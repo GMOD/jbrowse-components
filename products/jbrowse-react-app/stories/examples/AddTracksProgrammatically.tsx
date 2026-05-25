@@ -52,6 +52,9 @@ export const AddTracksProgrammatically = () => {
       >
         {added ? 'Genes track added' : 'Add genes track'}
       </button>
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/AddTracksProgrammatically.tsx">
+        Source code
+      </a>
       <JBrowseApp viewState={state} />
     </div>
   )

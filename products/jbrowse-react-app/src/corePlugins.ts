@@ -17,7 +17,6 @@ import HicPlugin from '@jbrowse/plugin-hic'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
-import Lollipop from '@jbrowse/plugin-lollipop'
 import Menus from '@jbrowse/plugin-menus'
 import RDF from '@jbrowse/plugin-rdf'
 import Sequence from '@jbrowse/plugin-sequence'
@@ -41,7 +40,6 @@ const corePlugins = [
   Gff3,
   LegacyJBrowse,
   LinearComparativeView,
-  Lollipop,
   Menus,
   RDF,
   Sequence,

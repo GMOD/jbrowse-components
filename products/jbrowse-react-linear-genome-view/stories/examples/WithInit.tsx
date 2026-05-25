@@ -1,10 +1,18 @@
+/**
+ * Initialization with Real Genome Data
+ *
+ * Shows how to configure the view at startup using the init field:
+ * - Specific location (loc)
+ * - Assembly name
+ * - Tracks to display
+ * Uses human GRCh38 genome with real RefSeq gene track.
+ */
+
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-// in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 import type { ViewModel } from '../../src/index.ts'
@@ -16,7 +24,7 @@ const ViewWithErrorHandling = observer(function ViewWithErrorHandling({
 }) {
   const error = state.session.view.error
   if (error) {
-    return <ErrorMessage error={error} />
+    return <ErrorBanner error={error} />
   }
   return <JBrowseLinearGenomeView viewState={state} />
 })

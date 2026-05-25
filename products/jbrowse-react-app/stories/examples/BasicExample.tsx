@@ -76,5 +76,12 @@ export const BasicExample = () => {
     }),
   )
 
-  return <JBrowseApp viewState={state} />
+  return (
+    <>
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/BasicExample.tsx">
+        Source code
+      </a>
+      <JBrowseApp viewState={state} />
+    </>
+  )
 }

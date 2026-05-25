@@ -12,16 +12,23 @@ export const WithFetchConfigJson = () => {
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
-      const url = 'test_data/volvox/config.json'
-      const response = await fetch(url)
+      const configPath = 'test_data/volvox/config.json'
+      const response = await fetch(configPath)
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status} fetching config ${url}`)
+        throw new Error(`HTTP ${response.status} fetching config ${configPath}`)
       }
       const config = await response.json()
-      addRelativeUris(config, new URL(url, window.location.href).href)
+      addRelativeUris(config, new URL(configPath, window.location.href).href)
       setState(createViewState({ config }))
     })()
   }, [])
 
-  return state ? <JBrowseApp viewState={state} /> : null
+  return state ? (
+    <>
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/WithFetchConfigJson.tsx">
+        Source code
+      </a>
+      <JBrowseApp viewState={state} />
+    </>
+  ) : null
 }

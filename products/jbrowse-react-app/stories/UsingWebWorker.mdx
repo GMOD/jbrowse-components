@@ -23,6 +23,12 @@ const state = createViewState({
 
 <Story of={WithWebWorker} />
 
-If workers don't resolve correctly in webpack, set `"publicPath":"auto"` in your
-webpack config
-[(see this issue)](https://github.com/webpack/webpack/issues/13791#issuecomment-897579223).
+## Bundler notes
+
+**Webpack** — set `output.publicPath: 'auto'` so the worker resolves its own
+URL. See
+[this comment](https://github.com/webpack/webpack/issues/13791#issuecomment-897579223)
+and the [official guide](https://webpack.js.org/guides/web-workers/).
+
+**Vite** — the worker is constructed via
+`new Worker(new URL(...), { type: 'module' })`, which Vite handles natively.

@@ -70,7 +70,7 @@ test('<JBrowseLinearGenomeView /> renders successfully', async () => {
     (getByPlaceholderText('Search for location') as HTMLInputElement).value
   await waitFor(
     () => {
-      expect(getAllByTestId('sequence_track').length).toBe(2)
+      expect(getAllByTestId('sequence-display').length).toBe(1)
     },
     {
       timeout,

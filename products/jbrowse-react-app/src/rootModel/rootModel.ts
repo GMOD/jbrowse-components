@@ -1,45 +1,35 @@
-import { RootAppMenuMixin, processMutableMenuActions } from '@jbrowse/app-core'
+import {
+  JBrowseModelF,
+  RootAppMenuMixin,
+  processMutableMenuActions,
+} from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable } from '@jbrowse/core/ui/Icons'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  getType,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
+import { PreferencesDialog } from '@jbrowse/web-core'
 import AddIcon from '@mui/icons-material/Add'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
+import SettingsIcon from '@mui/icons-material/Settings'
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StorageIcon from '@mui/icons-material/Storage'
 import { autorun } from 'mobx'
 
-import jbrowseWebFactory from '../jbrowseModel.ts'
-import { filterSessionInPlace } from '../util.ts'
 import { version } from '../version.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
-  SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
-import type { BaseSessionType } from '@jbrowse/product-core'
-
-export interface Menu {
-  label: string
-  menuItems: MenuItem[]
-}
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
 type SessionModelFactory = (args: {
@@ -75,7 +65,7 @@ export default function RootModel({
     .compose(
       BaseRootModelFactory({
         pluginManager,
-        jbrowseModelType: jbrowseWebFactory({
+        jbrowseModelType: JBrowseModelF({
           pluginManager,
           assemblyConfigSchema,
         }),
@@ -118,6 +108,8 @@ export default function RootModel({
       /**
        * #volatile
        */
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
     }))
     .actions(self => {
@@ -139,47 +131,21 @@ export default function RootModel({
         /**
          * #action
          */
-        setSession(sessionSnapshot?: SnapshotIn<BaseSessionType>) {
-          const oldSession = self.session
-          self.session = cast(sessionSnapshot)
-          if (self.session) {
-            // validate all references in the session snapshot
-            try {
-              filterSessionInPlace(self.session, getType(self.session))
-            } catch (error) {
-              // throws error if session filtering failed
-              self.session = oldSession
-              throw error
-            }
-          }
-        },
-
-        /**
-         * #action
-         */
         setPluginsUpdated(flag: boolean) {
           self.pluginsUpdated = flag
         },
         /**
          * #action
+         * BaseRootModel's setDefaultSession reuses defaultSession's literal
+         * name; react-app instead timestamps it so multiple "new sessions"
+         * don't collide.
          */
         setDefaultSession() {
           const { defaultSession } = self.jbrowse
-          this.setSession({
+          self.setSession({
             ...defaultSession,
             name: `${defaultSession.name} ${new Date().toLocaleString()}`,
           })
-        },
-        /**
-         * #action
-         */
-        renameCurrentSession(sessionName: string) {
-          if (self.session) {
-            this.setSession({
-              ...getSnapshot(self.session),
-              name: sessionName,
-            })
-          }
         },
 
         /**
@@ -203,9 +169,8 @@ export default function RootModel({
                 {
                   label: 'New session',
                   icon: AddIcon,
-
-                  onClick: (session: any) => {
-                    session.setDefaultSession()
+                  onClick: () => {
+                    self.setDefaultSession()
                   },
                 },
                 {
@@ -248,7 +213,7 @@ export default function RootModel({
                   onClick: (session: SessionWithWidgets) => {
                     if (session.views.length === 0) {
                       session.notify('Please open a view to add a track first')
-                    } else if (session.views.length > 0) {
+                    } else {
                       const widget = session.addWidget(
                         'AddTrackWidget',
                         'addTrackWidget',
@@ -283,6 +248,20 @@ export default function RootModel({
             {
               label: 'Tools',
               menuItems: [
+                {
+                  label: 'Preferences',
+                  icon: SettingsIcon,
+                  onClick: () => {
+                    self.session?.queueDialog((handleClose: () => void) => [
+                      PreferencesDialog,
+                      {
+                        session: self.session,
+                        pluginManager,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
                 {
                   label: 'Use workspaces',
                   icon: SpaceDashboardIcon,

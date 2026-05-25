@@ -1,26 +1,19 @@
-import { lazy } from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
-  DialogQueueSessionMixin,
   DrawerWidgetSessionMixin,
   ReferenceManagementSessionMixin,
   SessionTracksManagerSessionMixin,
-  TracksManagerSessionMixin,
+  TrackMenuSessionMixin,
 } from '@jbrowse/product-core'
-import InfoIcon from '@mui/icons-material/Info'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
-
-const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewSessionModel
@@ -28,8 +21,6 @@ const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
  * - [BaseSessionModel](../basesessionmodel)
  * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
  * - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
- * - [DialogQueueSessionMixin](../dialogqueuesessionmixin)
- * - [TracksManagerSessionMixin](../tracksmanagersessionmixin)
  * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
  * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
  * - [SnackbarModel](../snackbarmodel)
@@ -43,24 +34,18 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       BaseSessionModel(pluginManager),
       DrawerWidgetSessionMixin(pluginManager),
       ConnectionManagementSessionMixin(pluginManager),
-      DialogQueueSessionMixin(pluginManager),
-      TracksManagerSessionMixin(pluginManager),
       ReferenceManagementSessionMixin(pluginManager),
       SessionTracksManagerSessionMixin(pluginManager),
+      TrackMenuSessionMixin(pluginManager),
       SnackbarModel(),
     )
     .props({
       /**
        * #property
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel,
-      /**
-       * #property
-       */
-      sessionTracks: types.array(
-        pluginManager.pluggableConfigSchemaType('track'),
-      ),
     })
     .views(self => ({
       /**
@@ -133,29 +118,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       removeView() {},
-    }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      getTrackActionMenuItems(
-        config: any,
-        extraTrackActions?: MenuItem[],
-      ): MenuItem[] {
-        return [
-          {
-            label: 'About track',
-            onClick: () => {
-              self.queueDialog(doneCallback => [
-                AboutDialog,
-                { config, session: self, handleClose: doneCallback },
-              ])
-            },
-            icon: InfoIcon,
-          },
-          ...(extraTrackActions || []),
-        ]
-      },
     }))
 }
 

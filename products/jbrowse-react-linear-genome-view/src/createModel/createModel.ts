@@ -51,6 +51,10 @@ export default function createModel(
       /**
        * #property
        */
+      drawerViewHeight: types.optional(types.string, '100vh'),
+      /**
+       * #property
+       */
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
@@ -59,6 +63,7 @@ export default function createModel(
       /**
        * #volatile
        */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       /**
        * #volatile
@@ -93,10 +98,7 @@ export default function createModel(
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        this.setSession({
-          ...JSON.parse(JSON.stringify(getSnapshot(self.session))),
-          name: sessionName,
-        })
+        this.setSession({ ...getSnapshot(self.session), name: sessionName })
       },
       /**
        * #action

@@ -357,6 +357,14 @@ export function bpSpanPx(
   return region.reversed ? ([end, start] as const) : ([start, end] as const)
 }
 
+export function featureSpanPx(
+  feature: { get: (key: string) => number },
+  region: MinimalRegion,
+  bpPerPx: number,
+) {
+  return bpSpanPx(feature.get('start'), feature.get('end'), region, bpPerPx)
+}
+
 // do an array map of an iterable
 export function iterMap<T, U>(
   iter: Iterable<T>,

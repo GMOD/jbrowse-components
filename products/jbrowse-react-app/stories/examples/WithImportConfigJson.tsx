@@ -11,5 +11,12 @@ addRelativeUris(config, new URL(configPath, window.location.href).href)
 
 export const WithImportConfigJson = () => {
   const [state] = useState(() => createViewState({ config }))
-  return <JBrowseApp viewState={state} />
+  return (
+    <>
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/WithImportConfigJson.tsx">
+        Source code
+      </a>
+      <JBrowseApp viewState={state} />
+    </>
+  )
 }

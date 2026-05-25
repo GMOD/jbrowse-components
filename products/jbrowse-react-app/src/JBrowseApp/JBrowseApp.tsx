@@ -1,7 +1,6 @@
 import { Suspense, lazy } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
-import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -24,11 +23,10 @@ const JBrowseApp = observer(function JBrowseApp({
   viewState: ViewModel
 }) {
   const { classes } = useStyles()
-  const session = viewState.session
-  const theme = createJBrowseTheme(getConf(viewState.jbrowse, 'theme'))
+  const { session } = viewState
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={session.theme}>
       <div className={classes.avoidParentStyle}>
         <ScopedCssBaseline>
           <Suspense fallback={<LoadingEllipses />}>

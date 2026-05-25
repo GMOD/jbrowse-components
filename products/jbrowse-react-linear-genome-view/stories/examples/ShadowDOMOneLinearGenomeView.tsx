@@ -40,8 +40,8 @@ const ShadowComponent = () => {
     // defaultProps.container note
     setConfig(
       createViewState({
-        assembly: assembly,
-        tracks: tracks,
+        assembly,
+        tracks,
         location: 'ctgA:1105..1221',
         configuration: {
           theme: {
@@ -77,9 +77,6 @@ const ShadowComponent = () => {
                 defaultProps: {
                   container: () => nodeForPin.current,
                 },
-              },
-              MuiPaper: {
-                defaultProps: () => nodeForPin.current,
               },
             },
           },

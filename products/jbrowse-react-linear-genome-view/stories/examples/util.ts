@@ -23,11 +23,7 @@ export function getVolvoxConfig() {
     'WiggleTrack',
   ])
 
-  const excludeIds = new Set([
-    'gtf_plain_text_test',
-    'lollipop_track',
-    'arc_track',
-  ])
+  const excludeIds = new Set(['gtf_plain_text_test', 'arc_track'])
 
   return {
     assembly: config.assemblies[0],

@@ -1,5 +1,10 @@
-// in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
+/**
+ * Custom Theme
+ *
+ * Demonstrates theming by customizing colors for UI elements and DNA bases.
+ * Shows Material-UI palette configuration for primary, secondary, and base colors.
+ */
+
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 

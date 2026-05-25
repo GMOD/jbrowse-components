@@ -35,5 +35,12 @@ export const WithWebWorker = () => {
     }),
   )
 
-  return <JBrowseApp viewState={state} />
+  return (
+    <>
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/WithWebWorker.tsx">
+        Source code
+      </a>
+      <JBrowseApp viewState={state} />
+    </>
+  )
 }

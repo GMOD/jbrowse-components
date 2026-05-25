@@ -1,13 +1,18 @@
 /* eslint-disable no-console */
 
-// in your code:
-// import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+/**
+ * Basic Linear Genome View
+ *
+ * The simplest example showing a genome view with tracks and initial location.
+ * Shows how to: set up assembly, load tracks, navigate to a region, monitor changes.
+ */
+
 import { getVolvoxConfig } from './util.ts'
-import { JBrowseLinearGenomeView, useCreateViewState } from '../../src/index.ts'
+import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 export const OneLinearGenomeView = () => {
   const { assembly, tracks } = getVolvoxConfig()
-  const state = useCreateViewState({
+  const state = createViewState({
     assembly,
     tracks,
     // use 1-based coordinates for locstring

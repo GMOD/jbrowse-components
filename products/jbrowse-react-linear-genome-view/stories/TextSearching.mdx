@@ -8,53 +8,64 @@ import {
 
 # Text searching
 
-## Aggregate search index
+JBrowse can resolve gene symbols and other feature names typed into the location
+box, jumping the view to matching features. This requires a prebuilt search
+index (a `trix` file generated from the track's GFF or VCF data).
 
-An aggregate search index covers multiple tracks, configured via
-`aggregateTextSearchAdapters` (usually a single entry, but multiple are
-supported).
+There are two flavors:
+
+- **Aggregate index** — covers multiple tracks in a single index. Best when you
+  want one global search across all annotation.
+- **Per-track index** — one index per track, opened only when that track is
+  loaded. Best when tracks are added/removed dynamically.
+
+## Aggregate
+
+Pass `aggregateTextSearchAdapters` to `createViewState`. Most apps need only a
+single entry, but multiple are supported.
 
 <Story of={WithAggregateTextSearching} />
 
-## Per-track search index
+## Per-track
 
-Per-track search indexes contain information for a single track.
+Per-track indexes attach to the track config rather than the top-level view
+config:
 
 <Story of={WithPerTrackTextSearching} />
 
-## Preparing indexes
+## Building indexes
 
-In embedded mode, `jbrowse text-index` normally expects a config.json, but
-embedded apps often don't have one. Use the `--file` argument instead.
+In embedded mode you usually don't have a `config.json`, so use the `--file`
+form of `jbrowse text-index`:
 
-### Preparing aggregate search indexes
-
-If you use the `jbrowse text-index` command with the --file argument, you can
-create an aggregate index. E.g.
+### Aggregate
 
 ```sh
-jbrowse text-index --file file1.gff.gz --fileId trackid_of_file1 --file file2.vcf.gz --fileId track_id_of_file2
+jbrowse text-index \
+  --file file1.gff.gz --fileId trackid_of_file1 \
+  --file file2.vcf.gz --fileId trackid_of_file2
 ```
 
-This outputs a `trix/` directory containing `aggregate.ix`, `aggregate.ixx`, and
-`aggregate_meta.json`, which you can reference in your embedded config. The
-`--fileId` should match the trackId used at runtime so the track opens
-automatically when a user selects a search result.
+This produces a `trix/` directory containing `aggregate.ix`, `aggregate.ixx`,
+and `aggregate_meta.json`. Reference it from `aggregateTextSearchAdapters` in
+your `createViewState` call.
 
-### Preparing per-track search indexes
+### Per-track
 
-For a single file, use:
+Same command, single file:
 
+```sh
+jbrowse text-index --file myfile.gff3.gz --fileId trackid_of_myfile
 ```
-jbrowse text-index --file myfile.gff3.gz --fileId track_id_of_myfile
-```
 
-This creates `myfile.gff3.gz.ix`, `myfile.gff3.gz.ixx`, and
-`myfile.gff3.gz_meta.json`. As with the aggregate case, `--fileId` should match
-the trackId used at runtime.
+Produces `myfile.gff3.gz.ix`, `myfile.gff3.gz.ixx`, and
+`myfile.gff3.gz_meta.json` next to the input.
 
-### Using a config file
+The `--fileId` should match the `trackId` you'll use at runtime — that's how a
+search hit knows which track to open.
 
-You can also run `jbrowse text-index` against a config.json from a jbrowse-web
-deployment, then copy the relevant sections (e.g. `aggregateTextSearchAdapters`)
-into your `createViewState` arguments.
+### Using an existing config
+
+If you already maintain a `config.json` for a JBrowse Web instance, you can run
+`jbrowse text-index` against it directly and copy the resulting
+`aggregateTextSearchAdapters` block into your embedded `createViewState` call.

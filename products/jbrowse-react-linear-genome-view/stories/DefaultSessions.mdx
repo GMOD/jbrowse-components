@@ -5,28 +5,21 @@ import { DefaultSession } from './JBrowseLinearGenomeView.stories'
 
 # Default sessions
 
-When using JBrowse 2, information about the current app state such as what views
-are open is stored in a session. It is possible to configure a JB2 app with a
-`defaultSession`, which will be loaded when the app first loads.
+A _session_ is JBrowse's runtime representation of "what's open" — which views,
+which tracks, which display settings. Passing `defaultSession` to
+`createViewState` restores that state on first paint.
 
-Here is an example LGV with a long reads alignment track loaded in the
-`defaultSession`:
+For most use cases — landing on a locus with a couple of tracks open — prefer
+the [`init` field](?path=/docs/initialization--docs), which is declarative and
+easier to author by hand. Reach for `defaultSession` when you need finer control
+over per-track display settings, or when you're round-tripping a session
+exported from JBrowse Web.
+
+The example below opens a long-reads alignments track via `defaultSession`:
 
 <Story of={DefaultSession} />
 
-## The `init` shorthand (recommended)
-
-For most cases the `init` field is the simplest way to set an initial location
-and open tracks. It is covered in detail in the
-[Getting Started](?path=/docs/getting-started--docs) guide. Use the full session
-format below only when you need precise control over display-level options.
-
-## Creating a full default session
-
-You can programmatically configure a `defaultSession`, but note that the session
-format is an internal representation and may be verbose.
-
-Here is the structure of the session:
+## Anatomy of a session
 
 ```js
 const defaultSession = {
@@ -35,38 +28,14 @@ const defaultSession = {
     id: 'linearGenomeView',
     type: 'LinearGenomeView',
     tracks: [
-      {
-        // the first track displayed
-      },
-      {
-        // the second track displayed
-      },
-      {
-        // ...
-      },
+      // open tracks, in render order
     ],
   },
 }
 ```
 
-The general outline for a track looks like this:
-
-```js
-{
-  type: '{the type of the track}',
-  configuration: '{the id of the track}',
-  displays: [
-    {
-      type: '{the type of the display}',
-      configuration:
-        '{id of the track}-{the type of the display}',
-    },
-  ],
-},
-```
-
-For example, to display a ReferenceSequenceTrack with the id
-`GRCh38-ReferenceSequenceTrack`, the track configuration would be:
+Each entry in `tracks` references a track configuration plus the display(s) you
+want active:
 
 ```js
 {
@@ -82,23 +51,26 @@ For example, to display a ReferenceSequenceTrack with the id
 }
 ```
 
-## Exporting sessions from JBrowse Web/Desktop for use in @jbrowse/react-linear-genome-view2
+The `configuration` strings are the `trackId` (or `displayId`) of the matching
+entry in `tracks` / its `displays` array.
 
-A useful way to build default sessions is to configure the view interactively in
-JBrowse 2 and then export it (File → Export session). This exports a JSON file
-of the current session state, which you can adapt for the LGV component.
+## Exporting from JBrowse Web
 
-Load the tracks you want, open a single linear genome view, export the session,
-and save it as `session.json` in your app.
+The fastest way to get a working `defaultSession` is to build the view
+graphically in the main JBrowse Web app and export it:
 
-To use the view settings in your app, you can create the `defaultSession` like
-this:
+- Open a single linear genome view in JBrowse Web with the tracks and settings
+  you want.
+- Use **File → Export session** to download a `session.json`.
+- Drop the file into your app and pull out the view:
 
 ```js
 import session from './session.json'
 
 const defaultSession = {
-  name: 'My Session',
+  name: 'My session',
   view: session.session.views[0],
 }
 ```
+
+This avoids hand-authoring the deeply-nested track/display tree.

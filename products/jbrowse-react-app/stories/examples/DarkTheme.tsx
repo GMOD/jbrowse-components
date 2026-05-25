@@ -82,5 +82,12 @@ export const DarkTheme = () => {
     }),
   )
 
-  return <JBrowseApp viewState={state} />
+  return (
+    <>
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/DarkTheme.tsx">
+        Source code
+      </a>
+      <JBrowseApp viewState={state} />
+    </>
+  )
 }

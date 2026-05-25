@@ -20,63 +20,63 @@
   },
   "author": "JBrowse Team",
   "exports": {
-    "./assemblyManager": "./src/assemblyManager/index.ts",
-    "./assemblyManager/assembly": "./src/assemblyManager/assembly.ts",
-    "./assemblyManager/assemblyConfigSchema": "./src/assemblyManager/assemblyConfigSchema.ts",
     "./BaseFeatureWidget": "./src/BaseFeatureWidget/index.ts",
     "./BaseFeatureWidget/BaseFeatureDetail": "./src/BaseFeatureWidget/BaseFeatureDetail/index.tsx",
     "./BaseFeatureWidget/BaseFeatureDetail/Attributes": "./src/BaseFeatureWidget/BaseFeatureDetail/Attributes.tsx",
     "./BaseFeatureWidget/BaseFeatureDetail/BaseCard": "./src/BaseFeatureWidget/BaseFeatureDetail/BaseCard.tsx",
     "./BaseFeatureWidget/BaseFeatureDetail/FeatureDetails": "./src/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.tsx",
     "./BaseFeatureWidget/BaseFeatureDetail/SimpleField": "./src/BaseFeatureWidget/BaseFeatureDetail/SimpleField.tsx",
+    "./Plugin": "./src/Plugin.ts",
+    "./PluginLoader": "./src/PluginLoader.ts",
+    "./PluginManager": "./src/PluginManager.ts",
+    "./ReExports/list": "./src/ReExports/list.ts",
+    "./TextSearch/BaseResults": "./src/TextSearch/BaseResults.ts",
+    "./TextSearch/TextSearchManager": "./src/TextSearch/TextSearchManager.ts",
+    "./assemblyManager": "./src/assemblyManager/index.ts",
+    "./assemblyManager/assembly": "./src/assemblyManager/assembly.ts",
+    "./assemblyManager/assemblyConfigSchema": "./src/assemblyManager/assemblyConfigSchema.ts",
     "./configuration": "./src/configuration/index.ts",
+    "./configuration/configurationSchema": "./src/configuration/configurationSchema.ts",
     "./data_adapters/BaseAdapter": "./src/data_adapters/BaseAdapter/index.ts",
+    "./data_adapters/BaseAdapter/getAdapterId": "./src/data_adapters/BaseAdapter/getAdapterId.ts",
     "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
     "./data_adapters/BaseAdapter/types": "./src/data_adapters/BaseAdapter/types.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
-    "./gpu/blockClipUtils": "./src/gpu/blockClipUtils.ts",
-    "./gpu/canvas2dUtils": "./src/gpu/canvas2dUtils.ts",
-    "./gpu/createBackend": "./src/gpu/createBackend.ts",
-    "./gpu/gpuDevice": "./src/gpu/gpuDevice.ts",
     "./gpu/GpuLifecycleMixin": "./src/gpu/GpuLifecycleMixin.ts",
-    "./gpu/hal": "./src/gpu/hal/index.ts",
-    "./gpu/installPerRegionLifecycle": "./src/gpu/installPerRegionLifecycle.ts",
-    "./gpu/monolithicBackend": "./src/gpu/monolithicBackend.ts",
-    "./gpu/perRegionBackend": "./src/gpu/perRegionBackend.ts",
+    "./gpu/gpuDevice": "./src/gpu/gpuDevice.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
-    "./gpu/slangPass": "./src/gpu/slangPass.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
     "./pluggableElementTypes/DisplayType": "./src/pluggableElementTypes/DisplayType.ts",
+    "./pluggableElementTypes/GlyphType": "./src/pluggableElementTypes/GlyphType.ts",
     "./pluggableElementTypes/InternetAccountType": "./src/pluggableElementTypes/InternetAccountType.ts",
-    "./pluggableElementTypes/models": "./src/pluggableElementTypes/models/index.ts",
-    "./pluggableElementTypes/models/baseConnectionConfig": "./src/pluggableElementTypes/models/baseConnectionConfig.ts",
-    "./pluggableElementTypes/models/BaseViewModel": "./src/pluggableElementTypes/models/BaseViewModel.ts",
-    "./pluggableElementTypes/renderers/CircularChordRendererType": "./src/pluggableElementTypes/renderers/CircularChordRendererType.tsx",
-    "./pluggableElementTypes/renderers/FeatureRendererType": "./src/pluggableElementTypes/renderers/FeatureRendererType.ts",
-    "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
     "./pluggableElementTypes/RpcMethodType": "./src/pluggableElementTypes/RpcMethodType.ts",
     "./pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": "./src/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.ts",
     "./pluggableElementTypes/TextSearchAdapterType": "./src/pluggableElementTypes/TextSearchAdapterType.ts",
     "./pluggableElementTypes/TrackType": "./src/pluggableElementTypes/TrackType.ts",
     "./pluggableElementTypes/ViewType": "./src/pluggableElementTypes/ViewType.ts",
     "./pluggableElementTypes/WidgetType": "./src/pluggableElementTypes/WidgetType.ts",
-    "./Plugin": "./src/Plugin.ts",
-    "./PluginLoader": "./src/PluginLoader.ts",
-    "./PluginManager": "./src/PluginManager.ts",
-    "./rpc/coreRpcMethods": "./src/rpc/coreRpcMethods.ts",
-    "./rpc/methods/util": "./src/rpc/methods/util.ts",
+    "./pluggableElementTypes/models": "./src/pluggableElementTypes/models/index.ts",
+    "./pluggableElementTypes/models/BaseViewModel": "./src/pluggableElementTypes/models/BaseViewModel.ts",
+    "./pluggableElementTypes/models/baseConnectionConfig": "./src/pluggableElementTypes/models/baseConnectionConfig.ts",
+    "./pluggableElementTypes/renderers/BoxRendererType": "./src/pluggableElementTypes/renderers/BoxRendererType.ts",
+    "./pluggableElementTypes/renderers/CircularChordRendererType": "./src/pluggableElementTypes/renderers/CircularChordRendererType.tsx",
+    "./pluggableElementTypes/renderers/FeatureRendererType": "./src/pluggableElementTypes/renderers/FeatureRendererType.ts",
+    "./pluggableElementTypes/renderers/LayoutSession": "./src/pluggableElementTypes/renderers/LayoutSession.ts",
+    "./pluggableElementTypes/renderers/RendererType": "./src/pluggableElementTypes/renderers/RendererType.tsx",
+    "./pluggableElementTypes/renderers/ServerSideRendererType": "./src/pluggableElementTypes/renderers/ServerSideRendererType.ts",
+    "./pluggableElementTypes/renderers/util": "./src/pluggableElementTypes/renderers/util.ts",
+    "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
     "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
-    "./TextSearch/BaseResults": "./src/TextSearch/BaseResults.ts",
-    "./TextSearch/TextSearchManager": "./src/TextSearch/TextSearchManager.ts",
+    "./rpc/coreRpcMethods": "./src/rpc/coreRpcMethods.ts",
+    "./rpc/methods/util": "./src/rpc/methods/util.ts",
     "./ui": "./src/ui/index.ts",
     "./ui/AppLogo": "./src/ui/AppLogo.tsx",
     "./ui/BaseTooltip": "./src/ui/BaseTooltip.tsx",
     "./ui/CascadingMenuButton": "./src/ui/CascadingMenuButton.tsx",
     "./ui/ColorPicker": "./src/ui/ColorPicker.tsx",
-    "./ui/colors": "./src/ui/colors.ts",
     "./ui/ConfirmDialog": "./src/ui/ConfirmDialog.tsx",
     "./ui/DataGridFlexContainer": "./src/ui/DataGridFlexContainer.tsx",
     "./ui/Dialog": "./src/ui/Dialog.tsx",
@@ -85,22 +85,26 @@
     "./ui/EditableTypography": "./src/ui/EditableTypography.tsx",
     "./ui/ErrorBoundary": "./src/ui/ErrorBoundary.tsx",
     "./ui/ErrorMessageStackTraceDialog": "./src/ui/ErrorMessageStackTraceDialog.tsx",
-    "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
     "./ui/Icons": "./src/ui/Icons.tsx",
     "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
     "./ui/Logo": "./src/ui/Logo.tsx",
     "./ui/Menu": "./src/ui/Menu.tsx",
     "./ui/ResizeHandle": "./src/ui/ResizeHandle.tsx",
+    "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
+    "./ui/colors": "./src/ui/colors.ts",
     "./ui/theme": "./src/ui/theme.ts",
-    "./ui/useGraphicsCapabilities": "./src/ui/useGraphicsCapabilities.ts",
     "./util": "./src/util/index.ts",
-    "./util/aborting": "./src/util/aborting.ts",
-    "./util/analytics": "./src/util/analytics.ts",
     "./util/Base1DUtils": "./src/util/Base1DUtils.ts",
     "./util/Base1DViewModel": "./src/util/Base1DViewModel.ts",
+    "./util/FileSaver": "./src/util/FileSaver/index.ts",
+    "./util/QuickLRU": "./src/util/QuickLRU/index.ts",
+    "./util/SvgCanvas": "./src/util/SvgCanvas.ts",
+    "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
+    "./util/aborting": "./src/util/aborting.ts",
+    "./util/analytics": "./src/util/analytics.ts",
     "./util/blockTypes": "./src/util/blockTypes.ts",
     "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
     "./util/calculateStaticBlocks": "./src/util/calculateStaticBlocks.ts",
@@ -109,44 +113,34 @@
     "./util/colord": "./src/util/colord.ts",
     "./util/compositeMap": "./src/util/compositeMap.ts",
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
-    "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
-    "./util/FileSaver": "./src/util/FileSaver/index.ts",
+    "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
     "./util/flatbush": "./src/util/flatbush/index.ts",
     "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
     "./util/io": "./src/util/io/index.ts",
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
     "./util/jexlStrings": "./src/util/jexlStrings.ts",
+    "./util/layouts": "./src/util/layouts/index.ts",
+    "./util/layouts/BaseLayout": "./src/util/layouts/BaseLayout.ts",
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
-    "./util/layouts/placeRect": "./src/util/layouts/placeRect.ts",
     "./util/librpc": "./src/util/librpc.ts",
     "./util/mst-reflection": "./src/util/mst-reflection.ts",
-    "./util/paintLayer": "./src/util/paintLayer.tsx",
+    "./util/nanoid": "./src/util/nanoid.ts",
+    "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.ts",
+    "./util/offscreenCanvasUtils": "./src/util/offscreenCanvasUtils.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
-    "./util/QuickLRU": "./src/util/QuickLRU/index.ts",
     "./util/range": "./src/util/range.ts",
     "./util/rxjs": "./src/util/rxjs.ts",
     "./util/simpleFeature": "./src/util/simpleFeature.ts",
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
-    "./util/SvgCanvas": "./src/util/SvgCanvas.ts",
     "./util/svgExport": "./src/util/svgExport.tsx",
-    "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
     "./util/tracks": "./src/util/tracks.ts",
     "./util/tss-react": "./src/util/tss-react/index.ts",
+    "./util/tss-react/types": "./src/util/tss-react/types.ts",
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
     "./util/useGpuBackend": "./src/util/useGpuBackend.ts",
-    "./util/useGpuModelLifecycle": "./src/util/useGpuModelLifecycle.ts",
-    "./util/useMeasure": "./src/util/useMeasure.ts",
-    "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
-    "./util/nanoid": "./src/util/nanoid.ts",
-    "./ReExports/list": "./src/ReExports/list.ts",
-    "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
-    "./util/tss-react/types": "./src/util/tss-react/types.ts",
-    "./configuration/configurationSchema": "./src/configuration/configurationSchema.ts",
-    "./pluggableElementTypes/renderers/RendererType": "./src/pluggableElementTypes/renderers/RendererType.tsx",
-    "./util/layouts": "./src/util/layouts/index.ts",
-    "./data_adapters/BaseAdapter/getAdapterId": "./src/data_adapters/BaseAdapter/getAdapterId.ts"
+    "./util/useMeasure": "./src/util/useMeasure.ts"
   },
   "files": [
     "esm"
@@ -206,18 +200,6 @@
   "publishConfig": {
     "access": "public",
     "exports": {
-      "./assemblyManager": {
-        "types": "./esm/assemblyManager/index.d.ts",
-        "import": "./esm/assemblyManager/index.js"
-      },
-      "./assemblyManager/assembly": {
-        "types": "./esm/assemblyManager/assembly.d.ts",
-        "import": "./esm/assemblyManager/assembly.js"
-      },
-      "./assemblyManager/assemblyConfigSchema": {
-        "types": "./esm/assemblyManager/assemblyConfigSchema.d.ts",
-        "import": "./esm/assemblyManager/assemblyConfigSchema.js"
-      },
       "./BaseFeatureWidget": {
         "types": "./esm/BaseFeatureWidget/index.d.ts",
         "import": "./esm/BaseFeatureWidget/index.js"
@@ -242,13 +224,57 @@
         "types": "./esm/BaseFeatureWidget/BaseFeatureDetail/SimpleField.d.ts",
         "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/SimpleField.js"
       },
+      "./Plugin": {
+        "types": "./esm/Plugin.d.ts",
+        "import": "./esm/Plugin.js"
+      },
+      "./PluginLoader": {
+        "types": "./esm/PluginLoader.d.ts",
+        "import": "./esm/PluginLoader.js"
+      },
+      "./PluginManager": {
+        "types": "./esm/PluginManager.d.ts",
+        "import": "./esm/PluginManager.js"
+      },
+      "./ReExports/list": {
+        "types": "./esm/ReExports/list.d.ts",
+        "import": "./esm/ReExports/list.js"
+      },
+      "./TextSearch/BaseResults": {
+        "types": "./esm/TextSearch/BaseResults.d.ts",
+        "import": "./esm/TextSearch/BaseResults.js"
+      },
+      "./TextSearch/TextSearchManager": {
+        "types": "./esm/TextSearch/TextSearchManager.d.ts",
+        "import": "./esm/TextSearch/TextSearchManager.js"
+      },
+      "./assemblyManager": {
+        "types": "./esm/assemblyManager/index.d.ts",
+        "import": "./esm/assemblyManager/index.js"
+      },
+      "./assemblyManager/assembly": {
+        "types": "./esm/assemblyManager/assembly.d.ts",
+        "import": "./esm/assemblyManager/assembly.js"
+      },
+      "./assemblyManager/assemblyConfigSchema": {
+        "types": "./esm/assemblyManager/assemblyConfigSchema.d.ts",
+        "import": "./esm/assemblyManager/assemblyConfigSchema.js"
+      },
       "./configuration": {
         "types": "./esm/configuration/index.d.ts",
         "import": "./esm/configuration/index.js"
       },
+      "./configuration/configurationSchema": {
+        "types": "./esm/configuration/configurationSchema.d.ts",
+        "import": "./esm/configuration/configurationSchema.js"
+      },
       "./data_adapters/BaseAdapter": {
         "types": "./esm/data_adapters/BaseAdapter/index.d.ts",
         "import": "./esm/data_adapters/BaseAdapter/index.js"
+      },
+      "./data_adapters/BaseAdapter/getAdapterId": {
+        "types": "./esm/data_adapters/BaseAdapter/getAdapterId.d.ts",
+        "import": "./esm/data_adapters/BaseAdapter/getAdapterId.js"
       },
       "./data_adapters/BaseAdapter/stats": {
         "types": "./esm/data_adapters/BaseAdapter/stats.d.ts",
@@ -262,49 +288,17 @@
         "types": "./esm/data_adapters/dataAdapterCache.d.ts",
         "import": "./esm/data_adapters/dataAdapterCache.js"
       },
-      "./gpu/blockClipUtils": {
-        "types": "./esm/gpu/blockClipUtils.d.ts",
-        "import": "./esm/gpu/blockClipUtils.js"
-      },
-      "./gpu/canvas2dUtils": {
-        "types": "./esm/gpu/canvas2dUtils.d.ts",
-        "import": "./esm/gpu/canvas2dUtils.js"
-      },
-      "./gpu/createBackend": {
-        "types": "./esm/gpu/createBackend.d.ts",
-        "import": "./esm/gpu/createBackend.js"
+      "./gpu/GpuLifecycleMixin": {
+        "types": "./esm/gpu/GpuLifecycleMixin.d.ts",
+        "import": "./esm/gpu/GpuLifecycleMixin.js"
       },
       "./gpu/gpuDevice": {
         "types": "./esm/gpu/gpuDevice.d.ts",
         "import": "./esm/gpu/gpuDevice.js"
       },
-      "./gpu/GpuLifecycleMixin": {
-        "types": "./esm/gpu/GpuLifecycleMixin.d.ts",
-        "import": "./esm/gpu/GpuLifecycleMixin.js"
-      },
-      "./gpu/hal": {
-        "types": "./esm/gpu/hal/index.d.ts",
-        "import": "./esm/gpu/hal/index.js"
-      },
-      "./gpu/installPerRegionLifecycle": {
-        "types": "./esm/gpu/installPerRegionLifecycle.d.ts",
-        "import": "./esm/gpu/installPerRegionLifecycle.js"
-      },
-      "./gpu/monolithicBackend": {
-        "types": "./esm/gpu/monolithicBackend.d.ts",
-        "import": "./esm/gpu/monolithicBackend.js"
-      },
-      "./gpu/perRegionBackend": {
-        "types": "./esm/gpu/perRegionBackend.d.ts",
-        "import": "./esm/gpu/perRegionBackend.js"
-      },
       "./gpu/renderBlock": {
         "types": "./esm/gpu/renderBlock.d.ts",
         "import": "./esm/gpu/renderBlock.js"
-      },
-      "./gpu/slangPass": {
-        "types": "./esm/gpu/slangPass.d.ts",
-        "import": "./esm/gpu/slangPass.js"
       },
       "./pluggableElementTypes": {
         "types": "./esm/pluggableElementTypes/index.d.ts",
@@ -322,33 +316,13 @@
         "types": "./esm/pluggableElementTypes/DisplayType.d.ts",
         "import": "./esm/pluggableElementTypes/DisplayType.js"
       },
+      "./pluggableElementTypes/GlyphType": {
+        "types": "./esm/pluggableElementTypes/GlyphType.d.ts",
+        "import": "./esm/pluggableElementTypes/GlyphType.js"
+      },
       "./pluggableElementTypes/InternetAccountType": {
         "types": "./esm/pluggableElementTypes/InternetAccountType.d.ts",
         "import": "./esm/pluggableElementTypes/InternetAccountType.js"
-      },
-      "./pluggableElementTypes/models": {
-        "types": "./esm/pluggableElementTypes/models/index.d.ts",
-        "import": "./esm/pluggableElementTypes/models/index.js"
-      },
-      "./pluggableElementTypes/models/baseConnectionConfig": {
-        "types": "./esm/pluggableElementTypes/models/baseConnectionConfig.d.ts",
-        "import": "./esm/pluggableElementTypes/models/baseConnectionConfig.js"
-      },
-      "./pluggableElementTypes/models/BaseViewModel": {
-        "types": "./esm/pluggableElementTypes/models/BaseViewModel.d.ts",
-        "import": "./esm/pluggableElementTypes/models/BaseViewModel.js"
-      },
-      "./pluggableElementTypes/renderers/CircularChordRendererType": {
-        "types": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.js"
-      },
-      "./pluggableElementTypes/renderers/FeatureRendererType": {
-        "types": "./esm/pluggableElementTypes/renderers/FeatureRendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/FeatureRendererType.js"
-      },
-      "./pluggableElementTypes/renderers/util/serializableFilterChain": {
-        "types": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.js"
       },
       "./pluggableElementTypes/RpcMethodType": {
         "types": "./esm/pluggableElementTypes/RpcMethodType.d.ts",
@@ -374,25 +348,49 @@
         "types": "./esm/pluggableElementTypes/WidgetType.d.ts",
         "import": "./esm/pluggableElementTypes/WidgetType.js"
       },
-      "./Plugin": {
-        "types": "./esm/Plugin.d.ts",
-        "import": "./esm/Plugin.js"
+      "./pluggableElementTypes/models": {
+        "types": "./esm/pluggableElementTypes/models/index.d.ts",
+        "import": "./esm/pluggableElementTypes/models/index.js"
       },
-      "./PluginLoader": {
-        "types": "./esm/PluginLoader.d.ts",
-        "import": "./esm/PluginLoader.js"
+      "./pluggableElementTypes/models/BaseViewModel": {
+        "types": "./esm/pluggableElementTypes/models/BaseViewModel.d.ts",
+        "import": "./esm/pluggableElementTypes/models/BaseViewModel.js"
       },
-      "./PluginManager": {
-        "types": "./esm/PluginManager.d.ts",
-        "import": "./esm/PluginManager.js"
+      "./pluggableElementTypes/models/baseConnectionConfig": {
+        "types": "./esm/pluggableElementTypes/models/baseConnectionConfig.d.ts",
+        "import": "./esm/pluggableElementTypes/models/baseConnectionConfig.js"
       },
-      "./rpc/coreRpcMethods": {
-        "types": "./esm/rpc/coreRpcMethods.d.ts",
-        "import": "./esm/rpc/coreRpcMethods.js"
+      "./pluggableElementTypes/renderers/BoxRendererType": {
+        "types": "./esm/pluggableElementTypes/renderers/BoxRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/BoxRendererType.js"
       },
-      "./rpc/methods/util": {
-        "types": "./esm/rpc/methods/util.d.ts",
-        "import": "./esm/rpc/methods/util.js"
+      "./pluggableElementTypes/renderers/CircularChordRendererType": {
+        "types": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.js"
+      },
+      "./pluggableElementTypes/renderers/FeatureRendererType": {
+        "types": "./esm/pluggableElementTypes/renderers/FeatureRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/FeatureRendererType.js"
+      },
+      "./pluggableElementTypes/renderers/LayoutSession": {
+        "types": "./esm/pluggableElementTypes/renderers/LayoutSession.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/LayoutSession.js"
+      },
+      "./pluggableElementTypes/renderers/RendererType": {
+        "types": "./esm/pluggableElementTypes/renderers/RendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/RendererType.js"
+      },
+      "./pluggableElementTypes/renderers/ServerSideRendererType": {
+        "types": "./esm/pluggableElementTypes/renderers/ServerSideRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/ServerSideRendererType.js"
+      },
+      "./pluggableElementTypes/renderers/util": {
+        "types": "./esm/pluggableElementTypes/renderers/util.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/util.js"
+      },
+      "./pluggableElementTypes/renderers/util/serializableFilterChain": {
+        "types": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.js"
       },
       "./rpc/RpcManager": {
         "types": "./esm/rpc/RpcManager.d.ts",
@@ -402,13 +400,13 @@
         "types": "./esm/rpc/RpcRegistry.d.ts",
         "import": "./esm/rpc/RpcRegistry.js"
       },
-      "./TextSearch/BaseResults": {
-        "types": "./esm/TextSearch/BaseResults.d.ts",
-        "import": "./esm/TextSearch/BaseResults.js"
+      "./rpc/coreRpcMethods": {
+        "types": "./esm/rpc/coreRpcMethods.d.ts",
+        "import": "./esm/rpc/coreRpcMethods.js"
       },
-      "./TextSearch/TextSearchManager": {
-        "types": "./esm/TextSearch/TextSearchManager.d.ts",
-        "import": "./esm/TextSearch/TextSearchManager.js"
+      "./rpc/methods/util": {
+        "types": "./esm/rpc/methods/util.d.ts",
+        "import": "./esm/rpc/methods/util.js"
       },
       "./ui": {
         "types": "./esm/ui/index.d.ts",
@@ -429,10 +427,6 @@
       "./ui/ColorPicker": {
         "types": "./esm/ui/ColorPicker.d.ts",
         "import": "./esm/ui/ColorPicker.js"
-      },
-      "./ui/colors": {
-        "types": "./esm/ui/colors.d.ts",
-        "import": "./esm/ui/colors.js"
       },
       "./ui/ConfirmDialog": {
         "types": "./esm/ui/ConfirmDialog.d.ts",
@@ -466,10 +460,6 @@
         "types": "./esm/ui/ErrorMessageStackTraceDialog.d.ts",
         "import": "./esm/ui/ErrorMessageStackTraceDialog.js"
       },
-      "./ui/getGraphicsCapabilities": {
-        "types": "./esm/ui/getGraphicsCapabilities.d.ts",
-        "import": "./esm/ui/getGraphicsCapabilities.js"
-      },
       "./ui/Icons": {
         "types": "./esm/ui/Icons.d.ts",
         "import": "./esm/ui/Icons.js"
@@ -490,6 +480,10 @@
         "types": "./esm/ui/ResizeHandle.d.ts",
         "import": "./esm/ui/ResizeHandle.js"
       },
+      "./ui/ReturnToImportFormDialog": {
+        "types": "./esm/ui/ReturnToImportFormDialog.d.ts",
+        "import": "./esm/ui/ReturnToImportFormDialog.js"
+      },
       "./ui/SanitizedHTML": {
         "types": "./esm/ui/SanitizedHTML.d.ts",
         "import": "./esm/ui/SanitizedHTML.js"
@@ -502,25 +496,17 @@
         "types": "./esm/ui/SnackbarModel.d.ts",
         "import": "./esm/ui/SnackbarModel.js"
       },
+      "./ui/colors": {
+        "types": "./esm/ui/colors.d.ts",
+        "import": "./esm/ui/colors.js"
+      },
       "./ui/theme": {
         "types": "./esm/ui/theme.d.ts",
         "import": "./esm/ui/theme.js"
       },
-      "./ui/useGraphicsCapabilities": {
-        "types": "./esm/ui/useGraphicsCapabilities.d.ts",
-        "import": "./esm/ui/useGraphicsCapabilities.js"
-      },
       "./util": {
         "types": "./esm/util/index.d.ts",
         "import": "./esm/util/index.js"
-      },
-      "./util/aborting": {
-        "types": "./esm/util/aborting.d.ts",
-        "import": "./esm/util/aborting.js"
-      },
-      "./util/analytics": {
-        "types": "./esm/util/analytics.d.ts",
-        "import": "./esm/util/analytics.js"
       },
       "./util/Base1DUtils": {
         "types": "./esm/util/Base1DUtils.d.ts",
@@ -529,6 +515,30 @@
       "./util/Base1DViewModel": {
         "types": "./esm/util/Base1DViewModel.d.ts",
         "import": "./esm/util/Base1DViewModel.js"
+      },
+      "./util/FileSaver": {
+        "types": "./esm/util/FileSaver/index.d.ts",
+        "import": "./esm/util/FileSaver/index.js"
+      },
+      "./util/QuickLRU": {
+        "types": "./esm/util/QuickLRU/index.d.ts",
+        "import": "./esm/util/QuickLRU/index.js"
+      },
+      "./util/SvgCanvas": {
+        "types": "./esm/util/SvgCanvas.d.ts",
+        "import": "./esm/util/SvgCanvas.js"
+      },
+      "./util/TimeTraveller": {
+        "types": "./esm/util/TimeTraveller.d.ts",
+        "import": "./esm/util/TimeTraveller.js"
+      },
+      "./util/aborting": {
+        "types": "./esm/util/aborting.d.ts",
+        "import": "./esm/util/aborting.js"
+      },
+      "./util/analytics": {
+        "types": "./esm/util/analytics.d.ts",
+        "import": "./esm/util/analytics.js"
       },
       "./util/blockTypes": {
         "types": "./esm/util/blockTypes.d.ts",
@@ -562,13 +572,9 @@
         "types": "./esm/util/convertCodingSequenceToPeptides.d.ts",
         "import": "./esm/util/convertCodingSequenceToPeptides.js"
       },
-      "./util/diagonalizeRegions": {
-        "types": "./esm/util/diagonalizeRegions.d.ts",
-        "import": "./esm/util/diagonalizeRegions.js"
-      },
-      "./util/FileSaver": {
-        "types": "./esm/util/FileSaver/index.d.ts",
-        "import": "./esm/util/FileSaver/index.js"
+      "./util/fileHandleStore": {
+        "types": "./esm/util/fileHandleStore.d.ts",
+        "import": "./esm/util/fileHandleStore.js"
       },
       "./util/flatbush": {
         "types": "./esm/util/flatbush/index.d.ts",
@@ -590,13 +596,17 @@
         "types": "./esm/util/jexlStrings.d.ts",
         "import": "./esm/util/jexlStrings.js"
       },
+      "./util/layouts": {
+        "types": "./esm/util/layouts/index.d.ts",
+        "import": "./esm/util/layouts/index.js"
+      },
+      "./util/layouts/BaseLayout": {
+        "types": "./esm/util/layouts/BaseLayout.d.ts",
+        "import": "./esm/util/layouts/BaseLayout.js"
+      },
       "./util/layouts/GranularRectLayout": {
         "types": "./esm/util/layouts/GranularRectLayout.d.ts",
         "import": "./esm/util/layouts/GranularRectLayout.js"
-      },
-      "./util/layouts/placeRect": {
-        "types": "./esm/util/layouts/placeRect.d.ts",
-        "import": "./esm/util/layouts/placeRect.js"
       },
       "./util/librpc": {
         "types": "./esm/util/librpc.d.ts",
@@ -606,17 +616,21 @@
         "types": "./esm/util/mst-reflection.d.ts",
         "import": "./esm/util/mst-reflection.js"
       },
-      "./util/paintLayer": {
-        "types": "./esm/util/paintLayer.d.ts",
-        "import": "./esm/util/paintLayer.js"
+      "./util/nanoid": {
+        "types": "./esm/util/nanoid.d.ts",
+        "import": "./esm/util/nanoid.js"
+      },
+      "./util/offscreenCanvasPonyfill": {
+        "types": "./esm/util/offscreenCanvasPonyfill.d.ts",
+        "import": "./esm/util/offscreenCanvasPonyfill.js"
+      },
+      "./util/offscreenCanvasUtils": {
+        "types": "./esm/util/offscreenCanvasUtils.d.ts",
+        "import": "./esm/util/offscreenCanvasUtils.js"
       },
       "./util/parseLineByLine": {
         "types": "./esm/util/parseLineByLine.d.ts",
         "import": "./esm/util/parseLineByLine.js"
-      },
-      "./util/QuickLRU": {
-        "types": "./esm/util/QuickLRU/index.d.ts",
-        "import": "./esm/util/QuickLRU/index.js"
       },
       "./util/range": {
         "types": "./esm/util/range.d.ts",
@@ -638,17 +652,9 @@
         "types": "./esm/util/stopToken.d.ts",
         "import": "./esm/util/stopToken.js"
       },
-      "./util/SvgCanvas": {
-        "types": "./esm/util/SvgCanvas.d.ts",
-        "import": "./esm/util/SvgCanvas.js"
-      },
       "./util/svgExport": {
         "types": "./esm/util/svgExport.d.ts",
         "import": "./esm/util/svgExport.js"
-      },
-      "./util/TimeTraveller": {
-        "types": "./esm/util/TimeTraveller.d.ts",
-        "import": "./esm/util/TimeTraveller.js"
       },
       "./util/tracks": {
         "types": "./esm/util/tracks.d.ts",
@@ -657,6 +663,10 @@
       "./util/tss-react": {
         "types": "./esm/util/tss-react/index.d.ts",
         "import": "./esm/util/tss-react/index.js"
+      },
+      "./util/tss-react/types": {
+        "types": "./esm/util/tss-react/types.d.ts",
+        "import": "./esm/util/tss-react/types.js"
       },
       "./util/types": {
         "types": "./esm/util/types/index.d.ts",
@@ -670,62 +680,13 @@
         "types": "./esm/util/useGpuBackend.d.ts",
         "import": "./esm/util/useGpuBackend.js"
       },
-      "./util/useGpuModelLifecycle": {
-        "types": "./esm/util/useGpuModelLifecycle.d.ts",
-        "import": "./esm/util/useGpuModelLifecycle.js"
-      },
       "./util/useMeasure": {
         "types": "./esm/util/useMeasure.d.ts",
         "import": "./esm/util/useMeasure.js"
-      },
-      "./ui/ReturnToImportFormDialog": {
-        "types": "./esm/ui/ReturnToImportFormDialog.d.ts",
-        "import": "./esm/ui/ReturnToImportFormDialog.js"
-      },
-      "./util/nanoid": {
-        "types": "./esm/util/nanoid.d.ts",
-        "import": "./esm/util/nanoid.js"
-      },
-      "./ReExports/list": {
-        "types": "./esm/ReExports/list.d.ts",
-        "import": "./esm/ReExports/list.js"
-      },
-      "./util/fileHandleStore": {
-        "types": "./esm/util/fileHandleStore.d.ts",
-        "import": "./esm/util/fileHandleStore.js"
-      },
-      "./util/tss-react/types": {
-        "types": "./esm/util/tss-react/types.d.ts",
-        "import": "./esm/util/tss-react/types.js"
-      },
-      "./configuration/configurationSchema": {
-        "types": "./esm/configuration/configurationSchema.d.ts",
-        "import": "./esm/configuration/configurationSchema.js"
-      },
-      "./pluggableElementTypes/renderers/RendererType": {
-        "types": "./esm/pluggableElementTypes/renderers/RendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/RendererType.js"
-      },
-      "./util/layouts": {
-        "types": "./esm/util/layouts/index.d.ts",
-        "import": "./esm/util/layouts/index.js"
-      },
-      "./data_adapters/BaseAdapter/getAdapterId": {
-        "types": "./esm/data_adapters/BaseAdapter/getAdapterId.d.ts",
-        "import": "./esm/data_adapters/BaseAdapter/getAdapterId.js"
       }
     },
     "typesVersions": {
       "*": {
-        "assemblyManager": [
-          "esm/assemblyManager/index.d.ts"
-        ],
-        "assemblyManager/assembly": [
-          "esm/assemblyManager/assembly.d.ts"
-        ],
-        "assemblyManager/assemblyConfigSchema": [
-          "esm/assemblyManager/assemblyConfigSchema.d.ts"
-        ],
         "BaseFeatureWidget": [
           "esm/BaseFeatureWidget/index.d.ts"
         ],
@@ -744,11 +705,44 @@
         "BaseFeatureWidget/BaseFeatureDetail/SimpleField": [
           "esm/BaseFeatureWidget/BaseFeatureDetail/SimpleField.d.ts"
         ],
+        "Plugin": [
+          "esm/Plugin.d.ts"
+        ],
+        "PluginLoader": [
+          "esm/PluginLoader.d.ts"
+        ],
+        "PluginManager": [
+          "esm/PluginManager.d.ts"
+        ],
+        "ReExports/list": [
+          "esm/ReExports/list.d.ts"
+        ],
+        "TextSearch/BaseResults": [
+          "esm/TextSearch/BaseResults.d.ts"
+        ],
+        "TextSearch/TextSearchManager": [
+          "esm/TextSearch/TextSearchManager.d.ts"
+        ],
+        "assemblyManager": [
+          "esm/assemblyManager/index.d.ts"
+        ],
+        "assemblyManager/assembly": [
+          "esm/assemblyManager/assembly.d.ts"
+        ],
+        "assemblyManager/assemblyConfigSchema": [
+          "esm/assemblyManager/assemblyConfigSchema.d.ts"
+        ],
         "configuration": [
           "esm/configuration/index.d.ts"
         ],
+        "configuration/configurationSchema": [
+          "esm/configuration/configurationSchema.d.ts"
+        ],
         "data_adapters/BaseAdapter": [
           "esm/data_adapters/BaseAdapter/index.d.ts"
+        ],
+        "data_adapters/BaseAdapter/getAdapterId": [
+          "esm/data_adapters/BaseAdapter/getAdapterId.d.ts"
         ],
         "data_adapters/BaseAdapter/stats": [
           "esm/data_adapters/BaseAdapter/stats.d.ts"
@@ -759,38 +753,14 @@
         "data_adapters/dataAdapterCache": [
           "esm/data_adapters/dataAdapterCache.d.ts"
         ],
-        "gpu/blockClipUtils": [
-          "esm/gpu/blockClipUtils.d.ts"
-        ],
-        "gpu/canvas2dUtils": [
-          "esm/gpu/canvas2dUtils.d.ts"
-        ],
-        "gpu/createBackend": [
-          "esm/gpu/createBackend.d.ts"
+        "gpu/GpuLifecycleMixin": [
+          "esm/gpu/GpuLifecycleMixin.d.ts"
         ],
         "gpu/gpuDevice": [
           "esm/gpu/gpuDevice.d.ts"
         ],
-        "gpu/GpuLifecycleMixin": [
-          "esm/gpu/GpuLifecycleMixin.d.ts"
-        ],
-        "gpu/hal": [
-          "esm/gpu/hal/index.d.ts"
-        ],
-        "gpu/installPerRegionLifecycle": [
-          "esm/gpu/installPerRegionLifecycle.d.ts"
-        ],
-        "gpu/monolithicBackend": [
-          "esm/gpu/monolithicBackend.d.ts"
-        ],
-        "gpu/perRegionBackend": [
-          "esm/gpu/perRegionBackend.d.ts"
-        ],
         "gpu/renderBlock": [
           "esm/gpu/renderBlock.d.ts"
-        ],
-        "gpu/slangPass": [
-          "esm/gpu/slangPass.d.ts"
         ],
         "pluggableElementTypes": [
           "esm/pluggableElementTypes/index.d.ts"
@@ -804,26 +774,11 @@
         "pluggableElementTypes/DisplayType": [
           "esm/pluggableElementTypes/DisplayType.d.ts"
         ],
+        "pluggableElementTypes/GlyphType": [
+          "esm/pluggableElementTypes/GlyphType.d.ts"
+        ],
         "pluggableElementTypes/InternetAccountType": [
           "esm/pluggableElementTypes/InternetAccountType.d.ts"
-        ],
-        "pluggableElementTypes/models": [
-          "esm/pluggableElementTypes/models/index.d.ts"
-        ],
-        "pluggableElementTypes/models/baseConnectionConfig": [
-          "esm/pluggableElementTypes/models/baseConnectionConfig.d.ts"
-        ],
-        "pluggableElementTypes/models/BaseViewModel": [
-          "esm/pluggableElementTypes/models/BaseViewModel.d.ts"
-        ],
-        "pluggableElementTypes/renderers/CircularChordRendererType": [
-          "esm/pluggableElementTypes/renderers/CircularChordRendererType.d.ts"
-        ],
-        "pluggableElementTypes/renderers/FeatureRendererType": [
-          "esm/pluggableElementTypes/renderers/FeatureRendererType.d.ts"
-        ],
-        "pluggableElementTypes/renderers/util/serializableFilterChain": [
-          "esm/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts"
         ],
         "pluggableElementTypes/RpcMethodType": [
           "esm/pluggableElementTypes/RpcMethodType.d.ts"
@@ -843,20 +798,38 @@
         "pluggableElementTypes/WidgetType": [
           "esm/pluggableElementTypes/WidgetType.d.ts"
         ],
-        "Plugin": [
-          "esm/Plugin.d.ts"
+        "pluggableElementTypes/models": [
+          "esm/pluggableElementTypes/models/index.d.ts"
         ],
-        "PluginLoader": [
-          "esm/PluginLoader.d.ts"
+        "pluggableElementTypes/models/BaseViewModel": [
+          "esm/pluggableElementTypes/models/BaseViewModel.d.ts"
         ],
-        "PluginManager": [
-          "esm/PluginManager.d.ts"
+        "pluggableElementTypes/models/baseConnectionConfig": [
+          "esm/pluggableElementTypes/models/baseConnectionConfig.d.ts"
         ],
-        "rpc/coreRpcMethods": [
-          "esm/rpc/coreRpcMethods.d.ts"
+        "pluggableElementTypes/renderers/BoxRendererType": [
+          "esm/pluggableElementTypes/renderers/BoxRendererType.d.ts"
         ],
-        "rpc/methods/util": [
-          "esm/rpc/methods/util.d.ts"
+        "pluggableElementTypes/renderers/CircularChordRendererType": [
+          "esm/pluggableElementTypes/renderers/CircularChordRendererType.d.ts"
+        ],
+        "pluggableElementTypes/renderers/FeatureRendererType": [
+          "esm/pluggableElementTypes/renderers/FeatureRendererType.d.ts"
+        ],
+        "pluggableElementTypes/renderers/LayoutSession": [
+          "esm/pluggableElementTypes/renderers/LayoutSession.d.ts"
+        ],
+        "pluggableElementTypes/renderers/RendererType": [
+          "esm/pluggableElementTypes/renderers/RendererType.d.ts"
+        ],
+        "pluggableElementTypes/renderers/ServerSideRendererType": [
+          "esm/pluggableElementTypes/renderers/ServerSideRendererType.d.ts"
+        ],
+        "pluggableElementTypes/renderers/util": [
+          "esm/pluggableElementTypes/renderers/util.d.ts"
+        ],
+        "pluggableElementTypes/renderers/util/serializableFilterChain": [
+          "esm/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts"
         ],
         "rpc/RpcManager": [
           "esm/rpc/RpcManager.d.ts"
@@ -864,11 +837,11 @@
         "rpc/RpcRegistry": [
           "esm/rpc/RpcRegistry.d.ts"
         ],
-        "TextSearch/BaseResults": [
-          "esm/TextSearch/BaseResults.d.ts"
+        "rpc/coreRpcMethods": [
+          "esm/rpc/coreRpcMethods.d.ts"
         ],
-        "TextSearch/TextSearchManager": [
-          "esm/TextSearch/TextSearchManager.d.ts"
+        "rpc/methods/util": [
+          "esm/rpc/methods/util.d.ts"
         ],
         "ui": [
           "esm/ui/index.d.ts"
@@ -884,9 +857,6 @@
         ],
         "ui/ColorPicker": [
           "esm/ui/ColorPicker.d.ts"
-        ],
-        "ui/colors": [
-          "esm/ui/colors.d.ts"
         ],
         "ui/ConfirmDialog": [
           "esm/ui/ConfirmDialog.d.ts"
@@ -912,9 +882,6 @@
         "ui/ErrorMessageStackTraceDialog": [
           "esm/ui/ErrorMessageStackTraceDialog.d.ts"
         ],
-        "ui/getGraphicsCapabilities": [
-          "esm/ui/getGraphicsCapabilities.d.ts"
-        ],
         "ui/Icons": [
           "esm/ui/Icons.d.ts"
         ],
@@ -930,6 +897,9 @@
         "ui/ResizeHandle": [
           "esm/ui/ResizeHandle.d.ts"
         ],
+        "ui/ReturnToImportFormDialog": [
+          "esm/ui/ReturnToImportFormDialog.d.ts"
+        ],
         "ui/SanitizedHTML": [
           "esm/ui/SanitizedHTML.d.ts"
         ],
@@ -939,26 +909,38 @@
         "ui/SnackbarModel": [
           "esm/ui/SnackbarModel.d.ts"
         ],
+        "ui/colors": [
+          "esm/ui/colors.d.ts"
+        ],
         "ui/theme": [
           "esm/ui/theme.d.ts"
         ],
-        "ui/useGraphicsCapabilities": [
-          "esm/ui/useGraphicsCapabilities.d.ts"
-        ],
         "util": [
           "esm/util/index.d.ts"
-        ],
-        "util/aborting": [
-          "esm/util/aborting.d.ts"
-        ],
-        "util/analytics": [
-          "esm/util/analytics.d.ts"
         ],
         "util/Base1DUtils": [
           "esm/util/Base1DUtils.d.ts"
         ],
         "util/Base1DViewModel": [
           "esm/util/Base1DViewModel.d.ts"
+        ],
+        "util/FileSaver": [
+          "esm/util/FileSaver/index.d.ts"
+        ],
+        "util/QuickLRU": [
+          "esm/util/QuickLRU/index.d.ts"
+        ],
+        "util/SvgCanvas": [
+          "esm/util/SvgCanvas.d.ts"
+        ],
+        "util/TimeTraveller": [
+          "esm/util/TimeTraveller.d.ts"
+        ],
+        "util/aborting": [
+          "esm/util/aborting.d.ts"
+        ],
+        "util/analytics": [
+          "esm/util/analytics.d.ts"
         ],
         "util/blockTypes": [
           "esm/util/blockTypes.d.ts"
@@ -984,11 +966,8 @@
         "util/convertCodingSequenceToPeptides": [
           "esm/util/convertCodingSequenceToPeptides.d.ts"
         ],
-        "util/diagonalizeRegions": [
-          "esm/util/diagonalizeRegions.d.ts"
-        ],
-        "util/FileSaver": [
-          "esm/util/FileSaver/index.d.ts"
+        "util/fileHandleStore": [
+          "esm/util/fileHandleStore.d.ts"
         ],
         "util/flatbush": [
           "esm/util/flatbush/index.d.ts"
@@ -1005,11 +984,14 @@
         "util/jexlStrings": [
           "esm/util/jexlStrings.d.ts"
         ],
+        "util/layouts": [
+          "esm/util/layouts/index.d.ts"
+        ],
+        "util/layouts/BaseLayout": [
+          "esm/util/layouts/BaseLayout.d.ts"
+        ],
         "util/layouts/GranularRectLayout": [
           "esm/util/layouts/GranularRectLayout.d.ts"
-        ],
-        "util/layouts/placeRect": [
-          "esm/util/layouts/placeRect.d.ts"
         ],
         "util/librpc": [
           "esm/util/librpc.d.ts"
@@ -1017,14 +999,17 @@
         "util/mst-reflection": [
           "esm/util/mst-reflection.d.ts"
         ],
-        "util/paintLayer": [
-          "esm/util/paintLayer.d.ts"
+        "util/nanoid": [
+          "esm/util/nanoid.d.ts"
+        ],
+        "util/offscreenCanvasPonyfill": [
+          "esm/util/offscreenCanvasPonyfill.d.ts"
+        ],
+        "util/offscreenCanvasUtils": [
+          "esm/util/offscreenCanvasUtils.d.ts"
         ],
         "util/parseLineByLine": [
           "esm/util/parseLineByLine.d.ts"
-        ],
-        "util/QuickLRU": [
-          "esm/util/QuickLRU/index.d.ts"
         ],
         "util/range": [
           "esm/util/range.d.ts"
@@ -1041,20 +1026,17 @@
         "util/stopToken": [
           "esm/util/stopToken.d.ts"
         ],
-        "util/SvgCanvas": [
-          "esm/util/SvgCanvas.d.ts"
-        ],
         "util/svgExport": [
           "esm/util/svgExport.d.ts"
-        ],
-        "util/TimeTraveller": [
-          "esm/util/TimeTraveller.d.ts"
         ],
         "util/tracks": [
           "esm/util/tracks.d.ts"
         ],
         "util/tss-react": [
           "esm/util/tss-react/index.d.ts"
+        ],
+        "util/tss-react/types": [
+          "esm/util/tss-react/types.d.ts"
         ],
         "util/types": [
           "esm/util/types/index.d.ts"
@@ -1065,38 +1047,8 @@
         "util/useGpuBackend": [
           "esm/util/useGpuBackend.d.ts"
         ],
-        "util/useGpuModelLifecycle": [
-          "esm/util/useGpuModelLifecycle.d.ts"
-        ],
         "util/useMeasure": [
           "esm/util/useMeasure.d.ts"
-        ],
-        "ui/ReturnToImportFormDialog": [
-          "esm/ui/ReturnToImportFormDialog.d.ts"
-        ],
-        "util/nanoid": [
-          "esm/util/nanoid.d.ts"
-        ],
-        "ReExports/list": [
-          "esm/ReExports/list.d.ts"
-        ],
-        "util/fileHandleStore": [
-          "esm/util/fileHandleStore.d.ts"
-        ],
-        "util/tss-react/types": [
-          "esm/util/tss-react/types.d.ts"
-        ],
-        "configuration/configurationSchema": [
-          "esm/configuration/configurationSchema.d.ts"
-        ],
-        "pluggableElementTypes/renderers/RendererType": [
-          "esm/pluggableElementTypes/renderers/RendererType.d.ts"
-        ],
-        "util/layouts": [
-          "esm/util/layouts/index.d.ts"
-        ],
-        "data_adapters/BaseAdapter/getAdapterId": [
-          "esm/data_adapters/BaseAdapter/getAdapterId.d.ts"
         ]
       }
     }

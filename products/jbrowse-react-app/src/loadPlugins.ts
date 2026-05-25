@@ -13,5 +13,5 @@ export default async function loadPlugins(
 ) {
   const pluginLoader = new PluginLoader(pluginDefinitions, args)
   pluginLoader.installGlobalReExports(window)
-  return pluginLoader.load('')
+  return pluginLoader.load(window.location.href)
 }
