@@ -76,6 +76,7 @@
     "@types/set-value": "^4.0.3",
     "@types/string-template": "^1.0.7",
     "@types/tmp": "^0.2.6",
+    "@webgpu/types": "^0.1.70",
     "babel-loader": "^10.1.1",
     "babel-plugin-react-compiler": "^1.0.0",
     "browserslist": "^4.28.2",

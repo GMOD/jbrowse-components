@@ -152,6 +152,9 @@ importers:
       '@types/tmp':
         specifier: ^0.2.6
         version: 0.2.6
+      '@webgpu/types':
+        specifier: ^0.1.70
+        version: 0.1.70
       babel-loader:
         specifier: ^10.1.1
         version: 10.1.1(@babel/core@7.29.0)(webpack@5.107.1)
@@ -311,6 +314,18 @@ importers:
       webpack-dev-server:
         specifier: ^5.2.4
         version: 5.2.4(tslib@2.8.1)(webpack-cli@7.0.2)(webpack@5.107.1)
+
+  packages/alignments-core:
+    dependencies:
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../cigar-utils
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
+      '@jbrowse/wiggle-core':
+        specifier: workspace:^
+        version: link:../wiggle-core
 
   packages/app-core:
     dependencies:
@@ -666,6 +681,24 @@ importers:
       react-dom:
         specifier: '>=18.0.0'
         version: 19.2.6(react@19.2.6)
+
+  packages/wiggle-core:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
+      '@mui/material':
+        specifier: ^9.0.1
+        version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@mui/x-charts-vendor':
+        specifier: ^9.0.0
+        version: 9.0.0
+      mobx-react:
+        specifier: ^9.2.1
+        version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react:
+        specifier: '>=18.0.0'
+        version: 19.2.6
 
   plugins/alignments:
     dependencies:
@@ -5713,6 +5746,9 @@ packages:
 
   '@webcontainer/env@1.1.1':
     resolution: {integrity: sha512-6aN99yL695Hi9SuIk1oC88l9o0gmxL1nGWWQ/kNy81HigJ0FoaoTXpytCj6ItzgyCEwA9kF1wixsTuv5cjsgng==}
+
+  '@webgpu/types@0.1.70':
+    resolution: {integrity: sha512-LFiNHHKMvmAEvwVew3JLJmTdShhbdwRFSImUshGhE2mGE8ybQzIo63l5uRp+YKnNx+8Qno8Kf6gN+DKMreIJCA==}
 
   '@xmldom/xmldom@0.9.10':
     resolution: {integrity: sha512-A9gOqLdi6cV4ibazAjcQufGj0B1y/vDqYrcuP6d/6x8P27gRS8643Dj9o1dEKtB6O7fwxb2FgBmJS2mX7gpvdw==}
@@ -14344,6 +14380,8 @@ snapshots:
       '@xtuc/long': 4.2.2
 
   '@webcontainer/env@1.1.1': {}
+
+  '@webgpu/types@0.1.70': {}
 
   '@xmldom/xmldom@0.9.10': {}
 
