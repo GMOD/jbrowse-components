@@ -1,6 +1,8 @@
 ---
 id: theme
 title: Coloring/theming
+description: Customizing the application color theme
+guide_category: Other features
 ---
 
 ### Color

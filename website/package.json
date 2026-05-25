@@ -5,7 +5,9 @@
     "dev": "rimraf .astro && astro dev",
     "build": "astro build && pagefind --site dist",
     "index": "astro build && pagefind --site dist --output-path public/pagefind",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "lint-docs": "node --experimental-strip-types scripts/generate-guide-indexes.ts",
+    "lint-docs-check": "node --experimental-strip-types scripts/generate-guide-indexes.ts --check"
   },
   "dependencies": {
     "@astrojs/react": "^5.0.5",

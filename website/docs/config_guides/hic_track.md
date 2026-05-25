@@ -1,6 +1,8 @@
 ---
 id: hic_track
 title: Hi-C track configuration
+description: Contact matrix track config using the HicAdapter
+guide_category: Track types
 ---
 
 Example Hi-C track config:

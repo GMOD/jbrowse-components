@@ -1,6 +1,8 @@
 ---
 id: customizing_feature_details
 title: Customizing feature details with callbacks and plugins
+description: Customizing feature detail panels with the formatDetails slot
+guide_category: Callbacks and customization
 ---
 
 Every track has a configuration slot called `formatDetails`.

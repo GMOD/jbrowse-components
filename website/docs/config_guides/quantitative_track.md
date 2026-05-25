@@ -1,6 +1,8 @@
 ---
 id: quantitative_track
 title: Quantitative tracks
+description: BigWig/BedGraph signal track config and display options
+guide_category: Track types
 ---
 
 ### QuantitativeTrack config

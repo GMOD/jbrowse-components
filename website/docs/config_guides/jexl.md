@@ -1,6 +1,8 @@
 ---
 id: jexl
 title: Using jexl callbacks
+description: Dynamic configuration using jexl callback expressions
+guide_category: Callbacks and customization
 ---
 
 We use [Jexl](https://github.com/TomFrost/Jexl) for defining configuration

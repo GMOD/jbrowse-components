@@ -1,6 +1,8 @@
 ---
 id: assemblies
 title: Configuring assemblies
+description: Setting up reference genomes with sequence adapters and refname aliases
+guide_category: Core configuration
 ---
 
 An assembly configuration has a `name`, optional `aliases` (e.g. GRCh37/hg19),

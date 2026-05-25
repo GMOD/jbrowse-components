@@ -2,6 +2,8 @@
 id: simple_plugin
 title: Writing a plugin using jbrowse-plugin-template
 toplevel: true
+description: Step-by-step plugin setup using the official rollup template
+guide_category: Getting started
 ---
 
 Plugins add new pluggable elements (views, tracks, adapters, etc.) and can

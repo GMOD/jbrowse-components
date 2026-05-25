@@ -1,58 +1,41 @@
 ---
 id: user_guide
 toplevel: true
-title: User guides
+title: User guide
 ---
 
 ## General usage
 
-- [Basic usage](/docs/user_guides/basic_usage) - Navigation, searching, opening
-  files, and common UI controls
+- [Basic usage](/docs/user_guides/basic_usage) - Navigation, searching, opening files, and common UI controls
+- [Connections](/docs/user_guides/connections) - UCSC track hubs and JBrowse 1 data directories
 
 ## Track types
 
-- [Alignments track](/docs/user_guides/alignments_track) - BAM/CRAM pileup and
-  coverage displays
-- [Feature sequence panel](/docs/user_guides/feature_sequence) - Sequence
-  extraction for selected features
+- [Alignments track](/docs/user_guides/alignments_track) - BAM/CRAM pileup and coverage displays
+- [Feature sequence panel](/docs/user_guides/feature_sequence) - Sequence extraction for selected features
 - [Hi-C track](/docs/user_guides/hic_track) - Contact matrix display
-- [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track) -
-  Multiple signal tracks displayed together
-- [Multi-sample variant displays](/docs/user_guides/multivariant_track) -
-  Population-level variant views
-- [Quantitative tracks](/docs/user_guides/quantitative_track) - BigWig/BedGraph
-  signal tracks
-- [Sequence track](/docs/user_guides/sequence_track) - Reference sequence
-  display
+- [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track) - Multiple signal tracks displayed together
+- [Multi-sample variant displays](/docs/user_guides/multivariant_track) - Population-level variant views
+- [Quantitative tracks](/docs/user_guides/quantitative_track) - BigWig/BedGraph signal tracks
+- [Sequence track](/docs/user_guides/sequence_track) - Reference sequence display
 - [Variant tracks](/docs/user_guides/variant_track) - VCF variant display
 
 ## Views
 
 - [Dotplot view](/docs/user_guides/dotplot_view) - Whole-genome synteny dotplot
-- [Linear synteny view](/docs/user_guides/linear_synteny_view) - Side-by-side
-  alignment of two genomes
-- [SV inspector view](/docs/user_guides/sv_inspector_view) - Structural variant
-  spreadsheet and circular view
-- [Structural variant visualization](/docs/user_guides/sv_visualization) -
-  Interpreting SV signals across display types
+- [Linear synteny view](/docs/user_guides/linear_synteny_view) - Linear alignment of two genomes
+- [SV inspector view](/docs/user_guides/sv_inspector_view) - Structural variant spreadsheet and circular view
+- [Structural variant visualization](/docs/user_guides/sv_visualization) - Interpreting SV signals across display types
 
 ## Other features
 
-- [Bookmark widget](/docs/user_guides/bookmark_widget) - Saving and sharing
-  genomic locations
-- [Connections](/docs/user_guides/connections) - UCSC track hubs and JBrowse 1
-  data directories
+- [Bookmark widget](/docs/user_guides/bookmark_widget) - Saving and sharing genomic locations
 - [Plugin store](/docs/user_guides/plugin_store) - Installing community plugins
 
 ## Tutorials
 
-- [Phased trio analysis](/docs/tutorials/analyze_trio) - Inheritance patterns
-  and variant phasing in a trio dataset
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - Load and
-  inspect structural variants from real cancer sequencing data
-- [DNA methylation](/docs/tutorials/methylation) - Per-read and aggregate
-  methylation from MM-tagged BAM/CRAM files
-- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) -
-  Population-level SVs, trio inspection, and chromosomal inversions
-- [Synteny visualization](/docs/tutorials/synteny_visualization) - Compare
-  genome assemblies using dotplot and linear synteny views
+- [Analyzing a phased trio](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
+- [Visualizing DNA methylation](/docs/tutorials/methylation) - Per-read and aggregate methylation from ONT and modkit
+- [Multi-sample SV visualization w/ 1kG](/docs/tutorials/sv_multisamples) - Inspect population-level SVs, explore a family trio, and characterize a large chromosomal inversion
+- [Cancer Genome in a Bottle (SVs)](/docs/tutorials/sv_visualization_cgiab) - Load and inspect structural variants from real cancer sequencing data
+- [Synteny visualization and genome alignment](/docs/tutorials/synteny_visualization) - Compare genome assemblies using dotplot and linear synteny views

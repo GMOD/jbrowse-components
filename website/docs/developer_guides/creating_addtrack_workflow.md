@@ -1,6 +1,8 @@
 ---
 id: creating_addtrack_workflow
 title: Creating custom add-track workflows
+description: Custom UI in the Add track dialog for non-standard track types
+guide_category: Creating pluggable elements
 ---
 
 Plugins can register their own React component to display in the "Add track"

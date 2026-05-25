@@ -1,6 +1,8 @@
 ---
 title: Creating custom top-level menu items
 id: menus
+description: Add items to the top-level application menu bar
+guide_category: Creating pluggable elements
 ---
 
 ### Adding a top-level menu
