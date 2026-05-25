@@ -67,7 +67,7 @@ const ggplot2Colors5 = ['#F8766D', '#A3A500', '#00BF7D', '#00B0F6', '#E76BF3']
 const ggplot2Colors4 = ['#F8766D', '#7CAE00', '#00BFC4', '#C77CFF']
 const ggplot2Colors3 = ['#F8766D', '#00BA38', '#619CFF']
 
-export {
+export const paletteColors = {
   category10,
   dark2,
   ggplot2Colors3,
@@ -79,7 +79,7 @@ export {
   tableau10,
 }
 
-export const paletteColors = {
+export {
   category10,
   dark2,
   ggplot2Colors3,
