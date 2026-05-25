@@ -156,7 +156,11 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           visibility:'hidden' instead so the canvas stays in the DOM and the
           renderer connection is preserved. */}
       <canvas
-        data-testid={model.canvasDrawn ? 'variant_matrix_canvas_done' : 'variant_matrix_canvas'}
+        data-testid={
+          model.canvasDrawn
+            ? 'variant_matrix_canvas_done'
+            : 'variant_matrix_canvas'
+        }
         ref={canvasRef}
         style={{
           width,

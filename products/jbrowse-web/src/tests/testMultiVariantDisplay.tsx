@@ -18,7 +18,9 @@ export async function testMultiVariantDisplay({
       ? 'Multi-sample variant display (matrix)'
       : 'Multi-sample variant display (regular)'
   const canvasTestId =
-    displayType === 'matrix' ? 'variant_matrix_canvas_done' : 'variant_canvas_done'
+    displayType === 'matrix'
+      ? 'variant_matrix_canvas_done'
+      : 'variant_canvas_done'
 
   const { view, findByTestId, findByText } = await createView()
   await view.navToLocString('ctgA')

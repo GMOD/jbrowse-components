@@ -21,7 +21,10 @@ import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvas
 import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
-import type { VariantCellData } from './computeVariantCells.ts'
+import type {
+  FeatureGenotypeInfo,
+  VariantCellData,
+} from './computeVariantCells.ts'
 import type { VariantBackend } from './variantBackendTypes.ts'
 import type { VariantDisplayModelBase } from '../../shared/VariantDisplayModelInterface.ts'
 import type Flatbush from '@jbrowse/core/util/flatbush'
@@ -55,6 +58,128 @@ export interface VariantDisplayModel extends VariantDisplayModelBase {
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(scrollbarStyles)
+
+interface HoveredCell {
+  rowIndex: number
+  genomicStart: number
+  genomicEnd: number
+  displayedRegionIndex: number
+}
+
+interface VariantHit {
+  genotype: string
+  alleles: string
+  featureName: string
+  description: string
+  length: string
+  sampleName: string
+  name: string
+  featureId: string
+  featureInfo: FeatureGenotypeInfo
+  cell: HoveredCell
+}
+
+function getFeatureUnderMouse(
+  model: VariantDisplayModel,
+  rect: DOMRect,
+  eventClientX: number,
+  eventClientY: number,
+): VariantHit | undefined {
+  const cellData = model.cellData
+  if (!cellData) {
+    return undefined
+  }
+  const mouseX = eventClientX - rect.left
+  const mouseY = eventClientY - rect.top
+
+  const region = model.visibleRegions.find(
+    r => mouseX >= r.screenStartPx && mouseX < r.screenEndPx,
+  )
+  if (!region) {
+    return undefined
+  }
+
+  const regionCellData = cellData.perRegionCellData[region.displayedRegionIndex]
+  if (!regionCellData) {
+    return undefined
+  }
+
+  const flatbushIndex = model.flatbushIndices.get(region.displayedRegionIndex)
+  if (!flatbushIndex) {
+    return undefined
+  }
+
+  const blockWidth = region.screenEndPx - region.screenStartPx
+  const regionLengthBp = region.end - region.start
+  const bpPerPx = regionLengthBp / blockWidth
+
+  const frac = (mouseX - region.screenStartPx) / blockWidth
+  const genomicPos = region.reversed
+    ? region.end - frac * regionLengthBp
+    : region.start + frac * regionLengthBp
+  const rowFrac = (mouseY + model.scrollTop) / model.rowHeight
+
+  const pxPadding = 5
+  const bpPadding = pxPadding * bpPerPx
+  const rowPadding = Math.max(0.5, pxPadding / model.rowHeight)
+  const hits = flatbushIndex.search(
+    genomicPos - bpPadding,
+    rowFrac - rowPadding,
+    genomicPos + bpPadding,
+    rowFrac + rowPadding,
+  )
+
+  let bestIdx = -1
+  let bestDist = Infinity
+  for (const idx of hits) {
+    const gStart = regionCellData.flatbushGenomicStarts[idx]!
+    const gEnd = regionCellData.flatbushGenomicEnds[idx]!
+    const dx =
+      genomicPos < gStart
+        ? gStart - genomicPos
+        : genomicPos > gEnd
+          ? genomicPos - gEnd
+          : 0
+    if (dx < bestDist) {
+      bestDist = dx
+      bestIdx = idx
+    }
+  }
+
+  if (bestIdx < 0) {
+    return undefined
+  }
+
+  const featureId =
+    regionCellData.featureIdList[
+      regionCellData.flatbushFeatureIndices[bestIdx]!
+    ]!
+  const sourceName =
+    regionCellData.sourceNameList[regionCellData.cellRowIndices[bestIdx]!]!
+  const genomicStart = regionCellData.flatbushGenomicStarts[bestIdx]!
+  const genomicEnd = regionCellData.flatbushGenomicEnds[bestIdx]!
+  const info = regionCellData.featureGenotypeMap[featureId]!
+  const genotype = info.genotypes[sourceName]!
+  const source = model.sourceMap?.[sourceName]
+  return {
+    genotype,
+    alleles: makeSimpleAltString(genotype, info.ref, info.alt),
+    featureName: info.name,
+    description:
+      info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
+    length: getBpDisplayStr(info.length),
+    sampleName: source?.sampleName ?? sourceName,
+    name: sourceName,
+    featureId,
+    featureInfo: info,
+    cell: {
+      rowIndex: regionCellData.cellRowIndices[bestIdx]!,
+      genomicStart,
+      genomicEnd,
+      displayedRegionIndex: region.displayedRegionIndex,
+    },
+  }
+}
 
 const HoveredCellHighlight = observer(function HoveredCellHighlight({
   cell,
@@ -105,26 +230,6 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   )
 })
 
-interface HoveredCell {
-  rowIndex: number
-  genomicStart: number
-  genomicEnd: number
-  displayedRegionIndex: number
-}
-
-interface VariantHit {
-  genotype: string
-  alleles: string
-  featureName: string
-  description: string
-  length: string
-  sampleName: string
-  name: string
-  featureId: string
-  featureInfo: VariantCellData['featureGenotypeMap'][string]
-  cell: HoveredCell
-}
-
 const VariantComponent = observer(function VariantComponent({
   model,
 }: {
@@ -153,112 +258,10 @@ const VariantComponent = observer(function VariantComponent({
       setRowHeight: model.setRowHeight,
     })
 
-  function getFeatureUnderMouse(
-    rect: DOMRect,
-    eventClientX: number,
-    eventClientY: number,
-  ): VariantHit | undefined {
-    const cellData = model.cellData
-    if (!cellData) {
-      return undefined
-    }
-    const mouseX = eventClientX - rect.left
-    const mouseY = eventClientY - rect.top
-
-    const regions = model.visibleRegions
-    const region = regions.find(
-      r => mouseX >= r.screenStartPx && mouseX < r.screenEndPx,
-    )
-    if (!region) {
-      return undefined
-    }
-
-    const regionCellData =
-      cellData.perRegionCellData[region.displayedRegionIndex]
-    if (!regionCellData) {
-      return undefined
-    }
-
-    const flatbushIndex = model.flatbushIndices.get(region.displayedRegionIndex)
-    if (!flatbushIndex) {
-      return undefined
-    }
-
-    const blockWidth = region.screenEndPx - region.screenStartPx
-    const regionLengthBp = region.end - region.start
-    const bpPerPx = regionLengthBp / blockWidth
-
-    const frac = (mouseX - region.screenStartPx) / blockWidth
-    const genomicPos = region.reversed
-      ? region.end - frac * regionLengthBp
-      : region.start + frac * regionLengthBp
-    const rowFrac = (mouseY + model.scrollTop) / model.rowHeight
-
-    const pxPadding = 5
-    const bpPadding = pxPadding * bpPerPx
-    const rowPadding = Math.max(0.5, pxPadding / model.rowHeight)
-    const hits = flatbushIndex.search(
-      genomicPos - bpPadding,
-      rowFrac - rowPadding,
-      genomicPos + bpPadding,
-      rowFrac + rowPadding,
-    )
-
-    let bestIdx = -1
-    let bestDist = Infinity
-    for (const idx of hits) {
-      const gStart = regionCellData.flatbushGenomicStarts[idx]!
-      const gEnd = regionCellData.flatbushGenomicEnds[idx]!
-      const dx =
-        genomicPos < gStart
-          ? gStart - genomicPos
-          : genomicPos > gEnd
-            ? genomicPos - gEnd
-            : 0
-      if (dx < bestDist) {
-        bestDist = dx
-        bestIdx = idx
-      }
-    }
-
-    if (bestIdx >= 0) {
-      const featureId =
-        regionCellData.featureIdList[
-          regionCellData.flatbushFeatureIndices[bestIdx]!
-        ]!
-      const sourceName =
-        regionCellData.sourceNameList[regionCellData.cellRowIndices[bestIdx]!]!
-      const genomicStart = regionCellData.flatbushGenomicStarts[bestIdx]!
-      const genomicEnd = regionCellData.flatbushGenomicEnds[bestIdx]!
-      const info = regionCellData.featureGenotypeMap[featureId]!
-      const genotype = info.genotypes[sourceName]!
-      const source = model.sourceMap?.[sourceName]
-      return {
-        genotype,
-        alleles: makeSimpleAltString(genotype, info.ref, info.alt),
-        featureName: info.name,
-        description:
-          info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
-        length: getBpDisplayStr(info.length),
-        sampleName: source?.sampleName ?? sourceName,
-        name: sourceName,
-        featureId,
-        featureInfo: info,
-        cell: {
-          rowIndex: regionCellData.cellRowIndices[bestIdx]!,
-          genomicStart,
-          genomicEnd,
-          displayedRegionIndex: region.displayedRegionIndex,
-        },
-      }
-    }
-    return undefined
-  }
-
   const { canvasHandlers, contextMenuNode } =
     useVariantCanvasInteraction<VariantHit>({
       model,
-      getHit: getFeatureUnderMouse,
+      getHit: (rect, x, y) => getFeatureUnderMouse(model, rect, x, y),
       getTooltip: hit => {
         const { featureId, cell, sampleName, featureInfo, ...tooltip } = hit
         return tooltip
@@ -297,7 +300,9 @@ const VariantComponent = observer(function VariantComponent({
       {/* See VariantMatrixComponent.tsx for why the canvas must stay mounted
           and use visibility:'hidden' instead of conditional rendering */}
       <canvas
-        data-testid={model.canvasDrawn ? 'variant_canvas_done' : 'variant_canvas'}
+        data-testid={
+          model.canvasDrawn ? 'variant_canvas_done' : 'variant_canvas'
+        }
         ref={canvasRef}
         style={{
           width,
