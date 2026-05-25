@@ -25,14 +25,9 @@ export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions) {
     return ObservableCreate<Feature>(async observer => {
       const sequenceAdapter = await this.configure()
-      const hw = 10000
-      const queryEnd = query.end + hw
-      const queryStart = Math.max(0, query.start - hw)
-
-      if (queryEnd < 0 || queryStart > queryEnd) {
-        observer.complete()
-        return
-      }
+      const searchPaddingBp = 10_000
+      const queryEnd = query.end + searchPaddingBp
+      const queryStart = Math.max(0, query.start - searchPaddingBp)
 
       const residues =
         (await sequenceAdapter.getSequence(
@@ -44,9 +39,9 @@ export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
           opts,
         )) ?? ''
       const search = this.getConf('search') as string
-      const searchForward = this.getConf('searchForward')
-      const searchReverse = this.getConf('searchReverse')
-      const caseInsensitive = this.getConf('caseInsensitive')
+      const searchForward = this.getConf('searchForward') as boolean
+      const searchReverse = this.getConf('searchReverse') as boolean
+      const caseInsensitive = this.getConf('caseInsensitive') as boolean
       const re = new RegExp(search, `g${caseInsensitive ? 'i' : ''}`)
 
       if (search) {

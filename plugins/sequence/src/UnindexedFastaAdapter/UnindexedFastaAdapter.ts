@@ -4,9 +4,10 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { readOptionalMetadata } from '../chromSizesUtils.ts'
+
 import type { Feature } from '@jbrowse/core/util'
-import type { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 function parseSmallFasta(text: string) {
   return new Map(
@@ -14,7 +15,7 @@ function parseSmallFasta(text: string) {
       .split('>')
       .filter(t => /\S/.test(t))
       .map(entryText => {
-        const [defLine, ...seqLines] = entryText.split('\n')
+        const [defLine, ...seqLines] = entryText.split(/\r?\n/)
         const [id, ...description] = defLine!.split(' ')
         const sequence = seqLines.join('').replace(/\s/g, '')
         return [
@@ -33,13 +34,13 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
     fasta: ReturnType<typeof parseSmallFasta>
   }>
 
-  public async getRefNames(opts?: BaseOptions) {
-    const { fasta } = await this.setup(opts)
+  public async getRefNames() {
+    const { fasta } = await this.setup()
     return [...fasta.keys()]
   }
 
-  public async getRegions(opts?: BaseOptions) {
-    const { fasta } = await this.setup(opts)
+  public async getRegions() {
+    const { fasta } = await this.setup()
     return [...fasta.entries()].map(([refName, data]) => ({
       refName,
       start: 0,
@@ -47,46 +48,42 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
     }))
   }
 
-  public async setupPre(_opts?: BaseOptions) {
-    const fastaLocation = this.getConf('fastaLocation') as FileLocation
+  public async setupPre() {
     const res = parseSmallFasta(
-      await openLocation(fastaLocation, this.pluginManager).readFile('utf8'),
+      await openLocation(
+        this.getConf('fastaLocation'),
+        this.pluginManager,
+      ).readFile('utf8'),
     )
 
-    return {
-      fasta: new Map(
-        [...res.entries()].map(([refName, val]) => {
-          return [
-            readConfObject(this.config, 'rewriteRefNames', { refName }) ||
-              refName,
-            val,
-          ]
-        }),
-      ),
+    const fasta = new Map<string, { description: string; sequence: string }>()
+    for (const [refName, val] of res) {
+      const name =
+        readConfObject(this.config, 'rewriteRefNames', { refName }) || refName
+      fasta.set(name, val)
     }
+    return { fasta }
   }
 
   public async getHeader() {
-    const loc = this.getConf('metadataLocation')
-    return loc.uri === '' || loc.uri === '/path/to/fa.metadata.yaml'
-      ? null
-      : openLocation(loc, this.pluginManager).readFile('utf8')
+    return readOptionalMetadata(
+      this.getConf('metadataLocation'),
+      this.pluginManager,
+    )
   }
 
-  public async setup(opts?: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+  public async setup() {
+    this.setupP ??= this.setupPre().catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
-  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
+  public getFeatures(region: NoAssemblyRegion) {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
-      const { fasta } = await this.setup(opts)
+      const { fasta } = await this.setup()
       const entry = fasta.get(refName)
       if (entry) {
         observer.next(
