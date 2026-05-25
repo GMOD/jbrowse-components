@@ -15,14 +15,19 @@ const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 )
 
-const byYear = new Map<string, { slug: string; title: string; href: string }[]>()
+const byYear = new Map<
+  string,
+  { slug: string; title: string; href: string }[]
+>()
 for (const post of posts) {
   const slug = blogPath(post)
   const year = slug.split('/')[0]
   if (!byYear.has(year)) {
     byYear.set(year, [])
   }
-  byYear.get(year)!.push({ slug, title: post.data.title, href: `${baseUrl}/blog/${slug}/` })
+  byYear
+    .get(year)!
+    .push({ slug, title: post.data.title, href: `${baseUrl}/blog/${slug}/` })
 }
 
 const years = [...byYear.keys()].sort((a, b) => Number(b) - Number(a))
@@ -31,10 +36,19 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
 
 <BaseLayout title={title}>
   <div class="blog-layout">
-    <button class="sidebar-toggle" id="sidebar-toggle" aria-expanded="false" aria-controls="blog-sidebar-nav">
+    <button
+      class="sidebar-toggle"
+      id="sidebar-toggle"
+      aria-expanded="false"
+      aria-controls="blog-sidebar-nav"
+    >
       ☰ Posts
     </button>
-    <nav class="blog-sidebar" id="blog-sidebar-nav" aria-label="Blog navigation">
+    <nav
+      class="blog-sidebar"
+      id="blog-sidebar-nav"
+      aria-label="Blog navigation"
+    >
       <ul>
         <li>
           <a
@@ -48,7 +62,13 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
         {
           years.map(year => (
             <li>
-              <details open={year === currentYear || (!currentSlug && year === years[0]) || undefined}>
+              <details
+                open={
+                  year === currentYear ||
+                  (!currentSlug && year === years[0]) ||
+                  undefined
+                }
+              >
                 <summary>{year}</summary>
                 <ul>
                   {byYear.get(year)!.map(post => (
@@ -56,7 +76,9 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
                       <a
                         href={post.href}
                         class:list={[{ active: post.slug === currentSlug }]}
-                        aria-current={post.slug === currentSlug ? 'page' : undefined}
+                        aria-current={
+                          post.slug === currentSlug ? 'page' : undefined
+                        }
                       >
                         {post.title}
                       </a>
@@ -171,7 +193,9 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
   }
 
   @media (max-width: 768px) {
-    .blog-layout { flex-direction: column; }
+    .blog-layout {
+      flex-direction: column;
+    }
 
     .sidebar-toggle {
       display: flex;
@@ -206,12 +230,16 @@ const currentYear = currentSlug ? currentSlug.split('/')[0] : ''
 </style>
 
 <script>
-  document.querySelector('.blog-sidebar [aria-current="page"]')?.scrollIntoView({ block: 'nearest' })
+  document
+    .querySelector('.blog-sidebar [aria-current="page"]')
+    ?.scrollIntoView({ block: 'nearest' })
 
   const sidebar = document.querySelector('.blog-sidebar')
-  document.getElementById('sidebar-toggle')?.addEventListener('click', function () {
-    const expanded = this.getAttribute('aria-expanded') === 'true'
-    this.setAttribute('aria-expanded', String(!expanded))
-    sidebar?.classList.toggle('sidebar-open', !expanded)
-  })
+  document
+    .getElementById('sidebar-toggle')
+    ?.addEventListener('click', function () {
+      const expanded = this.getAttribute('aria-expanded') === 'true'
+      this.setAttribute('aria-expanded', String(!expanded))
+      sidebar?.classList.toggle('sidebar-open', !expanded)
+    })
 </script>

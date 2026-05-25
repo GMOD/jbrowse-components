@@ -33,7 +33,9 @@ const { plugins } = pluginJSON
     }
   ]
 }`}</code></pre>
-          <p>Plugins can also be added directly inside the app via the File menu.</p>
+          <p>
+            Plugins can also be added directly inside the app via the File menu.
+          </p>
         </div>
       </div>
 
@@ -41,16 +43,24 @@ const { plugins } = pluginJSON
         <div class="info-box-title">Developer information</div>
         <div class="info-body">
           <p>
-            We welcome developers who want to create a new JBrowse 2 plugin.
-            The primary resource for getting started is the
-            <a href="https://github.com/GMOD/jbrowse-plugin-template" target="_blank" rel="noopener">
+            We welcome developers who want to create a new JBrowse 2 plugin. The
+            primary resource for getting started is the
+            <a
+              href="https://github.com/GMOD/jbrowse-plugin-template"
+              target="_blank"
+              rel="noopener"
+            >
               plugin template
             </a>.
           </p>
           <p>
             If you build a plugin you'd like featured in this store, follow the
             instructions found
-            <a href="https://github.com/GMOD/jbrowse-plugin-list" target="_blank" rel="noopener">
+            <a
+              href="https://github.com/GMOD/jbrowse-plugin-list"
+              target="_blank"
+              rel="noopener"
+            >
               here
             </a>.
           </p>
@@ -59,50 +69,58 @@ const { plugins } = pluginJSON
     </div>
 
     <div class="plugin-list">
-      {plugins.map(plugin => {
-        const configString = JSON.stringify({ name: plugin.name, url: plugin.url }, null, 2)
-        return (
-          <div class="plugin-card">
-            {plugin.image && (
-              <img
-                class="plugin-image"
-                src={plugin.image}
-                alt={plugin.name}
-                loading="lazy"
-              />
-            )}
-            <div class="plugin-body">
-              <div class="plugin-header">
-                <h2>{plugin.name}</h2>
-                <a
-                  class:list={[btn.btn, btn.btnSecondary, btn.btnSmall]}
-                  href={plugin.location}
-                  target="_blank"
-                  rel="noopener"
-                >
-                  <Icon name="mdi:github" width="16" height="16" />
-                  GitHub
-                </a>
-              </div>
-              <div class="plugin-meta">
-                <span class="meta-item">
-                  <Icon name="mdi:account" width="14" height="14" />
-                  {plugin.authors.join(', ')}
-                </span>
-                <span class="meta-item">
-                  <Icon name="mdi:scale-balance" width="14" height="14" />
-                  {plugin.license === 'NONE' ? 'No license' : plugin.license}
-                </span>
-              </div>
-              <p class="plugin-description">{plugin.description}</p>
-              <div class="config-section">
-                <div class="config-label">Configuration</div>
-                <pre><code>{configString}</code></pre>
+      {
+        plugins.map(plugin => {
+          const configString = JSON.stringify(
+            { name: plugin.name, url: plugin.url },
+            null,
+            2,
+          )
+          return (
+            <div class="plugin-card">
+              {plugin.image && (
+                <img
+                  class="plugin-image"
+                  src={plugin.image}
+                  alt={plugin.name}
+                  loading="lazy"
+                />
+              )}
+              <div class="plugin-body">
+                <div class="plugin-header">
+                  <h2>{plugin.name}</h2>
+                  <a
+                    class:list={[btn.btn, btn.btnSecondary, btn.btnSmall]}
+                    href={plugin.location}
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    <Icon name="mdi:github" width="16" height="16" />
+                    GitHub
+                  </a>
+                </div>
+                <div class="plugin-meta">
+                  <span class="meta-item">
+                    <Icon name="mdi:account" width="14" height="14" />
+                    {plugin.authors.join(', ')}
+                  </span>
+                  <span class="meta-item">
+                    <Icon name="mdi:scale-balance" width="14" height="14" />
+                    {plugin.license === 'NONE' ? 'No license' : plugin.license}
+                  </span>
+                </div>
+                <p class="plugin-description">{plugin.description}</p>
+                <div class="config-section">
+                  <div class="config-label">Configuration</div>
+                  <pre>
+                    <code>{configString}</code>
+                  </pre>
+                </div>
               </div>
             </div>
-          </div>
-        )
-      })}
+          )
+        })
+      }
     </div>
   </div>
 </BaseLayout>

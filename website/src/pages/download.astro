@@ -33,23 +33,30 @@ const desktopDownloads = [
       many sources.
     </p>
     <div class="download-cards">
-      {desktopDownloads.map(({ os, suffix, icon }) => (
-        <div class="download-card">
-          <div class="card-icon"><Icon name={icon} width="40" height="40" /></div>
-          <h3>{os}</h3>
-          <a
-            class:list={[btn.btn, btn.btnPrimary, btn.btnSmall]}
-            href={`${desktopBase}/jbrowse-desktop-${currentVersion}-${suffix}`}
-          >
-            Download
-          </a>
-        </div>
-      ))}
+      {
+        desktopDownloads.map(({ os, suffix, icon }) => (
+          <div class="download-card">
+            <div class="card-icon">
+              <Icon name={icon} width="40" height="40" />
+            </div>
+            <h3>{os}</h3>
+            <a
+              class:list={[btn.btn, btn.btnPrimary, btn.btnSmall]}
+              href={`${desktopBase}/jbrowse-desktop-${currentVersion}-${suffix}`}
+            >
+              Download
+            </a>
+          </div>
+        ))
+      }
     </div>
     <p class="caption">
-      Check out our <a href={`${baseUrl}/docs/quickstart_desktop/`}>quick start guide</a>
-      after downloading. Can't find what you're looking for?
-      Check <a href={ghRelease}>other platforms</a>.
+      Check out our <a href={`${baseUrl}/docs/quickstart_desktop/`}
+        >quick start guide</a
+      >
+      after downloading. Can't find what you're looking for? Check <a
+        href={ghRelease}>other platforms</a
+      >.
     </p>
 
     <h2>JBrowse Web</h2>
@@ -58,7 +65,9 @@ const desktopDownloads = [
       your own website.
     </p>
     <div class="web-download">
-      <a class:list={[btn.btn, btn.btnPrimary]} href={webZip}>Download JBrowse Web</a>
+      <a class:list={[btn.btn, btn.btnPrimary]} href={webZip}
+        >Download JBrowse Web</a
+      >
     </div>
     <p>
       Consider installing the JBrowse CLI tools (below), which can be used to
@@ -87,34 +96,46 @@ const desktopDownloads = [
     <h2>Embedded components</h2>
     <ul>
       <li>
-        <a href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view">
+        <a
+          href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view"
+        >
           @jbrowse/react-linear-genome-view
         </a>
-        — linear genome browser React component on NPM
-        (<a href={lgvStorybook}>storybook docs</a>)
+        — linear genome browser React component on NPM (<a href={lgvStorybook}
+          >storybook docs</a
+        >)
       </li>
       <li>
-        <a href="https://www.npmjs.com/package/@jbrowse/react-circular-genome-view">
+        <a
+          href="https://www.npmjs.com/package/@jbrowse/react-circular-genome-view"
+        >
           @jbrowse/react-circular-genome-view
         </a>
-        — circular genome browser React component on NPM
-        (<a href={cgvStorybook}>storybook docs</a>)
+        — circular genome browser React component on NPM (<a href={cgvStorybook}
+          >storybook docs</a
+        >)
       </li>
     </ul>
     <p>
-      More info in the <a href={`${baseUrl}/docs/embedded_components/`}>embedded docs</a>,
-      including examples with create-react-app, vite, next.js, and vanillajs.
+      More info in the <a href={`${baseUrl}/docs/embedded_components/`}
+        >embedded docs</a
+      >, including examples with create-react-app, vite, next.js, and vanillajs.
     </p>
 
     <h2>Jupyter Notebooks Extension</h2>
     <ul>
-      <li><a href="https://gmod.github.io/jbrowse-jupyter/docs/html/index.html">Documentation</a></li>
+      <li>
+        <a href="https://gmod.github.io/jbrowse-jupyter/docs/html/index.html"
+          >Documentation</a>
+      </li>
       <li><a href="https://github.com/GMOD/jbrowse-jupyter">Source code</a></li>
     </ul>
 
     <h2>Dash — Python</h2>
     <ul>
-      <li><a href="https://github.com/GMOD/dash_jbrowse">GMOD/dash_jbrowse</a></li>
+      <li>
+        <a href="https://github.com/GMOD/dash_jbrowse">GMOD/dash_jbrowse</a>
+      </li>
     </ul>
 
     <h2>R/Shiny widget</h2>

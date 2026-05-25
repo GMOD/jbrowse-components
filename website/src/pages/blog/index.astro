@@ -25,7 +25,9 @@ const renderedPosts = await Promise.all(
         <article>
           <header>
             <h2>
-              <a href={`${baseUrl}/blog/${blogPath(post)}/`}>{post.data.title}</a>
+              <a href={`${baseUrl}/blog/${blogPath(post)}/`}>
+                {post.data.title}
+              </a>
             </h2>
             <div class="article-meta">
               <time datetime={post.data.date.toISOString()}>
@@ -35,7 +37,9 @@ const renderedPosts = await Promise.all(
                   day: 'numeric',
                 })}
               </time>
-              {post.data.author && <span class="author">{post.data.author}</span>}
+              {post.data.author && (
+                <span class="author">{post.data.author}</span>
+              )}
               {post.data.tags && (
                 <div class={blog.tags}>
                   {post.data.tags.map(tag => (

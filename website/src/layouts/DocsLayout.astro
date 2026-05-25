@@ -15,19 +15,29 @@ const { title, currentSlug, description } = Astro.props
 
 const allDocs = await getCollection('docs')
 const sidebar = buildSidebar(allDocs, baseUrl)
-
 ---
 
 <BaseLayout title={`${title} | JBrowse Docs`} description={description}>
   <div class="docs-layout">
-    <button class="sidebar-toggle" id="sidebar-toggle" aria-expanded="false" aria-controls="docs-sidebar-nav">
+    <button
+      class="sidebar-toggle"
+      id="sidebar-toggle"
+      aria-expanded="false"
+      aria-controls="docs-sidebar-nav"
+    >
       ☰ Contents
     </button>
-    <nav class="docs-sidebar" id="docs-sidebar-nav" aria-label="Documentation navigation">
+    <nav
+      class="docs-sidebar"
+      id="docs-sidebar-nav"
+      aria-label="Documentation navigation"
+    >
       <ul>
-        {sidebar.map(item => (
-          <SidebarItem item={item} currentSlug={currentSlug} />
-        ))}
+        {
+          sidebar.map(item => (
+            <SidebarItem item={item} currentSlug={currentSlug} />
+          ))
+        }
       </ul>
     </nav>
     <article class="docs-content" data-pagefind-body>
@@ -44,19 +54,23 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     let el: HTMLElement | null = active.parentElement
     while (el && el !== sidebar) {
       if (el.tagName === 'DETAILS') {
-        (el as HTMLDetailsElement).open = true
+        ;(el as HTMLDetailsElement).open = true
       }
       el = el.parentElement
     }
-    const offset = (active as HTMLElement).getBoundingClientRect().top - sidebar.getBoundingClientRect().top
+    const offset =
+      (active as HTMLElement).getBoundingClientRect().top -
+      sidebar.getBoundingClientRect().top
     sidebar.scrollTop += offset - sidebar.clientHeight / 2
   }
 
-  document.getElementById('sidebar-toggle')?.addEventListener('click', function () {
-    const expanded = this.getAttribute('aria-expanded') === 'true'
-    this.setAttribute('aria-expanded', String(!expanded))
-    sidebar?.classList.toggle('sidebar-open', !expanded)
-  })
+  document
+    .getElementById('sidebar-toggle')
+    ?.addEventListener('click', function () {
+      const expanded = this.getAttribute('aria-expanded') === 'true'
+      this.setAttribute('aria-expanded', String(!expanded))
+      sidebar?.classList.toggle('sidebar-open', !expanded)
+    })
 </script>
 
 <style>
@@ -174,8 +188,18 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     margin-bottom: 1rem;
     color: var(--color-text);
   }
-  .docs-content :global(h3) { font-size: 1.25rem; font-weight: 700; margin-top: 2rem; color: var(--color-text); }
-  .docs-content :global(h4) { font-size: 1.05rem; font-weight: 700; margin-top: 1.5rem; color: var(--color-text); }
+  .docs-content :global(h3) {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    color: var(--color-text);
+  }
+  .docs-content :global(h4) {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-top: 1.5rem;
+    color: var(--color-text);
+  }
 
   .docs-content :global(h2),
   .docs-content :global(h3),
@@ -250,8 +274,13 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     padding: 0.5rem 0.75rem;
     text-align: left;
   }
-  .docs-content :global(th) { background: var(--color-surface); font-weight: 600; }
-  .docs-content :global(tr:nth-child(even)) { background: var(--color-surface); }
+  .docs-content :global(th) {
+    background: var(--color-surface);
+    font-weight: 600;
+  }
+  .docs-content :global(tr:nth-child(even)) {
+    background: var(--color-surface);
+  }
   .docs-content :global(blockquote) {
     border-left: 4px solid var(--color-accent);
     margin: 1.5rem 0;
@@ -282,7 +311,9 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     padding: 0.75rem 1rem;
     margin: 1.5rem 0;
   }
-  .docs-content :global(.admonition > *:last-child) { margin-bottom: 0; }
+  .docs-content :global(.admonition > *:last-child) {
+    margin-bottom: 0;
+  }
   .docs-content :global(.admonition-title) {
     font-weight: 700;
     margin-bottom: 0.4rem;
@@ -294,25 +325,35 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     background: #f0f4ff;
     border-left: 4px solid #4a6cf7;
   }
-  .docs-content :global(.admonition-note .admonition-title) { color: #4a6cf7; }
+  .docs-content :global(.admonition-note .admonition-title) {
+    color: #4a6cf7;
+  }
   .docs-content :global(.admonition-info) {
     background: #f0faf8;
     border-left: 4px solid var(--color-accent);
   }
-  .docs-content :global(.admonition-info .admonition-title) { color: var(--color-accent); }
+  .docs-content :global(.admonition-info .admonition-title) {
+    color: var(--color-accent);
+  }
   .docs-content :global(.admonition-caution) {
     background: #fffbeb;
     border-left: 4px solid #d97706;
   }
-  .docs-content :global(.admonition-caution .admonition-title) { color: #d97706; }
+  .docs-content :global(.admonition-caution .admonition-title) {
+    color: #d97706;
+  }
   .docs-content :global(.admonition-warning) {
     background: #fff1f0;
     border-left: 4px solid #e53e3e;
   }
-  .docs-content :global(.admonition-warning .admonition-title) { color: #e53e3e; }
+  .docs-content :global(.admonition-warning .admonition-title) {
+    color: #e53e3e;
+  }
 
   @media (max-width: 768px) {
-    .docs-layout { flex-direction: column; }
+    .docs-layout {
+      flex-direction: column;
+    }
 
     .sidebar-toggle {
       display: flex;
@@ -344,8 +385,14 @@ const sidebar = buildSidebar(allDocs, baseUrl)
       display: block;
     }
 
-    .docs-content h1 { font-size: 1.5rem; }
-    .docs-content :global(h2) { font-size: 1.25rem; }
-    .docs-content :global(h3) { font-size: 1.1rem; }
+    .docs-content h1 {
+      font-size: 1.5rem;
+    }
+    .docs-content :global(h2) {
+      font-size: 1.25rem;
+    }
+    .docs-content :global(h3) {
+      font-size: 1.1rem;
+    }
   }
 </style>

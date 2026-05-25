@@ -14,7 +14,10 @@ export async function getStaticPaths() {
     params: { slug: blogPath(post) },
     props: {
       post,
-      prev: i > 0 ? { slug: blogPath(posts[i - 1]), title: posts[i - 1].data.title } : null,
+      prev:
+        i > 0
+          ? { slug: blogPath(posts[i - 1]), title: posts[i - 1].data.title }
+          : null,
       next:
         i < posts.length - 1
           ? { slug: blogPath(posts[i + 1]), title: posts[i + 1].data.title }
@@ -46,7 +49,11 @@ const { html } = await renderMarkdown(post.body ?? '')
           post.data.author && (
             <span class="author">
               {post.data.author_url ? (
-                <a href={post.data.author_url} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={post.data.author_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   {post.data.author}
                 </a>
               ) : (
