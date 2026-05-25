@@ -322,10 +322,10 @@ test('indexes single assembly volvox config', async () => {
       '--attributes',
       'Name,ID,Note',
       '--excludeTracks',
-      'gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf,volvox_pangenome_50_vcf',
+      'gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf',
     ])
     // to update (e.g. if volvox config is updated) run:
-    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force --excludeTracks gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf,volvox_pangenome_50_vcf
+    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force --excludeTracks gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf
     expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
     expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
     expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
@@ -346,10 +346,10 @@ test('indexes entire volvox config', async () => {
       '--attributes',
       'Name,ID,Note',
       '--excludeTracks',
-      'gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf,volvox_pangenome_50_vcf',
+      'gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf',
     ])
     // to update (e.g. if volvox config is updated) run:
-    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force --excludeTracks gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf,volvox_pangenome_50_vcf
+    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force --excludeTracks gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf
     expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
     expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
     expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)

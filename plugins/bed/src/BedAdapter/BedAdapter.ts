@@ -85,7 +85,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!
-      const splitLine = line!.split('\t')
+      const splitLine = line.split('\t')
       const feat = new SimpleFeature(
         featureData({
           splitLine,

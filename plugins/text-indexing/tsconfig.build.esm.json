@@ -5,6 +5,7 @@
   "compilerOptions": {
     "types": ["node", "jest"],
     "outDir": "esm",
-    "rootDir": "src"
+    "rootDir": "src",
+    "paths": {}
   }
 }
