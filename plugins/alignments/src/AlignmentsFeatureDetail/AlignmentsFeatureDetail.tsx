@@ -11,7 +11,7 @@ import { tags } from './tagInfo.ts'
 import { getTag } from './util.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { AlignmentFeatureSerialized } from './util.ts'
 
 // lazies
 const SupplementaryAlignments = lazy(
@@ -21,17 +21,20 @@ const LinkedPairedAlignments = lazy(
   () => import('./LinkedPairedAlignments.tsx'),
 )
 
-const FeatDefined = observer(function FeatDefined(props: {
-  feat: SimpleFeatureSerialized
+const FeatDefined = observer(function FeatDefined({
+  feat,
+  model,
+}: {
+  feat: AlignmentFeatureSerialized
   model: AlignmentFeatureWidgetModel
 }) {
-  const { model, feat } = props
-  const flags = feat.flags as number | null
-  const SA = getTag('SA', feat) as string | undefined
+  const { flags } = feat
+  const sa = getTag('SA', feat)
+  const SA = typeof sa === 'string' ? sa : undefined
   return (
     <Paper data-testid="alignment-side-drawer">
       <FeatureDetails
-        {...props}
+        model={model}
         descriptions={{ tags }}
         feature={feat}
         formatter={(value, key) =>
@@ -46,13 +49,13 @@ const FeatDefined = observer(function FeatDefined(props: {
       {SA !== undefined ? (
         <SupplementaryAlignments model={model} tag={SA} feature={feat} />
       ) : null}
-      {flags != null ? (
+      {flags !== undefined ? (
         <>
           {flags & 1 ? (
             <LinkedPairedAlignments model={model} feature={feat} />
           ) : null}
 
-          <Flags flags={flags} {...props} />
+          <Flags flags={flags} />
         </>
       ) : null}
     </Paper>

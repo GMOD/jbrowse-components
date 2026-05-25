@@ -1,27 +1,20 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { hasBreakpointSplitView } from '@jbrowse/sv-core'
 
 import LaunchPairedEndBreakpointSplitViewPanel from './LaunchPairedEndBreakpointSplitViewPanel.tsx'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { AlignmentFeatureSerialized } from './util.ts'
 
-export default function SuppAlignments(props: {
+export default function SuppAlignments({
+  model,
+  feature,
+}: {
   model: AlignmentFeatureWidgetModel
-  feature: SimpleFeatureSerialized
+  feature: AlignmentFeatureSerialized
 }) {
-  const { model, feature } = props
-  const session = getSession(model)
-  const { pluginManager } = getEnv(session)
-  let hasBreakendSplitView = false
-
-  try {
-    hasBreakendSplitView = !!pluginManager.getViewType('BreakpointSplitView')
-  } catch (e) {
-    // ignore
-  }
-  return hasBreakendSplitView ? (
-    <BaseCard {...props} title="Paired alignments">
+  return hasBreakpointSplitView(model) ? (
+    <BaseCard title="Paired alignments">
       <LaunchPairedEndBreakpointSplitViewPanel
         model={model}
         feature={feature}

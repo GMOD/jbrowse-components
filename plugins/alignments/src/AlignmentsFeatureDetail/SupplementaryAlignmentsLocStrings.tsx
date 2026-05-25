@@ -1,8 +1,7 @@
-import { getLengthOnRef } from '@jbrowse/cigar-utils'
+import { getLengthOnRef } from '@jbrowse/alignments-core'
 import { toLocale } from '@jbrowse/core/util'
+import { navToLoc } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
-
-import { navToLoc } from './util.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 
@@ -22,25 +21,22 @@ export default function SupplementaryAlignmentsLocStrings({
           .filter(SA => !!SA)
           .map((SA, idx) => {
             const [saRef, saStart, saStrand, saCigar] = SA.split(',')
-            const saLength = getLengthOnRef(saCigar!)
+            if (!saRef || !saStart || !saStrand || !saCigar) {
+              return null
+            }
+            const saLength = getLengthOnRef(saCigar)
             const extra = Math.floor(saLength / 5)
-            const start = +saStart!
-            const end = +saStart! + saLength
-            const sp = start - extra
-            const ep = end + extra
-            const locString = `${saRef}:${Math.max(1, sp)}-${ep}`
-            const displayStart = toLocale(start)
-            const displayEnd = toLocale(end)
-            const displayString = `${saRef}:${displayStart}-${displayEnd} (${saStrand}) [${saLength}bp]`
+            const start = +saStart
+            const end = start + saLength
+            const locString = `${saRef}:${Math.max(1, start - extra)}-${end + extra}`
+            const displayString = `${saRef}:${toLocale(start)}-${toLocale(end)} (${saStrand}) [${saLength}bp]`
             return (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */
               <li key={`${locString}-${idx}`}>
                 <Link
                   href="#"
-                  onClick={async event => {
+                  onClick={event => {
                     event.preventDefault()
-
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     navToLoc(locString, model)
                   }}
                 >

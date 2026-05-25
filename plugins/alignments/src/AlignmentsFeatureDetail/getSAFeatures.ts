@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { getSession } from '@jbrowse/core/util'
 
-import type { Feature } from '@jbrowse/core/util'
+import type { AlignmentFeatureSerialized } from './util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface ReducedFeature {
@@ -13,8 +13,8 @@ export interface ReducedFeature {
   start: number
   clipLengthAtStartOfRead: number
   end: number
-  strand: -1 | 1 | undefined
-  seqLength: number
+  strand: number
+  seqLength?: number
   syntenyId?: number
   uniqueId: string
   mate: {
@@ -31,13 +31,17 @@ export async function getSAFeatures({
   feature,
 }: {
   view: LinearGenomeViewModel
-  feature: Feature
+  feature: AlignmentFeatureSerialized
 }) {
   const { assemblyManager } = getSession(view)
-  const cigar = feature.get('CIGAR') as string
-  const origStrand = feature.get('strand')
-  const SA = (feature.get('tags')?.SA as string) || ''
-  const readName = feature.get('name')!
+  const { CIGAR: cigar, strand: origStrand = 1, name: readName, tags } = feature
+  if (cigar === undefined) {
+    throw new Error('feature missing CIGAR')
+  }
+  if (readName === undefined) {
+    throw new Error('feature missing name')
+  }
+  const SA = typeof tags?.SA === 'string' ? tags.SA : ''
   const clipLengthAtStartOfRead = getClip(cigar, 1)
 
   // get the canonical refname for the read because if the read.get('refName')
@@ -48,16 +52,10 @@ export async function getSAFeatures({
     throw new Error('assembly not found')
   }
 
-  const suppAlns = featurizeSA(
-    SA,
-    feature.id(),
-    origStrand ?? 1,
-    readName,
-    true,
-  )
+  const suppAlns = featurizeSA(SA, feature.uniqueId, origStrand, readName, true)
 
   const feat = {
-    ...feature.toJSON(),
+    ...feature,
     clipLengthAtStartOfRead,
     strand: 1,
     mate: {
@@ -68,8 +66,8 @@ export async function getSAFeatures({
   }
   const features = [feat, ...suppAlns] as ReducedFeature[]
 
-  for (const [i, feature_] of features.entries()) {
-    const f = feature_
+  for (let i = 0; i < features.length; i++) {
+    const f = features[i]!
     f.refName = assembly.getCanonicalRefName2(f.refName)
     f.syntenyId = i
     f.mate.syntenyId = i

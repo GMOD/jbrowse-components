@@ -26,32 +26,26 @@ const flagNames = [
   'supplementary alignment',
 ]
 
-export default function AlignmentFlags(props: { flags: number }) {
+export default function AlignmentFlags({ flags }: { flags: number }) {
   const { classes } = useStyles()
-  const { flags } = props
-
   return (
-    <BaseCard {...props} title="Flags">
+    <BaseCard title="Flags">
       <SimpleField name="Flag" value={flags} />
       <FormGroup>
-        {flagNames.map((name, idx) => {
-          const val = flags & (1 << idx)
-          const key = `${name}_${val}`
-          return (
-            <FormControlLabel
-              key={key}
-              control={
-                <Checkbox
-                  className={classes.compact}
-                  checked={Boolean(val)}
-                  name={name}
-                  readOnly
-                />
-              }
-              label={name}
-            />
-          )
-        })}
+        {flagNames.map((name, idx) => (
+          <FormControlLabel
+            key={name}
+            control={
+              <Checkbox
+                className={classes.compact}
+                checked={(flags & (1 << idx)) !== 0}
+                name={name}
+                readOnly
+              />
+            }
+            label={name}
+          />
+        ))}
       </FormGroup>
     </BaseCard>
   )

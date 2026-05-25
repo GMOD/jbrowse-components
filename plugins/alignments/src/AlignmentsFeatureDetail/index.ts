@@ -13,7 +13,7 @@ export default function AlignmentFeatureDetailsF(pluginManager: PluginManager) {
       new WidgetType({
         name: 'AlignmentsFeatureWidget',
         heading: 'Feature details',
-        configSchema: configSchema,
+        configSchema,
         stateModel: stateModelFactory(pluginManager),
         ReactComponent: lazy(() => import('./AlignmentsFeatureDetail.tsx')),
       }),

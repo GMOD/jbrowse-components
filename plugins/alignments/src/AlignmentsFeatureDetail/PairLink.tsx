@@ -1,6 +1,5 @@
+import { navToLoc } from '@jbrowse/sv-core'
 import { Link } from '@mui/material'
-
-import { navToLoc } from './util.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 
@@ -15,7 +14,6 @@ export default function PairLink({
     <Link
       onClick={event => {
         event.preventDefault()
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         navToLoc(locString, model)
       }}
       href="#"
