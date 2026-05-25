@@ -1,498 +1,118 @@
-import fs from 'fs'
 import path from 'path'
 
+import { destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
+import { createCanvas } from 'canvas'
 
+import { readData } from './readData.ts'
 import { booleanize } from './util.ts'
 
 import type { Entry } from './parseArgv.ts'
+import type { Opts } from './readData.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export interface Opts {
-  noRasterize?: boolean
-  loc?: string
-  width?: number
-  session?: string
-  assembly?: string
-  config?: string
-  fasta?: string
-  aliases?: string
-  cytobands?: string
-  defaultSession?: string
-  trackList?: Entry[]
-  tracks?: string
-}
+export type { Opts } from './readData.ts'
+export { makeTrackConfig, readData } from './readData.ts'
 
-function read(file: string): unknown {
-  let res: unknown
-  try {
-    res = JSON.parse(fs.readFileSync(file, 'utf8'))
-  } catch (e) {
-    throw new Error(
-      `Failed to parse ${file} as JSON, use --fasta if you mean to pass a FASTA file`,
-      { cause: e },
-    )
-  }
-  return res
-}
-function makeLocation(file: string) {
-  return file.startsWith('http') ? { uri: file } : { localPath: file }
-}
-
-function addRelativePaths(config: Record<string, unknown>, configPath: string) {
-  if (typeof config === 'object') {
-    for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object') {
-        addRelativePaths(config[key] as Record<string, unknown>, configPath)
-      } else if (key === 'localPath') {
-        config.localPath = path.resolve(configPath, config.localPath as string)
-      }
-    }
-  }
-}
-
-interface Assembly {
-  name: string
-  sequence: Record<string, unknown>
-  refNameAliases?: Record<string, unknown>
-  cytobands?: Record<string, unknown>
-}
-
-interface Track {
-  trackId: string
-  [key: string]: unknown
-}
-interface Config {
-  assemblies: Assembly[]
-  assembly: Assembly
-  tracks: Track[]
-  [key: string]: unknown
-}
-
-export function readData({
-  assembly: asm,
-  config,
-  session,
-  fasta,
-  aliases,
-  cytobands,
-  defaultSession,
-  tracks,
-  trackList = [],
-}: Opts) {
-  const assemblyData =
-    asm && fs.existsSync(asm) ? (read(asm) as Assembly) : undefined
-  const tracksData = tracks ? (read(tracks) as Track[]) : undefined
-  const configData = config ? (read(config) as Config) : ({} as Config)
-
-  let sessionData = session
-    ? (read(session) as Record<string, unknown>)
-    : undefined
-
-  if (config) {
-    addRelativePaths(configData, path.dirname(path.resolve(config)))
-  }
-
-  // the session.json can be a raw session or a json file with a "session"
-  // attribute, which is what is exported via the "File->Export session" in
-  // jbrowse-web
-  if (sessionData?.session) {
-    sessionData = sessionData.session as Record<string, unknown>
-  }
-
-  // only export first view
-  if (sessionData?.views) {
-    sessionData.view = (sessionData.views as Record<string, unknown>[])[0]
-  }
-
-  // use assembly from file if a file existed
-  if (assemblyData) {
-    configData.assembly = assemblyData
-  }
-  // else check if it was an assembly name in a config file
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  else if (configData.assemblies?.length) {
-    configData.assemblies.find(entry => entry.name === asm)
-    if (asm) {
-      const assembly = configData.assemblies.find(entry => entry.name === asm)
-      if (!assembly) {
-        throw new Error(`assembly ${asm} not found in config`)
-      }
-      configData.assembly = assembly
-    } else {
-      configData.assembly = configData.assemblies[0]!
-    }
-  }
-  // else load fasta from command line
-  else if (fasta) {
-    const bgzip = fasta.endsWith('gz')
-
-    configData.assembly = {
-      name: path.basename(fasta),
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'refseq',
-        adapter: {
-          type: bgzip ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
-          fastaLocation: makeLocation(fasta),
-          faiLocation: makeLocation(`${fasta}.fai`),
-          gziLocation: bgzip ? makeLocation(`${fasta}.gzi`) : undefined,
-        },
-      },
-    }
-    if (aliases) {
-      configData.assembly.refNameAliases = {
-        adapter: {
-          type: 'RefNameAliasAdapter',
-          location: makeLocation(aliases),
-        },
-      }
-    }
-    if (cytobands) {
-      configData.assembly.cytobands = {
-        adapter: {
-          type: 'CytobandAdapter',
-          location: makeLocation(cytobands),
-        },
-      }
-    }
-  }
-
-  // throw if still no assembly
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!configData.assembly) {
-    throw new Error(
-      'no assembly specified, use --fasta to supply an indexed FASTA file (generated with samtools faidx yourfile.fa). see README for alternatives with --assembly and --config',
-    )
-  }
-
-  if (tracksData) {
-    configData.tracks = tracksData
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  else if (!configData.tracks) {
-    configData.tracks = []
-  }
-
-  for (const track of trackList) {
-    const [type, opts] = track
-    const [file, ...rest] = opts
-    const index = rest.find(r => r.startsWith('index:'))?.replace('index:', '')
-    if (!file) {
-      throw new Error('no file specified')
-    }
-
-    if (type === 'bam') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'AlignmentsTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: makeLocation(file),
-            index: {
-              location: makeLocation(index || `${file}.bai`),
-              indexType: index?.endsWith('.csi') ? 'CSI' : 'BAI',
-            },
-            sequenceAdapter: configData.assembly.sequence.adapter,
-          },
-          ...(opts.includes('snpcov')
-            ? {
-                displays: [
-                  {
-                    type: 'LinearSNPCoverageDisplay',
-                    displayId: `${path.basename(file)}-${Math.random()}`,
-                  },
-                ],
-              }
-            : {}),
-        },
-      ]
-    }
-    if (type === 'cram') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'AlignmentsTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'CramAdapter',
-            cramLocation: makeLocation(file),
-            craiLocation: makeLocation(index || `${file}.crai`),
-            sequenceAdapter: configData.assembly.sequence.adapter,
-          },
-          ...(opts.includes('snpcov')
-            ? {
-                displays: [
-                  {
-                    type: 'LinearSNPCoverageDisplay',
-                    displayId: `${path.basename(file)}-${Math.random()}`,
-                  },
-                ],
-              }
-            : {}),
-        },
-      ]
-    }
-    if (type === 'bigwig') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'QuantitativeTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: makeLocation(file),
-          },
-        },
-      ]
-    }
-
-    if (type === 'vcfgz') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'VariantTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'VcfTabixAdapter',
-            vcfGzLocation: makeLocation(file),
-            index: {
-              location: makeLocation(index || `${file}.tbi`),
-              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
-            },
-          },
-        },
-      ]
-    }
-
-    if (type === 'gffgz') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'FeatureTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            gffGzLocation: makeLocation(file),
-            index: {
-              location: makeLocation(index || `${file}.tbi`),
-              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
-            },
-          },
-        },
-      ]
-    }
-
-    if (type === 'hic') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'HicTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'HicAdapter',
-            hicLocation: makeLocation(file),
-          },
-        },
-      ]
-    }
-    if (type === 'bigbed') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'FeatureTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'BigBedAdapter',
-            bigBedLocation: makeLocation(file),
-          },
-        },
-      ]
-    }
-    if (type === 'bedgz') {
-      configData.tracks = [
-        ...configData.tracks,
-        {
-          type: 'FeatureTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
-          adapter: {
-            type: 'BedTabixAdapter',
-            bedGzLocation: makeLocation(file),
-            index: {
-              location: makeLocation(index || `${file}.tbi`),
-              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
-            },
-          },
-        },
-      ]
-    }
-  }
-
-  if (!defaultSession) {
-    // don't use defaultSession from config.json file, can result in assembly
-    // name confusion
-    configData.defaultSession = undefined
-  }
-
-  // only allow an external manually specified session
-  if (sessionData) {
-    configData.defaultSession = sessionData
-  }
-
-  return configData
-}
-
-function process(
-  trackEntry: Entry,
-  view: LinearGenomeViewModel,
-  extra: (arg: string) => string = c => c,
-) {
+function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
   const [, [track, ...opts]] = trackEntry
   if (!track) {
     throw new Error('invalid command line args')
   }
-  const currentTrack = view.showTrack(extra(track))
+  const currentTrack = view.showTrack(path.basename(track))
   const display = currentTrack.displays[0]
   for (const opt of opts) {
-    // apply height to any track
-    if (opt.startsWith('height:')) {
-      const [, height] = opt.split(':')
-      if (height) {
-        display.setHeight(+height)
+    const [prefix, val1 = '', val2] = opt.split(':')
+
+    if (prefix === 'height') {
+      if (val1) {
+        display.setHeight(+val1)
       }
-    }
-
-    // apply sort to pileup
-    else if (opt.startsWith('sort:')) {
-      const [, type, tag] = opt.split(':')
-      display.PileupDisplay.setSortedBy(type, tag)
-    }
-
-    // apply color scheme to pileup
-    else if (opt.startsWith('color:')) {
-      const [, type, tag] = opt.split(':')
-      if (display.PileupDisplay) {
-        display.PileupDisplay.setColorScheme({ type, tag })
+    } else if (prefix === 'sort') {
+      display.setSortedBy?.(val1, val2)
+    } else if (prefix === 'color') {
+      if (display.setColorScheme) {
+        display.setColorScheme({ type: val1, tag: val2 })
       } else {
-        display.setColor(type)
+        display.setColor?.(val1)
       }
-    }
-
-    // apply feature height to pileup (supports normal/compact/super-compact or a number)
-    else if (opt.startsWith('featureHeight:')) {
-      const [, val] = opt.split(':')
-      if (val) {
-        const pileup = display.PileupDisplay ?? display
-        if (val === 'normal') {
-          pileup.setFeatureHeight(7)
-          pileup.setNoSpacing(false)
-        } else if (val === 'compact') {
-          pileup.setFeatureHeight(2)
-          pileup.setNoSpacing(true)
-        } else if (val === 'super-compact') {
-          pileup.setFeatureHeight(1)
-          pileup.setNoSpacing(true)
-        } else {
-          const n = +val
-          if (isNaN(n)) {
-            throw new Error(
-              `Invalid featureHeight "${val}". Use normal, compact, super-compact, or a number.`,
-            )
-          }
-          pileup.setFeatureHeight(n)
+    } else if (prefix === 'arcs') {
+      // 'off' | 'up' | 'down' | 'samplot' — paired-end arcs / samplot view
+      display.setPairedArcs?.(val1)
+    } else if (prefix === 'linkedReads') {
+      // 'off' | 'normal' | 'bezier' — 10x/linked-read chain overlay
+      display.setLinkedReads?.(val1)
+    } else if (prefix === 'sashimi') {
+      // 'off' | 'up' | 'down' — splice-junction arcs
+      display.setSashimiArcs?.(val1)
+    } else if (prefix === 'coverage') {
+      display.setShowCoverage?.(booleanize(val1 || 'true'))
+    } else if (prefix === 'coverageHeight') {
+      if (val1) {
+        display.setCoverageHeight?.(+val1)
+      }
+    } else if (prefix === 'arcsHeight') {
+      if (val1) {
+        display.setArcsHeight?.(+val1)
+      }
+    } else if (prefix === 'lineWidth') {
+      if (val1) {
+        display.setLineWidth?.(+val1)
+      }
+    } else if (prefix === 'featureHeight') {
+      if (val1 === 'normal' || val1 === 'compact' || val1 === 'super-compact') {
+        // setCompactness is the authoritative cross-display API (alignments,
+        // basic features, comparative views all implement it)
+        display.setCompactness?.(val1)
+      } else if (val1) {
+        const n = +val1
+        if (isNaN(n)) {
+          throw new Error(
+            `Invalid featureHeight "${val1}". Use normal, compact, super-compact, or a number.`,
+          )
         }
+        display.setFeatureHeight?.(n)
       }
-    }
-
-    // remove spacing between pileup features
-    else if (opt.startsWith('noSpacing:')) {
-      const [, val = 'true'] = opt.split(':')
-      const pileup = display.PileupDisplay ?? display
-      pileup.setNoSpacing(booleanize(val))
-    }
-
-    // show soft clipping on pileup
-    else if (opt.startsWith('softClipping:')) {
-      const [, val = 'true'] = opt.split(':')
-      const pileup = display.PileupDisplay ?? display
-      if (booleanize(val) !== pileup.showSoftClipping) {
-        pileup.toggleSoftClipping()
+    } else if (prefix === 'noSpacing') {
+      display.setNoSpacing?.(booleanize(val1 || 'true'))
+    } else if (prefix === 'softClipping') {
+      if (booleanize(val1 || 'true') !== display.showSoftClipping) {
+        display.toggleSoftClipping?.()
       }
-    }
-
-    // force track to render even if maxbpperpx limit hit...
-    else if (opt.startsWith('force:')) {
-      const [, force] = opt.split(':')
-      if (force) {
+    } else if (prefix === 'force') {
+      if (booleanize(val1 || 'true')) {
         display.setFeatureDensityStatsLimit({ bytes: Number.MAX_VALUE })
       }
-    }
-
-    // apply wiggle autoscale
-    else if (opt.startsWith('autoscale:')) {
-      const [, autoscale] = opt.split(':')
-      display.setAutoscale(autoscale)
-    }
-
-    // apply min and max score to wiggle
-    else if (opt.startsWith('minmax:')) {
-      const [, min, max] = opt.split(':')
-      if (min) {
-        display.setMinScore(+min)
+    } else if (prefix === 'autoscale') {
+      display.setAutoscale(val1)
+    } else if (prefix === 'minmax') {
+      if (val1) {
+        display.setMinScore(+val1)
       }
-      if (max) {
-        display.setMaxScore(+max)
+      if (val2) {
+        display.setMaxScore(+val2)
       }
+    } else if (prefix === 'scaletype') {
+      display.setScaleType(val1)
+    } else if (prefix === 'crosshatch') {
+      display.setCrossHatches(booleanize(val1 || 'false'))
+    } else if (prefix === 'fill') {
+      display.setFill(booleanize(val1 || 'true'))
+    } else if (prefix === 'resolution') {
+      const val =
+        val1 === 'fine' ? 10 : val1 === 'superfine' ? 100 : Number(val1)
+      display.setResolution(Number.isNaN(val) ? 1 : val)
     }
-
-    // apply linear or log scale to wiggle
-    else if (opt.startsWith('scaletype:')) {
-      const [, scaletype] = opt.split(':')
-      display.setScaleType(scaletype)
-    }
-
-    // draw crosshatches on wiggle
-    else if (opt.startsWith('crosshatch:')) {
-      const [, val = 'false'] = opt.split(':')
-      display.setCrossHatches(booleanize(val))
-    }
-
-    // turn off fill on bigwig with fill:false
-    else if (opt.startsWith('fill:')) {
-      const [, val = 'true'] = opt.split(':')
-      display.setFill(booleanize(val))
-    }
-
-    // set resolution:superfine to use finer bigwig bin size
-    else if (opt.startsWith('resolution:')) {
-      let [, val = 1] = opt.split(':')
-      if (val === 'fine') {
-        val = '10'
-      } else if (val === 'superfine') {
-        val = '100'
-      }
-      display.setResolution(+val)
-    }
+  }
+  // snpcov is a "show only coverage" pseudo-mode. The unified
+  // LinearAlignmentsDisplay has no explicit coverage-only flag — pileup
+  // viewport height = display.height - coverageHeight, so we make coverage
+  // fill the whole track. Done after the main loop so the user's height: or
+  // coverageHeight: settings flow through first.
+  if (opts.includes('snpcov') && display.setCoverageHeight && display.height) {
+    display.setShowCoverage?.(true)
+    display.setCoverageHeight(display.height)
   }
 }
 
@@ -522,15 +142,22 @@ export async function renderRegion(opts: Opts) {
       await view.navToLocString(loc, name)
     }
   } else if (!sessionParam && !defaultSession) {
-    console.warn('No loc specified')
+    throw new Error(
+      'No --loc specified (e.g. --loc chr1:1-10000 or --loc all). ' +
+        'Alternatively pass --session or --defaultSession.',
+    )
   }
 
   for (const track of trackList) {
-    process(track, view, extra => path.basename(extra))
+    applyTrackOpts(track, view)
   }
 
-  return renderToSvg(view, {
+  const result = await renderToSvg(view, {
     rasterizeLayers: !opts.noRasterize,
+    createCanvas: (w: number, h: number) =>
+      createCanvas(w, h) as unknown as HTMLCanvasElement,
     ...opts,
   })
+  destroy(model)
+  return result
 }

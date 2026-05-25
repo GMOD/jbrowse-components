@@ -49,7 +49,7 @@ samtools index yourfile.bam
 jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.svg
 ```
 
-If `--out` is not specified it writes to out.svg
+If `--out` is not specified it writes SVG to stdout
 
 ### Generate PNG instead of SVG
 
@@ -99,6 +99,35 @@ jb2export --fasta data/volvox/volvox.fa \
   --loc ctgA:609..968
 ```
 
+Other common alignment recipes:
+
+```bash
+## color by splice strand (XS tag), sort by haplotype (HP tag)
+jb2export --fasta ref.fa --bam reads.bam color:tag:XS sort:tag:HP --loc chr1:1-10000
+
+## color by base modifications (MM/ML tags) in super-compact layout
+jb2export --fasta ref.fa --bam reads.bam color:modifications featureHeight:super-compact \
+  --loc chr1:1-10000
+
+## color by insert size + orientation to highlight structural variants
+jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
+
+## samplot-style SV view — samplot overlays the coverage band, so use
+## coverageHeight to make the panel tall (NOT arcsHeight, which only sizes
+## the regular up/down arcs panel). Samplot disappears if coverage:false.
+jb2export --fasta ref.fa --bam reads.bam arcs:samplot coverageHeight:300 \
+  lineWidth:2 height:600 --loc chr1:1-50000
+
+## paired-end arcs above reads
+jb2export --fasta ref.fa --bam reads.bam arcs:up --loc chr1:1-10000
+
+## 10x linked-read chains (bezier mode)
+jb2export --fasta ref.fa --bam linked.bam linkedReads:bezier --loc chr1:1-50000
+
+## sashimi splice-junction arcs over an RNA-seq pileup
+jb2export --fasta ref.fa --bam rnaseq.bam sashimi:up --loc chr1:1-50000
+```
+
 Instead of extra `--flags`, track modifiers use a colon-based syntax that
 follows the track file argument. Full list of available modifiers:
 
@@ -111,26 +140,60 @@ follows the track file argument. Full list of available modifiers:
 
 **Alignment tracks (BAM/CRAM)**
 
-| Modifier                         | Example                                          | Description                                                                      |
-| -------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS`                   | Color scheme                                                                     |
-| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`                     | Sort reads                                                                       |
-| `featureHeight:preset\|N`        | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (2px), `super-compact` (1px) |
-| `noSpacing:true\|false`          | `noSpacing:true`                                 | Remove gap between reads                                                         |
-| `softClipping:true\|false`       | `softClipping:true`                              | Show soft-clipped bases                                                          |
-| `snpcov`                         | `snpcov`                                         | Render only the SNP/coverage subtrack                                            |
+Reads & coloring:
+
+| Modifier                         | Example                        | Description                                                   |
+| -------------------------------- | ------------------------------ | ------------------------------------------------------------- |
+| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS` | Color scheme (see types below)                                |
+| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`) |
+| `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                       |
+
+Overlays & subtracks:
+
+| Modifier               | Example              | Description                                                      |
+| ---------------------- | -------------------- | ---------------------------------------------------------------- |
+| `arcs:mode`            | `arcs:samplot`       | Paired-end arcs / samplot panel (`off`, `up`, `down`, `samplot`) |
+| `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                   |
+| `sashimi:mode`         | `sashimi:up`         | Sashimi splice-junction arcs (`off`, `up`, `down`)               |
+| `coverage:true\|false` | `coverage:false`     | Toggle coverage subtrack                                         |
+| `snpcov`               | `snpcov`             | Coverage-only view — resizes the coverage band to fill the track |
+
+Layout & sizing:
+
+| Modifier                  | Example                                          | Description                                                                      |
+| ------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `featureHeight:preset\|N` | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
+| `noSpacing:true\|false`   | `noSpacing:true`                                 | Remove gap between reads                                                         |
+| `coverageHeight:N`        | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the samplot overlay)         |
+| `arcsHeight:N`            | `arcsHeight:120`                                 | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`        |
+| `lineWidth:N`             | `lineWidth:2`                                    | Stroke width for arcs and linked-read chains                                     |
+
+Available `color:type` values:
+
+| Type                       | Description                                               |
+| -------------------------- | --------------------------------------------------------- |
+| `normal`                   | Default (grey reads, mismatches highlighted)              |
+| `strand`                   | Forward/reverse strand                                    |
+| `mappingQuality`           | MAPQ                                                      |
+| `perBaseQuality`           | Per-base quality overlay                                  |
+| `insertSize`               | Paired-end insert size                                    |
+| `pairOrientation`          | Paired-end orientation                                    |
+| `insertSizeAndOrientation` | Combined insert size + orientation                        |
+| `modifications`            | Base modifications via MM/ML tags                         |
+| `methylation`              | CpG methylation via MM/ML tags                            |
+| `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG` |
 
 **BigWig tracks**
 
-| Modifier                 | Example                | Description                                              |
-| ------------------------ | ---------------------- | -------------------------------------------------------- |
-| `autoscale:mode`         | `autoscale:localsd`    | Autoscale mode (`local`, `global`, `localsd`)            |
-| `minmax:min:max`         | `minmax:0:100`         | Manual score range                                       |
-| `scaletype:type`         | `scaletype:log`        | Scale type (`linear` or `log`)                           |
-| `fill:true\|false`       | `fill:false`           | Fill under curve                                         |
-| `crosshatch:true\|false` | `crosshatch:true`      | Draw crosshatches                                        |
-| `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier) |
-| `color:colorname`        | `color:purple`         | Fill color                                               |
+| Modifier                 | Example                | Description                                               |
+| ------------------------ | ---------------------- | --------------------------------------------------------- |
+| `autoscale:mode`         | `autoscale:localsd`    | Autoscale mode (`local`, `global`, `localsd`)             |
+| `minmax:min:max`         | `minmax:0:100`         | Manual score range                                        |
+| `scaletype:type`         | `scaletype:log`        | Scale type (`linear` or `log`)                            |
+| `fill:true\|false`       | `fill:false`           | Fill under curve                                          |
+| `crosshatch:true\|false` | `crosshatch:true`      | Draw crosshatches                                         |
+| `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier)  |
+| `color:value`            | `color:purple`         | Fill color (any CSS color — `tag:` form is BAM/CRAM only) |
 
 ### Force render a large region
 
@@ -143,10 +206,12 @@ jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
 
 ### Render only the SNPCoverage track of an alignments track
 
-Renders only the snpcov subtrack at height 600 for file.bam
+`snpcov` collapses the alignments display down to coverage-only by sizing the
+coverage band to fill the whole track. Combine with `height:N` (overall track
+height) to get a coverage-only render at the size you want.
 
 ```bash
-jb2export --bam file.bam snpcov height:600
+jb2export --bam file.bam snpcov height:200 --fasta hg19.fa
 ```
 
 ### Render the sequence track

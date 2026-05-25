@@ -3,17 +3,8 @@ import fs from 'fs'
 
 import tmp from 'tmp'
 
-// nice helper function from https://stackoverflow.com/questions/263965/
 export function booleanize(str: string) {
   return str === 'false' ? false : !!str
-}
-
-function createTmp() {
-  return tmp.fileSync({
-    mode: 0o644,
-    prefix: 'prefix-',
-    postfix: '.svg',
-  })
 }
 
 export function convert(
@@ -21,13 +12,31 @@ export function convert(
   args: { out: string; pngwidth?: string },
   spawnArgs: string[] = [],
 ) {
-  const { name } = createTmp()
+  const { name } = tmp.fileSync({
+    mode: 0o644,
+    prefix: 'jbrowse-img-',
+    postfix: '.svg',
+  })
   const { pngwidth = '2048', out } = args
   fs.writeFileSync(name, result)
-  const a = ['-w', pngwidth, name, '-o', out, ...spawnArgs] as string[]
+  const a = ['-w', pngwidth, name, '-o', out, ...spawnArgs]
   const ls = spawnSync('rsvg-convert', a)
-
-  console.error(`rsvg-convert stderr: ${ls.stderr.toString()}`)
-  console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`)
-  fs.unlinkSync(name)
+  try {
+    const stderr = ls.stderr.toString()
+    const stdout = ls.stdout.toString()
+    if (stderr) {
+      console.error(`rsvg-convert stderr: ${stderr}`)
+    }
+    if (stdout) {
+      console.log(`rsvg-convert stdout: ${stdout}`)
+    }
+    if (ls.error) {
+      throw ls.error
+    }
+    if (ls.status !== 0) {
+      throw new Error(`rsvg-convert exited with code ${ls.status}`)
+    }
+  } finally {
+    fs.unlinkSync(name)
+  }
 }
