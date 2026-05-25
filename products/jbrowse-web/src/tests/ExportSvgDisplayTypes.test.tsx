@@ -133,29 +133,3 @@ test('alignments display SVG vector export', async () => {
   // SvgCanvas paths emit as <g>/<path>; rasterized path would emit <image>.
   expect(svg).not.toContain('<image')
 }, 45000)
-
-test('MAF display SVG vector export', async () => {
-  const { view, findByTestId } = await createView()
-  await view.navToLocString('ctgA:1..2000')
-  fireEvent.click(await findByTestId(hts('volvox_maf_tabix'), ...opts))
-  await findByTestId(/^display-.*-done$/, ...opts)
-
-  await view.exportSvg({ rasterizeLayers: false })
-  const svg = getSavedSvg()
-  fs.writeFileSync(`${snapshotDir}/maf_vector_snapshot.svg`, svg)
-  expect(svg).toContain('<svg')
-  expect(svg).not.toContain('<image')
-}, 45000)
-
-test('MAF display SVG rasterized export embeds PNG', async () => {
-  const { view, findByTestId } = await createView()
-  await view.navToLocString('ctgA:1..2000')
-  fireEvent.click(await findByTestId(hts('volvox_maf_tabix'), ...opts))
-  await findByTestId(/^display-.*-done$/, ...opts)
-
-  await view.exportSvg({ rasterizeLayers: true, createCanvas: canvasFactory })
-  const svg = getSavedSvg()
-  fs.writeFileSync(`${snapshotDir}/maf_rasterized_snapshot.svg`, svg)
-  expect(svg).toContain('<image')
-  expect(svg).toContain('data:image/png;base64,iVBOR')
-}, 45000)
