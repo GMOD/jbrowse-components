@@ -16,9 +16,13 @@ toplevel: true
 
 ## Prerequisites
 
-- Node.js 18+ — use [NodeSource](https://github.com/nodesource) or [NVM](https://github.com/nvm-sh/nvm), not `apt` (tends to install old versions)
-- [samtools](http://www.htslib.org/): `sudo apt install samtools` or `brew install samtools`
-- [tabix](http://www.htslib.org/doc/tabix.html): `sudo apt install tabix` or `brew install htslib`
+- Node.js 18+ — use [NodeSource](https://github.com/nodesource) or
+  [NVM](https://github.com/nvm-sh/nvm), not `apt` (tends to install old
+  versions)
+- [samtools](http://www.htslib.org/): `sudo apt install samtools` or
+  `brew install samtools`
+- [tabix](http://www.htslib.org/doc/tabix.html): `sudo apt install tabix` or
+  `brew install htslib`
 
 ## Installing the JBrowse CLI
 
@@ -27,9 +31,8 @@ npm install -g @jbrowse/cli
 jbrowse --version
 ```
 
-:::note
-To avoid a global install, replace `jbrowse` with `npx @jbrowse/cli` in any command below.
-:::
+:::note To avoid a global install, replace `jbrowse` with `npx @jbrowse/cli` in
+any command below. :::
 
 ## Download JBrowse 2
 
@@ -37,13 +40,17 @@ To avoid a global install, replace `jbrowse` with `npx @jbrowse/cli` in any comm
 jbrowse create jbrowse2
 ```
 
-This downloads and unzips jbrowse-web into a folder named `jbrowse2`. Alternatively, download the zip manually from https://github.com/GMOD/jbrowse-components/releases.
+This downloads and unzips jbrowse-web into a folder named `jbrowse2`.
+Alternatively, download the zip manually from
+https://github.com/GMOD/jbrowse-components/releases.
 
 ## Running JBrowse 2
 
-JBrowse 2 requires a web server — opening `index.html` directly in your browser won't work.
+JBrowse 2 requires a web server — opening `index.html` directly in your browser
+won't work.
 
-For production, place the folder in your web server's static directory (e.g. `/var/www/html/jbrowse2/`) and visit `http://yourserver/jbrowse2`.
+For production, place the folder in your web server's static directory (e.g.
+`/var/www/html/jbrowse2/`) and visit `http://yourserver/jbrowse2`.
 
 To verify locally:
 
@@ -52,7 +59,8 @@ cd jbrowse2/
 npx serve -S .
 ```
 
-Navigate to `http://localhost:3000`. Click the sample config to confirm things are working.
+Navigate to `http://localhost:3000`. Click the sample config to confirm things
+are working.
 
 <Figure caption="JBrowse 2 screen showing no configuration found" src="/img/config_not_found.png"/>
 
@@ -67,7 +75,9 @@ samtools faidx genome.fa
 jbrowse add-assembly genome.fa --load copy --out /var/www/html/jbrowse/
 ```
 
-This writes an assembly entry to `config.json` and copies `genome.fa` and `genome.fa.fai` into the output directory. Use `--load symlink` to symlink instead of copying.
+This writes an assembly entry to `config.json` and copies `genome.fa` and
+`genome.fa.fai` into the output directory. Use `--load symlink` to symlink
+instead of copying.
 
 JBrowse 2 also supports bgzip-compressed indexed FASTA and 2bit files.
 
@@ -97,8 +107,7 @@ tabix file.vcf.gz
 jbrowse add-track file.vcf.gz --load copy --out /var/www/html/jbrowse
 ```
 
-:::note
-If tabix reports the VCF is unsorted, sort it first:
+:::note If tabix reports the VCF is unsorted, sort it first:
 
 ```bash
 bcftools sort file.vcf > file.sorted.vcf
@@ -113,8 +122,7 @@ bcftools view file.vcf --output-type z > file.vcf.gz
 bcftools index --tbi file.vcf.gz
 ```
 
-See https://www.htslib.org/ for more on `bgzip`, `tabix`, and `bcftools`.
-:::
+See https://www.htslib.org/ for more on `bgzip`, `tabix`, and `bcftools`. :::
 
 <Figure caption="JBrowse 2 linear genome view with variant track" src="/img/volvox_variants.png"/>
 
@@ -136,7 +144,8 @@ jbrowse add-track yourfile.sorted.gff.gz --load copy
 
 ### Synteny (PAF)
 
-Use [minimap2](https://github.com/lh3/minimap2) to align two assemblies and load the result as a synteny track:
+Use [minimap2](https://github.com/lh3/minimap2) to align two assemblies and load
+the result as a synteny track:
 
 ```bash
 minimap2 -cx asm20 grape.fa peach.fa > peach_vs_grape.paf
@@ -145,13 +154,17 @@ jbrowse add-assembly grape.fa --load copy -n grape --out /var/www/html/jbrowse
 jbrowse add-assembly peach.fa --load copy -n peach --out /var/www/html/jbrowse
 ```
 
-Note: `--assemblyNames` order is **reversed** from the `minimap2` argument order. If minimap2 was run as `minimap2 grape.fa peach.fa`, load with `--assemblyNames peach,grape`:
+Note: `--assemblyNames` order is **reversed** from the `minimap2` argument
+order. If minimap2 was run as `minimap2 grape.fa peach.fa`, load with
+`--assemblyNames peach,grape`:
 
 ```bash
 jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --load copy --out /var/www/html/jbrowse
 ```
 
-The `-cx asm20` preset is appropriate for cross-species comparisons (~5% divergence). Use `asm5` for same-species or `asm10` for moderately diverged strains. See the [minimap2 docs](https://github.com/lh3/minimap2) for details.
+The `-cx asm20` preset is appropriate for cross-species comparisons (~5%
+divergence). Use `asm5` for same-species or `asm10` for moderately diverged
+strains. See the [minimap2 docs](https://github.com/lh3/minimap2) for details.
 
 ## Indexing feature names for searching
 
@@ -161,7 +174,10 @@ Optionally, build a text index so users can search by gene name or feature ID:
 jbrowse text-index --out /var/www/html/jbrowse
 ```
 
-This indexes GFF3Tabix and VCFTabix tracks. Once complete, names can be typed directly into the LGV search box. See the [text-index docs](/docs/cli#jbrowse-text-index) and [FAQ](/docs/faq#text-searching) for more.
+This indexes GFF3Tabix and VCFTabix tracks. Once complete, names can be typed
+directly into the LGV search box. See the
+[text-index docs](/docs/cli#jbrowse-text-index) and
+[FAQ](/docs/faq#text-searching) for more.
 
 ## Next steps
 

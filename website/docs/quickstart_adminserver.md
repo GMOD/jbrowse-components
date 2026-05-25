@@ -20,7 +20,7 @@ This tutorial requires the following software
 
 - [JBrowse CLI](/docs/quickstart_web/#installing-the-jbrowse-cli)
 
-- [JBrowse 2 web application](/docs/quickstart_web/#using-jbrowse-create-to-download-jbrowse-2)
+- [JBrowse 2 web application](/docs/quickstart_web/#download-jbrowse-2)
 
 ## Starting JBrowse 2 admin server
 

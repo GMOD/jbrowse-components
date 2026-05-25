@@ -32,7 +32,7 @@ jbrowse add-track myfile.paf --assemblyNames grape,peach --load copy --out /var/
 The first assembly is the "target" and the second assembly is the "query."
 
 See how to
-[configure JBrowse using the CLI](/docs/quickstart_web/#adding-a-synteny-track-from-a-paf-file)
+[configure JBrowse using the CLI](/docs/quickstart_web/#synteny-paf)
 for more ways to load synteny tracks with the CLI.
 
 ### PAFAdapter config

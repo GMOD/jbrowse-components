@@ -1,7 +1,8 @@
 ---
 id: refname_aliasing
 title: RefName aliasing
-description: Map between chromosome naming conventions across tracks and assemblies
+description:
+  Map between chromosome naming conventions across tracks and assemblies
 guide_category: Advanced topics
 ---
 

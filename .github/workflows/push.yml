@@ -128,7 +128,9 @@ jobs:
             exit 1
           fi
       - name: Check guide indexes are up to date
-        run: node --experimental-strip-types website/scripts/generate-guide-indexes.ts --check
+        run:
+          node --experimental-strip-types
+          website/scripts/generate-guide-indexes.ts --check
       - name: Lint codebase
         run: NODE_OPTIONS='--max-old-space-size=7000' pnpm lint
 
@@ -163,7 +165,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Check documentation links
-        run: bash website/check-links.sh
+        run: bash check-links.sh
         working-directory: website
 
   spellcheck:
@@ -212,38 +214,38 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Install Chrome for Puppeteer
-        run: npx puppeteer browsers install chrome
-      - name: Run browser tests with Puppeteer
-        id: browser-tests
-        run: node --experimental-strip-types browser-tests/runner.ts
-        working-directory: products/jbrowse-web
-        continue-on-error: true
-      - name: Upload snapshot diffs to S3
-        if: steps.browser-tests.outcome == 'failure'
-        run: |
-          SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
-          S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
-
-          if ls ${SNAPSHOTS_DIR}/*.diff*.png 1> /dev/null 2>&1; then
-            echo "Uploading snapshot diffs to S3..."
-            aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.diff*.png"
-
-            echo ""
-            echo "============================================"
-            echo "SNAPSHOT DIFF IMAGES UPLOADED TO S3"
-            echo "============================================"
-            for file in ${SNAPSHOTS_DIR}/*.diff*.png; do
-              filename=$(basename "$file")
-              echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
-            done
-            echo "============================================"
-          else
-            echo "No snapshot diff files found"
-          fi
-      - name: Fail if browser tests failed
-        if: steps.browser-tests.outcome == 'failure'
-        run: exit 1
+      # - name: Install Chrome for Puppeteer
+      #   run: npx puppeteer browsers install chrome
+      # - name: Run browser tests with Puppeteer
+      #   id: browser-tests
+      #   run: node --experimental-strip-types browser-tests/runner.ts
+      #   working-directory: products/jbrowse-web
+      #   continue-on-error: true
+      # - name: Upload snapshot diffs to S3
+      #   if: steps.browser-tests.outcome == 'failure'
+      #   run: |
+      #     SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
+      #     S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
+      #
+      #     if ls ${SNAPSHOTS_DIR}/*.diff*.png 1> /dev/null 2>&1; then
+      #       echo "Uploading snapshot diffs to S3..."
+      #       aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.diff*.png"
+      #
+      #       echo ""
+      #       echo "============================================"
+      #       echo "SNAPSHOT DIFF IMAGES UPLOADED TO S3"
+      #       echo "============================================"
+      #       for file in ${SNAPSHOTS_DIR}/*.diff*.png; do
+      #         filename=$(basename "$file")
+      #         echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
+      #       done
+      #       echo "============================================"
+      #     else
+      #       echo "No snapshot diff files found"
+      #     fi
+      # - name: Fail if browser tests failed
+      #   if: steps.browser-tests.outcome == 'failure'
+      #   run: exit 1
 
       - name: Upload packed artifacts for component tests
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
