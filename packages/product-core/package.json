@@ -25,7 +25,7 @@
     "esm"
   ],
   "scripts": {
-    "build:esm": "tsgo -p tsconfig.build.esm.json",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
     "build": "pnpm build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/product-core",
     "clean": "rimraf esm *.tsbuildinfo",
@@ -34,10 +34,11 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.6.6",
+    "@jbrowse/mobx-state-tree": "^5.8.7",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
     "copy-to-clipboard": "^4.0.2",
+    "librpc-web-mod": "^2.1.1",
     "mobx": "^6.15.3",
     "mobx-react": "^9.2.1"
   },

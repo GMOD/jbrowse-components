@@ -3,14 +3,7 @@ import { useEffect, useState } from 'react'
 
 import { unzip } from '@gmod/bgzf-filehandle'
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import {
-  getEnv as getEnvMST,
-  getParent,
-  getSnapshot,
-  hasParent,
-  isAlive,
-  isStateTreeNode,
-} from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
@@ -19,29 +12,16 @@ import { colord } from './colord.ts'
 import { parseLocString } from './locString.ts'
 import { measureText } from './measureText.ts'
 import { checkStopToken } from './stopToken.ts'
-import {
-  isDisplayModel,
-  isSessionModel,
-  isTrackModel,
-  isUriLocation,
-  isViewModel,
-} from './types/index.ts'
+import { isUriLocation } from './types/index.ts'
 
 import type { ParsedLocString } from './locString.ts'
 import type PluginManager from '../PluginManager.ts'
+import type { Feature } from './simpleFeature.ts'
 import type { StopToken } from './stopToken.ts'
-import type {
-  AbstractDisplayModel,
-  AbstractSessionModel,
-  AbstractTrackModel,
-  AbstractViewModel,
-  AssemblyManager,
-  Region,
-  TypeTestedByPredicate,
-} from './types/index.ts'
+import type { AssemblyManager, Region } from './types/index.ts'
 import type { Region as MUIRegion } from './types/mst.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 export * from './types/index.ts'
@@ -58,18 +38,18 @@ export * from './offscreenCanvasPonyfill.ts'
 export * from './offscreenCanvasUtils.tsx'
 export * from './rpc.ts'
 export * from './crypto.ts'
-
-// WeakMap caches for containing model lookups to avoid repeated tree traversal
-const containingDisplayCache = new WeakMap<
-  IAnyStateTreeNode,
-  AbstractDisplayModel
->()
-const containingTrackCache = new WeakMap<
-  IAnyStateTreeNode,
-  AbstractTrackModel
->()
-const containingViewCache = new WeakMap<IAnyStateTreeNode, AbstractViewModel>()
-const sessionCache = new WeakMap<IAnyStateTreeNode, AbstractSessionModel>()
+export * from './openFeatureWidget.ts'
+export {
+  findParentThat,
+  findParentThatIs,
+  getContainingDisplay,
+  getContainingTrack,
+  getContainingView,
+  getEnv,
+  getSession,
+  hashCode,
+  objectHash,
+} from './mstUtils.ts'
 
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
@@ -110,32 +90,6 @@ export function useWidthSetter(
     }
   }, [padding, view, width])
   return ref
-}
-
-/**
- * find the first node in the hierarchy that matches the given predicate
- */
-export function findParentThat(
-  node: IAnyStateTreeNode,
-  predicate: (thing: IAnyStateTreeNode) => boolean,
-) {
-  if (!hasParent(node)) {
-    throw new Error('node does not have parent')
-  }
-  let currentNode = getParent(node)
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  while (currentNode && isAlive(currentNode)) {
-    if (predicate(currentNode)) {
-      return currentNode
-    }
-    if (hasParent(currentNode)) {
-      currentNode = getParent<any>(currentNode)
-    } else {
-      break
-    }
-  }
-  throw new Error('no matching node found')
 }
 
 interface Animation {
@@ -213,92 +167,6 @@ export function springAnimate(
       cancelAnimationFrame(animationFrameId)
     },
   ]
-}
-
-/**
- * find the first node in the hierarchy that matches the given 'is' typescript
- * type guard predicate
- */
-export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
-  node: IAnyStateTreeNode,
-  predicate: T,
-) {
-  return findParentThat(node, predicate) as TypeTestedByPredicate<T>
-}
-
-function cachedParent<T extends IAnyStateTreeNode>(
-  cache: WeakMap<IAnyStateTreeNode, T>,
-  node: IAnyStateTreeNode,
-  finder: () => T,
-  errorMsg: string,
-): T {
-  const cached = cache.get(node)
-  if (cached && isAlive(cached)) {
-    return cached
-  }
-  try {
-    const result = finder()
-    cache.set(node, result)
-    return result
-  } catch (e) {
-    throw new Error(errorMsg, { cause: e })
-  }
-}
-
-/**
- * get the current JBrowse session model, starting at any node in the state
- * tree. Results are cached for performance.
- */
-export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
-  return cachedParent(
-    sessionCache,
-    node,
-    () => findParentThatIs(node, isSessionModel),
-    'no session model found!',
-  )
-}
-
-/**
- * get the state model of the view in the state tree that contains the given
- * node. Results are cached for performance.
- */
-export function getContainingView(node: IAnyStateTreeNode): AbstractViewModel {
-  return cachedParent(
-    containingViewCache,
-    node,
-    () => findParentThatIs(node, isViewModel),
-    'no containing view found',
-  )
-}
-
-/**
- * get the state model of the track in the state tree that contains the given
- * node. Results are cached for performance.
- */
-export function getContainingTrack(
-  node: IAnyStateTreeNode,
-): AbstractTrackModel {
-  return cachedParent(
-    containingTrackCache,
-    node,
-    () => findParentThatIs(node, isTrackModel),
-    'no containing track found',
-  )
-}
-
-/**
- * get the state model of the display in the state tree that contains the given
- * node. Results are cached for performance.
- */
-export function getContainingDisplay(
-  node: IAnyStateTreeNode,
-): AbstractDisplayModel {
-  return cachedParent(
-    containingDisplayCache,
-    node,
-    () => findParentThatIs(node, isDisplayModel),
-    'no containing display found',
-  )
 }
 
 /**
@@ -679,23 +547,6 @@ export async function updateStatus2<U>(
   return res
 }
 
-export function hashCode(str: string) {
-  let hash = 0
-  if (str.length === 0) {
-    return hash
-  }
-  for (let i = 0; i < str.length; i++) {
-    const chr = str.charCodeAt(i)
-    hash = (hash << 5) - hash + chr
-    hash |= 0 // Convert to 32bit integer
-  }
-  return hash
-}
-
-export function objectHash(obj: object) {
-  return `${hashCode(JSON.stringify(obj))}`
-}
-
 interface VirtualOffset {
   blockPosition: number
 }
@@ -876,10 +727,6 @@ export function measureGridWidth(
       .map(str => measureText(str, fontSize))
       .map(n => Math.min(Math.max(n + padding, minWidth), maxWidth)),
   )
-}
-
-export function getEnv(obj: IAnyStateTreeNode) {
-  return getEnvMST<{ pluginManager: PluginManager }>(obj)
 }
 
 export function localStorageGetItem(item: string) {

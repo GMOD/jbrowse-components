@@ -127,6 +127,9 @@ export function createBaseTrackModel(
         return self.displays[0]
       },
 
+      /**
+       * #getter
+       */
       get viewMenuActions(): MenuItem[] {
         return self.displays.flatMap(d => d.viewMenuActions)
       },
@@ -237,7 +240,7 @@ export function createBaseTrackModel(
         const menuItems = self.displays.flatMap(
           d => d.trackMenuItems() as MenuItem[],
         )
-        const shownId = self.displays[0]?.configuration.displayId
+        const shownId = self.activeDisplay?.configuration.displayId
         const compatDisp = getCompatibleDisplays(self)
 
         return [

@@ -2,11 +2,10 @@
   "name": "@jbrowse/synteny-core",
   "version": "4.1.14",
   "type": "module",
-  "description": "Shared utilities for synteny and dotplot GPU rendering",
+  "description": "Shared utilities for synteny and dotplot rendering",
   "keywords": [
     "jbrowse",
     "jbrowse2",
-    "gpu",
     "synteny",
     "dotplot"
   ],
@@ -24,7 +23,7 @@
     "esm"
   ],
   "scripts": {
-    "build:esm": "tsgo -p tsconfig.build.esm.json",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
     "build": "pnpm build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/synteny-core",
     "clean": "rimraf esm *.tsbuildinfo",
@@ -35,7 +34,7 @@
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.6.6",
+    "@jbrowse/mobx-state-tree": "^5.8.7",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
     "mobx-react": "^9.2.1"

@@ -22,7 +22,9 @@
     "./esm/makeWorkerInstance": "./src/makeWorkerInstance.ts",
     "./esm/makeWorkerInstance.js": "./src/makeWorkerInstance.ts",
     "./esm/rpcWorker": "./src/rpcWorker.ts",
-    "./esm/rpcWorker.js": "./src/rpcWorker.ts"
+    "./esm/rpcWorker.js": "./src/rpcWorker.ts",
+    "./esm/workerPolyfill": "./src/workerPolyfill.js",
+    "./esm/workerPolyfill.js": "./src/workerPolyfill.js"
   },
   "files": [
     "esm",
@@ -31,7 +33,7 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "build:esm": "tsgo --build tsconfig.build.esm.json",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:webpack": "webpack -c webpack.config.mjs",
     "clean": "rimraf esm *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
@@ -40,11 +42,13 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
+    "@babel/runtime": "^7.29.2",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/embedded-core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.6.6",
+    "@jbrowse/mobx-state-tree": "^5.8.7",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-arc": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",
@@ -95,6 +99,12 @@
       "./esm/rpcWorker.js": {
         "types": "./esm/rpcWorker.d.ts",
         "import": "./esm/rpcWorker.js"
+      },
+      "./esm/workerPolyfill": {
+        "import": "./esm/workerPolyfill.js"
+      },
+      "./esm/workerPolyfill.js": {
+        "import": "./esm/workerPolyfill.js"
       }
     }
   },

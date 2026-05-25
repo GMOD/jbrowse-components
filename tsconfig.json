@@ -21,7 +21,8 @@
     "noFallthroughCasesInSwitch": true,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
-    "types": ["jest"]
+    "types": ["jest"],
+    "typeRoots": ["./node_modules/@types", "."]
   },
   "exclude": [
     "**/build/",

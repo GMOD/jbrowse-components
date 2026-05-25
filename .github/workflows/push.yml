@@ -50,7 +50,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
           version: 10
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -96,7 +96,7 @@ jobs:
         if: steps.tests.outcome == 'failure'
         run: exit 1
       - name: Upload coverage
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
       - name: Typecheck codebase
         run: pnpm typecheck
 
@@ -109,7 +109,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
           version: 10
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -128,38 +128,7 @@ jobs:
             exit 1
           fi
       - name: Lint codebase
-        run: pnpm lint
-
-  check_shaders:
-    name: Check shaders up to date
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-      - name: Install glslangValidator
-        run: sudo apt-get install -y glslang-tools
-      - name: Regenerate shaders
-        run: NAGA= pnpm gen:shaders
-      - name: Check generated files are up to date
-        run: |
-          if ! git diff --quiet -- '**/*.generated.ts'; then
-            echo "Error: shader generated files are out of date."
-            echo "Run 'pnpm gen:shaders' and commit the changes."
-            git diff -- '**/*.generated.ts'
-            exit 1
-          fi
+        run: NODE_OPTIONS='--max-old-space-size=7000' pnpm lint
 
   format:
     name: Format
@@ -170,7 +139,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
           version: 10
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -192,7 +161,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Check spelling
-        uses: crate-ci/typos@5374cbf686e897b15713110e233094e2874de7ef # v1.46.1
+        uses: crate-ci/typos@7b04f660f4ee4f048d18fd341887cf28dfbedfe2 # v1.46.3
 
   build_and_pack_artifacts:
     name: Build and pack artifacts
@@ -207,7 +176,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
           version: 10
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -235,55 +204,30 @@ jobs:
         run: node --experimental-strip-types browser-tests/runner.ts
         working-directory: products/jbrowse-web
         continue-on-error: true
-      - name: Run auth browser tests with Puppeteer
-        id: auth-browser-tests
-        run: node --experimental-strip-types browser-tests/runner.ts --auth
-        working-directory: products/jbrowse-web
-        continue-on-error: true
-      - name: Run WebGL backend browser tests
-        id: webgl-browser-tests
-        run:
-          node --experimental-strip-types browser-tests/runner.ts
-          --backend=webgl
-        working-directory: products/jbrowse-web
-        continue-on-error: true
       - name: Upload snapshot diffs to S3
-        if:
-          steps.browser-tests.outcome == 'failure' ||
-          steps.auth-browser-tests.outcome == 'failure' ||
-          steps.webgl-browser-tests.outcome == 'failure'
+        if: steps.browser-tests.outcome == 'failure'
         run: |
           SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
           S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
 
-          FOUND_DIFFS=false
-          for dir in "${SNAPSHOTS_DIR}" "${SNAPSHOTS_DIR}/webgl"; do
-            if [ -d "$dir" ] && ls ${dir}/*.diff*.png 1> /dev/null 2>&1; then
-              FOUND_DIFFS=true
-              SUBDIR=$(basename "$dir")
-              echo "Uploading snapshot diffs from ${dir} to S3..."
-              aws s3 cp ${dir}/ ${S3_PATH}/${SUBDIR}/ --recursive --exclude "*" --include "*.diff*.png"
+          if ls ${SNAPSHOTS_DIR}/*.diff*.png 1> /dev/null 2>&1; then
+            echo "Uploading snapshot diffs to S3..."
+            aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.diff*.png"
 
-              echo ""
-              echo "============================================"
-              echo "SNAPSHOT DIFF IMAGES: ${dir}"
-              echo "============================================"
-              for file in ${dir}/*.diff*.png; do
-                filename=$(basename "$file")
-                echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${SUBDIR}/${filename}"
-              done
-              echo "============================================"
-            fi
-          done
-
-          if [ "$FOUND_DIFFS" = false ]; then
+            echo ""
+            echo "============================================"
+            echo "SNAPSHOT DIFF IMAGES UPLOADED TO S3"
+            echo "============================================"
+            for file in ${SNAPSHOTS_DIR}/*.diff*.png; do
+              filename=$(basename "$file")
+              echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
+            done
+            echo "============================================"
+          else
             echo "No snapshot diff files found"
           fi
       - name: Fail if browser tests failed
-        if:
-          steps.browser-tests.outcome == 'failure' ||
-          steps.auth-browser-tests.outcome == 'failure' ||
-          steps.webgl-browser-tests.outcome == 'failure'
+        if: steps.browser-tests.outcome == 'failure'
         run: exit 1
 
       - name: Upload packed artifacts for component tests
@@ -302,7 +246,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
           version: 10
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -337,7 +281,7 @@ jobs:
           cd products/jbrowse-web/build
           zip -r "jbrowse-web-${REF_NAME}.zip" .
           cp test_data/config.json config.json
-          aws s3 sync --delete . s3://jbrowse.org/code/jb2/${REF_NAME}
+          aws s3 sync --delete --exclude="*.map" . s3://jbrowse.org/code/jb2/${REF_NAME}
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${REF_NAME}/*"
 
       - name: Build LGV storybook
@@ -386,7 +330,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
           version: 10
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -503,7 +447,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
           version: 10
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0

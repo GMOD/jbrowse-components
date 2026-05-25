@@ -1,4 +1,4 @@
-import { fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 
 import {
   createView,
@@ -8,7 +8,9 @@ import {
   setup,
 } from './util.tsx'
 
-import './svgExportMocks.ts'
+// @ts-expect-error
+global.Blob = (content, options) => ({ content, options })
+
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
@@ -22,7 +24,7 @@ const delay = { timeout: 40000 }
 const opts = [{}, delay]
 
 test('export svg of reversed region with gene labels', async () => {
-  const { view, findByTestId, findByText, findAllByTestId } = await createView()
+  const { view, findByTestId, findByText } = await createView()
 
   // Navigate to reversed region
   await view.navToLocString('ctgA:1..7,720[rev]', 'volvox')
@@ -38,8 +40,12 @@ test('export svg of reversed region with gene labels', async () => {
   // Open gff3tabix_genes track which has labels
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
 
-  // Wait for display to render
-  await findAllByTestId(/^display-.*-done$/, {}, { timeout: 30000 })
+  // Wait for at least one canvas block to finish rendering
+  await screen.findAllByTestId(
+    /prerendered_canvas.*done/,
+    {},
+    { timeout: 30000 },
+  )
 
   await exportAndVerifySvg({
     findByTestId,

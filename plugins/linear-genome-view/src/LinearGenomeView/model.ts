@@ -291,12 +291,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+
+
       volatileError: undefined as unknown,
       /**
        * #volatile
        */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+
+
       trackRefs: {} as Record<string, HTMLDivElement>,
       /**
        * #volatile

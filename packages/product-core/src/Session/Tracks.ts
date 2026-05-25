@@ -10,11 +10,9 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
-// Hydration cache for frozen track configs (jbrowse.tracks is stored as
-// types.frozen for large-tracklist performance). Keyed by the frozen object
-// itself so the entry is dropped automatically when the frozen ref is
-// replaced (e.g. via updateTrackConf), and each trackId maps to the same
-// MST instance for the lifetime of its frozen snapshot.
+// Hydration cache for frozen track configs (jbrowse.tracks is types.frozen for
+// large-tracklist performance). Keyed by the frozen object itself so the entry
+// is dropped when the ref is replaced (e.g. updateTrackConf).
 const hydrationCache = new WeakMap<object, AnyConfigurationModel>()
 
 function hydrateTrack(
@@ -87,11 +85,13 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
 
         const env = getEnv(self)
         return Object.fromEntries([
-          ...self.tracks.map(t => [
-            t.trackId,
-            hydrateTrack(t, pluginManager, env),
-          ]),
+          ...self.tracks.map(t => {
+            const hydrated = hydrateTrack(t, pluginManager, env)
+            return [hydrated.trackId, hydrated]
+          }),
+          // Include assembly sequence tracks so they can be resolved by trackId
           ...self.assemblies.map(a => [a.sequence.trackId, a.sequence]),
+          // Include temporary assembly sequence tracks
           ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
           ...connectionInstances.flatMap(c =>
             c.tracks.map(t => [t.trackId, t]),
@@ -100,6 +100,11 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * MobX-cached map of trackId → config for all tracks, assemblies, and
+       * connections. Recomputes only when dependencies change.
+       */
       get tracksById(): Record<string, AnyConfigurationModel> {
         return self.getTracksById()
       },

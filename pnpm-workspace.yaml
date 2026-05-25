@@ -19,3 +19,4 @@ minimumReleaseAgeExclude:
   - 'g2p_mapper'
   - 'ixixx'
   - 'gff-nostream'
+  - '@jbrowse/mobx-state-tree'

@@ -126,6 +126,14 @@ function stateModelFactory() {
         }
         return getConf(this.parentTrack, 'rpcDriverName')
       },
+
+      /**
+       * #getter
+       */
+      get effectiveTrackConfig() {
+        const track = getContainingTrack(self)
+        return getEffectiveTrackConfig(track.configuration, self)
+      },
     }))
     .views(self => ({
       /**

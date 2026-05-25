@@ -45,8 +45,6 @@ export function GpuLifecycleMixin() {
     .model('GpuLifecycle', {})
     .volatile(() => ({
       canvasDrawn: false,
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       currentBackend: undefined as unknown,
       renderTick: 0,
       autorunsInstalled: false,

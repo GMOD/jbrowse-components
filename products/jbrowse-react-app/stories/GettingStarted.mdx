@@ -3,6 +3,7 @@ import { BasicExample, HumanDemo } from './JBrowseReactApp.stories'
 
 <Meta title="Getting Started" />
 
+<<<<<<< HEAD
 # Welcome
 
 This is the [Storybook](https://storybook.js.org/) for
@@ -83,3 +84,58 @@ conservation tracks in a `LinearGenomeView` at a specific locus:
 - [Source for every storybook example](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-app/stories)
 - Integration recipes for create-react-app, Vite, and Next.js —
   [jbrowse.org/jb2/docs/embedded_components](https://jbrowse.org/jb2/docs/embedded_components/)
+=======
+# @jbrowse/react-app2
+
+```sh
+npm install @jbrowse/react-app2
+```
+
+Import the dockview stylesheet in your app entry point:
+
+```js
+import 'dockview-react/dist/styles/dockview.css'
+```
+
+<Story of={BasicExample} />
+
+```js
+import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
+
+const state = createViewState({
+  config: {
+    assemblies: [{ name: 'hg38', sequence: { /* ... */ } }],
+    tracks: [{ trackId: 'my_track', type: 'FeatureTrack', /* ... */ }],
+    defaultSession: {
+      views: [{
+        type: 'LinearGenomeView',
+        init: {
+          assembly: 'hg38',
+          loc: 'chr1:1,000,000-1,100,000',
+          tracks: ['my_track'],
+          tracklist: true,  // open track selector on load
+        },
+      }],
+    },
+  },
+})
+
+return <JBrowseApp viewState={state} />
+```
+
+## Runtime API
+
+```js
+// add a track at runtime (from an event handler, not during render)
+state.jbrowse.addTrackConf({ trackId: 'new_track', type: 'FeatureTrack', assemblyNames: ['hg38'], /* ... */ })
+state.session.views[0]?.showTrack('new_track')
+
+// navigate
+await state.session.views[0]?.navToLocString('chr1:1-100000', 'hg38')
+```
+
+See the [API Reference](?path=/docs/api-reference--docs) for the full `createViewState` options.
+
+For a linear-only embed without the full app shell, see
+[@jbrowse/react-linear-genome-view2](https://jbrowse.org/storybook/lgv/main).
+>>>>>>> origin/main

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 // replace with this in your code:
-// import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
+// import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
 import { addRelativeUris } from './util.ts'
 import { JBrowseApp, createViewState } from '../../src/index.ts'
 
@@ -23,12 +23,12 @@ export const WithFetchConfigJson = () => {
     })()
   }, [])
 
-  return !state ? null : (
-    <div>
+  return state ? (
+    <>
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/WithFetchConfigJson.tsx">
         Source code
       </a>
       <JBrowseApp viewState={state} />
-    </div>
-  )
+    </>
+  ) : null
 }

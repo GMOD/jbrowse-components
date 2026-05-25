@@ -13,5 +13,8 @@ beforeEach(() => {
 })
 
 test('color by modifications', async () => {
-  await testAlignmentModificationsDisplay({ config })
+  await testAlignmentModificationsDisplay({
+    config,
+    canvasTestId: 'prerendered_canvas_hg38_clip:20:13432:13524:0_done',
+  })
 }, 60000)

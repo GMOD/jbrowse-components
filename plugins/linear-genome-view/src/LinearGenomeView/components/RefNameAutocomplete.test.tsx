@@ -283,7 +283,6 @@ describe('RefNameAutocomplete', () => {
       />,
     )
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const input = screen.getByRole('combobox') as HTMLInputElement
     await user.click(input)
     await user.clear(input)
@@ -311,7 +310,6 @@ describe('RefNameAutocomplete', () => {
       />,
     )
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const input = screen.getByRole('combobox') as HTMLInputElement
     await user.click(input)
     await user.clear(input)
@@ -398,7 +396,7 @@ describe('RefNameAutocomplete', () => {
         fetchResults={async () => []}
       />,
     )
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+
     const input = screen.getByRole('combobox') as HTMLInputElement
 
     await user.click(input)
@@ -427,7 +425,7 @@ describe('RefNameAutocomplete', () => {
         onSelect={onSelect}
       />,
     )
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+
     const input = screen.getByRole('combobox') as HTMLInputElement
 
     await user.click(input)

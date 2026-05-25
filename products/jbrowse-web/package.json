@@ -11,28 +11,20 @@
     "./src/makeWorkerInstance": "./src/makeWorkerInstance.ts"
   },
   "scripts": {
-    "start": "node scripts/start.ts",
-    "build": "node scripts/build.ts",
+    "start": "NODE_ENV=development node scripts/start.ts",
+    "build": "NODE_ENV=production node scripts/build.ts",
     "prebuild": "rimraf build",
     "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
     "prepack": "pnpm build",
     "test:browser": "node browser-tests/runner.ts",
-    "test:browser:smoke": "pnpm build && node browser-tests/runner.ts --smoke",
     "test:browser:headed": "node browser-tests/runner.ts --headed",
-    "test:browser:update": "node browser-tests/runner.ts --update-snapshots",
-    "test:browser:webgl": "node browser-tests/runner.ts --backend=webgl",
-    "test:browser:canvas2d": "node browser-tests/runner.ts --backend=canvas2d",
-    "test:browser:webgpu": "VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run --auto-servernum node browser-tests/runner.ts --backend=webgpu",
-    "test:browser:webgpu:firefox": "VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run --auto-servernum node browser-tests/runner.ts --backend=webgpu --firefox",
-    "test:browser:all-backends": "VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run --auto-servernum node browser-tests/runner.ts --backend=all -u",
-    "test:browser:all-backends:ci": "node browser-tests/runner.ts --backend=all --skip-webgpu -u",
-    "test:browser:compare": "node browser-tests/compare-backends.ts"
+    "test:browser:update": "node browser-tests/runner.ts --update-snapshots"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.2.10",
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.6.6",
+    "@jbrowse/mobx-state-tree": "^5.8.7",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-arc": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",
@@ -69,11 +61,14 @@
     "@mui/material": "^9.0.1",
     "@node-oauth/oauth2-server": "^5.3.0",
     "@types/body-parser": "^1.19.6",
+    "@types/file-saver-es": "^2.0.3",
     "base64-js": "^1.5.1",
     "body-parser": "^2.2.2",
     "copy-to-clipboard": "^4.0.2",
-    "date-fns": "^4.2.1",
-    "dockview-core": "^6.4.0",
+    "date-fns": "^4.3.0",
+    "dockview-core": "^6.5.0",
+    "dockview-react": "^6.5.0",
+    "file-saver-es": "^2.0.5",
     "generic-filehandle2": "^2.1.9",
     "idb": "^8.0.3",
     "mobx": "^6.15.3",
@@ -88,6 +83,7 @@
     "production": [
       "last 1 chrome version"
     ],
+    "license": "Apache-2.0",
     "development": [
       "last 1 chrome version"
     ]

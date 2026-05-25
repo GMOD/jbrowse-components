@@ -22,11 +22,11 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/alignments",
+    "test": "cd ../..; jest --passWithNoTests plugins/alignments",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsgo -p tsconfig.build.esm.json",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
@@ -35,7 +35,7 @@
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.6.6",
+    "@jbrowse/mobx-state-tree": "^5.8.7",
     "@jbrowse/modifications-utils": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
@@ -44,6 +44,7 @@
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
     "@mui/x-charts-vendor": "^9.0.0",
+    "canvas2svg": "^1.0.16",
     "copy-to-clipboard": "^4.0.2",
     "fast-deep-equal": "^3.1.3",
     "generic-filehandle2": "^2.1.9",

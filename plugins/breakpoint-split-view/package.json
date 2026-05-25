@@ -22,17 +22,17 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/breakpoint-split-view",
+    "test": "cd ../..; jest --passWithNoTests plugins/breakpoint-split-view",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsgo -p tsconfig.build.esm.json",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
     "@gmod/vcf": "^7.0.8",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.6.6",
+    "@jbrowse/mobx-state-tree": "^5.8.7",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
@@ -40,8 +40,8 @@
     "mobx-react": "^9.2.1"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react": ">=16.8.4",
+    "react-dom": ">=16.8.4"
   },
   "publishConfig": {
     "access": "public",

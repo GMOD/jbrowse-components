@@ -8,6 +8,7 @@ import {
 
 # Importing config.json
 
+<<<<<<< HEAD
 JBrowse Web auto-loads a `config.json` from the current directory (or the
 `?config=` URL parameter). The embedded `react-app2` component does **not** — it
 makes no assumptions about URLs and lets you control how and when the config is
@@ -21,6 +22,12 @@ There are two common patterns:
 If your config is part of your app bundle, use a regular ES import. Bundlers
 handle the JSON natively, and the config ships alongside your JavaScript — no
 runtime fetch.
+=======
+`@jbrowse/react-app2` doesn't fetch a config automatically — pass it to
+`createViewState` directly. Two common patterns:
+
+## Static JSON import
+>>>>>>> origin/main
 
 <Story of={WithImportConfigJson} />
 

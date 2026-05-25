@@ -1,11 +1,10 @@
 // replace with this in your code:
-// import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
+// import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
+// import makeWorkerInstance from '@jbrowse/react-app2/esm/makeWorkerInstance'
 import { useState } from 'react'
 
 import volvoxConfig from '../../public/test_data/volvox/config.json' with { type: 'json' }
 import { JBrowseApp, createViewState } from '../../src/index.ts'
-// replace with this in your code:
-// import makeWorkerInstance from '@jbrowse/react-app2/esm/makeWorkerInstance'
 import makeWorkerInstance from '../../src/makeWorkerInstance.ts'
 
 export const WithWebWorker = () => {
@@ -37,11 +36,11 @@ export const WithWebWorker = () => {
   )
 
   return (
-    <div>
+    <>
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/WithWebWorker.tsx">
         Source code
       </a>
       <JBrowseApp viewState={state} />
-    </div>
+    </>
   )
 }
