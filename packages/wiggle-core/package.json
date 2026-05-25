@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/wiggle-core",
-  "version": "4.1.14",
+  "version": "4.3.0",
   "type": "module",
   "description": "Shared scale and autoscale utilities for wiggle and coverage displays",
   "keywords": [

@@ -27,3 +27,6 @@ COMPLETED.md
 IDEAS.md
 agent-docs
 *.generated.ts
+website/docs/developer_guide.md
+website/docs/config_guide.md
+website/docs/user_guide.md
