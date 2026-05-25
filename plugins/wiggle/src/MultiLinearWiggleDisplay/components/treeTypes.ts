@@ -1,23 +1,24 @@
 import type { Source } from '../../util.ts'
-import type { HierarchyNode } from '@jbrowse/tree-sidebar'
+import type {
+  HierarchyNode,
+  PositionedHierarchyNode,
+  HoveredTreeNode as TreeSidebarHoveredTreeNode,
+} from '@jbrowse/tree-sidebar'
+import type { NewickNode } from '@jbrowse/tree-sidebar'
 
-export interface ClusterNodeData {
-  name: string
+export interface ClusterNodeData extends NewickNode {
   height?: number
-  length?: number
-  children?: ClusterNodeData[]
 }
 
 export type ClusterHierarchyNode = HierarchyNode<ClusterNodeData>
 
-export interface HoveredTreeNode {
-  node: ClusterHierarchyNode
-  descendantNames: string[]
-}
+export type PositionedClusterHierarchyNode = PositionedHierarchyNode<ClusterNodeData>
+
+export type HoveredTreeNode = TreeSidebarHoveredTreeNode
 
 export interface TreeSidebarModel {
   totalHeight: number
-  hierarchy?: ClusterHierarchyNode
+  hierarchy?: PositionedClusterHierarchyNode
   treeAreaWidth: number
   height: number
   scrollTop: number
@@ -35,7 +36,7 @@ export interface LegendBarModel {
   id: string
   scrollTop: number
   height: number
-  hierarchy?: ClusterHierarchyNode
+  hierarchy?: PositionedClusterHierarchyNode
   treeAreaWidth: number
   totalHeight: number
   canDisplayLegendLabels: boolean
