@@ -509,7 +509,7 @@ export function SharedLinearPileupDisplayMixin(
                   self.clearFeatureSelection()
                 } else {
                   const sessionId = getRpcSessionId(self)
-                  const { feature } = (await rpcManager.call(
+                  const { feature } = await rpcManager.call(
                     sessionId,
                     'CoreGetFeatureDetails',
                     {
@@ -519,7 +519,7 @@ export function SharedLinearPileupDisplayMixin(
                       rendererType: 'PileupRenderer',
                       rpcDriverName: self.effectiveRpcDriverName,
                     },
-                  ))
+                  )
 
                   if (isAlive(self) && feature) {
                     self.selectFeature(new SimpleFeature(feature))
@@ -544,7 +544,7 @@ export function SharedLinearPileupDisplayMixin(
                   self.clearFeatureSelection()
                 } else {
                   const sessionId = getRpcSessionId(self)
-                  const { feature } = (await rpcManager.call(
+                  const { feature } = await rpcManager.call(
                     sessionId,
                     'CoreGetFeatureDetails',
                     {
@@ -554,7 +554,7 @@ export function SharedLinearPileupDisplayMixin(
                       rendererType: 'PileupRenderer',
                       rpcDriverName: self.effectiveRpcDriverName,
                     },
-                  ))
+                  )
 
                   if (feature) {
                     self.setContextMenuFeature(new SimpleFeature(feature))

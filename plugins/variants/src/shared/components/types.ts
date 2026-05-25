@@ -1,12 +1,8 @@
 import type { Source } from '../types.ts'
 import type {
   ClusterHierarchyNode,
-  
-  
   TreeSidebarModel as TreeSidebarModelBase,
 } from '@jbrowse/tree-sidebar'
-
-
 
 export interface TreeSidebarModel extends TreeSidebarModelBase {
   sources?: Source[]
@@ -33,4 +29,8 @@ export interface MouseState {
   offsetY: number
 }
 
-export { type ClusterHierarchyNode,type ClusterNodeData, type HoveredTreeNode} from '@jbrowse/tree-sidebar'
+export {
+  type ClusterHierarchyNode,
+  type ClusterNodeData,
+  type HoveredTreeNode,
+} from '@jbrowse/tree-sidebar'

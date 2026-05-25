@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 
-import { fromNewick } from '@gmod/hclust'
 import { getConf } from '@jbrowse/core/configuration'
 import { set1 as colors } from '@jbrowse/core/ui/colors'
 import {
@@ -11,7 +10,7 @@ import {
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { clusterLayout, hierarchy, sum } from '@jbrowse/tree-sidebar'
+import { clusterLayout, parseClusterTree } from '@jbrowse/tree-sidebar'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
@@ -21,11 +20,7 @@ import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
 import type { Source } from '../util.ts'
-import type {
-  ClusterHierarchyNode,
-  ClusterNodeData,
-  HoveredTreeNode,
-} from './components/treeTypes.ts'
+import type { HoveredTreeNode } from './components/treeTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
@@ -420,52 +415,9 @@ export function stateModelFactory(
        */
       get root() {
         const newick = self.clusterTree
-        if (!newick) {
-          return undefined
-        }
-        const tree = fromNewick(newick) as any
-        let root = hierarchy(tree, (d: ClusterNodeData) => d.children) as any
-        sum(root, (d: ClusterNodeData) => (d.children ? 0 : 1))
-        // Do not sort here — hclust already produces a leaf order that
-        // matches the `layout`/`sources` array. Sorting by height changes
-        // leaves(root) order and causes row highlights to land on the wrong
-        // samples.
-
-        // If subtree filter is active, find the matching subtree
-        if (self.subtreeFilter?.length) {
-          const filterSet = new Set(self.subtreeFilter)
-          const getLeafNames = (node: ClusterHierarchyNode): string[] => {
-            if (!node.children?.length) {
-              return node.data.name ? [node.data.name] : []
-            }
-            return node.children.flatMap(child => getLeafNames(child))
-          }
-          const findSubtree = (
-            node: ClusterHierarchyNode,
-          ): ClusterHierarchyNode | undefined => {
-            const leafNames = getLeafNames(node)
-            if (
-              leafNames.length === filterSet.size &&
-              leafNames.every(name => filterSet.has(name))
-            ) {
-              return node
-            }
-            if (node.children) {
-              for (const child of node.children) {
-                const found = findSubtree(child)
-                if (found) {
-                  return found
-                }
-              }
-            }
-            return undefined
-          }
-          const subtree = findSubtree(root)
-          if (subtree) {
-            root = subtree
-          }
-        }
-        return root
+        return newick
+          ? parseClusterTree(newick, self.subtreeFilter ?? undefined)
+          : undefined
       },
     }))
     .views(self => ({
@@ -483,11 +435,7 @@ export function stateModelFactory(
         if (!r || !self.sources?.length) {
           return undefined
         }
-        return clusterLayout(
-          r,
-          self.height,
-          self.treeAreaWidth,
-        )
+        return clusterLayout(r, self.height, self.treeAreaWidth)
       },
     }))
     .views(self => {

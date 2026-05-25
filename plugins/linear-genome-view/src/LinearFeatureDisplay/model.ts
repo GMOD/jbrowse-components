@@ -262,7 +262,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   self.clearFeatureSelection()
                 } else {
                   const sessionId = getRpcSessionId(self)
-                  const { feature } = (await rpcManager.call(
+                  const { feature } = await rpcManager.call(
                     sessionId,
                     'CoreGetFeatureDetails',
                     {
@@ -271,7 +271,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       trackInstanceId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
-                  ))
+                  )
 
                   if (isAlive(self) && feature) {
                     self.selectFeature(new SimpleFeature(feature))
@@ -291,7 +291,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   self.clearFeatureSelection()
                 } else {
                   const sessionId = getRpcSessionId(self)
-                  const { feature } = (await rpcManager.call(
+                  const { feature } = await rpcManager.call(
                     sessionId,
                     'CoreGetFeatureDetails',
                     {
@@ -300,7 +300,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       trackInstanceId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
-                  ))
+                  )
 
                   if (isAlive(self) && feature) {
                     self.setContextMenuFeature(new SimpleFeature(feature))
@@ -431,7 +431,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               const { parentTrack } = self
               try {
                 const sessionId = getRpcSessionId(self)
-                const { feature } = (await rpcManager.call(
+                const { feature } = await rpcManager.call(
                   sessionId,
                   'CoreGetFeatureDetails',
                   {
@@ -440,7 +440,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     trackInstanceId: parentTrack.id,
                     rendererType: self.rendererTypeName,
                   },
-                ))
+                )
 
                 // Only set if still alive and feature ID hasn't changed
                 if (

@@ -75,10 +75,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
     const renamed = await this.renameRegionsIfNeeded(
       args as unknown as RenderLinearReadArcsDisplayArgs,
     )
-    return super.serializeArguments(
-      renamed,
-      rpcDriver,
-    )
+    return super.serializeArguments(renamed, rpcDriver)
   }
 
   async execute(args: Record<string, unknown>, rpcDriver: string) {

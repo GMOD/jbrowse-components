@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 
-import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { set1 } from '@jbrowse/core/ui/colors'
@@ -13,7 +12,7 @@ import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
-import { clusterLayout, hierarchy, sum } from '@jbrowse/tree-sidebar'
+import { clusterLayout, parseClusterTree } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
@@ -31,11 +30,7 @@ import {
 import { getSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
 
-import type {
-  ClusterHierarchyNode,
-  ClusterNodeData,
-  HoveredTreeNode,
-} from './components/types.ts'
+import type { HoveredTreeNode } from './components/types.ts'
 import type { SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -496,52 +491,9 @@ export default function MultiVariantBaseModelF(
        */
       get root() {
         const newick = self.clusterTree
-        if (!newick) {
-          return undefined
-        }
-        const tree = fromNewick(newick) as any
-        let root = hierarchy(tree, (d: ClusterNodeData) => d.children) as any
-        sum(root, (d: ClusterNodeData) => (d.children ? 0 : 1))
-        // Do not sort here — hclust already produces a leaf order that
-        // matches the `layout`/`sources` array. Sorting by height changes
-        // leaves(root) order and causes row highlights to land on the wrong
-        // samples.
-
-        // If subtree filter is active, find the matching subtree
-        if (self.subtreeFilter?.length) {
-          const filterSet = new Set(self.subtreeFilter)
-          const getLeafNames = (node: ClusterHierarchyNode): string[] => {
-            if (!node.children?.length) {
-              return node.data.name ? [node.data.name] : []
-            }
-            return node.children.flatMap(child => getLeafNames(child))
-          }
-          const findSubtree = (
-            node: ClusterHierarchyNode,
-          ): ClusterHierarchyNode | undefined => {
-            const leafNames = getLeafNames(node)
-            if (
-              leafNames.length === filterSet.size &&
-              leafNames.every(name => filterSet.has(name))
-            ) {
-              return node
-            }
-            if (node.children) {
-              for (const child of node.children) {
-                const found = findSubtree(child)
-                if (found) {
-                  return found
-                }
-              }
-            }
-            return undefined
-          }
-          const subtree = findSubtree(root)
-          if (subtree) {
-            root = subtree
-          }
-        }
-        return root
+        return newick
+          ? parseClusterTree(newick, self.subtreeFilter ?? undefined)
+          : undefined
       },
     }))
     .views(self => {
@@ -588,11 +540,7 @@ export default function MultiVariantBaseModelF(
           if (!r || !self.sources?.length) {
             return undefined
           }
-          return clusterLayout(
-            r,
-            this.availableHeight,
-            self.treeAreaWidth,
-          )
+          return clusterLayout(r, this.availableHeight, self.treeAreaWidth)
         },
         /**
          * #method

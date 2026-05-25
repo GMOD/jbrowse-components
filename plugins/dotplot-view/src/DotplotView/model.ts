@@ -173,7 +173,8 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #volatile
        */
-      volatileError: undefined,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      volatileError: undefined as unknown,
 
       /**
        * #volatile
