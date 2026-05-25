@@ -11,10 +11,10 @@ import { Meta } from '@storybook/addon-docs/blocks'
 
 ```js
 createViewState({
-  config,             // required — full app config (same format as jbrowse-web config.json)
-  plugins,            // PluginConstructor[] — inline or imported plugin classes
+  config, // required — full app config (same format as jbrowse-web config.json)
+  plugins, // PluginConstructor[] — inline or imported plugin classes
   makeWorkerInstance, // () => Worker — web worker factory for WebWorker RPC
-  onChange,           // (patch, reversePatch) => void — called on every MST patch
+  onChange, // (patch, reversePatch) => void — called on every MST patch
 })
 ```
 
@@ -39,14 +39,15 @@ createViewState({
 }
 ```
 
-The `init` shorthand works for all view types — `LinearSyntenyView`, `DotplotView`, etc.
+The `init` shorthand works for all view types — `LinearSyntenyView`,
+`DotplotView`, etc.
 
 ---
 
 ## State object
 
 ```js
-state.jbrowse.addTrackConf(trackConf)           // register a track at runtime (event handler only)
+state.jbrowse.addTrackConf(trackConf) // register a track at runtime (event handler only)
 state.session.views[0].showTrack(trackId)
 state.session.views[0].hideTrack(trackId)
 await state.session.views[0].navToLocString(loc, assemblyName)

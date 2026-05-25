@@ -44,7 +44,12 @@ export const AddTracksProgrammatically = () => {
 
   return (
     <div>
-      <button disabled={added} onClick={() => { addTrack() }}>
+      <button
+        disabled={added}
+        onClick={() => {
+          addTrack()
+        }}
+      >
         {added ? 'Genes track added' : 'Add genes track'}
       </button>
       <JBrowseApp viewState={state} />

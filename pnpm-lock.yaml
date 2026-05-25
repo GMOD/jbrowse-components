@@ -248,6 +248,9 @@ importers:
       prettier:
         specifier: ^3.8.3
         version: 3.8.3
+      prettier-plugin-astro:
+        specifier: ^0.14.1
+        version: 0.14.1
       puppeteer:
         specifier: ^25.0.4
         version: 25.0.4(typescript@6.0.3)
