@@ -78,3 +78,15 @@ export {
   set2,
   tableau10,
 }
+
+export const paletteColors = {
+  category10,
+  dark2,
+  ggplot2Colors3,
+  ggplot2Colors4,
+  ggplot2Colors5,
+  ggplot2Colors6,
+  set1,
+  set2,
+  tableau10,
+}

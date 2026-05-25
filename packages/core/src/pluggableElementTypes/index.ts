@@ -29,7 +29,6 @@ export type PluggableElementType =
   | GlyphType
 
 export { default as AdapterType } from './AdapterType.ts'
-export { default as RendererType } from './renderers/RendererType.tsx'
 export { default as ConnectionType } from './ConnectionType.ts'
 export { default as TrackType } from './TrackType.ts'
 export { default as WidgetType } from './WidgetType.ts'
