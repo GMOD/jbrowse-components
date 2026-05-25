@@ -18,7 +18,6 @@ import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
 
 import {
@@ -30,7 +29,7 @@ import {
 } from './constants.ts'
 import { getSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
-import { hierarchy, sum, sort, clusterLayout } from '@jbrowse/tree-sidebar'
+import { hierarchy, sum, clusterLayout } from '@jbrowse/tree-sidebar'
 
 import type {
   ClusterHierarchyNode,
@@ -503,9 +502,10 @@ export default function MultiVariantBaseModelF(
         const tree = fromNewick(newick) as any
         let root = hierarchy(tree, (d: ClusterNodeData) => d.children) as any
         sum(root, (d: ClusterNodeData) => (d.children ? 0 : 1))
-        sort(root, ((a: any, b: any) =>
-          ascending(a.data.height || 1, b.data.height || 1)) as any,
-        )
+        // Do not sort here — hclust already produces a leaf order that
+        // matches the `layout`/`sources` array. Sorting by height changes
+        // leaves(root) order and causes row highlights to land on the wrong
+        // samples.
 
         // If subtree filter is active, find the matching subtree
         if (self.subtreeFilter?.length) {

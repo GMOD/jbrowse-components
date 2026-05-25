@@ -13,10 +13,9 @@ import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
 
-import { hierarchy, sum, sort, clusterLayout } from '@jbrowse/tree-sidebar'
+import { hierarchy, sum, clusterLayout } from '@jbrowse/tree-sidebar'
 import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
@@ -427,9 +426,10 @@ export function stateModelFactory(
         const tree = fromNewick(newick) as any
         let root = hierarchy(tree, (d: ClusterNodeData) => d.children) as any
         sum(root, (d: ClusterNodeData) => (d.children ? 0 : 1))
-        sort(root, ((a: any, b: any) =>
-          ascending(a.data.height || 1, b.data.height || 1)) as any,
-        )
+        // Do not sort here — hclust already produces a leaf order that
+        // matches the `layout`/`sources` array. Sorting by height changes
+        // leaves(root) order and causes row highlights to land on the wrong
+        // samples.
 
         // If subtree filter is active, find the matching subtree
         if (self.subtreeFilter?.length) {
