@@ -5,6 +5,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Menu, MenuItem, alpha } from '@mui/material'
+import { descendants } from '@jbrowse/tree-sidebar'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -109,7 +110,7 @@ const TreeSidebar = observer(function TreeSidebar({
           return
         }
 
-        const nodes = h.descendants().filter(node => node.children?.length)
+        const nodes = descendants(h).filter(node => node.children?.length)
 
         const index = new Flatbush(nodes.length)
         const hitRadius = 8

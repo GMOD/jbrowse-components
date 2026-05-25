@@ -1,5 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { links } from '@jbrowse/tree-sidebar'
 import { autorun } from 'mobx'
 
 import type { Source } from '../util.ts'
@@ -67,7 +68,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
 
         // Use single path for all tree lines for better performance
         ctx.beginPath()
-        for (const link of hierarchy.links()) {
+        for (const link of links(hierarchy)) {
           const { source, target } = link
           const sy = source.x!
           const ty = target.x!

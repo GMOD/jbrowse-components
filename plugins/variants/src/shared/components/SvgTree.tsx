@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react'
 
+import { links } from '@jbrowse/tree-sidebar'
 import type { LegendBarModel } from './types.ts'
 
 const SvgTree = observer(function SvgTree({
@@ -12,7 +13,7 @@ const SvgTree = observer(function SvgTree({
   const svg = []
   let idx = 0
   if (hierarchy) {
-    for (const link of hierarchy.links()) {
+    for (const link of links(hierarchy)) {
       const { source, target } = link
       const sy = source.x!
       const ty = target.x!
