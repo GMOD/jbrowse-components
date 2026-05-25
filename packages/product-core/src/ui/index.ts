@@ -1,4 +1,3 @@
-export { default as AboutDialog } from './AboutDialog.tsx'
 export * from './AboutDialog.tsx'
 export { default as DrawerWidget } from './DrawerWidget.tsx'
 export { default as ModalWidget } from './ModalWidget.tsx'

@@ -1,6 +1,6 @@
 import eslint from '@eslint/js'
 import { defineConfig } from 'eslint/config'
-import importPlugin from 'eslint-plugin-import-x'
+import { importX } from 'eslint-plugin-import-x'
 import eslintPluginReact from 'eslint-plugin-react'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
@@ -9,11 +9,13 @@ import tssUnusedClasses from 'eslint-plugin-tss-unused-classes'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
+import baselineJs from 'eslint-plugin-baseline-js'
 
 export default defineConfig(
   {
     ignores: [
       // Build outputs
+      'products/jbrowse-desktop/electron/',
       '**/build',
       '**/dist*',
       '**/esm',
@@ -36,8 +38,10 @@ export default defineConfig(
       'packages/core/src/util/map-obj',
       'packages/core/src/util/nanoid.js',
       'packages/core/src/ReExports/material-ui-colors.js',
+      'packages/tree-sidebar/src/d3-hierarchy2',
       'plugins/variants/src/d3-hierarchy2',
       'plugins/wiggle/src/d3-hierarchy2',
+      'plugins/alignments/src/CramAdapter/testNA12878.mjs',
 
       // Desktop tests
       'products/jbrowse-desktop/test/specs/test.e2e.ts',
@@ -55,6 +59,8 @@ export default defineConfig(
       'products/jbrowse-web/scripts',
       'products/jbrowse-img/src/bin.js',
 
+      'packages/core/src/util/p-limit.ts',
+
       // Worker polyfills (plain JS files)
       '**/workerPolyfill.js',
 
@@ -63,6 +69,7 @@ export default defineConfig(
 
       // Test fixtures and mocks
       '**/test_data',
+      'test/data',
       'packages/__mocks__',
       'integration.test.js',
 
@@ -89,9 +96,8 @@ export default defineConfig(
 
     settings: {
       react: {
-        version: '19.2.6',
+        version: '19.2.4',
       },
-      'import-x/ignore': ['dockview-react'],
     },
   },
   {
@@ -107,8 +113,16 @@ export default defineConfig(
   ...tseslint.configs.recommended,
   ...tseslint.configs.stylisticTypeChecked,
   ...tseslint.configs.strictTypeChecked,
-  importPlugin.flatConfigs.recommended,
+  importX.flatConfigs.recommended,
+  importX.flatConfigs.typescript,
   eslintPluginReact.configs.flat.recommended,
+  {
+    files: ['**/*.{js,ts,jsx,tsx}'],
+    plugins: { 'baseline-js': baselineJs },
+    rules: {
+      'baseline-js/use-baseline': ['error', { available: 'widely' }],
+    },
+  },
   {
     plugins: {
       'react-hooks': eslintPluginReactHooks,
@@ -133,6 +147,8 @@ export default defineConfig(
       ],
       'tss-unused-classes/unused-classes': 'warn',
       curly: 'error',
+      'object-shorthand': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
       semi: ['error', 'never'],
       'spaced-comment': [
         'error',
@@ -236,8 +252,6 @@ export default defineConfig(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
-      'react-hooks/set-state-in-effect': 'off',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
       '@typescript-eslint/no-unnecessary-type-conversion': 'off',
       '@typescript-eslint/no-unnecessary-type-parameters': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
@@ -248,7 +262,10 @@ export default defineConfig(
       '@typescript-eslint/restrict-plus-operands': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'off',
+      '@typescript-eslint/prefer-nullish-coalescing': [
+        'error',
+        { ignorePrimitives: { string: true } },
+      ],
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/require-await': 'off',
@@ -287,6 +304,7 @@ export default defineConfig(
     rules: {
       'no-restricted-globals': 'off',
       '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
       'no-console': 'off',
     },
   },
@@ -309,6 +327,40 @@ export default defineConfig(
       globals: {
         ...globals.worker,
       },
+    },
+  },
+  {
+    files: ['products/jbrowse-web/webgpu-debug.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  // Guards against regressions in the SVG-export pipeline. See
+  // agent-docs/ARCHITECTURE.md "SVG export pipeline (single source of truth)".
+  // Heavy draw paths must go through paintLayer; clipPath wrappers must use
+  // SvgClipRect for consistency.
+  {
+    files: ['plugins/**/renderSvg.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "NewExpression[callee.name='SvgCanvas']",
+          message:
+            'Use paintLayer(width, height, opts, ctx => drawXxxToCtx(ctx, …)) instead of constructing SvgCanvas directly. See agent-docs/ARCHITECTURE.md "SVG export pipeline".',
+        },
+        {
+          selector: "JSXOpeningElement[name.name='clipPath']",
+          message:
+            'Use <SvgClipRect> from @jbrowse/plugin-linear-genome-view instead of hand-rolling <defs><clipPath><rect>. See agent-docs/ARCHITECTURE.md "SVG export pipeline".',
+        },
+      ],
     },
   },
 )

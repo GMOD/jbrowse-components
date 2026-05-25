@@ -8,7 +8,6 @@ import ImportWizard from './ImportWizard.ts'
 import Spreadsheet from './SpreadsheetModel.tsx'
 
 import type { SpreadsheetModel } from './SpreadsheetModel.tsx'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface SpreadsheetViewInit {
@@ -75,10 +74,6 @@ export default function stateModelFactory() {
            * #volatile
            */
           width: 400,
-          /**
-           * #volatile
-           */
-          rowMenuItems: [] as MenuItem[],
         }))
         .views(self => ({
           /**
@@ -92,12 +87,6 @@ export default function stateModelFactory() {
           },
         }))
         .actions(self => ({
-          /**
-           * #action
-           */
-          setRowMenuItems(newItems: MenuItem[]) {
-            self.rowMenuItems = newItems
-          },
           /**
            * #action
            */
@@ -151,31 +140,24 @@ export default function stateModelFactory() {
               autorun(
                 async function spreadsheetViewInitAutorun() {
                   const { init, width } = self
-                  if (!width || !init) {
-                    return
-                  }
-
-                  const session = getSession(self)
-
-                  try {
-                    const exts = init.uri.split('.')
-                    let ext = exts.pop()?.toUpperCase()
-                    if (ext === 'GZ') {
-                      ext = exts.pop()?.toUpperCase()
+                  if (width && init) {
+                    const session = getSession(self)
+                    try {
+                      self.importWizard.setSelectedAssemblyName(init.assembly)
+                      self.importWizard.setFileSource({
+                        uri: init.uri,
+                        locationType: 'UriLocation',
+                      })
+                      if (init.fileType) {
+                        self.importWizard.setFileType(init.fileType)
+                      }
+                      await self.importWizard.import(init.assembly)
+                    } catch (e) {
+                      console.error(e)
+                      session.notifyError(`${e}`, e)
+                    } finally {
+                      self.setInit(undefined)
                     }
-
-                    self.importWizard.setFileType(init.fileType || ext || '')
-                    self.importWizard.setSelectedAssemblyName(init.assembly)
-                    self.importWizard.setFileSource({
-                      uri: init.uri,
-                      locationType: 'UriLocation',
-                    })
-                    await self.importWizard.import(init.assembly)
-                  } catch (e) {
-                    console.error(e)
-                    session.notifyError(`${e}`, e)
-                  } finally {
-                    self.setInit(undefined)
                   }
                 },
                 { name: 'SpreadsheetViewInit' },
@@ -201,40 +183,27 @@ export default function stateModelFactory() {
         })),
     )
     .postProcessSnapshot(snap => {
+      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       const { init, importWizard, spreadsheet, ...rest } = snap as Omit<
         typeof snap,
         symbol
       >
-      if (importWizard.cachedFileLocation && spreadsheet) {
-        // don't serialize spreadsheet rows if we have the importForm
-        // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-        const { rowSet, ...spreadsheetRest } = spreadsheet as Omit<
-          typeof spreadsheet,
-          symbol
-        >
-
-        return {
-          ...rest,
-          importWizard,
-          spreadsheet: spreadsheetRest,
-        }
-      } else if (spreadsheet) {
-        // don't serialize spreadsheet rows if we have the importForm
-        const { rowSet, ...spreadsheetRest } = spreadsheet as Omit<
-          typeof spreadsheet,
-          symbol
-        >
-        // check stringified length of rows if it is a localfile or similar.
-        // try not to exceed localstorage limits
-        return rowSet && JSON.stringify(rowSet).length > 1_000_000
-          ? {
-              ...rest,
-              importWizard,
-              spreadsheet: spreadsheetRest,
-            }
-          : { ...rest, importWizard, spreadsheet }
+      if (!spreadsheet) {
+        return { ...rest, importWizard }
       }
-      return { ...rest, importWizard }
+      const { rowSet, ...spreadsheetRest } = spreadsheet as Omit<
+        typeof spreadsheet,
+        symbol
+      >
+      // omit rows when a URI is cached (re-fetched on load) or too large for localStorage
+      const omitRows =
+        importWizard.cachedFileLocation ??
+        (rowSet !== undefined && JSON.stringify(rowSet).length > 1_000_000)
+      return {
+        ...rest,
+        importWizard,
+        spreadsheet: omitRows ? spreadsheetRest : spreadsheet,
+      }
     })
 }
 

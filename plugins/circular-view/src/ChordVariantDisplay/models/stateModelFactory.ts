@@ -21,7 +21,6 @@ import type {
 } from '../../CircularView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { ThemeOptions } from '@mui/material'
 
@@ -165,9 +164,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
                   { adapterConfig, regions, stopToken },
                 )
                 if (isAlive(self) && renderStopToken === stopToken) {
-                  self.setFeatures(
-                    new Map((feats as SimpleFeature[]).map(f => [f.id(), f])),
-                  )
+                  self.setFeatures(new Map(feats.map(f => [f.id(), f])))
                 }
               } catch (e) {
                 if (

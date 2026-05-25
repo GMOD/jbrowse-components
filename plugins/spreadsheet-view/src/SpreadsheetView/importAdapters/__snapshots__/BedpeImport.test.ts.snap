@@ -13,7 +13,7 @@ exports[`parses standard 6-column BED file 1`] = `
       "name": "end",
     },
     {
-      "name": "mateRef",
+      "name": "mateRefName",
     },
     {
       "name": "mateStart",

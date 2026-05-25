@@ -11,8 +11,7 @@ export function parseVcfBuffer(buffer: Uint8Array) {
   const vcfParser = new VCF({ header })
   const keys = new Set<string>()
   const rows = []
-  let i = 0
-  for (const line of body) {
+  for (const [i, line] of body.entries()) {
     const [CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT, ...rest] =
       line.split('\t')
     const ret = Object.fromEntries(
@@ -24,7 +23,7 @@ export function parseVcfBuffer(buffer: Uint8Array) {
           keys.add(k)
           const v = val.trim()
           return [k, isNumber(v) ? +v : v]
-        }) || [],
+        }) ?? [],
     )
     rows.push({
       // what is displayed
@@ -49,7 +48,6 @@ export function parseVcfBuffer(buffer: Uint8Array) {
         id: `vcf-${i}`,
       }).toJSON(),
     })
-    i++
   }
   return {
     columns: [

@@ -1,7 +1,8 @@
 import { colord } from '@jbrowse/core/util/colord'
+import { getMethBins, getModPositions, getModProbabilities } from '@jbrowse/modifications-utils'
 
-import { getMethBins } from '../../ModificationParser/getMethBins.ts'
 import { buildMismatchMap } from '../../shared/util.ts'
+import { getTagAlt } from '../../util.ts'
 
 import type { FlatbushItem, ProcessedRenderArgs } from '../types.ts'
 import type { LayoutFeature } from '../util.ts'
@@ -46,8 +47,12 @@ export function renderMethylation({
   }
   const fstart = feature.get('start')
   const fend = feature.get('end')
+  const fstrand = feature.get('strand') as -1 | 0 | 1
+  const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
+  const modifications = getModPositions(mm, seq, fstrand)
+  const probabilities = getModProbabilities(feature)
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
-    getMethBins(feature, cigarOps)
+    getMethBins({ modifications, probabilities, cigarOps, seq, fstrand, flen: fend - fstart })
   const mismatchMap = buildMismatchMap(feature, fstart)
 
   function getColAndProb(

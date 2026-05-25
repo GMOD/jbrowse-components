@@ -1,7 +1,8 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
+import { getMethBins, getModPositions, getModProbabilities } from '@jbrowse/modifications-utils'
 
 import { createEmptyBin, incWithProbabilities } from './util.ts'
-import { getMethBins } from '../ModificationParser/getMethBins.ts'
+import { getTagAlt } from '../util.ts'
 import { DELETION_TYPE } from '../shared/forEachMismatchTypes.ts'
 
 import type {
@@ -52,7 +53,17 @@ export function processReferenceCpGs({
   if (seq) {
     const cigarOps =
       feature.get('NUMERIC_CIGAR') ?? parseCigar2(feature.get('CIGAR'))
-    const { methBins, methProbs } = getMethBins(feature, cigarOps)
+    const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
+    const modifications = getModPositions(mm, seq, fstrand)
+    const probabilities = getModProbabilities(feature)
+    const { methBins, methProbs } = getMethBins({
+      modifications,
+      probabilities,
+      cigarOps,
+      seq,
+      fstrand,
+      flen: fend - fstart,
+    })
     const isDeleted = new Array(methBins.length).fill(false)
     feature.forEachMismatch((type, start, length) => {
       if (type === DELETION_TYPE) {

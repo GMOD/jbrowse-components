@@ -1,7 +1,6 @@
 import { getNextRefPos } from '@jbrowse/cigar-utils'
 
-import { getModPositions } from '../ModificationParser/getModPositions.ts'
-import { getModProbabilities } from '../ModificationParser/getModProbabilities.ts'
+import { getModPositions, getModProbabilities } from '@jbrowse/modifications-utils'
 import { getTagAlt } from '../util.ts'
 
 import type { Feature } from '@jbrowse/core/util'

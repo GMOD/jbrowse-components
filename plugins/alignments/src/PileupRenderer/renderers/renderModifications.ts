@@ -1,8 +1,7 @@
 import { getNextRefPos } from '@jbrowse/cigar-utils'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { getModPositions } from '../../ModificationParser/getModPositions.ts'
-import { getModProbabilities } from '../../ModificationParser/getModProbabilities.ts'
+import { getModPositions, getModProbabilities } from '@jbrowse/modifications-utils'
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
 import { getModificationName } from '../../shared/modificationData.ts'
 import { alphaColor, buildMismatchMap } from '../../shared/util.ts'
