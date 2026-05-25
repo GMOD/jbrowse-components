@@ -155,6 +155,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       matchedTrackFeatures: {} as Record<string, Feature[][]>,
     }))
     .views(self => ({
@@ -318,7 +319,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           viewOffsetPxs[level] = view.offsetPx
 
           if (!yOffsetsOverride) {
-            yOffsets[level] = domYOffsets?.[level] ?? viewTop
+            yOffsets[level] =
+              domYOffsets?.[level] ??
+              viewTop + (view.getTrackYOffset(trackId) ?? 0)
           }
           if (level < n - 1) {
             viewTop += view.height + VIEW_DIVIDER_HEIGHT

@@ -4,6 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import LinkIcon from '@mui/icons-material/Link'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import TuneIcon from '@mui/icons-material/Tune'
+import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 import { ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -27,6 +28,31 @@ const useStyles = makeStyles()({
     display: 'flex',
     flexDirection: 'column',
   },
+})
+
+const ScrollZoomButton = observer(function ScrollZoomButton({
+  model,
+}: {
+  model: BreakpointViewModel
+}) {
+  const { views } = model
+  const allScrollZoom = views.every(v => v.scrollZoom)
+  return (
+    <ToggleButton
+      value="scrollZoom"
+      selected={allScrollZoom}
+      onChange={() => {
+        for (const view of views) {
+          view.setScrollZoom(!allScrollZoom)
+        }
+      }}
+      title="Toggle scroll zoom on WebGL tracks"
+      sx={{ border: 'none' }}
+      size="small"
+    >
+      <ZoomInMapIcon />
+    </ToggleButton>
+  )
 })
 
 const LinkViewsButton = observer(function LinkViewsButton({
@@ -77,6 +103,7 @@ const Header = observer(function Header({
             <MoreVertIcon />
           </CascadingMenuButton>
         ) : null}
+        <ScrollZoomButton model={model} />
         <LinkViewsButton model={model} />
         <CascadingMenuButton
           size="small"

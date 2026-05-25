@@ -164,7 +164,10 @@ const BreakpointSplitViewOverlay = observer(
         const deltaX = normalizeWheel(event.deltaX, event.deltaMode)
         const isCtrlZoom = event.ctrlKey || event.metaKey
 
-        if (isCtrlZoom) {
+        if (
+          isCtrlZoom ||
+          (targetView.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))
+        ) {
           event.preventDefault()
           s.zoomAccum += deltaY / getNormalizer(deltaY)
           s.lastClientX = event.clientX
