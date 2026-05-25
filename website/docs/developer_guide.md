@@ -65,44 +65,28 @@ own via pull request.
 
 ### Getting started
 
-- [Writing a no-build plugin](/docs/developer_guides/no_build_plugin) - Plugin
-  without a build step, useful for jexl callbacks and simple modifications
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) - Overview of
-  all element types a plugin can register
-- [Writing a plugin using jbrowse-plugin-template](/docs/developer_guides/simple_plugin) -
-  Step-by-step plugin setup using the official rollup template
+- [Writing a no-build plugin](/docs/developer_guides/no_build_plugin) - Plugin without a build step, useful for jexl callbacks and simple modifications
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) - Overview of all element types a plugin can register
+- [Writing a plugin using jbrowse-plugin-template](/docs/developer_guides/simple_plugin) - Step-by-step plugin setup using the official rollup template
 
 ### Core concepts
 
-- [Configuration model basics](/docs/developer_guides/config_model) - Config
-  slot types, defaults, and how configuration schemas work
-- [Extension points](/docs/developer_guides/extension_points) - Callbacks
-  registered by producers and consumed across the app
-- [Renderer architecture](/docs/developer_guides/renderer_architecture) - How
-  canvas-based track rendering runs in a web worker via RPC
+- [Configuration model basics](/docs/developer_guides/config_model) - Config slot types, defaults, and how configuration schemas work
+- [Extension points](/docs/developer_guides/extension_points) - Callbacks registered by producers and consumed across the app
+- [Renderer architecture](/docs/developer_guides/renderer_architecture) - How canvas-based track rendering runs in a web worker via RPC
 
 ### Creating pluggable elements
 
-- [Creating custom adapters](/docs/developer_guides/creating_adapter) - Read
-  data from custom file formats with feature, regions, or sequence adapters
-- [Creating custom add-track workflows](/docs/developer_guides/creating_addtrack_workflow) -
-  Custom UI in the Add track dialog for non-standard track types
-- [Creating custom display types](/docs/developer_guides/creating_display) -
-  Control how a track renders in a given view type
-- [Creating custom renderers](/docs/developer_guides/creating_renderer) - Write
-  canvas- or SVG-based feature rendering in a web worker
-- [Creating custom track types](/docs/developer_guides/creating_track) - Define
-  new high-level track concepts backed by display types
-- [Creating custom view types](/docs/developer_guides/creating_view) - Add
-  entirely new view panels such as DotplotView or CircularView
-- [Creating custom widgets](/docs/developer_guides/creating_widget) - Add new
-  drawer/panel UI components
-- [Creating custom top-level menu items](/docs/developer_guides/menus) - Add
-  items to the top-level application menu bar
+- [Creating custom adapters](/docs/developer_guides/creating_adapter) - Read data from custom file formats with feature, regions, or sequence adapters
+- [Creating custom add-track workflows](/docs/developer_guides/creating_addtrack_workflow) - Custom UI in the Add track dialog for non-standard track types
+- [Creating custom display types](/docs/developer_guides/creating_display) - Control how a track renders in a given view type
+- [Creating custom renderers](/docs/developer_guides/creating_renderer) - Write canvas- or SVG-based feature rendering in a web worker
+- [Creating custom track types](/docs/developer_guides/creating_track) - Define new high-level track concepts backed by display types
+- [Creating custom view types](/docs/developer_guides/creating_view) - Add entirely new view panels such as DotplotView or CircularView
+- [Creating custom widgets](/docs/developer_guides/creating_widget) - Add new drawer/panel UI components
+- [Creating custom top-level menu items](/docs/developer_guides/menus) - Add items to the top-level application menu bar
 
 ### Advanced topics
 
-- [PIF (Pairwise Indexed Format)](/docs/developer_guides/pif_format) -
-  Tabix-indexed pairwise alignment format for large-scale synteny data
-- [RefName aliasing](/docs/developer_guides/refname_aliasing) - Map between
-  chromosome naming conventions across tracks and assemblies
+- [PIF (Pairwise Indexed Format)](/docs/developer_guides/pif_format) - Tabix-indexed pairwise alignment format for large-scale synteny data
+- [RefName aliasing](/docs/developer_guides/refname_aliasing) - Map between chromosome naming conventions across tracks and assemblies
