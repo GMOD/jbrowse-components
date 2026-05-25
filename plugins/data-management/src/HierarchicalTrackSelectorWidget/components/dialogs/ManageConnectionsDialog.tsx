@@ -44,7 +44,7 @@ const ManageConnectionsDialog = observer(function ManageConnectionsDialog({
   const { classes } = useStyles()
   const { adminMode, connections, sessionConnections } = session
   return (
-    <Dialog open onClose={handleClose} maxWidth="lg" title="Delete connections">
+    <Dialog open onClose={handleClose} maxWidth="lg" title="Manage connections">
       <DialogContent>
         <Typography>
           Click the X icon to delete the connection from your config completely

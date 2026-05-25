@@ -28,24 +28,24 @@ export default function DeletePluginDialog({
       <DialogActions>
         <Button
           variant="contained"
-          color="primary"
-          onClick={() => {
-            // avoid showing runtime plugin warning
-            window.setTimeout(() => {
-              onClose(plugin)
-            }, 500)
-          }}
-        >
-          Confirm
-        </Button>
-        <Button
-          variant="contained"
           color="secondary"
           onClick={() => {
             onClose()
           }}
         >
           Cancel
+        </Button>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={() => {
+            // delay so the runtime plugin warning doesn't flash before unmount
+            window.setTimeout(() => {
+              onClose(plugin)
+            }, 500)
+          }}
+        >
+          Remove
         </Button>
       </DialogActions>
     </Dialog>

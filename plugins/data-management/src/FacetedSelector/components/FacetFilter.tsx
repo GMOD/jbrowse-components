@@ -53,18 +53,17 @@ function ExpandButton({
 }
 
 const FacetFilter = observer(function FacetFilter({
-  column,
+  field,
   vals,
   faceted,
 }: {
-  column: { field: string }
+  field: string
   vals: [string, number][]
   faceted: FacetedModel
 }) {
   const { classes } = useStyles()
   const [visible, setVisible] = useState(true)
   const { filters } = faceted
-  const { field } = column
   return (
     <FormControl className={classes.facet} fullWidth>
       <div>
@@ -86,14 +85,9 @@ const FacetFilter = observer(function FacetFilter({
           multiple
           native
           className={classes.select}
-          value={filters.get(column.field) || []}
+          value={filters.get(field) ?? []}
           onChange={event => {
-            const options = (event.target as unknown as HTMLSelectElement)
-              .options
-            faceted.setFilter(
-              column.field,
-              [...options].filter(opt => opt.selected).map(opt => opt.value),
-            )
+            faceted.setFilter(field, event.target.value as string[])
           }}
         >
           {vals

@@ -1,50 +1,24 @@
-import { useState } from 'react'
-
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 import { observer } from 'mobx-react'
 
-import AutoSizer from './AutoSizer.tsx'
 import HierarchicalFab from './HierarchicalFab.tsx'
 import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
 import HierarchicalTree from './tree/HierarchicalTree.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
-// Don't use autosizer in jest and instead hardcode a height, otherwise fails
-// jest tests
-const AutoSizedHierarchicalTree = ({
-  model,
-  offset,
-}: {
-  model: HierarchicalTrackSelectorModel
-  offset: number
-}) => {
-  return typeof jest === 'undefined' ? (
-    <AutoSizer disableWidth>
-      {args => (
-        <HierarchicalTree
-          height={(args.height || offset) - offset}
-          model={model}
-        />
-      )}
-    </AutoSizer>
-  ) : (
-    <HierarchicalTree height={9000} model={model} />
-  )
-}
+const useStyles = makeStyles()({
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  treeContainer: {
+    flex: 1,
+    minHeight: 0,
+  },
+})
 
-const Wrapper = ({
-  overrideDimensions,
-  children,
-}: {
-  overrideDimensions?: { width: number; height: number }
-  children: React.ReactNode
-}) => {
-  return overrideDimensions ? (
-    <div style={{ ...overrideDimensions }}>{children}</div>
-  ) : (
-    children
-  )
-}
 const HierarchicalTrackSelectorContainer = observer(
   function HierarchicalTrackSelectorContainer({
     model,
@@ -55,14 +29,19 @@ const HierarchicalTrackSelectorContainer = observer(
     toolbarHeight: number
     overrideDimensions?: { width: number; height: number }
   }) {
-    return (
-      <Wrapper overrideDimensions={overrideDimensions}>
+    const inner = (
+      <>
         <HierarchicalTrackSelector
           model={model}
           toolbarHeight={toolbarHeight}
         />
         <HierarchicalFab model={model} />
-      </Wrapper>
+      </>
+    )
+    return overrideDimensions ? (
+      <div style={overrideDimensions}>{inner}</div>
+    ) : (
+      inner
     )
   },
 )
@@ -74,15 +53,18 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   model: HierarchicalTrackSelectorModel
   toolbarHeight?: number
 }) {
-  const [headerHeight, setHeaderHeight] = useState(0)
+  const { classes } = useStyles()
+  const [ref, { height }] = useMeasure()
   return (
-    <>
-      <HierarchicalHeader model={model} setHeaderHeight={setHeaderHeight} />
-      <AutoSizedHierarchicalTree
-        model={model}
-        offset={toolbarHeight + headerHeight}
-      />
-    </>
+    <div
+      className={classes.container}
+      style={{ height: `calc(100% - ${toolbarHeight}px)` }}
+    >
+      <HierarchicalHeader model={model} />
+      <div ref={ref} className={classes.treeContainer}>
+        {height ? <HierarchicalTree height={height} model={model} /> : null}
+      </div>
+    </div>
   )
 })
 

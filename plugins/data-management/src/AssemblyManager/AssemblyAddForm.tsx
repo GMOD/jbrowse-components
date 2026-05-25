@@ -192,11 +192,7 @@ const adapterTypes = [
   'TwoBitAdapter',
 ] as const
 
-type AdapterType =
-  | 'IndexedFastaAdapter'
-  | 'BgzipFastaAdapter'
-  | 'UnindexedFastaAdapter'
-  | 'TwoBitAdapter'
+type AdapterType = (typeof adapterTypes)[number]
 
 const AssemblyAddForm = observer(function AssemblyAddForm({
   session,
@@ -287,7 +283,7 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
           variant="contained"
           color="primary"
           onClick={() => {
-            if (assemblyName === '') {
+            if (!assemblyName.trim()) {
               session.notify("Can't create an assembly without a name")
             } else {
               onClose()

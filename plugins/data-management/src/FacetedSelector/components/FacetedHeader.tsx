@@ -5,8 +5,8 @@ import MoreVert from '@mui/icons-material/MoreVert'
 import { Grid, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ClearableSearchField from '../../HierarchicalTrackSelectorWidget/components/ClearableSearchField.tsx'
 import ShoppingCart from '../../HierarchicalTrackSelectorWidget/components/ShoppingCart.tsx'
+import ClearableSearchField from '../../shared/ClearableSearchField.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel } from '../facetedModel.ts'
@@ -87,17 +87,17 @@ const FacetedHeader = observer(function FacetedHeader({
             type: 'subMenu',
             subMenu: fields
               .filter(f => f !== 'name')
-              .map(field => ({
-                label: field,
-                type: 'checkbox' as const,
-                checked: visible[field] !== false,
-                onClick: () => {
-                  faceted.setVisible({
-                    ...visible,
-                    [field]: visible[field] === false,
-                  })
-                },
-              })),
+              .map(field => {
+                const checked = visible[field] !== false
+                return {
+                  label: field,
+                  type: 'checkbox' as const,
+                  checked,
+                  onClick: () => {
+                    faceted.setVisible({ ...visible, [field]: !checked })
+                  },
+                }
+              }),
           },
         ]}
       />

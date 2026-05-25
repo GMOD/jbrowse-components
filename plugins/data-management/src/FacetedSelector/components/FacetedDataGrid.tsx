@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 
 import { notEmpty } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -7,7 +7,7 @@ import { alpha, darken, lighten } from '@mui/material/styles'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { computeInitialWidths } from './computeInitialWidths.ts'
+import { useSearchHighlight } from '../../shared/useSearchHighlight.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
@@ -188,48 +188,19 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
 }) {
   const { classes } = useStyles()
   const { view } = model
-  const {
-    rows,
-    useShoppingCart,
-    filteredRows,
-    filteredNonMetadataKeys,
-    filteredMetadataKeys,
-    visible,
-  } = faceted
+  const { useShoppingCart, filteredRows, visible, filterText, initialWidths } =
+    faceted
 
   const [, startTransition] = useTransition()
 
-  const selectedIds = useMemo(
-    () =>
-      new Set(
-        useShoppingCart
-          ? selection.map(s => `${s.trackId}`)
-          : [...shownTrackIds],
-      ),
-    [useShoppingCart, selection, shownTrackIds],
-  )
+  const selectedIds = useShoppingCart
+    ? new Set(selection.map(s => `${s.trackId}`))
+    : shownTrackIds
 
-  const visibleColumns = useMemo(
-    () => columns.filter(col => visible[col.id] !== false),
-    [columns, visible],
-  )
+  const visibleColumns = columns.filter(col => visible[col.id] !== false)
 
-  const initialWidths = useMemo(
-    () =>
-      computeInitialWidths(
-        rows,
-        filteredNonMetadataKeys,
-        filteredMetadataKeys,
-        visible,
-      ),
-    [rows, filteredNonMetadataKeys, filteredMetadataKeys, visible],
-  )
-
-  const [colWidths, setColWidths] =
-    useState<Record<string, number>>(initialWidths)
-  useEffect(() => {
-    setColWidths(prev => ({ ...initialWidths, ...prev }))
-  }, [initialWidths])
+  const [overrides, setOverrides] = useState<Record<string, number>>({})
+  const colWidths = { ...initialWidths, ...overrides }
 
   const onResizeStart = (colId: string, e: React.MouseEvent) => {
     e.preventDefault()
@@ -238,7 +209,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
 
     const onMouseMove = (ev: MouseEvent) => {
       const newWidth = Math.max(50, startWidth + ev.clientX - startX)
-      setColWidths(prev => ({ ...prev, [colId]: newWidth }))
+      setOverrides(prev => ({ ...prev, [colId]: newWidth }))
     }
 
     const onMouseUp = () => {
@@ -286,7 +257,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           const currentIds = new Set(selection.map(s => `${s.trackId}`))
           const toAdd = filteredRows
             .filter(r => !currentIds.has(r.id))
-            .map(r => model.allTrackConfigurationTrackIdSet.get(r.id))
+            .map(r => model.allTrackConfigurationMap.get(r.id))
             .filter(notEmpty)
           model.setSelection([...selection, ...toAdd])
         }
@@ -307,7 +278,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
         if (selectedIds.has(rowId)) {
           model.setSelection(selection.filter(s => `${s.trackId}` !== rowId))
         } else {
-          const conf = model.allTrackConfigurationTrackIdSet.get(rowId)
+          const conf = model.allTrackConfigurationMap.get(rowId)
           if (conf) {
             model.setSelection([...selection, conf])
           }
@@ -319,6 +290,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   const lastColId = visibleColumns.at(-1)?.id
 
   const parentRef = useRef<HTMLDivElement>(null)
+  useSearchHighlight(parentRef, filterText, 'jbrowse-faceted-search')
   const { items: virtualItems, totalSize } = useVirtualRows(
     parentRef,
     filteredRows.length,

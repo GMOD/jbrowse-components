@@ -468,3 +468,64 @@ test('BAM file with .out in filename should infer BamAdapter not MashMapAdapter'
   expect(widget.trackAdapterType).toBe('BamAdapter')
   expect(widget.trackType).toBe('AlignmentsTrack')
 })
+
+function makeHg38Session() {
+  // Includes Alignments so BAM is guessable; assembly mocks make getTrackConfig non-undefined
+  const pluginManager = new PluginManager([
+    new FakeViewPlugin(),
+    new Alignments(),
+  ])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+
+  const SessionModel = types
+    .model({
+      view: FakeViewModel,
+      widget: stateModelFactory(pluginManager),
+    })
+    .volatile(() => ({
+      rpcManager: {},
+      configuration: {},
+      assemblies: [{ name: 'hg38' }],
+      assemblyManager: { get: (_name: string) => ({ name: 'hg38' }) },
+    }))
+
+  return SessionModel.create(
+    {
+      view: { id: 'v', type: 'FakeView', assemblyNames: ['hg38'] },
+      widget: { type: 'AddTrackWidget', view: 'v' },
+    },
+    { pluginManager },
+  )
+}
+
+test('getTrackConfig includes default assembly names when mixinData is empty', () => {
+  const { widget } = makeHg38Session()
+  widget.setTrackData({
+    uri: 'https://example.com/test.bam',
+    locationType: 'UriLocation',
+  })
+
+  const config = widget.getTrackConfig(Date.now())
+  expect(config?.adapter).toMatchObject({
+    queryAssembly: 'hg38',
+    targetAssembly: 'hg38',
+  })
+})
+
+test('getTrackConfig lets mixinData override default assembly names', () => {
+  const { widget } = makeHg38Session()
+  widget.setTrackData({
+    uri: 'https://example.com/test.bam',
+    locationType: 'UriLocation',
+  })
+  widget.setMixinData({
+    adapter: { queryAssembly: 'mm10', targetAssembly: 'hg38' },
+  })
+
+  const config = widget.getTrackConfig(Date.now())
+  expect(config?.adapter).toMatchObject({
+    queryAssembly: 'mm10',
+    targetAssembly: 'hg38',
+  })
+})

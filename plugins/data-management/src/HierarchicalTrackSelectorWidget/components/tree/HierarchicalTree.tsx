@@ -1,12 +1,62 @@
-import { useEffect, useRef, useState } from 'react'
+import { type RefObject, useEffect, useRef, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import SharedTooltip from './SharedTooltip.tsx'
 import TreeItem from './TreeItem.tsx'
+import { useSearchHighlight } from '../../../shared/useSearchHighlight.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+
+// Subscribes to container scroll + MST offset changes and exposes the current
+// visible range; only re-renders when start/end actually change.
+function useVisibleRange(
+  containerRef: RefObject<HTMLDivElement | null>,
+  model: HierarchicalTrackSelectorModel,
+  height: number,
+) {
+  const [range, setRange] = useState(() => model.itemOffsets(height, 0))
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) {
+      return
+    }
+    let rafId: number | undefined
+    const applyRange = (next: ReturnType<typeof model.itemOffsets>) => {
+      rafId = undefined
+      setRange(prev =>
+        next.startIndex === prev.startIndex &&
+        next.endIndex === prev.endIndex &&
+        next.totalHeight === prev.totalHeight
+          ? prev
+          : next,
+      )
+    }
+    const onScroll = () => {
+      rafId ??= requestAnimationFrame(() => {
+        applyRange(model.itemOffsets(height, container.scrollTop))
+      })
+    }
+    // addDisposer guards against the model being unmounted first; the React
+    // cleanup handles the common case of unmounting while the model lives
+    const dispose = autorun(() => {
+      applyRange(model.itemOffsets(height, container.scrollTop))
+    })
+    addDisposer(model, dispose)
+    container.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      dispose()
+      container.removeEventListener('scroll', onScroll)
+      if (rafId !== undefined) {
+        cancelAnimationFrame(rafId)
+      }
+    }
+  }, [containerRef, model, height])
+  return range
+}
 
 const HierarchicalTree = observer(function HierarchicalTree({
   height,
@@ -15,50 +65,19 @@ const HierarchicalTree = observer(function HierarchicalTree({
   height: number
   model: HierarchicalTrackSelectorModel
 }) {
-  const { flattenedItems, shownTrackIds } = model
+  const { flattenedItems } = model
   const { drawerPosition } = getSession(model)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [scrollTop, setScrollTop] = useState(0)
-  const { startIndex, endIndex, totalHeight, itemOffsets } = model.itemOffsets(
-    height,
-    scrollTop,
+  useSearchHighlight(
+    containerRef,
+    model.filterText,
+    'jbrowse-hierarchical-search',
   )
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) {
-      return
-    }
-
-    let rafId: number | undefined
-    const onScroll = () => {
-      if (rafId !== undefined) {
-        return
-      }
-      rafId = requestAnimationFrame(() => {
-        rafId = undefined
-        const newScrollTop = container.scrollTop
-        setScrollTop(prev => {
-          const { startIndex: prevStart, endIndex: prevEnd } =
-            model.itemOffsets(height, prev)
-          const { startIndex: nextStart, endIndex: nextEnd } =
-            model.itemOffsets(height, newScrollTop)
-          if (prevStart === nextStart && prevEnd === nextEnd) {
-            return prev
-          }
-          return newScrollTop
-        })
-      })
-    }
-
-    container.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      container.removeEventListener('scroll', onScroll)
-      if (rafId !== undefined) {
-        cancelAnimationFrame(rafId)
-      }
-    }
-  }, [height, model])
+  const { startIndex, endIndex, totalHeight, itemOffsets } = useVisibleRange(
+    containerRef,
+    model,
+    height,
+  )
 
   return (
     <div
@@ -84,11 +103,6 @@ const HierarchicalTree = observer(function HierarchicalTree({
               model={model}
               item={item}
               top={itemOffsets[index]!}
-              checked={
-                item.type === 'track'
-                  ? shownTrackIds.has(item.trackId)
-                  : undefined
-              }
             />
           ) : null
         })}

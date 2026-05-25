@@ -20,7 +20,6 @@ const useStyles = makeStyles()({
   },
   resizeHandle: {
     marginLeft: 5,
-    background: 'grey',
     width: 5,
   },
 })
@@ -61,22 +60,6 @@ export function HighlightText({
 
 const frac = 0.75
 
-function HighlightCell({
-  value,
-  filterText,
-  className,
-}: {
-  value: string | undefined
-  filterText: string
-  className: string
-}) {
-  return value ? (
-    <HighlightText className={className} text={value} query={filterText} />
-  ) : (
-    ''
-  )
-}
-
 const FacetedSelector = observer(function FacetedSelector({
   model,
   faceted,
@@ -90,7 +73,6 @@ const FacetedSelector = observer(function FacetedSelector({
     rows,
     panelWidth,
     showFilters,
-    filterText,
     filteredNonMetadataKeys,
     filteredMetadataKeys,
   } = faceted
@@ -103,7 +85,7 @@ const FacetedSelector = observer(function FacetedSelector({
       header: 'name',
       cell: row => (
         <div className={classes.cell}>
-          <HighlightText text={row.name} query={filterText} />
+          <SanitizedHTML html={row.name} />
           <TrackSelectorTrackMenu id={row.id} conf={row.conf} model={model} />
         </div>
       ),
@@ -113,23 +95,7 @@ const FacetedSelector = observer(function FacetedSelector({
         ({
           id: e,
           header: e,
-          cell: row => {
-            const val =
-              e === 'category'
-                ? row.category
-                : e === 'adapter'
-                  ? row.adapter
-                  : e === 'description'
-                    ? row.description
-                    : ''
-            return (
-              <HighlightCell
-                value={`${val ?? ''}`}
-                filterText={filterText}
-                className={classes.cell}
-              />
-            )
-          },
+          cell: row => row[e as 'category' | 'adapter' | 'description'],
         }) satisfies FacetedColumn,
     ),
     ...filteredMetadataKeys.map(
@@ -137,18 +103,13 @@ const FacetedSelector = observer(function FacetedSelector({
         ({
           id: `metadata.${e}`,
           header: nonMetadataFieldSet.has(e) ? `${e} (from metadata)` : e,
-          cell: row => (
-            <HighlightCell
-              value={`${row.metadata[e] ?? ''}`}
-              filterText={filterText}
-              className={classes.cell}
-            />
-          ),
+          cell: row => {
+            const val = row.metadata[e]
+            return val != null ? `${val}` : null
+          },
         }) satisfies FacetedColumn,
     ),
   ]
-
-  const facetColumns = columns.map(col => ({ field: col.id }))
 
   return (
     <>
@@ -187,7 +148,7 @@ const FacetedSelector = observer(function FacetedSelector({
               <FacetFilters
                 faceted={faceted}
                 rows={rows}
-                columns={facetColumns}
+                fields={columns.map(c => c.id)}
               />
             </div>
           </>

@@ -32,6 +32,9 @@ type MaybeCollapsedKeys = [string, boolean][] | undefined
 const defaultItemHeight = 22
 const categoryItemHeight = 40
 const overscan = 20
+const MAX_RECENTLY_USED = 10
+const sortTrackNamesK = 'sortTrackNames'
+const sortCategoriesK = 'sortCategories'
 
 // for settings that are config dependent
 function keyConfigPostFix() {
@@ -45,9 +48,9 @@ function keyConfigPostFix() {
     : 'empty'
 }
 
-export function getItemHeight(item: TreeNode, folderCategories?: Set<string>) {
+export function getItemHeight(item: TreeNode, folderCategories: Set<string>) {
   if (item.type === 'category') {
-    return folderCategories?.has(item.id)
+    return folderCategories.has(item.id)
       ? defaultItemHeight
       : categoryItemHeight
   }
@@ -84,19 +87,9 @@ function collapsedK(assemblyNames: string[], viewType: string) {
   ].join('-')
 }
 
-function sortTrackNamesK() {
-  return 'sortTrackNames'
-}
-
-function sortCategoriesK() {
-  return 'sortCategories'
-}
-
 function localStorageGetJSON<T>(key: string, defaultValue: T) {
   const val = localStorageGetItem(key)
-  return val !== undefined && val !== null && val
-    ? (JSON.parse(val) as T)
-    : defaultValue
+  return val ? (JSON.parse(val) as T) : defaultValue
 }
 
 function localStorageSetJSON(key: string, val: unknown) {
@@ -104,8 +97,6 @@ function localStorageSetJSON(key: string, val: unknown) {
     localStorageSetItem(key, JSON.stringify(val))
   }
 }
-
-const MAX_RECENTLY_USED = 10
 
 /**
  * #stateModel HierarchicalTrackSelectorWidget
@@ -146,14 +137,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #volatile
        */
       sortTrackNames: localStorageGetJSON<MaybeBoolean>(
-        sortTrackNamesK(),
+        sortTrackNamesK,
         undefined,
       ),
       /**
        * #volatile
        */
       sortCategories: localStorageGetJSON<MaybeBoolean>(
-        sortCategoriesK(),
+        sortCategoriesK,
         undefined,
       ),
       /**
@@ -211,7 +202,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #getter
        */
       get assemblyNames(): string[] {
-        return self.view?.assemblyNames || []
+        return self.view?.assemblyNames ?? []
       },
     }))
     .actions(self => ({
@@ -257,8 +248,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       addToFavorites(trackId: string) {
-        self.favoritesCounter += 1
-        self.favorites = [...self.favorites, trackId]
+        if (!self.favoritesSet.has(trackId)) {
+          self.favoritesCounter += 1
+          self.favorites = [...self.favorites, trackId]
+        }
       },
       /**
        * #action
@@ -271,6 +264,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       clearFavorites() {
         self.favorites = []
+        self.favoritesCounter = 0
       },
 
       /**
@@ -301,7 +295,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       addToRecentlyUsed(id: string) {
-        if (!self.recentlyUsed.includes(id)) {
+        if (!self.recentlyUsedSet.has(id)) {
           self.recentlyUsedCounter = Math.min(
             self.recentlyUsedCounter + 1,
             MAX_RECENTLY_USED,
@@ -317,6 +311,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       clearRecentlyUsed() {
         self.recentlyUsed = []
+        self.recentlyUsedCounter = 0
       },
       /**
        * #action
@@ -404,14 +399,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
         const viewType = pluginManager.getViewType(self.view.type)!
-        if (trackConf) {
-          for (const display of trackConf.displays) {
-            if (viewType.displayTypes.some(d => d.name === display.type)) {
-              return trackConf
-            }
-          }
-        }
-        return undefined
+        const viewDisplayNames = new Set(viewType.displayTypes.map(d => d.name))
+        const matches = trackConf?.displays.some((display: { type: string }) =>
+          viewDisplayNames.has(display.type),
+        )
+        return matches ? trackConf : undefined
       },
     }))
 
@@ -459,7 +451,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get allTrackConfigurationTrackIdSet() {
+      get allTrackConfigurationMap() {
         return new Map(this.allTrackConfigurations.map(t => [t.trackId, t]))
       },
     }))
@@ -470,8 +462,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get favoriteTracks() {
         return self.favorites
-          .filter(t => self.allTrackConfigurationTrackIdSet.has(t))
-          .map(t => self.allTrackConfigurationTrackIdSet.get(t)!)
+          .filter(t => self.allTrackConfigurationMap.has(t))
+          .map(t => self.allTrackConfigurationMap.get(t)!)
       },
 
       /**
@@ -480,8 +472,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get recentlyUsedTracks() {
         return self.recentlyUsed
-          .filter(t => self.allTrackConfigurationTrackIdSet.has(t))
-          .map(t => self.allTrackConfigurationTrackIdSet.get(t)!)
+          .filter(t => self.allTrackConfigurationMap.has(t))
+          .map(t => self.allTrackConfigurationMap.get(t)!)
       },
     }))
     .views(self => ({
@@ -495,13 +487,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             group: 'Tracks',
             tracks: self.configAndSessionTrackConfigurations,
             noCategories: false,
-            menuItems: [],
           },
           ...connectionInstances.flatMap(c => ({
             group: getConf(c, 'name'),
             tracks: filterTracks(c.tracks, self),
             noCategories: false,
-            menuItems: [],
           })),
         ]
       },
@@ -519,7 +509,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             name: s.group,
             id: s.group,
             type: 'category' as const,
-            menuItems: s.menuItems,
             nestingLevel: 0,
             children: generateHierarchy({
               model: self,
@@ -535,9 +524,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       get flattenedItems() {
         const { folderCategories } = self
         const sortedChildren = (items: TreeNode[]) => {
-          const tracks = [] as TreeNode[]
-          const folders = [] as TreeNode[]
-          const categories = [] as TreeNode[]
+          const tracks: TreeNode[] = []
+          const folders: TreeNode[] = []
+          const categories: TreeNode[] = []
           for (const item of items) {
             if (item.type === 'track') {
               tracks.push(item)
@@ -549,7 +538,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           }
           return [...tracks, ...folders, ...categories]
         }
-        const flatten = (items: TreeNode[], result = [] as TreeNode[]) => {
+        const flatten = (items: TreeNode[], result: TreeNode[] = []) => {
           for (const item of sortedChildren(items)) {
             result.push(item)
             const isFolderCategory =
@@ -571,11 +560,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const items = this.flattenedItems
         const offsets: number[] = []
         let cumulativeHeight = 0
-        const fc = new Set(self.folderCategories)
-
         for (let i = 0, l = items.length; i < l; i++) {
           offsets.push(cumulativeHeight)
-          cumulativeHeight += getItemHeight(items[i]!, fc)
+          cumulativeHeight += getItemHeight(items[i]!, self.folderCategories)
         }
         return { cumulativeHeight, offsets }
       },
@@ -636,11 +623,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         for (const item of self.flattenedItems) {
           if (item.type === 'category' && self.folderCategories.has(item.id)) {
             const trackNodes = getAllTrackNodes(item)
-            stats.set(item.id, {
-              active: trackNodes.filter(n => shownTrackIds.has(n.trackId))
-                .length,
-              total: trackNodes.length,
-            })
+            let active = 0
+            for (const n of trackNodes) {
+              if (shownTrackIds.has(n.trackId)) {
+                active++
+              }
+            }
+            stats.set(item.id, { active, total: trackNodes.length })
           }
         }
         return stats
@@ -651,9 +640,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       collapseSubCategories() {
-        const paths = [] as string[]
-        findSubCategories(self.hierarchy.children, paths)
-        for (const path of paths) {
+        for (const path of findSubCategories(self.hierarchy.children)) {
           self.setCategoryCollapsed(path, true)
         }
       },
@@ -661,14 +648,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       collapseTopLevelCategories() {
-        const paths = [] as string[]
         for (const trackGroups of self.hierarchy.children) {
           if (trackGroups.children.length) {
-            findTopLevelCategories(trackGroups.children, paths)
+            for (const path of findTopLevelCategories(trackGroups.children)) {
+              self.setCategoryCollapsed(path, true)
+            }
           }
-        }
-        for (const path of paths) {
-          self.setCategoryCollapsed(path, true)
         }
       },
     }))
@@ -751,8 +736,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               } = self
               localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
               localStorageSetJSON(favoritesK(), favorites)
-              localStorageSetJSON(sortTrackNamesK(), sortTrackNames)
-              localStorageSetJSON(sortCategoriesK(), sortCategories)
+              localStorageSetJSON(sortTrackNamesK, sortTrackNames)
+              localStorageSetJSON(sortCategoriesK, sortCategories)
               if (view) {
                 localStorageSetJSON(
                   collapsedK(assemblyNames, view.type),

@@ -40,6 +40,7 @@ const RecentlyUsedTracks = observer(function RecentlyUsedTracks({
           classes={{ badge: classes.smallBadge }}
           color="secondary"
           anchorOrigin={badgeAnchorOrigin}
+          className={classes.margin}
           badgeContent={recentlyUsedCounter}
         >
           <HistoryIcon />

@@ -18,7 +18,7 @@ function doTextIndexTrack({
 }) {
   const { textIndexingConf, trackName, assembly } = model
   const { jobsManager } = getRoot<any>(model)
-  const attr = textIndexingConf || {
+  const attr = textIndexingConf ?? {
     attributes: ['Name', 'ID'],
     exclude: ['CDS', 'exon'],
   }

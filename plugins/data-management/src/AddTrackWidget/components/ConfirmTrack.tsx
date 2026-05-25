@@ -1,6 +1,6 @@
-import { Suspense, useEffect } from 'react'
+import { Suspense } from 'react'
 
-import { AssemblySelector } from '@jbrowse/core/ui'
+import { AssemblySelector, PluggableComponent } from '@jbrowse/core/ui'
 import {
   getEnv,
   getSession,
@@ -38,13 +38,33 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+const DefaultAddTrackExtensionComponent = observer(
+  function DefaultAddTrackExtensionComponent({
+    model,
+  }: {
+    model: AddTrackModel
+  }) {
+    const session = getSession(model)
+    return (
+      <AssemblySelector
+        session={session}
+        helperText="Select assembly to add track to"
+        selected={model.assembly}
+        onChange={asm => {
+          model.setAssembly(asm)
+        }}
+        fullWidth
+      />
+    )
+  },
+)
+
 const ConfirmTrack = observer(function ConfirmTrack({
   model,
 }: {
   model: AddTrackModel
 }) {
   const { classes } = useStyles()
-  const session = getSession(model)
   const {
     trackName,
     unsupported,
@@ -55,12 +75,6 @@ const ConfirmTrack = observer(function ConfirmTrack({
     textIndexTrack,
     adapterHintNotConfigurable,
   } = model
-
-  useEffect(() => {
-    if (adapterHint === '' && trackAdapter && trackAdapter.type !== UNKNOWN) {
-      model.setAdapterHint(trackAdapter.type)
-    }
-  }, [adapterHint, trackAdapter, model])
 
   if (unsupported) {
     return <Unsupported />
@@ -79,21 +93,6 @@ const ConfirmTrack = observer(function ConfirmTrack({
   } else {
     const supportedForIndexing = isSupportedIndexingAdapter(trackAdapter.type)
     const { pluginManager } = getEnv(model)
-    const Component = pluginManager.evaluateExtensionPoint(
-      'Core-addTrackComponent',
-      ({ model }: { model: AddTrackModel }) => (
-        <AssemblySelector
-          session={session}
-          helperText="Select assembly to add track to"
-          selected={model.assembly}
-          onChange={asm => {
-            model.setAssembly(asm)
-          }}
-          fullWidth
-        />
-      ),
-      { model },
-    ) as React.FC<any>
     return (
       <div>
         <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
@@ -120,7 +119,12 @@ const ConfirmTrack = observer(function ConfirmTrack({
           <TrackTypeSelector model={model} />
 
           <Suspense fallback={null}>
-            <Component model={model} />
+            <PluggableComponent
+              pluginManager={pluginManager}
+              name="Core-addTrackComponent"
+              component={DefaultAddTrackExtensionComponent}
+              props={{ model }}
+            />
           </Suspense>
         </div>
 

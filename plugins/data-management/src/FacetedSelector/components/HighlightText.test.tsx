@@ -34,7 +34,7 @@ describe('HighlightText', () => {
     expect(container.querySelector('i')).toBeInTheDocument()
     expect(container.querySelector('mark')).toBeInTheDocument()
     expect(
-      container.querySelector('i')?.contains(container.querySelector('mark')!),
+      container.querySelector('i')?.contains(container.querySelector('mark')),
     ).toBe(true)
   })
 

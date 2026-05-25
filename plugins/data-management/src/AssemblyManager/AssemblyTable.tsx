@@ -44,10 +44,10 @@ const AssemblyTable = observer(function AssemblyTable({
                 field: 'actions',
                 renderCell: ({ row }) => {
                   const { assembly, name } = row
-                  // @ts-expect-error
-                  const editable = session.sessionAssemblies.includes(assembly)
-                    ? true
-                    : session.adminMode
+                  const editable =
+                    // @ts-expect-error
+                    session.sessionAssemblies.includes(assembly) ||
+                    session.adminMode
                   return (
                     <>
                       <IconButton
@@ -62,14 +62,12 @@ const AssemblyTable = observer(function AssemblyTable({
                         data-testid={`${name}-delete`}
                         disabled={!editable}
                         onClick={() => {
-                          if (editable) {
-                            if (!session.removeAssembly) {
-                              session.notify(
-                                'Unable to find removeAssembly function',
-                              )
-                            } else {
-                              session.removeAssembly(name)
-                            }
+                          if (!session.removeAssembly) {
+                            session.notify(
+                              'Unable to find removeAssembly function',
+                            )
+                          } else {
+                            session.removeAssembly(name)
                           }
                         }}
                       >

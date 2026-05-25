@@ -5,6 +5,19 @@ import type { TreeNode, TreeTrackNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
+export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
+  if (subtree?.type === 'category') {
+    return subtree.children.flatMap(t =>
+      t.type === 'category' ? getAllChildren(t) : t.conf,
+    )
+  }
+  return []
+}
+
+export function isUnsupported(name = '') {
+  return name.endsWith('(Unsupported)') || name.endsWith('(Unknown)')
+}
+
 export function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
   const s = new Set(a1)
   return a2.some(a => s.has(a))
@@ -15,13 +28,14 @@ export function hasAllOverlap<T>(a1: T[] = [], a2: T[] = []) {
   return a2.every(a => s1.has(a))
 }
 
-export function matches(
-  query: string,
+// queryLower must be pre-lowercased by caller to avoid redundant per-track work
+export function matchesLower(
+  queryLower: string,
   conf: AnyConfigurationModel,
   session: AbstractSessionModel,
 ) {
-  const categories = (readConfObject(conf, 'category') || []) as string[]
-  const queryLower = query.trim().toLowerCase()
+  const categories =
+    (readConfObject(conf, 'category') as string[] | undefined) ?? []
   return (
     getTrackName(conf, session).toLowerCase().includes(queryLower) ||
     categories.some(c => c.toLowerCase().includes(queryLower))
@@ -33,35 +47,59 @@ interface Node {
   id: string
 }
 
-export function findSubCategories(obj: Node[], paths: string[], depth = 0) {
-  let hasSubs = false
+function findSubCategoriesInner(
+  obj: Node[],
+  depth: number,
+): [paths: string[], hasDirectLeaves: boolean] {
+  const paths: string[] = []
+  let hasDirectLeaves = false
   for (const elt of obj) {
     if (elt.children.length) {
-      const hasSubCategories = findSubCategories(elt.children, paths, depth + 1)
+      const [subPaths, subHasDirectLeaves] = findSubCategoriesInner(
+        elt.children,
+        depth + 1,
+      )
       // avoid pushing the root "Tracks" node by checking depth>0
-      if (hasSubCategories && depth > 0) {
+      if (subHasDirectLeaves && depth > 0) {
         paths.push(elt.id)
       }
+      for (const p of subPaths) {
+        paths.push(p)
+      }
     } else {
-      hasSubs = true
+      hasDirectLeaves = true
     }
   }
-  return hasSubs
+  return [paths, hasDirectLeaves]
 }
 
-export function findTopLevelCategories(obj: Node[], paths: string[]) {
+export function findSubCategories(obj: Node[]) {
+  return findSubCategoriesInner(obj, 0)[0]
+}
+
+export function findTopLevelCategories(obj: Node[]) {
+  const paths: string[] = []
   for (const elt of obj) {
     if (elt.children.length) {
       paths.push(elt.id)
     }
   }
+  return paths
 }
 
 export function getAllTrackNodes(subtree?: TreeNode): TreeTrackNode[] {
-  if (subtree?.type === 'category') {
-    return subtree.children.flatMap(t =>
-      t.type === 'category' ? getAllTrackNodes(t) : [t],
-    )
+  const result: TreeTrackNode[] = []
+  function collect(node: TreeNode) {
+    for (const child of node.children) {
+      if (child.type === 'track') {
+        result.push(child)
+      } else {
+        collect(child)
+      }
+    }
   }
-  return []
+  if (subtree?.type === 'category') {
+    collect(subtree)
+  }
+  return result
 }

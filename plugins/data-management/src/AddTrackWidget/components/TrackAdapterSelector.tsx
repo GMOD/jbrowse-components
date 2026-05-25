@@ -18,7 +18,8 @@ const TrackAdapterSelector = observer(function ({
   // Show the adapterHint if set (even if config couldn't be built),
   // otherwise show the resolved adapter type
   const displayValue =
-    adapterHint || (trackAdapter?.type !== 'UNKNOWN' ? trackAdapter?.type : '')
+    adapterHint ||
+    (trackAdapter?.type !== 'UNKNOWN' ? (trackAdapter?.type ?? '') : '')
 
   return (
     <TextField

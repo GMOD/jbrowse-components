@@ -164,8 +164,9 @@ export default function f(pluginManager: PluginManager) {
       get isFtp() {
         const trackUri = getUri(self.trackData)
         const indexUri = getUri(self.indexTrackData)
-        return !!(
-          indexUri?.startsWith('ftp://') || trackUri?.startsWith('ftp://')
+        return (
+          indexUri?.startsWith('ftp://') === true ||
+          trackUri?.startsWith('ftp://') === true
         )
       },
 
@@ -209,7 +210,7 @@ export default function f(pluginManager: PluginManager) {
       get wrongProtocol() {
         return (
           window.location.protocol === 'https:' &&
-          (this.trackHttp || this.indexHttp)
+          (this.trackHttp ?? this.indexHttp)
         )
       },
 
@@ -268,6 +269,7 @@ export default function f(pluginManager: PluginManager) {
       getTrackConfig(timestamp: number) {
         const session = getSession(self)
         const assemblyInstance = session.assemblyManager.get(self.assembly)
+        const defaultAsm = session.assemblies[0]?.name ?? ''
 
         return assemblyInstance &&
           self.trackAdapter &&
@@ -281,7 +283,14 @@ export default function f(pluginManager: PluginManager) {
                 type: self.trackType,
                 name: self.trackName,
                 assemblyNames: [self.assembly],
-                adapter: self.trackAdapter,
+                // Spread default assembly names so comparative-adapter mixin
+                // components don't need to initialize mixinData on mount.
+                // mixinData.adapter overrides these if the user changed them.
+                adapter: {
+                  queryAssembly: defaultAsm,
+                  targetAssembly: defaultAsm,
+                  ...self.trackAdapter,
+                },
               },
               self.mixinData,
             )

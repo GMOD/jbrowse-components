@@ -2,6 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   localStorageGetBoolean,
   localStorageGetNumber,
+  measureGridWidth,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
@@ -9,6 +10,7 @@ import { autorun, observable } from 'mobx'
 
 import { getRowStr } from './components/util.ts'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
+import { measureNameColumnWidth } from '../HierarchicalTrackSelectorWidget/components/shared/trackGridUtils.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -57,7 +59,7 @@ export function facetedStateTreeF() {
       /**
        * #volatile
        */
-      visible: {} as Record<string, boolean>,
+      visible: {},
       /**
        * #volatile
        */
@@ -139,14 +141,6 @@ export function facetedStateTreeF() {
     .views(self => ({
       /**
        * #getter
-       */
-      get allTrackConfigurations() {
-        return self.trackConfigurations
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * Builds row objects from track configs. Cached and only recomputes when
        * track configurations change, not on every filterText keystroke.
        */
@@ -155,18 +149,18 @@ export function facetedStateTreeF() {
         if (!session) {
           return []
         }
-        return self.allTrackConfigurations.map(
+        return self.trackConfigurations.map(
           track =>
             ({
               id: track.trackId as string,
               conf: track,
               name: getTrackName(track, session),
               category: readConfObject(track, 'category')?.join(', '),
-              adapter: readConfObject(track, 'adapter')?.type as string,
+              adapter: (track.adapter as { type?: string } | undefined)?.type,
               description: readConfObject(track, 'description') as
                 | string
                 | undefined,
-              metadata: (readConfObject(track, 'metadata') || {}) as Record<
+              metadata: (readConfObject(track, 'metadata') ?? {}) as Record<
                 string,
                 unknown
               >,
@@ -253,6 +247,34 @@ export function facetedStateTreeF() {
           arrFilters.every(([key, val]) => val.has(getRowStr(key, row))),
         )
       },
+      /**
+       * #getter
+       * Measured pixel widths for every column. Cached by MobX; recomputes
+       * only when rows or the key set change, not on visibility toggles.
+       */
+      get initialWidths(): Record<string, number> {
+        return {
+          name: measureNameColumnWidth(self.rows),
+          ...Object.fromEntries(
+            this.filteredNonMetadataKeys.map(e => [
+              e,
+              measureGridWidth(
+                self.rows.map(r => r[e as keyof typeof r] as string),
+                { maxWidth: 400, stripHTML: true },
+              ),
+            ]),
+          ),
+          ...Object.fromEntries(
+            this.filteredMetadataKeys.map(e => [
+              `metadata.${e}`,
+              measureGridWidth(
+                self.rows.map(r => r.metadata[e]),
+                { maxWidth: 400, stripHTML: true },
+              ),
+            ]),
+          ),
+        }
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -269,28 +291,6 @@ export function facetedStateTreeF() {
         )
       },
     }))
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const {
-        filterText,
-        showSparse,
-        showFilters,
-        showOptions,
-        panelWidth,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        ...(filterText ? { filterText } : {}),
-        ...(showSparse ? { showSparse } : {}),
-        ...(!showFilters ? { showFilters } : {}),
-        ...(showOptions ? { showOptions } : {}),
-        ...(panelWidth !== 400 ? { panelWidth } : {}),
-      } as typeof snap
-    })
 }
 export type FacetedStateModel = ReturnType<typeof facetedStateTreeF>
 export type FacetedModel = Instance<FacetedStateModel>

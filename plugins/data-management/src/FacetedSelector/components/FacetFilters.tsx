@@ -8,57 +8,50 @@ import type { FacetedModel } from '../facetedModel.ts'
 
 const FacetFilters = observer(function FacetFilters({
   rows,
-  columns,
+  fields,
   faceted,
 }: {
   rows: Row[]
-  columns: { field: string }[]
+  fields: string[]
   faceted: FacetedModel
 }) {
   const { filters } = faceted
-  const facets = columns.slice(1)
+  const facets = fields.slice(1)
   const facetFieldToCategoryCountMap = new Map(
-    facets.map(f => [f.field, new Map<string, number>()] as const),
+    facets.map(f => [f, new Map<string, number>()] as const),
   )
 
-  // prioritize facets that already have active filters for drill-down behavior
-  const facetKeysPrioritizingUserSelections = new Set<string>()
-  for (const entry of filters.keys()) {
-    if (filters.get(entry)?.length) {
-      facetKeysPrioritizingUserSelections.add(entry)
-    }
-  }
-  for (const f of facets) {
-    facetKeysPrioritizingUserSelections.add(f.field)
-  }
+  // Active-filter facets first for drill-down: their counts reflect the pre-filter row set
+  const orderedFacets = [
+    ...facets.filter(f => filters.get(f)?.length),
+    ...facets.filter(f => !filters.get(f)?.length),
+  ]
 
   let currentRows = rows
-  for (const facetKey of facetKeysPrioritizingUserSelections) {
-    const categoryCountMap = facetFieldToCategoryCountMap.get(facetKey)
-    if (categoryCountMap) {
-      for (const row of currentRows) {
-        const key = getRowStr(facetKey, row)
-        if (key) {
-          categoryCountMap.set(key, (categoryCountMap.get(key) ?? 0) + 1)
-        }
+  for (const facet of orderedFacets) {
+    const categoryCountMap = facetFieldToCategoryCountMap.get(facet)!
+    for (const row of currentRows) {
+      const key = getRowStr(facet, row)
+      if (key) {
+        categoryCountMap.set(key, (categoryCountMap.get(key) ?? 0) + 1)
       }
     }
-    const filterValues = filters.get(facetKey)
+    const filterValues = filters.get(facet)
     if (filterValues?.length) {
       const filterSet = new Set(filterValues)
       currentRows = currentRows.filter(row =>
-        filterSet.has(getRowStr(facetKey, row)),
+        filterSet.has(getRowStr(facet, row)),
       )
     }
   }
 
   return (
     <div>
-      {facets.map(c => (
+      {facets.map(field => (
         <FacetFilter
-          key={c.field}
-          vals={[...facetFieldToCategoryCountMap.get(c.field)!]}
-          column={c}
+          key={field}
+          vals={[...facetFieldToCategoryCountMap.get(field)!]}
+          field={field}
           faceted={faceted}
         />
       ))}

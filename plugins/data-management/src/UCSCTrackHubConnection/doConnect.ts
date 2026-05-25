@@ -8,7 +8,7 @@ import { generateTracks } from './ucscTrackHub.ts'
 import { fetchGenomesFile, fetchTrackDbFile, resolve } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { FileLocation } from '@jbrowse/core/util'
+import type { UriLocation } from '@jbrowse/core/util'
 
 export async function doConnect(self: {
   configuration: AnyConfigurationModel
@@ -16,11 +16,10 @@ export async function doConnect(self: {
 }) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
-  const notLoadedAssemblies = [] as string[]
+  const notLoadedAssemblies: string[] = []
   try {
-    const hubFileLocation = getConf(self, 'hubTxtLocation') as FileLocation
+    const hubFileLocation = getConf(self, 'hubTxtLocation') as UriLocation
     const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
-    // @ts-expect-error
     const hubUri = resolve(hubFileLocation.uri, hubFileLocation.baseUri)
     const { assemblyManager } = session
     if (hubFileText.includes('useOneFile on')) {
@@ -88,8 +87,6 @@ export async function doConnect(self: {
         throw new Error('genomesFile not found on hub')
       }
 
-      // @ts-expect-error
-      const hubUri = resolve(hubFileLocation.uri, hubFileLocation.baseUri)
       const genomesFileLocation = hubUri
         ? {
             uri: resolve(genomeFile, hubUri),
@@ -100,7 +97,7 @@ export async function doConnect(self: {
             locationType: 'LocalPathLocation' as const,
           }
       const genomesFile = await fetchGenomesFile(genomesFileLocation)
-      const map = {} as Record<string, number>
+      const map: Record<string, number> = {}
       for (const [genomeName, genome] of Object.entries(genomesFile.data)) {
         const assemblyNames = getConf(self, 'assemblyNames')
         if (assemblyNames.length > 0 && !assemblyNames.includes(genomeName)) {
