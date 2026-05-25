@@ -1,5 +1,9 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
-import { getMethBins, getModPositions, getModProbabilities } from '@jbrowse/modifications-utils'
+import {
+  getMethBins,
+  getModPositions,
+  getModProbabilities,
+} from '@jbrowse/modifications-utils'
 
 import { createEmptyBin, incWithProbabilities } from './util.ts'
 import { getTagAlt } from '../util.ts'

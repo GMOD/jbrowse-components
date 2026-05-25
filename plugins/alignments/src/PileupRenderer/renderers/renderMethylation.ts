@@ -1,5 +1,9 @@
 import { colord } from '@jbrowse/core/util/colord'
-import { getMethBins, getModPositions, getModProbabilities } from '@jbrowse/modifications-utils'
+import {
+  getMethBins,
+  getModPositions,
+  getModProbabilities,
+} from '@jbrowse/modifications-utils'
 
 import { buildMismatchMap } from '../../shared/util.ts'
 import { getTagAlt } from '../../util.ts'
@@ -52,7 +56,14 @@ export function renderMethylation({
   const modifications = getModPositions(mm, seq, fstrand)
   const probabilities = getModProbabilities(feature)
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
-    getMethBins({ modifications, probabilities, cigarOps, seq, fstrand, flen: fend - fstart })
+    getMethBins({
+      modifications,
+      probabilities,
+      cigarOps,
+      seq,
+      fstrand,
+      flen: fend - fstart,
+    })
   const mismatchMap = buildMismatchMap(feature, fstart)
 
   function getColAndProb(
