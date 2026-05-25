@@ -13,7 +13,7 @@ function dataFromVariant(variant: Variant, parser: VCFParser) {
   const [type, description] = getSOTermAndDescription(REF, ALT, parser)
 
   return {
-    refName: CHROM,
+    refName: CHROM!,
     start,
     end: getEnd(variant),
     description,
@@ -22,12 +22,12 @@ function dataFromVariant(variant: Variant, parser: VCFParser) {
   }
 }
 function getEnd(variant: Variant) {
-  const { POS, REF = '', ALT = [] } = variant
+  const { POS, REF = '', ALT = [], INFO } = variant
   const start = POS - 1
   let isTRA = false
   let isSymbolic = false
   for (const a of ALT) {
-    if (a.includes('<')) {
+    if (a.startsWith('<')) {
       isSymbolic = true
       if (a === '<TRA>') {
         isTRA = true
@@ -35,23 +35,17 @@ function getEnd(variant: Variant) {
       }
     }
   }
-  if (isSymbolic) {
-    const info = variant.INFO
-    if (info.END && !isTRA) {
-      return +(info.END as string[])[0]!
-    }
-    const lens = []
-    if (info.SVLEN && !isTRA) {
-      const svlens = info.SVLEN as string[]
-
-      for (let i = 0; i < svlens.length; i++) {
-        const svlen = svlens[i]!
-        if (ALT[i]?.startsWith('<INS')) {
-          lens.push(1)
-        } else {
-          lens.push(Math.abs(+svlen))
-        }
+  if (isSymbolic && !isTRA) {
+    if (Array.isArray(INFO.END)) {
+      const end = INFO.END[0]
+      if (end !== undefined) {
+        return +end
       }
+    }
+    if (Array.isArray(INFO.SVLEN)) {
+      const lens = INFO.SVLEN.map((len, i) =>
+        ALT[i]?.startsWith('<INS') ? 1 : Math.abs(len === undefined ? 0 : +len),
+      )
       return start + max(lens)
     }
   }
@@ -74,6 +68,14 @@ export default class VCFFeature implements Feature {
     this._id = args.id
   }
 
+  get(field: 'ALT'): string[] | undefined
+  get(field: 'REF'): string | undefined
+  get(field: 'FILTER'): string | string[] | undefined
+  get(field: 'QUAL'): number | undefined
+  get(field: 'INFO'): Record<string, unknown>
+  get(field: 'genotypes'): Record<string, string>
+  get(field: 'samples'): ReturnType<Variant['SAMPLES']>
+  get(field: string): any
   get(field: string): any {
     return field === 'samples'
       ? this.variant.SAMPLES()
@@ -98,7 +100,7 @@ export default class VCFFeature implements Feature {
     this.variant.processGenotypes(callback)
   }
 
-  toJSON(): any {
+  toJSON() {
     return {
       uniqueId: this._id,
       ...this.variant.toJSON(),

@@ -1,3 +1,5 @@
+export const GENOTYPE_SPLITTER = /[/|]/
+
 export const f2 = 0.3
 
 // Sidebar and label background opacity

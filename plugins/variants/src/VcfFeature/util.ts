@@ -1,9 +1,9 @@
 import { parseBreakend } from '@gmod/vcf'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
-import type VCF from '@gmod/vcf'
+import { GENOTYPE_SPLITTER as genotypeDelimRegex } from '../shared/constants.ts'
 
-const genotypeDelimRegex = /[/|]/
+import type VCF from '@gmod/vcf'
 
 function isBreakend(alt: string) {
   return (
@@ -16,10 +16,6 @@ function isBreakend(alt: string) {
 
 function isSymbolic(alt: string) {
   return alt.startsWith('<') || isBreakend(alt)
-}
-
-function isInversion(ref: string, alt: string) {
-  return ref.split('').reverse().join('') === alt
 }
 
 const altTypeToSO: Record<string, string> = {
@@ -39,7 +35,7 @@ export function getSOTermAndDescription(
   ref: string,
   alt: string[] | undefined,
   parser: VCF,
-): string[] {
+): [string, string] {
   if (!alt || alt.length === 0) {
     return ['remark', 'no alternative alleles']
   }
@@ -68,7 +64,7 @@ function getSOTerm(alt: string, ref: string, parser: VCF): string {
   if (lenRef === 1 && lenAlt === 1) {
     return 'SNV'
   } else if (lenRef === lenAlt) {
-    return isInversion(ref, alt) ? 'inversion' : 'substitution'
+    return 'substitution'
   } else {
     return lenRef < lenAlt ? 'insertion' : 'deletion'
   }
@@ -98,7 +94,10 @@ function findSOTerm(alt: string, parser: VCF): string | undefined {
     : undefined
 }
 
-export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
+export function getSOAndDescFromAltDefs(
+  alt: string,
+  parser: VCF,
+): [] | [string, string] {
   if (!alt.startsWith('<')) {
     return []
   }
