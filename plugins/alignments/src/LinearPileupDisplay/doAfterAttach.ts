@@ -19,7 +19,7 @@ export function doAfterAttach(model: {
   autorunReady: boolean
   sortedBy?: SortedBy
   adapterConfig: AnyConfigurationModel
-  rendererType: { name: string }
+  rendererType?: { name: string }
   sortReady: boolean
   currSortBpPerPx: number
   parentTrack: any
@@ -58,11 +58,14 @@ export function doAfterAttach(model: {
       const { sortedBy, adapterConfig, rendererType, sortReady } = model
       const { bpPerPx } = view
 
+      if (!rendererType) {
+        return
+      }
       if (sortedBy && (!sortReady || model.currSortBpPerPx === view.bpPerPx)) {
         const { pos, refName, assemblyName } = sortedBy
         // render just the sorted region first
         // @ts-expect-error
-        await model.rendererType.renderInClient(rpcManager, {
+        await rendererType.renderInClient(rpcManager, {
           assemblyName,
           regions: [
             {

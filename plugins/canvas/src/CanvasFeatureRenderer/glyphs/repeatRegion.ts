@@ -53,7 +53,7 @@ export const repeatRegionGlyph: Glyph = {
     const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (end - start) / bpPerPx
 
-    const strand = feature.get('strand')
+    const strand = feature.get('strand') as -1 | 1 | undefined
     const arrowPadding = getStrandArrowPadding(strand, reversed)
 
     const subfeatures = feature.get('subfeatures') || []

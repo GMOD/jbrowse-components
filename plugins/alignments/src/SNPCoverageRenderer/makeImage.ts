@@ -49,7 +49,7 @@ export async function renderSNPCoverageToCanvas(
         refName: region.refName,
         start: feature.get('start'),
         end: feature.get('end'),
-        strand: feature.get('strand'),
+        strand: feature.get('strand') as -1 | 1 | undefined,
         score: feature.get('score'),
         effectiveStrand: feature.get('effectiveStrand'),
       })

@@ -131,7 +131,7 @@ export function drawLongReadChains({
         continue
       }
 
-      const featStrand = feat.get('strand')
+      const featStrand = feat.get('strand') as -1 | 1 | undefined
       const effectiveStrand: -1 | 1 | undefined =
         isSingleton || !flipStrandLongReadChains
           ? featStrand

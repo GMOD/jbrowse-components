@@ -39,7 +39,7 @@ export const processedTranscriptGlyph: Glyph = {
     const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (end - start) / bpPerPx
 
-    const strand = feature.get('strand')
+    const strand = feature.get('strand') as -1 | 1 | undefined
     const arrowPadding = getStrandArrowPadding(strand, reversed)
 
     // Get subparts with synthesized UTRs

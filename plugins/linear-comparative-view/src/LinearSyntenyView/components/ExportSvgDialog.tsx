@@ -119,10 +119,7 @@ export default function ExportSvgDialog({
           >
             {Object.entries(session.allThemes()).map(([key, val]) => (
               <MenuItem key={key} value={key}>
-                {
-                  // @ts-expect-error
-                  val.name || '(Unknown name)'
-                }
+                {(val as { name?: string }).name || '(Unknown name)'}
               </MenuItem>
             ))}
           </TextField2>

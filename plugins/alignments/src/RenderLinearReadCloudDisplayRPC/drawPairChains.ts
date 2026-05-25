@@ -157,7 +157,7 @@ export function drawPairChains({
         yPos: chainY,
         width,
         height: featureHeight,
-        strand: feat.get('strand'),
+        strand: feat.get('strand') as -1 | 1 | undefined,
         fillStyle: featFill,
         strokeStyle: featStroke,
         renderChevrons,

@@ -52,12 +52,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
               assemblyName,
               (await rpcManager.call(trackId, 'CoreGetRefNames', {
                 adapterConfig,
-                // hack for synteny adapters
-                regions: [
-                  {
-                    assemblyName,
-                  },
-                ],
+                assemblyName,
               })) as string[],
             ] as const
           }),
