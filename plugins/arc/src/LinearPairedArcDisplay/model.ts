@@ -2,13 +2,7 @@ import type React from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-  isSelectionContainer,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
@@ -65,6 +59,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get displayModeSetting() {
         return self.displayMode ?? getConf(self, ['renderer', 'displayMode'])
       },
+      get featureWidgetType() {
+        return {
+          type: 'VariantFeatureWidget',
+          id: 'variantFeature',
+        }
+      },
     }))
 
     .actions(self => ({
@@ -72,23 +72,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       selectFeature(feature: Feature) {
-        const session = getSession(self)
-        if (isSessionModelWithWidgets(session)) {
-          const featureWidget = session.addWidget(
-            'VariantFeatureWidget',
-            'variantFeature',
-            {
-              view: getContainingView(self),
-              track: getContainingTrack(self),
-              featureData: feature.toJSON(),
-            },
-          )
-
-          session.showWidget(featureWidget)
-        }
-        if (isSelectionContainer(session)) {
-          session.setSelection(feature)
-        }
+        openFeatureWidget(self, feature.toJSON(), {
+          widget: self.featureWidgetType,
+        })
       },
       /**
        * #action
@@ -116,7 +102,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ;(async () => {
           try {
             const { doAfterAttach } = await import('./afterAttach.tsx')
-            doAfterAttach(self)
+            doAfterAttach(self as LinearArcDisplayModel)
           } catch (e) {
             console.error(e)
             self.setError(e)
@@ -130,8 +116,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         rasterizeLayers?: boolean
       }): Promise<React.ReactNode> {
         const { renderArcSvg } = await import('./renderSvg.tsx')
-        // @ts-expect-error
-        return renderArcSvg(self, opts)
+        return renderArcSvg(self as LinearArcDisplayModel, opts)
       },
     }))
 }

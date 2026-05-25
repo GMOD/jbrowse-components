@@ -57,8 +57,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get displayModeSetting() {
         return self.displayMode ?? getConf(self, ['renderer', 'displayMode'])
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        */

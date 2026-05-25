@@ -5,7 +5,7 @@ import ErrorActions from './ErrorActions.tsx'
 
 import type { LinearArcDisplayModel } from '../model.ts'
 
-const ErrorMessage = observer(function ErrorMessage({
+const ArcErrorDisplay = observer(function ArcErrorDisplay({
   model,
 }: {
   model: LinearArcDisplayModel
@@ -20,4 +20,4 @@ const ErrorMessage = observer(function ErrorMessage({
   )
 })
 
-export default ErrorMessage
+export default ArcErrorDisplay

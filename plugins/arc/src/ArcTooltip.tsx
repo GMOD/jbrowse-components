@@ -1,38 +1,12 @@
-import { Suspense, forwardRef, isValidElement } from 'react'
-
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { observer } from 'mobx-react'
 
-interface Props {
-  message: React.ReactNode | string
-}
-const TooltipContents = forwardRef<HTMLDivElement, Props>(
-  function TooltipContents2({ message }, ref) {
-    return (
-      <div ref={ref}>
-        {isValidElement(message) ? (
-          message
-        ) : message ? (
-          <SanitizedHTML html={String(message)} />
-        ) : null}
-      </div>
-    )
-  },
-)
-
-const ArcTooltip = observer(function ArcTooltip({
-  contents,
-}: {
-  contents?: string
-}) {
+export default function ArcTooltip({ contents }: { contents?: string }) {
   return contents ? (
-    <Suspense fallback={null}>
-      <BaseTooltip>
-        <TooltipContents message={contents} />
-      </BaseTooltip>
-    </Suspense>
+    <BaseTooltip>
+      <div>
+        <SanitizedHTML html={contents} />
+      </div>
+    </BaseTooltip>
   ) : null
-})
-
-export default ArcTooltip
+}
