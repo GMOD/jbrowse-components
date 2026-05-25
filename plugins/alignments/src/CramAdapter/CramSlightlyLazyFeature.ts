@@ -1,19 +1,19 @@
-import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
-import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil.ts'
 import {
+  CHAR_FROM_CODE,
   DELETION_TYPE,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
-} from '../shared/forEachMismatchTypes.ts'
+} from '@jbrowse/cigar-utils'
+
+import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
 import { cacheGetter, convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type CramAdapter from './CramAdapter.ts'
-import type { MismatchCallback } from '../shared/forEachMismatchTypes.ts'
-import type { Mismatch } from '../shared/types.ts'
 import type { CramRecord } from '@gmod/cram'
+import type { Mismatch, MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // Module-level constant for CIGAR code conversion (avoids recreation on each call)
@@ -57,7 +57,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get qual() {
-    return (this.record.qualityScores || []).join(' ')
+    return (this.record.qualityScores ?? []).join(' ')
   }
 
   get qualRaw() {
@@ -69,11 +69,27 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get pair_orientation() {
-    return this.record.isPaired() ? this.record.getPairOrientation() : undefined
+    if (!this.record.isPaired()) {
+      return undefined
+    }
+    const { flags } = this.record
+    const isRead1 = !!(flags & 0x40)
+    const isSelfRev = !!(flags & 0x10)
+    const isMateRev = !!(flags & 0x20)
+    const selfStrand = isSelfRev ? 'R' : 'F'
+    const mateStrand = isMateRev ? 'R' : 'F'
+    const selfNum = isRead1 ? '1' : '2'
+    const mateNum = isRead1 ? '2' : '1'
+
+    return this.record.mate &&
+      (this.record.mate.sequenceId !== this.record.sequenceId ||
+        this.start < this.record.mate.alignmentStart)
+      ? selfStrand + selfNum + mateStrand + mateNum
+      : mateStrand + mateNum + selfStrand + selfNum
   }
 
   get template_length() {
-    return this.record.templateLength || this.record.templateSize
+    return this.record.templateLength ?? this.record.templateSize
   }
 
   get next_ref() {
@@ -95,7 +111,10 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get next_pos() {
-    return this.record.mate?.alignmentStart
+    if (this.record.mate) {
+      return this.record.mate.alignmentStart - 1
+    }
+    return undefined
   }
 
   get tags() {
@@ -141,6 +160,8 @@ export default class CramSlightlyLazyFeature implements Feature {
         return this.mismatches
       case 'qual':
         return this.qual
+      case 'NUMERIC_QUAL':
+        return this.qualRaw
       case 'CIGAR':
         return this.CIGAR
       case 'NUMERIC_CIGAR':
@@ -253,7 +274,7 @@ export default class CramSlightlyLazyFeature implements Feature {
           MISMATCH_TYPE,
           refPos,
           1,
-          rf.sub ?? '',
+          rf.sub ?? 'N',
           hasQual ? qual[rf.pos - 1]! : -1,
           refCharCode,
           0,

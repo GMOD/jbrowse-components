@@ -1,23 +1,20 @@
 import { BamRecord } from '@gmod/bam'
-
-import { forEachMismatchNumeric } from './forEachMismatchNumeric.ts'
 import {
   CHAR_FROM_CODE,
   CIGAR_H,
   CIGAR_S,
-} from '../PileupRenderer/renderers/cigarUtil.ts'
-import { decodeSeq } from '../shared/decodeSeq.ts'
-import {
   HARDCLIP_TYPE,
   INSERTION_TYPE,
   MISMATCH_TYPE,
   SOFTCLIP_TYPE,
-} from '../shared/forEachMismatchTypes.ts'
+  forEachMismatchNumeric,
+} from '@jbrowse/cigar-utils'
+
+import { decodeSeq } from '../shared/decodeSeq.ts'
 import { convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type BamAdapter from './BamAdapter.ts'
-import type { MismatchCallback } from '../shared/forEachMismatchTypes.ts'
-import type { Mismatch } from '../shared/types.ts'
+import type { Mismatch, MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class BamSlightlyLazyFeature
@@ -118,6 +115,23 @@ export default class BamSlightlyLazyFeature
     return 0
   }
 
+  get pair_orientation() {
+    if (!this.isPaired()) {
+      return undefined
+    }
+    const isRead1 = !!(this.flags & 0x40)
+    const isSelfRev = !!(this.flags & 0x10)
+    const isMateRev = !!(this.flags & 0x20)
+    const selfStrand = isSelfRev ? 'R' : 'F'
+    const mateStrand = isMateRev ? 'R' : 'F'
+    const selfNum = isRead1 ? '1' : '2'
+    const mateNum = isRead1 ? '2' : '1'
+
+    return this.next_refid !== this.ref_id || this.start <= this.next_pos
+      ? selfStrand + selfNum + mateStrand + mateNum
+      : mateStrand + mateNum + selfStrand + selfNum
+  }
+
   get refName() {
     return this.adapter.refIdToName(this.ref_id)!
   }
@@ -165,6 +179,8 @@ export default class BamSlightlyLazyFeature
         return this.template_length
       case 'clipLengthAtStartOfRead':
         return this.clipLengthAtStartOfRead
+      case 'score':
+        return this.score
 
       default:
         return this.fields[field]
@@ -180,24 +196,22 @@ export default class BamSlightlyLazyFeature
   }
 
   get fields(): SimpleFeatureSerialized {
-    if (this._cachedFields === undefined) {
-      this._cachedFields = {
-        start: this.start,
-        name: this.name,
-        end: this.end,
-        score: this.score,
-        strand: this.strand,
-        template_length: this.template_length,
-        flags: this.flags,
-        tags: this.tags,
-        refName: this.refName,
-        type: 'match',
-        pair_orientation: this.pair_orientation,
-        next_ref: this.next_ref,
-        next_pos: this.next_pos,
-        next_segment_position: this.next_segment_position,
-        uniqueId: this.id(),
-      }
+    this._cachedFields ??= {
+      start: this.start,
+      name: this.name,
+      end: this.end,
+      score: this.score,
+      strand: this.strand,
+      template_length: this.template_length,
+      flags: this.flags,
+      tags: this.tags,
+      refName: this.refName,
+      type: 'match',
+      pair_orientation: this.pair_orientation,
+      next_ref: this.next_ref,
+      next_pos: this.next_pos,
+      next_segment_position: this.next_segment_position,
+      uniqueId: this.id(),
     }
     return this._cachedFields
   }
