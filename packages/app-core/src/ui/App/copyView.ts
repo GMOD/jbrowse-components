@@ -17,6 +17,9 @@ export function renameIds(
     if (typeof value === 'object') {
       const result: Record<string, unknown> = {}
       for (const [key, val] of Object.entries(value)) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+          continue
+        }
         if (key === 'id' && typeof val === 'string') {
           if (!idMap.has(val)) {
             idMap.set(val, createElementId())
