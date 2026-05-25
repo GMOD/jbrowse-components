@@ -1,4 +1,4 @@
-import { computeLaidOutData, LAYOUT_Y_PADDING } from './layout.ts'
+import { LAYOUT_Y_PADDING, computeLaidOutData } from './layout.ts'
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'

@@ -59,7 +59,7 @@ async function setupView(trackIds: string[]) {
 test('session.tracksById does not eagerly hydrate frozen tracks', () => {
   const { rootModel } = getPluginManager()
   const session = rootModel.session!
-  const conf = session.tracksById['volvox_gc']
+  const conf = session.tracksById.volvox_gc
   expect(isStateTreeNode(conf)).toBe(false)
   expect(conf?.trackId).toBe('volvox_gc')
 })

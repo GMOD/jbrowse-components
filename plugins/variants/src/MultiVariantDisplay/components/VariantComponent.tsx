@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import {
@@ -6,7 +6,6 @@ import {
   getContainingView,
   useGpuBackend,
 } from '@jbrowse/core/util'
-import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -25,6 +24,7 @@ import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts
 import type { VariantCellData } from './computeVariantCells.ts'
 import type { VariantBackend } from './variantBackendTypes.ts'
 import type { VariantDisplayModelBase } from '../../shared/VariantDisplayModelInterface.ts'
+import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface PerRegionCellData {
@@ -33,6 +33,7 @@ interface PerRegionCellData {
 
 export interface VariantDisplayModel extends VariantDisplayModelBase {
   cellData: PerRegionCellData | undefined
+  flatbushIndices: Map<number, Flatbush>
   isDisplayLoading: boolean
   statusMessage?: string
   canvasDrawn: boolean
@@ -54,18 +55,6 @@ export interface VariantDisplayModel extends VariantDisplayModelBase {
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(scrollbarStyles)
-
-function buildFlatbushIndex(
-  cellData: VariantCellData,
-  cache: WeakMap<ArrayBuffer, Flatbush>,
-) {
-  let index = cache.get(cellData.flatbushData)
-  if (!index) {
-    index = Flatbush.from(cellData.flatbushData)
-    cache.set(cellData.flatbushData, index)
-  }
-  return index
-}
 
 const HoveredCellHighlight = observer(function HoveredCellHighlight({
   cell,
@@ -142,7 +131,6 @@ const VariantComponent = observer(function VariantComponent({
   model: VariantDisplayModel
 }) {
   const [hoveredCell, setHoveredCell] = useState<HoveredCell>()
-  const flatbushCacheRef = useRef(new WeakMap<ArrayBuffer, Flatbush>())
   const { classes } = useStyles()
 
   const { canvas, canvasRef, error, retry } = useGpuBackend(
@@ -191,10 +179,10 @@ const VariantComponent = observer(function VariantComponent({
       return undefined
     }
 
-    const flatbushIndex = buildFlatbushIndex(
-      regionCellData,
-      flatbushCacheRef.current,
-    )
+    const flatbushIndex = model.flatbushIndices.get(region.displayedRegionIndex)
+    if (!flatbushIndex) {
+      return undefined
+    }
 
     const blockWidth = region.screenEndPx - region.screenStartPx
     const regionLengthBp = region.end - region.start
@@ -309,6 +297,7 @@ const VariantComponent = observer(function VariantComponent({
       {/* See VariantMatrixComponent.tsx for why the canvas must stay mounted
           and use visibility:'hidden' instead of conditional rendering */}
       <canvas
+        data-testid={model.canvasDrawn ? 'variant_canvas_done' : 'variant_canvas'}
         ref={canvasRef}
         style={{
           width,

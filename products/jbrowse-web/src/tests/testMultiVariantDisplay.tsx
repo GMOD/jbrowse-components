@@ -17,8 +17,10 @@ export async function testMultiVariantDisplay({
     displayType === 'matrix'
       ? 'Multi-sample variant display (matrix)'
       : 'Multi-sample variant display (regular)'
+  const canvasTestId =
+    displayType === 'matrix' ? 'variant_matrix_canvas_done' : 'variant_canvas_done'
 
-  const { view, findByTestId, findByText, findAllByTestId } = await createView()
+  const { view, findByTestId, findByText } = await createView()
   await view.navToLocString('ctgA')
   fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))
 
@@ -32,5 +34,5 @@ export async function testMultiVariantDisplay({
     fireEvent.click(await findByText(/^Phased/, ...opts))
   }
 
-  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...opts))[0]!)
+  expectCanvasMatch(await findByTestId(canvasTestId, ...opts))
 }

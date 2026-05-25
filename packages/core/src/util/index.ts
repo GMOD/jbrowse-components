@@ -15,8 +15,6 @@ import { checkStopToken } from './stopToken.ts'
 import { isUriLocation } from './types/index.ts'
 
 import type { ParsedLocString } from './locString.ts'
-import type PluginManager from '../PluginManager.ts'
-import type { Feature } from './simpleFeature.ts'
 import type { StopToken } from './stopToken.ts'
 import type { AssemblyManager, Region } from './types/index.ts'
 import type { Region as MUIRegion } from './types/mst.ts'

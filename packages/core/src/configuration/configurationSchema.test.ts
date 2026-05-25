@@ -460,7 +460,7 @@ describe('ConfigurationReference', () => {
         { _tracks: [{ trackId: 'f1', name: 'frozen' }], holder: { ref: 'f1' } },
         { pluginManager },
       )
-      expect(isStateTreeNode(session.tracksById['f1'])).toBe(false)
+      expect(isStateTreeNode(session.tracksById.f1)).toBe(false)
     })
 
     test('resolves and hydrates a frozen plain object to an MST node', () => {

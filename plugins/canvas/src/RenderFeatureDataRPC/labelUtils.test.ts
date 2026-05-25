@@ -1,5 +1,5 @@
-import { applyLabelDimensions } from './labelUtils.ts'
 import { LABEL_FONT_SIZE } from './constants.ts'
+import { applyLabelDimensions } from './labelUtils.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
 import type { FeatureLayout } from './types.ts'

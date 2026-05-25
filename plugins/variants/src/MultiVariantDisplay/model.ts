@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
@@ -86,6 +87,19 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         if (cellData?.mode === 'regular') {
           for (const k in cellData.perRegionCellData) {
             out.set(Number(k), cellData.perRegionCellData[k]!)
+          }
+        }
+        return out
+      },
+      get flatbushIndices() {
+        const { cellData } = self
+        const out = new Map<number, Flatbush>()
+        if (cellData?.mode === 'regular') {
+          for (const k in cellData.perRegionCellData) {
+            out.set(
+              Number(k),
+              Flatbush.from(cellData.perRegionCellData[k]!.flatbushData),
+            )
           }
         }
         return out
