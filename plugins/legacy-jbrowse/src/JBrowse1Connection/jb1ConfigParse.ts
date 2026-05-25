@@ -270,8 +270,8 @@ export function regularizeConf(conf: Config, url: string): Config {
     }
   }
 
-  conf.stores = conf.stores || {}
-  for (let trackConfig of conf.tracks || []) {
+  conf.stores = conf.stores ?? {}
+  for (let trackConfig of conf.tracks ?? []) {
     // if there is a `config` subpart, just copy its keys in to the top-level
     // config
     if (trackConfig.config) {
@@ -424,9 +424,7 @@ function synthesizeTrackStoreConfig(
       ? 'refseqs'
       : `store${objectHash(storeConf)}`
   // record it
-  if (!mainConf.stores) {
-    mainConf.stores = {}
-  }
+  mainConf.stores ??= {}
   mainConf.stores[storeConf.name] = storeConf
 
   // connect it to the track conf

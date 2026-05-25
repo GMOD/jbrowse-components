@@ -59,7 +59,7 @@ export default class JBrowse1TextSearchAdapter
 
   async searchIndex(args: BaseTextSearchArgs) {
     const { searchType, queryString } = args
-    const tracks = this.tracksNames || (await this.httpMap.getTrackNames())
+    const tracks = this.tracksNames ?? (await this.httpMap.getTrackNames())
     const str = queryString.toLowerCase()
     const entries = await this.loadIndexFile(str)
     return entries[str]
@@ -75,7 +75,7 @@ export default class JBrowse1TextSearchAdapter
               new BaseResult({
                 label: typeof result === 'object' ? result.name : result,
                 matchedAttribute: 'name',
-                matchedObject: { result: result },
+                matchedObject: { result },
               }),
           )),
       ...results.exact.map(result => {

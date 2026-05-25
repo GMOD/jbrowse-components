@@ -74,7 +74,7 @@ export async function fetchJb1(
           `tried to access ${baseConfigLocation}/${conf}, but failed`,
         )
       }
-      newConfig = mergeConfigs(newConfig, fetchedConfig) || {}
+      newConfig = mergeConfigs(newConfig, fetchedConfig) ?? {}
     }
     if (dataRootReg[protocol]) {
       newConfig.dataRoot = dataRootReg[protocol]
@@ -94,7 +94,7 @@ export async function createFinalConfig(
 ): Promise<Config> {
   const configWithDefaults = deepUpdate(structuredClone(defaults), baseConfig)
   let finalConfig = await loadIncludes(configWithDefaults)
-  finalConfig = mergeConfigs(finalConfig, baseConfig) || finalConfig
+  finalConfig = mergeConfigs(finalConfig, baseConfig) ?? finalConfig
   fillTemplates(finalConfig, finalConfig)
   validateConfig(finalConfig)
   return finalConfig
@@ -126,14 +126,12 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
     return null
   }
 
-  if (a === null) {
-    a = {}
-  }
+  a ??= {}
 
   for (const prop of Object.keys(b)) {
     if (prop === 'tracks' && prop in a) {
-      const aTracks = a[prop] || []
-      const bTracks = b[prop] || []
+      const aTracks = a[prop] ?? []
+      const bTracks = b[prop] ?? []
 
       if (Array.isArray(aTracks) && Array.isArray(bTracks)) {
         a[prop] = mergeTrackConfigs(aTracks, bTracks)
@@ -218,7 +216,7 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
       throw new Error('Problem merging configs')
     }
     const includes = fillTemplates(
-      regularizeIncludes(config.include || []),
+      regularizeIncludes(config.include ?? []),
       newUpstreamConf,
     )
     config.include = undefined
@@ -233,7 +231,7 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
     })
     const includedDataObjects = await Promise.all(loads)
     for (const includedData of includedDataObjects) {
-      config = mergeConfigs(config, includedData) || config
+      config = mergeConfigs(config, includedData) ?? config
     }
     return config
   }
@@ -336,9 +334,7 @@ const configDefaults = {
  * @returns nothing meaningful
  */
 function validateConfig(config: Config): void {
-  if (!config.tracks) {
-    config.tracks = []
-  }
+  config.tracks ??= []
   if (!config.baseUrl) {
     throw new Error('Must provide a `baseUrl` in configuration')
   }

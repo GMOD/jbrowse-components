@@ -14,7 +14,7 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
       { model }: { model: IExtendedLGV },
     ) => {
       return [
-        ...(rest || []),
+        ...(rest ?? []),
         <Highlight key="highlight_grid_bookmark" model={model} />,
       ]
     },
@@ -27,7 +27,7 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
       { model, overview }: { model: IExtendedLGV; overview: Base1DViewModel },
     ) => {
       return [
-        ...(rest || []),
+        ...(rest ?? []),
         <OverviewHighlight
           key="overview_highlight_grid_bookmark"
           model={model}

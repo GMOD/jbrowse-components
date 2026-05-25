@@ -81,6 +81,15 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
       <DialogActions>
         <Button
           variant="contained"
+          color="secondary"
+          onClick={() => {
+            onClose()
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
           color="primary"
           startIcon={<GetAppIcon />}
           onClick={() => {
