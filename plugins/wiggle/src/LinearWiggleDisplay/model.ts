@@ -8,7 +8,6 @@ import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-
 import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

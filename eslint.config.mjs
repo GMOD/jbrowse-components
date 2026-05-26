@@ -246,6 +246,8 @@ export default defineConfig(
       ],
 
       'import-x/extensions': ['error', 'ignorePackages'],
+      'import-x/no-named-as-default': 'off',
+      'import-x/no-named-as-default-member': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
@@ -259,10 +261,7 @@ export default defineConfig(
       '@typescript-eslint/restrict-plus-operands': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': [
-        'error',
-        { ignorePrimitives: { string: true } },
-      ],
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/require-await': 'off',

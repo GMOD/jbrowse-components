@@ -7,9 +7,9 @@ import type { ScaleOpts } from '@jbrowse/wiggle-core'
 
 export {
   YSCALEBAR_LABEL_OFFSET,
-  getScale,
-  getOrigin,
   getNiceDomain,
+  getOrigin,
+  getScale,
 } from '@jbrowse/wiggle-core'
 export type { ScaleOpts } from '@jbrowse/wiggle-core'
 

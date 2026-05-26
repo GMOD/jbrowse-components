@@ -9,6 +9,7 @@ import {
   ReactRendering,
   renderingToSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { SvgClipRect } from '@jbrowse/core/util/svgExport'
 
 import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
 
@@ -76,16 +77,11 @@ export async function renderSvg(
 
   return (
     <>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={visibleWidth} height={height} />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${clipId})`}>
+      <SvgClipRect id={clipId} width={visibleWidth} height={height}>
         <g transform={`translate(${Math.max(0, -view.offsetPx)} 0)`}>
           <ReactRendering rendering={finalRendering} />
         </g>
-      </g>
+      </SvgClipRect>
       {showLegend && maxScore > 0 ? (
         <HicSVGColorLegend
           maxScore={maxScore}

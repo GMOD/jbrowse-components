@@ -1,4 +1,5 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { SvgClipRect } from '@jbrowse/core/util/svgExport'
 
 import { featureToArcData } from './arcUtils.ts'
 
@@ -52,26 +53,19 @@ function renderSashimiArcsSvg(
   const clipId = `sashimi-arcs-clip-${id}`
 
   return (
-    <>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={width} height={height} />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${clipId})`}>
-        <g transform={`translate(0, ${YSCALEBAR_LABEL_OFFSET})`}>
-          {arcs.map(arc => (
-            <path
-              key={arc.id}
-              d={arc.path}
-              stroke={arc.stroke}
-              strokeWidth={arc.strokeWidth}
-              fill="none"
-            />
-          ))}
-        </g>
+    <SvgClipRect id={clipId} width={width} height={height}>
+      <g transform={`translate(0, ${YSCALEBAR_LABEL_OFFSET})`}>
+        {arcs.map(arc => (
+          <path
+            key={arc.id}
+            d={arc.path}
+            stroke={arc.stroke}
+            strokeWidth={arc.strokeWidth}
+            fill="none"
+          />
+        ))}
       </g>
-    </>
+    </SvgClipRect>
   )
 }
 

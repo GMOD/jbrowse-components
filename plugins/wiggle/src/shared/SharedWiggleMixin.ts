@@ -338,7 +338,8 @@ export default function SharedWiggleMixin(
        * Returns undefined when the config sentinel (MIN_VALUE) means "unset"
        */
       get minScoreConfig() {
-        const val = self.constraints.min ?? (getConf(self, 'minScore') as number)
+        const val =
+          self.constraints.min ?? (getConf(self, 'minScore') as number)
         return val === Number.MIN_VALUE ? undefined : val
       },
 
@@ -347,7 +348,8 @@ export default function SharedWiggleMixin(
        * Returns undefined when the config sentinel (MAX_VALUE) means "unset"
        */
       get maxScoreConfig() {
-        const val = self.constraints.max ?? (getConf(self, 'maxScore') as number)
+        const val =
+          self.constraints.max ?? (getConf(self, 'maxScore') as number)
         return val === Number.MAX_VALUE ? undefined : val
       },
     }))
@@ -404,7 +406,13 @@ export default function SharedWiggleMixin(
          * #getter
          */
         get domain() {
-          const { stats, scaleType, minScoreConfig, maxScoreConfig, rendererConfig } = self
+          const {
+            stats,
+            scaleType,
+            minScoreConfig,
+            maxScoreConfig,
+            rendererConfig,
+          } = self
           if (!stats) {
             return undefined
           }

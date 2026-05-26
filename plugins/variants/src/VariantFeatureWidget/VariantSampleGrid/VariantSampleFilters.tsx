@@ -18,8 +18,10 @@ export default function SampleFilters({
 
   // Sync local state when parent filter prop changes externally
   useEffect(() => {
-    setLocalFilter(filter)
-  }, [filter])
+    startTransition(() => {
+      setLocalFilter(filter)
+    })
+  }, [filter, startTransition])
 
   return (
     <>

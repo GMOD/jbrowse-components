@@ -16,7 +16,11 @@ import {
 } from './util.tsx'
 import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
-import * as sessionSharing from '../sessionSharing.ts'
+import { shareSessionToDynamo } from '../sessionSharing.ts'
+
+jest.mock('../sessionSharing.ts', () => ({
+  shareSessionToDynamo: jest.fn(),
+}))
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -83,8 +87,7 @@ xtest('nclist track test with long name', async () => {
 }, 20000)
 
 test('test sharing', async () => {
-  // @ts-expect-error
-  sessionSharing.shareSessionToDynamo = jest.fn().mockReturnValue({
+  jest.mocked(shareSessionToDynamo).mockResolvedValue({
     encryptedSession: 'A',
     json: {
       sessionId: 'abc',

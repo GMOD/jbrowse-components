@@ -9,6 +9,7 @@ import {
   ReactRendering,
   renderingToSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { SvgClipRect } from '@jbrowse/core/util/svgExport'
 
 import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
@@ -88,12 +89,7 @@ export async function renderSvg(
 
   return (
     <>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={visibleWidth} height={height} />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${clipId})`}>
+      <SvgClipRect id={clipId} width={visibleWidth} height={height}>
         <g
           transform={`translate(${Math.max(0, -view.offsetPx)} ${lineZoneHeight})`}
         >
@@ -125,7 +121,7 @@ export async function renderSvg(
             />
           </g>
         ) : null}
-      </g>
+      </SvgClipRect>
       {showLegend ? (
         <LDSVGColorLegend
           ldMetric={ldMetric}

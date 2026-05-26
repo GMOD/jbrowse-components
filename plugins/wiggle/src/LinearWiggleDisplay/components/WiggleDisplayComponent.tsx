@@ -8,7 +8,6 @@ import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-
 import type { WiggleDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

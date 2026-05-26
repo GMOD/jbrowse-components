@@ -470,9 +470,7 @@ export function stateModelFactory(
             inverted: false,
           })
           const values =
-            rowHeight < 100 || useMinimalTicks
-              ? (domain)
-              : scale.ticks(4)
+            rowHeight < 100 || useMinimalTicks ? domain : scale.ticks(4)
           return {
             ticks: values.map(v => ({ value: v, y: scale(v) })),
             yTop: offset,

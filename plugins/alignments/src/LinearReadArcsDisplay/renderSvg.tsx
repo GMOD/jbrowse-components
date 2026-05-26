@@ -9,6 +9,7 @@ import {
   ReactRendering,
   renderingToSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { SvgClipRect } from '@jbrowse/core/util/svgExport'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { SVGLegend } from '@jbrowse/plugin-linear-genome-view'
 
@@ -86,16 +87,9 @@ export async function renderSvg(
   const legendItems = self.showLegend ? self.legendItems() : []
 
   return (
-    <>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={visibleWidth} height={height} />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${clipId})`}>
-        <g transform={`translate(${Math.max(0, -view.offsetPx)} 0)`}>
-          <ReactRendering rendering={finalRendering} />
-        </g>
+    <SvgClipRect id={clipId} width={visibleWidth} height={height}>
+      <g transform={`translate(${Math.max(0, -view.offsetPx)} 0)`}>
+        <ReactRendering rendering={finalRendering} />
       </g>
       {legendItems.length > 0 ? (
         <SVGLegend
@@ -104,6 +98,6 @@ export async function renderSvg(
           legendAreaWidth={opts.legendWidth}
         />
       ) : null}
-    </>
+    </SvgClipRect>
   )
 }

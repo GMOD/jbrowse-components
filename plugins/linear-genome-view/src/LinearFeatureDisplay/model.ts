@@ -26,7 +26,7 @@ import type {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SetMaxHeightDialog = lazy(
