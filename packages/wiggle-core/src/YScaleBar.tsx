@@ -33,7 +33,7 @@ const YScaleBar = observer(function YScaleBar({
         d={`M${k * tickLength} ${yTop + 0.5}H0.5V${yBottom + 0.5}H${k * tickLength}`}
       />
       {items.map(({ value, y, label }) => (
-        <g key={value} transform={`translate(0,${y})`}>
+        <g key={y} transform={`translate(0,${y})`}>
           <line x2={k * tickLength} y1={0.5} y2={0.5} />
           <text
             stroke={bg}

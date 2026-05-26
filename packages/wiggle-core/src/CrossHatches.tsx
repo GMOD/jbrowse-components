@@ -24,7 +24,7 @@ export default function CrossHatches({
     >
       {ticks.ticks.map(({ value, y }) => (
         <line
-          key={value}
+          key={y}
           x1={0}
           x2={width}
           y1={y}
