@@ -84,9 +84,9 @@ interactiveOverlay: true
 
 ```js
 // type signature
-false
+true
 // code
-showHeader: false
+showHeader: true
 ```
 
 #### property: views
@@ -135,6 +135,13 @@ boolean
 boolean
 ```
 
+#### getter: assembly
+
+```js
+// type
+({ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefined; lowerCaseRefNameAliases: RefNameAliases ...
+```
+
 #### getter: matchedTracks
 
 Find all track ids that match across multiple views, or return just the single
@@ -143,6 +150,19 @@ view's track if only a single row is used
 ```js
 // type
 (IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>) | { configuration: { trackId: string; }; }[]
+```
+
+#### getter: overlayMatches
+
+Zero-arg cached getter: classifies each matched track, pairs its features, looks
+up layout rectangles, and returns a Map keyed by trackId. Mobx caches this
+across renders and only invalidates when the underlying feature or layout reads
+change — so horizontal/vertical scrolling and track resizing do NOT trigger
+re-pairing or re-lookup.
+
+```js
+// type
+Map<string, OverlayMatch>
 ```
 
 ### BreakpointSplitView - Methods
@@ -165,25 +185,6 @@ Get tracks with a given trackId across multiple views
 getMatchedTracks: (trackConfigId: string) => any[]
 ```
 
-#### method: hasTranslocations
-
-Translocation features are handled differently since they do not have a mate
-e.g. they are one sided
-
-```js
-// type signature
-hasTranslocations: (trackConfigId: string) => boolean
-```
-
-#### method: hasPairedFeatures
-
-Paired features similar to breakends, but simpler, like BEDPE
-
-```js
-// type signature
-hasPairedFeatures: (trackConfigId: string) => boolean
-```
-
 #### method: getTrackFeatures
 
 Get a composite map of featureId-\>feature map for a track across multiple views
@@ -193,18 +194,26 @@ Get a composite map of featureId-\>feature map for a track across multiple views
 getTrackFeatures: (trackConfigId: string) => Map<string, Feature>
 ```
 
-#### method: getMatchedFeaturesInLayout
+#### method: getTrackOverlayData
+
+Per-render precompute for an overlay track. Gathers scroll top, display height,
+coverage offset, and view offsetPx per level, then returns getX/getY closures
+for converting feature layout records to SVG coordinates.
+
+`yOffsetsOverride` — SVG export: fixed track tops, scrollTops zeroed.
+`domYOffsets` — live rendering: DOM-measured track tops (relative to the overlay
+SVG), scrollTops still read from model.
 
 ```js
 // type signature
-getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: number; clipLengthAtStartOfRead: any; }[][]
+getTrackOverlayData: (trackId: string, yOffsetsOverride?: number[] | undefined, domYOffsets?: number[] | undefined) => { tracks: any[]; yOffsets: any[]; heights: any[]; getX: (level: number, refName: string, coord: number) => number | undefined; getY: (level: number, c: LayoutRecord) => any; }
 ```
 
 #### method: menuItems
 
 ```js
 // type signature
-menuItems: () => ({ label: string; subMenu: MenuItem[]; } | { label: string; onClick: () => void; type?: undefined; checked?: undefined; icon?: undefined; } | { label: string; type: string; checked: boolean; onClick: () => void; icon?: undefined; } | { ...; } | { ...; })[]
+menuItems: () => ({ label: string; subMenu: MenuItem[]; } | { label: string; onClick: () => void; icon?: undefined; subMenu?: undefined; } | { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { ...; }; onClick: () => void; subMenu?: undefined; } | { ...; })[]
 ```
 
 #### method: rubberBandMenuItems
@@ -263,6 +272,13 @@ setMatchedTrackFeatures: (obj: Record<string, Feature[][]>) => void
 ```js
 // type signature
 reverseViewOrder: () => void
+```
+
+#### action: squareView
+
+```js
+// type signature
+squareView: () => void
 ```
 
 #### action: setInit

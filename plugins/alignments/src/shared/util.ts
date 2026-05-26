@@ -1,3 +1,5 @@
+export const TAG_REGEX = /^[A-Za-z][A-Za-z0-9]$/
+
 import type { Theme } from '@mui/material'
 
 export const defaultFilterFlags = {

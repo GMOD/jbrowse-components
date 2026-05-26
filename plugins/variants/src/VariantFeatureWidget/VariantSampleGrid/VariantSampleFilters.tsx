@@ -1,8 +1,10 @@
+import { useState, useTransition } from 'react'
+
 import { TextField, Typography } from '@mui/material'
 
 type Filters = Record<string, string>
 
-export default function VariantSampleFilters({
+export default function SampleFilters({
   columns,
   filter,
   setFilter,
@@ -11,6 +13,9 @@ export default function VariantSampleFilters({
   filter: Filters
   setFilter: (arg: Filters) => void
 }) {
+  const [localFilter, setLocalFilter] = useState(filter)
+  const [, startTransition] = useTransition()
+
   return (
     <>
       <Typography>
@@ -23,9 +28,14 @@ export default function VariantSampleFilters({
         <TextField
           key={`filter-${field}`}
           placeholder={`Filter ${field}`}
-          value={filter[field] || ''}
+          value={localFilter[field] || ''}
           onChange={event => {
-            setFilter({ ...filter, [field]: event.target.value })
+            const value = event.target.value
+            const newFilter = { ...localFilter, [field]: value }
+            setLocalFilter(newFilter)
+            startTransition(() => {
+              setFilter(newFilter)
+            })
           }}
         />
       ))}

@@ -18,6 +18,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+used to load bgzip-compressed, tabix-indexed GFF3 files
+
 ### Gff3TabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi:

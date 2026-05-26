@@ -17,6 +17,3 @@ reference the markdown files in our repo of the checked out git tag
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/SvgFeatureRenderer.md)
 
 ## Docs
-
-NOTE: This is a fake config for SvgFeatureRenderer which was deleted, please
-update to use the real CanvasFeatureRenderer

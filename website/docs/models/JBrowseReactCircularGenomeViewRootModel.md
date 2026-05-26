@@ -35,7 +35,7 @@ config: createConfigModel(pluginManager, assemblyConfigSchema)
 
 ```js
 // type signature
-IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 21 more ... & { ...; }, _NotCustomized, { ...; } & ... 3 more ... & _NotCustomized>
+IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; focusedViewId: IMaybe<...>; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 19 more ... & { ...; }, _NotCustomized, { ...; } & ... 3 more ... & _NotCustomized>
 // code
 session: Session
 ```
@@ -44,7 +44,7 @@ session: Session
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cy...
+IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 5 more ... & { ...; }, _NotCus...
 // code
 assemblyManager: types.optional(assemblyManagerType, {})
 ```
@@ -82,7 +82,7 @@ PluginManager
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; } & { ...; } & { ...; } & { ...; }>>) => void
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; focusedViewId: IMaybe<...>; } & { ...; } & { ...; } & { ...; }>>) => void
 ```
 
 #### action: renameCurrentSession

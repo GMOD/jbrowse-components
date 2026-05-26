@@ -48,7 +48,7 @@ layout: types.optional(types.frozen<Source[]>(), [])
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -258,7 +258,7 @@ Source[] | undefined
 
 ```js
 // type
-any
+HierarchyNode<NewickNode> | undefined
 ```
 
 #### getter: sourceMap
@@ -295,7 +295,7 @@ number
 
 ```js
 // type
-any
+PositionedHierarchyNode<NewickNode> | undefined
 ```
 
 #### getter: canDisplayLabels
@@ -360,7 +360,7 @@ renderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: never; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userBpPerPxLimit: number | undefined; userByteSizeLimit: number | undefined; ... 16 more ...; subtreeFilter: (IMSTArray<...> & IStateTreeNode<...>) | undefined; } & ... 32 more ... & IStateTreeNod...
+renderingProps: () => { displayModel: { id: string; type: never; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userByteSizeLimit: number | undefined; userBpPerPxLimit: number | undefined; ... 16 more ...; subtreeFilter: (IMSTArray<...> & IStateTreeNode<...>) | undefined; } & ... 37 more ... & IStateTreeNod...
 ```
 
 #### method: legendItems
@@ -462,14 +462,14 @@ setClusterTree: (tree?: string | undefined) => void
 
 ```js
 // type signature
-setSourcesLoading: (token: string) => void
+setSourcesLoading: (token: StopToken) => void
 ```
 
 #### action: setSimplifiedFeaturesLoading
 
 ```js
 // type signature
-setSimplifiedFeaturesLoading: (token: string) => void
+setSimplifiedFeaturesLoading: (token: StopToken) => void
 ```
 
 #### action: setSources

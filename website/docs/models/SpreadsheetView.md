@@ -71,7 +71,7 @@ hideFilterControls: false
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<string>, [undefined]>; hasColumnNameLine: IType<boolean | undefined, boolean, boolean>; columnNameLineNumber: IType<...>; selectedAssemblyName: IMaybe<...>; cachedFileLocation: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, _NotCu...
+IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"BED" | "VCF" | "BEDPE" | "STAR-Fusion">, [undefined]>; hasColumnNameLine: IType<boolean | undefined, boolean, boolean>; columnNameLineNumber: IType<...>; selectedAssemblyName: IMaybe<...>; cachedFileLocation: IType<...>; }, { ...; } & ... 3 more ... &...
 // code
 importWizard: types.optional(ImportWizardModel, () =>
             ImportWizardModel.create(),
@@ -117,13 +117,6 @@ menuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, 
 ```
 
 ### SpreadsheetView - Actions
-
-#### action: setRowMenuItems
-
-```js
-// type signature
-setRowMenuItems: (newItems: MenuItem[]) => void
-```
 
 #### action: setWidth
 

@@ -119,13 +119,6 @@ addWidget: (typeName: string, id: string, initialState?: {}, conf?: unknown) => 
 showWidget: (widget: any) => void
 ```
 
-#### action: hasWidget
-
-```js
-// type signature
-hasWidget: (widget: any) => boolean
-```
-
 #### action: hideWidget
 
 ```js

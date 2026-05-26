@@ -48,7 +48,7 @@ type: types.literal(trackType)
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(baseTrackConfig)
 ```
@@ -119,6 +119,13 @@ any
 any
 ```
 
+#### getter: activeDisplay
+
+```js
+// type
+any
+```
+
 #### getter: viewMenuActions
 
 ```js
@@ -130,7 +137,7 @@ MenuItem[]
 
 ```js
 // type
-boolean | ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) | undefined
+boolean
 ```
 
 #### getter: adapterType
@@ -146,7 +153,7 @@ AdapterType
 
 ```js
 // type signature
-saveTrackFileFormatOptions: () => { gff3: { name: string; extension: string; callback: ({ features }: { features: Feature[]; }) => string; }; genbank: { name: string; extension: string; callback: ({ features, assemblyName, session, }: { assemblyName: string; session: AbstractSessionModel; features: Feature[]; }) => Promise<...>; helpText: stri...
+saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
 ```
 
 #### method: trackMenuItems
@@ -170,20 +177,6 @@ setPinned: (flag: boolean) => void
 ```js
 // type signature
 setMinimized: (flag: boolean) => void
-```
-
-#### action: showDisplay
-
-```js
-// type signature
-showDisplay: (displayId: string, initialSnapshot?: {}) => void
-```
-
-#### action: hideDisplay
-
-```js
-// type signature
-hideDisplay: (displayId: string) => number
 ```
 
 #### action: replaceDisplay

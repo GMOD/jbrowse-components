@@ -18,6 +18,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+used to load bgzip-compressed, tabix-indexed VCF files
+
 ### VcfTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:

@@ -46,7 +46,7 @@ blockState: types.map(BlockState)
 
 ```js
 // type signature
-ConfigurationSchemaType<{ maxFeatureScreenDensity: { type: string; description: string; defaultValue: number; }; fetchSizeLimit: { type: string; defaultValue: number; description: string; }; height: { type: string; defaultValue: number; description: string; }; mouseover: { ...; }; jexlFilters: { ...; }; }, Configura...
+ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -249,7 +249,7 @@ sent to the worker. includes displayModel and callbacks
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userBpPerPxLimit: number | undefined; userByteSizeLimit: number | undefined; blockState: IMSTMap<...> & IStateTreeNode<...>; configuration: { ...; } & ... 2 more ... & IStateTreeNode<...>; showLe...
+renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userByteSizeLimit: number | undefined; userBpPerPxLimit: number | undefined; blockState: IMSTMap<...> & IStateTreeNode<...>; configuration: any; showLegend: boolean | undefined; showTooltips: boo...
 ```
 
 #### method: renderProps
@@ -274,7 +274,7 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<Element>
 
 ```js
 // type signature
-addBlock: (key: string, block: BaseBlock) => void
+addBlock: (key: string, block: ContentBlock) => void
 ```
 
 #### action: deleteBlock

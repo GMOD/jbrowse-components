@@ -23,7 +23,6 @@ reference the markdown files in our repo of the checked out git tag
 used for "web based" products, including jbrowse-web and react-app composed of
 
 - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
-- [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
 - [ThemeManagerSessionMixin](../thememanagersessionmixin)
 - [MultipleViewsSessionMixin](../multipleviewssessionmixin)
 - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
@@ -31,15 +30,6 @@ used for "web based" products, including jbrowse-web and react-app composed of
 - [WebSessionConnectionsMixin](../websessionconnectionsmixin)
 
 ### BaseWebSession - Properties
-
-#### property: margin
-
-```js
-// type signature
-number
-// code
-margin: 0
-```
 
 #### property: sessionPlugins
 
@@ -65,7 +55,7 @@ sessionPlugins: types.array(
 
 ```js
 // type
-any
+WebRootModelInterface
 ```
 
 #### getter: assemblies
@@ -103,7 +93,7 @@ string[]
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: shareURL
@@ -124,28 +114,21 @@ TextSearchManager
 
 ```js
 // type
-{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefi...
+{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>> &...
 ```
 
 #### getter: savedSessionMetadata
 
 ```js
 // type
-any
-```
-
-#### getter: previousAutosaveId
-
-```js
-// type
-any
+SessionMetadata[] | undefined
 ```
 
 #### getter: history
 
 ```js
 // type
-any
+{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): void; }
 ```
 
 ### BaseWebSession - Methods
@@ -166,7 +149,7 @@ raw track actions (Settings, Copy, Delete) without submenu wrapper
 
 ```js
 // type signature
-getTrackActions: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => MenuItem[]
+getTrackActions: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
 ```
 
 #### method: getTrackListMenuItems
@@ -175,14 +158,14 @@ flattened menu items for use in hierarchical track selector
 
 ```js
 // type signature
-getTrackListMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => MenuItem[]
+getTrackListMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
 ```
 
 #### method: getTrackActionMenuItems
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, extraTrackActions?: MenuItem[] | undefined) => MenuItem[]
+getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, extraTrackActions?: MenuItem[] | undefined, effectiveConfig?: Record<...> | ...
 ```
 
 #### method: menus
@@ -193,13 +176,6 @@ menus: () => Menu[]
 ```
 
 ### BaseWebSession - Actions
-
-#### action: setName
-
-```js
-// type signature
-setName: (str: string) => void
-```
 
 #### action: addAssemblyConf
 
@@ -222,81 +198,46 @@ addSessionPlugin: (plugin: PluginDefinition & { name: string; }) => void
 removeSessionPlugin: (pluginDefinition: PluginDefinition) => void
 ```
 
-#### action: addSavedSession
-
-```js
-// type signature
-addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ drawerPosition: IOptionalIType<ISimpleType<string>, [undefined]>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; widgets: IMapType<...>; activeWidgets: IMapType<...>; minimized: IOptionalIType<...>; } & ... 9 more ... & { ...; }>>) => any
-```
-
 #### action: deleteSavedSession
 
 ```js
 // type signature
-deleteSavedSession: (id: string) => any
+deleteSavedSession: (id: string) => Promise<void>
 ```
 
-#### action: favoriteSavedSession
+#### action: setSavedSessionFavorite
 
 ```js
 // type signature
-favoriteSavedSession: (id: string) => any
-```
-
-#### action: unfavoriteSavedSession
-
-```js
-// type signature
-unfavoriteSavedSession: (id: string) => any
+setSavedSessionFavorite: (id: string, favorite: boolean) => Promise<void>
 ```
 
 #### action: renameCurrentSession
 
 ```js
 // type signature
-renameCurrentSession: (sessionName: string) => any
-```
-
-#### action: duplicateCurrentSession
-
-```js
-// type signature
-duplicateCurrentSession: () => any
+renameCurrentSession: (sessionName: string) => void
 ```
 
 #### action: activateSession
 
 ```js
 // type signature
-activateSession: (sessionName: string) => any
+activateSession: (sessionName: string) => Promise<void>
 ```
 
 #### action: setDefaultSession
 
 ```js
 // type signature
-setDefaultSession: () => any
-```
-
-#### action: saveSessionToLocalStorage
-
-```js
-// type signature
-saveSessionToLocalStorage: () => any
-```
-
-#### action: loadAutosaveSession
-
-```js
-// type signature
-loadAutosaveSession: () => any
+setDefaultSession: () => void
 ```
 
 #### action: setSession
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ drawerPosition: IOptionalIType<ISimpleType<string>, [undefined]>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; widgets: IMapType<...>; activeWidgets: IMapType<...>; minimized: IOptionalIType<...>; } & ... 9 more ... & { ...; }>>) => any
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; focusedViewId: IMaybe<...>; } & ... 7 more ... & { ...; }>>) => void
 ```
 
 #### action: editTrackConfiguration

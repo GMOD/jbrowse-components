@@ -25,7 +25,6 @@ composed of
 - [BaseSessionModel](../basesessionmodel)
 - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
 - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
-- [DialogQueueSessionMixin](../dialogqueuesessionmixin)
 - [TracksManagerSessionMixin](../tracksmanagersessionmixin)
 - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 - [SnackbarModel](../snackbarmodel)
@@ -95,13 +94,6 @@ renderProps: () => {
   theme: any
   highResolutionScaling: any
 }
-```
-
-#### method: getTrackActionMenuItems
-
-```js
-// type signature
-getTrackActionMenuItems: (config: any, extraTrackActions?: MenuItem[] | undefined) => MenuItem[]
 ```
 
 ### JBrowseReactCircularGenomeViewSessionModel - Actions

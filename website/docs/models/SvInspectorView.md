@@ -85,7 +85,7 @@ spreadsheetView: types.optional(SpreadsheetModel, () =>
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 7 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>
 // code
 circularView: types.optional(CircularModel, () =>
           CircularModel.create({
@@ -145,6 +145,13 @@ SimpleFeatureSerialized[]
 any[]
 ```
 
+#### getter: currentAssembly
+
+```js
+// type
+({ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefined; lowerCaseRefNameAliases: RefNameAliases ...
+```
+
 #### getter: canonicalFeatureRefNameSet
 
 ```js
@@ -182,13 +189,6 @@ setWidth: (newWidth: number) => void
 ```js
 // type signature
 setHeight: (newHeight: number) => number
-```
-
-#### action: setDisplayedRegions
-
-```js
-// type signature
-setDisplayedRegions: (regions: Region[]) => void
 ```
 
 #### action: setOnlyDisplayRelevantRegionsInCircularView

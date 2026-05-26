@@ -74,13 +74,6 @@ fetchSessionMetadata: () => Promise<void>
 setSessionDB: (sessionDB: IDBPDatabase<SessionDB>) => void
 ```
 
-#### action: setSession
-
-```js
-// type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; }>>) => void
-```
-
 #### action: setPluginsUpdated
 
 ```js
@@ -109,18 +102,11 @@ setDefaultSession: () => void
 activateSession: (id: string) => Promise<void>
 ```
 
-#### action: favoriteSavedSession
+#### action: setSavedSessionFavorite
 
 ```js
 // type signature
-favoriteSavedSession: (id: string) => Promise<void>
-```
-
-#### action: unfavoriteSavedSession
-
-```js
-// type signature
-unfavoriteSavedSession: (id: string) => Promise<void>
+setSavedSessionFavorite: (id: string, favorite: boolean) => Promise<void>
 ```
 
 #### action: deleteSavedSession
@@ -128,13 +114,6 @@ unfavoriteSavedSession: (id: string) => Promise<void>
 ```js
 // type signature
 deleteSavedSession: (id: string) => Promise<void>
-```
-
-#### action: renameCurrentSession
-
-```js
-// type signature
-renameCurrentSession: (sessionName: string) => void
 ```
 
 #### action: setError

@@ -59,7 +59,7 @@ indexType: {
 location: {
         type: 'fileLocation',
         defaultValue: {
-          uri: '/path/to/my.vcf.gz.tbi',
+          uri: '/path/to/my.bedgraph.gz.tbi',
           locationType: 'UriLocation',
         },
       }

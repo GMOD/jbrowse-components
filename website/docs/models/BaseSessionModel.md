@@ -52,6 +52,17 @@ number
 margin: 0
 ```
 
+#### property: focusedViewId
+
+used to keep track of which view is in focus
+
+```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
+focusedViewId: types.maybe(types.string)
+```
+
 ### BaseSessionModel - Getters
 
 #### getter: root
@@ -103,6 +114,20 @@ TextSearchManager
 ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
+#### getter: DialogComponent
+
+```js
+// type
+DialogComponentType
+```
+
+#### getter: DialogProps
+
+```js
+// type
+Record<string, unknown>
+```
+
 ### BaseSessionModel - Actions
 
 #### action: setSelection
@@ -129,4 +154,32 @@ clearSelection: () => void
 ```js
 // type signature
 setHovered: (thing: unknown) => void
+```
+
+#### action: setName
+
+```js
+// type signature
+setName: (str: string) => void
+```
+
+#### action: setFocusedViewId
+
+```js
+// type signature
+setFocusedViewId: (viewId: string) => void
+```
+
+#### action: removeActiveDialog
+
+```js
+// type signature
+removeActiveDialog: () => void
+```
+
+#### action: queueDialog
+
+```js
+// type signature
+queueDialog: (doneCallback: DoneCallback) => void
 ```

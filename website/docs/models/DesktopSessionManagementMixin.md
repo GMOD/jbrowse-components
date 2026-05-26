@@ -44,5 +44,5 @@ saveSession: (val: unknown) => Promise<void>
 
 ```js
 // type signature
-activateSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; }>>) => void
+activateSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; focusedViewId: IMaybe<...>; }>>) => void
 ```

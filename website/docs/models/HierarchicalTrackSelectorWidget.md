@@ -118,7 +118,7 @@ filter out tracks that don't match the current assembly/display types
 ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
-#### getter: allTrackConfigurationTrackIdSet
+#### getter: allTrackConfigurationMap
 
 ```js
 // type
@@ -147,14 +147,14 @@ filters out tracks that are not in the recently used group
 
 ```js
 // type
-{ group: any; tracks: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]; noCategories: boolean; menuItems: never[]; }[]
+{ group: any; tracks: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]; noCategories: boolean; }[]
 ```
 
 #### getter: hierarchy
 
 ```js
 // type
-{ name: string; id: string; type: "category"; children: { name: any; id: any; type: "category"; menuItems: never[]; nestingLevel: number; children: TreeNode[]; }[]; }
+{ name: string; id: string; type: "category"; children: { name: any; id: any; type: "category"; nestingLevel: number; children: TreeNode[]; }[]; }
 ```
 
 #### getter: hasAnySubcategories

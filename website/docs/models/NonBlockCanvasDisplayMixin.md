@@ -101,7 +101,7 @@ Set the rendering stop token
 
 ```js
 // type signature
-setRenderingStopToken: (token?: string | undefined) => void
+setRenderingStopToken: (token?: StopToken | undefined) => void
 ```
 
 #### action: setStatusMessage

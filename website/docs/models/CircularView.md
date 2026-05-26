@@ -84,15 +84,6 @@ false
 hideTrackSelectorButton: false
 ```
 
-#### property: lockedFitToWindow
-
-```js
-// type signature
-true
-// code
-lockedFitToWindow: true
-```
-
 #### property: disableImportForm
 
 ```js
@@ -109,24 +100,6 @@ disableImportForm: false
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 height: types.optional(types.number, defaultHeight)
-```
-
-#### property: scrollX
-
-```js
-// type signature
-number
-// code
-scrollX: 0
-```
-
-#### property: scrollY
-
-```js
-// type signature
-number
-// code
-scrollY: 0
 ```
 
 #### property: minimumRadiusPx
@@ -154,15 +127,6 @@ spacingPx: defaultSpacingPx
 number
 // code
 paddingPx: defaultPaddingPx
-```
-
-#### property: lockedPaddingPx
-
-```js
-// type signature
-number
-// code
-lockedPaddingPx: defaultLockedPaddingPx
 ```
 
 #### property: minVisibleWidth
@@ -299,28 +263,9 @@ boolean
 boolean
 ```
 
-#### getter: tooSmallToLock
+#### getter: figureSize
 
-```js
-// type
-boolean
-```
-
-#### getter: figureDimensions
-
-```js
-// type
-;[number, number]
-```
-
-#### getter: figureWidth
-
-```js
-// type
-number
-```
-
-#### getter: figureHeight
+figure is always square, so width === height
 
 ```js
 // type
@@ -414,13 +359,6 @@ boolean
 Slice[]
 ```
 
-#### getter: visibleStaticSlices
-
-```js
-// type
-Slice[]
-```
-
 ### CircularView - Methods
 
 #### method: menuItems
@@ -434,11 +372,11 @@ menuItems: () => MenuItem[]
 
 ### CircularView - Actions
 
-#### action: setWidth
+#### action: fitToWindow
 
 ```js
 // type signature
-setWidth: (newWidth: number) => number
+fitToWindow: () => void
 ```
 
 #### action: setHeight
@@ -476,18 +414,11 @@ rotateClockwiseButton: () => void
 rotateCounterClockwiseButton: () => void
 ```
 
-#### action: rotateClockwise
+#### action: rotate
 
 ```js
 // type signature
-rotateClockwise: (distance?: number) => void
-```
-
-#### action: rotateCounterClockwise
-
-```js
-// type signature
-rotateCounterClockwise: (distance?: number) => void
+rotate: (delta: number) => void
 ```
 
 #### action: zoomInButton
@@ -511,11 +442,14 @@ zoomOutButton: () => void
 setBpPerPx: (newVal: number) => void
 ```
 
-#### action: setModelViewWhenAdjust
+#### action: zoomToPoint
+
+zoom toward/away from a specific angle on the circle, keeping the genome
+position at that angle visually fixed under the cursor
 
 ```js
 // type signature
-setModelViewWhenAdjust: (secondCondition: boolean) => void
+zoomToPoint: (newBpPerPx: number, cursorAngle: number) => void
 ```
 
 #### action: setDisplayedRegions
@@ -529,7 +463,7 @@ setDisplayedRegions: (regions: Region[]) => void
 
 ```js
 // type signature
-activateTrackSelector: () => Widget
+activateTrackSelector: () => Widget | undefined
 ```
 
 #### action: toggleTrack
@@ -574,11 +508,11 @@ addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubs
 hideTrack: (trackId: string) => void
 ```
 
-#### action: toggleFitToWindowLock
+#### action: openExportDialog
 
 ```js
 // type signature
-toggleFitToWindowLock: () => boolean
+openExportDialog: () => void
 ```
 
 #### action: exportSvg

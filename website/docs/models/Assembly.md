@@ -33,13 +33,6 @@ configuration: types.safeReference(assemblyConfigType)
 
 ### Assembly - Getters
 
-#### getter: lowerCaseRefNameAliases
-
-```js
-// type
-{ [k: string]: string; } | undefined
-```
-
 #### getter: initialized
 
 this is a getter with a side effect of loading the data. not the best practice,
@@ -90,20 +83,6 @@ string[]
 note: lowerCaseRefNameAliases not included here: this allows the list of
 refnames to be just the "normal casing", but things like getCanonicalRefName can
 resolve a lower-case name if needed
-
-```js
-// type
-string[] | undefined
-```
-
-#### getter: lowerCaseRefNames
-
-```js
-// type
-string[] | undefined
-```
-
-#### getter: allRefNamesWithLowerCase
 
 ```js
 // type
@@ -246,6 +225,20 @@ setRegions: (regions: Region[]) => void
 ```js
 // type signature
 setRefNameAliases: (aliases: RefNameAliases) => void
+```
+
+#### action: setLowerCaseRefNameAliases
+
+```js
+// type signature
+setLowerCaseRefNameAliases: (aliases: RefNameAliases) => void
+```
+
+#### action: setAllRefNamesWithLowerCase
+
+```js
+// type signature
+setAllRefNamesWithLowerCase: (names: Set<string>) => void
 ```
 
 #### action: setCytobands

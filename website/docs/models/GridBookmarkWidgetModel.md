@@ -120,6 +120,13 @@ string[]
 setSelectedAssemblies: (assemblies?: string[] | undefined) => void
 ```
 
+#### action: setGridView
+
+```js
+// type signature
+setGridView: (arg: "bookmarks" | "highlights") => void
+```
+
 #### action: importBookmarks
 
 ```js
