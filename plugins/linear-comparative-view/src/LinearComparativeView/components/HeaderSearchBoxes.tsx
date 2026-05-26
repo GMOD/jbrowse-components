@@ -10,7 +10,7 @@ const useStyles = makeStyles()(() => ({
   bp: {
     display: 'flex',
     alignItems: 'center',
-    marginLeft: 10,
+    marginLeft: 7, // matches LGV HeaderRegionWidth gap (HeaderForm marginRight: 7)
   },
   searchBox: {
     display: 'flex',
@@ -26,8 +26,14 @@ const HeaderSearchBoxes = observer(function HeaderSearchBoxes({
   const { assemblyDisplayNames, coarseTotalBp } = view
   return (
     <span className={classes.searchBox}>
-      <SearchBox model={view} showHelp={false} />
-      <Typography variant="body2" color="textSecondary" className={classes.bp}>
+      <SearchBox
+        model={view}
+        showHelp={false}
+        maxWidth={250}
+        minWidth={100}
+        style={{ margin: 0 }}
+      />
+      <Typography variant="body2" color="text.secondary" className={classes.bp}>
         {assemblyDisplayNames.join(',')} {getBpDisplayStr(coarseTotalBp)}
       </Typography>
     </span>
