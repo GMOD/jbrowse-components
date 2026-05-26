@@ -24,9 +24,7 @@ export default class AdapterType extends PluggableElementBase {
    * `{type, uri}`) should expand it here to the canonical form so that
    * downstream code can read location keys without knowing each shorthand.
    */
-  normalizeSnapshot?: (
-    snap: Record<string, unknown>,
-  ) => Record<string, unknown>
+  normalizeSnapshot?: (snap: Record<string, unknown>) => Record<string, unknown>
 
   // `AdapterClass` is retained for backward compatibility with third-party
   // plugins that pass an eager class reference; new code should prefer

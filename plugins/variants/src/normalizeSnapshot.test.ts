@@ -3,7 +3,9 @@ import { normalizeSnapshot as normalizeVcfTabixSnapshot } from './VcfTabixAdapte
 
 describe('VcfAdapter normalizeSnapshot', () => {
   test('expands uri shorthand to vcfLocation', () => {
-    expect(normalizeVcfSnapshot({ type: 'VcfAdapter', uri: 'my.vcf' })).toMatchObject({
+    expect(
+      normalizeVcfSnapshot({ type: 'VcfAdapter', uri: 'my.vcf' }),
+    ).toMatchObject({
       type: 'VcfAdapter',
       vcfLocation: { uri: 'my.vcf' },
     })

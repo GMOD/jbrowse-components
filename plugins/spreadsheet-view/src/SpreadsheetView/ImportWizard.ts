@@ -39,7 +39,10 @@ function isFileLocation(loc: unknown): loc is FileLocation {
   return (
     !!loc &&
     typeof loc === 'object' &&
-    ('uri' in loc || 'localPath' in loc || 'blobId' in loc || 'locationType' in loc)
+    ('uri' in loc ||
+      'localPath' in loc ||
+      'blobId' in loc ||
+      'locationType' in loc)
   )
 }
 
@@ -192,7 +195,8 @@ export default function stateModelFactory() {
             const rawAdapter = readConfObject(track, 'adapter')
             const { pluginManager } = getEnv(self)
             const adapterType =
-              typeof rawAdapter?.type === 'string'
+              typeof rawAdapter?.type === 'string' &&
+              pluginManager.adapterTypes.has(rawAdapter.type)
                 ? pluginManager.getAdapterType(rawAdapter.type)
                 : undefined
             const adapter =

@@ -4,13 +4,18 @@ import { normalizeSnapshot as normalizeBedpeSnapshot } from './BedpeAdapter/conf
 
 describe('BedAdapter normalizeSnapshot', () => {
   test('expands uri shorthand to bedLocation', () => {
-    expect(normalizeBedSnapshot({ type: 'BedAdapter', uri: 'my.bed' })).toMatchObject({
+    expect(
+      normalizeBedSnapshot({ type: 'BedAdapter', uri: 'my.bed' }),
+    ).toMatchObject({
       bedLocation: { uri: 'my.bed' },
     })
   })
 
   test('passes through a fully-specified snapshot unchanged', () => {
-    const snap = { type: 'BedAdapter', bedLocation: { uri: 'my.bed', locationType: 'UriLocation' } }
+    const snap = {
+      type: 'BedAdapter',
+      bedLocation: { uri: 'my.bed', locationType: 'UriLocation' },
+    }
     expect(normalizeBedSnapshot(snap)).toBe(snap)
   })
 })
@@ -36,13 +41,18 @@ describe('BedTabixAdapter normalizeSnapshot', () => {
 
 describe('BedpeAdapter normalizeSnapshot', () => {
   test('expands uri shorthand to bedpeLocation', () => {
-    expect(normalizeBedpeSnapshot({ type: 'BedpeAdapter', uri: 'my.bedpe' })).toMatchObject({
+    expect(
+      normalizeBedpeSnapshot({ type: 'BedpeAdapter', uri: 'my.bedpe' }),
+    ).toMatchObject({
       bedpeLocation: { uri: 'my.bedpe' },
     })
   })
 
   test('passes through a fully-specified snapshot unchanged', () => {
-    const snap = { type: 'BedpeAdapter', bedpeLocation: { uri: 'my.bedpe', locationType: 'UriLocation' } }
+    const snap = {
+      type: 'BedpeAdapter',
+      bedpeLocation: { uri: 'my.bedpe', locationType: 'UriLocation' },
+    }
     expect(normalizeBedpeSnapshot(snap)).toBe(snap)
   })
 })
