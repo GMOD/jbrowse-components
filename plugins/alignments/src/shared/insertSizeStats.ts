@@ -1,7 +1,5 @@
 import { sum } from '@jbrowse/core/util'
 
-import type { ReducedFeature } from './types.ts'
-
 export function getInsertSizeStats(filtered: number[]) {
   const len = filtered.length
   const s = sum(filtered)
@@ -20,10 +18,4 @@ export function getInsertSizeStats(filtered: number[]) {
     avg,
     sd,
   }
-}
-
-export function filterForPairs(features: ReducedFeature[]) {
-  return features.filter(
-    f => f.flags & 2 && !(f.flags & 256) && !(f.flags & 2048),
-  )
 }

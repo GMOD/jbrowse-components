@@ -1,7 +1,5 @@
-import {
-  PileupGetGlobalValueForTag,
-  PileupGetVisibleModifications,
-} from './rpcMethods.ts'
+import PileupGetGlobalValueForTag from './methods/GetGlobalValueForTag.ts'
+import PileupGetVisibleModifications from './methods/GetVisibleModifications.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
