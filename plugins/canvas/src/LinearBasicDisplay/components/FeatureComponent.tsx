@@ -125,14 +125,6 @@ const useStyles = makeStyles()({
   },
 })
 
-const OverlayLayer = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode
-  className: string
-}) => (children ? <div className={className}>{children}</div> : null)
-
 const ContextMenu = observer(function ContextMenu({
   model,
   contextCoord,
@@ -283,8 +275,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     const result = hitTestAtEvent(e)
     if (result.feature) {
       e.preventDefault()
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      openContextMenu(
+      void openContextMenu(
         result.feature,
         result.displayedRegionIndex,
         e.clientX,
@@ -401,15 +392,15 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
             }}
           />
 
-          <OverlayLayer className={classes.overlay}>
-            {highlightOverlays}
-          </OverlayLayer>
-          <OverlayLayer className={classes.overlay}>
-            {floatingLabelElements}
-          </OverlayLayer>
-          <OverlayLayer className={classes.overlay}>
-            {aminoAcidOverlayElements}
-          </OverlayLayer>
+          {highlightOverlays ? (
+            <div className={classes.overlay}>{highlightOverlays}</div>
+          ) : null}
+          {floatingLabelElements ? (
+            <div className={classes.overlay}>{floatingLabelElements}</div>
+          ) : null}
+          {aminoAcidOverlayElements ? (
+            <div className={classes.overlay}>{aminoAcidOverlayElements}</div>
+          ) : null}
         </div>
       </div>
 

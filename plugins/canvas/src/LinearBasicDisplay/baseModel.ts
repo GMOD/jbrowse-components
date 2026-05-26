@@ -53,6 +53,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   ByteEstimateConfig,
   ExportSvgDisplayOptions,
@@ -63,6 +64,10 @@ import type {
 type LGV = LinearGenomeViewModel
 
 type LoadedFeatureData = FeatureDataResult & { loadedBpPerPx: number }
+
+function getView(self: IAnyStateTreeNode): LGV {
+  return getContainingView(self) as LGV
+}
 
 function findSubfeatureById(
   feature: Feature,
@@ -192,7 +197,7 @@ export default function baseStateModelFactory(
       }))
       .views(self => ({
         get renderState() {
-          const view = getContainingView(self) as LGV
+          const view = getView(self)
           return {
             scrollY: self.scrollTop,
             canvasWidth: view.trackWidthPx,
@@ -251,7 +256,7 @@ export default function baseStateModelFactory(
           if (self.userByteSizeLimit !== undefined) {
             return undefined
           }
-          const view = getContainingView(self) as LGV
+          const view = getView(self)
           if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
             return undefined
           }
@@ -262,7 +267,7 @@ export default function baseStateModelFactory(
         },
 
         get colorByCDS() {
-          const view = getContainingView(self) as LGV
+          const view = getView(self)
           return view.colorByCDS
         },
 
@@ -328,7 +333,7 @@ export default function baseStateModelFactory(
       // imperative getter.
       .views(self => ({
         get bytesEstimateTooLarge() {
-          const view = getContainingView(self) as LGV
+          const view = getView(self)
           if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
             return false
           }
@@ -348,7 +353,7 @@ export default function baseStateModelFactory(
           if (max === undefined) {
             return false
           }
-          const view = getContainingView(self) as LGV
+          const view = getView(self)
           for (const r of view.visibleRegions) {
             const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
             if (ds && screenDensity(ds, view.bpPerPx) > max) {
@@ -384,7 +389,7 @@ export default function baseStateModelFactory(
           if (self.regionTooLarge) {
             return new Map()
           }
-          const view = getContainingView(self) as LGV
+          const view = getView(self)
           if (!view.initialized || self.rpcDataMap.size === 0) {
             return new Map()
           }
@@ -450,7 +455,7 @@ export default function baseStateModelFactory(
         // reversed flag); MobX caches the value so repeated hover events read
         // the same indexes for free.
         get flatbushIndexes() {
-          const view = getContainingView(self) as LGV
+          const view = getView(self)
           const labels = {
             showLabels: self.showLabels,
             showDescriptions: self.effectiveShowDescriptions,
@@ -578,7 +583,7 @@ export default function baseStateModelFactory(
             // regions, not past the current `maxFeatureDensity`. The latter
             // already includes any prior force-load, so basing on it
             // multiplied force-load attempts exponentially.
-            const view = getContainingView(self) as LGV
+            const view = getView(self)
             let observedMax = 0
             for (const r of view.visibleRegions) {
               const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
@@ -724,7 +729,7 @@ export default function baseStateModelFactory(
         // FetchVisibleRegions autorun gates on regionTooLarge before calling
         // this, so the density-blocking case is handled there, not here.
         isCacheValid(displayedRegionIndex: number) {
-          const view = getContainingView(self) as LGV
+          const view = getView(self)
           const regionData = self.rpcDataMap.get(displayedRegionIndex)
           if (regionData === undefined) {
             return false
@@ -737,7 +742,7 @@ export default function baseStateModelFactory(
       }))
       .actions(self => ({
         getByteEstimateConfig(): ByteEstimateConfig | null {
-          const view = getContainingView(self) as LGV
+          const view = getView(self)
           if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
             return null
           }
@@ -858,7 +863,7 @@ export default function baseStateModelFactory(
           fetchNeeded(
             needed: { region: Region; displayedRegionIndex: number }[],
           ) {
-            const view = getContainingView(self) as LGV
+            const view = getView(self)
             const bpPerPx = view.bpPerPx
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during
@@ -947,7 +952,7 @@ export default function baseStateModelFactory(
               self,
               autorun(
                 () => {
-                  const view = getContainingView(self) as LGV
+                  const view = getView(self)
                   void self.scrollTop
                   void view.bpPerPx
                   void view.offsetPx
@@ -1023,7 +1028,7 @@ export default function baseStateModelFactory(
               onClick: () => {
                 const region = self.loadedRegions.get(displayedRegionIndex)
                 if (region) {
-                  const view = getContainingView(self) as LGV
+                  const view = getView(self)
                   view.navTo({
                     refName: region.refName,
                     start: startBp,

@@ -510,7 +510,7 @@ function processDefaultLayout(
 export function collectRenderData(
   layouts: FeatureLayout[],
   regionStart: number,
-  regionWidth: number,
+  regionEnd: number,
   config: DisplayConfig,
   theme: Theme,
   colorByCDS: boolean,
@@ -544,7 +544,7 @@ export function collectRenderData(
     collector.lines,
     collector.arrows,
     regionStart,
-    regionStart + regionWidth,
+    regionEnd,
   )
 
   return {

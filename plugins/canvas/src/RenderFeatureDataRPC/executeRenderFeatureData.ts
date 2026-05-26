@@ -78,8 +78,8 @@ export async function executeRenderFeatureData({
     )
   }
 
-  const regionStart = Math.floor(region.start)
-  const regionWidth = Math.ceil(region.end - region.start)
+  // region.start / region.end are integer bp by contract — see
+  // RenderFeatureDataArgs.region. No defensive rounding here.
 
   // Dedup before density-gating: multiple adapter passes can yield the same
   // feature id, and the returned featureCount is the dedup'd size — the gate
@@ -94,7 +94,7 @@ export async function executeRenderFeatureData({
   }
 
   if (maxFeatureDensity !== undefined) {
-    const regionWidthPx = regionWidth / requestedBpPerPx
+    const regionWidthPx = (region.end - region.start) / requestedBpPerPx
     const featureDensity = features.size / regionWidthPx
     if (featureDensity > maxFeatureDensity) {
       return {
@@ -153,8 +153,8 @@ export async function executeRenderFeatureData({
     () =>
       collectRenderData(
         layouts,
-        regionStart,
-        regionWidth,
+        region.start,
+        region.end,
         displayConfig,
         theme,
         !!colorByCDS,

@@ -22,7 +22,7 @@ interface LayoutInputs {
   regionKeys: Map<number, string>
   showLabels: boolean
   showDescriptions: boolean
-  reversedRegions?: ReadonlySet<number>
+  reversedRegions: ReadonlySet<number>
 }
 
 function reservedLabelWidthPx(
@@ -105,7 +105,7 @@ function packRef(
   bpPerPx: number,
   showLabels: boolean,
   showDescriptions: boolean,
-  reversedRegions: ReadonlySet<number> | undefined,
+  reversedRegions: ReadonlySet<number>,
 ) {
   const layout = new GranularRectLayout({ displayMode: 'normal' })
   const layoutMap = new Map<string, number>()

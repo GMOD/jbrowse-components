@@ -14,6 +14,10 @@ export interface RenderFeatureDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   displayConfig: DisplayConfig
+  // start/end MUST be integer bp positions. The on-screen producer is LGV's
+  // `bufferedVisibleRegions` which already rounds (floor on start, ceil on
+  // end). Callers that synthesize regions (e.g. tests) must round themselves
+  // rather than relying on a worker-side defensive re-round.
   region: {
     refName: string
     start: number
