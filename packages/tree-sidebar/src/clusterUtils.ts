@@ -1,4 +1,4 @@
-import { hierarchy, leaves, sort, sum } from './hierarchy.ts'
+import { hierarchy, leaves, sum } from './hierarchy.ts'
 import parseNewick from './newick.ts'
 
 import type { HierarchyNode } from './hierarchy.ts'
@@ -48,11 +48,15 @@ function findSubtree<T extends ClusterNodeData>(
 }
 
 /**
- * Wrap a pre-parsed Newick-shaped tree in a HierarchyNode, sort children by
- * branch length, and (optionally) descend into the deepest subtree whose
- * leaves exactly match `subtreeFilter`. Use when you already hold the parsed
- * tree (e.g. an MST volatile); use `parseClusterTree(string, filter)` to
- * accept a Newick string directly.
+ * Wrap a pre-parsed Newick-shaped tree in a HierarchyNode and (optionally)
+ * descend into the deepest subtree whose leaves exactly match
+ * `subtreeFilter`. Use when you already hold the parsed tree (e.g. an MST
+ * volatile); use `parseClusterTree(string, filter)` to accept a Newick
+ * string directly.
+ *
+ * Children are NOT re-sorted — hclust already produces the leaf order that
+ * matches the layout/sources array. Re-sorting would shift leaf positions
+ * and break row-highlight alignment.
  */
 export function clusterTree<T extends ClusterNodeData>(
   data: T,
@@ -60,7 +64,6 @@ export function clusterTree<T extends ClusterNodeData>(
 ) {
   let root = hierarchy<T>(data, d => d.children as T[] | undefined)
   sum(root, d => (d.children ? 0 : 1))
-  sort(root, (a, b) => (a.data.length ?? 1) - (b.data.length ?? 1))
 
   if (subtreeFilter?.length) {
     const filterSet = new Set(subtreeFilter)
