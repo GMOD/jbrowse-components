@@ -12,6 +12,7 @@ export default function BedpeAdapterF(pluginManager: PluginManager) {
         displayName: 'BEDPE adapter',
         configSchema,
         getAdapterClass: () => import('./BedpeAdapter.ts').then(r => r.default),
+        locationKey: 'bedpeLocation',
         normalizeSnapshot,
       }),
   )

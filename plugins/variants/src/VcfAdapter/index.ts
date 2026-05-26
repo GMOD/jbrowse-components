@@ -13,6 +13,7 @@ export default function VcfAdapterF(pluginManager: PluginManager) {
         configSchema,
         adapterCapabilities: ['exportData'],
         getAdapterClass: () => import('./VcfAdapter.ts').then(r => r.default),
+        locationKey: 'vcfLocation',
         normalizeSnapshot,
       }),
   )

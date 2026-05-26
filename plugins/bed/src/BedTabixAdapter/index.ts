@@ -13,6 +13,7 @@ export default function BedTabixAdapterF(pluginManager: PluginManager) {
         configSchema,
         getAdapterClass: () =>
           import('./BedTabixAdapter.ts').then(r => r.default),
+        locationKey: 'bedGzLocation',
         normalizeSnapshot,
       }),
   )

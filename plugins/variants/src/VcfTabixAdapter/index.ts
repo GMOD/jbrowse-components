@@ -16,6 +16,7 @@ export default function VcfTabixAdapterF(pluginManager: PluginManager) {
         adapterCapabilities: ['exportData'],
         getAdapterClass: () =>
           import('./VcfTabixAdapter.ts').then(r => r.default),
+        locationKey: 'vcfGzLocation',
         normalizeSnapshot,
       }),
   )

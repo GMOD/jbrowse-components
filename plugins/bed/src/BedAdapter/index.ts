@@ -12,6 +12,7 @@ export default function BedAdapterF(pluginManager: PluginManager) {
         displayName: 'BED adapter',
         configSchema,
         getAdapterClass: () => import('./BedAdapter.ts').then(r => r.default),
+        locationKey: 'bedLocation',
         normalizeSnapshot,
       }),
   )

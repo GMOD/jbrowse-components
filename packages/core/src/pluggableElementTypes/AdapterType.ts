@@ -26,6 +26,14 @@ export default class AdapterType extends PluggableElementBase {
    */
   normalizeSnapshot?: (snap: Record<string, unknown>) => Record<string, unknown>
 
+  /**
+   * The config key holding the adapter's primary file location (e.g.
+   * `'vcfGzLocation'`). Setting this opts the adapter into any feature that
+   * reads tracks by their primary file — such as "Open from track" in the
+   * spreadsheet / SV inspector.
+   */
+  locationKey?: string
+
   // `AdapterClass` is retained for backward compatibility with third-party
   // plugins that pass an eager class reference; new code should prefer
   // `getAdapterClass` for code splitting.
@@ -39,6 +47,7 @@ export default class AdapterType extends PluggableElementBase {
       normalizeSnapshot?: (
         snap: Record<string, unknown>,
       ) => Record<string, unknown>
+      locationKey?: string
     } & (
       | { getAdapterClass: () => Promise<AnyAdapter> }
       | { AdapterClass: AnyAdapter }
@@ -53,5 +62,6 @@ export default class AdapterType extends PluggableElementBase {
     this.adapterCapabilities = stuff.adapterCapabilities ?? []
     this.adapterMetadata = stuff.adapterMetadata
     this.normalizeSnapshot = stuff.normalizeSnapshot
+    this.locationKey = stuff.locationKey
   }
 }

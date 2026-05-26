@@ -24,17 +24,6 @@ const fileTypeParsers = {
     ),
 }
 
-const adapterTypeMap: Record<
-  string,
-  { fileType: string; locationKey: string }
-> = {
-  VcfAdapter: { fileType: 'VCF', locationKey: 'vcfLocation' },
-  VcfTabixAdapter: { fileType: 'VCF', locationKey: 'vcfGzLocation' },
-  BedAdapter: { fileType: 'BED', locationKey: 'bedLocation' },
-  BedTabixAdapter: { fileType: 'BED', locationKey: 'bedGzLocation' },
-  BedpeAdapter: { fileType: 'BEDPE', locationKey: 'bedpeLocation' },
-}
-
 function isFileLocation(loc: unknown): loc is FileLocation {
   return (
     !!loc &&
@@ -44,21 +33,6 @@ function isFileLocation(loc: unknown): loc is FileLocation {
       'blobId' in loc ||
       'locationType' in loc)
   )
-}
-
-function getAdapterInfo(adapter: Record<string, unknown>) {
-  const { type } = adapter
-  if (typeof type !== 'string') {
-    return undefined
-  }
-  const entry = adapterTypeMap[type]
-  if (!entry) {
-    return undefined
-  }
-  const locField = adapter[entry.locationKey]
-  return isFileLocation(locField)
-    ? { fileType: entry.fileType, loc: locField }
-    : undefined
 }
 
 // matches a file extension against the supported file types (case-insensitive)
@@ -193,19 +167,28 @@ export default function stateModelFactory() {
               return []
             }
             const rawAdapter = readConfObject(track, 'adapter')
-            const entry =
-              typeof rawAdapter?.type === 'string'
-                ? adapterTypeMap[rawAdapter.type]
-                : undefined
-            if (!entry) {
+            const adapterTypeName = rawAdapter?.type
+            if (typeof adapterTypeName !== 'string') {
               return []
             }
             const { pluginManager } = getEnv(self)
-            const adapterType = pluginManager.getAdapterType(rawAdapter.type)
+            if (!pluginManager.adapterTypes.has(adapterTypeName)) {
+              return []
+            }
+            const adapterType = pluginManager.getAdapterType(adapterTypeName)
+            const locationKey = adapterType?.locationKey
+            if (!locationKey) {
+              return []
+            }
             const adapter =
               adapterType?.normalizeSnapshot?.(rawAdapter) ?? rawAdapter
-            const info = getAdapterInfo(adapter)
-            if (!info) {
+            const loc = adapter[locationKey]
+            if (!isFileLocation(loc)) {
+              return []
+            }
+            const locName = getFileSourceName(loc)
+            const fileType = locName ? detectFileType(locName) : undefined
+            if (!fileType) {
               return []
             }
             const category = readConfObject(track, 'category') ?? []
@@ -218,8 +201,8 @@ export default function stateModelFactory() {
               ]
                 .filter(f => !!f)
                 .join(' '),
-              type: info.fileType,
-              loc: info.loc,
+              type: fileType,
+              loc,
             }
           })
           .sort((a, b) => a.label.localeCompare(b.label))
