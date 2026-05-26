@@ -49,6 +49,9 @@ function getAdapterInfo(adapter: Record<string, unknown>) {
     return undefined
   }
   const rawLoc = adapter[entry.locationKey] ?? adapter
+  if (type === 'VcfTabixAdapter') {
+    console.debug('[ImportWizard] getAdapterInfo VcfTabixAdapter', { adapterKeys: Object.keys(adapter), vcfGzLocation: adapter['vcfGzLocation'], rawLoc })
+  }
   return isFileLocation(rawLoc)
     ? { fileType: entry.fileType, loc: rawLoc }
     : undefined

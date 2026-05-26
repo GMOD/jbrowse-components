@@ -42,6 +42,7 @@
     "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
     "./data_adapters/BaseAdapter/types": "./src/data_adapters/BaseAdapter/types.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
+    "./gpu/canvas2dUtils": "./src/gpu/canvas2dUtils.ts",
     "./gpu/GpuLifecycleMixin": "./src/gpu/GpuLifecycleMixin.ts",
     "./gpu/gpuDevice": "./src/gpu/gpuDevice.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
@@ -103,6 +104,7 @@
     "./util/Base1DViewModel": "./src/util/Base1DViewModel.ts",
     "./util/FileSaver": "./src/util/FileSaver/index.ts",
     "./util/QuickLRU": "./src/util/QuickLRU/index.ts",
+    "./util/paintLayer": "./src/util/paintLayer.tsx",
     "./util/SvgCanvas": "./src/util/SvgCanvas.ts",
     "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
     "./util/aborting": "./src/util/aborting.ts",
@@ -289,6 +291,10 @@
       "./data_adapters/dataAdapterCache": {
         "types": "./esm/data_adapters/dataAdapterCache.d.ts",
         "import": "./esm/data_adapters/dataAdapterCache.js"
+      },
+      "./gpu/canvas2dUtils": {
+        "types": "./esm/gpu/canvas2dUtils.d.ts",
+        "import": "./esm/gpu/canvas2dUtils.js"
       },
       "./gpu/GpuLifecycleMixin": {
         "types": "./esm/gpu/GpuLifecycleMixin.d.ts",
@@ -534,6 +540,10 @@
         "types": "./esm/util/QuickLRU/index.d.ts",
         "import": "./esm/util/QuickLRU/index.js"
       },
+      "./util/paintLayer": {
+        "types": "./esm/util/paintLayer.d.ts",
+        "import": "./esm/util/paintLayer.js"
+      },
       "./util/SvgCanvas": {
         "types": "./esm/util/SvgCanvas.d.ts",
         "import": "./esm/util/SvgCanvas.js"
@@ -763,6 +773,9 @@
         "data_adapters/dataAdapterCache": [
           "esm/data_adapters/dataAdapterCache.d.ts"
         ],
+        "gpu/canvas2dUtils": [
+          "esm/gpu/canvas2dUtils.d.ts"
+        ],
         "gpu/GpuLifecycleMixin": [
           "esm/gpu/GpuLifecycleMixin.d.ts"
         ],
@@ -945,6 +958,9 @@
         ],
         "util/QuickLRU": [
           "esm/util/QuickLRU/index.d.ts"
+        ],
+        "util/paintLayer": [
+          "esm/util/paintLayer.d.ts"
         ],
         "util/SvgCanvas": [
           "esm/util/SvgCanvas.d.ts"

@@ -1,24 +1,65 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import { autorun } from 'mobx'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import {
+  dedupe,
+  getContainingTrack,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { types } from '@jbrowse/mobx-state-tree'
+import {
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
+import { observable } from 'mobx'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { Region } from '@jbrowse/core/util'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+const ZOOMED_OUT_BP_PER_PX = 10
+
+export interface SequenceRegionData {
+  seq: string
+  start: number
+  end: number
+}
+
+export interface LinearReferenceSequenceDisplayModel {
+  height: number
+  sequenceData: ReadonlyMap<number, SequenceRegionData>
+  renderBlocks: RenderBlock[]
+  error: unknown
+  showForward: boolean
+  showReverse: boolean
+  showTranslation: boolean
+  isDna: boolean
+  sequenceType: string
+  rowHeight: number
+  sequenceHeight: number
+  showLoading: boolean
+  zoomedOut: boolean
+  clearAllRpcData: () => void
+}
+
 /**
  * #stateModel LinearReferenceSequenceDisplay
- * base model `BaseLinearDisplay`
+ * base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
  */
 export function modelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearReferenceSequenceDisplay',
-      BaseLinearDisplay,
+      BaseDisplay,
+      TrackHeightMixin(),
+      MultiRegionDisplayMixin(),
       types.model({
         /**
          * #property
@@ -43,10 +84,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
-      /**
-       * #property
-       */
-      rowHeight: 15,
+      sequenceData: observable.map<number, SequenceRegionData>(),
     }))
     .views(self => ({
       /**
@@ -55,183 +93,168 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       get sequenceType() {
         return getConf(getContainingTrack(self), 'sequenceType')
       },
-
+    }))
+    .views(self => ({
       /**
        * #getter
-       * showReverse setting, it is NOT disabled for non-dna sequences
+       * true for DNA tracks; reverse-complement and translation rows are
+       * gated on this since they are biologically meaningful only for DNA.
        */
-      get showForwardActual() {
-        return self.showForward
-      },
-
-      /**
-       * #getter
-       * showReverse setting, is disabled for non-dna sequences
-       */
-      get showReverseActual() {
-        return this.sequenceType === 'dna' ? self.showReverse : false
-      },
-
-      /**
-       * #getter
-       * showTranslation setting is disabled for non-dna sequences
-       */
-      get showTranslationActual() {
-        return this.sequenceType === 'dna' ? self.showTranslation : false
+      get isDna() {
+        return self.sequenceType === 'dna'
       },
     }))
     .views(self => ({
       /**
        * #getter
+       * the view is too zoomed out to show individual bases
        */
-      get sequenceHeight() {
-        const {
-          rowHeight,
-          showTranslationActual,
-          showReverseActual,
-          showForwardActual,
-        } = self
-        const r1 =
-          showReverseActual && showTranslationActual ? rowHeight * 3 : 0
-        const r2 =
-          showForwardActual && showTranslationActual ? rowHeight * 3 : 0
-        const t = r1 + r2
-        const r = showReverseActual ? rowHeight : 0
-        const s = showForwardActual ? rowHeight : 0
-        return t + r + s
-      },
-    }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #method
-         */
-        renderProps() {
-          const {
-            rpcDriverName,
-            showForwardActual,
-            showReverseActual,
-            showTranslationActual,
-            rowHeight,
-            sequenceHeight,
-            sequenceType,
-          } = self
-          return {
-            ...superRenderProps(),
-            ...getParentRenderProps(self),
-            config: self.configuration.renderer,
-            rpcDriverName,
-            showForward: showForwardActual,
-            showReverse: showReverseActual,
-            showTranslation: showTranslationActual,
-            sequenceType,
-            rowHeight,
-            sequenceHeight,
-          }
-        },
-      }
-    })
-    .views(self => ({
-      /**
-       * #method
-       */
-      regionCannotBeRendered(/* region */) {
+      get zoomedOut() {
         const view = getContainingView(self) as LGV
-        return view.bpPerPx > 3 ? 'Zoom in to see sequence' : undefined
+        return view.bpPerPx > ZOOMED_OUT_BP_PER_PX
+      },
+      get numRows() {
+        const f = self.showForward ? 1 : 0
+        const r = self.isDna && self.showReverse ? 1 : 0
+        const t = self.isDna && self.showTranslation ? 1 : 0
+        return f + r + 3 * t * (f + r)
+      },
+      get sequenceHeight() {
+        return this.numRows * 15
+      },
+      get showLoading() {
+        return self.sequenceData.size === 0 || self.isLoading
       },
       /**
        * #getter
+       * collapses to 50px when zoomed out (no sequence visible) or before
+       * the view initializes; otherwise sized to fit the visible rows.
        */
-      get rendererTypeName() {
-        return self.configuration.renderer.type
+      get computedHeight() {
+        return this.zoomedOut ? 50 : this.sequenceHeight
+      },
+      /**
+       * #getter
+       * override TrackHeightMixin height: use manual resize if set,
+       * otherwise the zoom-aware computed height.
+       */
+      get height() {
+        return self.heightPreConfig ?? this.computedHeight
+      },
+      get rowHeight() {
+        return this.numRows > 0 ? this.height / this.numRows : 0
       },
     }))
     .actions(self => ({
+      setSequenceRegion(idx: number, data: SequenceRegionData) {
+        self.sequenceData.set(idx, data)
+      },
+      clearDisplaySpecificData() {
+        self.sequenceData.clear()
+      },
       /**
        * #action
        */
       toggleShowForward() {
         self.showForward = !self.showForward
+        self.heightPreConfig = undefined
       },
       /**
        * #action
        */
       toggleShowReverse() {
         self.showReverse = !self.showReverse
+        self.heightPreConfig = undefined
       },
       /**
        * #action
        */
       toggleShowTranslation() {
         self.showTranslation = !self.showTranslation
+        self.heightPreConfig = undefined
       },
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function sequenceHeightAutorun() {
-              const view = getContainingView(self) as LGV
-              if (view.bpPerPx > 3) {
-                self.setHeight(50)
-              } else {
-                self.setHeight(self.sequenceHeight)
+    }))
+    .actions(self => ({
+      async fetchNeeded(
+        needed: { region: Region; displayedRegionIndex: number }[],
+      ) {
+        if (self.zoomedOut) {
+          return
+        }
+        await self.fetchRegions(needed, async ctx => {
+          const { rpcManager } = getSession(self)
+          const sessionId = getRpcSessionId(self)
+          const adapterConfig = self.adapterConfig
+          for (const { region, displayedRegionIndex } of needed) {
+            const features = await rpcManager.call(
+              sessionId,
+              'CoreGetFeatures',
+              { regions: [region], adapterConfig, stopToken: ctx.stopToken },
+            )
+            if (ctx.isStale()) {
+              return
+            }
+            for (const f of dedupe(features, f => f.id())) {
+              const seq = f.get('seq') as string | undefined
+              if (seq) {
+                self.setSequenceRegion(displayedRegionIndex, {
+                  seq,
+                  start: f.get('start'),
+                  end: f.get('end'),
+                })
               }
-            },
-            { name: 'SequenceHeight' },
-          ),
-        )
+            }
+          }
+        })
       },
     }))
     .views(self => ({
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self, opts)
+      },
       /**
        * #method
        */
       trackMenuItems() {
-        return [
-          ...(self.sequenceType === 'dna'
-            ? [
-                {
-                  label: 'Show forward',
-                  type: 'checkbox',
-                  checked: self.showForward,
-                  onClick: () => {
-                    self.toggleShowForward()
-                  },
+        return self.isDna
+          ? [
+              {
+                label: 'Show forward',
+                type: 'checkbox',
+                checked: self.showForward,
+                onClick: () => {
+                  self.toggleShowForward()
                 },
-                {
-                  label: 'Show reverse',
-                  type: 'checkbox',
-                  checked: self.showReverse,
-                  onClick: () => {
-                    self.toggleShowReverse()
-                  },
+              },
+              {
+                label: 'Show reverse',
+                type: 'checkbox',
+                checked: self.showReverse,
+                onClick: () => {
+                  self.toggleShowReverse()
                 },
-                {
-                  label: 'Show translation',
-                  type: 'checkbox',
-                  checked: self.showTranslation,
-                  onClick: () => {
-                    self.toggleShowTranslation()
-                  },
+              },
+              {
+                label: 'Show translation',
+                type: 'checkbox',
+                checked: self.showTranslation,
+                onClick: () => {
+                  self.toggleShowTranslation()
                 },
-              ]
-            : []),
-        ]
+              },
+            ]
+          : []
       },
     }))
     .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
       const { showForward, showReverse, showTranslation, ...rest } =
         snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(!showForward ? { showForward } : {}),
-        ...(!showReverse ? { showReverse } : {}),
-        ...(!showTranslation ? { showTranslation } : {}),
+        ...(showForward ? {} : { showForward }),
+        ...(showReverse ? {} : { showReverse }),
+        ...(showTranslation ? {} : { showTranslation }),
       } as typeof snap
     })
 }
