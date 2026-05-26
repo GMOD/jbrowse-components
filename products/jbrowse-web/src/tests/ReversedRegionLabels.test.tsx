@@ -41,11 +41,7 @@ test('export svg of reversed region with gene labels', async () => {
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
 
   // Wait for at least one canvas block to finish rendering
-  await screen.findAllByTestId(
-    /prerendered_canvas.*done/,
-    {},
-    { timeout: 30000 },
-  )
+  await screen.findAllByTestId(/^display-.*-done$/, {}, { timeout: 30000 })
 
   await exportAndVerifySvg({
     findByTestId,

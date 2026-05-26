@@ -99,9 +99,7 @@ export function ColorPicker({
 
   const handleChange = (val: string) => {
     setText(val)
-    try {
-      onChange(colord(val).toRgbString())
-    } catch (e) {}
+    onChange(colord(val).toRgbString())
   }
   return (
     <div style={{ display: 'flex', padding: 10 }}>

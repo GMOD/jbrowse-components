@@ -150,6 +150,36 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
     },
     {
+      "displayName": "volvox (sample01 as anchor)",
+      "name": "volvox-sample01-anchor",
+      "sequence": {
+        "adapter": {
+          "features": [
+            {
+              "end": 45818,
+              "refName": "ctgA",
+              "seq": "",
+              "start": 0,
+              "uniqueId": "ctgA-sample01",
+            },
+          ],
+          "type": "FromConfigSequenceAdapter",
+        },
+        "displays": [
+          {
+            "displayId": "volvox_sample01_anchor_seq-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+          {
+            "displayId": "volvox_sample01_anchor_seq-LinearGCContentDisplay",
+            "type": "LinearGCContentDisplay",
+          },
+        ],
+        "trackId": "volvox_sample01_anchor_seq",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
+    {
       "name": "volvox404",
       "sequence": {
         "adapter": {
@@ -443,18 +473,43 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
   "internetAccounts": [],
   "plugins": [
     {
-      "name": "UMDLocPlugin",
-      "umdLoc": {
-        "uri": "umd_plugin.js",
-      },
-    },
-    {
       "name": "UMDUrlPlugin",
       "umdUrl": "umd_plugin.js",
     },
   ],
   "preConfiguredSessions": [],
   "tracks": [
+    {
+      "adapter": {
+        "bedGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.gwas.tsv.gz",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.gwas.tsv.gz.tbi",
+          },
+        },
+        "scoreColumn": "neg_log_pvalue",
+        "type": "GWASAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Annotation",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_gwas-LinearManhattanDisplay",
+          "type": "LinearManhattanDisplay",
+        },
+      ],
+      "name": "GWAS test",
+      "trackId": "volvox_gwas",
+      "type": "GWASTrack",
+    },
     {
       "adapter": {
         "twoBitLocation": {
@@ -501,8 +556,17 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.dup.renamed.vcf.gz.tbi",
+          },
+        },
         "type": "VcfTabixAdapter",
-        "uri": "volvox.dup.renamed.vcf.gz",
+        "vcfGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.dup.renamed.vcf.gz",
+        },
       },
       "assemblyNames": [
         "volvox",
@@ -841,16 +905,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_bam_small_max_height_alignments",
-          "pileupDisplay": {
-            "displayId": "volvox_bam_small_max_height_alignments_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "maxHeight": 10,
-                "type": "PileupRenderer",
-              },
-            },
-            "type": "LinearPileupDisplay",
-          },
+          "maxHeight": 10,
           "type": "LinearAlignmentsDisplay",
         },
       ],
@@ -1380,72 +1435,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "wiggle_track density (altname)",
       "trackId": "volvox_microarray_density_altname",
       "type": "QuantitativeTrack",
-    },
-    {
-      "adapter": {
-        "adapterId": "Xvg1McRUAP",
-        "features": [
-          {
-            "end": 191,
-            "name": "Boris",
-            "note": "note for boris",
-            "refName": "ctgA",
-            "score": 200,
-            "start": 190,
-            "type": "foo",
-            "uniqueId": "one",
-          },
-          {
-            "end": 192,
-            "name": "Theresa",
-            "note": "note for theresa",
-            "refName": "ctgA",
-            "score": 20,
-            "start": 191,
-            "type": "bar",
-            "uniqueId": "two",
-          },
-          {
-            "end": 211,
-            "name": "Nigel",
-            "note": "note for nigel",
-            "refName": "ctgA",
-            "score": 300,
-            "start": 210,
-            "type": "baz",
-            "uniqueId": "three",
-          },
-          {
-            "end": 221,
-            "name": "Geoffray",
-            "note": "note for geoffray",
-            "refName": "ctgA",
-            "score": 2,
-            "start": 220,
-            "type": "quux",
-            "uniqueId": "four",
-          },
-        ],
-        "type": "FromConfigAdapter",
-      },
-      "assemblyNames": [
-        "volvox",
-      ],
-      "category": [
-        "Miscellaneous",
-      ],
-      "displays": [
-        {
-          "displayId": "lollipop_track_linear",
-          "renderer": {
-            "type": "LollipopRenderer",
-          },
-          "type": "LinearLollipopDisplay",
-        },
-      ],
-      "name": "FromConfig Track (defaults to LinearLollipopDisplay)",
-      "trackId": "lollipop_track",
-      "type": "FeatureTrack",
     },
     {
       "adapter": {
@@ -3275,6 +3264,30 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "name": "volvox 1000genomes vcf (JEXL filters + coloring)",
       "trackId": "volvox_test_vcf_jexl",
+      "type": "VariantTrack",
+    },
+    {
+      "adapter": {
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.variants.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.variants.vcf.gz",
+        },
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "name": "volvox variants (vg deconstruct -a -u)",
+      "trackId": "volvox_variants_vcf",
       "type": "VariantTrack",
     },
   ],
