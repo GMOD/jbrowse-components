@@ -3,11 +3,7 @@ import { Suspense, lazy } from 'react'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const PopoverPicker = lazy(() =>
-  import('@jbrowse/core/ui/ColorPicker').then(m => ({
-    default: m.PopoverPicker,
-  })),
-)
+const PopoverPicker = lazy(() => import('@jbrowse/core/ui/PopoverPicker'))
 
 const ColorEditor = observer(function ColorEditor(props: {
   slot: {

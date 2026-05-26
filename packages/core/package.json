@@ -76,6 +76,7 @@
     "./ui/BaseTooltip": "./src/ui/BaseTooltip.tsx",
     "./ui/CascadingMenuButton": "./src/ui/CascadingMenuButton.tsx",
     "./ui/ColorPicker": "./src/ui/ColorPicker.tsx",
+    "./ui/PopoverPicker": "./src/ui/PopoverPicker.tsx",
     "./ui/colors": "./src/ui/colors.ts",
     "./ui/ConfirmDialog": "./src/ui/ConfirmDialog.tsx",
     "./ui/DataGridFlexContainer": "./src/ui/DataGridFlexContainer.tsx",
@@ -429,6 +430,10 @@
       "./ui/ColorPicker": {
         "types": "./esm/ui/ColorPicker.d.ts",
         "import": "./esm/ui/ColorPicker.js"
+      },
+      "./ui/PopoverPicker": {
+        "types": "./esm/ui/PopoverPicker.d.ts",
+        "import": "./esm/ui/PopoverPicker.js"
       },
       "./ui/colors": {
         "types": "./esm/ui/colors.d.ts",
@@ -884,6 +889,9 @@
         ],
         "ui/ColorPicker": [
           "esm/ui/ColorPicker.d.ts"
+        ],
+        "ui/PopoverPicker": [
+          "esm/ui/PopoverPicker.d.ts"
         ],
         "ui/colors": [
           "esm/ui/colors.d.ts"

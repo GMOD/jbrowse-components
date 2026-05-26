@@ -13,8 +13,6 @@ import { useDebounce, useLocalStorage } from '../util/index.ts'
 // https://stackoverflow.com/questions/58613492/how-to-resolve-cannot-use-import-statement-outside-a-module-in-jest
 
 const useStyles = makeStyles()({
-  picker: { position: 'relative' },
-
   swatches: {
     display: 'flex',
     padding: 12,
@@ -32,37 +30,6 @@ const useStyles = makeStyles()({
 })
 
 type PaletteType = keyof typeof paletteColors
-
-export const PopoverPicker = ({
-  color,
-  onChange,
-}: {
-  color: string
-  onChange: (color: string) => void
-}) => {
-  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
-  const { classes } = useStyles()
-
-  return (
-    <div className={classes.picker}>
-      <div
-        className={classes.swatch}
-        style={{ backgroundColor: color }}
-        onClick={event => {
-          setAnchorEl(event.currentTarget)
-        }}
-      />
-      <ColorPopover
-        anchorEl={anchorEl}
-        onClose={() => {
-          setAnchorEl(null)
-        }}
-        color={color}
-        onChange={onChange}
-      />
-    </div>
-  )
-}
 
 export function ColorPopover({
   anchorEl,
@@ -146,5 +113,3 @@ export function ColorPicker({
     </div>
   )
 }
-
-export default PopoverPicker
