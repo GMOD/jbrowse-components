@@ -87,7 +87,7 @@ boolean
 
 ```js
 // type
-{ range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; } | undefined
+YScaleTicks | undefined
 ```
 
 #### getter: fillSetting

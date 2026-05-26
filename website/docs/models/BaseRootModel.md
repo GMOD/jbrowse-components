@@ -60,7 +60,7 @@ sessionPath: types.optional(types.string, '')
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cy...
+IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 5 more ... & { ...; }, _NotCus...
 // code
 assemblyManager: types.optional(
         assemblyManagerFactory(assemblyConfigSchema, pluginManager),
@@ -78,6 +78,12 @@ setError: (error: unknown) => void
 ```
 
 #### action: setSession
+
+Sets the active session. Remaps any legacy display type names (e.g.
+LinearPileupDisplay → LinearAlignmentsDisplay), then walks the resulting MST
+tree to drop undefined references in arrays/maps so shared sessions still load
+when referencing tracks/widgets that no longer exist. If filtering throws, the
+previous session is restored.
 
 ```js
 // type signature

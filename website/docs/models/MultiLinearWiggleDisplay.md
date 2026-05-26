@@ -227,7 +227,7 @@ boolean
 
 ```js
 // type
-any
+HierarchyNode<NewickNode> | undefined
 ```
 
 #### getter: totalHeight
@@ -241,14 +241,14 @@ number
 
 ```js
 // type
-any
+PositionedHierarchyNode<NewickNode> | undefined
 ```
 
 #### getter: ticks
 
 ```js
 // type
-{ range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; } | undefined
+{ ticks: { value: number; y: number; }[]; yTop: number; yBottom: number; } | undefined
 ```
 
 #### getter: colors
@@ -308,7 +308,7 @@ renderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: "MultiLinearWiggleDisplay"; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userBpPerPxLimit: number | undefined; ... 23 more ...; subtreeFilter: (IMSTArray<...> & IStateTreeNode<...>) | undefined; } & ... 38 more ... & IStateTreeNode<...>; }
+renderingProps: () => { displayModel: { id: string; type: "MultiLinearWiggleDisplay"; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userByteSizeLimit: number | undefined; ... 23 more ...; subtreeFilter: (IMSTArray<...> & IStateTreeNode<...>) | undefined; } & ... 43 more ... & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems
@@ -331,7 +331,7 @@ setShowSidebar: (arg: boolean) => void
 
 ```js
 // type signature
-setSourcesLoading: (str: string) => void
+setSourcesLoading: (str: StopToken) => void
 ```
 
 #### action: setLayout

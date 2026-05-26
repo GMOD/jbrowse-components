@@ -41,13 +41,6 @@ menus: () => Menu[]
 
 ### JBrowseReactAppRootModel - Actions
 
-#### action: setSession
-
-```js
-// type signature
-setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; }>> | undefined) => void
-```
-
 #### action: setPluginsUpdated
 
 ```js
@@ -57,16 +50,12 @@ setPluginsUpdated: (flag: boolean) => void
 
 #### action: setDefaultSession
 
+BaseRootModel's setDefaultSession reuses defaultSession's literal name;
+react-app instead timestamps it so multiple "new sessions" don't collide.
+
 ```js
 // type signature
 setDefaultSession: () => void
-```
-
-#### action: renameCurrentSession
-
-```js
-// type signature
-renameCurrentSession: (sessionName: string) => void
 ```
 
 #### action: setError

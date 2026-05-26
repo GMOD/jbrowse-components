@@ -96,7 +96,7 @@ Returns the parent display if this display is nested within another display
 
 ```js
 // type
-any
+{ type?: string | undefined; effectiveRpcDriverName?: string | undefined; } | undefined
 ```
 
 #### getter: effectiveRpcDriverName
@@ -112,13 +112,20 @@ Returns the effective RPC driver name with hierarchical fallback:
 any
 ```
 
+#### getter: effectiveTrackConfig
+
+```js
+// type
+Record<string, unknown>
+```
+
 #### getter: rendererType
 
 the pluggable element type object for this display's renderer
 
 ```js
 // type
-RendererType
+RendererType | undefined
 ```
 
 #### getter: DisplayMessageComponent

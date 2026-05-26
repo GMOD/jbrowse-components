@@ -69,7 +69,7 @@ trackDisplayDirectionalChevrons: types.maybe(types.boolean)
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```

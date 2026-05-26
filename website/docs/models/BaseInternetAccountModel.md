@@ -44,7 +44,7 @@ type: types.string
 
 ```js
 // type signature
-ConfigurationSchemaType<{ name: { description: string; type: string; defaultValue: string; }; description: { description: string; type: string; defaultValue: string; }; authHeader: { description: string; type: string; defaultValue: string; }; tokenType: { ...; }; domains: { ...; }; }, ConfigurationSchemaOptions<...>>
+ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(BaseInternetAccountConfig)
 ```

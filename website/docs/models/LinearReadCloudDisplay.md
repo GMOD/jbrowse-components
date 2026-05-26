@@ -41,7 +41,7 @@ type: types.literal('LinearReadCloudDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```

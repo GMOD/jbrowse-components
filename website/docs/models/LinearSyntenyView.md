@@ -73,15 +73,18 @@ drawLocationMarkers: false
 
 #### property: init
 
-used for initializing the view from a session snapshot example:
+used for initializing the view from a session snapshot. tracks is 2D — outer
+index is the level (the gap between views[i] and views[i+1]), so a 3-way view
+has two entries. example:
 
 ```json
 {
   "views": [
     { "loc": "chr1:1-100", "assembly": "hg38", "tracks": ["genes"] },
-    { "loc": "chr1:1-100", "assembly": "mm39" }
+    { "loc": "chr1:1-100", "assembly": "mm39" },
+    { "loc": "chr1:1-100", "assembly": "rn7" }
   ],
-  "tracks": ["hg38_vs_mm39_synteny"]
+  "tracks": [["hg38_vs_mm39_synteny"], ["mm39_vs_rn7_synteny"]]
 }
 ```
 

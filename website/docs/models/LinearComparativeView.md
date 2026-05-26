@@ -139,7 +139,7 @@ boolean
 
 ```js
 // type
-string[][]
+(string | undefined)[][]
 ```
 
 #### getter: assemblyNames
@@ -218,7 +218,7 @@ setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimp
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string | undefined; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 12 more ...; init: (InitState & IStateTreeNode<...>) | undefined; } & ... 19 more ......
+removeView: (view: { id: string; displayName: string | undefined; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 16 more ...; init: (InitState & IStateTreeNode<...>) | undefined; } & ... 19 more ......
 ```
 
 #### action: setLevelHeight

@@ -18,6 +18,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+the default display for feature tracks in the linear genome view; renders
+features using the SvgFeatureRenderer (now CanvasFeatureRenderer)
+
 ### LinearBasicDisplay - Slots
 
 #### slot: renderer

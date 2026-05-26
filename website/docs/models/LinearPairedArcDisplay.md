@@ -44,7 +44,7 @@ type: types.literal('LinearPairedArcDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```

@@ -157,7 +157,7 @@ pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: bo
 
 ```js
 // type signature
-bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number | undefined; }) => number | undefined
+bpToPx: ({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number | undefined; }) => number | undefined
 ```
 
 ### Base1DView - Actions
@@ -232,7 +232,7 @@ scrollTo: (offsetPx: number) => number
 
 ```js
 // type signature
-centerAt: (coord: number, refName: string | undefined, regionNumber: number) => void
+centerAt: (coord: number, refName: string | undefined, displayedRegionIndex: number) => void
 ```
 
 #### action: scroll

@@ -64,18 +64,14 @@ visibleColumns: types.frozen<Record<string, boolean>>()
 
 ```js
 // type
-{
-  id: number
-  feature: SimpleFeatureSerialized | undefined
-}
-;[] | undefined
+GridRow[] | undefined
 ```
 
 #### getter: initialized
 
 ```js
 // type
-boolean | undefined
+boolean
 ```
 
 #### getter: dataGridColumns

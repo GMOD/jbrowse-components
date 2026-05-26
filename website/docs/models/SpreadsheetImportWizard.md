@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+IOptionalIType<ISimpleType<"BED" | "VCF" | "BEDPE" | "STAR-Fusion">, [undefined]>
 // code
 fileType: types.optional(types.enumeration(fileTypes), 'VCF')
 ```
@@ -75,21 +75,21 @@ cachedFileLocation: types.frozen<FileLocation | undefined>()
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: fileName
 
 ```js
 // type
-any
+string | undefined
 ```
 
 #### getter: requiresUnzip
 
 ```js
 // type
-any
+boolean
 ```
 
 ### SpreadsheetImportWizard - Methods
@@ -105,7 +105,7 @@ isValidRefName: (refName: string, assemblyName?: string | undefined) => boolean
 
 ```js
 // type signature
-tracksForAssembly: (selectedAssembly: string) => { track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; label: string; assemblyNames: any; type: string; loc: FileLocation; }[]
+tracksForAssembly: (selectedAssembly: string) => { track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; label: string; type: "BED" | ... 2 more ... | "STAR-Fusion"; loc: File...
 ```
 
 ### SpreadsheetImportWizard - Actions
@@ -121,7 +121,7 @@ setSelectedAssemblyName: (s: string) => void
 
 ```js
 // type signature
-setFileSource: (newSource: unknown) => void
+setFileSource: (newSource: FileLocation | undefined) => void
 ```
 
 #### action: setColumnNameLineNumber
@@ -150,13 +150,6 @@ setError: (error: unknown) => void
 ```js
 // type signature
 setLoading: (arg: boolean) => void
-```
-
-#### action: cancelButton
-
-```js
-// type signature
-cancelButton: () => void
 ```
 
 #### action: setCachedFileHandle

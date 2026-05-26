@@ -2912,6 +2912,30 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "starFusionLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.star-fusion.tsv",
+        },
+        "type": "StarFusionAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Variants",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_star_fusion-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
+        },
+      ],
+      "name": "STAR-Fusion fusions",
+      "trackId": "volvox_star_fusion",
+      "type": "VariantTrack",
+    },
+    {
+      "adapter": {
         "assemblyNames": [
           "volvox_del",
           "volvox",

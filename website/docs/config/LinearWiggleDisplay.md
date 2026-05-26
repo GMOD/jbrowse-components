@@ -18,7 +18,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-extends
+the display type for BigWig/quantitative tracks in the linear genome view;
+supports XY plot, density, and line renderers extends
 
 - [SharedWiggleDisplay](../sharedwiggledisplay)
 

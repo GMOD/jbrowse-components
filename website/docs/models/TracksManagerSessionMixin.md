@@ -49,15 +49,26 @@ additional assemblies (e.g. sessionAssemblies).
 ;[]
 ```
 
-### TracksManagerSessionMixin - Methods
+#### getter: getTracksById
 
-#### method: getTracksById
-
-Method to get tracks by ID. Includes tracks from connections if present.
+Map of trackId → config for all tracks, assemblies, and connections. Frozen
+jbrowse.tracks are returned as plain objects here; hydration to MST models
+happens lazily in TrackConfigurationReference on first access. MobX caches this
+until any dependency changes.
 
 ```js
-// type signature
-getTracksById: () => Record<string, { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
+// type
+() => Record<string, { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
+```
+
+#### getter: tracksById
+
+MobX-cached map of trackId → config for all tracks, assemblies, and connections.
+Recomputes only when dependencies change.
+
+```js
+// type
+Record<string, { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
 ```
 
 ### TracksManagerSessionMixin - Actions

@@ -32,7 +32,7 @@ Shared state model for LD displays extends
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```

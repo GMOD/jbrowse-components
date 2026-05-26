@@ -25,8 +25,6 @@ composed of
 - [BaseSessionModel](../basesessionmodel)
 - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
 - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
-- [DialogQueueSessionMixin](../dialogqueuesessionmixin)
-- [TracksManagerSessionMixin](../tracksmanagersessionmixin)
 - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
 - [SnackbarModel](../snackbarmodel)
@@ -41,17 +39,6 @@ IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: 
 // code
 view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel
-```
-
-#### property: sessionTracks
-
-```js
-// type signature
-IArrayType<IAnyModelType>
-// code
-sessionTracks: types.array(
-        pluginManager.pluggableConfigSchemaType('track'),
-      )
 ```
 
 ### JBrowseReactLinearGenomeViewSessionModel - Getters
@@ -102,7 +89,7 @@ any
 
 ```js
 // type
-({ id: string; displayName: string | undefined; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 12 more ...; init: (InitState & IStateTreeNode<...>) | undefined; } & ... 19 more ... & ISt...
+({ id: string; displayName: string | undefined; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 16 more ...; init: (InitState & IStateTreeNode<...>) | undefined; } & ... 19 more ... & ISt...
 ```
 
 ### JBrowseReactLinearGenomeViewSessionModel - Methods
@@ -117,18 +104,11 @@ renderProps: () => {
 }
 ```
 
-#### method: getTrackActionMenuItems
-
-```js
-// type signature
-getTrackActionMenuItems: (config: any, extraTrackActions?: MenuItem[] | undefined) => MenuItem[]
-```
-
 ### JBrowseReactLinearGenomeViewSessionModel - Actions
 
 #### action: addView
 
 ```js
 // type signature
-addView: (typeName: string, initialState?: {}) => { id: string; displayName: string | undefined; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<...>; ... 12 more ...; init: (InitState & IStateTreeNode<...>) | undefined; } & ... 19 more ... & IStateTreeNode<...>
+addView: (typeName: string, initialState?: {}) => { id: string; displayName: string | undefined; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<...>; ... 16 more ...; init: (InitState & IStateTreeNode<...>) | undefined; } & ... 19 more ... & IStateTreeNode<...>
 ```

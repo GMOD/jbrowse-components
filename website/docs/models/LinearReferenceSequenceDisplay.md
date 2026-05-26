@@ -20,7 +20,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-base model `BaseLinearDisplay`
+base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
 
 ### LinearReferenceSequenceDisplay - Properties
 
@@ -37,7 +37,7 @@ type: types.literal('LinearReferenceSequenceDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -69,15 +69,6 @@ true
 showTranslation: true
 ```
 
-#### property: rowHeight
-
-```js
-// type signature
-number
-// code
-rowHeight: 15
-```
-
 ### LinearReferenceSequenceDisplay - Getters
 
 #### getter: sequenceType
@@ -87,62 +78,46 @@ rowHeight: 15
 any
 ```
 
-#### getter: showForwardActual
+#### getter: isDna
 
-showReverse setting, it is NOT disabled for non-dna sequences
-
-```js
-// type
-boolean
-```
-
-#### getter: showReverseActual
-
-showReverse setting, is disabled for non-dna sequences
+true for DNA tracks; reverse-complement and translation rows are gated on this
+since they are biologically meaningful only for DNA.
 
 ```js
 // type
 boolean
 ```
 
-#### getter: showTranslationActual
+#### getter: zoomedOut
 
-showTranslation setting is disabled for non-dna sequences
+the view is too zoomed out to show individual bases
 
 ```js
 // type
 boolean
 ```
 
-#### getter: sequenceHeight
+#### getter: computedHeight
+
+collapses to 50px when zoomed out (no sequence visible) or before the view
+initializes; otherwise sized to fit the visible rows.
 
 ```js
 // type
 number
 ```
 
-#### getter: rendererTypeName
+#### getter: height
+
+override TrackHeightMixin height: use manual resize if set, otherwise the
+zoom-aware computed height.
 
 ```js
 // type
-any
+number
 ```
 
 ### LinearReferenceSequenceDisplay - Methods
-
-#### method: renderProps
-
-```js
-// type signature
-renderProps: () => any
-```
-
-#### method: regionCannotBeRendered
-
-```js
-// type signature
-regionCannotBeRendered: () => 'Zoom in to see sequence' | undefined
-```
 
 #### method: trackMenuItems
 

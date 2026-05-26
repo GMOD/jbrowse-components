@@ -238,7 +238,7 @@ renderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: never; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userBpPerPxLimit: number | undefined; userByteSizeLimit: number | undefined; ... 24 more ...; jexlFilters: IMSTArray<...> & IStateTreeNode<...>; } & ... 46 more ... & IStateTreeNode<...>; }
+renderingProps: () => { displayModel: { id: string; type: never; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userByteSizeLimit: number | undefined; userBpPerPxLimit: number | undefined; ... 24 more ...; jexlFilters: IMSTArray<...> & IStateTreeNode<...>; } & ... 51 more ... & IStateTreeNode<...>; }
 ```
 
 #### method: renderSvg

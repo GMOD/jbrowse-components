@@ -149,7 +149,7 @@ constraints: types.optional(
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -198,6 +198,24 @@ number
 ```js
 // type
 number
+```
+
+#### getter: minScoreConfig
+
+Returns undefined when the config sentinel (MIN_VALUE) means "unset"
+
+```js
+// type
+number | undefined
+```
+
+#### getter: maxScoreConfig
+
+Returns undefined when the config sentinel (MAX_VALUE) means "unset"
+
+```js
+// type
+number | undefined
 ```
 
 #### getter: adapterCapabilities
@@ -329,7 +347,7 @@ setNegColor: (color?: string | undefined) => void
 
 ```js
 // type signature
-setStatsLoading: (arg?: string | undefined) => void
+setStatsLoading: (arg?: StopToken | undefined) => void
 ```
 
 #### action: selectFeature

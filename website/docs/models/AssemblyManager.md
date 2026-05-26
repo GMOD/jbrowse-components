@@ -29,7 +29,7 @@ session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies
 
 ```js
 // type signature
-IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefined; } & ... ...
+IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 assemblies: types.array(assemblyFactory(conf, pm))
 ```
@@ -40,7 +40,7 @@ assemblies: types.array(assemblyFactory(conf, pm))
 
 ```js
 // type
-Record<string, { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefined; } & ... 6 more ... & IStat...
+Record<string, { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & IStateTreeNode<...>>
 ```
 
 #### getter: assemblyNamesList
@@ -69,18 +69,18 @@ session.temporaryAssemblies
 getCanonicalAssemblyName: (asmName: string) => string
 ```
 
-#### method: getCanonicalAssemblyName2
+#### method: getDisplayName
 
 ```js
 // type signature
-getCanonicalAssemblyName2: (asmName: string) => string
+getDisplayName: (asmName: string) => string
 ```
 
 #### method: get
 
 ```js
 // type signature
-get: (asmName: string) => ({ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefined; } & ... 6 more ... ...
+get: (asmName: string) => ({ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### method: waitForAssembly
@@ -90,7 +90,7 @@ with regions loaded
 
 ```js
 // type signature
-waitForAssembly: (assemblyName: string) => Promise<({ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefined; } & .....
+waitForAssembly: (assemblyName: string) => Promise<({ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & IStateTreeNode<...>) | undefined>
 ```
 
 #### method: getRefNameMapForAdapter
@@ -124,7 +124,7 @@ directly
 
 ```js
 // type signature
-removeAssembly: (asm: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefined; } & ... 6 more ... & IStateTreeNode...
+removeAssembly: (asm: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & IStateTreeNode<...>) => void
 ```
 
 #### action: addAssembly

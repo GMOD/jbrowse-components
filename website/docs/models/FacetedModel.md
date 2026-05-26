@@ -77,13 +77,6 @@ panelWidth: types.optional(types.number, () =>
 
 ### FacetedModel - Getters
 
-#### getter: allTrackConfigurations
-
-```js
-// type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
-```
-
 #### getter: allRows
 
 Builds row objects from track configs. Cached and only recomputes when track
@@ -136,6 +129,16 @@ string[]
 ```js
 // type
 { readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+```
+
+#### getter: initialWidths
+
+Measured pixel widths for every column. Cached by MobX; recomputes only when
+rows or the key set change, not on visibility toggles.
+
+```js
+// type
+Record<string, number>
 ```
 
 ### FacetedModel - Actions
