@@ -9,6 +9,11 @@ export interface AdapterMetadata {
   description?: string
 }
 
+/** Expand a raw adapter config snapshot (plain JSON) to its canonical form. */
+export type NormalizeSnapshot = (
+  snap: Record<string, unknown>,
+) => Record<string, unknown>
+
 export default class AdapterType extends PluggableElementBase {
   getAdapterClass: () => Promise<AnyAdapter>
 
@@ -17,6 +22,21 @@ export default class AdapterType extends PluggableElementBase {
   adapterCapabilities: string[]
 
   adapterMetadata?: AdapterMetadata
+
+  /**
+   * Normalize a raw adapter config snapshot (plain JSON, before MST
+   * instantiation). Adapters that support shorthand notation (e.g. just
+   * `{type, uri}`) should expand it here to the canonical form so that
+   * downstream code can read location keys without knowing each shorthand.
+   */
+  normalizeSnapshot?: NormalizeSnapshot
+
+  /**
+   * The config key holding the adapter's primary file location (e.g.
+   * `'vcfGzLocation'`). Used by import forms to extract the file location from
+   * a track's adapter config.
+   */
+  locationKey?: string
 
   // `AdapterClass` is retained for backward compatibility with third-party
   // plugins that pass an eager class reference; new code should prefer
@@ -28,6 +48,8 @@ export default class AdapterType extends PluggableElementBase {
       displayName?: string
       adapterCapabilities?: string[]
       adapterMetadata?: AdapterMetadata
+      normalizeSnapshot?: NormalizeSnapshot
+      locationKey?: string
     } & (
       | { getAdapterClass: () => Promise<AnyAdapter> }
       | { AdapterClass: AnyAdapter }
@@ -41,5 +63,7 @@ export default class AdapterType extends PluggableElementBase {
     this.configSchema = stuff.configSchema
     this.adapterCapabilities = stuff.adapterCapabilities ?? []
     this.adapterMetadata = stuff.adapterMetadata
+    this.normalizeSnapshot = stuff.normalizeSnapshot
+    this.locationKey = stuff.locationKey
   }
 }

@@ -6,6 +6,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        deltaLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 const DeltaAdapter = ConfigurationSchema(
   'DeltaAdapter',
   {
@@ -65,17 +77,7 @@ const DeltaAdapter = ConfigurationSchema(
      * ```
      */
 
-    preProcessSnapshot: snap => {
-      return snap.uri
-        ? {
-            ...snap,
-            deltaLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 

@@ -1,6 +1,6 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from './configSchema.ts'
+import configSchema, { normalizeSnapshot } from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -9,6 +9,7 @@ export default function BamAdapterF(pluginManager: PluginManager) {
     return new AdapterType({
       name: 'BamAdapter',
       displayName: 'BAM adapter',
+      normalizeSnapshot,
       configSchema,
       getAdapterClass: () => import('./BamAdapter.ts').then(r => r.default),
     })

@@ -1,6 +1,6 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from './configSchema.ts'
+import configSchema, { normalizeSnapshot } from './configSchema.ts'
 import configSchemaTabix from './configSchemaTabix.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -11,6 +11,7 @@ export default function PlinkLDAdapterF(pluginManager: PluginManager) {
       new AdapterType({
         name: 'PlinkLDAdapter',
         displayName: 'PLINK LD adapter',
+        normalizeSnapshot,
         configSchema,
         adapterMetadata: {
           category: 'Linkage disequilibrium',

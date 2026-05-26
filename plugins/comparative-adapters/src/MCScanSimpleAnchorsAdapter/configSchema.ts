@@ -5,6 +5,26 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri && snap.bed1 && snap.bed2
+    ? {
+        ...snap,
+        mcscanSimpleAnchorsLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+        bed1Location: {
+          uri: snap.bed1,
+          baseUri: snap.baseUri,
+        },
+        bed2Location: {
+          uri: snap.bed2,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 const MCScanSimpleAnchorsAdapter = ConfigurationSchema(
   'MCScanSimpleAnchorsAdapter',
   {
@@ -65,25 +85,7 @@ const MCScanSimpleAnchorsAdapter = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      return snap.uri && snap.bed1 && snap.bed2
-        ? {
-            ...snap,
-            mcscanSimpleAnchorsLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-            bed1Location: {
-              uri: snap.bed1,
-              baseUri: snap.baseUri,
-            },
-            bed2Location: {
-              uri: snap.bed2,
-              baseUri: snap.baseUri,
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 export default MCScanSimpleAnchorsAdapter

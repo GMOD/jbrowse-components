@@ -24,35 +24,25 @@ const fileTypeParsers = {
     ),
 }
 
-const adapterTypeMap: Record<
-  string,
-  { fileType: string; locationKey: string }
-> = {
-  VcfAdapter: { fileType: 'VCF', locationKey: 'vcfLocation' },
-  VcfTabixAdapter: { fileType: 'VCF', locationKey: 'vcfGzLocation' },
-  BedAdapter: { fileType: 'BED', locationKey: 'bedLocation' },
-  BedTabixAdapter: { fileType: 'BED', locationKey: 'bedGzLocation' },
-  BedpeAdapter: { fileType: 'BEDPE', locationKey: 'bedpeLocation' },
-}
-
 function isFileLocation(loc: unknown): loc is FileLocation {
-  return !!loc && typeof loc === 'object' && 'locationType' in loc
+  return (
+    !!loc &&
+    typeof loc === 'object' &&
+    ('uri' in loc ||
+      'localPath' in loc ||
+      'blobId' in loc ||
+      'locationType' in loc)
+  )
 }
 
-function getAdapterInfo(adapter: Record<string, unknown>) {
-  const { type } = adapter
-  if (typeof type !== 'string') {
-    return undefined
-  }
-  const entry = adapterTypeMap[type]
-  if (!entry) {
-    return undefined
-  }
-  const rawLoc = adapter[entry.locationKey] ?? adapter
-  return isFileLocation(rawLoc)
-    ? { fileType: entry.fileType, loc: rawLoc }
-    : undefined
-}
+// adapters whose tracks can be opened directly in the spreadsheet import form
+const spreadsheetCompatibleAdapters = new Set([
+  'VcfAdapter',
+  'VcfTabixAdapter',
+  'BedAdapter',
+  'BedTabixAdapter',
+  'BedpeAdapter',
+])
 
 // matches a file extension against the supported file types (case-insensitive)
 const fileTypesRegexp = new RegExp(
@@ -174,6 +164,7 @@ export default function stateModelFactory() {
        */
       tracksForAssembly(selectedAssembly: string) {
         const session = getSession(self)
+        const { pluginManager } = getEnv(self)
         const { tracks, sessionTracks = [] } = session
         const allTracks = [
           ...tracks,
@@ -185,9 +176,27 @@ export default function stateModelFactory() {
             if (!assemblyNames.includes(selectedAssembly)) {
               return []
             }
-            const adapter = readConfObject(track, 'adapter')
-            const info = getAdapterInfo(adapter)
-            if (!info) {
+            const rawAdapter = readConfObject(track, 'adapter')
+            const adapterTypeName = rawAdapter?.type
+            if (typeof adapterTypeName !== 'string') {
+              return []
+            }
+            if (!spreadsheetCompatibleAdapters.has(adapterTypeName)) {
+              return []
+            }
+            const adapterType = pluginManager.getAdapterType(adapterTypeName)
+            const { locationKey, normalizeSnapshot } = adapterType ?? {}
+            if (!locationKey) {
+              return []
+            }
+            const adapter = normalizeSnapshot?.(rawAdapter) ?? rawAdapter
+            const loc = adapter[locationKey]
+            if (!isFileLocation(loc)) {
+              return []
+            }
+            const locName = getFileSourceName(loc)
+            const fileType = locName ? detectFileType(locName) : undefined
+            if (!fileType) {
               return []
             }
             const category = readConfObject(track, 'category') ?? []
@@ -200,8 +209,8 @@ export default function stateModelFactory() {
               ]
                 .filter(f => !!f)
                 .join(' '),
-              type: info.fileType,
-              loc: info.loc,
+              type: fileType,
+              loc,
             }
           })
           .sort((a, b) => a.label.localeCompare(b.label))
