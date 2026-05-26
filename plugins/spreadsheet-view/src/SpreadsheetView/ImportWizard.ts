@@ -36,7 +36,11 @@ const adapterTypeMap: Record<
 }
 
 function isFileLocation(loc: unknown): loc is FileLocation {
-  return !!loc && typeof loc === 'object' && 'locationType' in loc
+  return (
+    !!loc &&
+    typeof loc === 'object' &&
+    ('uri' in loc || 'localPath' in loc || 'blobId' in loc || 'locationType' in loc)
+  )
 }
 
 function getAdapterInfo(adapter: Record<string, unknown>) {
@@ -48,12 +52,9 @@ function getAdapterInfo(adapter: Record<string, unknown>) {
   if (!entry) {
     return undefined
   }
-  const rawLoc = adapter[entry.locationKey] ?? adapter
-  if (type === 'VcfTabixAdapter') {
-    console.debug('[ImportWizard] getAdapterInfo VcfTabixAdapter', { adapterKeys: Object.keys(adapter), vcfGzLocation: adapter['vcfGzLocation'], rawLoc })
-  }
-  return isFileLocation(rawLoc)
-    ? { fileType: entry.fileType, loc: rawLoc }
+  const locField = adapter[entry.locationKey]
+  return isFileLocation(locField)
+    ? { fileType: entry.fileType, loc: locField }
     : undefined
 }
 
@@ -188,7 +189,14 @@ export default function stateModelFactory() {
             if (!assemblyNames.includes(selectedAssembly)) {
               return []
             }
-            const adapter = readConfObject(track, 'adapter')
+            const rawAdapter = readConfObject(track, 'adapter')
+            const { pluginManager } = getEnv(self)
+            const adapterType =
+              typeof rawAdapter?.type === 'string'
+                ? pluginManager.getAdapterType(rawAdapter.type)
+                : undefined
+            const adapter =
+              adapterType?.normalizeSnapshot?.(rawAdapter) ?? rawAdapter
             const info = getAdapterInfo(adapter)
             if (!info) {
               return []

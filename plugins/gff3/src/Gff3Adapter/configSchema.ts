@@ -6,6 +6,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        gffLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 const Gff3Adapter = ConfigurationSchema(
   'Gff3Adapter',
   {
@@ -36,18 +48,7 @@ const Gff3Adapter = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      // populate from just snap.uri
-      return snap.uri
-        ? {
-            ...snap,
-            gffLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 

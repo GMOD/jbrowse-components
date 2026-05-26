@@ -18,6 +18,16 @@ export default class AdapterType extends PluggableElementBase {
 
   adapterMetadata?: AdapterMetadata
 
+  /**
+   * Normalize a raw adapter config snapshot (plain JSON, before MST
+   * instantiation). Adapters that support shorthand notation (e.g. just
+   * `{type, uri}`) should expand it here to the canonical form so that
+   * downstream code can read location keys without knowing each shorthand.
+   */
+  normalizeSnapshot?: (
+    snap: Record<string, unknown>,
+  ) => Record<string, unknown>
+
   // `AdapterClass` is retained for backward compatibility with third-party
   // plugins that pass an eager class reference; new code should prefer
   // `getAdapterClass` for code splitting.
@@ -28,6 +38,9 @@ export default class AdapterType extends PluggableElementBase {
       displayName?: string
       adapterCapabilities?: string[]
       adapterMetadata?: AdapterMetadata
+      normalizeSnapshot?: (
+        snap: Record<string, unknown>,
+      ) => Record<string, unknown>
     } & (
       | { getAdapterClass: () => Promise<AnyAdapter> }
       | { AdapterClass: AnyAdapter }
@@ -41,5 +54,6 @@ export default class AdapterType extends PluggableElementBase {
     this.configSchema = stuff.configSchema
     this.adapterCapabilities = stuff.adapterCapabilities ?? []
     this.adapterMetadata = stuff.adapterMetadata
+    this.normalizeSnapshot = stuff.normalizeSnapshot
   }
 }

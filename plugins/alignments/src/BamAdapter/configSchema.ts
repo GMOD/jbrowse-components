@@ -7,6 +7,24 @@ import { types } from '@jbrowse/mobx-state-tree'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        bamLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+        index: {
+          location: {
+            uri: `${snap.uri}.bai`,
+            baseUri: snap.baseUri,
+          },
+        },
+      }
+    : snap
+}
+
 const configSchema = ConfigurationSchema(
   'BamAdapter',
   {
@@ -66,24 +84,7 @@ const configSchema = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      // populate from just snap.uri
-      return snap.uri
-        ? {
-            ...snap,
-            bamLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-            index: {
-              location: {
-                uri: `${snap.uri}.bai`,
-                baseUri: snap.baseUri,
-              },
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 

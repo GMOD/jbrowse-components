@@ -1,6 +1,6 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from './configSchema.ts'
+import configSchema, { normalizeSnapshot } from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -13,6 +13,7 @@ export default function BedTabixAdapterF(pluginManager: PluginManager) {
         configSchema,
         getAdapterClass: () =>
           import('./BedTabixAdapter.ts').then(r => r.default),
+        normalizeSnapshot,
       }),
   )
 }

@@ -5,6 +5,26 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        twoBitLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+        ...(snap.chromSizes
+          ? {
+              chromSizesLocation: {
+                uri: snap.chromSizes,
+                baseUri: snap.baseUri,
+              },
+            }
+          : {}),
+      }
+    : snap
+}
+
 const TwoBitAdapter = ConfigurationSchema(
   'TwoBitAdapter',
   {
@@ -49,26 +69,7 @@ const TwoBitAdapter = ConfigurationSchema(
      *
      * ```
      */
-    preProcessSnapshot: snap => {
-      // populate from just snap.uri
-      return snap.uri
-        ? {
-            ...snap,
-            twoBitLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-            ...(snap.chromSizes
-              ? {
-                  chromSizesLocation: {
-                    uri: snap.chromSizes,
-                    baseUri: snap.baseUri,
-                  },
-                }
-              : {}),
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 

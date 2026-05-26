@@ -4,6 +4,26 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        fastaLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+        faiLocation: {
+          uri: `${snap.uri}.fai`,
+          baseUri: snap.baseUri,
+        },
+        gziLocation: {
+          uri: `${snap.uri}.gzi`,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 const BgzipFastaAdapter = ConfigurationSchema(
   'BgzipFastaAdapter',
   {
@@ -62,26 +82,7 @@ const BgzipFastaAdapter = ConfigurationSchema(
      * ```
      */
 
-    preProcessSnapshot: snap => {
-      // populate from just snap.uri
-      return snap.uri
-        ? {
-            ...snap,
-            fastaLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-            faiLocation: {
-              uri: `${snap.uri}.fai`,
-              baseUri: snap.baseUri,
-            },
-            gziLocation: {
-              uri: `${snap.uri}.gzi`,
-              baseUri: snap.baseUri,
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 export default BgzipFastaAdapter

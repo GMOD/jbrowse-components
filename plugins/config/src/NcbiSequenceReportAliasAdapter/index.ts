@@ -1,6 +1,6 @@
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
-import configSchema from './configSchema.ts'
+import configSchema, { normalizeSnapshot } from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -10,6 +10,7 @@ export default function NcbiSequenceReportAliasAdapterF(
   pluginManager.addAdapterType(() => {
     return new AdapterType({
       name: 'NcbiSequenceReportAliasAdapter',
+      normalizeSnapshot,
       configSchema,
       getAdapterClass: () =>
         import('./NcbiSequenceReportAliasAdapter.ts').then(r => r.default),

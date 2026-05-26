@@ -5,6 +5,22 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        ixFilePath: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+        ixxFilePath: {
+          uri: `${snap.uri}x`,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 const TrixTextSearchAdapter = ConfigurationSchema(
   'TrixTextSearchAdapter',
   {
@@ -76,21 +92,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      return snap.uri
-        ? {
-            ...snap,
-            ixFilePath: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-            ixxFilePath: {
-              uri: `${snap.uri}x`,
-              baseUri: snap.baseUri,
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 

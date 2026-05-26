@@ -6,6 +6,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        hicLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 const HicAdapter = ConfigurationSchema(
   'HicAdapter',
   {
@@ -43,18 +55,7 @@ const HicAdapter = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      // populate from just snap.uri
-      return snap.uri
-        ? {
-            ...snap,
-            hicLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 

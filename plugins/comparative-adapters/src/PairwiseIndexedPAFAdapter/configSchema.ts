@@ -6,6 +6,24 @@ import { types } from '@jbrowse/mobx-state-tree'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        pifGzLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+        index: {
+          location: {
+            uri: `${snap.uri}.tbi`,
+            baseUri: snap.baseUri,
+          },
+        },
+      }
+    : snap
+}
+
 const PairwiseIndexedPAFAdapter = ConfigurationSchema(
   'PairwiseIndexedPAFAdapter',
   {
@@ -86,24 +104,7 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      // populate from just snap.uri
-      return snap.uri
-        ? {
-            ...snap,
-            pifGzLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-            index: {
-              location: {
-                uri: `${snap.uri}.tbi`,
-                baseUri: snap.baseUri,
-              },
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 

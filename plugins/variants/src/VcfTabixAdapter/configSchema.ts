@@ -1,6 +1,18 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        vcfGzLocation: { uri: snap.uri, baseUri: snap.baseUri },
+        index: {
+          location: { uri: `${snap.uri}.tbi`, baseUri: snap.baseUri },
+        },
+      }
+    : snap
+}
+
 /**
  * #config VcfTabixAdapter
  * used to load bgzip-compressed, tabix-indexed VCF files
@@ -71,24 +83,7 @@ const VcfTabixAdapter = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      // populate from just snap.uri
-      return snap.uri
-        ? {
-            ...snap,
-            vcfGzLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-            index: {
-              location: {
-                uri: `${snap.uri}.tbi`,
-                baseUri: snap.baseUri,
-              },
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 

@@ -1,6 +1,6 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from './configSchema.ts'
+import configSchema, { normalizeSnapshot } from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -16,6 +16,7 @@ export default function VcfTabixAdapterF(pluginManager: PluginManager) {
         adapterCapabilities: ['exportData'],
         getAdapterClass: () =>
           import('./VcfTabixAdapter.ts').then(r => r.default),
+        normalizeSnapshot,
       }),
   )
 }

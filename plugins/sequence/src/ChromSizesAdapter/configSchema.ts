@@ -5,6 +5,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        chromSizesLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 const ChromSizesAdapter = ConfigurationSchema(
   'ChromSizesAdapter',
   {
@@ -33,18 +45,7 @@ const ChromSizesAdapter = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      // populate from just snap.uri
-      return snap.uri
-        ? {
-            ...snap,
-            chromSizesLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 

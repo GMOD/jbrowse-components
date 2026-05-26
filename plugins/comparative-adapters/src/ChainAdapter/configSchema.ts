@@ -6,6 +6,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        chainLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 const ChainAdapter = ConfigurationSchema(
   'ChainAdapter',
   {
@@ -61,18 +73,7 @@ const ChainAdapter = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      // populate from just snap.uri
-      return snap.uri
-        ? {
-            ...snap,
-            chainLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 

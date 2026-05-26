@@ -1,5 +1,18 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        bedpeLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+          locationType: 'UriLocation',
+        },
+      }
+    : snap
+}
+
 /**
  * #config BedpeAdapter
  * intended for SVs in a single assembly
@@ -45,18 +58,7 @@ const BedpeAdapter = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      // populate from just snap.uri
-      return snap.uri
-        ? {
-            ...snap,
-            bedpeLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 export default BedpeAdapter
