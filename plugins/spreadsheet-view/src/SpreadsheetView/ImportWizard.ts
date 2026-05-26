@@ -42,6 +42,7 @@ const spreadsheetCompatibleAdapters = new Set([
   'BedAdapter',
   'BedTabixAdapter',
   'BedpeAdapter',
+  'StarFusionAdapter',
 ])
 
 // matches a file extension against the supported file types (case-insensitive)
