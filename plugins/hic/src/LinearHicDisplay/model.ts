@@ -18,6 +18,7 @@ import {
 import { autorun } from 'mobx'
 
 import { generateColorRamp } from './components/HicRenderer.ts'
+import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
   HicContactItem,
@@ -182,6 +183,26 @@ export default function stateModelFactory(
       },
 
       /**
+       * #method
+       * The binsize that `stepResolution(dir)` would land on, or undefined
+       * if no valid step exists in that direction. Consumed by both the UI
+       * (button disabled state) and `stepResolution` itself, so there's one
+       * source of truth for "what's the next resolution".
+       */
+      nextResolution(dir: -1 | 1): number | undefined {
+        const avail = self.availableResolutions
+        if (!avail?.length) {
+          return undefined
+        }
+        const cur = self.effectiveResolution ?? avail[0]!
+        const idx = avail.indexOf(cur)
+        const next = idx + dir
+        return idx !== -1 && next >= 0 && next < avail.length
+          ? avail[next]
+          : undefined
+      },
+
+      /**
        * #getter
        * Forward transform { scale, viewOffsetX } shared by GPU render,
        * mouse hit-test, and SVG export. See `computeRenderTransform` for
@@ -207,7 +228,7 @@ export default function stateModelFactory(
        */
       hitTest(mouseX: number, mouseY: number): HicContactItem | undefined {
         const data = self.rpcData
-        if (!data || data.items.length === 0) {
+        if (!data || data.numContacts === 0) {
           return undefined
         }
         const { scale, viewOffsetX } = self.renderTransform
@@ -219,20 +240,16 @@ export default function stateModelFactory(
         // Locate region pair via the cumulative pixel-start array, then
         // invert positions[i] = (bin + regionCombinedOffsets[r]) * binWidth.
         const starts = data.regionPixelStarts
-        let r1 = 0
-        let r2 = 0
-        for (let i = starts.length - 2; i >= 0; i--) {
-          if (ux >= starts[i]!) {
-            r1 = i
-            break
+        const findRegion = (u: number) => {
+          for (let i = starts.length - 2; i >= 0; i--) {
+            if (u >= starts[i]!) {
+              return i
+            }
           }
+          return 0
         }
-        for (let i = starts.length - 2; i >= 0; i--) {
-          if (uy >= starts[i]!) {
-            r2 = i
-            break
-          }
-        }
+        const r1 = findRegion(ux)
+        const r2 = findRegion(uy)
         const bin1 = Math.floor(
           ux / data.binWidth - data.regionCombinedOffsets[r1]!,
         )
@@ -240,7 +257,16 @@ export default function stateModelFactory(
           uy / data.binWidth - data.regionCombinedOffsets[r2]!,
         )
         const idx = data.lookup[`${r1}|${r2}|${bin1}|${bin2}`]
-        return idx !== undefined ? data.items[idx] : undefined
+        if (idx === undefined) {
+          return undefined
+        }
+        return {
+          bin1,
+          bin2,
+          region1Idx: r1,
+          region2Idx: r2,
+          counts: data.counts[idx]!,
+        }
       },
     }))
     .views(self => ({
@@ -301,7 +327,7 @@ export default function stateModelFactory(
                 numContacts: data.numContacts,
               })
             }
-            b.uploadColorRamp(generateColorRamp(self.colorScheme ?? 'juicebox'))
+            b.uploadColorRamp(generateColorRamp(self.colorScheme))
           },
           render: b => {
             const state = self.renderState
@@ -373,32 +399,14 @@ export default function stateModelFactory(
       },
       /**
        * #action
+       * dir = -1 → finer (smaller binsize); dir = +1 → coarser. Stepped
+       * relative to whatever's currently effective so the first click does
+       * what the user expects even in auto-mode.
        */
-      zoomResolutionCoarser() {
-        // Step relative to whatever's currently effective so the first
-        // click does what the user expects even when in auto-mode.
-        const avail = self.availableResolutions
-        if (!avail?.length) {
-          return
-        }
-        const cur = self.effectiveResolution ?? avail[0]!
-        const idx = avail.indexOf(cur)
-        if (idx !== -1 && idx < avail.length - 1) {
-          self.resolution = avail[idx + 1]
-        }
-      },
-      /**
-       * #action
-       */
-      zoomResolutionFiner() {
-        const avail = self.availableResolutions
-        if (!avail?.length) {
-          return
-        }
-        const cur = self.effectiveResolution ?? avail[0]!
-        const idx = avail.indexOf(cur)
-        if (idx !== -1 && idx > 0) {
-          self.resolution = avail[idx - 1]
+      stepResolution(dir: -1 | 1) {
+        const next = self.nextResolution(dir)
+        if (next !== undefined) {
+          self.resolution = next
         }
       },
       /**
@@ -416,134 +424,7 @@ export default function stateModelFactory(
          * #method
          */
         trackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Use log scale',
-              type: 'checkbox',
-              checked: self.useLogScale,
-              onClick: () => {
-                self.setUseLogScale(!self.useLogScale)
-              },
-            },
-            {
-              label: 'Use 95th percentile color scale',
-              type: 'checkbox',
-              checked: self.useColorPercentile,
-              onClick: () => {
-                self.setUseColorPercentile(!self.useColorPercentile)
-              },
-            },
-            {
-              label: 'Show legend',
-              type: 'checkbox',
-              checked: self.showLegend,
-              onClick: () => {
-                self.setShowLegend(!self.showLegend)
-              },
-            },
-            {
-              label: 'Rendering mode',
-              type: 'subMenu',
-              subMenu: [
-                {
-                  label: 'Triangular',
-                  type: 'radio',
-                  checked: self.mode === 'triangular',
-                  onClick: () => {
-                    self.setMode('triangular')
-                  },
-                },
-                {
-                  label: 'Adjust to height of display',
-                  type: 'radio',
-                  checked: self.mode === 'adjust',
-                  onClick: () => {
-                    self.setMode('adjust')
-                  },
-                },
-              ],
-            },
-            {
-              label: 'Color scheme',
-              type: 'subMenu',
-              subMenu: [
-                {
-                  label: 'Fall',
-                  type: 'radio',
-                  checked: self.colorScheme === 'fall',
-                  onClick: () => {
-                    self.setColorScheme('fall')
-                  },
-                },
-                {
-                  label: 'Viridis',
-                  type: 'radio',
-                  checked: self.colorScheme === 'viridis',
-                  onClick: () => {
-                    self.setColorScheme('viridis')
-                  },
-                },
-                {
-                  label: 'Juicebox',
-                  type: 'radio',
-                  checked: self.colorScheme === 'juicebox',
-                  onClick: () => {
-                    self.setColorScheme('juicebox')
-                  },
-                },
-                {
-                  label: 'Default',
-                  type: 'radio',
-                  checked: self.colorScheme === undefined,
-                  onClick: () => {
-                    self.setColorScheme(undefined)
-                  },
-                },
-              ],
-            },
-
-            {
-              label: 'Resolution',
-              subMenu: [
-                {
-                  label: 'Finer resolution',
-                  onClick: () => {
-                    self.zoomResolutionFiner()
-                  },
-                },
-                {
-                  label: 'Coarser resolution',
-                  onClick: () => {
-                    self.zoomResolutionCoarser()
-                  },
-                },
-                {
-                  label: 'Auto (track zoom)',
-                  type: 'checkbox',
-                  checked: self.resolution === undefined,
-                  onClick: () => {
-                    self.resetResolutionToAuto()
-                  },
-                },
-              ],
-            },
-            ...(self.availableNormalizations
-              ? [
-                  {
-                    label: 'Normalization scheme',
-                    subMenu: self.availableNormalizations.map(norm => ({
-                      label: norm,
-                      type: 'radio',
-                      checked: norm === self.activeNormalization,
-                      onClick: () => {
-                        self.setActiveNormalization(norm)
-                      },
-                    })),
-                  },
-                ]
-              : []),
-          ]
+          return [...superTrackMenuItems(), ...buildHicTrackMenuItems(self)]
         },
 
         /**

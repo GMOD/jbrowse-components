@@ -9,6 +9,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
 
 interface ContactRecord {
@@ -39,9 +40,11 @@ interface Ref {
   end: number
 }
 
-interface HicOptions extends BaseOptions {
-  resolution?: number
-  bpPerPx?: number
+interface HicContactOptions extends BaseOptions {
+  // Caller is responsible for picking a binsize from `metadata.resolutions`
+  // (the model's `effectiveResolution` getter does this); the adapter trusts
+  // that value rather than re-running its own auto-pick.
+  resolution: number
   normalization?: string
 }
 
@@ -101,61 +104,33 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     return metadata.chromosomes.map(chr => chr.name)
   }
 
-  async getResolution(res: number, opts?: BaseOptions) {
-    const { resolutions } = await this.setup(opts)
-    const resolutionMultiplier = this.getConf('resolutionMultiplier')
-    const threshold = 2 * res * resolutionMultiplier
-    const sorted = [...resolutions].sort((a, b) => a - b)
-    return sorted.findLast(r => r <= threshold) ?? sorted[0]!
-  }
-
-  getFeatures(region: Region, opts: HicOptions = {}) {
-    return ObservableCreate<ContactRecord>(async observer => {
-      const { refName: chr, start, end } = region
-      const {
-        resolution,
-        normalization = 'KR',
-        bpPerPx = 1,
-        statusCallback = () => {},
-      } = opts
-      const res = await this.getResolution(bpPerPx / (resolution ?? 1000), opts)
-
-      await updateStatus('Downloading .hic data', statusCallback, async () => {
-        const records = await this.hic.getContactRecords(
-          normalization,
-          { start, chr, end },
-          { start, chr, end },
-          'BP',
-          res,
-        )
-        for (const record of records) {
-          observer.next(record)
-        }
-      })
+  /**
+   * Hi-C is not a per-region feature stream — the display fetches contact
+   * matrices via `getMultiRegionContactRecords`. This method exists only to
+   * satisfy the abstract `BaseFeatureDataAdapter` contract.
+   */
+  getFeatures(_region: Region, _opts?: BaseOptions) {
+    return ObservableCreate<Feature>(observer => {
       observer.complete()
-    }, opts.stopToken) as any
+    })
   }
 
   async getMultiRegionContactRecords(
     regions: Region[],
-    opts: HicOptions = {},
+    opts: HicContactOptions,
   ): Promise<{ records: MultiRegionContactRecord[]; resolution: number }> {
     const {
-      resolution,
+      resolution: res,
       normalization = 'KR',
-      bpPerPx = 1,
       statusCallback = () => {},
     } = opts
 
     const metadata = await this.setup(opts)
-    // `resolution` is now a discrete binsize from metadata.resolutions
-    // (set by the model dropdown / zoomResolutionFiner-Coarser). If the
-    // caller passed one of the file's real binsizes, use it directly. Else
-    // fall back to auto-pick based on bpPerPx (legacy behaviour).
-    const res =
-      resolution !== undefined && metadata.resolutions.includes(resolution)
-        ? resolution
-        : await this.getResolution(bpPerPx, opts)
+    if (!metadata.resolutions.includes(res)) {
+      throw new Error(
+        `HicAdapter: requested binsize ${res} is not in the .hic file (available: ${metadata.resolutions.join(', ')})`,
+      )
+    }
 
     // hic-straw transposes queries when idx(chr1) > idx(chr2), returning
     // bin1/bin2 in the swapped order. We mirror that logic so bin1 always

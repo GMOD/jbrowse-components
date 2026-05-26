@@ -87,12 +87,8 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
   }
 
   const isAuto = resolution === undefined
-  const canGoFiner =
-    effectiveResolution !== undefined &&
-    !!availableResolutions?.some(r => r < effectiveResolution)
-  const canGoCoarser =
-    effectiveResolution !== undefined &&
-    !!availableResolutions?.some(r => r > effectiveResolution)
+  const canGoFiner = model.nextResolution(-1) !== undefined
+  const canGoCoarser = model.nextResolution(1) !== undefined
 
   return (
     <div className={classes.panel}>
@@ -113,7 +109,7 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
             disabled={!canGoFiner}
             title="Finer resolution"
             onClick={() => {
-              model.zoomResolutionFiner()
+              model.stepResolution(-1)
             }}
           >
             +
@@ -146,7 +142,7 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
             disabled={!canGoCoarser}
             title="Coarser resolution"
             onClick={() => {
-              model.zoomResolutionCoarser()
+              model.stepResolution(1)
             }}
           >
             −

@@ -723,6 +723,18 @@ and GLSL ES 3.00 (WebGL2) by `scripts/build-shaders.ts`. See ADR-005.
 (`hpmath.slang`, `colorPack.slang`) in `packages/core/src/gpu/shaders/`.
 Codegen emits `<name>.generated.ts`.
 
+**What's auto-derived from Slang reflection (not hand-coded):** the
+`.generated.ts` file exports shader source strings (`WGSL_SOURCE`,
+`GLSL_VERTEX`, `GLSL_FRAGMENT`), per-field byte offsets (`FIELD_OFFSET_BYTES`,
+`FIELD_OFFSET_F32`), strides (`INSTANCE_STRIDE_BYTES`, `INSTANCE_STRIDE_F32`),
+`UNIFORMS_SIZE_BYTES` + `UniformOffsets`, typed TS interfaces for instance and
+uniform structs, a typed `writeInstance()` packer, and the
+`GL_ATTRIBUTES: GlAttributeLayout[]` array consumed by `PassDescriptor`. TS
+code imports these constants by name from the generated module — stride and
+field-offset drift between the TS packer and the shader struct is impossible
+by construction. CI runs `pnpm gen:shaders && git diff --exit-code` to catch
+stale generated outputs.
+
 **Wire-up:** `slangPass()` turns a generated module into a `PassDescriptor`,
 with overrides for `topology`, `blendState`, `textures`, and buffer sharing.
 
@@ -937,8 +949,11 @@ key on a tuple of two displayedRegion indices.
   (`canvasDrawn`, `renderTick`, `currentBackend`, `markCanvasDrawn`,
   `resetCanvasDrawn`, `renderNow`, `stopBackend`, etc.) or the
   `isReady` view owned by `MultiRegionDisplayMixin`.
-- Don't hand-maintain WGSL/GLSL/offset tables next to generated modules;
-  consume the generated constants.
+- Don't hand-edit `*.generated.ts` or hand-maintain WGSL/GLSL/offset tables
+  next to generated modules. Edit `.slang` source and run `pnpm gen:shaders`;
+  CI's `git diff --exit-code` catches stale outputs. Consume generated
+  constants (`FIELD_OFFSET_F32.x`, `INSTANCE_STRIDE_BYTES`, `UniformOffsets.y`,
+  etc.) by name from TS — never copy a literal offset into a renderer.
 - Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into
   `rpcProps()` — `SettingsInvalidate` watches `rpcProps()` and calls
   `clearAllRpcData`, which clears the very data `rpcProps()` just read, creating

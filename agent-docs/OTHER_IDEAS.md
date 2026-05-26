@@ -275,3 +275,9 @@ disappear.
 
 - Connect to gene glyps for mcscan type results?
 - add 'synteny rects' in the area to show for example where there is non-ribbon based synteny e.g. non-displayed-region translocations?
+
+
+ In https://github.com/PopicLab/cue there is a workflow which creates a image showing read pairs
+  and read depth  and rl/lr read pairs using a matrix, I am curious if this type of data could be
+  shown in our application either as a triangular heatmap similar to plugins/hic or even in dotplot
+  view.

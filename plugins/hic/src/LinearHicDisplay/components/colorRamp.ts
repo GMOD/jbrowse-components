@@ -1,11 +1,11 @@
 export type RGBA = readonly [number, number, number, number]
 
+export const DEFAULT_HIC_COLOR_SCHEME = 'juicebox'
+
 // Single source of truth for each scheme. Used to build the GPU/Canvas2D
-// 256x1 RGBA ramp AND the CSS/SVG legend gradients. Stops are evenly spaced
-// unless an explicit `offset` (0..1) is provided.
+// 256x1 RGBA ramp AND the CSS/SVG legend gradients. Stops are evenly spaced.
 interface ColorStops {
   stops: readonly RGBA[]
-  offsets?: readonly number[]
 }
 
 const FALL_STOPS: ColorStops = {
@@ -60,11 +60,7 @@ const SCHEMES: Record<string, ColorStops> = {
 }
 
 function getScheme(name?: string) {
-  return SCHEMES[name ?? 'juicebox'] ?? JUICEBOX_STOPS
-}
-
-function offsetAt(scheme: ColorStops, i: number) {
-  return scheme.offsets?.[i] ?? i / (scheme.stops.length - 1)
+  return SCHEMES[name ?? DEFAULT_HIC_COLOR_SCHEME] ?? JUICEBOX_STOPS
 }
 
 function lerp(a: number, b: number, t: number) {
@@ -76,22 +72,18 @@ function sample(scheme: ColorStops, t: number): RGBA {
   if (stops.length === 1) {
     return stops[0]!
   }
-  for (let i = 0; i < stops.length - 1; i++) {
-    const lo = offsetAt(scheme, i)
-    const hi = offsetAt(scheme, i + 1)
-    if (t <= hi) {
-      const f = hi === lo ? 0 : (t - lo) / (hi - lo)
-      const a = stops[i]!
-      const b = stops[i + 1]!
-      return [
-        Math.round(lerp(a[0], b[0], f)),
-        Math.round(lerp(a[1], b[1], f)),
-        Math.round(lerp(a[2], b[2], f)),
-        Math.round(lerp(a[3], b[3], f)),
-      ]
-    }
-  }
-  return stops[stops.length - 1]!
+  // Evenly spaced stops: bucket index = floor(t * (n-1)).
+  const last = stops.length - 1
+  const idx = Math.min(Math.floor(t * last), last - 1)
+  const f = t * last - idx
+  const a = stops[idx]!
+  const b = stops[idx + 1]!
+  return [
+    Math.round(lerp(a[0], b[0], f)),
+    Math.round(lerp(a[1], b[1], f)),
+    Math.round(lerp(a[2], b[2], f)),
+    Math.round(lerp(a[3], b[3], f)),
+  ]
 }
 
 function buildRamp(colorScheme?: string): Uint8Array {
@@ -115,7 +107,10 @@ const RAMPS: Record<string, Uint8Array> = {
 }
 
 export function generateColorRamp(colorScheme?: string): Uint8Array {
-  return RAMPS[colorScheme ?? 'juicebox'] ?? RAMPS.juicebox!
+  return (
+    RAMPS[colorScheme ?? DEFAULT_HIC_COLOR_SCHEME] ??
+    RAMPS[DEFAULT_HIC_COLOR_SCHEME]!
+  )
 }
 
 // Sample N evenly-spaced legend stops from the same source as the GPU ramp.

@@ -26,11 +26,11 @@ export interface HicDataResult {
   maxScore: number
   percentile95: number
   binWidth: number
-  items: HicContactItem[]
   /**
    * Hover hit-test index. Key = `${r1}|${r2}|${bin1}|${bin2}`, value = index
-   * into items. Every drawn rect is the same size and on a deterministic
-   * grid, so a Map lookup replaces the previous Flatbush R-tree.
+   * into `counts` (and `positions`). Every drawn rect is the same size and on
+   * a deterministic grid, so a Map lookup replaces the previous Flatbush
+   * R-tree.
    */
   lookup: Record<string, number>
   /** Cumulative pixel-x offset of each region (length regions.length+1). */
