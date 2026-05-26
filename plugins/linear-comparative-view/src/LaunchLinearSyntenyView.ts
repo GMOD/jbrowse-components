@@ -1,13 +1,8 @@
-import type { LinearSyntenyViewModel } from './LinearSyntenyView/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-type LSV = LinearSyntenyViewModel
-
-interface ViewData {
-  loc?: string
-  assembly: string
-  tracks?: string[]
+function isNestedTracks(t: string[] | string[][]): t is string[][] {
+  return Array.isArray(t[0])
 }
 
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
@@ -20,25 +15,26 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
       tracks = [],
     }: {
       session: AbstractSessionModel
-      views: ViewData[]
+      views: { loc?: string; assembly: string; tracks?: string[] }[]
       tracks?: string[] | string[][]
     }) => {
-      // Normalize 1D tracks to 2D — flat array goes to level 0. The 2D form
-      // targets one entry per level (between views[i] and views[i+1]).
-      const tracks2D: string[][] = Array.isArray(tracks[0])
-        ? (tracks as string[][])
-        : [tracks as string[]]
-
+      if (views.length < 2) {
+        throw new Error(
+          'LinearSyntenyView requires at least 2 views to be specified',
+        )
+      }
+      // 2D tracks targets one entry per level (between views[i] and
+      // views[i+1]); flat 1D tracks goes to level 0; empty stays empty.
       session.addView('LinearSyntenyView', {
         init: {
-          views: views.map(v => ({
-            loc: v.loc,
-            assembly: v.assembly,
-            tracks: v.tracks,
-          })),
-          tracks: tracks2D,
+          views,
+          tracks: isNestedTracks(tracks)
+            ? tracks
+            : tracks.length
+              ? [tracks]
+              : [],
         },
-      }) as LSV
+      })
     },
   )
 }

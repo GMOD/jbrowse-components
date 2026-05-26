@@ -56,21 +56,21 @@ test('2D tracks preserved per-level for multi-way', async () => {
   ])
 })
 
-test('empty tracks normalized to single empty level', async () => {
+test('empty tracks passed through as empty', async () => {
   const { captured, session, run } = setup()
   await run({
     session,
     views: [{ assembly: 'A' }, { assembly: 'B' }],
     tracks: [],
   })
-  expect(captured[0]!.initialState.init.tracks).toEqual([[]])
+  expect(captured[0]!.initialState.init.tracks).toEqual([])
 })
 
-test('omitted tracks defaults to single empty level', async () => {
+test('omitted tracks defaults to empty', async () => {
   const { captured, session, run } = setup()
   await run({
     session,
     views: [{ assembly: 'A' }, { assembly: 'B' }],
   })
-  expect(captured[0]!.initialState.init.tracks).toEqual([[]])
+  expect(captured[0]!.initialState.init.tracks).toEqual([])
 })
