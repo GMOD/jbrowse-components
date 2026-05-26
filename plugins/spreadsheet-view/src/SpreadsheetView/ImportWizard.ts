@@ -193,12 +193,15 @@ export default function stateModelFactory() {
               return []
             }
             const rawAdapter = readConfObject(track, 'adapter')
-            const { pluginManager } = getEnv(self)
-            const adapterType =
-              typeof rawAdapter?.type === 'string' &&
-              pluginManager.adapterTypes.has(rawAdapter.type)
-                ? pluginManager.getAdapterType(rawAdapter.type)
+            const entry =
+              typeof rawAdapter?.type === 'string'
+                ? adapterTypeMap[rawAdapter.type]
                 : undefined
+            if (!entry) {
+              return []
+            }
+            const { pluginManager } = getEnv(self)
+            const adapterType = pluginManager.getAdapterType(rawAdapter.type)
             const adapter =
               adapterType?.normalizeSnapshot?.(rawAdapter) ?? rawAdapter
             const info = getAdapterInfo(adapter)
