@@ -42,8 +42,8 @@
     "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
     "./data_adapters/BaseAdapter/types": "./src/data_adapters/BaseAdapter/types.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
-    "./gpu/canvas2dUtils": "./src/gpu/canvas2dUtils.ts",
     "./gpu/GpuLifecycleMixin": "./src/gpu/GpuLifecycleMixin.ts",
+    "./gpu/canvas2dUtils": "./src/gpu/canvas2dUtils.ts",
     "./gpu/gpuDevice": "./src/gpu/gpuDevice.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
@@ -97,14 +97,12 @@
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
     "./ui/colors": "./src/ui/colors.ts",
     "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
-    "./ui/theme": "./src/ui/theme.ts",
     "./ui/useGraphicsCapabilities": "./src/ui/useGraphicsCapabilities.ts",
     "./util": "./src/util/index.ts",
     "./util/Base1DUtils": "./src/util/Base1DUtils.ts",
     "./util/Base1DViewModel": "./src/util/Base1DViewModel.ts",
     "./util/FileSaver": "./src/util/FileSaver/index.ts",
     "./util/QuickLRU": "./src/util/QuickLRU/index.ts",
-    "./util/paintLayer": "./src/util/paintLayer.tsx",
     "./util/SvgCanvas": "./src/util/SvgCanvas.ts",
     "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
     "./util/aborting": "./src/util/aborting.ts",
@@ -131,6 +129,7 @@
     "./util/nanoid": "./src/util/nanoid.ts",
     "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.ts",
     "./util/offscreenCanvasUtils": "./src/util/offscreenCanvasUtils.tsx",
+    "./util/paintLayer": "./src/util/paintLayer.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
     "./util/range": "./src/util/range.ts",
     "./util/rxjs": "./src/util/rxjs.ts",
@@ -292,13 +291,13 @@
         "types": "./esm/data_adapters/dataAdapterCache.d.ts",
         "import": "./esm/data_adapters/dataAdapterCache.js"
       },
-      "./gpu/canvas2dUtils": {
-        "types": "./esm/gpu/canvas2dUtils.d.ts",
-        "import": "./esm/gpu/canvas2dUtils.js"
-      },
       "./gpu/GpuLifecycleMixin": {
         "types": "./esm/gpu/GpuLifecycleMixin.d.ts",
         "import": "./esm/gpu/GpuLifecycleMixin.js"
+      },
+      "./gpu/canvas2dUtils": {
+        "types": "./esm/gpu/canvas2dUtils.d.ts",
+        "import": "./esm/gpu/canvas2dUtils.js"
       },
       "./gpu/gpuDevice": {
         "types": "./esm/gpu/gpuDevice.d.ts",
@@ -512,10 +511,6 @@
         "types": "./esm/ui/getGraphicsCapabilities.d.ts",
         "import": "./esm/ui/getGraphicsCapabilities.js"
       },
-      "./ui/theme": {
-        "types": "./esm/ui/theme.d.ts",
-        "import": "./esm/ui/theme.js"
-      },
       "./ui/useGraphicsCapabilities": {
         "types": "./esm/ui/useGraphicsCapabilities.d.ts",
         "import": "./esm/ui/useGraphicsCapabilities.js"
@@ -539,10 +534,6 @@
       "./util/QuickLRU": {
         "types": "./esm/util/QuickLRU/index.d.ts",
         "import": "./esm/util/QuickLRU/index.js"
-      },
-      "./util/paintLayer": {
-        "types": "./esm/util/paintLayer.d.ts",
-        "import": "./esm/util/paintLayer.js"
       },
       "./util/SvgCanvas": {
         "types": "./esm/util/SvgCanvas.d.ts",
@@ -647,6 +638,10 @@
       "./util/offscreenCanvasUtils": {
         "types": "./esm/util/offscreenCanvasUtils.d.ts",
         "import": "./esm/util/offscreenCanvasUtils.js"
+      },
+      "./util/paintLayer": {
+        "types": "./esm/util/paintLayer.d.ts",
+        "import": "./esm/util/paintLayer.js"
       },
       "./util/parseLineByLine": {
         "types": "./esm/util/parseLineByLine.d.ts",
@@ -773,11 +768,11 @@
         "data_adapters/dataAdapterCache": [
           "esm/data_adapters/dataAdapterCache.d.ts"
         ],
-        "gpu/canvas2dUtils": [
-          "esm/gpu/canvas2dUtils.d.ts"
-        ],
         "gpu/GpuLifecycleMixin": [
           "esm/gpu/GpuLifecycleMixin.d.ts"
+        ],
+        "gpu/canvas2dUtils": [
+          "esm/gpu/canvas2dUtils.d.ts"
         ],
         "gpu/gpuDevice": [
           "esm/gpu/gpuDevice.d.ts"
@@ -938,9 +933,6 @@
         "ui/getGraphicsCapabilities": [
           "esm/ui/getGraphicsCapabilities.d.ts"
         ],
-        "ui/theme": [
-          "esm/ui/theme.d.ts"
-        ],
         "ui/useGraphicsCapabilities": [
           "esm/ui/useGraphicsCapabilities.d.ts"
         ],
@@ -958,9 +950,6 @@
         ],
         "util/QuickLRU": [
           "esm/util/QuickLRU/index.d.ts"
-        ],
-        "util/paintLayer": [
-          "esm/util/paintLayer.d.ts"
         ],
         "util/SvgCanvas": [
           "esm/util/SvgCanvas.d.ts"
@@ -1039,6 +1028,9 @@
         ],
         "util/offscreenCanvasUtils": [
           "esm/util/offscreenCanvasUtils.d.ts"
+        ],
+        "util/paintLayer": [
+          "esm/util/paintLayer.d.ts"
         ],
         "util/parseLineByLine": [
           "esm/util/parseLineByLine.d.ts"

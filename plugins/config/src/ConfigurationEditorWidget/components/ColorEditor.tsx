@@ -1,8 +1,9 @@
-import { Suspense, useState } from 'react'
+import { Suspense, lazy } from 'react'
 
-import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
+
+const PopoverPicker = lazy(() => import('@jbrowse/core/ui/PopoverPicker'))
 
 const ColorEditor = observer(function ColorEditor(props: {
   slot: {
@@ -13,32 +14,25 @@ const ColorEditor = observer(function ColorEditor(props: {
   }
 }) {
   const { slot } = props
-  const [displayed, setDisplayed] = useState(false)
-
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
       <TextField
         value={slot.value}
         label={slot.name}
         helperText={slot.description}
         style={{ flex: 1, minWidth: 0 }}
-        onClick={() => {
-          setDisplayed(!displayed)
-        }}
         onChange={event => {
           slot.set(event.target.value)
         }}
       />
-      <div style={{ marginTop: 10 }}>
-        <Suspense fallback={null}>
-          <ColorPicker
-            color={slot.value}
-            onChange={color => {
-              slot.set(color)
-            }}
-          />
-        </Suspense>
-      </div>
+      <Suspense fallback={null}>
+        <PopoverPicker
+          color={slot.value}
+          onChange={color => {
+            slot.set(color)
+          }}
+        />
+      </Suspense>
     </div>
   )
 })

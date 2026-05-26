@@ -82,8 +82,7 @@ export async function handleSelectedRegion({
 }) {
   const { assemblyManager, textSearchManager } = getSession(model)
   const assembly = assemblyManager.get(assemblyName)
-  const allRefsArr = assembly?.allRefNamesWithLowerCase
-  const allRefs = allRefsArr ? new Set(allRefsArr) : undefined
+  const allRefs = assembly?.allRefNamesWithLowerCase
 
   if (allRefs && input.split(' ').every(entry => checkRef(entry, allRefs))) {
     await model.navToLocations(

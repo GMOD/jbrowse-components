@@ -1,5 +1,9 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import {
+  IntervalTree,
+  SimpleFeature,
+  fetchAndMaybeUnzip,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -85,12 +89,14 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter {
     flip: boolean,
   ): Feature {
     const cols = line.split('\t')
-    const row = Object.fromEntries(columnNames.map((name, i) => [name, cols[i]]))
+    const row = Object.fromEntries(
+      columnNames.map((name, i) => [name, cols[i]]),
+    )
     const primaryBp = parseBreakpoint(
-      (flip ? row['RightBreakpoint'] : row['LeftBreakpoint'])!,
+      (flip ? row.RightBreakpoint : row.LeftBreakpoint)!,
     )
     const mateBp = parseBreakpoint(
-      (flip ? row['LeftBreakpoint'] : row['RightBreakpoint'])!,
+      (flip ? row.LeftBreakpoint : row.RightBreakpoint)!,
     )
     return new SimpleFeature({
       uniqueId,
@@ -98,8 +104,8 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter {
       start: primaryBp.start,
       end: primaryBp.end,
       strand: primaryBp.strand,
-      name: row['FusionName'],
-      score: row['JunctionReadCount'] ? +row['JunctionReadCount']! : undefined,
+      name: row.FusionName,
+      score: row.JunctionReadCount ? +row.JunctionReadCount : undefined,
       type: 'fusion',
       mate: {
         refName: mateBp.refName,

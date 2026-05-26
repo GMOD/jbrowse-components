@@ -25,7 +25,12 @@ test('returns features on left-breakpoint ref', async () => {
   const adapter = makeAdapter()
   const features = await firstValueFrom(
     adapter
-      .getFeatures({ assemblyName: 'test', refName: 'chr1', start: 0, end: 10000 })
+      .getFeatures({
+        assemblyName: 'test',
+        refName: 'chr1',
+        start: 0,
+        end: 10000,
+      })
       .pipe(toArray()),
   )
 
@@ -38,7 +43,12 @@ test('primary feature has correct coords and mate', async () => {
   const adapter = makeAdapter()
   const features = await firstValueFrom(
     adapter
-      .getFeatures({ assemblyName: 'test', refName: 'chr1', start: 0, end: 1500 })
+      .getFeatures({
+        assemblyName: 'test',
+        refName: 'chr1',
+        start: 0,
+        end: 1500,
+      })
       .pipe(toArray()),
   )
 
@@ -59,7 +69,12 @@ test('flipped mate feature has correct coords', async () => {
   const adapter = makeAdapter()
   const features = await firstValueFrom(
     adapter
-      .getFeatures({ assemblyName: 'test', refName: 'chr2', start: 0, end: 10000 })
+      .getFeatures({
+        assemblyName: 'test',
+        refName: 'chr2',
+        start: 0,
+        end: 10000,
+      })
       .pipe(toArray()),
   )
 
@@ -77,7 +92,12 @@ test('returns empty array for unknown ref', async () => {
   const adapter = makeAdapter()
   const features = await firstValueFrom(
     adapter
-      .getFeatures({ assemblyName: 'test', refName: 'chrX', start: 0, end: 999999 })
+      .getFeatures({
+        assemblyName: 'test',
+        refName: 'chrX',
+        start: 0,
+        end: 999999,
+      })
       .pipe(toArray()),
   )
   expect(features).toHaveLength(0)
@@ -87,7 +107,12 @@ test('includes extra columns on feature', async () => {
   const adapter = makeAdapter()
   const features = await firstValueFrom(
     adapter
-      .getFeatures({ assemblyName: 'test', refName: 'chr1', start: 0, end: 1500 })
+      .getFeatures({
+        assemblyName: 'test',
+        refName: 'chr1',
+        start: 0,
+        end: 1500,
+      })
       .pipe(toArray()),
   )
 

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
-import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
+import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import {
   Button,
   DialogActions,

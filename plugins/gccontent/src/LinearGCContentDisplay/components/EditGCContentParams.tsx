@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
@@ -35,7 +35,7 @@ const EditGCContentParamsDialog = observer(function EditGCContentParamsDialog({
           size as then the sliding window will miss contents.
         </Typography>
         {+windowDelta > +windowSize ? (
-          <ErrorMessage error="It is not recommended to make the step size larger than the window size" />
+          <ErrorBanner error="It is not recommended to make the step size larger than the window size" />
         ) : null}
         <TextField
           label="Size of sliding window (bp)"

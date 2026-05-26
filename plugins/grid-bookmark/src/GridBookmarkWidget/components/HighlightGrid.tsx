@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
+import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import {
   assembleLocString,
   getSession,
@@ -141,7 +141,7 @@ const HighlightGrid = observer(function HighlightGrid({
             headerName: 'Color',
             width: 100,
             renderCell: ({ value, row }) => (
-              <ColorPicker
+              <PopoverPicker
                 color={value ?? theme.palette.highlight.main}
                 onChange={newColor => {
                   row.view.updateHighlight(row.highlight, { color: newColor })

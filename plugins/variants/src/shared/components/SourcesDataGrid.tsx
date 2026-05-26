@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { SanitizedHTML } from '@jbrowse/core/ui'
-import ColorPicker from '@jbrowse/core/ui/ColorPicker'
+import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import { getStr, measureGridWidth } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DataGrid } from '@mui/x-data-grid'
@@ -64,7 +64,7 @@ export default function SourcesDataGrid({
             renderCell: params => {
               const { value, id } = params
               return (
-                <ColorPicker
+                <PopoverPicker
                   color={value || 'blue'}
                   onChange={c => {
                     const elt = rows.find(f => f.name === id)
