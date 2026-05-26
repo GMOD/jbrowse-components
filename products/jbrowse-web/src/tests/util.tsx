@@ -44,7 +44,7 @@ export function getPluginManager(
     adminMode,
   }).create(
     {
-      jbrowse: initialState || configSnapshot,
+      jbrowse: initialState ?? configSnapshot,
     },
     { pluginManager },
   )
