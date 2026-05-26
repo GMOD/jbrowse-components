@@ -24,18 +24,13 @@ composed of
 
 - ReferenceManagementSessionMixin
 - ConnectionManagementSessionMixin
-- DrawerWidgetSessionMixin
-- DialogQueueSessionMixin
 - ThemeManagerSessionMixin
 - TracksManagerSessionMixin
 - MultipleViewsSessionMixin
-- DesktopSessionMixin
-- SessionAssembliesMixin
-- TemporaryAssembliesMixin
+- AssembliesMixin
 - DesktopSessionTrackMenuMixin
 - DockviewLayoutMixin
 - SnackbarModel
-- AppFocusMixin
 
 ### JBrowseDesktopSessionModel - Getters
 

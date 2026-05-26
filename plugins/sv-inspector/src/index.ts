@@ -8,6 +8,8 @@ import SvInspectorViewF from './SvInspectorView/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 
+export type { SvInspectorViewModel } from './SvInspectorView/model.ts'
+
 export default class SvInspectorViewPlugin extends Plugin {
   name = 'SvInspectorViewPlugin'
 

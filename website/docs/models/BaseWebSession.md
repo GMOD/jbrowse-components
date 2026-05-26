@@ -24,14 +24,11 @@ used for "web based" products, including jbrowse-web and react-app composed of
 
 - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
-- [DialogQueueSessionMixin](../dialogqueuesessionmixin)
 - [ThemeManagerSessionMixin](../thememanagersessionmixin)
 - [MultipleViewsSessionMixin](../multipleviewssessionmixin)
 - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
-- [SessionAssembliesMixin](../sessionassembliesmixin)
-- [TemporaryAssembliesMixin](../temporaryassembliesmixin)
+- [AssembliesMixin](../assembliesmixin)
 - [WebSessionConnectionsMixin](../websessionconnectionsmixin)
-- [AppFocusMixin](../appfocusmixin)
 
 ### BaseWebSession - Properties
 

@@ -90,6 +90,7 @@
     "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
     "./ui/Logo": "./src/ui/Logo.tsx",
     "./ui/Menu": "./src/ui/Menu.tsx",
+    "./ui/PopoverPicker": "./src/ui/PopoverPicker.tsx",
     "./ui/ResizeHandle": "./src/ui/ResizeHandle.tsx",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
@@ -482,6 +483,10 @@
       "./ui/Menu": {
         "types": "./esm/ui/Menu.d.ts",
         "import": "./esm/ui/Menu.js"
+      },
+      "./ui/PopoverPicker": {
+        "types": "./esm/ui/PopoverPicker.d.ts",
+        "import": "./esm/ui/PopoverPicker.js"
       },
       "./ui/ResizeHandle": {
         "types": "./esm/ui/ResizeHandle.d.ts",
@@ -911,6 +916,9 @@
         ],
         "ui/Menu": [
           "esm/ui/Menu.d.ts"
+        ],
+        "ui/PopoverPicker": [
+          "esm/ui/PopoverPicker.d.ts"
         ],
         "ui/ResizeHandle": [
           "esm/ui/ResizeHandle.d.ts"
