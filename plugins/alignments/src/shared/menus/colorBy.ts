@@ -38,20 +38,14 @@ interface ColorOption {
 
 interface ColorByMenuOptions {
   showLinkedReads?: boolean
-  includeModifications?: boolean
   includeTagOption?: boolean
   colorOptions?: ColorOption[]
   arcsState?: ArcsState
-}
-
-function isModificationsModel(model: unknown): model is ModificationsModel {
-  return (
-    typeof model === 'object' &&
-    model !== null &&
-    'modificationsReady' in model &&
-    'visibleModificationTypes' in model &&
-    'modificationThreshold' in model
-  )
+  // Provides the modifications submenu when set. The model passed here must
+  // implement ModificationsModel — in practice it's the same MST node passed
+  // as the first arg, but split out so the type contract is explicit instead
+  // of relying on a runtime duck-type check.
+  modifications?: ModificationsModel
 }
 
 const basicColorOptions: ColorOption[] = [
@@ -179,10 +173,10 @@ export function getColorByMenuItem(
 ) {
   const {
     showLinkedReads = false,
-    includeModifications = false,
     includeTagOption = false,
     colorOptions,
     arcsState,
+    modifications,
   } = options
 
   const colorRadio = ({ label, type }: ColorOption) => ({
@@ -240,16 +234,15 @@ export function getColorByMenuItem(
       ]
     : []
 
-  const modificationsItem =
-    includeModifications && isModificationsModel(model)
-      ? [
-          {
-            label: 'Modifications',
-            type: 'subMenu' as const,
-            subMenu: getModificationsSubMenu(model),
-          },
-        ]
-      : []
+  const modificationsItem = modifications
+    ? [
+        {
+          label: 'Modifications',
+          type: 'subMenu' as const,
+          subMenu: getModificationsSubMenu(modifications),
+        },
+      ]
+    : []
 
   return {
     label: 'Color by...',

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import type React from 'react'
 
 import { toRgb } from '../../shaders/colors.ts'
@@ -93,4 +94,63 @@ export const CIGAR_TYPE_LABELS: Record<string, string> = {
   skip: 'Skip (Intron)',
   softclip: 'Soft Clip',
   hardclip: 'Hard Clip',
+}
+
+// Ref to a shared AbortController, auto-aborted on unmount so that a
+// removed component leaves no dangling document mousemove/mouseup
+// listeners referencing destroyed models.
+export function useAbortableRef() {
+  const ref = useRef<AbortController | null>(null)
+  useEffect(
+    () => () => {
+      ref.current?.abort()
+    },
+    [],
+  )
+  return ref
+}
+
+// True iff the shared controller has an active drag. Used to suppress
+// canvas hover updates during any drag without a parallel "isDragging"
+// flag — the AbortController IS the source of truth (mouseup aborts it).
+export function isDragInProgress(
+  controllerRef: React.RefObject<AbortController | null>,
+) {
+  const ac = controllerRef.current
+  return ac !== null && !ac.signal.aborted
+}
+
+// Starts a document-level drag: cancels any in-progress drag on the shared
+// controllerRef, listens to document mousemove/mouseup, and forwards each
+// delta from the original mousedown position to `onMove`. The shared ref
+// ensures opening a new drag while one is active cleanly tears down the old
+// listeners — no orphan document handlers, no double-fire. Using document
+// listeners (vs React canvas events) means the drag continues when the
+// cursor leaves the source element, with no "isDragging" flag needed.
+export function startDocumentDrag(
+  e: React.MouseEvent,
+  controllerRef: React.RefObject<AbortController | null>,
+  onMove: (dx: number, dy: number) => void,
+) {
+  e.preventDefault()
+  e.stopPropagation()
+  controllerRef.current?.abort()
+  const ac = new AbortController()
+  controllerRef.current = ac
+  const startX = e.clientX
+  const startY = e.clientY
+  document.addEventListener(
+    'mousemove',
+    me => {
+      onMove(me.clientX - startX, me.clientY - startY)
+    },
+    { signal: ac.signal },
+  )
+  document.addEventListener(
+    'mouseup',
+    () => {
+      ac.abort()
+    },
+    { signal: ac.signal },
+  )
 }

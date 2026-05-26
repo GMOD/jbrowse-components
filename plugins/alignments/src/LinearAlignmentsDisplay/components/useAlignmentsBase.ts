@@ -1,13 +1,16 @@
 import type React from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
-import { getContainingView, useGpuBackend } from '@jbrowse/core/util'
+import { clamp, getContainingView, useGpuBackend } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
 import {
   buildColorPaletteFromTheme,
   getCanvasCoords,
+  isDragInProgress,
+  startDocumentDrag,
+  useAbortableRef,
 } from './alignmentComponentUtils.ts'
 import { performHitTest } from './hitTestPipeline.ts'
 import {
@@ -42,24 +45,15 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     error: gpuError,
     retry,
   } = useGpuBackend(AlignmentsRenderer, model)
-  const [resizeHandleHovered, setResizeHandleHovered] = useState(false)
-  const [arcsResizeHovered, setArcsResizeHovered] = useState(false)
-  const [sashimiResizeHovered, setSashimiResizeHovered] = useState(false)
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
     null,
   )
-  const dragRef = useRef({ isDragging: false, lastX: 0 })
-  // Tracks the currently-active drag so listeners are torn down on unmount —
-  // otherwise a track removed mid-drag leaves document handlers referencing
-  // a destroyed model.
-  const dragControllerRef = useRef<AbortController | null>(null)
-  useEffect(
-    () => () => {
-      dragControllerRef.current?.abort()
-    },
-    [],
-  )
+  // Tracks the currently-active drag (pan, resize, or scrollbar). All four
+  // share this single controller — starting a new drag aborts the previous,
+  // unmount aborts in-flight. Doubles as the "is dragging" source of truth
+  // via isDragInProgress; no parallel boolean state needed.
+  const dragControllerRef = useAbortableRef()
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const theme = useTheme()
@@ -125,113 +119,47 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   // --- Shared event handlers ---
 
   function handleMouseDown(e: React.MouseEvent) {
-    e.stopPropagation()
-    dragRef.current = { isDragging: true, lastX: e.clientX }
-  }
-
-  function handleDragMove(e: React.MouseEvent) {
-    if (!dragRef.current.isDragging) {
-      return
-    }
-    e.stopPropagation()
-
-    const dx = e.clientX - dragRef.current.lastX
-    dragRef.current.lastX = e.clientX
-
-    if (dx !== 0) {
-      const minOffset = view.minOffset
-      const maxOffset = view.maxOffset
-      const newOffsetPx = Math.max(
-        minOffset,
-        Math.min(maxOffset, view.offsetPx - dx),
+    const startOffsetPx = view.offsetPx
+    startDocumentDrag(e, dragControllerRef, dx => {
+      view.setNewView(
+        view.bpPerPx,
+        clamp(startOffsetPx - dx, view.minOffset, view.maxOffset),
       )
-      view.setNewView(view.bpPerPx, newOffsetPx)
-    }
-  }
-
-  function handleMouseUp() {
-    dragRef.current.isDragging = false
+    })
   }
 
   function handleMouseLeave() {
-    dragRef.current.isDragging = false
     if (!model.contextMenuCoord) {
       model.clearMouseoverState()
     }
   }
 
+  function startHeightDrag(
+    e: React.MouseEvent,
+    startHeight: number,
+    setHeight: (h: number) => void,
+  ) {
+    startDocumentDrag(e, dragControllerRef, (_dx, dy) => {
+      setHeight(Math.max(20, startHeight + dy))
+    })
+  }
+
   const handleResizeMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragControllerRef.current?.abort()
-    const ac = new AbortController()
-    dragControllerRef.current = ac
-    const startY = e.clientY
-    const startHeight = coverageHeight
-    document.addEventListener(
-      'mousemove',
-      me => {
-        model.setCoverageHeight(Math.max(20, startHeight + me.clientY - startY))
-      },
-      { signal: ac.signal },
-    )
-    document.addEventListener(
-      'mouseup',
-      () => {
-        ac.abort()
-      },
-      { signal: ac.signal },
-    )
+    startHeightDrag(e, coverageHeight, h => {
+      model.setCoverageHeight(h)
+    })
   }
 
   const handleArcsResizeMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragControllerRef.current?.abort()
-    const ac = new AbortController()
-    dragControllerRef.current = ac
-    const startY = e.clientY
-    const startHeight = arcsHeight
-    document.addEventListener(
-      'mousemove',
-      me => {
-        model.setArcsHeight(Math.max(20, startHeight + me.clientY - startY))
-      },
-      { signal: ac.signal },
-    )
-    document.addEventListener(
-      'mouseup',
-      () => {
-        ac.abort()
-      },
-      { signal: ac.signal },
-    )
+    startHeightDrag(e, arcsHeight, h => {
+      model.setArcsHeight(h)
+    })
   }
 
   const handleSashimiArcsResizeMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragControllerRef.current?.abort()
-    const ac = new AbortController()
-    dragControllerRef.current = ac
-    const startY = e.clientY
-    const startHeight = model.sashimiArcsHeight
-    document.addEventListener(
-      'mousemove',
-      me => {
-        model.setSashimiArcsHeight(
-          Math.max(20, startHeight + me.clientY - startY),
-        )
-      },
-      { signal: ac.signal },
-    )
-    document.addEventListener(
-      'mouseup',
-      () => {
-        ac.abort()
-      },
-      { signal: ac.signal },
-    )
+    startHeightDrag(e, model.sashimiArcsHeight, h => {
+      model.setSashimiArcsHeight(h)
+    })
   }
 
   function handleContextMenu(e: React.MouseEvent) {
@@ -270,8 +198,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     onFeature: (hit: FeatureHit, resolved: ResolvedBlock) => void,
     onNoFeature: () => void,
   ) {
-    if (dragRef.current.isDragging) {
-      handleDragMove(e)
+    if (isDragInProgress(dragControllerRef)) {
       return
     }
 
@@ -406,20 +333,13 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     canvasRef,
     gpuError,
     retry,
-    resizeHandleHovered,
-    setResizeHandleHovered,
     width,
     contrastMap,
     handleMouseDown,
-    handleMouseUp,
     handleMouseLeave,
     handleResizeMouseDown,
     handleArcsResizeMouseDown,
-    arcsResizeHovered,
-    setArcsResizeHovered,
     handleSashimiArcsResizeMouseDown,
-    sashimiResizeHovered,
-    setSashimiResizeHovered,
     handleContextMenu,
     processMouseMove,
     processClick,

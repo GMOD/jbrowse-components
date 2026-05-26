@@ -30,11 +30,11 @@ describe('computeInsertSizeTicks', () => {
     })
 
     expect(result).toBeDefined()
-    expect(result?.ticks.length).toBeGreaterThan(0)
+    expect(result?.items.length).toBeGreaterThan(0)
     expect(result?.yTop).toBeDefined()
     expect(result?.yBottom).toBeDefined()
     // All y values should be finite
-    expect(result?.ticks.every(t => Number.isFinite(t.y))).toBe(true)
+    expect(result?.items.every(t => Number.isFinite(t.y))).toBe(true)
   })
 
   it('generates ticks with finite y coordinates', () => {
@@ -46,7 +46,7 @@ describe('computeInsertSizeTicks', () => {
     })
 
     expect(result).toBeDefined()
-    expect(result?.ticks.every(t => Number.isFinite(t.y))).toBe(true)
+    expect(result?.items.every(t => Number.isFinite(t.y))).toBe(true)
     expect(Number.isFinite(result?.yTop)).toBe(true)
     expect(Number.isFinite(result?.yBottom)).toBe(true)
   })

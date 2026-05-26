@@ -42,6 +42,7 @@ import {
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
   ARC_DIRECTION_OPTIONS,
+  COMPACTNESS_PRESETS,
   LINKED_READS_OPTIONS,
   PAIRED_ARCS_OPTIONS,
   getColorByMenuItem,
@@ -50,7 +51,7 @@ import {
   getGroupByMenuItem,
   getReadsMenuItem,
   getSortByMenuItem,
-  radioModeSubMenu,
+  radioModeMenuItem,
 } from '../shared/menus/index.ts'
 import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
@@ -68,6 +69,7 @@ import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { ArcsDataResult } from '../features/arcs/compute.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
+import type { CompactnessLevel } from '../shared/menus/featureSize.ts'
 import type {
   ArcColorByType,
   ColorBy,
@@ -188,6 +190,29 @@ export const ColorScheme = {
   baseQuality: 9,
   insertSizeGradient: 10,
 } as const
+
+// colorBy.type → shader colorScheme index. Aliases listed explicitly:
+//   stranded → firstOfPairStrand
+//   methylation → modifications (same shader path, different config)
+//   perBaseQuality → normal (per-base quality paints colored rects on top
+//     of a neutral read body via drawPerBaseQuality; shader uses normal
+//     coloring for the background pass).
+const COLOR_BY_TO_SCHEME: Record<string, number> = {
+  normal: ColorScheme.normal,
+  strand: ColorScheme.strand,
+  mappingQuality: ColorScheme.mappingQuality,
+  insertSize: ColorScheme.insertSize,
+  insertSizeGradient: ColorScheme.insertSizeGradient,
+  firstOfPairStrand: ColorScheme.firstOfPairStrand,
+  stranded: ColorScheme.firstOfPairStrand,
+  pairOrientation: ColorScheme.pairOrientation,
+  insertSizeAndOrientation: ColorScheme.insertSizeAndOrientation,
+  modifications: ColorScheme.modifications,
+  methylation: ColorScheme.modifications,
+  tag: ColorScheme.tag,
+  baseQuality: ColorScheme.baseQuality,
+  perBaseQuality: ColorScheme.normal,
+}
 
 // Material UI 200-tone palette for color-by-tag values. The first value
 // hit gets index 0, the eleventh wraps to index 0 again.
@@ -549,43 +574,8 @@ export default function stateModelFactory(
           return self.colorBy.modifications?.threshold ?? 10
         },
 
-        /**
-         * Calculate color scheme index from colorBy setting
-         */
         get colorSchemeIndex() {
-          switch (self.colorBy.type) {
-            case 'normal':
-              return ColorScheme.normal
-            case 'strand':
-              return ColorScheme.strand
-            case 'mappingQuality':
-              return ColorScheme.mappingQuality
-            case 'insertSize':
-              return ColorScheme.insertSize
-            case 'insertSizeGradient':
-              return ColorScheme.insertSizeGradient
-            case 'firstOfPairStrand':
-            case 'stranded':
-              return ColorScheme.firstOfPairStrand
-            case 'pairOrientation':
-              return ColorScheme.pairOrientation
-            case 'insertSizeAndOrientation':
-              return ColorScheme.insertSizeAndOrientation
-            case 'modifications':
-            case 'methylation':
-              return ColorScheme.modifications
-            case 'tag':
-              return ColorScheme.tag
-            case 'baseQuality':
-              return ColorScheme.baseQuality
-            case 'perBaseQuality':
-              // Per-base quality paints colored rects on top of a neutral
-              // read body via the main-thread overlay (drawPerBaseQuality);
-              // shader uses normal coloring for the background pass.
-              return ColorScheme.normal
-            default:
-              return ColorScheme.normal
-          }
+          return COLOR_BY_TO_SCHEME[self.colorBy.type] ?? ColorScheme.normal
         },
 
         get showModifications() {
@@ -885,7 +875,7 @@ export default function stateModelFactory(
             })
           }
         }
-        function clearHoverState() {
+        function clearMouseoverState() {
           self.featureIdUnderMouse = undefined
           self.mouseoverExtraInformation = undefined
           self.overCigarItem = false
@@ -894,17 +884,19 @@ export default function stateModelFactory(
           }
         }
         return {
+          clearMouseoverState,
+
           setError(error?: unknown) {
             superSetError(error)
             if (error) {
-              clearHoverState()
+              clearMouseoverState()
             }
           },
 
           setRegionTooLarge(val: boolean, reason?: string) {
             superSetRegionTooLarge(val, reason)
             if (val) {
-              clearHoverState()
+              clearMouseoverState()
             }
           },
 
@@ -950,10 +942,6 @@ export default function stateModelFactory(
             if (self.highlightedChainIds.length > 0) {
               self.highlightedChainIds = []
             }
-          },
-
-          clearMouseoverState() {
-            clearHoverState()
           },
 
           clearSelection() {
@@ -1078,13 +1066,8 @@ export default function stateModelFactory(
           },
 
           // duck-typed by LGV/BreakpointSplitView/LinearComparativeView "Compact all tracks"
-          setCompactness(level: 'normal' | 'compact' | 'super-compact') {
-            const COMPACTNESS = {
-              normal: { featureHeight: 7, noSpacing: false },
-              compact: { featureHeight: 3, noSpacing: true },
-              'super-compact': { featureHeight: 1, noSpacing: true },
-            } as const
-            const { featureHeight, noSpacing } = COMPACTNESS[level]
+          setCompactness(level: CompactnessLevel) {
+            const { featureHeight, noSpacing } = COMPACTNESS_PRESETS[level]
             self.setOverride('featureHeight', featureHeight)
             self.setOverride('noSpacing', noSpacing)
             self.currentRangeY = [0, 0]
@@ -1169,7 +1152,7 @@ export default function stateModelFactory(
               self.selectedChainIds = []
             }
             if ((prev === 'off') !== (mode === 'off')) {
-              clearHoverState()
+              clearMouseoverState()
               if (mode === 'off') {
                 self.setOverride('colorBy', { type: 'normal' })
               } else {
@@ -1409,7 +1392,7 @@ export default function stateModelFactory(
           const items: MenuItem[] = [
             getColorByMenuItem(self, {
               showLinkedReads: self.linkedReads !== 'off',
-              includeModifications: true,
+              modifications: self,
               includeTagOption: true,
               arcsState: self,
             }),
@@ -1429,39 +1412,30 @@ export default function stateModelFactory(
               label: 'Read connections',
               type: 'subMenu' as const,
               subMenu: [
-                {
-                  label: 'Linked reads',
-                  type: 'subMenu' as const,
-                  subMenu: radioModeSubMenu(
-                    LINKED_READS_OPTIONS,
-                    self.linkedReads,
-                    v => {
-                      self.setLinkedReads(v)
-                    },
-                  ),
-                },
-                {
-                  label: 'Paired arcs',
-                  type: 'subMenu' as const,
-                  subMenu: radioModeSubMenu(
-                    PAIRED_ARCS_OPTIONS,
-                    self.pairedArcs,
-                    v => {
-                      self.setPairedArcs(v)
-                    },
-                  ),
-                },
-                {
-                  label: 'Sashimi arcs',
-                  type: 'subMenu' as const,
-                  subMenu: radioModeSubMenu(
-                    ARC_DIRECTION_OPTIONS,
-                    self.sashimiArcs,
-                    v => {
-                      self.setSashimiArcs(v)
-                    },
-                  ),
-                },
+                radioModeMenuItem(
+                  'Linked reads',
+                  LINKED_READS_OPTIONS,
+                  self.linkedReads,
+                  v => {
+                    self.setLinkedReads(v)
+                  },
+                ),
+                radioModeMenuItem(
+                  'Paired arcs',
+                  PAIRED_ARCS_OPTIONS,
+                  self.pairedArcs,
+                  v => {
+                    self.setPairedArcs(v)
+                  },
+                ),
+                radioModeMenuItem(
+                  'Sashimi arcs',
+                  ARC_DIRECTION_OPTIONS,
+                  self.sashimiArcs,
+                  v => {
+                    self.setSashimiArcs(v)
+                  },
+                ),
               ],
             },
           ]

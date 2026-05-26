@@ -48,3 +48,19 @@ export function radioModeSubMenu<T extends string>(
     },
   }))
 }
+
+// Top-level submenu item that holds a radio-mode picker. Wraps
+// radioModeSubMenu with the {label, type:'subMenu', subMenu} shape so the
+// three connection-mode entries in trackMenuItems are one-liners.
+export function radioModeMenuItem<T extends string>(
+  label: string,
+  options: { value: T; label: string }[],
+  current: T,
+  setMode: (m: T) => void,
+) {
+  return {
+    label,
+    type: 'subMenu' as const,
+    subMenu: radioModeSubMenu(options, current, setMode),
+  }
+}

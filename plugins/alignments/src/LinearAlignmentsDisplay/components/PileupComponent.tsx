@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { ErrorBar } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
+import { clamp, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
@@ -13,6 +13,10 @@ import PileupArcsOverlay from './PileupArcsOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import TlenAxisLabel from './TlenAxisLabel.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
+import {
+  startDocumentDrag,
+  useAbortableRef,
+} from './alignmentComponentUtils.ts'
 import { formatChainTooltip, formatFeatureTooltip } from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
@@ -37,7 +41,41 @@ const useStyles = makeStyles()({
     background: 'rgba(0,0,0,0.3)',
     pointerEvents: 'none' as const,
   },
+  resizeHandle: {
+    position: 'absolute' as const,
+    left: 0,
+    right: 0,
+    height: YSCALEBAR_LABEL_OFFSET,
+    cursor: 'row-resize',
+    zIndex: 10,
+    background: 'transparent',
+    '&:hover': {
+      background: 'rgba(0,0,0,0.1)',
+    },
+  },
 })
+
+function ResizeHandle({
+  top,
+  onMouseDown,
+  title,
+}: {
+  top: number
+  onMouseDown: (e: React.MouseEvent) => void
+  title: string
+}) {
+  const { classes } = useStyles()
+  return (
+    <div
+      className={classes.resizeHandle}
+      style={{ top }}
+      onMouseDown={e => {
+        onMouseDown(e)
+      }}
+      title={title}
+    />
+  )
+}
 
 const PileupComponent = observer(function PileupComponent({
   model,
@@ -75,17 +113,10 @@ const PileupInner = observer(function PileupInner({
   const {
     canvas,
     canvasRef,
-    resizeHandleHovered,
-    setResizeHandleHovered,
-    arcsResizeHovered,
-    setArcsResizeHovered,
     handleSashimiArcsResizeMouseDown,
-    sashimiResizeHovered,
-    setSashimiResizeHovered,
     width,
     contrastMap,
     handleMouseDown,
-    handleMouseUp,
     handleMouseLeave,
     handleResizeMouseDown,
     handleArcsResizeMouseDown,
@@ -116,7 +147,7 @@ const PileupInner = observer(function PileupInner({
         dy *= pileupViewportHeight
       }
       const curScroll = currentRangeY[0]
-      const newScroll = Math.max(0, Math.min(scrollableHeight, curScroll + dy))
+      const newScroll = clamp(curScroll + dy, 0, scrollableHeight)
       if (newScroll !== curScroll) {
         e.preventDefault()
         model.setCurrentRangeY([newScroll, newScroll + pileupViewportHeight])
@@ -204,7 +235,6 @@ const PileupInner = observer(function PileupInner({
           height={height}
           handleMouseDown={handleMouseDown}
           handleCanvasMouseMove={handleCanvasMouseMove}
-          handleMouseUp={handleMouseUp}
           handleMouseLeave={handleMouseLeave}
           handleClick={handleClick}
           handleContextMenu={handleContextMenu}
@@ -227,74 +257,25 @@ const PileupInner = observer(function PileupInner({
         <LegendHost model={model} />
 
         {showCoverage ? (
-          <div
+          <ResizeHandle
+            top={coverageHeight - YSCALEBAR_LABEL_OFFSET}
             onMouseDown={handleResizeMouseDown}
-            onMouseEnter={() => {
-              setResizeHandleHovered(true)
-            }}
-            onMouseLeave={() => {
-              setResizeHandleHovered(false)
-            }}
-            style={{
-              position: 'absolute',
-              top: coverageHeight - YSCALEBAR_LABEL_OFFSET,
-              left: 0,
-              right: 0,
-              height: YSCALEBAR_LABEL_OFFSET,
-              cursor: 'row-resize',
-              background: resizeHandleHovered
-                ? 'rgba(0,0,0,0.1)'
-                : 'transparent',
-              zIndex: 10,
-            }}
             title="Drag to resize coverage track"
           />
         ) : null}
 
         {pairedArcs === 'down' ? (
-          <div
+          <ResizeHandle
+            top={topOffset - YSCALEBAR_LABEL_OFFSET}
             onMouseDown={handleArcsResizeMouseDown}
-            onMouseEnter={() => {
-              setArcsResizeHovered(true)
-            }}
-            onMouseLeave={() => {
-              setArcsResizeHovered(false)
-            }}
-            style={{
-              position: 'absolute',
-              top: topOffset - YSCALEBAR_LABEL_OFFSET,
-              left: 0,
-              right: 0,
-              height: YSCALEBAR_LABEL_OFFSET,
-              cursor: 'row-resize',
-              background: arcsResizeHovered ? 'rgba(0,0,0,0.1)' : 'transparent',
-              zIndex: 10,
-            }}
             title="Drag to resize arcs area"
           />
         ) : null}
 
         {sashimiArcs === 'down' && showCoverage ? (
-          <div
+          <ResizeHandle
+            top={coverageHeight + sashimiArcsHeight - YSCALEBAR_LABEL_OFFSET}
             onMouseDown={handleSashimiArcsResizeMouseDown}
-            onMouseEnter={() => {
-              setSashimiResizeHovered(true)
-            }}
-            onMouseLeave={() => {
-              setSashimiResizeHovered(false)
-            }}
-            style={{
-              position: 'absolute',
-              top: coverageHeight + sashimiArcsHeight - YSCALEBAR_LABEL_OFFSET,
-              left: 0,
-              right: 0,
-              height: YSCALEBAR_LABEL_OFFSET,
-              cursor: 'row-resize',
-              background: sashimiResizeHovered
-                ? 'rgba(0,0,0,0.1)'
-                : 'transparent',
-              zIndex: 10,
-            }}
             title="Drag to resize sashimi arcs area"
           />
         ) : null}
@@ -312,7 +293,6 @@ const PileupCanvas = observer(function PileupCanvas({
   height,
   handleMouseDown,
   handleCanvasMouseMove,
-  handleMouseUp,
   handleMouseLeave,
   handleClick,
   handleContextMenu,
@@ -323,7 +303,6 @@ const PileupCanvas = observer(function PileupCanvas({
   height: number
   handleMouseDown: (e: React.MouseEvent) => void
   handleCanvasMouseMove: (e: React.MouseEvent) => void
-  handleMouseUp: () => void
   handleMouseLeave: () => void
   handleClick: (e: React.MouseEvent) => void
   handleContextMenu: (e: React.MouseEvent) => void
@@ -342,7 +321,6 @@ const PileupCanvas = observer(function PileupCanvas({
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleCanvasMouseMove}
-      onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
@@ -449,13 +427,7 @@ const PileupScrollbar = observer(function PileupScrollbar({
 }) {
   const { classes } = useStyles()
   const { scrollableHeight, pileupViewportHeight, totalPileupHeight } = model
-  const dragAcRef = useRef<AbortController | null>(null)
-  useEffect(
-    () => () => {
-      dragAcRef.current?.abort()
-    },
-    [],
-  )
+  const dragAcRef = useAbortableRef()
   if (scrollableHeight <= 0) {
     return null
   }
@@ -471,36 +443,15 @@ const PileupScrollbar = observer(function PileupScrollbar({
       className={classes.scrollbarTrack}
       style={{ top: topOffset, height: trackHeight }}
       onMouseDown={e => {
-        e.preventDefault()
-        e.stopPropagation()
-        dragAcRef.current?.abort()
-        const ac = new AbortController()
-        dragAcRef.current = ac
-        const startY = e.clientY
         const startScroll = model.currentRangeY[0]
         const scrollRange = model.scrollableHeight
         const usableTrack = trackHeight - thumbHeight
-        document.addEventListener(
-          'mousemove',
-          me => {
-            const dy = me.clientY - startY
-            const scrollDelta =
-              usableTrack > 0 ? (dy / usableTrack) * scrollRange : 0
-            const next = Math.max(
-              0,
-              Math.min(scrollRange, startScroll + scrollDelta),
-            )
-            model.setCurrentRangeY([next, next + model.pileupViewportHeight])
-          },
-          { signal: ac.signal },
-        )
-        document.addEventListener(
-          'mouseup',
-          () => {
-            ac.abort()
-          },
-          { signal: ac.signal },
-        )
+        startDocumentDrag(e, dragAcRef, (_dx, dy) => {
+          const scrollDelta =
+            usableTrack > 0 ? (dy / usableTrack) * scrollRange : 0
+          const next = clamp(startScroll + scrollDelta, 0, scrollRange)
+          model.setCurrentRangeY([next, next + model.pileupViewportHeight])
+        })
       }}
     >
       <div

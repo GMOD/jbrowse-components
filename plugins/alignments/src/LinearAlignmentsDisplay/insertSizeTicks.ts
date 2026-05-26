@@ -41,14 +41,14 @@ export function computeInsertSizeTicks({
     ? arcsTop + YSCALEBAR_LABEL_OFFSET
     : arcsTop + arcsHeight - YSCALEBAR_LABEL_OFFSET
 
-  const ticks: YScaleTicks['ticks'] = []
+  const items: YScaleTicks['items'] = []
   for (let v = 0; v <= arcsYDomainBp; v += step) {
     const offset = Math.min(v * yScale, availH)
     const y = pairedArcsDown ? anchor + offset : anchor - offset
-    ticks.push({ value: v, y, label: formatBp(v) })
+    items.push({ value: v, y, label: formatBp(v) })
   }
 
   const yTop = pairedArcsDown ? anchor : anchor - availH
   const yBottom = pairedArcsDown ? anchor + availH : anchor
-  return { ticks, yTop, yBottom }
+  return { items, yTop, yBottom }
 }
