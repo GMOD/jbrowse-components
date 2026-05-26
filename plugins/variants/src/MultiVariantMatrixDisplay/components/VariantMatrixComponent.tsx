@@ -1,4 +1,4 @@
-import { ErrorBar, ErrorOverlay } from '@jbrowse/core/ui'
+import { ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
@@ -9,6 +9,10 @@ import { observer } from 'mobx-react'
 
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
+import {
+  VariantErrorBar,
+  VariantLoadingOverlay,
+} from '../../shared/components/VariantStatusOverlays.tsx'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
@@ -186,15 +190,9 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           />
         </div>
       ) : null}
+      <VariantErrorBar model={model} />
       {model.regionTooLarge ? model.regionCannotBeRendered() : null}
-      {model.error ? (
-        <ErrorBar
-          error={model.error}
-          onRetry={() => {
-            model.reload()
-          }}
-        />
-      ) : null}
+      <VariantLoadingOverlay model={model} />
       {contextMenuNode}
     </div>
   )

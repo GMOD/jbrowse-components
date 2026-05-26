@@ -17,6 +17,7 @@ import {
   genotypeStringFromRaw,
   getPhasedColorFromRaw,
   getRawCallGenotype,
+  splitPhasedAlleles,
 } from '../../shared/rawGenotypes.ts'
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
@@ -181,68 +182,79 @@ export function computeVariantCells({
 
     const callGt = getRawCallGenotype(feature)
     if (renderingMode === 'phased') {
-      // PS (phase-set) coloring requires per-sample FORMAT data, which is
-      // only carried by the heavier `samples` field — neither the raw
-      // callGenotype Int8Array nor the flat `genotypes` map preserves it.
-      // PS in FORMAT is uncommon, so the slower samples path runs only when
-      // a feature actually declares PS. Mirrors the matrix display's PS
-      // branch so phased coloring is consistent across both displays.
+      // PS (phase-set) coloring requires per-sample FORMAT data, which only
+      // the heavier `samples` field preserves — neither the raw callGenotype
+      // Int8Array nor the flat `genotypes` map carry it. PS in FORMAT is
+      // uncommon, so the slower samples path runs only when a feature
+      // actually declares PS. Mirrors the matrix display's PS branch so
+      // phased coloring is consistent across both displays.
       const hasPhaseSet = feature.get('FORMAT')?.includes('PS')
-      if (hasPhaseSet) {
-        const samp = feature.get('samples') as Record<
-          string,
-          Record<string, string[]>
-        >
-        for (let j = 0; j < numSources; j++) {
-          const { name, HP, sampleName } = sources[j]!
-          const s = samp[sampleName]
-          if (s) {
-            const genotype = s.GT?.[0]
-            if (genotype) {
-              const isPhasedGt = genotype.includes('|')
-              if (isPhasedGt) {
-                const PS = s.PS?.[0]
-                const alleles =
-                  genotype.length === 3
-                    ? [genotype[0]!, genotype[2]!]
-                    : genotype.split('|')
-                const c = getPhasedColor(
-                  alleles,
-                  HP!,
-                  mostFrequentAlt,
-                  PS,
-                  drawRef,
-                )
-                if (c) {
-                  addCell(
-                    start,
-                    end,
-                    renderEnd,
-                    j,
-                    getCachedABGR(c),
-                    shape,
-                    c === REFERENCE_COLOR,
-                    featureIdx,
-                  )
-                  renderedGenotypes[name] = genotype
-                }
-              } else {
-                addCell(
-                  start,
-                  end,
-                  renderEnd,
-                  j,
-                  BLACK_ABGR,
-                  shape,
-                  false,
-                  featureIdx,
-                )
-                renderedGenotypes[name] = genotype
-              }
-            }
+      if (hasPhaseSet || !callGt || !sampleIndices) {
+        let samp: Record<string, Record<string, string[]>> | undefined
+        let stringGenotypes: Record<string, string> | undefined
+        if (hasPhaseSet) {
+          samp = feature.get('samples') as Record<
+            string,
+            Record<string, string[]>
+          >
+        } else {
+          stringGenotypes = genotypesCache.get(featureId)
+          if (!stringGenotypes) {
+            stringGenotypes = feature.get('genotypes') as Record<string, string>
+            genotypesCache.set(featureId, stringGenotypes)
           }
         }
-      } else if (callGt && sampleIndices) {
+
+        for (let j = 0; j < numSources; j++) {
+          const { name, HP, sampleName } = sources[j]!
+          let genotype: string | undefined
+          let PS: string | undefined
+          if (samp) {
+            const s = samp[sampleName]
+            genotype = s?.GT?.[0]
+            PS = s?.PS?.[0]
+          } else {
+            genotype = stringGenotypes![sampleName]
+          }
+          if (!genotype) {
+            continue
+          }
+          if (genotype.includes('|')) {
+            const c = getPhasedColor(
+              splitPhasedAlleles(genotype),
+              HP!,
+              mostFrequentAlt,
+              PS,
+              drawRef,
+            )
+            if (c) {
+              addCell(
+                start,
+                end,
+                renderEnd,
+                j,
+                getCachedABGR(c),
+                shape,
+                c === REFERENCE_COLOR,
+                featureIdx,
+              )
+              renderedGenotypes[name] = genotype
+            }
+          } else {
+            addCell(
+              start,
+              end,
+              renderEnd,
+              j,
+              BLACK_ABGR,
+              shape,
+              false,
+              featureIdx,
+            )
+            renderedGenotypes[name] = genotype
+          }
+        }
+      } else {
         const callGtPhased = feature.get('callGenotypePhased') as
           | Uint8Array
           | undefined
@@ -292,58 +304,6 @@ export function computeVariantCells({
               featureIdx,
             )
             renderedGenotypes[name] = gtStr
-          }
-        }
-      } else {
-        let samp = genotypesCache.get(featureId)
-        if (!samp) {
-          samp = feature.get('genotypes') as Record<string, string>
-          genotypesCache.set(featureId, samp)
-        }
-
-        for (let j = 0; j < numSources; j++) {
-          const { name, HP, sampleName } = sources[j]!
-          const genotype = samp[sampleName]
-          if (genotype) {
-            const isPhasedGt = genotype.includes('|')
-            if (isPhasedGt) {
-              const alleles =
-                genotype.length === 3
-                  ? [genotype[0]!, genotype[2]!]
-                  : genotype.split('|')
-              const c = getPhasedColor(
-                alleles,
-                HP!,
-                mostFrequentAlt,
-                undefined,
-                drawRef,
-              )
-              if (c) {
-                addCell(
-                  start,
-                  end,
-                  renderEnd,
-                  j,
-                  getCachedABGR(c),
-                  shape,
-                  c === REFERENCE_COLOR,
-                  featureIdx,
-                )
-                renderedGenotypes[name] = genotype
-              }
-            } else {
-              addCell(
-                start,
-                end,
-                renderEnd,
-                j,
-                BLACK_ABGR,
-                shape,
-                false,
-                featureIdx,
-              )
-              renderedGenotypes[name] = genotype
-            }
           }
         }
       }

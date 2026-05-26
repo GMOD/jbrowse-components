@@ -14,6 +14,8 @@ export interface VariantDisplayModelBase {
   referenceDrawingMode: string
   regionTooLarge: boolean
   featuresReady: boolean
+  isDisplayLoading: boolean
+  statusMessage?: string
   error: unknown
   reload: () => void
   setFeatureDensityStatsLimit: (s?: unknown) => void

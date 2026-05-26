@@ -37,8 +37,6 @@ interface PerRegionCellData {
 export interface VariantDisplayModel extends VariantDisplayModelBase {
   cellData: PerRegionCellData | undefined
   flatbushIndices: Map<number, Flatbush>
-  isDisplayLoading: boolean
-  statusMessage?: string
   canvasDrawn: boolean
   startBackend: (backend: VariantBackend) => void
   stopBackend: () => void

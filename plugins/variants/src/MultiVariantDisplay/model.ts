@@ -23,7 +23,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'MultiLinearVariantDisplay',
-      MultiSampleVariantBaseModelF(configSchema),
+      MultiSampleVariantBaseModelF(configSchema, 'regular'),
       types.model({
         type: types.literal('MultiLinearVariantDisplay'),
       }),
@@ -38,9 +38,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
         get DisplayMessageComponent() {
           return VariantComponent
-        },
-        get cellDataMode() {
-          return 'regular' as const
         },
         get renderState() {
           const view = getContainingView(self) as LinearGenomeViewModel

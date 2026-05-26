@@ -3,7 +3,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { when } from 'mobx'
 
-import { drawVariantsToCtx } from './components/Canvas2DVariantRenderer.ts'
+import { drawVariantBlocks } from './components/Canvas2DVariantRenderer.ts'
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 
@@ -44,22 +44,23 @@ export async function renderSvg(
   } = model
   const totalWidth = view.totalWidthPx
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
+  const regions = new Map<number, VariantCellData>()
+  for (const [idxStr, data] of Object.entries(cellData.perRegionCellData)) {
+    if (data.numCells > 0) {
+      regions.set(Number(idxStr), data)
+    }
+  }
   const cellsNode = paintLayer(totalWidth, availableHeight, opts, ctx => {
     if (referenceDrawingMode === 'skip') {
       ctx.fillStyle = REFERENCE_COLOR
       ctx.fillRect(0, 0, totalWidth, availableHeight)
     }
-    drawVariantsToCtx(
-      ctx,
-      { perRegionCellData: cellData.perRegionCellData },
-      renderBlocks,
-      {
-        canvasWidth: totalWidth,
-        canvasHeight: availableHeight,
-        rowHeight,
-        scrollTop,
-      },
-    )
+    drawVariantBlocks(ctx, regions, renderBlocks, {
+      canvasWidth: totalWidth,
+      canvasHeight: availableHeight,
+      rowHeight,
+      scrollTop,
+    })
   })
 
   const sources = model.sources ?? []

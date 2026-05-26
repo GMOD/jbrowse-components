@@ -23,7 +23,7 @@ export default function stateModelFactory(
   return types
     .compose(
       'LinearVariantMatrixDisplay',
-      MultiSampleVariantBaseModelF(configSchema),
+      MultiSampleVariantBaseModelF(configSchema, 'matrix'),
       types.model({
         type: types.literal('LinearVariantMatrixDisplay'),
         lineZoneHeight: types.optional(types.number, 20),
@@ -38,9 +38,6 @@ export default function stateModelFactory(
       },
       get prefersOffset() {
         return true
-      },
-      get cellDataMode() {
-        return 'matrix' as const
       },
       /**
        * #getter

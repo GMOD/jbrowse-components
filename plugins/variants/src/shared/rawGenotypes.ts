@@ -8,6 +8,15 @@ export function getRawCallGenotype(feature: Feature) {
   return feature.get('callGenotype') as Int8Array | undefined
 }
 
+// Fast-path diploid genotype split. The 3-char form "a|b" hits on the vast
+// majority of human VCFs; the general `split('|')` branch handles polyploid
+// or multi-digit allele indices ("10|0").
+export function splitPhasedAlleles(genotype: string) {
+  return genotype.length === 3
+    ? [genotype[0]!, genotype[2]!]
+    : genotype.split('|')
+}
+
 export function buildSampleIndexMap(sampleNames: string[]) {
   const map = new Map<string, number>()
   for (const [i, sampleName] of sampleNames.entries()) {

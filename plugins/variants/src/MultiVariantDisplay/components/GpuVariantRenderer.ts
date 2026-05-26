@@ -35,12 +35,10 @@ export class GpuVariantRenderer extends GpuPerRegionBackend<
   VariantRenderState
 > {
   private uniformF32: Float32Array
-  private uniformU32: Uint32Array
 
   constructor(hal: GpuHal) {
     super(hal, UNIFORMS_SIZE_BYTES)
     this.uniformF32 = new Float32Array(this.uniformData)
-    this.uniformU32 = new Uint32Array(this.uniformData)
   }
 
   uploadRegion(displayedRegionIndex: number, data: VariantUploadData) {

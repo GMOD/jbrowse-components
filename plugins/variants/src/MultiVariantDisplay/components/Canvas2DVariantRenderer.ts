@@ -16,14 +16,11 @@ import type {
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
- * Pure draw entry point. Paints the variant matrix cells (one shape per
- * variant×sample) into any 2D-canvas-like context. Per-block scissor clip
- * keeps off-block cells from bleeding across boundaries; per-row Y-cull
- * skips off-screen rows fast (meaningful when the matrix is taller than the
- * viewport and scrolled).
- *
- * The on-screen `Canvas2DVariantRenderer` wraps this with `prepareCanvas`;
- * SVG export calls it directly with an `SvgCanvas`.
+ * Pure draw entry point shared by the on-screen Canvas2D backend (via
+ * `Canvas2DVariantRenderer.renderBlocks`) and the SVG export path
+ * (`renderSvg.tsx` → `paintLayer` with an `SvgCanvas`). Per-block scissor
+ * clip keeps cells from bleeding across block boundaries; per-row Y-cull
+ * skips off-screen rows fast for tall scrolled matrices.
  */
 export function drawVariantBlocks(
   ctx: Ctx2D,
@@ -78,26 +75,6 @@ export function drawVariantBlocks(
 
     ctx.restore()
   }
-}
-
-// One-shot pure entry point used by SVG export per ARCHITECTURE.md "SVG
-// export pipeline". On-screen uses the streamed per-region path via
-// Canvas2DVariantRenderer because perRegionCellData entries arrive incrementally.
-// VariantCellData is a structural superset of VariantUploadData (extra fields
-// are flatbush + genotype maps for hit-testing), so pass-through is type-safe.
-export function drawVariantsToCtx(
-  ctx: Ctx2D,
-  sources: { perRegionCellData: Record<number, VariantUploadData> },
-  blocks: VariantRenderBlock[],
-  state: VariantRenderState,
-) {
-  const regions = new Map<number, VariantUploadData>()
-  for (const [idxStr, data] of Object.entries(sources.perRegionCellData)) {
-    if (data.numCells > 0) {
-      regions.set(Number(idxStr), data)
-    }
-  }
-  drawVariantBlocks(ctx, regions, blocks, state)
 }
 
 export class Canvas2DVariantRenderer extends Canvas2DPerRegionBackend<

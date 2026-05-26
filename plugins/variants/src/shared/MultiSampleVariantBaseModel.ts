@@ -85,9 +85,8 @@ function encodeGenotype(gt: string) {
 
 // Module-local helper for the variant cell data RPC call. Takes the resolved
 // rpcProps object (rather than `self`) so TS infers the payload shape from
-// the model's rpcProps view without a structural cast. `mode` is plumbed in
-// explicitly because cellDataMode is defined per-subclass and not visible
-// here on the base self.
+// the model's rpcProps view without a structural cast. `mode` comes from the
+// per-subclass cellDataMode that's bound at factory call time.
 async function callMultiSampleVariantCellData(args: {
   node: IAnyStateTreeNode
   adapterConfig: AnyConfigurationModel
@@ -153,6 +152,7 @@ function getGenotypeMapForFeature(
  */
 export default function MultiSampleVariantBaseModelF(
   configSchema: AnyConfigurationSchemaType,
+  cellDataMode: 'regular' | 'matrix',
 ) {
   return types
     .compose(
@@ -174,6 +174,11 @@ export default function MultiSampleVariantBaseModelF(
         lineZoneHeight: types.optional(types.number, 0),
       }),
     )
+    // Migration boundary: input is a legacy snapshot whose shape predates
+    // the current model, output must match the current ModelCreationType.
+    // MST can't express that bidirectional reshape, so `any` is the honest
+    // type here — narrowing with `as` casts would just relocate the escape
+    // hatch.
     .preProcessSnapshot((snap: any) => {
       if (!snap) {
         return snap
@@ -181,15 +186,15 @@ export default function MultiSampleVariantBaseModelF(
 
       // Strip properties from old BaseLinearDisplay snapshots
       const { blockState, showLegend, showTooltips, ...cleaned } = snap
-      snap = cleaned
+      let next = cleaned
 
       // Rewrite "height" from older snapshots to "heightPreConfig"
-      if (snap.height !== undefined && snap.heightPreConfig === undefined) {
-        const { height, ...rest } = snap
-        snap = { ...rest, heightPreConfig: height }
+      if (next.height !== undefined && next.heightPreConfig === undefined) {
+        const { height, ...rest } = next
+        next = { ...rest, heightPreConfig: height }
       }
 
-      return migrateOldSettingSnapshots(snap)
+      return migrateOldSettingSnapshots(next)
     })
     .volatile(() => ({
       /**
@@ -566,12 +571,13 @@ export default function MultiSampleVariantBaseModelF(
 
       /**
        * #getter
+       * rowHeightMode === 0 means auto-fit (computed from availableHeight /
+       * nrow); any positive value is a user-pinned height. `resizeHeight`
+       * scales pinned values proportionally so manual + display-resize stay
+       * in sync without snap-back fuzziness.
        */
       get rowHeight() {
-        if (self.rowHeightMode === 0) {
-          return this.autoRowHeight
-        }
-        return Math.abs(self.rowHeightMode - this.autoRowHeight) < 0.01
+        return self.rowHeightMode === 0
           ? this.autoRowHeight
           : self.rowHeightMode
       },
@@ -988,12 +994,6 @@ export default function MultiSampleVariantBaseModelF(
           return
         }
         const sources = self.sourcesBase
-        // cellDataMode is defined per-subclass and not visible on the base
-        // self; read it via a narrow view interface and pass to the RPC
-        // helper as an explicit parameter.
-        const { cellDataMode } = self as unknown as {
-          cellDataMode: 'regular' | 'matrix'
-        }
         const rpcProps = { ...self.rpcProps(), sources }
         await self.fetchRegions(allBuffered, async (ctx: FetchContext) => {
           const result = await callMultiSampleVariantCellData({
