@@ -23,6 +23,8 @@ lerna-debug.log
 *.cpuprofile
 test_data/soa4
 *.tgz
+*.log
+.cache/
 debug-storybook.log
 website/.astro/
 
