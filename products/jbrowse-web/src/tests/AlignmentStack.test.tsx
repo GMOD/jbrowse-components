@@ -1,5 +1,3 @@
-import { cleanup } from '@testing-library/react'
-
 import { testLinkedReadsDisplay } from './testLinkedReadsDisplay.tsx'
 import { doBeforeEach, setup } from './util.tsx'
 
@@ -7,10 +5,6 @@ setup()
 
 beforeEach(() => {
   doBeforeEach()
-})
-
-afterEach(() => {
-  cleanup()
 })
 
 const timeout = 90000
