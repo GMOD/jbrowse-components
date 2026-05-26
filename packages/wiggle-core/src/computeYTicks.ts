@@ -27,9 +27,12 @@ export function computeYTicks(opts: {
     range: [yBottom, yTop],
     inverted: false,
   })
+  const [domainMin, domainMax] = domain
   const values =
     height < 100 || minimalTicks
-      ? [...new Set(domain as number[])]
+      ? domainMin === domainMax
+        ? [domainMin]
+        : [domainMin, domainMax]
       : scale.ticks(4)
   return {
     ticks: values.map(v => ({ value: v, y: scale(v) })),
