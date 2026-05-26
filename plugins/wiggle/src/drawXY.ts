@@ -6,7 +6,14 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { fillRectCtx, getOrigin, getScale } from './util.ts'
+import {
+  WIGGLE_CLIP_HEIGHT,
+  WIGGLE_FUDGE_FACTOR,
+  drawCrosshatches,
+  fillRectCtx,
+  getOrigin,
+  getScale,
+} from './util.ts'
 
 import type { ScaleOpts } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -35,9 +42,6 @@ function darken(color: Colord, amount: number) {
     l: clamp(l, 0, 100),
   })
 }
-
-const fudgeFactor = 0.3
-const clipHeight = 2
 
 export function drawXY(
   ctx: CanvasRenderingContext2D,
@@ -153,7 +157,7 @@ export function drawXY(
         ? (regionEnd - fStart) * inverseBpPerPx
         : (fEnd - regionStart) * inverseBpPerPx
       if (feature.get('summary')) {
-        const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
         const max = feature.get('maxScore')
         const c = colorCallback(feature, max)
         const effectiveC = crossingOrigin
@@ -190,7 +194,7 @@ export function drawXY(
                 .mix(colord(colorCallback(feature, min)))
                 .toString())
           : c
-      const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
       if (
         Math.floor(leftPx) !== Math.floor(prevLeftPx) ||
         rightPx - leftPx > 1
@@ -218,7 +222,7 @@ export function drawXY(
       if (feature.get('summary')) {
         const min = feature.get('minScore')
         const c = colorCallback(feature, min)
-        const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
         const effectiveC = crossingOrigin
           ? c
           : c === lastCol
@@ -254,7 +258,7 @@ export function drawXY(
       const c = colorCallback(feature, score)
 
       hasClipping = hasClipping || score < niceMin || score > niceMax
-      const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
 
       if (summaryScoreMode === 'max') {
         const s = feature.get('summary') ? feature.get('maxScore') : score
@@ -283,26 +287,19 @@ export function drawXY(
       const rightPx = regionReversed
         ? (regionEnd - fStart) * inverseBpPerPx
         : (fEnd - regionStart) * inverseBpPerPx
-      const w = rightPx - leftPx + fudgeFactor
+      const w = rightPx - leftPx + WIGGLE_FUDGE_FACTOR
       const score = feature.get('score')
       if (score > niceMax) {
-        fillRectCtx(leftPx, offset, w, clipHeight, ctx)
+        fillRectCtx(leftPx, offset, w, WIGGLE_CLIP_HEIGHT, ctx)
       } else if (score < niceMin && scaleOpts.scaleType !== 'log') {
-        fillRectCtx(leftPx, unadjustedHeight, w, clipHeight, ctx)
+        fillRectCtx(leftPx, unadjustedHeight, w, WIGGLE_CLIP_HEIGHT, ctx)
       }
     }
   }
   ctx.restore()
 
   if (displayCrossHatches) {
-    ctx.lineWidth = 1
-    ctx.strokeStyle = 'rgba(200,200,200,0.5)'
-    for (const { value } of ticks?.items ?? []) {
-      ctx.beginPath()
-      ctx.moveTo(0, Math.round(toY(value)))
-      ctx.lineTo(width, Math.round(toY(value)))
-      ctx.stroke()
-    }
+    drawCrosshatches(ctx, ticks, width, toY)
   }
 
   return {

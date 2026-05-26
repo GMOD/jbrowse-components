@@ -11,12 +11,12 @@ import {
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { clusterLayout, parseClusterTree } from '@jbrowse/tree-sidebar'
+import { computeYTicks } from '@jbrowse/wiggle-core'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
-import { computeYTicks } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '../util.ts'
 
 import type { Source } from '../util.ts'

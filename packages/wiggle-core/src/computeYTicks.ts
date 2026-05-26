@@ -16,7 +16,13 @@ export function computeYTicks(opts: {
   minimalTicks: boolean
   offset?: number
 }): YScaleTicks | undefined {
-  const { height, domain, scaleType, minimalTicks, offset = YSCALEBAR_LABEL_OFFSET } = opts
+  const {
+    height,
+    domain,
+    scaleType,
+    minimalTicks,
+    offset = YSCALEBAR_LABEL_OFFSET,
+  } = opts
   const domainMin = domain?.[0]
   const domainMax = domain?.[1]
   if (domainMin === undefined || domainMax === undefined) {

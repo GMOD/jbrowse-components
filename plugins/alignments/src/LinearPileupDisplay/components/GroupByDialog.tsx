@@ -31,7 +31,6 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-
 function TagResults({ tag, tagSet }: { tag: string; tagSet: string[] }) {
   if (tagSet.length === 0) {
     return (

@@ -439,7 +439,7 @@ export default function SharedWiggleMixin(
           }
 
           // avoid returning a new object if it matches the old value
-          if (JSON.stringify(oldDomain) !== JSON.stringify(ret)) {
+          if (oldDomain[0] !== ret[0] || oldDomain[1] !== ret[1]) {
             oldDomain = ret
           }
 

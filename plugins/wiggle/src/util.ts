@@ -3,7 +3,7 @@ import { getScale } from '@jbrowse/wiggle-core'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { ScaleOpts } from '@jbrowse/wiggle-core'
+import type { ScaleOpts, YScaleTicks } from '@jbrowse/wiggle-core'
 
 export {
   YSCALEBAR_LABEL_OFFSET,
@@ -80,6 +80,22 @@ export function round(value: number) {
 
 export const WIGGLE_FUDGE_FACTOR = 0.3
 export const WIGGLE_CLIP_HEIGHT = 2
+
+export function drawCrosshatches(
+  ctx: CanvasRenderingContext2D,
+  ticks: YScaleTicks | undefined,
+  width: number,
+  toY: (v: number) => number,
+) {
+  ctx.lineWidth = 1
+  ctx.strokeStyle = 'rgba(200,200,200,0.5)'
+  for (const { value } of ticks?.items ?? []) {
+    ctx.beginPath()
+    ctx.moveTo(0, Math.round(toY(value)))
+    ctx.lineTo(width, Math.round(toY(value)))
+    ctx.stroke()
+  }
+}
 
 export interface ScaleValues {
   niceMin: number

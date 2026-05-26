@@ -5,7 +5,12 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { WIGGLE_CLIP_HEIGHT, WIGGLE_FUDGE_FACTOR, getScale } from './util.ts'
+import {
+  WIGGLE_CLIP_HEIGHT,
+  WIGGLE_FUDGE_FACTOR,
+  drawCrosshatches,
+  getScale,
+} from './util.ts'
 
 import type { ScaleOpts } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -214,14 +219,7 @@ export function drawLine(
   }
 
   if (displayCrossHatches) {
-    ctx.lineWidth = 1
-    ctx.strokeStyle = 'rgba(200,200,200,0.5)'
-    for (const { value } of ticks?.items ?? []) {
-      ctx.beginPath()
-      ctx.moveTo(0, Math.round(toY(value)))
-      ctx.lineTo(width, Math.round(toY(value)))
-      ctx.stroke()
-    }
+    drawCrosshatches(ctx, ticks, width, toY)
   }
   return {
     reducedFeatures,

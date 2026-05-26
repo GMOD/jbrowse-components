@@ -25,7 +25,6 @@ export interface YScaleTicks {
 export { default as CrossHatches } from './CrossHatches.tsx'
 export { default as SetMinMaxDialog } from './SetMinMaxDialog.tsx'
 export { default as YScaleBar } from './YScaleBar.tsx'
-export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
 
 export type {
   SourceRenderData,
