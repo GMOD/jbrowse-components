@@ -3,7 +3,7 @@ import { fireEvent, waitFor } from '@testing-library/react'
 
 import { createView, doBeforeEach, mockConsoleWarn, setup } from './util.tsx'
 
-import type { SvInspectorViewModel } from '../../../../plugins/sv-inspector/src/SvInspectorView/model.ts'
+import type { SvInspectorViewModel } from '@jbrowse/plugin-sv-inspector'
 
 setup()
 

@@ -47,7 +47,7 @@ export default function SharedModelF(
       }) {
         self.windowSize = windowSize
         self.windowDelta = windowDelta
-        self.clearAllRpcData()
+        self.reload()
       },
     }))
     .views(self => ({
