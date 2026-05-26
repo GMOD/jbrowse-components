@@ -31,7 +31,7 @@ const ColorByTagDialog = observer(function ColorByTagDialog({
     <Dialog open onClose={handleClose} title="Color by tag">
       <DialogContent style={{ overflowX: 'hidden' }}>
         <Typography>Enter tag to color by: </Typography>
-        <Typography color="textSecondary">
+        <Typography color="text.secondary">
           Examples: XS or TS for RNA-seq inferred read strand, ts (lower-case)
           for minimap2 read strand, HP for haplotype, RG for read group, etc.
         </Typography>

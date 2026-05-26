@@ -105,7 +105,7 @@ function RecentSessionCard({
           subheader={
             <Typography
               variant="body2"
-              color="textSecondary"
+              color="text.secondary"
               noWrap
               className={classes.cardTitle}
             >
