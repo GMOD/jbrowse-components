@@ -1,3 +1,22 @@
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+
+export interface VCFFeatureSerialized extends SimpleFeatureSerialized {
+  ALT?: string[]
+  REF?: string
+  INFO?: {
+    CHR2?: (string | number | undefined)[]
+    END?: (string | number | undefined)[]
+    ANN?: string[]
+    CSQ?: string[]
+  } & Record<string, (string | number | undefined)[] | boolean | undefined>
+  mate?: { refName: string; start: number; end?: number }
+  samples?: Record<string, Record<string, unknown[]>>
+  genotypes?: Record<string, string>
+  clickedSample?: string
+  clickedGenotype?: string
+  clickedAlleles?: string
+}
+
 export interface Descriptions {
   INFO?: {
     ANN?: {
@@ -6,12 +25,5 @@ export interface Descriptions {
     CSQ?: {
       Description?: string
     }
-  }
-}
-
-export interface ReducedFeature {
-  INFO?: {
-    ANN?: string[]
-    CSQ?: string[]
   }
 }

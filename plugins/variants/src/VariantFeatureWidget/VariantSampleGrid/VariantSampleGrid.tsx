@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
@@ -14,20 +14,22 @@ import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable.tsx'
 import SampleFilters from './VariantSampleFilters.tsx'
 import { getSampleGridRows } from './getSampleGridRows.ts'
 
-import type { Filters, InfoFields, VariantFieldDescriptions } from './types.ts'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Filters, VariantFieldDescriptions } from './types.ts'
+import type { VCFFeatureSerialized } from '../types.ts'
 import type { GridColDef } from '@mui/x-data-grid'
 
-type ColumnDisplayMode = 'all' | 'gtOnly' | 'genotypeOnly'
+type ColumnDisplayMode = 'all' | 'gtOnly' | 'gtAndGenotype'
 
 const gtOnlyFields = new Set(['sample', 'GT'])
-const genotypeFields = new Set(['sample', 'GT', 'genotype'])
+const gtAndGenotypeFields = new Set(['sample', 'GT', 'genotype'])
 
-export default function VariantSampleGrid(props: {
-  feature: SimpleFeatureSerialized
+export default function VariantSampleGrid({
+  feature,
+  descriptions = {},
+}: {
+  feature: VCFFeatureSerialized
   descriptions?: VariantFieldDescriptions | null
 }) {
-  const { feature, descriptions = {} } = props
   const [filter, setFilter] = useState<Filters>({})
   const [columnDisplayMode, setColumnDisplayMode] =
     useState<ColumnDisplayMode>('all')
@@ -37,14 +39,11 @@ export default function VariantSampleGrid(props: {
   const [useCounts, setUseCounts] = useState(false)
   const [selectedGenotypes, setSelectedGenotypes] =
     useState<Set<string> | null>(null)
-  const samples = (feature.samples || {}) as Record<string, InfoFields>
-  const ALT = feature.ALT as string[]
-  const REF = feature.REF as string
 
   const { rows, error } = getSampleGridRows(
-    samples,
-    REF,
-    ALT,
+    feature.samples ?? {},
+    feature.REF ?? '',
+    feature.ALT ?? [],
     filter,
     useCounts,
   )
@@ -60,7 +59,7 @@ export default function VariantSampleGrid(props: {
   const columns = useMemo(() => {
     const keys = [
       'sample',
-      ...Object.keys(rows[0] || {}).filter(k => k !== 'id' && k !== 'sample'),
+      ...Object.keys(rows[0] ?? {}).filter(k => k !== 'id' && k !== 'sample'),
     ]
     return keys.map(
       field =>
@@ -73,7 +72,7 @@ export default function VariantSampleGrid(props: {
   }, [rows, filteredRows, descriptions])
 
   return !rows.length ? null : (
-    <BaseCard {...props} title="Samples">
+    <BaseCard title="Samples">
       {error ? <Typography color="error">{`${error}`}</Typography> : null}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <CascadingMenuButton
@@ -121,15 +120,17 @@ export default function VariantSampleGrid(props: {
           value={columnDisplayMode}
           exclusive
           size="small"
-          onChange={(_, newValue) => {
+          onChange={(_, newValue: ColumnDisplayMode | null) => {
             if (newValue !== null) {
-              setColumnDisplayMode(newValue as ColumnDisplayMode)
+              setColumnDisplayMode(newValue)
             }
           }}
         >
           <ToggleButton value="all">All</ToggleButton>
           <ToggleButton value="gtOnly">GT only</ToggleButton>
-          <ToggleButton value="genotypeOnly">GT+resolved genotype</ToggleButton>
+          <ToggleButton value="gtAndGenotype">
+            GT+resolved genotype
+          </ToggleButton>
         </ToggleButtonGroup>
       </div>
 
@@ -146,7 +147,7 @@ export default function VariantSampleGrid(props: {
           <Typography variant="subtitle2" style={{ marginTop: 8 }}>
             Genotype frequencies (click to filter)
           </Typography>
-          <ErrorBoundary FallbackComponent={ErrorMessage}>
+          <ErrorBoundary FallbackComponent={ErrorBanner}>
             <VariantGenotypeFrequencyTable
               rows={rows}
               selectedGenotypes={selectedGenotypes}
@@ -170,8 +171,8 @@ export default function VariantSampleGrid(props: {
           columns={
             columnDisplayMode === 'gtOnly'
               ? columns.filter(f => gtOnlyFields.has(f.field))
-              : columnDisplayMode === 'genotypeOnly'
-                ? columns.filter(f => genotypeFields.has(f.field))
+              : columnDisplayMode === 'gtAndGenotype'
+                ? columns.filter(f => gtAndGenotypeFields.has(f.field))
                 : columns
           }
           rowHeight={25}

@@ -1,8 +1,9 @@
 import { Suspense, lazy } from 'react'
 
 import { parseBreakend } from '@gmod/vcf'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
-import { Paper } from '@mui/material'
+import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AltFormatter from './AltFormatter.tsx'
@@ -11,8 +12,7 @@ import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 
 import type { VariantFeatureWidgetModel } from './stateModelFactory.ts'
-import type { Descriptions, ReducedFeature } from './types.ts'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Descriptions, VCFFeatureSerialized } from './types.ts'
 
 // lazies
 const LaunchBreakendPanel = lazy(
@@ -30,14 +30,14 @@ function AnnotationPanel({
   regex,
 }: {
   descriptions?: Descriptions
-  feature: SimpleFeatureSerialized & ReducedFeature
+  feature: VCFFeatureSerialized
   fieldKey: 'ANN' | 'CSQ'
   title: string
   regex: RegExp
 }) {
   const desc = descriptions?.INFO?.[fieldKey]?.Description
-  const fields = desc?.match(regex)?.[1]?.split('|') || []
-  const data = feature.INFO?.[fieldKey] || []
+  const fields = desc?.match(regex)?.[1]?.split('|') ?? []
+  const data = feature.INFO?.[fieldKey] ?? []
   return (
     <VariantConsequenceDataGrid fields={fields} data={data} title={title} />
   )
@@ -47,77 +47,80 @@ const svTypes = ['inversion', 'deletion', 'duplication', 'cnv', 'sv']
 
 function LaunchBreakendWidgetArea({
   model,
+  feat,
 }: {
   model: VariantFeatureWidgetModel
+  feat: VCFFeatureSerialized
 }) {
-  const { featureData } = model
-  const feat = JSON.parse(JSON.stringify(featureData))
-  const { type = '' } = feat
+  const { type = '', ALT = [], INFO, mate, refName, start, end } = feat
 
   return type === 'breakend' ? (
     <LaunchBreakendPanel
       feature={feat}
-      locStrings={feat.ALT.map(
-        (alt: string) => parseBreakend(alt)?.MatePosition || '',
-      )}
+      locStrings={ALT.map(alt => parseBreakend(alt)?.MatePosition || '')}
       model={model}
     />
-  ) : type === 'translocation' ? (
+  ) : type === 'translocation' && INFO?.CHR2 && INFO.END ? (
     <LaunchBreakendPanel
       feature={feat}
       model={model}
-      locStrings={[`${feat.INFO.CHR2[0]}:${feat.INFO.END}`]}
+      locStrings={[`${INFO.CHR2[0]}:${INFO.END[0]}`]}
     />
-  ) : type === 'paired_feature' ? (
+  ) : type === 'paired_feature' && mate ? (
     <LaunchBreakendPanel
       feature={feat}
       model={model}
-      locStrings={[`${feat.mate.refName}:${feat.mate.start}`]}
+      locStrings={[`${mate.refName}:${mate.start}`]}
     />
   ) : svTypes.some(t => type.includes(t)) ? (
     <LaunchBreakendPanel
       feature={{
         uniqueId: 'random',
-        refName: feat.refName,
-        start: feat.start,
-        end: feat.start + 1,
-        mate: {
-          refName: feat.refName,
-          start: feat.end,
-          end: feat.end + 1,
-        },
+        refName,
+        start,
+        end: start + 1,
+        mate: { refName, start: end, end: end + 1 },
       }}
       model={model}
-      locStrings={[`${feat.refName}:${feat.end}`]}
+      locStrings={[`${refName}:${end}`]}
     />
   ) : null
 }
 
-const FeatDefined = observer(function FeatDefined(props: {
-  feat: SimpleFeatureSerialized
+const FeatDefined = observer(function FeatDefined({
+  feat,
+  model,
+}: {
+  feat: VCFFeatureSerialized
   model: VariantFeatureWidgetModel
 }) {
-  const { feat, model } = props
   const { descriptions } = model
-  const { samples, ...rest } = feat
-  const { REF } = rest
+  const {
+    samples,
+    genotypes,
+    clickedSample,
+    clickedGenotype,
+    clickedAlleles,
+    ...rest
+  } = feat
+  const { REF = '' } = rest
 
   return (
     <Paper data-testid="variant-side-drawer">
       <FeatureDetails
         feature={rest}
+        model={model}
         descriptions={{
           ...variantFieldDescriptions,
           ...descriptions,
         }}
         formatter={(value, key) =>
           key === 'ALT' ? (
-            <AltFormatter value={`${value}`} refString={REF as string} />
+            <AltFormatter value={`${value}`} refString={REF} />
           ) : (
             <Formatter value={value} />
           )
         }
-        {...props}
       />
       <Suspense fallback={null}>
         <AnnotationPanel
@@ -134,26 +137,27 @@ const FeatDefined = observer(function FeatDefined(props: {
           title="Variant ANN field"
           regex={/.*Functional annotations:'(.*)'$/}
         />
-        <LaunchBreakendWidgetArea model={model} />
+        <LaunchBreakendWidgetArea model={model} feat={feat} />
       </Suspense>
-      <VariantSampleGrid
-        feature={feat}
-        {...props}
-        descriptions={descriptions}
-      />
+      {clickedSample ? (
+        <BaseCard title={`Sample: ${clickedSample}`}>
+          <Typography>Genotype: {`${clickedGenotype}`}</Typography>
+          <Typography>Alleles: {`${clickedAlleles}`}</Typography>
+        </BaseCard>
+      ) : null}
+      <VariantSampleGrid feature={feat} descriptions={descriptions} />
     </Paper>
   )
 })
 
-const VariantFeatureWidget = observer(function VariantFeatureWidget(props: {
+const VariantFeatureWidget = observer(function VariantFeatureWidget({
+  model,
+}: {
   model: VariantFeatureWidgetModel
 }) {
-  const { model } = props
-  const { featureData } = model
-  const feat = structuredClone(featureData)
-
+  const feat = structuredClone(model.featureData)
   return feat ? (
-    <FeatDefined feat={feat} {...props} />
+    <FeatDefined feat={feat} model={model} />
   ) : (
     <div>
       No feature loaded, may not be available after page refresh because it was
