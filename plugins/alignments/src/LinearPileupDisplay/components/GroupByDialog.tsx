@@ -20,13 +20,17 @@ import {
 import { observer } from 'mobx-react'
 
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
-import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util.ts'
+import {
+  TAG_REGEX,
+  defaultFilterFlags,
+  negFlags,
+  posFlags,
+} from '../../shared/util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const TAG_REGEX = /^[A-Za-z][A-Za-z0-9]$/
 
 function TagResults({ tag, tagSet }: { tag: string; tagSet: string[] }) {
   if (tagSet.length === 0) {
@@ -190,14 +194,6 @@ const GroupByTagDialog = observer(function GroupByTagDialog(props: {
       }
     })()
   }, [model, type, debouncedTag])
-
-  useEffect(() => {
-    if (type !== 'tag') {
-      setGroupByTagSet(undefined)
-      setError(undefined)
-      setLoading(false)
-    }
-  }, [type])
 
   return (
     <Dialog open onClose={handleClose} title="Group by">

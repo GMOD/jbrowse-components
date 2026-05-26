@@ -1,3 +1,5 @@
+export const TAG_REGEX = /^[A-Za-z][A-Za-z0-9]$/
+
 import { measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 

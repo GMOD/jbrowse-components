@@ -271,7 +271,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         init: types.frozen<InitState | undefined>(),
       }),
     )
-    .volatile(() => ({
+    .volatile(self => ({
       /**
        * #volatile
        */
@@ -311,7 +311,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      coarseBpPerPx: 0,
+      coarseBpPerPx: self.bpPerPx,
       /**
        * #volatile
        */

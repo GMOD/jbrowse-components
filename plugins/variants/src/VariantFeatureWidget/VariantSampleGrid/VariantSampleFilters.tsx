@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 
 import { TextField, Typography } from '@mui/material'
 
@@ -15,13 +15,6 @@ export default function SampleFilters({
 }) {
   const [localFilter, setLocalFilter] = useState(filter)
   const [, startTransition] = useTransition()
-
-  // Sync local state when parent filter prop changes externally
-  useEffect(() => {
-    startTransition(() => {
-      setLocalFilter(filter)
-    })
-  }, [filter, startTransition])
 
   return (
     <>

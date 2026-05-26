@@ -41,7 +41,7 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 const SetFeatureHeightDialog = lazy(
-  () => import('./components/SetFeatureHeightDialog.tsx'),
+  () => import('../shared/components/SetFeatureHeightDialog.tsx'),
 )
 
 /**

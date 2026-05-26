@@ -125,11 +125,7 @@ test('opens reference sequence track and expects zoom in message', async () => {
   const { view, findByTestId, findAllByText } = await createView()
   fireEvent.click(await findByTestId(hts('volvox_refseq'), ...opts))
   view.setNewView(20, 0)
-  await findByTestId(
-    'display-volvox_refseq-LinearReferenceSequenceDisplay',
-    {},
-    delay,
-  )
+  await findByTestId('sequence-display', {}, delay)
   await findAllByText('Zoom in to see sequence')
 }, 30000)
 

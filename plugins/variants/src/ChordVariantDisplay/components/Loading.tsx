@@ -35,7 +35,7 @@ const Loading = observer(function Loading({
     return () => {
       clearTimeout(timeout)
     }
-  })
+  }, [])
 
   return !shown ? null : (
     <g>
