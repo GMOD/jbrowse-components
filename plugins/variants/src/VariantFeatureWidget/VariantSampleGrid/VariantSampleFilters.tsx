@@ -4,7 +4,7 @@ import { TextField, Typography } from '@mui/material'
 
 type Filters = Record<string, string>
 
-export default function SampleFilters({
+export default function VariantSampleFilters({
   columns,
   filter,
   setFilter,
@@ -28,7 +28,7 @@ export default function SampleFilters({
         <TextField
           key={`filter-${field}`}
           placeholder={`Filter ${field}`}
-          value={localFilter[field] || ''}
+          value={localFilter[field] ?? ''}
           onChange={event => {
             const value = event.target.value
             const newFilter = { ...localFilter, [field]: value }
