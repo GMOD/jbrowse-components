@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
+import { getTag } from '@jbrowse/alignments-core'
 import {
   featurizeSA,
   getClip,
@@ -12,6 +13,7 @@ import {
   gatherOverlaps,
   getContainingView,
   getSession,
+  useFetch,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -65,58 +67,48 @@ export default function ReadVsRefDialog({
   // window size stored as string, because it corresponds to a textfield which
   // is parsed as number on submit
   const [windowSizeText, setWindowSize] = useState('0')
-  const [error, setError] = useState<unknown>()
-  const [primaryFeature, setPrimaryFeature] = useState<Feature>()
+  const [submitError, setSubmitError] = useState<unknown>()
   const windowSize = +windowSizeText
 
   // we need to fetch the primary alignment if the selected feature is 2048.
   // this should be the first in the list of the SA tag
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      setError(undefined)
-      try {
-        if (preFeature.get('flags') & 2048) {
-          const SA: string = preFeature.get('tags').SA || ''
-          const primaryAln = SA.split(';')[0]!
-          const [saRef, saStart] = primaryAln.split(',')
-          const { rpcManager } = getSession(track)
-          const adapterConfig = getConf(track, 'adapter')
-          const sessionId = getRpcSessionId(track)
-
-          const [asm] = getConf(track, 'assemblyNames') as string[]
-          const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
-            adapterConfig,
-            regions: [
-              {
-                refName: saRef!,
-                start: +saStart! - 1,
-                end: +saStart!,
-                assemblyName: asm ?? '',
-              },
-            ],
-          })
-
-          const result = feats.find(
-            f =>
-              f.get('name') === preFeature.get('name') &&
-              !(f.get('flags') & 2048) &&
-              !(f.get('flags') & 256),
-          )
-          if (result) {
-            setPrimaryFeature(result)
-          } else {
-            throw new Error('primary feature not found')
-          }
-        } else {
-          setPrimaryFeature(preFeature)
+  const { data: primaryFeature, error: fetchError } = useFetch(
+    ['primaryAlignment', preFeature.id()],
+    async () => {
+      if (preFeature.get('flags') & 2048) {
+        const SA: string = getTag(preFeature, 'SA') || ''
+        const primaryAln = SA.split(';')[0]!
+        const [saRef, saStart] = primaryAln.split(',')
+        const { rpcManager } = getSession(track)
+        const adapterConfig = getConf(track, 'adapter')
+        const sessionId = getRpcSessionId(track)
+        const [asm] = getConf(track, 'assemblyNames') as string[]
+        const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
+          adapterConfig,
+          regions: [
+            {
+              refName: saRef!,
+              start: +saStart! - 1,
+              end: +saStart!,
+              assemblyName: asm ?? '',
+            },
+          ],
+        })
+        const result = feats.find(
+          f =>
+            f.get('name') === preFeature.get('name') &&
+            !(f.get('flags') & 2048) &&
+            !(f.get('flags') & 256),
+        )
+        if (!result) {
+          throw new Error('primary feature not found')
         }
-      } catch (e) {
-        console.error(e)
-        setError(e)
+        return result
       }
-    })()
-  }, [preFeature, track])
+      return preFeature
+    },
+  )
+  const error = submitError ?? fetchError
 
   function onSubmit() {
     try {
@@ -129,7 +121,7 @@ export default function ReadVsRefDialog({
       const cigar = feature.get('CIGAR') as string
       const flags = feature.get('flags') as number
       const origStrand = feature.get('strand')!
-      const SA = (feature.get('tags').SA as string) || ''
+      const SA = (getTag(feature, 'SA') as string) || ''
       const readName = feature.get('name')!
       const clipLengthAtStartOfRead = getClip(cigar, 1)
 
@@ -309,7 +301,7 @@ export default function ReadVsRefDialog({
       handleClose()
     } catch (e) {
       console.error(e)
-      setError(e)
+      setSubmitError(e)
     }
   }
 

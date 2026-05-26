@@ -1,6 +1,8 @@
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
+export type Coord = [number, number] | undefined
+
 export type Conf = SnapshotIn<AnyConfigurationModel>
 
 export type ImportFormSyntenyTrack =

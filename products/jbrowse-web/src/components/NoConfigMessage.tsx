@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 
 const extractConfigFromHref = (h: string) => {
   const params = new URLSearchParams(h.split('?')[1] || '')
@@ -17,7 +17,7 @@ function LinkList({
   }[]
   buildUrl?: (config: string, params?: Record<string, string>) => string
 }) {
-  const [hoveredBadge, setHoveredBadge] = React.useState<string | null>(null)
+  const [hoveredBadge, setHoveredBadge] = useState<string | null>(null)
 
   return (
     <ul>
@@ -173,10 +173,6 @@ const syntenyConfigs: {
   {
     config: 'test_data/yeast_synteny/config.json',
     label: 'Yeast synteny',
-  },
-  {
-    config: 'test_data/config_synteny_nway.json',
-    label: '3-way volvox synteny',
   },
   {
     config: 'test_data/hs1_vs_mm39/config.json',

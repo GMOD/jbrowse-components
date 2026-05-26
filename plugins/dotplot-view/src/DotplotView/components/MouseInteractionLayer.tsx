@@ -3,8 +3,7 @@ import { observer } from 'mobx-react'
 import DotplotGridWrapper from './DotplotGridWrapper.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
-
-type Coord = [number, number] | undefined
+import type { Coord } from '../types.ts'
 
 interface MouseInteractionLayerProps {
   model: DotplotViewModel
