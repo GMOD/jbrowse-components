@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
 import { SanitizedHTML } from '@jbrowse/core/ui'
-import { ColorPicker, ColorPopover } from '@jbrowse/core/ui/ColorPicker'
+import { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
+import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import { getStr, measureGridWidth } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -163,7 +164,7 @@ function SourcesGrid({
               headerName: 'Track color',
               width: 100,
               renderCell: ({ value, id }) => (
-                <ColorPicker
+                <PopoverPicker
                   color={value || 'blue'}
                   onChange={c => {
                     const elt = rows.find(f => f.name === id)
@@ -180,8 +181,8 @@ function SourcesGrid({
               headerName: 'Label color',
               width: 100,
               renderCell: ({ value, id }) => (
-                <ColorPicker
-                  color={value || ''}
+                <PopoverPicker
+                  color={value || 'blue'}
                   onChange={c => {
                     const elt = rows.find(f => f.name === id)
                     if (elt) {

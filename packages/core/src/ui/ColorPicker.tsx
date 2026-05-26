@@ -49,7 +49,7 @@ export function ColorPopover({
   )
 }
 
-export function ColorPicker({
+export default function ColorPicker({
   onChange,
   color,
 }: {

@@ -1,5 +1,5 @@
-import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
+import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import {
   assembleLocString,
   getSession,
@@ -118,7 +118,7 @@ const BookmarkGrid = observer(function BookmarkGrid({
             headerName: 'Highlight',
             width: widths[4],
             renderCell: ({ value, row }) => (
-              <ColorPicker
+              <PopoverPicker
                 color={value || 'black'}
                 onChange={event => {
                   model.updateBookmarkHighlight(row, event)
