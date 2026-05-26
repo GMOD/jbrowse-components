@@ -26,7 +26,7 @@ test('getLeafNames skips unnamed leaves', () => {
   expect(getLeafNames(root).sort()).toEqual(['A', 'B'])
 })
 
-test('clusterTree sorts children by branch length ascending', () => {
+test('clusterTree preserves child order (no sort)', () => {
   const root = clusterTree<NewickNode>({
     children: [
       { name: 'A', length: 3 },
@@ -34,7 +34,7 @@ test('clusterTree sorts children by branch length ascending', () => {
       { name: 'C', length: 2 },
     ],
   })
-  expect(root.children!.map(c => c.data.name)).toEqual(['B', 'C', 'A'])
+  expect(root.children!.map(c => c.data.name)).toEqual(['A', 'B', 'C'])
 })
 
 test('parseClusterTree returns the full tree when no filter is given', () => {
