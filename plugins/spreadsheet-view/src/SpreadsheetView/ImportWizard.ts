@@ -155,6 +155,7 @@ export default function stateModelFactory() {
        */
       tracksForAssembly(selectedAssembly: string) {
         const session = getSession(self)
+        const { pluginManager } = getEnv(self)
         const { tracks, sessionTracks = [] } = session
         const allTracks = [
           ...tracks,
@@ -171,17 +172,14 @@ export default function stateModelFactory() {
             if (typeof adapterTypeName !== 'string') {
               return []
             }
-            const { pluginManager } = getEnv(self)
-            if (!pluginManager.adapterTypes.has(adapterTypeName)) {
-              return []
-            }
-            const adapterType = pluginManager.getAdapterType(adapterTypeName)
-            const locationKey = adapterType?.locationKey
+            const adapterType = pluginManager.adapterTypes.has(adapterTypeName)
+              ? pluginManager.getAdapterType(adapterTypeName)
+              : undefined
+            const { locationKey, normalizeSnapshot } = adapterType ?? {}
             if (!locationKey) {
               return []
             }
-            const adapter =
-              adapterType?.normalizeSnapshot?.(rawAdapter) ?? rawAdapter
+            const adapter = normalizeSnapshot?.(rawAdapter) ?? rawAdapter
             const loc = adapter[locationKey]
             if (!isFileLocation(loc)) {
               return []

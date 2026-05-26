@@ -9,6 +9,11 @@ export interface AdapterMetadata {
   description?: string
 }
 
+/** Expand a raw adapter config snapshot (plain JSON) to its canonical form. */
+export type NormalizeSnapshot = (
+  snap: Record<string, unknown>,
+) => Record<string, unknown>
+
 export default class AdapterType extends PluggableElementBase {
   getAdapterClass: () => Promise<AnyAdapter>
 
@@ -24,7 +29,7 @@ export default class AdapterType extends PluggableElementBase {
    * `{type, uri}`) should expand it here to the canonical form so that
    * downstream code can read location keys without knowing each shorthand.
    */
-  normalizeSnapshot?: (snap: Record<string, unknown>) => Record<string, unknown>
+  normalizeSnapshot?: NormalizeSnapshot
 
   /**
    * The config key holding the adapter's primary file location (e.g.
@@ -44,9 +49,7 @@ export default class AdapterType extends PluggableElementBase {
       displayName?: string
       adapterCapabilities?: string[]
       adapterMetadata?: AdapterMetadata
-      normalizeSnapshot?: (
-        snap: Record<string, unknown>,
-      ) => Record<string, unknown>
+      normalizeSnapshot?: NormalizeSnapshot
       locationKey?: string
     } & (
       | { getAdapterClass: () => Promise<AnyAdapter> }
