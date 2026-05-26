@@ -1,26 +1,25 @@
-import { lazy } from 'react'
-
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
-import { getAssemblyName } from '@jbrowse/sv-core'
+import { SimpleFeature, getSession } from '@jbrowse/core/util'
+import {
+  getAssemblyName,
+  hasBreakpointSplitView,
+  launchBreakpointSplitView,
+  navToLoc,
+} from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { VariantFeatureWidgetModel } from '../stateModelFactory.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
-const BreakpointSplitViewChoiceDialog = lazy(
-  () => import('./BreakpointSplitViewChoiceDialog.tsx'),
-)
-
-function LocStringList({
+const LocStringList = observer(function LocStringList({
   locStrings,
   model,
 }: {
   locStrings: string[]
   model: VariantFeatureWidgetModel
 }) {
-  const session = getSession(model)
-  return (
+  return locStrings.length ? (
     <div>
       <Typography>Navigate to breakend endpoint in linear view:</Typography>
       <ul>
@@ -32,19 +31,7 @@ function LocStringList({
               href="#"
               onClick={event => {
                 event.preventDefault()
-                const { view } = model
-                try {
-                  if (view) {
-                    view.navToLocString?.(locString)
-                  } else {
-                    throw new Error(
-                      'No view associated with this feature detail panel anymore',
-                    )
-                  }
-                } catch (e) {
-                  console.error(e)
-                  session.notify(`${e}`)
-                }
+                navToLoc(locString, model)
               }}
             >
               (LGV)
@@ -53,75 +40,65 @@ function LocStringList({
         ))}
       </ul>
     </div>
-  )
-}
+  ) : null
+})
 
-function LaunchBreakpointSplitViewPanel({
-  locStrings,
+const LaunchBreakpointSplitViewPanel = observer(
+  function LaunchBreakpointSplitViewPanel({
+    locStrings,
+    model,
+    feature,
+  }: {
+    locStrings: string[]
+    model: VariantFeatureWidgetModel
+    feature: SimpleFeatureSerialized
+  }) {
+    const session = getSession(model)
+    const simpleFeature = new SimpleFeature(feature)
+    const assemblyName = getAssemblyName(model.view)
+    return assemblyName ? (
+      <div>
+        <Typography>Launch split view</Typography>
+        <ul>
+          {locStrings.map(locString => (
+            <li key={locString}>
+              {`${feature.refName}:${feature.start} // ${locString}`}{' '}
+              <Link
+                href="#"
+                onClick={event => {
+                  event.preventDefault()
+                  launchBreakpointSplitView({
+                    session,
+                    view: model.view,
+                    assemblyName,
+                    feature: simpleFeature,
+                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview`,
+                  })
+                }}
+              >
+                (breakpoint split view)
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ) : null
+  },
+)
+
+export default function LaunchBreakendPanel({
   model,
+  locStrings,
   feature,
 }: {
   locStrings: string[]
   model: VariantFeatureWidgetModel
   feature: SimpleFeatureSerialized
 }) {
-  const session = getSession(model)
-  const simpleFeature = new SimpleFeature(feature)
-  const assemblyName = getAssemblyName(model.view)
-
-  return assemblyName ? (
-    <div>
-      <Typography>Launch split view</Typography>
-      <ul>
-        {locStrings.map(locString => (
-          <li key={locString}>
-            {`${feature.refName}:${feature.start} // ${locString}`}{' '}
-            <Link
-              href="#"
-              onClick={event => {
-                event.preventDefault()
-                session.queueDialog(handleClose => [
-                  BreakpointSplitViewChoiceDialog,
-                  {
-                    handleClose,
-                    session,
-                    feature: simpleFeature,
-                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview`,
-                    view: model.view,
-                    assemblyName,
-                  },
-                ])
-              }}
-            >
-              (breakpoint split view)
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  ) : null
-}
-
-export default function LaunchBreakendPanel(props: {
-  locStrings: string[]
-  model: VariantFeatureWidgetModel
-  feature: SimpleFeatureSerialized
-}) {
-  const { model, locStrings, feature } = props
-  const session = getSession(model)
-  const { pluginManager } = getEnv(session)
-  let hasBreakpointSplitView = false
-
-  try {
-    hasBreakpointSplitView = !!pluginManager.getViewType('BreakpointSplitView')
-  } catch (e) {
-    // ignore
-  }
-
   return (
-    <BaseCard {...props} title="Breakends">
+    <BaseCard title="Breakends">
       <LocStringList model={model} locStrings={locStrings} />
-      {hasBreakpointSplitView ? (
+      {hasBreakpointSplitView(model) ? (
         <LaunchBreakpointSplitViewPanel
           model={model}
           locStrings={locStrings}

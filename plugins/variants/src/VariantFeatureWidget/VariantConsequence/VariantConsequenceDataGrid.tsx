@@ -14,10 +14,14 @@ export default function VariantConsequenceDataGrid({
   return data.length ? (
     <BaseCard title={title}>
       <VariantConsequenceDataGridWrapper
-        rows={data.map((elt, id) => ({
-          id,
-          ...Object.fromEntries(elt.split('|').map((e, i) => [fields[i], e])),
-        }))}
+        rows={data.map((elt, id) => {
+          const parts = elt.split('|')
+          const row: Record<string, string> = { id: `${id}` }
+          for (const [i, field] of fields.entries()) {
+            row[field] = parts[i] ?? ''
+          }
+          return row
+        })}
         columns={fields.map(c => ({ field: c }))}
       />
     </BaseCard>
