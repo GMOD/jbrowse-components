@@ -2,7 +2,6 @@ const baseConfig = {
   moduleNameMapper: {
     '^@jbrowse/core/util/useMeasure$':
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
-    '^.*/AutoSizer\\.tsx$': '<rootDir>/packages/__mocks__/AutoSizer.ts',
     '^@jbrowse/text-indexing-core$':
       '<rootDir>/packages/text-indexing-core/src/index.ts',
     '^swr$': '<rootDir>/packages/__mocks__/swr.ts',
@@ -21,16 +20,16 @@ const baseConfig = {
     'plugins/*/src/**/*.{js,jsx,ts,tsx}',
   ],
   coveragePathIgnorePatterns: [
-    '!*.d.ts',
+    '\\.d\\.ts$',
     'makeWorkerInstance.ts',
     'react-colorful.js',
     'QuickLRU.js',
   ],
   setupFiles: [
     '<rootDir>/config/jest/textEncoder.js',
+    '<rootDir>/config/jest/structuredClone.js',
     '<rootDir>/config/jest/console.js',
     '<rootDir>/config/jest/messagechannel.js',
-    '<rootDir>/config/jest/structuredClone.js',
     '<rootDir>/config/jest/setHTML.js',
   ],
   testEnvironmentOptions: { url: 'http://localhost' },
