@@ -40,6 +40,7 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
     "@jbrowse/tree-sidebar": "workspace:^",
+    "@jbrowse/wiggle-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
     "@mui/x-charts-vendor": "^9.0.0",

@@ -1640,6 +1640,9 @@ importers:
       '@jbrowse/tree-sidebar':
         specifier: workspace:^
         version: link:../../packages/tree-sidebar
+      '@jbrowse/wiggle-core':
+        specifier: workspace:^
+        version: link:../../packages/wiggle-core
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
