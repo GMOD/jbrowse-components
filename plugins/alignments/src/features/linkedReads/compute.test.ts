@@ -1,4 +1,11 @@
 import {
+  SAM_FLAG_MATE_UNMAPPED,
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_SECONDARY,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/alignments-core'
+
+import {
   LINKED_READ_COLOR_PAIR_LL,
   LINKED_READ_COLOR_PAIR_LR,
   LINKED_READ_COLOR_PAIR_RL,
@@ -15,11 +22,6 @@ import {
 
 import type { ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
-
-const SAM_FLAG_PAIRED = 1
-const SAM_FLAG_SECONDARY = 256
-const SAM_FLAG_SUPPLEMENTARY = 2048
-const SAM_FLAG_MATE_UNMAPPED = 8
 
 // Minimal PileupDataResult with only the fields used by these functions.
 function makeData(opts: {

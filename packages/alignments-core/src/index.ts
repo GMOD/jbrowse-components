@@ -28,6 +28,20 @@ export type { ClipMismatch, Mismatch } from '@jbrowse/cigar-utils'
 export { getTag } from './getTag.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
+  SAM_FLAG_DUPLICATE,
+  SAM_FLAG_FAILS_QC,
+  SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_MATE_REVERSE,
+  SAM_FLAG_MATE_UNMAPPED,
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_PROPER_PAIR,
+  SAM_FLAG_REVERSE,
+  SAM_FLAG_SECONDARY,
+  SAM_FLAG_SECOND_IN_PAIR,
+  SAM_FLAG_SUPPLEMENTARY,
+  SAM_FLAG_UNMAPPED,
+} from './samFlags.ts'
+export {
   CANVAS2D_COVERAGE,
   coverageLayout,
   drawCoverageBins,

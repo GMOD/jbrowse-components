@@ -1,14 +1,15 @@
+import {
+  SAM_FLAG_PROPER_PAIR,
+  SAM_FLAG_REVERSE,
+  SAM_FLAG_SECONDARY,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/alignments-core'
 import { groupBy, max, min } from '@jbrowse/core/util'
 
 import { getInsertSizeStats } from './insertSizeStats.ts'
 
 import type { ChainStats } from './types.ts'
 import type { ChainFeatureData } from './webglRpcTypes.ts'
-
-const SAM_FLAG_PROPER_PAIR = 2
-const SAM_FLAG_REVERSE = 16
-const SAM_FLAG_SECONDARY = 256
-const SAM_FLAG_SUPPLEMENTARY = 2048
 
 /**
  * Group chain features by name and compute per-chain metadata used by the

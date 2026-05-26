@@ -4,7 +4,7 @@ import {
   SAM_FLAG_PAIRED,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
-} from '../../shared/samFlags.ts'
+} from '@jbrowse/alignments-core'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { ArcColorByType } from '../../shared/types.ts'

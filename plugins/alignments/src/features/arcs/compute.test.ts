@@ -1,4 +1,9 @@
 import {
+  SAM_FLAG_MATE_UNMAPPED,
+  SAM_FLAG_PAIRED,
+} from '@jbrowse/alignments-core'
+
+import {
   arcsToRegionResult,
   computeArcsFromPileupData,
   groupArcsByRef,
@@ -104,9 +109,6 @@ function makePileupData(
     ...overrides,
   }
 }
-
-const SAM_FLAG_PAIRED = 1
-const SAM_FLAG_MATE_UNMAPPED = 8
 
 describe('computeArcsFromPileupData', () => {
   test('returns empty result for empty data', () => {

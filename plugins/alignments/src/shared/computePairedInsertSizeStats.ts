@@ -1,9 +1,10 @@
-import { getInsertSizeStats } from './insertSizeStats.ts'
 import {
   SAM_FLAG_PROPER_PAIR,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
-} from './samFlags.ts'
+} from '@jbrowse/alignments-core'
+
+import { getInsertSizeStats } from './insertSizeStats.ts'
 
 import type { FeatureData } from './webglRpcTypes.ts'
 
