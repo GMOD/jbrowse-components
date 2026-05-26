@@ -11,23 +11,25 @@ const YSCALEBAR_LABEL_OFFSET = 5
 // endpoints for short tracks / when the user opts into minimal ticks.
 export function computeYTicks(opts: {
   height: number
-  domain: [number, number] | undefined
+  domain: [number, number] | number[] | undefined
   scaleType: string
   minimalTicks: boolean
+  offset?: number
 }): YScaleTicks | undefined {
-  const { height, domain, scaleType, minimalTicks } = opts
-  if (!domain) {
+  const { height, domain, scaleType, minimalTicks, offset = YSCALEBAR_LABEL_OFFSET } = opts
+  const domainMin = domain?.[0]
+  const domainMax = domain?.[1]
+  if (domainMin === undefined || domainMax === undefined) {
     return undefined
   }
-  const yTop = YSCALEBAR_LABEL_OFFSET
-  const yBottom = height - YSCALEBAR_LABEL_OFFSET - 1
+  const yTop = offset
+  const yBottom = height - offset - 1
   const scale = getScale({
     scaleType,
-    domain,
+    domain: [domainMin, domainMax],
     range: [yBottom, yTop],
     inverted: false,
   })
-  const [domainMin, domainMax] = domain
   const values =
     height < 100 || minimalTicks
       ? domainMin === domainMax
@@ -35,7 +37,7 @@ export function computeYTicks(opts: {
         : [domainMin, domainMax]
       : scale.ticks(4)
   return {
-    ticks: values.map(v => ({ value: v, y: scale(v) })),
+    items: values.map(v => ({ value: v, y: scale(v) })),
     yTop,
     yBottom,
   }

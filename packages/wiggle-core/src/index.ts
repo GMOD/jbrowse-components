@@ -17,7 +17,7 @@ export const YSCALEBAR_LABEL_OFFSET = 5
 export { computeYTicks } from './computeYTicks.ts'
 
 export interface YScaleTicks {
-  ticks: { value: number; y: number; label?: string }[]
+  items: { value: number; y: number; label?: string }[]
   yTop: number
   yBottom: number
 }

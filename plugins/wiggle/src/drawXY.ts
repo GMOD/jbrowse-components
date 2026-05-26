@@ -297,7 +297,7 @@ export function drawXY(
   if (displayCrossHatches) {
     ctx.lineWidth = 1
     ctx.strokeStyle = 'rgba(200,200,200,0.5)'
-    for (const { value } of ticks?.ticks ?? []) {
+    for (const { value } of ticks?.items ?? []) {
       ctx.beginPath()
       ctx.moveTo(0, Math.round(toY(value)))
       ctx.lineTo(width, Math.round(toY(value)))

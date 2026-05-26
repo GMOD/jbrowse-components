@@ -17,7 +17,7 @@ describe('YScaleBar', () => {
       <svg>
         <YScaleBar
           ticks={{
-            ticks: [],
+            items: [],
             yTop: 0,
             yBottom: 45,
           }}
@@ -34,7 +34,7 @@ describe('YScaleBar', () => {
       <svg>
         <YScaleBar
           ticks={{
-            ticks: [
+            items: [
               { value: 0, y: 40, label: '0' },
               { value: 100, y: 20, label: '100' },
               { value: 200, y: 0, label: '200' },
@@ -50,12 +50,12 @@ describe('YScaleBar', () => {
     expect(groups.length).toBeGreaterThanOrEqual(3)
   })
 
-  it('uses numeric value as key for ticks', () => {
+  it('uses composite key for ticks', () => {
     const { container } = render(
       <svg>
         <YScaleBar
           ticks={{
-            ticks: [
+            items: [
               { value: 0, y: 40, label: '0' },
               { value: 10, y: 30, label: '10' },
             ],

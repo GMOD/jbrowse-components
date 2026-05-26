@@ -14,7 +14,7 @@ const YScaleBar = observer(function YScaleBar({
   if (!ticks) {
     return null
   }
-  const { ticks: items, yTop, yBottom } = ticks
+  const { items, yTop, yBottom } = ticks
   const bg = theme.palette.background.default
   const fg = theme.palette.text.primary
   const isLeft = orientation !== 'right'

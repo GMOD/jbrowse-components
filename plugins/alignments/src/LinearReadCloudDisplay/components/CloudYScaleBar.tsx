@@ -48,8 +48,8 @@ const CloudYScaleBar = observer(function CloudYScaleBar({
         d={`M${k * tickLength},0H0.5V${height}H${k * tickLength}`}
       />
       {/* Ticks and labels */}
-      {ticks.map(({ value, y }) => (
-        <g key={value} transform={`translate(0,${y})`}>
+      {ticks.map(({ value, y }, i) => (
+        <g key={`${value}-${y}-${i}`} transform={`translate(0,${y})`}>
           <line stroke={fg} x2={k * tickLength} y1={0.5} y2={0.5} />
           <text
             stroke={bg}

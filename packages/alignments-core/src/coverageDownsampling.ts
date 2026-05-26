@@ -30,7 +30,7 @@ export function computeCoverageTicks(
   const yBottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
 
   if (maxDepth === 0) {
-    return { ticks: [], yTop, yBottom }
+    return { items: [], yTop, yBottom }
   }
 
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
@@ -41,7 +41,7 @@ export function computeCoverageTicks(
           yBottom - (Math.log2(Math.max(1, value)) / logMax) * effectiveHeight
       : (value: number) => yBottom - (value / maxDepth) * effectiveHeight
 
-  const ticks: YScaleTicks['ticks'] = []
+  const ticks: YScaleTicks['items'] = []
   if (scaleType === 'log') {
     ticks.push({ value: 1, y: yOf(1) })
     let tick = 2
@@ -62,7 +62,7 @@ export function computeCoverageTicks(
     }
   }
 
-  return { ticks, yTop, yBottom }
+  return { items: ticks, yTop, yBottom }
 }
 
 export interface CoverageRegion {

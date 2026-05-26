@@ -22,7 +22,7 @@ export default function CrossHatches({
         width,
       }}
     >
-      {ticks.ticks.map(({ value, y }, i) => (
+      {ticks.items.map(({ value, y }, i) => (
         <line
           key={`${value}-${y}-${i}`}
           x1={0}

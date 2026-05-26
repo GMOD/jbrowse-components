@@ -16,7 +16,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
-import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
+import { computeYTicks } from '@jbrowse/wiggle-core'
+import { YSCALEBAR_LABEL_OFFSET } from '../util.ts'
 
 import type { Source } from '../util.ts'
 import type { HoveredTreeNode } from './components/treeTypes.ts'
@@ -459,23 +460,13 @@ export function stateModelFactory(
         get ticks() {
           const { scaleType, domain, isMultiRow, rowHeight, useMinimalTicks } =
             self
-          if (!domain) {
-            return undefined
-          }
-          const offset = isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET
-          const scale = getScale({
-            scaleType,
+          return computeYTicks({
+            height: rowHeight,
             domain,
-            range: [rowHeight - offset, offset],
-            inverted: false,
+            scaleType,
+            minimalTicks: useMinimalTicks,
+            offset: isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET,
           })
-          const values =
-            rowHeight < 100 || useMinimalTicks ? domain : scale.ticks(4)
-          return {
-            ticks: values.map(v => ({ value: v, y: scale(v) })),
-            yTop: offset,
-            yBottom: rowHeight - offset,
-          }
         },
 
         /**

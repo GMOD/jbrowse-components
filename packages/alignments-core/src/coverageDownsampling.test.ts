@@ -12,30 +12,30 @@ describe('computeCoverageTicks', () => {
     expect(result.yTop).toBe(5)
     expect(result.yBottom).toBe(145)
     // step = 50 for maxDepth=100; ticks at 0, 50, 100
-    expect(result.ticks.map(t => t.value)).toEqual([0, 50, 100])
+    expect(result.items.map(t => t.value)).toEqual([0, 50, 100])
   })
 
   test('short height uses only 0 and max ticks', () => {
     const small = computeCoverageTicks(50, 50)
-    expect(small.ticks.length).toBe(2)
-    expect(small.ticks[0]!.value).toBe(0)
-    expect(small.ticks[1]!.value).toBe(50)
+    expect(small.items.length).toBe(2)
+    expect(small.items[0]!.value).toBe(0)
+    expect(small.items[1]!.value).toBe(50)
   })
 
   test('tall height uses nice step (more ticks than short)', () => {
     const small = computeCoverageTicks(50, 50)
     const large = computeCoverageTicks(50, 150)
-    expect(large.ticks.length).toBeGreaterThan(small.ticks.length)
+    expect(large.items.length).toBeGreaterThan(small.items.length)
     // all values are multiples of a nice step
-    const step = large.ticks[1]!.value - large.ticks[0]!.value
-    for (const tick of large.ticks) {
+    const step = large.items[1]!.value - large.items[0]!.value
+    for (const tick of large.items) {
       expect(tick.value % step).toBe(0)
     }
   })
 
   test('tick y values are within bounds', () => {
     const result = computeCoverageTicks(200, 100)
-    for (const tick of result.ticks) {
+    for (const tick of result.items) {
       expect(tick.y).toBeGreaterThanOrEqual(result.yTop)
       expect(tick.y).toBeLessThanOrEqual(result.yBottom)
     }
