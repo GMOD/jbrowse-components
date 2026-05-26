@@ -78,12 +78,12 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { width, maxBpPerPx, minBpPerPx, coarseBpPerPx, bpPerPx } = model
+  const { width, maxBpPerPx, minBpPerPx, coarseBpPerPx } = model
 
   const [dragValue, setDragValue] = useState<number | null>(null)
   const value = dragValue ?? -Math.log2(coarseBpPerPx) * 100
-  const zoomInDisabled = bpPerPx <= minBpPerPx + 0.0001
-  const zoomOutDisabled = bpPerPx >= maxBpPerPx - 0.0001
+  const zoomInDisabled = coarseBpPerPx <= minBpPerPx + 0.0001
+  const zoomOutDisabled = coarseBpPerPx >= maxBpPerPx - 0.0001
   return (
     <div className={classes.container}>
       <Tooltip title="Zoom out 2x">
