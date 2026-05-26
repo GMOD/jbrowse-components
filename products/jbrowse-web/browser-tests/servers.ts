@@ -5,7 +5,12 @@ import { fileURLToPath } from 'url'
 
 import OAuthServer from '@node-oauth/express-oauth-server'
 import cors from 'cors'
-import express, { Router, json, static as serveStatic, urlencoded } from 'express'
+import express, {
+  Router,
+  json,
+  static as serveStatic,
+  urlencoded,
+} from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
 import type {

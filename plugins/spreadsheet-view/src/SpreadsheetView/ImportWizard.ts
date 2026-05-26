@@ -35,14 +35,16 @@ function isFileLocation(loc: unknown): loc is FileLocation {
   )
 }
 
-// adapters whose tracks can be opened directly in the spreadsheet import form
-const spreadsheetCompatibleAdapters = new Set([
-  'VcfAdapter',
-  'VcfTabixAdapter',
-  'BedAdapter',
-  'BedTabixAdapter',
-  'BedpeAdapter',
-])
+// maps adapter type name → spreadsheet file type; this is both the allowlist
+// and the type resolution for "open from track" (avoids filename guessing)
+const adapterFileTypes: Record<string, (typeof fileTypes)[number]> = {
+  VcfAdapter: 'VCF',
+  VcfTabixAdapter: 'VCF',
+  BedAdapter: 'BED',
+  BedTabixAdapter: 'BED',
+  BedpeAdapter: 'BEDPE',
+  StarFusionAdapter: 'STAR-Fusion',
+}
 
 // matches a file extension against the supported file types (case-insensitive)
 const fileTypesRegexp = new RegExp(
@@ -181,7 +183,8 @@ export default function stateModelFactory() {
             if (typeof adapterTypeName !== 'string') {
               return []
             }
-            if (!spreadsheetCompatibleAdapters.has(adapterTypeName)) {
+            const fileType = adapterFileTypes[adapterTypeName]
+            if (!fileType) {
               return []
             }
             const adapterType = pluginManager.getAdapterType(adapterTypeName)
@@ -192,11 +195,6 @@ export default function stateModelFactory() {
             const adapter = normalizeSnapshot?.(rawAdapter) ?? rawAdapter
             const loc = adapter[locationKey]
             if (!isFileLocation(loc)) {
-              return []
-            }
-            const locName = getFileSourceName(loc)
-            const fileType = locName ? detectFileType(locName) : undefined
-            if (!fileType) {
               return []
             }
             const category = readConfObject(track, 'category') ?? []

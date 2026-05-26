@@ -2281,6 +2281,26 @@
       ]
     },
     {
+      "type": "VariantTrack",
+      "trackId": "volvox_star_fusion",
+      "name": "STAR-Fusion fusions",
+      "category": ["Variants"],
+      "adapter": {
+        "type": "StarFusionAdapter",
+        "starFusionLocation": {
+          "uri": "volvox.star-fusion.tsv",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["volvox"],
+      "displays": [
+        {
+          "type": "LinearPairedArcDisplay",
+          "displayId": "volvox_star_fusion-LinearPairedArcDisplay"
+        }
+      ]
+    },
+    {
       "type": "SyntenyTrack",
       "trackId": "volvox_del.pif",
       "name": "volvox_del.pif",
