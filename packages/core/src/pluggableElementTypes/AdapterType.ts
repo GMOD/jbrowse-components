@@ -33,9 +33,8 @@ export default class AdapterType extends PluggableElementBase {
 
   /**
    * The config key holding the adapter's primary file location (e.g.
-   * `'vcfGzLocation'`). Setting this opts the adapter into any feature that
-   * reads tracks by their primary file — such as "Open from track" in the
-   * spreadsheet / SV inspector.
+   * `'vcfGzLocation'`). Used by import forms to extract the file location from
+   * a track's adapter config.
    */
   locationKey?: string
 

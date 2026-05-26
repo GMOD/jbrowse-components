@@ -35,6 +35,15 @@ function isFileLocation(loc: unknown): loc is FileLocation {
   )
 }
 
+// adapters whose tracks can be opened directly in the spreadsheet import form
+const spreadsheetCompatibleAdapters = new Set([
+  'VcfAdapter',
+  'VcfTabixAdapter',
+  'BedAdapter',
+  'BedTabixAdapter',
+  'BedpeAdapter',
+])
+
 // matches a file extension against the supported file types (case-insensitive)
 const fileTypesRegexp = new RegExp(
   String.raw`\.(${fileTypes.join('|')})(\.gz)?$`,
@@ -172,9 +181,10 @@ export default function stateModelFactory() {
             if (typeof adapterTypeName !== 'string') {
               return []
             }
-            const adapterType = pluginManager.adapterTypes.has(adapterTypeName)
-              ? pluginManager.getAdapterType(adapterTypeName)
-              : undefined
+            if (!spreadsheetCompatibleAdapters.has(adapterTypeName)) {
+              return []
+            }
+            const adapterType = pluginManager.getAdapterType(adapterTypeName)
             const { locationKey, normalizeSnapshot } = adapterType ?? {}
             if (!locationKey) {
               return []
