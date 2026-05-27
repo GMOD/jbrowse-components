@@ -27,8 +27,11 @@ import {
 import {
   VIEW_DIVIDER_HEIGHT,
   calc,
+  findFeatureViewLevel,
   getBlockFeatures,
   intersect,
+  isOffscreenLayout,
+  makeOffscreenLayout,
 } from './util.ts'
 
 import type {
@@ -232,6 +235,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         function getY(level: number, c: LayoutRecord) {
+          // Synthesized off-display marker from getMatchedFeaturesInLayout —
+          // snap to the track's bottom edge.
+          if (isOffscreenLayout(c)) {
+            return yOffsets[level] + heights[level]
+          }
           const off = coverageOffsets[level]
           const top = c[1]
           const bot = c[3]
@@ -252,6 +260,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
         const tracks = this.getMatchedTracks(trackConfigId)
+        const { views } = self
         return features.map(c =>
           c
             .map(feature => {
@@ -267,7 +276,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   }
                 }
               }
-              return undefined
+              // Feature wasn't found in any track's pileup layout — usually
+              // filterBy excluded it, the alignments display's maxHeight
+              // pushed it off the bottom, or it hasn't loaded yet. Synthesize
+              // an off-display LayoutRecord so the connection still draws to
+              // the track's bottom edge (see makeOffscreenLayout / getY).
+              const refName = feature.get('refName')
+              const start = feature.get('start')
+              const level = findFeatureViewLevel(views, refName, start)
+              if (level === undefined) {
+                return undefined
+              }
+              return {
+                feature,
+                layout: makeOffscreenLayout(start, feature.get('end')),
+                level,
+                clipLengthAtStartOfRead:
+                  feature.get('clipLengthAtStartOfRead') ?? 0,
+              }
             })
             .filter(notEmpty),
         )
