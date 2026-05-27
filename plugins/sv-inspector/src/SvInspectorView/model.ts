@@ -196,7 +196,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           trackId,
           name: 'features from tabular data',
           adapter: this.featuresAdapterConfigSnapshot,
-          assemblyNames: this.assemblyName ? [this.assemblyName] : [],
+          assemblyNames: [this.assemblyName!],
           displays: [
             {
               type: 'ChordVariantDisplay',
@@ -353,12 +353,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
-              const {
-                featuresCircularTrackConfiguration: generatedTrackConf,
-                assemblyName,
-                circularView,
-                variantTrackId,
-              } = self
+              const { assemblyName, circularView, variantTrackId } = self
               // hideTrack reads circularView.tracks internally; avoid tracking
               // that dependency to prevent re-triggering on our own track changes
               untracked(() => {
@@ -366,7 +361,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               })
               if (assemblyName) {
                 // @ts-expect-error
-                circularView.addTrackConf(generatedTrackConf, { assemblyName })
+                circularView.addTrackConf(self.featuresCircularTrackConfiguration, {
+                  assemblyName,
+                })
               }
             },
             { name: 'SvInspectorView track configuration binding' },
