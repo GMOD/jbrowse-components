@@ -20,7 +20,9 @@ import {
 import { formatChainTooltip, formatFeatureTooltip } from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
+import type { FeatureHit } from './useAlignmentsBase.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
+import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 const useStyles = makeStyles()({
   scrollbarTrack: {
@@ -145,23 +147,23 @@ const PileupInner = observer(function PileupInner({
     sashimiArcsHeight,
   } = model
 
+  function chainIdsForHit(hit: FeatureHit, resolved: ResolvedBlock) {
+    const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
+    return chainIdx !== undefined ? (model.chainIdMap.get(chainIdx) ?? []) : []
+  }
+
   function handleCanvasMouseMove(e: React.MouseEvent) {
     processMouseMove(
       e,
       (hit, resolved) => {
         model.setFeatureIdUnderMouse(hit.id)
         if (isChainMode) {
-          const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
-          const chainIds =
-            chainIdx !== undefined ? (model.chainIdMap.get(chainIdx) ?? []) : []
-          model.setHighlightedChainIds(chainIds)
+          model.setHighlightedChainIds(chainIdsForHit(hit, resolved))
           model.setMouseoverExtraInformation(
             formatChainTooltip(resolved.rpcData, hit.index, resolved.refName),
           )
         } else {
-          if (model.highlightedChainIds.length > 0) {
-            model.setHighlightedChainIds([])
-          }
+          model.clearHighlights()
           model.setMouseoverExtraInformation(
             formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
           )
@@ -179,10 +181,7 @@ const PileupInner = observer(function PileupInner({
       (hit, resolved) => {
         void model.selectFeatureById(hit.id)
         if (isChainMode) {
-          const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
-          const chainIds =
-            chainIdx !== undefined ? (model.chainIdMap.get(chainIdx) ?? []) : []
-          model.setSelectedChainIds(chainIds)
+          model.setSelectedChainIds(chainIdsForHit(hit, resolved))
         }
       },
       () => {

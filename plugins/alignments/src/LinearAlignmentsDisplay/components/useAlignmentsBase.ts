@@ -6,6 +6,7 @@ import { useTheme } from '@mui/material'
 
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
 import {
+  CLICK_SUPPRESS_THRESHOLD_PX,
   buildColorPaletteFromTheme,
   getCanvasCoords,
   isDragInProgress,
@@ -54,6 +55,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   // source of truth via isDragInProgress; no parallel boolean state needed.
   // Resize handles and scrollbar manage their own drags independently.
   const dragControllerRef = useAbortableRef()
+  // Suppresses the trailing click that fires when a pan ends inside the canvas.
+  const dragMovedRef = useRef(false)
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const theme = useTheme()
@@ -118,8 +121,15 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   // --- Shared event handlers ---
 
   function handleMouseDown(e: React.MouseEvent) {
+    dragMovedRef.current = false
     const startOffsetPx = view.offsetPx
-    startDocumentDrag(e, dragControllerRef, dx => {
+    startDocumentDrag(e, dragControllerRef, (dx, dy) => {
+      if (
+        !dragMovedRef.current &&
+        Math.abs(dx) + Math.abs(dy) > CLICK_SUPPRESS_THRESHOLD_PX
+      ) {
+        dragMovedRef.current = true
+      }
       view.setNewView(
         view.bpPerPx,
         clamp(startOffsetPx - dx, view.minOffset, view.maxOffset),
@@ -247,6 +257,11 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     onFeature: (hit: FeatureHit, resolved: ResolvedBlock) => void,
     onNoFeature: () => void,
   ) {
+    // click fires after mousedown+mouseup regardless of motion in between.
+    if (dragMovedRef.current) {
+      dragMovedRef.current = false
+      return
+    }
     const coords = getCanvasCoords(e, canvas, canvasRectRef)
     if (!coords) {
       return

@@ -96,6 +96,9 @@ export const CIGAR_TYPE_LABELS: Record<string, string> = {
   hardclip: 'Hard Clip',
 }
 
+// Pan-or-click threshold (|dx|+|dy|, CSS px).
+export const CLICK_SUPPRESS_THRESHOLD_PX = 4
+
 // Ref to a shared AbortController, auto-aborted on unmount so that a
 // removed component leaves no dangling document mousemove/mouseup
 // listeners referencing destroyed models.
