@@ -26,8 +26,8 @@ export default function RecentSessionsCards({
           onClick={async () => {
             await launch(session.path)
           }}
-          onDelete={del => {
-            setSessionsToDelete([del])
+          onDelete={() => {
+            setSessionsToDelete([session])
           }}
           onRename={setSessionToRename}
           onAddToQuickstartList={addToQuickstartList}

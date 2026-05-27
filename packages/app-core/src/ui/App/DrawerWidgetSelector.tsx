@@ -10,9 +10,11 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { Widget } from '@jbrowse/core/util/types'
-import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  SessionWithFocusedViewAndDrawerWidgets,
+  Widget,
+} from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
   formControl: {

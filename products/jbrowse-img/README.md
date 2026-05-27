@@ -337,8 +337,8 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
   `--config`; can be used in place of `--fasta`
 - `--tracks` — path to a JSON file containing an array of JBrowse 2 track
   configs (e.g. [data/tracks.json](data/tracks.json))
-- `--session` — path to a JBrowse 2 session JSON exported from
-  File → Export session
+- `--session` — path to a JBrowse 2 session JSON exported from File → Export
+  session
 - `--config` — path to a full JBrowse 2 config.json (e.g.
   [data/config.json](data/config.json))
 - `--defaultSession` — use the `defaultSession` embedded in `--config`

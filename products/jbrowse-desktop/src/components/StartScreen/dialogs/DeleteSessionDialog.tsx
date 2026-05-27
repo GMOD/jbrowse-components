@@ -1,34 +1,32 @@
-import { useState } from 'react'
-
 import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { DialogContentText } from '@mui/material'
+
+import { useIpcAction } from './useIpcAction.ts'
+
 const { ipcRenderer } = window.require('electron')
 
-const DeleteSessionDialog = ({
+export default function DeleteSessionDialog({
   sessionsToDelete,
   onClose,
 }: {
   sessionsToDelete: { path: string }[]
   onClose: () => void
-}) => {
-  const [error, setError] = useState<unknown>()
+}) {
+  const count = sessionsToDelete.length
+  const { error, onSubmit } = useIpcAction(
+    () =>
+      ipcRenderer.invoke(
+        'deleteSessions',
+        sessionsToDelete.map(s => s.path),
+      ),
+    onClose,
+  )
   return (
     <ConfirmDialog
       open
-      title={`Delete ${sessionsToDelete.length} ${sessionsToDelete.length === 1 ? 'session' : 'sessions'}?`}
-      onSubmit={async () => {
-        try {
-          await ipcRenderer.invoke(
-            'deleteSessions',
-            sessionsToDelete.map(s => s.path),
-          )
-          onClose()
-        } catch (e) {
-          console.error(e)
-          setError(e)
-        }
-      }}
+      title={`Delete ${count} ${count === 1 ? 'session' : 'sessions'}?`}
+      onSubmit={onSubmit}
       onCancel={onClose}
     >
       <DialogContentText>This action cannot be undone</DialogContentText>
@@ -36,5 +34,3 @@ const DeleteSessionDialog = ({
     </ConfirmDialog>
   )
 }
-
-export default DeleteSessionDialog

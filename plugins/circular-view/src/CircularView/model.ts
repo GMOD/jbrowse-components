@@ -532,7 +532,10 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addTrackConf(configuration: Record<string, unknown>, initialSnapshot = {}) {
+      addTrackConf(
+        configuration: Record<string, unknown>,
+        initialSnapshot = {},
+      ) {
         const { trackId } = configuration
         if (typeof trackId === 'string') {
           showTrackGeneric(self, trackId, initialSnapshot, {}, configuration)

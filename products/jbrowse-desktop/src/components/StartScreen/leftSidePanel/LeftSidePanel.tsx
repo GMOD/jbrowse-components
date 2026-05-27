@@ -82,7 +82,7 @@ export default function LeftSidePanel({
   ) => launchSession(() => fetchData(sel))
 
   const launchFromSnap = (snap: JBrowseConfig) =>
-    launchSession(async () => [snap])
+    launchSession(() => Promise.resolve([snap]))
 
   return (
     <div className={classes.form}>

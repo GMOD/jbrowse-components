@@ -11,6 +11,7 @@ import {
   Checkbox,
   FormControl,
   FormControlLabel,
+  IconButton,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
@@ -19,9 +20,9 @@ import {
 
 import RecentSessionsCards from './RecentSessionsCards.tsx'
 import RecentSessionsList from './RecentSessionsDataGrid.tsx'
-import { useLoadSession } from './useLoadSession.ts'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
+import { loadPluginManager } from '../util.tsx'
 
 import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -41,13 +42,40 @@ const useStyles = makeStyles()({
 
 type RecentSessions = RecentSessionData[]
 
-// uses span to allow disabled button to have a tooltip
-function ToggleButtonWithTooltip(props: ToggleButtonProps) {
-  const { title = '', children, ...rest } = props
+function ToggleButtonWithTooltip({
+  title = '',
+  children,
+  ...rest
+}: ToggleButtonProps) {
+  return (
+    <Tooltip title={title}>
+      <ToggleButton {...rest}>{children}</ToggleButton>
+    </Tooltip>
+  )
+}
+
+function IconButtonWithTooltip({
+  title,
+  disabled,
+  onClick,
+  children,
+}: {
+  title: string
+  disabled?: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
   return (
     <Tooltip title={title}>
       <span>
-        <ToggleButton {...rest}>{children}</ToggleButton>
+        <IconButton
+          disabled={disabled}
+          onClick={() => {
+            onClick()
+          }}
+        >
+          {children}
+        </IconButton>
       </span>
     </Tooltip>
   )
@@ -61,10 +89,7 @@ export default function RecentSessionPanel({
   setPluginManager: (pm: PluginManager) => void
 }) {
   const { classes } = useStyles()
-  const { launch, loading: sessionLoading } = useLoadSession({
-    setPluginManager,
-    setError,
-  })
+  const [sessionLoading, setSessionLoading] = useState(false)
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>([])
@@ -96,6 +121,22 @@ export default function RecentSessionPanel({
     },
   )
 
+  const launch = async (path: string) => {
+    setSessionLoading(true)
+    try {
+      setPluginManager(await loadPluginManager(path))
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    } finally {
+      setSessionLoading(false)
+    }
+  }
+
+  const refreshSessions = () => {
+    mutateSessions().catch(console.error)
+  }
+
   async function addToQuickstartList(arg: RecentSessionData[]) {
     try {
       await Promise.all(
@@ -122,9 +163,7 @@ export default function RecentSessionPanel({
           sessionToRename={sessionToRename}
           onClose={() => {
             setSessionToRename(undefined)
-            mutateSessions().catch((e: unknown) => {
-              console.error(e)
-            })
+            refreshSessions()
           }}
         />
       ) : null}
@@ -133,9 +172,7 @@ export default function RecentSessionPanel({
           sessionsToDelete={sessionsToDelete}
           onClose={() => {
             setSessionsToDelete(undefined)
-            mutateSessions().catch((e: unknown) => {
-              console.error(e)
-            })
+            refreshSessions()
           }}
         />
       ) : null}
@@ -156,30 +193,26 @@ export default function RecentSessionPanel({
             </ToggleButtonWithTooltip>
           </ToggleButtonGroup>
         </FormControl>
-        <FormControl>
-          <ToggleButtonGroup>
-            <ToggleButtonWithTooltip
-              value="delete"
-              title="Delete sessions"
-              disabled={!selectedSessions.length}
-              onClick={() => {
-                setSessionsToDelete(selectedSessions)
-              }}
-            >
-              <DeleteIcon />
-            </ToggleButtonWithTooltip>
-            <ToggleButtonWithTooltip
-              value="quickstart"
-              title="Add sessions to quickstart list"
-              disabled={!selectedSessions.length}
-              onClick={async () => {
-                await addToQuickstartList(selectedSessions)
-              }}
-            >
-              <PlaylistAddIcon />
-            </ToggleButtonWithTooltip>
-          </ToggleButtonGroup>
-        </FormControl>
+        <div style={{ display: 'flex' }}>
+          <IconButtonWithTooltip
+            title="Delete sessions"
+            disabled={!selectedSessions.length}
+            onClick={() => {
+              setSessionsToDelete(selectedSessions)
+            }}
+          >
+            <DeleteIcon />
+          </IconButtonWithTooltip>
+          <IconButtonWithTooltip
+            title="Add sessions to quickstart list"
+            disabled={!selectedSessions.length}
+            onClick={async () => {
+              await addToQuickstartList(selectedSessions)
+            }}
+          >
+            <PlaylistAddIcon />
+          </IconButtonWithTooltip>
+        </div>
         <FormControlLabel
           label="Show autosaves"
           control={
@@ -230,7 +263,7 @@ export default function RecentSessionPanel({
       ) : displayMode === 'grid' ? (
         <RecentSessionsCards
           launch={launch}
-          addToQuickstartList={async entry => addToQuickstartList([entry])}
+          addToQuickstartList={entry => addToQuickstartList([entry])}
           sessions={filteredSessions}
           setSessionsToDelete={setSessionsToDelete}
           setSessionToRename={setSessionToRename}

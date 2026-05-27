@@ -50,7 +50,7 @@ function RecentSessionCard({
   onAddToQuickstartList,
 }: {
   sessionData: RecentSessionData
-  onClick: (arg: RecentSessionData) => void
+  onClick: () => void
   onDelete: (arg: RecentSessionData) => void
   onRename: (arg: RecentSessionData) => void
   onAddToQuickstartList: (arg: RecentSessionData) => Promise<void>
@@ -77,7 +77,7 @@ function RecentSessionCard({
       <Card
         className={classes.card}
         onClick={() => {
-          onClick(sessionData)
+          onClick()
         }}
       >
         {screenshot ? (

@@ -2,13 +2,18 @@ import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { IconButton, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
   header: {
     display: 'flex',
     alignItems: 'center',
     cursor: 'pointer',
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    width: '100%',
+    textAlign: 'left',
   },
   title: {
     marginBottom: 5,
@@ -32,19 +37,22 @@ export default function CollapsibleSection({
 
   return (
     <div>
-      <div
+      <button
+        type="button"
         className={classes.header}
         onClick={() => {
           setOpen(!open)
         }}
       >
-        <IconButton size="small">
-          {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        </IconButton>
+        {open ? (
+          <ExpandLessIcon fontSize="small" />
+        ) : (
+          <ExpandMoreIcon fontSize="small" />
+        )}
         <Typography variant="h6" className={classes.title}>
           {title}
         </Typography>
-      </div>
+      </button>
       {open ? <div className={classes.body}>{children}</div> : null}
     </div>
   )

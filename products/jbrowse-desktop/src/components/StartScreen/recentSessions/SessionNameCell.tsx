@@ -44,14 +44,12 @@ function SessionNameCell({
       >
         {value}
       </ActionLink>
-      {isFavorite ? (
-        <StarIcon
-          isFavorite={isFavorite}
-          onClick={() => {
-            toggleFavorite(row.path)
-          }}
-        />
-      ) : null}
+      <StarIcon
+        isFavorite={isFavorite}
+        onClick={() => {
+          toggleFavorite(row.path)
+        }}
+      />
       <CascadingMenuButton
         menuItems={[
           {

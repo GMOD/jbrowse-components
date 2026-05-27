@@ -1,17 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
+
+function subscribeResize(cb: () => void) {
+  window.addEventListener('resize', cb)
+  return () => {
+    window.removeEventListener('resize', cb)
+  }
+}
+
+const getWindowHeight = () => window.innerHeight
 
 export function useInnerDims() {
-  const [height, setHeight] = useState(window.innerHeight)
-
-  useEffect(() => {
-    const update = () => {
-      setHeight(window.innerHeight)
-    }
-    window.addEventListener('resize', update)
-    return () => {
-      window.removeEventListener('resize', update)
-    }
-  }, [])
-
+  const height = useSyncExternalStore(
+    subscribeResize,
+    getWindowHeight,
+    getWindowHeight,
+  )
   return { height }
 }

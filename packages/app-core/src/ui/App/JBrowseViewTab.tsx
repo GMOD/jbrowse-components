@@ -59,7 +59,9 @@ function getTabDisplayName(
     const view = views[0]!
     return (
       view.displayName ||
-      view.assemblyNames?.map(r => session.assemblyManager.getDisplayName(r)).join(',') ||
+      view.assemblyNames
+        ?.map(r => session.assemblyManager.getDisplayName(r))
+        .join(',') ||
       'View'
     )
   }
