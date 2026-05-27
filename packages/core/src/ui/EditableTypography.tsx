@@ -44,65 +44,65 @@ interface Props {
 }
 
 function EditableTypography(props: Props) {
-    const { value, setValue, variant, ref, ...other } = props
-    const [ref2, { width }] = useMeasure()
-    const [editedValue, setEditedValue] = useState<string>()
-    const inputRef = useRef<HTMLInputElement | null>(null)
+  const { value, setValue, variant, ref, ...other } = props
+  const [ref2, { width }] = useMeasure()
+  const [editedValue, setEditedValue] = useState<string>()
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
-    const { classes } = useStyles(props, { props })
-    const theme = useTheme()
+  const { classes } = useStyles(props, { props })
+  const theme = useTheme()
 
-    const val = editedValue ?? value
+  const val = editedValue ?? value
 
-    return (
-      <div {...other} ref={ref}>
-        <div style={{ position: 'relative' }}>
-          <Typography
-            ref={ref2}
-            component="span"
-            variant={variant}
-            className={classes.typography}
-          >
-            {val}
-          </Typography>
-        </div>
-        <InputBase
-          inputRef={inputRef}
-          className={classes.inputBase}
-          slotProps={{
-            input: {
-              style: {
-                width,
-                ...(variant && variant !== 'inherit'
-                  ? theme.typography[variant]
-                  : {}),
-              },
-            },
-          }}
-          classes={{
-            input: classes.input,
-            root: classes.inputRoot,
-            focused: classes.inputFocused,
-          }}
-          value={val}
-          onChange={event => {
-            setEditedValue(event.target.value)
-          }}
-          onKeyDown={event => {
-            if (event.key === 'Enter') {
-              inputRef.current?.blur()
-            } else if (event.key === 'Escape') {
-              setEditedValue(undefined)
-              inputRef.current?.blur()
-            }
-          }}
-          onBlur={() => {
-            setValue(editedValue ?? value)
-            setEditedValue(undefined)
-          }}
-        />
+  return (
+    <div {...other} ref={ref}>
+      <div style={{ position: 'relative' }}>
+        <Typography
+          ref={ref2}
+          component="span"
+          variant={variant}
+          className={classes.typography}
+        >
+          {val}
+        </Typography>
       </div>
-    )
+      <InputBase
+        inputRef={inputRef}
+        className={classes.inputBase}
+        slotProps={{
+          input: {
+            style: {
+              width,
+              ...(variant && variant !== 'inherit'
+                ? theme.typography[variant]
+                : {}),
+            },
+          },
+        }}
+        classes={{
+          input: classes.input,
+          root: classes.inputRoot,
+          focused: classes.inputFocused,
+        }}
+        value={val}
+        onChange={event => {
+          setEditedValue(event.target.value)
+        }}
+        onKeyDown={event => {
+          if (event.key === 'Enter') {
+            inputRef.current?.blur()
+          } else if (event.key === 'Escape') {
+            setEditedValue(undefined)
+            inputRef.current?.blur()
+          }
+        }}
+        onBlur={() => {
+          setValue(editedValue ?? value)
+          setEditedValue(undefined)
+        }}
+      />
+    </div>
+  )
 }
 
 export default EditableTypography
