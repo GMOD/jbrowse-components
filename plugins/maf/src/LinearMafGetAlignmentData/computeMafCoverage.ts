@@ -32,7 +32,7 @@ export function computeMafCoverage(
   const length = Math.max(0, regionEnd - regionStart)
   const depths = new Float32Array(length)
   const mismatches: MismatchEntry[] = []
-  const insertionsSeen = new Set<string>()
+  const insertionsSeen = new Map<number, Set<number>>()
   const insertions: InsertionEntry[] = []
 
   for (const block of blocks) {
@@ -45,9 +45,13 @@ export function computeMafCoverage(
         for (const row of block.rows) {
           const sampleByte = row.alignmentBytes[col]!
           if (sampleByte !== DASH) {
-            const key = `${row.rowIndex}:${refPos}`
-            if (!insertionsSeen.has(key)) {
-              insertionsSeen.add(key)
+            let seen = insertionsSeen.get(row.rowIndex)
+            if (!seen) {
+              seen = new Set()
+              insertionsSeen.set(row.rowIndex, seen)
+            }
+            if (!seen.has(refPos)) {
+              seen.add(refPos)
               insertions.push({ position: refPos, length: 1 })
             }
           }

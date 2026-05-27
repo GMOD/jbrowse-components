@@ -86,9 +86,6 @@ export function computeInterbaseCoverage(
 
   for (const entry of interbaseByPosition.values()) {
     const total = entry.insertion + entry.softclip + entry.hardclip
-    if (total === 0) {
-      continue
-    }
     let yOffset = 0
     if (entry.insertion > 0) {
       segments.push({
