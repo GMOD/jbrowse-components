@@ -9,6 +9,13 @@ const sequenceConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
+    adapterId: {
+      type: 'string',
+      defaultValue: '',
+    },
+    /**
+     * #slot
+     */
     features: {
       type: 'frozen',
       defaultValue: [],

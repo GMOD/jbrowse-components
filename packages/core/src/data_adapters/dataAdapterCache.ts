@@ -1,5 +1,4 @@
-export { adapterConfigCacheKey } from './util.ts'
-import { adapterConfigCacheKey } from './util.ts'
+import idMaker from '../util/idMaker.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
@@ -8,12 +7,25 @@ import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>
 
+export function adapterConfigCacheKey(conf: Record<string, unknown> = {}) {
+  const { adapterId } = conf
+  return typeof adapterId === 'string' && adapterId ? adapterId : idMaker(conf)
+}
+
 interface AdapterCacheEntry {
   dataAdapter: AnyDataAdapter
   sessionIds: Set<string>
 }
 
 let adapterCache: Record<string, Promise<AdapterCacheEntry>> = {}
+
+/** stores a promise in the cache and auto-evicts if it rejects */
+function storeWithEvict(key: string, p: Promise<AdapterCacheEntry>) {
+  p.catch(() => {
+    delete adapterCache[key]
+  })
+  adapterCache[key] = p
+}
 
 async function getAdapterPre(
   pluginManager: PluginManager,
@@ -41,7 +53,8 @@ async function getAdapterPre(
     { pluginManager },
   )
 
-  const getSubAdapter = getAdapter.bind(null, pluginManager, sessionId)
+  const getSubAdapter: getSubAdapterType = conf =>
+    getAdapter(pluginManager, sessionId, conf)
   const CLASS = await dataAdapterType.getAdapterClass()
   const dataAdapter = new CLASS(adapterConfig, getSubAdapter, pluginManager)
 
@@ -51,30 +64,17 @@ async function getAdapterPre(
   }
 }
 
-/**
- * instantiate a data adapter, or return an already-instantiated one if we have
- * one with the same configuration
- *
- * @param pluginManager
- *
- * @param sessionId - session ID of the associated worker session. used for
- * reference counting
- *
- * @param adapterConfigSnapshot - plain-JS configuration snapshot for the
- * adapter
- */
+/** instantiate a data adapter, or return a cached one with the same config */
 export async function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
 ): Promise<AdapterCacheEntry> {
   const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
-  adapterCache[cacheKey] ??= getAdapterPre(
-    pluginManager,
-    sessionId,
-    adapterConfigSnapshot,
-  )
-  const ret = await adapterCache[cacheKey]
+  if (!adapterCache[cacheKey]) {
+    storeWithEvict(cacheKey, getAdapterPre(pluginManager, sessionId, adapterConfigSnapshot))
+  }
+  const ret = await adapterCache[cacheKey]!
   ret.sessionIds.add(sessionId)
   return ret
 }
@@ -89,17 +89,19 @@ export type getSubAdapterType = (
 ) => ReturnType<typeof getAdapter>
 
 export async function freeAdapterResources(args: { sessionId?: string }) {
-  // drop any adapters that were only associated with this session. (the
-  // previous per-region branch is gone — no in-tree adapter overrode
-  // freeResources to do anything per-region.)
   const { sessionId } = args
   if (!sessionId) {
     return
   }
   for (const [cacheKey, cacheEntryP] of Object.entries(adapterCache)) {
-    const cacheEntry = await cacheEntryP
-    cacheEntry.sessionIds.delete(sessionId)
-    if (cacheEntry.sessionIds.size === 0) {
+    try {
+      const cacheEntry = await cacheEntryP
+      cacheEntry.sessionIds.delete(sessionId)
+      if (cacheEntry.sessionIds.size === 0) {
+        delete adapterCache[cacheKey]
+      }
+    } catch (e) {
+      console.error(`dataAdapterCache: evicting failed adapter "${cacheKey}"`, e)
       delete adapterCache[cacheKey]
     }
   }

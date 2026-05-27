@@ -9,6 +9,15 @@ const configSchema = ConfigurationSchema(
   {
     /**
      * #slot
+     * stable identifier used as the adapter cache key; avoids hashing the
+     * (potentially large) features array. optional — falls back to hash.
+     */
+    adapterId: {
+      type: 'string',
+      defaultValue: '',
+    },
+    /**
+     * #slot
      */
     features: {
       type: 'frozen',

@@ -2,7 +2,7 @@ import AbortablePromiseCache from '@gmod/abortable-promise-cache'
 import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../configuration/index.ts'
-import { adapterConfigCacheKey } from '../data_adapters/util.ts'
+import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import { when } from '../util/index.ts'
 

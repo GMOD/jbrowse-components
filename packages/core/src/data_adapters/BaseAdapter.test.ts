@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { BaseFeatureDataAdapter } from './BaseAdapter/index.ts'
-import { adapterConfigCacheKey } from './util.ts'
+import { adapterConfigCacheKey } from './dataAdapterCache.ts'
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from '../configuration/configurationSchema.ts'
 import { ObservableCreate } from '../util/rxjs.ts'
@@ -86,7 +86,7 @@ describe('base data adapter', () => {
 })
 
 describe('adapterConfigCacheKey', () => {
-  it('returns a stable idMaker hash', () => {
+  it('returns a stable idMaker hash when no adapterId', () => {
     const AdapterConfig = ConfigurationSchema(
       'SomeAdapter',
       {
@@ -95,13 +95,46 @@ describe('adapterConfigCacheKey', () => {
       { explicitlyTyped: true },
     )
 
-    const adapter = AdapterConfig.create(
-      { uri: '/path/to/file' },
-      { pluginManager },
+    const snap = getSnapshot(
+      AdapterConfig.create({ uri: '/path/to/file' }, { pluginManager }),
     )
-    const snap = getSnapshot(adapter)
     const cacheKey = adapterConfigCacheKey(snap)
     expect(cacheKey).toMatch(/^adp-/)
     expect(cacheKey).toBe(adapterConfigCacheKey(snap))
+  })
+
+  it('uses adapterId directly when present', () => {
+    const AdapterConfig = ConfigurationSchema(
+      'SomeAdapter',
+      {
+        adapterId: { type: 'string', defaultValue: '' },
+        uri: { type: 'string', defaultValue: '' },
+      },
+      { explicitlyTyped: true },
+    )
+
+    const snap = getSnapshot(
+      AdapterConfig.create(
+        { adapterId: 'my-stable-id', uri: '/path/to/file' },
+        { pluginManager },
+      ),
+    )
+    expect(adapterConfigCacheKey(snap)).toBe('my-stable-id')
+  })
+
+  it('falls back to hash when adapterId is empty string', () => {
+    const AdapterConfig = ConfigurationSchema(
+      'SomeAdapter',
+      {
+        adapterId: { type: 'string', defaultValue: '' },
+        uri: { type: 'string', defaultValue: '' },
+      },
+      { explicitlyTyped: true },
+    )
+
+    const snap = getSnapshot(
+      AdapterConfig.create({ uri: '/path/to/file' }, { pluginManager }),
+    )
+    expect(adapterConfigCacheKey(snap)).toMatch(/^adp-/)
   })
 })
