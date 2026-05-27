@@ -61,7 +61,7 @@ export function hitTestCoverage(
     if (snpHit !== undefined) {
       return { type: 'coverage', position: snpHit }
     }
-    const noncovHit = findSignificantInBin(
+    const interbaseHit = findSignificantInBin(
       rpcData.interbasePositions,
       coverageDepths,
       coverageStartPos,
@@ -69,8 +69,8 @@ export function hitTestCoverage(
       binEnd,
       0.2,
     )
-    if (noncovHit !== undefined) {
-      return { type: 'coverage', position: noncovHit }
+    if (interbaseHit !== undefined) {
+      return { type: 'coverage', position: interbaseHit }
     }
   }
 

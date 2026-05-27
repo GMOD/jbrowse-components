@@ -52,6 +52,8 @@ export interface MafCoverageRegion {
   mismatchBases: Uint8Array
   coveragePackedBuffer: ArrayBuffer
   snpPackedBuffer: ArrayBuffer
+  interbasePackedBuffer: ArrayBuffer
+  interbaseMaxCount: number
 }
 
 export interface MafRegionData {

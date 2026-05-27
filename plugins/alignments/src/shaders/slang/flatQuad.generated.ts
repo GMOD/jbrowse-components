@@ -30,7 +30,7 @@ export const UNIFORM_OFFSET_F32 = {
   covYOffset: 12,
   depthScale: 13,
   binSize: 14,
-  noncovHeight: 15,
+  interbaseHeight: 15,
   depthDomainMax: 16,
   insertUpper: 17,
   insertLower: 18,
@@ -118,7 +118,7 @@ export interface Uniforms {
   covYOffset: number
   depthScale: number
   binSize: number
-  noncovHeight: number
+  interbaseHeight: number
   depthDomainMax: number
   insertUpper: number
   insertLower: number
@@ -199,7 +199,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[12] = uniforms.covYOffset
   f32[13] = uniforms.depthScale
   f32[14] = uniforms.binSize
-  f32[15] = uniforms.noncovHeight
+  f32[15] = uniforms.interbaseHeight
   f32[16] = uniforms.depthDomainMax
   f32[17] = uniforms.insertUpper
   f32[18] = uniforms.insertLower

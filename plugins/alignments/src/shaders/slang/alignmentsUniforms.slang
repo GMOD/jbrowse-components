@@ -36,7 +36,7 @@ public struct Uniforms {
   public float covYOffset;
   public float depthScale;
   public float binSize;
-  public float noncovHeight;
+  public float interbaseHeight;
   public float depthDomainMax; // coverage domain maximum (for log scale normalization)
 
   // Insert-size thresholds

@@ -1,6 +1,8 @@
 import {
+  computeInterbaseCoverage,
   computeSNPCoverage,
   packCoverageBinsForGpu,
+  packInterbaseSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from '@jbrowse/alignments-core'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -123,6 +125,13 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       region.start,
       coverageForSnp,
     )
+    const interbaseCoverage = computeInterbaseCoverage(
+      mafCov.insertions,
+      [],
+      [],
+      region.start,
+      coverageForSnp,
+    )
 
     // Pack mismatch list into MismatchArrays form so alignments-core's
     // `buildCoverageTooltipBin` / `countSnpsAtPosition` can read it directly
@@ -156,6 +165,14 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
         snpCoverage.relDepths,
         snpCoverage.count,
       ),
+      interbasePackedBuffer: packInterbaseSegmentsForGpu(
+        interbaseCoverage.positions,
+        interbaseCoverage.yOffsets,
+        interbaseCoverage.heights,
+        interbaseCoverage.colorTypes,
+        interbaseCoverage.segmentCount,
+      ),
+      interbaseMaxCount: interbaseCoverage.maxCount,
     }
 
     return { samples, treeNewick, regionData: { blocks, coverage } }

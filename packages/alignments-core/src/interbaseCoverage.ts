@@ -1,8 +1,7 @@
 /**
- * Compute noncov (interbase) coverage segments and per-position indicator
- * data in a single per-position bucket sweep. Returns both arrays so
- * callers (orchestrator) can route indicator data to features/indicator/
- * without redoing the bucket pass.
+ * Compute interbase coverage segments and per-position indicator data in a
+ * single per-position bucket sweep. Returns both arrays so callers can route
+ * indicator data to features/indicator/ without redoing the bucket pass.
  */
 
 export interface InsertionEntry {
@@ -19,7 +18,7 @@ export interface ClipEntry {
 const MINIMUM_INDICATOR_READ_DEPTH = 8
 const INDICATOR_THRESHOLD = 0.3
 
-export function computeNoncovCoverage(
+export function computeInterbaseCoverage(
   insertions: InsertionEntry[],
   softclips: ClipEntry[],
   hardclips: ClipEntry[],
@@ -31,37 +30,37 @@ export function computeNoncovCoverage(
     maxDepth,
     startPos: coverageStartPos,
   } = coverage
-  const noncovByPosition = new Map<
+  const interbaseByPosition = new Map<
     number,
     { position: number; insertion: number; softclip: number; hardclip: number }
   >()
 
   for (const ins of insertions) {
-    let entry = noncovByPosition.get(ins.position)
+    let entry = interbaseByPosition.get(ins.position)
     if (!entry) {
       entry = { position: ins.position, insertion: 0, softclip: 0, hardclip: 0 }
-      noncovByPosition.set(ins.position, entry)
+      interbaseByPosition.set(ins.position, entry)
     }
     entry.insertion++
   }
   for (const sc of softclips) {
-    let entry = noncovByPosition.get(sc.position)
+    let entry = interbaseByPosition.get(sc.position)
     if (!entry) {
       entry = { position: sc.position, insertion: 0, softclip: 0, hardclip: 0 }
-      noncovByPosition.set(sc.position, entry)
+      interbaseByPosition.set(sc.position, entry)
     }
     entry.softclip++
   }
   for (const hc of hardclips) {
-    let entry = noncovByPosition.get(hc.position)
+    let entry = interbaseByPosition.get(hc.position)
     if (!entry) {
       entry = { position: hc.position, insertion: 0, softclip: 0, hardclip: 0 }
-      noncovByPosition.set(hc.position, entry)
+      interbaseByPosition.set(hc.position, entry)
     }
     entry.hardclip++
   }
 
-  if (noncovByPosition.size === 0) {
+  if (interbaseByPosition.size === 0) {
     return {
       positions: new Uint32Array(0),
       yOffsets: new Float32Array(0),
@@ -85,7 +84,7 @@ export function computeNoncovCoverage(
   }[] = []
   const indicators: { position: number; colorType: number }[] = []
 
-  for (const entry of noncovByPosition.values()) {
+  for (const entry of interbaseByPosition.values()) {
     const total = entry.insertion + entry.softclip + entry.hardclip
     if (total === 0) {
       continue

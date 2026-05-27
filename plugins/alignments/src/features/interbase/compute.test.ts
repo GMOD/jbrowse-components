@@ -1,12 +1,12 @@
-import { computeNoncovCoverage } from './compute.ts'
+import { computeInterbaseCoverage } from '@jbrowse/alignments-core'
 
 function cov(depths: Float32Array, maxDepth: number, startPos = 100) {
   return { depths, maxDepth, startPos }
 }
 
-describe('computeNoncovCoverage (indicator triangles)', () => {
+describe('computeInterbaseCoverage (indicator triangles)', () => {
   it('returns empty when no insertions/clips', () => {
-    const result = computeNoncovCoverage(
+    const result = computeInterbaseCoverage(
       [],
       [],
       [],
@@ -22,7 +22,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       position: 105,
       length: 5,
     }))
-    const result = computeNoncovCoverage(
+    const result = computeInterbaseCoverage(
       insertions,
       [],
       [],
@@ -38,7 +38,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       { position: 105, length: 5 },
       { position: 105, length: 3 },
     ]
-    const result = computeNoncovCoverage(
+    const result = computeInterbaseCoverage(
       insertions,
       [],
       [],
@@ -53,7 +53,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       position: 105,
       length: 5,
     }))
-    const result = computeNoncovCoverage(
+    const result = computeInterbaseCoverage(
       insertions,
       [],
       [],
@@ -68,7 +68,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       position: 105,
       length: 5,
     }))
-    const result = computeNoncovCoverage(
+    const result = computeInterbaseCoverage(
       insertions,
       [],
       [],
@@ -87,7 +87,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       position: 105,
       length: 10,
     }))
-    const result = computeNoncovCoverage(
+    const result = computeInterbaseCoverage(
       insertions,
       softclips,
       [],
@@ -103,7 +103,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       position: 105,
       length: 5,
     }))
-    const result = computeNoncovCoverage(
+    const result = computeInterbaseCoverage(
       insertions,
       [],
       [],
@@ -118,7 +118,7 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
       position: 105,
       length: 5,
     }))
-    const result = computeNoncovCoverage(
+    const result = computeInterbaseCoverage(
       insertions,
       [],
       [],

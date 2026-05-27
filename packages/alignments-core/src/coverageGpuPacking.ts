@@ -21,9 +21,9 @@ import {
   INSTANCE_STRIDE_F32 as MOD_COV_STRIDE,
 } from './modCoverageLayout.generated.ts'
 import {
-  FIELD_OFFSET_F32 as NONCOV_FIELD,
-  INSTANCE_STRIDE_F32 as NONCOV_STRIDE,
-} from './noncovHistogramLayout.generated.ts'
+  FIELD_OFFSET_F32 as INTERBASE_FIELD,
+  INSTANCE_STRIDE_F32 as INTERBASE_STRIDE,
+} from './interbaseHistogramLayout.generated.ts'
 import {
   FIELD_OFFSET_F32 as SNP_FIELD,
   INSTANCE_STRIDE_F32 as SNP_STRIDE,
@@ -124,24 +124,24 @@ export function packModCovSegmentsForGpu(
 }
 
 // Layout per segment: [position(u32), yOffset(f32), height(f32), colorType(f32)]
-// = 16 bytes. Matches alignments plugin noncovHistogram.slang. Position is
+// = 16 bytes. Matches alignments plugin interbaseHistogram.slang. Position is
 // absolute uint32.
-export function packNoncovSegmentsForGpu(
+export function packInterbaseSegmentsForGpu(
   positions: Uint32Array,
   yOffsets: Float32Array,
   heights: Float32Array,
   colorTypes: Uint8Array,
   count: number,
 ) {
-  const buffer = new ArrayBuffer(count * NONCOV_STRIDE * 4)
+  const buffer = new ArrayBuffer(count * INTERBASE_STRIDE * 4)
   const f32 = new Float32Array(buffer)
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
-    const o = i * NONCOV_STRIDE
-    u32[o + NONCOV_FIELD.position] = positions[i]!
-    f32[o + NONCOV_FIELD.yOffset] = yOffsets[i]!
-    f32[o + NONCOV_FIELD.segHeight] = heights[i]!
-    f32[o + NONCOV_FIELD.colorType] = colorTypes[i]!
+    const o = i * INTERBASE_STRIDE
+    u32[o + INTERBASE_FIELD.position] = positions[i]!
+    f32[o + INTERBASE_FIELD.yOffset] = yOffsets[i]!
+    f32[o + INTERBASE_FIELD.segHeight] = heights[i]!
+    f32[o + INTERBASE_FIELD.colorType] = colorTypes[i]!
   }
   return buffer
 }

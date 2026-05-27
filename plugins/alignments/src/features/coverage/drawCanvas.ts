@@ -9,7 +9,7 @@ import type { RenderState } from '../../LinearAlignmentsDisplay/components/rende
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Draws only the depth-bar layer of the coverage area. Other coverage-area
-// layers (SNP / mod-cov / noncov / indicator) are drawn from their own
+// layers (SNP / mod-cov / interbase / indicator) are drawn from their own
 // feature folders by the renderer's coverage-area orchestrator.
 export function drawCoverageBars(
   ctx: Ctx2D,

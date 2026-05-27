@@ -9,7 +9,7 @@ export function buildCoverageResultFields(
   const {
     coverage,
     snpCoverage,
-    noncovCoverage,
+    interbaseCoverage,
     modCoverage,
     coverageAreaPacked,
     sashimi,
@@ -31,14 +31,14 @@ export function buildCoverageResultFields(
     snpColorTypes: snpCoverage.colorTypes,
     snpRelDepths: snpCoverage.relDepths,
 
-    noncovPositions: noncovCoverage.positions,
-    noncovYOffsets: noncovCoverage.yOffsets,
-    noncovHeights: noncovCoverage.heights,
-    noncovColorTypes: noncovCoverage.colorTypes,
-    noncovMaxCount: noncovCoverage.maxCount,
+    interbaseCovPositions: interbaseCoverage.positions,
+    interbaseCovYOffsets: interbaseCoverage.yOffsets,
+    interbaseCovHeights: interbaseCoverage.heights,
+    interbaseCovColorTypes: interbaseCoverage.colorTypes,
+    interbaseMaxCount: interbaseCoverage.maxCount,
 
-    indicatorPositions: noncovCoverage.indicatorPositions,
-    indicatorColorTypes: noncovCoverage.indicatorColorTypes,
+    indicatorPositions: interbaseCoverage.indicatorPositions,
+    indicatorColorTypes: interbaseCoverage.indicatorColorTypes,
 
     modCovPositions: modCoverage?.positions ?? new Uint32Array(0),
     modCovYOffsets: modCoverage?.yOffsets ?? new Float32Array(0),

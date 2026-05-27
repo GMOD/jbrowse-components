@@ -31,7 +31,7 @@ import { drawLinkedReadLines } from '../../features/linkedReads/drawCanvas.ts'
 import { drawMismatches } from '../../features/mismatch/drawCanvas.ts'
 import { drawModCoverageCanvas } from '../../features/modCoverage/drawCanvas.ts'
 import { drawModifications } from '../../features/modification/drawCanvas.ts'
-import { drawNoncovCanvas } from '../../features/noncov/drawCanvas.ts'
+import { drawInterbaseCanvas } from '../../features/interbase/drawCanvas.ts'
 import { drawPerBaseQuality } from '../../features/perBaseQuality/drawCanvas.ts'
 import {
   buildReadFields,
@@ -79,8 +79,8 @@ export interface Canvas2DRegionData
   softclipBaseBases: Uint8Array
   snpPackedBuffer: ArrayBuffer
   modCovPackedBuffer: ArrayBuffer
-  noncovPackedBuffer: ArrayBuffer
-  noncovMaxCount: number
+  interbasePackedBuffer: ArrayBuffer
+  interbaseMaxCount: number
   indicatorPackedBuffer: ArrayBuffer
 }
 
@@ -143,8 +143,8 @@ function emptyPileupFields(): Canvas2DRegionData {
     ...emptyCoverageFields(),
     snpPackedBuffer: new ArrayBuffer(0),
     modCovPackedBuffer: new ArrayBuffer(0),
-    noncovPackedBuffer: new ArrayBuffer(0),
-    noncovMaxCount: 0,
+    interbasePackedBuffer: new ArrayBuffer(0),
+    interbaseMaxCount: 0,
     indicatorPackedBuffer: new ArrayBuffer(0),
     ...emptyArcsUploadData(),
     connectingLinePositions: new Uint32Array(0),
@@ -172,8 +172,8 @@ function buildPileupRegion(
     ...buildCoverageFields(data),
     snpPackedBuffer: data.snpPackedBuffer,
     modCovPackedBuffer: data.modCovPackedBuffer,
-    noncovPackedBuffer: data.noncovPackedBuffer,
-    noncovMaxCount: data.noncovMaxCount,
+    interbasePackedBuffer: data.interbasePackedBuffer,
+    interbaseMaxCount: data.interbaseMaxCount,
     indicatorPackedBuffer: data.indicatorPackedBuffer,
     connectingLinePositions: data.connectingLinePositions,
     connectingLineYs: data.connectingLineYs,
@@ -417,7 +417,7 @@ function drawCoverage(
   drawCoverageBars(ctx, region, bpToX, viewWidth, state, domainMax)
   drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
   drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
-  drawNoncovCanvas(ctx, region, bpToX, viewWidth, state)
+  drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state)
   drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
 }
 

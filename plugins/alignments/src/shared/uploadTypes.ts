@@ -67,12 +67,12 @@ export interface CoverageUploadData {
   snpColorTypes: Uint8Array
   snpRelDepths: Float32Array
   snpPackedBuffer: ArrayBuffer
-  noncovPositions: Uint32Array
-  noncovYOffsets: Float32Array
-  noncovHeights: Float32Array
-  noncovColorTypes: Uint8Array
-  noncovMaxCount: number
-  noncovPackedBuffer: ArrayBuffer
+  interbaseCovPositions: Uint32Array
+  interbaseCovYOffsets: Float32Array
+  interbaseCovHeights: Float32Array
+  interbaseCovColorTypes: Uint8Array
+  interbaseMaxCount: number
+  interbasePackedBuffer: ArrayBuffer
   indicatorPositions: Uint32Array
   indicatorColorTypes: Uint8Array
   indicatorPackedBuffer: ArrayBuffer

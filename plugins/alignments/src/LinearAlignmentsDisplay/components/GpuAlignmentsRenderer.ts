@@ -58,8 +58,8 @@ import {
   PASS_MOD,
 } from '../../features/modification/packGpu.ts'
 import { uploadModifications } from '../../features/modification/uploadGpu.ts'
-import { NONCOV_PASS, PASS_NONCOV } from '../../features/noncov/packGpu.ts'
-import { uploadNoncov } from '../../features/noncov/uploadGpu.ts'
+import { INTERBASE_PASS, PASS_INTERBASE } from '../../features/interbase/packGpu.ts'
+import { uploadInterbase } from '../../features/interbase/uploadGpu.ts'
 import { PASS_READ, READ_PASS } from '../../features/read/packGpu.ts'
 import { uploadReads as uploadReadSegments } from '../../features/read/uploadGpu.ts'
 import {
@@ -141,8 +141,8 @@ function fillFrameUniforms(
   f[U.depthDomainMax] = domainMax ?? 0
   i[U.coverageScaleType] = state.coverageIsLog ? 1 : 0
   f[U.binSize] = region.binSize
-  f[U.noncovHeight] =
-    region.noncovMaxCount > 0 ? Math.min(region.noncovMaxCount * 2, 20) : 0
+  f[U.interbaseHeight] =
+    region.interbaseMaxCount > 0 ? Math.min(region.interbaseMaxCount * 2, 20) : 0
   f[U.insertUpper] = region.insertSizeStats?.upper ?? 999999
   f[U.insertLower] = region.insertSizeStats?.lower ?? 0
   i[U.colorScheme] = state.colorScheme
@@ -252,7 +252,7 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
   COVERAGE_PASS,
   SNP_COVERAGE_PASS,
   MOD_COVERAGE_PASS,
-  NONCOV_PASS,
+  INTERBASE_PASS,
   INDICATOR_PASS,
   ARC_PASS,
   ARC_LINE_PASS,
@@ -276,7 +276,7 @@ function emptyRegion(): LocalRegion {
     readYs: new Uint16Array(0),
     maxDepth: 0,
     binSize: 1,
-    noncovMaxCount: 0,
+    interbaseMaxCount: 0,
   }
 }
 
@@ -299,7 +299,7 @@ interface LocalRegion extends ChainBoundsRegion {
   insertSizeStats?: { upper: number; lower: number }
   maxDepth: number
   binSize: number
-  noncovMaxCount: number
+  interbaseMaxCount: number
 }
 
 const OVERLAY_REGION = 999999
@@ -413,14 +413,14 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
       data.snpPositions.length,
     )
 
-    uploadNoncov(
+    uploadInterbase(
       this.hal,
       displayedRegionIndex,
-      data.noncovPackedBuffer,
-      data.noncovPositions.length,
+      data.interbasePackedBuffer,
+      data.interbaseCovPositions.length,
     )
-    if (data.noncovPositions.length > 0) {
-      r.noncovMaxCount = data.noncovMaxCount
+    if (data.interbaseCovPositions.length > 0) {
+      r.interbaseMaxCount = data.interbaseMaxCount
     }
 
     uploadIndicators(
@@ -504,7 +504,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
         this.hal.drawPass(PASS_COVERAGE, block.displayedRegionIndex)
         this.hal.drawPass(PASS_SNP_COV, block.displayedRegionIndex)
         this.hal.drawPass(PASS_MOD_COV, block.displayedRegionIndex)
-        this.hal.drawPass(PASS_NONCOV, block.displayedRegionIndex)
+        this.hal.drawPass(PASS_INTERBASE, block.displayedRegionIndex)
         this.hal.drawPass(PASS_INDICATOR, block.displayedRegionIndex)
       }
 

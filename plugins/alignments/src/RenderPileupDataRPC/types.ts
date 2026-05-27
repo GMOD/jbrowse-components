@@ -137,15 +137,15 @@ export interface PileupDataResult {
   // Pre-packed GPU buffer for PASS_SNP_COV (worker-built).
   snpPackedBuffer: ArrayBuffer
 
-  // Noncov (interbase) coverage data - insertion/softclip/hardclip counts by position
+  // Interbase histogram (coverage-area bars) - insertion/softclip/hardclip counts by position
   // Bars grow downward from top of coverage area
-  noncovPositions: Uint32Array // absolute genomic coordinates
-  noncovYOffsets: Float32Array // cumulative height below this segment (normalized 0-1)
-  noncovHeights: Float32Array // height of this segment (normalized 0-1)
-  noncovColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
-  noncovMaxCount: number // max total count at any position (for scaling)
-  // Pre-packed GPU buffer for PASS_NONCOV (worker-built).
-  noncovPackedBuffer: ArrayBuffer
+  interbaseCovPositions: Uint32Array // absolute genomic coordinates
+  interbaseCovYOffsets: Float32Array // cumulative height below this segment (normalized 0-1)
+  interbaseCovHeights: Float32Array // height of this segment (normalized 0-1)
+  interbaseCovColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
+  interbaseMaxCount: number // max total count at any position (for scaling)
+  // Pre-packed GPU buffer for PASS_INTERBASE (worker-built).
+  interbasePackedBuffer: ArrayBuffer
 
   // Interbase indicator data - triangles at significant positions
   indicatorPositions: Uint32Array // absolute genomic coordinates

@@ -12,9 +12,9 @@ import {
   INSTANCE_STRIDE_F32 as MOD_COV_STRIDE,
 } from './modCoverageLayout.generated.ts'
 import {
-  FIELD_OFFSET_F32 as NONCOV_FIELD,
-  INSTANCE_STRIDE_F32 as NONCOV_STRIDE,
-} from './noncovHistogramLayout.generated.ts'
+  FIELD_OFFSET_F32 as INTERBASE_FIELD,
+  INSTANCE_STRIDE_F32 as INTERBASE_STRIDE,
+} from './interbaseHistogramLayout.generated.ts'
 import {
   FIELD_OFFSET_F32 as SNP_FIELD,
   INSTANCE_STRIDE_F32 as SNP_STRIDE,
@@ -23,7 +23,7 @@ import {
 import type { CigarOpDrawColors } from './labelConstants.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
-interface NoncovDrawColors {
+interface InterbaseDrawColors {
   insertion: string
   softclip: string
   hardclip: string
@@ -142,7 +142,7 @@ export function drawSnpSegments(
 export function drawIndicators(
   ctx: Ctx,
   buffer: ArrayBuffer,
-  colors: NoncovDrawColors,
+  colors: InterbaseDrawColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
 ) {
@@ -161,37 +161,37 @@ export function drawIndicators(
   }
 }
 
-export function drawNoncovSegments(
+export function drawInterbaseSegments(
   ctx: Ctx,
   buffer: ArrayBuffer,
-  noncovMaxCount: number,
-  colors: NoncovDrawColors,
+  interbaseMaxCount: number,
+  colors: InterbaseDrawColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
 ) {
-  if (noncovMaxCount === 0) {
+  if (interbaseMaxCount === 0) {
     return
   }
 
-  const noncovHeight = Math.min(noncovMaxCount * 2, 20)
+  const interbaseHeight = Math.min(interbaseMaxCount * 2, 20)
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
   const colorLut = [colors.insertion, colors.softclip, colors.hardclip]
-  const segmentCount = buffer.byteLength / (NONCOV_STRIDE * 4)
+  const segmentCount = buffer.byteLength / (INTERBASE_STRIDE * 4)
 
   for (let i = 0; i < segmentCount; i++) {
-    const off = i * NONCOV_STRIDE
-    const pos = u32[off + NONCOV_FIELD.position]!
+    const off = i * INTERBASE_STRIDE
+    const pos = u32[off + INTERBASE_FIELD.position]!
     const px = bpToX(pos)
     const px2 = bpToX(pos + 1)
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const yOffset = f32[off + NONCOV_FIELD.yOffset]!
-    const segH = f32[off + NONCOV_FIELD.segHeight]!
-    const colorType = f32[off + NONCOV_FIELD.colorType]!
-    const segTop = INDICATOR_TRIANGLE_H + yOffset * noncovHeight
-    const segHeight = segH * noncovHeight
+    const yOffset = f32[off + INTERBASE_FIELD.yOffset]!
+    const segH = f32[off + INTERBASE_FIELD.segHeight]!
+    const colorType = f32[off + INTERBASE_FIELD.colorType]!
+    const segTop = INDICATOR_TRIANGLE_H + yOffset * interbaseHeight
+    const segHeight = segH * interbaseHeight
     ctx.fillStyle = colorLut[colorType - 1] ?? colorLut[0]!
     ctx.fillRect(px - 0.5, segTop, 1, segHeight)
   }

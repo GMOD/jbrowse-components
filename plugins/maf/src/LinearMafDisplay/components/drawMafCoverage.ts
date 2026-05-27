@@ -1,6 +1,7 @@
 import {
   DEFAULT_CIGAR_OP_DRAW_COLORS,
   drawCoverageBins,
+  drawInterbaseSegments,
   drawSnpSegments,
 } from '@jbrowse/alignments-core'
 import {
@@ -71,6 +72,18 @@ export function drawMafCoverage(
         domainMax,
         coverageHeight,
         snpColors,
+        bpToX,
+        canvasWidth,
+      )
+      drawInterbaseSegments(
+        ctx,
+        region.coverage.interbasePackedBuffer,
+        region.coverage.interbaseMaxCount,
+        {
+          insertion: theme.palette.insertion,
+          softclip: theme.palette.insertion,
+          hardclip: theme.palette.insertion,
+        },
         bpToX,
         canvasWidth,
       )

@@ -1,7 +1,7 @@
-// Non-coverage histogram: slim 1-bp-wide bars indicating insertion /
+// Interbase histogram: slim 1-bp-wide bars indicating insertion /
 // softclip / hardclip density across the coverage strip.
 //! targets: wgsl, glsl
-//! layout-out: packages/alignments-core/src/noncovHistogramLayout.generated.ts
+//! layout-out: packages/alignments-core/src/interbaseHistogramLayout.generated.ts
 
 import alignmentsUniforms;
 import colorPack;
@@ -23,7 +23,7 @@ struct VsOut {
   float4 color    : COLOR0;
 };
 
-float3 noncovColor(float ct, Uniforms u) {
+float3 interbaseColor(float ct, Uniforms u) {
   int ci = int(ct);
   if (ci == 1) { return unpackRGBA(u.colorInsertion).xyz; }
   if (ci == 2) { return unpackRGBA(u.colorSoftclip).xyz; }
@@ -40,14 +40,14 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   // Sits just above the bottom coverage-area edge, below the indicator row.
   float indOff = 9.0 / u.canvasH;
-  float sTop = 1.0 - indOff - (inst.yOffset * u.noncovHeight / u.canvasH) * 2.0;
-  float sBot = sTop - (inst.segHeight * u.noncovHeight / u.canvasH) * 2.0;
+  float sTop = 1.0 - indOff - (inst.yOffset * u.interbaseHeight / u.canvasH) * 2.0;
+  float sBot = sTop - (inst.segHeight * u.interbaseHeight / u.canvasH) * 2.0;
 
   o.position = float4(
     flipX(lerp(cx - barW * 0.5, cx + barW * 0.5, local.x), u),
     lerp(sBot, sTop, local.y),
     0.0, 1.0);
-  o.color = float4(noncovColor(inst.colorType, u), 1.0);
+  o.color = float4(interbaseColor(inst.colorType, u), 1.0);
   return o;
 }
 

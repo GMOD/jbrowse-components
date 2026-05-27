@@ -1,4 +1,8 @@
-import { computeCoverage, computeSNPCoverage } from '@jbrowse/alignments-core'
+import {
+  computeCoverage,
+  computeInterbaseCoverage,
+  computeSNPCoverage,
+} from '@jbrowse/alignments-core'
 import { updateStatus } from '@jbrowse/core/util'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
@@ -6,7 +10,6 @@ import { buildModTooltipData } from './buildTooltipData.ts'
 import { computeFrequenciesAndThresholds } from './computeFrequenciesAndThresholds.ts'
 import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 import { computeModificationCoverage } from '../features/modCoverage/compute.ts'
-import { computeNoncovCoverage } from '../features/noncov/compute.ts'
 import { computeSashimiJunctions } from '../features/sashimi/compute.ts'
 
 import type {
@@ -23,7 +26,7 @@ import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 /**
  * Runs the full coverage-area computation pipeline as a single named operation.
  * Both pileup and chain executors call this so that the coverage step order
- * (compute → freqs → SNP → noncov → mod → mod-tooltip → sashimi → pack) cannot
+ * (compute → freqs → SNP → interbase → mod → mod-tooltip → sashimi → pack) cannot
  * drift between them.
  *
  * Pileup passes `regionSequence` to enable mod coverage; chain omits it so the
@@ -86,7 +89,7 @@ export async function runCoveragePipeline({
     )
 
   const snpCoverage = computeSNPCoverage(mismatches, regionStart, coverage)
-  const noncovCoverage = computeNoncovCoverage(
+  const interbaseCoverage = computeInterbaseCoverage(
     insertions,
     softclips,
     hardclips,
@@ -112,14 +115,14 @@ export async function runCoveragePipeline({
   const coverageAreaPacked = packCoverageAreaForGpu(
     coverage,
     snpCoverage,
-    noncovCoverage,
+    interbaseCoverage,
     modCoverage,
   )
 
   return {
     coverage,
     snpCoverage,
-    noncovCoverage,
+    interbaseCoverage,
     modCoverage,
     modTooltipData,
     sashimi,

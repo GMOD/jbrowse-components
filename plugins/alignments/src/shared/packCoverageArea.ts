@@ -1,4 +1,4 @@
-// Pack all coverage-area GPU buffers (per-bp coverage, SNP, noncov histogram,
+// Pack all coverage-area GPU buffers (per-bp coverage, SNP, interbase histogram,
 // indicators, mod-coverage) for transfer to the GPU renderer.
 //
 // Why this runs in the RPC worker: none of these passes reference
@@ -7,18 +7,20 @@
 // removes the equivalent pack loops from the main thread during refetches.
 // See ADR-004.
 
-import { packCoverageBinsForGpu } from '@jbrowse/alignments-core'
+import {
+  packCoverageBinsForGpu,
+  packInterbaseSegmentsForGpu,
+} from '@jbrowse/alignments-core'
 
 import { packIndicatorsForGpu } from '../features/indicator/packGpu.ts'
 import { packModCovSegmentsForGpu } from '../features/modCoverage/packGpu.ts'
-import { packNoncovSegmentsForGpu } from '../features/noncov/packGpu.ts'
 import { packSnpSegmentsForGpu } from '../features/snpCoverage/packGpu.ts'
 
 import type { computeModificationCoverage } from '../features/modCoverage/compute.ts'
-import type { computeNoncovCoverage } from '../features/noncov/compute.ts'
 import type {
   SNPCoverageResult,
   computeCoverage,
+  computeInterbaseCoverage,
 } from '@jbrowse/alignments-core'
 
 // All packed buffers store absolute genomic uint32 positions. Shaders read via
@@ -28,7 +30,7 @@ import type {
 export function packCoverageAreaForGpu(
   coverage: ReturnType<typeof computeCoverage>,
   snp: SNPCoverageResult,
-  noncov: ReturnType<typeof computeNoncovCoverage>,
+  interbase: ReturnType<typeof computeInterbaseCoverage>,
   modCov: ReturnType<typeof computeModificationCoverage> | undefined,
 ) {
   return {
@@ -46,17 +48,17 @@ export function packCoverageAreaForGpu(
       snp.relDepths,
       snp.count,
     ),
-    noncovPackedBuffer: packNoncovSegmentsForGpu(
-      noncov.positions,
-      noncov.yOffsets,
-      noncov.heights,
-      noncov.colorTypes,
-      noncov.segmentCount,
+    interbasePackedBuffer: packInterbaseSegmentsForGpu(
+      interbase.positions,
+      interbase.yOffsets,
+      interbase.heights,
+      interbase.colorTypes,
+      interbase.segmentCount,
     ),
     indicatorPackedBuffer: packIndicatorsForGpu(
-      noncov.indicatorPositions,
-      noncov.indicatorColorTypes,
-      noncov.indicatorCount,
+      interbase.indicatorPositions,
+      interbase.indicatorColorTypes,
+      interbase.indicatorCount,
     ),
     modCovPackedBuffer: modCov
       ? packModCovSegmentsForGpu(

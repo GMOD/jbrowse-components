@@ -2,7 +2,7 @@ import {
   coverageLayout,
   packCoverageBinsForGpu,
   packIndicatorsForGpu,
-  packNoncovSegmentsForGpu,
+  packInterbaseSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from '@jbrowse/alignments-core'
 import { MockHal } from '@jbrowse/core/gpu/hal'
@@ -38,10 +38,10 @@ function makeCoverageData(): CoverageUploadData {
   const snpHeights = new Float32Array([0.4, 0.3])
   const snpColorTypes = new Uint8Array([1, 2])
   const snpRelDepths = new Float32Array([1, 1])
-  const noncovPositions = new Uint32Array([])
-  const noncovYOffsets = new Float32Array([])
-  const noncovHeights = new Float32Array([])
-  const noncovColorTypes = new Uint8Array([])
+  const interbaseCovPositions = new Uint32Array([])
+  const interbaseCovYOffsets = new Float32Array([])
+  const interbaseCovHeights = new Float32Array([])
+  const interbaseCovColorTypes = new Uint8Array([])
   const indicatorPositions = new Uint32Array([REGION_START + 2])
   const indicatorColorTypes = new Uint8Array([1])
   return {
@@ -67,16 +67,16 @@ function makeCoverageData(): CoverageUploadData {
       snpRelDepths,
       snpPositions.length,
     ),
-    noncovPositions,
-    noncovYOffsets,
-    noncovHeights,
-    noncovColorTypes,
-    noncovMaxCount: 0,
-    noncovPackedBuffer: packNoncovSegmentsForGpu(
-      noncovPositions,
-      noncovYOffsets,
-      noncovHeights,
-      noncovColorTypes,
+    interbaseCovPositions,
+    interbaseCovYOffsets,
+    interbaseCovHeights,
+    interbaseCovColorTypes,
+    interbaseMaxCount: 0,
+    interbasePackedBuffer: packInterbaseSegmentsForGpu(
+      interbaseCovPositions,
+      interbaseCovYOffsets,
+      interbaseCovHeights,
+      interbaseCovColorTypes,
       0,
     ),
     indicatorPositions,

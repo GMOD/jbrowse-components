@@ -1,5 +1,5 @@
 import type { MafBlock } from '../LinearMafRenderer/mafBackendTypes.ts'
-import type { MismatchEntry } from '@jbrowse/alignments-core'
+import type { InsertionEntry, MismatchEntry } from '@jbrowse/alignments-core'
 
 const DASH = 45
 const N_UPPER = 78
@@ -13,6 +13,7 @@ export interface MafCoverageResult {
   maxDepth: number
   startPos: number
   mismatches: MismatchEntry[]
+  insertions: InsertionEntry[]
 }
 
 /**
@@ -31,6 +32,8 @@ export function computeMafCoverage(
   const length = Math.max(0, regionEnd - regionStart)
   const depths = new Float32Array(length)
   const mismatches: MismatchEntry[] = []
+  const insertionsSeen = new Set<string>()
+  const insertions: InsertionEntry[] = []
 
   for (const block of blocks) {
     const refBytes = block.refSeqBytes
@@ -38,7 +41,18 @@ export function computeMafCoverage(
     let refPos = block.startBp
     for (let col = 0; col < refLen; col++) {
       const refByte = refBytes[col]!
-      if (refByte !== DASH) {
+      if (refByte === DASH) {
+        for (const row of block.rows) {
+          const sampleByte = row.alignmentBytes[col]!
+          if (sampleByte !== DASH) {
+            const key = `${row.rowIndex}:${refPos}`
+            if (!insertionsSeen.has(key)) {
+              insertionsSeen.add(key)
+              insertions.push({ position: refPos, length: 1 })
+            }
+          }
+        }
+      } else {
         const depthIdx = refPos - regionStart
         if (depthIdx >= 0 && depthIdx < length) {
           const refUpper = toUpper(refByte)
@@ -73,5 +87,5 @@ export function computeMafCoverage(
       maxDepth = d
     }
   }
-  return { depths, maxDepth, startPos: regionStart, mismatches }
+  return { depths, maxDepth, startPos: regionStart, mismatches, insertions }
 }

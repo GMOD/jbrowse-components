@@ -446,7 +446,7 @@ describe('drawModCovSegments', () => {
 })
 
 describe('drawIndicators', () => {
-  const noncovColors = {
+  const interbaseColors = {
     insertion: 'purple',
     softclip: 'cyan',
     hardclip: 'orange',
@@ -462,7 +462,7 @@ describe('drawIndicators', () => {
     f32[3] = 2 // softclip
 
     const { ctx, calls } = makeCtx()
-    drawIndicators(ctx, buf, noncovColors, (bp: number) => bp, 200)
+    drawIndicators(ctx, buf, interbaseColors, (bp: number) => bp, 200)
 
     const styleCalls = calls.filter(c => c.method === 'fillStyle')
     expect(styleCalls.some(c => c.args[0] === 'purple')).toBe(true)
@@ -476,7 +476,7 @@ describe('drawIndicators', () => {
     f32[1] = 1
 
     const { ctx, calls } = makeCtx()
-    drawIndicators(ctx, buf, noncovColors, (bp: number) => bp, 200)
+    drawIndicators(ctx, buf, interbaseColors, (bp: number) => bp, 200)
 
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(0)

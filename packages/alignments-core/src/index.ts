@@ -46,18 +46,22 @@ export {
   coverageLayout,
   drawCoverageBins,
   drawIndicators,
+  drawInterbaseSegments,
   drawModCovSegments,
-  drawNoncovSegments,
   drawSnpSegments,
   getDevicePixelRatio,
 } from './rendererUtils.ts'
 export {
   packCoverageBinsForGpu,
   packIndicatorsForGpu,
+  packInterbaseSegmentsForGpu,
   packModCovSegmentsForGpu,
-  packNoncovSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from './coverageGpuPacking.ts'
+export {
+  computeInterbaseCoverage,
+} from './interbaseCoverage.ts'
+export type { InsertionEntry, ClipEntry } from './interbaseCoverage.ts'
 export { computeCoverage } from './coverageCompute.ts'
 export type { CoverageGap } from './coverageCompute.ts'
 export {
