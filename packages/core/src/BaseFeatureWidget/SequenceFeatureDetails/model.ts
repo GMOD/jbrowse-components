@@ -146,7 +146,9 @@ export function SequenceFeatureDetailsF() {
        */
       get hasExon(): boolean {
         return (
-          self.feature?.subfeatures?.some(sub => sub.type === 'exon') ?? false
+          self.feature?.subfeatures?.some(
+            sub => sub.type?.toLowerCase() === 'exon',
+          ) ?? false
         )
       },
       /**

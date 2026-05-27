@@ -23,7 +23,8 @@ const SequenceFeatureMenu = observer(
     ref,
   ) {
     if (typeof ref === 'function') {
-      throw new Error('needs a non function ref')
+      console.error('SequenceFeatureMenu needs a RefObject, not a callback ref')
+      return null
     }
     const [showSettings, setShowSettings] = useState(false)
     const { showCoordinatesSetting, showGenomicCoordsOption } = model

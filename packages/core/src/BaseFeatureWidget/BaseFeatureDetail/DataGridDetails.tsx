@@ -67,6 +67,8 @@ export default function DataGridDetails({
     colNames = [...unionKeys]
   }
   const widths = colNames.map(e => measureGridWidth(rows.map(r => r[e])))
+  // Avoid rendering a nearly-empty grid when later rows introduce many new
+  // columns compared to the first row (heterogeneous schemas are hard to read)
   if (unionKeys.size < firstRowKeyCount + 5) {
     return (
       <div className={classes.margin}>

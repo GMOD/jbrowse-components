@@ -47,7 +47,7 @@ function processFeatureData(
         }),
       )
   const exons = filterSuccessiveElementsWithSameStartAndEndCoord(
-    children.filter(sub => sub.type === 'exon'),
+    children.filter(sub => sub.type?.toLowerCase() === 'exon'),
   )
   let utr = filterSuccessiveElementsWithSameStartAndEndCoord(
     children.filter(sub => sub.type?.match(/utr/i)),
