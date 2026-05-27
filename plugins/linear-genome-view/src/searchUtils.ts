@@ -174,10 +174,7 @@ export async function fetchResults({
   )
 
   // resolve aliases (e.g. 'contigB') to the canonical refname ('ctgB') so
-  // the dropdown shows the name that matches the FASTA / displayed regions.
-  // matchedAttribute marks these as refName hits so the client-side filter
-  // keeps them when the typed alias text doesn't appear in the canonical
-  // label. Matches the RefNameAutocomplete convention.
+  // the dropdown shows the name that matches the FASTA / displayed regions
   const refNameResults = [
     ...new Set(
       assembly?.allRefNames

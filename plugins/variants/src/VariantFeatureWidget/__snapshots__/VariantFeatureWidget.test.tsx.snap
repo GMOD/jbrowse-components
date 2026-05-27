@@ -129,6 +129,7 @@ exports[`renders with just the required model elements 1`] = `
                     aria-label="reference base(s): Each base must be one of A,C,G,T,N (case insensitive)."
                     class="css-1yswd44 css-c392m0"
                     data-mui-internal-clone-element="true"
+                    style="width: 43px;"
                   >
                     REF
                   </div>
@@ -163,6 +164,7 @@ exports[`renders with just the required model elements 1`] = `
                     aria-label="quality: Phred-scaled quality score for the assertion made in ALT"
                     class="css-1yswd44 css-c392m0"
                     data-mui-internal-clone-element="true"
+                    style="width: 43px;"
                   >
                     QUAL
                   </div>

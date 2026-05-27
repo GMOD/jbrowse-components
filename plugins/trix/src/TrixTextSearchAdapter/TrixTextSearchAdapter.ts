@@ -106,7 +106,6 @@ export default class TrixTextSearchAdapter
           label,
           displayString,
           matchedAttribute: 'description',
-          adapterData: data,
           trackId,
         })
       })

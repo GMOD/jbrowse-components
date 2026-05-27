@@ -66,6 +66,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox",
       "refNameAliases": {
         "adapter": {
+          "adapterId": "W6DyPGJ0UU",
           "features": [
             {
               "aliases": [
@@ -154,6 +155,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox-sample01-anchor",
       "sequence": {
         "adapter": {
+          "adapterId": "volvox-sample01-anchor-seq",
           "features": [
             {
               "end": 45818,

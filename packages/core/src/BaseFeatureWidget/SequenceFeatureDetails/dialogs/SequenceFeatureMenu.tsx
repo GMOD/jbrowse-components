@@ -35,7 +35,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
             label: 'Copy plaintext',
             onClick: async () => {
               const { default: copy } = await import('copy-to-clipboard')
-              const r = ref?.current
+              const r = ref.current
               if (r) {
                 await copy(r.textContent || '', { format: 'text/plain' })
               }
@@ -45,7 +45,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
             label: 'Copy HTML',
             onClick: async () => {
               const { default: copy } = await import('copy-to-clipboard')
-              const r = ref?.current
+              const r = ref.current
               if (r) {
                 await copy(r.outerHTML, { format: 'text/html' })
               }
@@ -54,7 +54,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
           {
             label: 'Download plaintext',
             onClick: async () => {
-              const r = ref?.current
+              const r = ref.current
               if (r) {
                 saveAs(
                   new Blob([r.textContent || ''], {
@@ -68,7 +68,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
           {
             label: 'Download HTML',
             onClick: async () => {
-              const r = ref?.current
+              const r = ref.current
               if (r) {
                 saveAs(
                   new Blob([r.outerHTML], {

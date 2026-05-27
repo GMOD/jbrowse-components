@@ -2,17 +2,6 @@ import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 
 import { getEnv, getSession } from '@jbrowse/core/util'
-
-declare module '@jbrowse/core/PluginManager' {
-  interface ExtensionPointRegistry {
-    'LinearGenomeView-OverviewScalebarComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: LinearGenomeViewModel; overview: Base1DViewModel }
-    }
-  }
-}
-
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
@@ -29,6 +18,16 @@ import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'LinearGenomeView-OverviewScalebarComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: LinearGenomeViewModel; overview: Base1DViewModel }
+    }
+  }
+}
 
 const wholeSeqSpacer = 2
 
