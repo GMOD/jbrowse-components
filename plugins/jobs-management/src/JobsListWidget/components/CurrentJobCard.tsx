@@ -11,12 +11,12 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { NewJob } from '../model.ts'
+import type { JobModel } from '../jobModel.ts'
 
 const CurrentJobCard = observer(function CurrentJobCard({
   job,
 }: {
-  job: NewJob
+  job: JobModel
 }) {
   const [clicked, setClicked] = useState(false)
   return (
@@ -34,9 +34,9 @@ const CurrentJobCard = observer(function CurrentJobCard({
           sx={{
             display: 'flex',
             alignItems: 'center',
-            marginTop: 10,
-            marginBottom: 10,
-            marginLeft: 10,
+            marginTop: 1,
+            marginBottom: 1,
+            marginLeft: 1,
           }}
         >
           {job.progressPct === 0 || job.progressPct === 100 ? (
@@ -49,9 +49,7 @@ const CurrentJobCard = observer(function CurrentJobCard({
                 <LinearProgress variant="determinate" value={job.progressPct} />
               </Box>
               <Box sx={{ m: 1 }}>
-                <Typography>{`${Math.round(
-                  job.progressPct || 0,
-                )}%`}</Typography>
+                <Typography>{`${Math.round(job.progressPct)}%`}</Typography>
               </Box>
             </>
           )}
@@ -61,7 +59,7 @@ const CurrentJobCard = observer(function CurrentJobCard({
         <Button
           variant="contained"
           color="inherit"
-          disabled={clicked || job.progressPct === 0}
+          disabled={clicked}
           onClick={() => {
             job.setStatusMessage('Aborted via cancel button')
             job.cancelCallback()

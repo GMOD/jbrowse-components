@@ -29,10 +29,8 @@ export default class JobsManagementPlugin extends Plugin {
             let jobStatusWidget = widgets.get('JobsList')
             if (!jobStatusWidget) {
               jobStatusWidget = session.addWidget('JobsListWidget', 'JobsList')
-              session.showWidget(jobStatusWidget)
-            } else {
-              session.showWidget(jobStatusWidget)
             }
+            session.showWidget(jobStatusWidget)
           }
         },
       })

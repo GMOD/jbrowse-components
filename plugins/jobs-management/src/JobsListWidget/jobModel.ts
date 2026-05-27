@@ -1,5 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #stateModel
  */
@@ -43,3 +45,5 @@ export const Job = types
       self.progressPct = pct
     },
   }))
+
+export type JobModel = Instance<typeof Job>

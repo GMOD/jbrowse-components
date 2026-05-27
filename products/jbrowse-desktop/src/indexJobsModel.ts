@@ -172,19 +172,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         if (isSessionModelWithWidgets(session)) {
           const jobStatusWidget = self.getJobStatusWidget()
           session.showWidget(jobStatusWidget)
-          const {
-            name,
-            statusMessage = '',
-            progressPct = 0,
-            cancelCallback,
-          } = props
-          jobStatusWidget.addQueuedJob({
-            name,
-            statusMessage,
-            progressPct,
-            cancelCallback: cancelCallback ?? (() => {}),
-            setStatusMessage: () => {},
-          })
+          const { name, statusMessage = '', progressPct = 0 } = props
+          jobStatusWidget.addQueuedJob({ name, statusMessage, progressPct })
         }
         self.jobsQueue.push(props)
       },
@@ -291,14 +280,11 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             if (isSessionModelWithWidgets(session)) {
               const jobStatusWidget = self.getJobStatusWidget()
               session.showWidget(jobStatusWidget)
-              const { name, statusMessage, progressPct, cancelCallback } =
-                current
+              const { name, statusMessage, progressPct } = current
               jobStatusWidget.addFinishedJob({
                 name,
                 statusMessage: statusMessage ?? 'done',
                 progressPct: progressPct ?? 100,
-                cancelCallback: cancelCallback ?? (() => {}),
-                setStatusMessage: () => {},
               })
             }
           }
@@ -341,7 +327,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               statusMessage: statusMessage ?? '',
               progressPct: progressPct ?? 0,
               cancelCallback: cancelCallback ?? (() => {}),
-              setStatusMessage: () => {},
             })
             jobStatusWidget.removeQueuedJob(name)
           }
