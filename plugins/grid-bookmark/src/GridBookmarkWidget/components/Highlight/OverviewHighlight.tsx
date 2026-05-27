@@ -1,9 +1,6 @@
-import { useEffect } from 'react'
-
 import { getSession, notEmpty } from '@jbrowse/core/util'
-import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Tooltip } from '@mui/material'
+import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
+import { OverviewHighlightBand } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../../model.ts'
@@ -12,14 +9,6 @@ import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 type LGV = IExtendedLGV
 
-const useStyles = makeStyles()({
-  highlight: {
-    height: '100%',
-    position: 'absolute',
-    left: 0,
-  },
-})
-
 const OverviewHighlight = observer(function OverviewHighlight({
   model,
   overview,
@@ -27,69 +16,37 @@ const OverviewHighlight = observer(function OverviewHighlight({
   model: LGV
   overview: ViewLayout
 }) {
-  const { cytobandOffset } = model
   const session = getSession(model) as SessionWithWidgets
-  const { classes } = useStyles()
   const { assemblyManager } = session
-  const { bookmarkHighlightsVisible, labelsVisible } = model
+  const { cytobandOffset, bookmarkHighlightsVisible, labelsVisible } = model
   const bookmarkWidget = session.widgets.get('GridBookmark') as
     | GridBookmarkModel
     | undefined
 
-  useEffect(() => {
-    if (!bookmarkWidget) {
-      session.addWidget('GridBookmarkWidget', 'GridBookmark')
-    }
-  }, [session, bookmarkWidget])
+  if (!bookmarkHighlightsVisible || !bookmarkWidget?.bookmarks) {
+    return null
+  }
 
   const assemblyNames = new Set(model.assemblyNames)
-  return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
-    ? bookmarkWidget.bookmarks
-        .filter(r => assemblyNames.has(r.assemblyName))
-        .map(r => {
-          const asm = assemblyManager.get(r.assemblyName)
-          const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
-          const rev = r.reversed
-          const s = layoutBpToPx(overview, {
-            refName,
-            coord: rev ? r.end : r.start,
-          })
-          const e = layoutBpToPx(overview, {
-            refName,
-            coord: rev ? r.start : r.end,
-          })
-          return s !== undefined && e !== undefined
-            ? {
-                width: Math.abs(e - s),
-                left: s + cytobandOffset,
-                highlight: r.highlight,
-                label: r.label,
-              }
-            : undefined
-        })
-        .filter(notEmpty)
-        .map((obj, idx) => {
-          const { left, width, highlight, label } = obj
-          return (
-            <Tooltip
-              key={`${obj.left}_${obj.width}_${idx}`}
-              title={labelsVisible ? label : ''}
-              arrow
-            >
-              <div
-                className={classes.highlight}
-                style={{
-                  transform: `translateX(${left}px)`,
-                  width,
-                  background: highlight,
-                  borderLeft: `1px solid ${highlight}`,
-                  borderRight: `1px solid ${highlight}`,
-                }}
-              />
-            </Tooltip>
-          )
-        })
-    : null
+  return bookmarkWidget.bookmarks
+    .filter(r => assemblyNames.has(r.assemblyName))
+    .map(r => {
+      const asm = assemblyManager.get(r.assemblyName)
+      const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
+      const coords = getLayoutHighlightCoords(overview, { ...r, refName })
+      return coords ? { coords, bookmark: r } : undefined
+    })
+    .filter(notEmpty)
+    .map(({ coords, bookmark: r }, idx) => (
+      <OverviewHighlightBand
+        /* biome-ignore lint/suspicious/noArrayIndexKey: */
+        key={`${coords.left}_${coords.width}_${idx}`}
+        coords={{ ...coords, left: coords.left + cytobandOffset }}
+        background={r.highlight}
+        borderColor={r.highlight}
+        tooltip={labelsVisible ? r.label : undefined}
+      />
+    ))
 })
 
 export default OverviewHighlight

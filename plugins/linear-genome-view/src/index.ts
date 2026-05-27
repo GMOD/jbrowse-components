@@ -127,6 +127,7 @@ export {
   HighlightBand,
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,
+  OverviewHighlightBand,
   RefNameAutocomplete,
   SearchBox,
 } from './LinearGenomeView/index.ts'

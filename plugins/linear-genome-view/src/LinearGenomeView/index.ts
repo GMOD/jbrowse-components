@@ -20,3 +20,4 @@ export default function LinearGenomeViewF(pluginManager: PluginManager) {
 export * from './model.ts'
 export * from './types.ts'
 export { default as HighlightBand } from './components/HighlightBand.tsx'
+export { default as OverviewHighlightBand } from './components/OverviewHighlightBand.tsx'

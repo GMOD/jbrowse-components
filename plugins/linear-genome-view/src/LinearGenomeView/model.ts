@@ -20,6 +20,7 @@ import {
 import {
   bpToPx,
   computeMoveToLayout,
+  getLayoutHighlightCoords,
   moveTo,
   offsetBpToPx,
   pxToBp,
@@ -1960,16 +1961,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           : undefined
         const refName =
           asm?.getCanonicalRefName(region.refName) ?? region.refName
-        const s = this.bpToPx({ refName, coord: region.start })
-        const e = this.bpToPx({ refName, coord: region.end })
-        return s && e
-          ? {
-              // floor at 3px so the band stays visible when zoomed far enough
-              // out that the highlight collapses to a sub-pixel sliver
-              width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
-              left: Math.min(s.offsetPx, e.offsetPx) - self.offsetPx,
-            }
-          : undefined
+        return getLayoutHighlightCoords(self, { ...region, refName })
       },
 
       /**

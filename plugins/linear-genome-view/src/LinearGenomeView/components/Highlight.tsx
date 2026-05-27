@@ -27,6 +27,9 @@ const Highlight = observer(function Highlight({
   const bandColor = highlight.color
     ? colord(highlight.color)
     : colord(theme.palette.highlight.main).alpha(0.35)
+  // hide the chip icon color when the band is fully transparent ("label-only"
+  // highlight); otherwise bump the band color to 0.8 alpha so the chip is legible
+  const chipAlpha = bandColor.alpha() === 0 ? 0 : 0.8
 
   return coords ? (
     <HighlightBand coords={coords} background={bandColor.toRgbString()}>
@@ -46,7 +49,7 @@ const Highlight = observer(function Highlight({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <LinkIcon
               fontSize="small"
-              sx={{ color: bandColor.alpha(0.8).toRgbString() }}
+              sx={{ color: bandColor.alpha(chipAlpha).toRgbString() }}
             />
             {highlight.label && model.labelsVisible ? (
               <Typography variant="caption" noWrap>

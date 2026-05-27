@@ -1,4 +1,10 @@
-import { bpToPx, computeMoveToLayout, moveTo, pxToBp } from './Base1DUtils.ts'
+import {
+  bpToPx,
+  computeMoveToLayout,
+  getLayoutHighlightCoords,
+  moveTo,
+  pxToBp,
+} from './Base1DUtils.ts'
 import calculateDynamicBlocks from './calculateDynamicBlocks.ts'
 import calculateBlocks from './calculateStaticBlocks.ts'
 
@@ -379,6 +385,97 @@ describe('computeMoveToLayout', () => {
     const refs = blocks.contentBlocks.map(b => b.refName)
     expect(refs).not.toContain('chr1')
     expect(refs).toContain('chr2')
+  })
+})
+
+describe('getLayoutHighlightCoords', () => {
+  it('returns pixel position+width for a forward region', () => {
+    const self = makeSnap([{ refName: 'chr1', start: 0, end: 1000 }])
+    const coords = getLayoutHighlightCoords(self, {
+      refName: 'chr1',
+      start: 100,
+      end: 300,
+    })
+    expect(coords).toEqual({ left: 100, width: 200 })
+  })
+
+  it('returns identical coords regardless of start/end order', () => {
+    const self = makeSnap([{ refName: 'chr1', start: 0, end: 1000 }])
+    const a = getLayoutHighlightCoords(self, {
+      refName: 'chr1',
+      start: 100,
+      end: 300,
+    })
+    // swapped start/end — a reversed-bookmark in a forward displayed region
+    // should still place the band at left=100 with width=200
+    const b = getLayoutHighlightCoords(self, {
+      refName: 'chr1',
+      start: 300,
+      end: 100,
+    })
+    expect(a).toEqual(b)
+  })
+
+  it('places the band correctly for a reversed displayed region', () => {
+    // In a reversed region, bpToPx(start=0) is the right edge (offsetPx 1000)
+    // and bpToPx(end=1000) is the left edge (offsetPx 0). Width should be the
+    // |delta| (200), left should be min (200).
+    const self = makeSnap([
+      { refName: 'ctgA', start: 0, end: 1000, reversed: true },
+    ])
+    const coords = getLayoutHighlightCoords(self, {
+      refName: 'ctgA',
+      start: 700,
+      end: 900,
+    })
+    expect(coords).toEqual({ left: 100, width: 200 })
+  })
+
+  it('subtracts layout.offsetPx so `left` is in viewport space', () => {
+    const self = makeSnap([{ refName: 'chr1', start: 0, end: 1000 }], {
+      offsetPx: 50,
+    })
+    const coords = getLayoutHighlightCoords(self, {
+      refName: 'chr1',
+      start: 100,
+      end: 300,
+    })
+    expect(coords).toEqual({ left: 50, width: 200 })
+  })
+
+  it('applies a 3px minimum width by default', () => {
+    const self = makeSnap([{ refName: 'chr1', start: 0, end: 1000 }], {
+      bpPerPx: 100,
+    })
+    // 10bp at 100bp/px = 0.1px raw → floored to 3
+    const coords = getLayoutHighlightCoords(self, {
+      refName: 'chr1',
+      start: 100,
+      end: 110,
+    })
+    expect(coords?.width).toBe(3)
+  })
+
+  it('respects a custom minWidth (e.g. 0 for unclamped overview)', () => {
+    const self = makeSnap([{ refName: 'chr1', start: 0, end: 1000 }], {
+      bpPerPx: 10,
+    })
+    const coords = getLayoutHighlightCoords(
+      self,
+      { refName: 'chr1', start: 100, end: 110 },
+      0,
+    )
+    expect(coords?.width).toBe(1)
+  })
+
+  it('returns undefined when refName is not in displayed regions', () => {
+    const self = makeSnap([{ refName: 'chr1', start: 0, end: 1000 }])
+    const coords = getLayoutHighlightCoords(self, {
+      refName: 'chrZ',
+      start: 100,
+      end: 300,
+    })
+    expect(coords).toBeUndefined()
   })
 })
 

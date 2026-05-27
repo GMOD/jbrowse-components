@@ -290,6 +290,26 @@ export function layoutBpToPx(
   return bpToPx({ ...args, self: layout })?.offsetPx
 }
 
+// Map a region's start/end onto `layout` and return the pixel position+width to
+// render a highlight band. `minWidth` floors the band so it stays visible when
+// zoomed out far enough that it would otherwise collapse to a sub-pixel sliver.
+// Math.min/Math.abs make the result independent of whether the displayed region
+// is reversed.
+export function getLayoutHighlightCoords(
+  layout: ViewLayout,
+  region: { refName: string; start: number; end: number },
+  minWidth = 3,
+) {
+  const s = layoutBpToPx(layout, { refName: region.refName, coord: region.start })
+  const e = layoutBpToPx(layout, { refName: region.refName, coord: region.end })
+  return s !== undefined && e !== undefined
+    ? {
+        width: Math.max(Math.abs(e - s), minWidth),
+        left: Math.min(s, e) - layout.offsetPx,
+      }
+    : undefined
+}
+
 // Plain-object overview projection (the "show all displayed regions in `width`
 // pixels" layout). Replaces the pattern of creating a temporary Base1DView
 // MST model just to call bpToPx/pxToBp/calculateDynamicBlocks on it.
