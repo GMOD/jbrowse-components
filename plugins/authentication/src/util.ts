@@ -1,3 +1,20 @@
+import type { UriLocation } from '@jbrowse/core/util/types'
+
+export async function validateTokenWithHEAD(
+  token: string,
+  location: UriLocation,
+  addAuthHeaderToInit: (init?: RequestInit, token?: string) => RequestInit,
+) {
+  const newInit = addAuthHeaderToInit({ method: 'HEAD' }, token)
+  const response = await fetch(location.uri, newInit)
+  if (!response.ok) {
+    throw new Error(
+      await getResponseError({ response, reason: 'Error validating token' }),
+    )
+  }
+  return token
+}
+
 export async function getResponseError({
   response,
   reason,
@@ -12,7 +29,7 @@ export async function getResponseError({
     reason,
     statusText ?? (await getError(response)),
   ]
-    .filter(f => !!f)
+    .filter(Boolean)
     .join(' - ')
 }
 

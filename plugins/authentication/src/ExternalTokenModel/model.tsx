@@ -3,7 +3,7 @@ import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { getRoot, types } from '@jbrowse/mobx-state-tree'
 
 import { ExternalTokenEntryForm } from './ExternalTokenEntryForm.tsx'
-import { getResponseError } from '../util.ts'
+import { validateTokenWithHEAD } from '../util.ts'
 
 import type { ExternalTokenInternetAccountConfigModel } from './configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util/types'
@@ -32,7 +32,7 @@ const stateModelFactory = (
           ExternalTokenEntryForm,
           {
             internetAccountId: self.internetAccountId,
-            handleClose: (token: string) => {
+            handleClose: (token?: string) => {
               if (token) {
                 resolve(token)
               } else {
@@ -44,20 +44,11 @@ const stateModelFactory = (
         ])
       },
       async validateToken(token: string, location: UriLocation) {
-        if (!self.validateWithHEAD) {
-          return token
-        }
-        const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
-        const response = await fetch(location.uri, newInit)
-        if (!response.ok) {
-          throw new Error(
-            await getResponseError({
-              response,
-              reason: 'Error validating token',
-            }),
-          )
-        }
-        return token
+        return self.validateWithHEAD
+          ? validateTokenWithHEAD(token, location, (i, t) =>
+              self.addAuthHeaderToInit(i, t),
+            )
+          : token
       },
     }))
 }

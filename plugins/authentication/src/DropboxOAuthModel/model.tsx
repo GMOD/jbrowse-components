@@ -91,7 +91,6 @@ const stateModelFactory = (
         if (!response.ok) {
           const refreshToken = self.retrieveRefreshToken()
           if (refreshToken) {
-            self.removeRefreshToken()
             const newToken =
               await self.exchangeRefreshForAccessToken(refreshToken)
             return this.validateToken(newToken, location)
