@@ -61,6 +61,7 @@ const EditHighlightColorDialog = observer(function EditHighlightColorDialog({
         <Button
           variant="contained"
           color="primary"
+          disabled={editNone}
           onClick={() => {
             model.updateBulkBookmarkHighlights(color)
             onClose()

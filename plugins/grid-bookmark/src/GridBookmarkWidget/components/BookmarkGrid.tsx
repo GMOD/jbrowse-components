@@ -27,6 +27,10 @@ const useStyles = makeStyles()(() => ({
 // the row count fits in a single page
 const DEFAULT_PAGE_SIZE = 100
 
+function colWidth(header: string, values: string[]) {
+  return Math.max(measureText(header, 12) + 30, measureGridWidth(values))
+}
+
 const BookmarkGrid = observer(function BookmarkGrid({
   model,
 }: {
@@ -57,18 +61,9 @@ const BookmarkGrid = observer(function BookmarkGrid({
 
   const widths = [
     50,
-    Math.max(
-      measureText('Bookmark link', 12) + 30,
-      measureGridWidth(rows.map(row => row.locString)),
-    ),
-    Math.max(
-      measureText('Label', 12) + 30,
-      measureGridWidth(rows.map(row => row.label)),
-    ),
-    Math.max(
-      measureText('Assembly', 12) + 30,
-      measureGridWidth(rows.map(row => row.assemblyName)),
-    ),
+    colWidth('Bookmark link', rows.map(row => row.locString)),
+    colWidth('Label', rows.map(row => row.label)),
+    colWidth('Assembly', rows.map(row => row.assemblyName)),
     100,
   ]
 
@@ -119,7 +114,7 @@ const BookmarkGrid = observer(function BookmarkGrid({
             width: widths[4],
             renderCell: ({ value, row }) => (
               <PopoverPicker
-                color={value || 'black'}
+                color={value ?? 'rgba(247, 129, 192, 0.35)'}
                 onChange={event => {
                   model.updateBookmarkHighlight(row, event)
                 }}

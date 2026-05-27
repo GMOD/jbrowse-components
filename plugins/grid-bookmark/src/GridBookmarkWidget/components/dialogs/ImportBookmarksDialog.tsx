@@ -60,12 +60,9 @@ function guessFileType(header: string) {
     : 'BED'
 }
 
-async function getBookmarksFromTSVFile(lines: string[]) {
-  if (lines[0]!.startsWith('chrom')) {
-    lines = lines.slice(1)
-  }
-
-  return lines
+function getBookmarksFromTSVFile(lines: string[]) {
+  const dataLines = lines[0]!.startsWith('chrom') ? lines.slice(1) : lines
+  return dataLines
     .filter(f => !f.startsWith('#'))
     .map(line => {
       const [refName, start, end, label, assemblyName] = line.split('\t')
@@ -79,7 +76,7 @@ async function getBookmarksFromTSVFile(lines: string[]) {
     })
 }
 
-async function getBookmarksFromBEDFile(lines: string[], selectedAsm: string) {
+function getBookmarksFromBEDFile(lines: string[], selectedAsm: string) {
   return lines
     .filter(f => !f.startsWith('#'))
     .map(line => {
@@ -193,12 +190,10 @@ const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
                 const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
                 const fileType = guessFileType(lines[0]!)
                 if (fileType === 'BED') {
-                  model.importBookmarks(
-                    await getBookmarksFromBEDFile(lines, selectedAsm),
-                  )
+                  model.importBookmarks(getBookmarksFromBEDFile(lines, selectedAsm))
                 } else {
                   // TSV
-                  model.importBookmarks(await getBookmarksFromTSVFile(lines))
+                  model.importBookmarks(getBookmarksFromTSVFile(lines))
                 }
               } else if (
                 expanded === 'shareLinkAccordion' &&

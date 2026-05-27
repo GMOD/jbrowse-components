@@ -56,28 +56,16 @@ export async function downloadBookmarkFile(
   const { saveAs } = await import('@jbrowse/core/util')
 
   if (fileFormat === 'BED') {
-    const fileHeader = ''
     const fileContents: Record<string, string[]> = {}
     for (const bookmark of bookmarksToDownload) {
-      const { label } = bookmark
-      const labelVal = label === '' ? '.' : label
+      const labelVal = bookmark.label === '' ? '.' : bookmark.label
       const line = `${bookmark.refName}\t${bookmark.start}\t${bookmark.end}\t${labelVal}\n`
-
-      if (fileContents[bookmark.assemblyName]) {
-        fileContents[bookmark.assemblyName]!.push(line)
-      } else {
-        fileContents[bookmark.assemblyName] = [line]
-      }
+      ;(fileContents[bookmark.assemblyName] ??= []).push(line)
     }
 
     for (const assembly in fileContents) {
-      const fileContent = fileContents[assembly]!.reduce(
-        (a, b) => a + b,
-        fileHeader,
-      )
-
       saveAs(
-        new Blob([fileContent || ''], {
+        new Blob([fileContents[assembly]!.join('')], {
           type: 'text/x-bed;charset=utf-8',
         }),
         `jbrowse_bookmarks_${assembly}.bed`,
@@ -86,20 +74,18 @@ export async function downloadBookmarkFile(
   } else {
     // TSV
     const fileHeader = 'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n'
-
-    const fileContents = bookmarksToDownload
-      .map(bookmark => {
-        const { label } = bookmark
-        const labelVal = label === '' ? '.' : label
-        const locString = assembleLocString(bookmark)
-        return `${bookmark.refName}\t${bookmark.start + 1}\t${
-          bookmark.end
-        }\t${labelVal}\t${bookmark.assemblyName}\t${locString}\n`
-      })
-      .reduce((a, b) => a + b, fileHeader)
+    const fileContents =
+      fileHeader +
+      bookmarksToDownload
+        .map(bookmark => {
+          const labelVal = bookmark.label === '' ? '.' : bookmark.label
+          const locString = assembleLocString(bookmark)
+          return `${bookmark.refName}\t${bookmark.start + 1}\t${bookmark.end}\t${labelVal}\t${bookmark.assemblyName}\t${locString}\n`
+        })
+        .join('')
 
     saveAs(
-      new Blob([fileContents || ''], {
+      new Blob([fileContents], {
         type: 'text/tab-separated-values;charset=utf-8',
       }),
       'jbrowse_bookmarks.tsv',

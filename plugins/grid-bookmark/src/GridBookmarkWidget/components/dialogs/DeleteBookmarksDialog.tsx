@@ -1,6 +1,7 @@
 import { ConfirmDialog } from '@jbrowse/core/ui'
-import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import BookmarkSelectionAlert from './BookmarkSelectionAlert.tsx'
 
 import type { GridBookmarkModel } from '../../model.ts'
 
@@ -23,24 +24,13 @@ const DeleteBookmarksDialog = observer(function DeleteBookmarksDialog({
       onSubmit={() => {
         if (deleteAll) {
           model.clearAllBookmarks()
+        } else {
+          model.clearSelectedBookmarks()
         }
-        model.clearSelectedBookmarks()
         onClose()
       }}
     >
-      <Alert severity="warning">
-        {deleteAll ? (
-          <>
-            <span>All bookmarks will be deleted.</span>
-            <br />
-            <span>
-              Use the checkboxes to select individual bookmarks to delete.
-            </span>
-          </>
-        ) : (
-          'Only selected bookmarks will be deleted.'
-        )}
-      </Alert>
+      <BookmarkSelectionAlert all={deleteAll} verb="deleted" severity="warning" />
     </ConfirmDialog>
   )
 })

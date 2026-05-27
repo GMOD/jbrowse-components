@@ -1,10 +1,8 @@
 import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
 import { getSession, isSessionWithShareURL, useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import {
-  Alert,
   Button,
   DialogActions,
   DialogContent,
@@ -16,6 +14,7 @@ import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
 import { shareSessionToDynamo } from '../../sessionSharing.ts'
+import BookmarkSelectionAlert from './BookmarkSelectionAlert.tsx'
 
 import type { GridBookmarkModel } from '../../model.ts'
 
@@ -41,23 +40,21 @@ const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
   const session = getSession(model)
   const { selectedBookmarks } = model
   const shareAll = selectedBookmarks.length === 0
-  const bookmarksToShare =
-    selectedBookmarks.length === 0
-      ? model.allBookmarksModel
-      : model.sharedBookmarksModel
+  const bookmarksToShare = shareAll
+    ? model.allBookmarksSnapshot
+    : model.sharedBookmarksSnapshot
 
   const {
     data: url = '',
     error,
     isLoading: loading,
-  } = useFetch(['shareBookmarks', getSnapshot(bookmarksToShare)], async () => {
+  } = useFetch(['shareBookmarks', bookmarksToShare], async () => {
     if (!isSessionWithShareURL(session)) {
       throw new Error('No shareURL configured')
     }
-    const snap = getSnapshot(bookmarksToShare)
     const locationUrl = new URL(window.location.href)
     const result = await shareSessionToDynamo(
-      snap,
+      bookmarksToShare,
       session.shareURL,
       locationUrl.href,
     )
@@ -70,19 +67,7 @@ const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
   return (
     <Dialog open onClose={onClose} title="Share bookmarks">
       <DialogContent className={classes.content}>
-        <Alert severity="info">
-          {shareAll ? (
-            <>
-              <span>All bookmarks will be shared.</span>
-              <br />
-              <span>
-                Use the checkboxes to select individual bookmarks to share.
-              </span>
-            </>
-          ) : (
-            'Only selected bookmarks will be shared.'
-          )}
-        </Alert>
+        <BookmarkSelectionAlert all={shareAll} verb="shared" />
         <DialogContentText>
           Copy the URL below to share your bookmarks.
         </DialogContentText>
@@ -120,8 +105,8 @@ const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
           color="primary"
           disabled={loading}
           startIcon={<ContentCopyIcon />}
-          onClick={async () => {
-            await copy(url)
+          onClick={() => {
+            copy(url)
             session.notify('Copied to clipboard', 'success')
             onClose()
           }}

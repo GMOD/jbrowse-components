@@ -25,6 +25,10 @@ const useStyles = makeStyles()({
   },
 })
 
+function colWidth(header: string, values: string[]) {
+  return Math.max(measureText(header, 12) + 30, measureGridWidth(values))
+}
+
 const HighlightGrid = observer(function HighlightGrid({
   model,
 }: {
@@ -92,10 +96,7 @@ const HighlightGrid = observer(function HighlightGrid({
           {
             field: 'locString',
             headerName: 'Location',
-            width: Math.max(
-              measureText('Location', 12) + 30,
-              measureGridWidth(rows.map(r => r.locString)),
-            ),
+            width: colWidth('Location', rows.map(r => r.locString)),
             renderCell: ({ value, row }) => (
               <Link
                 className={classes.cell}
@@ -123,18 +124,12 @@ const HighlightGrid = observer(function HighlightGrid({
             field: 'label',
             headerName: 'Label',
             editable: true,
-            width: Math.max(
-              measureText('Label', 12) + 30,
-              measureGridWidth(rows.map(r => r.label)),
-            ),
+            width: colWidth('Label', rows.map(r => r.label)),
           },
           {
             field: 'assemblyName',
             headerName: 'Assembly',
-            width: Math.max(
-              measureText('Assembly', 12) + 30,
-              measureGridWidth(rows.map(r => r.assemblyName)),
-            ),
+            width: colWidth('Assembly', rows.map(r => r.assemblyName)),
           },
           {
             field: 'color',
@@ -176,7 +171,7 @@ const HighlightGrid = observer(function HighlightGrid({
         rowSelectionModel={{ type: 'include', ids: selectedIds }}
         processRowUpdate={row => {
           row.view.updateHighlight(row.highlight, {
-            label: row.label || undefined,
+            label: row.label ? row.label : undefined,
           })
           return row
         }}

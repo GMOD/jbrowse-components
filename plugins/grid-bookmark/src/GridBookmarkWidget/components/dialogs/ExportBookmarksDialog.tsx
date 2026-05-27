@@ -4,7 +4,6 @@ import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
-  Alert,
   Button,
   DialogActions,
   DialogContent,
@@ -15,6 +14,7 @@ import {
 import { observer } from 'mobx-react'
 
 import { downloadBookmarkFile } from '../../utils.ts'
+import BookmarkSelectionAlert from './BookmarkSelectionAlert.tsx'
 
 import type { GridBookmarkModel } from '../../model.ts'
 
@@ -51,19 +51,7 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
       }}
     >
       <DialogContent className={classes.container}>
-        <Alert severity="info">
-          {exportAll ? (
-            <>
-              <span>All bookmarks will be exported.</span>
-              <br />
-              <span>
-                Use the checkboxes to select individual bookmarks to export.
-              </span>
-            </>
-          ) : (
-            'Only selected bookmarks will be exported.'
-          )}
-        </Alert>
+        <BookmarkSelectionAlert all={exportAll} verb="exported" />
         <div className={classes.flexItem}>
           <Typography>Format to download:</Typography>
           <Select
@@ -93,8 +81,7 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
           color="primary"
           startIcon={<GetAppIcon />}
           onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            downloadBookmarkFile(fileType, model)
+            void downloadBookmarkFile(fileType, model)
             onClose()
           }}
         >

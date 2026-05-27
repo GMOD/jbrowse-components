@@ -29,9 +29,6 @@ const LabeledRegionModel = types
     },
   }))
 
-const SharedBookmarksModel = types.model('SharedBookmarksModel', {
-  sharedBookmarks: types.maybe(types.array(LabeledRegionModel)),
-})
 
 export interface IExtendedLGV extends LinearGenomeViewModel {
   bookmarkHighlightsVisible: boolean
@@ -60,7 +57,7 @@ export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
 
 const localStorageKeyF = () =>
   typeof window !== 'undefined'
-    ? `bookmarks-${[window.location.host + window.location.pathname].join('-')}`
+    ? `bookmarks-${window.location.host}${window.location.pathname}`
     : 'empty'
 
 /**
@@ -148,27 +145,41 @@ export default function f(_pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       * Plain snapshot of selected (or all) bookmarks for the share dialog.
+       * Explicit field pick strips volatile-only fields (id, correspondingObj).
        */
-      get sharedBookmarksModel() {
-        // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate
-        // reference to same object in the same state tree, will otherwise error
-        // when performing share
-        return SharedBookmarksModel.create({
-          sharedBookmarks: JSON.parse(JSON.stringify(self.selectedBookmarks)),
-        })
+      get sharedBookmarksSnapshot() {
+        return {
+          sharedBookmarks: self.selectedBookmarks.map(
+            ({ refName, start, end, reversed, assemblyName, label, highlight }) => ({
+              refName,
+              start,
+              end,
+              reversed,
+              assemblyName,
+              label,
+              highlight,
+            }),
+          ),
+        }
       },
       /**
        * #getter
        */
-      get allBookmarksModel() {
-        // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate
-        // reference to same object in the same state tree, will otherwise error
-        // when performing share
-        return SharedBookmarksModel.create({
-          sharedBookmarks: JSON.parse(
-            JSON.stringify(self.bookmarksWithValidAssemblies),
+      get allBookmarksSnapshot() {
+        return {
+          sharedBookmarks: self.bookmarksWithValidAssemblies.map(
+            ({ refName, start, end, reversed, assemblyName, label, highlight }) => ({
+              refName,
+              start,
+              end,
+              reversed,
+              assemblyName,
+              label,
+              highlight,
+            }),
           ),
-        })
+        }
       },
     }))
     .actions(self => ({
@@ -264,11 +275,9 @@ export default function f(_pluginManager: PluginManager) {
           // @ts-expect-error
           view.setBookmarkHighlightsVisible?.(arg)
           // @ts-expect-error
-          // eslint-disable-next-line unicorn/no-array-for-each
-          view.views?.forEach((view: unknown) => {
-            // @ts-expect-error
-            view.setBookmarkHighlightsVisible?.(arg)
-          })
+          for (const subView of view.views ?? []) {
+            subView.setBookmarkHighlightsVisible?.(arg)
+          }
         }
       },
       /**
@@ -281,11 +290,9 @@ export default function f(_pluginManager: PluginManager) {
           // @ts-expect-error
           view.setLabelsVisible?.(arg)
           // @ts-expect-error
-          // eslint-disable-next-line unicorn/no-array-for-each
-          view.views?.forEach((view: unknown) => {
-            // @ts-expect-error
-            view.setLabelsVisible?.(arg)
-          })
+          for (const subView of view.views ?? []) {
+            subView.setLabelsVisible?.(arg)
+          }
         }
       },
     }))
