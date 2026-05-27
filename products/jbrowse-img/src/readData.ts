@@ -16,6 +16,9 @@ export interface Opts {
   defaultSession?: boolean
   trackList?: Entry[]
   tracks?: string
+  themeName?: string
+  showGridlines?: boolean
+  trackLabels?: string
 }
 
 function read(file: string): unknown {
@@ -180,7 +183,9 @@ export function readData({
     throw new Error(`${tracks}: expected a JSON array of tracks`)
   }
   const tracksData = rawTracksData as Track[] | undefined
-  const configData = config ? (read(config) as Config) : ({} as Config)
+  const configData: Partial<Config> & Record<string, unknown> = config
+    ? (read(config) as Config)
+    : {}
 
   let sessionData = session
     ? (read(session) as Record<string, unknown>)
@@ -207,7 +212,6 @@ export function readData({
     configData.assembly = assemblyData
   }
   // else check if it was an assembly name in a config file
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   else if (configData.assemblies?.length) {
     if (asm) {
       const assembly = configData.assemblies.find(entry => entry.name === asm)
@@ -254,8 +258,6 @@ export function readData({
     }
   }
 
-  // throw if still no assembly
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!configData.assembly) {
     throw new Error(
       'no assembly specified, use --fasta to supply an indexed FASTA file (generated with samtools faidx yourfile.fa). see README for alternatives with --assembly and --config',
@@ -264,10 +266,7 @@ export function readData({
 
   if (tracksData) {
     configData.tracks = tracksData
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  else if (!configData.tracks) {
+  } else if (!configData.tracks) {
     configData.tracks = []
   }
 
@@ -295,5 +294,6 @@ export function readData({
     configData.defaultSession = sessionData
   }
 
-  return configData
+  // assembly and tracks are guaranteed set above (throw otherwise)
+  return configData as Config
 }

@@ -8,7 +8,7 @@ You don't need to have JBrowse 2 installed to use this tool. The tool can
 generate images using files on your hard drive or from remote files. So, all you
 need to run this tool is
 
-- NodeJS v16+
+- NodeJS v23+
 
 ## Screenshot
 
@@ -214,26 +214,14 @@ height) to get a coverage-only render at the size you want.
 jb2export --bam file.bam snpcov height:200 --fasta hg19.fa
 ```
 
-### Render the sequence track
-
-If you are using the fasta argument, the refseq will be named "refseq" and can
-be specified with the --configtracks tag. If you are using a pre-loaded
-config.json then you can find the trackId to pass to --configtracks in there
-
-```bash
-jb2export --fasta data/volvox/volvox.fa --configtracks refseq --loc ctgA:1-100
-```
-
 ### Use with a jbrowse config.json (remote files in the config.json)
 
-A config.json can be specified, and then we just refer to trackIds in this file,
-and extra tracks can also be supplied that are outside of the config e.g. with
---bam
+A config.json can be specified with extra tracks supplied outside the config
+e.g. with `--bam`
 
 ```bash
 jb2export --config data/config.json \
   --assembly hg19 \
-  --configtracks hg00096_highcov clinvar_cnv_hg19 \
   --bam custom_bam.bam \
   --loc 1:1,000,000-1,100,000
 ```
@@ -309,7 +297,6 @@ Then you can call it like above
 ```bash
 jb2export --config data/volvox/config.json \
   --assembly volvox \
-  --configtracks volvox_sv \
   --loc ctgA:1-50,000
 ```
 
@@ -324,92 +311,56 @@ data/config.json for a config that just contains URLs
 
 ### Assembly params
 
-- --fasta - filename or http(s) URL for a indexed or bgzip indexed FASTA file
-- --aliases - tab separated "refName aliases" with column 1 matching the FASTA,
-  and other columns being aliases
+- `--fasta` — path or http(s) URL to an indexed FASTA (`.fa`, `.fa.gz`)
+- `--aliases` — tab-separated refname aliases; column 1 matches the FASTA, other
+  columns are aliases (e.g. maps `1` → `chr1`)
+- `--cytobands` — path or URL to a cytoband BED file for the assembly
 
 ### Track params
 
-Specify these with a filename (local to the computer) or a http(s) URL. Can
-specify it multiple times e.g. --bam file1.bam --bam file2.bam
+Specify a filename (local) or http(s) URL. Can be repeated for multiple tracks
+of the same type, e.g. `--bam file1.bam --bam file2.bam`
 
-- --bigbed
-- --gffgz
-- --bedgz
-- --vcfgz
-- --bigwig
-- --bam
-- --cram
-- --hic (wip)
+- `--bam`
+- `--cram`
+- `--bigwig`
+- `--vcfgz`
+- `--gffgz`
+- `--bigbed`
+- `--bedgz`
+- `--hic`
 
 ### Config file params (optional)
 
-- --assembly - path to a JSON file containing a jbrowse 2 assembly config e.g.
-  [data/assembly.json](data/assembly.json), can be used in place of --fasta
-- --tracks - path to a JSON file containing a list of jbrowse 2 track configs
-  e.g. [data/tracks.json](data/tracks.json)
-- --session - path to a JSON file containing a jbrowse 2 session config e.g.
-  [data/session.json](data/session.json)
-- --config - path to a JSON file containing a full jbrowse 2 config e.g.
-  [data/config.json](data/config.json)
+- `--assembly` — path to a JBrowse 2 assembly JSON (e.g.
+  [data/assembly.json](data/assembly.json)), or the name of an assembly in
+  `--config`; can be used in place of `--fasta`
+- `--tracks` — path to a JSON file containing an array of JBrowse 2 track
+  configs (e.g. [data/tracks.json](data/tracks.json))
+- `--session` — path to a JBrowse 2 session JSON exported from
+  File → Export session
+- `--config` — path to a full JBrowse 2 config.json (e.g.
+  [data/config.json](data/config.json))
+- `--defaultSession` — use the `defaultSession` embedded in `--config`
 
-### Other
+### Output params
 
-- --loc - a locstring to navigate to
-- --out - file to write the svg to
-- --noRasterize - the canvas based tracks such as wiggle, read pileups, and hic
-  are rasterized to a PNG inside the svg by default. if you want it in all SVG
-  then use this flag but note that filesize may be much larger
+- `--loc` — location string to render, e.g. `chr1:1-10000` or `all`
+- `--out` — output file path; `.svg`, `.png`, or `.pdf`
+- `--width` — view width in pixels (default: 1500)
+- `--noRasterize` — render everything as SVG vectors instead of rasterizing
+  canvas layers (pileup, coverage, hic); results in larger files
+
+### Appearance params
+
+- `--themeName` — theme to use for rendering (`default` or `dark`)
+- `--showGridlines` — draw genomic coordinate gridlines
+- `--trackLabels` — label position: `offset` (default), `overlapping`, or
+  `hidden`
 
 ## Use --help
 
-```
-
-jb2export --help
-jb2export [command]
-
-Commands:
-  jb2export jb2export  Creates a jbrowse 2 image snapshot
-
-Options:
-      --version         Show version number                            [boolean]
-      --config          Path to config file                             [string]
-      --session         Path to session file                            [string]
-      --assembly        Path to an assembly configuration, or a name of an
-                        assembly in the configFile                      [string]
-      --tracks          Path to tracks portion of a session             [string]
-      --loc             A locstring to navigate to, or --loc all to view the
-                        whole genome                                    [string]
-      --fasta           Supply a fasta for the assembly                 [string]
-      --aliases         Supply aliases for the assembly, e.g. mapping of 1 to
-                        chr1. Tab separated file where column 1 matches the
-                        names from the FASTA                            [string]
-  -w, --width           Set the width of the svg canvas, default 1500px [number]
-      --configtracks    A list of track labels from a config file        [array]
-      --bam             A bam file, flag --bam can be used multiple times to
-                        specify multiple bam files                       [array]
-      --bigwig          A bigwig file, the --bigwig flag can be used multiple
-                        times to specify multiple bigwig files           [array]
-      --cram            A cram file, the --cram flag can be used multiple times
-                        to specify multiple cram files                   [array]
-      --vcfgz           A tabixed VCF, the --vcfgz flag can be used multiple
-                        times to specify multiple vcfgz files            [array]
-      --gffgz           A tabixed GFF, the --gffgz can be used multiple times to
-                        specify multiple gffgz files                     [array]
-      --hic             A .hic file, the --hic can be used multiple times to
-                        specify multiple hic files                       [array]
-      --bigbed          A .bigBed file, the --bigbed can be used multiple times
-                        to specify multiple bigbed files                 [array]
-      --bedgz           A bed tabix file, the --bedgz can be used multiple times
-                        to specify multiple bedtabix files               [array]
-      --out             File to output to. Default: out.svg
-                                                   [string] [default: "out.svg"]
-      --noRasterize     Use full SVG rendering with no rasterized layers, this
-                        can substantially increase filesize            [boolean]
-      --defaultSession  Use the defaultSession from config.json        [boolean]
-  -h, --help            Show help                                      [boolean]
-
-```
+Run `jb2export --help` for the full option list.
 
 ## Convert to PNG
 

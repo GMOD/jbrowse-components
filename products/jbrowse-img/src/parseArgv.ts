@@ -30,7 +30,7 @@ export function standardizeArgv(args: Entry[], trackTypes: string[]) {
     if (trackTypes.includes(arg[0])) {
       result.trackList.push(arg)
     } else {
-      result[arg[0]] = arg[1][0] || true
+      result[arg[0]] = arg[1][0] ?? true
     }
   }
   return result

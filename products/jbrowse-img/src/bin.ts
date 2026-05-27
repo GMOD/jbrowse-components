@@ -28,6 +28,9 @@ const knownOptions = new Set([
   'defaultSession',
   'tracks',
   'cytobands',
+  'themeName',
+  'showGridlines',
+  'trackLabels',
   'help',
   'version',
 ])
@@ -78,13 +81,46 @@ const yargsInstance = yargs(hideBin(process.argv))
     description: 'Use default session from config',
     default: false,
   })
+  .option('tracks', {
+    type: 'string',
+    description: 'Path to JSON file with an array of track configs',
+  })
+  .option('cytobands', {
+    type: 'string',
+    description: 'Path to cytoband file for the assembly',
+  })
+  .option('themeName', {
+    type: 'string',
+    description: 'Theme name for rendering (e.g. default, dark)',
+  })
+  .option('showGridlines', {
+    type: 'boolean',
+    description: 'Show genomic coordinate gridlines in the output',
+    default: false,
+  })
+  .option('trackLabels', {
+    type: 'string',
+    description: 'Track label position: offset, overlapping, or hidden',
+  })
   .example(
     '$0 --fasta ref.fa --bam reads.bam --loc chr1:1-10000 --out out.svg',
-    'Render BAM alignments',
+    'Render BAM alignments to SVG',
   )
   .example(
     '$0 --fasta ref.fa --vcfgz variants.vcf.gz --loc chr1:1-50000 --out out.png',
-    'Render VCF variants',
+    'Render VCF variants to PNG',
+  )
+  .example(
+    '$0 --fasta ref.fa --bam reads.bam height:80 color:strand --loc chr1:1-10000 --out out.svg',
+    'Custom track height and strand coloring',
+  )
+  .example(
+    '$0 --config jbrowse.json --assembly hg38 --tracks tracks.json --loc chr1:1-100000 --out out.svg',
+    'Render from config with a JSON tracks file',
+  )
+  .example(
+    '$0 --fasta ref.fa.gz --cytobands cytobands.bed --bigwig signal.bw --loc chr1 --out out.svg',
+    'Render BigWig with cytobands',
   )
   .epilogue(`Track options: ${trackTypes.map(t => `--${t}`).join(', ')}`)
   .strict(false)
@@ -114,6 +150,11 @@ async function main() {
     width: argv.width,
     noRasterize: argv.noRasterize,
     defaultSession: argv.defaultSession,
+    tracks: argv.tracks,
+    cytobands: argv.cytobands,
+    themeName: argv.themeName,
+    showGridlines: argv.showGridlines,
+    trackLabels: argv.trackLabels,
     trackList,
   }
 

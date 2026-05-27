@@ -102,7 +102,7 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
     } else if (prefix === 'scaletype') {
       display.setScaleType(val1)
     } else if (prefix === 'crosshatch') {
-      display.setCrossHatches(booleanize(val1 || 'false'))
+      display.setCrossHatches(booleanize(val1 || 'true'))
     } else if (prefix === 'fill') {
       display.setFill(booleanize(val1 || 'true'))
     } else if (prefix === 'resolution') {
@@ -132,6 +132,9 @@ export async function renderRegion(opts: Opts) {
     trackList = [],
     session: sessionParam,
     defaultSession,
+    themeName,
+    showGridlines,
+    trackLabels,
   } = opts
 
   const { session } = model
@@ -162,7 +165,9 @@ export async function renderRegion(opts: Opts) {
     rasterizeLayers: !opts.noRasterize,
     createCanvas: (w: number, h: number) =>
       createCanvas(w, h) as unknown as HTMLCanvasElement,
-    ...opts,
+    themeName,
+    showGridlines,
+    trackLabels,
   })
   destroy(model)
   return result
