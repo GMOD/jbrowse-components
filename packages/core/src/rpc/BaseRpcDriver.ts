@@ -36,15 +36,21 @@ function detectHardwareConcurrency() {
   return mainThread && canDetect ? window.navigator.hardwareConcurrency : 1
 }
 class LazyWorker {
-  workerP?: Promise<WorkerHandle> | undefined
+  workerP?: Promise<WorkerHandle>
 
   constructor(public driver: BaseRpcDriver) {}
 
   async getWorker() {
-    this.workerP ??= this.driver.makeWorker().catch((e: unknown) => {
-      this.workerP = undefined
-      throw e
-    })
+    if (!this.workerP) {
+      // wrap so a rejection clears workerP, letting the next caller retry
+      const p = this.driver.makeWorker()
+      this.workerP = p
+      p.catch(() => {
+        if (this.workerP === p) {
+          this.workerP = undefined
+        }
+      })
+    }
     return this.workerP
   }
 }
@@ -89,7 +95,18 @@ export default abstract class BaseRpcDriver {
         .map(t => this.filterArgs(t)) as unknown as THING_TYPE
     } else if (isStateTreeNode(thing) && !isAlive(thing)) {
       throw new Error('dead state tree node passed to RPC call')
-    } else if (thing instanceof File) {
+    } else if (
+      thing instanceof File ||
+      thing instanceof Blob ||
+      thing instanceof ArrayBuffer ||
+      ArrayBuffer.isView(thing) ||
+      thing instanceof Date ||
+      thing instanceof Map ||
+      thing instanceof Set ||
+      thing instanceof RegExp
+    ) {
+      // structured-clone handles these natively; treating them as plain objects
+      // would collapse them to {} since Object.entries returns []
       return thing
     } else {
       return Object.fromEntries(
@@ -98,6 +115,10 @@ export default abstract class BaseRpcDriver {
           .map(([k, v]) => [k, this.filterArgs(v)]),
       ) as THING_TYPE
     }
+  }
+
+  freeSession(sessionId: string) {
+    this.workerAssignments.delete(sessionId)
   }
 
   async remoteAbort(

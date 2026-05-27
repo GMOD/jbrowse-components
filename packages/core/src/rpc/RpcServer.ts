@@ -49,16 +49,15 @@ export default class RpcServer {
     }
     const methodFn = this.methods[method]
     if (methodFn) {
-      Promise.resolve(data)
-        .then(methodFn)
-        .then(
-          response => {
-            this.reply(uid, method, response)
-          },
-          (error: unknown) => {
-            this.throw(uid, serializeError(error))
-          },
-        )
+      // wrap so a synchronous throw inside methodFn still routes to .throw()
+      ;(async () => methodFn(data))().then(
+        response => {
+          this.reply(uid, method, response)
+        },
+        (error: unknown) => {
+          this.throw(uid, serializeError(error))
+        },
+      )
     } else {
       this.throw(uid, `Unknown RPC method "${method}"`)
     }

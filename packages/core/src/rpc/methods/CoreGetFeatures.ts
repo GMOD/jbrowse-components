@@ -39,7 +39,7 @@ export default class CoreGetFeatures extends RpcMethodType {
       sessionId: string
       regions: Region[]
       adapterConfig: Record<string, unknown>
-      statusCallback: (arg: string) => void
+      statusCallback?: (arg: string) => void
       stopToken?: StopToken
       opts?: Record<string, unknown>
     },

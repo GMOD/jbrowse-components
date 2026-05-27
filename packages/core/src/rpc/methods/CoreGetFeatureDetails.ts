@@ -31,10 +31,12 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
     const { rendererType, featureId } = deserializedArgs
     const RendererType = this.pluginManager.getRendererType(
       rendererType,
-    )! as BoxRendererType
-    const data = RendererType.getLayoutSession(args)?.cachedLayout?.layout.getDataByID(
-      featureId,
-    ) as Feature | undefined
+    ) as BoxRendererType | undefined
+    if (!RendererType) {
+      throw new Error(`unknown renderer ${rendererType}`)
+    }
+    const data = RendererType.getLayoutSession(deserializedArgs)
+      ?.cachedLayout?.layout.getDataByID(featureId) as Feature | undefined
     return { feature: data?.toJSON() }
   }
 }

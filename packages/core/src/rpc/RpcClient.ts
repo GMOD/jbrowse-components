@@ -79,10 +79,13 @@ export default class RpcClient {
 
   protected catch(e: ErrorEvent) {
     const error = new Error(e.message)
-    for (const { reject } of this.pending.values()) {
+    // snapshot before clearing so a synchronous reject handler that schedules
+    // a new call() can't have its entry dropped by the clear()
+    const snapshot = [...this.pending.values()]
+    this.pending.clear()
+    for (const { reject } of snapshot) {
       reject(error)
     }
-    this.pending.clear()
     this.emit('error', {
       message: e.message,
       lineno: e.lineno,

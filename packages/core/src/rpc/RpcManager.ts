@@ -135,12 +135,22 @@ export default class RpcManager {
       statusCallback?: (message: unknown) => void
     }
     const driverForCall = this.getDriverForCall(a, opts)
-    return driverForCall.call(
-      this.pluginManager,
-      sessionId,
-      functionName,
-      a,
-      opts ?? {},
-    ) as M extends RpcMethodName ? RpcReturn<M & RpcMethodName> : unknown
+    try {
+      return (await driverForCall.call(
+        this.pluginManager,
+        sessionId,
+        functionName,
+        a,
+        opts ?? {},
+      )) as M extends RpcMethodName ? RpcReturn<M & RpcMethodName> : unknown
+    } finally {
+      // when a session is freed, drop its sticky worker assignment on every
+      // driver so the workerAssignments map doesn't grow unboundedly
+      if (functionName === 'CoreFreeResources') {
+        for (const driver of this.driverObjects.values()) {
+          driver.freeSession(sessionId)
+        }
+      }
+    }
   }
 }

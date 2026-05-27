@@ -167,6 +167,13 @@ export function getFileHandleCache() {
   return fileHandleCache
 }
 
+export function hasFileHandlesInCache() {
+  for (const _ in fileHandleCache) {
+    return true
+  }
+  return false
+}
+
 export function setFileHandleCache(cache: Record<string, File>) {
   fileHandleCache = cache
 }

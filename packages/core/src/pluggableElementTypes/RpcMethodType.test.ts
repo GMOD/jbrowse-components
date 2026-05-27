@@ -8,49 +8,115 @@ class MockRpcMethodType extends RpcMethodType {
   async execute() {}
 }
 
-test('test serialize arguments with augmentLocationObject', async () => {
-  const mockRpc = new MockRpcMethodType(pluginManager)
-  mockRpc.serializeNewAuthArguments = jest.fn().mockReturnValue({
-    locationType: 'UriLocation',
-    uri: 'test',
-    internetAccountId: 'HTTPBasicInternetAccount-test',
-  })
-  const locationInAdapter = {
-    locationType: 'UriLocation',
-    uri: 'test',
-    internetAccountId: 'HTTPBasicInternetAccount-test',
+// Stub of AppRootModel that satisfies isAppRootModel and exposes a controllable
+// internetAccounts list. The augment walk skips entirely when length === 0.
+function withMockRootModel(internetAccountsCount: number) {
+  const original = pluginManager.rootModel
+  ;(pluginManager as { rootModel: unknown }).rootModel = {
+    findAppropriateInternetAccount: () => undefined,
+    internetAccounts: new Array<{ internetAccountId: string }>(
+      internetAccountsCount,
+    ).fill({ internetAccountId: 'mock' }),
   }
-  const deeplyNestedLocation = {
-    locationType: 'UriLocation',
-    uri: 'test2',
-    internetAccountId: 'HTTPBasicInternetAccount-test2',
+  return () => {
+    ;(pluginManager as { rootModel: unknown }).rootModel = original
   }
+}
 
+test('augmentLocationObject walks and serializes URIs when internet accounts exist', async () => {
+  const restore = withMockRootModel(1)
+  try {
+    const mockRpc = new MockRpcMethodType(pluginManager)
+    mockRpc.serializeNewAuthArguments = jest.fn().mockReturnValue({
+      locationType: 'UriLocation',
+      uri: 'test',
+      internetAccountId: 'HTTPBasicInternetAccount-test',
+    })
+    const locationInAdapter = {
+      locationType: 'UriLocation',
+      uri: 'test',
+      internetAccountId: 'HTTPBasicInternetAccount-test',
+    }
+    const deeplyNestedLocation = {
+      locationType: 'UriLocation',
+      uri: 'test2',
+      internetAccountId: 'HTTPBasicInternetAccount-test2',
+    }
+
+    await mockRpc.serializeArguments(
+      {
+        adapter: {
+          testLocation: locationInAdapter,
+        },
+        filters: [],
+        stopToken: 'teststring',
+        randomProperty: 'randomstring',
+        parentObject: {
+          nestedObject: {
+            arrayInNestedObject: [deeplyNestedLocation],
+          },
+        },
+      },
+      '',
+    )
+    expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledTimes(2)
+    expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
+      locationInAdapter,
+      '',
+    )
+    expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
+      deeplyNestedLocation,
+      '',
+    )
+  } finally {
+    restore()
+  }
+})
+
+test('augmentLocationObject skips walk when no internet accounts and no file handles', async () => {
+  // No rootModel set up → no internet accounts; no FileHandles in cache either
+  const mockRpc = new MockRpcMethodType(pluginManager)
+  mockRpc.serializeNewAuthArguments = jest.fn()
   await mockRpc.serializeArguments(
     {
       adapter: {
-        testLocation: locationInAdapter,
-      },
-      filters: [],
-      stopToken: 'teststring',
-      randomProperty: 'randomstring',
-      parentObject: {
-        nestedObject: {
-          arrayInNestedObject: [deeplyNestedLocation],
+        location: {
+          locationType: 'UriLocation',
+          uri: 'test',
         },
       },
     },
     '',
   )
-  expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledTimes(2)
-  expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
-    locationInAdapter,
-    '',
-  )
-  expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
-    deeplyNestedLocation,
-    '',
-  )
+  expect(mockRpc.serializeNewAuthArguments).not.toHaveBeenCalled()
+})
+
+test('augmentLocationObject still walks when only file handles are present', async () => {
+  const mockFile = new File(['x'], 'a.bam')
+  setFileInCache('augment-walk-test', mockFile)
+  try {
+    const mockRpc = new MockRpcMethodType(pluginManager)
+    mockRpc.serializeNewAuthArguments = jest.fn()
+    const args: Record<string, unknown> = {
+      adapter: {
+        location: {
+          locationType: 'FileHandleLocation',
+          handleId: 'augment-walk-test',
+          name: 'a.bam',
+        },
+      },
+    }
+    await mockRpc.serializeArguments(args, '')
+    expect(
+      ((args.adapter as Record<string, unknown>).location as Record<
+        string,
+        unknown
+      >).locationType,
+    ).toBe('BlobLocation')
+    expect(mockRpc.serializeNewAuthArguments).not.toHaveBeenCalled()
+  } finally {
+    clearFileFromCache('augment-walk-test')
+  }
 })
 
 describe('convertFileHandleLocations', () => {

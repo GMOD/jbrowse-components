@@ -22,6 +22,7 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
       regions: Region[]
       stopToken?: StopToken
       headers?: Record<string, string>
+      statusCallback?: (arg: string) => void
       sessionId: string
     },
     rpcDriver: string,

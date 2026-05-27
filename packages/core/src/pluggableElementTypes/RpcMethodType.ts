@@ -1,8 +1,12 @@
 import PluggableElementBase from './PluggableElementBase.ts'
 import { renameRegionsIfNeeded } from '../util/index.ts'
-import mapObject from '../util/map-obj/index.ts'
 import { isRpcResult } from '../util/rpc.ts'
-import { getBlobMap, getFileFromCache, setBlobMap } from '../util/tracks.ts'
+import {
+  getBlobMap,
+  getFileFromCache,
+  hasFileHandlesInCache,
+  setBlobMap,
+} from '../util/tracks.ts'
 import {
   RetryError,
   isAppRootModel,
@@ -18,60 +22,74 @@ import type { FileHandleLocation, UriLocation } from '../util/types/index.ts'
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
-// Note: We use custom recursion instead of mapObject here because mapObject's
-// mapper function only receives object properties, not array items directly.
-// FileHandleLocation objects can appear as array elements (e.g., in adapter
-// configs with multiple file locations), so we need direct array item access.
+function convertFileHandleToBlob(
+  loc: FileHandleLocation,
+  blobMap: Record<string, File>,
+) {
+  const file = getFileFromCache(loc.handleId)
+  if (!file) {
+    throw new Error(
+      `File not in cache for handleId: ${loc.handleId}. ` +
+        `The file "${loc.name}" may need to be reopened.`,
+    )
+  }
+  // Deterministic blobId from handleId so the same FileHandleLocation always
+  // produces the same BlobLocation — keeps adapter config hashes stable.
+  const blobId = `fh-blob-${loc.handleId}`
+  blobMap[blobId] = file
+  return { locationType: 'BlobLocation' as const, name: loc.name, blobId }
+}
+
+/**
+ * Single recursive walker that handles both FileHandleLocation → BlobLocation
+ * conversion and UriLocation collection for auth augmentation. Either side can
+ * be disabled by omitting the corresponding option; if both are omitted the
+ * walk is a no-op and the caller should skip it entirely.
+ */
+function walkLocationObjects(
+  obj: unknown,
+  opts: { blobMap?: Record<string, File>; uris?: UriLocation[] },
+  seen = new WeakSet<object>(),
+): void {
+  if (!obj || typeof obj !== 'object' || seen.has(obj)) {
+    return
+  }
+  seen.add(obj)
+
+  const visit = (val: unknown, write: (next: unknown) => void) => {
+    if (opts.blobMap && isFileHandleLocation(val)) {
+      write(convertFileHandleToBlob(val, opts.blobMap))
+    } else {
+      if (opts.uris && isUriLocation(val)) {
+        opts.uris.push(val)
+      }
+      walkLocationObjects(val, opts, seen)
+    }
+  }
+
+  if (Array.isArray(obj)) {
+    for (let i = 0; i < obj.length; i++) {
+      visit(obj[i], next => {
+        obj[i] = next
+      })
+    }
+  } else {
+    const record = obj as Record<string, unknown>
+    for (const key of Object.keys(record)) {
+      visit(record[key], next => {
+        record[key] = next
+      })
+    }
+  }
+}
+
+// Back-compat wrapper around the combined walker; some tests and external
+// callers import this directly.
 export function convertFileHandleLocations(
   obj: unknown,
   blobMap: Record<string, File>,
-  seen = new WeakSet<object>(),
 ) {
-  const convertLocation = (loc: FileHandleLocation) => {
-    const file = getFileFromCache(loc.handleId)
-    if (!file) {
-      throw new Error(
-        `File not in cache for handleId: ${loc.handleId}. ` +
-          `The file "${loc.name}" may need to be reopened.`,
-      )
-    }
-    // Use deterministic blobId based on handleId so the same FileHandleLocation
-    // always converts to the same BlobLocation. This ensures adapter config
-    // hashes remain stable across render calls.
-    const blobId = `fh-blob-${loc.handleId}`
-    blobMap[blobId] = file
-    return { locationType: 'BlobLocation' as const, name: loc.name, blobId }
-  }
-
-  const convert = (current: unknown): void => {
-    if (!current || typeof current !== 'object' || seen.has(current)) {
-      return
-    }
-    seen.add(current)
-
-    if (Array.isArray(current)) {
-      for (let i = 0; i < current.length; i++) {
-        const item = current[i]
-        if (isFileHandleLocation(item)) {
-          current[i] = convertLocation(item)
-        } else {
-          convert(item)
-        }
-      }
-    } else {
-      const record = current as Record<string, unknown>
-      for (const key of Object.keys(record)) {
-        const val = record[key]
-        if (isFileHandleLocation(val)) {
-          record[key] = convertLocation(val)
-        } else {
-          convert(val)
-        }
-      }
-    }
-  }
-
-  convert(obj)
+  walkLocationObjects(obj, { blobMap })
 }
 
 export default abstract class RpcMethodType extends PluggableElementBase {
@@ -203,38 +221,24 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     rpcDriverClassName: string,
   ) {
     const rootModel = this.pluginManager.rootModel
+    const needsFileHandles = hasFileHandlesInCache()
+    const needsUris =
+      isAppRootModel(rootModel) && rootModel.internetAccounts.length > 0
 
-    const uris: UriLocation[] = []
-    const blobMap = getBlobMap()
-
-    // Convert FileHandleLocation to BlobLocation in-place
-    // Skip renderingProps as it may have circular references
-    const { renderingProps, ...rest } = thing
-    convertFileHandleLocations(rest, blobMap)
-
-    // Collect UriLocations for auth augmentation using map-obj (handles cycles)
-    mapObject(
-      rest,
-      (key, val: unknown) => {
-        if (isUriLocation(val)) {
-          uris.push(val)
-        }
-        if (Array.isArray(val)) {
-          for (const item of val) {
-            if (isUriLocation(item)) {
-              uris.push(item)
-            }
-          }
-        }
-        return [key, val]
-      },
-      { deep: true },
-    )
-
-    // Skip URI auth augmentation if we have a valid root model with no internet accounts
-    if (isAppRootModel(rootModel) && rootModel.internetAccounts.length === 0) {
+    // Common case (web users with no internet accounts and no desktop file
+    // handles): nothing to do, skip the tree walk entirely.
+    if (!needsFileHandles && !needsUris) {
       return thing
     }
+
+    // Skip renderingProps — it may contain circular references and never has
+    // FileHandleLocations or UriLocations inside.
+    const uris: UriLocation[] = []
+    const { renderingProps, ...rest } = thing
+    walkLocationObjects(rest, {
+      blobMap: needsFileHandles ? getBlobMap() : undefined,
+      uris: needsUris ? uris : undefined,
+    })
 
     for (const uri of uris) {
       await this.serializeNewAuthArguments(uri, rpcDriverClassName)
