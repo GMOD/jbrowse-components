@@ -539,6 +539,13 @@ export default function baseStateModelFactory(
           bytes?: number
           fetchSizeLimit?: number
         }) {
+          // Clear both gates first: force-loads alternate between byte and
+          // density limits depending on which gate tripped, and leaving a
+          // stale value behind disables the other code path forever (the
+          // maxFeatureDensity getter short-circuits when userByteSizeLimit
+          // is set, and densityTooLarge ignores its stats when no max is set).
+          self.userByteSizeLimit = undefined
+          self.userFeatureDensityLimit = undefined
           if (stats?.bytes) {
             self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
           } else if (self.maxFeatureDensity !== undefined) {

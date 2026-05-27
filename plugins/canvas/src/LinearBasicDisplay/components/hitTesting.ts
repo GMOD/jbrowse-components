@@ -108,7 +108,10 @@ export function performMultiRegionHitDetection(
   yPos: number,
 ): HitResult {
   for (const vr of visibleRegions) {
-    if (mouseXPx >= vr.screenStartPx && mouseXPx <= vr.screenEndPx) {
+    // Upper bound is exclusive so adjacent regions (regionA.screenEndPx ===
+    // regionB.screenStartPx) don't both match at the shared pixel — the
+    // earlier region would always win and steal clicks meant for the later one.
+    if (mouseXPx >= vr.screenStartPx && mouseXPx < vr.screenEndPx) {
       const data = laidOutDataMap.get(vr.displayedRegionIndex)
       const indexes = flatbushIndexes.get(vr.displayedRegionIndex)
       if (data && indexes) {

@@ -269,6 +269,26 @@ test('multi-region selects correct region', () => {
   expect((hitR1 as any).displayedRegionIndex).toBe(1)
 })
 
+test('adjacent regions: shared boundary pixel goes to the later region', () => {
+  // regionA ends at screen px 400; regionB starts at screen px 400. The mouse
+  // at exactly px 400 must hit regionB, not regionA, otherwise clicks at the
+  // boundary always steal into the earlier region.
+  const dataA = makeData([makeItem('geneA', 0, 1000, 0, 20)])
+  const dataB = makeData([makeItem('geneB', 0, 1000, 0, 20)])
+  const laidOutDataMap = new Map([
+    [0, dataA],
+    [1, dataB],
+  ])
+  const regions = [
+    makeRegion(0, 0, 1000, 0, 400),
+    makeRegion(1, 0, 1000, 400, 800),
+  ]
+
+  const boundary = hit(laidOutDataMap, regions, 400, 10)
+  expect(boundary.feature!.featureId).toBe('geneB')
+  expect((boundary as any).displayedRegionIndex).toBe(1)
+})
+
 test('multi-region continues to next region when first has no hit', () => {
   // region 0 is within X range but has no feature at Y=999; region 1 has a feature
   const data1 = makeData([makeItem('geneA', 100, 400, 0, 20)])

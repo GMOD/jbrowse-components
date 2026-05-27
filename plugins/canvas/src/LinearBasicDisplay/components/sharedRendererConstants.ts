@@ -6,6 +6,12 @@ export { LABEL_FONT_SIZE } from '../../RenderFeatureDataRPC/constants.ts'
 // Instancing limits
 export const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
+// Overlay stacking. The overflow indicator sits on top of the canvas, label
+// overlays, and amino-acid overlay (all of which sit at default z-index inside
+// the scroll container). Keep above MUI's tooltip floor (1500) is unnecessary
+// because the indicator's tooltip is itself MUI-managed.
+export const OVERFLOW_INDICATOR_Z_INDEX = 999
+
 // Drawing dimensions (in pixels)
 export { MIN_RECT_WIDTH_PX } from './shaders/rect.generated.ts'
 export {

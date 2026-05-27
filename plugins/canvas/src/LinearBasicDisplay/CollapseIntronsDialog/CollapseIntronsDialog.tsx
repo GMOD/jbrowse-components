@@ -60,14 +60,16 @@ export default function CollapseIntronsDialog({
           errorText="Must be a non-negative number"
           style={{ marginBottom: 16, width: 250 }}
         />
-        <Button
-          style={{ float: 'right' }}
-          onClick={() => {
-            setShowAll(s => !s)
-          }}
-        >
-          {!showAll ? 'Show' : 'Hide'} all transcripts ({transcripts.length})
-        </Button>
+        {transcripts.length > 1 ? (
+          <Button
+            style={{ float: 'right' }}
+            onClick={() => {
+              setShowAll(s => !s)
+            }}
+          >
+            {!showAll ? 'Show' : 'Hide'} all transcripts ({transcripts.length})
+          </Button>
+        ) : null}
         {showAll ? (
           <TranscriptTable
             transcripts={transcripts}

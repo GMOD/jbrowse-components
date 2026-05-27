@@ -80,6 +80,12 @@ export function useFloatingLabels(
   onLabelMouseOver?: (item: FlatbushItem, e: React.MouseEvent) => void,
 ) {
   const { classes, cx } = useStyles()
+  // Read observables outside useMemo so the memo cache invalidates when they
+  // change. Inside useMemo, model.* reads only run on cache-miss; relying on
+  // them to re-trigger would couple correctness to transitive recomputation
+  // of laidOutDataMap (which happens to depend on the same flags). Mirrors
+  // the destructure-before-useMemo pattern in useHighlightOverlays below.
+  const { showLabels, effectiveShowDescriptions } = model
   return useMemo(() => {
     if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
       return null
@@ -88,8 +94,8 @@ export function useFloatingLabels(
     const elements: React.ReactElement[] = []
     const renderedLabels = new Set<string>()
     const visibility = {
-      showLabels: model.showLabels,
-      showDescriptions: model.effectiveShowDescriptions,
+      showLabels,
+      showDescriptions: effectiveShowDescriptions,
     }
 
     for (const vr of visibleRegions) {
@@ -166,6 +172,8 @@ export function useFloatingLabels(
     width,
     bpPerPx,
     visibleRegions,
+    showLabels,
+    effectiveShowDescriptions,
     model,
     openContextMenu,
     onLabelMouseOver,

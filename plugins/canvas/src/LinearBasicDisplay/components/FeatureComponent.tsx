@@ -60,7 +60,10 @@ export interface LinearBasicDisplayModel {
   featureDensityStats?: { bytes?: number }
   statusMessage: string | undefined
   setScrollTop: (n: number) => void
-  setFeatureDensityStatsLimit: (s?: { bytes?: number }) => void
+  setFeatureDensityStatsLimit: (s?: {
+    bytes?: number
+    fetchSizeLimit?: number
+  }) => void
   reload: () => void
   expandToFit: () => void
   collapseFromExpand: () => void

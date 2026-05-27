@@ -4,13 +4,15 @@ import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { OVERFLOW_INDICATOR_Z_INDEX } from './sharedRendererConstants.ts'
+
 const SCROLLBAR_WIDTH = 14
 
 const useStyles = makeStyles()(theme => ({
   root: {
     position: 'absolute',
     bottom: 2,
-    zIndex: 999,
+    zIndex: OVERFLOW_INDICATOR_Z_INDEX,
     pointerEvents: 'auto',
   },
   button: {
