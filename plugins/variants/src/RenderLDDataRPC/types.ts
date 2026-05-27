@@ -1,5 +1,11 @@
 import type { FilterStats, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 
+export const PRECOMPUTED_LD_ADAPTERS = [
+  'PlinkLDAdapter',
+  'PlinkLDTabixAdapter',
+  'LdmatAdapter',
+] as const
+
 export interface LDFlatbushItem {
   i: number
   j: number
@@ -15,9 +21,7 @@ export interface LDDataResult {
   // For genomic positions mode: midpoint boundaries between adjacent SNPs.
   boundaries: Float32Array
   numCells: number
-  maxScore: number
   uniformW: number
-  yScalar: number
   metric: LDMetric
   signedLD: boolean
   snps: LDSnp[]

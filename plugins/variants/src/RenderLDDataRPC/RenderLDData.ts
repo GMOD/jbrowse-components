@@ -20,8 +20,6 @@ export interface RenderLDDataArgs {
   jexlFilters: string[]
   signedLD: boolean
   useGenomicPositions: boolean
-  fitToHeight: boolean
-  displayHeight?: number
   stopToken?: StopToken
 }
 

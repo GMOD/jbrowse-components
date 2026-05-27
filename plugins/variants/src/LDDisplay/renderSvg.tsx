@@ -34,18 +34,20 @@ export async function renderSvg(
     showLegend,
     showRecombination,
     lineZoneHeight,
+    effectiveLineZoneHeight,
     useGenomicPositions,
     signedLD,
+    yScalar,
   } = self
 
   if (!rpcData || rpcData.numCells === 0) {
     return null
   }
 
-  const { ldValues, boundaries, yScalar, numCells, uniformW } = rpcData
+  const { ldValues, boundaries, numCells, uniformW } = rpcData
   const visibleWidth = view.width
   const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
-  const triangleHeight = height - lineZoneHeight
+  const triangleHeight = height - effectiveLineZoneHeight
 
   const matrixEl = paintLayer(visibleWidth, triangleHeight, opts, ctx => {
     drawLDBlocks(ctx, { ldValues, boundaries, numCells }, ramp, {
@@ -59,8 +61,13 @@ export async function renderSvg(
     })
   })
 
-  const recombTrackHeight = lineZoneHeight / 2
-  const recombTrackYOffset = lineZoneHeight / 2
+  // Match the live overlay's layout: genomic-positions mode places the
+  // recombination plot at the top spanning effectiveLineZoneHeight; index
+  // mode tucks it in the lower half of lineZoneHeight, above the matrix.
+  const recombTrackHeight = useGenomicPositions
+    ? effectiveLineZoneHeight
+    : lineZoneHeight / 2
+  const recombTrackYOffset = useGenomicPositions ? 0 : lineZoneHeight / 2
 
   return (
     <>
@@ -69,7 +76,7 @@ export async function renderSvg(
         width={visibleWidth}
         height={height}
       >
-        <g transform={`translate(0 ${lineZoneHeight})`}>{matrixEl}</g>
+        <g transform={`translate(0 ${effectiveLineZoneHeight})`}>{matrixEl}</g>
         {useGenomicPositions ? (
           <Wrapper model={self} exportSVG>
             <VariantLabels model={self} />

@@ -47,14 +47,6 @@ export default function sharedLDConfigFactory() {
       },
       /**
        * #slot
-       * Color scheme for the LD heatmap
-       */
-      colorScheme: {
-        type: 'string',
-        defaultValue: '',
-      },
-      /**
-       * #slot
        * Whether to show the legend
        */
       showLegend: {

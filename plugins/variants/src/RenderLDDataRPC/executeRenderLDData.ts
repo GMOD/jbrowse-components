@@ -1,5 +1,6 @@
 import { updateStatus } from '@jbrowse/core/util'
 
+import { PRECOMPUTED_LD_ADAPTERS } from './types.ts'
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
 
@@ -12,20 +13,12 @@ type ExecuteArgs = RenderLDDataArgs & {
   statusCallback?: (msg: string) => void
 }
 
-const PRECOMPUTED_LD_ADAPTERS = [
-  'PlinkLDAdapter',
-  'PlinkLDTabixAdapter',
-  'LdmatAdapter',
-] as const
-
 function emptyResult(signedLD: boolean, metric: LDMetric): LDDataResult {
   return {
     ldValues: new Float32Array(0),
     boundaries: new Float32Array(0),
     numCells: 0,
-    maxScore: 1,
     uniformW: 0,
-    yScalar: 1,
     metric,
     signedLD,
     snps: [],
@@ -52,8 +45,6 @@ export async function executeRenderLDData({
     jexlFilters,
     signedLD,
     useGenomicPositions,
-    fitToHeight,
-    displayHeight,
     statusCallback,
   } = args
 
@@ -107,12 +98,6 @@ export async function executeRenderLDData({
 
   const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   const width = totalWidthBp / bpPerPx
-  const triangleHeight = width / 2
-  const height = fitToHeight
-    ? (displayHeight ?? triangleHeight)
-    : triangleHeight
-  const yScalar = fitToHeight ? height / triangleHeight : 1
-
   const uniformW = width / (n * Math.SQRT2)
   const numCells = (n * (n - 1)) / 2
 
@@ -164,9 +149,7 @@ export async function executeRenderLDData({
     ldValues,
     boundaries,
     numCells,
-    maxScore: 1,
     uniformW,
-    yScalar,
     metric: ldData.metric,
     signedLD,
     snps: ldData.snps,

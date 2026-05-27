@@ -7,8 +7,6 @@ import {
   LD_UNIFORM_BYTE_SIZE,
 } from './GpuLDRenderer.ts'
 
-export { generateLDColorRamp } from './ldColorRamp.ts'
-
 import type { LDBackend } from './ldBackendTypes.ts'
 
 export function LDRenderer(canvas: HTMLCanvasElement) {

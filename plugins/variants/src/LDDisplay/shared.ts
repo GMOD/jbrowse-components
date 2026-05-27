@@ -19,7 +19,8 @@ import {
   migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import { generateLDColorRamp } from './components/LDRenderer.ts'
+import { generateLDColorRamp } from './components/ldColorRamp.ts'
+import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
@@ -106,9 +107,6 @@ export default function sharedModelFactory(
       setLDMetric(metric: LDMetric) {
         self.setOverride('ldMetric', metric)
       },
-      setColorScheme(scheme: string | undefined) {
-        self.setOverride('colorScheme', scheme)
-      },
       setShowLegend(show: boolean) {
         self.setOverride('showLegend', show)
       },
@@ -168,9 +166,6 @@ export default function sharedModelFactory(
       get ldMetric() {
         return self.getConfWithOverride<LDMetric>('ldMetric')
       },
-      get colorScheme() {
-        return self.getConfWithOverride<string>('colorScheme') || undefined
-      },
       get showLegend() {
         return self.getConfWithOverride<boolean>('showLegend')
       },
@@ -218,12 +213,6 @@ export default function sharedModelFactory(
       get snps(): LDSnp[] {
         return self.rpcData?.snps ?? []
       },
-      get maxScore() {
-        return self.rpcData?.maxScore ?? 1
-      },
-      get yScalar() {
-        return self.rpcData?.yScalar ?? 1
-      },
       get cellWidth() {
         return self.rpcData?.uniformW ?? 0
       },
@@ -234,22 +223,46 @@ export default function sharedModelFactory(
         return self.rpcData?.recombination
       },
       get isPrecomputedLD() {
-        const adapterType = self.adapterConfig?.type
-        return (
-          adapterType === 'PlinkLDAdapter' ||
-          adapterType === 'PlinkLDTabixAdapter' ||
-          adapterType === 'LdmatAdapter'
+        return (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(
+          self.adapterConfig?.type,
         )
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * Effective height for the LD canvas (total height minus line zone)
-       * Note: Recombination track is overlaid on the line zone, not in a separate zone
+       * Pixel height of the SVG zone above the canvas (variant labels +
+       * lines, or recombination scale). The hit-test subtracts this from
+       * mouseY before reversing the render transform.
+       */
+      get effectiveLineZoneHeight() {
+        if (self.useGenomicPositions) {
+          return self.showRecombination ? self.recombinationZoneHeight : 0
+        }
+        return self.lineZoneHeight
+      },
+      /**
+       * #getter
+       * Effective height for the LD canvas (total height minus the zone the
+       * recombination overlay / variant lines occupy above the matrix).
        */
       get ldCanvasHeight() {
-        return Math.max(50, self.height - self.lineZoneHeight)
+        return Math.max(50, self.height - this.effectiveLineZoneHeight)
+      },
+      /**
+       * #getter
+       * Per-frame yScalar squash factor. When fitToHeight is on, squashes
+       * the natural (canvasWidth/2) triangle into ldCanvasHeight. Lives on
+       * the main thread so resize doesn't trigger a worker re-fetch.
+       */
+      get yScalar() {
+        if (!self.fitToHeight) {
+          return 1
+        }
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const canvasWidth = view.dynamicBlocks.totalWidthPxWithoutBorders
+        const triangleHeight = canvasWidth / 2
+        return triangleHeight > 0 ? this.ldCanvasHeight / triangleHeight : 1
       },
 
       // Literal RPC payload for RenderLDData. Adding a field here
@@ -268,16 +281,8 @@ export default function sharedModelFactory(
           jexlFilters: self.jexlFilters,
           signedLD: self.signedLD,
           useGenomicPositions: self.useGenomicPositions,
-          fitToHeight: self.fitToHeight,
-          displayHeight: self.fitToHeight ? this.ldCanvasHeight : undefined,
         }
       },
-      /**
-       * #getter
-       * Per-frame render state for the GPU backend. Read by the upload/render
-       * autorun — every change to any tracked observable (view.bpPerPx,
-       * view.offsetPx, model.fitToHeight, rpcData contents, …) re-fires it.
-       */
       /**
        * #getter
        * Forward transform { scale, viewOffsetX } shared by GPU render,
@@ -293,6 +298,12 @@ export default function sharedModelFactory(
           viewBpPerPx: view.bpPerPx,
         })
       },
+      /**
+       * #getter
+       * Per-frame render state for the GPU backend. Read by the upload/render
+       * autorun — every change to any tracked observable (view.bpPerPx,
+       * view.offsetPx, model.fitToHeight, rpcData contents, …) re-fires it.
+       */
       get renderState() {
         const view = getContainingView(self) as LinearGenomeViewModel
         const data = self.rpcData
@@ -304,7 +315,7 @@ export default function sharedModelFactory(
           view.dynamicBlocks.totalWidthPxWithoutBorders,
         )
         return {
-          yScalar: data.yScalar,
+          yScalar: this.yScalar,
           canvasWidth,
           canvasHeight: self.fitToHeight
             ? this.ldCanvasHeight
@@ -314,19 +325,6 @@ export default function sharedModelFactory(
           viewOffsetX,
           uniformW: data.uniformW,
         }
-      },
-
-      /**
-       * #getter
-       * Pixel height of the SVG zone above the canvas (variant labels +
-       * lines, or recombination scale). The hit-test subtracts this from
-       * mouseY before reversing the render transform.
-       */
-      get effectiveLineZoneHeight() {
-        if (self.useGenomicPositions) {
-          return self.showRecombination ? self.recombinationZoneHeight : 0
-        }
-        return self.lineZoneHeight
       },
 
       /**
@@ -350,7 +348,7 @@ export default function sharedModelFactory(
         // Reverse the rendering's `scale(1, yScalar) · rotate(-π/4)` then
         // pick the cell. yScalar squashes Y, so divide it out before
         // un-rotating.
-        const scaledY = dataY / data.yScalar
+        const scaledY = dataY / this.yScalar
         const x = (dataX - scaledY) / Math.SQRT2
         const y = (dataX + scaledY) / Math.SQRT2
         const { boundaries, ldValues } = data

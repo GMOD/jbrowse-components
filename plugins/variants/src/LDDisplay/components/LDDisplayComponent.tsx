@@ -5,6 +5,7 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView, max, useGpuBackend } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import Crosshairs from './Crosshairs.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
 import { LDRenderer } from './LDRenderer.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
@@ -18,8 +19,6 @@ import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-const SQRT2 = Math.SQRT2
 
 function LDTooltip({
   item,
@@ -49,131 +48,6 @@ function LDTooltip({
         {metricLabel}: {item.ldValue.toFixed(3)}
       </div>
     </BaseTooltip>
-  )
-}
-
-function Crosshairs({
-  hoveredItem,
-  cellWidth,
-  genomicX1,
-  genomicX2,
-  yScalar,
-  lineZoneHeight,
-  tickHeight,
-  width,
-  height,
-  useGenomicPositions,
-  snps,
-  regionStart,
-  bpPerPx,
-  viewScale,
-  viewOffsetX,
-}: {
-  hoveredItem: LDFlatbushItem
-  cellWidth: number
-  genomicX1: number
-  genomicX2: number
-  yScalar: number
-  lineZoneHeight: number
-  tickHeight: number
-  width: number
-  height: number
-  useGenomicPositions: boolean
-  snps: { start: number }[]
-  regionStart: number
-  bpPerPx: number
-  viewScale: number
-  viewOffsetX: number
-}) {
-  const { i, j } = hoveredItem
-
-  const toScreen = (x: number, y: number) => {
-    const rx = (x + y) / SQRT2
-    const ry = (y - x) / SQRT2
-    return {
-      x: rx * viewScale + viewOffsetX,
-      y: ry * viewScale * yScalar + lineZoneHeight,
-    }
-  }
-
-  let hoveredCenter: { x: number; y: number }
-  let snpJPos: { x: number; y: number }
-  let snpIPos: { x: number; y: number }
-
-  if (useGenomicPositions && snps.length > 0) {
-    if (i >= snps.length || j >= snps.length) {
-      return null
-    }
-
-    const getBoundary = (idx: number) => {
-      const snpPos = snps[idx]!.start
-      const prevPos = idx > 0 ? snps[idx - 1]!.start : regionStart
-      const boundaryPos = (prevPos + snpPos) / 2
-      return (boundaryPos - regionStart) / bpPerPx / SQRT2
-    }
-
-    const getNextBoundary = (idx: number) => {
-      if (idx + 1 < snps.length) {
-        const snpPos = snps[idx]!.start
-        const nextPos = snps[idx + 1]!.start
-        return ((snpPos + nextPos) / 2 - regionStart) / bpPerPx / SQRT2
-      }
-      const lastSnpPos = snps[snps.length - 1]!.start
-      return (lastSnpPos + 50 * bpPerPx - regionStart) / bpPerPx / SQRT2
-    }
-
-    const jBoundary = getBoundary(j)
-    const iBoundary = getBoundary(i)
-    const jNextBoundary = getNextBoundary(j)
-    const iNextBoundary = getNextBoundary(i)
-
-    const cellCenterX = (jBoundary + jNextBoundary) / 2
-    const cellCenterY = (iBoundary + iNextBoundary) / 2
-    hoveredCenter = toScreen(cellCenterX, cellCenterY)
-
-    snpJPos = { x: genomicX1, y: lineZoneHeight }
-    snpIPos = { x: genomicX2, y: lineZoneHeight }
-  } else {
-    const w = cellWidth
-
-    hoveredCenter = toScreen((j + 0.5) * w, (i + 0.5) * w)
-
-    snpJPos = toScreen((j + 0.5) * w, (j + 0.5) * w)
-    snpIPos = toScreen((i + 0.5) * w, (i + 0.5) * w)
-  }
-
-  return (
-    <svg
-      style={{
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width,
-        height,
-        pointerEvents: 'none',
-      }}
-    >
-      <path
-        stroke="rgba(0, 0, 0, 0.6)"
-        strokeWidth={1}
-        fill="none"
-        d={`M ${snpJPos.x} ${snpJPos.y} L ${hoveredCenter.x} ${hoveredCenter.y} L ${snpIPos.x} ${snpIPos.y}`}
-      />
-      <g stroke="#e00" strokeWidth="1.5" fill="none">
-        {!useGenomicPositions ? (
-          <>
-            <path
-              d={`M ${snpJPos.x} ${snpJPos.y} L ${genomicX1} ${tickHeight}`}
-            />
-            <path
-              d={`M ${snpIPos.x} ${snpIPos.y} L ${genomicX2} ${tickHeight}`}
-            />
-          </>
-        ) : null}
-        <path d={`M ${genomicX1} 0 L ${genomicX1} ${tickHeight}`} />
-        <path d={`M ${genomicX2} 0 L ${genomicX2} ${tickHeight}`} />
-      </g>
-    </svg>
   )
 }
 
@@ -230,15 +104,12 @@ const LDCanvas = observer(function LDCanvas({
   const width = view.totalWidthPxWithoutBorders
   const {
     rpcData,
-    yScalar,
-    cellWidth,
     showLegend,
     ldMetric,
     lineZoneHeight,
     fitToHeight,
     ldCanvasHeight,
     useGenomicPositions,
-    snps,
     signedLD,
     isLoading,
     effectiveLineZoneHeight,
@@ -268,7 +139,7 @@ const LDCanvas = observer(function LDCanvas({
       ? (hoveredItem.snp1.start - region.start) / bpPerPx
       : undefined
 
-  const { scale: viewScale, viewOffsetX } = model.renderTransform
+  const { viewOffsetX } = model.renderTransform
 
   useEffect(() => {
     if (
@@ -347,21 +218,11 @@ const LDCanvas = observer(function LDCanvas({
 
       {hoveredItem && genomicX1 !== undefined && genomicX2 !== undefined ? (
         <Crosshairs
+          model={model}
           hoveredItem={hoveredItem}
-          cellWidth={cellWidth}
           genomicX1={genomicX1}
           genomicX2={genomicX2}
-          yScalar={yScalar}
-          lineZoneHeight={effectiveLineZoneHeight}
-          tickHeight={model.tickHeight}
-          width={width}
           height={containerHeight}
-          useGenomicPositions={useGenomicPositions}
-          snps={snps}
-          regionStart={region?.start ?? 0}
-          bpPerPx={bpPerPx}
-          viewScale={viewScale}
-          viewOffsetX={viewOffsetX}
         />
       ) : null}
 

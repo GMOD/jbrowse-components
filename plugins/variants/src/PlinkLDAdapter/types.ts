@@ -12,11 +12,6 @@ export interface PlinkLDRecord {
 }
 
 export interface PlinkLDHeader {
-  columns: string[]
-  hasR2: boolean
-  hasDprime: boolean
-  hasMafA: boolean
-  hasMafB: boolean
   chrAIdx: number
   bpAIdx: number
   snpAIdx: number
