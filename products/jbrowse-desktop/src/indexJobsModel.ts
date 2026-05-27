@@ -172,8 +172,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         if (isSessionModelWithWidgets(session)) {
           const jobStatusWidget = self.getJobStatusWidget()
           session.showWidget(jobStatusWidget)
-          const { name, statusMessage = '', progressPct = 0 } = props
-          jobStatusWidget.addQueuedJob({ name, statusMessage, progressPct })
+          const { name, statusMessage = '' } = props
+          jobStatusWidget.addQueuedJob({ name, statusMessage })
         }
         self.jobsQueue.push(props)
       },
@@ -302,9 +302,14 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               },
             },
           )
-          // remove job from queue but since it was not successful
-          // do not add to finished list
-          this.dequeueJob()
+          const failed = this.dequeueJob()
+          if (failed && isSessionModelWithWidgets(session)) {
+            self.getJobStatusWidget().addAbortedJob({
+              name: failed.name,
+              statusMessage: `${e}`,
+              progressPct: self.progressPct,
+            })
+          }
         }
         // clear
         this.clear()
@@ -320,12 +325,10 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           if (isSessionModelWithWidgets(session)) {
             const jobStatusWidget = self.getJobStatusWidget()
             session.showWidget(jobStatusWidget)
-            const { name, statusMessage, progressPct, cancelCallback } =
-              firstIndexingJob
+            const { name, statusMessage, cancelCallback } = firstIndexingJob
             jobStatusWidget.addJob({
               name,
               statusMessage: statusMessage ?? '',
-              progressPct: progressPct ?? 0,
               cancelCallback: cancelCallback ?? (() => {}),
             })
             jobStatusWidget.removeQueuedJob(name)

@@ -109,6 +109,18 @@ export function stateModelFactory(_pluginManager: PluginManager) {
         /**
          * #action
          */
+        clearFinished() {
+          self.finished.clear()
+        },
+        /**
+         * #action
+         */
+        clearAborted() {
+          self.aborted.clear()
+        },
+        /**
+         * #action
+         */
         updateJobStatusMessage(jobName: string, message?: string) {
           const job = self.jobs.find(j => j.name === jobName)
           if (!job) {

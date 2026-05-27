@@ -4,6 +4,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Button,
   Card,
   CardContent,
   Typography,
@@ -21,6 +22,9 @@ const useStyles = makeStyles()(theme => ({
   },
   expandIcon: {
     color: theme.palette.tertiary.contrastText,
+  },
+  summaryTitle: {
+    flexGrow: 1,
   },
 }))
 
@@ -73,7 +77,20 @@ const JobsListWidget = observer(function JobsListWidget({
         <AccordionSummary
           expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
         >
-          <Typography variant="h5">Completed jobs</Typography>
+          <Typography variant="h5" className={classes.summaryTitle}>
+            Completed jobs
+          </Typography>
+          {finished.length ? (
+            <Button
+              size="small"
+              onClick={e => {
+                e.stopPropagation()
+                model.clearFinished()
+              }}
+            >
+              Clear
+            </Button>
+          ) : null}
         </AccordionSummary>
         <AccordionDetails>
           {finished.length ? (
@@ -91,7 +108,20 @@ const JobsListWidget = observer(function JobsListWidget({
         <AccordionSummary
           expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
         >
-          <Typography variant="h5">Aborted jobs</Typography>
+          <Typography variant="h5" className={classes.summaryTitle}>
+            Aborted jobs
+          </Typography>
+          {aborted.length ? (
+            <Button
+              size="small"
+              onClick={e => {
+                e.stopPropagation()
+                model.clearAborted()
+              }}
+            >
+              Clear
+            </Button>
+          ) : null}
         </AccordionSummary>
         <AccordionDetails>
           {aborted.length ? (

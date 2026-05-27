@@ -18,7 +18,7 @@ export const Job = types
     /**
      * #property
      */
-    progressPct: types.number,
+    progressPct: types.optional(types.number, 0),
   })
   .volatile(() => ({
     cancelCallback() {},
