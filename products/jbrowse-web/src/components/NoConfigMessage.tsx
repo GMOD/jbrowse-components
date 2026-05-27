@@ -73,12 +73,17 @@ function LinkList({
 }
 
 const sampleConfigs: {
-  config: string
+  config?: string
+  href?: string
   label: string
 }[] = [
   {
     config: 'test_data/volvox/config.json',
     label: 'Volvox (sample data)',
+  },
+  {
+    href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":["gff3tabix_genes","volvox_microarray_multi","volvox_bam"]}]}',
+    label: 'Volvox (genes + multi-wiggle + BAM)',
   },
   {
     config: 'test_data/config.json',
@@ -241,6 +246,30 @@ const demoSessions = [
   {
     href: '?config=test_data/config_demo.json&session=share-vQBatl-Of9&password=Mhl6F',
     label: 'Human trio phased VCF rendering',
+  },
+  {
+    href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","type":"CircularView","tracks":["volvox_sv_test"]}]}',
+    label: 'Circular genome view (volvox SVs as chords)',
+  },
+  {
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"17:1-83257441","type":"LinearGenomeView","tracks":["hic"]}]}',
+    label: 'Hi-C contact matrix (chr17, hg19)',
+  },
+  {
+    href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":["volvox_bedpe"]}]}',
+    label: 'BEDPE arc display (volvox SVs)',
+  },
+  {
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"1:1-5000000","type":"LinearGenomeView","tracks":["Pairend_StrandSpecific_51mer_Human_hg19"]}]}',
+    label: 'Paired-end stranded RNA-seq',
+  },
+  {
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"15:23900000-24000000","type":"LinearGenomeView","tracks":["HG002_WGS_fiberseq.MAGEL2_2"]}]}',
+    label: 'Fiber-seq (5mC on single molecules, MAGEL2)',
+  },
+  {
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"17:43000000-43200000","type":"LinearGenomeView","tracks":["NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted"]}]}',
+    label: 'Direct RNA-seq nanopore (BRCA1)',
   },
 ] as const
 
