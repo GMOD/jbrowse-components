@@ -2,7 +2,9 @@ import { openFeatureWidget as showWidget } from '@jbrowse/core/util'
 
 import { CIGAR_TYPE_LABELS } from './alignmentComponentUtils.ts'
 import { getTooltipBin, pct } from './tooltipUtils.ts'
+import { getModificationName } from '../../shared/modificationData.ts'
 
+import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
@@ -110,6 +112,32 @@ export function openSashimiWidget(
     score: arc.score,
     strand: arc.strand,
   })
+}
+
+// Per-read modification details, parallel to openCigarWidget for a mismatch.
+// The coverage-level aggregate (count, avg prob, strands) is shown by clicking
+// the coverage bar; this widget reports the single read's call at this base.
+export function openModificationWidget(
+  model: IAnyStateTreeNode,
+  modHit: ModificationHitResult,
+  refName: string,
+  snpBase: string | undefined,
+) {
+  const featureData: SimpleFeatureSerialized = {
+    uniqueId: `modification-${refName}-${modHit.position}-${modHit.modType ?? 'unknown'}`,
+    name: modHit.modType ? getModificationName(modHit.modType) : 'Modification',
+    type: 'modification',
+    refName,
+    start: modHit.position,
+    end: modHit.position + 1,
+    modType: modHit.modType,
+    probability: `${(modHit.probability * 100).toFixed(1)}%`,
+    color: modHit.color,
+  }
+  if (snpBase) {
+    featureData.snpBase = snpBase
+  }
+  showWidget(model, featureData)
 }
 
 export function openCigarWidget(

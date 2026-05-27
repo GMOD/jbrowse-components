@@ -18,6 +18,7 @@ import {
   openCigarWidget,
   openCoverageWidget,
   openIndicatorWidget,
+  openModificationWidget,
 } from './openFeatureWidget.ts'
 import {
   formatCigarTooltip,
@@ -290,15 +291,17 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       case 'cigar':
         openCigarWidget(model, result.hit, result.resolved.refName)
         return
-      case 'modification':
-        openCoverageWidget(
+      case 'modification': {
+        const snpBase =
+          result.cigarHit?.type === 'mismatch' ? result.cigarHit.base : undefined
+        openModificationWidget(
           model,
-          result.hit.position,
+          result.hit,
           result.resolved.refName,
-          result.resolved.rpcData,
-          result.hit.modType,
+          snpBase,
         )
         return
+      }
       case 'feature':
         onFeature(result.hit, result.resolved)
         return
