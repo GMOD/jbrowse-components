@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, NumberTextField } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
@@ -8,7 +8,6 @@ import {
   DialogActions,
   DialogContent,
   FormControlLabel,
-  TextField,
 } from '@mui/material'
 
 import { navToSynteny } from './util.ts'
@@ -40,7 +39,7 @@ export default function LaunchSyntenyViewDialog({
   const inverted = feature.get('strand') === -1
   const hasCIGAR = !!feature.get('CIGAR')
   const [horizontallyFlip, setHorizontallyFlip] = useState(inverted)
-  const [windowSize, setWindowSize] = useState('1000')
+  const [windowSize, setWindowSize] = useState<number | undefined>(1000)
   const [useRegionOfInterest, setUseRegionOfInterest] = useState(true)
   return (
     <Dialog
@@ -81,30 +80,32 @@ export default function LaunchSyntenyViewDialog({
             coordinates decreasing left to right. Horizontally flip?"
           />
         ) : null}
-        <TextField
+        <NumberTextField
           label="Add window size in bp"
-          value={windowSize}
-          onChange={event => {
-            setWindowSize(event.target.value)
-          }}
+          defaultValue={1000}
+          onValueChange={setWindowSize}
+          min={0}
+          errorText="Must be a non-negative number"
         />
       </DialogContent>
       <DialogActions>
         <Button
           variant="contained"
-          disabled={!Number.isFinite(+windowSize)}
+          disabled={windowSize === undefined}
           onClick={() => {
-            navToSynteny({
-              feature,
-              windowSize: +windowSize,
-              horizontallyFlip,
-              trackId,
-              session,
-              region: useRegionOfInterest
-                ? view?.dynamicBlocks.contentBlocks[0]
-                : undefined,
-            })
-            handleClose()
+            if (windowSize !== undefined) {
+              navToSynteny({
+                feature,
+                windowSize,
+                horizontallyFlip,
+                trackId,
+                session,
+                region: useRegionOfInterest
+                  ? view?.dynamicBlocks.contentBlocks[0]
+                  : undefined,
+              })
+              handleClose()
+            }
           }}
         >
           Submit

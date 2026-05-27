@@ -95,7 +95,6 @@ const IntegerEditor = observer(function IntegerEditor({
       label={slot.name}
       helperText={slot.description}
       value={val}
-      type="number"
       onChange={evt => {
         const v = evt.target.value
         setVal(v)

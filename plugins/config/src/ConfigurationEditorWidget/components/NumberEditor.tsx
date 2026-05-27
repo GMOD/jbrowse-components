@@ -20,12 +20,11 @@ const NumberEditor = observer(function NumberEditor({
       label={slot.name}
       helperText={slot.description}
       value={val}
-      type="number"
       onChange={evt => {
         const v = evt.target.value
         setVal(v)
-        const num = Number.parseFloat(v)
-        if (!Number.isNaN(num)) {
+        const num = Number(v)
+        if (v !== '' && Number.isFinite(num)) {
           slot.set(num)
         }
       }}

@@ -548,7 +548,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                         id="_r_k_"
-                        type="number"
+                        type="text"
                         value="88.5"
                       />
                     </div>
@@ -589,7 +589,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
                         id="_r_l_"
-                        type="number"
+                        type="text"
                         value="42"
                       />
                     </div>

@@ -1,13 +1,12 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, NumberTextField } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import {
   Button,
   DialogActions,
   DialogContent,
   DialogContentText,
-  TextField,
 } from '@mui/material'
 
 import TranscriptTable from './TranscriptTable.tsx'
@@ -29,9 +28,8 @@ export default function CollapseIntronsDialog({
   handleClose: () => void
 }) {
   const [showAll, setShowAll] = useState(false)
-  const [windowSize, setWindowSize] = useState('100')
-  const windowSizeNum = +windowSize
-  const validWindowSize = !Number.isNaN(windowSizeNum) && windowSizeNum >= 0
+  const [windowSize, setWindowSize] = useState<number | undefined>(100)
+  const validWindowSize = windowSize !== undefined
 
   return (
     <Dialog
@@ -54,25 +52,12 @@ export default function CollapseIntronsDialog({
             transcripts" and then "Select"
           </p>
         </DialogContentText>
-        <TextField
+        <NumberTextField
           label="Number of bp around splice site to include"
-          value={windowSize}
-          onChange={event => {
-            setWindowSize(event.target.value)
-          }}
-          error={windowSize !== '' && !validWindowSize}
-          helperText={
-            windowSize !== '' && !validWindowSize
-              ? 'Must be a non-negative number'
-              : ''
-          }
-          type="number"
-          slotProps={{
-            htmlInput: {
-              min: 0,
-              step: 10,
-            },
-          }}
+          defaultValue={100}
+          onValueChange={setWindowSize}
+          min={0}
+          errorText="Must be a non-negative number"
           style={{ marginBottom: 16, width: 250 }}
         />
         <Button
@@ -88,7 +73,7 @@ export default function CollapseIntronsDialog({
             transcripts={transcripts}
             view={view}
             assembly={assembly}
-            padding={windowSizeNum}
+            padding={windowSize ?? 0}
             validPadding={validWindowSize}
             handleClose={handleClose}
           />
@@ -106,7 +91,7 @@ export default function CollapseIntronsDialog({
                 view,
                 transcripts,
                 assembly,
-                padding: windowSizeNum,
+                padding: windowSize ?? 0,
               })
               handleClose()
             } catch (e) {
