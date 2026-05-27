@@ -367,6 +367,7 @@ export class WebGPUHal implements GpuHal {
       if (!texState) {
         return null
       }
+      const tb = desc.textures[0]
       const { bindGroupLayout } = getOrCreateTexturedLayout(
         this.device,
         this.layoutState,
@@ -382,8 +383,8 @@ export class WebGPUHal implements GpuHal {
               size: this.alignedUniformSize,
             },
           },
-          { binding: 2, resource: texState.texture.createView() },
-          { binding: 3, resource: texState.sampler },
+          { binding: tb.textureBinding, resource: texState.texture.createView() },
+          { binding: tb.samplerBinding, resource: texState.sampler },
         ],
       })
     }
@@ -518,7 +519,11 @@ export class WebGPUHal implements GpuHal {
       this.uniformStaging.set(new Uint8Array(data), offset)
       this.uniformSlot++
     } else {
-      // Outside a frame: write directly to slot 0
+      // Outside a frame: write directly to slot 0. This is used by renderers
+      // that upload uniforms once (e.g. on data load) rather than per-frame.
+      // Note: endFrame's staging upload overwrites slot 0, so this pre-frame
+      // write is only visible to drawPass calls that happen before beginFrame
+      // (which is unusual; in-frame paths are the normal case).
       this.device.queue.writeBuffer(this.uniformRingBuffer, 0, data)
       this.uniformSlot = 1
     }
@@ -675,6 +680,9 @@ export class WebGPUHal implements GpuHal {
     }
     this.passTextures.clear()
     this.msaaTexture?.destroy()
+    // Release the swapchain so the browser can reclaim GPU memory immediately
+    // rather than waiting for the canvas to be GC'd.
+    this.context.unconfigure()
   }
 
   private getOrCreateRegion(regionKey: number) {
