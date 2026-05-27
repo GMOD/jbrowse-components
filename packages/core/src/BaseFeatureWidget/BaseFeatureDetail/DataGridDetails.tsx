@@ -39,7 +39,6 @@ export default function DataGridDetails({
 }) {
   const { classes } = useStyles()
   const [checked, setChecked] = useState(false)
-  const firstRowKeyCount = Object.keys(value[0]!).length
 
   // avoids key 'id' from being used in row data
   const rows = value.map((val, k) => {
@@ -67,47 +66,42 @@ export default function DataGridDetails({
     colNames = [...unionKeys]
   }
   const widths = colNames.map(e => measureGridWidth(rows.map(r => r[e])))
-  // Avoid rendering a nearly-empty grid when later rows introduce many new
-  // columns compared to the first row (heterogeneous schemas are hard to read)
-  if (unionKeys.size < firstRowKeyCount + 5) {
-    return (
-      <div className={classes.margin}>
-        <FieldName prefix={prefix} name={name} />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={checked}
-              onChange={event => {
-                setChecked(event.target.checked)
-              }}
-            />
-          }
-          label={<Typography variant="body2">Show options</Typography>}
-        />
-        <DataGridFlexContainer>
-          <DataGrid
-            disableRowSelectionOnClick
-            rows={rows}
-            rowHeight={20}
-            columnHeaderHeight={35}
-            hideFooter={rows.length < 25}
-            showToolbar={checked}
-            columns={colNames.map(
-              (val, index) =>
-                ({
-                  field: val,
-                  width: widths[index],
-                  renderCell: ({ value }) => (
-                    <div className={classes.cell}>
-                      <SanitizedHTML html={getStr(value ?? '')} />
-                    </div>
-                  ),
-                }) satisfies GridColDef<(typeof rows)[0]>,
-            )}
+  return (
+    <div className={classes.margin}>
+      <FieldName prefix={prefix} name={name} />
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={checked}
+            onChange={event => {
+              setChecked(event.target.checked)
+            }}
           />
-        </DataGridFlexContainer>
-      </div>
-    )
-  }
-  return null
+        }
+        label={<Typography variant="body2">Show options</Typography>}
+      />
+      <DataGridFlexContainer>
+        <DataGrid
+          disableRowSelectionOnClick
+          rows={rows}
+          rowHeight={20}
+          columnHeaderHeight={35}
+          hideFooter={rows.length < 25}
+          showToolbar={checked}
+          columns={colNames.map(
+            (val, index) =>
+              ({
+                field: val,
+                width: widths[index],
+                renderCell: ({ value }) => (
+                  <div className={classes.cell}>
+                    <SanitizedHTML html={getStr(value ?? '')} />
+                  </div>
+                ),
+              }) satisfies GridColDef<(typeof rows)[0]>,
+          )}
+        />
+      </DataGridFlexContainer>
+    </div>
+  )
 }

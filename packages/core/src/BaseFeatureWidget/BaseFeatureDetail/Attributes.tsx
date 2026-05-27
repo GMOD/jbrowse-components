@@ -9,6 +9,10 @@ import type { Descriptors } from '../types.tsx'
 
 const MAX_FIELD_NAME_WIDTH = 170
 
+// Max extra unique columns vs. first row before falling back to per-row field
+// sections instead of the data grid (avoids a mostly-empty, hard-to-read grid)
+const DATAGRID_SCHEMA_TOLERANCE = 5
+
 // these are always omitted as too detailed
 const globalOmit = [
   '__jbrowsefmt',
@@ -58,16 +62,27 @@ export default function Attributes(props: {
       {filteredFormattedAttributes.map(([key, value]) => {
         const description = accessNested([...prefix, key], descriptions)
         if (Array.isArray(value)) {
-          // check if it looks like an array of objects, which could be used
-          // in data grid
-          return value.length > 1 && value.every(val => isObject(val)) ? (
-            <DataGridDetails
-              key={key}
-              name={key}
-              prefix={prefix}
-              value={value}
-            />
-          ) : (
+          if (value.length > 1 && value.every(v => isObject(v))) {
+            const objArr = value as Record<string, unknown>[]
+            const firstKeyCount = Object.keys(objArr[0]!).length
+            const unionKeyCount = new Set(
+              objArr.flatMap(v => Object.keys(v)),
+            ).size
+            // Only use the data grid when schemas are homogeneous enough;
+            // heterogeneous arrays fall through to ArrayValue which renders
+            // each object as individual field sections instead of disappearing
+            if (unionKeyCount < firstKeyCount + DATAGRID_SCHEMA_TOLERANCE) {
+              return (
+                <DataGridDetails
+                  key={key}
+                  name={key}
+                  prefix={prefix}
+                  value={objArr}
+                />
+              )
+            }
+          }
+          return (
             <ArrayValue
               key={key}
               name={key}

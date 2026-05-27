@@ -57,8 +57,7 @@ export default function ArrayValue({
       </div>
     )
   } else if (value.every(val => isObject(val))) {
-    // note: this branch is rarely reached since Attributes.tsx routes
-    // arrays of objects with length > 1 to DataGridDetails
+    // heterogeneous object arrays that DataGridDetails declined to render
     return (
       <>
         {value.map((val, i) => (

@@ -59,19 +59,16 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
         />
       </div>
       {openInDialog ? (
-        <div>
-          Open in dialog...
-          <Suspense fallback={<LoadingEllipses />}>
-            <SequenceDialog
-              model={model}
-              sequenceFeatureDetails={sequenceFeatureDetails}
-              feature={feature}
-              handleClose={() => {
-                setOpenInDialog(false)
-              }}
-            />
-          </Suspense>
-        </div>
+        <Suspense fallback={<LoadingEllipses />}>
+          <SequenceDialog
+            model={model}
+            sequenceFeatureDetails={sequenceFeatureDetails}
+            feature={feature}
+            handleClose={() => {
+              setOpenInDialog(false)
+            }}
+          />
+        </Suspense>
       ) : (
         <div>
           {feature.type === 'gene' ? (
