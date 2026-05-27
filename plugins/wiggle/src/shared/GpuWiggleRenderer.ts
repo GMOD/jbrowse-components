@@ -101,7 +101,11 @@ export class GpuWiggleRenderer
       this.uniformF32[U.domainYMax] = state.domainY[1]
       // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
       this.uniformF32[U.zero] = 0
-      this.uniformF32[U.viewportWidth] = clip.pxW
+      // viewportWidth stays in CSS units to match canvasHeight (per CLAUDE.md
+      // GPU conventions). The shader's `minClipW = 3 / viewportWidth` therefore
+      // resolves to a stable 1.5 CSS px floor across DPRs, matching
+      // WIGGLE_MIN_PX in the Canvas2D path.
+      this.uniformF32[U.viewportWidth] = clip.scissorW
       this.uniformF32[U.reversed] = block.reversed ? 1 : 0
 
       this.hal.writeUniforms(this.uniformData)

@@ -2,6 +2,10 @@ import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafBackendTypes.ts'
 
+const DASH = 45 // '-'.charCodeAt(0)
+const SPACE = 32 // ' '.charCodeAt(0)
+const LOWER_BIT = 0x20
+
 const decoder = new TextDecoder()
 
 export interface VisibleLabel {
@@ -78,21 +82,26 @@ export function computeVisibleLabels(
         // crash on `undefined.toLowerCase()`.
         const len = Math.min(alignment.length, refSeq.length)
 
+        // Hot per-cell loop: use charCodeAt + ASCII bit math instead of
+        // toLowerCase/toUpperCase (per-call string allocations) and ===
+        // string compares. Matches resolveCellColor's `(byte | 0x20)` match
+        // check so the gap/match predicate stays in sync with the renderers.
         for (let i = 0, genomicOffset = 0; i < len; i++) {
-          const refChar = refSeq[i]!
-          if (refChar !== '-') {
-            const alignChar = alignment[i]!
-            if (
-              (showAllLetters ||
-                refChar.toLowerCase() !== alignChar.toLowerCase()) &&
-              alignChar !== '-'
-            ) {
-              labels.push({
-                x: bpCenterToPx(block.startBp + genomicOffset),
-                y: yPos,
-                text: showAsUpperCase ? alignChar.toUpperCase() : alignChar,
-                lowerBase: alignChar.toLowerCase(),
-              })
+          const refCode = refSeq.charCodeAt(i)
+          if (refCode !== DASH) {
+            const alnCode = alignment.charCodeAt(i)
+            if (alnCode !== DASH && alnCode !== SPACE) {
+              const isMatch = (refCode | LOWER_BIT) === (alnCode | LOWER_BIT)
+              if (showAllLetters || !isMatch) {
+                labels.push({
+                  x: bpCenterToPx(block.startBp + genomicOffset),
+                  y: yPos,
+                  text: showAsUpperCase
+                    ? String.fromCharCode(alnCode & ~LOWER_BIT)
+                    : alignment[i]!,
+                  lowerBase: String.fromCharCode(alnCode | LOWER_BIT),
+                })
+              }
             }
             genomicOffset++
           }

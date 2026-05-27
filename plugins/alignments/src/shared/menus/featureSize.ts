@@ -9,17 +9,21 @@ const SetMaxHeightDialog = lazy(
   () => import('../components/SetMaxHeightDialog.tsx'),
 )
 
-// Single source of truth for the {featureHeight, noSpacing} pairs that the
-// feature-height menu and the LGV/comparative-view setCompactness API both
-// drive. Both the menu radios' `checked` state and `setCompactness` derive
-// from this — adding a preset means updating one place.
+// Single source of truth for the (featureHeight, featureSpacing) pairs that
+// the feature-height menu and the LGV/comparative-view setCompactness API
+// both drive. Both the menu radios' `checked` state and `setCompactness`
+// derive from this — adding a preset means updating one place.
+//
+// 'Normal' here matches the config-schema default for featureSpacing (1) so
+// that a fresh display with no overrides already reads as Normal-checked
+// and clicking Normal is a no-op rather than a silent 1→2 spacing jump.
 export const COMPACTNESS_PRESETS = {
-  normal: { label: 'Normal', featureHeight: 7, noSpacing: false },
-  compact: { label: 'Compact', featureHeight: 3, noSpacing: true },
+  normal: { label: 'Normal', featureHeight: 7, featureSpacing: 1 },
+  compact: { label: 'Compact', featureHeight: 3, featureSpacing: 0 },
   'super-compact': {
     label: 'Super-compact',
     featureHeight: 1,
-    noSpacing: true,
+    featureSpacing: 0,
   },
 } as const
 
@@ -27,9 +31,9 @@ export type CompactnessLevel = keyof typeof COMPACTNESS_PRESETS
 
 interface FeatureHeightModel {
   featureHeightSetting: number
-  noSpacingSetting?: boolean
+  featureSpacing: number
   setFeatureHeight: (height?: number) => void
-  setNoSpacing: (noSpacing?: boolean) => void
+  setFeatureSpacing: (spacing?: number) => void
 }
 
 export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
@@ -42,10 +46,10 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
         type: 'radio' as const,
         checked:
           model.featureHeightSetting === preset.featureHeight &&
-          (model.noSpacingSetting ?? false) === preset.noSpacing,
+          model.featureSpacing === preset.featureSpacing,
         onClick: () => {
           model.setFeatureHeight(preset.featureHeight)
-          model.setNoSpacing(preset.noSpacing)
+          model.setFeatureSpacing(preset.featureSpacing)
         },
       })),
       {

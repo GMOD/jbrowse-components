@@ -6,13 +6,6 @@ interface WithResolution {
   setSummaryScoreMode: (v: string) => void
 }
 
-interface WithScaleAutoscale {
-  scaleType: string
-  autoscaleType: string
-  setScaleType: (v: string) => void
-  setAutoscale: (v?: string) => void
-}
-
 export function makeResolutionAndSummarySubMenus(self: WithResolution) {
   if (!self.hasResolution) {
     return []
@@ -47,49 +40,4 @@ export function makeResolutionAndSummarySubMenus(self: WithResolution) {
       })),
     },
   ]
-}
-
-export function makeScaleTypeSubMenu(self: WithScaleAutoscale) {
-  return {
-    label: 'Scale type',
-    subMenu: [
-      {
-        label: 'Linear scale',
-        type: 'radio',
-        checked: self.scaleType === 'linear',
-        onClick: () => {
-          self.setScaleType('linear')
-        },
-      },
-      {
-        label: 'Log scale',
-        type: 'radio',
-        checked: self.scaleType === 'log',
-        onClick: () => {
-          self.setScaleType('log')
-        },
-      },
-    ],
-  }
-}
-
-export function makeAutoscaleTypeSubMenu(self: WithScaleAutoscale) {
-  return {
-    label: 'Autoscale type',
-    subMenu: (
-      [
-        ['local', 'Local'],
-        ['global', 'Global'],
-        ['globalsd', 'Global ± 3σ'],
-        ['localsd', 'Local ± 3σ'],
-      ] as const
-    ).map(([val, label]) => ({
-      label,
-      type: 'radio' as const,
-      checked: self.autoscaleType === val,
-      onClick: () => {
-        self.setAutoscale(val)
-      },
-    })),
-  }
 }

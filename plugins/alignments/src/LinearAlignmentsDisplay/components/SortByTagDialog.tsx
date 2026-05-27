@@ -4,6 +4,8 @@ import { SubmitDialog } from '@jbrowse/core/ui'
 import { TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { TAG_REGEX } from '../../shared/util.ts'
+
 const SortByTagDialog = observer(function SortByTagDialog(props: {
   model: {
     setSortedBy: (arg: string, arg2: string) => void
@@ -12,11 +14,12 @@ const SortByTagDialog = observer(function SortByTagDialog(props: {
 }) {
   const { model, handleClose } = props
   const [tag, setTag] = useState('')
-  const validTag = /^[A-Za-z][A-Za-z0-9]$/.exec(tag)
+  const validTag = TAG_REGEX.test(tag)
   return (
     <SubmitDialog
       open
       title="Sort by tag"
+      submitDisabled={!validTag}
       onCancel={handleClose}
       onSubmit={() => {
         model.setSortedBy('tag', tag)

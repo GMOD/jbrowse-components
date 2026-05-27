@@ -7,14 +7,13 @@ setup()
 const delay = { timeout: 20000 }
 beforeEach(() => {
   doBeforeEach()
+  jest.spyOn(console, 'warn').mockImplementation()
 })
 afterEach(() => {
   localStorage.clear()
   sessionStorage.clear()
+  jest.restoreAllMocks()
 })
-
-// onAction listener warning
-console.warn = jest.fn()
 
 test('three level', async () => {
   const { session, queryAllByTestId } = await createView()

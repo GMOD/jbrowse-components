@@ -1,6 +1,6 @@
 export type RGBA = readonly [number, number, number, number]
 
-export const DEFAULT_HIC_COLOR_SCHEME = 'juicebox'
+export const DEFAULT_HIC_COLOR_SCHEME: HicColorScheme = 'juicebox'
 
 // Single source of truth for each scheme. Used to build the GPU/Canvas2D
 // 256x1 RGBA ramp AND the CSS/SVG legend gradients. Stops are evenly spaced.
@@ -53,14 +53,20 @@ function viridisRgbaFromHex(): RGBA[] {
 
 const VIRIDIS_FULL_STOPS: ColorStops = { stops: viridisRgbaFromHex() }
 
-const SCHEMES: Record<string, ColorStops> = {
+const SCHEMES = {
   fall: FALL_STOPS,
   juicebox: JUICEBOX_STOPS,
   viridis: VIRIDIS_FULL_STOPS,
+} as const
+
+export type HicColorScheme = keyof typeof SCHEMES
+
+function isHicColorScheme(s: string): s is HicColorScheme {
+  return s in SCHEMES
 }
 
 function getScheme(name?: string) {
-  return SCHEMES[name ?? DEFAULT_HIC_COLOR_SCHEME] ?? JUICEBOX_STOPS
+  return name && isHicColorScheme(name) ? SCHEMES[name] : JUICEBOX_STOPS
 }
 
 function lerp(a: number, b: number, t: number) {
@@ -86,8 +92,7 @@ function sample(scheme: ColorStops, t: number): RGBA {
   ]
 }
 
-function buildRamp(colorScheme?: string): Uint8Array {
-  const scheme = getScheme(colorScheme)
+function buildRamp(scheme: ColorStops): Uint8Array {
   const data = new Uint8Array(256 * 4)
   for (let i = 0; i < 256; i++) {
     const t = i / 255
@@ -100,17 +105,16 @@ function buildRamp(colorScheme?: string): Uint8Array {
   return data
 }
 
-const RAMPS: Record<string, Uint8Array> = {
-  juicebox: buildRamp('juicebox'),
-  fall: buildRamp('fall'),
-  viridis: buildRamp('viridis'),
+const RAMPS: Record<HicColorScheme, Uint8Array> = {
+  juicebox: buildRamp(JUICEBOX_STOPS),
+  fall: buildRamp(FALL_STOPS),
+  viridis: buildRamp(VIRIDIS_FULL_STOPS),
 }
 
 export function generateColorRamp(colorScheme?: string): Uint8Array {
-  return (
-    RAMPS[colorScheme ?? DEFAULT_HIC_COLOR_SCHEME] ??
-    RAMPS[DEFAULT_HIC_COLOR_SCHEME]!
-  )
+  return colorScheme && isHicColorScheme(colorScheme)
+    ? RAMPS[colorScheme]
+    : RAMPS[DEFAULT_HIC_COLOR_SCHEME]
 }
 
 // Sample N evenly-spaced legend stops from the same source as the GPU ramp.

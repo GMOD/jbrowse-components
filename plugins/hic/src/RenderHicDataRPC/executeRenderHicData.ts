@@ -1,21 +1,14 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-import { calcRegionCombinedOffsets } from '../regionOffsets.ts'
+import {
+  calcRegionCombinedOffsets,
+  calcRegionDataXStarts,
+  contactLookupKey,
+} from '../regionOffsets.ts'
 
 import type { HicDataResult, RenderHicDataArgs } from './types.ts'
 import type HicAdapter from '../HicAdapter/HicAdapter.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Region } from '@jbrowse/core/util/types'
-
-function calcRegionPixelStarts(regions: Region[], bpPerPx: number) {
-  const out = [0]
-  let cum = 0
-  for (const region of regions) {
-    cum += (region.end - region.start) / bpPerPx
-    out.push(cum)
-  }
-  return out
-}
 
 export async function executeRenderHicData({
   pluginManager,
@@ -45,7 +38,7 @@ export async function executeRenderHicData({
     sessionId,
     adapterConfig,
   )
-  const adapter = dataAdapter as unknown as HicAdapter
+  const adapter = dataAdapter as HicAdapter
 
   const { records: features, resolution: res } =
     await adapter.getMultiRegionContactRecords(regions, {
@@ -55,7 +48,7 @@ export async function executeRenderHicData({
 
   const w = res / (bpPerPx * Math.SQRT2)
   const regionCombinedOffsets = calcRegionCombinedOffsets(regions, bpPerPx, res)
-  const regionPixelStarts = calcRegionPixelStarts(regions, bpPerPx)
+  const regionDataXStarts = calcRegionDataXStarts(regions, bpPerPx)
   const numContacts = features.length
 
   const positions = new Float32Array(numContacts * 2)
@@ -67,7 +60,7 @@ export async function executeRenderHicData({
     positions[i * 2] = (bin1 + regionCombinedOffsets[region1Idx]!) * w
     positions[i * 2 + 1] = (bin2 + regionCombinedOffsets[region2Idx]!) * w
     counts[i] = c
-    lookup[`${region1Idx}|${region2Idx}|${bin1}|${bin2}`] = i
+    lookup[contactLookupKey(region1Idx, region2Idx, bin1, bin2)] = i
   }
 
   // Sort a Float32Array copy of `counts` once and read both maxScore and the
@@ -91,7 +84,7 @@ export async function executeRenderHicData({
     percentile95,
     binWidth: w,
     lookup,
-    regionPixelStarts,
+    regionDataXStarts,
     regionCombinedOffsets,
   }
 }

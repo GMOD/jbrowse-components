@@ -7,9 +7,9 @@ import {
 
 interface ReadsModel {
   featureHeightSetting: number
-  noSpacingSetting?: boolean
+  featureSpacing: number
   setFeatureHeight: (height?: number) => void
-  setNoSpacing: (noSpacing?: boolean) => void
+  setFeatureSpacing: (spacing?: number) => void
 
   maxHeight?: number
   setMaxHeight: (arg?: number) => void

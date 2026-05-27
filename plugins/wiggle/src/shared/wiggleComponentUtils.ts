@@ -152,6 +152,22 @@ export function isSummaryFeature(
   )
 }
 
+// Spread-friendly helper: returns `{ summary, minScore, maxScore }` when the
+// feature is a real summary (min/max diverge from score) and the user isn't
+// asking for plain 'avg'. Otherwise returns `{}` so the tooltip omits those
+// fields. Used by both single- and multi-wiggle hit handlers.
+export function summaryFields(
+  score: number,
+  minScore: number | undefined,
+  maxScore: number | undefined,
+  summaryScoreMode: string,
+) {
+  return summaryScoreMode !== 'avg' &&
+    isSummaryFeature(score, minScore, maxScore)
+    ? { summary: true as const, minScore, maxScore }
+    : {}
+}
+
 interface MouseRegion {
   refName: string
   screenStartPx: number

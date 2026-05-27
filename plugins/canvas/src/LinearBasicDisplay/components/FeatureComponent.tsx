@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 
 import { ErrorOverlay, LoadingOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView, useGpuBackend } from '@jbrowse/core/util'
@@ -11,7 +11,6 @@ import FeatureTooltip from './FeatureTooltip.tsx'
 import OverflowIndicator from './OverflowIndicator.tsx'
 import { performMultiRegionHitDetection } from './hitTesting.ts'
 import {
-  type FeatureItemEntry,
   useAminoAcidOverlay,
   useFloatingLabels,
   useHighlightOverlays,
@@ -19,7 +18,11 @@ import {
 import { useScrollSync } from './useScrollSync.ts'
 
 import type { CanvasFeatureBackend } from './canvasFeatureBackendTypes.ts'
-import type { FlatbushRegionIndexes, VisibleRegion } from './hitTesting.ts'
+import type {
+  FeatureItemEntry,
+  FlatbushRegionIndexes,
+  VisibleRegion,
+} from './hitTesting.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
@@ -38,6 +41,7 @@ interface LinearBasicDisplayModel {
   height: number
   laidOutDataMap: Map<number, FeatureDataResult>
   visibleRegions: VisibleRegion[]
+  featureItemMap: Map<string, FeatureItemEntry>
   isReady: boolean
   error: Error | null
   maxY: number
@@ -293,24 +297,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions
 
-  const featureItemMap = useMemo(() => {
-    const map = new Map<string, FeatureItemEntry>()
-    for (const vr of visibleRegions) {
-      const data = laidOutDataMap.get(vr.displayedRegionIndex)
-      if (data) {
-        for (const f of data.flatbushItems) {
-          map.set(f.featureId, { kind: 'feature', item: f, vr, data })
-        }
-        for (const s of data.subfeatureInfos) {
-          if (!map.has(s.featureId)) {
-            map.set(s.featureId, { kind: 'subfeature', item: s, vr })
-          }
-        }
-      }
-    }
-    return map
-  }, [laidOutDataMap, visibleRegions])
-
   const onLabelMouseOver = useCallback(
     (item: FlatbushItem, e: React.MouseEvent) => {
       setClientXY([e.clientX, e.clientY])
@@ -341,7 +327,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   )
 
   const highlightOverlays = useHighlightOverlays(
-    featureItemMap,
+    model.featureItemMap,
     visibleRegions,
     view.initialized,
     width,

@@ -1,38 +1,27 @@
-import { getDensityColor, makeDensityColorFn } from './getDensityColor.ts'
+import { makeDensityRgbStringFn } from './getDensityColor.ts'
 
-describe('makeDensityColorFn', () => {
-  it('returns the same color as getDensityColor for each score', () => {
-    const scores = [-1, -0.5, 0, 0.25, 0.5, 0.75, 1, 2]
-    const colorFn = makeDensityColorFn(-1, 2, 'linear', '#f00')
-    for (const score of scores) {
-      expect(colorFn(score)).toBe(
-        getDensityColor(score, -1, 2, 'linear', '#f00'),
-      )
-    }
-  })
-
-  it('works with log scale', () => {
-    const scores = [0.1, 1, 10, 100]
-    const colorFn = makeDensityColorFn(0.1, 100, 'log', '#00f')
-    for (const score of scores) {
-      expect(colorFn(score)).toBe(
-        getDensityColor(score, 0.1, 100, 'log', '#00f'),
-      )
-    }
-  })
-
+describe('makeDensityRgbStringFn', () => {
   it('interpolates toward white for scores near zero', () => {
-    // #ff0000 = red; G channel goes from 255 (white) down to 0 (full red)
-    const colorFn = makeDensityColorFn(0, 1, 'linear', '#ff0000')
-    const nearZero = colorFn(0.01)
-    const atMax = colorFn(1)
-    // parse G from "rgb(R,G,B)"
+    // red; G channel goes from 255 (white) down to 0 (full red)
+    const colorFn = makeDensityRgbStringFn(0, 1, false, 255, 0, 0)
     const parseG = (s: string) => parseInt(s.split(',')[1]!, 10)
-    expect(parseG(nearZero)).toBeGreaterThan(parseG(atMax))
+    expect(parseG(colorFn(0.01))).toBeGreaterThan(parseG(colorFn(1)))
   })
 
   it('domain with zero pivot produces full-strength color at max', () => {
-    const colorFn = makeDensityColorFn(0, 1, 'linear', '#ff0000')
+    const colorFn = makeDensityRgbStringFn(0, 1, false, 255, 0, 0)
     expect(colorFn(1)).toBe('rgb(255,0,0)')
+  })
+
+  it('returns consistent strings (LUT cache hit)', () => {
+    const colorFn = makeDensityRgbStringFn(-1, 2, false, 255, 0, 0)
+    expect(colorFn(0.5)).toBe(colorFn(0.5))
+  })
+
+  it('works with log scale', () => {
+    const colorFn = makeDensityRgbStringFn(0.1, 100, true, 0, 0, 255)
+    // domainMin/max coerced via Math.max(_, 1) → log domain becomes [1, 100];
+    // score=100 should produce the bluest result
+    expect(colorFn(100)).toBe('rgb(0,0,255)')
   })
 })

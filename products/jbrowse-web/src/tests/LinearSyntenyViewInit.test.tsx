@@ -1,7 +1,5 @@
 import { waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
-
-import { handleRequest } from './generateReadBuffer.ts'
+import { grapePeachGetFile, useFetchMock } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 import configSnapshot from '../../test_data/grape_peach_synteny/config.json' with { type: 'json' }
 
@@ -12,29 +10,10 @@ beforeEach(() => {
   jest.spyOn(console, 'error').mockImplementation()
 })
 
-const getFile = (url: string) => {
-  // Handle relative URLs from the grape_peach_synteny config
-  const cleanUrl = url.replace(/http:\/\/localhost\//, '')
-  // If the URL doesn't start with test_data, assume it's relative to grape_peach_synteny
-  const filePath = cleanUrl.startsWith('test_data')
-    ? cleanUrl
-    : `test_data/grape_peach_synteny/${cleanUrl}`
-  return new LocalFile(require.resolve(`../../${filePath}`))
-}
-
 jest.mock('../makeWorkerInstance', () => () => {})
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
+useFetchMock(grapePeachGetFile)
 
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
-  jest.restoreAllMocks()
-})
 
 async function createSyntenyViewWithInit(init: {
   views: { loc?: string; assembly: string; tracks?: string[] }[]

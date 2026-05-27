@@ -41,7 +41,11 @@ import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThres
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureBackend } from './components/canvasFeatureBackendTypes.ts'
-import type { FlatbushRegionIndexes } from './components/hitTesting.ts'
+import type {
+  FeatureItemEntry,
+  FlatbushRegionIndexes,
+  VisibleRegion,
+} from './components/hitTesting.ts'
 // rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
 // from it is enough to make rpcManager.call() resolve to the typed args.
 import type {
@@ -450,6 +454,30 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
+        // Per-feature entry across visible regions, indexed by featureId.
+        // Drives overlay rendering (hover/selection highlights) — keyed on
+        // laidOutDataMap + view.visibleRegions, so it recomputes on layout
+        // change, pan, or zoom. Feature wins over subfeature on id collision.
+        get featureItemMap(): Map<string, FeatureItemEntry> {
+          const map = new Map<string, FeatureItemEntry>()
+          const visibleRegions = getView(self).visibleRegions as VisibleRegion[]
+          for (const vr of visibleRegions) {
+            const data = self.laidOutDataMap.get(vr.displayedRegionIndex)
+            if (!data) {
+              continue
+            }
+            for (const f of data.flatbushItems) {
+              map.set(f.featureId, { kind: 'feature', item: f, vr, data })
+            }
+            for (const s of data.subfeatureInfos) {
+              if (!map.has(s.featureId)) {
+                map.set(s.featureId, { kind: 'subfeature', item: s, vr })
+              }
+            }
+          }
+          return map
+        },
+
         // Flatbush spatial indexes per region for hit testing. Recomputes when
         // any input observable moves (laid-out data, label visibility, zoom,
         // reversed flag); MobX caches the value so repeated hover events read

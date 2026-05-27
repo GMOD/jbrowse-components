@@ -1,29 +1,37 @@
 import { useState } from 'react'
 
 import { SubmitDialog } from '@jbrowse/core/ui'
-import {
-  Checkbox,
-  FormControlLabel,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
+
+function parsePx(value: string) {
+  if (value === '') {
+    return { valid: false, num: undefined as number | undefined }
+  }
+  const num = Number(value)
+  return {
+    valid: Number.isFinite(num) && num >= 0,
+    num,
+  }
+}
 
 const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
   model: {
     setFeatureHeight: (arg?: number) => void
-    setNoSpacing: (arg?: boolean) => void
+    setFeatureSpacing: (arg?: number) => void
     featureHeightSetting: number
-    noSpacingSetting?: boolean
+    featureSpacing: number
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const { featureHeightSetting, noSpacingSetting } = model
+  const { featureHeightSetting, featureSpacing } = model
   const [height, setHeight] = useState(`${featureHeightSetting}`)
-  const [noSpacing, setNoSpacing] = useState(noSpacingSetting)
+  const [spacing, setSpacing] = useState(`${featureSpacing}`)
 
-  const ok = height !== '' && !Number.isNaN(+height)
+  const heightParsed = parsePx(height)
+  const spacingParsed = parsePx(spacing)
+  const ok = heightParsed.valid && spacingParsed.valid
 
   return (
     <SubmitDialog
@@ -32,36 +40,41 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
       submitDisabled={!ok}
       onCancel={handleClose}
       onSubmit={() => {
-        model.setFeatureHeight(
-          height !== '' && !Number.isNaN(+height) ? +height : undefined,
-        )
-        model.setNoSpacing(noSpacing)
+        model.setFeatureHeight(heightParsed.num)
+        model.setFeatureSpacing(spacingParsed.num)
         handleClose()
       }}
     >
       <Typography>
-        Adjust the feature height and whether there is any spacing between
-        features. Setting feature height to 1 and removing spacing makes the
-        display very compact.
+        Adjust the feature height and the spacing between features. Setting
+        feature height to 1 and spacing to 0 makes the display very compact.
       </Typography>
       <TextField
         value={height}
         label="Feature height (px)"
         autoFocus
+        error={height !== '' && !heightParsed.valid}
+        helperText={
+          height !== '' && !heightParsed.valid
+            ? 'Must be a non-negative number'
+            : ''
+        }
         onChange={event => {
           setHeight(event.target.value)
         }}
       />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={!!noSpacing}
-            onChange={() => {
-              setNoSpacing(val => !val)
-            }}
-          />
+      <TextField
+        value={spacing}
+        label="Feature spacing (px)"
+        error={spacing !== '' && !spacingParsed.valid}
+        helperText={
+          spacing !== '' && !spacingParsed.valid
+            ? 'Must be a non-negative number'
+            : ''
         }
-        label="Remove spacing between features in y-direction?"
+        onChange={event => {
+          setSpacing(event.target.value)
+        }}
       />
     </SubmitDialog>
   )

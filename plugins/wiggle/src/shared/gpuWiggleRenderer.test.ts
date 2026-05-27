@@ -306,6 +306,32 @@ describe('GpuWiggleRenderer', () => {
     expect(hal.callsOf('dispose').length).toBe(1)
   })
 
+  it('writes viewportWidth in CSS pixels regardless of devicePixelRatio', () => {
+    // viewportWidth feeds the shader's minClipW = 3 / viewportWidth, which
+    // must resolve to a stable 1.5 CSS-px minimum across DPRs to match the
+    // Canvas2D WIGGLE_MIN_PX path. Using a DPR-scaled value silently shrinks
+    // the floor on hi-DPI displays.
+    const originalDpr = globalThis.devicePixelRatio
+    try {
+      globalThis.devicePixelRatio = 2
+      const hal = new MockHal(WIGGLE_PASSES)
+      const renderer = new GpuWiggleRenderer(hal)
+      const source = makeSource()
+
+      renderer.uploadRegion(0, [source])
+      renderer.renderBlocks(
+        [makeBlock({ screenStartPx: 0, screenEndPx: 800 })],
+        new Map([[0, [source]]]),
+        DEFAULT_STATE,
+      )
+
+      const f32 = hal.getLastUniformsF32()!
+      expect(f32[U.viewportWidth]).toBe(800)
+    } finally {
+      globalThis.devicePixelRatio = originalDpr
+    }
+  })
+
   it('handles log scale type in uniforms', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)

@@ -24,6 +24,12 @@ export interface YScaleTicks {
 
 export { default as CrossHatches } from './CrossHatches.tsx'
 export { default as SetMinMaxDialog } from './SetMinMaxDialog.tsx'
+
+export {
+  DEFAULT_AUTOSCALE_OPTIONS,
+  makeAutoscaleTypeSubMenu,
+  makeScaleTypeSubMenu,
+} from './scoreMenuItems.ts'
 export { default as YScaleBar } from './YScaleBar.tsx'
 export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
 

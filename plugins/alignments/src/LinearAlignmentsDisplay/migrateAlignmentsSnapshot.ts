@@ -175,6 +175,7 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
     colorBySetting,
     filterBySetting,
     featureHeight,
+    featureSpacing,
     noSpacing,
     showOutline,
     mismatchAlpha,
@@ -194,8 +195,13 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
   if (featureHeight !== undefined) {
     overrides.featureHeight = featureHeight
   }
-  if (noSpacing !== undefined) {
-    overrides.noSpacing = noSpacing
+  // featureSpacing override directly maps; legacy noSpacing boolean folds
+  // into it (true → 0, false → 2 to preserve the pre-unification render).
+  // featureSpacing wins if both are present in an in-flight session.
+  if (featureSpacing !== undefined) {
+    overrides.featureSpacing = featureSpacing
+  } else if (noSpacing !== undefined) {
+    overrides.featureSpacing = noSpacing ? 0 : 2
   }
   if (showOutline !== undefined) {
     overrides.showOutline = showOutline

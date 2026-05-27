@@ -82,46 +82,34 @@ function emitIntronLines(
   const end = feature.get('end')
   const lineY = transcriptTopPx + transcript.height / 2
   const strand = feature.get('strand') ?? 0
-  const children = transcript.children
 
-  if (children.length === 0) {
-    lines.push({
-      start,
-      end,
-      y: lineY,
-      color: strokeUint,
-      direction: strand,
-      flatbushIdx,
-    })
-  } else {
-    let prevEnd = start
-    for (const child of children) {
-      const childStart = child.feature.get('start')
-      const childEnd = child.feature.get('end')
-      if (childStart > prevEnd) {
-        lines.push({
-          start: prevEnd,
-          end: childStart,
-          y: lineY,
-          color: strokeUint,
-          direction: strand,
-          flatbushIdx,
-        })
-      }
-      if (childEnd > prevEnd) {
-        prevEnd = childEnd
-      }
-    }
-    if (prevEnd < end) {
+  let prevEnd = start
+  for (const child of transcript.children) {
+    const childStart = child.feature.get('start')
+    const childEnd = child.feature.get('end')
+    if (childStart > prevEnd) {
       lines.push({
         start: prevEnd,
-        end,
+        end: childStart,
         y: lineY,
         color: strokeUint,
         direction: strand,
         flatbushIdx,
       })
     }
+    if (childEnd > prevEnd) {
+      prevEnd = childEnd
+    }
+  }
+  if (prevEnd < end) {
+    lines.push({
+      start: prevEnd,
+      end,
+      y: lineY,
+      color: strokeUint,
+      direction: strand,
+      flatbushIdx,
+    })
   }
 }
 
@@ -248,6 +236,27 @@ function pushBoxRect(
   })
 }
 
+function emitStrandArrow(
+  feature: Feature,
+  topPx: number,
+  height: number,
+  strokeUint: number,
+  flatbushIdx: number,
+  arrows: ArrowData[],
+) {
+  const strand = feature.get('strand') ?? 0
+  if (strand === 0) {
+    return
+  }
+  arrows.push({
+    x: strand === 1 ? feature.get('end') : feature.get('start'),
+    y: topPx + height / 2,
+    direction: strand,
+    color: strokeUint,
+    flatbushIdx,
+  })
+}
+
 function emitExonRects(
   transcript: FeatureLayout,
   transcriptTopPx: number,
@@ -313,7 +322,6 @@ function processTranscriptLayout(
   collector: Collector,
 ) {
   const transcriptFeature = transcript.feature
-  const transcriptStrand = transcriptFeature.get('strand') ?? 0
   const strokeUint = colorToUint32(strokeColor(transcriptFeature, ctx))
 
   emitIntronLines(
@@ -377,16 +385,14 @@ function processTranscriptLayout(
     }
   }
 
-  if (transcriptStrand !== 0) {
-    const arrowX = transcriptStrand === 1 ? transcriptEnd : transcriptStart
-    collector.arrows.push({
-      x: arrowX,
-      y: transcriptTopPx + transcript.height / 2,
-      direction: transcriptStrand,
-      color: strokeUint,
-      flatbushIdx,
-    })
-  }
+  emitStrandArrow(
+    transcriptFeature,
+    transcriptTopPx,
+    transcript.height,
+    strokeUint,
+    flatbushIdx,
+    collector.arrows,
+  )
 }
 
 function processFeatureRecord(
@@ -442,15 +448,18 @@ function processFeatureRecord(
   })
   const flatbushIdx = collector.flatbushItems.length - 1
 
-  if (isContainerLayout(layout)) {
-    processTranscriptLayout(layout, 0, feature, flatbushIdx, ctx, collector)
-  } else if (
-    layout.glyphType === 'Subfeatures' ||
-    layout.glyphType === 'MatureProteinRegion'
-  ) {
-    processSubfeaturesLayout(layout, flatbushIdx, ctx, collector)
-  } else {
-    processDefaultLayout(layout, flatbushIdx, ctx, collector)
+  switch (layout.glyphType) {
+    case 'ProcessedTranscript':
+    case 'Segments':
+      processTranscriptLayout(layout, 0, feature, flatbushIdx, ctx, collector)
+      break
+    case 'Subfeatures':
+    case 'MatureProteinRegion':
+      processSubfeaturesLayout(layout, flatbushIdx, ctx, collector)
+      break
+    case 'Box':
+      processDefaultLayout(layout, flatbushIdx, ctx, collector)
+      break
   }
 }
 
@@ -491,19 +500,16 @@ function processDefaultLayout(
   collector: Collector,
 ) {
   const { feature } = layout
-  const strand = feature.get('strand') ?? 0
-
   pushBoxRect(feature, 0, layout.height, flatbushIdx, ctx, collector.rects)
-
-  if (!feature.parent?.() && strand !== 0) {
-    const arrowX = strand === 1 ? feature.get('end') : feature.get('start')
-    collector.arrows.push({
-      x: arrowX,
-      y: layout.height / 2,
-      direction: strand,
-      color: colorToUint32(strokeColor(feature, ctx)),
+  if (!feature.parent?.()) {
+    emitStrandArrow(
+      feature,
+      0,
+      layout.height,
+      colorToUint32(strokeColor(feature, ctx)),
       flatbushIdx,
-    })
+      collector.arrows,
+    )
   }
 }
 

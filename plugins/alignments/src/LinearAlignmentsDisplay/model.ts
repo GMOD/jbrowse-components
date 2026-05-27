@@ -369,15 +369,7 @@ export default function stateModelFactory(
           return self.getConfWithOverride<number>('featureHeight')
         },
 
-        get noSpacingSetting() {
-          return self.getOverride<boolean>('noSpacing')
-        },
-
         get featureSpacing() {
-          const noSpacing = self.getOverride<boolean>('noSpacing')
-          if (noSpacing !== undefined) {
-            return noSpacing ? 0 : 2
-          }
           return self.getConfWithOverride<number>('featureSpacing')
         },
 
@@ -1003,18 +995,23 @@ export default function stateModelFactory(
           setSortedBy(type: string, tag?: string) {
             const view = getContainingView(self) as LGV
             const { centerLineInfo } = view
-            if (centerLineInfo) {
-              const { refName, assemblyName, offset } = centerLineInfo
-              const centerBp = Math.round(offset)
-              if (centerBp >= 0 && refName) {
-                self.setOverride('sortedBy', {
-                  type,
-                  pos: centerBp,
-                  refName,
-                  assemblyName,
-                  tag,
-                })
-              }
+            const refName = centerLineInfo?.refName
+            const centerBp = centerLineInfo
+              ? Math.round(centerLineInfo.offset)
+              : -1
+            if (centerLineInfo && refName && centerBp >= 0) {
+              self.setOverride('sortedBy', {
+                type,
+                pos: centerBp,
+                refName,
+                assemblyName: centerLineInfo.assemblyName,
+                tag,
+              })
+            } else {
+              getSession(self).notify(
+                'Cannot sort: the view center line is not over a valid position. Scroll so the center line is within a region and try again.',
+                'warning',
+              )
             }
           },
 
@@ -1028,6 +1025,11 @@ export default function stateModelFactory(
                 refName,
                 assemblyName,
               })
+            } else {
+              getSession(self).notify(
+                'Cannot sort: no assembly loaded in this view.',
+                'warning',
+              )
             }
           },
 
@@ -1060,16 +1062,16 @@ export default function stateModelFactory(
             self.currentRangeY = [0, 0]
           },
 
-          setNoSpacing(flag?: boolean) {
-            self.setOverride('noSpacing', flag)
+          setFeatureSpacing(spacing?: number) {
+            self.setOverride('featureSpacing', spacing)
             self.currentRangeY = [0, 0]
           },
 
           // duck-typed by LGV/BreakpointSplitView/LinearComparativeView "Compact all tracks"
           setCompactness(level: CompactnessLevel) {
-            const { featureHeight, noSpacing } = COMPACTNESS_PRESETS[level]
+            const { featureHeight, featureSpacing } = COMPACTNESS_PRESETS[level]
             self.setOverride('featureHeight', featureHeight)
-            self.setOverride('noSpacing', noSpacing)
+            self.setOverride('featureSpacing', featureSpacing)
             self.currentRangeY = [0, 0]
           },
 

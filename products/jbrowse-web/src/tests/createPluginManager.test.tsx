@@ -10,9 +10,9 @@ import type { WebRootModel } from '../rootModel/rootModel.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-// @ts-ignore
+// @ts-expect-error
 global.nodeImage = Image
-// @ts-ignore
+// @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
 const getFile = (url: string) =>

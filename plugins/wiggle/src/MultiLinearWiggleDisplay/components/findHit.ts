@@ -1,26 +1,14 @@
 import {
   findFeatureAtBp,
-  isSummaryFeature,
+  summaryFields,
 } from '../../shared/wiggleComponentUtils.ts'
 
-import type { MultiWiggleDisplayModel } from './MultiWiggleComponent.tsx'
+import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 import type { WiggleDataResult, WiggleSourceData } from '../../util.ts'
 
 type FeatureUnderMouse = NonNullable<
   MultiWiggleDisplayModel['featureUnderMouse']
 >
-
-function summaryFields(
-  score: number,
-  minScore: number | undefined,
-  maxScore: number | undefined,
-  summaryScoreMode: string,
-) {
-  return summaryScoreMode !== 'avg' &&
-    isSummaryFeature(score, minScore, maxScore)
-    ? { summary: true as const, minScore, maxScore }
-    : {}
-}
 
 // Overlay mode: every visible source's score at the cursor bp is collected
 // and returned as `allSources`. Tooltip header coord is the cursor bp itself

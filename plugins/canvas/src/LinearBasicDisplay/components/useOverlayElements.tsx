@@ -7,21 +7,12 @@ import { computeLabelPosition } from './labelPositioning.ts'
 import { LABEL_FONT_SIZE } from './sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
-import type { VisibleRegion } from './hitTesting.ts'
+import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-
-export type FeatureItemEntry =
-  | {
-      kind: 'feature'
-      item: FlatbushItem
-      vr: VisibleRegion
-      data: FeatureDataResult
-    }
-  | { kind: 'subfeature'; item: SubfeatureInfo; vr: VisibleRegion }
 
 interface OverlayModel {
   showLabels: boolean

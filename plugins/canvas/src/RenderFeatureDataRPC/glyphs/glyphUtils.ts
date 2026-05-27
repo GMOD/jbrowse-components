@@ -2,7 +2,7 @@ import type { DisplayConfig } from '../renderConfig.ts'
 import type { FeatureLayout, GlyphType, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-const HEIGHT_MULTIPLIERS: Record<string, number> = {
+const HEIGHT_MULTIPLIERS: Record<DisplayConfig['displayMode'], number> = {
   normal: 1,
   compact: 0.6,
   superCompact: 0.3,
@@ -23,8 +23,7 @@ export function sortByPosition(children: FeatureLayout[]) {
 }
 
 export function getFeatureHeightPx(config: DisplayConfig) {
-  const heightMultiplier = HEIGHT_MULTIPLIERS[config.displayMode] ?? 1
-  return config.featureHeight * heightMultiplier
+  return config.featureHeight * HEIGHT_MULTIPLIERS[config.displayMode]
 }
 
 // Used by main-thread label-fit math in LinearBasicDisplay/layout.ts —

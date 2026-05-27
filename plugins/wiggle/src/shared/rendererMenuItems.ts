@@ -1,9 +1,8 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { makeAutoscaleTypeSubMenu } from '@jbrowse/wiggle-core'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
-
-import { makeAutoscaleTypeSubMenu } from './wiggleMenuItems.ts'
 
 const SetMinMaxDialog = lazy(() =>
   import('@jbrowse/wiggle-core').then(m => ({ default: m.SetMinMaxDialog })),

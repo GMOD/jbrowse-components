@@ -74,8 +74,14 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
         }
         display.setFeatureHeight?.(n)
       }
+    } else if (prefix === 'featureSpacing') {
+      if (val1) {
+        display.setFeatureSpacing?.(+val1)
+      }
     } else if (prefix === 'noSpacing') {
-      display.setNoSpacing?.(booleanize(val1 || 'true'))
+      // Legacy boolean: true → 0px spacing, false → 2px spacing (the value
+      // the pre-unification override branch baked in for noSpacing=false).
+      display.setFeatureSpacing?.(booleanize(val1 || 'true') ? 0 : 2)
     } else if (prefix === 'softClipping') {
       if (booleanize(val1 || 'true') !== display.showSoftClipping) {
         display.toggleSoftClipping?.()

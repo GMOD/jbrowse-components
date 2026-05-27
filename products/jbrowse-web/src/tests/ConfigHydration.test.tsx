@@ -1,35 +1,16 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
 import { autorun } from 'mobx'
 
-import { handleRequest } from './generateReadBuffer.ts'
+import { useFetchMock, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager } from './util.tsx'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-const getFile = (url: string) => {
-  const cleanUrl = url.replace(/http:\/\/localhost\//, '')
-  const filePath = cleanUrl.startsWith('test_data')
-    ? cleanUrl
-    : `test_data/volvox/${cleanUrl}`
-  return new LocalFile(require.resolve(`../../${filePath}`))
-}
-
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
-
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
-  jest.restoreAllMocks()
-})
+useFetchMock(volvoxGetFile)
 
 async function setupView(trackIds: string[]) {
   const { rootModel } = getPluginManager()

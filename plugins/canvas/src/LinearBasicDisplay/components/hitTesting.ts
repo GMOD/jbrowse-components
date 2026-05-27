@@ -19,6 +19,18 @@ export interface VisibleRegion {
   screenEndPx: number
 }
 
+// Per-feature entry built by indexing flatbushItems/subfeatureInfos across
+// every visible region. Feature entries carry their region's render data so
+// overlay code can look up label widths without re-walking the data map.
+export type FeatureItemEntry =
+  | {
+      kind: 'feature'
+      item: FlatbushItem
+      vr: VisibleRegion
+      data: FeatureDataResult
+    }
+  | { kind: 'subfeature'; item: SubfeatureInfo; vr: VisibleRegion }
+
 export interface LabelVisibility {
   showLabels: boolean
   showDescriptions: boolean

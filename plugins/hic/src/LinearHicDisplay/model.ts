@@ -17,6 +17,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
+import { contactLookupKey } from '../regionOffsets.ts'
 import { generateColorRamp } from './components/HicRenderer.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
@@ -24,6 +25,7 @@ import type {
   HicContactItem,
   HicDataResult,
 } from '../RenderHicDataRPC/types.ts'
+import type { HicColorScheme } from './components/colorRamp.ts'
 import type { HicBackend } from './components/hicBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -31,6 +33,13 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+
+/**
+ * `triangular`: standard triangular Hi-C view, height-independent square
+ * bins. `adjust`: stretch the triangle vertically to fit the user-chosen
+ * display height (squashes bins).
+ */
+export type HicRenderMode = 'triangular' | 'adjust'
 
 /**
  * #stateModel LinearHicDisplay
@@ -121,8 +130,8 @@ export default function stateModelFactory(
       }
     })
     .views(self => ({
-      get colorScheme(): string | undefined {
-        return self.getOverride<string>('colorScheme')
+      get colorScheme(): HicColorScheme | undefined {
+        return self.getOverride<HicColorScheme>('colorScheme')
       },
       get showLegend(): boolean | undefined {
         return self.getOverride<boolean>('showLegend')
@@ -142,6 +151,10 @@ export default function stateModelFactory(
        * Index into `availableResolutions` that pure auto-mode would pick at
        * the current zoom — largest binsize ≤ 2*bpPerPx, falling back to the
        * finest binsize (idx 0) when nothing qualifies (very zoomed in).
+       *
+       * The factor 2 floors at ~0.5 bins/screen-pixel, which keeps bins
+       * visible without going sub-pixel; users who want finer can step the
+       * resolution bias down.
        */
       get autoResolutionIdx(): number {
         const avail = self.availableResolutions
@@ -256,14 +269,15 @@ export default function stateModelFactory(
           return undefined
         }
         const { scale, viewOffsetX } = self.renderTransform
-        // Reverse viewport transform, then un-rotate to data-space.
+        // Reverse viewport transform, then un-rotate to pre-rotation
+        // data-space — the same coordinate system positions[] live in.
         const dataX = (mouseX - viewOffsetX) / scale
         const dataY = mouseY / scale / self.yScalar
         const ux = (dataX - dataY) / Math.SQRT2
         const uy = (dataX + dataY) / Math.SQRT2
-        // Locate region pair via the cumulative pixel-start array, then
-        // invert positions[i] = (bin + regionCombinedOffsets[r]) * binWidth.
-        const starts = data.regionPixelStarts
+        // Bucket each axis into a region, then invert
+        // positions[i] = (bin + regionCombinedOffsets[r]) * binWidth.
+        const starts = data.regionDataXStarts
         const findRegion = (u: number) => {
           for (let i = starts.length - 2; i >= 0; i--) {
             if (u >= starts[i]!) {
@@ -280,7 +294,7 @@ export default function stateModelFactory(
         const bin2 = Math.floor(
           uy / data.binWidth - data.regionCombinedOffsets[r2]!,
         )
-        const idx = data.lookup[`${r1}|${r2}|${bin1}|${bin2}`]
+        const idx = data.lookup[contactLookupKey(r1, r2, bin1, bin2)]
         if (idx === undefined) {
           return undefined
         }
@@ -343,13 +357,8 @@ export default function stateModelFactory(
       startBackend(backend: HicBackend) {
         self.attachBackend<HicBackend>(backend, {
           upload: b => {
-            const data = self.rpcData
-            if (data) {
-              b.uploadData({
-                positions: data.positions,
-                counts: data.counts,
-                numContacts: data.numContacts,
-              })
+            if (self.rpcData) {
+              b.uploadData(self.rpcData)
             }
             b.uploadColorRamp(generateColorRamp(self.colorScheme))
           },
@@ -378,7 +387,7 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setColorScheme(f?: string) {
+      setColorScheme(f?: HicColorScheme) {
         self.setOverride('colorScheme', f)
       },
       /**
@@ -396,7 +405,7 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setMode(arg: string) {
+      setMode(arg: HicRenderMode) {
         self.mode = arg
       },
       /**

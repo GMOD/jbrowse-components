@@ -1,32 +1,19 @@
 import { render } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
 
-import { handleRequest } from './generateReadBuffer.ts'
+import { useFetchMock } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 import { expectCanvasMatch, setup } from './util.tsx'
 setup()
-
-const getFile = (url: string) =>
-  new LocalFile(
-    require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
-  )
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
 const delay = { timeout: 20000 }
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
+useFetchMock()
 
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation()
 })
-
-console.warn = jest.fn()
 
 async function testSyntenyView(
   peachLoc: string,

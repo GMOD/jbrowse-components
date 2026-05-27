@@ -63,28 +63,31 @@ export function useDragSelection(ref: React.RefObject<HTMLDivElement | null>) {
   }
 
   function handleMouseUp(e: React.MouseEvent) {
-    setState(s => {
-      if (s.isDragging && s.drag) {
-        const dx = Math.abs(s.drag.endX - s.drag.startX)
-        if (dx > MIN_DRAG_DISTANCE) {
-          const { x, y } = relativeXY(ref, e)
-          setContextCoord({
-            coord: [e.clientX, e.clientY],
-            startX: s.drag.startX,
-            startY: s.drag.startY,
-            endX: x,
-            endY: y,
-          })
-          return { ...s, isDragging: false, showSelectionBox: true }
-        }
-      }
-      return {
+    // Decide outside the setState updater so the updater stays pure
+    // (React strict mode double-invokes updaters).
+    const { drag, isDragging } = state
+    const draggedFar =
+      isDragging &&
+      drag !== undefined &&
+      Math.abs(drag.endX - drag.startX) > MIN_DRAG_DISTANCE
+    if (draggedFar) {
+      const { x, y } = relativeXY(ref, e)
+      setContextCoord({
+        coord: [e.clientX, e.clientY],
+        startX: drag.startX,
+        startY: drag.startY,
+        endX: x,
+        endY: y,
+      })
+      setState(s => ({ ...s, isDragging: false, showSelectionBox: true }))
+    } else {
+      setState(s => ({
         ...s,
         isDragging: false,
         drag: undefined,
         showSelectionBox: false,
-      }
-    })
+      }))
+    }
   }
 
   function handleMouseLeave() {

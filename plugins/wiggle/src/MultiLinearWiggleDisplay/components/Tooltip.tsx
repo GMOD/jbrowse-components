@@ -7,7 +7,7 @@ import {
   WiggleScoreDisplay,
 } from '../../shared/WiggleTooltipShared.tsx'
 
-import type { MultiWiggleDisplayModel } from './MultiWiggleComponent.tsx'
+import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 
 type Coord = [number, number]
 

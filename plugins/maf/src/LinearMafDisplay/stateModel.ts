@@ -281,7 +281,7 @@ export default function stateModelFactory(
           const filterSet = new Set(self.subtreeFilter)
           return base.filter(s => filterSet.has(s.name))
         }
-        return [...base]
+        return base
       },
     }))
     .views(self => ({

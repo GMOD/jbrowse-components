@@ -10,7 +10,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { computeYTicks } from '@jbrowse/wiggle-core'
+import { computeYTicks, makeScaleTypeSubMenu } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
@@ -18,10 +18,7 @@ import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import { rendererMenuItems } from '../shared/rendererMenuItems.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
-import {
-  makeResolutionAndSummarySubMenus,
-  makeScaleTypeSubMenu,
-} from '../shared/wiggleMenuItems.ts'
+import { makeResolutionAndSummarySubMenus } from '../shared/wiggleMenuItems.ts'
 import {
   SINGLE_WIGGLE_SOURCE_NAME,
   YSCALEBAR_LABEL_OFFSET,

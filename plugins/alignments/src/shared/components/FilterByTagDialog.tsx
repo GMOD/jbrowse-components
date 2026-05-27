@@ -47,10 +47,12 @@ function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
   return (
     <>
       <TextField
-        type="number"
         value={flag}
         onChange={event => {
-          setFlag(+event.target.value)
+          const n = Number(event.target.value)
+          if (Number.isFinite(n) && n >= 0) {
+            setFlag(n)
+          }
         }}
       />
       {flagNames.map((name, index) => {
@@ -92,7 +94,8 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   const [tag, setTag] = useState(filterBy.tagFilter?.tag || '')
   const [tagValue, setTagValue] = useState(filterBy.tagFilter?.value || '')
   const [readName, setReadName] = useState(filterBy.readName || '')
-  const validTag = TAG_REGEX.exec(tag)
+  const validTag = TAG_REGEX.test(tag)
+  const tagInvalid = tag !== '' && !validTag
 
   const site = 'https://broadinstitute.github.io/picard/explain-flags.html'
 
@@ -129,11 +132,9 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
               setTag(event.target.value)
             }}
             label="Tag name"
-            error={tag.length === 2 && !validTag}
+            error={tagInvalid}
             helperText={
-              tag.length === 2 && !validTag
-                ? 'Not a valid tag'
-                : '2 characters, e.g. HP or RG'
+              tagInvalid ? 'Not a valid tag' : '2 characters, e.g. HP or RG'
             }
             slotProps={{
               htmlInput: {
@@ -168,6 +169,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
           color="primary"
           autoFocus
           type="submit"
+          disabled={tagInvalid}
           onClick={() => {
             model.setFilterBy({
               flagInclude,

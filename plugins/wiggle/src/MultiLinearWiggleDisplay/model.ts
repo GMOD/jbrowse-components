@@ -16,7 +16,11 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebarMixin, clusterLayout } from '@jbrowse/tree-sidebar'
-import { computeYTicks } from '@jbrowse/wiggle-core'
+import {
+  computeYTicks,
+  makeAutoscaleTypeSubMenu,
+  makeScaleTypeSubMenu,
+} from '@jbrowse/wiggle-core'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -29,11 +33,7 @@ import {
   isOverlayMode,
   makeRenderState,
 } from '../shared/wiggleComponentUtils.ts'
-import {
-  makeAutoscaleTypeSubMenu,
-  makeResolutionAndSummarySubMenus,
-  makeScaleTypeSubMenu,
-} from '../shared/wiggleMenuItems.ts'
+import { makeResolutionAndSummarySubMenus } from '../shared/wiggleMenuItems.ts'
 
 import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

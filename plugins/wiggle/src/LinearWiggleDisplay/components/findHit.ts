@@ -1,6 +1,6 @@
 import {
   findFeatureAtBp,
-  isSummaryFeature,
+  summaryFields,
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
@@ -20,16 +20,16 @@ export function findHit(
     return undefined
   }
   const score = featureScores[i]!
-  const minScore = source.featureMinScores[i]
-  const maxScore = source.featureMaxScores[i]
   return {
     refName,
     start: featurePositions[i * 2]!,
     end: featurePositions[i * 2 + 1]!,
     score,
-    ...(summaryScoreMode !== 'avg' &&
-    isSummaryFeature(score, minScore, maxScore)
-      ? { summary: true as const, minScore, maxScore }
-      : {}),
+    ...summaryFields(
+      score,
+      source.featureMinScores[i],
+      source.featureMaxScores[i],
+      summaryScoreMode,
+    ),
   }
 }

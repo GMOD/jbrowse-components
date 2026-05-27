@@ -1,7 +1,5 @@
 import { waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
-
-import { handleRequest } from './generateReadBuffer.ts'
+import { useFetchMock, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 
@@ -12,27 +10,9 @@ beforeEach(() => {
   jest.spyOn(console, 'error').mockImplementation()
 })
 
-const getFile = (url: string) => {
-  const cleanUrl = url.replace(/http:\/\/localhost\//, '')
-  const filePath = cleanUrl.startsWith('test_data')
-    ? cleanUrl
-    : `test_data/volvox/${cleanUrl}`
-  return new LocalFile(require.resolve(`../../${filePath}`))
-}
-
 jest.mock('../makeWorkerInstance', () => () => {})
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
-
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
-  jest.restoreAllMocks()
-})
+useFetchMock(volvoxGetFile)
 
 test('multi-way LinearSyntenyView init routes tracks to per-level slots', async () => {
   const { rootModel } = getPluginManager(configSnapshot)

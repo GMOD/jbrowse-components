@@ -15,6 +15,8 @@ import {
 import type { RenderingContext } from './types.ts'
 
 const CHAR_HEIGHT = measureText('M') - 2
+const DASH = 45 // '-'.charCodeAt(0)
+const SPACE = 32 // ' '.charCodeAt(0)
 
 /**
  * Draw insertion markers between bp positions. The position just *before*
@@ -32,12 +34,17 @@ export function renderInsertions(
   const { ctx, scale, h, rowHeight, reversed, palette, bpToCellLeftPx } =
     context
   const insertionFill = palette.insertionColor
+  // Defensive min() mirrors mafInstanceBuffer.ts / rendering/bases.ts: if a
+  // malformed file ships uneven lengths, the inner while would read past
+  // alignment end and count `undefined` chars as insertion bases, inflating
+  // insLen past LARGE_INSERTION_THRESHOLD and switching to the wrong glyph.
+  const len = Math.min(alignment.length, seq.length)
 
-  for (let i = 0, genomicOffset = 0; i < alignment.length; i++) {
+  for (let i = 0, genomicOffset = 0; i < len; i++) {
     let insLen = 0
-    while (seq[i] === '-') {
-      const c = alignment[i]!
-      if (c !== '-' && c !== ' ') {
+    while (i < len && seq.charCodeAt(i) === DASH) {
+      const code = alignment.charCodeAt(i)
+      if (code !== DASH && code !== SPACE) {
         insLen++
       }
       i++

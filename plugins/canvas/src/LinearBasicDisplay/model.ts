@@ -34,12 +34,16 @@ export default function stateModelFactory(
       showOnlyGenes: false,
     })
     .views(self => ({
-      get subfeatureLabels() {
-        return self.getConfWithOverride<string>('subfeatureLabels')
+      get subfeatureLabels(): DisplayConfig['subfeatureLabels'] {
+        return self.getConfWithOverride<DisplayConfig['subfeatureLabels']>(
+          'subfeatureLabels',
+        )
       },
 
-      get displayMode() {
-        return self.getConfWithOverride<string>('displayMode')
+      get displayMode(): DisplayConfig['displayMode'] {
+        return self.getConfWithOverride<DisplayConfig['displayMode']>(
+          'displayMode',
+        )
       },
 
       get geneGlyphMode(): DisplayConfig['geneGlyphMode'] {
@@ -86,15 +90,15 @@ export default function stateModelFactory(
       }
     })
     .actions(self => ({
-      setSubfeatureLabels(value: string) {
+      setSubfeatureLabels(value: DisplayConfig['subfeatureLabels']) {
         self.setOverride('subfeatureLabels', value)
       },
 
-      setGeneGlyphMode(value: string) {
+      setGeneGlyphMode(value: DisplayConfig['geneGlyphMode']) {
         self.setOverride('geneGlyphMode', value)
       },
 
-      setDisplayMode(value: string) {
+      setDisplayMode(value: DisplayConfig['displayMode']) {
         self.setOverride('displayMode', value)
       },
 

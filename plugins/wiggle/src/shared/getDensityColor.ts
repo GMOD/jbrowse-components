@@ -1,11 +1,9 @@
-import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
-
 import { makeScoreNormalizer } from '../util.ts'
 
-// Low-level density-color factory: takes raw 0-255 rgb and an isLog boolean.
-// Returns a closure that maps score → "rgb(r,g,b)" string, white→color as
-// |score - 0| grows toward the bigger end of the domain. Caches strings in a
-// 256-entry LUT to avoid per-feature allocation in the hot drawing loop.
+// Density-color factory: maps a score to an "rgb(r,g,b)" string that fades
+// from white at score=0 toward the (r,g,b) color as |score| grows toward the
+// bigger end of the domain. Caches 256 string buckets so the hot drawing loop
+// avoids per-feature string allocation.
 export function makeDensityRgbStringFn(
   domainMin: number,
   domainMax: number,
@@ -38,31 +36,4 @@ export function makeDensityRgbStringFn(
     }
     return s
   }
-}
-
-export function makeDensityColorFn(
-  minScore: number,
-  maxScore: number,
-  scaleType: string,
-  colorHex: string,
-) {
-  const [r, g, b] = cssColorToRgba(colorHex)
-  return makeDensityRgbStringFn(
-    minScore,
-    maxScore,
-    scaleType === 'log',
-    r,
-    g,
-    b,
-  )
-}
-
-export function getDensityColor(
-  score: number,
-  minScore: number,
-  maxScore: number,
-  scaleType: string,
-  colorHex: string,
-) {
-  return makeDensityColorFn(minScore, maxScore, scaleType, colorHex)(score)
 }

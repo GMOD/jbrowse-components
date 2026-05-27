@@ -209,7 +209,7 @@ describe('migrateAlignmentsSnapshot', () => {
     const result = migrateAlignmentsSnapshot(snap)
     const overrides = result.configOverrides as Record<string, unknown>
     expect(overrides.featureHeight).toBe(5)
-    expect(overrides.noSpacing).toBe(true)
+    expect(overrides.featureSpacing).toBe(0)
     expect(overrides.maxHeight).toBe(800)
     expect(overrides.showOutline).toBe(false)
     expect(overrides.showLegend).toBe(true)

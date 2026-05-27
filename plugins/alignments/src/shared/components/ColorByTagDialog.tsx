@@ -4,6 +4,8 @@ import { SubmitDialog } from '@jbrowse/core/ui'
 import { TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { TAG_REGEX } from '../util.ts'
+
 interface Tag {
   type: string
   tag: string
@@ -19,7 +21,7 @@ const ColorByTagDialog = observer(function ColorByTagDialog({
   handleClose: () => void
 }) {
   const [tag, setTag] = useState('')
-  const validTag = /^[A-Za-z][A-Za-z0-9]$/.exec(tag)
+  const validTag = TAG_REGEX.test(tag)
 
   return (
     <SubmitDialog

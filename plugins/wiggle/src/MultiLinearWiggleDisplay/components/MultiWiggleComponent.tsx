@@ -18,82 +18,14 @@ import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import { getRowTop, hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
 
-import type { WiggleDataResult } from '../../util.ts'
+import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type {
-  ClusterHierarchyNode,
-  HoveredTreeNode,
-} from '@jbrowse/tree-sidebar'
-import type { WiggleBackend, YScaleTicks } from '@jbrowse/wiggle-core'
+
+export type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 
 type LGV = LinearGenomeViewModel
 
 const COORD0: [number, number] = [0, 0]
-
-export interface MultiWiggleDisplayModel {
-  rpcDataMap: Map<number, WiggleDataResult>
-  sources: { name: string; color?: string; labelColor?: string }[]
-  height: number
-  domain: [number, number] | undefined
-  scaleType: string
-  posColor: string
-  negColor: string
-  renderingType: string
-  isDensityMode: boolean
-  isOverlay: boolean
-  summaryScoreMode: string
-  numSources: number
-  rowHeight: number
-  rowHeightTooSmallForScalebar: boolean
-  ticks?: YScaleTicks
-  error: Error | null
-  isLoading: boolean
-  statusMessage?: string
-  displayCrossHatches: boolean
-  reload: () => void
-  scalebarOverlapLeft: number
-  hierarchy?: ClusterHierarchyNode
-  treeAreaWidth: number
-  showTree: boolean
-  showRowSeparators: boolean
-  subtreeFilter?: string[]
-  hoveredTreeNode?: HoveredTreeNode
-  treeCanvas?: HTMLCanvasElement | null
-  mouseoverCanvas?: HTMLCanvasElement | null
-  featureUnderMouse?: {
-    refName: string
-    start: number
-    end: number
-    score: number
-    minScore?: number
-    maxScore?: number
-    source: string
-    summary?: boolean
-    allSources?: {
-      source: string
-      score: number
-      minScore?: number
-      maxScore?: number
-      summary?: boolean
-    }[]
-  }
-  setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
-  setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
-  setHoveredTreeNode: (node?: HoveredTreeNode) => void
-  setTreeAreaWidth: (width: number) => void
-  setSubtreeFilter: (names?: string[]) => void
-  setFeatureUnderMouse: (
-    feat?: MultiWiggleDisplayModel['featureUnderMouse'],
-  ) => void
-  selectFeature: (
-    feat: NonNullable<MultiWiggleDisplayModel['featureUnderMouse']>,
-  ) => void
-  canvasDrawn: boolean
-  isReady: boolean
-  startBackend: (backend: WiggleBackend) => void
-  stopBackend: () => void
-  renderNow: () => void
-}
 
 const MultiWiggleComponent = observer(function MultiWiggleComponent({
   model,

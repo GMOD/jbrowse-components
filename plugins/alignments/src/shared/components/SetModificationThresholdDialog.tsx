@@ -19,9 +19,12 @@ const SetModificationThresholdDialog = observer(
     const [threshold, setThreshold] = useState(
       String(model.modificationThreshold),
     )
-    const numThreshold = Number.parseFloat(threshold)
+    const numThreshold = Number(threshold)
     const validThreshold =
-      !Number.isNaN(numThreshold) && numThreshold >= 0 && numThreshold <= 100
+      threshold !== '' &&
+      Number.isFinite(numThreshold) &&
+      numThreshold >= 0 &&
+      numThreshold <= 100
 
     return (
       <SubmitDialog
@@ -62,14 +65,6 @@ const SetModificationThresholdDialog = observer(
               : ''
           }
           autoComplete="off"
-          type="number"
-          slotProps={{
-            htmlInput: {
-              min: 0,
-              max: 100,
-              step: 1,
-            },
-          }}
         />
       </SubmitDialog>
     )

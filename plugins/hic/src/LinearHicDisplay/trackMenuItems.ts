@@ -1,3 +1,5 @@
+import type { HicColorScheme } from './components/colorRamp.ts'
+import type { HicRenderMode } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface HicMenuSelf {
@@ -12,8 +14,8 @@ interface HicMenuSelf {
   setUseLogScale: (f: boolean) => void
   setUseColorPercentile: (f: boolean) => void
   setShowLegend: (f: boolean) => void
-  setMode: (m: string) => void
-  setColorScheme: (s?: string) => void
+  setMode: (m: HicRenderMode) => void
+  setColorScheme: (s?: HicColorScheme) => void
   stepResolution: (dir: -1 | 1) => void
   resetResolutionBias: () => void
   setActiveNormalization: (s: string) => void

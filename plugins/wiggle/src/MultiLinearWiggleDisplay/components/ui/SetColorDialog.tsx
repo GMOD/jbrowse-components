@@ -126,7 +126,6 @@ export default function SetColorDialog({
               color="secondary"
               onClick={() => {
                 handleClose()
-                setCurrLayout([...model.sources])
               }}
             >
               Cancel

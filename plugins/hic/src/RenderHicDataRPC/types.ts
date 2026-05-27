@@ -33,8 +33,12 @@ export interface HicDataResult {
    * R-tree.
    */
   lookup: Record<string, number>
-  /** Cumulative pixel-x offset of each region (length regions.length+1). */
-  regionPixelStarts: number[]
+  /**
+   * Pre-rotation data-x position where each region starts, in the same
+   * coordinate space as `positions[]` (length regions.length+1). Hover
+   * hit-test buckets a cursor into a region pair against this array.
+   */
+  regionDataXStarts: number[]
   /**
    * Per-region offset baked into `positions[]`:
    * `positionX = (bin1 + regionCombinedOffsets[r1]) * binWidth`.

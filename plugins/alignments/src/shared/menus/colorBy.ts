@@ -84,7 +84,13 @@ function getModificationsSubMenu(model: ModificationsModel) {
   } = model
 
   if (!modificationsReady) {
-    return [{ label: 'Loading modifications...', onClick: () => {} }]
+    return [
+      {
+        label: 'Loading modifications...',
+        disabled: true,
+        onClick: () => {},
+      },
+    ]
   } else {
     if (!visibleModificationTypes.length) {
       return [
