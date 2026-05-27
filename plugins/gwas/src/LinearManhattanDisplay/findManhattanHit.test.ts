@@ -9,7 +9,7 @@ import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 function buildFlatbush(
   positions: number[],
   scores: number[],
-): ArrayBuffer | undefined {
+): Flatbush | undefined {
   if (positions.length === 0) {
     return undefined
   }
@@ -18,7 +18,7 @@ function buildFlatbush(
     fb.add(positions[i]!, scores[i]!, positions[i], scores[i])
   }
   fb.finish()
-  return fb.data
+  return fb
 }
 
 // One block covering bp 0..1000 across 100 screen px (10 bp/px).
@@ -39,11 +39,8 @@ const state: ManhattanRenderState = {
 
 const refNames = new Map([[0, 'chr1']])
 
-function mkData(
-  positions: number[],
-  scores: number[],
-): Map<number, ManhattanRpcResult> {
-  return new Map([
+function mkData(positions: number[], scores: number[]) {
+  const data = new Map<number, ManhattanRpcResult>([
     [
       0,
       {
@@ -53,22 +50,30 @@ function mkData(
         numFeatures: positions.length,
         scoreMin: 0,
         scoreMax: 0,
-        flatbushData: buildFlatbush(positions, scores),
+        flatbushData: undefined,
       },
     ],
   ])
+  const fb = buildFlatbush(positions, scores)
+  const flatbushes = new Map<number, Flatbush>()
+  if (fb) {
+    flatbushes.set(0, fb)
+  }
+  return { data, flatbushes }
 }
 
 test('returns undefined when nothing within hit radius', () => {
   // bp=500 → screen (50, 50). Mouse far away at (0,0).
+  const { data, flatbushes } = mkData([500], [5])
   expect(
-    findManhattanHit(0, 0, [block], mkData([500], [5]), state, refNames),
+    findManhattanHit(0, 0, [block], data, flatbushes, state, refNames),
   ).toBeUndefined()
 })
 
 test('finds nearest point within hit radius', () => {
+  const { data, flatbushes } = mkData([500], [5])
   expect(
-    findManhattanHit(51, 49, [block], mkData([500], [5]), state, refNames),
+    findManhattanHit(51, 49, [block], data, flatbushes, state, refNames),
   ).toEqual({
     refName: 'chr1',
     start: 500,
@@ -81,11 +86,13 @@ test('finds nearest point within hit radius', () => {
 
 test('picks closest of two candidates', () => {
   // bp=500 → x=50, bp=510 → x=51 (both at score=5 → y=50)
+  const { data, flatbushes } = mkData([500, 510], [5, 5])
   const hit = findManhattanHit(
     52,
     50,
     [block],
-    mkData([500, 510], [5, 5]),
+    data,
+    flatbushes,
     state,
     refNames,
   )
@@ -94,17 +101,19 @@ test('picks closest of two candidates', () => {
 
 test('skips blocks with no data', () => {
   expect(
-    findManhattanHit(50, 50, [block], new Map(), state, refNames),
+    findManhattanHit(50, 50, [block], new Map(), new Map(), state, refNames),
   ).toBeUndefined()
 })
 
 test('respects reversed block direction', () => {
   // Reversed: bp=900 → screen x = (1000 - 900) / 10 = 10
+  const { data, flatbushes } = mkData([900], [5])
   const hit = findManhattanHit(
     10,
     50,
     [{ ...block, reversed: true }],
-    mkData([900], [5]),
+    data,
+    flatbushes,
     state,
     refNames,
   )
@@ -116,11 +125,13 @@ test('finds the right point in a dense array via Flatbush', () => {
   // should pick the bp=500 point (screen x=50), not bp=0 or bp=1000.
   const positions = Array.from({ length: 1001 }, (_, i) => i)
   const scores = positions.map(() => 5)
+  const { data, flatbushes } = mkData(positions, scores)
   const hit = findManhattanHit(
     50,
     50,
     [block],
-    mkData(positions, scores),
+    data,
+    flatbushes,
     state,
     refNames,
   )
@@ -131,11 +142,13 @@ test('Flatbush Y-prune rejects same-X point at a far-off score', () => {
   // Two features at bp=500 (same screen x=50): score=5 (y=50) and score=10
   // (y=0). Mouse at (50, 50) is on top of the score=5 point and >>HIT_RADIUS
   // away in Y from score=10 — Y prune must reject the latter and pick score=5.
+  const { data, flatbushes } = mkData([500, 500], [5, 10])
   const hit = findManhattanHit(
     50,
     50,
     [block],
-    mkData([500, 500], [5, 10]),
+    data,
+    flatbushes,
     state,
     refNames,
   )

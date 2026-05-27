@@ -8,6 +8,7 @@ import {
   getSession,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -69,6 +70,10 @@ export function stateModelFactory(
     .volatile(() => ({
       // 1:1 points keyed by displayedRegionIndex.
       rpcDataMap: observable.map<number, ManhattanRpcResult>(),
+      // Wrapped Flatbush per region. Kept in lockstep with rpcDataMap so
+      // a single-region fetch only re-wraps that region (whole-genome views
+      // land 20+ regions serially; a derived view would re-wrap them all).
+      flatbushes: observable.map<number, Flatbush>(),
       // Currently hovered point — drives the hover circle + tooltip.
       featureUnderMouse: undefined as ManhattanHit | undefined,
     }))
@@ -171,12 +176,18 @@ export function stateModelFactory(
       },
       setRpcData(idx: number, data: ManhattanRpcResult) {
         self.rpcDataMap.set(idx, data)
+        if (data.flatbushData) {
+          self.flatbushes.set(idx, Flatbush.from(data.flatbushData))
+        } else {
+          self.flatbushes.delete(idx)
+        }
       },
       setFeatureUnderMouse(hit: ManhattanHit | undefined) {
         self.featureUnderMouse = hit
       },
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
+        self.flatbushes.clear()
       },
     }))
     .actions(self => ({

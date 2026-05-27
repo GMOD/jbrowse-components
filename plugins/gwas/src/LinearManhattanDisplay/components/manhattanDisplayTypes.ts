@@ -5,6 +5,7 @@ import type {
   ManhattanRenderState,
 } from '../manhattanBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
 // Component-facing slice of LinearManhattanDisplayModel. Hand-rolled to avoid
@@ -16,6 +17,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
 > {
   renderBlocks: RenderBlock[]
   regionRefNames: ReadonlyMap<number, string>
+  flatbushes: ReadonlyMap<number, Flatbush>
   renderState: ManhattanRenderState | undefined
   featureUnderMouse: ManhattanHit | undefined
   setFeatureUnderMouse: (hit: ManhattanHit | undefined) => void

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
@@ -36,46 +36,35 @@ const LinearManhattanDisplayComponent = observer(
     const view = getContainingView(model) as LGV
     const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
 
-    const hitTest = useCallback(
-      (event: React.MouseEvent<HTMLDivElement>) => {
+    function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
+      setClientMouseCoord([event.clientX, event.clientY])
+      const state = model.renderState
+      if (state) {
         const rect = event.currentTarget.getBoundingClientRect()
-        const state = model.renderState
-        if (!state) {
-          return undefined
-        }
-        return findManhattanHit(
-          event.clientX - rect.left,
-          event.clientY - rect.top - YSCALEBAR_LABEL_OFFSET,
-          model.renderBlocks,
-          model.rpcDataMap,
-          state,
-          model.regionRefNames,
+        model.setFeatureUnderMouse(
+          findManhattanHit(
+            event.clientX - rect.left,
+            event.clientY - rect.top - YSCALEBAR_LABEL_OFFSET,
+            model.renderBlocks,
+            model.rpcDataMap,
+            model.flatbushes,
+            state,
+            model.regionRefNames,
+          ),
         )
-      },
-      [model],
-    )
+      }
+    }
 
-    const handleMouseMove = useCallback(
-      (event: React.MouseEvent<HTMLDivElement>) => {
-        setClientMouseCoord([event.clientX, event.clientY])
-        model.setFeatureUnderMouse(hitTest(event))
-      },
-      [model, hitTest],
-    )
-
-    const handleMouseLeave = useCallback(() => {
+    function handleMouseLeave() {
       model.setFeatureUnderMouse(undefined)
-    }, [model])
+    }
 
-    const handleClick = useCallback(
-      (event: React.MouseEvent<HTMLDivElement>) => {
-        const hit = hitTest(event)
-        if (hit) {
-          model.selectFeature(hit)
-        }
-      },
-      [model, hitTest],
-    )
+    function handleClick() {
+      const hit = model.featureUnderMouse
+      if (hit) {
+        model.selectFeature(hit)
+      }
+    }
 
     const width = view.trackWidthPx
     const height = model.height

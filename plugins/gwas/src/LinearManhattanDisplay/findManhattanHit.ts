@@ -1,9 +1,9 @@
 import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
-import Flatbush from '@jbrowse/core/util/flatbush'
 
 import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type Flatbush from '@jbrowse/core/util/flatbush'
 
 export interface ManhattanHit {
   refName: string
@@ -16,30 +16,20 @@ export interface ManhattanHit {
 
 const HIT_RADIUS_PX = 8
 
-// Caches the Flatbush instance per ArrayBuffer so we don't rebuild the
-// wrapper (and its FlatQueue) on every mousemove. The cache is weak so it
-// drops automatically when a region's data is replaced or evicted.
-const flatbushCache = new WeakMap<ArrayBuffer, Flatbush>()
-function getFlatbush(buffer: ArrayBuffer): Flatbush {
-  let fb = flatbushCache.get(buffer)
-  if (!fb) {
-    fb = Flatbush.from(buffer)
-    flatbushCache.set(buffer, fb)
-  }
-  return fb
-}
-
 // 2D hit test. The Flatbush index over (bp, score) is built worker-side per
-// region; here we derive a (bp, score) query box from the mouse position +
-// current view and only check exact pixel distance for points inside that
-// box. Edge-clamped points (out-of-domain scores pinned to the canvas top/
-// bottom) are still catchable because the query window is widened to ±Inf
-// in score when the mouse is within hit-radius of the canvas edge.
+// region and wrapped by the display model's `flatbushMap` view (MobX-cached so
+// it survives mousemoves without rebuild). Here we derive a (bp, score) query
+// box from the mouse position + current view and only check exact pixel
+// distance for points inside that box. Edge-clamped points (out-of-domain
+// scores pinned to the canvas top/bottom) are still catchable because the
+// query window is widened to ±Inf in score when the mouse is within
+// hit-radius of the canvas edge.
 export function findManhattanHit(
   mouseX: number,
   mouseY: number,
   blocks: RenderBlock[],
   regionData: ReadonlyMap<number, ManhattanRpcResult>,
+  flatbushMap: ReadonlyMap<number, Flatbush>,
   state: ManhattanRenderState,
   refNames: ReadonlyMap<number, string>,
 ): ManhattanHit | undefined {
@@ -52,8 +42,9 @@ export function findManhattanHit(
 
   for (const block of blocks) {
     const data = regionData.get(block.displayedRegionIndex)
+    const flatbush = flatbushMap.get(block.displayedRegionIndex)
     const refName = refNames.get(block.displayedRegionIndex)
-    if (!data?.flatbushData || !refName) {
+    if (!data || !flatbush || !refName) {
       continue
     }
     const { screenStartPx, screenEndPx, reversed, start, end } = block
@@ -82,7 +73,7 @@ export function findManhattanHit(
       mouseY <= HIT_RADIUS_PX ? Infinity : mouseScore + halfScore
 
     const { positions, scores } = data
-    const candidates = getFlatbush(data.flatbushData).search(
+    const candidates = flatbush.search(
       candBpMin,
       candScoreMin,
       candBpMax,

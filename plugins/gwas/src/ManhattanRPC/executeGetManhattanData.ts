@@ -35,7 +35,7 @@ export function buildManhattanResult(
     // space); a `| 0` here would silently sign-extend bp ≥ 2^31 — wrong for
     // T2T-scale cumulative coordinates.
     positions[i] = f.get('start')
-    const score = f.get('score') as number
+    const score = Number(f.get('score'))
     scores[i] = score
     if (score < scoreMin) {
       scoreMin = score
