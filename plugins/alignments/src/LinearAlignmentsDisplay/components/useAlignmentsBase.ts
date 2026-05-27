@@ -125,12 +125,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     dragMovedRef.current = false
     const startOffsetPx = view.offsetPx
     startDocumentDrag(e, dragControllerRef, (dx, dy) => {
-      if (
-        !dragMovedRef.current &&
+      dragMovedRef.current ||=
         Math.abs(dx) + Math.abs(dy) > CLICK_SUPPRESS_THRESHOLD_PX
-      ) {
-        dragMovedRef.current = true
-      }
       view.setNewView(
         view.bpPerPx,
         clamp(startOffsetPx - dx, view.minOffset, view.maxOffset),
