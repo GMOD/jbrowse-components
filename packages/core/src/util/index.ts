@@ -164,7 +164,7 @@ export function springAnimate(
     () => {
       cancelAnimationFrame(animationFrameId)
     },
-  ]
+  ] as const
 }
 
 /**

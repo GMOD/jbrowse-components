@@ -449,7 +449,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-
       MiniControlsComponent(): React.FC<any> {
         return MiniControls
       },
@@ -457,7 +456,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-
       HeaderComponent(): React.FC<any> {
         return Header
       },
@@ -607,28 +605,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       getTrackYOffset(trackId: string) {
         let y = this.headerHeight + this.scalebarHeight
-        let found = false
-        for (const t of self.pinnedTracks) {
+        for (const t of [...self.pinnedTracks, ...self.unpinnedTracks]) {
           if (t.configuration.trackId === trackId) {
-            found = true
-            break
+            return y
           }
           y +=
             (t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height) +
             RESIZE_HANDLE_HEIGHT
         }
-        if (!found) {
-          for (const t of self.unpinnedTracks) {
-            if (t.configuration.trackId === trackId) {
-              found = true
-              break
-            }
-            y +=
-              (t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height) +
-              RESIZE_HANDLE_HEIGHT
-          }
-        }
-        return found ? y : undefined
+        return undefined
       },
 
       /**
@@ -1326,8 +1311,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           200,
         )
         cancelLastAnimation()
-        cancelLastAnimation = cancelAnimation!
-        animate!()
+        cancelLastAnimation = cancelAnimation
+        animate()
       }
 
       return { slide }
@@ -1364,8 +1349,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           1000,
           50,
         )
-        cancelLastAnimation = cancelAnimation!
-        animate!()
+        cancelLastAnimation = cancelAnimation
+        animate()
       }
 
       return { zoom }

@@ -3,6 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import TooLargeMessage from './TooLargeMessage.tsx'
 
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
+import type { Region } from '@jbrowse/core/util/types'
 
 /**
  * Shared mixin owning "region too large" state and force-load UI.
@@ -35,7 +36,7 @@ export default function RegionTooLargeMixin() {
       },
     }))
     .views(self => ({
-      regionCannotBeRenderedText() {
+      regionCannotBeRenderedText(_region?: Region) {
         return self.regionTooLarge ? 'Force load to see features' : ''
       },
     }))
@@ -66,7 +67,7 @@ export default function RegionTooLargeMixin() {
       // directly) so subclasses that override the getter with a derived
       // computation — e.g. canvas's density-based derivation — see the
       // banner reflect their state.
-      regionCannotBeRendered() {
+      regionCannotBeRendered(_region?: Region) {
         return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
       },
     }))

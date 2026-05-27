@@ -41,20 +41,33 @@ const OverviewRubberband = observer(function OverviewRubberband({
   const { classes } = useStyles()
   const mouseDragging = startX !== undefined
 
+  // refs let globalMouseUp read the latest values without forcing the effect
+  // below to re-register listeners on every drag movement
+  const startXRef = useRef(startX)
+  const currentXRef = useRef(currentX)
+  startXRef.current = startX
+  currentXRef.current = currentX
+
   useEffect(() => {
+    if (!mouseDragging) {
+      return
+    }
+
     function globalMouseMove(event: MouseEvent) {
       const ref = controlsRef.current
-      if (ref && mouseDragging) {
+      if (ref) {
         setCurrentX(getRelativeX(event, ref))
       }
     }
 
     function globalMouseUp() {
+      const sx = startXRef.current
+      const cx = currentXRef.current
       // click and drag
-      if (startX !== undefined && currentX !== undefined) {
-        if (Math.abs(currentX - startX) > 3) {
-          const left = Math.min(startX, currentX)
-          const right = Math.max(startX, currentX)
+      if (sx !== undefined && cx !== undefined) {
+        if (Math.abs(cx - sx) > 3) {
+          const left = Math.min(sx, cx)
+          const right = Math.max(sx, cx)
           model.moveTo(
             overview.pxToBp(left - cytobandOffset),
             overview.pxToBp(right - cytobandOffset),
@@ -63,8 +76,8 @@ const OverviewRubberband = observer(function OverviewRubberband({
       }
 
       // just a click
-      if (startX !== undefined && currentX === undefined) {
-        const click = overview.pxToBp(startX - cytobandOffset)
+      if (sx !== undefined && cx === undefined) {
+        const click = overview.pxToBp(sx - cytobandOffset)
         if (!click.refName) {
           getSession(model).notify('unknown position clicked')
           console.error('unknown position clicked', click)
@@ -74,10 +87,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
       }
       setStartX(undefined)
       setCurrentX(undefined)
-
-      if (startX !== undefined) {
-        setGuideX(undefined)
-      }
+      setGuideX(undefined)
     }
 
     function globalKeyDown(event: KeyboardEvent) {
@@ -87,18 +97,15 @@ const OverviewRubberband = observer(function OverviewRubberband({
       }
     }
 
-    if (mouseDragging) {
-      window.addEventListener('mousemove', globalMouseMove, true)
-      window.addEventListener('mouseup', globalMouseUp, true)
-      window.addEventListener('keydown', globalKeyDown, true)
-      return () => {
-        window.removeEventListener('mousemove', globalMouseMove, true)
-        window.removeEventListener('mouseup', globalMouseUp, true)
-        window.removeEventListener('keydown', globalKeyDown, true)
-      }
+    window.addEventListener('mousemove', globalMouseMove, true)
+    window.addEventListener('mouseup', globalMouseUp, true)
+    window.addEventListener('keydown', globalKeyDown, true)
+    return () => {
+      window.removeEventListener('mousemove', globalMouseMove, true)
+      window.removeEventListener('mouseup', globalMouseUp, true)
+      window.removeEventListener('keydown', globalKeyDown, true)
     }
-    return () => {}
-  }, [mouseDragging, currentX, startX, model, overview, cytobandOffset])
+  }, [mouseDragging, model, overview, cytobandOffset])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()

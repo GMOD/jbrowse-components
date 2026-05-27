@@ -22,9 +22,6 @@ type LGV = LinearGenomeViewModel
 
 type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
 
-interface WithConfiguration {
-  configuration: AnyConfigurationModel
-}
 /**
  * Block-based display mixin that adds reactive density-stats checking
  * on top of RegionTooLargeMixin.
@@ -35,7 +32,11 @@ interface WithConfiguration {
  * For canvas/GPU displays, use MultiRegionDisplayMixin instead (which
  * also composes RegionTooLargeMixin but uses an imperative check path).
  */
-export default function FeatureDensityMixin() {
+export default function FeatureDensityMixin<
+  TConf extends { configuration: AnyConfigurationModel } = {
+    configuration: AnyConfigurationModel
+  },
+>() {
   return types
     .compose(
       'FeatureDensityMixin',
@@ -61,10 +62,7 @@ export default function FeatureDensityMixin() {
       },
 
       get maxFeatureScreenDensity() {
-        return getConf(
-          self as unknown as WithConfiguration,
-          'maxFeatureScreenDensity',
-        )
+        return getConf(self as unknown as TConf, 'maxFeatureScreenDensity')
       },
 
       get featureDensityStatsReady() {
@@ -79,10 +77,7 @@ export default function FeatureDensityMixin() {
         return (
           self.userByteSizeLimit ??
           self.featureDensityStats?.fetchSizeLimit ??
-          (getConf(
-            self as unknown as WithConfiguration,
-            'fetchSizeLimit',
-          ) as number)
+          (getConf(self as unknown as TConf, 'fetchSizeLimit') as number)
         )
       },
     }))

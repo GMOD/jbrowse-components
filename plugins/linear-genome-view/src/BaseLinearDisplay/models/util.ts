@@ -14,17 +14,8 @@ export function getDisplayStr(totalBytes: number) {
   }
 }
 
-// stabilize clipid under test for snapshot
 export function getId(id: string, index: string | number) {
-  const notJest = typeof jest === 'undefined'
-  return [
-    'clip',
-    notJest ? id : 'jest',
-    String(index),
-    notJest ? Math.random() : '',
-  ]
-    .filter(f => !!f)
-    .join('-')
+  return `clip-${id}-${index}`
 }
 
 export async function getFeatureDensityStatsPre(self: {

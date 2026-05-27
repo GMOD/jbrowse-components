@@ -205,7 +205,11 @@ export function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
         localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
         localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
         localStorageSetItem('lgv-showTrackOutlines', s(showTrackOutlines))
-        localStorageSetItem('lgv-trackLabels', trackLabels)
+        // skip writing the empty default — otherwise reads later round-trip to
+        // '' instead of null, hiding the config-fallback path
+        if (trackLabels) {
+          localStorageSetItem('lgv-trackLabels', trackLabels)
+        }
         localStorageSetItem('lgv-scrollZoom', s(scrollZoom))
       },
       { name: 'LGVLocalStorage' },
