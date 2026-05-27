@@ -36,7 +36,7 @@ const stateModelFactory = (
               if (token) {
                 resolve(token)
               } else {
-                reject(new Error('user cancelled entry'))
+                reject(new Error('User cancelled entry'))
               }
               doneCallback()
             },
@@ -45,8 +45,10 @@ const stateModelFactory = (
       },
       async validateToken(token: string, location: UriLocation) {
         return self.validateWithHEAD
-          ? validateTokenWithHEAD(token, location, (i, t) =>
-              self.addAuthHeaderToInit(i, t),
+          ? validateTokenWithHEAD(
+              token,
+              location,
+              self.addAuthHeaderToInit({ method: 'HEAD' }, token),
             )
           : token
       },

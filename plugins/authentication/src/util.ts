@@ -3,10 +3,9 @@ import type { UriLocation } from '@jbrowse/core/util/types'
 export async function validateTokenWithHEAD(
   token: string,
   location: UriLocation,
-  addAuthHeaderToInit: (init?: RequestInit, token?: string) => RequestInit,
+  init: RequestInit,
 ) {
-  const newInit = addAuthHeaderToInit({ method: 'HEAD' }, token)
-  const response = await fetch(location.uri, newInit)
+  const response = await fetch(location.uri, init)
   if (!response.ok) {
     throw new Error(
       await getResponseError({ response, reason: 'Error validating token' }),

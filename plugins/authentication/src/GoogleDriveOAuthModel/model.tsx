@@ -18,11 +18,11 @@ export interface RequestInitWithMetadata extends RequestInit {
 }
 
 function getUri(str: string) {
-  const urlId = /[-\w]{25,}/.exec(str)
+  const urlId = /\/d\/([-\w]{25,})/.exec(str)
   if (!urlId) {
     throw new Error(`Could not extract Google Drive file ID from URL: ${str}`)
   }
-  return `https://www.googleapis.com/drive/v3/files/${urlId[0]}`
+  return `https://www.googleapis.com/drive/v3/files/${urlId[1]}`
 }
 
 /**
@@ -74,7 +74,9 @@ export default function stateModelFactory(
             searchParams.append('alt', 'media')
           }
           driveUrl.search = searchParams.toString()
-          const authToken = await self.getToken(location)
+          const authToken = location
+            ? await self.validateToken(await self.getToken(location), location)
+            : await self.getToken(location)
           const response = await fetch(
             driveUrl,
             self.addAuthHeaderToInit(
@@ -96,6 +98,12 @@ export default function stateModelFactory(
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!response.ok) {
+          const refreshToken = self.retrieveRefreshToken()
+          if (refreshToken) {
+            const newToken =
+              await self.exchangeRefreshForAccessToken(refreshToken)
+            return self.validateToken(newToken, location)
+          }
           throw new Error(
             await getDescriptiveErrorMessage(
               response,
