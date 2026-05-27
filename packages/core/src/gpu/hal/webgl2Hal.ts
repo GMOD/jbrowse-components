@@ -116,7 +116,8 @@ function glBlendFactor(
 interface TextureState {
   texture: WebGLTexture | null
   unit: number
-  uniformLoc: WebGLUniformLocation | null
+  // uniformLoc is not stored — the sampler unit is set once at program init
+  // (in the constructor) and never changes, so per-draw uniform1i is skipped.
 }
 
 interface PassState {
@@ -259,8 +260,10 @@ export class WebGL2Hal implements GpuHal {
       let textureState: TextureState | null = null
       if (desc.textures?.length) {
         const tb = desc.textures[0]!
-        const uniformLoc = gl.getUniformLocation(program, tb.glUniformName)
-        textureState = { texture: null, unit: tb.glTextureUnit, uniformLoc }
+        // Bind the sampler uniform to the texture unit once — it never changes.
+        gl.useProgram(program)
+        gl.uniform1i(gl.getUniformLocation(program, tb.glUniformName), tb.glTextureUnit)
+        textureState = { texture: null, unit: tb.glTextureUnit }
       }
 
       this.passes.set(desc.id, {
@@ -563,7 +566,7 @@ export class WebGL2Hal implements GpuHal {
     if (ts?.texture) {
       gl.activeTexture(gl.TEXTURE0 + ts.unit)
       gl.bindTexture(gl.TEXTURE_2D, ts.texture)
-      gl.uniform1i(ts.uniformLoc, ts.unit)
+      // sampler uniform set once at construction — no uniform1i here
     }
   }
 

@@ -70,6 +70,9 @@ export function GpuLifecycleMixin() {
       },
     }))
     .actions(self => ({
+      // `cbs` is captured permanently by the autoruns on first call.
+      // Re-calling with a new backend (context-loss recovery) updates
+      // `currentBackend` only — `cbs` from the first call stay in effect.
       attachBackend<B>(backend: B, cbs: BackendCallbacks<B>) {
         self.currentBackend = backend
         if (self.autorunsInstalled) {

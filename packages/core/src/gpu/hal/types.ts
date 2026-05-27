@@ -42,8 +42,9 @@ export interface PassDescriptor {
   glslFragmentOverride?: string
   // primitive topology (default: 'triangle-list')
   topology?: 'triangle-list' | 'triangle-strip' | 'line-list'
-  // texture bindings for this pass
-  textures?: readonly TextureBinding[]
+  // Texture binding for this pass. Only textures[0] is wired up by both HAL
+  // implementations — multi-texture passes are not currently supported.
+  textures?: readonly [TextureBinding, ...TextureBinding[]]
 }
 
 export interface GpuHal {

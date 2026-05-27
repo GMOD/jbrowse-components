@@ -66,6 +66,18 @@ export function getGpuOverride() {
   return gpuOverride
 }
 
+/**
+ * Reset module-level singleton state. For use in tests only — clears
+ * `device` and `devicePromise` so the next `getGpuDevice()` call starts
+ * fresh rather than returning the cached (possibly null) promise from a
+ * previous test.
+ */
+export function resetGpuDeviceForTests() {
+  device = null
+  devicePromise = null
+  deviceLostListeners.clear()
+}
+
 export function getGpuDevice() {
   const override = getGpuOverride()
   if (

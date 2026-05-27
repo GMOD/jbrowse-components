@@ -22,7 +22,7 @@ export interface ShaderModule {
   // Present if the shader declares `Sampler2D<T>` bindings. The codegen
   // derives bindings from reflection so the renderer doesn't hand-maintain
   // them.
-  TEXTURES?: readonly TextureBinding[]
+  TEXTURES?: readonly [TextureBinding, ...TextureBinding[]]
 }
 
 export interface SlangPassOpts {
@@ -36,7 +36,7 @@ export interface SlangPassOpts {
   topology?: PassDescriptor['topology']
   blend?: boolean
   blendState?: BlendState
-  textures?: TextureBinding[]
+  textures?: [TextureBinding, ...TextureBinding[]]
   wgslFragmentEntry?: string
   glslFragmentOverride?: string
   // Override if the data buffer comes from another pass (e.g. canvas's
