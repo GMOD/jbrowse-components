@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { set1 } from '@jbrowse/core/ui/colors'
 import {
@@ -19,7 +19,11 @@ import {
   TrackHeightMixin,
   migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
-import { TreeSidebarMixin, clusterLayout } from '@jbrowse/tree-sidebar'
+import {
+  TreeSidebarMixin,
+  applyColorPalette,
+  clusterLayout,
+} from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
@@ -27,9 +31,6 @@ import SortIcon from '@mui/icons-material/Sort'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
-
-import { getConf } from '@jbrowse/core/configuration'
-import { applyColorPalette } from '@jbrowse/tree-sidebar'
 
 import {
   GENOTYPE_SPLITTER,
@@ -41,28 +42,6 @@ import {
 } from './constants.ts'
 import { getSources, makeHaplotypeSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
-
-// Apply the `colorBy` config palette the first time sources arrive — but only
-// when the user hasn't already set a layout (manual edit or persisted snapshot
-// in the source list). When the user clicks "Clear custom settings" later, the
-// caller can re-invoke this to restore the default arrangement.
-function maybeApplyColorByPalette(
-  configuration: AnyConfigurationModel,
-  sources: Source[],
-): Source[] | undefined {
-  const colorBy = getConf({ configuration }, 'colorBy') as string
-  if (!colorBy) {
-    return undefined
-  }
-  if (sources.some(source => colorBy in source)) {
-    return applyColorPalette(sources, colorBy)
-  }
-  console.warn(
-    `colorBy attribute "${colorBy}" not found in sample metadata. ` +
-      `Available attributes: ${Object.keys(sources[0] ?? {}).join(', ')}`,
-  )
-  return undefined
-}
 
 import type { ProcessedSource, Source } from './types.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -81,6 +60,28 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
+// Apply the `colorBy` config palette the first time sources arrive — but only
+// when the user hasn't already set a layout. Returns the colored sources, or
+// undefined when there's nothing to apply (no colorBy config, or sources lack
+// the requested attribute).
+function maybeApplyColorByPalette(
+  configuration: AnyConfigurationModel,
+  sources: Source[],
+): Source[] | undefined {
+  const colorBy = getConf({ configuration }, 'colorBy') as string
+  if (!colorBy) {
+    return undefined
+  }
+  if (sources.some(source => colorBy in source)) {
+    return applyColorPalette(sources, colorBy)
+  }
+  console.warn(
+    `colorBy attribute "${colorBy}" not found in sample metadata. ` +
+      `Available attributes: ${Object.keys(sources[0] ?? {}).join(', ')}`,
+  )
+  return undefined
+}
+
 // lazies
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
 
@@ -94,7 +95,7 @@ const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
 
-function encodeGenotype(gt: string) {
+export function encodeGenotype(gt: string) {
   const alleles = gt.split(GENOTYPE_SPLITTER)
   let nonRefCount = 0
   let uncalledCount = 0
@@ -106,6 +107,21 @@ function encodeGenotype(gt: string) {
     }
   }
   return uncalledCount === alleles.length ? -1 : nonRefCount
+}
+
+// Sort `sources` by per-sample genotype, descending (more non-ref alleles
+// first). Sources in phased mode carry haplotype-keyed `name` (e.g.
+// "HG001 HP0"); the genotype map is keyed by sample name, so look up via
+// `sampleName` rather than `name`.
+export function sortSourcesByGenotype(
+  sources: ProcessedSource[],
+  genotypes: Record<string, string>,
+): ProcessedSource[] {
+  return [...sources].sort((a, b) => {
+    const ga = genotypes[a.sampleName] ?? './.'
+    const gb = genotypes[b.sampleName] ?? './.'
+    return encodeGenotype(gb) - encodeGenotype(ga)
+  })
 }
 
 // Module-local helper for the variant cell data RPC call. Takes the resolved
@@ -399,6 +415,21 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #action
+         * Restore the configured default arrangement — empties the layout
+         * and clears the cluster tree, then re-applies the `colorBy` palette
+         * if one is configured. Overrides the mixin's `clearLayout` so the
+         * user gets the same starting state they had on initial load.
+         */
+        clearLayout() {
+          self.clusterTree = undefined
+          const sources = self.sourcesVolatile
+          const colored = sources
+            ? maybeApplyColorByPalette(self.configuration, sources)
+            : undefined
+          self.layout = colored ?? []
+        },
+        /**
+         * #action
          */
         setMafFilter(arg: number) {
           self.setOverride('minorAlleleFrequencyFilter', arg)
@@ -677,14 +708,7 @@ export default function MultiSampleVariantBaseModelF(
           if (!info) {
             return
           }
-          // `info.genotypes` is keyed by sample name; in phased mode `a.name`
-          // is "<sample> HP<n>", so look up by sampleName instead.
-          const sorted = [...sources].sort((a, b) => {
-            const ga = info.genotypes[a.sampleName] ?? './.'
-            const gb = info.genotypes[b.sampleName] ?? './.'
-            return encodeGenotype(gb) - encodeGenotype(ga)
-          })
-          self.setLayout(sorted, true)
+          self.setLayout(sortSourcesByGenotype(sources, info.genotypes))
         },
       }))
       .views(self => ({
@@ -838,6 +862,7 @@ export default function MultiSampleVariantBaseModelF(
               },
               {
                 label: 'Edit colors/arrangement...',
+                disabled: !self.sourcesVolatile?.length,
                 onClick: () => {
                   getSession(self).queueDialog(handleClose => [
                     SetColorDialog,

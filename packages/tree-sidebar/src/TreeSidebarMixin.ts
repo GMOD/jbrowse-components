@@ -63,12 +63,11 @@ export function TreeSidebarMixin<
       },
     }))
     .actions(self => ({
-      setLayout(layout: S[], clearTree = true) {
+      setLayout(layout: S[]) {
         // Clear the cached cluster tree whenever the set of sample names
         // changes (membership or order) — the tree was built from the prior
         // layout and is no longer valid.
         const namesChanged =
-          clearTree &&
           !!self.clusterTree &&
           (self.layout.length !== layout.length ||
             self.layout.some(

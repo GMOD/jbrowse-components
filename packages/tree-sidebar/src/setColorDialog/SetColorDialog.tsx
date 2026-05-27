@@ -24,22 +24,16 @@ const useStyles = makeStyles()({
   },
 })
 
-// Model contract — `sources` should be implemented as a getter that returns
-// the dialog-editable view (no palette-synthesized colors, no subtree filter),
-// so Submit only persists explicit choices and Clear-then-render sees the
-// post-clearLayout state.
-export interface SetColorDialogModel<
-  S extends { name: string; color?: string },
-> {
-  sources: S[]
-  setLayout: (s: S[], clearTree?: boolean) => void
-  clearLayout: () => void
-}
-
 export interface SetColorDialogProps<
   S extends { name: string; color?: string },
 > {
-  model: SetColorDialogModel<S>
+  // Returns the current dialog-editable source list (no palette synthesis, no
+  // subtree filter). Called once on mount to seed local state and again after
+  // "Clear custom settings" to refresh from the underlying model. Use a
+  // function (not a value) so the dialog reads the post-clearLayout state.
+  getSources: () => S[]
+  onSetLayout: (s: S[]) => void
+  onClearLayout: () => void
   handleClose: () => void
   // PopoverPicker columns. Each renders both a bulk header button and a
   // PopoverPicker column. Defaults to a single `color` column.
@@ -51,16 +45,18 @@ export interface SetColorDialogProps<
   enableBulkEdit?: boolean
   enableRowPalettizer?: boolean
   showTipsStorageKey?: string
-  // Additional column names hidden from the auto-derived "extras" list and
-  // from the palettizer's choices (e.g. variants' `sampleName`/`HP`).
-  reservedExtra?: ReadonlySet<string>
-  palettizerExcludedFields?: ReadonlySet<string>
+  // Plugin-specific field names that are internal plumbing (e.g. variants'
+  // `sampleName`/`HP`): hidden from both the auto-derived "extras" column
+  // list and the palettizer's per-field buttons.
+  reservedFields?: ReadonlySet<string>
 }
 
 export default function SetColorDialog<
   S extends { name: string; color?: string },
 >({
-  model,
+  getSources,
+  onSetLayout,
+  onClearLayout,
   handleClose,
   colorColumns = [{ field: 'color', headerName: 'Color' }],
   hasClusterTree,
@@ -68,24 +64,23 @@ export default function SetColorDialog<
   enableBulkEdit = false,
   enableRowPalettizer = false,
   showTipsStorageKey = 'setColorDialog-showTips',
-  reservedExtra,
-  palettizerExcludedFields,
+  reservedFields,
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
   const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(() =>
-    structuredClone(model.sources),
+    structuredClone(getSources()),
   )
   const [showTips, setShowTips] = useLocalStorage(showTipsStorageKey, false)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
 
   const submit = () => {
-    model.setLayout(currLayout)
+    onSetLayout(currLayout)
     handleClose()
   }
 
   const onSubmit = () => {
-    const original = model.sources
+    const original = getSources()
     const reordered =
       hasClusterTree &&
       original.length === currLayout.length &&
@@ -141,7 +136,7 @@ export default function SetColorDialog<
                 <RowPalettizer
                   currLayout={currLayout}
                   setCurrLayout={setCurrLayout}
-                  excludedFields={palettizerExcludedFields}
+                  excludedFields={reservedFields}
                 />
               </>
             ) : null}
@@ -151,7 +146,7 @@ export default function SetColorDialog<
               onChange={setCurrLayout}
               showTips={showTips}
               colorColumns={colorColumns}
-              reservedExtra={reservedExtra}
+              reservedExtra={reservedFields}
             />
           </DialogContent>
           <DialogActions>
@@ -160,8 +155,8 @@ export default function SetColorDialog<
               type="submit"
               color="inherit"
               onClick={() => {
-                model.clearLayout()
-                setCurrLayout(model.sources)
+                onClearLayout()
+                setCurrLayout(getSources())
               }}
             >
               Clear custom settings

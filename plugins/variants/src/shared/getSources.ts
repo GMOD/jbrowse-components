@@ -53,19 +53,21 @@ export function getSources({
 
     const merged = { ...baseSource, ...row }
 
-    if (renderingMode === 'phased') {
-      if (row.HP !== undefined) {
-        // already a haplotype entry (from haplotype clustering)
-        return [{ ...merged, sampleName }]
-      }
-      // expand sample to haplotypes
-      const ploidy = sampleInfo?.[sampleName]?.maxPloidy
-      if (ploidy) {
-        return makeHaplotypeSources(merged, ploidy)
-      }
-      return []
+    // Phased expansion needs sampleInfo to know ploidy. Without it we fall
+    // through and return the sample row as-is — matches the `sources` getter
+    // in MultiSampleVariantBaseModel, which waits for sampleInfo before
+    // expanding. Once sampleInfo is present, missing samples default to
+    // diploid to match `expandSourcesToHaplotypes`.
+    if (
+      renderingMode === 'phased' &&
+      row.HP === undefined &&
+      sampleInfo !== undefined
+    ) {
+      return makeHaplotypeSources(
+        merged,
+        sampleInfo[sampleName]?.maxPloidy ?? 2,
+      )
     }
-    // non-phased mode
     return [{ ...merged, sampleName }]
   })
 }

@@ -111,7 +111,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                         sampleInfo,
                       })
                     : sourcesVolatile
-                model.setLayoutAndClusterTree(
+                model.setLayoutAndPendingClusterTree(
                   buildClusteredLayout(baseSources, model.layout, ret.order),
                   ret.tree,
                 )

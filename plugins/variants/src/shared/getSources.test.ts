@@ -220,6 +220,35 @@ describe('getSources', () => {
     expect(result.map(r => r.sampleName)).toEqual(['HG001', 'HG001'])
   })
 
+  // Regression: previously returned [] when sampleInfo lacked the sample,
+  // dropping the row entirely. `sources` and `expandSourcesToHaplotypes` both
+  // default to ploidy 2, so getSources should match.
+  test('phased mode defaults to ploidy 2 when sampleInfo lacks the sample', () => {
+    const result = getSources({
+      sources: [{ name: 'HG999' }],
+      renderingMode: 'phased',
+      sampleInfo: {},
+    })
+
+    expect(result).toHaveLength(2)
+    expect(result.map(r => r.HP)).toEqual([0, 1])
+    expect(result.map(r => r.sampleName)).toEqual(['HG999', 'HG999'])
+  })
+
+  // Regression: without sampleInfo at all, the row should pass through
+  // unexpanded — matches the `sources` getter, which waits for sampleInfo
+  // before expanding rather than dropping rows.
+  test('phased mode without sampleInfo returns samples unexpanded', () => {
+    const result = getSources({
+      sources: [{ name: 'HG001' }, { name: 'HG002' }],
+      renderingMode: 'phased',
+    })
+
+    expect(result).toHaveLength(2)
+    expect(result.map(r => r.name)).toEqual(['HG001', 'HG002'])
+    expect(result.every(r => r.HP === undefined)).toBe(true)
+  })
+
   test('layout colors are preserved in phased mode with haplotype layout', () => {
     const haplotypeLayout = [
       { name: 'HG002 HP0', sampleName: 'HG002', HP: 0, color: 'green' },

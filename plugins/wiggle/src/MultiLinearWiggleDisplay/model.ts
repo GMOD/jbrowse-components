@@ -233,69 +233,80 @@ export default function stateModelFactory(
         return clusterLayout(r, self.height, self.treeAreaWidth)
       },
     }))
-    .actions(self => ({
-      setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
-        self.rpcDataMap.set(displayedRegionIndex, data)
-        if (self.sourcesVolatile.length === 0 && data.sources.length > 0) {
-          self.sourcesVolatile = data.sources.map(
-            ({ name, color, labelColor, label, group, baseUri }) => ({
-              name,
-              color,
-              labelColor,
-              label,
-              group,
-              baseUri,
-            }),
+    .actions(self => {
+      const { clearDisplaySpecificData: superClearDisplaySpecificData } = self
+      return {
+        // sourcesVolatile is piggy-backed on each region's data — wipe it
+        // whenever we wipe the data, so the next fetch's first region
+        // repopulates with current adapter metadata (handles adapter
+        // reconfigure / chromosome navigation).
+        clearDisplaySpecificData() {
+          superClearDisplaySpecificData()
+          self.sourcesVolatile = []
+        },
+        setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
+          self.rpcDataMap.set(displayedRegionIndex, data)
+          if (self.sourcesVolatile.length === 0 && data.sources.length > 0) {
+            self.sourcesVolatile = data.sources.map(
+              ({ name, color, labelColor, label, group, baseUri }) => ({
+                name,
+                color,
+                labelColor,
+                label,
+                group,
+                baseUri,
+              }),
+            )
+          }
+        },
+
+        startBackend(backend: WiggleBackend) {
+          installPerRegionLifecycle(
+            self,
+            self.rpcDataMap,
+            backend,
+            data => buildSourceRenderData(data, self.gpuProps()),
+            (b, encoded) => {
+              const state = self.renderState
+              if (!state) {
+                return false
+              }
+              b.renderBlocks(self.renderBlocks, encoded, state)
+              return true
+            },
           )
-        }
-      },
+        },
 
-      startBackend(backend: WiggleBackend) {
-        installPerRegionLifecycle(
-          self,
-          self.rpcDataMap,
-          backend,
-          data => buildSourceRenderData(data, self.gpuProps()),
-          (b, encoded) => {
-            const state = self.renderState
-            if (!state) {
-              return false
-            }
-            b.renderBlocks(self.renderBlocks, encoded, state)
-            return true
-          },
-        )
-      },
+        setSources(sources: SourceInfo[]) {
+          self.sourcesVolatile = sources
+        },
 
-      setSources(sources: SourceInfo[]) {
-        self.sourcesVolatile = sources
-      },
+        setShowTree(arg: boolean) {
+          self.setOverride('showTree', arg)
+        },
 
-      setShowTree(arg: boolean) {
-        self.setOverride('showTree', arg)
-      },
+        setShowRowSeparators(arg: boolean) {
+          self.setOverride('showRowSeparators', arg)
+        },
 
-      setShowRowSeparators(arg: boolean) {
-        self.setOverride('showRowSeparators', arg)
-      },
+        setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
+          self.featureUnderMouse = feat
+        },
 
-      setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
-        self.featureUnderMouse = feat
-      },
-
-      selectFeature(feat: NonNullable<typeof self.featureUnderMouse>) {
-        const sources = feat.allSources
-          ? Object.fromEntries(feat.allSources.map(s => [s.source, s.score]))
-          : { [feat.source]: feat.score }
-        openFeatureWidget(self, {
-          uniqueId: `wiggle-${feat.refName}-${feat.start}-${feat.end}`,
-          refName: feat.refName,
-          start: feat.start,
-          end: feat.end,
-          sources,
-        })
-      },
-    }))
+        selectFeature(feat: NonNullable<typeof self.featureUnderMouse>) {
+          const sources = feat.allSources
+            ? Object.fromEntries(feat.allSources.map(s => [s.source, s.score]))
+            : { [feat.source]: feat.score }
+          openFeatureWidget(self, {
+            uniqueId: `wiggle-${feat.refName}-${feat.start}-${feat.end}`,
+            refName: feat.refName,
+            start: feat.start,
+            end: feat.end,
+            sources,
+          })
+        },
+      }
+    })
     .actions(self => {
       const superAfterAttach = self.afterAttach
 
@@ -451,6 +462,7 @@ export default function stateModelFactory(
           {
             label: 'Edit colors/arrangement...',
             icon: PaletteIcon,
+            disabled: !self.sourcesVolatile.length,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 SetColorDialog,
@@ -487,7 +499,7 @@ export default function stateModelFactory(
         snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(layout.length > 0 ? { layout } : {}),
+        ...(layout.length ? { layout } : {}),
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(subtreeFilter?.length ? { subtreeFilter } : {}),

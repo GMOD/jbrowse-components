@@ -32,20 +32,15 @@ export default function MultiWiggleSetColorDialog({
   }
   handleClose: () => void
 }) {
-  const dialogModel = {
-    get sources() {
-      return model.editableSources
-    },
-    setLayout: (s: Source[]) => {
-      model.setLayout(s)
-    },
-    clearLayout: () => {
-      model.clearLayout()
-    },
-  }
   return (
     <SetColorDialog
-      model={dialogModel}
+      getSources={() => model.editableSources}
+      onSetLayout={s => {
+        model.setLayout(s)
+      }}
+      onClearLayout={() => {
+        model.clearLayout()
+      }}
       handleClose={handleClose}
       title="Multi-wiggle color/arrangement editor"
       colorColumns={COLOR_COLUMNS}

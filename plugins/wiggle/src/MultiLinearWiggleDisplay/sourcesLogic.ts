@@ -10,10 +10,10 @@ export function pickColor(
   isOverlay: boolean,
   color: string | undefined,
 ) {
-  if (color) {
-    return color
-  }
-  return isOverlay ? overlayColors[index % overlayColors.length] : undefined
+  return (
+    color ??
+    (isOverlay ? overlayColors[index % overlayColors.length] : undefined)
+  )
 }
 
 // Merge adapter fields with the persisted layout, in layout order (or
