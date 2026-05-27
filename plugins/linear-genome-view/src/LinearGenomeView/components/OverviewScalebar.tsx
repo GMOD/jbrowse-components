@@ -9,6 +9,7 @@ declare module '@jbrowse/core/PluginManager' {
     'LinearGenomeView-OverviewScalebarComponent': {
       args: ReactNode[]
       result: ReactNode[]
+      props: { model: LinearGenomeViewModel; overview: Base1DViewModel }
     }
   }
 }

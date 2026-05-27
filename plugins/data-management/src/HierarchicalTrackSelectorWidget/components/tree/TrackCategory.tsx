@@ -28,6 +28,11 @@ declare module '@jbrowse/core/PluginManager' {
     'TrackSelector-folderDialog': {
       args: FC<FolderDialogProps>
       result: FC<FolderDialogProps>
+      props: {
+        categoryId: string
+        model: HierarchicalTrackSelectorModel
+        subtracks: TreeNode[]
+      }
     }
   }
 }

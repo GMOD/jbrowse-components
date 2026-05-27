@@ -12,6 +12,7 @@ declare module '@jbrowse/core/PluginManager' {
     'LinearGenomeView-TracksContainerComponent': {
       args: ReactNode[]
       result: ReactNode[]
+      props: { model: LinearGenomeViewModel }
     }
   }
 }

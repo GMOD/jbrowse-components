@@ -87,6 +87,9 @@ type ExtensionPointCallback = (
 // Each entry declares:
 //   args:   the value passed as `extendee` (also the accumulator type)
 //   result: the value each callback must return
+//   props:  (optional) the read-only context object passed unchanged to every
+//           callback. Use for notification-style points where the payload
+//           should not be mutated between callbacks.
 //
 // Extension points are accumulator-style: every callback receives the previous
 // callback's return value as its first arg, so for side-effect points
@@ -100,6 +103,7 @@ type ExtensionPointCallback = (
 //       'LaunchView-LinearGenomeView': {
 //         args: LaunchArgs
 //         result: LaunchArgs
+//         props: { session: AbstractSessionModel } // optional
 //       }
 //     }
 //   }
@@ -116,6 +120,11 @@ export type ExtensionPointArgs<N extends ExtensionPointName> =
 
 export type ExtensionPointResult<N extends ExtensionPointName> =
   ExtensionPointRegistry[N]['result']
+
+export type ExtensionPointProps<N extends ExtensionPointName> =
+  'props' extends keyof ExtensionPointRegistry[N]
+    ? ExtensionPointRegistry[N]['props']
+    : Record<string, unknown>
 
 /**
  * free-form string-to-unknown mapping of metadata related to the instance of
@@ -646,7 +655,7 @@ export default class PluginManager {
     extensionPointName: N,
     callback: (
       extendee: ExtensionPointArgs<N>,
-      props: Record<string, unknown>,
+      props: ExtensionPointProps<N>,
     ) => ExtensionPointResult<N> | Promise<ExtensionPointResult<N>>,
   ): void
   addToExtensionPoint<T>(
@@ -671,7 +680,7 @@ export default class PluginManager {
   evaluateExtensionPoint<N extends ExtensionPointName>(
     extensionPointName: N,
     extendee: ExtensionPointArgs<N>,
-    props?: Record<string, unknown>,
+    props?: ExtensionPointProps<N>,
   ): ExtensionPointResult<N>
   evaluateExtensionPoint(
     extensionPointName: string,
@@ -700,7 +709,7 @@ export default class PluginManager {
   evaluateAsyncExtensionPoint<N extends ExtensionPointName>(
     extensionPointName: N,
     extendee: ExtensionPointArgs<N>,
-    props?: Record<string, unknown>,
+    props?: ExtensionPointProps<N>,
   ): Promise<ExtensionPointResult<N>>
   evaluateAsyncExtensionPoint(
     extensionPointName: string,

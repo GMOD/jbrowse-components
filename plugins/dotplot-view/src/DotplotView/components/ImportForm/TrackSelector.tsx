@@ -30,6 +30,7 @@ declare module '@jbrowse/core/PluginManager' {
     'DotplotView-ImportFormSyntenyOptions': {
       args: DotplotImportFormSyntenyOption[]
       result: DotplotImportFormSyntenyOption[]
+      props: { model: DotplotViewModel; assembly1: string; assembly2: string }
     }
   }
 }

@@ -23,6 +23,11 @@ declare module '@jbrowse/core/PluginManager' {
     'LinearSyntenyView-ImportFormSyntenyOptions': {
       args: LinearSyntenyImportFormSyntenyOption[]
       result: LinearSyntenyImportFormSyntenyOption[]
+      props: {
+        model: LinearSyntenyViewModel
+        assembly1: string
+        assembly2: string
+      }
     }
   }
 }
