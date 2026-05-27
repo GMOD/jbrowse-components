@@ -60,7 +60,10 @@ export default function TrackHeightMixin<
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
-        self.heightPreConfig = Math.max(self.height + distance, minDisplayHeight)
+        self.heightPreConfig = Math.max(
+          self.height + distance,
+          minDisplayHeight,
+        )
         return self.height - oldHeight
       },
     }))

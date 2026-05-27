@@ -38,7 +38,7 @@
   "dependencies": {
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
-    "@jbrowse/mobx-state-tree": "^5.9.0",
+    "@jbrowse/mobx-state-tree": "^5.9.2",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/react-linear-genome-view2": "workspace:^",
     "@types/jsdom": "^28.0.3",

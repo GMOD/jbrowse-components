@@ -248,8 +248,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { showForward, showReverse, showTranslation, ...rest } =
-        snap
+      const { showForward, showReverse, showTranslation, ...rest } = snap
       return {
         ...rest,
         ...(showForward ? {} : { showForward }),
