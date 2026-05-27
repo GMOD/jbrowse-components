@@ -6,7 +6,7 @@ interface HicMenuSelf {
   showLegend: boolean | undefined
   mode: string
   colorScheme: string | undefined
-  resolution: number | undefined
+  resolutionBias: number
   availableNormalizations: string[] | undefined
   activeNormalization: string
   setUseLogScale: (f: boolean) => void
@@ -15,7 +15,7 @@ interface HicMenuSelf {
   setMode: (m: string) => void
   setColorScheme: (s?: string) => void
   stepResolution: (dir: -1 | 1) => void
-  resetResolutionToAuto: () => void
+  resetResolutionBias: () => void
   setActiveNormalization: (s: string) => void
 }
 
@@ -122,11 +122,11 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
           },
         },
         {
-          label: 'Auto (track zoom)',
+          label: 'Auto (no bias)',
           type: 'checkbox',
-          checked: self.resolution === undefined,
+          checked: self.resolutionBias === 0,
           onClick: () => {
-            self.resetResolutionToAuto()
+            self.resetResolutionBias()
           },
         },
       ],

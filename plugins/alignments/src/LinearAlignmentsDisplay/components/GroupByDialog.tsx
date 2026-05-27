@@ -21,7 +21,12 @@ import {
 import { observer } from 'mobx-react'
 
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
-import { TAG_REGEX, defaultFilterFlags, negFlags, posFlags } from '../../shared/util.ts'
+import {
+  TAG_REGEX,
+  defaultFilterFlags,
+  negFlags,
+  posFlags,
+} from '../../shared/util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'

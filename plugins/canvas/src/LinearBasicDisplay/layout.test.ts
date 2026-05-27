@@ -54,7 +54,7 @@ function layout(
   bpPerPx: number,
   showLabels = true,
   showDescriptions = true,
-  reversedRegions: Set<number> = new Set(),
+  reversedRegions = new Set<number>(),
 ) {
   return computeLaidOutData(raw, {
     bpPerPx,

@@ -75,7 +75,7 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
     colorScheme,
     useLogScale,
     showLegend,
-    resolution,
+    resolutionBias,
     availableResolutions,
     effectiveResolution,
   } = model
@@ -86,9 +86,12 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
     return null
   }
 
-  const isAuto = resolution === undefined
+  const isAuto = resolutionBias === 0
   const canGoFiner = model.nextResolution(-1) !== undefined
   const canGoCoarser = model.nextResolution(1) !== undefined
+  const biasSuffix = isAuto
+    ? ' (auto)'
+    : ` (${resolutionBias > 0 ? '+' : '−'}${Math.abs(resolutionBias)})`
 
   return (
     <div className={classes.panel}>
@@ -127,14 +130,14 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
               isAuto
                 ? undefined
                 : () => {
-                    model.resetResolutionToAuto()
+                    model.resetResolutionBias()
                   }
             }
           >
             {effectiveResolution !== undefined
               ? `${(effectiveResolution / 1000).toFixed(0)}k`
               : '…'}
-            {isAuto ? ' (auto)' : ''}
+            {biasSuffix}
           </span>
           <button
             type="button"

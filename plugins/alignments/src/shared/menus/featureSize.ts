@@ -16,7 +16,11 @@ const SetMaxHeightDialog = lazy(
 export const COMPACTNESS_PRESETS = {
   normal: { label: 'Normal', featureHeight: 7, noSpacing: false },
   compact: { label: 'Compact', featureHeight: 3, noSpacing: true },
-  'super-compact': { label: 'Super-compact', featureHeight: 1, noSpacing: true },
+  'super-compact': {
+    label: 'Super-compact',
+    featureHeight: 1,
+    noSpacing: true,
+  },
 } as const
 
 export type CompactnessLevel = keyof typeof COMPACTNESS_PRESETS

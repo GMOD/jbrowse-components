@@ -160,7 +160,7 @@ function packRef(
   }
   const allFeatures = new Map<string, FeatureExtent>()
   for (const [displayedRegionIndex, data] of regions) {
-    const reversed = !!reversedRegions?.has(displayedRegionIndex)
+    const reversed = reversedRegions.has(displayedRegionIndex)
     for (const item of data.flatbushItems) {
       const existing = allFeatures.get(item.featureId)
       if (existing) {

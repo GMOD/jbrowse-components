@@ -59,11 +59,14 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * User-selected binsize (one of the file's available resolutions).
-         * Undefined means "auto" — pick a binsize from `availableResolutions`
-         * based on the current view's bpPerPx on every fetch.
+         * Signed integer offset from the zoom-derived auto-picked binsize.
+         * `0` means pure auto. `-1` is one step finer than auto, `+1` is one
+         * step coarser, etc. Tracking the *offset* (not an absolute binsize)
+         * keeps the user's intent valid across zoom levels — a saved session
+         * with bias=-1 still means "one step finer than auto" when reopened
+         * at a different scale.
          */
-        resolution: types.maybe(types.number),
+        resolutionBias: 0,
         useLogScale: false,
         /**
          * #property
@@ -100,17 +103,11 @@ export default function stateModelFactory(
       if (!snap) {
         return snap
       }
-      // The old `resolution` field was a multiplier (default 1) on
-      // auto-selected binsize. The new `resolution` is a discrete binsize
-      // from the file (5000, 10000, …). Anything < 1000 in old snapshots
-      // is almost certainly a stale multiplier — drop it so the model
-      // falls back to auto-mode.
-      let normalized = snap
-      if (snap.resolution !== undefined && snap.resolution < 1000) {
-        const { resolution: _drop, ...withoutRes } = snap
-        normalized = withoutRes
-      }
-      const { colorScheme, showLegend, ...rest } = normalized
+      // Drop any legacy `resolution` field — older snapshots stored either a
+      // multiplier (< 1000) or an absolute binsize (>= 1000); neither maps
+      // cleanly to the new `resolutionBias` field, so just reset to auto
+      // (bias = 0) and let zoom drive the choice.
+      const { resolution: _drop, colorScheme, showLegend, ...rest } = snap
       if (colorScheme === undefined && showLegend === undefined) {
         return rest
       }
@@ -142,24 +139,24 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The actual binsize to fetch at — user override if set, else
-       * auto-picked (largest available binsize ≤ 2*bpPerPx).
+       * Index into `availableResolutions` that pure auto-mode would pick at
+       * the current zoom — largest binsize ≤ 2*bpPerPx, falling back to the
+       * finest binsize (idx 0) when nothing qualifies (very zoomed in).
        */
-      get effectiveResolution(): number | undefined {
+      get autoResolutionIdx(): number {
         const avail = self.availableResolutions
         if (!avail?.length) {
-          return undefined
-        }
-        const userSet = self.resolution
-        if (userSet !== undefined && avail.includes(userSet)) {
-          return userSet
+          return -1
         }
         const view = getContainingView(self) as LinearGenomeViewModel
         const bpPerPx = Math.max(1, view.bpPerPx)
-        // avail is sorted ascending (smallest binsize first); pick the
-        // largest binsize ≤ 2*bpPerPx, falling back to the smallest if
-        // none qualify (very zoomed in).
-        return avail.findLast(r => r <= 2 * bpPerPx) ?? avail[0]!
+        let idx = -1
+        for (let i = 0; i < avail.length; i++) {
+          if (avail[i]! <= 2 * bpPerPx) {
+            idx = i
+          }
+        }
+        return idx === -1 ? 0 : idx
       },
       get yScalar() {
         const view = getContainingView(self) as LinearGenomeViewModel
@@ -168,6 +165,37 @@ export default function stateModelFactory(
         return self.mode === 'adjust'
           ? height / Math.max(height, defaultHeight)
           : 1
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Index actually used after applying `resolutionBias`, clamped to the
+       * valid range so a stale bias from a different zoom level can't index
+       * out of bounds.
+       */
+      get effectiveResolutionIdx(): number {
+        const avail = self.availableResolutions
+        if (!avail?.length) {
+          return -1
+        }
+        return Math.max(
+          0,
+          Math.min(
+            avail.length - 1,
+            self.autoResolutionIdx + self.resolutionBias,
+          ),
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The actual binsize to fetch at, after auto-pick + bias.
+       */
+      get effectiveResolution(): number | undefined {
+        const avail = self.availableResolutions
+        return avail?.length ? avail[self.effectiveResolutionIdx]! : undefined
       },
     }))
     .views(self => ({
@@ -194,12 +222,8 @@ export default function stateModelFactory(
         if (!avail?.length) {
           return undefined
         }
-        const cur = self.effectiveResolution ?? avail[0]!
-        const idx = avail.indexOf(cur)
-        const next = idx + dir
-        return idx !== -1 && next >= 0 && next < avail.length
-          ? avail[next]
-          : undefined
+        const next = self.effectiveResolutionIdx + dir
+        return next >= 0 && next < avail.length ? avail[next] : undefined
       },
 
       /**
@@ -342,12 +366,6 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setResolution(n: number | undefined) {
-        self.resolution = n
-      },
-      /**
-       * #action
-       */
       setUseLogScale(f: boolean) {
         self.useLogScale = f
       },
@@ -399,22 +417,24 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * dir = -1 → finer (smaller binsize); dir = +1 → coarser. Stepped
-       * relative to whatever's currently effective so the first click does
-       * what the user expects even in auto-mode.
+       * dir = -1 → finer (smaller binsize); dir = +1 → coarser. Re-grounds
+       * the bias against the *current* effective index so repeated clicks
+       * at a clamped boundary don't accumulate stale bias the user can't
+       * see — the bias always reflects what's actually on screen.
        */
       stepResolution(dir: -1 | 1) {
-        const next = self.nextResolution(dir)
-        if (next !== undefined) {
-          self.resolution = next
+        if (self.nextResolution(dir) === undefined) {
+          return
         }
+        self.resolutionBias =
+          self.effectiveResolutionIdx + dir - self.autoResolutionIdx
       },
       /**
        * #action
-       * Clear the user override so resolution auto-tracks bpPerPx again.
+       * Reset to pure auto-mode: bias 0, binsize follows zoom directly.
        */
-      resetResolutionToAuto() {
-        self.resolution = undefined
+      resetResolutionBias() {
+        self.resolutionBias = 0
       },
     }))
     .views(self => {
@@ -513,8 +533,8 @@ export default function stateModelFactory(
               }
               if (resolutions) {
                 self.setAvailableResolutions(resolutions)
-                // No initial-resolution selection here — `effectiveResolution`
-                // auto-derives from bpPerPx whenever `self.resolution` is unset.
+                // No initial selection needed — `effectiveResolution` derives
+                // the binsize from bpPerPx + `resolutionBias` on every fetch.
               }
             }
           } catch (e) {
