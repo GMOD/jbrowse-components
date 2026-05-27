@@ -222,6 +222,7 @@ export function isSessionWithShareURL(
 export interface Widget {
   type: string
   id: string
+  view?: { id: string }
 }
 
 /** Minimal map interface compatible with both native Map and MST IMSTMap */
@@ -331,6 +332,7 @@ export interface AbstractViewModel {
   displayName: string | undefined
   setDisplayName: (arg: string) => void
   menuItems: () => MenuItem[]
+  assemblyNames?: string[]
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (

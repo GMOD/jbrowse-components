@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import JBrowseTabMenu from './JBrowseTabMenu.tsx'
 import { getViewsForPanel } from './dockviewUtils.ts'
 
-import type { DockviewSessionType } from './types.ts'
+import type { DockviewSessionType, JBrowseViewPanelParams } from './types.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { IDockviewPanelHeaderProps } from 'dockview-react'
 
@@ -48,11 +48,6 @@ function stopEvent(e: React.MouseEvent | React.PointerEvent) {
   e.preventDefault()
 }
 
-export interface JBrowseViewPanelParams {
-  panelId: string
-  session?: DockviewSessionType
-}
-
 function getTabDisplayName(
   views: AbstractViewModel[],
   session: DockviewSessionType,
@@ -64,11 +59,7 @@ function getTabDisplayName(
     const view = views[0]!
     return (
       view.displayName ||
-      // @ts-expect-error
-      view.assemblyNames
-        // @ts-expect-error
-        ?.map(r => session.assemblyManager.getDisplayName(r))
-        .join(',') ||
+      view.assemblyNames?.map(r => session.assemblyManager.getDisplayName(r)).join(',') ||
       'View'
     )
   }

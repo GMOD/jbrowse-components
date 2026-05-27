@@ -28,7 +28,6 @@ const useStyles = makeStyles()(theme => ({
     gridTemplateRows: '[menubar] min-content [components] auto',
     height: '100vh',
   },
-
   appBar: {
     flexGrow: 1,
     gridRow: 'menubar',
@@ -40,31 +39,25 @@ interface Props {
   session: AppSession
 }
 
-const LazyDrawerWidget = observer(function LazyDrawerWidget(props: Props) {
-  const { session } = props
-  return (
-    <Suspense fallback={null}>
-      <DrawerWidget session={session} />
-    </Suspense>
-  )
-})
-
 const App = observer(function App(props: Props) {
   const { session } = props
   const { classes } = useStyles()
   const { minimized, visibleWidget, drawerWidth, drawerPosition } = session
   const drawerVisible = visibleWidget && !minimized
-  const d = drawerVisible ? `[drawer] ${drawerWidth}px` : undefined
   const main = '[main] minmax(0, 1fr)'
-  const grid = drawerPosition === 'right' ? [main, d] : [d, main]
+  const drawer = `[drawer] ${drawerWidth}px`
+  const gridTemplateColumns = drawerVisible
+    ? drawerPosition === 'right'
+      ? `${main} ${drawer}`
+      : `${drawer} ${main}`
+    : main
 
   return (
-    <div
-      className={classes.root}
-      style={{ gridTemplateColumns: grid.filter(f => !!f).join(' ') }}
-    >
+    <div className={classes.root} style={{ gridTemplateColumns }}>
       {drawerVisible && drawerPosition === 'left' ? (
-        <LazyDrawerWidget session={session} />
+        <Suspense fallback={null}>
+          <DrawerWidget session={session} />
+        </Suspense>
       ) : null}
       <DialogQueue session={session} />
       <div className={classes.appContainer}>
@@ -74,11 +67,11 @@ const App = observer(function App(props: Props) {
         <ViewsContainer {...props} />
       </div>
       <AppFab session={session} />
-
       {drawerVisible && drawerPosition === 'right' ? (
-        <LazyDrawerWidget session={session} />
+        <Suspense fallback={null}>
+          <DrawerWidget session={session} />
+        </Suspense>
       ) : null}
-
       <Snackbar session={session} />
     </div>
   )

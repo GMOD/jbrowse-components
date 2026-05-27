@@ -35,9 +35,8 @@ const ViewContainerTitle = observer(function ViewContainerTitle({
     <Tooltip title="Rename view" arrow>
       <EditableTypography
         value={
-          view.displayName ||
-          // @ts-expect-error
-          `${view.assemblyNames?.map(r => assemblyManager.getDisplayName(r)).join(',') || 'Untitled view'}${
+          view.displayName ??
+          `${view.assemblyNames?.map(r => assemblyManager.getDisplayName(r)).join(',') ?? 'Untitled view'}${
             view.minimized ? ' (minimized)' : ''
           }`
         }

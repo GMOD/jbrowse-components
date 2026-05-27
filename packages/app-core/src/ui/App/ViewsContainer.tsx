@@ -28,19 +28,17 @@ const ViewsContainer = observer(function ViewsContainer(props: Props) {
 
   return (
     <div className={classes.viewsContainer}>
-      {views.length > 0 ? (
-        <Suspense fallback={null}>
-          {useWorkspaces ? (
+      <Suspense fallback={null}>
+        {views.length > 0 ? (
+          useWorkspaces ? (
             <TiledViewsContainer session={session} />
           ) : (
             <ClassicViewsContainer session={session} />
-          )}
-        </Suspense>
-      ) : (
-        <Suspense fallback={null}>
+          )
+        ) : (
           <ViewLauncher {...props} />
-        </Suspense>
-      )}
+        )}
+      </Suspense>
     </div>
   )
 })

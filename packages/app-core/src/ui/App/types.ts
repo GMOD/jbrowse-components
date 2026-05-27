@@ -20,3 +20,8 @@ export type DockviewSessionType = SessionWithFocusedViewAndDrawerWidgets & {
   snackbarMessages: SnackbarMessage[]
   popSnackbarMessage: () => unknown
 }
+
+export interface JBrowseViewPanelParams {
+  panelId: string
+  session?: DockviewSessionType
+}

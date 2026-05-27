@@ -39,7 +39,6 @@ const DrawerHeader = observer(function DrawerHeader({
   const { classes } = useStyles()
   const focusedViewId = session.focusedViewId
   const { visibleWidget } = session
-  // @ts-expect-error
   const viewWidgetId = visibleWidget?.view?.id
   const { pluginManager } = getEnv(session)
   const widgetType = visibleWidget

@@ -260,8 +260,7 @@ export function processMutableMenuActions(ret: Menu[], actions: MenuAction[]) {
       appendToSubMenu({ menus: ret, ...action })
     } else if (action.type === 'appendToMenu') {
       appendToMenu({ menus: ret, ...action })
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    } else if (action.type === 'insertInMenu') {
+    } else {
       insertInMenu({ menus: ret, ...action })
     }
   }

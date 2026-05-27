@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 import ViewContainer from './ViewContainer.tsx'
 import { getViewsForPanel } from './dockviewUtils.ts'
 
-import type { DockviewSessionType } from './types.ts'
+import type { JBrowseViewPanelParams } from './types.ts'
 import type { IDockviewPanelProps } from 'dockview-react'
 
 const ViewLauncher = lazy(() => import('./ViewLauncher.tsx'))
@@ -31,11 +31,6 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
   },
 }))
-
-export interface JBrowseViewPanelParams {
-  panelId: string
-  session?: DockviewSessionType
-}
 
 const JBrowseViewPanel = observer(function JBrowseViewPanel({
   params,

@@ -10,7 +10,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import type { Widget } from '@jbrowse/core/util/types'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()(theme => ({
   formControl: {
@@ -26,6 +28,27 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.secondary.contrastText,
   },
 }))
+
+function WidgetHeading({
+  widget,
+  pluginManager,
+}: {
+  widget: Widget
+  pluginManager: PluginManager
+}) {
+  const widgetType = pluginManager.getWidgetType(widget.type)
+  if (!widgetType) {
+    throw new Error(`unknown widget type ${widget.type}`)
+  }
+  const { HeadingComponent, heading } = widgetType
+  return HeadingComponent ? (
+    <HeadingComponent model={widget} />
+  ) : (
+    <Typography variant="h6" color="inherit">
+      {heading}
+    </Typography>
+  )
+}
 
 const DrawerWidgetSelector = observer(function DrawerWidgetSelector({
   session,
@@ -44,23 +67,11 @@ const DrawerWidgetSelector = observer(function DrawerWidgetSelector({
         classes={{ icon: classes.dropDownIcon }}
         renderValue={widgetId => {
           const widget = session.activeWidgets.get(widgetId)
-          if (!widget) {
-            return (
-              <Typography variant="h6" color="inherit">
-                Unknown widget
-              </Typography>
-            )
-          }
-          const widgetType = pluginManager.getWidgetType(widget.type)
-          if (!widgetType) {
-            throw new Error(`unknown widget type ${widget.type}`)
-          }
-          const { HeadingComponent, heading } = widgetType
-          return HeadingComponent ? (
-            <HeadingComponent model={widget} />
+          return widget ? (
+            <WidgetHeading widget={widget} pluginManager={pluginManager} />
           ) : (
             <Typography variant="h6" color="inherit">
-              {heading}
+              Unknown widget
             </Typography>
           )
         }}
@@ -73,38 +84,25 @@ const DrawerWidgetSelector = observer(function DrawerWidgetSelector({
           }
         }}
       >
-        {[...activeWidgets.values()].map(widget => {
-          const widgetType = pluginManager.getWidgetType(widget.type)
-          if (!widgetType) {
-            throw new Error(`unknown widget type ${widget.type}`)
-          }
-          const { HeadingComponent, heading } = widgetType
-          return (
-            <MenuItem
-              data-testid={`widget-drawer-selects-item-${widget.type}`}
-              key={widget.id}
-              value={widget.id}
+        {[...activeWidgets.values()].map(widget => (
+          <MenuItem
+            data-testid={`widget-drawer-selects-item-${widget.type}`}
+            key={widget.id}
+            value={widget.id}
+          >
+            <WidgetHeading widget={widget} pluginManager={pluginManager} />
+            <IconButton
+              data-testid={`${widget.type}-drawer-delete`}
+              color="inherit"
+              aria-label="Delete"
+              onClick={() => {
+                session.hideWidget(widget)
+              }}
             >
-              {HeadingComponent ? (
-                <HeadingComponent model={widget} />
-              ) : (
-                <Typography variant="h6" color="inherit">
-                  {heading}
-                </Typography>
-              )}
-              <IconButton
-                data-testid={`${widget.type}-drawer-delete`}
-                color="inherit"
-                aria-label="Delete"
-                onClick={() => {
-                  session.hideWidget(widget)
-                }}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </MenuItem>
-          )
-        })}
+              <DeleteIcon />
+            </IconButton>
+          </MenuItem>
+        ))}
       </Select>
     </FormControl>
   )

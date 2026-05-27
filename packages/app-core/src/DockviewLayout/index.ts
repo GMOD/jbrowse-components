@@ -131,9 +131,7 @@ export function DockviewLayoutMixin() {
         for (const viewIds of self.panelViewAssignments.values()) {
           const idx = viewIds.indexOf(viewId)
           if (idx > 0) {
-            const temp = viewIds[idx - 1]!
-            viewIds[idx - 1] = viewIds[idx]!
-            viewIds[idx] = temp
+            viewIds.splice(idx - 1, 2, viewIds[idx]!, viewIds[idx - 1]!)
             break
           }
         }
@@ -147,9 +145,7 @@ export function DockviewLayoutMixin() {
         for (const viewIds of self.panelViewAssignments.values()) {
           const idx = viewIds.indexOf(viewId)
           if (idx !== -1 && idx < viewIds.length - 1) {
-            const temp = viewIds[idx + 1]!
-            viewIds[idx + 1] = viewIds[idx]!
-            viewIds[idx] = temp
+            viewIds.splice(idx, 2, viewIds[idx + 1]!, viewIds[idx]!)
             break
           }
         }

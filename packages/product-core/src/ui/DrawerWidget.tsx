@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useCallback, useState } from 'react'
 
 import {
   ErrorBanner,
@@ -214,15 +214,15 @@ const DrawerHeader = observer(function DrawerHeader({
   setToolbarHeight: (arg: number) => void
 }) {
   const { classes } = useStyles()
+  const appBarRef = useCallback(
+    (ref: HTMLDivElement | null) => {
+      setToolbarHeight(ref?.getBoundingClientRect().height ?? 0)
+    },
+    [setToolbarHeight],
+  )
 
   return (
-    <AppBar
-      position="sticky"
-      className={classes.appBar}
-      ref={ref => {
-        setToolbarHeight(ref?.getBoundingClientRect().height ?? 0)
-      }}
-    >
+    <AppBar position="sticky" className={classes.appBar} ref={appBarRef}>
       <Toolbar disableGutters>
         <DrawerWidgetSelector session={session} />
         <div className={classes.spacer} />
@@ -274,21 +274,12 @@ const DrawerWidget = observer(function DrawerWidget({
           />
         </ErrorBoundary>
       </Suspense>
-      {drawerPosition === 'right' ? (
-        <ResizeHandle
-          onDrag={session.resizeDrawer}
-          className={classes.resizeHandle}
-          vertical
-        />
-      ) : null}
-      {drawerPosition === 'left' ? (
-        <ResizeHandle
-          onDrag={session.resizeDrawer}
-          className={classes.resizeHandle}
-          style={{ left: drawerWidth }}
-          vertical
-        />
-      ) : null}
+      <ResizeHandle
+        onDrag={session.resizeDrawer}
+        className={classes.resizeHandle}
+        style={drawerPosition === 'left' ? { left: drawerWidth } : undefined}
+        vertical
+      />
     </Paper>
   )
 })
