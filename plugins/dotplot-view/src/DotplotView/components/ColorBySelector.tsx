@@ -3,8 +3,13 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
-const COLOR_BY_OPTIONS = [
+const COLOR_BY_OPTIONS: readonly {
+  value: SyntenyColorBy
+  label: string
+  helpText: string
+}[] = [
   {
     value: 'default',
     label: 'Default',
@@ -41,7 +46,7 @@ const COLOR_BY_OPTIONS = [
     helpText:
       'Color alignments by query sequence name. Each unique query sequence is assigned a consistent color based on its name, making it easy to visually distinguish between different sequences.',
   },
-] as const
+]
 
 const ColorBySelector = observer(function ColorBySelector({
   model,

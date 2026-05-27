@@ -9,6 +9,7 @@ import {
 import { hashString } from '@jbrowse/synteny-core'
 
 import type { DotplotRpcData } from './types.ts'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export type DotplotColorFn = (data: DotplotRpcData, index: number) => number
 
@@ -88,7 +89,7 @@ function constantColorFn(packed: number): DotplotColorFn {
 }
 
 export function createDotplotColorFunction(
-  colorBy: string,
+  colorBy: SyntenyColorBy,
   alpha: number,
   data: DotplotRpcData,
 ): DotplotColorFn {
@@ -106,7 +107,7 @@ export function createDotplotColorFunction(
       return scaledHueColorFn(data.meanScores, 200, alpha)
     case 'mappingQuality':
       return scaledHueColorFn(data.mappingQuals, 1, alpha)
-    default:
+    case 'default':
       return constantColorFn(packColor(0, 0, 0, alpha))
   }
 }
