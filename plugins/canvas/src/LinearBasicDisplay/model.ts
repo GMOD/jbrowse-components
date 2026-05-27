@@ -1,11 +1,11 @@
 import { lazy } from 'react'
 
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
-import baseStateModelFactory from './baseModel.ts'
+import baseStateModelFactory, { getView } from './baseModel.ts'
 
 const CollapseIntronsDialog = lazy(
   () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
@@ -14,9 +14,6 @@ const CollapseIntronsDialog = lazy(
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 export type { Region } from '@jbrowse/core/util'
 
@@ -58,8 +55,7 @@ export default function stateModelFactory(
 
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
         if (this.geneGlyphMode === 'auto') {
-          const view = getContainingView(self) as LGV
-          return view.bpPerPx > 100 ? 'longestCoding' : 'all'
+          return getView(self).bpPerPx > 100 ? 'longestCoding' : 'all'
         }
         return this.geneGlyphMode
       },
@@ -237,7 +233,7 @@ export default function stateModelFactory(
                   session.notify('No introns found in this feature', 'info')
                   return
                 }
-                const view = getContainingView(self) as LGV
+                const view = getView(self)
                 const assembly = session.assemblyManager.get(
                   view.assemblyNames[0]!,
                 )

@@ -28,7 +28,7 @@ export function computeLabelPosition(
     label.textWidth > featureWidth
       ? featureLeftPx
       : Math.min(
-          Math.max(Math.max(bounds.screenStartPx, featureLeftPx), 0),
+          Math.max(bounds.screenStartPx, featureLeftPx, 0),
           featureRightPx - label.textWidth,
         )
   return { labelX, labelY }

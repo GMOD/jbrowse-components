@@ -69,7 +69,7 @@ type LGV = LinearGenomeViewModel
 
 type LoadedFeatureData = FeatureDataResult & { loadedBpPerPx: number }
 
-function getView(self: IAnyStateTreeNode): LGV {
+export function getView(self: IAnyStateTreeNode): LGV {
   return getContainingView(self) as LGV
 }
 
