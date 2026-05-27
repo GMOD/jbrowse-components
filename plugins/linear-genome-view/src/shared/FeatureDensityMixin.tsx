@@ -23,6 +23,7 @@ type LGV = LinearGenomeViewModel
 type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
 
 /**
+ * #stateModel FeatureDensityMixin
  * Block-based display mixin that adds reactive density-stats checking
  * on top of RegionTooLargeMixin.
  *
