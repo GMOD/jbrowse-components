@@ -297,7 +297,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
         {model.displayCrossHatches && model.ticks
           ? model.isOverlay
-            ? model.ticks.ticks.map(({ value, y }) => (
+            ? model.ticks.items.map(({ value, y }) => (
                 <line
                   key={`ch-${value}`}
                   x1={0}
@@ -310,7 +310,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
               ))
             : Array.from({ length: numSources }).map((_, rowIdx) => {
                 const top = getRowTop(rowIdx, rowHeight)
-                return model.ticks!.ticks.map(({ value, y: tickY }) => {
+                return model.ticks!.items.map(({ value, y: tickY }) => {
                   const y = top + tickY
                   if (y < top || y > top + rowHeight) {
                     return null

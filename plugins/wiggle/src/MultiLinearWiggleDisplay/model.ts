@@ -33,7 +33,7 @@ import {
   makeResolutionAndSummarySubMenus,
   makeScaleTypeSubMenu,
 } from '../shared/wiggleMenuItems.ts'
-import { getScale } from '../util.ts'
+import { computeYTicks } from '@jbrowse/wiggle-core'
 
 import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -183,27 +183,13 @@ export default function stateModelFactory(
       },
 
       get ticks() {
-        const domain = self.domain
-        const rowHeight = self.rowHeight
-        if (!domain) {
-          return undefined
-        }
-        const scale = getScale({
+        return computeYTicks({
+          height: self.rowHeight,
+          domain: self.domain,
           scaleType: self.scaleType,
-          domain,
-          range: [rowHeight, 0],
-          inverted: false,
+          minimalTicks: self.getConfWithOverride<boolean>('minimalTicks'),
+          offset: 0,
         })
-        const minimalTicks = self.getConfWithOverride<boolean>('minimalTicks')
-        const values =
-          rowHeight < 100 || minimalTicks
-            ? (domain as number[])
-            : scale.ticks(4)
-        return {
-          ticks: values.map(v => ({ value: v, y: scale(v) })),
-          yTop: 0,
-          yBottom: rowHeight,
-        }
       },
 
       get renderState() {
