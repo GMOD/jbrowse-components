@@ -289,7 +289,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         return
       case 'modification': {
         const snpBase =
-          result.cigarHit?.type === 'mismatch' ? result.cigarHit.base : undefined
+          result.cigarHit?.type === 'mismatch'
+            ? result.cigarHit.base
+            : undefined
         openModificationWidget(
           model,
           result.hit,

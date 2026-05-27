@@ -123,8 +123,8 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
               onChange={v => {
                 setMinLengthValue(v)
               }}
-              onChangeCommitted={() => {
-                const newMinLength = Math.round(2 ** (minLengthValue / 100))
+              onChangeCommitted={v => {
+                const newMinLength = Math.round(2 ** (v / 100))
                 for (const d of dotplotDisplays) {
                   d.setMinAlignmentLength(newMinLength)
                 }

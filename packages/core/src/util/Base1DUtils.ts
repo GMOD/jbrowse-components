@@ -300,7 +300,10 @@ export function getLayoutHighlightCoords(
   region: { refName: string; start: number; end: number },
   minWidth = 3,
 ) {
-  const s = layoutBpToPx(layout, { refName: region.refName, coord: region.start })
+  const s = layoutBpToPx(layout, {
+    refName: region.refName,
+    coord: region.start,
+  })
   const e = layoutBpToPx(layout, { refName: region.refName, coord: region.end })
   return s !== undefined && e !== undefined
     ? {

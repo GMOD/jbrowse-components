@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
-import useLatestRef from '@jbrowse/core/util/useLatestRef'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import useLatestRef from '@jbrowse/core/util/useLatestRef'
 import { observer } from 'mobx-react'
 
 import OverviewRubberbandHoverTooltip from './OverviewRubberbandHoverTooltip.tsx'
@@ -103,7 +103,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
       window.removeEventListener('mouseup', globalMouseUp, true)
       window.removeEventListener('keydown', globalKeyDown, true)
     }
-  }, [mouseDragging, model, overview, cytobandOffset])
+  }, [mouseDragging, model, overview, cytobandOffset, currentXRef, startXRef])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()

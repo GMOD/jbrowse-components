@@ -95,7 +95,7 @@ export function useRangeSelect(
       window.removeEventListener('mouseup', globalMouseUp)
       window.removeEventListener('keydown', globalKeyDown)
     }
-  }, [mouseDragging, model, ref])
+  }, [mouseDragging, model, ref, startXRef])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     if (shiftOnly && !event.shiftKey) {

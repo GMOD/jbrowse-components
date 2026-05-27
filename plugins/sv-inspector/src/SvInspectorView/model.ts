@@ -147,14 +147,20 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #getter
        */
       get featureRefNames() {
-        type VcfLike = { INFO?: { CHR2?: string } }
-        type MateLike = { mate?: { refName?: string } }
+        interface VcfLike {
+          INFO?: { CHR2?: string }
+        }
+        interface MateLike {
+          mate?: { refName?: string }
+        }
         return [
           ...new Set(
             [
               ...this.features.map(r => r.refName),
               ...this.features.map(r => (r as unknown as VcfLike).INFO?.CHR2),
-              ...this.features.map(r => (r as unknown as MateLike).mate?.refName),
+              ...this.features.map(
+                r => (r as unknown as MateLike).mate?.refName,
+              ),
             ].filter((f): f is string => !!f),
           ),
         ]
@@ -361,9 +367,12 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               })
               if (assemblyName) {
                 // @ts-expect-error
-                circularView.addTrackConf(self.featuresCircularTrackConfiguration, {
-                  assemblyName,
-                })
+                circularView.addTrackConf(
+                  self.featuresCircularTrackConfiguration,
+                  {
+                    assemblyName,
+                  },
+                )
               }
             },
             { name: 'SvInspectorView track configuration binding' },

@@ -58,9 +58,9 @@ describe('fillTemplate', () => {
     expect(fillTemplate('{unknown}', {})).toBe('{unknown}')
   })
   it('replaces multiple variables in one string', () => {
-    expect(fillTemplate('{dataRoot}/seq/{chr}', { dataRoot: '/data', chr: '1' })).toBe(
-      '/data/seq/1',
-    )
+    expect(
+      fillTemplate('{dataRoot}/seq/{chr}', { dataRoot: '/data', chr: '1' }),
+    ).toBe('/data/seq/1')
   })
   it('calls function values with the var name', () => {
     const fn = jest.fn(() => 'computed')

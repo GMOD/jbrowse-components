@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
+import RubberbandTooltip from '@jbrowse/core/ui/RubberbandTooltip'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import RubberbandTooltip from '@jbrowse/core/ui/RubberbandTooltip'
 import { Typography, alpha } from '@mui/material'
 
 const useStyles = makeStyles()(theme => {

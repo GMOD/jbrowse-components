@@ -32,7 +32,7 @@ const split = (path: string, splitChar: string, options: Options): string[] => {
 
 const isValid = (key: string, target: unknown, options: Options): boolean => {
   if (typeof options.isValid === 'function') {
-    return options.isValid(key, target as {})
+    return options.isValid(key, target as {}) // eslint-disable-line
   }
   return true
 }
@@ -71,10 +71,14 @@ const getValue = (
   let t = target as Record<string, unknown>
 
   if (t[path as string] !== undefined) {
-    return isValid(path as string, t, options) ? t[path as string] : options.default
+    return isValid(path as string, t, options)
+      ? t[path as string]
+      : options.default
   }
 
-  const segs = pathIsArray ? (path as string[]) : split(path as string, splitChar, options)
+  const segs = pathIsArray
+    ? (path as string[])
+    : split(path as string, splitChar, options)
   const len = segs.length
   let idx = 0
 

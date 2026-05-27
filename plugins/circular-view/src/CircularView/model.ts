@@ -183,7 +183,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get radiusPx() {
-        return this.circumferencePx / (twoPi)
+        return this.circumferencePx / twoPi
       },
       /**
        * #getter

@@ -5,6 +5,7 @@ import { useRef } from 'react'
 // without re-registering when it changes.
 export default function useLatestRef<T>(value: T) {
   const ref = useRef(value)
+  // eslint-disable-next-line react-hooks/refs
   ref.current = value
   return ref
 }

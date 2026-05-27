@@ -27,7 +27,6 @@ const DotplotCoordTooltip = observer(function DotplotCoordTooltip({
       {`x - ${locstr(coord[0], hview)}`}
       <br />
       {`y - ${locstr(viewHeight - coord[1], vview)}`}
-      <br />
     </BaseTooltip>
   )
 })

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
+import useLatestRef from '@jbrowse/core/util/useLatestRef'
 import { transaction } from 'mobx'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -163,15 +164,22 @@ export function useDotplotInteraction(
   }, [])
 
   // mouseup: commit selection if drag exceeded threshold, else cancel.
-  // Depend on the underlying client state (stable identity) rather than the
-  // derived tuples (recreated each render) so the listener isn't churned.
+  // Use refs for the threshold values so the listener isn't re-registered on
+  // every mousemove (xdistance/ydistance change each frame).
+  const xdistanceRef = useLatestRef(xdistance)
+  const ydistanceRef = useLatestRef(ydistance)
+  const validSelectRef = useLatestRef(validSelect)
   const hasDrag = !!mousedownClient && !mouseupClient
   useEffect(() => {
     if (!hasDrag) {
       return
     }
     function onUp(event: MouseEvent) {
-      if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
+      if (
+        Math.abs(xdistanceRef.current) > 3 &&
+        Math.abs(ydistanceRef.current) > 3 &&
+        validSelectRef.current
+      ) {
         setMouseUpClient([event.clientX, event.clientY])
       } else {
         setMouseDownClient(undefined)
@@ -181,7 +189,7 @@ export function useDotplotInteraction(
     return () => {
       window.removeEventListener('mouseup', onUp, true)
     }
-  }, [validSelect, hasDrag, xdistance, ydistance])
+  }, [hasDrag, validSelectRef, xdistanceRef, ydistanceRef])
 
   const dragOpen =
     !!mousedown &&

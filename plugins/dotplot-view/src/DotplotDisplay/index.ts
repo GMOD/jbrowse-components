@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
@@ -17,7 +15,7 @@ export default function DotplotDisplayF(pm: PluginManager) {
       stateModel: stateModelFactory(configSchema),
       trackType: 'SyntenyTrack',
       viewType: 'DotplotView',
-      ReactComponent: lazy(() => import('./components/DotplotDisplay.tsx')),
+      ReactComponent: () => null,
     })
   })
 }

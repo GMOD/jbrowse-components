@@ -19,7 +19,7 @@ function offsetsEqual(
   for (const key of aKeys) {
     const av = a[key]!
     const bv = b[key]
-    if (!bv || av.length !== bv.length) {
+    if (av.length !== bv?.length) {
       return false
     }
     for (let i = 0; i < av.length; i++) {

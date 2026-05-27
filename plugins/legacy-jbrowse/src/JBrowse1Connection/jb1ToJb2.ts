@@ -77,7 +77,10 @@ function resolveIndex(
     }
   }
   return {
-    location: { uri: `${urlTemplate}.${defaultExt}`, locationType: 'UriLocation' },
+    location: {
+      uri: `${urlTemplate}.${defaultExt}`,
+      locationType: 'UriLocation',
+    },
   }
 }
 

@@ -20,8 +20,10 @@ import {
 import { formatChainTooltip, formatFeatureTooltip } from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
-import type { FeatureHit } from './useAlignmentsBase.ts'
-import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
+import type {
+  FeatureHit,
+  LinearAlignmentsDisplayModel,
+} from './useAlignmentsBase.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 const useStyles = makeStyles()({

@@ -26,7 +26,9 @@ export default function Breakends(props: OverlayProps) {
             }
             const relevantAlt = findMatchingAlt(f1, f2)
             if (!relevantAlt) {
-              console.warn('the relevant ALT allele was not found, cannot render')
+              console.warn(
+                'the relevant ALT allele was not found, cannot render',
+              )
               return []
             }
             const refs = getCanonicalRefPair(
@@ -43,8 +45,16 @@ export default function Breakends(props: OverlayProps) {
             const y2 = getY(level2, c2)
             const reversed1 = views[level1]!.pxToBp(x1).reversed
             const reversed2 = views[level2]!.pxToBp(x2).reversed
-            const x1Tick = tickX(x1, relevantAlt.Join === 'left' ? -1 : 1, reversed1)
-            const x2Tick = tickX(x2, relevantAlt.MateDirection === 'left' ? 1 : -1, reversed2)
+            const x1Tick = tickX(
+              x1,
+              relevantAlt.Join === 'left' ? -1 : 1,
+              reversed1,
+            )
+            const x2Tick = tickX(
+              x2,
+              relevantAlt.MateDirection === 'left' ? 1 : -1,
+              reversed2,
+            )
             return [
               {
                 id: f1.id(),

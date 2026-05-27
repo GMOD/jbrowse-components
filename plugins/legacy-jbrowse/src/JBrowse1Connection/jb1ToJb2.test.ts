@@ -5,7 +5,7 @@ import type { Track } from './types.ts'
 const dataRoot = 'https://example.com/data'
 
 function track(overrides: Partial<Track> & { label: string }): Track {
-  return overrides as Track
+  return overrides
 }
 
 describe('convertTrackConfig', () => {

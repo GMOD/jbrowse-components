@@ -49,9 +49,7 @@ test('meta.json is only fetched once across multiple accessors', async () => {
 })
 
 test('get bucket contents', async () => {
-  const spy = jest
-    .spyOn(global, 'fetch')
-    .mockImplementation(mockFetch)
+  const spy = jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
   const hashMap = new HttpMap({ url: rootTemplate })
 
   await hashMap.getBucket('apple')

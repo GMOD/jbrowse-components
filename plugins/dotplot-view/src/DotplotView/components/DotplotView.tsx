@@ -83,29 +83,6 @@ const DotplotCanvas = observer(function DotplotCanvas({
   )
 })
 
-const RenderedComponent = observer(function RenderedComponent({
-  model,
-}: {
-  model: DotplotViewModel
-}) {
-  const { classes } = useStyles()
-  return (
-    <div className={classes.overlay}>
-      <DotplotCanvas model={model} />
-      {model.tracks.map(track => {
-        const [display] = track.displays
-        const { RenderingComponent } = display
-        return RenderingComponent ? (
-          <RenderingComponent
-            key={track.configuration.trackId}
-            model={display}
-          />
-        ) : null
-      })}
-    </div>
-  )
-})
-
 const DotplotViewInternal = observer(function DotplotViewInternal({
   model,
 }: {
@@ -113,6 +90,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
 }) {
   const { classes } = useStyles()
   const interaction = useDotplotInteraction(model)
+  const { viewWidth, viewHeight } = model
   return (
     <div>
       <Header model={model} selection={interaction.selection} />
@@ -133,7 +111,42 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
             <MouseInteractionLayer model={model} interaction={interaction} />
             <div className={classes.spacer} />
           </div>
-          <RenderedComponent model={model} />
+          <div className={classes.overlay}>
+            <DotplotCanvas model={model} />
+            {model.dotplotDisplays.map((display, idx) =>
+              display.error ? (
+                <ErrorBanner key={idx} error={display.error} />
+              ) : display.isLoading ? (
+                <div
+                  key={idx}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: viewWidth,
+                    height: viewHeight,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <LoadingEllipses />
+                </div>
+              ) : display.isRefetching ? (
+                <div
+                  key={idx}
+                  style={{
+                    position: 'absolute',
+                    bottom: 4,
+                    right: 4,
+                    opacity: 0.7,
+                  }}
+                >
+                  <LoadingEllipses />
+                </div>
+              ) : null,
+            )}
+          </div>
           <SelectionContextMenu model={model} interaction={interaction} />
         </div>
         <ResizeHandle

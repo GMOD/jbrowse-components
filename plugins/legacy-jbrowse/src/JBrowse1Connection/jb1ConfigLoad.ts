@@ -59,8 +59,14 @@ export async function fetchJb1(
       try {
         fetchedConfig = await fetchConfigFile(
           isUriLocation(baseConfigRoot)
-            ? { uri: `${baseConfigLocation}/${conf}`, locationType: 'UriLocation' }
-            : { localPath: `${baseConfigLocation}/${conf}`, locationType: 'LocalPathLocation' },
+            ? {
+                uri: `${baseConfigLocation}/${conf}`,
+                locationType: 'UriLocation',
+              }
+            : {
+                localPath: `${baseConfigLocation}/${conf}`,
+                locationType: 'LocalPathLocation',
+              },
         )
       } catch (error) {
         console.error(

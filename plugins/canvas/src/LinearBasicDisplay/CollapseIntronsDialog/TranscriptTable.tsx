@@ -32,9 +32,7 @@ function buildRows(transcripts: Feature[]): TranscriptRow[] {
       const start = transcript.get('start')
       const end = transcript.get('end')
       const exonsAndCDS = getExonsAndCDS([transcript])
-      const exonCount = exonsAndCDS.filter(
-        f => f.get('type') === 'exon',
-      ).length
+      const exonCount = exonsAndCDS.filter(f => f.get('type') === 'exon').length
       return {
         transcript,
         name:

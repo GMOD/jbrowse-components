@@ -78,5 +78,4 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
   async getRefNames() {
     return this.configRefNames ?? []
   }
-
 }

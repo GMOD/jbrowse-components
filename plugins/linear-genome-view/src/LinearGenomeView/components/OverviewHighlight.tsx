@@ -25,7 +25,9 @@ const OverviewHighlight = observer(function OverviewHighlight({
 
   return highlight
     .map(r => {
-      const asm = r.assemblyName ? assemblyManager.get(r.assemblyName) : undefined
+      const asm = r.assemblyName
+        ? assemblyManager.get(r.assemblyName)
+        : undefined
       const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
       const coords = getLayoutHighlightCoords(overview, { ...r, refName })
       return coords ? { coords, highlight: r } : undefined
