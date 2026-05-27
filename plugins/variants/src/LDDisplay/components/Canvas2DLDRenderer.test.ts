@@ -160,7 +160,7 @@ describe('Canvas2DLDRenderer', () => {
       makeRenderState({ signedLD: true }),
     )
 
-    expect(ctx.fillStyle).toBe('rgba(0,0,0,1)')
+    expect(ctx.fillStyle).toBe('rgba(0,0,0,1.000)')
   })
 
   test('signedLD maps 1 to ramp end', () => {
@@ -173,7 +173,7 @@ describe('Canvas2DLDRenderer', () => {
       makeRenderState({ signedLD: true }),
     )
 
-    expect(ctx.fillStyle).toBe('rgba(255,255,255,1)')
+    expect(ctx.fillStyle).toBe('rgba(255,255,255,1.000)')
   })
 
   test('unsigned mode uses ldValue directly as ramp position', () => {
@@ -186,7 +186,7 @@ describe('Canvas2DLDRenderer', () => {
       makeRenderState({ signedLD: false }),
     )
 
-    expect(ctx.fillStyle).toBe('rgba(128,128,128,1)')
+    expect(ctx.fillStyle).toBe('rgba(128,128,128,1.000)')
   })
 
   test('skips cells with near-zero alpha', () => {

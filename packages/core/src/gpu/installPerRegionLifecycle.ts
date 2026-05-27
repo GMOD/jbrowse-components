@@ -69,7 +69,8 @@ export function installPerRegionLifecycle<
 
   self.attachBackend<B>(backend, {
     upload: b => {
-      for (const key of rpcDataMap.keys()) {
+      const activeKeys = new Set(rpcDataMap.keys())
+      for (const key of activeKeys) {
         if (!perKeyDisposers.has(key)) {
           perKeyDisposers.set(
             key,
@@ -90,7 +91,6 @@ export function installPerRegionLifecycle<
           )
         }
       }
-      const activeKeys = new Set(rpcDataMap.keys())
       for (const [key, dispose] of perKeyDisposers) {
         if (!activeKeys.has(key)) {
           dispose()

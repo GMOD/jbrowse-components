@@ -1,6 +1,6 @@
 /// <reference types="@webgpu/types" />
 
-import { getDpr } from '../canvas2dUtils.ts'
+import { syncCanvasSize } from '../canvas2dUtils.ts'
 import { getGpuDevice } from '../gpuDevice.ts'
 import {
   STANDARD_BLEND_STATE,
@@ -9,6 +9,7 @@ import {
   createVertexBuffer,
   glToGpuVertexFormat,
 } from '../webgpuUtils.ts'
+import { RegionRegistry } from './regionRegistry.ts'
 
 import type { BlendState, GpuHal, PassDescriptor } from './types.ts'
 
@@ -55,10 +56,6 @@ interface RegionPassBuffer {
   dataBuffer: GPUBuffer
   bindGroup: GPUBindGroup | null
   count: number
-}
-
-interface RegionState {
-  buffers: Map<string, RegionPassBuffer>
 }
 
 // Per-HAL bind group and pipeline layouts. Two layouts, both @group(0):
@@ -206,7 +203,7 @@ export class WebGPUHal implements GpuHal {
   private device: GPUDevice
   private canvas: HTMLCanvasElement
   private context: GPUCanvasContext
-  private regions = new Map<number, RegionState>()
+  private regions: RegionRegistry<RegionPassBuffer>
   private descriptors: Map<string, PassDescriptor>
   private pipelines: ReadonlyMap<string, GPURenderPipeline>
   private passTextures = new Map<string, PassTextureState>()
@@ -219,6 +216,11 @@ export class WebGPUHal implements GpuHal {
   private uniformRingBuffer: GPUBuffer
   private uniformStaging: Uint8Array
   private uniformSlot = 0
+
+  // Shared bind group for every uniform-only pass — only references
+  // `uniformRingBuffer` (via dynamic offset at draw time), so one instance
+  // serves all passes/regions instead of allocating a fresh one per upload.
+  private uniformOnlyBindGroup: GPUBindGroup
 
   // MSAA resolve texture — 4x multisampled render target
   private msaaTexture: GPUTexture | null = null
@@ -264,6 +266,15 @@ export class WebGPUHal implements GpuHal {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
     this.uniformStaging = new Uint8Array(ringSize)
+    this.uniformOnlyBindGroup = createUniformOnlyBindGroup(
+      device,
+      layoutState.uniformOnlyBindGroupLayout,
+      this.uniformRingBuffer,
+      this.alignedUniformSize,
+    )
+    this.regions = new RegionRegistry<RegionPassBuffer>(buf => {
+      buf.dataBuffer.destroy()
+    })
   }
 
   static async create(
@@ -301,18 +312,9 @@ export class WebGPUHal implements GpuHal {
   }
 
   resize(width: number, height: number) {
-    const dpr = getDpr()
-    const pw = Math.round(width * dpr)
-    const ph = Math.round(height * dpr)
-    const sizeChanged = this.canvas.width !== pw || this.canvas.height !== ph
-    if (sizeChanged) {
-      this.canvas.width = pw
-      this.canvas.height = ph
-      this.canvas.style.width = `${width}px`
-      this.canvas.style.height = `${height}px`
-    }
+    const sizeChanged = syncCanvasSize(this.canvas, width, height)
     if (sizeChanged || !this.msaaTexture) {
-      this.recreateMsaaTexture(pw, ph)
+      this.recreateMsaaTexture(this.canvas.width, this.canvas.height)
     }
   }
 
@@ -337,37 +339,31 @@ export class WebGPUHal implements GpuHal {
     data: ArrayBuffer | ArrayBufferView,
     count: number,
   ) {
-    const region = this.getOrCreateRegion(regionKey)
-    const existing = region.buffers.get(passId)
-    if (existing) {
-      existing.dataBuffer.destroy()
-    }
-
+    this.regions.deleteBuffer(regionKey, passId)
     if (count === 0) {
-      region.buffers.delete(passId)
       return
     }
-
     const dataBuffer = createVertexBuffer(this.device, data)
     const bindGroup = this.buildBindGroupForPass(passId)
-    region.buffers.set(passId, { dataBuffer, bindGroup, count })
+    this.regions.set(regionKey, passId, { dataBuffer, bindGroup, count })
   }
 
   // Build the bind group matching the pipeline layout for `passId`. Returns
   // null when the pass requires a texture that hasn't been uploaded yet;
   // drawPass skips such entries and uploadTexture rebuilds them once the
-  // texture arrives.
+  // texture arrives. Uniform-only passes reuse `this.uniformOnlyBindGroup`
+  // (all such bind groups would be byte-identical anyway).
   private buildBindGroupForPass(passId: string): GPUBindGroup | null {
     const desc = this.descriptors.get(passId)
     if (!desc) {
       return null
     }
-    if (desc.textures?.length) {
+    const tb = desc.textures?.[0]
+    if (tb) {
       const texState = this.passTextures.get(passId)
       if (!texState) {
         return null
       }
-      const tb = desc.textures[0]
       const { bindGroupLayout } = getOrCreateTexturedLayout(
         this.device,
         this.layoutState,
@@ -388,73 +384,36 @@ export class WebGPUHal implements GpuHal {
         ],
       })
     }
-    return createUniformOnlyBindGroup(
-      this.device,
-      this.layoutState.uniformOnlyBindGroupLayout,
-      this.uniformRingBuffer,
-      this.alignedUniformSize,
-    )
+    return this.uniformOnlyBindGroup
   }
 
   getBufferCount(regionKey: number, passId: string) {
-    return this.regions.get(regionKey)?.buffers.get(passId)?.count ?? 0
+    return this.regions.get(regionKey, passId)?.count ?? 0
+  }
+
+  // Mid-frame destroy of buffers referenced by an in-flight render pass is a
+  // bug — warn but proceed (the registry destroy lands either way).
+  private warnIfMidFrame(label: string) {
+    if (this.currentEncoder) {
+      console.warn(
+        `[WebGPUHal] ${label} called mid-frame — in-flight render passes may reference these buffers`,
+      )
+    }
   }
 
   deleteBuffer(regionKey: number, passId: string) {
-    if (this.currentEncoder) {
-      console.warn(
-        `[WebGPUHal] deleteBuffer(${regionKey}, ${passId}) called mid-frame — ` +
-          'in-flight render passes may reference this buffer',
-      )
-    }
-    const region = this.regions.get(regionKey)
-    if (region) {
-      const buf = region.buffers.get(passId)
-      if (buf) {
-        buf.dataBuffer.destroy()
-        region.buffers.delete(passId)
-      }
-    }
+    this.warnIfMidFrame(`deleteBuffer(${regionKey}, ${passId})`)
+    this.regions.deleteBuffer(regionKey, passId)
   }
 
   deleteRegion(regionKey: number) {
-    if (this.currentEncoder) {
-      console.warn(
-        `[WebGPUHal] deleteRegion(${regionKey}) called mid-frame — ` +
-          'in-flight render passes may reference these buffers',
-      )
-    }
-    const region = this.regions.get(regionKey)
-    if (region) {
-      for (const buf of region.buffers.values()) {
-        buf.dataBuffer.destroy()
-      }
-      this.regions.delete(regionKey)
-    }
-  }
-
-  private deleteAllRegions() {
-    if (this.currentEncoder) {
-      console.warn(
-        '[WebGPUHal] deleteAllRegions called mid-frame — ' +
-          'in-flight render passes may reference these buffers',
-      )
-    }
-    for (const region of this.regions.values()) {
-      for (const buf of region.buffers.values()) {
-        buf.dataBuffer.destroy()
-      }
-    }
-    this.regions.clear()
+    this.warnIfMidFrame(`deleteRegion(${regionKey})`)
+    this.regions.deleteRegion(regionKey)
   }
 
   pruneRegions(active: Iterable<number>) {
-    const activeSet = new Set(active)
-    for (const regionKey of this.regions.keys()) {
-      if (!activeSet.has(regionKey)) {
-        this.deleteRegion(regionKey)
-      }
-    }
+    this.warnIfMidFrame('pruneRegions')
+    this.regions.prune(active)
   }
 
   uploadTexture(
@@ -464,14 +423,14 @@ export class WebGPUHal implements GpuHal {
     height: number,
   ) {
     const desc = this.descriptors.get(passId)
-    if (!desc?.textures?.length) {
+    const tb = desc?.textures?.[0]
+    if (!tb) {
       return
     }
     const existing = this.passTextures.get(passId)
     if (existing) {
       existing.texture.destroy()
     }
-    const tb = desc.textures[0]!
     const texture = this.device.createTexture({
       size: [width, height],
       format: 'rgba8unorm',
@@ -493,12 +452,9 @@ export class WebGPUHal implements GpuHal {
 
     // Rebuild bind groups for all regions whose data was uploaded before the
     // texture arrived (they were stored with a null bind group).
-    for (const region of this.regions.values()) {
-      const buf = region.buffers.get(passId)
-      if (buf) {
-        buf.bindGroup = this.buildBindGroupForPass(passId)
-      }
-    }
+    this.regions.forEachInPass(passId, buf => {
+      buf.bindGroup = this.buildBindGroupForPass(passId)
+    })
   }
 
   writeUniforms(data: ArrayBuffer) {
@@ -575,9 +531,7 @@ export class WebGPUHal implements GpuHal {
     if (!pipeline) {
       return
     }
-    const regionBuf = this.regions
-      .get(regionKey)
-      ?.buffers.get(bufferPassId ?? passId)
+    const regionBuf = this.regions.get(regionKey, bufferPassId ?? passId)
     if (!regionBuf || regionBuf.count === 0 || !regionBuf.bindGroup) {
       return
     }
@@ -588,7 +542,16 @@ export class WebGPUHal implements GpuHal {
     }
 
     // uniformSlot is post-incremented in writeUniforms, so slot (uniformSlot-1)
-    // holds the uniforms written for this draw call.
+    // holds the uniforms written for THIS draw call. Multiple drawPass calls
+    // between writeUniforms calls intentionally share the same slot.
+    //
+    // Edge case: if drawPass is called before any writeUniforms in this frame
+    // (uniformSlot === 0), Math.max clamps the offset to 0 — the draw reads
+    // slot 0, which is whatever was written most recently to it (either a
+    // pre-frame writeUniforms via the else-branch, or stale data from a prior
+    // frame's first writeUniforms). This mostly serves the "upload uniforms
+    // once at data load" path; in-frame renderers should always pair
+    // writeUniforms with drawPass.
     const dynamicOffset =
       Math.max(0, this.uniformSlot - 1) * this.alignedUniformSize
 
@@ -673,7 +636,8 @@ export class WebGPUHal implements GpuHal {
       return
     }
     this.disposed = true
-    this.deleteAllRegions()
+    this.warnIfMidFrame('dispose')
+    this.regions.deleteAll()
     this.uniformRingBuffer.destroy()
     for (const ts of this.passTextures.values()) {
       ts.texture.destroy()
@@ -683,16 +647,5 @@ export class WebGPUHal implements GpuHal {
     // Release the swapchain so the browser can reclaim GPU memory immediately
     // rather than waiting for the canvas to be GC'd.
     this.context.unconfigure()
-  }
-
-  private getOrCreateRegion(regionKey: number) {
-    let region = this.regions.get(regionKey)
-    if (!region) {
-      region = {
-        buffers: new Map(),
-      }
-      this.regions.set(regionKey, region)
-    }
-    return region
   }
 }

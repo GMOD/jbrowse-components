@@ -1,4 +1,5 @@
-import { getDpr } from '../canvas2dUtils.ts'
+import { syncCanvasSize } from '../canvas2dUtils.ts'
+import { RegionRegistry } from './regionRegistry.ts'
 
 import type { BlendState, GpuHal, PassDescriptor } from './types.ts'
 
@@ -31,7 +32,7 @@ function createProgram(
     gl.deleteShader(vs)
     throw e
   }
-  const program = gl.createProgram()!
+  const program = gl.createProgram()
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
   gl.linkProgram(program)
@@ -133,10 +134,6 @@ interface RegionPassBuffer {
   count: number
 }
 
-interface RegionState {
-  buffers: Map<string, RegionPassBuffer>
-}
-
 // Module-scope lifecycle tracking — Firefox caps active WebGL contexts
 // around 16 and Chrome around 8. Context leaks force the oldest contexts to
 // lose. These counters surface the leak when it happens.
@@ -147,7 +144,7 @@ export class WebGL2Hal implements GpuHal {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private passes: Map<string, PassState>
-  private regions = new Map<number, RegionState>()
+  private regions: RegionRegistry<RegionPassBuffer>
   private ubo: WebGLBuffer
   private debug = false
   private instanceId = 0
@@ -223,6 +220,10 @@ export class WebGL2Hal implements GpuHal {
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferData(gl.UNIFORM_BUFFER, uniformByteSize, gl.DYNAMIC_DRAW)
 
+    this.regions = new RegionRegistry<RegionPassBuffer>(buf =>
+      { gl.deleteBuffer(buf.vbo) },
+    )
+
     this.passes = new Map()
     for (const desc of descriptors) {
       const fragShader = desc.glslFragmentOverride ?? desc.glslFragment
@@ -247,7 +248,7 @@ export class WebGL2Hal implements GpuHal {
           )
         }
       }
-      const vao = gl.createVertexArray()!
+      const vao = gl.createVertexArray()
       gl.bindVertexArray(vao)
       for (const loc of attrLocs) {
         if (loc >= 0) {
@@ -258,8 +259,8 @@ export class WebGL2Hal implements GpuHal {
       gl.bindVertexArray(null)
 
       let textureState: TextureState | null = null
-      if (desc.textures?.length) {
-        const tb = desc.textures[0]!
+      const tb = desc.textures?.[0]
+      if (tb) {
         // Bind the sampler uniform to the texture unit once — it never changes.
         gl.useProgram(program)
         gl.uniform1i(gl.getUniformLocation(program, tb.glUniformName), tb.glTextureUnit)
@@ -279,15 +280,7 @@ export class WebGL2Hal implements GpuHal {
   }
 
   resize(width: number, height: number) {
-    const dpr = getDpr()
-    const pw = Math.round(width * dpr)
-    const ph = Math.round(height * dpr)
-    if (this.canvas.width !== pw || this.canvas.height !== ph) {
-      this.canvas.width = pw
-      this.canvas.height = ph
-      this.canvas.style.width = `${width}px`
-      this.canvas.style.height = `${height}px`
-    }
+    syncCanvasSize(this.canvas, width, height)
   }
 
   uploadBuffer(
@@ -297,65 +290,30 @@ export class WebGL2Hal implements GpuHal {
     count: number,
   ) {
     const gl = this.gl
-    const region = this.getOrCreateRegion(regionKey)
-    const existing = region.buffers.get(passId)
-
-    if (existing) {
-      gl.deleteBuffer(existing.vbo)
-    }
-
+    this.regions.deleteBuffer(regionKey, passId)
     if (count === 0) {
-      region.buffers.delete(passId)
       return
     }
-
-    const vbo = gl.createBuffer()!
+    const vbo = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
-    region.buffers.set(passId, { vbo, count })
+    this.regions.set(regionKey, passId, { vbo, count })
   }
 
   getBufferCount(regionKey: number, passId: string) {
-    return this.regions.get(regionKey)?.buffers.get(passId)?.count ?? 0
+    return this.regions.get(regionKey, passId)?.count ?? 0
   }
 
   deleteBuffer(regionKey: number, passId: string) {
-    const region = this.regions.get(regionKey)
-    if (region) {
-      const buf = region.buffers.get(passId)
-      if (buf) {
-        this.gl.deleteBuffer(buf.vbo)
-        region.buffers.delete(passId)
-      }
-    }
+    this.regions.deleteBuffer(regionKey, passId)
   }
 
   deleteRegion(regionKey: number) {
-    const region = this.regions.get(regionKey)
-    if (region) {
-      for (const buf of region.buffers.values()) {
-        this.gl.deleteBuffer(buf.vbo)
-      }
-      this.regions.delete(regionKey)
-    }
-  }
-
-  private deleteAllRegions() {
-    for (const region of this.regions.values()) {
-      for (const buf of region.buffers.values()) {
-        this.gl.deleteBuffer(buf.vbo)
-      }
-    }
-    this.regions.clear()
+    this.regions.deleteRegion(regionKey)
   }
 
   pruneRegions(active: Iterable<number>) {
-    const activeSet = new Set(active)
-    for (const regionKey of this.regions.keys()) {
-      if (!activeSet.has(regionKey)) {
-        this.deleteRegion(regionKey)
-      }
-    }
+    this.regions.prune(active)
   }
 
   uploadTexture(
@@ -370,6 +328,10 @@ export class WebGL2Hal implements GpuHal {
       return
     }
     const ts = pass.textureState
+    const tb = pass.descriptor.textures?.[0]
+    if (!tb) {
+      return
+    }
     if (ts.texture) {
       gl.deleteTexture(ts.texture)
     }
@@ -386,7 +348,6 @@ export class WebGL2Hal implements GpuHal {
       gl.UNSIGNED_BYTE,
       data,
     )
-    const tb = pass.descriptor.textures![0]!
     const filter = tb.filter === 'linear' ? gl.LINEAR : gl.NEAREST
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter)
@@ -435,9 +396,7 @@ export class WebGL2Hal implements GpuHal {
     if (!pass) {
       return
     }
-    const regionBuf = this.regions
-      .get(regionKey)
-      ?.buffers.get(bufferPassId ?? passId)
+    const regionBuf = this.regions.get(regionKey, bufferPassId ?? passId)
     if (!regionBuf || regionBuf.count === 0) {
       return
     }
@@ -512,7 +471,7 @@ export class WebGL2Hal implements GpuHal {
       )
     }
 
-    this.deleteAllRegions()
+    this.regions.deleteAll()
     for (const pass of this.passes.values()) {
       gl.deleteVertexArray(pass.vao)
       gl.deleteProgram(pass.program)
@@ -529,17 +488,6 @@ export class WebGL2Hal implements GpuHal {
     // Chrome only needs this as a test-suite optimisation; for production we
     // let the browser reclaim the context when the canvas is GC'd. If we
     // need explicit release again, gate it on navigator.userAgent.
-  }
-
-  private getOrCreateRegion(regionKey: number) {
-    let region = this.regions.get(regionKey)
-    if (!region) {
-      region = {
-        buffers: new Map(),
-      }
-      this.regions.set(regionKey, region)
-    }
-    return region
   }
 
   private applyBlendState(desc: PassDescriptor) {

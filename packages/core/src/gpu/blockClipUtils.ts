@@ -6,7 +6,9 @@
 export function splitPositionWithFrac(value: number): [number, number] {
   const intValue = Math.floor(value)
   const frac = value - intValue
-  const loInt = intValue - Math.floor(intValue / 4096) * 4096
+  // Genomic positions are non-negative, so % matches Math.floor(intValue/4096)*4096
+  // pattern while making the modulo intent explicit.
+  const loInt = intValue % 4096
   const hi = intValue - loInt
   const lo = loInt + frac
   return [hi, lo]

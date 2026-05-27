@@ -17,6 +17,28 @@ export function getDpr() {
   return typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
 }
 
+// Apply CSS dimensions + dpr-scaled physical dimensions to `canvas`. Returns
+// whether the backing dimensions actually changed — both HAL impls and any
+// 2D-canvas backend use this so the dpr math and style-vs-attribute logic
+// live in one place.
+export function syncCanvasSize(
+  canvas: HTMLCanvasElement,
+  width: number,
+  height: number,
+): boolean {
+  const dpr = getDpr()
+  const pw = Math.round(width * dpr)
+  const ph = Math.round(height * dpr)
+  const changed = canvas.width !== pw || canvas.height !== ph
+  if (changed) {
+    canvas.width = pw
+    canvas.height = ph
+    canvas.style.width = `${width}px`
+    canvas.style.height = `${height}px`
+  }
+  return changed
+}
+
 export function prepareCanvas(
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
@@ -78,12 +100,7 @@ export function lookupColorRampCSS(ramp: Uint8Array, t: number) {
 export function makeRampFillStyleLut(ramp: Uint8Array) {
   const lut: (string | undefined)[] = new Array(256)
   return (t: number) => {
-    let idx = (t * 255 + 0.5) | 0
-    if (idx < 0) {
-      idx = 0
-    } else if (idx > 255) {
-      idx = 255
-    }
+    const idx = Math.max(0, Math.min(255, Math.round(t * 255)))
     let s = lut[idx]
     if (s === undefined) {
       const o = idx * 4

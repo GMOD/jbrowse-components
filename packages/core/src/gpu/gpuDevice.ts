@@ -41,11 +41,18 @@ async function createDevice(): Promise<GPUDevice | null> {
       console.error('[GPU] UNCAPTURED ERROR:', event.error.message)
     })
     void d.lost.then(info => {
-      console.error('[GPU] Device lost:', info.message)
-      device = null
-      devicePromise = null
-      for (const listener of deviceLostListeners) {
-        listener()
+      // Identity check: if the module-level device has already been replaced
+      // (test reset + re-init, or a subsequent successful createDevice), the
+      // resolution of the old device's `.lost` promise must NOT null out the
+      // newer device. Without this guard the new device's reference is
+      // silently cleared on the next getGpuDevice() call.
+      if (device === d) {
+        console.error('[GPU] Device lost:', info.message)
+        device = null
+        devicePromise = null
+        for (const listener of deviceLostListeners) {
+          listener()
+        }
       }
     })
     device = d

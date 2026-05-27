@@ -380,7 +380,10 @@ export function emit(inputs: CodegenInputs) {
   if (textures && textures.length > 0) {
     lines.push(
       '// Combined `Sampler2D` bindings. Texture unit indices start at 0.',
-      'export const TEXTURES: readonly TextureBinding[] = [',
+      // Emitted as a non-empty tuple type so it matches ShaderModule.TEXTURES
+      // (which slangPass.ts requires to be `readonly [TextureBinding, ...TextureBinding[]]`).
+      // Codegen only enters this branch when textures.length > 0.
+      'export const TEXTURES: readonly [TextureBinding, ...TextureBinding[]] = [',
     )
     for (let i = 0; i < textures.length; i++) {
       const t = textures[i]!
