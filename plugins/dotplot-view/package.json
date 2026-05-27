@@ -33,7 +33,7 @@
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.8.7",
+    "@jbrowse/mobx-state-tree": "^5.9.0",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/synteny-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",
@@ -41,8 +41,8 @@
     "@mui/x-data-grid": "^9.3.0",
     "@types/file-saver-es": "^2.0.3",
     "file-saver-es": "^2.0.5",
-    "mobx": "^6.15.3",
-    "mobx-react": "^9.2.1"
+    "mobx": "^6.15.4",
+    "mobx-react": "^9.2.2"
   },
   "peerDependencies": {
     "react": ">=19.0.0",

@@ -40,13 +40,13 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@babel/runtime": "^7.29.2",
+    "@babel/runtime": "^7.29.7",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/embedded-core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.8.7",
+    "@jbrowse/mobx-state-tree": "^5.9.0",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-arc": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",
@@ -66,8 +66,8 @@
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "mobx": "^6.15.3",
-    "mobx-react": "^9.2.1",
+    "mobx": "^6.15.4",
+    "mobx-react": "^9.2.2",
     "rxjs": "^7.8.2"
   },
   "peerDependencies": {

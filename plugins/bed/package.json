@@ -35,8 +35,8 @@
     "@gmod/bed": "^2.2.5",
     "@gmod/tabix": "^3.3.8",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.8.7",
-    "mobx": "^6.15.3",
+    "@jbrowse/mobx-state-tree": "^5.9.0",
+    "mobx": "^6.15.4",
     "rxjs": "^7.8.2"
   },
   "publishConfig": {

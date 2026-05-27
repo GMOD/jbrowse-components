@@ -33,14 +33,14 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.8.7",
+    "@jbrowse/mobx-state-tree": "^5.9.0",
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "dockview-core": "^6.5.0",
-    "dockview-react": "^6.5.0",
-    "mobx": "^6.15.3",
-    "mobx-react": "^9.2.1"
+    "dockview-core": "^6.6.0",
+    "dockview-react": "^6.6.0",
+    "mobx": "^6.15.4",
+    "mobx-react": "^9.2.2"
   },
   "peerDependencies": {
     "react": ">=19.0.0",
