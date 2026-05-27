@@ -6,7 +6,7 @@ import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
-import { computeLabelPosition } from './components/labelPositioning.ts'
+import { forEachRenderedLabel } from './components/labelPositioning.ts'
 import { LABEL_FONT_SIZE } from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -41,43 +41,9 @@ function renderLabels(
   vr: SvgRegionBounds,
   visibility: { showLabels: boolean; showDescriptions: boolean },
 ) {
-  const { floatingLabelsData } = data
-  const toScreen = makeBpMapper(vr)
-
   ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
-
-  for (const labelData of Object.values(floatingLabelsData)) {
-    const featureStartBp = labelData.minX
-    const featureEndBp = labelData.maxX
-
-    if (featureEndBp < vr.start || featureStartBp > vr.end) {
-      continue
-    }
-    const px1 = toScreen(featureStartBp)
-    const px2 = toScreen(featureEndBp)
-    const featureLeftPx = Math.min(px1, px2)
-    const featureRightPx = Math.max(px1, px2)
-    const featureWidth = featureRightPx - featureLeftPx
-    const featureBottomPx = labelData.topY + labelData.featureHeight
-
-    const emitLabel = (
-      label: {
-        text: string
-        relativeY: number
-        color: string
-        textWidth: number
-        isOverlay?: boolean
-      },
-      padding: number,
-    ) => {
-      const { labelX, labelY } = computeLabelPosition(label, padding, {
-        featureLeftPx,
-        featureRightPx,
-        featureWidth,
-        featureBottomPx,
-        screenStartPx: vr.screenStartPx,
-      })
-
+  forEachRenderedLabel(data, vr, visibility, (_, labels) => {
+    for (const { label, labelX, labelY } of labels) {
       if (label.isOverlay) {
         ctx.fillStyle = 'rgba(255,255,255,0.8)'
         ctx.fillRect(
@@ -90,23 +56,7 @@ function renderLabels(
       ctx.fillStyle = label.color
       ctx.fillText(label.text, labelX, labelY + LABEL_FONT_SIZE)
     }
-
-    if (labelData.nameLabel && visibility.showLabels) {
-      emitLabel(labelData.nameLabel, 2)
-    }
-    if (labelData.descriptionLabel && visibility.showDescriptions) {
-      // Match the DOM overlay: when name is hidden, the description collapses
-      // up to fill the vacated row.
-      const nameRendered = !!labelData.nameLabel && visibility.showLabels
-      const desc = nameRendered
-        ? labelData.descriptionLabel
-        : { ...labelData.descriptionLabel, relativeY: 0 }
-      emitLabel(desc, 2)
-    }
-    if (labelData.subfeatureLabel) {
-      emitLabel(labelData.subfeatureLabel, 0)
-    }
-  }
+  })
 }
 
 function renderPeptides(

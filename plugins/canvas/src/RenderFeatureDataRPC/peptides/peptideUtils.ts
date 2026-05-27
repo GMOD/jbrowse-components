@@ -49,25 +49,21 @@ async function fetchSequence(
   }
 }
 
-const DEFAULT_TRANSCRIPT_TYPES = new Set([
-  'mRNA',
-  'transcript',
-  'primary_transcript',
-  'protein_coding_primary_transcript',
-])
-
-function isTranscriptType(type: string) {
-  return DEFAULT_TRANSCRIPT_TYPES.has(type)
-}
-
 function hasCDSSubfeatures(feature: Feature) {
   const subfeatures = feature.get('subfeatures')
   return subfeatures?.some((sub: Feature) => sub.get('type') === 'CDS') ?? false
 }
 
+// Uses the same `transcriptTypes` list as the glyph layout (see findGlyph.ts).
+// Threading the config through keeps peptide rendering and glyph layout from
+// drifting — adding a SO term to the config picks it up in both places.
 export function findTranscriptsWithCDS(
   features: Map<string, Feature>,
+  transcriptTypes: readonly string[],
 ): Feature[] {
+  const transcriptTypeSet = new Set(transcriptTypes)
+  const isTranscriptType = (type: string | undefined) =>
+    type !== undefined && transcriptTypeSet.has(type)
   const transcripts: Feature[] = []
 
   for (const feature of features.values()) {
@@ -77,8 +73,10 @@ export function findTranscriptsWithCDS(
     if (type === 'gene' && subfeatures?.length) {
       let hasTranscriptWithCDS = false
       for (const subfeature of subfeatures) {
-        const subType = subfeature.get('type') ?? ''
-        if (isTranscriptType(subType) && hasCDSSubfeatures(subfeature)) {
+        if (
+          isTranscriptType(subfeature.get('type')) &&
+          hasCDSSubfeatures(subfeature)
+        ) {
           transcripts.push(subfeature)
           hasTranscriptWithCDS = true
         }
@@ -86,7 +84,7 @@ export function findTranscriptsWithCDS(
       if (!hasTranscriptWithCDS && hasCDSSubfeatures(feature)) {
         transcripts.push(feature)
       }
-    } else if (isTranscriptType(type ?? '') && hasCDSSubfeatures(feature)) {
+    } else if (isTranscriptType(type) && hasCDSSubfeatures(feature)) {
       transcripts.push(feature)
     }
   }
@@ -151,10 +149,11 @@ export async function fetchPeptideData(
   pluginManager: PluginManager,
   props: PeptideFetchProps,
   features: Map<string, Feature>,
+  transcriptTypes: readonly string[],
 ): Promise<Map<string, PeptideData>> {
   const peptideDataMap = new Map<string, PeptideData>()
 
-  const transcripts = findTranscriptsWithCDS(features)
+  const transcripts = findTranscriptsWithCDS(features, transcriptTypes)
   if (transcripts.length === 0) {
     return peptideDataMap
   }

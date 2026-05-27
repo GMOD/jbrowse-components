@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 
 import { makeBpMapper } from '@jbrowse/core/gpu/canvas2dUtils'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { computeLabelExtraWidth } from './highlightUtils.ts'
-import { computeLabelPosition } from './labelPositioning.ts'
+import { forEachRenderedLabel } from './labelPositioning.ts'
 import { LABEL_FONT_SIZE } from './sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -33,8 +34,38 @@ interface HighlightModel {
   hoveredSubfeature: SubfeatureInfo | null
 }
 
+const useStyles = makeStyles()({
+  floatingLabel: {
+    position: 'absolute',
+    fontSize: LABEL_FONT_SIZE,
+    lineHeight: 1,
+    whiteSpace: 'nowrap',
+  },
+  floatingLabelClickable: {
+    pointerEvents: 'auto',
+    cursor: 'pointer',
+  },
+  floatingLabelStatic: {
+    pointerEvents: 'none',
+  },
+  floatingLabelOverlay: {
+    background: 'rgba(255,255,255,0.65)',
+  },
+  aminoAcid: {
+    position: 'absolute',
+    transform: 'translateX(-50%)',
+    fontFamily: 'monospace',
+    textShadow: '0 0 1px white',
+    pointerEvents: 'none',
+    userSelect: 'none',
+    whiteSpace: 'nowrap',
+    WebkitFontSmoothing: 'antialiased',
+  },
+})
+
 export function useFloatingLabels(
   laidOutDataMap: Map<number, FeatureDataResult>,
+  featureItemMap: Map<string, FeatureItemEntry>,
   visibleRegions: VisibleRegion[],
   viewInitialized: boolean,
   width: number | undefined,
@@ -48,6 +79,7 @@ export function useFloatingLabels(
   ) => void,
   onLabelMouseOver?: (item: FlatbushItem, e: React.MouseEvent) => void,
 ) {
+  const { classes, cx } = useStyles()
   return useMemo(() => {
     if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
       return null
@@ -55,6 +87,10 @@ export function useFloatingLabels(
 
     const elements: React.ReactElement[] = []
     const renderedLabels = new Set<string>()
+    const visibility = {
+      showLabels: model.showLabels,
+      showDescriptions: model.effectiveShowDescriptions,
+    }
 
     for (const vr of visibleRegions) {
       const data = laidOutDataMap.get(vr.displayedRegionIndex)
@@ -62,43 +98,19 @@ export function useFloatingLabels(
         continue
       }
 
-      const toScreen = makeBpMapper(vr)
-
-      const flatbushItemById = new Map<string, FlatbushItem>()
-      for (const f of data.flatbushItems) {
-        flatbushItemById.set(f.featureId, f)
-      }
-
-      for (const [featureId, labelData] of Object.entries(
-        data.floatingLabelsData,
-      )) {
+      forEachRenderedLabel(data, vr, visibility, (featureId, labels) => {
         if (renderedLabels.has(featureId)) {
-          continue
+          return
         }
-
-        const featureStartBp = labelData.minX
-        const featureEndBp = labelData.maxX
-
-        if (featureEndBp < vr.start || featureStartBp > vr.end) {
-          continue
-        }
-
         renderedLabels.add(featureId)
 
-        const px1 = toScreen(featureStartBp)
-        const px2 = toScreen(featureEndBp)
-        const featureLeftPx = Math.min(px1, px2)
-        const featureRightPx = Math.max(px1, px2)
-        const featureWidth = featureRightPx - featureLeftPx
-        const featureBottomPx = labelData.topY + labelData.featureHeight
-
-        const item = flatbushItemById.get(featureId)
+        const entry = featureItemMap.get(featureId)
+        const item = entry?.kind === 'feature' ? entry.item : undefined
         const handleLabelClick = item
           ? () => {
               model.selectFeatureById(item, undefined, vr.displayedRegionIndex)
             }
           : undefined
-
         const handleLabelContextMenu = item
           ? (e: React.MouseEvent) => {
               e.preventDefault()
@@ -110,83 +122,46 @@ export function useFloatingLabels(
               )
             }
           : undefined
-
         const handleLabelMouseMove = item
           ? (e: React.MouseEvent) => {
               onLabelMouseOver?.(item, e)
             }
           : undefined
 
-        const emitLabel = (
-          label: {
-            text: string
-            relativeY: number
-            color: string
-            textWidth: number
-            isOverlay?: boolean
-          },
-          padding: number,
-          key: string,
-          clickable?: boolean,
-        ) => {
-          const { labelX, labelY } = computeLabelPosition(label, padding, {
-            featureLeftPx,
-            featureRightPx,
-            featureWidth,
-            featureBottomPx,
-            screenStartPx: vr.screenStartPx,
-          })
-
+        for (const { label, labelX, labelY, kind } of labels) {
+          const clickable = kind !== 'desc'
           elements.push(
             <div
-              key={`${vr.displayedRegionIndex}-${featureId}-${key}`}
+              key={`${vr.displayedRegionIndex}-${featureId}-${kind}`}
               data-testid={
-                clickable ? `feature-${key}-${label.text}` : undefined
+                clickable ? `feature-${kind}-${label.text}` : undefined
               }
+              className={cx(
+                classes.floatingLabel,
+                clickable
+                  ? classes.floatingLabelClickable
+                  : classes.floatingLabelStatic,
+                label.isOverlay && classes.floatingLabelOverlay,
+              )}
               onClick={clickable ? handleLabelClick : undefined}
               onContextMenu={clickable ? handleLabelContextMenu : undefined}
               onMouseMove={clickable ? handleLabelMouseMove : undefined}
               style={{
-                position: 'absolute',
                 transform: `translate(${labelX}px, ${labelY}px)`,
-                fontSize: LABEL_FONT_SIZE,
-                lineHeight: 1,
                 color: label.color,
-                pointerEvents: clickable ? 'auto' : 'none',
-                cursor: clickable ? 'pointer' : undefined,
-                whiteSpace: 'nowrap',
-                ...(label.isOverlay
-                  ? { background: 'rgba(255,255,255,0.65)' }
-                  : undefined),
               }}
             >
               {label.text}
             </div>,
           )
         }
-
-        if (labelData.nameLabel && model.showLabels) {
-          emitLabel(labelData.nameLabel, 2, 'name', true)
-        }
-        if (labelData.descriptionLabel && model.effectiveShowDescriptions) {
-          // descriptionLabel.relativeY is baked at RPC time assuming the name
-          // label is rendered; when showLabels is off, collapse description
-          // up to the top so it fills the vacated name row.
-          const nameRendered = !!labelData.nameLabel && model.showLabels
-          const relativeY = nameRendered
-            ? labelData.descriptionLabel.relativeY
-            : 0
-          emitLabel({ ...labelData.descriptionLabel, relativeY }, 2, 'desc')
-        }
-        if (labelData.subfeatureLabel) {
-          emitLabel(labelData.subfeatureLabel, 0, 'sub', true)
-        }
-      }
+      })
     }
 
     return elements.length > 0 ? elements : null
   }, [
     laidOutDataMap,
+    featureItemMap,
     viewInitialized,
     width,
     bpPerPx,
@@ -194,6 +169,8 @@ export function useFloatingLabels(
     model,
     openContextMenu,
     onLabelMouseOver,
+    classes,
+    cx,
   ])
 }
 
@@ -204,6 +181,7 @@ export function useAminoAcidOverlay(
   width: number | undefined,
   bpPerPx: number,
 ) {
+  const { classes } = useStyles()
   return useMemo(() => {
     if (
       !viewInitialized ||
@@ -238,21 +216,14 @@ export function useAminoAcidOverlay(
         elements.push(
           <div
             key={`${vr.displayedRegionIndex}-${i}`}
+            className={classes.aminoAcid}
             style={{
-              position: 'absolute',
               left: (pxStart + pxEnd) / 2,
               top: item.topPx,
               height: item.heightPx,
-              transform: 'translateX(-50%)',
               fontSize,
-              fontFamily: 'monospace',
               lineHeight: `${item.heightPx}px`,
               color: item.isStopOrNonTriplet ? 'red' : 'black',
-              textShadow: '0 0 1px white',
-              pointerEvents: 'none',
-              userSelect: 'none',
-              whiteSpace: 'nowrap',
-              WebkitFontSmoothing: 'antialiased',
             }}
           >
             {item.aminoAcid}
@@ -263,7 +234,7 @@ export function useAminoAcidOverlay(
     }
 
     return elements.length > 0 ? elements : null
-  }, [laidOutDataMap, viewInitialized, width, bpPerPx, visibleRegions])
+  }, [laidOutDataMap, viewInitialized, width, bpPerPx, visibleRegions, classes])
 }
 
 export function useHighlightOverlays(

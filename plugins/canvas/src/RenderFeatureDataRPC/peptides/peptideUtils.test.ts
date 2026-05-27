@@ -2,6 +2,13 @@ import { findTranscriptsWithCDS } from './peptideUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
+const DEFAULT_TRANSCRIPT_TYPES = [
+  'mRNA',
+  'transcript',
+  'primary_transcript',
+  'protein_coding_primary_transcript',
+]
+
 function createMockFeature(opts: {
   id?: string
   type?: string
@@ -34,7 +41,7 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features)
+    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('mRNA-1')
@@ -51,7 +58,7 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features)
+    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('gene-1')
@@ -70,7 +77,7 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features)
+    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('mRNA-1')
@@ -84,7 +91,7 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['transcript-1', transcript]])
-    const result = findTranscriptsWithCDS(features)
+    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('transcript-1')
@@ -108,7 +115,7 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features)
+    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
 
     expect(result).toHaveLength(2)
     expect(result.map(r => r.id())).toEqual(['mRNA-1', 'mRNA-2'])
@@ -125,7 +132,7 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features)
+    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
 
     expect(result).toHaveLength(0)
   })
@@ -143,7 +150,7 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features)
+    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
 
     expect(result).toHaveLength(0)
   })
@@ -156,7 +163,7 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features)
+    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
 
     expect(result).toHaveLength(0)
   })
@@ -169,7 +176,7 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['transcript-1', transcript]])
-    const result = findTranscriptsWithCDS(features)
+    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('transcript-1')
@@ -183,7 +190,37 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['transcript-1', transcript]])
-    const result = findTranscriptsWithCDS(features)
+    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
+
+    expect(result).toHaveLength(1)
+    expect(result[0]!.id()).toBe('transcript-1')
+  })
+
+  it('rejects a transcript type not in the configured list', () => {
+    const transcript = createMockFeature({
+      id: 'transcript-1',
+      type: 'protein_coding_primary_transcript',
+      subfeatures: [createMockFeature({ type: 'CDS' })],
+    })
+
+    const features = new Map([['transcript-1', transcript]])
+    const result = findTranscriptsWithCDS(features, ['mRNA'])
+
+    expect(result).toHaveLength(0)
+  })
+
+  it('accepts a custom transcript type when configured', () => {
+    const transcript = createMockFeature({
+      id: 'transcript-1',
+      type: 'some_org_specific_transcript',
+      subfeatures: [createMockFeature({ type: 'CDS' })],
+    })
+
+    const features = new Map([['transcript-1', transcript]])
+    const result = findTranscriptsWithCDS(features, [
+      'mRNA',
+      'some_org_specific_transcript',
+    ])
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('transcript-1')

@@ -21,13 +21,13 @@ import type { CanvasFeatureBackend } from './canvasFeatureBackendTypes.ts'
 import type {
   FeatureItemEntry,
   FlatbushRegionIndexes,
-  VisibleRegion,
 } from './hitTesting.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -41,10 +41,9 @@ type LGV = LinearGenomeViewModel
 export interface LinearBasicDisplayModel {
   height: number
   laidOutDataMap: Map<number, FeatureDataResult>
-  visibleRegions: VisibleRegion[]
   featureItemMap: Map<string, FeatureItemEntry>
   isReady: boolean
-  error: Error | null
+  error: unknown
   maxY: number
   hasOverflow: boolean
   heightBeforeExpand: number | undefined
@@ -82,13 +81,18 @@ export interface LinearBasicDisplayModel {
     featureInfo: FlatbushItem,
     displayedRegionIndex: number,
   ) => void
-  contextMenuInfo: unknown
-  setContextMenuInfo: (info?: unknown) => void
-  setContextMenuFeature: (feature?: unknown) => void
+  contextMenuInfo:
+    | { item: FlatbushItem; displayedRegionIndex: number }
+    | undefined
+  setContextMenuInfo: (info?: {
+    item: FlatbushItem
+    displayedRegionIndex: number
+  }) => void
+  setContextMenuFeature: (feature?: Feature) => void
   fetchFullFeature: (
     featureId: string,
     displayedRegionIndex: number,
-  ) => Promise<unknown>
+  ) => Promise<Feature | undefined>
   contextMenuItems: () => { label: string; onClick: () => void }[]
   getFeatureById: (featureId: string) => FlatbushItem | undefined
   clearSelection: () => void
@@ -310,6 +314,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const floatingLabelElements = useFloatingLabels(
     laidOutDataMap,
+    model.featureItemMap,
     visibleRegions,
     view.initialized,
     width,

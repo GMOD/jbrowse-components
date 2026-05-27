@@ -36,6 +36,7 @@ import {
   indexById,
   screenDensity,
 } from './baseModelHelpers.ts'
+import type { RegionDensityStats } from './baseModelHelpers.ts'
 import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
@@ -121,10 +122,7 @@ export default function baseStateModelFactory(
         // Drives the derived `regionTooLarge` getter so banner state is a
         // pure function of cached data + current bpPerPx (no flicker on
         // small zoom changes).
-        densityStatsPerRegion: observable.map<
-          number,
-          { featureCount: number; regionWidthBp: number }
-        >(),
+        densityStatsPerRegion: observable.map<number, RegionDensityStats>(),
         featureIdUnderMouse: null as string | null,
         subfeatureIdUnderMouse: null as string | null,
         mouseoverExtraInformation: undefined as string | undefined,
@@ -474,7 +472,7 @@ export default function baseStateModelFactory(
 
         setDensityStats(
           displayedRegionIndex: number,
-          stats: { featureCount: number; regionWidthBp: number },
+          stats: RegionDensityStats,
         ) {
           self.densityStatsPerRegion.set(displayedRegionIndex, stats)
         },

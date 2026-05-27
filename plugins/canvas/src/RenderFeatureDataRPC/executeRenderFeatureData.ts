@@ -141,6 +141,7 @@ export async function executeRenderFeatureData({
             regions: [region],
           },
           features,
+          displayConfig.transcriptTypes,
         ),
     )
   }
@@ -166,23 +167,12 @@ export async function executeRenderFeatureData({
 
   const result: FeatureDataResult = { ...packed, featureCount: features.size }
 
-  const transferables = [
-    result.rectPositions.buffer,
-    result.rectYs.buffer,
-    result.rectHeights.buffer,
-    result.rectColors.buffer,
-    result.rectFeatureIndices.buffer,
-    result.linePositions.buffer,
-    result.lineYs.buffer,
-    result.lineColors.buffer,
-    result.lineDirections.buffer,
-    result.lineFeatureIndices.buffer,
-    result.arrowXs.buffer,
-    result.arrowYs.buffer,
-    result.arrowDirections.buffer,
-    result.arrowColors.buffer,
-    result.arrowFeatureIndices.buffer,
-  ] as ArrayBuffer[]
+  // Derive transferables from the result so new TypedArray fields don't
+  // silently get cloned across the worker boundary just because someone
+  // forgot to extend a hand-maintained list.
+  const transferables = Object.values(result)
+    .filter((v): v is ArrayBufferView => ArrayBuffer.isView(v))
+    .map(v => v.buffer as ArrayBuffer)
 
   // rpcResult wraps value + transferables for the RPC framework, which
   // unwraps it before returning to the caller. The function signature

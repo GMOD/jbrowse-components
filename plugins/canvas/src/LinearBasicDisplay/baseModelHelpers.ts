@@ -47,13 +47,17 @@ export async function fetchCanvasFeatureDetails(
   }
 }
 
+// Per-region density sample written after each fetch. featureCount comes from
+// the worker; regionWidthBp is derived locally from the request's region.
+export interface RegionDensityStats {
+  featureCount: number
+  regionWidthBp: number
+}
+
 // Features-per-pixel for a single region given its raw count, the region's
 // genomic span, and the current bpPerPx. Used by the derived regionTooLarge
 // banner and by force-load to sample observed density.
-export function screenDensity(
-  ds: { featureCount: number; regionWidthBp: number },
-  bpPerPx: number,
-) {
+export function screenDensity(ds: RegionDensityStats, bpPerPx: number) {
   return (ds.featureCount / ds.regionWidthBp) * bpPerPx
 }
 
