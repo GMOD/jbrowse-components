@@ -25,6 +25,8 @@ function makeRpcData(
     mappingQuals: new Float32Array([-1]),
     refNames: ['chr1'],
     parsedCigars: [[]],
+    totalFeatureCount: 1,
+    skippedFeatureCount: 0,
   }
 }
 

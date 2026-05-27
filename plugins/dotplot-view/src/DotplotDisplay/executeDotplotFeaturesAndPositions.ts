@@ -30,6 +30,8 @@ export interface DotplotFeaturesAndPositionsResult {
   mappingQuals: Float32Array
   refNames: string[]
   parsedCigars: number[][]
+  totalFeatureCount: number
+  skippedFeatureCount: number
 }
 
 function makeAssemblyLookup(pluginManager: PluginManager) {
@@ -113,6 +115,7 @@ export async function executeDotplotFeaturesAndPositions({
     cigar: number[]
   }
   const valid: ValidFeature[] = []
+  let skippedFeatureCount = 0
   for (const f of features) {
     const mate = f.get('mate') as FeatureMate
     const strand = f.get('strand') ?? 1
@@ -123,6 +126,7 @@ export async function executeDotplotFeaturesAndPositions({
     const mateRefName = a2?.getCanonicalRefName(mate.refName) ?? mate.refName
 
     if (!hIndex.entries.has(refName) || !vIndex.entries.has(mateRefName)) {
+      skippedFeatureCount++
       continue
     }
 
@@ -175,6 +179,8 @@ export async function executeDotplotFeaturesAndPositions({
     mappingQuals: new Float32Array(n),
     refNames: new Array<string>(n),
     parsedCigars: new Array<number[]>(n),
+    totalFeatureCount: features.length,
+    skippedFeatureCount,
   }
   for (let i = 0; i < n; i++) {
     const v = valid[i]!

@@ -61,6 +61,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            */
           geometry: undefined as DotplotGeometryData | undefined,
           fetchStopToken: undefined as StopToken | undefined,
+          warnings: [] as { message: string; effect: string }[],
         })),
     )
     .views(self => ({
@@ -93,6 +94,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setRpcData(data: DotplotRpcData) {
         self.rpcData = data
         self.fetchStopToken = undefined
+      },
+      setWarnings(w: { message: string; effect: string }[]) {
+        self.warnings = w
       },
       setGeometry(data: DotplotGeometryData | undefined) {
         self.geometry = data

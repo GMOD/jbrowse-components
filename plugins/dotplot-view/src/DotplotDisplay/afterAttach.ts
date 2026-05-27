@@ -73,6 +73,17 @@ export function doAfterAttach(
             return
           }
           self.setRpcData(result)
+          if (result.skippedFeatureCount > 0) {
+            self.setWarnings([
+              {
+                message: `${result.skippedFeatureCount} of ${result.totalFeatureCount} features were outside the displayed regions`,
+                effect:
+                  'Check that the query and target assemblies are configured correctly.',
+              },
+            ])
+          } else {
+            self.setWarnings([])
+          }
         } catch (e) {
           if (
             thisStopToken === currentStopToken &&

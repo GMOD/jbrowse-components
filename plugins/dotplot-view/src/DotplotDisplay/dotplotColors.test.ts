@@ -26,6 +26,8 @@ function fakeRpcData(overrides: Partial<DotplotRpcData> = {}): DotplotRpcData {
     meanScores: new Float32Array([0.5]),
     mappingQuals: new Float32Array([30]),
     refNames: ['chr1'],
+    totalFeatureCount: 1,
+    skippedFeatureCount: 0,
     ...overrides,
   }
 }

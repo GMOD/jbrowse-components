@@ -19,6 +19,8 @@ export interface DotplotRpcData {
   meanScores: Float32Array
   mappingQuals: Float32Array
   refNames: string[]
+  totalFeatureCount: number
+  skippedFeatureCount: number
 }
 
 export interface DotplotRenderModel extends IAnyStateTreeNode {
