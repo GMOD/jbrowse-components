@@ -306,11 +306,50 @@ describe('RemoteFileWithRangeCache', () => {
     expect(stat.size).toBe(FILE_SIZE)
   })
 
-  test('stat() does not throw when Content-Range is not exposed (CORS)', async () => {
+  test('stat() throws when Content-Range is not exposed (CORS)', async () => {
     const { mockFetch } = createMockFetch() // no Content-Range headers
     const file = makeFile(mockFetch)
-    // Falls back to parent stat() — should not crash
-    await expect(file.stat()).resolves.toBeDefined()
+    // Throws loudly rather than silently lying with size:0 — callers that can
+    // degrade gracefully (e.g. ImportWizard size check) wrap stat in try/catch.
+    await expect(file.stat()).rejects.toThrow(/Could not determine size/)
+  })
+
+  // Regression: a fresh filehandle whose chunk cache is already populated (e.g.
+  // from a previous filehandle instance's leaked fetch in the same process)
+  // must still return the correct file size from stat(). Previously stat()
+  // would short-circuit on the cached chunk and never observe Content-Range,
+  // returning a bogus size of 0.
+  test('stat() returns correct size after chunk cache is pre-populated by another instance', async () => {
+    const mockFetch = async (
+      _url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      const range = new Headers(init?.headers).get('range')
+      if (range) {
+        const m = /bytes=(\d+)-(\d+)/.exec(range)
+        if (m) {
+          const start = Number(m[1])
+          const end = Math.min(Number(m[2]), FILE_SIZE - 1)
+          return new Response(slice(start, end), {
+            status: 206,
+            headers: {
+              'content-range': `bytes ${start}-${end}/${FILE_SIZE}`,
+            },
+          })
+        }
+      }
+      return new Response('', { status: 200 })
+    }
+    // First instance: prime the module-level chunk cache for the URL.
+    const file1 = makeFile(mockFetch)
+    await fetchRange(file1, 0, 99)
+
+    // Second instance for the same URL — its per-instance state starts fresh.
+    // stat() must NOT depend on the (per-instance) cachedStat field that would
+    // have been populated only as a side effect of file1's range fetch.
+    const file2 = makeFile(mockFetch)
+    const stat = await file2.stat()
+    expect(stat.size).toBe(FILE_SIZE)
   })
 
   // Cold cache: the over-read request is the FIRST request, so no short chunk

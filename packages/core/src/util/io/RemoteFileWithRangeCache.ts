@@ -5,6 +5,11 @@ const CHUNK_SIZE = 256 * 1024
 const MAX_CONCURRENT = 20
 
 let cache = new Map<string, Uint8Array>()
+// File size is cached at the module level (keyed by URL), parallel to the chunk
+// cache. Per-instance state can't be used: a cache-hit serving bytes from a
+// previous instance's fetch would otherwise leave a new instance's stat() with
+// no Content-Range observation, returning a bogus size of 0.
+let sizeCache = new Map<string, number>()
 let activeCount = 0
 const queue: (() => void)[] = []
 
@@ -24,6 +29,14 @@ function putCached(key: string, buffer: Uint8Array) {
 
 export function clearCache() {
   cache = new Map<string, Uint8Array>()
+  sizeCache = new Map<string, number>()
+  // Reset concurrency state too. A leaked async fetch from a prior test that
+  // resolves after clearCache will still decrement activeCount via its
+  // .then/.catch handlers — so this can momentarily push activeCount negative,
+  // which is harmless (runNext still allows new work) and self-corrects once
+  // any leaked work has resolved.
+  activeCount = 0
+  queue.length = 0
 }
 
 function runNext() {
@@ -64,16 +77,25 @@ function cacheKey(url: string, chunkIndex: number) {
 }
 
 export class RemoteFileWithRangeCache extends RemoteFile {
-  private cachedStat?: { size: number }
-
   async stat() {
-    if (!this.cachedStat) {
-      await this.getCachedRange(this.url, 0, 1)
+    let size = sizeCache.get(this.url)
+    if (size === undefined) {
+      // Bypass the chunk cache: a populated chunk would otherwise short-circuit
+      // fetchRange, leaving sizeCache empty. fetchRange always observes
+      // Content-Range and updates sizeCache directly.
+      await this.fetchRange(this.url, 0, 0)
+      size = sizeCache.get(this.url)
     }
-    // Content-Range may not be exposed (CORS) — return size 0 rather than
-    // throwing so callers degrade gracefully.
-
-    return this.cachedStat ?? { size: 0 }
+    if (size === undefined) {
+      // Content-Range header wasn't observable (commonly CORS hiding it).
+      // Throw rather than silently returning size: 0 — that lie tends to cause
+      // downstream callers to issue zero-byte reads or treat the file as empty.
+      // Callers that can degrade gracefully should wrap stat() in try/catch.
+      throw new Error(
+        `Could not determine size of ${this.url} (Content-Range header not observable; likely a CORS configuration issue)`,
+      )
+    }
+    return { size }
   }
 
   private async fetchRange(
@@ -95,12 +117,15 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       const msg = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}${res.status === 200 ? hint : ''}`
       throw Object.assign(new Error(msg), { status: res.status })
     }
-    // Parse total file size from Content-Range (e.g. "bytes 0-255/12345")
-    if (!this.cachedStat) {
+    // Parse total file size from Content-Range (e.g. "bytes 0-255/12345"). Always
+    // refresh the module-level sizeCache here, so any successful range fetch —
+    // including those triggered by a leaked promise from a prior test — leaves
+    // the cache in a consistent state for future stat() callers.
+    if (!sizeCache.has(url)) {
       const contentRange = res.headers.get('content-range')
       const match = contentRange ? /\/(\d+)$/.exec(contentRange) : null
       if (match) {
-        this.cachedStat = { size: parseInt(match[1]!, 10) }
+        sizeCache.set(url, parseInt(match[1]!, 10))
       }
     }
     return new Uint8Array(await res.arrayBuffer())
