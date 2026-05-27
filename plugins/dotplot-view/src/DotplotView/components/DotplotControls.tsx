@@ -28,9 +28,6 @@ const DotplotControls = observer(function DotplotControls({
   const [showDynamicControls, setShowDynamicControls] = useState(true)
   const session = getSession(model)
 
-  // Check if we have any displays to show sliders
-  const hasDisplays = model.tracks[0]?.displays[0]
-
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
       {isSessionModelWithWidgets(session) ? (
@@ -189,7 +186,7 @@ const DotplotControls = observer(function DotplotControls({
       </CascadingMenuButton>
       <ColorBySelector model={model} />
 
-      {hasDisplays && showDynamicControls ? (
+      {model.dotplotDisplays.length > 0 && showDynamicControls ? (
         <DotplotSettingsPopover model={model} />
       ) : null}
     </div>
