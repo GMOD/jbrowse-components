@@ -76,7 +76,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
   if (!self.hasDisplayedRegions) {
     return []
   }
-  const { canShowCytobands, showCytobands } = self
   const session = getSession(self)
   const menuItems: MenuItem[] = [
     {
@@ -131,13 +130,17 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
     },
     {
       label: 'Open track selector',
-      onClick: self.activateTrackSelector,
+      onClick: () => {
+        self.activateTrackSelector()
+      },
       icon: TrackSelectorIcon,
     },
     {
       label: 'Horizontally flip',
       icon: SyncAltIcon,
-      onClick: self.horizontallyFlip,
+      onClick: () => {
+        self.horizontallyFlip()
+      },
     },
     {
       label: 'Color by CDS and draw amino acids',
@@ -154,7 +157,9 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       subMenu: [
         {
           label: 'Show all regions in assembly',
-          onClick: self.showAllRegionsInAssembly,
+          onClick: () => {
+            self.showAllRegionsInAssembly()
+          },
         },
         {
           label: 'Show center line',
@@ -216,14 +221,14 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           helpText:
             'When enabled, scrolling on WebGL tracks zooms in and out without needing to hold Ctrl. When disabled, Ctrl+scroll is still available for zooming.',
         },
-        ...(canShowCytobands
+        ...(self.canShowCytobands
           ? [
               {
                 label: 'Show ideogram',
                 type: 'checkbox' as const,
                 checked: self.showCytobands,
                 onClick: () => {
-                  self.setShowCytobands(!showCytobands)
+                  self.setShowCytobands(!self.showCytobands)
                 },
               },
             ]

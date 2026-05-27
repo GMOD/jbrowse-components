@@ -17,7 +17,6 @@ const ServerSideRenderedBlockContent = observer(
       message?: React.ReactNode
       statusMessage?: string
       reactElement?: React.ReactElement
-      isRenderingPending?: boolean
       displayHeight?: number
     }
   }) {

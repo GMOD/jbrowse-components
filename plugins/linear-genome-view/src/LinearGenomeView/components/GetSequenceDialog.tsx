@@ -201,7 +201,12 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         >
           Download FASTA
         </Button>
-        <Button onClick={handleClose} variant="contained">
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          variant="contained"
+        >
           Close
         </Button>
       </DialogActions>

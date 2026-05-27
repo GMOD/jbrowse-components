@@ -138,33 +138,27 @@ const OverviewRubberband = observer(function OverviewRubberband({
     )
   }
 
-  let left = startX || 0
+  let left = startX
   let width = 0
   if (currentX !== undefined) {
     left = Math.min(currentX, startX)
     width = currentX - startX
   }
   // calculate the start and end bp of drag
-  let leftBpOffset: ReturnType<typeof overview.pxToBp> | undefined
-  let rightBpOffset: ReturnType<typeof overview.pxToBp> | undefined
-  if (startX) {
-    leftBpOffset = overview.pxToBp(startX - cytobandOffset)
-    rightBpOffset = overview.pxToBp(startX + width - cytobandOffset)
-    if (currentX !== undefined && currentX < startX) {
-      ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
-    }
+  let leftBpOffset = overview.pxToBp(startX - cytobandOffset)
+  let rightBpOffset = overview.pxToBp(startX + width - cytobandOffset)
+  if (currentX !== undefined && currentX < startX) {
+    ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
   }
 
   return (
     <div className={classes.rel}>
-      {leftBpOffset && rightBpOffset ? (
-        <RubberbandSpan
-          leftBpOffset={leftBpOffset}
-          rightBpOffset={rightBpOffset}
-          width={Math.abs(width)}
-          left={left}
-        />
-      ) : null}
+      <RubberbandSpan
+        leftBpOffset={leftBpOffset}
+        rightBpOffset={rightBpOffset}
+        width={Math.abs(width)}
+        left={left}
+      />
       <div
         data-testid="rubberband_controls"
         className={classes.rubberbandControl}

@@ -242,7 +242,6 @@ const blockState = types
         self.isRenderingPending = false
         self.error = undefined
         self.message = undefined
-        self.ReactComponent = ServerSideRenderedBlockContent
         clearRenderState()
         getParent<{ reload(): void }>(self, 2).reload()
       },

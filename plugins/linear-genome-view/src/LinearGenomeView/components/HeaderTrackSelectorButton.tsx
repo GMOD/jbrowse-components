@@ -21,7 +21,9 @@ const HeaderTrackSelectorButton = observer(function HeaderTrackSelectorButton({
   const { classes } = useStyles()
   return (
     <IconButton
-      onClick={model.activateTrackSelector}
+      onClick={() => {
+        model.activateTrackSelector()
+      }}
       className={classes.toggleButton}
       title="Open track selector"
       value="track_select"
