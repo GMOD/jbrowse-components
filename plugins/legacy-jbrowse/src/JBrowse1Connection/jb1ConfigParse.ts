@@ -30,13 +30,6 @@ export function parseJB1Conf(config: string, url: string): Config {
   return regularizeConf(parsedConf, url)
 }
 
-function isAlwaysArray(varName: string): boolean {
-  if (varName === 'include') {
-    return true
-  }
-  return false
-}
-
 function parse(text: string, url: string): Config {
   let section: string[] = []
   let keyPath: string[] | undefined
@@ -130,7 +123,7 @@ function parse(text: string, url: string): Config {
       keyPath = match[1]!.trim().split(/\s*\.\s*/)
       // @ts-expect-error
       ;[, , operation] = match
-      if (isAlwaysArray([...section, ...keyPath].join('.'))) {
+      if ([...section, ...keyPath].join('.') === 'include') {
         operation = '+='
       }
       value = match[3]!.trim()

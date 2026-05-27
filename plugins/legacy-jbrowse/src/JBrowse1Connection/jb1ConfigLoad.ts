@@ -34,41 +34,34 @@ export async function fetchJb1(
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
   baseConfigRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
 ): Promise<Config> {
-  const protocol = 'uri' in dataRoot ? 'uri' : 'localPath'
-  const dataRootReg = JSON.parse(JSON.stringify(dataRoot))
-  let dataRootLocation = ''
-  if (isUriLocation(dataRoot)) {
-    dataRootLocation = dataRoot.uri
-  }
-  if (isLocalPathLocation(dataRoot)) {
-    dataRootLocation = dataRoot.localPath
-  }
+  let dataRootLocation = isUriLocation(dataRoot)
+    ? dataRoot.uri
+    : isLocalPathLocation(dataRoot)
+      ? dataRoot.localPath
+      : ''
   if (dataRootLocation.endsWith('/')) {
-    dataRootReg[protocol] = dataRootLocation.slice(0, -1)
+    dataRootLocation = dataRootLocation.slice(0, -1)
   }
-  if (
-    (isUriLocation(baseConfigRoot) && baseConfigRoot.uri) ||
-    (isLocalPathLocation(baseConfigRoot) && baseConfigRoot.localPath)
-  ) {
-    const baseProtocol = 'uri' in baseConfigRoot ? 'uri' : 'localPath'
-    let baseConfigLocation = ''
-    if (isUriLocation(baseConfigRoot)) {
-      baseConfigLocation = baseConfigRoot.uri
-    }
-    if (isLocalPathLocation(baseConfigRoot)) {
-      baseConfigLocation = baseConfigRoot.localPath
-    }
-    if (baseConfigLocation.endsWith('/')) {
-      baseConfigLocation = baseConfigLocation.slice(0, -1)
-    }
+
+  let baseConfigLocation = isUriLocation(baseConfigRoot)
+    ? baseConfigRoot.uri
+    : isLocalPathLocation(baseConfigRoot)
+      ? baseConfigRoot.localPath
+      : ''
+  if (baseConfigLocation.endsWith('/')) {
+    baseConfigLocation = baseConfigLocation.slice(0, -1)
+  }
+
+  if (baseConfigLocation) {
     let newConfig: Config = {}
     for (const conf of ['jbrowse.conf', 'jbrowse_conf.json']) {
       let fetchedConfig = null
       try {
-        // @ts-expect-error
-        fetchedConfig = await fetchConfigFile({
-          [baseProtocol]: `${baseConfigLocation}/${conf}`,
-        })
+        fetchedConfig = await fetchConfigFile(
+          isUriLocation(baseConfigRoot)
+            ? { uri: `${baseConfigLocation}/${conf}`, locationType: 'UriLocation' }
+            : { localPath: `${baseConfigLocation}/${conf}`, locationType: 'LocalPathLocation' },
+        )
       } catch (error) {
         console.error(
           `tried to access ${baseConfigLocation}/${conf}, but failed`,
@@ -76,14 +69,14 @@ export async function fetchJb1(
       }
       newConfig = mergeConfigs(newConfig, fetchedConfig) ?? {}
     }
-    if (dataRootReg[protocol]) {
-      newConfig.dataRoot = dataRootReg[protocol]
+    if (dataRootLocation) {
+      newConfig.dataRoot = dataRootLocation
     }
     return createFinalConfig(newConfig)
   }
   const newConfig = regularizeConf(baseConfig, window.location.href)
-  if (dataRootReg[protocol]) {
-    newConfig.dataRoot = dataRootReg[protocol]
+  if (dataRootLocation) {
+    newConfig.dataRoot = dataRootLocation
   }
   return createFinalConfig(newConfig)
 }
