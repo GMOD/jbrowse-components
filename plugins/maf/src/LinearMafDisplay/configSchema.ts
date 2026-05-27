@@ -10,12 +10,7 @@ export default function configSchemaF(pluginManager: PluginManager) {
   const { baseLinearDisplayConfigSchema } = LinearGenomePlugin.exports
   return ConfigurationSchema(
     'LinearMafDisplay',
-    {
-      /**
-       * #slot
-       */
-      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
-    },
+    {},
     {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,

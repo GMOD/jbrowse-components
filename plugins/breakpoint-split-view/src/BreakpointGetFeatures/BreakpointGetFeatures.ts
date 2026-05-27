@@ -8,16 +8,23 @@ import { toArray } from 'rxjs/operators'
 import { getClip } from '../BreakpointSplitView/getClip.ts'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { RpcRegistry } from '@jbrowse/core/rpc/RpcRegistry'
-import type { RenderArgs } from '@jbrowse/core/rpc/methods/util'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+
+export interface BreakpointGetFeaturesArgs {
+  sessionId: string
+  regions: Region[]
+  adapterConfig: Record<string, unknown>
+  assemblyName?: string
+  statusCallback?: (arg: string) => void
+  stopToken?: StopToken
+  opts?: Record<string, unknown>
+}
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     BreakpointGetFeatures: {
-      args: Record<string, unknown>
+      args: BreakpointGetFeaturesArgs
       return: Feature[]
     }
   }
@@ -68,27 +75,14 @@ export default class BreakpointGetFeatures extends RpcMethodType {
     return superDeserialized.map(feat => new SimpleFeature(feat))
   }
 
-  async serializeArguments(args: RenderArgs, rpcDriver: string) {
+  async serializeArguments(args: BreakpointGetFeaturesArgs, rpcDriver: string) {
     const { rootModel } = this.pluginManager
     const assemblyManager = rootModel!.session!.assemblyManager
     const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
-    return super.serializeArguments(
-      renamedArgs,
-      rpcDriver,
-    ) as Promise<RenderArgs>
+    return super.serializeArguments(renamedArgs, rpcDriver)
   }
 
-  async execute(
-    args: {
-      sessionId: string
-      regions: Region[]
-      adapterConfig: Record<string, unknown>
-      statusCallback: (arg: string) => void
-      stopToken?: StopToken
-      opts?: Record<string, unknown>
-    },
-    rpcDriver: string,
-  ) {
+  async execute(args: BreakpointGetFeaturesArgs, rpcDriver: string) {
     const {
       stopToken,
       statusCallback,

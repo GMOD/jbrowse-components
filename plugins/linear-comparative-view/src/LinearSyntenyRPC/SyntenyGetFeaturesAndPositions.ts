@@ -31,13 +31,6 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export class SyntenyGetFeaturesAndPositions extends RpcMethodType {
   name = 'SyntenyGetFeaturesAndPositions'
 
-  async serializeArguments(
-    args: Record<string, unknown>,
-    _rpcDriverClassName: string,
-  ) {
-    return args
-  }
-
   async execute(
     args: SyntenyGetFeaturesAndPositionsArgs,
     rpcDriverClassName: string,

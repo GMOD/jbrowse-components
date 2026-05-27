@@ -26,13 +26,6 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export class DotplotGetFeaturesAndPositions extends RpcMethodType {
   name = 'DotplotGetFeaturesAndPositions'
 
-  async serializeArguments(
-    args: Record<string, unknown>,
-    _rpcDriverClassName: string,
-  ) {
-    return args
-  }
-
   async execute(
     args: DotplotGetFeaturesAndPositionsArgs,
     rpcDriverClassName: string,

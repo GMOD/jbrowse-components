@@ -1,9 +1,10 @@
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { RefSequenceResult } from '@jbrowse/core/TextSearch/BaseResults'
 import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
 
 import { parseLocStrings } from './LinearGenomeView/util.ts'
 
 import type { LinearGenomeViewModel } from './LinearGenomeView/index.ts'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -156,9 +157,9 @@ export async function fetchResults({
 
   // resolve aliases (e.g. 'contigB') to the canonical refname ('ctgB') so
   // the dropdown shows the name that matches the FASTA / displayed regions.
-  // matchedObject is set so the client-side filter (which checks label
-  // against the user's query) keeps these even when the typed alias text
-  // doesn't appear in the canonical label.
+  // matchedAttribute marks these as refName hits so the client-side filter
+  // keeps them when the typed alias text doesn't appear in the canonical
+  // label. Matches the RefNameAutocomplete convention.
   const refNameResults = [
     ...new Set(
       assembly?.allRefNames
@@ -166,7 +167,9 @@ export async function fetchResults({
         .map(ref => assembly.getCanonicalRefName(ref) ?? ref)
         .slice(0, 10),
     ),
-  ].map(r => new BaseResult({ label: r, matchedObject: { refName: r } }))
+  ].map(
+    r => new RefSequenceResult({ label: r, refName: r, matchedAttribute: 'refName' }),
+  )
 
   return dedupe([...refNameResults, ...(textSearchResults ?? [])], elt =>
     elt.getId(),
