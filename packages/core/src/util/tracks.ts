@@ -491,6 +491,7 @@ export function showTrackGeneric(
   trackId: string,
   initialSnapshot = {},
   displayInitialSnapshot = {},
+  inlineConf?: Record<string, unknown>,
 ) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
@@ -501,7 +502,7 @@ export function showTrackGeneric(
     return found
   }
 
-  const rawConf = session.tracksById[trackId]
+  const rawConf = inlineConf ?? session.tracksById[trackId]
   if (!rawConf) {
     throw new Error(`Could not resolve identifier "${trackId}"`)
   }
@@ -553,11 +554,10 @@ export function showTrackGeneric(
     ...displayConfState
   } = displayConf ?? {}
 
-  // Create track with just the trackId - the ConfigurationReference will resolve it
   const track = trackType.stateModel.create({
     ...initialSnapshot,
     type: conf.type,
-    configuration: trackId,
+    configuration: inlineConf ?? trackId,
     displays: [
       {
         type: displayType,

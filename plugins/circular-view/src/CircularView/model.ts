@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 import type { FC, ReactNode } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -24,7 +23,6 @@ import { viewportVisibleSection } from './viewportVisibleRegion.ts'
 
 import type { SliceRegion } from './slices.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -545,32 +543,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addTrackConf(configuration: AnyConfigurationModel, initialSnapshot = {}) {
-        const { type } = configuration
-        const name = readConfObject(configuration, 'name')
-        const trackType = pluginManager.getTrackType(type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)!
-        const supportedDisplays = new Set(
-          viewType.displayTypes.map(d => d.name),
-        )
-        const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => supportedDisplays.has(d.type),
-        )
-        if (!displayConf) {
-          throw new Error(`no supported display found for track type ${type}`)
-        }
-        self.tracks.push(
-          trackType.stateModel.create({
-            ...initialSnapshot,
-            name,
-            type,
-            configuration,
-            displays: [{ type: displayConf.type, configuration: displayConf }],
-          }),
-        )
+      addTrackConf(configuration: Record<string, unknown>, initialSnapshot = {}) {
+        const { trackId } = configuration as { trackId: string }
+        showTrackGeneric(self, trackId, initialSnapshot, {}, configuration)
       },
 
       /**

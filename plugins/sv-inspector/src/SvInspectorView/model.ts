@@ -366,7 +366,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                 circularView.hideTrack(variantTrackId)
               })
               if (assemblyName) {
-                // @ts-expect-error
                 circularView.addTrackConf(
                   self.featuresCircularTrackConfiguration,
                   {

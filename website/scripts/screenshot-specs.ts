@@ -57,37 +57,87 @@ function cgiabUrl(session?: object) {
 
 export const specs: ScreenshotSpec[] = [
   {
+    mode: 'url',
     name: 'volvox_alignments',
-    loc: 'ctgA:1-20000',
-    openTracks: ['volvox_cram_alignments'],
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['volvox_cram_alignments'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
     settleMs: 4000,
   },
 
   {
+    mode: 'url',
     name: 'volvox_variants',
-    loc: 'ctgA:5000-10000',
-    openTracks: ['volvox_test_vcf'],
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:5000-10000',
+          tracks: ['volvox_test_vcf'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
     settleMs: 3000,
   },
 
   {
+    mode: 'url',
     name: 'variant_with_pileup',
-    loc: 'ctgA:1500-3500',
-    openTracks: ['volvox_filtered_vcf', 'volvox_cram_alignments'],
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1500-3500',
+          tracks: ['volvox_filtered_vcf', 'volvox_cram_alignments'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
     settleMs: 4000,
   },
 
   {
+    mode: 'url',
     name: 'bigwig_xyplot',
-    loc: 'ctgA:1-50000',
-    openTracks: ['volvox_microarray'],
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: ['volvox_microarray'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
     settleMs: 4000,
   },
 
   {
+    mode: 'url',
     name: 'bigwig_line',
-    loc: 'ctgA:1-50000',
-    openTracks: ['volvox_microarray_line'],
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: ['volvox_microarray_line'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
     settleMs: 4000,
   },
 
@@ -101,9 +151,19 @@ export const specs: ScreenshotSpec[] = [
   },
 
   {
+    mode: 'url',
     name: 'sequence_track',
-    loc: 'ctgA:20000-20050',
-    openTracks: ['volvox_refseq'],
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:20000-20050',
+          tracks: ['volvox_refseq'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
     settleMs: 3000,
   },
 
@@ -353,16 +413,36 @@ export const specs: ScreenshotSpec[] = [
   // Alignments track doc screenshots (local volvox data)
 
   {
+    mode: 'url',
     name: 'alignment_clipping_indicators',
-    loc: 'ctgA:1-10000',
-    openTracks: ['volvox_cram_alignments'],
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-10000',
+          tracks: ['volvox_cram_alignments'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
     settleMs: 4000,
   },
 
   {
+    mode: 'url',
     name: 'insertion_indicators',
-    loc: 'ctgA:1-50000',
-    openTracks: ['volvox-long-reads-cram'],
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: ['volvox-long-reads-cram'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
     settleMs: 4000,
   },
 
