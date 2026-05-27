@@ -51,3 +51,5 @@ export {
   type WiggleGpuDisplayModel,
   waitForRenderableState,
 } from './displayModel.ts'
+
+export { collectWiggleTransferables } from './transferables.ts'

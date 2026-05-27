@@ -1,9 +1,11 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus } from '@jbrowse/core/util'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
+import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -47,7 +49,7 @@ function hasFeatureArrays(
 export async function executeRenderWiggleData({
   pluginManager,
   args,
-}: ExecuteParams): Promise<WiggleDataResult> {
+}: ExecuteParams) {
   const {
     sessionId,
     adapterConfig,
@@ -81,5 +83,8 @@ export async function executeRenderWiggleData({
   checkStopToken2(stopTokenCheck)
 
   const arrays = processFeaturesFromArrays(raw, bicolorPivot)
-  return { sources: [{ name: SINGLE_WIGGLE_SOURCE_NAME, ...arrays }] }
+  const result: WiggleDataResult = {
+    sources: [{ name: SINGLE_WIGGLE_SOURCE_NAME, ...arrays }],
+  }
+  return rpcResult(result, collectWiggleTransferables(result))
 }

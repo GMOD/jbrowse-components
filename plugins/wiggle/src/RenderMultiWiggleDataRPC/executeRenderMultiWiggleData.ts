@@ -1,9 +1,11 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus } from '@jbrowse/core/util'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
+import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
 
 import { processFeaturesFromArrays } from '../util.ts'
 
@@ -61,7 +63,7 @@ const EMPTY_RAW: RawFeatureArrays = {
 export async function executeRenderMultiWiggleData({
   pluginManager,
   args,
-}: ExecuteParams): Promise<WiggleDataResult> {
+}: ExecuteParams) {
   const {
     sessionId,
     adapterConfig,
@@ -108,7 +110,7 @@ export async function executeRenderMultiWiggleData({
       ? sourcesList
       : perSource.map(({ source }) => ({ name: source }))
 
-  return {
+  const result: WiggleDataResult = {
     sources: orderedSources.map(source => ({
       ...source,
       ...processFeaturesFromArrays(
@@ -117,4 +119,5 @@ export async function executeRenderMultiWiggleData({
       ),
     })),
   }
+  return rpcResult(result, collectWiggleTransferables(result))
 }
