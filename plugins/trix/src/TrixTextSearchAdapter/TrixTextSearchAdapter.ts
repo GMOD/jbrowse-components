@@ -103,17 +103,19 @@ export default class TrixTextSearchAdapter
 
         return new BaseResult({
           locString: loc,
-          label: labelField,
+          label,
           displayString,
-          matchedObject: decoded,
+          matchedAttribute: 'description',
+          adapterData: data,
           trackId,
         })
       })
 
-    return args.searchType === 'exact'
-      ? formatted.filter(
-          r => r.getLabel().toLowerCase() === args.queryString.toLowerCase(),
-        )
-      : formatted
+    if (args.searchType === 'exact') {
+      return formatted.filter(
+        r => r.getLabel().toLowerCase() === args.queryString.toLowerCase(),
+      )
+    }
+    return formatted
   }
 }

@@ -6,7 +6,7 @@ import {
   pickColor,
 } from './sourcesLogic.ts'
 
-import type { EditableSource, Source, SourceInfo } from '../util.ts'
+import type { Source, SourceInfo } from '../util.ts'
 
 const adapter = (count: number): SourceInfo[] =>
   Array.from({ length: count }, (_, i) => ({ name: `source_${i}` }))

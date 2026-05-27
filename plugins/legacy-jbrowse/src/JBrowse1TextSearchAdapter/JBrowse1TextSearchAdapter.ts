@@ -75,7 +75,7 @@ export default class JBrowse1TextSearchAdapter
               new BaseResult({
                 label: typeof result === 'object' ? result.name : result,
                 matchedAttribute: 'name',
-                matchedObject: { result },
+                adapterData: { result },
               }),
           )),
       ...results.exact.map(result => {
@@ -89,7 +89,7 @@ export default class JBrowse1TextSearchAdapter
           locString: locstring,
           label: name,
           matchedAttribute: 'name',
-          matchedObject: result,
+          adapterData: result,
           trackId: tracks[trackIndex],
         })
       }),

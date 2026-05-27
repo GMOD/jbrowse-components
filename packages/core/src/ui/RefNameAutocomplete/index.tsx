@@ -21,12 +21,12 @@ interface Option {
 
 function getFiltered(options: Option[], inputValue: string) {
   const query = inputValue.toLocaleLowerCase()
-  // matchedObject is set by text-search adapters (trix, jb1) to signal that
-  // the result was already filtered server-side — always include those so the
+  // adapterData is set by text-search adapters (trix, jb1) to signal that
+  // the result was already filtered by the adapter — always include those so the
   // adapter's results aren't silently hidden by client-side filtering
   const filtered = options.filter(
     ({ result }) =>
-      result.getLabel().toLowerCase().includes(query) || result.matchedObject,
+      result.getLabel().toLowerCase().includes(query) || result.adapterData,
   )
   return [
     ...filtered.slice(0, 100),

@@ -12,7 +12,7 @@ export interface BaseResultArgs {
 
   matchedAttribute?: string
 
-  matchedObject?: unknown
+  adapterData?: unknown
 
   textSearchAdapter?: TextSearchAdapterType
 
@@ -38,7 +38,7 @@ export default class BaseResult {
 
   matchedAttribute?: string
 
-  matchedObject?: unknown
+  adapterData?: unknown
 
   textSearchAdapter?: TextSearchAdapterType
 
@@ -58,7 +58,7 @@ export default class BaseResult {
     this.renderingComponent = args.renderingComponent
     this.displayString = args.displayString
     this.matchedAttribute = args.matchedAttribute
-    this.matchedObject = args.matchedObject
+    this.adapterData = args.adapterData
     this.textSearchAdapter = args.textSearchAdapter
     this.relevance = args.relevance
     this.trackId = args.trackId
