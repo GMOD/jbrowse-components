@@ -262,37 +262,24 @@ const LDCanvas = observer(function LDCanvas({
   )
 })
 
-const LDDisplayContent = observer(function LDDisplayContent({
+const EmptyState = observer(function EmptyState({
   model,
 }: {
   model: SharedLDModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = view.totalWidthPxWithoutBorders
-  const { height, showLDTriangle, showRecombination } = model
-
-  if (!showLDTriangle && !showRecombination) {
-    return (
-      <div
-        style={{
-          width,
-          height,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#666',
-        }}
-      >
-        Enable LD triangle or recombination track in display settings
-      </div>
-    )
-  }
-
-  // Gap shift is now folded into viewOffsetX inside the renderer (matches
-  // plugins/hic). Wrapper div stays at left:0 — full viewport width.
   return (
-    <div style={{ position: 'relative', width, height }}>
-      {showLDTriangle ? <LDCanvas model={model} /> : null}
+    <div
+      style={{
+        width: view.totalWidthPxWithoutBorders,
+        height: model.height,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#666',
+      }}
+    >
+      Enable LD triangle in display settings to view data
     </div>
   )
 })
@@ -304,7 +291,11 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
 }) {
   return (
     <CanvasDisplayWrapper model={model}>
-      <LDDisplayContent model={model} />
+      {model.showLDTriangle ? (
+        <LDCanvas model={model} />
+      ) : (
+        <EmptyState model={model} />
+      )}
     </CanvasDisplayWrapper>
   )
 })
