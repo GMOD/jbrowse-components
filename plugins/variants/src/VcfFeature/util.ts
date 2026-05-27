@@ -72,7 +72,7 @@ function getSOTerm(alt: string, ref: string, parser: VCF): string {
 
 function formatGroupDescription(ref: string, alts: string[]): string {
   if (alts.every(isSymbolic)) {
-    return alts.join(',')
+    return alts.map(a => altTypeToSO[a] ?? a).join(',')
   }
 
   const lenRef = ref.length

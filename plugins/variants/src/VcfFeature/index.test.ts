@@ -44,7 +44,7 @@ test('DEL feature with END info field', () => {
 
   expect(f.get('start')).toEqual(99)
   expect(f.get('end')).toEqual(1000)
-  expect(f.get('description')).toEqual('<DEL>')
+  expect(f.get('description')).toEqual('deletion')
 })
 
 test('DEL feature with SVLEN when END not available', () => {
@@ -70,7 +70,7 @@ test('multiple SVs', () => {
     'chr1\t100\trs123\tR\t<INVDUP>,<INV>\t29\tPASS\tEND=1000;SVTYPE=DEL',
   )
 
-  expect(f.get('description')).toEqual('<INVDUP>,<INV>')
+  expect(f.get('description')).toEqual('inverted_duplication,inversion')
 })
 
 test('BND', () => {
@@ -116,7 +116,7 @@ test('mixed symbolic and SNV', () => {
 test('multiple symbolic ALT', () => {
   const f = createFeature('chr1\t100\trs123\tG\t<DEL>,<INS>,<DUP>\t29\tPASS\t.')
 
-  expect(f.get('description')).toEqual('<DEL>,<INS>,<DUP>')
+  expect(f.get('description')).toEqual('deletion,insertion,duplication')
 })
 
 test('multiple insertions of varying lengths', () => {

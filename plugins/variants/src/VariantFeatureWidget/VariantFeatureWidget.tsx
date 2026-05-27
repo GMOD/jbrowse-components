@@ -103,7 +103,13 @@ const FeatDefined = observer(function FeatDefined({
     clickedAlleles,
     ...rest
   } = feat
-  const { REF = '' } = rest
+  const { REF = '', INFO } = rest
+  const svlenInfo = INFO?.SVLEN
+  const svlen =
+    Array.isArray(svlenInfo) &&
+    svlenInfo.every(v => typeof v === 'number')
+      ? (svlenInfo as number[])
+      : undefined
 
   return (
     <Paper data-testid="variant-side-drawer">
@@ -116,7 +122,7 @@ const FeatDefined = observer(function FeatDefined({
         }}
         formatter={(value, key) =>
           key === 'ALT' ? (
-            <AltFormatter value={`${value}`} refString={REF} />
+            <AltFormatter value={`${value}`} refString={REF} svlen={svlen} />
           ) : (
             <Formatter value={value} />
           )
