@@ -1,4 +1,3 @@
-import { createElementId } from '@jbrowse/core/util/types/mst'
 import { observer } from 'mobx-react'
 
 import ConfigWarningDialog from './ConfigWarningDialog.tsx'
@@ -18,11 +17,7 @@ const SessionTriaged = observer(function SessionTriaged({
   return sessionTriaged.origin === 'session' ? (
     <SessionWarningDialog
       onConfirm={async () => {
-        // second param true says we passed user confirmation
-        await loader.loadSession(
-          { ...sessionTriaged.snap, id: createElementId() },
-          true,
-        )
+        await loader.loadDecodedSession(sessionTriaged.snap, true)
         loader.setSessionTriaged(undefined)
       }}
       onCancel={() => {
@@ -34,11 +29,7 @@ const SessionTriaged = observer(function SessionTriaged({
   ) : (
     <ConfigWarningDialog
       onConfirm={async () => {
-        await loader.fetchPlugins(sessionTriaged.snap)
-        loader.setConfigSnapshot({
-          ...sessionTriaged.snap,
-          id: createElementId(),
-        })
+        await loader.applyTriagedConfig(sessionTriaged.snap)
         loader.setSessionTriaged(undefined)
       }}
       onCancel={() => {

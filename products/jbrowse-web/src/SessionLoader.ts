@@ -1,110 +1,28 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
-import { openLocation } from '@jbrowse/core/util/io'
 import { createElementId } from '@jbrowse/core/util/types/mst'
 import { destroy, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { openDB } from 'idb'
+import { autorun } from 'mobx'
 
 import { createPluginManager } from './createPluginManager.ts'
-import { readSessionFromDynamo } from './sessionSharing.ts'
 import {
-  addRelativeUris,
-  checkPlugins,
-  fromUrlSafeB64,
-  readConf,
-} from './util.ts'
+  buildJb1SessionSpec,
+  fetchRemoteConfig,
+  loadPluginRecords,
+  readSessionFromIDB,
+  readSessionFromStorage,
+  stripPrefix,
+} from './sessionLoaderHelpers.ts'
+import { readSessionFromDynamo } from './sessionSharing.ts'
+import { checkPlugins, fromUrlSafeB64, readConf } from './util.ts'
 
-import type { SessionDB, SessionTriagedInfo } from './types.ts'
+import type { SessionTriagedInfo, Snap } from './types.ts'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 type ReloadPluginManagerCallback = (
-  configSnapshot: Record<string, unknown>,
-  sessionSnapshot: Record<string, unknown>,
+  configSnapshot: Snap,
+  sessionSnapshot: Snap,
 ) => void
-
-type Snap = Record<string, unknown>
-
-// --- Pure / IO helpers -----------------------------------------------------
-
-async function loadPluginRecords(defs: PluginDefinition[]) {
-  const loader = new PluginLoader(defs, {
-    fetchESM: url => import(/* webpackIgnore:true */ url),
-  })
-  loader.installGlobalReExports(window)
-  return [...(await loader.load(window.location.href))]
-}
-
-export function readSessionFromStorage(query: string) {
-  const str = sessionStorage.getItem('current')
-  if (str) {
-    const snap = JSON.parse(str).session ?? {}
-    if (query === snap.id) {
-      return snap as Snap
-    }
-  }
-  return undefined
-}
-
-export async function readSessionFromIDB(query: string) {
-  try {
-    const db = await openDB<SessionDB>('sessionsDB', 2, {
-      upgrade(db) {
-        db.createObjectStore('metadata')
-        db.createObjectStore('sessions')
-      },
-    })
-    return await db.get('sessions', query)
-  } catch (e) {
-    console.error(e)
-    return undefined
-  }
-}
-
-async function fetchRemoteConfig(configPath: string) {
-  const text = await openLocation({
-    uri:
-      configPath +
-      // @ts-expect-error
-      (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
-    locationType: 'UriLocation',
-  }).readFile('utf8')
-  const config = JSON.parse(text)
-  const configUri = new URL(configPath, window.location.href)
-  addRelativeUris(config, configUri)
-  return { config, configUri }
-}
-
-function buildJb1SessionSpec(args: {
-  loc?: string
-  tracks?: string
-  assembly?: string
-  tracklist?: boolean
-  nav?: boolean
-  highlight?: string
-  sessionTracks: unknown
-}) {
-  return {
-    sessionTracks: args.sessionTracks,
-    views: [
-      {
-        type: 'LinearGenomeView',
-        tracks: args.tracks?.split(','),
-        sessionTracks: args.sessionTracks,
-        loc: args.loc,
-        assembly: args.assembly,
-        tracklist: args.tracklist,
-        nav: args.nav,
-        highlight: args.highlight?.split(' '),
-      },
-    ],
-  }
-}
-
-const stripPrefix = (s: string) =>
-  s.replace(/^(share|spec|encoded|json|local)-/, '')
-
-// --- Model ----------------------------------------------------------------
 
 const SessionLoader = types
   .model({
@@ -220,6 +138,10 @@ const SessionLoader = types
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     pluginManagerError: undefined as unknown,
+    /**
+     * #volatile
+     */
+    buildAutorunDisposer: undefined as (() => void) | undefined,
   }))
   .views(self => ({
     /**
@@ -274,12 +196,6 @@ const SessionLoader = types
     /**
      * #getter
      */
-    get error() {
-      return self.configError || self.sessionError
-    },
-    /**
-     * #getter
-     */
     get pluginsLoaded() {
       // session-plugins are only needed when we're loading from a snapshot
       const needSessionPlugins =
@@ -298,12 +214,6 @@ const SessionLoader = types
         self.sessionSnapshot !== undefined ||
         self.sessionSpec !== undefined
       )
-    },
-    /**
-     * #getter
-     */
-    get isConfigLoaded() {
-      return Boolean(self.configError || self.configSnapshot)
     },
     /**
      * #getter
@@ -480,10 +390,27 @@ const SessionLoader = types
     /**
      * #action
      * Helper to load a decoded session with a fresh ID. New IDs prevent
-     * conflicts when the same session is open in multiple tabs.
+     * conflicts when the same session is open in multiple tabs. Pass
+     * `userAcceptedConfirmation` when the caller has shown the user a triage
+     * dialog and they accepted.
      */
-    async loadDecodedSession(session: Snap) {
-      await this.loadSession({ ...session, id: createElementId() })
+    async loadDecodedSession(
+      session: Snap,
+      userAcceptedConfirmation?: boolean,
+    ) {
+      await this.loadSession(
+        { ...session, id: createElementId() },
+        userAcceptedConfirmation,
+      )
+    },
+    /**
+     * #action
+     * Commits a config snapshot that was previously surfaced via triage —
+     * loads its plugins and applies it with a fresh ID.
+     */
+    async applyTriagedConfig(snap: Snap) {
+      await this.fetchPlugins(snap)
+      self.setConfigSnapshot({ ...snap, id: createElementId() })
     },
     /**
      * #action
@@ -600,26 +527,64 @@ const SessionLoader = types
       }
     },
     /**
+     * #action
+     */
+    async loadConfig() {
+      // eslint-disable-next-line unicorn/prefer-ternary
+      if (self.configSnapshot) {
+        // HMR / reload: snapshot already URI-stamped, just load plugins
+        await self.fetchPlugins(
+          self.configSnapshot as { plugins?: PluginDefinition[] },
+        )
+      } else {
+        await self.fetchConfig()
+      }
+    },
+    /**
+     * #action
+     * A config error short-circuits session loading: the try/catch sits at
+     * this level so loadSessionByType is skipped on config failure.
+     */
+    async initialize() {
+      try {
+        await this.loadConfig()
+        await this.loadSessionByType()
+      } catch (e) {
+        console.error(e)
+        self.setConfigError(e)
+      }
+    },
+    /**
+     * #action
+     * Attaches a React host: starts an autorun that fires
+     * `buildPluginManager` once `ready` flips true. Idempotent — a second
+     * call while already activated is a no-op.
+     */
+    activate(reloadCallback: ReloadPluginManagerCallback) {
+      if (self.buildAutorunDisposer) {
+        return
+      }
+      self.buildAutorunDisposer = autorun(() => {
+        if (self.ready) {
+          self.buildPluginManager(reloadCallback)
+        }
+      })
+    },
+    /**
+     * #action
+     * Detaches the React host: stops the build autorun and disposes the
+     * rootModel.
+     */
+    deactivate() {
+      self.buildAutorunDisposer?.()
+      self.buildAutorunDisposer = undefined
+      self.disposePluginManager()
+    },
+    /**
      * #aftercreate
      */
     afterCreate() {
-      void (async () => {
-        try {
-          // eslint-disable-next-line unicorn/prefer-ternary
-          if (self.configSnapshot) {
-            // HMR / reload: snapshot already URI-stamped, just load plugins
-            await self.fetchPlugins(
-              self.configSnapshot as { plugins?: PluginDefinition[] },
-            )
-          } else {
-            await self.fetchConfig()
-          }
-          await this.loadSessionByType()
-        } catch (e) {
-          console.error(e)
-          self.setConfigError(e)
-        }
-      })()
+      void this.initialize()
     },
   }))
 

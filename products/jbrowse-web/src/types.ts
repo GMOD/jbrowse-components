@@ -2,6 +2,10 @@ import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type { SessionMetadata } from '@jbrowse/web-core'
 import type { DBSchema } from 'idb'
 
+// JSON-shaped snapshot used for configs and session payloads as they cross the
+// URL / IDB / network / MST boundaries.
+export type Snap = Record<string, unknown>
+
 export interface Session {
   name: string
   id: string

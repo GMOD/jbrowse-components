@@ -1,7 +1,12 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
-import SessionLoader, { readSessionFromStorage } from './SessionLoader.ts'
+import SessionLoader from './SessionLoader.ts'
+import {
+  createSessionLoaderFromUrl,
+  reloadSessionLoader,
+} from './createSessionLoader.ts'
+import { readSessionFromStorage } from './sessionLoaderHelpers.ts'
 
 // Mock dependencies
 jest.mock('@jbrowse/core/util/io', () => ({
@@ -147,22 +152,6 @@ describe('SessionLoader', () => {
       })
       loader.setSessionError(new Error('test error'))
       expect(loader.isSessionLoaded).toBe(true)
-    })
-
-    it('isConfigLoaded is true when configSnapshot exists', () => {
-      const loader = SessionLoader.create({
-        configSnapshot: { assemblies: [] },
-        initialTimestamp: Date.now(),
-      })
-      expect(loader.isConfigLoaded).toBe(true)
-    })
-
-    it('isConfigLoaded is true when configError exists', () => {
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-      loader.setConfigError(new Error('config error'))
-      expect(loader.isConfigLoaded).toBe(true)
     })
 
     it('pluginsLoaded requires runtimePlugins for blank session', () => {
@@ -323,6 +312,53 @@ describe('SessionLoader', () => {
     })
   })
 
+  describe('activate/deactivate', () => {
+    const reloadCb = () => {}
+
+    it('builds when ready flips true', async () => {
+      const { createPluginManager } = jest.requireMock('./createPluginManager')
+      const loader = SessionLoader.create({
+        configSnapshot: { assemblies: [] },
+        initialTimestamp: Date.now(),
+      })
+      loader.activate(reloadCb)
+      // not ready yet
+      expect(createPluginManager).not.toHaveBeenCalled()
+      // becoming ready in the model triggers the autorun
+      loader.setBlankSession(true)
+      loader.setRuntimePlugins([])
+      await when(() => loader.ready)
+      expect(createPluginManager).toHaveBeenCalledTimes(1)
+      loader.deactivate()
+    })
+
+    it('is idempotent — second activate is a no-op', () => {
+      const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+      loader.activate(reloadCb)
+      const firstDisposer = loader.buildAutorunDisposer
+      loader.activate(reloadCb)
+      expect(loader.buildAutorunDisposer).toBe(firstDisposer)
+      loader.deactivate()
+    })
+
+    it('deactivate stops the autorun and disposes pluginManager', async () => {
+      const { createPluginManager } = jest.requireMock('./createPluginManager')
+      createPluginManager.mockClear()
+      const loader = SessionLoader.create({
+        configSnapshot: { assemblies: [] },
+        initialTimestamp: Date.now(),
+      })
+      loader.activate(reloadCb)
+      loader.setBlankSession(true)
+      loader.setRuntimePlugins([])
+      await when(() => loader.ready)
+      expect(createPluginManager).toHaveBeenCalledTimes(1)
+      loader.deactivate()
+      expect(loader.buildAutorunDisposer).toBeUndefined()
+      expect(loader.pluginManager).toBeUndefined()
+    })
+  })
+
   describe('readSessionFromStorage', () => {
     it('returns the snapshot when query matches session id in storage', () => {
       const sessionSnap = { id: 'test-session-id', name: 'Test' }
@@ -343,37 +379,6 @@ describe('SessionLoader', () => {
 
     it('returns undefined when sessionStorage is empty', () => {
       expect(readSessionFromStorage('test-session-id')).toBeUndefined()
-    })
-  })
-
-  describe('error getter', () => {
-    it('returns configError when set', () => {
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-      const err = new Error('config error')
-      loader.setConfigError(err)
-      expect(loader.error).toBe(err)
-    })
-
-    it('returns sessionError when configError is not set', () => {
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-      const err = new Error('session error')
-      loader.setSessionError(err)
-      expect(loader.error).toBe(err)
-    })
-
-    it('returns configError over sessionError', () => {
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-      const configErr = new Error('config error')
-      const sessionErr = new Error('session error')
-      loader.setConfigError(configErr)
-      loader.setSessionError(sessionErr)
-      expect(loader.error).toBe(configErr)
     })
   })
 
@@ -473,6 +478,81 @@ describe('SessionLoader', () => {
       })
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
       expect(loader.sessionError).toBeDefined()
+    })
+  })
+
+  describe('createSessionLoaderFromUrl', () => {
+    const setSearch = (qs: string) => {
+      window.history.replaceState(null, '', `${window.location.pathname}${qs}`)
+    }
+
+    it('parses scalar params and strips consumed keys from URL', () => {
+      setSearch(
+        '?config=foo.json&session=local-abc&loc=chr1:1-100&assembly=hg38&password=p&adminKey=a',
+      )
+      const loader = createSessionLoaderFromUrl(123)
+      expect(loader.configPath).toBe('foo.json')
+      expect(loader.sessionQuery).toBe('local-abc')
+      expect(loader.loc).toBe('chr1:1-100')
+      expect(loader.assembly).toBe('hg38')
+      expect(loader.password).toBe('p')
+      expect(loader.adminKey).toBe('a')
+      expect(loader.initialTimestamp).toBe(123)
+
+      // adminKey, config, session preserved; loc, assembly, password stripped
+      const after = new URLSearchParams(window.location.search)
+      expect(after.get('config')).toBe('foo.json')
+      expect(after.get('session')).toBe('local-abc')
+      expect(after.get('adminKey')).toBe('a')
+      expect(after.get('loc')).toBeNull()
+      expect(after.get('assembly')).toBeNull()
+      expect(after.get('password')).toBeNull()
+    })
+
+    it('parses hubURL as comma-separated list', () => {
+      setSearch('?hubURL=https://a/hub.txt,https://b/hub.txt')
+      const loader = createSessionLoaderFromUrl(0)
+      expect(loader.hubURL).toEqual(['https://a/hub.txt', 'https://b/hub.txt'])
+    })
+
+    it('treats tracklist=true as true and any other value as false', () => {
+      setSearch('?tracklist=true')
+      expect(createSessionLoaderFromUrl(0).tracklist).toBe(true)
+      setSearch('?tracklist=false')
+      expect(createSessionLoaderFromUrl(0).tracklist).toBe(false)
+      setSearch('')
+      expect(createSessionLoaderFromUrl(0).tracklist).toBe(false)
+    })
+
+    it('treats nav=false as false and any other value (incl. absent) as true', () => {
+      setSearch('?nav=false')
+      expect(createSessionLoaderFromUrl(0).nav).toBe(false)
+      setSearch('?nav=true')
+      expect(createSessionLoaderFromUrl(0).nav).toBe(true)
+      setSearch('')
+      expect(createSessionLoaderFromUrl(0).nav).toBe(true)
+    })
+  })
+
+  describe('reloadSessionLoader', () => {
+    it('copies prev snapshot and overrides config/session snapshots + timestamp', () => {
+      const prev = SessionLoader.create({
+        configPath: '/c.json',
+        adminKey: 'admin',
+        sessionQuery: 'local-x',
+        initialTimestamp: 1,
+      })
+      const next = reloadSessionLoader(
+        prev,
+        { assemblies: ['hg38'] },
+        { id: 'new', name: 'new session' },
+      )
+      expect(next.configPath).toBe('/c.json')
+      expect(next.adminKey).toBe('admin')
+      expect(next.sessionQuery).toBe('local-x')
+      expect(next.configSnapshot).toEqual({ assemblies: ['hg38'] })
+      expect(next.sessionSnapshot).toEqual({ id: 'new', name: 'new session' })
+      expect(next.initialTimestamp).not.toBe(1)
     })
   })
 
