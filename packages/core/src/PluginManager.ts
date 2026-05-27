@@ -79,6 +79,44 @@ type ExtensionPointCallback = (
   props?: Record<string, unknown>,
 ) => unknown
 
+// Typed registry for extension points, mirroring RpcRegistry. Plugins augment
+// this interface via declaration merging so the addToExtensionPoint /
+// evaluateExtensionPoint / evaluateAsyncExtensionPoint overloads narrow per
+// extension point name.
+//
+// Each entry declares:
+//   args:   the value passed as `extendee` (also the accumulator type)
+//   result: the value each callback must return
+//
+// Extension points are accumulator-style: every callback receives the previous
+// callback's return value as its first arg, so for side-effect points
+// (LaunchView-*, etc.) declare `result` equal to `args` and return the args
+// unchanged so subsequent callbacks see the original payload.
+//
+// Example augmentation in a plugin:
+//
+//   declare module '@jbrowse/core/PluginManager' {
+//     interface ExtensionPointRegistry {
+//       'LaunchView-LinearGenomeView': {
+//         args: LaunchArgs
+//         result: LaunchArgs
+//       }
+//     }
+//   }
+//
+// Untyped extension points still work — they hit the second overload of each
+// method and fall back to the prior loose typing.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ExtensionPointRegistry {}
+
+export type ExtensionPointName = keyof ExtensionPointRegistry
+
+export type ExtensionPointArgs<N extends ExtensionPointName> =
+  ExtensionPointRegistry[N]['args']
+
+export type ExtensionPointResult<N extends ExtensionPointName> =
+  ExtensionPointRegistry[N]['result']
+
 /**
  * free-form string-to-unknown mapping of metadata related to the instance of
  * this plugin. `isCore` is typically set to `Boolean(true)` if the plugin was
@@ -604,9 +642,23 @@ export default class PluginManager {
     return this.glyphTypes.all()
   }
 
+  addToExtensionPoint<N extends ExtensionPointName>(
+    extensionPointName: N,
+    callback: (
+      extendee: ExtensionPointArgs<N>,
+      props: Record<string, unknown>,
+    ) => ExtensionPointResult<N> | Promise<ExtensionPointResult<N>>,
+  ): void
   addToExtensionPoint<T>(
     extensionPointName: string,
     callback: (extendee: T, props: Record<string, unknown>) => T,
+  ): void
+  addToExtensionPoint(
+    extensionPointName: string,
+    callback: (
+      extendee: unknown,
+      props: Record<string, unknown>,
+    ) => unknown,
   ) {
     let callbacks = this.extensionPoints.get(extensionPointName)
     if (!callbacks) {
@@ -616,6 +668,16 @@ export default class PluginManager {
     callbacks.push(callback as ExtensionPointCallback)
   }
 
+  evaluateExtensionPoint<N extends ExtensionPointName>(
+    extensionPointName: N,
+    extendee: ExtensionPointArgs<N>,
+    props?: Record<string, unknown>,
+  ): ExtensionPointResult<N>
+  evaluateExtensionPoint(
+    extensionPointName: string,
+    extendee: unknown,
+    props?: Record<string, unknown>,
+  ): unknown
   evaluateExtensionPoint(
     extensionPointName: string,
     extendee: unknown,
@@ -635,6 +697,16 @@ export default class PluginManager {
     return accumulator
   }
 
+  evaluateAsyncExtensionPoint<N extends ExtensionPointName>(
+    extensionPointName: N,
+    extendee: ExtensionPointArgs<N>,
+    props?: Record<string, unknown>,
+  ): Promise<ExtensionPointResult<N>>
+  evaluateAsyncExtensionPoint(
+    extensionPointName: string,
+    extendee: unknown,
+    props?: Record<string, unknown>,
+  ): Promise<unknown>
   async evaluateAsyncExtensionPoint(
     extensionPointName: string,
     extendee: unknown,
