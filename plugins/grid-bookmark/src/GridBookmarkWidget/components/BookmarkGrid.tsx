@@ -61,9 +61,18 @@ const BookmarkGrid = observer(function BookmarkGrid({
 
   const widths = [
     50,
-    colWidth('Bookmark link', rows.map(row => row.locString)),
-    colWidth('Label', rows.map(row => row.label)),
-    colWidth('Assembly', rows.map(row => row.assemblyName)),
+    colWidth(
+      'Bookmark link',
+      rows.map(row => row.locString),
+    ),
+    colWidth(
+      'Label',
+      rows.map(row => row.label),
+    ),
+    colWidth(
+      'Assembly',
+      rows.map(row => row.assemblyName),
+    ),
     100,
   ]
 

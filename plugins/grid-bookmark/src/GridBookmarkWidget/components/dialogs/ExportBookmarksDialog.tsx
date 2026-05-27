@@ -13,8 +13,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { downloadBookmarkFile } from '../../utils.ts'
 import BookmarkSelectionAlert from './BookmarkSelectionAlert.tsx'
+import { downloadBookmarkFile } from '../../utils.ts'
 
 import type { GridBookmarkModel } from '../../model.ts'
 

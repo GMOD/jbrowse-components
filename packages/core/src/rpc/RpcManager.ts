@@ -28,6 +28,24 @@ export type RpcDriverFactory = (
   pluginManager: PluginManager,
 ) => BaseRpcDriver
 
+const makeMainThreadDriver: RpcDriverFactory = (config, backendConfig) =>
+  new MainThreadRpcDriver({
+    ...(backendConfig as ConstructorParameters<typeof MainThreadRpcDriver>[0]),
+    config,
+  })
+
+const makeWebWorkerDriver: RpcDriverFactory = (config, backendConfig, pm) =>
+  new WebWorkerRpcDriver(
+    {
+      ...(backendConfig as ConstructorParameters<typeof WebWorkerRpcDriver>[0]),
+      config,
+    },
+    {
+      plugins: pm.runtimePluginDefinitions,
+      windowHref: typeof window !== 'undefined' ? window.location.href : '',
+    },
+  )
+
 export default class RpcManager {
   static configSchema = rpcConfigSchema
 
@@ -48,34 +66,8 @@ export default class RpcManager {
     this.driverObjects = new Map()
     this.driverFactories = new Map()
 
-    // Register built-in drivers
-    this.registerDriverFactory(
-      'MainThreadRpcDriver',
-      (config, backendConfig) =>
-        new MainThreadRpcDriver({
-          ...(backendConfig as ConstructorParameters<
-            typeof MainThreadRpcDriver
-          >[0]),
-          config,
-        }),
-    )
-    this.registerDriverFactory(
-      'WebWorkerRpcDriver',
-      (config, backendConfig, pm) =>
-        new WebWorkerRpcDriver(
-          {
-            ...(backendConfig as ConstructorParameters<
-              typeof WebWorkerRpcDriver
-            >[0]),
-            config,
-          },
-          {
-            plugins: pm.runtimePluginDefinitions,
-            windowHref:
-              typeof window !== 'undefined' ? window.location.href : '',
-          },
-        ),
-    )
+    this.registerDriverFactory('MainThreadRpcDriver', makeMainThreadDriver)
+    this.registerDriverFactory('WebWorkerRpcDriver', makeWebWorkerDriver)
   }
 
   registerDriverFactory(name: string, factory: RpcDriverFactory) {

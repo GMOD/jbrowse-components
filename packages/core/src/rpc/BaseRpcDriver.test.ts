@@ -48,7 +48,11 @@ describe('BaseRpcDriver.filterArgs', () => {
   const driver = new TestDriver()
 
   test('strips functions from nested objects', () => {
-    const out = driver.filterArgs({ a: 1, fn: () => 0, nested: { b: () => 0, c: 2 } })
+    const out = driver.filterArgs({
+      a: 1,
+      fn: () => 0,
+      nested: { b: () => 0, c: 2 },
+    })
     expect(out).toEqual({ a: 1, nested: { c: 2 } })
   })
 
@@ -62,7 +66,8 @@ describe('BaseRpcDriver.filterArgs', () => {
     expect(driver.filterArgs('hi')).toBe('hi')
     expect(driver.filterArgs(true)).toBe(true)
     expect(driver.filterArgs(null)).toBe(null)
-    expect(driver.filterArgs(undefined)).toBe(undefined)
+    const u: unknown = undefined
+    expect(driver.filterArgs(u)).toBeUndefined()
   })
 
   test('preserves Date instances (structured-clone handles them)', () => {

@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 
 // core
-import { getEnv, getSession } from '@jbrowse/core/util'
 import type { ReactNode } from 'react'
+
+import { getEnv, getSession } from '@jbrowse/core/util'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {

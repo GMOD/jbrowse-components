@@ -18,18 +18,15 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
-    'LaunchView-SvInspectorView',
-    args => {
-      const { session, assembly, uri, fileType } = args
-      session.addView('SvInspectorView', {
-        init: {
-          assembly,
-          uri,
-          fileType,
-        },
-      })
-      return args
-    },
-  )
+  pluginManager.addToExtensionPoint('LaunchView-SvInspectorView', args => {
+    const { session, assembly, uri, fileType } = args
+    session.addView('SvInspectorView', {
+      init: {
+        assembly,
+        uri,
+        fileType,
+      },
+    })
+    return args
+  })
 }

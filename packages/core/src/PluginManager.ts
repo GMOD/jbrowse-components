@@ -664,10 +664,7 @@ export default class PluginManager {
   ): void
   addToExtensionPoint(
     extensionPointName: string,
-    callback: (
-      extendee: unknown,
-      props: Record<string, unknown>,
-    ) => unknown,
+    callback: (extendee: unknown, props: Record<string, unknown>) => unknown,
   ) {
     let callbacks = this.extensionPoints.get(extensionPointName)
     if (!callbacks) {

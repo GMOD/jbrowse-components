@@ -29,14 +29,15 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
   ) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { rendererType, featureId } = deserializedArgs
-    const RendererType = this.pluginManager.getRendererType(
-      rendererType,
-    ) as BoxRendererType | undefined
+    const RendererType = this.pluginManager.getRendererType(rendererType) as
+      | BoxRendererType
+      | undefined
     if (!RendererType) {
       throw new Error(`unknown renderer ${rendererType}`)
     }
-    const data = RendererType.getLayoutSession(deserializedArgs)
-      ?.cachedLayout?.layout.getDataByID(featureId) as Feature | undefined
+    const data = RendererType.getLayoutSession(
+      deserializedArgs,
+    )?.cachedLayout?.layout.getDataByID(featureId) as Feature | undefined
     return { feature: data?.toJSON() }
   }
 }

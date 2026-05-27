@@ -1,11 +1,10 @@
 import { Suspense, lazy, useRef } from 'react'
+import type { ReactNode } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-
-import type { ReactNode } from 'react'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {

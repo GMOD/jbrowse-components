@@ -29,7 +29,6 @@ const LabeledRegionModel = types
     },
   }))
 
-
 export interface IExtendedLGV extends LinearGenomeViewModel {
   bookmarkHighlightsVisible: boolean
   setBookmarkHighlightsVisible: (arg: boolean) => void
@@ -151,7 +150,15 @@ export default function f(_pluginManager: PluginManager) {
       get sharedBookmarksSnapshot() {
         return {
           sharedBookmarks: self.selectedBookmarks.map(
-            ({ refName, start, end, reversed, assemblyName, label, highlight }) => ({
+            ({
+              refName,
+              start,
+              end,
+              reversed,
+              assemblyName,
+              label,
+              highlight,
+            }) => ({
               refName,
               start,
               end,
@@ -169,7 +176,15 @@ export default function f(_pluginManager: PluginManager) {
       get allBookmarksSnapshot() {
         return {
           sharedBookmarks: self.bookmarksWithValidAssemblies.map(
-            ({ refName, start, end, reversed, assemblyName, label, highlight }) => ({
+            ({
+              refName,
+              start,
+              end,
+              reversed,
+              assemblyName,
+              label,
+              highlight,
+            }) => ({
               refName,
               start,
               end,

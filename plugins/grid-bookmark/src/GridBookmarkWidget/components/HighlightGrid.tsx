@@ -96,7 +96,10 @@ const HighlightGrid = observer(function HighlightGrid({
           {
             field: 'locString',
             headerName: 'Location',
-            width: colWidth('Location', rows.map(r => r.locString)),
+            width: colWidth(
+              'Location',
+              rows.map(r => r.locString),
+            ),
             renderCell: ({ value, row }) => (
               <Link
                 className={classes.cell}
@@ -124,12 +127,18 @@ const HighlightGrid = observer(function HighlightGrid({
             field: 'label',
             headerName: 'Label',
             editable: true,
-            width: colWidth('Label', rows.map(r => r.label)),
+            width: colWidth(
+              'Label',
+              rows.map(r => r.label),
+            ),
           },
           {
             field: 'assemblyName',
             headerName: 'Assembly',
-            width: colWidth('Assembly', rows.map(r => r.assemblyName)),
+            width: colWidth(
+              'Assembly',
+              rows.map(r => r.assemblyName),
+            ),
           },
           {
             field: 'color',

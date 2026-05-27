@@ -190,7 +190,9 @@ const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
                 const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
                 const fileType = guessFileType(lines[0]!)
                 if (fileType === 'BED') {
-                  model.importBookmarks(getBookmarksFromBEDFile(lines, selectedAsm))
+                  model.importBookmarks(
+                    getBookmarksFromBEDFile(lines, selectedAsm),
+                  )
                 } else {
                   // TSV
                   model.importBookmarks(getBookmarksFromTSVFile(lines))

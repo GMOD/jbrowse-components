@@ -17,20 +17,17 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 export default function LaunchDotplotView(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
-    'LaunchView-DotplotView',
-    args => {
-      const { session, views, tracks = [] } = args
-      if (views.length < 2) {
-        throw new Error('DotplotView requires 2 views to be specified')
-      }
-      session.addView('DotplotView', {
-        init: {
-          views,
-          tracks,
-        },
-      })
-      return args
-    },
-  )
+  pluginManager.addToExtensionPoint('LaunchView-DotplotView', args => {
+    const { session, views, tracks = [] } = args
+    if (views.length < 2) {
+      throw new Error('DotplotView requires 2 views to be specified')
+    }
+    session.addView('DotplotView', {
+      init: {
+        views,
+        tracks,
+      },
+    })
+    return args
+  })
 }

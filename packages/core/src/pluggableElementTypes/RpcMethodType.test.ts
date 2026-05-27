@@ -108,10 +108,12 @@ test('augmentLocationObject still walks when only file handles are present', asy
     }
     await mockRpc.serializeArguments(args, '')
     expect(
-      ((args.adapter as Record<string, unknown>).location as Record<
-        string,
-        unknown
-      >).locationType,
+      (
+        (args.adapter as Record<string, unknown>).location as Record<
+          string,
+          unknown
+        >
+      ).locationType,
     ).toBe('BlobLocation')
     expect(mockRpc.serializeNewAuthArguments).not.toHaveBeenCalled()
   } finally {

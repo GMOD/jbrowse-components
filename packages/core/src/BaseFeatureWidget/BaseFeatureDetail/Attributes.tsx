@@ -65,9 +65,8 @@ export default function Attributes(props: {
           if (value.length > 1 && value.every(v => isObject(v))) {
             const objArr = value as Record<string, unknown>[]
             const firstKeyCount = Object.keys(objArr[0]!).length
-            const unionKeyCount = new Set(
-              objArr.flatMap(v => Object.keys(v)),
-            ).size
+            const unionKeyCount = new Set(objArr.flatMap(v => Object.keys(v)))
+              .size
             // Only use the data grid when schemas are homogeneous enough;
             // heterogeneous arrays fall through to ArrayValue which renders
             // each object as individual field sections instead of disappearing

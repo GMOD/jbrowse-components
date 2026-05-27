@@ -153,11 +153,19 @@ export default function ErrorMessageStackTraceDialog({
     .join('\n')
 
   return (
-    <Dialog open onClose={() => onClose()} maxWidth="xl">
+    <Dialog
+      open
+      onClose={() => {
+        onClose()
+      }}
+      maxWidth="xl"
+    >
       <DialogTitle>
         Stack trace
         <IconButton
-          onClick={() => onClose()}
+          onClick={() => {
+            onClose()
+          }}
           sx={{
             position: 'absolute',
             right: 8,
@@ -189,7 +197,13 @@ export default function ErrorMessageStackTraceDialog({
         >
           {clicked ? 'Copied!' : 'Copy stack trace to clipboard'}
         </Button>
-        <Button variant="contained" color="primary" onClick={() => onClose()}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            onClose()
+          }}
+        >
           Close
         </Button>
       </DialogActions>

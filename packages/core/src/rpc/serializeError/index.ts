@@ -32,11 +32,23 @@ function newError(name: string) {
   if (factory) {
     return factory()
   }
-  const ErrorConstructor = errorConstructors.get(name) ?? Error
   if (name === 'AggregateError') {
     return new AggregateError([], 'AggregateError')
   }
+  const ErrorConstructor = errorConstructors.get(name) ?? Error
   return new ErrorConstructor()
+}
+
+function isBufferValue(value: unknown): value is Uint8Array {
+  return value instanceof Uint8Array && value.constructor.name === 'Buffer'
+}
+
+function isStreamValue(value: unknown): boolean {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof (value as { pipe?: unknown }).pipe === 'function'
+  )
 }
 
 export function isErrorLike(value: unknown): value is Error {
@@ -115,20 +127,12 @@ function destroyCircular({
     })
 
   for (const [key, value] of Object.entries(from)) {
-    if (
-      value &&
-      value instanceof Uint8Array &&
-      value.constructor.name === 'Buffer'
-    ) {
+    if (isBufferValue(value)) {
       to[key] = serialize ? '[object Buffer]' : value
       continue
     }
 
-    if (
-      value !== null &&
-      typeof value === 'object' &&
-      typeof (value as { pipe?: unknown }).pipe === 'function'
-    ) {
+    if (isStreamValue(value)) {
       to[key] = serialize ? '[object Stream]' : value
       continue
     }
@@ -149,7 +153,9 @@ function destroyCircular({
       continue
     }
 
-    to[key] = seen.includes(from[key]) ? '[Circular]' : continueDestroyCircular(from[key] as Record<string, unknown>)
+    to[key] = seen.includes(from[key])
+      ? '[Circular]'
+      : continueDestroyCircular(from[key] as Record<string, unknown>)
   }
 
   if (serialize || to instanceof Error) {

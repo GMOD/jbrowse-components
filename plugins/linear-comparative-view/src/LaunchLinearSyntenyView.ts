@@ -21,28 +21,21 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
-    'LaunchView-LinearSyntenyView',
-    args => {
-      const { session, views, tracks = [] } = args
-      if (views.length < 2) {
-        throw new Error(
-          'LinearSyntenyView requires at least 2 views to be specified',
-        )
-      }
-      // 2D tracks targets one entry per level (between views[i] and
-      // views[i+1]); flat 1D tracks goes to level 0; empty stays empty.
-      session.addView('LinearSyntenyView', {
-        init: {
-          views,
-          tracks: isNestedTracks(tracks)
-            ? tracks
-            : tracks.length
-              ? [tracks]
-              : [],
-        },
-      })
-      return args
-    },
-  )
+  pluginManager.addToExtensionPoint('LaunchView-LinearSyntenyView', args => {
+    const { session, views, tracks = [] } = args
+    if (views.length < 2) {
+      throw new Error(
+        'LinearSyntenyView requires at least 2 views to be specified',
+      )
+    }
+    // 2D tracks targets one entry per level (between views[i] and
+    // views[i+1]); flat 1D tracks goes to level 0; empty stays empty.
+    session.addView('LinearSyntenyView', {
+      init: {
+        views,
+        tracks: isNestedTracks(tracks) ? tracks : tracks.length ? [tracks] : [],
+      },
+    })
+    return args
+  })
 }

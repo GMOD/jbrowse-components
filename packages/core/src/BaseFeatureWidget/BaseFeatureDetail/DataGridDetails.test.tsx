@@ -5,7 +5,9 @@ import DataGridDetails from './DataGridDetails.tsx'
 import { createJBrowseTheme } from '../../ui/index.ts'
 
 function renderWithTheme(ui: React.ReactElement) {
-  return render(<ThemeProvider theme={createJBrowseTheme()}>{ui}</ThemeProvider>)
+  return render(
+    <ThemeProvider theme={createJBrowseTheme()}>{ui}</ThemeProvider>,
+  )
 }
 
 describe('DataGridDetails', () => {

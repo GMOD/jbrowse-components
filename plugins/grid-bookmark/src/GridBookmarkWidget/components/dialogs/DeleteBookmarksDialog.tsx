@@ -30,7 +30,11 @@ const DeleteBookmarksDialog = observer(function DeleteBookmarksDialog({
         onClose()
       }}
     >
-      <BookmarkSelectionAlert all={deleteAll} verb="deleted" severity="warning" />
+      <BookmarkSelectionAlert
+        all={deleteAll}
+        verb="deleted"
+        severity="warning"
+      />
     </ConfirmDialog>
   )
 })

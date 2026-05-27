@@ -94,5 +94,4 @@ export default class PlinkLDAdapter extends BaseAdapter {
       r => r.chrB === refName && r.bpB >= start && r.bpB <= end,
     )
   }
-
 }

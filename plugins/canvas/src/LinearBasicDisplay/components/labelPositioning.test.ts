@@ -1,9 +1,6 @@
 import { forEachRenderedLabel } from './labelPositioning.ts'
 
-import type {
-  LabelVisibility,
-  ResolvedLabel,
-} from './labelPositioning.ts'
+import type { LabelVisibility, ResolvedLabel } from './labelPositioning.ts'
 import type {
   FeatureDataResult,
   FeatureLabelData,
@@ -35,9 +32,7 @@ function makeLabelData(
   }
 }
 
-function makeData(
-  labels: Record<string, FeatureLabelData>,
-): FeatureDataResult {
+function makeData(labels: Record<string, FeatureLabelData>): FeatureDataResult {
   return { floatingLabelsData: labels } as FeatureDataResult
 }
 

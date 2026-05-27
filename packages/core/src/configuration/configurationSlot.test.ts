@@ -137,7 +137,7 @@ test('convertToCallback escapes quotes in string values', () => {
   const instance = model.create(undefined, { pluginManager })
   instance.set('fo"o')
   instance.convertToCallback()
-  expect(instance.value).toBe('jexl:"fo\\"o"')
+  expect(instance.value).toBe(String.raw`jexl:"fo\"o"`)
   expect(instance.expr.eval()).toBe('fo"o')
 })
 

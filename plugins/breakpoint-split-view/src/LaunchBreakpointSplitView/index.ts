@@ -22,21 +22,18 @@ declare module '@jbrowse/core/PluginManager' {
 export default function LaunchBreakpointSplitViewF(
   pluginManager: PluginManager,
 ) {
-  pluginManager.addToExtensionPoint(
-    'LaunchView-BreakpointSplitView',
-    args => {
-      const { session, views } = args
-      if (views.length < 2) {
-        throw new Error(
-          'BreakpointSplitView requires at least 2 views to be specified',
-        )
-      }
-      session.addView('BreakpointSplitView', {
-        init: {
-          views,
-        },
-      })
-      return args
-    },
-  )
+  pluginManager.addToExtensionPoint('LaunchView-BreakpointSplitView', args => {
+    const { session, views } = args
+    if (views.length < 2) {
+      throw new Error(
+        'BreakpointSplitView requires at least 2 views to be specified',
+      )
+    }
+    session.addView('BreakpointSplitView', {
+      init: {
+        views,
+      },
+    })
+    return args
+  })
 }

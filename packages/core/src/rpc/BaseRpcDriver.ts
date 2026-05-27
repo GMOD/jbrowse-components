@@ -30,6 +30,22 @@ function isCloneable(thing: unknown) {
   return !(typeof thing === 'function') && !(thing instanceof Error)
 }
 
+// values that structured-clone handles natively; filterArgs must pass these
+// through unchanged, since Object.entries on them yields [] and would collapse
+// them to plain {}
+function isStructuredClonePassthrough(thing: object): boolean {
+  return (
+    thing instanceof File ||
+    thing instanceof Blob ||
+    thing instanceof ArrayBuffer ||
+    ArrayBuffer.isView(thing) ||
+    thing instanceof Date ||
+    thing instanceof Map ||
+    thing instanceof Set ||
+    thing instanceof RegExp
+  )
+}
+
 function detectHardwareConcurrency() {
   const mainThread = typeof window !== 'undefined'
   const canDetect = mainThread && 'hardwareConcurrency' in window.navigator
@@ -95,18 +111,7 @@ export default abstract class BaseRpcDriver {
         .map(t => this.filterArgs(t)) as unknown as THING_TYPE
     } else if (isStateTreeNode(thing) && !isAlive(thing)) {
       throw new Error('dead state tree node passed to RPC call')
-    } else if (
-      thing instanceof File ||
-      thing instanceof Blob ||
-      thing instanceof ArrayBuffer ||
-      ArrayBuffer.isView(thing) ||
-      thing instanceof Date ||
-      thing instanceof Map ||
-      thing instanceof Set ||
-      thing instanceof RegExp
-    ) {
-      // structured-clone handles these natively; treating them as plain objects
-      // would collapse them to {} since Object.entries returns []
+    } else if (isStructuredClonePassthrough(thing)) {
       return thing
     } else {
       return Object.fromEntries(

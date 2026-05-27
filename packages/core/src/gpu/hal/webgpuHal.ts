@@ -379,7 +379,10 @@ export class WebGPUHal implements GpuHal {
               size: this.alignedUniformSize,
             },
           },
-          { binding: tb.textureBinding, resource: texState.texture.createView() },
+          {
+            binding: tb.textureBinding,
+            resource: texState.texture.createView(),
+          },
           { binding: tb.samplerBinding, resource: texState.sampler },
         ],
       })

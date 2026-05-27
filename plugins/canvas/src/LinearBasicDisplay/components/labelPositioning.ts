@@ -65,7 +65,9 @@ export function forEachRenderedLabel(
   emit: (featureId: string, labels: ResolvedLabel[]) => void,
 ) {
   const toScreen = makeBpMapper(vr)
-  for (const [featureId, labelData] of Object.entries(data.floatingLabelsData)) {
+  for (const [featureId, labelData] of Object.entries(
+    data.floatingLabelsData,
+  )) {
     if (labelData.maxX < vr.start || labelData.minX > vr.end) {
       continue
     }

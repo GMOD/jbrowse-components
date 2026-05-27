@@ -220,9 +220,9 @@ export class WebGL2Hal implements GpuHal {
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferData(gl.UNIFORM_BUFFER, uniformByteSize, gl.DYNAMIC_DRAW)
 
-    this.regions = new RegionRegistry<RegionPassBuffer>(buf =>
-      { gl.deleteBuffer(buf.vbo) },
-    )
+    this.regions = new RegionRegistry<RegionPassBuffer>(buf => {
+      gl.deleteBuffer(buf.vbo)
+    })
 
     this.passes = new Map()
     for (const desc of descriptors) {
@@ -263,7 +263,10 @@ export class WebGL2Hal implements GpuHal {
       if (tb) {
         // Bind the sampler uniform to the texture unit once — it never changes.
         gl.useProgram(program)
-        gl.uniform1i(gl.getUniformLocation(program, tb.glUniformName), tb.glTextureUnit)
+        gl.uniform1i(
+          gl.getUniformLocation(program, tb.glUniformName),
+          tb.glTextureUnit,
+        )
         textureState = { texture: null, unit: tb.glTextureUnit }
       }
 

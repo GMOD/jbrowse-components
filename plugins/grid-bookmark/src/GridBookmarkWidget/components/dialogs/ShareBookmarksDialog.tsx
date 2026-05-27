@@ -13,8 +13,8 @@ import {
 import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
-import { shareSessionToDynamo } from '../../sessionSharing.ts'
 import BookmarkSelectionAlert from './BookmarkSelectionAlert.tsx'
+import { shareSessionToDynamo } from '../../sessionSharing.ts'
 
 import type { GridBookmarkModel } from '../../model.ts'
 

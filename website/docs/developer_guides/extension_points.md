@@ -45,10 +45,10 @@ argument (chained). In the example above, `ret` would be `{value:3}`.
 
 All built-in extension points are registered in the `ExtensionPointRegistry`
 interface in `@jbrowse/core/PluginManager`. The overloads of
-`addToExtensionPoint` / `evaluateExtensionPoint` /
-`evaluateAsyncExtensionPoint` automatically narrow to the registered types when
-you pass a known name, so callbacks get typed `args` and evaluate calls return
-the correct type without a cast.
+`addToExtensionPoint` / `evaluateExtensionPoint` / `evaluateAsyncExtensionPoint`
+automatically narrow to the registered types when you pass a known name, so
+callbacks get typed `args` and evaluate calls return the correct type without a
+cast.
 
 If you create your own extension point, register it the same way:
 

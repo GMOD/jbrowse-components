@@ -72,7 +72,10 @@ export async function getAdapter(
 ): Promise<AdapterCacheEntry> {
   const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
   if (!adapterCache[cacheKey]) {
-    storeWithEvict(cacheKey, getAdapterPre(pluginManager, sessionId, adapterConfigSnapshot))
+    storeWithEvict(
+      cacheKey,
+      getAdapterPre(pluginManager, sessionId, adapterConfigSnapshot),
+    )
   }
   const ret = await adapterCache[cacheKey]!
   ret.sessionIds.add(sessionId)
@@ -101,7 +104,10 @@ export async function freeAdapterResources(args: { sessionId?: string }) {
         delete adapterCache[cacheKey]
       }
     } catch (e) {
-      console.error(`dataAdapterCache: evicting failed adapter "${cacheKey}"`, e)
+      console.error(
+        `dataAdapterCache: evicting failed adapter "${cacheKey}"`,
+        e,
+      )
       delete adapterCache[cacheKey]
     }
   }

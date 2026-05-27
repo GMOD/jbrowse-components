@@ -8,7 +8,10 @@ import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { AbstractSessionModel, TextSearchManager } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  TextSearchManager,
+} from '@jbrowse/core/util'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {

@@ -54,7 +54,13 @@ export default function LDFilterDialog({
     (callRateEnabled && callRate === undefined)
 
   return (
-    <Dialog open onClose={() => { handleClose() }} title="LD Filter Settings">
+    <Dialog
+      open
+      onClose={() => {
+        handleClose()
+      }}
+      title="LD Filter Settings"
+    >
       <DialogContent style={{ width: 500 }}>
         {filterStats ? (
           <Alert severity="info" style={{ marginBottom: 16 }}>
@@ -173,7 +179,12 @@ export default function LDFilterDialog({
         ) : null}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => { handleClose() }} color="primary">
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button
@@ -181,7 +192,9 @@ export default function LDFilterDialog({
             if (maf !== undefined) {
               model.setMafFilter(maf)
             }
-            model.setHweFilter(hweEnabled && hweThreshold !== undefined ? hweThreshold : 0)
+            model.setHweFilter(
+              hweEnabled && hweThreshold !== undefined ? hweThreshold : 0,
+            )
             model.setCallRateFilter(
               callRateEnabled && callRate !== undefined ? callRate : 0,
             )

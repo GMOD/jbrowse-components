@@ -26,9 +26,7 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
         size="small"
         value={mode}
         onChange={event => {
-          model.setMode(
-            event.target.value as Parameters<typeof model.setMode>[0],
-          )
+          model.setMode(event.target.value)
         }}
       >
         {[

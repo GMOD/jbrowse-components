@@ -36,7 +36,6 @@ import {
   indexById,
   screenDensity,
 } from './baseModelHelpers.ts'
-import type { RegionDensityStats } from './baseModelHelpers.ts'
 import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
@@ -45,6 +44,7 @@ import { computeLaidOutData } from './layout.ts'
 import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
+import type { RegionDensityStats } from './baseModelHelpers.ts'
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureBackend } from './components/canvasFeatureBackendTypes.ts'
 import type {
