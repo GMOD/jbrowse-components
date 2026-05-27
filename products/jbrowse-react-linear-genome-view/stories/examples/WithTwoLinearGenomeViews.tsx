@@ -1,20 +1,26 @@
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
+import { useState } from 'react'
+
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 export const WithTwoLinearGenomeViews = () => {
   const { assembly, tracks } = getVolvoxConfig()
-  const state1 = createViewState({
-    assembly,
-    tracks,
-    location: 'ctgA:1105..1221',
-  })
-  const state2 = createViewState({
-    assembly,
-    tracks,
-    location: 'ctgA:5560..30589',
-  })
+  const [state1] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      location: 'ctgA:1105..1221',
+    }),
+  )
+  const [state2] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      location: 'ctgA:5560..30589',
+    }),
+  )
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state1} />

@@ -7,6 +7,8 @@
  * Features: resizable, repositionable (left/right), minimizable, closeable.
  */
 
+import { useState } from 'react'
+
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
@@ -14,24 +16,26 @@ export const WithDrawerWidget = () => {
   const { assembly, tracks } = getVolvoxConfig()
   // Use the 'init' field to automatically show the hierarchical track selector
   // in the drawer when the view loads, similar to ?tracklist=true in URL params
-  const state = createViewState({
-    assembly,
-    tracks,
-    location: 'ctgA:1105..1221',
-    drawerViewHeight: '100vh',
-    defaultSession: {
-      name: 'Drawer Widget Example',
-      view: {
-        id: 'linearGenomeView',
-        type: 'LinearGenomeView',
-        init: {
-          // @ts-expect-error assembly guaranteed from getVolvoxConfig
-          assembly: assembly.name,
-          tracklist: true,
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      location: 'ctgA:1105..1221',
+      drawerViewHeight: '100vh',
+      defaultSession: {
+        name: 'Drawer Widget Example',
+        view: {
+          id: 'linearGenomeView',
+          type: 'LinearGenomeView',
+          init: {
+            // @ts-expect-error assembly guaranteed from getVolvoxConfig
+            assembly: assembly.name,
+            tracklist: true,
+          },
         },
       },
-    },
-  })
+    }),
+  )
 
   return (
     <div>

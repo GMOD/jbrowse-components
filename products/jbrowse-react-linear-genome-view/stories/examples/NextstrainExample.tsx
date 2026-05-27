@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import nextstrainConfig from '../../public/nextstrain_covid.json' with { type: 'json' }
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
@@ -5,24 +7,26 @@ import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 export const NextstrainExample = () => {
   const { assembly, tracks, defaultSession } = nextstrainConfig
-  const state = createViewState({
-    assembly,
-    tracks,
-    defaultSession,
-    location: 'SARS-CoV-2:1..29,903',
-    configuration: {
-      theme: {
-        palette: {
-          primary: {
-            main: '#5da8a3',
-          },
-          secondary: {
-            main: '#333',
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      defaultSession,
+      location: 'SARS-CoV-2:1..29,903',
+      configuration: {
+        theme: {
+          palette: {
+            primary: {
+              main: '#5da8a3',
+            },
+            secondary: {
+              main: '#333',
+            },
           },
         },
       },
-    },
-  })
+    }),
+  )
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />

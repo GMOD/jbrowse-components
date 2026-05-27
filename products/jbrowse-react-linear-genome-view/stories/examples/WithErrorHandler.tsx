@@ -9,23 +9,24 @@ import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 export const WithErrorHandler = () => {
   const { assembly } = getVolvoxConfig()
-  const [error, setError] = useState<unknown>()
-  const [viewState] = useState(() => {
+  const [{ viewState, error }] = useState(() => {
     try {
-      return createViewState({
-        assembly,
-        tracks: [
-          {
-            type: 'BadTrack',
-            notProperTrack: 'error',
-            shouldHaveTrackIdAndStuff: 'test',
-          },
-        ],
-        location: 'ctgA:1105..1221',
-      })
+      return {
+        viewState: createViewState({
+          assembly,
+          tracks: [
+            {
+              type: 'BadTrack',
+              notProperTrack: 'error',
+              shouldHaveTrackIdAndStuff: 'test',
+            },
+          ],
+          location: 'ctgA:1105..1221',
+        }),
+        error: undefined as unknown,
+      }
     } catch (e) {
-      setError(e)
-      return undefined
+      return { viewState: undefined, error: e }
     }
   })
   return (

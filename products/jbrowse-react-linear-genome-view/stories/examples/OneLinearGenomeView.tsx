@@ -7,20 +7,24 @@
  * Shows how to: set up assembly, load tracks, navigate to a region, monitor changes.
  */
 
+import { useState } from 'react'
+
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 export const OneLinearGenomeView = () => {
   const { assembly, tracks } = getVolvoxConfig()
-  const state = createViewState({
-    assembly,
-    tracks,
-    // use 1-based coordinates for locstring
-    location: 'ctgA:1105..1221',
-    onChange: patch => {
-      console.log('patch', patch)
-    },
-  })
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      // use 1-based coordinates for locstring
+      location: 'ctgA:1105..1221',
+      onChange: patch => {
+        console.log('patch', patch)
+      },
+    }),
+  )
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />

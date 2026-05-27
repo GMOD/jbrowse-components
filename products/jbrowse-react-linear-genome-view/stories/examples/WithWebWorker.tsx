@@ -1,5 +1,7 @@
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
+import { useState } from 'react'
+
 import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 // in your code
@@ -8,18 +10,21 @@ import makeWorkerInstance from '../../src/makeWorkerInstance.ts'
 
 export const WithWebWorker = () => {
   const { assembly, tracks } = getVolvoxConfig()
-  const state = createViewState({
-    assembly,
-    tracks,
-    location: 'ctgA:1105..1221',
-    configuration: {
-      rpc: {
-        defaultDriver: 'WebWorkerRpcDriver',
+  const [state] = useState(() => {
+    const s = createViewState({
+      assembly,
+      tracks,
+      location: 'ctgA:1105..1221',
+      configuration: {
+        rpc: {
+          defaultDriver: 'WebWorkerRpcDriver',
+        },
       },
-    },
-    makeWorkerInstance,
+      makeWorkerInstance,
+    })
+    s.session.view.showTrack('Deep sequencing')
+    return s
   })
-  state.session.view.showTrack('Deep sequencing')
 
   return (
     <div>

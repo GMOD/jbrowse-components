@@ -45,10 +45,8 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   const { classes } = useStyles()
 
   const drawerSession = session as SessionWithDrawerWidgets
-  const drawerPosition = drawerSession.drawerPosition || 'right'
-  const drawerWidth = drawerSession.drawerWidth || 384
-  const minimized = drawerSession.minimized || false
-  const visibleWidget = drawerSession.visibleWidget
+  const { drawerPosition, drawerWidth, minimized, visibleWidget } =
+    drawerSession
   const drawerViewHeight = viewState.drawerViewHeight
   const drawerVisible = visibleWidget && !minimized
 
