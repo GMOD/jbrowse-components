@@ -28,6 +28,9 @@ import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
+import { getConf } from '@jbrowse/core/configuration'
+import { applyColorPalette } from '@jbrowse/tree-sidebar'
+
 import {
   GENOTYPE_SPLITTER,
   NO_CALL_COLOR,
@@ -38,6 +41,28 @@ import {
 } from './constants.ts'
 import { getSources, makeHaplotypeSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
+
+// Apply the `colorBy` config palette the first time sources arrive — but only
+// when the user hasn't already set a layout (manual edit or persisted snapshot
+// in the source list). When the user clicks "Clear custom settings" later, the
+// caller can re-invoke this to restore the default arrangement.
+function maybeApplyColorByPalette(
+  configuration: AnyConfigurationModel,
+  sources: Source[],
+): Source[] | undefined {
+  const colorBy = getConf({ configuration }, 'colorBy') as string
+  if (!colorBy) {
+    return undefined
+  }
+  if (sources.some(source => colorBy in source)) {
+    return applyColorPalette(sources, colorBy)
+  }
+  console.warn(
+    `colorBy attribute "${colorBy}" not found in sample metadata. ` +
+      `Available attributes: ${Object.keys(sources[0] ?? {}).join(', ')}`,
+  )
+  return undefined
+}
 
 import type { ProcessedSource, Source } from './types.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -216,12 +241,6 @@ export default function MultiSampleVariantBaseModelF(
         sourcesVolatile: undefined as Source[] | undefined,
         /**
          * #volatile
-         * Tracks whether the colorBy config has been applied (to avoid
-         * re-applying on every source update)
-         */
-        colorByApplied: false,
-        /**
-         * #volatile
          */
         hoveredGenotype: undefined as
           | (Record<string, unknown> & { genotype: string; name: string })
@@ -355,13 +374,6 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #action
          */
-        setColorByApplied(value: boolean) {
-          self.colorByApplied = value
-        },
-
-        /**
-         * #action
-         */
         setSourcesLoading(token: StopToken) {
           if (self.sourcesLoadingStopToken) {
             stopStopToken(self.sourcesLoadingStopToken)
@@ -372,8 +384,17 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         setSources(sources: Source[]) {
-          if (!deepEqual(sources, self.sourcesVolatile)) {
-            self.sourcesVolatile = sources
+          if (deepEqual(sources, self.sourcesVolatile)) {
+            return
+          }
+          self.sourcesVolatile = sources
+          // Apply the configured colorBy palette only when the user hasn't
+          // already arranged the layout themselves.
+          if (self.layout.length === 0) {
+            const colored = maybeApplyColorByPalette(self.configuration, sources)
+            if (colored) {
+              self.layout = colored
+            }
           }
         },
         /**
@@ -388,14 +409,14 @@ export default function MultiSampleVariantBaseModelF(
         setShowTree(arg: boolean) {
           self.setOverride('showTree', arg)
         },
-        setLayoutAndClusterTree(layout: Source[], tree?: string) {
+        // Sets `layout` and stashes the cluster tree as pending — the tree
+        // only applies once the matching cellData arrives, see `setCellData`.
+        // Distinct from the mixin's `setLayoutAndClusterTree` (which applies
+        // the tree immediately) so the rendered tree never references rows
+        // that don't yet have data.
+        setLayoutAndPendingClusterTree(layout: Source[], tree: string) {
           self.layout = layout
-          if (tree !== undefined) {
-            self.pendingClusterTree = tree
-          } else {
-            self.clusterTree = undefined
-            self.pendingClusterTree = undefined
-          }
+          self.pendingClusterTree = tree
         },
         /**
          * #action
@@ -525,6 +546,24 @@ export default function MultiSampleVariantBaseModelF(
                 ),
           )
         },
+        /**
+         * #getter
+         * Layout-merged, phased-expanded view for the Edit Color/Arrangement
+         * dialog. Does NOT apply the subtree filter — submitting the dialog
+         * persists every row back to `layout`, so filtered samples must be
+         * present or they would be wiped from layout on submit.
+         */
+        get editableSources() {
+          if (!self.sourcesVolatile) {
+            return undefined
+          }
+          return getSources({
+            sources: self.sourcesVolatile,
+            layout: self.layout.length ? self.layout : undefined,
+            renderingMode: self.renderingMode,
+            sampleInfo: self.sampleInfo,
+          })
+        },
       }))
       .views(self => ({
         // Payload for MultiSampleVariantGetCellData. SettingsInvalidate watches
@@ -638,9 +677,11 @@ export default function MultiSampleVariantBaseModelF(
           if (!info) {
             return
           }
+          // `info.genotypes` is keyed by sample name; in phased mode `a.name`
+          // is "<sample> HP<n>", so look up by sampleName instead.
           const sorted = [...sources].sort((a, b) => {
-            const ga = info.genotypes[a.name] ?? './.'
-            const gb = info.genotypes[b.name] ?? './.'
+            const ga = info.genotypes[a.sampleName] ?? './.'
+            const gb = info.genotypes[b.sampleName] ?? './.'
             return encodeGenotype(gb) - encodeGenotype(ga)
           })
           self.setLayout(sorted, true)
@@ -796,17 +837,7 @@ export default function MultiSampleVariantBaseModelF(
                 },
               },
               {
-                label: 'Sort by genotype',
-                icon: SortIcon,
-                onClick: () => {
-                  const feat = self.featureNearestCenter
-                  if (feat) {
-                    self.sortByGenotype(feat.id())
-                  }
-                },
-              },
-              {
-                label: 'Edit group colors/arrangement...',
+                label: 'Edit colors/arrangement...',
                 onClick: () => {
                   getSession(self).queueDialog(handleClose => [
                     SetColorDialog,
