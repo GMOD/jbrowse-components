@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 
-import { useFetchMock } from './generateReadBuffer.ts'
+import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 import { expectCanvasMatch, setup } from './util.tsx'
 setup()
@@ -9,7 +9,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 const delay = { timeout: 20000 }
 
-useFetchMock()
+utilizeFetchMockForTest()
 
 beforeEach(() => {
   jest.spyOn(console, 'warn').mockImplementation()

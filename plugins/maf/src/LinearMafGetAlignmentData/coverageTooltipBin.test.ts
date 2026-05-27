@@ -64,9 +64,11 @@ test('bin reports depth + per-base SNP counts for a mixed column', () => {
 })
 
 test('bin is undefined when the position has zero depth', () => {
-  const bin = makeBin([block(10, 'A', [{ rowIndex: 0, sample: '-' }])], 10, 11)(
+  const bin = makeBin(
+    [block(10, 'A', [{ rowIndex: 0, sample: '-' }])],
     10,
-  )
+    11,
+  )(10)
   expect(bin).toBeUndefined()
 })
 

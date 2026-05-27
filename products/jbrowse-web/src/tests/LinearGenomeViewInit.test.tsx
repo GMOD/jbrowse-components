@@ -1,6 +1,10 @@
 import { waitFor } from '@testing-library/react'
 
-import { handleRequest, useFetchMock, volvoxGetFile } from './generateReadBuffer.ts'
+import {
+  handleRequest,
+  utilizeFetchMockForTest,
+  volvoxGetFile,
+} from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
 setup()
@@ -12,7 +16,7 @@ beforeEach(() => {
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-useFetchMock(volvoxGetFile)
+utilizeFetchMockForTest(volvoxGetFile)
 
 async function createLinearGenomeViewWithInit(init: {
   loc?: string

@@ -46,9 +46,7 @@ interface SortField {
 
 const ALWAYS_RESERVED = ['name', 'source', 'baseUri']
 
-export default function SourceGrid<
-  S extends { name: string; color?: string },
->({
+export default function SourceGrid<S extends { name: string; color?: string }>({
   rows,
   onChange,
   showTips,
@@ -222,9 +220,7 @@ export default function SourceGrid<
               [...rows].sort((a, b) => {
                 const aa = getStr((a as Record<string, unknown>)[field])
                 const bb = getStr((b as Record<string, unknown>)[field])
-                return idx === 1
-                  ? aa.localeCompare(bb)
-                  : bb.localeCompare(aa)
+                return idx === 1 ? aa.localeCompare(bb) : bb.localeCompare(aa)
               }),
             )
           }}

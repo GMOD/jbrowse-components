@@ -1,13 +1,13 @@
 import { render } from '@testing-library/react'
 
-import { useFetchMock } from './generateReadBuffer.ts'
+import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
 const delay = { timeout: 20000 }
 
-useFetchMock()
+utilizeFetchMockForTest()
 
 test('can use a spec url for sv inspector view', async () => {
   jest.spyOn(console, 'warn').mockImplementation()

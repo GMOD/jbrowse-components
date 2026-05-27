@@ -18,7 +18,8 @@ function LinkList({
     <ul>
       {links.map(({ config, href, label, renderers }) => {
         const finalHref =
-          href ?? (config && buildUrl ? buildUrl(config) : `?config=${config ?? ''}`)
+          href ??
+          (config && buildUrl ? buildUrl(config) : `?config=${config ?? ''}`)
 
         const defaultRenderers = ['webgpu', 'webgl', 'canvas']
         const badgeList = renderers?.length ? renderers : defaultRenderers
@@ -30,7 +31,9 @@ function LinkList({
             params.set('renderer', r)
             return `?${params}`
           }
-          return config && buildUrl ? buildUrl(config, { renderer: r }) : finalHref
+          return config && buildUrl
+            ? buildUrl(config, { renderer: r })
+            : finalHref
         }
 
         return (

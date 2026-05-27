@@ -1,6 +1,6 @@
 import { waitFor } from '@testing-library/react'
 
-import { useFetchMock, volvoxGetFile } from './generateReadBuffer.ts'
+import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
 setup()
@@ -12,7 +12,7 @@ beforeEach(() => {
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-useFetchMock(volvoxGetFile)
+utilizeFetchMockForTest(volvoxGetFile)
 
 async function createSpreadsheetViewWithInit(init: {
   assembly: string

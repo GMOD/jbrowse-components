@@ -1,6 +1,6 @@
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 
-import type { Source, SourceInfo } from '../util.ts'
+import type { EditableSource, Source, SourceInfo } from '../util.ts'
 
 // Apply the overlay palette only to sources with no explicit color, in
 // overlay mode. Explicit choice (user layout or adapter config) always wins,
@@ -23,14 +23,19 @@ export function pickColor(
 export function buildEditableSources(
   sourcesVolatile: SourceInfo[],
   layout: Source[],
-): Source[] {
+): EditableSource[] {
   const adapterByName = new Map(sourcesVolatile.map(s => [s.name, s]))
   const base = layout.length ? layout : sourcesVolatile
-  return base.map(s => ({
-    source: s.name,
-    ...adapterByName.get(s.name),
-    ...s,
-  }))
+  return base.map(s => {
+    const info = adapterByName.get(s.name)
+    const source = 'source' in s ? s.source : s.name
+    const res: EditableSource = {
+      ...info,
+      ...s,
+      source,
+    }
+    return res
+  })
 }
 
 // What the canvas/SVG renderers consume: editable sources after subtree

@@ -75,8 +75,10 @@ export function processFeaturesToFasta({
               rowBytes[pos] = DASH
             } else if (alnCode !== SPACE) {
               const lowerAln = alnCode | LOWER_BIT
-              rowBytes[pos] = !showAllLetters &&
-                (seqCode | LOWER_BIT) === lowerAln ? DOT : lowerAln
+              rowBytes[pos] =
+                !showAllLetters && (seqCode | LOWER_BIT) === lowerAln
+                  ? DOT
+                  : lowerAln
             }
           }
           o++

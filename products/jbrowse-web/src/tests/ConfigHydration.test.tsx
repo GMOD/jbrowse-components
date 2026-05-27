@@ -3,14 +3,14 @@ import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 
-import { useFetchMock, volvoxGetFile } from './generateReadBuffer.ts'
+import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager } from './util.tsx'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-useFetchMock(volvoxGetFile)
+utilizeFetchMockForTest(volvoxGetFile)
 
 async function setupView(trackIds: string[]) {
   const { rootModel } = getPluginManager()

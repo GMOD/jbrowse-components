@@ -41,7 +41,14 @@ function makeContext(ctx: object): RenderingContext {
 test('one insertion in the middle draws one marker', () => {
   const { ctx, fillRectCalls } = makeCtx()
   // seq AC---T → alignment ACCCCT: one 3-base insertion between C and T
-  renderInsertions(makeContext(ctx), bytes('ACCCCT'), bytes('AC---T'), 100, 0, 0.5)
+  renderInsertions(
+    makeContext(ctx),
+    bytes('ACCCCT'),
+    bytes('AC---T'),
+    100,
+    0,
+    0.5,
+  )
   expect(fillRectCalls.length).toBeGreaterThan(0)
 })
 
@@ -76,6 +83,13 @@ test('alignment longer than seq does not draw spurious insertions', () => {
   const { ctx, fillRectCalls } = makeCtx()
   // alignment overruns seq; the trailing alignment chars have no
   // corresponding seq positions, so nothing should be drawn for them.
-  renderInsertions(makeContext(ctx), bytes('ACGTNNNN'), bytes('ACGT'), 100, 0, 0.5)
+  renderInsertions(
+    makeContext(ctx),
+    bytes('ACGTNNNN'),
+    bytes('ACGT'),
+    100,
+    0,
+    0.5,
+  )
   expect(fillRectCalls).toHaveLength(0)
 })

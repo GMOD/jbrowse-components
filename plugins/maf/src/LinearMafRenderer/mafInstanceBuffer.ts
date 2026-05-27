@@ -64,7 +64,11 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
       let genomicOffset = 0
 
       for (let i = 0; i < len; i++) {
-        const color = resolveCellPacked(refSeqBytes[i]!, alignmentBytes[i]!, cfg)
+        const color = resolveCellPacked(
+          refSeqBytes[i]!,
+          alignmentBytes[i]!,
+          cfg,
+        )
         if (color === RESOLVE_PACKED_SKIP) {
           // Reference insertion: not rendered as a base cell.
           if (inRun) {

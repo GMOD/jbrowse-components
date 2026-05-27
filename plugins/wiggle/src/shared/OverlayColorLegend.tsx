@@ -5,7 +5,12 @@ export default function OverlayColorLegend({
   fallbackColor,
   canvasWidth,
 }: {
-  sources: { name: string; label?: string; color?: string; labelColor?: string }[]
+  sources: {
+    name: string
+    label?: string
+    color?: string
+    labelColor?: string
+  }[]
   fallbackColor: string
   canvasWidth: number
 }) {

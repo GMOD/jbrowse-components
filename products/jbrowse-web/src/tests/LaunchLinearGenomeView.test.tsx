@@ -1,7 +1,7 @@
 import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 
-import { useFetchMock } from './generateReadBuffer.ts'
+import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -13,7 +13,7 @@ global.nodeCreateCanvas = createCanvas
 
 const delay = { timeout: 10000 }
 
-useFetchMock()
+utilizeFetchMockForTest()
 
 test('can use a spec url for lgv', async () => {
   const { findByText, findByPlaceholderText } = render(

@@ -82,15 +82,17 @@ export function grapePeachGetFile(url: string): GenericFilehandle {
   return new LocalFile(require.resolve(`../../${filePath}`))
 }
 
-export function useFetchMock(
+export function utilizeFetchMockForTest(
   getFile: (url: string) => GenericFilehandle = defaultGetFile,
 ) {
   beforeEach(() => {
-    jest.spyOn(global, 'fetch').mockImplementation(async (url, args) =>
-      `${url}`.includes('jb2=true')
-        ? new Response('{}')
-        : handleRequest(() => getFile(`${url}`), args),
-    )
+    jest
+      .spyOn(global, 'fetch')
+      .mockImplementation(async (url, args) =>
+        `${url}`.includes('jb2=true')
+          ? new Response('{}')
+          : handleRequest(() => getFile(`${url}`), args),
+      )
   })
   afterEach(() => {
     localStorage.clear()

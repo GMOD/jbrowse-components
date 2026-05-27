@@ -264,6 +264,7 @@ export default function f(_pluginManager: PluginManager) {
           // @ts-expect-error
           view.setBookmarkHighlightsVisible?.(arg)
           // @ts-expect-error
+          // eslint-disable-next-line unicorn/no-array-for-each
           view.views?.forEach((view: unknown) => {
             // @ts-expect-error
             view.setBookmarkHighlightsVisible?.(arg)
@@ -280,6 +281,7 @@ export default function f(_pluginManager: PluginManager) {
           // @ts-expect-error
           view.setLabelsVisible?.(arg)
           // @ts-expect-error
+          // eslint-disable-next-line unicorn/no-array-for-each
           view.views?.forEach((view: unknown) => {
             // @ts-expect-error
             view.setLabelsVisible?.(arg)

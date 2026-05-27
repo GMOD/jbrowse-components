@@ -23,17 +23,14 @@ test('export svg of breakpoint split view', async () => {
       await createView(breakpointConfig)
 
     // Wait for both alignment displays (one per view) to finish rendering
-    await waitFor(
-      async () => {
-        const done = await findAllByTestId(
-          'display-pacbio_hg002_breakpoints-LinearAlignmentsDisplay-done',
-          {},
-          delay,
-        )
-        expect(done.length).toBe(2)
-      },
-      delay,
-    )
+    await waitFor(async () => {
+      const done = await findAllByTestId(
+        'display-pacbio_hg002_breakpoints-LinearAlignmentsDisplay-done',
+        {},
+        delay,
+      )
+      expect(done.length).toBe(2)
+    }, delay)
 
     await exportAndVerifySvg({
       findByTestId,

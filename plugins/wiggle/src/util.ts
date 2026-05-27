@@ -17,7 +17,7 @@ export type {
   WiggleSourceData,
 } from '@jbrowse/wiggle-core'
 
-import type { WiggleFeatureArrays } from '@jbrowse/wiggle-core'
+import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 
@@ -51,6 +51,8 @@ export interface Source {
   labelColor?: string
   group?: string
 }
+
+export interface EditableSource extends Source, SourceInfo {}
 
 export function toP(s = 0) {
   return +s.toPrecision(6)

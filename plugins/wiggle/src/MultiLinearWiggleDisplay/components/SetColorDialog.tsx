@@ -4,8 +4,16 @@ import type { Source } from '../../util.ts'
 import type { ColorColumn } from '@jbrowse/tree-sidebar'
 
 const COLOR_COLUMNS: ColorColumn<Source>[] = [
-  { field: 'color', headerName: 'Track color', bulkLabel: 'Change track color of selected' },
-  { field: 'labelColor', headerName: 'Label color', bulkLabel: 'Change label color of selected' },
+  {
+    field: 'color',
+    headerName: 'Track color',
+    bulkLabel: 'Change track color of selected',
+  },
+  {
+    field: 'labelColor',
+    headerName: 'Label color',
+    bulkLabel: 'Change label color of selected',
+  },
 ]
 
 // Seed from `editableSources` (not `sources`) so overlay-palette synthesis

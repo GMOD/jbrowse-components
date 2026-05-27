@@ -1,8 +1,12 @@
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 
-import { buildEditableSources, buildSources, pickColor } from './sourcesLogic.ts'
+import {
+  buildEditableSources,
+  buildSources,
+  pickColor,
+} from './sourcesLogic.ts'
 
-import type { Source, SourceInfo } from '../util.ts'
+import type { EditableSource, Source, SourceInfo } from '../util.ts'
 
 const adapter = (count: number): SourceInfo[] =>
   Array.from({ length: count }, (_, i) => ({ name: `source_${i}` }))
@@ -28,6 +32,7 @@ describe('buildEditableSources', () => {
   it('returns adapter order when no layout', () => {
     const out = buildEditableSources(adapter(3), [])
     expect(out.map(s => s.name)).toEqual(['source_0', 'source_1', 'source_2'])
+    expect(out.map(s => s.source)).toEqual(['source_0', 'source_1', 'source_2'])
   })
 
   it('orders by layout when layout is set, merging adapter fields', () => {
@@ -41,6 +46,7 @@ describe('buildEditableSources', () => {
     ]
     const out = buildEditableSources(adapters, layout)
     expect(out.map(s => s.name)).toEqual(['b', 'a'])
+    expect(out.map(s => s.source)).toEqual(['b', 'a'])
     // Layout color wins
     expect(out[0]!.color).toBe('#bbb')
     // Adapter color flows through when layout doesn't override

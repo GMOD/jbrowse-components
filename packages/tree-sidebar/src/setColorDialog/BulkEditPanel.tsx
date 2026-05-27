@@ -69,8 +69,8 @@ export default function BulkEditPanel<S extends { name: string }>({
     <>
       <DialogContent>
         <Typography>
-          Paste CSV or TSV. The first line is the header. A column called
-          "name" is used to join to existing rows.
+          Paste CSV or TSV. The first line is the header. A column called "name"
+          is used to join to existing rows.
         </Typography>
 
         {error ? <ErrorBanner error={error} /> : null}

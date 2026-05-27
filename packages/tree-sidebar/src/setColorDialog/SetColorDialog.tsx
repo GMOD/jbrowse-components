@@ -28,7 +28,9 @@ const useStyles = makeStyles()({
 // the dialog-editable view (no palette-synthesized colors, no subtree filter),
 // so Submit only persists explicit choices and Clear-then-render sees the
 // post-clearLayout state.
-export interface SetColorDialogModel<S extends { name: string; color?: string }> {
+export interface SetColorDialogModel<
+  S extends { name: string; color?: string },
+> {
   sources: S[]
   setLayout: (s: S[], clearTree?: boolean) => void
   clearLayout: () => void

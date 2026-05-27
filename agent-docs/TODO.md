@@ -125,3 +125,12 @@ Replacing alignments' local ResizeHandle with core's — I was wrong about this 
   If you want, I can do step 1 as a real PR (refactor util.tsx + convert ~5 light tests) and measure
   the suite delta.
 
+
+## misc
+
+
+  5. Consolidate Source vs SourceInfo
+  The project has a historical "name vs source" ambiguity. If you're planning a larger refactor, it
+  might be worth moving the EditableSource definition and the logic that synchronizes name and source
+  into a shared utility in @jbrowse/core, as this pattern likely appears in other plugins (like
+  alignments or sv-inspector).

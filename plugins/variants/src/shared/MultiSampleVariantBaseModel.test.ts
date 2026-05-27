@@ -211,28 +211,34 @@ describe('colorBy config slot', () => {
 })
 
 describe('applyColorPalette', () => {
-  it('returns original sources when attribute is empty', () => {
+  it('adds colors even when attribute is empty (falls back to name)', () => {
     const sources = [
       { name: 'sample1', population: 'EUR' },
       { name: 'sample2', population: 'AFR' },
     ]
     const result = applyColorPalette(sources, '')
-    expect(result).toBe(sources)
+    expect(result).toHaveLength(2)
+    expect(result[0]).toHaveProperty('color')
+    expect(result[1]).toHaveProperty('color')
+    expect(result[0]!.color).not.toBe(result[1]!.color)
   })
 
-  it('returns original sources when sources array is empty', () => {
+  it('returns empty array when sources array is empty', () => {
     const sources: { name: string }[] = []
     const result = applyColorPalette(sources, 'population')
-    expect(result).toBe(sources)
+    expect(result).toEqual([])
   })
 
-  it('returns original sources when attribute does not exist', () => {
+  it('adds colors even when attribute does not exist (falls back to name)', () => {
     const sources = [
       { name: 'sample1', population: 'EUR' },
       { name: 'sample2', population: 'AFR' },
     ]
     const result = applyColorPalette(sources, 'nonexistent')
-    expect(result).toBe(sources)
+    expect(result).toHaveLength(2)
+    expect(result[0]).toHaveProperty('color')
+    expect(result[1]).toHaveProperty('color')
+    expect(result[0]!.color).not.toBe(result[1]!.color)
   })
 
   it('applies colors based on attribute values', () => {

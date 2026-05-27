@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 
-import { useFetchMock } from './generateReadBuffer.ts'
+import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -27,7 +27,7 @@ beforeEach(() => {
   jest.spyOn(console, 'warn').mockImplementation()
 })
 
-useFetchMock(getFile)
+utilizeFetchMockForTest(getFile)
 
 test('can use a spec url for breakpoint split view', async () => {
   const { findByText } = render(
