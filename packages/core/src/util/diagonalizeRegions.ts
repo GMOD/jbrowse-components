@@ -1,12 +1,12 @@
 import type { Region } from './types/index.ts'
 
 export interface AlignmentData {
-  queryRefName: string
   refRefName: string
-  queryStart: number
-  queryEnd: number
+  queryRefName: string
   refStart: number
   refEnd: number
+  queryStart: number
+  queryEnd: number
   strand: number
 }
 
@@ -29,8 +29,8 @@ export type DiagonalizeTick = () => void
 // pair. Selects the reference chromosome with the most aligned bases as the
 // best match, then sorts query chromosomes to align with that reference order.
 //
-// - queryRefName: horizontal-axis (reference) chromosome
-// - refRefName:   vertical-axis (query) chromosome
+// - refRefName:   horizontal-axis (reference) chromosome
+// - queryRefName: vertical-axis (query) chromosome
 export async function diagonalizeRegions(
   alignments: AlignmentData[],
   referenceRegions: Region[],
@@ -47,26 +47,27 @@ export async function diagonalizeRegions(
   >()
 
   for (const aln of alignments) {
-    // Use x-axis (query) length throughout: consistent weighting for x-axis
-    // position and base-count, matching the original jmonlong R implementation
-    const alnLength = Math.abs(aln.queryEnd - aln.queryStart)
+    // Use x-axis (reference) length throughout: consistent weighting for
+    // x-axis position and base-count, matching the original jmonlong R
+    // implementation
+    const alnLength = aln.refEnd - aln.refStart
 
-    if (!queryGroups.has(aln.refRefName)) {
-      queryGroups.set(aln.refRefName, new Map())
+    if (!queryGroups.has(aln.queryRefName)) {
+      queryGroups.set(aln.queryRefName, new Map())
     }
-    const group = queryGroups.get(aln.refRefName)!
+    const group = queryGroups.get(aln.queryRefName)!
 
-    if (!group.has(aln.queryRefName)) {
-      group.set(aln.queryRefName, {
+    if (!group.has(aln.refRefName)) {
+      group.set(aln.refRefName, {
         bases: 0,
         weightedPosSum: 0,
         strandWeightedSum: 0,
       })
     }
-    const data = group.get(aln.queryRefName)!
+    const data = group.get(aln.refRefName)!
 
     data.bases += alnLength
-    data.weightedPosSum += ((aln.queryStart + aln.queryEnd) / 2) * alnLength
+    data.weightedPosSum += ((aln.refStart + aln.refEnd) / 2) * alnLength
     data.strandWeightedSum += (aln.strand >= 0 ? 1 : -1) * alnLength
   }
 
@@ -97,7 +98,7 @@ export async function diagonalizeRegions(
     queryOrdering.push({
       refName: verticalChrom,
       bestRefName,
-      bestRefPos: bestBases > 0 ? bestWeightedPosSum / bestBases : 0,
+      bestRefPos: bestWeightedPosSum / bestBases,
       shouldReverse: bestStrandWeightedSum < 0,
     })
   }
@@ -135,12 +136,25 @@ export async function diagonalizeRegions(
     r => !orderedNames.has(r.refName),
   )
 
+  // Count how many regions ended up at a different position than they started
+  // (within the subset that participated in the ordering — unaligned regions
+  // keep their tail position and aren't counted as moves).
+  const previousOrder = currentRegions
+    .map(r => r.refName)
+    .filter(name => orderedNames.has(name))
+  let regionsReordered = 0
+  for (let i = 0; i < newQueryRegions.length; i++) {
+    if (newQueryRegions[i]!.refName !== previousOrder[i]) {
+      regionsReordered++
+    }
+  }
+
   return {
     newRegions: [...newQueryRegions, ...regionsWithoutAlignments],
     stats: {
       totalAlignments: alignments.length,
       regionsProcessed: queryOrdering.length,
-      regionsReordered: newQueryRegions.length,
+      regionsReordered,
       regionsReversed,
     },
   }

@@ -86,12 +86,12 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
 
       if (mate) {
         alignments.push({
-          queryRefName: feat.get('refName'),
-          refRefName: mate.refName,
-          queryStart: feat.get('start'),
-          queryEnd: feat.get('end'),
-          refStart: mate.start,
-          refEnd: mate.end,
+          refRefName: feat.get('refName'),
+          queryRefName: mate.refName,
+          refStart: feat.get('start'),
+          refEnd: feat.get('end'),
+          queryStart: mate.start,
+          queryEnd: mate.end,
           strand: feat.get('strand') ?? 1,
         })
       }

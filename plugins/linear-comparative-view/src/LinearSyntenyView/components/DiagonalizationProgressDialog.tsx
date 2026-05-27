@@ -14,18 +14,9 @@ import { observer } from 'mobx-react'
 
 import { diagonalizeRegions } from '../util/diagonalize.ts'
 
+import type { SyntenyFeatureData } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { AlignmentData } from '../util/diagonalize.ts'
-
-interface FeatureData {
-  refNames: string[]
-  starts: Uint32Array
-  ends: Uint32Array
-  strands: Int8Array
-  mateStarts: Uint32Array
-  mateEnds: Uint32Array
-  mateRefNames: string[]
-}
 
 function collectAlignments(
   level: LinearSyntenyViewModel['levels'][number],
@@ -33,18 +24,19 @@ function collectAlignments(
   const alignments: AlignmentData[] = []
   for (const track of level.tracks) {
     for (const display of track.displays) {
-      const { featureData } = display as { featureData?: FeatureData }
+      const featureData = (display as { featureData?: SyntenyFeatureData })
+        .featureData
       if (!featureData) {
         continue
       }
       for (let i = 0; i < featureData.refNames.length; i++) {
         alignments.push({
-          queryRefName: featureData.refNames[i]!,
-          refRefName: featureData.mateRefNames[i]!,
-          queryStart: featureData.starts[i]!,
-          queryEnd: featureData.ends[i]!,
-          refStart: featureData.mateStarts[i]!,
-          refEnd: featureData.mateEnds[i]!,
+          refRefName: featureData.refNames[i]!,
+          queryRefName: featureData.mateRefNames[i]!,
+          refStart: featureData.starts[i]!,
+          refEnd: featureData.ends[i]!,
+          queryStart: featureData.mateStarts[i]!,
+          queryEnd: featureData.mateEnds[i]!,
           strand: featureData.strands[i]!,
         })
       }
@@ -75,6 +67,12 @@ const DiagonalizationProgressDialog = observer(
             return
           }
 
+          // Yield so the LinearProgress paints before the synchronous
+          // collect+diagonalize work blocks the main thread.
+          await new Promise(resolve => {
+            setTimeout(resolve, 0)
+          })
+
           const perLevel: {
             queryView: LinearSyntenyViewModel['views'][number]
             result: Awaited<ReturnType<typeof diagonalizeRegions>>
@@ -103,11 +101,9 @@ const DiagonalizationProgressDialog = observer(
           let totalReordered = 0
           transaction(() => {
             for (const { queryView, result } of perLevel) {
-              if (result.newRegions.length > 0) {
-                queryView.setDisplayedRegions(result.newRegions)
-                totalReversed += result.stats.regionsReversed
-                totalReordered += result.stats.regionsReordered
-              }
+              queryView.setDisplayedRegions(result.newRegions)
+              totalReversed += result.stats.regionsReversed
+              totalReordered += result.stats.regionsReordered
             }
           })
 
