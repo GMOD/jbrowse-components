@@ -1,15 +1,17 @@
 import type React from 'react'
-import { Suspense, forwardRef } from 'react'
+import { Suspense } from 'react'
 
 export function lazyifyComponent(
   key: string,
   ReactComponent: React.ComponentType<any>,
 ) {
-  const Component = forwardRef((props: Record<string, unknown>, ref) => (
-    <Suspense fallback={null}>
-      <ReactComponent {...props} ref={ref} />
-    </Suspense>
-  ))
+  function Component(props: Record<string, unknown>) {
+    return (
+      <Suspense fallback={null}>
+        <ReactComponent {...props} />
+      </Suspense>
+    )
+  }
   Component.displayName = key
   return [key, Component]
 }

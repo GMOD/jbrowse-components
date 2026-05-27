@@ -1,4 +1,4 @@
-import { forwardRef, isValidElement, useMemo } from 'react'
+import { isValidElement, useMemo } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
@@ -8,22 +8,17 @@ import { observer } from 'mobx-react'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
-interface Props {
-  message: React.ReactNode | string
+function TooltipContents({ message }: { message: React.ReactNode | string }) {
+  return (
+    <div>
+      {isValidElement(message) ? (
+        message
+      ) : message ? (
+        <SanitizedHTML html={String(message)} />
+      ) : null}
+    </div>
+  )
 }
-const TooltipContents = forwardRef<HTMLDivElement, Props>(
-  function TooltipContents2({ message }, ref) {
-    return (
-      <div ref={ref}>
-        {isValidElement(message) ? (
-          message
-        ) : message ? (
-          <SanitizedHTML html={String(message)} />
-        ) : null}
-      </div>
-    )
-  },
-)
 
 type Coord = [number, number]
 

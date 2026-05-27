@@ -1,5 +1,3 @@
-import { forwardRef } from 'react'
-
 import { observer } from 'mobx-react'
 
 import SequenceContents from './SequenceContents.tsx'
@@ -40,30 +38,31 @@ function NoWordWrap({ children }: { children: React.ReactNode }) {
   )
 }
 
-const SequencePanel = observer(
-  forwardRef<HTMLDivElement, SequencePanelProps>(function S(props, ref) {
-    const { sequence, model, feature } = props
-    const { showCoordinates, mode } = model
-
-    const Container = showCoordinates ? WordWrap : NoWordWrap
-    return (
-      <div
-        data-testid="sequence_panel"
-        ref={ref}
-        style={{ maxHeight: 300, overflow: 'auto' }}
-      >
-        <Container>
-          <SequenceName model={model} mode={mode} feature={feature} />
-          <SequenceContents
-            model={model}
-            mode={mode}
-            feature={feature}
-            sequence={sequence}
-          />
-        </Container>
-      </div>
-    )
-  }),
-)
+const SequencePanel = observer(function SequencePanel({
+  sequence,
+  model,
+  feature,
+  ref,
+}: SequencePanelProps) {
+  const { showCoordinates, mode } = model
+  const Container = showCoordinates ? WordWrap : NoWordWrap
+  return (
+    <div
+      data-testid="sequence_panel"
+      ref={ref}
+      style={{ maxHeight: 300, overflow: 'auto' }}
+    >
+      <Container>
+        <SequenceName model={model} mode={mode} feature={feature} />
+        <SequenceContents
+          model={model}
+          mode={mode}
+          feature={feature}
+          sequence={sequence}
+        />
+      </Container>
+    </div>
+  )
+})
 
 export default SequencePanel

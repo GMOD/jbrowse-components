@@ -1,4 +1,5 @@
-import { forwardRef, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
+import type { RefObject } from 'react'
 
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { InputBase, Typography, useTheme } from '@mui/material'
@@ -39,12 +40,11 @@ interface Props {
   setValue: (value: string) => void
   variant: Variant
   classes?: Partial<Record<EditableTypographyClassKey, string>>
+  ref?: RefObject<HTMLDivElement | null>
 }
 
-// using forwardRef so that MUI Tooltip can wrap this component
-const EditableTypography = forwardRef<HTMLDivElement, Props>(
-  function EditableTypography2(props, ref) {
-    const { value, setValue, variant, ...other } = props
+function EditableTypography(props: Props) {
+    const { value, setValue, variant, ref, ...other } = props
     const [ref2, { width }] = useMeasure()
     const [editedValue, setEditedValue] = useState<string>()
     const inputRef = useRef<HTMLInputElement | null>(null)
@@ -103,7 +103,6 @@ const EditableTypography = forwardRef<HTMLDivElement, Props>(
         />
       </div>
     )
-  },
-)
+}
 
 export default EditableTypography
