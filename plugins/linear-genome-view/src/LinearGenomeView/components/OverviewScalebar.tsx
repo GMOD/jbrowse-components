@@ -1,6 +1,4 @@
 import { useMemo } from 'react'
-
-// core
 import type { ReactNode } from 'react'
 
 import { getEnv, getSession } from '@jbrowse/core/util'

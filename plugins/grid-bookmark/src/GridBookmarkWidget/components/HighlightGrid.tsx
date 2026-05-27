@@ -180,7 +180,7 @@ const HighlightGrid = observer(function HighlightGrid({
         rowSelectionModel={{ type: 'include', ids: selectedIds }}
         processRowUpdate={row => {
           row.view.updateHighlight(row.highlight, {
-            label: row.label ? row.label : undefined,
+            label: row.label,
           })
           return row
         }}

@@ -1,4 +1,5 @@
-import { forwardRef, lazy, useState } from 'react'
+import { lazy, useState } from 'react'
+import type { RefObject } from 'react'
 
 import MoreVert from '@mui/icons-material/MoreVert'
 import Settings from '@mui/icons-material/Settings'
@@ -15,133 +16,129 @@ const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog.tsx'))
 
 interface Props {
   model: SequenceFeatureDetailsModel
+  ref: RefObject<HTMLDivElement | null>
   extraItems?: MenuItem[]
 }
-const SequenceFeatureMenu = observer(
-  forwardRef<HTMLDivElement, Props>(function SequenceFeatureMenu2(
-    { model, extraItems = [] },
-    ref,
-  ) {
-    if (typeof ref === 'function') {
-      console.error('SequenceFeatureMenu needs a RefObject, not a callback ref')
-      return null
-    }
-    const [showSettings, setShowSettings] = useState(false)
-    const { showCoordinatesSetting, showGenomicCoordsOption } = model
+const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
+  model,
+  ref,
+  extraItems = [],
+}: Props) {
+  const [showSettings, setShowSettings] = useState(false)
+  const { showCoordinatesSetting, showGenomicCoordsOption } = model
 
-    return (
-      <>
-        <CascadingMenuButton
-          menuItems={[
-            {
-              label: 'Copy plaintext',
-              onClick: async () => {
-                const { default: copy } = await import('copy-to-clipboard')
-                const r = ref?.current
-                if (r) {
-                  await copy(r.textContent || '', { format: 'text/plain' })
-                }
-              },
+  return (
+    <>
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Copy plaintext',
+            onClick: async () => {
+              const { default: copy } = await import('copy-to-clipboard')
+              const r = ref?.current
+              if (r) {
+                await copy(r.textContent || '', { format: 'text/plain' })
+              }
             },
-            {
-              label: 'Copy HTML',
-              onClick: async () => {
-                const { default: copy } = await import('copy-to-clipboard')
-                const r = ref?.current
-                if (r) {
-                  await copy(r.outerHTML, { format: 'text/html' })
-                }
-              },
+          },
+          {
+            label: 'Copy HTML',
+            onClick: async () => {
+              const { default: copy } = await import('copy-to-clipboard')
+              const r = ref?.current
+              if (r) {
+                await copy(r.outerHTML, { format: 'text/html' })
+              }
             },
-            {
-              label: 'Download plaintext',
-              onClick: async () => {
-                const r = ref?.current
-                if (r) {
-                  saveAs(
-                    new Blob([r.textContent || ''], {
-                      type: 'text/plain;charset=utf-8',
-                    }),
-                    'sequence.txt',
-                  )
-                }
-              },
+          },
+          {
+            label: 'Download plaintext',
+            onClick: async () => {
+              const r = ref?.current
+              if (r) {
+                saveAs(
+                  new Blob([r.textContent || ''], {
+                    type: 'text/plain;charset=utf-8',
+                  }),
+                  'sequence.txt',
+                )
+              }
             },
-            {
-              label: 'Download HTML',
-              onClick: async () => {
-                const r = ref?.current
-                if (r) {
-                  saveAs(
-                    new Blob([r.outerHTML], {
-                      type: 'text/html;charset=utf-8',
-                    }),
-                    'sequence.html',
-                  )
-                }
-              },
+          },
+          {
+            label: 'Download HTML',
+            onClick: async () => {
+              const r = ref?.current
+              if (r) {
+                saveAs(
+                  new Blob([r.outerHTML], {
+                    type: 'text/html;charset=utf-8',
+                  }),
+                  'sequence.html',
+                )
+              }
             },
+          },
 
-            ...extraItems,
+          ...extraItems,
 
-            {
-              label: 'Show coordinates?',
-              type: 'subMenu',
-              subMenu: [
-                {
-                  label: 'No coordinates',
-                  type: 'radio',
-                  checked: showCoordinatesSetting === 'none',
-                  onClick: () => {
-                    model.setShowCoordinates('none')
-                  },
+          {
+            label: 'Show coordinates?',
+            type: 'subMenu',
+            subMenu: [
+              {
+                label: 'No coordinates',
+                type: 'radio',
+                checked: showCoordinatesSetting === 'none',
+                onClick: () => {
+                  model.setShowCoordinates('none')
                 },
-                {
-                  label: 'Coordinates relative to feature start',
-                  type: 'radio',
-                  checked: showCoordinatesSetting === 'relative',
-                  onClick: () => {
-                    model.setShowCoordinates('relative')
-                  },
+              },
+              {
+                label: 'Coordinates relative to feature start',
+                type: 'radio',
+                checked: showCoordinatesSetting === 'relative',
+                onClick: () => {
+                  model.setShowCoordinates('relative')
                 },
-                ...(showGenomicCoordsOption
-                  ? [
-                      {
-                        label:
-                          'Coordinates relative to genome (only available for continuous genome based sequence types)',
-                        type: 'radio' as const,
-                        checked: showCoordinatesSetting === 'genomic',
-                        onClick: () => {
-                          model.setShowCoordinates('genomic')
-                        },
+              },
+              ...(showGenomicCoordsOption
+                ? [
+                    {
+                      label:
+                        'Coordinates relative to genome (only available for continuous genome based sequence types)',
+                      type: 'radio' as const,
+                      checked: showCoordinatesSetting === 'genomic',
+                      onClick: () => {
+                        model.setShowCoordinates('genomic')
                       },
-                    ]
-                  : []),
-              ],
+                    },
+                  ]
+                : []),
+            ],
+          },
+          {
+            label: 'Settings',
+            icon: Settings,
+            onClick: () => {
+              setShowSettings(true)
             },
-            {
-              label: 'Settings',
-              icon: Settings,
-              onClick: () => {
-                setShowSettings(true)
-              },
-            },
-          ]}
-        >
-          <MoreVert />
-        </CascadingMenuButton>
+          },
+        ]}
+      >
+        <MoreVert />
+      </CascadingMenuButton>
 
-        {showSettings ? (
-          <SequenceFeatureSettingsDialog
-            model={model}
-            handleClose={() => {
-              setShowSettings(false)
-            }}
-          />
-        ) : null}
-      </>
-    )
-  }),
-)
+      {showSettings ? (
+        <SequenceFeatureSettingsDialog
+          model={model}
+          handleClose={() => {
+            setShowSettings(false)
+          }}
+        />
+      ) : null}
+    </>
+  )
+})
 
 export default SequenceFeatureMenu
