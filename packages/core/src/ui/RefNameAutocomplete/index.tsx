@@ -20,21 +20,19 @@ interface Option {
 }
 
 function getFiltered(options: Option[], inputValue: string) {
-  const query = inputValue.toLocaleLowerCase()
+  const query = inputValue.toLowerCase()
   const filtered = options.filter(({ result }) =>
     result.getLabel().toLowerCase().includes(query),
   )
-  return [
-    ...filtered.slice(0, 100),
-    ...(filtered.length > 100
-      ? [
-          {
-            group: 'limitOption',
-            result: new BaseResult({ label: 'keep typing for more results' }),
-          },
-        ]
-      : []),
-  ]
+  return filtered.length > 100
+    ? [
+        ...filtered.slice(0, 100),
+        {
+          group: 'limitOption',
+          result: new BaseResult({ label: 'keep typing for more results' }),
+        },
+      ]
+    : filtered
 }
 
 function getDeduplicatedResult(results: BaseResult[]): Option[] {
@@ -120,7 +118,6 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       result: new RefSequenceResult({
         refName: region.refName,
         label: region.refName,
-        matchedAttribute: 'refName',
       }),
     })) ?? []
 

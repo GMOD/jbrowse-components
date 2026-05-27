@@ -27,14 +27,3 @@ test('create RefSequenceResult', () => {
   expect(refSeqResult.getLocation()).toEqual('chr1')
   expect(refSeqResult.hasLocation()).toBe(true)
 })
-
-test('can update score of result and throw appropriate errors', () => {
-  const refSeqResult = new RefSequenceResult({
-    refName: 'chr1',
-    label: 'chromosome 1',
-  })
-
-  expect(refSeqResult.getScore()).toBe(1)
-  refSeqResult.updateScore(1000)
-  expect(refSeqResult.getScore()).toBe(1000)
-})

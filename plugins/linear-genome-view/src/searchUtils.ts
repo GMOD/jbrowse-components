@@ -175,21 +175,20 @@ export async function fetchResults({
 
   // resolve aliases (e.g. 'contigB') to the canonical refname ('ctgB') so
   // the dropdown shows the name that matches the FASTA / displayed regions
+  const q = queryString.toLowerCase()
   const refNameResults = [
     ...new Set(
       assembly?.allRefNames
-        ?.filter(ref => ref.toLowerCase().startsWith(queryString.toLowerCase()))
-        .map(ref => assembly.getCanonicalRefName(ref) ?? ref)
-        .slice(0, 10),
+        ?.filter(ref =>
+          searchType === 'exact'
+            ? ref.toLowerCase() === q
+            : ref.toLowerCase().startsWith(q),
+        )
+        .map(ref => assembly.getCanonicalRefName(ref) ?? ref),
     ),
-  ].map(
-    r =>
-      new RefSequenceResult({
-        label: r,
-        refName: r,
-        matchedAttribute: 'refName',
-      }),
-  )
+  ]
+    .slice(0, 10)
+    .map(r => new RefSequenceResult({ label: r, refName: r }))
 
   return dedupe([...refNameResults, ...(textSearchResults ?? [])], elt =>
     elt.getId(),
@@ -198,11 +197,6 @@ export async function fetchResults({
 
 // splits on the last instance of a character
 export function splitLast(str: string, split: string): [string, string] {
-  const lastIndex = str.lastIndexOf(split)
-  if (lastIndex === -1) {
-    return [str, '']
-  }
-  const before = str.slice(0, lastIndex)
-  const after = str.slice(lastIndex + 1)
-  return [before, after]
+  const i = str.lastIndexOf(split)
+  return i === -1 ? [str, ''] : [str.slice(0, i), str.slice(i + 1)]
 }
