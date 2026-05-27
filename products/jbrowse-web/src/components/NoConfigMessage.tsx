@@ -1,10 +1,5 @@
 import { useState } from 'react'
 
-const extractConfigFromHref = (h: string) => {
-  const params = new URLSearchParams(h.split('?')[1] || '')
-  return params.get('config')
-}
-
 function LinkList({
   links,
   buildUrl,
@@ -23,15 +18,21 @@ function LinkList({
     <ul>
       {links.map(({ config, href, label, renderers }) => {
         const finalHref =
-          href ||
-          (config && buildUrl ? buildUrl(config) : `?config=${config || ''}`)
-
-        const configForRenderers =
-          config || (href ? extractConfigFromHref(href) : null)
+          href ?? (config && buildUrl ? buildUrl(config) : `?config=${config ?? ''}`)
 
         const defaultRenderers = ['webgpu', 'webgl', 'canvas']
         const badgeList = renderers?.length ? renderers : defaultRenderers
         const badgeKey = `${label}:${renderers?.length ? renderers.join(',') : 'default'}`
+
+        const buildBadgeHref = (r: string) => {
+          if (href) {
+            const params = new URLSearchParams(href.split('?')[1] ?? '')
+            params.set('renderer', r)
+            return `?${params}`
+          }
+          return config && buildUrl ? buildUrl(config, { renderer: r }) : finalHref
+        }
+
         return (
           <li key={label} style={{ marginBottom: 4 }}>
             <a href={finalHref}>{label}</a>{' '}
@@ -41,11 +42,7 @@ function LinkList({
                 return (
                   <span key={r}>
                     <a
-                      href={
-                        configForRenderers && buildUrl
-                          ? buildUrl(configForRenderers, { renderer: r })
-                          : finalHref
-                      }
+                      href={buildBadgeHref(r)}
                       onMouseEnter={() => {
                         setHoveredBadge(badgeId)
                       }}
@@ -159,10 +156,7 @@ const sampleConfigs: {
   },
 ]
 
-const syntenyConfigs: {
-  config: string
-  label: string
-}[] = [
+const syntenyConfigs = [
   {
     config: 'test_data/config_synteny_grape_peach.json',
     label: 'Grape/Peach synteny',
@@ -273,10 +267,7 @@ const demoSessions = [
   },
 ] as const
 
-const galleryDemos: {
-  href: string
-  label: string
-}[] = [
+const galleryDemos = [
   {
     href: '?config=test_data%2Fconfig_dotplot.json&session=share-r4sMB3bHh5&password=C9jCa',
     label: 'Dotplot grape vs peach genome',
