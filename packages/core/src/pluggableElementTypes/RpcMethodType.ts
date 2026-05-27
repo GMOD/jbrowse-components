@@ -1,4 +1,5 @@
 import PluggableElementBase from './PluggableElementBase.ts'
+import { renameRegionsIfNeeded } from '../util/index.ts'
 import mapObject from '../util/map-obj/index.ts'
 import { isRpcResult } from '../util/rpc.ts'
 import { getBlobMap, getFileFromCache, setBlobMap } from '../util/tracks.ts'
@@ -11,6 +12,8 @@ import {
 } from '../util/types/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
+import type { Region } from '../util/index.ts'
+import type { StopToken } from '../util/stopToken.ts'
 import type { FileHandleLocation, UriLocation } from '../util/types/index.ts'
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
@@ -91,6 +94,20 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       ...args,
       blobMap: getBlobMap(),
     }
+  }
+
+  protected async renameRegions<
+    T extends {
+      assemblyName?: string
+      regions?: Region[]
+      stopToken?: StopToken
+      adapterConfig: Record<string, unknown>
+      sessionId: string
+      statusCallback?: (arg: string) => void
+    },
+  >(args: T): Promise<T> {
+    const { rootModel } = this.pluginManager
+    return renameRegionsIfNeeded(rootModel!.session!.assemblyManager, args)
   }
 
   async serializeNewAuthArguments(

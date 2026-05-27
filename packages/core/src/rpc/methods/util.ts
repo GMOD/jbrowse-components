@@ -1,4 +1,5 @@
 import type { ServerSideRendererType } from '../../pluggableElementTypes/index.ts'
+import type RendererType from '../../pluggableElementTypes/renderers/RendererType.tsx'
 import type {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
@@ -17,17 +18,16 @@ export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
   rendererType: string
 }
 
-export function validateRendererType<T>(
+export function validateRendererType(
   rendererType: string,
-  RendererType: T,
+  RendererTypeInstance: RendererType | undefined,
 ): ServerSideRendererType {
-  // @ts-expect-error
-  if (!RendererType.ReactComponent) {
+  if (!RendererTypeInstance?.ReactComponent) {
     throw new Error(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
     )
   }
-  return RendererType as unknown as ServerSideRendererType
+  return RendererTypeInstance as ServerSideRendererType
 }
 
 export {

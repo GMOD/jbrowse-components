@@ -91,6 +91,11 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
     return this.rectangles.get(id)
   }
 
+  // PrecomputedLayout has rectangles only; data was dropped during serialization
+  getDataByID(_id: string): T | undefined {
+    return undefined
+  }
+
   addRectToBitmap(_rect: Rectangle<T>, _data: Record<string, T>): void {
     throw new Error('Method not implemented.')
   }

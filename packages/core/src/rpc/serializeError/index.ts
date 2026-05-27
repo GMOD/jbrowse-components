@@ -109,7 +109,7 @@ function destroyCircular({
       seen: [...seen],
       forceEnumerable,
       maxDepth,
-      depth,
+      depth: depth + 1,
       useToJSON,
       serialize,
     })
@@ -149,13 +149,7 @@ function destroyCircular({
       continue
     }
 
-    if (!seen.includes(from[key])) {
-      depth++
-      to[key] = continueDestroyCircular(from[key] as Record<string, unknown>)
-      continue
-    }
-
-    to[key] = '[Circular]'
+    to[key] = seen.includes(from[key]) ? '[Circular]' : continueDestroyCircular(from[key] as Record<string, unknown>)
   }
 
   if (serialize || to instanceof Error) {

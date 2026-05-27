@@ -68,7 +68,7 @@ export default abstract class BaseRpcDriver {
   }
 
   // filter the given object and just remove any non-cloneable things from it
-  filterArgs<THING_TYPE>(thing: THING_TYPE, sessionId: string): THING_TYPE {
+  filterArgs<THING_TYPE>(thing: THING_TYPE): THING_TYPE {
     // Fast path for primitives (most common case)
     if (thing === null || thing === undefined) {
       return thing
@@ -85,8 +85,8 @@ export default abstract class BaseRpcDriver {
     // Object cases
     if (Array.isArray(thing)) {
       return thing
-        .filter(thing => isCloneable(thing))
-        .map(t => this.filterArgs(t, sessionId)) as unknown as THING_TYPE
+        .filter(t => isCloneable(t))
+        .map(t => this.filterArgs(t)) as unknown as THING_TYPE
     } else if (isStateTreeNode(thing) && !isAlive(thing)) {
       throw new Error('dead state tree node passed to RPC call')
     } else if (thing instanceof File) {
@@ -95,7 +95,7 @@ export default abstract class BaseRpcDriver {
       return Object.fromEntries(
         Object.entries(thing)
           .filter(e => isCloneable(e[1]))
-          .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),
+          .map(([k, v]) => [k, this.filterArgs(v)]),
       ) as THING_TYPE
     }
   }
@@ -118,7 +118,7 @@ export default abstract class BaseRpcDriver {
 
     const workerCount =
       readConfObject(this.config, 'workerCount') ||
-      clamp(1, Math.max(1, hardwareConcurrency - 1), 5)
+      clamp(hardwareConcurrency - 1, 1, 5)
 
     const workers = []
     for (let i = 0; i < workerCount; i++) {
@@ -167,7 +167,7 @@ export default abstract class BaseRpcDriver {
       throw new Error(`unknown RPC method ${functionName}`)
     }
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
-    const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)
+    const filteredAndSerializedArgs = this.filterArgs(serializedArgs)
 
     // now actually call the worker
     const call = await worker.call(functionName, filteredAndSerializedArgs, {

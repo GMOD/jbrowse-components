@@ -30,6 +30,7 @@ export interface CachedLayout {
 // Generic session interface that any layout session must implement
 export interface LayoutSessionLike {
   layout: BaseMultiLayout
+  cachedLayout?: CachedLayout
   update(props: LayoutSessionProps): LayoutSessionLike
 }
 

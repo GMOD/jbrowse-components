@@ -1,6 +1,5 @@
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
-import { renameRegionsIfNeeded } from '../../util/index.ts'
 
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
@@ -13,10 +12,7 @@ export default class CoreGetExportData extends RpcMethodType {
     args: RpcArgs<'CoreGetExportData'> & { sessionId: string },
     rpcDriver: string,
   ) {
-    const { rootModel } = this.pluginManager
-    const assemblyManager = rootModel!.session!.assemblyManager
-    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
-    return super.serializeArguments(renamedArgs, rpcDriver)
+    return super.serializeArguments(await this.renameRegions(args), rpcDriver)
   }
 
   async execute(

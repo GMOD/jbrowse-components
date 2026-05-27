@@ -46,14 +46,9 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
 
     // Use direct execution if the method supports it (avoids serialization)
     if (rpcMethod.supportsDirectExecution()) {
-      const result = await rpcMethod.executeDirect(args)
-      if (result !== undefined) {
-        return result
-      }
-      // Fall through to serialized path if executeDirect returns undefined
+      return rpcMethod.executeDirect(args)
     }
 
-    // Fallback to serialized execution
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const result = await rpcMethod.execute(serializedArgs, this.name)
     return rpcMethod.deserializeReturn(result, args, this.name)

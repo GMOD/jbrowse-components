@@ -28,6 +28,7 @@ export interface BaseLayout<T> {
   collides(rect: Rectangle<T>, top: number): boolean
   addRectToBitmap(rect: Rectangle<T>, data: unknown): void
   getRectangles(): Map<string, RectTuple>
+  getDataByID(id: string): T | undefined
   discardRange(left: number, right: number): void
   serializeRegion(region: { start: number; end: number }): SerializedLayout
   getTotalHeight(): number

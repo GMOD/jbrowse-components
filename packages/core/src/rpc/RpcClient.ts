@@ -33,11 +33,12 @@ export default class RpcClient {
   }
 
   on(event: string, listener: Listener) {
-    let listeners = this.events.get(event)
-    if (!listeners) {
-      this.events.set(event, (listeners = []))
+    const listeners = this.events.get(event)
+    if (listeners) {
+      listeners.push(listener)
+    } else {
+      this.events.set(event, [listener])
     }
-    listeners.push(listener)
     return this
   }
 

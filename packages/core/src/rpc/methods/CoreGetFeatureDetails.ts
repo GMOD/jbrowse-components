@@ -1,8 +1,9 @@
+import { validateRendererType } from './util.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
-import { renameRegionsIfNeeded } from '../../util/index.ts'
 
 import type { RenderArgs, RenderArgsSerialized } from './util.ts'
 import type { BoxRendererType } from '../../pluggableElementTypes/index.ts'
+import type { Feature } from '../../util/simpleFeature.ts'
 import type { StopToken } from '../../util/stopToken.ts'
 
 /**
@@ -12,21 +13,18 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
   name = 'CoreGetFeatureDetails'
 
   async serializeArguments(args: RenderArgs, rpcDriver: string) {
-    const { rootModel } = this.pluginManager
-    const assemblyManager = rootModel!.session!.assemblyManager
-    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
     const superArgs = (await super.serializeArguments(
-      renamedArgs,
+      await this.renameRegions(args),
       rpcDriver,
     )) as RenderArgs
-    const { rendererType } = args
-    const RendererType = this.pluginManager.getRendererType(rendererType)!
-    // @ts-expect-error
-    return RendererType.serializeArgsInClient(superArgs)
+    return validateRendererType(
+      args.rendererType,
+      this.pluginManager.getRendererType(args.rendererType),
+    ).serializeArgsInClient(superArgs)
   }
 
   async execute(
-    args: RenderArgsSerialized & { stopToken?: StopToken },
+    args: RenderArgsSerialized & { stopToken?: StopToken; featureId: string },
     rpcDriver: string,
   ) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
@@ -34,12 +32,9 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
     const RendererType = this.pluginManager.getRendererType(
       rendererType,
     )! as BoxRendererType
-
-    return {
-      feature: RendererType.getLayoutSession(args)
-        // @ts-expect-error
-        ?.cachedLayout.layout.getDataByID(featureId)
-        ?.toJSON(),
-    }
+    const data = RendererType.getLayoutSession(args)?.cachedLayout?.layout.getDataByID(
+      featureId,
+    ) as Feature | undefined
+    return { feature: data?.toJSON() }
   }
 }

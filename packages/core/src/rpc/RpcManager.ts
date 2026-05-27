@@ -106,14 +106,12 @@ export default class RpcManager {
     return newDriver
   }
 
-  async getDriverForCall(
-    _sessionId: string,
-    _functionName: string,
-    args: Record<string, unknown>,
+  getDriverForCall(
+    args: { rpcDriverName?: string },
     opts?: { rpcDriverName?: string },
   ) {
     const backendName =
-      (args.rpcDriverName as string | undefined) ||
+      args.rpcDriverName ||
       opts?.rpcDriverName ||
       readConfObject(this.mainConfiguration, 'defaultDriver')
 
@@ -126,24 +124,23 @@ export default class RpcManager {
     args: M extends RpcMethodName
       ? RpcArgs<M & RpcMethodName>
       : Record<string, unknown>,
-    opts?: Record<string, unknown>,
+    opts?: { rpcDriverName?: string } & Record<string, unknown>,
   ): Promise<M extends RpcMethodName ? RpcReturn<M & RpcMethodName> : unknown> {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
-    const a = { ...args, sessionId } as Record<string, unknown>
-    const driverForCall = await this.getDriverForCall(
-      sessionId,
-      functionName,
-      a,
-      opts,
-    )
+    const a = { ...args, sessionId } as Record<string, unknown> & {
+      sessionId: string
+      rpcDriverName?: string
+      statusCallback?: (message: unknown) => void
+    }
+    const driverForCall = this.getDriverForCall(a, opts)
     return driverForCall.call(
       this.pluginManager,
       sessionId,
       functionName,
       a,
       opts ?? {},
-    ) as any
+    ) as M extends RpcMethodName ? RpcReturn<M & RpcMethodName> : unknown
   }
 }
