@@ -615,12 +615,11 @@ bookmark highlights. Append to the array and return it.
 
 type: async
 
-- `args` - `SearchResultSelectedArgs` from `@jbrowse/plugin-linear-genome-view`
+- `args` - `undefined` (notification point — no accumulator)
+- `props` - an object of the type below
 
 ```typescript
-import type { SearchResultSelectedArgs } from '@jbrowse/plugin-linear-genome-view'
-// SearchResultSelectedArgs:
-interface args {
+interface props {
   session: AbstractSessionModel
   result: BaseResult // the search result that was selected
   model: LinearGenomeViewModel
@@ -632,20 +631,28 @@ Called when a search result is selected in the LinearGenomeView search box.
 Fires after navigation (if the result has a location). Useful for taking
 additional action after a search, e.g. selecting a corresponding feature.
 
+This is a notification-style extension point: the payload lives in `props`
+(passed unchanged to every callback) rather than `args`, because callbacks
+should not be able to alter what subsequent callbacks see.
+
 Example:
 
 ```typescript
-import type { SearchResultSelectedArgs } from '@jbrowse/plugin-linear-genome-view'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 pluginManager.addToExtensionPoint(
   'LinearGenomeView-searchResultSelected',
-  (args: SearchResultSelectedArgs) => {
-    const { result, model } = args
+  (_, props) => {
+    const { result, model } = props as {
+      result: BaseResult
+      model: LinearGenomeViewModel
+      assemblyName: string
+    }
     const trackId = result.getTrackId()
     if (trackId === 'my_custom_track') {
       // perform custom action
     }
-    return args
   },
 )
 ```

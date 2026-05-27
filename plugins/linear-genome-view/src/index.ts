@@ -131,7 +131,6 @@ export {
   SearchBox,
 } from './LinearGenomeView/index.ts'
 export { fetchResults } from './searchUtils.ts'
-export type { SearchResultSelectedArgs } from './searchUtils.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'
 export type {
   BpOffset,
