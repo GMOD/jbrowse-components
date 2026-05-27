@@ -392,8 +392,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.26
-        version: 6.0.26
+        specifier: ^6.0.27
+        version: 6.0.27
       '@gmod/http-range-fetcher':
         specifier: ^5.0.7
         version: 5.0.7
@@ -1251,8 +1251,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.26
-        version: 6.0.26
+        specifier: ^6.0.27
+        version: 6.0.27
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1500,8 +1500,8 @@ importers:
   plugins/maf:
     dependencies:
       '@gmod/bgzf-filehandle':
-        specifier: ^6.0.26
-        version: 6.0.26
+        specifier: ^6.0.27
+        version: 6.0.27
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -1728,8 +1728,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.0.15
-        version: 3.0.15
+        specifier: ^3.0.16
+        version: 3.0.16
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1908,8 +1908,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2
       tmp:
-        specifier: ^0.2.5
-        version: 0.2.5
+        specifier: ^0.2.6
+        version: 0.2.6
 
   products/jbrowse-desktop:
     dependencies:
@@ -2137,8 +2137,8 @@ importers:
         specifier: ^19.2.6
         version: 19.2.6(react@19.2.6)
       tmp:
-        specifier: ^0.2.5
-        version: 0.2.5
+        specifier: ^0.2.6
+        version: 0.2.6
       yargs:
         specifier: ^18.0.0
         version: 18.0.0
@@ -3920,8 +3920,8 @@ packages:
   '@gmod/bed@2.2.5':
     resolution: {integrity: sha512-bk+D5yrV1cxNCuiJ771iK68jmU8yEGV2vufdJW1SjeByl7ievJoYKgRdSwEol4hleqV1cNcmlMvfmj3t+n+OMw==}
 
-  '@gmod/bgzf-filehandle@6.0.26':
-    resolution: {integrity: sha512-w7KLBVfwEPud6FBbe635Io91Jrmi7qUcB89vQsSKzVmfAvvmMU8S6TxLgDyhkEW8zIVbXx4rGvboB2OXoPX8Zg==}
+  '@gmod/bgzf-filehandle@6.0.27':
+    resolution: {integrity: sha512-+mH9sM6Wkr8DTJuncMCvjve6IAGBJyVWad1xyli4Vn0ZchXI4aCArFE1Pfp2mEW6DMRKWwFVBfgeQfdvxNmLiQ==}
 
   '@gmod/cram@8.2.6':
     resolution: {integrity: sha512-qsH3nN3f1sqWAs915iDpuX4jiG1CSCNisb9cBF7rxmZpxg82pnM9x9AxQQC95dUt3bAEBN5RPdZzJTa3YYzKtg==}
@@ -3945,8 +3945,8 @@ packages:
   '@gmod/tabix@3.3.8':
     resolution: {integrity: sha512-fyTWQTSS1ZyKeVIPF6pnCqOyrkNTGWgmhH71VGTsq8GDKZs70KxfRtRghu8q/z34nE4DEG2+G/vXn+AJivJVZQ==}
 
-  '@gmod/trix@3.0.15':
-    resolution: {integrity: sha512-KPXXQDHF8jYq9LZZ+QSITwEc4lm2wNcsuJlqIj1eVlRuYDis/191jLqcQiy0SPMEMwmNfl2HroXs6+1TOHDMxA==}
+  '@gmod/trix@3.0.16':
+    resolution: {integrity: sha512-KCHswOgkZTjs2JnfX8H5j7NFwwVtEhtpuW/zQBYBX0dK4km5xU500LWGTE69cBs+hWlwg93ThxuQBMBn0NRpog==}
 
   '@gmod/twobit@6.0.9':
     resolution: {integrity: sha512-8X0QERQbJ152ITLQEEujrYG3Ho19FOMCj4LnOkxB8A9EynNp+ensmIh4/aQAzwgtrqqzb8DOFubET6c4bVdzwA==}
@@ -10232,8 +10232,8 @@ packages:
     resolution: {integrity: sha512-WMi/OQ2axVTf/ykqCQgXiIct+mSQDFdH2fkwhPwgEwvJ1kSzZRiinb0zF2Xb8u4+OqPChmyI6MEu4EezNJz+FQ==}
     hasBin: true
 
-  tmp@0.2.5:
-    resolution: {integrity: sha512-voyz6MApa1rQGUxT3E+BK7/ROe8itEx7vD8/HEvt4xwXucvQ5G5oeEiHkmHZJuBO21RpOf+YYm9MOivj709jow==}
+  tmp@0.2.6:
+    resolution: {integrity: sha512-5sJPdPjfI5Kx+qbrDesxkglRBxW//g7hCsqspEjwkewGvBMGIKMOTKzLt1hFVJzyadba3lDUN20O9qhvbQUSTA==}
     engines: {node: '>=14.14'}
 
   tmpl@1.0.5:
@@ -10759,8 +10759,8 @@ packages:
     resolution: {integrity: sha512-n1brCuqClxfFfq/Rb0ICg9giSZqCS+pLtccdag6C2HyufBrh3fBOiy9nb6ggRMvWOVH5GrdJskj5iGTZNxd7SA==}
     engines: {node: '>=4'}
 
-  which-typed-array@1.1.20:
-    resolution: {integrity: sha512-LYfpUkmqwl0h9A2HL09Mms427Q1RZWuOHsukfVcKRq9q95iQxdw0ix1JQrqbcDR9PH1QDwf5Qo8OZb5lksZ8Xg==}
+  which-typed-array@1.1.21:
+    resolution: {integrity: sha512-zbRA8cVm6io/d5W8uIe2hblzN76/Wm3v/yiythQvr+dpBWeqhPSWIDNj4zOyHi4zKbMK6DN34Xsr9jPHJERAEw==}
     engines: {node: '>= 0.4'}
 
   which@2.0.2:
@@ -12276,7 +12276,7 @@ snapshots:
 
   '@gmod/bam@7.2.4':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.26
+      '@gmod/bgzf-filehandle': 6.0.27
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
       generic-filehandle2: 2.1.9
@@ -12291,7 +12291,7 @@ snapshots:
 
   '@gmod/bed@2.2.5': {}
 
-  '@gmod/bgzf-filehandle@6.0.26':
+  '@gmod/bgzf-filehandle@6.0.27':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.9
@@ -12316,7 +12316,7 @@ snapshots:
 
   '@gmod/indexedfasta@5.0.7':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.0.26
+      '@gmod/bgzf-filehandle': 6.0.27
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.9
 
@@ -12329,11 +12329,11 @@ snapshots:
   '@gmod/tabix@3.3.8':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
-      '@gmod/bgzf-filehandle': 6.0.26
+      '@gmod/bgzf-filehandle': 6.0.27
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.1.9
 
-  '@gmod/trix@3.0.15': {}
+  '@gmod/trix@3.0.16': {}
 
   '@gmod/twobit@6.0.9':
     dependencies:
@@ -15684,7 +15684,7 @@ snapshots:
       typed-array-byte-offset: 1.0.4
       typed-array-length: 1.0.7
       unbox-primitive: 1.1.0
-      which-typed-array: 1.1.20
+      which-typed-array: 1.1.21
 
   es-define-property@1.0.1: {}
 
@@ -17005,7 +17005,7 @@ snapshots:
 
   is-typed-array@1.1.15:
     dependencies:
-      which-typed-array: 1.1.20
+      which-typed-array: 1.1.21
 
   is-weakmap@2.0.2: {}
 
@@ -19186,7 +19186,7 @@ snapshots:
     dependencies:
       '@bazel/runfiles': 6.5.0
       jszip: 3.10.1
-      tmp: 0.2.5
+      tmp: 0.2.6
       ws: 8.21.0
     transitivePeerDependencies:
       - bufferutil
@@ -19797,7 +19797,7 @@ snapshots:
     dependencies:
       tldts-core: 6.1.86
 
-  tmp@0.2.5: {}
+  tmp@0.2.6: {}
 
   tmpl@1.0.5: {}
 
@@ -20356,7 +20356,7 @@ snapshots:
       isarray: 2.0.5
       which-boxed-primitive: 1.1.1
       which-collection: 1.0.2
-      which-typed-array: 1.1.20
+      which-typed-array: 1.1.21
 
   which-collection@1.0.2:
     dependencies:
@@ -20367,7 +20367,7 @@ snapshots:
 
   which-pm-runs@1.1.0: {}
 
-  which-typed-array@1.1.20:
+  which-typed-array@1.1.21:
     dependencies:
       available-typed-arrays: 1.0.7
       call-bind: 1.0.9
