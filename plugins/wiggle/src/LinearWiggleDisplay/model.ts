@@ -134,7 +134,7 @@ function stateModelFactory(
         get ticks() {
           return computeYTicks({
             height: self.height,
-            domain: self.domain as [number, number] | undefined,
+            domain: self.domain,
             scaleType: self.scaleType,
             minimalTicks: getConf(self, 'minimalTicks') as boolean,
           })

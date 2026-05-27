@@ -26,6 +26,7 @@ interface WithConfiguration {
   configuration: AnyConfigurationModel
 }
 /**
+ * #stateModel FeatureDensityMixin
  * Block-based display mixin that adds reactive density-stats checking
  * on top of RegionTooLargeMixin.
  *

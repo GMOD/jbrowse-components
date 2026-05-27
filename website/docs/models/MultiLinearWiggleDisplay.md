@@ -248,7 +248,7 @@ PositionedHierarchyNode<NewickNode> | undefined
 
 ```js
 // type
-{ ticks: { value: number; y: number; }[]; yTop: number; yBottom: number; } | undefined
+YScaleTicks | undefined
 ```
 
 #### getter: colors
