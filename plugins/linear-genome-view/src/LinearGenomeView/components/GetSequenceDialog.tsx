@@ -145,7 +145,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
           <FormControlLabel
             control={
               <Checkbox
-                value={rev}
+                checked={rev}
                 onChange={event => {
                   setReverse(event.target.checked)
                 }}
@@ -156,7 +156,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
           <FormControlLabel
             control={
               <Checkbox
-                value={comp}
+                checked={comp}
                 onChange={event => {
                   setComplement(event.target.checked)
                 }}
