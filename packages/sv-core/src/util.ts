@@ -74,6 +74,24 @@ export function makeTitle(f: Feature) {
   return `${f.get('name') || f.get('id') || 'breakend'} split detail`
 }
 
+// Read the mate destination from a VCF translocation INFO record. CHR2/END
+// give the mate ref+position; STRANDS[0] is a two-char code (e.g. "+-") where
+// the first char is this side's strand and the second is the mate's. Returns
+// undefined when CHR2/END aren't both present.
+export function readTranslocationMate(info: {
+  CHR2?: string[]
+  END?: number[]
+  STRANDS?: string[]
+}) {
+  const chr = info.CHR2?.[0]
+  const pos = info.END?.[0]
+  if (chr === undefined || pos === undefined) {
+    return undefined
+  }
+  const [myDir, mateDir] = info.STRANDS?.[0]?.split('') ?? ['.', '.']
+  return { chr, pos, myDir: myDir ?? '.', mateDir: mateDir ?? '.' }
+}
+
 export function hasBreakpointSplitView(model: IAnyStateTreeNode) {
   try {
     return !!getEnv(getSession(model)).pluginManager.getViewType(
