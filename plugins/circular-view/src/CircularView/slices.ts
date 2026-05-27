@@ -1,7 +1,5 @@
 import { assembleLocString, polarToCartesian } from '@jbrowse/core/util'
 
-import { thetaRangesOverlap } from './viewportVisibleRegion.ts'
-
 import type { Region } from '@jbrowse/core/util'
 
 export interface SliceElidedRegion {
@@ -72,20 +70,4 @@ function calculateStaticSlices(self: {
   return slices
 }
 
-function sliceIsVisible(
-  self: { offsetRadians: number; visibleSection: { theta: [number, number] } },
-  slice: Slice,
-) {
-  const {
-    theta: [visibleThetaMin, visibleThetaMax],
-  } = self.visibleSection
-
-  return thetaRangesOverlap(
-    slice.offsetRadians + self.offsetRadians,
-    slice.radianWidth,
-    visibleThetaMin,
-    visibleThetaMax - visibleThetaMin,
-  )
-}
-
-export { calculateStaticSlices, sliceIsVisible }
+export { calculateStaticSlices }

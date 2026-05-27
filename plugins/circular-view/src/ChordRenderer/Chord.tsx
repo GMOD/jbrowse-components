@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import type { MouseEvent } from 'react'
 
 import { parseBreakend } from '@gmod/vcf'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getStrokeProps, polarToCartesian } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import type { AnyRegion, Block } from './types.ts'
+import type { Block } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -54,12 +53,7 @@ const Chord = observer(function Chord({
   config: AnyConfigurationModel
   bezierRadius: number
   selected: boolean
-  onClick: (
-    feat: Feature,
-    reg: AnyRegion,
-    end: AnyRegion,
-    evt: MouseEvent<SVGPathElement>,
-  ) => void
+  onClick: (feat: Feature) => void
 }) {
   const [hovered, setHovered] = useState(false)
   const startBlock = blocksForRefs[feature.get('refName')]
@@ -100,8 +94,8 @@ const Chord = observer(function Chord({
       d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
       {...getStrokeProps(stroke)}
       strokeWidth={hovered ? 3 : 1}
-      onClick={evt => {
-        onClick(feature, startBlock.region, endBlock.region, evt)
+      onClick={() => {
+        onClick(feature)
       }}
       onMouseOver={() => {
         setHovered(true)

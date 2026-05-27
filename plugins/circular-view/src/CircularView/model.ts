@@ -340,21 +340,14 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (self.init) {
           const { assemblyManager } = getSession(self)
           const asm = assemblyManager.get(self.init.assembly)
-          if (asm?.error) {
-            return asm.error
-          }
           if (!asm) {
             return `Assembly ${self.init.assembly} not found`
           }
+          if (asm.error) {
+            return asm.error
+          }
         }
         return undefined
-      },
-
-      /**
-       * #getter
-       */
-      get loadingMessage() {
-        return this.showLoading ? 'Loading' : undefined
       },
 
       /**
@@ -377,11 +370,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * Whether the view is fully initialized and ready to display
        */
       get showView() {
-        return (
-          !!self.displayedRegions.length &&
-          !!this.figureSize &&
-          this.initialized
-        )
+        return !!self.displayedRegions.length && this.initialized
       },
 
       /**
@@ -544,8 +533,10 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       addTrackConf(configuration: Record<string, unknown>, initialSnapshot = {}) {
-        const { trackId } = configuration as { trackId: string }
-        showTrackGeneric(self, trackId, initialSnapshot, {}, configuration)
+        const { trackId } = configuration
+        if (typeof trackId === 'string') {
+          showTrackGeneric(self, trackId, initialSnapshot, {}, configuration)
+        }
       },
 
       /**

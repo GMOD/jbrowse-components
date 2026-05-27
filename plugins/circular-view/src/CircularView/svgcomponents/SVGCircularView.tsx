@@ -48,9 +48,8 @@ export async function renderToSvg(
             {staticSlices.map(slice => (
               <Ruler key={slice.key} model={model} slice={slice} />
             ))}
-            {displayResults.map(({ result }, i) => (
-              /* biome-ignore lint/suspicious/noArrayIndexKey: */
-              <Fragment key={i}>{result}</Fragment>
+            {displayResults.map(({ track, result }) => (
+              <Fragment key={track.id}>{result}</Fragment>
             ))}
           </g>
         </svg>

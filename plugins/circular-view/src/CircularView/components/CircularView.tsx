@@ -49,17 +49,14 @@ const CircularView = observer(function CircularView({
 }: {
   model: CircularViewModel
 }) {
-  const { showLoading, showView, showImportForm, loadingMessage } = model
-
-  if (showLoading) {
-    return <LoadingEllipses variant="h6" message={loadingMessage} />
-  } else if (showImportForm) {
-    return <ImportForm model={model} />
-  } else if (showView) {
-    return <CircularViewLoaded model={model} />
-  } else {
-    return null
-  }
+  const { showLoading, showView, showImportForm } = model
+  return showLoading ? (
+    <LoadingEllipses variant="h6" message="Loading" />
+  ) : showImportForm ? (
+    <ImportForm model={model} />
+  ) : showView ? (
+    <CircularViewLoaded model={model} />
+  ) : null
 })
 
 const CircularViewLoaded = observer(function CircularViewLoaded({
@@ -132,19 +129,18 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   }
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (!isDragging) {
-      return
+    if (isDragging) {
+      const angle = angleFromCenter(event.clientX, event.clientY)
+      let delta = angle - lastAngleRef.current
+      // wrap delta to [-π, π] to handle the ±π boundary crossing
+      if (delta > Math.PI) {
+        delta -= 2 * Math.PI
+      } else if (delta < -Math.PI) {
+        delta += 2 * Math.PI
+      }
+      model.rotate(delta)
+      lastAngleRef.current = angle
     }
-    const angle = angleFromCenter(event.clientX, event.clientY)
-    let delta = angle - lastAngleRef.current
-    // wrap delta to [-π, π] to handle the ±π boundary crossing
-    if (delta > Math.PI) {
-      delta -= 2 * Math.PI
-    } else if (delta < -Math.PI) {
-      delta += 2 * Math.PI
-    }
-    model.rotate(delta)
-    lastAngleRef.current = angle
   }
 
   const handlePointerUp = (event: React.PointerEvent<SVGSVGElement>) => {

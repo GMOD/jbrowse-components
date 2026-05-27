@@ -164,14 +164,13 @@ const RegionRulerArc = observer(function RegionRulerArc({
   const widthPx = (endRadians - startRadians) * radiusPx
   const session = getSession(model)
   const assembly = session.assemblyManager.get(region.assemblyName)
-  let color = assembly ? assembly.getRefNameColor(region.refName) : undefined
-  if (color) {
-    try {
-      color = makeContrasting(color, theme.palette.background.paper)
-    } catch (error) {
-      color = theme.palette.text.primary
-    }
-  } else {
+  const refNameColor = assembly?.getRefNameColor(region.refName)
+  let color: string
+  try {
+    color = refNameColor
+      ? makeContrasting(refNameColor, theme.palette.background.paper)
+      : theme.palette.text.primary
+  } catch {
     color = theme.palette.text.primary
   }
 

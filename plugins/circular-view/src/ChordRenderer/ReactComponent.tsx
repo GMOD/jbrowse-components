@@ -1,11 +1,10 @@
 import { useMemo } from 'react'
-import type { MouseEvent } from 'react'
 
 import { observer } from 'mobx-react'
 
 import Chord from './Chord.tsx'
 
-import type { AnyRegion, Block } from './types.ts'
+import type { Block } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -18,7 +17,7 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
   displayModel,
   onChordClick,
 }: {
-  features: Map<string, Feature>
+  features: Feature[]
   radius: number
   config: AnyConfigurationModel
   displayModel: {
@@ -27,12 +26,7 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
   }
   blockDefinitions: Block[]
   bezierRadius: number
-  onChordClick: (
-    feature: Feature,
-    reg: AnyRegion,
-    endBlock: AnyRegion,
-    evt: MouseEvent<SVGPathElement>,
-  ) => void
+  onChordClick: (feature: Feature) => void
 }) {
   const { selectedFeatureId } = displayModel
   const blocksForRefsMemo = useMemo(() => {
@@ -50,7 +44,7 @@ const SVChordsReactComponent = observer(function SVChordsReactComponent({
 
   return (
     <g data-testid="structuralVariantChordRenderer">
-      {[...features.values()].map(feature => {
+      {features.map(feature => {
         const id = feature.id()
         const selected = selectedFeatureId === id
         return (

@@ -53,7 +53,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
       /**
        * #volatile
        */
-      features: undefined as Map<string, Feature> | undefined,
+      features: undefined as Feature[] | undefined,
       /**
        * #volatile
        */
@@ -117,7 +117,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
         /**
          * #action
          */
-        setFeatures(features: Map<string, Feature>) {
+        setFeatures(features: Feature[]) {
           self.features = features
           self.error = undefined
         },
@@ -140,40 +140,38 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
             self,
             autorun(async () => {
               const view = getContainingView(self) as CircularViewModel
-              if (!view.displayedRegions.length) {
-                return
-              }
+              if (view.displayedRegions.length) {
+                const sessionId = getRpcSessionId(self)
+                const adapterConfig = structuredClone(self.adapterConfig)
+                const regions = structuredClone(view.displayedRegions)
+                const { rpcManager } = getSession(view)
 
-              const sessionId = getRpcSessionId(self)
-              const adapterConfig = structuredClone(self.adapterConfig)
-              const regions = structuredClone(view.displayedRegions)
-              const { rpcManager } = getSession(view)
-
-              if (renderStopToken) {
-                stopStopToken(renderStopToken)
-              }
-              const stopToken = createStopToken()
-              renderStopToken = stopToken
-
-              self.setFeatures(new Map())
-
-              try {
-                const feats = await rpcManager.call(
-                  sessionId,
-                  'CoreGetFeatures',
-                  { adapterConfig, regions, stopToken },
-                )
-                if (isAlive(self) && renderStopToken === stopToken) {
-                  self.setFeatures(new Map(feats.map(f => [f.id(), f])))
+                if (renderStopToken) {
+                  stopStopToken(renderStopToken)
                 }
-              } catch (e) {
-                if (
-                  !isAbortException(e) &&
-                  isAlive(self) &&
-                  renderStopToken === stopToken
-                ) {
-                  console.error(e)
-                  self.setError(e)
+                const stopToken = createStopToken()
+                renderStopToken = stopToken
+
+                self.setFeatures([])
+
+                try {
+                  const feats = await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatures',
+                    { adapterConfig, regions, stopToken },
+                  )
+                  if (isAlive(self) && renderStopToken === stopToken) {
+                    self.setFeatures(feats)
+                  }
+                } catch (e) {
+                  if (
+                    !isAbortException(e) &&
+                    isAlive(self) &&
+                    renderStopToken === stopToken
+                  ) {
+                    console.error(e)
+                    self.setError(e)
+                  }
                 }
               }
             }),
@@ -208,7 +206,11 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
                   self.setRefNameMap(refNameMap)
                 }
               } catch (e) {
-                if (!isAbortException(e) && isAlive(self)) {
+                if (
+                  !isAbortException(e) &&
+                  isAlive(self) &&
+                  refNameStopToken === stopToken
+                ) {
                   console.error(e)
                   self.setError(e)
                 }
