@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import CloseIcon from '@mui/icons-material/Close'
 import {
@@ -18,6 +18,16 @@ import {
   preferredRenderer,
 } from './getGraphicsCapabilities.ts'
 import { useGraphicsCapabilities } from './useGraphicsCapabilities.ts'
+import { readConfObject } from '../configuration/index.ts'
+import { hasSharedArrayBuffer } from '../util/stopToken.ts'
+import { useFetch } from '../util/useFetch.ts'
+
+import type { AnyConfigurationModel } from '../configuration/index.ts'
+
+interface SessionGlobal {
+  version?: string
+  rpcManager: { mainConfiguration: AnyConfigurationModel }
+}
 
 async function myfetchtext(uri: string) {
   const res = await fetch(uri)
@@ -101,39 +111,31 @@ export default function ErrorMessageStackTraceDialog({
   error: unknown
   extra?: unknown
 }) {
-  const [mappedStackTrace, setMappedStackTrace] = useState<string>()
-  const [secondaryError, setSecondaryError] = useState<unknown>()
   const [clicked, setClicked] = useState(false)
   const graphicsCapabilities = useGraphicsCapabilities()
   const errorText = error ? `${error}` : ''
   const stackTrace = stripMessage(getStackTrace(error), errorText)
 
-  useEffect(() => {
-    let cancelled = false
-    mapStackTrace(stackTrace)
-      .then(result => {
-        if (!cancelled) {
-          setMappedStackTrace(result)
-        }
-      })
-      .catch((e: unknown) => {
-        console.error(e)
-        if (!cancelled) {
-          setMappedStackTrace(stackTrace)
-          setSecondaryError(e)
-        }
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [stackTrace])
+  const {
+    data: mappedStackTrace,
+    error: secondaryError,
+    isLoading,
+  } = useFetch(['mappedStackTrace', stackTrace], () =>
+    mapStackTrace(stackTrace),
+  )
 
   const graphicsInfo = graphicsCapabilities
     ? `Graphics: ${preferredRenderer(graphicsCapabilities)} (${availableRenderers(graphicsCapabilities).join(', ')})`
     : ''
+  const sabInfo = `Worker abort: ${hasSharedArrayBuffer ? 'SharedArrayBuffer' : 'XHR fallback'}`
 
-  // @ts-expect-error
-  const version = window.JBrowseSession?.version
+  const session = (window as unknown as { JBrowseSession?: SessionGlobal })
+    .JBrowseSession
+  const version = session?.version
+  const rpcConfig = session?.rpcManager.mainConfiguration
+  const rpcInfo = rpcConfig
+    ? `RPC: ${readConfObject(rpcConfig, 'defaultDriver')}`
+    : ''
   const errorBoxText = [
     secondaryError
       ? 'Error loading source map, showing raw stack trace below:'
@@ -141,19 +143,21 @@ export default function ErrorMessageStackTraceDialog({
     errorText.length > MAX_ERR_LEN
       ? `${errorText.slice(0, MAX_ERR_LEN)}...`
       : errorText,
-    mappedStackTrace || 'No stack trace available',
+    mappedStackTrace || stackTrace || 'No stack trace available',
     version ? `JBrowse ${version}` : '',
     graphicsInfo,
+    rpcInfo,
+    sabInfo,
   ]
     .filter(Boolean)
     .join('\n')
 
   return (
-    <Dialog open onClose={onClose} maxWidth="xl">
+    <Dialog open onClose={() => onClose()} maxWidth="xl">
       <DialogTitle>
         Stack trace
         <IconButton
-          onClick={onClose}
+          onClick={() => onClose()}
           sx={{
             position: 'absolute',
             right: 8,
@@ -164,7 +168,7 @@ export default function ErrorMessageStackTraceDialog({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        {mappedStackTrace === undefined ? (
+        {isLoading ? (
           <LoadingEllipses variant="h6" />
         ) : (
           <ErrorMessageStackTraceContents text={errorBoxText} extra={extra} />
@@ -176,7 +180,7 @@ export default function ErrorMessageStackTraceDialog({
           color="secondary"
           onClick={async () => {
             const { default: copy } = await import('copy-to-clipboard')
-            await copy(errorBoxText)
+            copy(errorBoxText)
             setClicked(true)
             setTimeout(() => {
               setClicked(false)
@@ -185,7 +189,7 @@ export default function ErrorMessageStackTraceDialog({
         >
           {clicked ? 'Copied!' : 'Copy stack trace to clipboard'}
         </Button>
-        <Button variant="contained" color="primary" onClick={onClose}>
+        <Button variant="contained" color="primary" onClick={() => onClose()}>
           Close
         </Button>
       </DialogActions>

@@ -47,11 +47,8 @@ export default function NumberTextField(props: Props) {
   const [text, setText] = useState(
     defaultValue === undefined ? '' : `${defaultValue}`,
   )
-  const num = Number(text)
-  const inBounds =
-    (min === undefined || num >= min) && (max === undefined || num <= max)
-  const valid = Number.isFinite(num) && inBounds
-  const showError = text !== '' && !valid
+  const parsed = parseInBounds(text, min, max)
+  const showError = text !== '' && parsed === undefined
 
   return (
     <TextField
@@ -63,17 +60,20 @@ export default function NumberTextField(props: Props) {
       onChange={event => {
         const next = event.target.value
         setText(next)
-        if (next === '') {
-          onValueChange(undefined)
-        } else {
-          const n = Number(next)
-          const ok =
-            Number.isFinite(n) &&
-            (min === undefined || n >= min) &&
-            (max === undefined || n <= max)
-          onValueChange(ok ? n : undefined)
-        }
+        onValueChange(parseInBounds(next, min, max))
       }}
     />
   )
+}
+
+function parseInBounds(text: string, min?: number, max?: number) {
+  if (text === '') {
+    return undefined
+  }
+  const n = Number(text)
+  const ok =
+    Number.isFinite(n) &&
+    (min === undefined || n >= min) &&
+    (max === undefined || n <= max)
+  return ok ? n : undefined
 }

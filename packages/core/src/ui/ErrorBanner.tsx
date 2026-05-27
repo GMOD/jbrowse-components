@@ -57,7 +57,7 @@ function ErrorButtons({
       ) : null}
       {onReset ? (
         <Tooltip title="Retry">
-          <IconButton onClick={onReset} color="primary">
+          <IconButton onClick={() => onReset()} color="primary">
             <RefreshIcon />
           </IconButton>
         </Tooltip>

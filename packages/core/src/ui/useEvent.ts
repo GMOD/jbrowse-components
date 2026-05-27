@@ -1,13 +1,13 @@
-import * as React from 'react'
+import { useCallback, useLayoutEffect, useRef } from 'react'
 
-export function useEvent<Fn extends (...args: any[]) => any>(handler: Fn): Fn {
-  const handlerRef = React.useRef<Fn | null>(null)
+export function useEvent<A extends unknown[], R>(
+  handler: (...args: A) => R,
+): (...args: A) => R {
+  const handlerRef = useRef(handler)
 
-  React.useLayoutEffect(() => {
+  useLayoutEffect(() => {
     handlerRef.current = handler
   })
 
-  return React.useCallback((...args: any[]): any => {
-    handlerRef.current?.(...args)
-  }, []) as Fn
+  return useCallback((...args: A) => handlerRef.current(...args), [])
 }

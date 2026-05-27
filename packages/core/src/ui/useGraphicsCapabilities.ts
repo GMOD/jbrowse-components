@@ -1,20 +1,9 @@
-import { useEffect, useState } from 'react'
-
 import { getGraphicsCapabilities } from './getGraphicsCapabilities.ts'
-
-import type { GraphicsCapabilities } from './getGraphicsCapabilities.ts'
+import { useFetch } from '../util/useFetch.ts'
 
 export function useGraphicsCapabilities() {
-  const [graphicsCapabilities, setGraphicsCapabilities] =
-    useState<GraphicsCapabilities | null>(null)
-
-  useEffect(() => {
-    getGraphicsCapabilities()
-      .then(setGraphicsCapabilities)
-      .catch(() => {
-        // Silent fail
-      })
-  }, [])
-
-  return graphicsCapabilities
+  const { data } = useFetch(['graphicsCapabilities'], () =>
+    getGraphicsCapabilities(),
+  )
+  return data ?? null
 }

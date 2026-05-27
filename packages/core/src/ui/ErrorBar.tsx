@@ -51,7 +51,10 @@ export default function ErrorBar({
               </IconButton>
             </Tooltip>
             <Tooltip title="Retry">
-              <IconButton data-testid="reload_button" onClick={onRetry}>
+              <IconButton
+                data-testid="reload_button"
+                onClick={() => onRetry()}
+              >
                 <RefreshIcon />
               </IconButton>
             </Tooltip>

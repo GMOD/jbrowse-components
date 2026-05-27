@@ -57,8 +57,8 @@ function CascadingSubmenu({
       <MenuItem
         ref={setAnchorEl}
         data-testid={testId ? `cascading-submenu-${testId}` : undefined}
-        onMouseOver={onOpen}
-        onClick={onOpen}
+        onMouseOver={() => onOpen()}
+        onClick={() => onOpen()}
         onKeyDown={e => {
           if (e.key === 'ArrowRight') {
             onOpen()
