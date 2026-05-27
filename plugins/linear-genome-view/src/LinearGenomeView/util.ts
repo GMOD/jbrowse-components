@@ -1,4 +1,8 @@
-import { assembleLocString, parseLocString } from '@jbrowse/core/util'
+import {
+  UnknownRefNameError,
+  assembleLocString,
+  parseLocString,
+} from '@jbrowse/core/util'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -205,7 +209,7 @@ export function parseLocStrings(
     // start, end if start and end are integer inputs
     const [refName, start, end] = inputs
     if (
-      /Unknown feature or sequence/.exec(`${e}`) &&
+      e instanceof UnknownRefNameError &&
       Number.isInteger(+start!) &&
       Number.isInteger(+end!)
     ) {

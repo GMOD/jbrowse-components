@@ -13,7 +13,12 @@ import {
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
 import { isRetryException } from '@jbrowse/core/util/types'
-import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getParent,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent.tsx'
 
@@ -285,7 +290,7 @@ const blockState = types
   .actions(self => ({
     afterAttach() {
       const display = self.cachedDisplay ?? getContainingDisplay(self)
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
         if (isAlive(self)) {
           makeAbortableReaction(
             self as BlockModel,
@@ -302,6 +307,9 @@ const blockState = types
           )
         }
       }, display.renderDelay)
+      addDisposer(self, () => {
+        clearTimeout(timerId)
+      })
     },
   }))
 

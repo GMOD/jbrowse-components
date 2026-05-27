@@ -6,6 +6,14 @@ export interface ParsedLocString {
   reversed?: boolean
 }
 
+// Thrown when the input doesn't resolve to any known refName. Callers
+// (e.g. the LGV locstring path) catch this to fall back to alternative
+// interpretations like "refname start end" triplets — string-matching
+// the error message would be brittle.
+export class UnknownRefNameError extends Error {
+  name = 'UnknownRefNameError'
+}
+
 // matches coordinate strings: "100", "100-200", "100..200", "100.." (open-ended)
 // groups: [1]=start [2]=end (if range) [3]=trailing separator (if open-ended)
 const COORD_REGEX = /^(-?\d+)(?:(?:\.\.|[-–])(-?\d+))?(\.\.|[-–])?$/
@@ -62,7 +70,7 @@ export function parseLocStringOneBased(
     if (isValidRefName(location!, assemblyName)) {
       return { assemblyName, refName: location!, reversed }
     }
-    throw new Error(`Unknown feature or sequence "${location}"`)
+    throw new UnknownRefNameError(`Unknown feature or sequence "${location}"`)
   }
 
   // split into refName (prefix) and coordinate part (suffix) at the last colon
@@ -88,7 +96,9 @@ export function parseLocStringOneBased(
     const coords = parseCoords(suffix, locString)
     return { assemblyName, refName: prefix, reversed, ...coords }
   }
-  throw new Error(`unknown reference sequence name in location "${locString}"`)
+  throw new UnknownRefNameError(
+    `unknown reference sequence name in location "${locString}"`,
+  )
 }
 
 export function parseLocString(

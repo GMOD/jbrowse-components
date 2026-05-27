@@ -295,10 +295,10 @@ const OverviewScalebar = observer(function OverviewScalebar({
   } = model
 
   const modWidth = width - cytobandOffset
-  const str = JSON.stringify(displayedRegions)
+  // displayedRegions is types.frozen — its reference is stable across renders
   const overview = useMemo(() => {
     const overview = Base1DView.create({
-      displayedRegions: JSON.parse(str),
+      displayedRegions,
       interRegionPaddingWidth: 0,
       minimumBlockWidth,
     })
@@ -306,7 +306,7 @@ const OverviewScalebar = observer(function OverviewScalebar({
     overview.setVolatileWidth(modWidth)
     overview.showAllRegions()
     return overview
-  }, [str, minimumBlockWidth, modWidth])
+  }, [displayedRegions, minimumBlockWidth, modWidth])
 
   const scale =
     totalBp / (modWidth - (displayedRegions.length - 1) * wholeSeqSpacer)
