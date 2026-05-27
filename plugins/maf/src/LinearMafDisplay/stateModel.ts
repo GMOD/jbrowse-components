@@ -21,6 +21,7 @@ import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import { observable } from 'mobx'
 
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { findCellAtBp } from './components/findCellAtBp.ts'
 import { fetchMafAlignmentData } from './fetchMafAlignmentData.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
@@ -430,12 +431,10 @@ export default function stateModelFactory(
        * #method
        * Resolve a per-cell hover hit: given a region index, absolute genomic
        * bp (uint32, per worker-output convention), and a row index into
-       * `sources`, walk the fetched MAF blocks to find the cell at that bp
-       * on that row and return the sample label + base. Returns undefined
-       * when no fetched block covers the bp, the row is out of range, or
-       * the cell is a gap with no sample data. Base case follows
-       * `showAsUpperCase` so the tooltip matches the visible-labels overlay
-       * and the insertion widget.
+       * `sources`, return the sample label + base at that cell. Returns
+       * undefined when no fetched block covers the bp, the row is out of
+       * range, or the cell is a gap. Base-case folding mirrors
+       * `computeVisibleLabels`.
        */
       cellHoverInfo(
         displayedRegionIndex: number,
@@ -450,45 +449,15 @@ export default function stateModelFactory(
         if (!region) {
           return undefined
         }
-        const targetBp = Math.floor(bp)
-        const DASH = 45
-        const SPACE = 32
-        const LOWER_BIT = 0x20
-        for (const block of region.blocks) {
-          if (block.startBp > targetBp) {
-            continue
-          }
-          const refSeqBytes = block.refSeqBytes
-          const len = refSeqBytes.length
-          let genomicOffset = 0
-          for (let i = 0; i < len; i++) {
-            if (refSeqBytes[i]! !== DASH) {
-              if (block.startBp + genomicOffset === targetBp) {
-                const row = block.rows.find(r => r.rowIndex === rowIndex)
-                if (!row) {
-                  return undefined
-                }
-                const code = row.alignmentBytes[i]
-                if (code === undefined || code === SPACE) {
-                  return undefined
-                }
-                const displayCode = self.showAsUpperCase
-                  ? code & ~LOWER_BIT
-                  : code
-                const source = sources[rowIndex]!
-                return {
-                  sampleLabel: source.label ?? source.name,
-                  base: String.fromCharCode(displayCode),
-                }
-              }
-              genomicOffset++
-              if (block.startBp + genomicOffset > targetBp) {
-                break
-              }
-            }
-          }
+        const cell = findCellAtBp(region, bp, rowIndex, self.showAsUpperCase)
+        if (!cell) {
+          return undefined
         }
-        return undefined
+        const source = sources[rowIndex]!
+        return {
+          sampleLabel: source.label ?? source.name,
+          base: cell.base,
+        }
       },
       /**
        * #method
