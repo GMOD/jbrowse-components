@@ -6,12 +6,10 @@ import type {
   DotplotRenderState,
 } from './dotplotBackendTypes.ts'
 
-type Geometry = DotplotGeometryData
-
 export class Canvas2DDotplotRenderer implements DotplotBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
-  private geometries = new Map<number, Geometry>()
+  private geometries = new Map<number, DotplotGeometryData>()
   private width = 0
   private height = 0
 
@@ -45,17 +43,13 @@ export class Canvas2DDotplotRenderer implements DotplotBackend {
 
   render(state: DotplotRenderState) {
     const {
-      viewBpHHi,
-      viewBpHLo,
+      viewBpH,
       bpPerPxHInv,
-      viewBpVHi,
-      viewBpVLo,
+      viewBpV,
       bpPerPxVInv,
       lineWidth,
       displayKeys,
     } = state
-    const viewBpH = viewBpHHi + viewBpHLo
-    const viewBpV = viewBpVHi + viewBpVLo
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
     const ctx = this.ctx
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)

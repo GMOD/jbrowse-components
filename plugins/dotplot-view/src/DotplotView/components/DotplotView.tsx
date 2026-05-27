@@ -9,12 +9,7 @@ import Header from './Header.tsx'
 import ImportForm from './ImportForm/index.tsx'
 import MouseInteractionLayer from './MouseInteractionLayer.tsx'
 import SelectionContextMenu from './SelectionContextMenu.tsx'
-import { useCtrlKeyTracking } from './hooks/useCtrlKeyTracking.ts'
-import { useCursorMode } from './hooks/useCursorMode.ts'
-import { useMouseCoordinates } from './hooks/useMouseCoordinates.ts'
-import { useMouseMoveHandler } from './hooks/useMouseMoveHandler.ts'
-import { useMouseUpHandler } from './hooks/useMouseUpHandler.ts'
-import { useWheelHandler } from './hooks/useWheelHandler.ts'
+import { useDotplotInteraction } from './useDotplotInteraction.ts'
 import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -29,7 +24,6 @@ const useStyles = makeStyles()(theme => ({
     marginBottom: theme.spacing(1),
     overflow: 'hidden',
   },
-
   container: {
     display: 'grid',
     padding: 5,
@@ -41,19 +35,17 @@ const useStyles = makeStyles()(theme => ({
     position: 'relative',
     gridRow: '1/2',
     gridColumn: '2/2',
-    zIndex: 100, // needs to be below controls
+    zIndex: 100,
     '& path': {
       cursor: 'crosshair',
       fill: 'none',
     },
   },
-
   content: {
     position: 'relative',
     gridColumn: '2/2',
     gridRow: '1/2',
   },
-
   resizeHandle: {
     height: 4,
     boxSizing: 'border-box',
@@ -67,12 +59,10 @@ const DotplotCanvas = observer(function DotplotCanvas({
   model: DotplotViewModel
 }) {
   const { viewWidth, viewHeight } = model
-
   const { canvasRef, error: gpuError } = useGpuBackend(
     createDotplotRenderer,
     model,
   )
-
   return (
     <>
       <canvas
@@ -122,123 +112,29 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
   model: DotplotViewModel
 }) {
   const { classes } = useStyles()
-  const { hview, vview, cursorMode, lockAspectRatio } = model
-
-  // Mouse coordinate tracking
-  const {
-    mousecurrClient,
-    mousedownClient,
-    mouseupClient,
-    mouseOvered,
-    setMouseCurrClient,
-    setMouseDownClient,
-    setMouseUpClient,
-    setMouseOvered,
-    refEl,
-    refCallback,
-    rect,
-    mousedown,
-    mousecurr,
-    mouseup,
-    mouserect,
-    mouserectClient,
-    xdistance,
-    ydistance,
-  } = useMouseCoordinates(lockAspectRatio)
-
-  // Cursor mode and validation
-  const {
-    ctrlKeyDown,
-    validPan,
-    validSelect,
-    setCtrlKeyWasUsed,
-    setCtrlKeyDown,
-  } = useCursorMode(cursorMode)
-
-  // Event handlers
-  useWheelHandler(refEl, hview, vview, mousecurr, rect.height)
-  useMouseMoveHandler(
-    mousecurrClient,
-    mousedownClient,
-    mouseupClient,
-    validPan,
-    hview,
-    vview,
-    setMouseCurrClient,
-  )
-  useCtrlKeyTracking(setCtrlKeyDown)
-  useMouseUpHandler(
-    mousedown,
-    mouseup,
-    xdistance,
-    ydistance,
-    validSelect,
-    setMouseUpClient,
-    setMouseDownClient,
-  )
-
+  const interaction = useDotplotInteraction(model)
   return (
     <div>
-      <Header
-        model={model}
-        selection={
-          !validSelect || !(mousedown && mouserect)
-            ? undefined
-            : {
-                width: Math.abs(xdistance),
-                height: Math.abs(ydistance),
-              }
-        }
-      />
+      <Header model={model} selection={interaction.selection} />
       <div
         className={classes.root}
         onMouseLeave={() => {
-          setMouseOvered(false)
+          interaction.setMouseOvered(false)
         }}
         onMouseEnter={() => {
-          setMouseOvered(true)
+          interaction.setMouseOvered(true)
         }}
       >
         <div className={classes.container}>
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />
-          <div ref={refCallback} className={classes.content}>
-            <DotplotTooltips
-              model={model}
-              mouseOvered={mouseOvered}
-              validSelect={validSelect}
-              mouserect={mouserect}
-              mouserectClient={mouserectClient}
-              xdistance={xdistance}
-              mousedown={mousedown}
-              mousedownClient={mousedownClient}
-              ydistance={ydistance}
-            />
-            <MouseInteractionLayer
-              model={model}
-              ctrlKeyDown={ctrlKeyDown}
-              cursorMode={cursorMode}
-              validSelect={validSelect}
-              mousedown={mousedown}
-              mouserect={mouserect}
-              xdistance={xdistance}
-              ydistance={ydistance}
-              setMouseDownClient={setMouseDownClient}
-              setMouseCurrClient={setMouseCurrClient}
-              setCtrlKeyWasUsed={setCtrlKeyWasUsed}
-            />
+          <div ref={interaction.refCallback} className={classes.content}>
+            <DotplotTooltips model={model} interaction={interaction} />
+            <MouseInteractionLayer model={model} interaction={interaction} />
             <div className={classes.spacer} />
           </div>
           <RenderedComponent model={model} />
-          <SelectionContextMenu
-            model={model}
-            mouseup={mouseup}
-            mouseupClient={mouseupClient}
-            mousedown={mousedown}
-            setMouseUpClient={setMouseUpClient}
-            setMouseDownClient={setMouseDownClient}
-            setMouseOvered={setMouseOvered}
-          />
+          <SelectionContextMenu model={model} interaction={interaction} />
         </div>
         <ResizeHandle
           onDrag={n => model.setHeight(model.height + n)}
@@ -248,13 +144,13 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
     </div>
   )
 })
+
 const DotplotView = observer(function DotplotView({
   model,
 }: {
   model: DotplotViewModel
 }) {
   const { initialized, showLoading, error, loadingMessage } = model
-
   if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
   } else if (!initialized || error) {

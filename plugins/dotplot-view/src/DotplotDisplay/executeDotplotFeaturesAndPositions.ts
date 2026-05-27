@@ -6,23 +6,20 @@ import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { splitHiLo } from './hiLoUtils.ts'
-
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
+// Float64 because cumBp values reach Gbp-scale, which Float32 can't represent
+// without losing per-base precision. Hi/lo splitting happens at the GPU upload
+// boundary only — never in plain JS, per project rules.
 export interface DotplotFeaturesAndPositionsResult {
-  p11Hi: Float32Array
-  p11Lo: Float32Array
-  p12Hi: Float32Array
-  p12Lo: Float32Array
-  p21Hi: Float32Array
-  p21Lo: Float32Array
-  p22Hi: Float32Array
-  p22Lo: Float32Array
+  p11: Float64Array
+  p12: Float64Array
+  p21: Float64Array
+  p22: Float64Array
   padHs: Float32Array
   padVs: Float32Array
   strands: Int8Array
@@ -33,6 +30,30 @@ export interface DotplotFeaturesAndPositionsResult {
   mappingQuals: Float32Array
   refNames: string[]
   parsedCigars: number[][]
+}
+
+function makeAssemblyLookup(pluginManager: PluginManager) {
+  const assemblyManager = pluginManager.rootModel?.session?.assemblyManager
+  const cache = new Map<
+    string,
+    { getCanonicalRefName(n: string): string | undefined } | undefined
+  >()
+  return (name: string | undefined) => {
+    if (!name || !assemblyManager) {
+      return undefined
+    }
+    if (!cache.has(name)) {
+      cache.set(name, assemblyManager.get(name))
+    }
+    return cache.get(name)
+  }
+}
+
+interface FeatureMate {
+  start: number
+  end: number
+  refName: string
+  assemblyName?: string
 }
 
 export async function executeDotplotFeaturesAndPositions({
@@ -52,76 +73,54 @@ export async function executeDotplotFeaturesAndPositions({
   vViewSnap: BpIndexViewSnap
   stopToken?: StopToken
 }) {
-  const dataAdapter = (
-    await getAdapter(pluginManager, sessionId, adapterConfig)
-  ).dataAdapter as BaseFeatureDataAdapter
+  const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
+  const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
-  const bpPerPx = hViewSnap.bpPerPx
   const rawFeatures = await firstValueFrom(
     dataAdapter
-      .getFeaturesInMultipleRegions(regions, { stopToken, bpPerPx })
+      .getFeaturesInMultipleRegions(regions, {
+        stopToken,
+        bpPerPx: hViewSnap.bpPerPx,
+      })
       .pipe(toArray()),
   )
-
   const features = dedupe(rawFeatures, f => f.id())
 
-  const assemblyManager = pluginManager.rootModel?.session?.assemblyManager
-  const assemblyCache = new Map<
-    string,
-    { getCanonicalRefName(n: string): string | undefined } | undefined
-  >()
-  const getAssembly = (name: string | undefined) => {
-    if (!name || !assemblyManager) {
-      return undefined
-    }
-    if (assemblyCache.has(name)) {
-      return assemblyCache.get(name)
-    }
-    const a = assemblyManager.get(name)
-    assemblyCache.set(name, a)
-    return a
-  }
+  const getAssembly = makeAssemblyLookup(pluginManager)
 
   // SYNC: parallel impl in packages/synteny-core/src/bpRegionIndex.ts
   const hIndex = buildBpRegionIndex(hViewSnap)
   const vIndex = buildBpRegionIndex(vViewSnap)
 
-  const count = features.length
-  const p11Hi = new Float32Array(count)
-  const p11Lo = new Float32Array(count)
-  const p12Hi = new Float32Array(count)
-  const p12Lo = new Float32Array(count)
-  const p21Hi = new Float32Array(count)
-  const p21Lo = new Float32Array(count)
-  const p22Hi = new Float32Array(count)
-  const p22Lo = new Float32Array(count)
-  const padHsArray = new Float32Array(count)
-  const padVsArray = new Float32Array(count)
-  const strandsArray = new Int8Array(count)
-  const startsArray = new Uint32Array(count)
-  const endsArray = new Uint32Array(count)
-  const identitiesArray = new Float32Array(count)
-  const meanScoresArray = new Float32Array(count)
-  const mappingQualsArray = new Float32Array(count)
-  const refNames: string[] = []
-  const parsedCigars: number[][] = []
-
-  let validCount = 0
+  // Two-pass strategy avoids over-allocation: first pass walks features and
+  // gathers valid (refName-resolved + position-mappable) ones into a working
+  // list; second pass writes into tightly-sized typed arrays. Keeps the result
+  // free of trailing dead slots and means we never need .subarray().
+  interface ValidFeature {
+    p11Cum: number
+    p12Cum: number
+    p21Cum: number
+    p22Cum: number
+    padH: number
+    padV: number
+    strand: number
+    start: number
+    end: number
+    identity: number
+    meanScore: number
+    mappingQual: number
+    refName: string
+    cigar: number[]
+  }
+  const valid: ValidFeature[] = []
   for (const f of features) {
-    const mate = f.get('mate') as {
-      start: number
-      end: number
-      refName: string
-      assemblyName?: string
-    }
+    const mate = f.get('mate') as FeatureMate
     const strand = f.get('strand') ?? 1
     const rawRefName = f.get('refName')
-    const rawMateRefName = mate.refName
     const a1 = getAssembly(f.get('assemblyName') as string | undefined)
     const a2 = getAssembly(mate.assemblyName)
     const refName = a1?.getCanonicalRefName(rawRefName) ?? rawRefName
-    const mateRefName =
-      a2?.getCanonicalRefName(rawMateRefName) ?? rawMateRefName
+    const mateRefName = a2?.getCanonicalRefName(mate.refName) ?? mate.refName
 
     if (!hIndex.entries.has(refName) || !vIndex.entries.has(mateRefName)) {
       continue
@@ -129,6 +128,8 @@ export async function executeDotplotFeaturesAndPositions({
 
     const start = f.get('start')
     const end = f.get('end')
+    // Reversed strand: swap start/end on the H axis so p11→p12 is a left→right
+    // walk on screen regardless of strand.
     const f1s = strand === -1 ? end : start
     const f1e = strand === -1 ? start : end
 
@@ -136,74 +137,75 @@ export async function executeDotplotFeaturesAndPositions({
     const p12 = bpToCumBpAndPad(hIndex, refName, f1e)
     const p21 = bpToCumBpAndPad(vIndex, mateRefName, mate.start)
     const p22 = bpToCumBpAndPad(vIndex, mateRefName, mate.end)
-
-    if (
-      p11 === undefined ||
-      p12 === undefined ||
-      p21 === undefined ||
-      p22 === undefined
-    ) {
+    if (!p11 || !p12 || !p21 || !p22) {
       continue
     }
 
-    splitHiLo(p11Hi, p11Lo, validCount, p11.cumBp)
-    splitHiLo(p12Hi, p12Lo, validCount, p12.cumBp)
-    splitHiLo(p21Hi, p21Lo, validCount, p21.cumBp)
-    splitHiLo(p22Hi, p22Lo, validCount, p22.cumBp)
-    padHsArray[validCount] = p11.padPx
-    padVsArray[validCount] = p21.padPx
-
-    strandsArray[validCount] = strand
-    startsArray[validCount] = start
-    endsArray[validCount] = end
-    identitiesArray[validCount] =
-      (f.get('identity') as number | undefined) ?? -1
-    meanScoresArray[validCount] =
-      (f.get('meanScore') as number | undefined) ?? -1
-    mappingQualsArray[validCount] =
-      (f.get('mappingQual') as number | undefined) ?? -1
-    refNames.push(rawRefName)
-    parsedCigars.push(parseCigar2((f.get('CIGAR') as string | undefined) ?? ''))
-    validCount++
+    valid.push({
+      p11Cum: p11.cumBp,
+      p12Cum: p12.cumBp,
+      p21Cum: p21.cumBp,
+      p22Cum: p22.cumBp,
+      padH: p11.padPx,
+      padV: p21.padPx,
+      strand,
+      start,
+      end,
+      identity: (f.get('identity') as number | undefined) ?? -1,
+      meanScore: (f.get('meanScore') as number | undefined) ?? -1,
+      mappingQual: (f.get('mappingQual') as number | undefined) ?? -1,
+      refName: rawRefName,
+      cigar: parseCigar2((f.get('CIGAR') as string | undefined) ?? ''),
+    })
   }
 
+  const n = valid.length
   const result: DotplotFeaturesAndPositionsResult = {
-    p11Hi: p11Hi.subarray(0, validCount),
-    p11Lo: p11Lo.subarray(0, validCount),
-    p12Hi: p12Hi.subarray(0, validCount),
-    p12Lo: p12Lo.subarray(0, validCount),
-    p21Hi: p21Hi.subarray(0, validCount),
-    p21Lo: p21Lo.subarray(0, validCount),
-    p22Hi: p22Hi.subarray(0, validCount),
-    p22Lo: p22Lo.subarray(0, validCount),
-    padHs: padHsArray.subarray(0, validCount),
-    padVs: padVsArray.subarray(0, validCount),
-    strands: strandsArray.subarray(0, validCount),
-    starts: startsArray.subarray(0, validCount),
-    ends: endsArray.subarray(0, validCount),
-    identities: identitiesArray.subarray(0, validCount),
-    meanScores: meanScoresArray.subarray(0, validCount),
-    mappingQuals: mappingQualsArray.subarray(0, validCount),
-    refNames,
-    parsedCigars,
+    p11: new Float64Array(n),
+    p12: new Float64Array(n),
+    p21: new Float64Array(n),
+    p22: new Float64Array(n),
+    padHs: new Float32Array(n),
+    padVs: new Float32Array(n),
+    strands: new Int8Array(n),
+    starts: new Uint32Array(n),
+    ends: new Uint32Array(n),
+    identities: new Float32Array(n),
+    meanScores: new Float32Array(n),
+    mappingQuals: new Float32Array(n),
+    refNames: new Array<string>(n),
+    parsedCigars: new Array<number[]>(n),
+  }
+  for (let i = 0; i < n; i++) {
+    const v = valid[i]!
+    result.p11[i] = v.p11Cum
+    result.p12[i] = v.p12Cum
+    result.p21[i] = v.p21Cum
+    result.p22[i] = v.p22Cum
+    result.padHs[i] = v.padH
+    result.padVs[i] = v.padV
+    result.strands[i] = v.strand
+    result.starts[i] = v.start
+    result.ends[i] = v.end
+    result.identities[i] = v.identity
+    result.meanScores[i] = v.meanScore
+    result.mappingQuals[i] = v.mappingQual
+    result.refNames[i] = v.refName
+    result.parsedCigars[i] = v.cigar
   }
 
   return rpcResult(result, [
-    p11Hi.buffer,
-    p11Lo.buffer,
-    p12Hi.buffer,
-    p12Lo.buffer,
-    p21Hi.buffer,
-    p21Lo.buffer,
-    p22Hi.buffer,
-    p22Lo.buffer,
-    padHsArray.buffer,
-    padVsArray.buffer,
-    strandsArray.buffer,
-    startsArray.buffer,
-    endsArray.buffer,
-    identitiesArray.buffer,
-    meanScoresArray.buffer,
-    mappingQualsArray.buffer,
-  ] as ArrayBuffer[])
+    result.p11.buffer,
+    result.p12.buffer,
+    result.p21.buffer,
+    result.p22.buffer,
+    result.padHs.buffer,
+    result.padVs.buffer,
+    result.strands.buffer,
+    result.starts.buffer,
+    result.ends.buffer,
+    result.identities.buffer,
+    result.meanScores.buffer,
+    result.mappingQuals.buffer,
+  ])
 }

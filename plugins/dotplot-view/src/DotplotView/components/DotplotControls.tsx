@@ -35,7 +35,9 @@ const DotplotControls = observer(function DotplotControls({
     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
       {isSessionModelWithWidgets(session) ? (
         <IconButton
-          onClick={model.activateTrackSelector}
+          onClick={() => {
+            model.activateTrackSelector()
+          }}
           title="Open track selector"
         >
           <TrackSelectorIcon />

@@ -3,14 +3,13 @@ import {
   getStrokeProps,
   getTickDisplayStr,
 } from '@jbrowse/core/util'
-import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getBlockLabelKeysToHide } from './util.ts'
+import { computeTickPositions, getBlockLabelKeysToHide } from './util.ts'
 
+import type { PositionedTick } from './util.ts'
 import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(() => ({
@@ -27,6 +26,12 @@ const useStyles = makeStyles()(() => ({
     userSelect: 'none',
   },
 }))
+
+// Tick lines are 4px (minor) or 6px (major) long in the cross-axis direction.
+function tickLen(t: PositionedTick) {
+  return t.tick.type === 'major' ? 6 : 4
+}
+
 export const HorizontalAxis = observer(function HorizontalAxis({
   model,
 }: {
@@ -48,89 +53,77 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
 }) {
   const { viewWidth, borderX, borderY, hview, htextRotation, hticks } = model
   const { offsetPx, width, dynamicBlocks, bpPerPx } = hview
-  const dblocks = dynamicBlocks.contentBlocks
-  const hide = getBlockLabelKeysToHide(dblocks, viewWidth, offsetPx)
+  const blocks = dynamicBlocks.contentBlocks
+  const hide = getBlockLabelKeysToHide(blocks, viewWidth, offsetPx)
+  const ticks = computeTickPositions(hview, hticks)
   const theme = useTheme()
-  const hviewSnap = {
-    ...getSnapshot(hview),
-    width,
-    staticBlocks: hview.staticBlocks,
-  }
-
-  const ticks = hticks.flatMap(tick => {
-    const px = bpToPx({
-      refName: tick.refName,
-      coord: tick.base,
-      self: hviewSnap,
-    })?.offsetPx
-    return px !== undefined ? [[tick, px - offsetPx] as const] : []
-  })
+  const fill = getFillProps(theme.palette.text.primary)
+  const stroke = getStrokeProps(theme.palette.text.primary)
 
   return (
     <>
-      {dblocks
-        .filter(region => !hide.has(region.key))
-        .map(region => {
-          const xoff = Math.floor(region.offsetPx - hview.offsetPx)
+      {blocks
+        .filter(b => !hide.has(b.key))
+        .map(b => {
+          const xoff = Math.floor(b.offsetPx - offsetPx)
           return (
             <text
               transform={`rotate(${htextRotation},${xoff},0)`}
-              key={region.key}
+              key={b.key}
               x={xoff}
               y={1}
               fontSize={11}
               dominantBaseline="hanging"
               textAnchor="end"
-              {...getFillProps(theme.palette.text.primary)}
+              {...fill}
             >
-              {region.refName}
+              {b.refName}
             </text>
           )
         })}
-      {ticks.map(([tick, x], idx) =>
+      {ticks.map(({ tick, alongPx: x }, idx) =>
         x > 0 && x < width ? (
           <line
             key={`line-${tick.refName}-${tick.base}-${idx}`}
             x1={x}
             x2={x}
             y1={0}
-            y2={tick.type === 'major' ? 6 : 4}
+            y2={tickLen({ tick, alongPx: x })}
             strokeWidth={1}
-            {...getStrokeProps(theme.palette.text.primary)}
+            {...stroke}
           />
         ) : null,
       )}
-      {ticks
-        .filter(t => t[0].type === 'major')
-        .map(([tick, x], idx) =>
-          x > 10 && x < width ? (
-            <text
-              x={x - 7}
-              y={0}
-              transform={`rotate(${htextRotation},${x},0)`}
-              key={`text-${tick.refName}-${tick.base}-${idx}`}
-              fontSize={11}
-              dominantBaseline="middle"
-              textAnchor="end"
-              {...getFillProps(theme.palette.text.primary)}
-            >
-              {getTickDisplayStr(tick.base + 1, bpPerPx)}
-            </text>
-          ) : null,
-        )}
+      {ticks.map(({ tick, alongPx: x }, idx) =>
+        tick.type === 'major' && x > 10 && x < width ? (
+          <text
+            x={x - 7}
+            y={0}
+            transform={`rotate(${htextRotation},${x},0)`}
+            key={`text-${tick.refName}-${tick.base}-${idx}`}
+            fontSize={11}
+            dominantBaseline="middle"
+            textAnchor="end"
+            {...fill}
+          >
+            {getTickDisplayStr(tick.base + 1, bpPerPx)}
+          </text>
+        ) : null,
+      )}
       <text
         y={borderY - 12}
         x={(viewWidth - borderX) / 2}
         textAnchor="middle"
         fontSize={11}
         dominantBaseline="hanging"
-        {...getFillProps(theme.palette.text.primary)}
+        {...fill}
       >
         {hview.assemblyNames.join(',')}
       </text>
     </>
   )
 })
+
 export const VerticalAxis = observer(function VerticalAxis({
   model,
 }: {
@@ -151,81 +144,73 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
   model: DotplotViewModel
 }) {
   const { viewHeight, borderX, borderY, vview, vtextRotation, vticks } = model
-  const { offsetPx, width, dynamicBlocks, bpPerPx } = vview
-  const dblocks = dynamicBlocks.contentBlocks
-  const hide = getBlockLabelKeysToHide(dblocks, viewHeight, offsetPx)
+  const { offsetPx, dynamicBlocks, bpPerPx } = vview
+  const blocks = dynamicBlocks.contentBlocks
+  const hide = getBlockLabelKeysToHide(blocks, viewHeight, offsetPx)
+  const ticks = computeTickPositions(vview, vticks)
   const theme = useTheme()
-  const vviewSnap = {
-    ...getSnapshot(vview),
-    width,
-    staticBlocks: vview.staticBlocks,
-  }
-  const ticks = vticks.flatMap(tick => {
-    const px = bpToPx({
-      refName: tick.refName,
-      coord: tick.base,
-      self: vviewSnap,
-    })?.offsetPx
-    return px !== undefined ? [[tick, px - offsetPx] as const] : []
-  })
+  const fill = getFillProps(theme.palette.text.primary)
+  const stroke = getStrokeProps(theme.palette.text.primary)
 
+  // Vertical axis is flipped: block offsetPx grows upward visually, so we map
+  // alongPx (downward-natural) to viewHeight - alongPx.
   return (
     <>
-      {dblocks
-        .filter(region => !hide.has(region.key))
-        .map(region => {
-          const yoff = Math.floor(viewHeight - region.offsetPx + offsetPx)
+      {blocks
+        .filter(b => !hide.has(b.key))
+        .map(b => {
+          const yoff = Math.floor(viewHeight - b.offsetPx + offsetPx)
           return (
             <text
-              transform={`rotate(${vtextRotation},${borderX},${region.offsetPx})`}
-              key={region.key}
+              transform={`rotate(${vtextRotation},${borderX},${b.offsetPx})`}
+              key={b.key}
               x={borderX}
               y={yoff}
               fontSize={11}
               textAnchor="end"
-              {...getFillProps(theme.palette.text.primary)}
+              {...fill}
             >
-              {region.refName}
+              {b.refName}
             </text>
           )
         })}
-      {ticks.map(([tick, y], idx) =>
-        y > 0 && y < viewHeight ? (
+      {ticks.map(({ tick, alongPx }, idx) => {
+        const y = viewHeight - alongPx
+        const len = tickLen({ tick, alongPx })
+        return alongPx > 0 && alongPx < viewHeight ? (
           <line
             key={`line-${tick.refName}-${tick.base}-${idx}`}
-            y1={viewHeight - y}
-            y2={viewHeight - y}
+            y1={y}
+            y2={y}
             x1={borderX}
-            x2={borderX - (tick.type === 'major' ? 6 : 4)}
+            x2={borderX - len}
             strokeWidth={1}
-            {...getStrokeProps(theme.palette.text.primary)}
+            {...stroke}
           />
+        ) : null
+      })}
+      {ticks.map(({ tick, alongPx }, idx) =>
+        tick.type === 'major' && alongPx > 10 && alongPx < viewHeight ? (
+          <text
+            y={viewHeight - alongPx - 3}
+            x={borderX - 7}
+            key={`text-${tick.refName}-${tick.base}-${idx}`}
+            textAnchor="end"
+            dominantBaseline="hanging"
+            fontSize={11}
+            {...fill}
+          >
+            {getTickDisplayStr(tick.base + 1, bpPerPx)}
+          </text>
         ) : null,
       )}
-      {ticks
-        .filter(t => t[0].type === 'major')
-        .map(([tick, y], idx) =>
-          y > 10 && y < viewHeight ? (
-            <text
-              y={viewHeight - y - 3}
-              x={borderX - 7}
-              key={`text-${tick.refName}-${tick.base}-${idx}`}
-              textAnchor="end"
-              dominantBaseline="hanging"
-              fontSize={11}
-              {...getFillProps(theme.palette.text.primary)}
-            >
-              {getTickDisplayStr(tick.base + 1, bpPerPx)}
-            </text>
-          ) : null,
-        )}
       <text
         y={(viewHeight - borderY) / 2}
         x={12}
         transform={`rotate(-90,12,${(viewHeight - borderY) / 2})`}
         textAnchor="middle"
         fontSize={11}
-        {...getFillProps(theme.palette.text.primary)}
+        {...fill}
       >
         {vview.assemblyNames.join(',')}
       </text>

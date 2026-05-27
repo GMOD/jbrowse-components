@@ -1,59 +1,45 @@
 import { Suspense, lazy } from 'react'
 
+import type { DotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
-import type { Coord } from '../types.ts'
 
-const TooltipWhereClicked = lazy(() => import('./DotplotTooltipClick.tsx'))
-const TooltipWhereMouseovered = lazy(
-  () => import('./DotplotTooltipMouseover.tsx'),
-)
-
-interface DotplotTooltipsProps {
-  model: DotplotViewModel
-  mouseOvered: boolean
-  validSelect: boolean
-  mouserect: Coord
-  mouserectClient: Coord
-  xdistance: number
-  mousedown: Coord
-  mousedownClient: Coord
-  ydistance: number
-}
+const DotplotCoordTooltip = lazy(() => import('./DotplotCoordTooltip.tsx'))
 
 export default function DotplotTooltips({
   model,
-  mouseOvered,
-  validSelect,
-  mouserect,
-  mouserectClient,
-  xdistance,
-  mousedown,
-  mousedownClient,
-  ydistance,
-}: DotplotTooltipsProps) {
+  interaction,
+}: {
+  model: DotplotViewModel
+  interaction: DotplotInteraction
+}) {
+  const {
+    mouseOvered,
+    validSelect,
+    mouserect,
+    mouserectClient,
+    xdistance,
+    mousedown,
+    mousedownClient,
+    selection,
+  } = interaction
   return (
-    <>
-      {mouseOvered && validSelect ? (
-        <Suspense fallback={null}>
-          <TooltipWhereMouseovered
-            model={model}
-            mouserect={mouserect}
-            mouserectClient={mouserectClient}
-            xdistance={xdistance}
-          />
-        </Suspense>
+    <Suspense fallback={null}>
+      {mouseOvered && validSelect && mouserect ? (
+        <DotplotCoordTooltip
+          model={model}
+          coord={mouserect}
+          clientCoord={mouserectClient}
+          placement={xdistance < 0 ? 'left' : 'right'}
+        />
       ) : null}
-      {validSelect ? (
-        <Suspense fallback={null}>
-          <TooltipWhereClicked
-            model={model}
-            mousedown={mousedown}
-            mousedownClient={mousedownClient}
-            xdistance={xdistance}
-            ydistance={ydistance}
-          />
-        </Suspense>
+      {selection && mousedown ? (
+        <DotplotCoordTooltip
+          model={model}
+          coord={mousedown}
+          clientCoord={mousedownClient}
+          placement={xdistance < 0 ? 'right' : 'left'}
+        />
       ) : null}
-    </>
+    </Suspense>
   )
 }

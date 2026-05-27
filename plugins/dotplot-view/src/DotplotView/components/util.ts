@@ -1,7 +1,26 @@
-import { toLocale } from '@jbrowse/core/util'
+import {
+  getTickDisplayStr,
+  max,
+  measureText,
+  toLocale,
+} from '@jbrowse/core/util'
+import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import type { Dotplot1DViewModel } from '../model.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+
+export interface Tick {
+  type: string
+  base: number
+  index: number
+  refName: string
+}
+
+export interface PositionedTick {
+  tick: Tick
+  alongPx: number
+}
 
 export function locstr(
   px: number,
@@ -13,6 +32,56 @@ export function locstr(
   return oob
     ? 'out of bounds'
     : `${includeAsm ? `{${assemblyName}}` : ''}${refName}:${toLocale(coord)}`
+}
+
+// Bundling blocks + bpPerPx + hide as one axis prevents the H/V mix-up that
+// used to produce wrong border sizing — the three values must come from the
+// same view (`bpPerPx` drives the tick-label precision string).
+export interface AxisBundle {
+  blocks: ContentBlock[]
+  bpPerPx: number
+  hide: Set<string>
+}
+
+function stringLenPx(a: string) {
+  return measureText(a.slice(0, 30))
+}
+
+// Maps each tick's (refName, base) to an `alongPx` offset within the view —
+// negative or out-of-range positions are kept so the caller can clip in one
+// place. Shared between HorizontalAxis and VerticalAxis to keep their tick
+// math identical.
+export function computeTickPositions(
+  view: Dotplot1DViewModel,
+  ticks: Tick[],
+): PositionedTick[] {
+  const snap = {
+    ...getSnapshot(view),
+    width: view.width,
+    staticBlocks: view.staticBlocks,
+  }
+  const offsetPx = view.offsetPx
+  return ticks.flatMap(tick => {
+    const px = bpToPx({
+      refName: tick.refName,
+      coord: tick.base,
+      self: snap,
+    })?.offsetPx
+    return px === undefined ? [] : [{ tick, alongPx: px - offsetPx }]
+  })
+}
+
+export function pxWidthForBlocks({ blocks, bpPerPx, hide }: AxisBundle) {
+  const widths: number[] = []
+  for (const b of blocks) {
+    if (!hide.has(b.key)) {
+      widths.push(
+        stringLenPx(b.refName),
+        stringLenPx(getTickDisplayStr(b.end, bpPerPx)),
+      )
+    }
+  }
+  return max(widths)
 }
 
 export function getBlockLabelKeysToHide(

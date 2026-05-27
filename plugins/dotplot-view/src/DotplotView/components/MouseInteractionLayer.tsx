@@ -2,39 +2,30 @@ import { observer } from 'mobx-react'
 
 import DotplotGrid from './DotplotGrid.tsx'
 
+import type { DotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
-import type { Coord } from '../types.ts'
-
-interface MouseInteractionLayerProps {
-  model: DotplotViewModel
-  ctrlKeyDown: boolean
-  cursorMode: string
-  validSelect: boolean
-  mousedown: Coord
-  mouserect: Coord
-  xdistance: number
-  ydistance: number
-  setMouseDownClient: (coord: Coord) => void
-  setMouseCurrClient: (coord: Coord) => void
-  setCtrlKeyWasUsed: (wasUsed: boolean) => void
-}
 
 const MouseInteractionLayer = observer(function MouseInteractionLayer({
   model,
-  ctrlKeyDown,
-  cursorMode,
-  validSelect,
-  mousedown,
-  mouserect,
-  xdistance,
-  ydistance,
-  setMouseDownClient,
-  setMouseCurrClient,
-  setCtrlKeyWasUsed,
-}: MouseInteractionLayerProps) {
+  interaction,
+}: {
+  model: DotplotViewModel
+  interaction: DotplotInteraction
+}) {
+  const {
+    ctrlKeyDown,
+    validSelect,
+    mousedown,
+    mouserect,
+    xdistance,
+    ydistance,
+    setMouseDownClient,
+    setMouseCurrClient,
+    setCtrlKeyWasUsed,
+  } = interaction
   return (
     <div
-      style={{ cursor: ctrlKeyDown ? 'pointer' : cursorMode }}
+      style={{ cursor: ctrlKeyDown ? 'pointer' : model.cursorMode }}
       onMouseDown={event => {
         if (event.button === 0) {
           const { clientX, clientY } = event

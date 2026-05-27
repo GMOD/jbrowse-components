@@ -1,26 +1,59 @@
 import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 
-import { splitHiLo } from './hiLoUtils.ts'
-
 import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
 import type { DotplotColorFn } from './dotplotColors.ts'
 import type { DotplotRpcData } from './types.ts'
 
+// Below this on-screen feature width we collapse CIGAR detail to a single
+// segment — sub-pixel CIGAR ops aren't visible anyway and skipping them
+// is the dominant frame-time win at zoomed-out views.
 const MIN_CIGAR_PX_WIDTH = 4
 
-interface Cursor {
-  n: number
-  x1Hi: Float32Array
-  x1Lo: Float32Array
-  y1Hi: Float32Array
-  y1Lo: Float32Array
-  x2Hi: Float32Array
-  x2Lo: Float32Array
-  y2Hi: Float32Array
-  y2Lo: Float32Array
-  padHs: Float32Array
-  padVs: Float32Array
-  colors: Uint32Array
+type GeometryBuffers = Omit<DotplotGeometryData, 'instanceCount'>
+
+function allocBuffers(capacity: number): GeometryBuffers {
+  return {
+    x1: new Float64Array(capacity),
+    y1: new Float64Array(capacity),
+    x2: new Float64Array(capacity),
+    y2: new Float64Array(capacity),
+    padHs: new Float32Array(capacity),
+    padVs: new Float32Array(capacity),
+    colors: new Uint32Array(capacity),
+  }
+}
+
+function writeSegment(
+  b: GeometryBuffers,
+  n: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  padH: number,
+  padV: number,
+  color: number,
+) {
+  b.x1[n] = x1
+  b.y1[n] = y1
+  b.x2[n] = x2
+  b.y2[n] = y2
+  b.padHs[n] = padH
+  b.padVs[n] = padV
+  b.colors[n] = color
+}
+
+function trimToCount(b: GeometryBuffers, n: number): DotplotGeometryData {
+  return {
+    x1: b.x1.subarray(0, n),
+    y1: b.y1.subarray(0, n),
+    x2: b.x2.subarray(0, n),
+    y2: b.y2.subarray(0, n),
+    padHs: b.padHs.subarray(0, n),
+    padVs: b.padVs.subarray(0, n),
+    colors: b.colors.subarray(0, n),
+    instanceCount: n,
+  }
 }
 
 export function buildLineSegments(
@@ -32,14 +65,10 @@ export function buildLineSegments(
   bpPerPxV: number,
 ): DotplotGeometryData {
   const {
-    p11Hi,
-    p11Lo,
-    p12Hi,
-    p12Lo,
-    p21Hi,
-    p21Lo,
-    p22Hi,
-    p22Lo,
+    p11,
+    p12,
+    p21,
+    p22,
     padHs,
     padVs,
     starts,
@@ -47,33 +76,20 @@ export function buildLineSegments(
     strands,
     parsedCigars,
   } = data
-  const count = p11Hi.length
+  const count = p11.length
   const bpPerPxHInv = 1 / bpPerPxH
   const bpPerPxVInv = 1 / bpPerPxV
 
-  let maxSegments = 0
+  // Upper bound: one segment per feature, plus one per CIGAR op if drawing.
+  let maxSegments = count
   if (drawCigar) {
     for (let i = 0; i < count; i++) {
-      maxSegments += 1 + parsedCigars[i]!.length
+      maxSegments += parsedCigars[i]!.length
     }
-  } else {
-    maxSegments = count
   }
 
-  const out: Cursor = {
-    n: 0,
-    x1Hi: new Float32Array(maxSegments),
-    x1Lo: new Float32Array(maxSegments),
-    y1Hi: new Float32Array(maxSegments),
-    y1Lo: new Float32Array(maxSegments),
-    x2Hi: new Float32Array(maxSegments),
-    x2Lo: new Float32Array(maxSegments),
-    y2Hi: new Float32Array(maxSegments),
-    y2Lo: new Float32Array(maxSegments),
-    padHs: new Float32Array(maxSegments),
-    padVs: new Float32Array(maxSegments),
-    colors: new Uint32Array(maxSegments),
-  }
+  const buf = allocBuffers(maxSegments)
+  let n = 0
 
   for (let i = 0; i < count; i++) {
     if (
@@ -82,65 +98,49 @@ export function buildLineSegments(
     ) {
       continue
     }
-    const p11CumBp = p11Hi[i]! + p11Lo[i]!
-    const p12CumBp = p12Hi[i]! + p12Lo[i]!
-    const p21CumBp = p21Hi[i]! + p21Lo[i]!
-    const p22CumBp = p22Hi[i]! + p22Lo[i]!
+    const x1 = p11[i]!
+    const x2 = p12[i]!
+    const y1 = p21[i]!
+    const y2 = p22[i]!
     const padH = padHs[i]!
     const padV = padVs[i]!
     const cigar = parsedCigars[i]!
-    const featureWidthH = Math.abs(p12CumBp - p11CumBp) * bpPerPxHInv
-    const featureWidthV = Math.abs(p22CumBp - p21CumBp) * bpPerPxVInv
-    const featureWidth = Math.max(featureWidthH, featureWidthV)
+    const featureWidthPx = Math.max(
+      Math.abs(x2 - x1) * bpPerPxHInv,
+      Math.abs(y2 - y1) * bpPerPxVInv,
+    )
     const color = colorFn(data, i)
     const strand = strands[i]!
 
-    if (cigar.length > 0 && drawCigar && featureWidth >= MIN_CIGAR_PX_WIDTH) {
+    if (cigar.length > 0 && drawCigar && featureWidthPx >= MIN_CIGAR_PX_WIDTH) {
       visitCigarRenderedSegments(
         cigar,
-        p11CumBp,
-        p21CumBp,
+        x1,
+        y1,
         bpPerPxH,
         bpPerPxV,
         strand,
         1,
-        (_op, segBp1Start, segBp1End, segBp2Start, segBp2End) => {
-          const n = out.n
-          splitHiLo(out.x1Hi, out.x1Lo, n, segBp1Start)
-          splitHiLo(out.y1Hi, out.y1Lo, n, segBp2Start)
-          splitHiLo(out.x2Hi, out.x2Lo, n, segBp1End)
-          splitHiLo(out.y2Hi, out.y2Lo, n, segBp2End)
-          out.padHs[n] = padH
-          out.padVs[n] = padV
-          out.colors[n] = color
-          out.n = n + 1
+        (_op, seg1Start, seg1End, seg2Start, seg2End) => {
+          writeSegment(
+            buf,
+            n,
+            seg1Start,
+            seg2Start,
+            seg1End,
+            seg2End,
+            padH,
+            padV,
+            color,
+          )
+          n++
         },
       )
     } else {
-      const n = out.n
-      splitHiLo(out.x1Hi, out.x1Lo, n, p11CumBp)
-      splitHiLo(out.y1Hi, out.y1Lo, n, p21CumBp)
-      splitHiLo(out.x2Hi, out.x2Lo, n, p12CumBp)
-      splitHiLo(out.y2Hi, out.y2Lo, n, p22CumBp)
-      out.padHs[n] = padH
-      out.padVs[n] = padV
-      out.colors[n] = color
-      out.n = n + 1
+      writeSegment(buf, n, x1, y1, x2, y2, padH, padV, color)
+      n++
     }
   }
 
-  return {
-    x1Hi: out.x1Hi.subarray(0, out.n),
-    x1Lo: out.x1Lo.subarray(0, out.n),
-    y1Hi: out.y1Hi.subarray(0, out.n),
-    y1Lo: out.y1Lo.subarray(0, out.n),
-    x2Hi: out.x2Hi.subarray(0, out.n),
-    x2Lo: out.x2Lo.subarray(0, out.n),
-    y2Hi: out.y2Hi.subarray(0, out.n),
-    y2Lo: out.y2Lo.subarray(0, out.n),
-    padHs: out.padHs.subarray(0, out.n),
-    padVs: out.padVs.subarray(0, out.n),
-    colors: out.colors.subarray(0, out.n),
-    instanceCount: out.n,
-  }
+  return trimToCount(buf, n)
 }

@@ -1,5 +1,6 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
+import { splitHiLo } from './hiLoUtils.ts'
 import * as dotplotShader from './shaders/dotplot.generated.ts'
 
 import type {
@@ -22,6 +23,12 @@ export const DOTPLOT_PASSES: PassDescriptor[] = [
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
   }),
 ]
+
+// Aligns to the 4096 bp boundary used by splitHiLo so origin and instance
+// coords share a low-precision frame.
+function hiPart(cumBp: number) {
+  return Math.floor(cumBp / 4096) * 4096
+}
 
 export class GpuDotplotRenderer implements DotplotBackend {
   private hal: GpuHal
@@ -51,16 +58,14 @@ export class GpuDotplotRenderer implements DotplotBackend {
     const f = new Float32Array(buf)
     const u = new Uint32Array(buf)
 
+    // Splitting cumBp → (hi, lo) Float32 happens here at the shader-uniform
+    // boundary; JS-side code always works in cumBp space.
     for (let i = 0; i < n; i++) {
       const off = i * INSTANCE_STRIDE_F32
-      f[off + F.x1Hi] = data.x1Hi[i]!
-      f[off + F.x1Lo] = data.x1Lo[i]!
-      f[off + F.y1Hi] = data.y1Hi[i]!
-      f[off + F.y1Lo] = data.y1Lo[i]!
-      f[off + F.x2Hi] = data.x2Hi[i]!
-      f[off + F.x2Lo] = data.x2Lo[i]!
-      f[off + F.y2Hi] = data.y2Hi[i]!
-      f[off + F.y2Lo] = data.y2Lo[i]!
+      splitHiLo(f, off + F.x1Hi, off + F.x1Lo, data.x1[i]!)
+      splitHiLo(f, off + F.y1Hi, off + F.y1Lo, data.y1[i]!)
+      splitHiLo(f, off + F.x2Hi, off + F.x2Lo, data.x2[i]!)
+      splitHiLo(f, off + F.y2Hi, off + F.y2Lo, data.y2[i]!)
       f[off + F.padH] = data.padHs[i]!
       f[off + F.padV] = data.padVs[i]!
       u[off + F.color] = data.colors[i]!
@@ -75,24 +80,24 @@ export class GpuDotplotRenderer implements DotplotBackend {
 
   render(state: DotplotRenderState) {
     const {
-      viewBpHHi,
-      viewBpHLo,
+      viewBpH,
       bpPerPxHInv,
-      viewBpVHi,
-      viewBpVLo,
+      viewBpV,
       bpPerPxVInv,
       lineWidth,
       displayKeys,
     } = state
     this.hal.beginFrame(0, 0, 0, 0)
+    const viewBpHHi = hiPart(viewBpH)
+    const viewBpVHi = hiPart(viewBpV)
     this.uniformF32[U.resolution] = this.width
     this.uniformF32[U.resolution + 1] = this.height
     this.uniformF32[U.lineWidth] = lineWidth
     this.uniformF32[U.viewBpHHi] = viewBpHHi
-    this.uniformF32[U.viewBpHLo] = viewBpHLo
+    this.uniformF32[U.viewBpHLo] = viewBpH - viewBpHHi
     this.uniformF32[U.bpPerPxHInv] = bpPerPxHInv
     this.uniformF32[U.viewBpVHi] = viewBpVHi
-    this.uniformF32[U.viewBpVLo] = viewBpVLo
+    this.uniformF32[U.viewBpVLo] = viewBpV - viewBpVHi
     this.uniformF32[U.bpPerPxVInv] = bpPerPxVInv
     this.uniformF32[U.hpZero] = 0
     this.hal.writeUniforms(this.uniformData)

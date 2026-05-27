@@ -7,11 +7,8 @@ import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewMo
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   getSession,
-  getTickDisplayStr,
   isSessionModelWithWidgets,
   localStorageGetItem,
-  max,
-  measureText,
   minmax,
 } from '@jbrowse/core/util'
 import {
@@ -33,8 +30,13 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { autorun, observable } from 'mobx'
 
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
-import { getBlockLabelKeysToHide, makeTicks } from './components/util.ts'
+import {
+  getBlockLabelKeysToHide,
+  makeTicks,
+  pxWidthForBlocks,
+} from './components/util.ts'
 
+import type { AxisBundle } from './components/util.ts'
 import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
 import type {
   DotplotBackend,
@@ -44,7 +46,6 @@ import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.ts
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
@@ -62,6 +63,7 @@ const defaultBorderSize = 20
 const defaultTickSize = 5
 const defaultHtextRotation = -90
 const defaultFontSize = 15
+const defaultLineWidth = 2.5
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
@@ -69,27 +71,6 @@ export interface ExportSvgOptions {
   filename?: string
   Wrapper?: React.FC<{ children: React.ReactNode }>
   themeName?: string
-}
-
-function stringLenPx(a: string) {
-  return measureText(a.slice(0, 30))
-}
-
-function pxWidthForBlocks(
-  blocks: ContentBlock[],
-  bpPerPx: number,
-  hide: Set<string>,
-) {
-  const widths: number[] = []
-  for (const b of blocks) {
-    if (!hide.has(b.key)) {
-      widths.push(
-        stringLenPx(b.refName),
-        stringLenPx(getTickDisplayStr(b.end, bpPerPx)),
-      )
-    }
-  }
-  return max(widths)
 }
 
 /**
@@ -163,7 +144,7 @@ export default function stateModelFactory(pm: PluginManager) {
            * display in this view. View-level because the GPU pass renders all
            * displays with one uniform.
            */
-          lineWidth: types.optional(types.number, 2.5),
+          lineWidth: types.optional(types.number, defaultLineWidth),
           /**
            * #property
            */
@@ -413,16 +394,10 @@ export default function stateModelFactory(pm: PluginManager) {
             return undefined
           }
           const { hview, vview } = self
-          const viewBpH = hview.offsetPx * hview.bpPerPx
-          const viewBpV = vview.offsetPx * vview.bpPerPx
-          const viewBpHHi = Math.floor(viewBpH / 4096) * 4096
-          const viewBpVHi = Math.floor(viewBpV / 4096) * 4096
           return {
-            viewBpHHi,
-            viewBpHLo: viewBpH - viewBpHHi,
+            viewBpH: hview.offsetPx * hview.bpPerPx,
+            viewBpV: vview.offsetPx * vview.bpPerPx,
             bpPerPxHInv: 1 / hview.bpPerPx,
-            viewBpVHi,
-            viewBpVLo: viewBpV - viewBpVHi,
             bpPerPxVInv: 1 / vview.bpPerPx,
             lineWidth: self.lineWidth,
             displayKeys,
@@ -674,19 +649,28 @@ export default function stateModelFactory(pm: PluginManager) {
           }
           const { vview, hview, viewHeight, viewWidth } = self
           const padding = 40
-          const vblocks = vview.dynamicBlocks.contentBlocks
-          const hblocks = hview.dynamicBlocks.contentBlocks
-          const hoffset = hview.offsetPx
-          const voffset = vview.offsetPx
-
-          const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
-          const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
-          const by = pxWidthForBlocks(hblocks, vview.bpPerPx, hhide)
-          const bx = pxWidthForBlocks(vblocks, hview.bpPerPx, vhide)
+          const hAxis: AxisBundle = {
+            blocks: hview.dynamicBlocks.contentBlocks,
+            bpPerPx: hview.bpPerPx,
+            hide: getBlockLabelKeysToHide(
+              hview.dynamicBlocks.contentBlocks,
+              viewWidth,
+              hview.offsetPx,
+            ),
+          }
+          const vAxis: AxisBundle = {
+            blocks: vview.dynamicBlocks.contentBlocks,
+            bpPerPx: vview.bpPerPx,
+            hide: getBlockLabelKeysToHide(
+              vview.dynamicBlocks.contentBlocks,
+              viewHeight,
+              vview.offsetPx,
+            ),
+          }
 
           return {
-            borderX: Math.max(bx + padding, 50),
-            borderY: Math.max(by + padding, 50),
+            borderX: Math.max(pxWidthForBlocks(vAxis) + padding, 50),
+            borderY: Math.max(pxWidthForBlocks(hAxis) + padding, 50),
           }
         },
         /**
@@ -1032,7 +1016,9 @@ export default function stateModelFactory(pm: PluginManager) {
               ? [
                   {
                     label: 'Open track selector',
-                    onClick: self.activateTrackSelector,
+                    onClick: () => {
+                      self.activateTrackSelector()
+                    },
                     icon: TrackSelectorIcon,
                   },
                 ]
@@ -1062,6 +1048,7 @@ export default function stateModelFactory(pm: PluginManager) {
           trackSelectorType,
           drawCigar,
           lockAspectRatio,
+          lineWidth,
           assemblyNames,
           viewTrackConfigs,
           ...rest
@@ -1079,6 +1066,7 @@ export default function stateModelFactory(pm: PluginManager) {
             : {}),
           ...(!drawCigar ? { drawCigar } : {}),
           ...(lockAspectRatio ? { lockAspectRatio } : {}),
+          ...(lineWidth !== defaultLineWidth ? { lineWidth } : {}),
           ...(assemblyNames.length ? { assemblyNames } : {}),
           ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
         } as typeof snap

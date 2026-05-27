@@ -1,12 +1,11 @@
+// Per-feature line segment geometry, in SoA form. Coordinates are absolute
+// genomic cumBp (Float64Array) — the hi/lo split for shader precision is
+// applied at GPU upload only, never in plain JS.
 export interface DotplotGeometryData {
-  x1Hi: Float32Array
-  x1Lo: Float32Array
-  y1Hi: Float32Array
-  y1Lo: Float32Array
-  x2Hi: Float32Array
-  x2Lo: Float32Array
-  y2Hi: Float32Array
-  y2Lo: Float32Array
+  x1: Float64Array
+  y1: Float64Array
+  x2: Float64Array
+  y2: Float64Array
   padHs: Float32Array
   padVs: Float32Array
   colors: Uint32Array
@@ -14,11 +13,10 @@ export interface DotplotGeometryData {
 }
 
 export interface DotplotRenderState {
-  viewBpHHi: number
-  viewBpHLo: number
+  // Absolute genomic cumBp position of the left/top edge of the view.
+  viewBpH: number
+  viewBpV: number
   bpPerPxHInv: number
-  viewBpVHi: number
-  viewBpVLo: number
   bpPerPxVInv: number
   lineWidth: number
   displayKeys: readonly number[]
