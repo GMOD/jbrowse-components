@@ -22,7 +22,7 @@ const MAFTooltip = observer(function ({
   model: LinearMafDisplayModel
   origMouseX?: number
 }) {
-  const { showCoverage, coverageDisplayHeight } = model
+  const { showCoverage, coverageDisplayHeight, rowHeight, scrollTop } = model
   const view = getContainingView(model) as LinearGenomeViewModel
   const p1 = origMouseX !== undefined ? view.pxToBp(origMouseX) : undefined
   const p2 = view.pxToBp(mouseX)
@@ -42,9 +42,21 @@ const MAFTooltip = observer(function ({
     ) : null
   }
 
+  // Per-cell hover: convert (mouseX, mouseY) to (bp, rowIndex into
+  // `sources`) and look up the sample/base at that cell. Skipped during a
+  // selection drag (origMouseX set) so the drag's range readout stays.
+  const cell =
+    origMouseX === undefined && !p2.oob
+      ? model.cellHoverInfo(
+          p2.index,
+          p2.coord - 1,
+          Math.floor((mouseY + scrollTop - coverageDisplayHeight) / rowHeight),
+        )
+      : undefined
+
   return (
     <BaseTooltip>
-      <SanitizedHTML html={generateTooltipContent(p1, p2)} />
+      <SanitizedHTML html={generateTooltipContent(p1, p2, cell)} />
     </BaseTooltip>
   )
 })

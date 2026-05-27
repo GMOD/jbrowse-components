@@ -8,14 +8,18 @@ export interface GenomicPosition {
 export function generateTooltipContent(
   p1: GenomicPosition | undefined,
   p2: GenomicPosition,
+  cell?: { sampleLabel: string; base: string },
 ): string {
+  const ref = `Ref: ${p2.refName}:${toLocale(p2.coord)}`
   return p1
     ? [
         `Start: ${p1.refName}:${toLocale(p1.coord)}`,
         `End: ${p2.refName}:${toLocale(p2.coord)}`,
         `Length: ${getBpDisplayStr(Math.abs(p1.coord - p2.coord))}`,
       ].join('<br/>')
-    : `Ref: ${p2.refName}:${toLocale(p2.coord)}`
+    : cell
+      ? [`Sample: ${cell.sampleLabel}`, `Base: ${cell.base}`, ref].join('<br/>')
+      : ref
 }
 
 export interface MsaHighlight {

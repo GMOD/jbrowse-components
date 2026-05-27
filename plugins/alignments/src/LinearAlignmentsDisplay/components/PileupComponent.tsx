@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
-import { ErrorBar } from '@jbrowse/core/ui'
+import { ErrorBar, ResizeHandle } from '@jbrowse/core/ui'
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
@@ -46,36 +46,9 @@ const useStyles = makeStyles()({
     left: 0,
     right: 0,
     height: YSCALEBAR_LABEL_OFFSET,
-    cursor: 'row-resize',
     zIndex: 10,
-    background: 'transparent',
-    '&:hover': {
-      background: 'rgba(0,0,0,0.1)',
-    },
   },
 })
-
-function ResizeHandle({
-  top,
-  onMouseDown,
-  title,
-}: {
-  top: number
-  onMouseDown: (e: React.MouseEvent) => void
-  title: string
-}) {
-  const { classes } = useStyles()
-  return (
-    <div
-      className={classes.resizeHandle}
-      style={{ top }}
-      onMouseDown={e => {
-        onMouseDown(e)
-      }}
-      title={title}
-    />
-  )
-}
 
 const PileupComponent = observer(function PileupComponent({
   model,
@@ -113,17 +86,15 @@ const PileupInner = observer(function PileupInner({
   const {
     canvas,
     canvasRef,
-    handleSashimiArcsResizeMouseDown,
     width,
     contrastMap,
     handleMouseDown,
     handleMouseLeave,
-    handleResizeMouseDown,
-    handleArcsResizeMouseDown,
     handleContextMenu,
     processMouseMove,
     processClick,
   } = base
+  const { classes } = useStyles()
 
   const view = getContainingView(model) as { scrollZoom?: boolean }
   const { scrollZoom } = view
@@ -258,24 +229,42 @@ const PileupInner = observer(function PileupInner({
 
         {showCoverage ? (
           <ResizeHandle
-            top={coverageHeight - YSCALEBAR_LABEL_OFFSET}
-            onMouseDown={handleResizeMouseDown}
+            className={classes.resizeHandle}
+            style={{ top: coverageHeight - YSCALEBAR_LABEL_OFFSET }}
+            onDrag={dy => {
+              model.setCoverageHeight(
+                Math.max(20, model.coverageHeight + dy),
+              )
+              return undefined
+            }}
             title="Drag to resize coverage track"
           />
         ) : null}
 
         {pairedArcs === 'down' ? (
           <ResizeHandle
-            top={topOffset - YSCALEBAR_LABEL_OFFSET}
-            onMouseDown={handleArcsResizeMouseDown}
+            className={classes.resizeHandle}
+            style={{ top: topOffset - YSCALEBAR_LABEL_OFFSET }}
+            onDrag={dy => {
+              model.setArcsHeight(Math.max(20, model.arcsHeight + dy))
+              return undefined
+            }}
             title="Drag to resize arcs area"
           />
         ) : null}
 
         {sashimiArcs === 'down' && showCoverage ? (
           <ResizeHandle
-            top={coverageHeight + sashimiArcsHeight - YSCALEBAR_LABEL_OFFSET}
-            onMouseDown={handleSashimiArcsResizeMouseDown}
+            className={classes.resizeHandle}
+            style={{
+              top: coverageHeight + sashimiArcsHeight - YSCALEBAR_LABEL_OFFSET,
+            }}
+            onDrag={dy => {
+              model.setSashimiArcsHeight(
+                Math.max(20, model.sashimiArcsHeight + dy),
+              )
+              return undefined
+            }}
             title="Drag to resize sashimi arcs area"
           />
         ) : null}

@@ -49,10 +49,10 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
     null,
   )
-  // Tracks the currently-active drag (pan, resize, or scrollbar). All four
-  // share this single controller — starting a new drag aborts the previous,
-  // unmount aborts in-flight. Doubles as the "is dragging" source of truth
-  // via isDragInProgress; no parallel boolean state needed.
+  // Tracks the currently-active pan drag. Starting a new pan aborts the
+  // previous and unmount aborts in-flight. Doubles as the "is dragging"
+  // source of truth via isDragInProgress; no parallel boolean state needed.
+  // Resize handles and scrollbar manage their own drags independently.
   const dragControllerRef = useAbortableRef()
 
   const view = getContainingView(model) as LinearGenomeViewModel
@@ -65,7 +65,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     featureSpacing,
     showCoverage,
     coverageHeight,
-    arcsHeight,
     coverageDisplayHeight: topOffset,
     showInterbaseIndicators,
     isChainMode,
@@ -132,34 +131,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (!model.contextMenuCoord) {
       model.clearMouseoverState()
     }
-  }
-
-  function startHeightDrag(
-    e: React.MouseEvent,
-    startHeight: number,
-    setHeight: (h: number) => void,
-  ) {
-    startDocumentDrag(e, dragControllerRef, (_dx, dy) => {
-      setHeight(Math.max(20, startHeight + dy))
-    })
-  }
-
-  const handleResizeMouseDown = (e: React.MouseEvent) => {
-    startHeightDrag(e, coverageHeight, h => {
-      model.setCoverageHeight(h)
-    })
-  }
-
-  const handleArcsResizeMouseDown = (e: React.MouseEvent) => {
-    startHeightDrag(e, arcsHeight, h => {
-      model.setArcsHeight(h)
-    })
-  }
-
-  const handleSashimiArcsResizeMouseDown = (e: React.MouseEvent) => {
-    startHeightDrag(e, model.sashimiArcsHeight, h => {
-      model.setSashimiArcsHeight(h)
-    })
   }
 
   function handleContextMenu(e: React.MouseEvent) {
@@ -337,9 +308,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     contrastMap,
     handleMouseDown,
     handleMouseLeave,
-    handleResizeMouseDown,
-    handleArcsResizeMouseDown,
-    handleSashimiArcsResizeMouseDown,
     handleContextMenu,
     processMouseMove,
     processClick,
