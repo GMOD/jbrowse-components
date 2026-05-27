@@ -1,7 +1,6 @@
 import { Suspense, lazy, useRef } from 'react'
 import type { ReactNode } from 'react'
 
-import { Menu } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -17,6 +16,7 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 import Gridlines from './Gridlines.tsx'
+import RangeSelectOverlay from './RangeSelectOverlay.tsx'
 import Rubberband from './Rubberband.tsx'
 import Scalebar from './Scalebar.tsx'
 import VerticalGuide from './VerticalGuide.tsx'
@@ -28,7 +28,6 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 const CenterLine = lazy(() => import('./CenterLine.tsx'))
 const Highlight = lazy(() => import('./Highlight.tsx'))
-const RubberbandSpan = lazy(() => import('./RubberbandSpan.tsx'))
 
 const useStyles = makeStyles()({
   tracksContainer: {
@@ -49,31 +48,9 @@ const TracksContainer = observer(function TracksContainer({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
-  const {
-    stickyViewHeaders,
-    rubberbandTop,
-    showGridlines,
-    showCenterLine,
-    isScalebarRefNameMenuOpen,
-  } = model
+  const { showGridlines, showCenterLine } = model
   const ref = useRef<HTMLDivElement>(null)
-  const {
-    guideX,
-    rubberbandOn,
-    leftBpOffset,
-    rightBpOffset,
-    numOfBpSelected,
-    width,
-    left,
-    anchorPosition,
-    open,
-    isClick,
-    clickBpOffset,
-    handleMenuItemClick,
-    handleClose,
-    mouseMove,
-    mouseDown: mouseDown2,
-  } = useRangeSelect(ref, model, true)
+  const range = useRangeSelect(ref, model, true)
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-TracksContainerComponent',
@@ -88,51 +65,19 @@ const TracksContainer = observer(function TracksContainer({
       className={classes.tracksContainer}
       onMouseDown={event => {
         mouseDown1(event)
-        mouseDown2(event)
+        range.mouseDown(event)
       }}
-      onMouseMove={mouseMove}
+      onMouseMove={range.mouseMove}
       onMouseUp={mouseUp}
     >
       {showGridlines ? <Gridlines model={model} /> : null}
       <Suspense fallback={null}>
         {showCenterLine ? <CenterLine model={model} /> : null}
       </Suspense>
-      {guideX !== undefined && !isScalebarRefNameMenuOpen ? (
-        <VerticalGuide model={model} coordX={guideX} />
-      ) : rubberbandOn ? (
-        <Suspense fallback={null}>
-          <RubberbandSpan
-            leftBpOffset={leftBpOffset}
-            rightBpOffset={rightBpOffset}
-            numOfBpSelected={numOfBpSelected}
-            width={width}
-            left={left}
-            top={rubberbandTop}
-            sticky={stickyViewHeaders}
-          />
-        </Suspense>
-      ) : null}
+      <RangeSelectOverlay model={model} range={range} />
       {model.volatileGuides.map((guide, idx) => (
         <VerticalGuide key={idx} model={model} coordX={guide.xPos} />
       ))}
-      {anchorPosition ? (
-        <Menu
-          anchorReference="anchorPosition"
-          anchorPosition={{
-            left: anchorPosition.clientX,
-            top: anchorPosition.clientY,
-          }}
-          onMenuItemClick={handleMenuItemClick}
-          open={open}
-          onClose={handleClose}
-          menuItems={
-            isClick && clickBpOffset
-              ? model.rubberbandClickMenuItems(clickBpOffset)
-              : model.rubberBandMenuItems()
-          }
-        />
-      ) : null}
-
       <Rubberband
         model={model}
         ControlComponent={

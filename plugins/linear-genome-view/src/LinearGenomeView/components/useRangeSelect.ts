@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { getRelativeX } from './util.ts'
 
@@ -26,6 +26,11 @@ export function useRangeSelect(
   const [guideX, setGuideX] = useState<number>()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
+  // ref lets globalMouseUp read the latest startX without forcing the effect
+  // below to re-register listeners on every drag movement
+  const startXRef = useRef(startX)
+  startXRef.current = startX
+
   const handleClose = useCallback(() => {
     setAnchorPosition(undefined)
     setStartX(undefined)
@@ -34,72 +39,65 @@ export function useRangeSelect(
   }, [])
 
   useEffect(() => {
-    function computeOffsets(offsetX: number) {
-      if (startX === undefined) {
-        return
-      }
-      const leftPx = Math.min(startX, offsetX)
-      const rightPx = Math.max(startX, offsetX)
-      return {
-        leftOffset: model.pxToBp(leftPx),
-        rightOffset: model.pxToBp(rightPx),
-      }
+    if (!mouseDragging) {
+      return
     }
 
     function globalMouseMove(event: MouseEvent) {
-      if (ref.current && mouseDragging) {
-        const relativeX = getRelativeX(event, ref.current)
-        setCurrentX(relativeX)
+      if (ref.current) {
+        setCurrentX(getRelativeX(event, ref.current))
       }
     }
 
     function globalMouseUp(event: MouseEvent) {
-      if (startX !== undefined && ref.current) {
-        const { clientX, clientY } = event
-        const offsetX = getRelativeX(event, ref.current)
-        const isClick = Math.abs(offsetX - startX) <= 3
+      const sx = startXRef.current
+      if (sx === undefined || !ref.current) {
+        return
+      }
+      const { clientX, clientY } = event
+      const offsetX = getRelativeX(event, ref.current)
+      const isClick = Math.abs(offsetX - sx) <= 3
 
-        // If click started on a scalebar refname label, let that component
-        // handle it instead of showing the rubberband menu
-        if (isClick && model.scalebarRefNameClickPending) {
-          setStartX(undefined)
-          setCurrentX(undefined)
-          return
-        }
+      // If click started on a scalebar refname label, let that component
+      // handle it instead of showing the rubberband menu
+      if (isClick && model.scalebarRefNameClickPending) {
+        setStartX(undefined)
+        setCurrentX(undefined)
+        return
+      }
 
-        // Clear the pending flag if it was a drag (not a click)
-        if (!isClick && model.scalebarRefNameClickPending) {
-          model.setScalebarRefNameClickPending(false)
-        }
+      if (!isClick && model.scalebarRefNameClickPending) {
+        model.setScalebarRefNameClickPending(false)
+      }
 
-        // store both clientX/Y and offsetX for different purposes
-        setAnchorPosition({
-          offsetX,
-          clientX,
-          clientY,
-          isClick,
-        })
-        if (isClick) {
-          setGuideX(offsetX)
-        } else {
-          const args = computeOffsets(offsetX)
-          if (args) {
-            model.setOffsets(args.leftOffset, args.rightOffset)
-          }
-          setGuideX(undefined)
-        }
+      setAnchorPosition({ offsetX, clientX, clientY, isClick })
+      if (isClick) {
+        setGuideX(offsetX)
+      } else {
+        model.setOffsets(
+          model.pxToBp(Math.min(sx, offsetX)),
+          model.pxToBp(Math.max(sx, offsetX)),
+        )
+        setGuideX(undefined)
       }
     }
-    if (mouseDragging) {
-      window.addEventListener('mousemove', globalMouseMove)
-      window.addEventListener('mouseup', globalMouseUp)
-      return () => {
-        window.removeEventListener('mousemove', globalMouseMove)
-        window.removeEventListener('mouseup', globalMouseUp)
+
+    function globalKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setStartX(undefined)
+        setCurrentX(undefined)
       }
     }
-    return () => {}
-  }, [startX, mouseDragging, model, ref, handleClose])
+
+    window.addEventListener('mousemove', globalMouseMove)
+    window.addEventListener('mouseup', globalMouseUp)
+    window.addEventListener('keydown', globalKeyDown)
+    return () => {
+      window.removeEventListener('mousemove', globalMouseMove)
+      window.removeEventListener('mouseup', globalMouseUp)
+      window.removeEventListener('keydown', globalKeyDown)
+    }
+  }, [mouseDragging, model, ref])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     if (shiftOnly && !event.shiftKey) {
@@ -117,22 +115,12 @@ export function useRangeSelect(
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    // If we have a rubberband selection active (menu is open from a drag, not a click),
-    // don't update guideX - let the rubberband stay visible
+    // Keep the rubberband visible while a drag-selection menu is open
     if (anchorPosition?.isClick === false) {
       return
     }
-    if (mouseDragging) {
-      setGuideX(undefined)
-    } else if (shiftOnly) {
-      if (event.shiftKey) {
-        setGuideX(getRelativeX(event, ref.current))
-      } else {
-        setGuideX(undefined)
-      }
-    } else {
-      setGuideX(getRelativeX(event, ref.current))
-    }
+    const wantsGuide = !mouseDragging && (!shiftOnly || event.shiftKey)
+    setGuideX(wantsGuide ? getRelativeX(event, ref.current) : undefined)
   }
 
   function mouseOut() {

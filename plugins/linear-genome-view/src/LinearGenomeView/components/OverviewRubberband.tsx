@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -9,7 +10,7 @@ import RubberbandSpan from './RubberbandSpan.tsx'
 import { getRelativeX } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 type LGV = LinearGenomeViewModel
 
@@ -30,7 +31,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
   ControlComponent = <div />,
 }: {
   model: LGV
-  overview: Base1DViewModel
+  overview: ViewLayout
   ControlComponent?: React.ReactElement
 }) {
   const { cytobandOffset } = model
@@ -69,15 +70,15 @@ const OverviewRubberband = observer(function OverviewRubberband({
           const left = Math.min(sx, cx)
           const right = Math.max(sx, cx)
           model.moveTo(
-            overview.pxToBp(left - cytobandOffset),
-            overview.pxToBp(right - cytobandOffset),
+            pxToBp(overview, left - cytobandOffset),
+            pxToBp(overview, right - cytobandOffset),
           )
         }
       }
 
       // just a click
       if (sx !== undefined && cx === undefined) {
-        const click = overview.pxToBp(sx - cytobandOffset)
+        const click = pxToBp(overview, sx - cytobandOffset)
         if (!click.refName) {
           getSession(model).notify('unknown position clicked')
           console.error('unknown position clicked', click)
@@ -121,53 +122,30 @@ const OverviewRubberband = observer(function OverviewRubberband({
     setGuideX(undefined)
   }
 
-  if (startX === undefined) {
-    return (
-      <div className={classes.rel}>
-        {guideX !== undefined ? (
-          <OverviewRubberbandHoverTooltip
-            model={model}
-            open={!mouseDragging}
-            overview={overview}
-            guideX={guideX}
-          />
-        ) : null}
-        <div
-          className={classes.rubberbandControl}
-          ref={controlsRef}
-          onMouseDown={mouseDown}
-          onMouseOut={mouseOut}
-          onMouseMove={mouseMove}
-        >
-          {ControlComponent}
-        </div>
-      </div>
-    )
-  }
-
-  let left = startX
-  let width = 0
-  if (currentX !== undefined) {
-    left = Math.min(currentX, startX)
-    width = currentX - startX
-  }
-  // calculate the start and end bp of drag
-  let leftBpOffset = overview.pxToBp(startX - cytobandOffset)
-  let rightBpOffset = overview.pxToBp(startX + width - cytobandOffset)
-  if (currentX !== undefined && currentX < startX) {
-    ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
-  }
+  const endX = currentX ?? startX
+  const leftPx = mouseDragging ? Math.min(startX, endX!) : 0
+  const rightPx = mouseDragging ? Math.max(startX, endX!) : 0
 
   return (
     <div className={classes.rel}>
-      <RubberbandSpan
-        leftBpOffset={leftBpOffset}
-        rightBpOffset={rightBpOffset}
-        width={Math.abs(width)}
-        left={left}
-      />
+      {!mouseDragging && guideX !== undefined ? (
+        <OverviewRubberbandHoverTooltip
+          model={model}
+          open
+          overview={overview}
+          guideX={guideX}
+        />
+      ) : null}
+      {mouseDragging ? (
+        <RubberbandSpan
+          leftBpOffset={pxToBp(overview, leftPx - cytobandOffset)}
+          rightBpOffset={pxToBp(overview, rightPx - cytobandOffset)}
+          width={rightPx - leftPx}
+          left={leftPx}
+        />
+      ) : null}
       <div
-        data-testid="rubberband_controls"
+        data-testid={mouseDragging ? 'rubberband_controls' : undefined}
         className={classes.rubberbandControl}
         ref={controlsRef}
         onMouseDown={mouseDown}
