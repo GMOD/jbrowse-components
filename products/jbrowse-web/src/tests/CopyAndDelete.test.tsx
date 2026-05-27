@@ -142,7 +142,7 @@ test('copy and delete track to session tracks', () => {
 }, 40000)
 
 xtest('delete connection', async () => {
-  const pluginManager = getPluginManager(masterConfig, true)
+  const { pluginManager } = getPluginManager(masterConfig, true)
   const { findAllByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )

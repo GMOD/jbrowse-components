@@ -14,7 +14,6 @@ const testStack = (loc: string, track: string) =>
     loc,
     track,
     displayMode: 'stack',
-    canvasId: 'stack-canvas',
     timeout: timeout - 5000,
   })
 

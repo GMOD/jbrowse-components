@@ -268,7 +268,7 @@ export async function exportAndVerifySvg({
 
 export async function testFileReload(config: {
   failingFile: string
-  readBuffer: any
+  readBuffer: (request: Request) => Promise<Response>
   trackId: string
   viewLocation: [number, number]
   expectedCanvas: string | RegExp

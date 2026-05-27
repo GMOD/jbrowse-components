@@ -1,5 +1,5 @@
 import { waitFor } from '@testing-library/react'
-import { useFetchMock, volvoxGetFile } from './generateReadBuffer.ts'
+import { handleRequest, useFetchMock, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
 setup()
@@ -186,7 +186,7 @@ test('LinearGenomeView init with 404 TwoBitAdapter shows error', async () => {
     if (`${url}`.includes('jb2=true')) {
       return new Response('{}')
     }
-    return handleRequest(() => getFile(`${url}`), args)
+    return handleRequest(() => volvoxGetFile(`${url}`), args)
   })
 
   const { rootModel } = getPluginManager(config404)

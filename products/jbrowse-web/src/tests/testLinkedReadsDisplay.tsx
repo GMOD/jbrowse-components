@@ -23,7 +23,6 @@ export async function testLinkedReadsDisplay({
   loc: string
   track: string
   displayMode: DisplayMode
-  canvasId?: string
   timeout?: number
 }) {
   const user = userEvent.setup()

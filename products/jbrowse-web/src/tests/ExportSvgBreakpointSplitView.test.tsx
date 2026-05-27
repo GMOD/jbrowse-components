@@ -1,3 +1,5 @@
+import { waitFor } from '@testing-library/react'
+
 import {
   createView,
   doBeforeEach,
@@ -17,11 +19,21 @@ const delay = { timeout: 50000 }
 test('export svg of breakpoint split view', async () => {
   await mockConsoleWarn(async () => {
     doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
-    const { findByTestId, findAllByText, findByText } =
+    const { findByTestId, findAllByText, findByText, findAllByTestId } =
       await createView(breakpointConfig)
 
-    // TODO: replace with waitFor once a suitable render-complete selector exists
-    await new Promise(resolve => setTimeout(resolve, 10000))
+    // Wait for both alignment displays (one per view) to finish rendering
+    await waitFor(
+      async () => {
+        const done = await findAllByTestId(
+          'display-pacbio_hg002_breakpoints-LinearAlignmentsDisplay-done',
+          {},
+          delay,
+        )
+        expect(done.length).toBe(2)
+      },
+      delay,
+    )
 
     await exportAndVerifySvg({
       findByTestId,

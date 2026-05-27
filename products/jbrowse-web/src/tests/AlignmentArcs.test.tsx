@@ -13,7 +13,6 @@ const testArc = (loc: string, track: string) =>
     loc,
     track,
     displayMode: 'arc',
-    canvasId: 'arc-canvas',
     timeout: timeout - 5000,
   })
 

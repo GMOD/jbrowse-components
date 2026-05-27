@@ -29,7 +29,7 @@ test('test stats estimation pileup, zoom in to see', async () => {
     expect(view.bpPerPx).toBe(before / 2)
   }, delay)
   const display = await findByTestId('pileup-display-done', ...o)
-  findCanvasIn(display)
+  expect(display.querySelector('canvas')).toBeTruthy()
 }, 30000)
 
 test('test stats estimation pileup, force load to see', async () => {
