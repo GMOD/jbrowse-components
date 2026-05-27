@@ -175,8 +175,8 @@ function stateModelFactory(pluginManager: PluginManager) {
                 for (const view of self.views) {
                   const viewPath = getPath(view)
                   if (viewPath !== sourcePath) {
-                    // @ts-expect-error
-                    view[rawCall.name](rawCall.args[0])
+                    // @ts-expect-error dynamic dispatch by action name
+                    view[rawCall.name](...rawCall.args)
                   }
                 }
                 return

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 
+import { SingleSlider } from '@jbrowse/core/ui'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { SliderTooltip } from '@jbrowse/synteny-core'
 import TuneIcon from '@mui/icons-material/Tune'
-import { IconButton, Popover, Slider, Typography } from '@mui/material'
+import { IconButton, Popover, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -79,10 +80,9 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
             <Typography variant="body2" className={classes.label}>
               Opacity:
             </Typography>
-            <Slider
+            <SingleSlider
               value={sliderValue}
-              onChange={(_, value) => {
-                const v = typeof value === 'number' ? value : value[0]
+              onChange={v => {
                 const newAlpha = sliderToAlpha(v)
                 for (const d of dotplotDisplays) {
                   d.setAlpha(newAlpha)
@@ -101,10 +101,9 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
             <Typography variant="body2" className={classes.label}>
               Line width:
             </Typography>
-            <Slider
+            <SingleSlider
               value={lineWidth}
-              onChange={(_, value) => {
-                const v = typeof value === 'number' ? value : value[0]
+              onChange={v => {
                 model.setLineWidth(v)
               }}
               min={0.5}
@@ -119,10 +118,9 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
             <Typography variant="body2" className={classes.label}>
               Min length:
             </Typography>
-            <Slider
+            <SingleSlider
               value={minLengthValue}
-              onChange={(_, val) => {
-                const v = typeof val === 'number' ? val : val[0]
+              onChange={v => {
                 setMinLengthValue(v)
               }}
               onChangeCommitted={() => {

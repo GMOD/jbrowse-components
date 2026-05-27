@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
+import { SingleSlider } from '@jbrowse/core/ui'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { SliderTooltip } from '@jbrowse/synteny-core'
 import HelpIcon from '@mui/icons-material/Help'
 import TuneIcon from '@mui/icons-material/Tune'
-import { IconButton, Popover, Slider, Tooltip, Typography } from '@mui/material'
+import { IconButton, Popover, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
@@ -71,10 +72,9 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
             <Typography variant="body2" className={classes.label}>
               Opacity:
             </Typography>
-            <Slider
+            <SingleSlider
               value={sliderValue}
-              onChange={(_, value) => {
-                const v = typeof value === 'number' ? value : value[0]
+              onChange={v => {
                 model.setAlpha(v ** 3)
               }}
               min={0}
@@ -90,9 +90,9 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
             <Typography variant="body2" className={classes.label}>
               Min length:
             </Typography>
-            <Slider
+            <SingleSlider
               value={minLengthValue}
-              onChange={(_, val) => {
+              onChange={val => {
                 setMinLengthDragValue(val)
               }}
               onChangeCommitted={() => {
@@ -119,9 +119,9 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
                 <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
               </Tooltip>
             </Typography>
-            <Slider
+            <SingleSlider
               value={model.overdrawPx}
-              onChange={(_, val) => {
+              onChange={val => {
                 model.setOverdrawPx(val)
               }}
               min={0}

@@ -216,8 +216,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
+      get view() {
+        return getContainingView(self) as LinearSyntenyViewModel
+      },
+      /**
+       * #getter
+       */
       get colorSchemeConfig() {
-        const key = (getContainingView(self) as LinearSyntenyViewModel).colorBy
+        const key = this.view.colorBy
         return key in colorSchemes
           ? colorSchemes[key as ColorScheme]
           : colorSchemes.default
@@ -225,15 +231,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get effectiveAlpha() {
-        return (getContainingView(self) as LinearSyntenyViewModel)
-          .effectiveAlpha
-      },
-      /**
-       * #getter
-       */
       get colorMapWithAlpha() {
-        const alpha = this.effectiveAlpha
+        const alpha = this.view.alpha
         const activeColorMap = this.colorSchemeConfig.cigarColors
         return {
           I: applyAlpha(activeColorMap.I, alpha),
@@ -248,19 +247,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get posColorWithAlpha() {
-        return applyAlpha('red', this.effectiveAlpha)
+        return applyAlpha('red', this.view.alpha)
       },
       /**
        * #getter
        */
       get negColorWithAlpha() {
-        return applyAlpha('blue', this.effectiveAlpha)
+        return applyAlpha('blue', this.view.alpha)
       },
       /**
        * #getter
        */
       get queryColorWithAlphaMap() {
-        const alpha = this.effectiveAlpha
+        const alpha = this.view.alpha
         const cache = new Map<string, string>()
         return (queryName: string) => {
           if (!cache.has(queryName)) {
@@ -286,8 +285,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get computedColors() {
         const { instanceData, featureData } = self
-        const view = getContainingView(self) as LinearSyntenyViewModel
-        const { colorBy, opacityByIdentity } = view
+        const { colorBy, opacityByIdentity } = this.view
         if (!instanceData || !featureData) {
           return undefined
         }
@@ -334,7 +332,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         if (self.isMinimized) {
           return undefined
         }
-        const view = getContainingView(self) as LinearSyntenyViewModel
+        const view = this.view
         if (!view.initialized) {
           return undefined
         }
@@ -353,7 +351,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return {
           yTop: 0,
           height: this.height,
-          alpha: this.effectiveAlpha,
+          alpha: view.alpha,
           minAlignmentLength: view.minAlignmentLength,
           hoveredFeatureId:
             hoveredFeatureIdx >= 0 && self.instanceData

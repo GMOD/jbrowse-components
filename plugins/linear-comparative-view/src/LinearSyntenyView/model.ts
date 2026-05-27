@@ -112,12 +112,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get effectiveAlpha() {
-        return self.alpha
-      },
-      /**
-       * #getter
-       */
       get hasSomethingToShow() {
         return self.views.length > 0 || !!self.init
       },

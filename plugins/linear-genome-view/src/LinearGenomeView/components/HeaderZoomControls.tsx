@@ -1,12 +1,13 @@
 import { lazy, useState } from 'react'
 
+import { SingleSlider } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getBpDisplayStr, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
-import { IconButton, Slider, Tooltip } from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -100,13 +101,13 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
         </span>
       </Tooltip>
 
-      <Slider
+      <SingleSlider
         size="small"
         className={classes.slider}
         value={value}
         min={-Math.log2(maxBpPerPx) * 100}
         max={-Math.log2(minBpPerPx) * 100}
-        onChangeCommitted={(_, val) => {
+        onChangeCommitted={val => {
           setDragValue(null)
           model.zoomTo(2 ** (-val / 100))
         }}
@@ -117,7 +118,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
         slots={{
           valueLabel: ValueLabelComponent,
         }}
-        onChange={(_, val) => {
+        onChange={val => {
           setDragValue(val)
         }}
       />
