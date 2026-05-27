@@ -13,7 +13,7 @@ interface LifecycleHost extends IAnyStateTreeNode {
 
 interface UploadableBackend<Encoded> {
   uploadRegion(displayedRegionIndex: number, encoded: Encoded): void
-  pruneRegions(active: number[]): void
+  pruneRegions(active: Iterable<number>): void
 }
 
 /**
@@ -69,9 +69,7 @@ export function installPerRegionLifecycle<
 
   self.attachBackend<B>(backend, {
     upload: b => {
-      const active: number[] = []
       for (const key of rpcDataMap.keys()) {
-        active.push(key)
         if (!perKeyDisposers.has(key)) {
           perKeyDisposers.set(
             key,
@@ -92,15 +90,15 @@ export function installPerRegionLifecycle<
           )
         }
       }
-      const activeSet = new Set(active)
+      const activeKeys = new Set(rpcDataMap.keys())
       for (const [key, dispose] of perKeyDisposers) {
-        if (!activeSet.has(key)) {
+        if (!activeKeys.has(key)) {
           dispose()
           perKeyDisposers.delete(key)
           encodedRegions.delete(key)
         }
       }
-      b.pruneRegions(active)
+      b.pruneRegions(activeKeys)
     },
     render: b => render(b, encodedRegions),
   })

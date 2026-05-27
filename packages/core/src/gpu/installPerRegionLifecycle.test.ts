@@ -20,7 +20,7 @@ interface UploadCall {
 
 interface FakeBackend {
   uploadRegion(key: number, payload: FakeEncoded): void
-  pruneRegions(active: number[]): void
+  pruneRegions(active: Iterable<number>): void
 }
 
 function makeFakeBackend() {

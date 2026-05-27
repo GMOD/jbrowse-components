@@ -88,7 +88,7 @@ export function makeRampFillStyleLut(ramp: Uint8Array) {
     if (s === undefined) {
       const o = idx * 4
       const a = ramp[o + 3]! / 255
-      s = `rgba(${ramp[o]!},${ramp[o + 1]!},${ramp[o + 2]!},${a})`
+      s = `rgba(${ramp[o]!},${ramp[o + 1]!},${ramp[o + 2]!},${a.toFixed(3)})`
       lut[idx] = s
     }
     return s

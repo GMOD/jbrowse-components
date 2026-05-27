@@ -24,8 +24,14 @@ function createProgram(
   fsSource: string,
 ) {
   const vs = createShader(gl, gl.VERTEX_SHADER, vsSource)
-  const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource)
-  const program = gl.createProgram()
+  let fs: WebGLShader
+  try {
+    fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource)
+  } catch (e) {
+    gl.deleteShader(vs)
+    throw e
+  }
+  const program = gl.createProgram()!
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
   gl.linkProgram(program)
@@ -240,7 +246,7 @@ export class WebGL2Hal implements GpuHal {
           )
         }
       }
-      const vao = gl.createVertexArray()
+      const vao = gl.createVertexArray()!
       gl.bindVertexArray(vao)
       for (const loc of attrLocs) {
         if (loc >= 0) {
@@ -300,7 +306,7 @@ export class WebGL2Hal implements GpuHal {
       return
     }
 
-    const vbo = gl.createBuffer()
+    const vbo = gl.createBuffer()!
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     region.buffers.set(passId, { vbo, count })

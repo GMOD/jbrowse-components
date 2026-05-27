@@ -70,8 +70,12 @@ interface RegionState {
 interface LayoutState {
   uniformOnlyBindGroupLayout: GPUBindGroupLayout
   uniformOnlyPipelineLayout: GPUPipelineLayout
-  texturedBindGroupLayout: GPUBindGroupLayout | null
-  texturedPipelineLayout: GPUPipelineLayout | null
+  // Lazily created on first pass with textures. Bundled so null/non-null is
+  // always consistent between the two — avoids a non-null assertion on access.
+  texturedLayouts: {
+    bindGroupLayout: GPUBindGroupLayout
+    pipelineLayout: GPUPipelineLayout
+  } | null
 }
 
 function createLayoutState(device: GPUDevice): LayoutState {
@@ -81,14 +85,13 @@ function createLayoutState(device: GPUDevice): LayoutState {
     uniformOnlyPipelineLayout: device.createPipelineLayout({
       bindGroupLayouts: [uniformOnlyBindGroupLayout],
     }),
-    texturedBindGroupLayout: null,
-    texturedPipelineLayout: null,
+    texturedLayouts: null,
   }
 }
 
 function getOrCreateTexturedLayout(device: GPUDevice, state: LayoutState) {
-  if (!state.texturedBindGroupLayout) {
-    state.texturedBindGroupLayout = device.createBindGroupLayout({
+  if (!state.texturedLayouts) {
+    const bindGroupLayout = device.createBindGroupLayout({
       entries: [
         {
           binding: 1,
@@ -110,14 +113,14 @@ function getOrCreateTexturedLayout(device: GPUDevice, state: LayoutState) {
         },
       ],
     })
-    state.texturedPipelineLayout = device.createPipelineLayout({
-      bindGroupLayouts: [state.texturedBindGroupLayout],
-    })
+    state.texturedLayouts = {
+      bindGroupLayout,
+      pipelineLayout: device.createPipelineLayout({
+        bindGroupLayouts: [bindGroupLayout],
+      }),
+    }
   }
-  return {
-    layout: state.texturedBindGroupLayout,
-    pipelineLayout: state.texturedPipelineLayout!,
-  }
+  return state.texturedLayouts
 }
 
 async function compilePipelines(
@@ -364,12 +367,12 @@ export class WebGPUHal implements GpuHal {
       if (!texState) {
         return null
       }
-      const { layout } = getOrCreateTexturedLayout(
+      const { bindGroupLayout } = getOrCreateTexturedLayout(
         this.device,
         this.layoutState,
       )
       return this.device.createBindGroup({
-        layout,
+        layout: bindGroupLayout,
         entries: [
           {
             binding: 1,

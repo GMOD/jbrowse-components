@@ -26,7 +26,7 @@ export interface PerRegionBackend<
   RenderData = UploadData,
 > {
   uploadRegion(displayedRegionIndex: number, data: UploadData): void
-  pruneRegions(activeRegions: number[]): void
+  pruneRegions(activeRegions: Iterable<number>): void
   renderBlocks(
     blocks: Block[],
     regions: ReadonlyMap<number, RenderData>,
@@ -92,7 +92,7 @@ export abstract class GpuPerRegionBackend<
     this.uniformData = new ArrayBuffer(uniformByteSize)
   }
 
-  pruneRegions(activeRegions: number[]): void {
+  pruneRegions(activeRegions: Iterable<number>): void {
     this.hal.pruneRegions(activeRegions)
   }
 
