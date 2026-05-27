@@ -3,12 +3,12 @@ import { GAP_STROKE_OFFSET } from './types.ts'
 
 import type { RenderingContext } from './types.ts'
 
-const DASH = '-'.charCodeAt(0)
+const DASH = 45 // '-'.charCodeAt(0)
 
 export function renderBases(
   context: RenderingContext,
-  alignment: string,
-  seq: string,
+  alignment: Uint8Array,
+  seq: Uint8Array,
   startBp: number,
   rowTop: number,
 ) {
@@ -23,18 +23,18 @@ export function renderBases(
   } = context
   const cellW = scale + GAP_STROKE_OFFSET
   const cfg = { ...palette, showAllLetters, mismatchRendering }
-  // Defensive min() — `seq.charCodeAt(i)` returns NaN past the end and the
-  // bitwise match check in resolveCellColor would silently mis-classify
-  // those cells (NaN | 0x20 === 0x20 collides with everything).
+  // Defensive min() guards against malformed files where worker output ships
+  // uneven lengths; without it `seq[i]` past the end is undefined and the
+  // bitwise match check in resolveCellColor silently mis-classifies cells.
   const len = Math.min(alignment.length, seq.length)
 
   for (let i = 0, genomicOffset = 0; i < len; i++) {
-    const refByte = seq.charCodeAt(i)
+    const refByte = seq[i]!
     if (refByte === DASH) {
       // Reference insertion — skipped here, drawn by renderInsertions.
       continue
     }
-    const css = resolveCellColor(refByte, alignment.charCodeAt(i), cfg)
+    const css = resolveCellColor(refByte, alignment[i]!, cfg)
     if (css !== undefined) {
       ctx.fillStyle = css
       ctx.fillRect(bpToCellLeftPx(startBp + genomicOffset), rowTop, cellW, h)

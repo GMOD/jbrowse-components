@@ -2,6 +2,9 @@ import { renderInsertions } from './insertions.ts'
 
 import type { RenderingContext } from './types.ts'
 
+const enc = new TextEncoder()
+const bytes = (s: string) => enc.encode(s)
+
 function makeCtx() {
   const fillRectCalls: { x: number; y: number; w: number; h: number }[] = []
   const ctx = {
@@ -38,13 +41,13 @@ function makeContext(ctx: object): RenderingContext {
 test('one insertion in the middle draws one marker', () => {
   const { ctx, fillRectCalls } = makeCtx()
   // seq AC---T → alignment ACCCCT: one 3-base insertion between C and T
-  renderInsertions(makeContext(ctx), 'ACCCCT', 'AC---T', 100, 0, 0.5)
+  renderInsertions(makeContext(ctx), bytes('ACCCCT'), bytes('AC---T'), 100, 0, 0.5)
   expect(fillRectCalls.length).toBeGreaterThan(0)
 })
 
 test('no insertions draws nothing', () => {
   const { ctx, fillRectCalls } = makeCtx()
-  renderInsertions(makeContext(ctx), 'ACGT', 'ACGT', 100, 0, 0.5)
+  renderInsertions(makeContext(ctx), bytes('ACGT'), bytes('ACGT'), 100, 0, 0.5)
   expect(fillRectCalls).toHaveLength(0)
 })
 
@@ -55,8 +58,8 @@ test('alignment shorter than seq with trailing insertion does not inflate insLen
   // With the bug, insLen grows to 20 (crosses LARGE_INSERTION_THRESHOLD=10)
   // and the renderer switches to the large-glyph path → wrong glyph + text.
   const { ctx, fillRectCalls } = makeCtx()
-  const seq = `A${'-'.repeat(20)}`
-  const alignment = `A${'C'.repeat(5)}`
+  const seq = bytes(`A${'-'.repeat(20)}`)
+  const alignment = bytes(`A${'C'.repeat(5)}`)
   renderInsertions(makeContext(ctx), alignment, seq, 100, 0, 50)
   // The small-insertion glyph draws 1 rect (the line). The bug pushes us into
   // the LARGE branch, which depending on bpPerPx draws 1 wide rect or a
@@ -73,6 +76,6 @@ test('alignment longer than seq does not draw spurious insertions', () => {
   const { ctx, fillRectCalls } = makeCtx()
   // alignment overruns seq; the trailing alignment chars have no
   // corresponding seq positions, so nothing should be drawn for them.
-  renderInsertions(makeContext(ctx), 'ACGTNNNN', 'ACGT', 100, 0, 0.5)
+  renderInsertions(makeContext(ctx), bytes('ACGTNNNN'), bytes('ACGT'), 100, 0, 0.5)
   expect(fillRectCalls).toHaveLength(0)
 })

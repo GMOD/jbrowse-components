@@ -10,8 +10,6 @@ import type { MafGPURenderState, MafRegionData } from './mafBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-const decoder = new TextDecoder()
-
 export function drawMafBlocks(
   ctx: Ctx2D,
   regions: { get(key: number): MafRegionData | undefined },
@@ -66,22 +64,22 @@ export function drawMafBlocks(
     ctx.clip()
 
     for (const mafBlock of regionData.blocks) {
-      const refSeq = decoder.decode(mafBlock.refSeqBytes)
+      const { refSeqBytes, startBp: blockStartBp } = mafBlock
       for (const row of mafBlock.rows) {
-        const alignment = decoder.decode(row.alignmentBytes)
+        const { alignmentBytes } = row
         const rowTop = offset + rowHeight * row.rowIndex
         renderBases(
           renderingContext,
-          alignment,
-          refSeq,
-          mafBlock.startBp,
+          alignmentBytes,
+          refSeqBytes,
+          blockStartBp,
           rowTop,
         )
         renderInsertions(
           renderingContext,
-          alignment,
-          refSeq,
-          mafBlock.startBp,
+          alignmentBytes,
+          refSeqBytes,
+          blockStartBp,
           rowTop,
           bpPerPx,
         )

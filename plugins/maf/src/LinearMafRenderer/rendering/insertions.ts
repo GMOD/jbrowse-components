@@ -25,8 +25,8 @@ const SPACE = 32 // ' '.charCodeAt(0)
  */
 export function renderInsertions(
   context: RenderingContext,
-  alignment: string,
-  seq: string,
+  alignment: Uint8Array,
+  seq: Uint8Array,
   startBp: number,
   rowTop: number,
   bpPerPx: number,
@@ -36,14 +36,14 @@ export function renderInsertions(
   const insertionFill = palette.insertionColor
   // Defensive min() mirrors mafInstanceBuffer.ts / rendering/bases.ts: if a
   // malformed file ships uneven lengths, the inner while would read past
-  // alignment end and count `undefined` chars as insertion bases, inflating
+  // alignment end and count out-of-bounds bytes as insertion bases, inflating
   // insLen past LARGE_INSERTION_THRESHOLD and switching to the wrong glyph.
   const len = Math.min(alignment.length, seq.length)
 
   for (let i = 0, genomicOffset = 0; i < len; i++) {
     let insLen = 0
-    while (i < len && seq.charCodeAt(i) === DASH) {
-      const code = alignment.charCodeAt(i)
+    while (i < len && seq[i] === DASH) {
+      const code = alignment[i]!
       if (code !== DASH && code !== SPACE) {
         insLen++
       }

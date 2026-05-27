@@ -108,6 +108,11 @@ export function parseRowInstructions(meta: string) {
         row: +ret[i++]!,
         gapSubstring: ret[i++]!,
       })
+    } else {
+      // Unknown opcode: subsequent tokens may be operands the next iteration
+      // would mis-read as opcodes. Surface this instead of silently
+      // misaligning the whole instruction stream.
+      throw new Error(`Unknown TAF row instruction opcode: ${type}`)
     }
   }
   return rows

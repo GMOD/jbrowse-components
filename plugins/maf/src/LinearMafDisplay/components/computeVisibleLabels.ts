@@ -6,8 +6,6 @@ const DASH = 45 // '-'.charCodeAt(0)
 const SPACE = 32 // ' '.charCodeAt(0)
 const LOWER_BIT = 0x20
 
-const decoder = new TextDecoder()
-
 export interface VisibleLabel {
   x: number
   y: number
@@ -71,34 +69,33 @@ export function computeVisibleLabels(
       ? (bp: number) => vr.screenStartPx + (bpEdge - bp) * scale - halfScale
       : (bp: number) => vr.screenStartPx + (bp - bpEdge) * scale + halfScale
     for (const block of regionData.blocks) {
-      const refSeq = decoder.decode(block.refSeqBytes)
+      const refSeqBytes = block.refSeqBytes
 
       for (const row of block.rows) {
-        const alignment = decoder.decode(row.alignmentBytes)
+        const alignmentBytes = row.alignmentBytes
         const rowTop = offset + rowHeight * row.rowIndex
         const yPos = Math.round(hp2 + rowTop)
-        // refSeq/alignment should be same length per MAF spec; defensive
-        // min() mirrors mafInstanceBuffer.ts so a malformed file doesn't
-        // crash on `undefined.toLowerCase()`.
-        const len = Math.min(alignment.length, refSeq.length)
+        // Defensive min() guards malformed files (worker output should match).
+        const len = Math.min(alignmentBytes.length, refSeqBytes.length)
 
-        // Hot per-cell loop: use charCodeAt + ASCII bit math instead of
-        // toLowerCase/toUpperCase (per-call string allocations) and ===
-        // string compares. Matches resolveCellColor's `(byte | 0x20)` match
-        // check so the gap/match predicate stays in sync with the renderers.
+        // Hot per-cell loop: work directly on bytes (skips a per-row
+        // TextDecoder.decode() that would allocate a string only to be
+        // immediately reduced to char codes). ASCII bit math matches
+        // resolveCellColor's `(byte | 0x20)` match check.
         for (let i = 0, genomicOffset = 0; i < len; i++) {
-          const refCode = refSeq.charCodeAt(i)
+          const refCode = refSeqBytes[i]!
           if (refCode !== DASH) {
-            const alnCode = alignment.charCodeAt(i)
+            const alnCode = alignmentBytes[i]!
             if (alnCode !== DASH && alnCode !== SPACE) {
               const isMatch = (refCode | LOWER_BIT) === (alnCode | LOWER_BIT)
               if (showAllLetters || !isMatch) {
+                const displayCode = showAsUpperCase
+                  ? alnCode & ~LOWER_BIT
+                  : alnCode
                 labels.push({
                   x: bpCenterToPx(block.startBp + genomicOffset),
                   y: yPos,
-                  text: showAsUpperCase
-                    ? String.fromCharCode(alnCode & ~LOWER_BIT)
-                    : alignment[i]!,
+                  text: String.fromCharCode(displayCode),
                   lowerBase: String.fromCharCode(alnCode | LOWER_BIT),
                 })
               }

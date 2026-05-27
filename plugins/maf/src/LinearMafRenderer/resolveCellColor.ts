@@ -7,7 +7,14 @@
  * Returns `undefined` for cells that should not be drawn as a base rect
  * (reference insertions — those are rendered by the separate insertion
  * pass).
+ *
+ * Two flavors: `resolveCellColor` returns CSS strings (for ctx.fillStyle);
+ * `resolveCellPacked` returns pre-packed ABGR integers (for the GPU instance
+ * buffer). The packed variant avoids the per-cell CSS-string allocation +
+ * Map lookup that bridged the gap before.
  */
+
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 const DASH = '-'.charCodeAt(0)
 const SPACE = ' '.charCodeAt(0)
@@ -60,4 +67,78 @@ export function resolveCellColor(
   }
   const base = String.fromCharCode(alnByte | 0x20)
   return cfg.colorForBase[base] ?? cfg.unknownBaseColor
+}
+
+/**
+ * Packed-ABGR mirror of `MafCellColorConfig`. Built once per
+ * `buildInstanceBuffer` call via `packMafCellColorConfig`; the GPU hot loop
+ * does a direct byte→packed-int lookup (no Map.get, no String allocation).
+ */
+export interface MafCellPackedConfig {
+  /**
+   * Indexed by lowercase ASCII byte. Pre-filled with `unknownBase` so the
+   * hot loop needs no fallback branch on miss. Known bases (a/c/g/t/n/u
+   * from theme palette) overwrite their slots.
+   */
+  packedByLowerByte: Uint32Array
+  match: number
+  gap: number
+  mismatchOff: number
+  showAllNoMismatchFallback: number
+  showAllLetters: boolean
+  mismatchRendering: boolean
+}
+
+const LOWER_BIT = 0x20
+
+export function packMafCellColorConfig(
+  cfg: MafCellColorConfig,
+): MafCellPackedConfig {
+  const unknownBase = cssColorToABGR(cfg.unknownBaseColor)
+  // 128 entries cover all 7-bit ASCII (alignment bases are always ASCII).
+  // Pre-fill with the fallback so the hot loop is branchless on lookup.
+  const packedByLowerByte = new Uint32Array(128).fill(unknownBase)
+  for (const [base, css] of Object.entries(cfg.colorForBase)) {
+    const code = base.charCodeAt(0) | LOWER_BIT
+    if (code < 128) {
+      packedByLowerByte[code] = cssColorToABGR(css)
+    }
+  }
+  return {
+    packedByLowerByte,
+    match: cssColorToABGR(cfg.matchColor),
+    gap: cssColorToABGR(cfg.gapColor),
+    mismatchOff: cssColorToABGR(cfg.mismatchOffColor),
+    showAllNoMismatchFallback: cssColorToABGR(SHOW_ALL_NO_MISMATCH_FALLBACK),
+    showAllLetters: cfg.showAllLetters,
+    mismatchRendering: cfg.mismatchRendering,
+  }
+}
+
+/** Sentinel meaning "skip this cell" (reference insertion). Negative so it
+ *  can never collide with a valid packed ABGR value. */
+export const RESOLVE_PACKED_SKIP = -1
+
+export function resolveCellPacked(
+  refByte: number,
+  alnByte: number,
+  cfg: MafCellPackedConfig,
+): number {
+  if (refByte === DASH) {
+    return RESOLVE_PACKED_SKIP // reference insertion — drawn separately
+  }
+  if (alnByte === DASH || alnByte === SPACE) {
+    return cfg.gap
+  }
+  const isMatch = (refByte | LOWER_BIT) === (alnByte | LOWER_BIT)
+  if (isMatch && !cfg.showAllLetters) {
+    return cfg.match
+  }
+  if (isMatch && !cfg.mismatchRendering) {
+    return cfg.showAllNoMismatchFallback
+  }
+  if (!isMatch && !cfg.mismatchRendering) {
+    return cfg.mismatchOff
+  }
+  return cfg.packedByLowerByte[(alnByte | LOWER_BIT) & 0x7f]!
 }

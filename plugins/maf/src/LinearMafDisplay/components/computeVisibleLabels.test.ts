@@ -13,6 +13,13 @@ function regionData(refSeq: string, alignment: string): MafRegionData {
         rows: [{ rowIndex: 0, alignmentBytes: enc.encode(alignment) }],
       },
     ],
+    coverage: {
+      coverageDepths: new Float32Array(0),
+      coverageStartPos: 100,
+      coverageMaxDepth: 0,
+      coveragePackedBuffer: new ArrayBuffer(0),
+      snpPackedBuffer: new ArrayBuffer(0),
+    },
   }
 }
 

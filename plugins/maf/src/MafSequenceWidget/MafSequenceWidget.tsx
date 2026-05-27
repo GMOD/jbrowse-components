@@ -119,16 +119,6 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
     session,
   ])
 
-  const formattedSequence = formatFastaSequences(
-    rawSequences,
-    samples,
-    singleLineFormat,
-  )
-
-  const sequenceTooLarge = formattedSequence
-    ? formattedSequence.length > 5_000_000
-    : false
-
   if (!adapterConfig || !samples || !regions) {
     return (
       <Paper className={classes.root}>
@@ -136,6 +126,14 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
       </Paper>
     )
   }
+
+  const formattedSequence = formatFastaSequences(
+    rawSequences,
+    samples,
+    singleLineFormat,
+  )
+
+  const sequenceTooLarge = formattedSequence.length > 5_000_000
 
   const menuItems: MenuItem[] = [
     {

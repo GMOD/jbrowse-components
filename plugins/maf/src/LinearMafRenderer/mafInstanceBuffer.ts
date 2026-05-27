@@ -1,6 +1,8 @@
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-
-import { resolveCellColor } from './resolveCellColor.ts'
+import {
+  RESOLVE_PACKED_SKIP,
+  packMafCellColorConfig,
+  resolveCellPacked,
+} from './resolveCellColor.ts'
 import {
   FIELD_OFFSET_F32,
   INSTANCE_STRIDE_BYTES,
@@ -9,19 +11,6 @@ import {
 
 import type { MafBlock } from './mafBackendTypes.ts'
 import type { MafColorPalette } from './util.ts'
-
-// Memoized resolver. CSS color strings come from a small set (theme bases +
-// theme match/gap/mismatch/unknown), so the cache stays small and hot.
-const colorCache = new Map<string, number>()
-
-function cssToPackedABGR(css: string): number {
-  let packed = colorCache.get(css)
-  if (packed === undefined) {
-    packed = cssColorToABGR(css)
-    colorCache.set(css, packed)
-  }
-  return packed
-}
 
 export interface BuildInstancesArgs {
   blocks: MafBlock[]
@@ -54,7 +43,13 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
   count: number
 } {
   const { blocks, palette, showAllLetters, mismatchRendering } = args
-  const cfg = { ...palette, showAllLetters, mismatchRendering }
+  // Pack the palette once: per-cell color resolution then reads packed ABGR
+  // ints directly with no CSS-string allocation or Map lookups.
+  const cfg = packMafCellColorConfig({
+    ...palette,
+    showAllLetters,
+    mismatchRendering,
+  })
   const runs: Run[] = []
 
   for (const block of blocks) {
@@ -69,8 +64,8 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
       let genomicOffset = 0
 
       for (let i = 0; i < len; i++) {
-        const css = resolveCellColor(refSeqBytes[i]!, alignmentBytes[i]!, cfg)
-        if (css === undefined) {
+        const color = resolveCellPacked(refSeqBytes[i]!, alignmentBytes[i]!, cfg)
+        if (color === RESOLVE_PACKED_SKIP) {
           // Reference insertion: not rendered as a base cell.
           if (inRun) {
             runs.push({
@@ -83,7 +78,6 @@ export function buildInstanceBuffer(args: BuildInstancesArgs): {
           }
           continue
         }
-        const color = cssToPackedABGR(css)
         const bpPos = startBp + genomicOffset
         if (inRun && color === runColor) {
           // Extend current run.

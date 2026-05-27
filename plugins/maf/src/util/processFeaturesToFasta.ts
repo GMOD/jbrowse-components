@@ -6,11 +6,22 @@ interface InsertionInfo {
   sampleIndex: number
 }
 
+const DASH = 45 // '-'.charCodeAt(0)
+const SPACE = 32 // ' '.charCodeAt(0)
+const DOT = 46 // '.'.charCodeAt(0)
+const LOWER_BIT = 0x20
+
+const decoder = new TextDecoder()
+
 /**
  * Worker-side: convert MAF features into per-sample sequence rows aligned to
  * `regions[0]`. With `showAllLetters`, every base is written; without it,
  * matches collapse to `.` and only mismatches show. `includeInsertions` adds
  * per-insert columns expanded to the max length across samples.
+ *
+ * Hot loop: char-codes + ASCII bit math (`code | 0x20` to compare in
+ * lowercase) — same trick the renderers use. Per-row output is a Uint8Array
+ * decoded once at the end rather than a string[] joined per cell.
  */
 export function processFeaturesToFasta({
   regions,
@@ -29,8 +40,9 @@ export function processFeaturesToFasta({
   const sampleToRowMap = new Map(samples.map((s, i) => [s.id, i]))
   const rlen = region.end - region.start
 
-  // Use character arrays instead of strings for O(1) mutations
-  const outputRowsArrays = samples.map(() => new Array(rlen).fill('-'))
+  // Byte-per-cell rows pre-filled with '-' (DASH). Compared to string[][],
+  // writes are a single indexed store and the final decode is one call.
+  const outputRowsBytes = samples.map(() => new Uint8Array(rlen).fill(DASH))
 
   // Track insertions at each position if includeInsertions is enabled
   // Key is the reference position (0-based relative to region), value is array of insertions
@@ -40,43 +52,40 @@ export function processFeaturesToFasta({
     const leftCoord = feature.get('start')
     const vals = feature.get('alignments') as Record<string, AlignmentRecord>
     const seq = feature.get('seq') as string
+    const seqLen = seq.length
 
-    for (const [sample, val] of Object.entries(vals)) {
-      const alignment = val.seq
+    for (const sample in vals) {
       const row = sampleToRowMap.get(sample)
       if (row === undefined) {
         continue
       }
+      const alignment = vals[sample]!.seq
+      const alignLen = alignment.length
+      const rowBytes = outputRowsBytes[row]!
+      const len = Math.min(alignLen, seqLen)
 
-      const rowArray = outputRowsArrays[row]!
-
-      for (let i = 0, o = 0, l = alignment.length; i < l; i++) {
-        const seqChar = seq[i]!
-        if (seqChar !== '-') {
-          const alignChar = alignment[i]!
+      for (let i = 0, o = 0; i < len; i++) {
+        const seqCode = seq.charCodeAt(i)
+        if (seqCode !== DASH) {
+          const alnCode = alignment.charCodeAt(i)
           const pos = leftCoord + o - region.start
 
           if (pos >= 0 && pos < rlen) {
-            if (alignChar === '-') {
-              rowArray[pos] = '-'
-            } else if (alignChar !== ' ') {
-              const c = alignChar.toLowerCase()
-              if (showAllLetters) {
-                rowArray[pos] = c
-              } else if (seqChar.toLowerCase() === c) {
-                rowArray[pos] = '.'
-              } else {
-                rowArray[pos] = c
-              }
+            if (alnCode === DASH) {
+              rowBytes[pos] = DASH
+            } else if (alnCode !== SPACE) {
+              const lowerAln = alnCode | LOWER_BIT
+              rowBytes[pos] = !showAllLetters &&
+                (seqCode | LOWER_BIT) === lowerAln ? DOT : lowerAln
             }
           }
           o++
         } else if (includeInsertions) {
           let insertionSequence = ''
-          while (i < alignment.length && seq[i] === '-') {
-            const alignChar = alignment[i]!
-            if (alignChar !== '-' && alignChar !== ' ') {
-              insertionSequence += alignChar.toLowerCase()
+          while (i < len && seq.charCodeAt(i) === DASH) {
+            const alnCode = alignment.charCodeAt(i)
+            if (alnCode !== DASH && alnCode !== SPACE) {
+              insertionSequence += String.fromCharCode(alnCode | LOWER_BIT)
             }
             i++
           }
@@ -97,13 +106,13 @@ export function processFeaturesToFasta({
 
   if (includeInsertions && insertionsAtPosition.size > 0) {
     return expandWithInsertions(
-      outputRowsArrays,
+      outputRowsBytes,
       insertionsAtPosition,
       samples.length,
     )
   }
 
-  return outputRowsArrays.map(arr => arr.join(''))
+  return outputRowsBytes.map(arr => decoder.decode(arr))
 }
 
 /**
@@ -113,7 +122,7 @@ export function processFeaturesToFasta({
  * than repeatedly splicing — splice-in-loop was O(n²) per row.
  */
 function expandWithInsertions(
-  outputRowsArrays: string[][],
+  outputRowsBytes: Uint8Array[],
   insertionsAtPosition: Map<number, InsertionInfo[]>,
   numSamples: number,
 ) {
@@ -136,21 +145,21 @@ function expandWithInsertions(
 
   const result: string[] = []
   for (let s = 0; s < numSamples; s++) {
-    const row = outputRowsArrays[s]!
+    const rowStr = decoder.decode(outputRowsBytes[s])
     const myIns = insBySampleAndPos[s]!
     const out: string[] = []
-    let pi = 0
-    for (let i = 0; i <= row.length; i++) {
-      while (pi < sortedPositions.length && sortedPositions[pi] === i) {
-        const pos = sortedPositions[pi]!
-        const maxLen = maxLenByPos.get(pos)!
-        const insSeq = myIns.get(pos)
-        out.push(insSeq ? insSeq.padEnd(maxLen, '-') : '-'.repeat(maxLen))
-        pi++
+    let lastI = 0
+    for (const pos of sortedPositions) {
+      if (pos > lastI) {
+        out.push(rowStr.slice(lastI, pos))
+        lastI = pos
       }
-      if (i < row.length) {
-        out.push(row[i]!)
-      }
+      const maxLen = maxLenByPos.get(pos)!
+      const insSeq = myIns.get(pos)
+      out.push(insSeq ? insSeq.padEnd(maxLen, '-') : '-'.repeat(maxLen))
+    }
+    if (lastI < rowStr.length) {
+      out.push(rowStr.slice(lastI))
     }
     result.push(out.join(''))
   }
