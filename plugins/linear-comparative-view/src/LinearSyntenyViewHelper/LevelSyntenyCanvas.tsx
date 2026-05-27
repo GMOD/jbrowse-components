@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
 import {
@@ -12,6 +12,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
+import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
 
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
@@ -50,6 +51,10 @@ interface ParentViewDuck {
   scrollZoom: boolean
 }
 
+// Distance (px) below which a mousedown/mouseup pair counts as a click, not
+// a drag. Tuned to be tolerant of jittery trackpads.
+const CLICK_DRAG_THRESHOLD_PX = 5
+
 function openSyntenyFeatureWidget(
   display: LinearSyntenyDisplayModel,
   featureIndex: number,
@@ -78,6 +83,22 @@ function openSyntenyFeatureWidget(
   )
 }
 
+// Single hover-id update across all live displays in a level. Picked display
+// gets the hit's feature index; everyone else clears.
+function setHoverOnDisplays(
+  model: LinearSyntenyViewHelperModel,
+  hitDisplay: LinearSyntenyDisplayModel | undefined,
+  featureIndex: number,
+) {
+  transaction(() => {
+    for (const display of model.linearSyntenyDisplays) {
+      if (isAlive(display)) {
+        display.setHoveredFeatureIdx(display === hitDisplay ? featureIndex : -1)
+      }
+    }
+  })
+}
+
 const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   model,
 }: {
@@ -90,11 +111,6 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
 
   const dragStartX = useRef<number | undefined>(undefined)
   const lastDragX = useRef<number | undefined>(undefined)
-  const scrollAccumX = useRef(0)
-  const scrollScheduled = useRef(false)
-  const zoomAccum = useRef(0)
-  const zoomScheduled = useRef(false)
-  const lastZoomClientX = useRef(0)
 
   const {
     canvas,
@@ -102,6 +118,8 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     error: gpuError,
     retry,
   } = useGpuBackend(SyntenyRendererFactory, model)
+
+  const { scrollingRef } = useWheelScrollZoom(canvas, parentView)
 
   // One banner per level so GPU lifecycle errors and per-display fetch errors
   // (e.g. PAF 404) never stack visually
@@ -118,95 +136,29 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     return { x: evt.clientX - rect.left, y: evt.clientY - rect.top }
   }
 
-  function flushHorizontalScroll() {
-    if (scrollScheduled.current) {
-      return
-    }
-    scrollScheduled.current = true
-    requestAnimationFrame(() => {
-      transaction(() => {
-        for (const v of parentView.views) {
-          v.horizontalScroll(scrollAccumX.current)
-        }
-        scrollAccumX.current = 0
-        scrollScheduled.current = false
-      })
-    })
-  }
-
-  const scrollingRef = useRef(false)
-
-  useEffect(() => {
-    let scrollTimer: ReturnType<typeof setTimeout> | undefined
-    function onWheel(event: WheelEvent) {
-      event.preventDefault()
-      scrollingRef.current = true
-      clearTimeout(scrollTimer)
-      scrollTimer = setTimeout(() => {
-        scrollingRef.current = false
-      }, 150)
-
-      const doZoom =
-        event.ctrlKey ||
-        (parentView.scrollZoom &&
-          Math.abs(event.deltaY) > Math.abs(event.deltaX))
-      if (doZoom) {
-        zoomAccum.current += event.deltaY / 500
-        lastZoomClientX.current = event.clientX
-        if (!zoomScheduled.current) {
-          zoomScheduled.current = true
-          requestAnimationFrame(() => {
-            const d = zoomAccum.current
-            const canvasLeft = canvas?.getBoundingClientRect().left ?? 0
-            transaction(() => {
-              for (const v of parentView.views) {
-                v.zoomTo(
-                  d > 0 ? v.bpPerPx * (1 + d) : v.bpPerPx / (1 - d),
-                  lastZoomClientX.current - canvasLeft,
-                )
-              }
-            })
-            zoomAccum.current = 0
-            zoomScheduled.current = false
-          })
-        }
-      } else if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
-        scrollAccumX.current += event.deltaX / 2
-        flushHorizontalScroll()
-      }
-    }
-    canvas?.addEventListener('wheel', onWheel, { passive: false })
-    return () => {
-      canvas?.removeEventListener('wheel', onWheel)
-      clearTimeout(scrollTimer)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvas, model, parentView])
-
-  function dispatchHoverPick(coords: { x: number; y: number }) {
+  function pickAt(coords: { x: number; y: number }) {
     const backend = model.gpuBackend
     const state = model.syntenyRenderState
     if (!backend || !state) {
-      return
+      return undefined
     }
-    const hit = backend.pick(coords.x, coords.y, state)
-    const hitDisplay = hit ? model.displaysByKey.get(hit.key) : undefined
+    return backend.pick(coords.x, coords.y, state)
+  }
+
+  // Drag-pan accumulator. Drag mode flushes synchronously per mousemove
+  // because mouse events fire at ~60Hz, no batching needed.
+  function dragPan(dx: number) {
     transaction(() => {
-      for (const display of model.linearSyntenyDisplays) {
-        if (isAlive(display)) {
-          display.setHoveredFeatureIdx(
-            display === hitDisplay ? hit!.featureIndex : -1,
-          )
-        }
+      for (const v of parentView.views) {
+        v.horizontalScroll(dx)
       }
     })
   }
 
   function handleMouseMove(event: React.MouseEvent<HTMLCanvasElement>) {
     if (lastDragX.current !== undefined) {
-      scrollAccumX.current += lastDragX.current - event.clientX
+      dragPan(lastDragX.current - event.clientX)
       lastDragX.current = event.clientX
-      flushHorizontalScroll()
       return
     }
     if (scrollingRef.current) {
@@ -214,18 +166,17 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     }
     const coords = canvasCoords(event)
     if (coords) {
-      dispatchHoverPick(coords)
+      const hit = pickAt(coords)
+      setHoverOnDisplays(
+        model,
+        hit ? model.displaysByKey.get(hit.key) : undefined,
+        hit ? hit.featureIndex : -1,
+      )
     }
   }
 
   function handleMouseLeave() {
-    transaction(() => {
-      for (const display of model.linearSyntenyDisplays) {
-        if (isAlive(display)) {
-          display.setHoveredFeatureIdx(-1)
-        }
-      }
-    })
+    setHoverOnDisplays(model, undefined, -1)
     dragStartX.current = undefined
     lastDragX.current = undefined
   }
@@ -239,19 +190,17 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     const start = dragStartX.current
     lastDragX.current = undefined
     dragStartX.current = undefined
-    if (start === undefined || Math.abs(event.clientX - start) >= 5) {
+    if (
+      start === undefined ||
+      Math.abs(event.clientX - start) >= CLICK_DRAG_THRESHOLD_PX
+    ) {
       return
     }
     const coords = canvasCoords(event)
     if (!coords) {
       return
     }
-    const backend = model.gpuBackend
-    const state = model.syntenyRenderState
-    if (!backend || !state) {
-      return
-    }
-    const hit = backend.pick(coords.x, coords.y, state)
+    const hit = pickAt(coords)
     transaction(() => {
       for (const display of model.linearSyntenyDisplays) {
         const isHit = hit && model.displaysByKey.get(hit.key) === display
@@ -264,17 +213,12 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   }
 
   function handleContextMenu(event: React.MouseEvent<HTMLCanvasElement>) {
-    const backend = model.gpuBackend
-    const state = model.syntenyRenderState
-    if (!backend || !state) {
-      return
-    }
     event.preventDefault()
     const coords = canvasCoords(event)
     if (!coords) {
       return
     }
-    const hit = backend.pick(coords.x, coords.y, state)
+    const hit = pickAt(coords)
     if (!hit) {
       return
     }

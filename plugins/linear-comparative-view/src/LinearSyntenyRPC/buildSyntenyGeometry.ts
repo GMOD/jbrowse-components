@@ -1,6 +1,7 @@
 import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/cigar-utils'
 import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 
+import { writeHiLo } from './hpMathSplit.ts'
 import {
   KIND_BASE,
   KIND_BASE_HIDDEN,
@@ -184,26 +185,10 @@ export function buildSyntenyGeometry({
     padTop: number,
     padBottom: number,
   ) {
-    const iv1 = Math.floor(cumBp1)
-    const lo1 = iv1 - Math.floor(iv1 / 4096) * 4096
-    bp1HiArr[idx] = iv1 - lo1
-    bp1LoArr[idx] = lo1 + (cumBp1 - iv1)
-
-    const iv2 = Math.floor(cumBp2)
-    const lo2 = iv2 - Math.floor(iv2 / 4096) * 4096
-    bp2HiArr[idx] = iv2 - lo2
-    bp2LoArr[idx] = lo2 + (cumBp2 - iv2)
-
-    const iv3 = Math.floor(cumBp3)
-    const lo3 = iv3 - Math.floor(iv3 / 4096) * 4096
-    bp3HiArr[idx] = iv3 - lo3
-    bp3LoArr[idx] = lo3 + (cumBp3 - iv3)
-
-    const iv4 = Math.floor(cumBp4)
-    const lo4 = iv4 - Math.floor(iv4 / 4096) * 4096
-    bp4HiArr[idx] = iv4 - lo4
-    bp4LoArr[idx] = lo4 + (cumBp4 - iv4)
-
+    writeHiLo(cumBp1, bp1HiArr, bp1LoArr, idx)
+    writeHiLo(cumBp2, bp2HiArr, bp2LoArr, idx)
+    writeHiLo(cumBp3, bp3HiArr, bp3LoArr, idx)
+    writeHiLo(cumBp4, bp4HiArr, bp4LoArr, idx)
     kindsArr[idx] = kind
     featIdxArr[idx] = featureIdx
     queryTotalLengthArr[idx] = qtl

@@ -1,3 +1,4 @@
+import { buildCompactAllTracksMenu } from '@jbrowse/core/ui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   getSession,
@@ -66,62 +67,6 @@ export function rewriteOnClicks(
       }
     }
   }
-}
-
-type Compactness = 'normal' | 'compact' | 'super-compact'
-
-// SYNC: plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts, plugins/linear-comparative-view/src/LinearComparativeView/model.ts
-function buildCompactAllTracksMenu(
-  tracks: { displays: unknown[] }[],
-): MenuItem[] {
-  const hasAny = tracks.some(t =>
-    t.displays.some(
-      d => d !== null && typeof d === 'object' && 'setCompactness' in d,
-    ),
-  )
-  if (!hasAny) {
-    return []
-  }
-  function applyCompactness(level: Compactness) {
-    for (const track of tracks) {
-      for (const display of track.displays) {
-        if (
-          display !== null &&
-          typeof display === 'object' &&
-          'setCompactness' in display
-        ) {
-          ;(
-            display as { setCompactness: (v: Compactness) => void }
-          ).setCompactness(level)
-        }
-      }
-    }
-  }
-  return [
-    {
-      label: 'Compact all tracks',
-      subMenu: [
-        {
-          label: 'Normal',
-          onClick: () => {
-            applyCompactness('normal')
-          },
-        },
-        {
-          label: 'Compact',
-          onClick: () => {
-            applyCompactness('compact')
-          },
-        },
-        {
-          label: 'Super-compact',
-          onClick: () => {
-            applyCompactness('super-compact')
-          },
-        },
-      ],
-    },
-  ]
 }
 
 /**

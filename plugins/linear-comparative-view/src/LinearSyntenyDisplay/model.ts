@@ -13,7 +13,7 @@ import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.t
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ColorScheme } from '@jbrowse/synteny-core'
+import type { ColorScheme, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export interface SyntenyFeatureData {
   strands: Int8Array
@@ -294,7 +294,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return computeSyntenyColors({
           instanceData,
           featureData,
-          colorBy,
+          colorBy: colorBy as SyntenyColorBy,
           opacityByIdentity,
         })
       },

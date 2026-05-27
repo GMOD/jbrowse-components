@@ -55,7 +55,16 @@ const Header = observer(function Header({
   )
 
   const hasDisplays = levels[0]?.tracks[0]?.displays[0]
-  const syntenyModel = model as LinearSyntenyViewModel
+  // The dynamic-control widgets are synteny-specific (colorBy, alpha, etc).
+  // Gate on the actual MST type discriminator rather than an unchecked cast,
+  // so a non-synteny LinearComparativeView never renders these controls
+  // against a model that lacks the matching state/actions. The
+  // base-comparative `type` literal is narrower than the runtime set of
+  // subclasses, so widen to string for the comparison.
+  const syntenyModel: LinearSyntenyViewModel | undefined =
+    (model.type as string) === 'LinearSyntenyView'
+      ? (model as LinearSyntenyViewModel)
+      : undefined
 
   return (
     <FormGroup row className={classes.header}>
@@ -150,7 +159,7 @@ const Header = observer(function Header({
         <ZoomInMapIcon />
       </ToggleButton>
 
-      {hasDisplays && showDynamicControls ? (
+      {hasDisplays && showDynamicControls && syntenyModel ? (
         <>
           <ColorBySelector model={syntenyModel} />
           <SyntenySettingsPopover model={syntenyModel} />

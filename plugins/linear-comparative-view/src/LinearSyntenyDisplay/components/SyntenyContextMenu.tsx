@@ -1,14 +1,9 @@
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 
+import type { ClickCoord } from './util.ts'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
-import type { FeatPos, LinearSyntenyDisplayModel } from '../model.ts'
-
-interface ClickCoord {
-  clientX: number
-  clientY: number
-  feature: FeatPos
-}
+import type { LinearSyntenyDisplayModel } from '../model.ts'
 
 export default function SyntenyContextMenu({
   model,

@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { buildCompactAllTracksMenu } from '@jbrowse/core/ui'
 import { avg, getSession, notEmpty } from '@jbrowse/core/util'
 import {
   addDisposer,
@@ -29,54 +30,6 @@ import {
   getBlockFeatures,
   intersect,
 } from './util.ts'
-
-type Compactness = 'normal' | 'compact' | 'super-compact'
-
-interface CompactableDisplay {
-  setCompactness: (v: Compactness) => void
-}
-
-function isCompactable(d: unknown): d is CompactableDisplay {
-  return d !== null && typeof d === 'object' && 'setCompactness' in d
-}
-
-// SYNC: plugins/linear-genome-view/src/LinearGenomeView/menuItems.ts, plugins/linear-comparative-view/src/LinearComparativeView/model.ts
-function buildCompactAllTracksMenu(tracks: { displays: unknown[] }[]) {
-  const compactable = tracks.flatMap(t => t.displays.filter(isCompactable))
-  if (compactable.length === 0) {
-    return []
-  }
-  function applyCompactness(level: Compactness) {
-    for (const display of compactable) {
-      display.setCompactness(level)
-    }
-  }
-  return [
-    {
-      label: 'Compact all tracks',
-      subMenu: [
-        {
-          label: 'Normal',
-          onClick: () => {
-            applyCompactness('normal')
-          },
-        },
-        {
-          label: 'Compact',
-          onClick: () => {
-            applyCompactness('compact')
-          },
-        },
-        {
-          label: 'Super-compact',
-          onClick: () => {
-            applyCompactness('super-compact')
-          },
-        },
-      ],
-    },
-  ]
-}
 
 import type {
   BreakpointSplitViewInit,
@@ -200,45 +153,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGBreakpointSplitView.tsx')
         const html = await renderToSvg(self as BreakpointViewModel, opts)
-        const { saveAs } = await import('@jbrowse/core/util')
-
-        if (opts.format === 'png') {
-          const img = new Image()
-          const svgBlob = new Blob([html], { type: 'image/svg+xml' })
-          const url = URL.createObjectURL(svgBlob)
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => {
-              const canvas = document.createElement('canvas')
-              canvas.width = img.width
-              canvas.height = img.height
-              const ctx = canvas.getContext('2d')!
-              ctx.drawImage(img, 0, 0)
-              URL.revokeObjectURL(url)
-              canvas.toBlob(blob => {
-                if (blob) {
-                  saveAs(blob, opts.filename || 'image.png')
-                  resolve()
-                } else {
-                  reject(
-                    new Error(
-                      `Failed to create PNG. The image may be too large (${img.width}x${img.height}). Try reducing the view size or use SVG format.`,
-                    ),
-                  )
-                }
-              }, 'image/png')
-            }
-            img.onerror = () => {
-              URL.revokeObjectURL(url)
-              reject(new Error('Failed to load SVG for PNG conversion'))
-            }
-            img.src = url
-          })
-        } else {
-          saveAs(
-            new Blob([html], { type: 'image/svg+xml' }),
-            opts.filename || 'image.svg',
-          )
-        }
+        const { saveSvgAsImage } = await import('@jbrowse/core/util')
+        await saveSvgAsImage(html, opts)
       },
     }))
     .views(self => ({

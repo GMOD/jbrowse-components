@@ -961,6 +961,11 @@ export {
 
 export { blobToDataURL } from './blobToDataURL.ts'
 export { saveAs } from './FileSaver/index.ts'
+export {
+  type SaveSvgAsImageOptions,
+  saveSvgAsImage,
+  svgHtmlToPngBlob,
+} from './saveSvgAsImage.ts'
 export { makeAbortableReaction } from './makeAbortableReaction.ts'
 export * from './aborting.ts'
 export * from './linkify.ts'

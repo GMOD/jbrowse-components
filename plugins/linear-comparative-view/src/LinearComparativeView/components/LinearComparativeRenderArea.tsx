@@ -8,15 +8,15 @@ import { Fragment } from 'react/jsx-runtime'
 import LevelSyntenyCanvas from '../../LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
 
 import type { LinearComparativeViewModel } from '../model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractTrackModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-interface TrackEntry {
-  configuration: AnyConfigurationModel
-  displays: {
-    height: number
-    RenderingComponent: React.FC<{ model: unknown }>
-  }[]
+// The structural surface of the display objects this file consumes. We
+// don't depend on the full BaseDisplayModel typing because `levels` is an
+// MST array of pluggable types late-resolved at runtime.
+interface TrackDisplay {
+  height: number
+  RenderingComponent: React.FC<{ model: TrackDisplay }>
 }
 
 const useStyles = makeStyles()(() => ({
@@ -104,14 +104,12 @@ const Overlays = observer(function Overlays({
   const { classes } = useStyles()
   const levelImpl = model.levels[level]!
 
-  const tracks = levelImpl.tracks as TrackEntry[]
   return (
     <>
-      {tracks.map(track => {
-        const display = track.displays[0]
-        const RenderingComponent = display?.RenderingComponent
+      {(levelImpl.tracks as AbstractTrackModel[]).map(track => {
+        const display = track.displays[0] as TrackDisplay | undefined
         const trackId = getConf(track, 'trackId') as string
-        return RenderingComponent ? (
+        return display ? (
           <div
             className={classes.overlay}
             key={trackId}
@@ -120,7 +118,7 @@ const Overlays = observer(function Overlays({
               overflow: 'hidden',
             }}
           >
-            <RenderingComponent model={display} />
+            <display.RenderingComponent model={display} />
           </div>
         ) : null
       })}

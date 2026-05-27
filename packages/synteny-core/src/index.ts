@@ -9,7 +9,7 @@ export {
   hashString,
   strandCigarColors,
 } from './colorUtils.ts'
-export type { ColorScheme } from './colorUtils.ts'
+export type { ColorScheme, SyntenyColorBy } from './colorUtils.ts'
 export { default as SliderTooltip } from './SliderTooltip.tsx'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export { default as ImportSyntenyOpenCustomTrack } from './ImportSyntenyOpenCustomTrack.tsx'

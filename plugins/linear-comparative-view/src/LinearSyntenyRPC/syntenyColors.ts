@@ -10,6 +10,8 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { colorSchemes, hashString } from '@jbrowse/synteny-core'
 
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+
 // Per-instance kind tag. Determines how the color for an instance is derived
 // from the parent feature's strand/refName/featureIdx and the current colorBy
 // scheme. Emitted by the worker once during geometry build; colors are
@@ -67,37 +69,36 @@ interface ColorInputs {
 }
 
 function createColorFunction(
-  colorBy: string,
+  colorBy: SyntenyColorBy,
   d: ColorInputs,
 ): (index: number) => number {
-  if (colorBy === 'identity') {
-    return index => lutLookup(IDENTITY_LUT, d.identities[index]!)
-  }
-  if (colorBy === 'mappingQuality') {
-    return index => lutLookup(MAPQ_LUT, d.mappingQuals[index]!, 60)
-  }
-  if (colorBy === 'meanQueryIdentity') {
-    return index => lutLookup(MEAN_SCORE_LUT, d.meanScores[index]!)
-  }
-  if (colorBy === 'strand') {
-    return index => (d.strands[index] === -1 ? STRAND_NEG : STRAND_POS)
-  }
-  if (colorBy === 'query') {
-    const colorCache = new Map<string, number>()
-    return index => {
-      const refName = d.refNames[index]!
-      let c = colorCache.get(refName)
-      if (c === undefined) {
-        c = category10Packed[hashString(refName) % category10Packed.length]!
-        colorCache.set(refName, c)
+  switch (colorBy) {
+    case 'identity':
+      return index => lutLookup(IDENTITY_LUT, d.identities[index]!)
+    case 'mappingQuality':
+      return index => lutLookup(MAPQ_LUT, d.mappingQuals[index]!, 60)
+    case 'meanQueryIdentity':
+      return index => lutLookup(MEAN_SCORE_LUT, d.meanScores[index]!)
+    case 'strand':
+      return index => (d.strands[index] === -1 ? STRAND_NEG : STRAND_POS)
+    case 'query': {
+      const colorCache = new Map<string, number>()
+      return index => {
+        const refName = d.refNames[index]!
+        let c = colorCache.get(refName)
+        if (c === undefined) {
+          c = category10Packed[hashString(refName) % category10Packed.length]!
+          colorCache.set(refName, c)
+        }
+        return c
       }
-      return c
     }
+    case 'default':
+      return () => DEFAULT_COLOR
   }
-  return () => DEFAULT_COLOR
 }
 
-function buildIndelColors(colorBy: string) {
+function buildIndelColors(colorBy: SyntenyColorBy) {
   const scheme =
     colorBy === 'strand' ? colorSchemes.strand : colorSchemes.default
   const cigarColors = scheme.cigarColors
@@ -133,7 +134,7 @@ export function computeSyntenyColors({
 }: {
   instanceData: InstanceInputs
   featureData: ColorInputs
-  colorBy: string
+  colorBy: SyntenyColorBy
   opacityByIdentity?: boolean
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData

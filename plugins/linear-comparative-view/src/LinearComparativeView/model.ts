@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { buildCompactAllTracksMenu } from '@jbrowse/core/ui'
 import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
@@ -20,59 +21,6 @@ import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
-type Compactness = 'normal' | 'compact' | 'super-compact'
-
-// SYNC: plugins/linear-genome-view/src/LinearGenomeView/menuItems.ts, plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts
-function buildCompactAllTracksMenu(tracks: { displays: unknown[] }[]) {
-  const hasAny = tracks.some(t =>
-    t.displays.some(
-      d => d !== null && typeof d === 'object' && 'setCompactness' in d,
-    ),
-  )
-  if (!hasAny) {
-    return []
-  }
-  function applyCompactness(level: Compactness) {
-    for (const track of tracks) {
-      for (const display of track.displays) {
-        if (
-          display !== null &&
-          typeof display === 'object' &&
-          'setCompactness' in display
-        ) {
-          ;(
-            display as { setCompactness: (v: Compactness) => void }
-          ).setCompactness(level)
-        }
-      }
-    }
-  }
-  return [
-    {
-      label: 'Compact all tracks',
-      subMenu: [
-        {
-          label: 'Normal',
-          onClick: () => {
-            applyCompactness('normal')
-          },
-        },
-        {
-          label: 'Compact',
-          onClick: () => {
-            applyCompactness('compact')
-          },
-        },
-        {
-          label: 'Super-compact',
-          onClick: () => {
-            applyCompactness('super-compact')
-          },
-        },
-      ],
-    },
-  ]
-}
 // lazies
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),

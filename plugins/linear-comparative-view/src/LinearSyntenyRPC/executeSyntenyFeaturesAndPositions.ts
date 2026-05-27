@@ -172,6 +172,8 @@ export async function executeSyntenyFeaturesAndPositions({
   const viewWidth = v1.width
   const v1Offset = v1.offsetPx
   const v2Offset = v2.offsetPx
+  const bpPerPxInv1 = 1 / v1.bpPerPx
+  const bpPerPxInv2 = 1 / v2.bpPerPx
   const bufferPx = viewWidth * 0.5
   const offScreenLeftBound = -bufferPx
   const offScreenRightBound = viewWidth + bufferPx
@@ -218,8 +220,6 @@ export async function executeSyntenyFeaturesAndPositions({
 
     // Cull features where BOTH view projections are entirely off-screen.
     // Convert cumBp to screen px for the check.
-    const bpPerPxInv1 = 1 / v1.bpPerPx
-    const bpPerPxInv2 = 1 / v2.bpPerPx
     const topMinX =
       Math.min(p11.cumBp, p12.cumBp) * bpPerPxInv1 + p11.padPx - v1Offset
     const topMaxX =

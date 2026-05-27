@@ -1,40 +1,31 @@
-import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_I,
-  CIGAR_M,
-  CIGAR_X,
-  parseCigar2,
-} from '@jbrowse/cigar-utils'
+import { parseCigar2 } from '@jbrowse/cigar-utils'
+
+import { findPosInCigar } from './findPosInCigar.ts'
 
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
-
-function findPosInCigar(cigar: number[], startX: number) {
-  let featX = 0
-  let mateX = 0
-  for (const packed of cigar) {
-    if (featX >= startX) {
-      break
-    }
-    const len = packed >>> 4
-    const opIdx = packed & 0xf
-    const min = Math.min(len, startX - featX)
-    if (opIdx === CIGAR_I) {
-      mateX += len
-    } else if (opIdx === CIGAR_D) {
-      featX += min
-    } else if (opIdx === CIGAR_M || opIdx === CIGAR_EQ || opIdx === CIGAR_X) {
-      mateX += min
-      featX += min
-    }
-  }
-  return [featX, mateX] as const
-}
 
 interface SimpleRegion {
   refName: string
   start: number
   end: number
+}
+
+interface MateAnchor {
+  start: number
+  end: number
+}
+
+// Given a CIGAR-walked offset `mateX` along the mate axis, place it back on
+// genomic coordinates. The mate's genomic span is mate.start..mate.end. For
+// forward-strand alignments we walk forward from mate.start; for reverse
+// strand we walk backward from mate.end. `strand === undefined` is treated as
+// forward (avoids `* 0` zeroing out the offset).
+function mateOffsetToGenomic(
+  mate: MateAnchor,
+  mateOffset: number,
+  strand: number | undefined,
+) {
+  return strand === -1 ? mate.end - mateOffset : mate.start + mateOffset
 }
 
 export function navToSynteny({
@@ -60,8 +51,6 @@ export function navToSynteny({
   const featStart = feature.get('start')
   const featEnd = feature.get('end')
   const mate = feature.get('mate')
-  const mateStart = mate.start
-  const mateEnd = mate.end
   const mateAsm = mate.assemblyName
   const mateRef = mate.refName
 
@@ -71,23 +60,19 @@ export function navToSynteny({
   let rFeatEnd: number
 
   if (region && cigar) {
-    const regStart = region.start
-    const regEnd = region.end
     const p = parseCigar2(cigar)
-    const [fStartX, mStartX] = findPosInCigar(p, regStart - featStart)
-    const [fEndX, mEndX] = findPosInCigar(p, regEnd - featStart)
+    const [fStartX, mStartX] = findPosInCigar(p, region.start - featStart)
+    const [fEndX, mEndX] = findPosInCigar(p, region.end - featStart)
 
-    // avoid multiply by 0 with strand undefined
-    const flipper = strand === -1 ? -1 : 1
     rFeatStart = featStart + fStartX
     rFeatEnd = featStart + fEndX
-    rMateStart = (strand === -1 ? mateEnd : mateStart) + mStartX * flipper
-    rMateEnd = (strand === -1 ? mateEnd : mateStart) + mEndX * flipper
+    rMateStart = mateOffsetToGenomic(mate, mStartX, strand)
+    rMateEnd = mateOffsetToGenomic(mate, mEndX, strand)
   } else {
     rFeatStart = featStart
     rFeatEnd = featEnd
-    rMateStart = mateStart
-    rMateEnd = mateEnd
+    rMateStart = mate.start
+    rMateEnd = mate.end
   }
   const m1 = Math.min(rMateStart, rMateEnd)
   const m2 = Math.max(rMateStart, rMateEnd)

@@ -57,6 +57,19 @@ export const colorSchemes = {
 
 export type ColorScheme = keyof typeof colorSchemes
 
+// Closed set of color-scheme keys shared between linear-comparative-view and
+// dotplot-view UIs and worker code. Stored in MST models as plain
+// `types.string` for snapshot-compat but every API surface — the menu
+// builder, the setter, the color-function dispatch — uses this literal so
+// the compiler covers every case.
+export type SyntenyColorBy =
+  | 'default'
+  | 'strand'
+  | 'query'
+  | 'identity'
+  | 'meanQueryIdentity'
+  | 'mappingQuality'
+
 export function applyAlpha(color: string, a: number) {
   if (a === 1) {
     return color

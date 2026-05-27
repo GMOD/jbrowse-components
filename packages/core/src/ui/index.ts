@@ -33,4 +33,10 @@ export { default as SanitizedHTML } from './SanitizedHTML.tsx'
 export { default as BaseTooltip } from './BaseTooltip.tsx'
 export { default as PluggableComponent } from './PluggableComponent.tsx'
 export * from './MenuTypes.ts'
+export {
+  type CompactableDisplay,
+  type Compactness,
+  buildCompactAllTracksMenu,
+  isCompactable,
+} from './buildCompactAllTracksMenu.ts'
 export const VIEW_HEADER_HEIGHT = 28

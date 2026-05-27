@@ -57,13 +57,15 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
                 if (!v1 || !v2) {
                   getSession(model).notify(
                     [
-                      v1
+                      !v1
                         ? `Unable to find ${assembleLocString(f1)} in synteny view`
                         : '',
-                      v2
+                      !v2
                         ? `Unable to find ${assembleLocString(f2)} in synteny view`
                         : '',
-                    ].join(' ... '),
+                    ]
+                      .filter(Boolean)
+                      .join(' ... '),
                   )
                 }
                 v1?.navTo(f1, 0.2)

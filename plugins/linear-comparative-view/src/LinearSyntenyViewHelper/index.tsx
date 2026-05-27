@@ -4,9 +4,9 @@ import { linearSyntenyViewHelperModelFactory } from './stateModelFactory.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-function UnusedComponent() {
-  return <div />
-}
+// LinearSyntenyViewHelper is hidden from the GUI; the helper has no UI of its
+// own — the LinearComparativeView renders LevelSyntenyCanvas for each level.
+const HelperPlaceholder = () => null
 
 export default function LinearSyntenyViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {
@@ -17,7 +17,7 @@ export default function LinearSyntenyViewF(pluginManager: PluginManager) {
         hiddenFromGUI: true,
       },
       stateModel: linearSyntenyViewHelperModelFactory(pluginManager),
-      ReactComponent: UnusedComponent,
+      ReactComponent: HelperPlaceholder,
     })
   })
 }
