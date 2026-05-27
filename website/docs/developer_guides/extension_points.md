@@ -41,6 +41,38 @@ pluginManager.addToExtensionPoint(
 Each registered callback receives the return value of the previous one as its
 argument (chained). In the example above, `ret` would be `{value:3}`.
 
+## TypeScript types for extension points
+
+All built-in extension points are registered in the `ExtensionPointRegistry`
+interface in `@jbrowse/core/PluginManager`. The overloads of
+`addToExtensionPoint` / `evaluateExtensionPoint` /
+`evaluateAsyncExtensionPoint` automatically narrow to the registered types when
+you pass a known name, so callbacks get typed `args` and evaluate calls return
+the correct type without a cast.
+
+If you create your own extension point, register it the same way:
+
+```typescript
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+export interface MyPluginExtensionArgs {
+  value: number
+}
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'MyPlugin-myExtensionPoint': {
+      args: MyPluginExtensionArgs
+      result: MyPluginExtensionArgs
+    }
+  }
+}
+```
+
+Put the `declare module` block in any file that is part of your plugin's
+compilation. Plugins that register a callback get typed `args`; callers of
+`evaluateExtensionPoint` get the typed result without a cast.
+
 ## API description of extension points
 
 ### Evaluation API
@@ -432,11 +464,16 @@ reference for implementing a LaunchView for your own view type.
 - `args` - an object with the following format
 
 ```typescript
+import type { LaunchLinearGenomeViewArgs } from '@jbrowse/plugin-linear-genome-view'
+// LaunchLinearGenomeViewArgs:
 interface args {
-  session: AbstractSessionModel // the session model
-  assembly: string // assembly name
-  loc: string // locstring
-  tracks: string[] // array of track IDs
+  session: AbstractSessionModel
+  assembly?: string
+  loc?: string
+  tracks?: TrackInit[] // string trackId, or { trackId, displaySnapshot?, trackSnapshot? }
+  tracklist?: boolean
+  nav?: boolean
+  highlight?: string[]
 }
 ```
 
@@ -538,58 +575,77 @@ interface args {
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts#L9-L68
 
-### LinearGenomeView-TracksContainer
+### LinearGenomeView-TracksContainerComponent
 
 type: synchronous
 
-- `args` - `React.ReactNode[]` - an array of rendered react components
-  (ReactNode) which you can append to
+- `args` - `ReactNode[]` - accumulator array of React nodes rendered inside the
+  TracksContainer div
 - `props` - an object of the type below
 
 ```typescript
 interface props {
-  model: LinearGenomeViewModel // instance of the linear genome view model
+  model: LinearGenomeViewModel
 }
 ```
 
-Allows rendering a custom component as a child of the LinearGenomeView's
-"TracksContainer". Used to render highlights for example with a div of height
-100% over the TracksContainer
+Allows rendering a custom overlay component inside the LinearGenomeView
+TracksContainer. Used e.g. to render highlights as a full-height div over the
+tracks area. Append to the array and return it.
+
+### LinearGenomeView-OverviewScalebarComponent
+
+type: synchronous
+
+- `args` - `ReactNode[]` - accumulator array of React nodes rendered inside the
+  overview scalebar
+- `props` - an object of the type below
+
+```typescript
+interface props {
+  model: LinearGenomeViewModel
+  overview: Base1DViewModel
+}
+```
+
+Allows rendering custom overlay components inside the overview scalebar, e.g.
+bookmark highlights. Append to the array and return it.
 
 ### LinearGenomeView-searchResultSelected
 
 type: async
 
-- `args` - `undefined`
-- `props` - an object of the type below
+- `args` - `SearchResultSelectedArgs` from `@jbrowse/plugin-linear-genome-view`
 
 ```typescript
-interface props {
+import type { SearchResultSelectedArgs } from '@jbrowse/plugin-linear-genome-view'
+// SearchResultSelectedArgs:
+interface args {
   session: AbstractSessionModel
   result: BaseResult // the search result that was selected
-  model: LinearGenomeViewModel // the linear genome view model
-  assemblyName: string // the assembly name
+  model: LinearGenomeViewModel
+  assemblyName: string
 }
 ```
 
-Called when a search result is selected in the LinearGenomeView search box. This
-fires after navigation has occurred (if the result has a location). Useful for
-plugins that want to take additional action when a search result is selected,
-such as selecting a corresponding feature in a track.
+Called when a search result is selected in the LinearGenomeView search box.
+Fires after navigation (if the result has a location). Useful for taking
+additional action after a search, e.g. selecting a corresponding feature.
 
-Example: selecting a feature in a custom track when a search result is chosen
+Example:
 
 ```typescript
-import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import type { SearchResultSelectedArgs } from '@jbrowse/plugin-linear-genome-view'
 
 pluginManager.addToExtensionPoint(
   'LinearGenomeView-searchResultSelected',
-  (_, { session, result, model, assemblyName }) => {
+  (args: SearchResultSelectedArgs) => {
+    const { result, model } = args
     const trackId = result.getTrackId()
     if (trackId === 'my_custom_track') {
-      // perform custom action, e.g. select the feature in the track
+      // perform custom action
     }
-    return _
+    return args
   },
 )
 ```
@@ -717,45 +773,39 @@ type: synchronous
 
 ```typescript
 interface props {
-  model: LinearSyntenyViewModel // instance of the linear synteny view model
+  model: LinearSyntenyViewModel
   assembly1: string // name of the top assembly
   assembly2: string // name of the bottom assembly
-  selectedRow: number // which row is currently selected (0-indexed)
 }
 ```
 
 Allows plugins to add custom radio options to the LinearSyntenyView import form.
-When a user selects a custom radio option, the plugin's React component is
-rendered. This is similar to `DotplotView-ImportFormSyntenyOptions` but includes
-an additional `selectedRow` prop since the linear synteny view can have multiple
-rows.
+Same pattern as `DotplotView-ImportFormSyntenyOptions`.
 
-Each option in the array should have the following structure:
+Each option should have the following structure:
 
 ```typescript
-interface LinearSyntenyImportFormSyntenyOption {
-  value: string // unique identifier for the radio option
-  label: string // display text for the radio option
+import type { LinearSyntenyImportFormSyntenyOption } from '@jbrowse/plugin-linear-comparative-view'
+// LinearSyntenyImportFormSyntenyOption:
+interface option {
+  value: string
+  label: string
   ReactComponent: React.FC<{
     model: LinearSyntenyViewModel
     assembly1: string
     assembly2: string
-    selectedRow: number
   }>
 }
 ```
 
-Example: adding a custom synteny option
+Example:
 
 ```typescript
 import type { LinearSyntenyImportFormSyntenyOption } from '@jbrowse/plugin-linear-comparative-view'
 
 pluginManager.addToExtensionPoint(
   'LinearSyntenyView-ImportFormSyntenyOptions',
-  (
-    options: LinearSyntenyImportFormSyntenyOption[],
-    { model, assembly1, assembly2, selectedRow },
-  ) => {
+  (options: LinearSyntenyImportFormSyntenyOption[]) => {
     return [
       ...options,
       {

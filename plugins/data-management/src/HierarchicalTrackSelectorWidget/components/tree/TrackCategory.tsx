@@ -1,4 +1,5 @@
 import { lazy, useState } from 'react'
+import type { FC } from 'react'
 
 import { CascadingMenuButton, SanitizedHTML } from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
@@ -13,7 +14,23 @@ import { observer } from 'mobx-react'
 import { getAllChildren, getAllTrackNodes } from '../../util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { TreeCategoryNode } from '../../types.ts'
+import type { TreeCategoryNode, TreeNode } from '../../types.ts'
+
+export interface FolderDialogProps {
+  model: HierarchicalTrackSelectorModel
+  title: string
+  subtracks: TreeNode[]
+  handleClose: () => void
+}
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'TrackSelector-folderDialog': {
+      args: FC<FolderDialogProps>
+      result: FC<FolderDialogProps>
+    }
+  }
+}
 
 const DefaultFolderDialog = lazy(() => import('../DefaultFolderDialog.tsx'))
 
@@ -66,14 +83,9 @@ function openFolderDialog(
   const subtracks = getAllTrackNodes(item)
   const DialogComponent = pluginManager.evaluateExtensionPoint(
     'TrackSelector-folderDialog',
-    DefaultFolderDialog,
+    DefaultFolderDialog as FC<FolderDialogProps>,
     { categoryId: item.id, model, subtracks },
-  ) as React.FC<{
-    model: HierarchicalTrackSelectorModel
-    title: string
-    subtracks: typeof subtracks
-    handleClose: () => void
-  }>
+  )
   session.queueDialog((handleClose: () => void) => [
     DialogComponent,
     {

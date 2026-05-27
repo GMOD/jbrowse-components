@@ -8,13 +8,20 @@ import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { TextSearchManager } from '@jbrowse/core/util'
+import type { AbstractSessionModel, TextSearchManager } from '@jbrowse/core/util'
+
+export interface SearchResultSelectedArgs {
+  session: AbstractSessionModel
+  result: BaseResult
+  model: LinearGenomeViewModel
+  assemblyName: string
+}
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
     'LinearGenomeView-searchResultSelected': {
-      args: undefined
-      result: undefined
+      args: SearchResultSelectedArgs
+      result: SearchResultSelectedArgs
     }
   }
 }
@@ -71,7 +78,6 @@ export async function navToOption({
   const { pluginManager } = getEnv(session)
   await pluginManager.evaluateAsyncExtensionPoint(
     'LinearGenomeView-searchResultSelected',
-    undefined,
     { session, result: option, model, assemblyName },
   )
 }

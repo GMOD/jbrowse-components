@@ -74,7 +74,6 @@ export default function SearchResultsTable({
       }
       await pluginManager.evaluateAsyncExtensionPoint(
         'LinearGenomeView-searchResultSelected',
-        undefined,
         { session, result, model, assemblyName },
       )
     }
