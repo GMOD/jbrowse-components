@@ -33,7 +33,8 @@
     "build": "pnpm run /^build:/",
     "build:esm": "tsgo --build tsconfig.build.esm.json",
     "prepack": "pnpm build",
-    "preversion": "pnpm build"
+    "preversion": "pnpm build",
+    "test:integration": "npx tsx --tsconfig ../../tsconfig.json --test test/refseq.test.mjs"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -44,6 +45,7 @@
     "@types/jsdom": "^28.0.3",
     "@types/yargs": "^17.0.35",
     "canvas": "^3.2.3",
+    "jsdom": "^29.1.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "tmp": "^0.2.6",

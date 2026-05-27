@@ -31,6 +31,7 @@ const knownOptions = new Set([
   'themeName',
   'showGridlines',
   'trackLabels',
+  'refseq',
   'help',
   'version',
 ])
@@ -102,6 +103,11 @@ const yargsInstance = yargs(hideBin(process.argv))
     type: 'string',
     description: 'Track label position: offset, overlapping, or hidden',
   })
+  .option('refseq', {
+    type: 'boolean',
+    description: 'Show the reference sequence track',
+    default: false,
+  })
   .example(
     '$0 --fasta ref.fa --bam reads.bam --loc chr1:1-10000 --out out.svg',
     'Render BAM alignments to SVG',
@@ -155,6 +161,7 @@ async function main() {
     themeName: argv.themeName,
     showGridlines: argv.showGridlines,
     trackLabels: argv.trackLabels,
+    refseq: argv.refseq,
     trackList,
   }
 

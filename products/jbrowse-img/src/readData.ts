@@ -19,6 +19,7 @@ export interface Opts {
   themeName?: string
   showGridlines?: boolean
   trackLabels?: string
+  refseq?: boolean
 }
 
 function read(file: string): unknown {

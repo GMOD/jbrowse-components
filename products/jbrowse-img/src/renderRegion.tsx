@@ -123,9 +123,8 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
 }
 
 export async function renderRegion(opts: Opts) {
-  const model = createViewState({
-    ...readData(opts),
-  })
+  const data = readData(opts)
+  const model = createViewState({ ...data })
   const {
     loc,
     width = 1500,
@@ -135,6 +134,7 @@ export async function renderRegion(opts: Opts) {
     themeName,
     showGridlines,
     trackLabels,
+    refseq,
   } = opts
 
   const { session } = model
@@ -155,6 +155,13 @@ export async function renderRegion(opts: Opts) {
       'No --loc specified (e.g. --loc chr1:1-10000 or --loc all). ' +
         'Alternatively pass --session or --defaultSession.',
     )
+  }
+
+  if (refseq) {
+    const seqTrackId = data.assembly.sequence.trackId
+    if (typeof seqTrackId === 'string') {
+      view.showTrack(seqTrackId)
+    }
   }
 
   for (const track of trackList) {
