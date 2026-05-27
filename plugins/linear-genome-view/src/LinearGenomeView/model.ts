@@ -1690,26 +1690,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * Similar to `navToLocString`, but accepts a parsed location object
-       * instead of a locstring. Will try to perform `setDisplayedRegions` if
-       * changing regions
-       *
-       * @param parsedLocString - a parsed location object with refName, start,
-       * end, etc.
-       * @param assemblyName - optional assembly name
-       * @param grow - optional multiplier to expand the region by (e.g., 0.2
-       * adds 20% padding on each side)
-       */
-      async navToLocation(
-        parsedLocString: ParsedLocString,
-        assemblyName?: string,
-        grow?: number,
-      ) {
-        return this.navToLocations([parsedLocString], assemblyName, grow)
-      },
-
-      /**
-       * #action
        * Similar to `navToLocString`, but accepts a list of parsed location
        * objects instead of a locstring. Will try to perform
        * `setDisplayedRegions` if changing regions
@@ -1932,6 +1912,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
+    .actions(self => ({
+      /**
+       * #action
+       * Similar to `navToLocString`, but accepts a parsed location object
+       * instead of a locstring. Will try to perform `setDisplayedRegions` if
+       * changing regions
+       *
+       * @param parsedLocString - a parsed location object with refName, start,
+       * end, etc.
+       * @param assemblyName - optional assembly name
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
+       */
+      async navToLocation(
+        parsedLocString: ParsedLocString,
+        assemblyName?: string,
+        grow?: number,
+      ) {
+        return self.navToLocations([parsedLocString], assemblyName, grow)
+      },
+    }))
     .views(self => ({
       /**
        * #method
@@ -2090,7 +2091,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         highlightsVisible,
         labelsVisible,
         ...rest
-      } = snap as Omit<typeof snap, symbol>
+      } = snap
 
       return {
         ...rest,

@@ -105,7 +105,7 @@ export default function ConfigOverrideMixin() {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { configOverrides, ...rest } = snap as Omit<typeof snap, symbol>
+      const { configOverrides, ...rest } = snap
       if (Object.keys(configOverrides).length === 0) {
         return rest as typeof snap
       }

@@ -78,7 +78,7 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      const { sessionConnections, ...rest } = snap as Omit<typeof snap, symbol>
+      const { sessionConnections, ...rest } = snap
       return {
         ...rest,
         ...(sessionConnections.length ? { sessionConnections } : {}),

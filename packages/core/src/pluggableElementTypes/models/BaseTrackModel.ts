@@ -294,7 +294,7 @@ export function createBaseTrackModel(
       if (!snap) {
         return snap
       }
-      const { minimized, pinned, ...rest } = snap as Omit<typeof snap, symbol>
+      const { minimized, pinned, ...rest } = snap
       return {
         ...rest,
         ...(minimized ? { minimized } : {}),

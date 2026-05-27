@@ -155,10 +155,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      const { stickyViewHeaders, useWorkspaces, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
+      const { stickyViewHeaders, useWorkspaces, ...rest } = snap
       return {
         ...rest,
         ...(!stickyViewHeaders ? { stickyViewHeaders } : {}),

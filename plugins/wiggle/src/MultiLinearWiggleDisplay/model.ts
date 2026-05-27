@@ -492,7 +492,7 @@ export default function stateModelFactory(
         return snap
       }
       const { layout, clusterTree, treeAreaWidth, subtreeFilter, ...rest } =
-        snap as Omit<typeof snap, symbol>
+        snap
       return {
         ...rest,
         ...(layout.length ? { layout } : {}),

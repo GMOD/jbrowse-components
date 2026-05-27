@@ -250,7 +250,7 @@ export default function stateModelFactory(
       }
     })
     .postProcessSnapshot(snap => {
-      const { showOnlyGenes, ...rest } = snap as Omit<typeof snap, symbol>
+      const { showOnlyGenes, ...rest } = snap
       return {
         ...rest,
         ...(showOnlyGenes && { showOnlyGenes }),

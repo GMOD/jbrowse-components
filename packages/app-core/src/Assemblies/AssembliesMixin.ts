@@ -105,10 +105,7 @@ export function AssembliesMixin(
       if (!snap) {
         return snap
       }
-      const { sessionAssemblies, temporaryAssemblies, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
+      const { sessionAssemblies, temporaryAssemblies, ...rest } = snap
       return {
         ...rest,
         ...(sessionAssemblies.length ? { sessionAssemblies } : {}),

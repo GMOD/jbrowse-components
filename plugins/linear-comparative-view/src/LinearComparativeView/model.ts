@@ -449,7 +449,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         showDynamicControls,
         viewTrackConfigs,
         ...rest
-      } = snap as Omit<typeof snap, symbol>
+      } = snap
       return {
         ...rest,
         ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),

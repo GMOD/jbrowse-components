@@ -631,7 +631,7 @@ export default function stateModelFactory(
         layout: _layout,
         clusterTree: _clusterTree,
         ...rest
-      } = snap as Omit<typeof snap, symbol>
+      } = snap
       return {
         ...rest,
         ...(rowHeight !== DEFAULTS.rowHeight && { rowHeight }),

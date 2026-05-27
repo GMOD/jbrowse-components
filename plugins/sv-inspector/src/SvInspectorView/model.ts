@@ -369,7 +369,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
     }))
     .postProcessSnapshot(snap => {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524
-      const { init, circularView, ...rest } = snap as Omit<typeof snap, symbol>
+      const { init, circularView, ...rest } = snap
       return rest
     })
 }

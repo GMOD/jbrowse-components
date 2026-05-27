@@ -34,7 +34,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
-        return configBlob as Omit<typeof configBlob, symbol>
+        return configBlob
       },
       /**
        * #getter

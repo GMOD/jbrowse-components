@@ -75,7 +75,7 @@ const BaseViewModel = types
     if (!snap) {
       return snap
     }
-    const { minimized, ...rest } = snap as Omit<typeof snap, symbol>
+    const { minimized, ...rest } = snap
     return {
       ...rest,
       ...(minimized ? { minimized } : {}),

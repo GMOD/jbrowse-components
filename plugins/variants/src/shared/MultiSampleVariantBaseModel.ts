@@ -1116,7 +1116,7 @@ export default function MultiSampleVariantBaseModelF(
           ...rest
         } = snap
         return {
-          ...(rest as Omit<typeof rest, symbol>),
+          ...rest,
           ...(layout.length ? { layout } : {}),
           ...(rowHeightMode !== 0 ? { rowHeightMode } : {}),
           ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER

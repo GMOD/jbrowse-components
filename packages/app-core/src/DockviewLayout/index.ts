@@ -196,7 +196,7 @@ export function DockviewLayoutMixin() {
         init: _init,
         activePanelId,
         ...rest
-      } = snap as Omit<typeof snap, symbol>
+      } = snap
       return {
         ...rest,
         ...(dockviewLayout !== undefined ? { dockviewLayout } : {}),

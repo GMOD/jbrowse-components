@@ -88,6 +88,8 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         self.internetAccounts.push(internetAccount)
         return internetAccount
       },
+    }))
+    .actions(self => ({
       /**
        * #action
        */
@@ -113,7 +115,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
 
         // if still no existing account, create ephemeral config to use
         return selectedId
-          ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
+          ? self.createEphemeralInternetAccount(selectedId, {}, location.uri)
           : null
       },
     }))

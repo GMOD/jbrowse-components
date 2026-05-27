@@ -361,7 +361,7 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { bookmarks: _, ...rest } = snap as Omit<typeof snap, symbol>
+      const { bookmarks: _, ...rest } = snap
       return rest
     })
 }

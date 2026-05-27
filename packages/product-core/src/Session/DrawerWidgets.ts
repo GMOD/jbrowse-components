@@ -94,8 +94,12 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
           distance *= -1
         }
         const oldDrawerWidth = self.drawerWidth
-        const newDrawerWidth = this.updateDrawerWidth(oldDrawerWidth - distance)
-        return oldDrawerWidth - newDrawerWidth
+        const max = window.innerWidth - minMainWidth
+        self.drawerWidth = Math.min(
+          Math.max(oldDrawerWidth - distance, minDrawerWidth),
+          max,
+        )
+        return oldDrawerWidth - self.drawerWidth
       },
 
       /**
@@ -219,7 +223,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         activeWidgets,
         minimized,
         ...rest
-      } = snap as Omit<typeof snap, symbol>
+      } = snap
       return {
         ...rest,
         ...(drawerPosition !== 'right' ? { drawerPosition } : {}),

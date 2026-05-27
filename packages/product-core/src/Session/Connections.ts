@@ -129,7 +129,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      const { connectionInstances, ...rest } = snap as Omit<typeof snap, symbol>
+      const { connectionInstances, ...rest } = snap
       return {
         ...rest,
         // mst types wrong, nullish needed

@@ -89,14 +89,6 @@ export default function stateModelFactory(
         }
       },
       /**
-       * #method
-       */
-      openLocation(location: UriLocation) {
-        return new GoogleDriveFile(location.uri, {
-          fetch: this.getFetcher(location),
-        })
-      },
-      /**
        * #action
        */
       async validateToken(token: string, location: UriLocation) {
@@ -112,6 +104,16 @@ export default function stateModelFactory(
           )
         }
         return token
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #method
+       */
+      openLocation(location: UriLocation) {
+        return new GoogleDriveFile(location.uri, {
+          fetch: self.getFetcher(location),
+        })
       },
     }))
 }

@@ -194,11 +194,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-      const { unformattedFeatureData, featureData, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
+      const { unformattedFeatureData, featureData, ...rest } = snap
 
       const s2 = JSON.stringify(featureData, (_, v) =>
         v === undefined ? null : v,

@@ -1014,7 +1014,7 @@ export default function stateModelFactory(pm: PluginManager) {
           assemblyNames,
           viewTrackConfigs,
           ...rest
-        } = snap as Omit<typeof snap, symbol>
+        } = snap
         return {
           ...rest,
           ...(height !== defaultHeight ? { height } : {}),

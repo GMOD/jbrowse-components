@@ -105,16 +105,16 @@ export default function stateModelFactory() {
            */
           resizeHeight(distance: number) {
             const oldHeight = self.height
-            const newHeight = this.setHeight(self.height + distance)
-            return newHeight - oldHeight
+            self.height = Math.max(self.height + distance, minHeight)
+            return self.height - oldHeight
           },
           /**
            * #action
            */
           resizeWidth(distance: number) {
             const oldWidth = self.width
-            const newWidth = this.setWidth(self.width + distance)
-            return newWidth - oldWidth
+            self.width = self.width + distance
+            return self.width - oldWidth
           },
 
           /**
@@ -182,18 +182,11 @@ export default function stateModelFactory() {
         })),
     )
     .postProcessSnapshot(snap => {
-      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-      const { init, importWizard, spreadsheet, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
+      const { init, importWizard, spreadsheet, ...rest } = snap
       if (!spreadsheet) {
         return { ...rest, importWizard }
       }
-      const { rowSet, ...spreadsheetRest } = spreadsheet as Omit<
-        typeof spreadsheet,
-        symbol
-      >
+      const { rowSet, ...spreadsheetRest } = spreadsheet
       // omit rows when a URI is cached (re-fetched on load) or too large for localStorage
       const omitRows =
         importWizard.cachedFileLocation ??

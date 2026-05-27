@@ -419,10 +419,11 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.panX = 0
         self.panY = 0
       },
-      setWidth(newWidth: number) {
-        self.volatileWidth = Math.max(newWidth, minWidth)
+      setWidth(newWidth: number): number {
+        const clamped = Math.max(newWidth, minWidth)
+        self.volatileWidth = clamped
         this.fitToWindow()
-        return self.volatileWidth
+        return clamped
       },
       /**
        * #action
@@ -431,22 +432,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.height = Math.max(newHeight, minHeight)
         this.fitToWindow()
         return self.height
-      },
-      /**
-       * #action
-       */
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        const newHeight = this.setHeight(self.height + distance)
-        return newHeight - oldHeight
-      },
-      /**
-       * #action
-       */
-      resizeWidth(distance: number) {
-        const oldWidth = self.width
-        const newWidth = this.setWidth(self.width + distance)
-        return newWidth - oldWidth
       },
       /**
        * #action
@@ -614,6 +599,27 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        const newHeight = self.setHeight(self.height + distance)
+        return newHeight - oldHeight
+      },
+      /**
+       * #action
+       */
+      resizeWidth(distance: number) {
+        if (self.volatileWidth === undefined) {
+          return 0
+        }
+        const oldWidth = self.volatileWidth
+        self.setWidth(oldWidth + distance)
+        return Math.max(oldWidth + distance, minWidth) - oldWidth
+      },
+    }))
+    .actions(self => ({
       afterAttach() {
         addDisposer(
           self,
@@ -698,7 +704,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         minimumBlockWidth,
         trackSelectorType,
         ...rest
-      } = snap as Omit<typeof snap, symbol>
+      } = snap
       return {
         ...rest,
         ...(offsetRadians !== defaultOffsetRadians ? { offsetRadians } : {}),

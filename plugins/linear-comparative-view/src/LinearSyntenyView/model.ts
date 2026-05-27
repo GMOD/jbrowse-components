@@ -510,7 +510,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawLocationMarkers,
         overdrawPx,
         ...rest
-      } = snap as Omit<typeof snap, symbol>
+      } = snap
       return {
         ...rest,
         ...(cigarMode !== 'full' ? { cigarMode } : {}),

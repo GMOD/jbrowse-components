@@ -78,7 +78,6 @@ const ViewMenu = observer(function ViewMenu({
                   model.type,
                   renameIds(
                     structuredClone(
-                      // @ts-expect-error
                       getSnapshot(model) as Record<string, unknown>,
                     ),
                   ),

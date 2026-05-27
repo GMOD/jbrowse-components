@@ -182,7 +182,7 @@ export function BaseSessionModel<
       if (!snap) {
         return snap
       }
-      const { margin, ...rest } = snap as Omit<typeof snap, symbol>
+      const { margin, ...rest } = snap
       return {
         ...rest,
         ...(margin ? { margin } : {}),

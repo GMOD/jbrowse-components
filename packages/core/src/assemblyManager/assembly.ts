@@ -450,16 +450,6 @@ export default function assemblyFactory(
       /**
        * #action
        */
-      load() {
-        self.loadingP ??= this.loadPre().catch((e: unknown) => {
-          this.setLoadingP(undefined)
-          this.setError(e)
-        })
-        return self.loadingP
-      },
-      /**
-       * #action
-       */
       async loadPre() {
         const conf = self.configuration
         const refNameAliasesAdapterConf = conf?.refNameAliases?.adapter
@@ -530,6 +520,18 @@ export default function assemblyFactory(
             pluginManager,
           }),
         })
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      load() {
+        self.loadingP ??= self.loadPre().catch((e: unknown) => {
+          self.setLoadingP(undefined)
+          self.setError(e)
+        })
+        return self.loadingP
       },
     }))
     .views(self => ({

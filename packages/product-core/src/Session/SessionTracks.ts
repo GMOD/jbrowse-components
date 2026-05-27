@@ -80,7 +80,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      const { sessionTracks, ...rest } = snap as Omit<typeof snap, symbol>
+      const { sessionTracks, ...rest } = snap
       return {
         ...rest,
         // mst types wrong, nullish needed

@@ -636,7 +636,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         interactiveOverlay,
         showHeader,
         ...rest
-      } = snap as Omit<typeof snap, symbol>
+      } = snap
       return {
         ...rest,
         ...(height !== 400 ? { height } : {}),

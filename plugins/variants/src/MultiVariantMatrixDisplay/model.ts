@@ -95,7 +95,7 @@ export default function stateModelFactory(
     .postProcessSnapshot(snap => {
       const { lineZoneHeight, ...rest } = snap
       return {
-        ...(rest as Omit<typeof rest, symbol>),
+        ...rest,
         ...(lineZoneHeight !== 20 ? { lineZoneHeight } : {}),
       }
     })

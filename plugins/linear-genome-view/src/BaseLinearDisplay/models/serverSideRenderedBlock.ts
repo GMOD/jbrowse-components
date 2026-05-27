@@ -368,7 +368,8 @@ export function renderBlockData(
         assemblyName: self.region.assemblyName,
         regions: [
           {
-            ...(self.region as Omit<Region, symbol>),
+            // cast needed: $stateTreeNodeType phantom symbol leaks into inferred return type via tsgo
+            ...(self.region as Region),
             seqAdapterRefName,
           },
         ],

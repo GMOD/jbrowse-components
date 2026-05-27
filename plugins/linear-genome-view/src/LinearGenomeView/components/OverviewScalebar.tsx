@@ -237,7 +237,7 @@ const Scalebar = observer(function Scalebar({
 }) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
-  const overviewVisibleRegions = overview.dynamicBlocks
+  const overviewVisibleRegions = overview.dynamicBlocks.blocks
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-OverviewScalebarComponent',
