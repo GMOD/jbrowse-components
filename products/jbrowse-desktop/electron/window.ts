@@ -1,23 +1,33 @@
 import path from 'path'
 import { pathToFileURL } from 'url'
 
-import electron, { BrowserWindow, Menu, app, shell } from 'electron'
+import { BrowserWindow, Menu, app, shell } from 'electron'
 
 import windowStateKeeper from './windowStateKeeper.ts'
 
 import type { AppUpdater } from 'electron-updater'
 
-const DEFAULT_WINDOW_SIZE = {
-  width: 1400,
-  height: 800,
-}
-
+const DEFAULT_WINDOW_WIDTH = 1400
+const DEFAULT_WINDOW_HEIGHT = 800
 const DEFAULT_DEV_SERVER_URL = 'http://localhost:3000'
 
-function getAppUrl(devServerUrl: URL): URL {
-  return app.isPackaged
+export interface AuthWindowParams {
+  internetAccountId: string
+  data: { redirect_uri: string }
+  url: string
+}
+
+export function buildAppUrl(
+  devServerUrl: string | undefined,
+  sessionPath?: string,
+) {
+  const url = app.isPackaged
     ? pathToFileURL(path.join(app.getAppPath(), 'index.html'))
-    : devServerUrl
+    : new URL(devServerUrl ?? DEFAULT_DEV_SERVER_URL)
+  if (sessionPath) {
+    url.searchParams.set('config', sessionPath)
+  }
+  return url
 }
 
 function createMenu(autoUpdater: AppUpdater) {
@@ -33,11 +43,19 @@ function createMenu(autoUpdater: AppUpdater) {
       submenu: [
         {
           label: 'Visit jbrowse.org',
-          click: () => electron.shell.openExternal('https://jbrowse.org'),
+          click: () => {
+            shell.openExternal('https://jbrowse.org').catch((e: unknown) => {
+              console.error(e)
+            })
+          },
         },
         {
           label: 'Check for updates...',
-          click: () => autoUpdater.checkForUpdates(),
+          click: () => {
+            autoUpdater.checkForUpdates().catch((e: unknown) => {
+              console.error(e)
+            })
+          },
         },
       ],
     },
@@ -46,11 +64,12 @@ function createMenu(autoUpdater: AppUpdater) {
 
 export async function createMainWindow(
   autoUpdater: AppUpdater,
-  devServerUrl?: string,
+  devServerUrl: string | undefined,
+  initialSessionPath: string | undefined,
 ): Promise<BrowserWindow> {
   const mainWindowState = windowStateKeeper({
-    defaultWidth: DEFAULT_WINDOW_SIZE.width,
-    defaultHeight: DEFAULT_WINDOW_SIZE.height,
+    defaultWidth: DEFAULT_WINDOW_WIDTH,
+    defaultHeight: DEFAULT_WINDOW_HEIGHT,
   })
 
   const { x, y, width, height } = mainWindowState
@@ -80,16 +99,7 @@ export async function createMainWindow(
     })
   }
 
-  const serverUrl = new URL(devServerUrl || DEFAULT_DEV_SERVER_URL)
-  const appUrl = getAppUrl(serverUrl)
-
-  // Handle opening .jbrowse files from command line
-  const lastArg = process.argv.at(-1)
-  if (lastArg?.endsWith('.jbrowse')) {
-    appUrl.searchParams.append('config', lastArg)
-  }
-
-  await mainWindow.loadURL(appUrl.href)
+  await mainWindow.loadURL(buildAppUrl(devServerUrl, initialSessionPath).href)
 
   mainWindow.webContents.setWindowOpenHandler(edata => {
     shell.openExternal(edata.url).catch((e: unknown) => {
@@ -107,11 +117,9 @@ export async function createMainWindow(
   return mainWindow
 }
 
-export function createAuthWindow(params: {
-  internetAccountId: string
-  data: { redirect_uri: string }
-  url: string
-}) {
+export function createAuthWindow(
+  params: AuthWindowParams,
+): Promise<string | undefined> {
   const win = new BrowserWindow({
     width: 1000,
     height: 600,
@@ -139,6 +147,8 @@ export function createAuthWindow(params: {
         }
       },
     )
-    win.on('closed', () => resolve(undefined))
+    win.on('closed', () => {
+      resolve(undefined)
+    })
   })
 }

@@ -41,27 +41,27 @@ export default function windowStateKeeper(options: Options) {
   }
 
   function isValidState(s: WindowState) {
+    const { x, y, width, height } = s
     const hasBounds =
-      Number.isInteger(s.x) &&
-      Number.isInteger(s.y) &&
-      Number.isInteger(s.width) &&
-      s.width > 0 &&
-      Number.isInteger(s.height) &&
-      s.height > 0
+      Number.isInteger(x) &&
+      Number.isInteger(y) &&
+      Number.isInteger(width) &&
+      width > 0 &&
+      Number.isInteger(height) &&
+      height > 0
 
     if (!hasBounds && !s.isMaximized && !s.isFullScreen) {
       return false
     }
 
-    // Ensure window is visible on some display
-    if (hasBounds) {
+    if (hasBounds && x !== undefined && y !== undefined) {
       const visible = screen.getAllDisplays().some(display => {
         const b = display.bounds
         return (
-          s.x! >= b.x &&
-          s.y! >= b.y &&
-          s.x! + s.width <= b.x + b.width &&
-          s.y! + s.height <= b.y + b.height
+          x >= b.x &&
+          y >= b.y &&
+          x + width <= b.x + b.width &&
+          y + height <= b.y + b.height
         )
       })
       if (!visible) {

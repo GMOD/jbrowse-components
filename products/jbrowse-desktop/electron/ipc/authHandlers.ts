@@ -2,18 +2,10 @@ import { ipcMain } from 'electron'
 
 import { createAuthWindow } from '../window.ts'
 
+import type { AuthWindowParams } from '../window.ts'
+
 export function registerAuthHandlers() {
-  ipcMain.handle(
-    'openAuthWindow',
-    (
-      _,
-      params: {
-        internetAccountId: string
-        data: { redirect_uri: string }
-        url: string
-      },
-    ) => {
-      return createAuthWindow(params)
-    },
-  )
+  ipcMain.handle('openAuthWindow', (_, params: AuthWindowParams) => {
+    return createAuthWindow(params)
+  })
 }

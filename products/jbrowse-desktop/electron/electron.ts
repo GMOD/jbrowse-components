@@ -1,3 +1,5 @@
+import path from 'path'
+
 import { app, dialog } from 'electron'
 import contextMenu from 'electron-context-menu'
 import debug from 'electron-debug'
@@ -10,9 +12,8 @@ import { registerFileHandlers } from './ipc/fileHandlers.ts'
 import { registerQuickstartHandlers } from './ipc/quickstartHandlers.ts'
 import { registerSessionHandlers } from './ipc/sessionHandlers.ts'
 import { initializePaths } from './paths.ts'
-import { createMainWindow } from './window.ts'
+import { buildAppUrl, createMainWindow } from './window.ts'
 
-import type { AppPaths } from './paths.ts'
 import type { BrowserWindow } from 'electron'
 
 const { autoUpdater } = pkg
@@ -22,59 +23,141 @@ debug({ showDevTools: false, isEnabled: true })
 
 const DEV_SERVER_URL = process.env.DEV_SERVER_URL
 
-let mainWindow: BrowserWindow | null = null
-let paths!: AppPaths
+function findSessionPathArg(argv: readonly string[], cwd: string) {
+  const arg = argv.slice(1).find(a => a.endsWith('.jbrowse'))
+  return arg ? path.resolve(cwd, arg) : undefined
+}
 
-function showFatalError(title: string, error: unknown, shouldQuit = true) {
+function showFatalError(title: string, error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
   const detail = error instanceof Error ? error.stack : undefined
   console.error(`${title}:`, error)
   dialog.showErrorBox(title, detail ? `${message}\n\n${detail}` : message)
-  if (shouldQuit) {
-    app.quit()
-  }
+  app.quit()
 }
 
-async function initialize() {
-  await initializeFileSystem(paths)
-  mainWindow = await createMainWindow(autoUpdater, DEV_SERVER_URL)
-  mainWindow.on('closed', () => {
-    mainWindow = null
+// Resolves to the .jbrowse path that should drive the first window: either an
+// argv argument, or the first 'open-file' event that fires before 'ready'
+// (macOS Open-With launch). Resolves exactly once, when 'ready' fires.
+function getInitialSession(): Promise<string | undefined> {
+  return new Promise(resolve => {
+    const onOpenFile = (event: Electron.Event, filePath: string) => {
+      event.preventDefault()
+      resolve(filePath)
+    }
+    app.once('open-file', onOpenFile)
+    app.whenReady().then(() => {
+      app.off('open-file', onOpenFile)
+      resolve(findSessionPathArg(process.argv, process.cwd()))
+    })
   })
 }
 
-function registerIpcHandlers() {
-  registerSessionHandlers(paths, () => mainWindow)
-  registerQuickstartHandlers(paths)
-  registerFileHandlers(paths)
-  registerAuthHandlers()
+function loadSession(win: BrowserWindow, sessionPath: string) {
+  win.loadURL(buildAppUrl(DEV_SERVER_URL, sessionPath).href).catch(
+    (e: unknown) => {
+      console.error(e)
+    },
+  )
 }
 
-setupAutoUpdater(autoUpdater, () => mainWindow)
+// Tracks the single main window. Concurrent ensureWindow calls during creation
+// share the in-flight promise; the 'closed' handler nulls both bindings
+// together so the next call rebuilds the window.
+function createWindowManager() {
+  let mainWindow: BrowserWindow | null = null
+  let creating: Promise<BrowserWindow> | null = null
 
-app.on('ready', async () => {
-  try {
-    // app.getPath() is only reliable after 'ready'
-    paths = initializePaths()
-    registerIpcHandlers()
-    await initialize()
-  } catch (error) {
-    showFatalError('Failed to initialize application', error)
+  async function startCreate(sessionPath: string | undefined) {
+    const win = await createMainWindow(autoUpdater, DEV_SERVER_URL, sessionPath)
+    mainWindow = win
+    win.on('closed', () => {
+      mainWindow = null
+      creating = null
+    })
+    return win
   }
-})
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-app.on('activate', async () => {
-  if (mainWindow === null) {
-    try {
-      await initialize()
-    } catch (error) {
-      showFatalError('Failed to create window', error)
+  async function ensureWindow(sessionPath?: string): Promise<BrowserWindow> {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) {
+        mainWindow.restore()
+      }
+      mainWindow.focus()
+      if (sessionPath) {
+        loadSession(mainWindow, sessionPath)
+      }
+      return mainWindow
     }
+    if (creating) {
+      const win = await creating
+      if (sessionPath) {
+        loadSession(win, sessionPath)
+      }
+      return win
+    }
+    creating = startCreate(sessionPath)
+    return creating
   }
-})
+
+  return {
+    ensureWindow,
+    get current() {
+      return mainWindow
+    },
+  }
+}
+
+function runApp() {
+  const initialSession = getInitialSession()
+  const wm = createWindowManager()
+
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      app.quit()
+    }
+  })
+
+  app.whenReady().then(async () => {
+    try {
+      // app.getPath() is only reliable after 'ready'
+      const paths = initializePaths()
+      registerSessionHandlers(paths, () => wm.current)
+      registerQuickstartHandlers(paths)
+      registerFileHandlers(paths)
+      registerAuthHandlers()
+      setupAutoUpdater(autoUpdater, () => wm.current)
+
+      await initializeFileSystem(paths)
+
+      app.on('second-instance', (_event, argv, workingDirectory) => {
+        wm.ensureWindow(findSessionPathArg(argv, workingDirectory)).catch(
+          (e: unknown) => {
+            console.error(e)
+          },
+        )
+      })
+      app.on('open-file', (event, filePath) => {
+        event.preventDefault()
+        wm.ensureWindow(filePath).catch((e: unknown) => {
+          console.error(e)
+        })
+      })
+      app.on('activate', () => {
+        wm.ensureWindow().catch((e: unknown) => {
+          console.error(e)
+        })
+      })
+
+      await wm.ensureWindow(await initialSession)
+    } catch (error) {
+      showFatalError('Failed to initialize application', error)
+    }
+  })
+}
+
+if (app.requestSingleInstanceLock()) {
+  runApp()
+} else {
+  app.quit()
+}
