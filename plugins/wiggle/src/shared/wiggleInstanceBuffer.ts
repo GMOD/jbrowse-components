@@ -36,6 +36,18 @@ export function interleaveInstances(
       u32[off + FIELD_OFFSET_F32.startEnd] = currStart
       u32[off + FIELD_OFFSET_F32.startEnd + 1] = currEnd
       f32[off + FIELD_OFFSET_F32.score] = score
+      // The shader's line pass draws three segments per feature:
+      //   v0–v1: vertical at startX from prevScore → score (transition in)
+      //   v2–v3: horizontal at score across [startX, endX]
+      //   v4–v5: vertical at endX   from score → nextScore (transition out)
+      //
+      // prevScore=0 with a gap-before encodes "rise from the zero line."
+      // nextScore=0 with a gap-after encodes "drop to the zero line."
+      //
+      // When adjacent: prevScore = previous feature's score (smooth join);
+      // nextScore deliberately stays equal to the current score so v4–v5
+      // collapses to a no-op — the *next* feature's v0–v1 draws the real
+      // transition. (Drawing it on both sides would double-stroke the seam.)
       f32[off + FIELD_OFFSET_F32.prevScore] = prevAdj ? scores[i - 1]! : 0
       f32[off + FIELD_OFFSET_F32.nextScore] = nextAdj ? score : 0
       u32[off + FIELD_OFFSET_F32.color] = colorAbgr

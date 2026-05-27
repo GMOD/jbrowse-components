@@ -11,6 +11,19 @@ export {
 } from './clusterUtils.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 export {
+  extraColumns,
+  moveDown,
+  moveUp,
+  updateRows,
+} from './sourcesGridUtils.ts'
+export { applyColorPalette } from './setColorDialog/applyColorPalette.ts'
+export { default as SetColorDialog } from './setColorDialog/SetColorDialog.tsx'
+export type {
+  SetColorDialogModel,
+  SetColorDialogProps,
+} from './setColorDialog/SetColorDialog.tsx'
+export type { ColorColumn } from './setColorDialog/SourceGrid.tsx'
+export {
   assignDepthY,
   clusterLayout,
   descendants,

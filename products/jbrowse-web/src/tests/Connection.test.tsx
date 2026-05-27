@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { LocalFile } from 'generic-filehandle2'
 
+import { handleRequest } from './generateReadBuffer.ts'
 import { createView, doBeforeEach, generateReadBuffer } from './util.tsx'
 import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 
@@ -11,10 +12,6 @@ beforeEach(() => {
 
 const readBuffer = generateReadBuffer(
   s => new LocalFile(require.resolve(`../../test_data/volvox/${s}`)),
-)
-
-const readBuffer2 = generateReadBuffer(
-  s => new LocalFile(require.resolve(`../../test_data/volvoxhub/hub1/${s}`)),
 )
 
 const delay = { timeout: 40000 }
@@ -27,8 +24,13 @@ test('Open up a UCSC trackhub connection', async () => {
   fetch.mockResponse(async request => {
     if (request.url.startsWith(root)) {
       const str = request.url.replace(root, '')
-      // @ts-expect-error
-      return readBuffer2({ url: str, headers: new Map() })
+      return handleRequest(
+        () =>
+          new LocalFile(
+            require.resolve(`../../test_data/volvoxhub/hub1/${str}`),
+          ),
+        request,
+      )
     }
     return readBuffer(request)
   })

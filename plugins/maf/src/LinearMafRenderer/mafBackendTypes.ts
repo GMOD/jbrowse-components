@@ -33,8 +33,30 @@ export interface MafBlock {
   rows: MafAlignedRow[]
 }
 
+// Per-region MAF coverage area data. `coverageDepths[i]` covers
+// `[coverageStartPos + i, coverageStartPos + i + 1)` as an absolute genomic
+// uint32; `coverageMaxDepth` is the per-region max used to normalize the bar
+// height in the GPU-packed buffer. The two packed buffers are produced in the
+// worker via the alignments-core packers and consumed by alignments-core
+// `drawCoverageBins` / `drawSnpSegments` on the main thread — no per-region
+// re-pack on theme/zoom changes.
+//
+// `mismatchPositions` / `mismatchBases` mirror the alignments worker's
+// MismatchArrays shape so alignments-core's `buildCoverageTooltipBin` /
+// `countSnpsAtPosition` can consume the data unchanged for hover tooltips.
+export interface MafCoverageRegion {
+  coverageDepths: Float32Array
+  coverageStartPos: number
+  coverageMaxDepth: number
+  mismatchPositions: Uint32Array
+  mismatchBases: Uint8Array
+  coveragePackedBuffer: ArrayBuffer
+  snpPackedBuffer: ArrayBuffer
+}
+
 export interface MafRegionData {
   blocks: MafBlock[]
+  coverage: MafCoverageRegion
 }
 
 // Inputs to `buildInstanceBuffer` — derived from theme + user toggles on

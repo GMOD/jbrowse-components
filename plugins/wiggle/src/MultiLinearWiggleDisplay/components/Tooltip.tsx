@@ -74,6 +74,9 @@ const TooltipContents = observer(function TooltipContents({
   } = featureUnderMouse
   const coord =
     start === end ? toLocale(start) : `${toLocale(start)}..${toLocale(end)}`
+  // Overlay-mode tooltips iterate all sources at the cursor bp; a per-row
+  // .find on model.sources would be O(n²). Build the lookup once.
+  const sourcesByName = new Map(model.sources.map(s => [s.name, s]))
 
   return (
     <div>
@@ -89,7 +92,7 @@ const TooltipContents = observer(function TooltipContents({
               summary={s.summary}
               minScore={s.minScore}
               maxScore={s.maxScore}
-              sourceObj={model.sources.find(ms => ms.name === s.source)}
+              sourceObj={sourcesByName.get(s.source)}
             />
           ))}
           {allSources.length > 8 ? (
@@ -105,7 +108,7 @@ const TooltipContents = observer(function TooltipContents({
           summary={summary}
           minScore={minScore}
           maxScore={maxScore}
-          sourceObj={model.sources.find(s => s.name === source)}
+          sourceObj={sourcesByName.get(source)}
         />
       )}
     </div>

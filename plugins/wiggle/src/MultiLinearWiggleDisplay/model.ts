@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 import {
   getContainingView,
   getSession,
@@ -25,6 +24,7 @@ import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
+import { buildEditableSources, buildSources } from './sourcesLogic.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
@@ -58,20 +58,6 @@ const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(
   () => import('./components/WiggleClusterDialog/WiggleClusterDialog.tsx'),
 )
-
-function resolveOverlayColor(
-  index: number,
-  isOverlay: boolean,
-  adapterColor?: string,
-  layoutColor?: string,
-) {
-  if (isOverlay) {
-    return (
-      layoutColor ?? adapterColor ?? overlayColors[index % overlayColors.length]
-    )
-  }
-  return layoutColor ?? adapterColor
-}
 
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -130,39 +116,24 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      get sourcesWithoutLayout() {
-        return self.sourcesVolatile.map((s, i) => ({
-          source: s.name,
-          ...s,
-          color: resolveOverlayColor(i, self.isOverlay, s.color),
-        }))
+      // Raw adapter sources, in adapter order. Used as input to clustering:
+      // cluster RPC reads `name` and `buildClusteredLayout` maps order
+      // indices into this list.
+      get sourcesWithoutLayout(): Source[] {
+        return self.sourcesVolatile.map(s => ({ source: s.name, ...s }))
       },
 
+      get editableSources(): Source[] {
+        return buildEditableSources(self.sourcesVolatile, self.layout)
+      },
+    }))
+    .views(self => ({
       get sources(): Source[] {
-        const sourceMap = new Map(self.sourcesVolatile.map(s => [s.name, s]))
-        const layoutColors = new Map(
-          (self.layout as Source[])
-            .filter(s => s.color)
-            .map(s => [s.name, s.color]),
+        return buildSources(
+          self.editableSources,
+          self.subtreeFilter,
+          self.isOverlay,
         )
-        let iter = self.layout.length ? self.layout : self.sourcesVolatile
-
-        if (self.subtreeFilter?.length) {
-          const filterSet = new Set(self.subtreeFilter)
-          iter = iter.filter(s => filterSet.has(s.name))
-        }
-
-        return iter.map((s, i) => ({
-          source: s.name,
-          ...sourceMap.get(s.name),
-          ...s,
-          color: resolveOverlayColor(
-            i,
-            self.isOverlay,
-            sourceMap.get(s.name)?.color,
-            layoutColors.get(s.name),
-          ),
-        }))
       },
     }))
     .views(self => ({
@@ -266,10 +237,16 @@ export default function stateModelFactory(
       setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
         self.rpcDataMap.set(displayedRegionIndex, data)
         if (self.sourcesVolatile.length === 0 && data.sources.length > 0) {
-          self.sourcesVolatile = data.sources.map(s => ({
-            name: s.name,
-            color: s.color,
-          }))
+          self.sourcesVolatile = data.sources.map(
+            ({ name, color, labelColor, label, group, baseUri }) => ({
+              name,
+              color,
+              labelColor,
+              label,
+              group,
+              baseUri,
+            }),
+          )
         }
       },
 

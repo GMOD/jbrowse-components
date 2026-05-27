@@ -1,5 +1,5 @@
-import RangeParser from 'range-parser'
 import { LocalFile } from 'generic-filehandle2'
+import RangeParser from 'range-parser'
 
 import type { GenericFilehandle } from 'generic-filehandle2'
 

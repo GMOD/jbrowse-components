@@ -92,6 +92,12 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
+      // Sent to the worker as `bicolorPivot`. When the user picked a custom
+      // color we set the pivot to -Infinity so `score >= pivot` is always
+      // true and every feature lands in the worker's pos arrays — the
+      // display then paints that single bucket with the user's chosen color.
+      // Default (`#f0f`) color keeps the configured pivot for the standard
+      // pos/neg split.
       get effectiveBicolorPivot() {
         return isDefaultBicolor(self.color) ? self.bicolorPivot : -Infinity
       },

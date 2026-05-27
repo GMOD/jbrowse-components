@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { readConfObject } from '@jbrowse/core/configuration'
+import { applyColorPalette } from '@jbrowse/tree-sidebar'
 
 import sharedVariantConfigFactory from './SharedVariantConfigSchema.ts'
-import { applyColorPalette } from './applyColorPalette.ts'
 
 describe('SharedVariantConfigSchema', () => {
   const configSchema = sharedVariantConfigFactory()
@@ -281,14 +281,10 @@ describe('applyColorPalette', () => {
     const result = applyColorPalette(sources, 'population')
 
     expect(result[0]!.name).toBe('sample1')
-    // @ts-expect-error
     expect(result[0]!.region).toBe('Western')
-    // @ts-expect-error
     expect(result[0]!.custom).toBe(123)
     expect(result[1]!.name).toBe('sample2')
-    // @ts-expect-error
     expect(result[1]!.region).toBe('Eastern')
-    // @ts-expect-error
     expect(result[1]!.custom).toBe(456)
   })
 

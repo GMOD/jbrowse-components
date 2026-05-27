@@ -1,5 +1,5 @@
 import { saveAs } from '@jbrowse/core/util'
-import { fireEvent, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import { createView, doBeforeEach, setup } from './util.tsx'
@@ -199,11 +199,14 @@ test('Toggle highlight visibility across all views', async () => {
 
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
-  await user.click(await findByTestId('toggle_highlight_all_switch'))
+  await user.click(
+    (await findByTestId('toggle_highlight_all_switch')).querySelector('input')!,
+  )
   await user.click(await findByText('Close'))
 
-  // expect(highlight3).toBeUndefined()
-  // expect(highlight4).toBeUndefined()
+  await waitFor(() => {
+    expect(screen.queryAllByTestId('BookmarkIcon').length).toBe(0)
+  }, delay)
 }, 60000)
 
 test('Toggle highlight label visibility across all views', async () => {
@@ -221,21 +224,25 @@ test('Toggle highlight label visibility across all views', async () => {
     end: 240,
     refName: 'ctgA',
     assemblyName: 'volvox',
+    label: 'my bookmark',
   })
 
-  // const highlight = (await findAllByTestId('BookmarkIcon'))[0]
-  // const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
-
-  // expect(highlight).toBeDefined()
-  // expect(highlight2).toBeDefined()
+  await screen.findAllByText('my bookmark', {}, delay)
 
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
-  await user.click(await findByTestId('toggle_highlight_label_all_switch'))
+  await user.click(
+    (await findByTestId('toggle_highlight_label_all_switch')).querySelector(
+      'input',
+    )!,
+  )
   await user.click(await findByText('Close'))
 
-  // expect(highlight).toBeUndefined()
-  // expect(highlight2).toBeUndefined()
+  // 'my bookmark' appears in both the grid cell and the highlight label; after
+  // toggling labels off, only the grid cell entry remains (count drops 2 → 1)
+  await waitFor(() => {
+    expect(screen.queryAllByText('my bookmark').length).toBe(1)
+  }, delay)
 }, 60000)
 
 test('Downloads a BED file correctly', async () => {

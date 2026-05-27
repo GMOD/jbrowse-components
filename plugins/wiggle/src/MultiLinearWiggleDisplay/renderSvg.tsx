@@ -5,11 +5,9 @@ import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
-import { YScaleBar } from '@jbrowse/wiggle-core'
-import { when } from 'mobx'
+import { YScaleBar, waitForRenderableState } from '@jbrowse/wiggle-core'
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
-import DensityLegend from '../shared/DensityLegend.tsx'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
@@ -28,9 +26,7 @@ export async function renderSvg(
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
-  await when(
-    () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
-  )
+  await waitForRenderableState(model)
   const { offsetPx } = view
   // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
   const scalebarLeft = Math.max(-offsetPx, 0)
@@ -59,7 +55,7 @@ export async function renderSvg(
   let legendEl: React.ReactNode = null
   if (model.isDensityMode) {
     legendEl = (
-      <DensityLegend
+      <ScoreLegend
         domain={domain}
         scaleType={scaleType}
         canvasWidth={view.width}

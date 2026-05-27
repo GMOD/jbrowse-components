@@ -10,15 +10,14 @@ import {
   Typography,
 } from '@mui/material'
 
-import type { Source } from '../../../util.ts'
-
 const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
 })
 
-function parseCsv(val: string, currLayout: Source[]) {
+// Parse CSV/TSV with a header row that includes a `name` column for join.
+function parseRowsByName(val: string) {
   const lines = val
     .split('\n')
     .map(f => f.trim())
@@ -27,47 +26,51 @@ function parseCsv(val: string, currLayout: Source[]) {
   if (!fields.includes('name')) {
     throw new Error('No "name" column found on line 1')
   }
-  const oldLayout = Object.fromEntries(
-    currLayout.map(record => [record.name, record]),
+  return Object.fromEntries(
+    lines.slice(1).map(line => {
+      const cols = line.split(/[,\t]/gm)
+      const record = Object.fromEntries(
+        cols.map((col, idx) => [fields[idx], col]),
+      )
+      return [record.name as string, record]
+    }),
   )
-  return {
-    oldLayout,
-    newData: Object.fromEntries(
-      lines.slice(1).map(line => {
-        const cols = line.split(/[,\t]/gm)
-        const newRecord = Object.fromEntries(
-          cols.map((col, idx) => [fields[idx], col]),
-        )
-        return [
-          newRecord.name,
-          {
-            ...newRecord,
-            ...oldLayout[newRecord.name],
-          },
-        ]
-      }),
-    ),
-  }
 }
 
-export default function SetColorDialogBulkEditPanel({
+export default function BulkEditPanel<S extends { name: string }>({
   onClose,
   currLayout,
 }: {
-  currLayout: Source[]
-  onClose: (arg?: Source[]) => void
+  currLayout: S[]
+  onClose: (arg?: S[]) => void
 }) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
   const [error, setError] = useState<unknown>()
 
+  const apply = (replace: boolean) => {
+    try {
+      setError(undefined)
+      const newByName = parseRowsByName(val)
+      onClose(
+        currLayout.map(record => ({
+          ...(replace ? {} : record),
+          ...newByName[record.name],
+          name: record.name,
+        })) as S[],
+      )
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    }
+  }
+
   return (
     <>
       <DialogContent>
         <Typography>
-          Paste CSV or TSV. If a header column is present. First line is a
-          header. If a column called "name" is present, it uses that to connect
-          to IDs in the table, otherwise it uses the first column no.
+          Paste CSV or TSV. The first line is the header. A column called
+          "name" is used to join to existing rows.
         </Typography>
 
         {error ? <ErrorBanner error={error} /> : null}
@@ -98,19 +101,7 @@ export default function SetColorDialogBulkEditPanel({
           variant="contained"
           color="secondary"
           onClick={() => {
-            try {
-              setError('')
-              const { newData } = parseCsv(val, currLayout)
-              onClose(
-                currLayout.map(record => ({
-                  ...record,
-                  ...newData[record.name],
-                })),
-              )
-            } catch (e) {
-              console.error(e)
-              setError(e)
-            }
+            apply(false)
           }}
         >
           Update rows
@@ -119,22 +110,11 @@ export default function SetColorDialogBulkEditPanel({
           variant="contained"
           color="primary"
           onClick={() => {
-            try {
-              setError('')
-              const { newData } = parseCsv(val, currLayout)
-              onClose(
-                currLayout.map(record => ({
-                  ...newData[record.name],
-                })) as Source[],
-              )
-            } catch (e) {
-              setError(e)
-            }
+            apply(true)
           }}
         >
           Replace rows
         </Button>
-
         <Button
           variant="contained"
           color="inherit"

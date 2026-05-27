@@ -7,7 +7,7 @@ export function SvgRowLabels({
   scrollTop = 0,
   availableHeight,
 }: {
-  sources: { name: string; labelColor?: string }[]
+  sources: { name: string; label?: string; labelColor?: string }[]
   rowHeight: number
   labelOffset: number
   scrollTop?: number
@@ -18,7 +18,10 @@ export function SvgRowLabels({
   }
   const fontSize = Math.min(rowHeight, 12)
   const boxHeight = Math.min(rowHeight, 20)
-  const labelWidth = max(sources.map(s => measureText(s.name, fontSize))) + 10
+  // `name` is the identity (used as key + hit-test); `label` is the displayed
+  // string if the adapter config supplied one.
+  const display = sources.map(s => s.label ?? s.name)
+  const labelWidth = max(display.map(d => measureText(d, fontSize))) + 10
   return (
     <g transform={`translate(${labelOffset} 0)`}>
       {sources.map((source, idx) => {
@@ -46,7 +49,7 @@ export function SvgRowLabels({
               dominantBaseline="central"
               fill={lc ? 'white' : 'black'}
             >
-              {source.name}
+              {display[idx]}
             </text>
           </g>
         )

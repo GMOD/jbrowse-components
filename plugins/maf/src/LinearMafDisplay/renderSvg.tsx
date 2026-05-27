@@ -6,8 +6,10 @@ import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
+import { drawMafCoverage } from './components/drawMafCoverage.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import {
@@ -46,7 +48,18 @@ export async function renderSvg(
   const theme = createJBrowseTheme(opts.theme)
   const width = view.totalWidthPx
   const height = model.height
-  const { hierarchy, showTree, treeAreaWidth, sources, rowHeight } = model
+  const {
+    hierarchy,
+    showTree,
+    treeAreaWidth,
+    sources,
+    rowHeight,
+    rowsHeight,
+    coverageDisplayHeight,
+    coverageTicks,
+    showCoverage,
+    coverageDomain,
+  } = model
   const treeShowing = showTree && !!hierarchy
   const labelOffset = treeShowing ? treeAreaWidth : 0
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
@@ -55,29 +68,46 @@ export async function renderSvg(
   const svgState = {
     ...state,
     canvasWidth: width,
-    canvasHeight: height,
+    canvasHeight: rowsHeight,
     palette: getMafColorPalette(theme),
   }
   const contrast = getContrastBaseMap(theme)
 
   return (
     <SvgClipRect id={`maf-clip-${model.id}`} width={view.width} height={height}>
-      {paintLayer(width, height, opts, ctx => {
-        drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
-        drawMafLabels(
-          ctx,
-          model.visibleLabels,
-          contrast,
-          state.mismatchRendering,
-        )
-      })}
-      {treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null}
-      {sources?.length ? (
-        <SvgRowLabels
-          sources={sources}
-          rowHeight={rowHeight}
-          labelOffset={labelOffset}
-        />
+      {showCoverage
+        ? paintLayer(width, model.coverageHeight, opts, ctx => {
+            drawMafCoverage(ctx, renderBlocks, model.rpcDataMap, {
+              coverageHeight: model.coverageHeight,
+              canvasWidth: width,
+              domainMax: coverageDomain?.[1] ?? 0,
+              theme,
+            })
+          })
+        : null}
+      <g transform={`translate(0, ${coverageDisplayHeight})`}>
+        {paintLayer(width, rowsHeight, opts, ctx => {
+          drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
+          drawMafLabels(
+            ctx,
+            model.visibleLabels,
+            contrast,
+            state.mismatchRendering,
+          )
+        })}
+        {treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null}
+        {sources?.length ? (
+          <SvgRowLabels
+            sources={sources}
+            rowHeight={rowHeight}
+            labelOffset={labelOffset}
+          />
+        ) : null}
+      </g>
+      {showCoverage && coverageTicks ? (
+        <g transform="translate(45, 0)">
+          <YScaleBar ticks={coverageTicks} orientation="left" />
+        </g>
       ) : null}
     </SvgClipRect>
   )

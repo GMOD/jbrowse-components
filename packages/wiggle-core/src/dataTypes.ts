@@ -1,6 +1,10 @@
 export interface SourceInfo {
   name: string
   color?: string
+  labelColor?: string
+  label?: string
+  group?: string
+  baseUri?: string
 }
 
 // Display-ready per-feature typed arrays from the wiggle RPC. Single-source

@@ -23,6 +23,7 @@ export default function SubsequenceContextMenu({
   view,
   samples,
   rowHeight,
+  rowsTopOffset,
   scrollTop,
   contextCoord,
   setContextCoord,
@@ -32,6 +33,10 @@ export default function SubsequenceContextMenu({
   view: LinearGenomeViewModel
   samples: Sample[] | undefined
   rowHeight: number
+  // Y offset of the rows area within the outer display container. The drag
+  // rect's startY/endY are outer-container coords; the coverage band above the
+  // rows shifts row 0 down by this much.
+  rowsTopOffset: number
   scrollTop: number
   contextCoord: ContextCoord | undefined
   setContextCoord: (c: ContextCoord | undefined) => void
@@ -84,8 +89,14 @@ export default function SubsequenceContextMenu({
             if (contextCoord && samples) {
               const minY = Math.min(contextCoord.startY, contextCoord.endY)
               const maxY = Math.max(contextCoord.startY, contextCoord.endY)
-              const startRow = Math.floor((minY + scrollTop) / rowHeight)
-              const endRow = Math.ceil((maxY + scrollTop) / rowHeight)
+              const startRow = Math.max(
+                0,
+                Math.floor((minY + scrollTop - rowsTopOffset) / rowHeight),
+              )
+              const endRow = Math.max(
+                0,
+                Math.ceil((maxY + scrollTop - rowsTopOffset) / rowHeight),
+              )
               openSubsequenceWidget(
                 session,
                 model,

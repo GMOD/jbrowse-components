@@ -1,4 +1,9 @@
-import { moveDown, moveUp } from './util.ts'
+import {
+  extraColumns,
+  moveDown,
+  moveUp,
+  updateRows,
+} from './sourcesGridUtils.ts'
 
 interface Item {
   name: string
@@ -44,12 +49,6 @@ describe('moveUp', () => {
     moveUp(arr, ['b', 'c'])
     expect(arr.map(x => x.name)).toEqual(['b', 'c', 'a', 'd'])
   })
-
-  it('returns the mutated array', () => {
-    const arr: Item[] = [{ name: 'a' }, { name: 'b' }]
-    const result = moveUp(arr, ['b'])
-    expect(result).toBe(arr)
-  })
 })
 
 describe('moveDown', () => {
@@ -92,10 +91,57 @@ describe('moveDown', () => {
     moveDown(arr, ['b', 'c'])
     expect(arr.map(x => x.name)).toEqual(['a', 'd', 'b', 'c'])
   })
+})
 
-  it('returns the mutated array', () => {
-    const arr: Item[] = [{ name: 'a' }, { name: 'b' }]
-    const result = moveDown(arr, ['a'])
-    expect(result).toBe(arr)
+describe('updateRows', () => {
+  it('returns a new array with selected rows patched, others untouched', () => {
+    const a = { name: 'a', color: 'red' }
+    const b = { name: 'b', color: 'green' }
+    const c = { name: 'c', color: 'blue' }
+    const result = updateRows([a, b, c], ['a', 'c'], { color: 'pink' })
+    expect(result[0]!.color).toBe('pink')
+    expect(result[1]).toBe(b)
+    expect(result[2]!.color).toBe('pink')
+  })
+
+  it('returns a new outer array reference even when nothing matches', () => {
+    const rows = [{ name: 'a', color: 'red' }]
+    const result = updateRows(rows, ['missing'], { color: 'pink' })
+    expect(result).not.toBe(rows)
+    expect(result[0]).toBe(rows[0])
+  })
+})
+
+describe('extraColumns', () => {
+  const reserved = new Set(['name', 'color'])
+
+  it('returns empty when every key is reserved', () => {
+    expect(extraColumns([{ name: 'a', color: 'red' }], reserved)).toEqual([])
+  })
+
+  it('returns extra fields beyond the reserved set', () => {
+    expect(
+      extraColumns(
+        [{ name: 'a', color: 'red', label: 'A', group: 'g1' }],
+        reserved,
+      ).sort(),
+    ).toEqual(['group', 'label'])
+  })
+
+  it('unions field names across rows (heterogeneous adapters)', () => {
+    const rows = [
+      { name: 'a', label: 'A' },
+      { name: 'b', group: 'g1' },
+      { name: 'c', population: 'EUR' },
+    ]
+    expect(extraColumns(rows, reserved).sort()).toEqual([
+      'group',
+      'label',
+      'population',
+    ])
+  })
+
+  it('returns empty for empty input', () => {
+    expect(extraColumns([], reserved)).toEqual([])
   })
 })

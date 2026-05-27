@@ -12,7 +12,6 @@ import { observer } from 'mobx-react'
 
 import MultiWiggleTooltip from './Tooltip.tsx'
 import { findOverlayHit, findRowHit } from './findHit.ts'
-import DensityLegend from '../../shared/DensityLegend.tsx'
 import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
@@ -180,7 +179,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         ) : null}
 
         {model.isDensityMode && model.domain ? (
-          <DensityLegend
+          <ScoreLegend
             domain={model.domain}
             scaleType={model.scaleType}
             canvasWidth={totalWidth}

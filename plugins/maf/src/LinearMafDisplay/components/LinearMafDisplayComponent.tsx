@@ -16,6 +16,9 @@ import { observer } from 'mobx-react'
 import Crosshairs from './Crosshairs.tsx'
 import DragSelectionRect from './DragSelectionRect.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
+import MafCoverageCanvas from './MafCoverageCanvas.tsx'
+import MafCoverageResizeHandle from './MafCoverageResizeHandle.tsx'
+import MafCoverageYScale from './MafCoverageYScale.tsx'
 import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
@@ -32,6 +35,8 @@ const LinearMafDisplay = observer(function (props: {
   const { model } = props
   const {
     height,
+    rowsHeight,
+    coverageDisplayHeight,
     scrollTop,
     rowHeight,
     showTree,
@@ -94,44 +99,57 @@ const LinearMafDisplay = observer(function (props: {
       }}
       onMouseLeave={handleMouseLeave}
     >
-      <canvas
-        ref={canvasRef}
+      <MafCoverageCanvas model={model} />
+      <MafCoverageYScale model={model} />
+      <MafCoverageResizeHandle model={model} />
+      <div
         style={{
           position: 'absolute',
-          top: 0,
+          top: coverageDisplayHeight,
           left: 0,
           width,
-          height,
+          height: rowsHeight,
         }}
-      />
-      <VisibleLabelsOverlay
-        labels={model.visibleLabels}
-        width={width}
-        height={height}
-        mismatchRendering={model.mismatchRendering}
-      />
-      {showTree && sources?.length ? (
-        <svg
+      >
+        <canvas
+          ref={canvasRef}
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
             width,
-            height,
-            pointerEvents: 'none',
-            zIndex: 2,
+            height: rowsHeight,
           }}
-        >
-          <SvgRowLabels
-            sources={sources}
-            rowHeight={rowHeight}
-            labelOffset={sidebarOffset}
-            scrollTop={scrollTop}
-            availableHeight={height}
-          />
-        </svg>
-      ) : null}
-      <TreeSidebar model={model} />
+        />
+        <VisibleLabelsOverlay
+          labels={model.visibleLabels}
+          width={width}
+          height={rowsHeight}
+          mismatchRendering={model.mismatchRendering}
+        />
+        {showTree && sources?.length ? (
+          <svg
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width,
+              height: rowsHeight,
+              pointerEvents: 'none',
+              zIndex: 2,
+            }}
+          >
+            <SvgRowLabels
+              sources={sources}
+              rowHeight={rowHeight}
+              labelOffset={sidebarOffset}
+              scrollTop={scrollTop}
+              availableHeight={rowsHeight}
+            />
+          </svg>
+        ) : null}
+        <TreeSidebar model={model} />
+      </div>
       <MsaHighlightOverlay model={model} view={view} height={height} />
       <DisplayErrorBar model={model} />
       <DisplayLoadingOverlay model={model} />
@@ -151,6 +169,7 @@ const LinearMafDisplay = observer(function (props: {
           <MAFTooltip
             model={model}
             mouseX={mouseX}
+            mouseY={mouseY}
             origMouseX={isDragging ? dragStartX : undefined}
           />
         </div>
@@ -174,6 +193,7 @@ const LinearMafDisplay = observer(function (props: {
         view={view}
         samples={samples}
         rowHeight={rowHeight}
+        rowsTopOffset={coverageDisplayHeight}
         scrollTop={scrollTop}
         contextCoord={contextCoord}
         setContextCoord={setContextCoord}

@@ -64,26 +64,64 @@ superAfterAttach might not be needed
   8. Split SessionLoader into two models. It conflates two distinct phases: (a) URL/storage decoding + plugin loading, (b) pluginManager build/dispose lifecycle. They share state but the responsibilities are different. A SessionLoader (a) + PluginManagerHost (b)
   split would be conceptually cleaner but would force passing data across a boundary that's currently free. Not worth the churn unless you're already planning to overhaul this area.
 
-## Modifications utils cleanup
+##Next
+  - Sort state in SourceGrid — still uses the idx % 2 flip-flop. A 5-line cleanup to direction: 'asc'
+  | 'desc', didn't seem worth interrupting the bigger unification for.
+  - Variants doesn't yet have an editableSources-equivalent — irrelevant today (no overlay synthesis
+  to leak), but if variants ever grows a subtree filter that applies to model.sources, the dialog
+  would inherit the same persist-only-filtered-set bug we just fixed in wiggle. The model: { sources }
+   contract makes it a one-line wrapper change when needed.
+  - MAF: I noticed MAF in the changed-files list at session start but didn't audit it for the same
+  source-management patterns. Worth a separate pass if it has a multi-sample editor.
 
-1. Use modProbAt from modifications-utils — renderModifications.ts and
-   getMaximumModificationAtEachPosition.ts both inline the same
-   probability-index calculation (probabilities?.[probIndex + (fstrand === -1 ?
-   positions.length - 1 - idx : idx)] || 0) that modProbAt encapsulates. They
-   could import and use it instead.
 
-2. Extract the MM tag read — (getTagAlt(feature, 'MM', 'Mm') as string) || ''
-   appears in 4 places. Per CLAUDE.md, || here is a code smell — getTagAlt can
-   return a non-string (e.g. a number), so the cast is unsound. A small helper
-   like getMMTag(feature): string would remove the repeated cast and ||.
+## MAF
 
-3. getTagAlt in getMaximumModificationAtEachPosition.ts — this function reads mm
-   and passes it to getModPositions, then computes probabilities manually using
-   the inline index formula. Since getMethBins in modifications-utils now does
-   all of this together (positions + probabilities + CpG filtering), there may
-   be a path toward consolidating getMaxProbModAtEachPosition and getMethBins
-   calls, though that's a bigger refactor only worth doing if the call sites
-   overlap significantly.
 
-Of these, (1) is the most mechanical and lowest-risk cleanup to do next. Want me
-to go ahead with any of them?
+Replacing alignments' local ResizeHandle with core's — I was wrong about this being cleanup. The
+  local one is wired into a dragControllerRef shared with pan and scrollbar drags, so a single drag
+  can abort the previous, and isDragInProgress(controllerRef) skips hit testing while resizing. Core's
+  hit-tests run during resize. Real architecture, not duplication. MAF doesn't have that integration
+  so core's ResizeHandle is fine there. The drag 'abort controller' isnt a big deal to me please align with core reseizehandle unless truly there is some reason not to
+
+  About per-cell hover: previously stubbed and dead. Coverage band hover now works (depth + per-base
+  SNP counts). Per-cell hover (sample name + base at position) still doesn't exist — that's net new
+  feature work (~80 lines: MAF cell hit test + payload). Worth doing if you want feature parity with
+  the implied behavior of the old stub; let me know. yes, we want per-cell hover if possible
+
+
+
+## test speedups
+  You were right that the import graph is the problem — but it's only ~⅓ of the cost.
+
+  ┌──────────────────────┬─────────┬───────┐
+  │       Variant        │ Modules │ Time  │
+  ├──────────────────────┼─────────┼───────┤
+  │ Pure noop test       │       1 │ 0.73s │
+  ├──────────────────────┼─────────┼───────┤
+  │ 5 plugins            │     381 │ 2.58s │
+  ├──────────────────────┼─────────┼───────┤
+  │ Current (30 plugins) │   1,512 │ 3.33s │
+  ├──────────────────────┼─────────┼───────┤
+  │ Real test (10 tests) │  1,512+ │ 11.3s │
+  └──────────────────────┴─────────┴───────┘
+
+  The math for a 2× warm-cache win:
+  - Trim corePlugins to per-test minimum: saves ~0.7s/file → ~10% on heavy tests, ~25% on light tests
+  - Share JBrowse mount across tests in same file: saves ~3–5s per heavy file
+  - Combined: realistic path to ~1.6–1.8×. Honest 2× requires both.
+
+  SWC / esbuild / Vitest: 0% local warm-cache help. Confirmed by profile (babel is 1.8% CPU on real
+  tests).
+
+  What I'd actually do, in order:
+  1. Make getPluginManager() in util.tsx accept a plugin list (default = corePlugins). Migrate the
+  lightest tests to pass [LinearGenomeView, Config, Menus, Sequence, DataManagement]. Quick win, low
+  risk.
+  2. Audit one heavy plugin barrel (e.g. linear-comparative-view/src/index.ts reaches 504 files) to
+  see if non-lazy imports can become lazy() — would benefit all tests.
+  3. Only then consider sharing mounts across tests — bigger refactor, harder to keep correct.
+
+  If you want, I can do step 1 as a real PR (refactor util.tsx + convert ~5 light tests) and measure
+  the suite delta.
+

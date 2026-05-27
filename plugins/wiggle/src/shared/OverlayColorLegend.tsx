@@ -5,13 +5,16 @@ export default function OverlayColorLegend({
   fallbackColor,
   canvasWidth,
 }: {
-  sources: { name: string; color?: string; labelColor?: string }[]
+  sources: { name: string; label?: string; color?: string; labelColor?: string }[]
   fallbackColor: string
   canvasWidth: number
 }) {
+  // `label` from the adapter config is the displayed string when present;
+  // `name` stays the row identity.
+  const display = sources.map(s => s.label ?? s.name)
   let labelWidth = 0
-  for (const s of sources) {
-    const w = measureText(s.name, 10)
+  for (const d of display) {
+    const w = measureText(d, 10)
     if (w > labelWidth) {
       labelWidth = w
     }
@@ -45,7 +48,7 @@ export default function OverlayColorLegend({
               fontSize={10}
               fill={source.labelColor ?? 'black'}
             >
-              {source.name}
+              {display[idx]}
             </text>
           </g>
         )

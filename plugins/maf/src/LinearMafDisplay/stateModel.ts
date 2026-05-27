@@ -1,3 +1,8 @@
+import {
+  buildCoverageTooltipBin,
+  computeCoverageTicks,
+  computeVisibleCoverageStats,
+} from '@jbrowse/alignments-core'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -13,6 +18,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebarMixin, clusterLayout } from '@jbrowse/tree-sidebar'
+import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import { observable } from 'mobx'
 
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
@@ -21,7 +27,6 @@ import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 
-import type { HoveredInfo } from './util.ts'
 import type {
   MafBackend,
   MafGPURenderState,
@@ -59,6 +64,8 @@ const DEFAULTS = {
   mismatchRendering: true,
   showAsUpperCase: true,
   showTree: true,
+  showCoverage: true,
+  coverageHeight: 45,
 } as const
 
 /**
@@ -108,6 +115,14 @@ export default function stateModelFactory(
          * #property
          */
         showTree: DEFAULTS.showTree,
+        /**
+         * #property
+         */
+        showCoverage: DEFAULTS.showCoverage,
+        /**
+         * #property
+         */
+        coverageHeight: DEFAULTS.coverageHeight,
       }),
     )
     .volatile(() => ({
@@ -115,10 +130,6 @@ export default function stateModelFactory(
        * #volatile
        */
       rpcDataMap: observable.map<number, MafRegionData>(),
-      /**
-       * #volatile
-       */
-      hoveredInfo: undefined as HoveredInfo | undefined,
       /**
        * #volatile
        */
@@ -142,12 +153,6 @@ export default function stateModelFactory(
       colorPalette: undefined as MafColorPalette | undefined,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setHoveredInfo(arg?: HoveredInfo) {
-        self.hoveredInfo = arg
-      },
       /**
        * #action
        */
@@ -214,6 +219,18 @@ export default function stateModelFactory(
        */
       setShowTree(arg: boolean) {
         self.showTree = arg
+      },
+      /**
+       * #action
+       */
+      setShowCoverage(arg: boolean) {
+        self.showCoverage = arg
+      },
+      /**
+       * #action
+       */
+      setCoverageHeight(arg: number) {
+        self.coverageHeight = arg
       },
       /**
        * #action
@@ -300,16 +317,33 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * Height of the per-sample rows area (excludes the coverage band).
+       */
+      get rowsHeight() {
+        return self.sources ? self.sources.length * self.rowHeight : 1
+      },
+      /**
+       * #getter
+       * Height of the coverage band above the rows (0 when hidden).
+       */
+      get coverageDisplayHeight() {
+        return self.showCoverage ? self.coverageHeight : 0
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Full display height = rows area + coverage band.
        */
       get totalHeight() {
-        return self.sources ? self.sources.length * self.rowHeight : 1
+        return self.rowsHeight + self.coverageDisplayHeight
       },
     }))
     .views(self => ({
       /**
        * #getter
        * Override BaseLinearDisplay.height so the track container matches the
-       * rendering canvas height exactly (samples × rowHeight).
+       * rendering canvas height exactly (coverage band + rows × rowHeight).
        */
       get height() {
         return self.totalHeight
@@ -317,20 +351,23 @@ export default function stateModelFactory(
       /**
        * #getter
        * Positioned tree hierarchy. Coordinates are computed against
-       * `(totalHeight, treeAreaWidth)` so leaf rows align with row tops.
+       * `(rowsHeight, treeAreaWidth)` so leaf rows align with row tops; the
+       * coverage band is offset separately by the React layer.
        */
       get hierarchy() {
         const r = self.root
         if (!r || !self.sources?.length) {
           return undefined
         }
-        return clusterLayout(r, self.totalHeight, self.treeAreaWidth)
+        return clusterLayout(r, self.rowsHeight, self.treeAreaWidth)
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * Render state passed to GPU/Canvas2D backend each frame.
+       * Render state passed to GPU/Canvas2D backend each frame. Uses the rows-
+       * only height so the GPU canvas only paints the per-sample band; the
+       * coverage band is drawn on a separate Canvas2D overlay above.
        */
       get renderState(): MafGPURenderState | undefined {
         const view = getContainingView(self) as LinearGenomeViewModel
@@ -339,7 +376,7 @@ export default function stateModelFactory(
         }
         return {
           canvasWidth: view.width,
-          canvasHeight: self.totalHeight,
+          canvasHeight: self.rowsHeight,
           rowHeight: self.rowHeight,
           rowProportion: self.rowProportion,
           showAllLetters: self.showAllLetters,
@@ -364,6 +401,86 @@ export default function stateModelFactory(
           showAllLetters: self.showAllLetters,
           mismatchRendering: self.mismatchRendering,
         }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Per-position depth stats across the currently visible content blocks,
+       * derived from the worker-shipped `coverage.coverageDepths` arrays.
+       * Feeds `coverageDomain` → `coverageTicks`.
+       */
+      get coverageStats() {
+        if (!self.showCoverage) {
+          return undefined
+        }
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return undefined
+        }
+        return computeVisibleCoverageStats(
+          view.dynamicBlocks.contentBlocks,
+          b => self.rpcDataMap.get(b.displayedRegionIndex!)?.coverage,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * [min, max] coverage domain for the visible blocks. Linear scale only
+       * for MAF — sample counts are already bounded and well-distributed.
+       */
+      get coverageDomain() {
+        return self.coverageStats
+          ? getNiceDomain({
+              domain: domainFromStats(self.coverageStats, 'global', 3),
+              bounds: [undefined, undefined],
+              scaleType: 'linear',
+            })
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Y-axis tick marks for the coverage band.
+       */
+      get coverageTicks() {
+        return self.coverageDomain
+          ? computeCoverageTicks(
+              self.coverageDomain[1],
+              self.coverageHeight,
+              'linear',
+            )
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Build a per-position coverage tooltip bin (depth + SNP base counts)
+       * for the given absolute genomic bp + region index. Delegates the math
+       * to alignments-core's `buildCoverageTooltipBin` — same code path the
+       * alignments display uses for hover info. Returns undefined when the
+       * region has no fetched data or the bin has zero depth.
+       */
+      coverageTooltipBin(displayedRegionIndex: number, position: number) {
+        const region = self.rpcDataMap.get(displayedRegionIndex)
+        if (!region) {
+          return undefined
+        }
+        const { coverage } = region
+        return buildCoverageTooltipBin(
+          position,
+          {
+            coverageDepths: coverage.coverageDepths,
+            coverageStartPos: coverage.coverageStartPos,
+          },
+          {
+            mismatchPositions: coverage.mismatchPositions,
+            mismatchBases: coverage.mismatchBases,
+          },
+        )
       },
     }))
     .views(self => ({
@@ -418,12 +535,17 @@ export default function stateModelFactory(
       reload() {
         self.clearAllRpcData()
       },
-      // Override base setHeight: distribute the new total height across rows so
-      // the resize handle and programmatic setHeight both work.
+      // Override base setHeight: subtract the coverage band, then distribute
+      // the remaining rows area across samples. Resize handle and programmatic
+      // setHeight both work.
       setHeight(newHeight: number) {
         const sampleCount = self.sources?.length
         if (sampleCount) {
-          self.rowHeight = Math.max(1, Math.floor(newHeight / sampleCount))
+          const rowsTarget = Math.max(
+            sampleCount,
+            newHeight - self.coverageDisplayHeight,
+          )
+          self.rowHeight = Math.max(1, Math.floor(rowsTarget / sampleCount))
         }
       },
       startBackend(backend: MafBackend) {
@@ -500,6 +622,8 @@ export default function stateModelFactory(
         treeAreaWidth,
         showAsUpperCase,
         showTree,
+        showCoverage,
+        coverageHeight,
         subtreeFilter,
         layout: _layout,
         clusterTree: _clusterTree,
@@ -518,6 +642,8 @@ export default function stateModelFactory(
           showAsUpperCase,
         }),
         ...(showTree !== DEFAULTS.showTree && { showTree }),
+        ...(showCoverage !== DEFAULTS.showCoverage && { showCoverage }),
+        ...(coverageHeight !== DEFAULTS.coverageHeight && { coverageHeight }),
         ...(subtreeFilter?.length && { subtreeFilter }),
       }
     })

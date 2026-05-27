@@ -180,6 +180,12 @@ export function stateModelFactory(
       },
     }))
     .actions(self => ({
+      // Manhattan features are 1:1 with the underlying SNPs (pre-transformed
+      // -log10 p values) and don't downsample by zoom, so we never need to
+      // refetch on bpPerPx change. We intentionally don't call
+      // setLoadedBpPerPx — the inherited isCacheValid short-circuits to true
+      // whenever loadedBpPerPx is undefined, which is exactly the behavior
+      // we want here.
       async fetchNeeded(
         needed: { region: Region; displayedRegionIndex: number }[],
       ) {

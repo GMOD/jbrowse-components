@@ -1,6 +1,8 @@
 import { ConfirmDialog } from '@jbrowse/core/ui'
 import { DialogContentText } from '@mui/material'
 
+// Shown before Submit when the user reordered rows while a cluster tree is
+// loaded — the tree was built on the old ordering and will be invalidated.
 export default function ClearTreeWarningDialog({
   handleClose,
   onConfirm,

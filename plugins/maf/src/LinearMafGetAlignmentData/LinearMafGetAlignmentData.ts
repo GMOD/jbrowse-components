@@ -1,6 +1,12 @@
+import {
+  computeSNPCoverage,
+  packCoverageBinsForGpu,
+  packSnpSegmentsForGpu,
+} from '@jbrowse/alignments-core'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
+import { computeMafCoverage } from './computeMafCoverage.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type {
@@ -90,16 +96,68 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
           string,
           AlignmentRecord
         >
-        const rows = Object.entries(alignments).flatMap(([sampleId, data]) => {
+        // for...in + push avoids the Object.entries+flatMap temp array
+        // allocations on a per-feature hot path.
+        const rows: { rowIndex: number; alignmentBytes: Uint8Array }[] = []
+        for (const sampleId in alignments) {
           const rowIndex = sampleToRow.get(sampleId)
-          return rowIndex === undefined
-            ? []
-            : [{ rowIndex, alignmentBytes: enc.encode(data.seq) }]
-        })
+          if (rowIndex !== undefined) {
+            rows.push({
+              rowIndex,
+              alignmentBytes: enc.encode(alignments[sampleId]!.seq),
+            })
+          }
+        }
         blocks.push({ startBp, refSeqBytes, rows })
       },
     )
 
-    return { samples, treeNewick, regionData: { blocks } }
+    const mafCov = computeMafCoverage(blocks, region.start, region.end)
+    const coverageForSnp = {
+      depths: mafCov.depths,
+      maxDepth: mafCov.maxDepth,
+      startPos: mafCov.startPos,
+    }
+    const snpCoverage = computeSNPCoverage(
+      mafCov.mismatches,
+      region.start,
+      coverageForSnp,
+    )
+
+    // Pack mismatch list into MismatchArrays form so alignments-core's
+    // `buildCoverageTooltipBin` / `countSnpsAtPosition` can read it directly
+    // — same shape the alignments worker ships.
+    const mmCount = mafCov.mismatches.length
+    const mismatchPositions = new Uint32Array(mmCount)
+    const mismatchBases = new Uint8Array(mmCount)
+    for (let i = 0; i < mmCount; i++) {
+      const m = mafCov.mismatches[i]!
+      mismatchPositions[i] = m.position
+      mismatchBases[i] = m.base
+    }
+
+    const coverage = {
+      coverageDepths: mafCov.depths,
+      coverageStartPos: mafCov.startPos,
+      coverageMaxDepth: mafCov.maxDepth,
+      mismatchPositions,
+      mismatchBases,
+      coveragePackedBuffer: packCoverageBinsForGpu(
+        mafCov.depths,
+        mafCov.maxDepth,
+        mafCov.startPos,
+        mafCov.depths.length,
+      ),
+      snpPackedBuffer: packSnpSegmentsForGpu(
+        snpCoverage.positions,
+        snpCoverage.yOffsets,
+        snpCoverage.heights,
+        snpCoverage.colorTypes,
+        snpCoverage.relDepths,
+        snpCoverage.count,
+      ),
+    }
+
+    return { samples, treeNewick, regionData: { blocks, coverage } }
   }
 }

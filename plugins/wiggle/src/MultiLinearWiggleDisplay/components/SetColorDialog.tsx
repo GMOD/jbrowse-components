@@ -1,28 +1,50 @@
-import SourcesGrid from './SourcesGrid.tsx'
-import SharedSetColorDialog from './ui/SetColorDialog.tsx'
+import { SetColorDialog } from '@jbrowse/tree-sidebar'
 
 import type { Source } from '../../util.ts'
+import type { ColorColumn } from '@jbrowse/tree-sidebar'
 
-export default function SetColorDialog({
+const COLOR_COLUMNS: ColorColumn<Source>[] = [
+  { field: 'color', headerName: 'Track color', bulkLabel: 'Change track color of selected' },
+  { field: 'labelColor', headerName: 'Label color', bulkLabel: 'Change label color of selected' },
+]
+
+// Seed from `editableSources` (not `sources`) so overlay-palette synthesis
+// doesn't bake unset colors into the persisted layout on Submit. setLayout's
+// `namesChanged` heuristic already clears the cluster tree on reorder, but
+// the warning dialog surfaces that destruction to the user first.
+export default function MultiWiggleSetColorDialog({
   model,
   handleClose,
 }: {
   model: {
-    sources: Source[]
+    editableSources: Source[]
+    clusterTree?: string
     setLayout: (s: Source[]) => void
     clearLayout: () => void
   }
   handleClose: () => void
 }) {
+  const dialogModel = {
+    get sources() {
+      return model.editableSources
+    },
+    setLayout: (s: Source[]) => {
+      model.setLayout(s)
+    },
+    clearLayout: () => {
+      model.clearLayout()
+    },
+  }
   return (
-    <SharedSetColorDialog
-      model={model}
+    <SetColorDialog
+      model={dialogModel}
       handleClose={handleClose}
       title="Multi-wiggle color/arrangement editor"
+      colorColumns={COLOR_COLUMNS}
+      hasClusterTree={!!model.clusterTree}
       enableBulkEdit
       enableRowPalettizer
       showTipsStorageKey="multiwiggle-showTips"
-      SourcesGridComponent={SourcesGrid}
     />
   )
 }

@@ -15,7 +15,7 @@ import { observer } from 'mobx-react'
 
 import WiggleTooltip from './WiggleTooltip.tsx'
 import { findHit } from './findHit.ts'
-import DensityLegend from '../../shared/DensityLegend.tsx'
+import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import { hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
 
@@ -118,7 +118,7 @@ const WiggleComponent = observer(function WiggleComponent({
             width,
           }}
         >
-          <DensityLegend
+          <ScoreLegend
             domain={model.domain}
             scaleType={model.scaleType}
             canvasWidth={width}

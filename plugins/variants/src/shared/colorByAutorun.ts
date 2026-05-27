@@ -1,8 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { applyColorPalette } from '@jbrowse/tree-sidebar'
 import { autorun } from 'mobx'
-
-import { applyColorPalette } from './applyColorPalette.ts'
 
 import type { Source } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

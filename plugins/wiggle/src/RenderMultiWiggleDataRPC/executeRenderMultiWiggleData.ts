@@ -109,11 +109,10 @@ export async function executeRenderMultiWiggleData({
       : perSource.map(({ source }) => ({ name: source }))
 
   return {
-    sources: orderedSources.map(({ name, color }) => ({
-      name,
-      color,
+    sources: orderedSources.map(source => ({
+      ...source,
       ...processFeaturesFromArrays(
-        rawBySource.get(name) ?? EMPTY_RAW,
+        rawBySource.get(source.name) ?? EMPTY_RAW,
         bicolorPivot,
       ),
     })),

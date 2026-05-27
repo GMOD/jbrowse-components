@@ -47,7 +47,6 @@ describe('getMsaHighlights', () => {
 describe('generateTooltipContent', () => {
   test('drag range shows start, end, and length', () => {
     const result = generateTooltipContent(
-      undefined,
       { refName: 'chr1', coord: 100 },
       { refName: 'chr1', coord: 200 },
     )
@@ -56,52 +55,11 @@ describe('generateTooltipContent', () => {
     expect(result).toContain('Length:')
   })
 
-  test('single position with hover info shows alt sample', () => {
-    const result = generateTooltipContent(
-      {
-        sampleId: 's1',
-        sampleLabel: 'Sample1',
-        pos: 150,
-        base: 'A',
-        chr: 'chr1',
-      },
-      undefined,
-      { refName: 'chr1', coord: 150 },
-    )
-    expect(result).toContain('Ref: chr1:150')
-    expect(result).toContain('Alt Sample1: chr1:150 (A)')
-  })
-
-  test('insertion label appears for isInsertion', () => {
-    const result = generateTooltipContent(
-      {
-        sampleId: 's1',
-        sampleLabel: 'Sample1',
-        pos: 150,
-        base: 'ACGT',
-        chr: 'chr1',
-        isInsertion: true,
-      },
-      undefined,
-      { refName: 'chr1', coord: 150 },
-    )
-    expect(result).toContain('4bp')
-    expect(result).toContain('Insertion')
-  })
-
-  test('long base sequence is truncated', () => {
-    const longBase = 'A'.repeat(30)
-    const result = generateTooltipContent(
-      {
-        sampleId: 's1',
-        sampleLabel: 'Sample1',
-        pos: 150,
-        base: longBase,
-        chr: 'chr1',
-      },
-      undefined,
-      { refName: 'chr1', coord: 150 },
-    )
-    expect(result).toContain('...')
+  test('single position shows ref location', () => {
+    const result = generateTooltipContent(undefined, {
+      refName: 'chr1',
+      coord: 150,
+    })
+    expect(result).toBe('Ref: chr1:150')
   })
 })
