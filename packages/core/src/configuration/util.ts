@@ -115,6 +115,10 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
  *
  * For JEXL callback slots, the raw "jexl:..." string is included so the
  * worker can evaluate it per-feature.
+ *
+ * Note: only handles slots and direct sub-configuration models. Arrays or
+ * maps of sub-schemas are silently dropped — no current consumer
+ * (LinearBasicDisplay.rpcProps is the only caller) needs them.
  */
 export function getConfSnapshot(confObject: AnyConfigurationModel) {
   const result: Record<string, unknown> = {}
@@ -159,19 +163,18 @@ export function getConf<CONFMODEL extends AnyConfigurationModel>(
  */
 export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
   if (isType(maybeUnionType)) {
-    maybeUnionType = resolveLateType(maybeUnionType)
-    // @ts-expect-error
-    if (isUnionType(maybeUnionType)) {
+    const resolved = resolveLateType(maybeUnionType)
+    if (isUnionType(resolved)) {
       const typeNames: string[] = []
-      for (let type of getUnionSubTypes(maybeUnionType)) {
-        type = resolveLateType(type)
-        let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
+      for (const subType of getUnionSubTypes(resolved)) {
+        const resolvedSub = resolveLateType(subType)
+        let typeName = getTypeNamesFromExplicitlyTypedUnion(resolvedSub)
         if (!typeName.length) {
-          const def = getDefaultValue(type)
+          const def = getDefaultValue(resolvedSub)
           typeName = [def.type]
         }
         if (!typeName[0]) {
-          throw new Error(`invalid config schema type ${type}`)
+          throw new Error(`invalid config schema type ${resolvedSub}`)
         }
         for (const name of typeName) {
           typeNames.push(name)

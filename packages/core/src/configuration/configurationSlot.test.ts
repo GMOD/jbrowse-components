@@ -130,6 +130,17 @@ test('a saved jexl callback opens in callback mode by default', () => {
   expect(instance.editorIsCallback).toBe(true)
 })
 
+test('convertToCallback escapes quotes in string values', () => {
+  // regression: the previous json() helper wrapped strings as `"${value}"`
+  // without escaping, so a value like `fo"o` produced invalid jexl `"fo"o"`.
+  const model = ConfigSlot('tester', { type: 'string', defaultValue: 'foo' })
+  const instance = model.create(undefined, { pluginManager })
+  instance.set('fo"o')
+  instance.convertToCallback()
+  expect(instance.value).toBe('jexl:"fo\\"o"')
+  expect(instance.expr.eval()).toBe('fo"o')
+})
+
 test('convertToValue uses defaultValue when eval returns undefined, not type fallback', () => {
   // regression: convertToValue was unconditionally overwriting defaultValue with
   // fallbackDefaults[type]; should only do so when defaultValue is itself jexl

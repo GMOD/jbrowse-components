@@ -141,9 +141,6 @@ const typeModelExtensions: Record<string, (self: any) => any> = {
 const JexlStringType = types.refinement('JexlString', types.string, str =>
   str.startsWith('jexl:'),
 )
-function json(value: any) {
-  return value?.toJSON ? value.toJSON() : `"${value}"`
-}
 export interface ConfigSlotDefinition {
   /** human-readable description of the slot's meaning */
   description?: string
@@ -225,12 +222,8 @@ export default function ConfigSlot(
       // JS representation of the value of this slot, suitable
       // for embedding in either JSON or a JS function string.
       // many of the data types override this in typeModelExtensions
-      get valueJSON():
-        | unknown[]
-        | Record<string, unknown>
-        | string
-        | undefined {
-        return self.isCallback ? undefined : json(self.value)
+      get valueJSON(): string | undefined {
+        return self.isCallback ? undefined : JSON.stringify(self.value)
       },
     }))
     .views(self => ({

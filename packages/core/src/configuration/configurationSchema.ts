@@ -128,14 +128,10 @@ function makeConfigurationSchemaModel<
     }
   }
 
-  const volatileConstants: Record<string, unknown> = {
-    isJBrowseConfigurationSchema: true,
-    jbrowseSchema: {
-      modelName,
-      definition: schemaDefinition,
-      options,
-    },
-  }
+  // String/number entries in the schema definition become volatile instance
+  // constants (read via `model.someName`). The schema type itself carries the
+  // jbrowse metadata flags — see line 281 — so we don't duplicate them here.
+  const volatileConstants: Record<string, unknown> = {}
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
     if (
       (isType(slotDefinition) && isLateType(slotDefinition)) ||
@@ -172,11 +168,20 @@ function makeConfigurationSchemaModel<
     }
   }
 
+  // isConfigurationSchemaType walks union/optional/array/map types recursively;
+  // computing once at schema construction means setSubschema and the per-key
+  // postProcessSnapshot filter both become Set.has lookups.
+  const subSchemaKeys = new Set(
+    Object.keys(modelDefinition).filter(k =>
+      isConfigurationSchemaType(modelDefinition[k]),
+    ),
+  )
+
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
     .actions(self => ({
       setSubschema(slotName: string, data: Record<string, unknown>) {
-        if (!isConfigurationSchemaType(modelDefinition[slotName])) {
+        if (!subSchemaKeys.has(slotName)) {
           throw new Error(`${slotName} is not a subschema, cannot replace`)
         }
         const newSchema = isStateTreeNode(data)
@@ -224,7 +229,7 @@ function makeConfigurationSchemaModel<
       // or {} must be preserved even when empty, since they may differ from a
       // non-empty default (isEmptyArray/isEmptyObject on a slot value would
       // cause it to silently revert to the default on next load).
-      const isSubSchema = isConfigurationSchemaType(modelDefinition[key])
+      const isSubSchema = subSchemaKeys.has(key)
       if (
         value !== undefined &&
         volatileConstants[key] === undefined &&
@@ -378,8 +383,12 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       // track.configuration is a hydrated MST node (hydrated lazily via
       // TrackConfigurationReference), so its displays array contains MST nodes.
       const track = getContainingTrack(parent)
-      const displays = track.configuration.displays
-      let ret = displays.find((d: { displayId: string }) => d.displayId === id)
+      const displays = track.configuration.displays as {
+        displayId: string
+        type?: string
+      }[]
+      const displayType = (parent as { type?: string }).type
+      let ret = displays.find(d => d.displayId === id)
 
       // Fallback: match by display type when the displayId isn't found.
       // baseTrackConfig.preProcessSnapshot injects a display entry for every
@@ -388,17 +397,11 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       // entry here. The `if (displayType)` guard prevents an undefined
       // parent.type from silently matching a display whose `.type` is also
       // undefined.
-      if (!ret) {
-        const displayType = (parent as { type?: string }).type
-        if (displayType) {
-          ret = displays.find(
-            (d: unknown) => (d as { type?: string }).type === displayType,
-          )
-        }
+      if (!ret && displayType) {
+        ret = displays.find(d => d.type === displayType)
       }
 
       if (!ret) {
-        const displayType = (parent as { type?: string }).type
         const trackId = (track.configuration as { trackId?: string }).trackId
         throw new Error(
           `Display configuration "${id}" not found on track "${trackId}" (looked up by displayId, then by type "${displayType ?? '<no type on parent>'}")`,
