@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-import { SubmitDialog } from '@jbrowse/core/ui'
-import { TextField, Typography } from '@mui/material'
+import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { ColorBy } from '../types.ts'
@@ -16,31 +16,27 @@ const SetModificationThresholdDialog = observer(
     handleClose: () => void
   }) {
     const { model, handleClose } = props
-    const [threshold, setThreshold] = useState(
-      String(model.modificationThreshold),
+    const [threshold, setThreshold] = useState<number | undefined>(
+      model.modificationThreshold,
     )
-    const numThreshold = Number(threshold)
-    const validThreshold =
-      threshold !== '' &&
-      Number.isFinite(numThreshold) &&
-      numThreshold >= 0 &&
-      numThreshold <= 100
 
     return (
       <SubmitDialog
         open
         title="Adjust modification threshold"
-        submitDisabled={!validThreshold}
+        submitDisabled={threshold === undefined}
         onCancel={handleClose}
         onSubmit={() => {
-          const currentColorBy = model.colorBy ?? { type: 'modifications' }
-          model.setColorScheme({
-            ...currentColorBy,
-            modifications: {
-              ...currentColorBy.modifications,
-              threshold: numThreshold,
-            },
-          })
+          if (threshold !== undefined) {
+            const currentColorBy = model.colorBy ?? { type: 'modifications' }
+            model.setColorScheme({
+              ...currentColorBy,
+              modifications: {
+                ...currentColorBy.modifications,
+                threshold,
+              },
+            })
+          }
           handleClose()
         }}
       >
@@ -51,20 +47,14 @@ const SetModificationThresholdDialog = observer(
           Only modifications with probability above this threshold will be
           displayed (0-100%)
         </Typography>
-        <TextField
-          value={threshold}
-          autoFocus
-          onChange={event => {
-            setThreshold(event.target.value)
-          }}
+        <NumberTextField
+          defaultValue={model.modificationThreshold}
+          onValueChange={setThreshold}
           label="Threshold (0-100)"
-          error={threshold !== '' && !validThreshold}
-          helperText={
-            threshold !== '' && !validThreshold
-              ? 'Must be a number between 0 and 100'
-              : ''
-          }
-          autoComplete="off"
+          autoFocus
+          min={0}
+          max={100}
+          errorText="Must be a number between 0 and 100"
         />
       </SubmitDialog>
     )

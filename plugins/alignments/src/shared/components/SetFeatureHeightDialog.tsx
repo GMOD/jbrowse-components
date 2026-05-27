@@ -1,19 +1,8 @@
 import { useState } from 'react'
 
-import { SubmitDialog } from '@jbrowse/core/ui'
-import { TextField, Typography } from '@mui/material'
+import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-
-function parsePx(value: string) {
-  if (value === '') {
-    return { valid: false, num: undefined as number | undefined }
-  }
-  const num = Number(value)
-  return {
-    valid: Number.isFinite(num) && num >= 0,
-    num,
-  }
-}
 
 const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
   model: {
@@ -25,13 +14,13 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const { featureHeightSetting, featureSpacing } = model
-  const [height, setHeight] = useState(`${featureHeightSetting}`)
-  const [spacing, setSpacing] = useState(`${featureSpacing}`)
-
-  const heightParsed = parsePx(height)
-  const spacingParsed = parsePx(spacing)
-  const ok = heightParsed.valid && spacingParsed.valid
+  const [height, setHeight] = useState<number | undefined>(
+    model.featureHeightSetting,
+  )
+  const [spacing, setSpacing] = useState<number | undefined>(
+    model.featureSpacing,
+  )
+  const ok = height !== undefined && spacing !== undefined
 
   return (
     <SubmitDialog
@@ -40,8 +29,8 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
       submitDisabled={!ok}
       onCancel={handleClose}
       onSubmit={() => {
-        model.setFeatureHeight(heightParsed.num)
-        model.setFeatureSpacing(spacingParsed.num)
+        model.setFeatureHeight(height)
+        model.setFeatureSpacing(spacing)
         handleClose()
       }}
     >
@@ -49,32 +38,20 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
         Adjust the feature height and the spacing between features. Setting
         feature height to 1 and spacing to 0 makes the display very compact.
       </Typography>
-      <TextField
-        value={height}
+      <NumberTextField
+        defaultValue={model.featureHeightSetting}
+        onValueChange={setHeight}
         label="Feature height (px)"
         autoFocus
-        error={height !== '' && !heightParsed.valid}
-        helperText={
-          height !== '' && !heightParsed.valid
-            ? 'Must be a non-negative number'
-            : ''
-        }
-        onChange={event => {
-          setHeight(event.target.value)
-        }}
+        min={0}
+        errorText="Must be a non-negative number"
       />
-      <TextField
-        value={spacing}
+      <NumberTextField
+        defaultValue={model.featureSpacing}
+        onValueChange={setSpacing}
         label="Feature spacing (px)"
-        error={spacing !== '' && !spacingParsed.valid}
-        helperText={
-          spacing !== '' && !spacingParsed.valid
-            ? 'Must be a non-negative number'
-            : ''
-        }
-        onChange={event => {
-          setSpacing(event.target.value)
-        }}
+        min={0}
+        errorText="Must be a non-negative number"
       />
     </SubmitDialog>
   )

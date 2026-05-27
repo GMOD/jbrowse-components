@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
-import { SubmitDialog } from '@jbrowse/core/ui'
+import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { TextField, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
@@ -20,8 +20,7 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog(props: {
 }) {
   const { model, handleClose } = props
   const { classes } = useStyles()
-  const { maxHeight = '' } = model
-  const [max, setMax] = useState(`${maxHeight}`)
+  const [max, setMax] = useState<number | undefined>(model.maxHeight)
 
   return (
     <SubmitDialog
@@ -29,7 +28,7 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog(props: {
       title="Set max track height"
       onCancel={handleClose}
       onSubmit={() => {
-        model.setMaxHeight(max !== '' && !Number.isNaN(+max) ? +max : undefined)
+        model.setMaxHeight(max)
         handleClose()
       }}
     >
@@ -38,13 +37,13 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog(props: {
           Set max layout height for the track. For example, you can increase
           this if the layout says &quot;Max height reached&quot;
         </Typography>
-        <TextField
-          value={max}
-          autoFocus
-          onChange={event => {
-            setMax(event.target.value)
-          }}
+        <NumberTextField
+          defaultValue={model.maxHeight}
+          onValueChange={setMax}
           label="Max height (px)"
+          autoFocus
+          min={1}
+          errorText="Must be a positive number"
         />
       </div>
     </SubmitDialog>
