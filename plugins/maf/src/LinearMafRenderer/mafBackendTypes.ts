@@ -54,6 +54,7 @@ export interface MafCoverageRegion {
   snpPackedBuffer: ArrayBuffer
   interbasePackedBuffer: ArrayBuffer
   interbaseMaxCount: number
+  indicatorPackedBuffer: ArrayBuffer
 }
 
 export interface MafRegionData {

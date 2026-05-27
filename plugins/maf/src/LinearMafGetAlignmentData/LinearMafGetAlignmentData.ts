@@ -2,6 +2,7 @@ import {
   computeInterbaseCoverage,
   computeSNPCoverage,
   packCoverageBinsForGpu,
+  packIndicatorsForGpu,
   packInterbaseSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from '@jbrowse/alignments-core'
@@ -173,6 +174,11 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
         interbaseCoverage.segmentCount,
       ),
       interbaseMaxCount: interbaseCoverage.maxCount,
+      indicatorPackedBuffer: packIndicatorsForGpu(
+        interbaseCoverage.indicatorPositions,
+        interbaseCoverage.indicatorColorTypes,
+        interbaseCoverage.indicatorCount,
+      ),
     }
 
     return { samples, treeNewick, regionData: { blocks, coverage } }
