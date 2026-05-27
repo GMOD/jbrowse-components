@@ -9,6 +9,7 @@ import { getClip } from '../BreakpointSplitView/getClip.ts'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface BreakpointGetFeaturesArgs {
@@ -30,40 +31,47 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-// This interface covers features from two different track types:
-//
-// 1. AlignmentsTrack (BAM/CRAM) - uses fields like:
-//    - CIGAR, strand, flags, pair_orientation, clipLengthAtStartOfRead
-//    - Rendered by AlignmentConnections component
-//
-// 2. VariantTrack (VCF) - uses fields like:
-//    - ALT, INFO, type (e.g. 'translocation', 'paired_feature', or breakend)
-//    - Rendered by Translocations, PairedFeatures, or Breakends components
-interface MinimalFeature {
-  [key: string]: unknown
+// Subset of VCF INFO fields the breakpoint view actually reads. `STRANDS`
+// encodes the directionality of a translocation; `CHR2`/`END` give the mate
+// position. Other INFO fields may exist on the wire but the renderer ignores
+// them.
+export interface BreakpointVcfInfo {
+  CHR2?: string[]
+  END?: number[]
+  STRANDS?: string[]
+}
+
+// Shape emitted by the worker for each feature. Consumed by `deserializeReturn`
+// which wraps each one in a `SimpleFeature`. Covers both:
+//   1. AlignmentsTrack (BAM/CRAM): strand/flags/pair_orientation/CIGAR-derived
+//      clipLengthAtStartOfRead; rendered by AlignmentConnections.
+//   2. VariantTrack (VCF): ALT/INFO/type=('translocation'|'paired_feature'|
+//      'breakend'); rendered by Translocations, PairedFeatures, or Breakends.
+// Each feature only populates the fields relevant to its source.
+export interface BreakpointSerializedFeature {
   uniqueId: string
   refName: string
   start: number
   end: number
-  strand: number
-  flags: number
   name?: string
   id?: string
-  // Alignment-specific fields
-  tags?: Record<string, unknown>
+  type?: string
+  // Alignment-specific
+  strand?: number
+  flags?: number
+  tags?: { SA?: string } & Record<string, unknown>
   pair_orientation?: string
   clipLengthAtStartOfRead?: number
-  // Variant-specific fields
-  INFO?: Record<string, unknown>
-  ALT?: unknown[]
-  type?: string
+  // Variant-specific
+  ALT?: string[]
+  INFO?: BreakpointVcfInfo
 }
 
 export default class BreakpointGetFeatures extends RpcMethodType {
   name = 'BreakpointGetFeatures'
 
   async deserializeReturn(
-    feats: MinimalFeature[],
+    feats: BreakpointSerializedFeature[],
     args: unknown,
     rpcDriver: string,
   ) {
@@ -71,8 +79,10 @@ export default class BreakpointGetFeatures extends RpcMethodType {
       feats,
       args,
       rpcDriver,
-    )) as MinimalFeature[]
-    return superDeserialized.map(feat => new SimpleFeature(feat))
+    )) as BreakpointSerializedFeature[]
+    return superDeserialized.map(
+      feat => new SimpleFeature(feat as unknown as SimpleFeatureSerialized),
+    )
   }
 
   async serializeArguments(args: BreakpointGetFeaturesArgs, rpcDriver: string) {
@@ -82,7 +92,10 @@ export default class BreakpointGetFeatures extends RpcMethodType {
     return super.serializeArguments(renamedArgs, rpcDriver)
   }
 
-  async execute(args: BreakpointGetFeaturesArgs, rpcDriver: string) {
+  async execute(
+    args: BreakpointGetFeaturesArgs,
+    rpcDriver: string,
+  ): Promise<BreakpointSerializedFeature[]> {
     const {
       stopToken,
       statusCallback,
@@ -106,10 +119,6 @@ export default class BreakpointGetFeatures extends RpcMethodType {
         .pipe(toArray()),
     )
 
-    // Serialize minimal fields needed for breakpoint view. This includes fields
-    // for both alignment features (CIGAR, strand, pair_orientation) and variant
-    // features (ALT, INFO, type). Each feature will only have the relevant
-    // fields populated based on its source adapter.
     return features.map(feature => {
       const cigar = feature.get('CIGAR')
       const strand = feature.get('strand')

@@ -5,6 +5,19 @@ import { getPairedOrientation } from './getOrientationColor.tsx'
 
 import type { Feature } from '@jbrowse/core/util'
 
+function bucket<K, V>(map: Map<K, V[]>, key: K, value: V) {
+  const arr = map.get(key)
+  if (arr) {
+    arr.push(value)
+  } else {
+    map.set(key, [value])
+  }
+}
+
+function multi<K, V>(map: Map<K, V[]>) {
+  return [...map.values()].filter(v => v.length > 1)
+}
+
 export function getBadlyPairedAlignments(features: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
   const alreadyPairedWithSamePosition = new Set<string>()
@@ -31,38 +44,22 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
       isBadlyPaired &&
       !unmapped
     ) {
-      const n = feature.get('name')!
-      let val = candidates.get(n)
-      if (!val) {
-        val = []
-        candidates.set(n, val)
-      }
-      val.push(feature)
+      bucket(candidates, feature.get('name')!, feature)
     }
     alreadyPairedWithSamePosition.add(locString)
   }
 
-  return [...candidates.values()].filter(v => v.length > 1)
+  return multi(candidates)
 }
 
 export function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
-
-  for (const feature of features.values()) {
-    const unmapped = feature.get('flags') & 4
-    const hasSA = !!feature.get('tags')?.SA
-    if (!unmapped && hasSA) {
-      const n = feature.get('name')!
-      let val = candidates.get(n)
-      if (!val) {
-        val = []
-        candidates.set(n, val)
-      }
-      val.push(feature)
+  for (const f of features.values()) {
+    if (!(f.get('flags') & 4) && f.get('tags')?.SA) {
+      bucket(candidates, f.get('name')!, f)
     }
   }
-
-  return [...candidates.values()].filter(v => v.length > 1)
+  return multi(candidates)
 }
 
 export function hasPairedReads(features: Map<string, Feature>) {
@@ -85,42 +82,34 @@ export function findMatchingAlt(feat1: Feature, feat2: Feature) {
 
 export function getMatchedBreakendFeatures(feats: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
-
   for (const f of feats.values()) {
-    if (f.get('type') === 'breakend') {
-      const alts = f.get('ALT') as string[] | undefined
-      if (alts) {
-        for (const a of alts) {
-          const cur = `${f.get('refName')}:${f.get('start') + 1}`
-          const bnd = parseBreakend(a)
-          if (bnd?.MatePosition) {
-            // canonical key so feature A→B and feature B→A land in the same bucket
-            const key = [cur, bnd.MatePosition].sort().join('\t')
-            let val = candidates.get(key)
-            if (!val) {
-              val = []
-              candidates.set(key, val)
-            }
-            val.push(f)
-          }
-        }
+    if (f.get('type') !== 'breakend') {
+      continue
+    }
+    const alts = f.get('ALT') as string[] | undefined
+    if (!alts) {
+      continue
+    }
+    const cur = `${f.get('refName')}:${f.get('start') + 1}`
+    for (const a of alts) {
+      const bnd = parseBreakend(a)
+      if (bnd?.MatePosition) {
+        // canonical key so feature A→B and feature B→A land in the same bucket
+        bucket(candidates, [cur, bnd.MatePosition].sort().join('\t'), f)
       }
     }
   }
-
-  return [...candidates.values()].filter(v => v.length > 1)
+  return multi(candidates)
 }
 
 // Getting "matched" TRA means just return all TRA
 export function getMatchedTranslocationFeatures(feats: Map<string, Feature>) {
   const ret: Feature[][] = []
-
   for (const f of feats.values()) {
     if (f.get('ALT')?.[0] === '<TRA>') {
       ret.push([f])
     }
   }
-
   return ret
 }
 
@@ -146,20 +135,14 @@ export function classifyVariantFeatures(features: Map<string, Feature>) {
 
 export function getMatchedPairedFeatures(feats: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
-
   for (const f of feats.values()) {
-    if (f.get('type') === 'paired_feature') {
-      const baseId = f.id().replace(/-r[12]$/, '')
-      if (f.id() !== baseId) {
-        let val = candidates.get(baseId)
-        if (!val) {
-          val = []
-          candidates.set(baseId, val)
-        }
-        val.push(f)
-      }
+    if (f.get('type') !== 'paired_feature') {
+      continue
+    }
+    const baseId = f.id().replace(/-r[12]$/, '')
+    if (f.id() !== baseId) {
+      bucket(candidates, baseId, f)
     }
   }
-
-  return [...candidates.values()].filter(v => v.length > 1)
+  return multi(candidates)
 }

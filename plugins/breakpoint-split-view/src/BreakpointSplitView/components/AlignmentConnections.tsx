@@ -9,8 +9,9 @@ import {
 import {
   LEFT,
   RIGHT,
-  getCanonicalRefs,
+  getCanonicalRefPair,
   getTestId,
+  isLevelPairMinimized,
   useMouseoverElt,
 } from './overlayUtils.tsx'
 
@@ -32,28 +33,32 @@ const AlignmentConnections = observer(function AlignmentConnections({
     yOffsetsOverride,
     domYOffsets,
   )
-  const layoutMatches = match?.layoutMatches ?? []
-  const hasPaired = match?.hasPairedReads
-  const allFeatures = match?.allFeatures
+  if (!assembly || !match) {
+    return null
+  }
+  const { layoutMatches, hasPairedReads: hasPaired, allFeatures } = match
 
-  return assembly && match ? (
+  return (
     <g fill="none" data-testid={getTestId(trackId, layoutMatches.length > 0)}>
       {layoutMatches.flatMap(chunk =>
         chunk.slice(0, -1).flatMap((item, i) => {
           const { layout: c1, feature: f1, level: level1 } = item
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
-
-          if (tracks[level1]?.minimized || tracks[level2]?.minimized) {
+          if (isLevelPairMinimized(tracks, level1, level2)) {
             return []
           }
           if (!showIntraviewLinks && level1 === level2) {
             return []
           }
-          const { f1ref, f2ref } = getCanonicalRefs(
+          const refs = getCanonicalRefPair(
             assembly,
             f1.get('refName'),
             f2.get('refName'),
           )
+          if (!refs) {
+            return []
+          }
+          const { f1ref, f2ref } = refs
           const s1 = f1.get('strand')!
           const s2 = f2.get('strand')!
           const sameRef = f1ref === f2ref
@@ -80,23 +85,13 @@ const AlignmentConnections = observer(function AlignmentConnections({
           const trackHeight = abnormalSpecialRenderFlag ? heights[level1]! : 0
           const pf1 = hasPaired ? -1 : 1
           const y0 = yOffsets[level1]!
-
-          const path = [
-            'M',
-            x1,
-            y1,
-            'C',
-            x1 + 200 * s1 * rf1,
-            abnormalSpecialRenderFlag
-              ? Math.min(y0 + trackHeight, y1 + trackHeight)
-              : y1,
-            x2 - 200 * s2 * rf2 * pf1,
-            abnormalSpecialRenderFlag
-              ? Math.min(y0 + trackHeight, y2 + trackHeight)
-              : y2,
-            x2,
-            y2,
-          ].join(' ')
+          const cy1 = abnormalSpecialRenderFlag
+            ? Math.min(y0 + trackHeight, y1 + trackHeight)
+            : y1
+          const cy2 = abnormalSpecialRenderFlag
+            ? Math.min(y0 + trackHeight, y2 + trackHeight)
+            : y2
+          const path = `M ${x1} ${y1} C ${x1 + 200 * s1 * rf1} ${cy1} ${x2 - 200 * s2 * rf2 * pf1} ${cy2} ${x2} ${y2}`
           const id = `${f1.id()}-${f2.id()}`
           return [
             <path
@@ -114,8 +109,8 @@ const AlignmentConnections = observer(function AlignmentConnections({
                   'breakpointAlignments',
                   {
                     featureData: {
-                      feature1: allFeatures?.get(f1.id())?.toJSON(),
-                      feature2: allFeatures?.get(f2.id())?.toJSON(),
+                      feature1: allFeatures.get(f1.id())?.toJSON(),
+                      feature2: allFeatures.get(f2.id())?.toJSON(),
                     },
                   },
                 )
@@ -132,7 +127,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
         }),
       )}
     </g>
-  ) : null
+  )
 })
 
 export default AlignmentConnections

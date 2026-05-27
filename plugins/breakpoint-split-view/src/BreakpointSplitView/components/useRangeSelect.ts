@@ -1,9 +1,8 @@
 import type React from 'react'
 import { useCallback, useEffect, useState } from 'react'
 
+import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { transaction } from 'mobx'
-
-import { getRelativeX } from './rubberbandUtil.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 
@@ -19,7 +18,6 @@ export function useRangeSelect(
 ) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState(0)
-
   const [anchorPosition, setAnchorPosition] = useState<AnchorPosition>()
   const [guideX, setGuideX] = useState<number>()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
@@ -31,58 +29,44 @@ export function useRangeSelect(
   }, [])
 
   useEffect(() => {
-    function computeOffsets(offsetX: number) {
-      if (startX === undefined) {
-        return
-      }
-      const leftPx = Math.min(startX, offsetX)
-      const rightPx = Math.max(startX, offsetX)
-      return model.views.map(view => ({
-        leftOffset: view.pxToBp(leftPx),
-        rightOffset: view.pxToBp(rightPx),
-      }))
+    if (!mouseDragging) {
+      return
     }
-
     function globalMouseMove(event: MouseEvent) {
-      if (ref.current && mouseDragging) {
-        const relativeX = getRelativeX(event, ref.current)
-        setCurrentX(relativeX)
+      if (ref.current) {
+        setCurrentX(getRelativeX(event, ref.current))
       }
     }
 
     function globalMouseUp(event: MouseEvent) {
-      if (startX !== undefined && ref.current) {
-        const { clientX, clientY } = event
-        const offsetX = getRelativeX(event, ref.current)
-        if (Math.abs(offsetX - startX) <= 3) {
-          handleClose()
-          return
-        }
-        setAnchorPosition({
-          offsetX,
-          clientX,
-          clientY,
-        })
-        const offsets = computeOffsets(offsetX)
-        if (offsets) {
-          transaction(() => {
-            for (const [idx, elt] of offsets.entries()) {
-              model.views[idx]!.setOffsets(elt.leftOffset, elt.rightOffset)
-            }
-          })
-        }
-        setGuideX(undefined)
+      if (startX === undefined || !ref.current) {
+        return
       }
-    }
-    if (mouseDragging) {
-      window.addEventListener('mousemove', globalMouseMove)
-      window.addEventListener('mouseup', globalMouseUp)
-      return () => {
-        window.removeEventListener('mousemove', globalMouseMove)
-        window.removeEventListener('mouseup', globalMouseUp)
+      const offsetX = getRelativeX(event, ref.current)
+      if (Math.abs(offsetX - startX) <= 3) {
+        handleClose()
+        return
       }
+      setAnchorPosition({
+        offsetX,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      })
+      const leftPx = Math.min(startX, offsetX)
+      const rightPx = Math.max(startX, offsetX)
+      transaction(() => {
+        for (const view of model.views) {
+          view.setOffsets(view.pxToBp(leftPx), view.pxToBp(rightPx))
+        }
+      })
+      setGuideX(undefined)
     }
-    return () => {}
+    window.addEventListener('mousemove', globalMouseMove)
+    window.addEventListener('mouseup', globalMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', globalMouseMove)
+      window.removeEventListener('mouseup', globalMouseUp)
+    }
   }, [startX, mouseDragging, model, ref, handleClose])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
@@ -94,7 +78,7 @@ export function useRangeSelect(
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    // If we have a rubberband selection active (menu is open), don't update guideX
+    // Don't update guideX while the menu is open (rubberband locked)
     if (anchorPosition) {
       return
     }
@@ -115,39 +99,26 @@ export function useRangeSelect(
     handleClose()
   }
 
-  const open = Boolean(anchorPosition)
-  if (startX === undefined) {
-    return {
-      open,
-      guideX,
-      mouseDown,
-      mouseMove,
-      mouseOut,
-      handleMenuItemClick,
-    }
-  }
-  const right = anchorPosition ? anchorPosition.offsetX : currentX
-  const left = Math.min(right, startX)
-  const width = Math.abs(right - startX)
-  const leftBpOffset = model.views.map(view => view.pxToBp(left))
-  const rightBpOffset = model.views.map(view => view.pxToBp(left + width))
-  const numOfBpSelected = model.views.map(view =>
-    Math.ceil(width * view.bpPerPx),
-  )
+  const rubberbandOn = startX !== undefined
+  const right = anchorPosition?.offsetX ?? currentX
+  const left = rubberbandOn ? Math.min(right, startX) : 0
+  const width = rubberbandOn ? Math.abs(right - startX) : 0
+  const views = rubberbandOn ? model.views : []
 
   return {
-    open,
-    rubberbandOn: true,
+    open: Boolean(anchorPosition),
+    rubberbandOn,
+    guideX,
+    anchorPosition,
+    left,
+    width,
+    leftBpOffset: views.map(v => v.pxToBp(left)),
+    rightBpOffset: views.map(v => v.pxToBp(left + width)),
+    numOfBpSelected: views.map(v => Math.ceil(width * v.bpPerPx)),
     mouseDown,
     mouseMove,
     mouseOut,
     handleClose,
     handleMenuItemClick,
-    leftBpOffset,
-    rightBpOffset,
-    anchorPosition,
-    numOfBpSelected,
-    width,
-    left,
   }
 }

@@ -22,13 +22,6 @@ export interface BreakpointSplitViewInit {
   }[]
 }
 
-export interface Breakend {
-  MateDirection: string
-  Join: string
-  Replacement: string
-  MatePosition: string
-}
-
 export type LayoutRecord = [number, number, number, number]
 
 import type { Feature } from '@jbrowse/core/util'

@@ -186,19 +186,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Get a composite map of featureId-\>feature map for a track across
-       * multiple views
-       */
-      getTrackFeatures(trackConfigId: string) {
-        return new Map(
-          self.matchedTrackFeatures[trackConfigId]
-            ?.flat()
-            .map(f => [f.id(), f] as const),
-        )
-      },
-
-      /**
-       * #method
        * Per-render precompute for an overlay track. Gathers scroll top,
        * display height, coverage offset, and view offsetPx per level, then
        * returns getX/getY closures for converting feature layout records to SVG
