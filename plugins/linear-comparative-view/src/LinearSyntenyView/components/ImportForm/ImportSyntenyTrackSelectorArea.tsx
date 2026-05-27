@@ -18,6 +18,15 @@ export interface LinearSyntenyImportFormSyntenyOption {
   }>
 }
 
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'LinearSyntenyView-ImportFormSyntenyOptions': {
+      args: LinearSyntenyImportFormSyntenyOption[]
+      result: LinearSyntenyImportFormSyntenyOption[]
+    }
+  }
+}
+
 export default function ImportSyntenyTrackSelectorArea({
   model,
   assembly1,
@@ -32,9 +41,9 @@ export default function ImportSyntenyTrackSelectorArea({
 
   const customOptions = pluginManager.evaluateExtensionPoint(
     'LinearSyntenyView-ImportFormSyntenyOptions',
-    [] as LinearSyntenyImportFormSyntenyOption[],
+    [],
     { model, assembly1, assembly2 },
-  ) as LinearSyntenyImportFormSyntenyOption[]
+  )
 
   const selectedCustomOption = customOptions.find(opt => opt.value === choice)
 

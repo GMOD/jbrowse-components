@@ -9,7 +9,6 @@ import { Badge } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
 const ShoppingCart = observer(function ShoppingCart({
   model,
@@ -29,7 +28,7 @@ const ShoppingCart = observer(function ShoppingCart({
     'TrackSelector-multiTrackMenuItems',
     [],
     { session },
-  ) as MenuItem[]
+  )
   const definedSelection = selection.filter(
     (elt): elt is AnyConfigurationModel => !!elt,
   )

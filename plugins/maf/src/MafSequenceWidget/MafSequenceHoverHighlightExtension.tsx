@@ -1,5 +1,3 @@
-import React from 'react'
-
 import MafSequenceHoverHighlight from './MafSequenceHoverHighlight.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -10,13 +8,10 @@ export default function MafSequenceHoverHighlightExtensionF(
 ) {
   pluginManager.addToExtensionPoint(
     'LinearGenomeView-TracksContainerComponent',
-    // @ts-expect-error
-    (
-      rest: React.ReactNode[] | undefined,
-      { model }: { model: LinearGenomeViewModel },
-    ) => {
+    (rest, props) => {
+      const { model } = props as { model: LinearGenomeViewModel }
       return [
-        ...(rest ?? []),
+        ...rest,
         <MafSequenceHoverHighlight
           key="maf-sequence-hover-highlight"
           model={model}

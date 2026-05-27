@@ -10,6 +10,15 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { TextSearchManager } from '@jbrowse/core/util'
 
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'LinearGenomeView-searchResultSelected': {
+      args: undefined
+      result: undefined
+    }
+  }
+}
+
 // shared dispatch used by SearchBox.onSelect and the LGV ImportForm submit:
 // route a chosen result to a direct nav, a multi-result dialog, or a generic
 // locstring/refname resolution

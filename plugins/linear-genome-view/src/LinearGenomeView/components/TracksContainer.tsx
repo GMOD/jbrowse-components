@@ -5,6 +5,17 @@ import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import type { ReactNode } from 'react'
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'LinearGenomeView-TracksContainerComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+    }
+  }
+}
+
 import Gridlines from './Gridlines.tsx'
 import Rubberband from './Rubberband.tsx'
 import Scalebar from './Scalebar.tsx'
@@ -66,9 +77,9 @@ const TracksContainer = observer(function TracksContainer({
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-TracksContainerComponent',
-    [] as React.ReactNode[],
+    [],
     { model },
-  ) as React.ReactNode
+  )
 
   return (
     <div

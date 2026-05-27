@@ -2,6 +2,17 @@ import { useMemo } from 'react'
 
 // core
 import { getEnv, getSession } from '@jbrowse/core/util'
+import type { ReactNode } from 'react'
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'LinearGenomeView-OverviewScalebarComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+    }
+  }
+}
+
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
@@ -230,9 +241,9 @@ const Scalebar = observer(function Scalebar({
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-OverviewScalebarComponent',
-    undefined,
+    [],
     { model, overview },
-  ) as React.ReactNode
+  )
 
   return (
     <div className={classes.scalebar}>

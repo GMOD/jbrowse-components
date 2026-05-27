@@ -25,6 +25,15 @@ export interface DotplotImportFormSyntenyOption {
   }>
 }
 
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'DotplotView-ImportFormSyntenyOptions': {
+      args: DotplotImportFormSyntenyOption[]
+      result: DotplotImportFormSyntenyOption[]
+    }
+  }
+}
+
 const TrackSelector = observer(function TrackSelector({
   assembly1,
   assembly2,
@@ -39,9 +48,9 @@ const TrackSelector = observer(function TrackSelector({
 
   const customOptions = pluginManager.evaluateExtensionPoint(
     'DotplotView-ImportFormSyntenyOptions',
-    [] as DotplotImportFormSyntenyOption[],
+    [],
     { model, assembly1, assembly2 },
-  ) as DotplotImportFormSyntenyOption[]
+  )
 
   const selectedCustomOption = customOptions.find(opt => opt.value === choice)
 
