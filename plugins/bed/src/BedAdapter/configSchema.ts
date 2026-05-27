@@ -9,7 +9,6 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 /**
  * #config BedAdapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const BedAdapter = ConfigurationSchema(
   'BedAdapter',

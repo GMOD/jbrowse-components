@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### FacetedModel - Properties
 
-#### property: filterText
+#### propertie: filterText
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 filterText: types.optional(types.string, '')
 ```
 
-#### property: showSparse
+#### propertie: showSparse
 
 ```js
 // type signature
@@ -42,7 +42,7 @@ showSparse: types.optional(types.boolean, () =>
       )
 ```
 
-#### property: showFilters
+#### propertie: showFilters
 
 ```js
 // type signature
@@ -53,7 +53,7 @@ showFilters: types.optional(types.boolean, () =>
       )
 ```
 
-#### property: showOptions
+#### propertie: showOptions
 
 ```js
 // type signature
@@ -64,7 +64,7 @@ showOptions: types.optional(types.boolean, () =>
       )
 ```
 
-#### property: panelWidth
+#### propertie: panelWidth
 
 ```js
 // type signature

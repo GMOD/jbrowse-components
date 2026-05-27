@@ -3,7 +3,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config PAFAdapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri

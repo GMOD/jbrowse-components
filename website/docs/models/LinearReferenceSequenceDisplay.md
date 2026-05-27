@@ -24,7 +24,7 @@ base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
 
 ### LinearReferenceSequenceDisplay - Properties
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -33,7 +33,7 @@ ISimpleType<"LinearReferenceSequenceDisplay">
 type: types.literal('LinearReferenceSequenceDisplay')
 ```
 
-#### property: configuration
+#### propertie: configuration
 
 ```js
 // type signature
@@ -42,7 +42,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: showForward
+#### propertie: showForward
 
 ```js
 // type signature
@@ -51,7 +51,7 @@ true
 showForward: true
 ```
 
-#### property: showReverse
+#### propertie: showReverse
 
 ```js
 // type signature
@@ -60,7 +60,7 @@ true
 showReverse: true
 ```
 
-#### property: showTranslation
+#### propertie: showTranslation
 
 ```js
 // type signature

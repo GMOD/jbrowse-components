@@ -25,7 +25,7 @@ contain multiple views stacked vertically.
 
 ### DockviewLayoutMixin - Properties
 
-#### property: dockviewLayout
+#### propertie: dockviewLayout
 
 Serialized dockview layout state
 
@@ -36,7 +36,7 @@ IMaybe<IType<SerializedDockview, SerializedDockview, SerializedDockview>>
 dockviewLayout: types.maybe(types.frozen<SerializedDockview>())
 ```
 
-#### property: panelViewAssignments
+#### propertie: panelViewAssignments
 
 Maps panel IDs to arrays of view IDs (for stacking views within a panel)
 
@@ -50,7 +50,7 @@ panelViewAssignments: types.optional(
       )
 ```
 
-#### property: init
+#### propertie: init
 
 Initial layout configuration from URL params. Processed once then cleared.
 
@@ -61,7 +61,7 @@ IType<DockviewLayoutNode | undefined, DockviewLayoutNode | undefined, DockviewLa
 init: types.frozen<DockviewLayoutNode | undefined>()
 ```
 
-#### property: activePanelId
+#### propertie: activePanelId
 
 The currently active panel ID in dockview
 

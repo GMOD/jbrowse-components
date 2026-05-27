@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### ConnectionManagementSessionMixin - Properties
 
-#### property: connectionInstances
+#### propertie: connectionInstances
 
 ```js
 // type signature

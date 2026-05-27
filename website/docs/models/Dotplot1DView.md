@@ -34,13 +34,6 @@ this uses padding=false and elision=false
 BlockSet
 ```
 
-#### getter: scaleFactor
-
-```js
-// type
-number
-```
-
 #### getter: maxBpPerPx
 
 ```js
@@ -70,13 +63,6 @@ number
 ```
 
 ### Dotplot1DView - Actions
-
-#### action: setScaleFactor
-
-```js
-// type signature
-setScaleFactor: (n: number) => void
-```
 
 #### action: center
 

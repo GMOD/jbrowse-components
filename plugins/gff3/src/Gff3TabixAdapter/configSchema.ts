@@ -6,7 +6,6 @@ import { types } from '@jbrowse/mobx-state-tree'
  * #category adapter
  * used to load bgzip-compressed, tabix-indexed GFF3 files
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri

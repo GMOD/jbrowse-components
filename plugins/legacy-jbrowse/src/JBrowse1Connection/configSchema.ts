@@ -4,7 +4,6 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 /**
  * #config JBrowse1Connection
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const JBrowse1Connection = ConfigurationSchema(
   'JBrowse1Connection',

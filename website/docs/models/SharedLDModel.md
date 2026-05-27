@@ -24,239 +24,11 @@ Shared state model for LD displays extends
 
 - [BaseDisplay](../basedisplay)
 - [TrackHeightMixin](../trackheightmixin)
-- [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
-
-### SharedLDModel - Properties
-
-#### property: configuration
-
-```js
-// type signature
-ITypeUnion<any, any, any>
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
-#### property: minorAlleleFrequencyFilterSetting
-
-When undefined, falls back to config value
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-minorAlleleFrequencyFilterSetting: types.maybe(types.number)
-```
-
-#### property: lengthCutoffFilterSetting
-
-When undefined, falls back to config value
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-lengthCutoffFilterSetting: types.maybe(types.number)
-```
-
-#### property: lineZoneHeightSetting
-
-When undefined, falls back to config value Height of the zone for connecting
-lines at the top
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-lineZoneHeightSetting: types.maybe(types.number)
-```
-
-#### property: ldMetricSetting
-
-When undefined, falls back to config value LD metric to compute: 'r2' (squared
-correlation) or 'dprime' (normalized D)
-
-```js
-// type signature
-IMaybe<ISimpleType<string>>
-// code
-ldMetricSetting: types.maybe(types.string)
-```
-
-#### property: colorSchemeSetting
-
-When undefined, falls back to config value
-
-```js
-// type signature
-IMaybe<ISimpleType<string>>
-// code
-colorSchemeSetting: types.maybe(types.string)
-```
-
-#### property: showLegendSetting
-
-When undefined, falls back to config value
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-showLegendSetting: types.maybe(types.boolean)
-```
-
-#### property: showLDTriangleSetting
-
-When undefined, falls back to config value Whether to show the LD triangle
-heatmap
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-showLDTriangleSetting: types.maybe(types.boolean)
-```
-
-#### property: showRecombinationSetting
-
-When undefined, falls back to config value Whether to show the recombination
-rate track
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-showRecombinationSetting: types.maybe(types.boolean)
-```
-
-#### property: recombinationZoneHeightSetting
-
-When undefined, falls back to config value Height of the recombination track
-zone at the top
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-recombinationZoneHeightSetting: types.maybe(types.number)
-```
-
-#### property: fitToHeightSetting
-
-When undefined, falls back to config value When true, squash the LD triangle to
-fit the display height
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-fitToHeightSetting: types.maybe(types.boolean)
-```
-
-#### property: hweFilterThresholdSetting
-
-When undefined, falls back to config value HWE filter p-value threshold
-(variants with HWE p < this are excluded) Set to 0 to disable HWE filtering
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-hweFilterThresholdSetting: types.maybe(types.number)
-```
-
-#### property: callRateFilterSetting
-
-When undefined, falls back to config value Call rate filter threshold (0-1).
-Variants with fewer than this proportion of non-missing genotypes are excluded.
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-callRateFilterSetting: types.maybe(types.number)
-```
-
-#### property: showVerticalGuidesSetting
-
-When undefined, falls back to config value Whether to show vertical guides at
-the connected genome positions on hover
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-showVerticalGuidesSetting: types.maybe(types.boolean)
-```
-
-#### property: showLabelsSetting
-
-When undefined, falls back to config value Whether to show variant labels above
-the tick marks
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-showLabelsSetting: types.maybe(types.boolean)
-```
-
-#### property: tickHeightSetting
-
-When undefined, falls back to config value Height of the vertical tick marks at
-the genomic position
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-tickHeightSetting: types.maybe(types.number)
-```
-
-#### property: useGenomicPositionsSetting
-
-When undefined, falls back to config value When true, draw cells sized according
-to genomic distance between SNPs rather than uniform squares
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-useGenomicPositionsSetting: types.maybe(types.boolean)
-```
-
-#### property: signedLDSetting
-
-When undefined, falls back to config value When true, show signed LD values (-1
-to 1) instead of absolute values
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-signedLDSetting: types.maybe(types.boolean)
-```
-
-#### property: jexlFiltersSetting
-
-When undefined, falls back to config value JEXL filter expressions to apply to
-variants
-
-```js
-// type signature
-IMaybe<IArrayType<ISimpleType<string>>>
-// code
-jexlFiltersSetting: types.maybe(types.array(types.string))
-```
+- [GlobalDataDisplayMixin](../globaldatadisplaymixin)
+- [StaleViewportRescaleMixin](../staleviewportrescalemixin)
+- [ConfigOverrideMixin](../configoverridemixin)
 
 ### SharedLDModel - Getters
-
-#### getter: blockType
-
-```js
-// type
-string
-```
 
 #### getter: prefersOffset
 
@@ -265,197 +37,14 @@ string
 boolean
 ```
 
-#### getter: rendererTypeName
-
-```js
-// type
-string
-```
-
-#### getter: rendererConfig
-
-```js
-// type
-any
-```
-
-#### getter: regionTooLarge
-
-```js
-// type
-boolean
-```
-
-#### getter: minorAlleleFrequencyFilter
-
-Returns the effective minor allele frequency filter, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: lengthCutoffFilter
-
-Returns the effective length cutoff filter, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: lineZoneHeight
-
-Returns the effective line zone height, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: ldMetric
-
-Returns the effective LD metric, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: colorScheme
-
-Returns the effective color scheme, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: showLegend
-
-Returns the effective show legend setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: showLDTriangle
-
-Returns the effective show LD triangle setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: showRecombination
-
-Returns the effective show recombination setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: recombinationZoneHeight
-
-Returns the effective recombination zone height, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: fitToHeight
-
-Returns the effective fit to height setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: hweFilterThreshold
-
-Returns the effective HWE filter threshold, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: callRateFilter
-
-Returns the effective call rate filter threshold, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: showVerticalGuides
-
-Returns the effective show vertical guides setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: showLabels
-
-Returns the effective show labels setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: tickHeight
-
-Returns the effective tick height, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: useGenomicPositions
-
-Returns the effective use genomic positions setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: signedLD
-
-Returns the effective signed LD setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: jexlFilters
-
-Returns the effective jexl filters, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: isPrecomputedLD
+#### getter: snps
 
 Returns true if this display uses pre-computed LD data (PLINK, ldmat) rather
 than computing LD from VCF genotypes
 
 ```js
 // type
-boolean
+LDSnp[]
 ```
 
 #### getter: ldCanvasHeight
@@ -468,13 +57,42 @@ Recombination track is overlaid on the line zone, not in a separate zone
 number
 ```
 
+#### getter: renderTransform
+
+Per-frame render state for the GPU backend. Read by the upload/render autorun —
+every change to any tracked observable (view.bpPerPx, view.offsetPx,
+model.fitToHeight, rpcData contents, …) re-fires it. Forward transform { scale,
+viewOffsetX } shared by GPU render, mouse hit-test, and the
+matrix→genomic-position SVG lines. See `computeRenderTransform` for the math.
+
+```js
+// type
+RenderTransform
+```
+
+#### getter: effectiveLineZoneHeight
+
+Pixel height of the SVG zone above the canvas (variant labels + lines, or
+recombination scale). The hit-test subtracts this from mouseY before reversing
+the render transform.
+
+```js
+// type
+number
+```
+
 ### SharedLDModel - Methods
 
-#### method: regionCannotBeRendered
+#### method: hitTest
+
+Inverse of `renderTransform` for the LD matrix: takes mouse coords
+(canvas-relative) and returns the LD cell under the cursor, or undefined.
+Mirrors plugins/hic's `hitTest` so both contact maps keep the forward and
+inverse transforms paired on the model.
 
 ```js
 // type signature
-regionCannotBeRendered: () => null
+hitTest: (mouseX: number, mouseY: number) => LDFlatbushItem | undefined
 ```
 
 #### method: filterMenuItems
@@ -484,11 +102,18 @@ regionCannotBeRendered: () => null
 filterMenuItems: () => { label: string; onClick: () => void; }[]
 ```
 
-#### method: renderProps
+#### method: legendItems
 
 ```js
 // type signature
-renderProps: () => any
+legendItems: () => LegendItem[]
+```
+
+#### method: svgLegendWidth
+
+```js
+// type signature
+svgLegendWidth: () => number
 ```
 
 #### method: trackMenuItems
@@ -507,25 +132,24 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 
 ### SharedLDModel - Actions
 
-#### action: setFlatbushData
+#### action: startBackend
+
+Starts the upload/render autorun. Data + color ramp both derive from the same
+rpcData object, so a single identity-diffed slot handles both uploads.
 
 ```js
 // type signature
-setFlatbushData: (flatbush: ArrayBufferLike | undefined, items: LDFlatbushItem[], snps: { id: string; refName: string; start: number; end: number; }[], maxScore: number, yScalar: number, cellWidth: number) => void
+startBackend: (backend: LDBackend) => void
 ```
 
-#### action: setLineZoneHeight
+#### action: performLDFetch
+
+Re-fetches LD matrix for the current viewport. Both the autorun (in
+`afterAttach`) and `reload()` invoke this directly.
 
 ```js
 // type signature
-setLineZoneHeight: (n: number) => void
-```
-
-#### action: setError
-
-```js
-// type signature
-setError: (error: unknown) => void
+performLDFetch: () => Promise<void>
 ```
 
 #### action: reload
@@ -533,137 +157,4 @@ setError: (error: unknown) => void
 ```js
 // type signature
 reload: () => void
-```
-
-#### action: setMafFilter
-
-```js
-// type signature
-setMafFilter: (arg: number) => void
-```
-
-#### action: setLengthCutoffFilter
-
-```js
-// type signature
-setLengthCutoffFilter: (arg: number) => void
-```
-
-#### action: setLDMetric
-
-```js
-// type signature
-setLDMetric: (metric: string) => void
-```
-
-#### action: setColorScheme
-
-```js
-// type signature
-setColorScheme: (scheme: string | undefined) => void
-```
-
-#### action: setShowLegend
-
-```js
-// type signature
-setShowLegend: (show: boolean) => void
-```
-
-#### action: setShowLDTriangle
-
-```js
-// type signature
-setShowLDTriangle: (show: boolean) => void
-```
-
-#### action: setShowRecombination
-
-```js
-// type signature
-setShowRecombination: (show: boolean) => void
-```
-
-#### action: setRecombinationZoneHeight
-
-```js
-// type signature
-setRecombinationZoneHeight: (n: number) => void
-```
-
-#### action: setFitToHeight
-
-```js
-// type signature
-setFitToHeight: (value: boolean) => void
-```
-
-#### action: setHweFilter
-
-```js
-// type signature
-setHweFilter: (threshold: number) => void
-```
-
-#### action: setCallRateFilter
-
-```js
-// type signature
-setCallRateFilter: (threshold: number) => void
-```
-
-#### action: setFilterStats
-
-```js
-// type signature
-setFilterStats: (stats: FilterStats | undefined) => void
-```
-
-#### action: setRecombination
-
-```js
-// type signature
-setRecombination: (data: { values: number[]; positions: number[]; } | undefined) => void
-```
-
-#### action: setShowVerticalGuides
-
-```js
-// type signature
-setShowVerticalGuides: (show: boolean) => void
-```
-
-#### action: setShowLabels
-
-```js
-// type signature
-setShowLabels: (show: boolean) => void
-```
-
-#### action: setTickHeight
-
-```js
-// type signature
-setTickHeight: (height: number) => void
-```
-
-#### action: setUseGenomicPositions
-
-```js
-// type signature
-setUseGenomicPositions: (value: boolean) => void
-```
-
-#### action: setSignedLD
-
-```js
-// type signature
-setSignedLD: (value: boolean) => void
-```
-
-#### action: setJexlFilters
-
-```js
-// type signature
-setJexlFilters: (filters: string[] | undefined) => void
 ```

@@ -3,7 +3,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config MafTabixAdapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const configSchema = ConfigurationSchema(
   'MafTabixAdapter',

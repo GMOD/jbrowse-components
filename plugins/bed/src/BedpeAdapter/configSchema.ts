@@ -17,7 +17,6 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config BedpeAdapter
  * intended for SVs in a single assembly
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const BedpeAdapter = ConfigurationSchema(
   'BedpeAdapter',

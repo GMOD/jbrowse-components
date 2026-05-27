@@ -23,7 +23,6 @@ const defaultHeight = 440
  * #stateModel SpreadsheetView
  * #category view
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function stateModelFactory() {
   const ImportWizardModel = ImportWizard()

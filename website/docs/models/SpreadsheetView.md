@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### SpreadsheetView - Properties
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ ISimpleType<"SpreadsheetView">
 type: types.literal('SpreadsheetView')
 ```
 
-#### property: offsetPx
+#### propertie: offsetPx
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ number
 offsetPx: 0
 ```
 
-#### property: height
+#### propertie: height
 
 ```js
 // type signature
@@ -49,7 +49,7 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 height: types.optional(types.number, defaultHeight)
 ```
 
-#### property: hideVerticalResizeHandle
+#### propertie: hideVerticalResizeHandle
 
 ```js
 // type signature
@@ -58,7 +58,7 @@ false
 hideVerticalResizeHandle: false
 ```
 
-#### property: hideFilterControls
+#### propertie: hideFilterControls
 
 ```js
 // type signature
@@ -67,18 +67,18 @@ false
 hideFilterControls: false
 ```
 
-#### property: importWizard
+#### propertie: importWizard
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"BED" | "VCF" | "BEDPE" | "STAR-Fusion">, [undefined]>; hasColumnNameLine: IType<boolean | undefined, boolean, boolean>; columnNameLineNumber: IType<...>; selectedAssemblyName: IMaybe<...>; cachedFileLocation: IType<...>; }, { ...; } & ... 3 more ... &...
+IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"VCF" | "BED" | "BEDPE" | "STAR-Fusion">, [undefined]>; hasColumnNameLine: IType<boolean | undefined, boolean, boolean>; columnNameLineNumber: IType<...>; selectedAssemblyName: IMaybe<...>; cachedFileLocation: IType<...>; }, { ...; } & ... 3 more ... &...
 // code
 importWizard: types.optional(ImportWizardModel, () =>
             ImportWizardModel.create(),
           )
 ```
 
-#### property: spreadsheet
+#### propertie: spreadsheet
 
 ```js
 // type signature
@@ -87,7 +87,7 @@ IMaybe<IModelType<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet
 spreadsheet: types.maybe(Spreadsheet())
 ```
 
-#### property: init
+#### propertie: init
 
 used for initializing the view from a session snapshot
 

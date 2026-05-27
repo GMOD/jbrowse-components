@@ -18,11 +18,10 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-Extends LinearFeatureDisplay (not LinearBasicDisplay) since variants don't need
-gene glyph display options.
+Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
 
 ### LinearVariantDisplay - Derives from
 
 ```js
-baseConfiguration: linearFeatureDisplayConfigSchemaFactory(pluginManager)
+baseConfiguration: linearCanvasBaseDisplayConfigSchemaFactory(pluginManager)
 ```

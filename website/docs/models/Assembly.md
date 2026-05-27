@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### Assembly - Properties
 
-#### property: configuration
+#### propertie: configuration
 
 ```js
 // type signature

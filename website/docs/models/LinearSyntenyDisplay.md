@@ -22,11 +22,16 @@ reference the markdown files in our repo of the checked out git tag
 
 extends
 
-- [LinearComparativeDisplay](../linearcomparativedisplay)
+- [BaseDisplay](../basedisplay)
+
+Pure-data model. The containing LinearSyntenyView owns the shared GPU backend,
+the upload autorun (which watches every display's `instanceData` and keys it by
+`displayKey`), and the render autorun. This display only carries per-track state
+and the `renderParams` the view reads out.
 
 ### LinearSyntenyDisplay - Properties
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -35,7 +40,7 @@ ISimpleType<"LinearSyntenyDisplay">
 type: types.literal('LinearSyntenyDisplay')
 ```
 
-#### property: configuration
+#### propertie: configuration
 
 ```js
 // type signature
@@ -44,40 +49,33 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: colorBy
-
-color scheme to use for rendering synteny features
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-colorBy: types.optional(types.string, 'default')
-```
-
-#### property: alpha
-
-alpha transparency value for synteny drawing (0-1)
-
-```js
-// type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-alpha: types.optional(types.number, 0.2)
-```
-
-#### property: minAlignmentLength
-
-minimum alignment length to display (in bp)
-
-```js
-// type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-minAlignmentLength: types.optional(types.number, 0)
-```
-
 ### LinearSyntenyDisplay - Getters
+
+#### getter: parentHelper
+
+```js
+// type
+{
+  height: number
+  level: number
+}
+```
+
+#### getter: displayKey
+
+Stable backend key under the view-shared backend.
+
+```js
+// type
+number
+```
+
+#### getter: height
+
+```js
+// type
+number
+```
 
 #### getter: adapterConfig
 
@@ -102,32 +100,36 @@ number
 
 #### getter: ready
 
-used for synteny svg rendering
+```js
+// type
+boolean
+```
+
+#### getter: loading
+
+Fetch in-flight. Excludes error so error UI and loading UI never show
+simultaneously.
 
 ```js
 // type
 boolean
 ```
 
-#### getter: featMap
-
-```js
-// type
-{ [k: string]: FeatPos; }
-```
-
 #### getter: colorSchemeConfig
 
-cached color scheme config based on colorBy
+```js
+// type
+{ cigarColors: { I: string; N: string; D: string; X: string; M: string; '=': string; }; }
+```
+
+#### getter: effectiveAlpha
 
 ```js
 // type
-{ cigarColors: { I: string; N: string; D: string; X: string; M: string; '=': string; }; } | { posColor: string; negColor: string; cigarColors: { I: string; N: string; D: string; X: string; M: string; '=': string; }; } | { ...; }
+number
 ```
 
 #### getter: colorMapWithAlpha
-
-cached CIGAR colors with alpha applied
 
 ```js
 // type
@@ -136,16 +138,12 @@ cached CIGAR colors with alpha applied
 
 #### getter: posColorWithAlpha
 
-cached positive strand color with alpha
-
 ```js
 // type
 string
 ```
 
 #### getter: negColorWithAlpha
-
-cached negative strand color with alpha
 
 ```js
 // type
@@ -154,97 +152,52 @@ string
 
 #### getter: queryColorWithAlphaMap
 
-cached query colors with alpha - returns a function that caches results
-
 ```js
 // type
 (queryName: string) => string
 ```
 
-#### getter: queryTotalLengths
+#### getter: computedColors
 
-cached query total lengths for minAlignmentLength filtering
+Main-thread-computed per-instance colors. Recomputes whenever colorBy,
+featureData, or instanceData descriptors change — this is the gpuProps half of
+the rpcProps/gpuProps split. colorBy changes flow through here without touching
+the RPC.
 
 ```js
 // type
-Map<string, number> | undefined
+Uint32Array<ArrayBuffer> | undefined
+```
+
+#### getter: renderInstanceData
+
+Instance data with main-thread-computed colors substituted in. The view's upload
+autorun reads this, so any colorBy change re-fires upload without an RPC
+round-trip.
+
+```js
+// type
+{ colors: Uint32Array<ArrayBuffer>; bp1Hi: Float32Array<ArrayBufferLike>; bp1Lo: Float32Array<ArrayBufferLike>; ... 12 more ...; nonCigarInstanceCount: number; } | undefined
+```
+
+#### getter: renderParams
+
+Per-track render params consumed by the view's aggregator. The view substitutes
+yTop before handing this to the backend.
+
+```js
+// type
+{ yTop: number; height: number; alpha: number; minAlignmentLength: number; hoveredFeatureId: number; clickedFeatureId: number; offsetPx0: number; offsetPx1: number; bpPerPx0: number; bpPerPx1: number; drawCurves: boolean; } | undefined
 ```
 
 ### LinearSyntenyDisplay - Actions
 
-#### action: setFeatPositions
+#### action: setRpcData
+
+Set both feature and instance data in one MST action so downstream autoruns
+(upload, render) fire once per RPC completion, not twice.
 
 ```js
 // type signature
-setFeatPositions: (arg: FeatPos[]) => void
-```
-
-#### action: setMainCanvasRef
-
-```js
-// type signature
-setMainCanvasRef: (ref: HTMLCanvasElement | null) => void
-```
-
-#### action: setClickMapCanvasRef
-
-```js
-// type signature
-setClickMapCanvasRef: (ref: HTMLCanvasElement | null) => void
-```
-
-#### action: setCigarClickMapCanvasRef
-
-```js
-// type signature
-setCigarClickMapCanvasRef: (ref: HTMLCanvasElement | null) => void
-```
-
-#### action: setMouseoverCanvasRef
-
-```js
-// type signature
-setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
-```
-
-#### action: setMouseoverId
-
-```js
-// type signature
-setMouseoverId: (arg?: string | undefined) => void
-```
-
-#### action: setCigarMouseoverId
-
-```js
-// type signature
-setCigarMouseoverId: (arg: number) => void
-```
-
-#### action: setClickId
-
-```js
-// type signature
-setClickId: (arg?: string | undefined) => void
-```
-
-#### action: setAlpha
-
-```js
-// type signature
-setAlpha: (value: number) => void
-```
-
-#### action: setMinAlignmentLength
-
-```js
-// type signature
-setMinAlignmentLength: (value: number) => void
-```
-
-#### action: setColorBy
-
-```js
-// type signature
-setColorBy: (value: string) => void
+setRpcData: (featureData: SyntenyFeatureData | undefined, instanceData: SyntenyGeometry | undefined) => void
 ```

@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### DesktopSessionManagementMixin - Properties
 
-#### property: sessionPath
+#### propertie: sessionPath
 
 ```js
 // type signature

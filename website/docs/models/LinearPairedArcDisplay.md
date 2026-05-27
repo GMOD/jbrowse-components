@@ -31,7 +31,7 @@ extends
 
 ### LinearPairedArcDisplay - Properties
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ ISimpleType<"LinearPairedArcDisplay">
 type: types.literal('LinearPairedArcDisplay')
 ```
 
-#### property: configuration
+#### propertie: configuration
 
 ```js
 // type signature
@@ -49,7 +49,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: displayMode
+#### propertie: displayMode
 
 ```js
 // type signature

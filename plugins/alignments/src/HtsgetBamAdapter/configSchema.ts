@@ -3,7 +3,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config HtsgetBamAdapter
  * Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam library
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const HtsgetBamAdapter = ConfigurationSchema(
   'HtsgetBamAdapter',

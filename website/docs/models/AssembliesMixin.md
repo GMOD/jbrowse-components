@@ -25,7 +25,7 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 
 ### AssembliesMixin - Properties
 
-#### property: sessionAssemblies
+#### propertie: sessionAssemblies
 
 ```js
 // type signature
@@ -34,7 +34,7 @@ IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: neve
 sessionAssemblies: types.array(assemblyConfigSchemasType)
 ```
 
-#### property: temporaryAssemblies
+#### propertie: temporaryAssemblies
 
 ```js
 // type signature

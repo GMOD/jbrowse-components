@@ -26,7 +26,7 @@ extends
 
 ### LinearComparativeView - Properties
 
-#### property: id
+#### propertie: id
 
 ```js
 // type signature
@@ -35,7 +35,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -44,7 +44,7 @@ ISimpleType<"LinearComparativeView">
 type: types.literal('LinearComparativeView')
 ```
 
-#### property: trackSelectorType
+#### propertie: trackSelectorType
 
 ```js
 // type signature
@@ -53,7 +53,7 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
-#### property: showIntraviewLinks
+#### propertie: showIntraviewLinks
 
 ```js
 // type signature
@@ -62,7 +62,7 @@ true
 showIntraviewLinks: true
 ```
 
-#### property: linkViews
+#### propertie: linkViews
 
 ```js
 // type signature
@@ -71,7 +71,7 @@ false
 linkViews: false
 ```
 
-#### property: interactiveOverlay
+#### propertie: interactiveOverlay
 
 ```js
 // type signature
@@ -80,7 +80,16 @@ false
 interactiveOverlay: false
 ```
 
-#### property: showDynamicControls
+#### propertie: scrollZoom
+
+```js
+// type signature
+false
+// code
+scrollZoom: false
+```
+
+#### propertie: showDynamicControls
 
 ```js
 // type signature
@@ -89,7 +98,7 @@ true
 showDynamicControls: true
 ```
 
-#### property: levels
+#### propertie: levels
 
 ```js
 // type signature
@@ -98,7 +107,7 @@ IArrayType<IAnyModelType>
 levels: types.array(LinearSyntenyViewHelper!)
 ```
 
-#### property: views
+#### propertie: views
 
 currently this is limited to an array of two
 
@@ -112,7 +121,7 @@ views: types.array(
         )
 ```
 
-#### property: viewTrackConfigs
+#### propertie: viewTrackConfigs
 
 this represents tracks specific to this view specifically used for read vs ref
 dotplots where this track would not really apply elsewhere
@@ -167,6 +176,13 @@ boolean
 
 ### LinearComparativeView - Methods
 
+#### method: isViewCompact
+
+```js
+// type signature
+isViewCompact: (idx: number) => boolean
+```
+
 #### method: headerMenuItems
 
 includes a subset of view menu options because the full list is a little
@@ -175,6 +191,16 @@ overwhelming. overridden by subclasses
 ```js
 // type signature
 headerMenuItems: () => MenuItem[]
+```
+
+#### method: showMenuItems
+
+items for the "Show..." submenu in the header. overridden by subclasses to add
+view-specific toggle options
+
+```js
+// type signature
+showMenuItems: () => MenuItem[]
 ```
 
 #### method: menuItems
@@ -221,18 +247,18 @@ setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimp
 removeView: (view: { id: string; displayName: string | undefined; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 16 more ...; init: (InitState & IStateTreeNode<...>) | undefined; } & ... 19 more ......
 ```
 
-#### action: setLevelHeight
-
-```js
-// type signature
-setLevelHeight: (newHeight: number, level?: number) => any
-```
-
 #### action: setLinkViews
 
 ```js
 // type signature
 setLinkViews: (arg: boolean) => void
+```
+
+#### action: setScrollZoom
+
+```js
+// type signature
+setScrollZoom: (arg: boolean) => void
 ```
 
 #### action: setShowDynamicControls
@@ -282,4 +308,32 @@ squareView: () => void
 ```js
 // type signature
 clearView: () => void
+```
+
+#### action: toggleCompactView
+
+```js
+// type signature
+toggleCompactView: (idx: number) => void
+```
+
+#### action: compactAllViews
+
+```js
+// type signature
+compactAllViews: () => void
+```
+
+#### action: expandAllViews
+
+```js
+// type signature
+expandAllViews: () => void
+```
+
+#### action: autoScaleLevelHeights
+
+```js
+// type signature
+autoScaleLevelHeights: () => void
 ```

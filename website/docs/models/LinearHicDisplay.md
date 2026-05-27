@@ -20,117 +20,127 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-Non-block-based Hi-C display that renders to a single canvas extends
+Hi-C display that renders contact matrix using WebGL extends
 
 - [BaseDisplay](../basedisplay)
 - [TrackHeightMixin](../trackheightmixin)
-- [FeatureDensityMixin](../featuredensitymixin)
-- [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
+- [GlobalDataDisplayMixin](../globaldatadisplaymixin)
 
 ### LinearHicDisplay - Properties
 
-#### property: type
+#### propertie: resolutionBias
+
+Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure
+auto. `-1` is one step finer than auto, `+1` is one step coarser, etc. Tracking
+the _offset_ (not an absolute binsize) keeps the user's intent valid across zoom
+levels — a saved session with bias=-1 still means "one step finer than auto"
+when reopened at a different scale.
 
 ```js
 // type signature
-ISimpleType<"LinearHicDisplay">
+number
 // code
-type: types.literal('LinearHicDisplay')
+resolutionBias: 0
 ```
 
-#### property: configuration
+#### propertie: useColorPercentile
 
-```js
-// type signature
-ITypeUnion<any, any, any>
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
-#### property: resolution
-
-```js
-// type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-resolution: types.optional(types.number, 1)
-```
-
-#### property: useLogScale
+Color saturation point: false → maxScore/20 (linear) or maxScore (log), matches
+legacy behavior. true → 95th percentile of counts; lower saturation point so
+off-diagonal contacts read more strongly.
 
 ```js
 // type signature
 false
 // code
-useLogScale: false
-```
-
-#### property: colorScheme
-
-```js
-// type signature
-IMaybe<ISimpleType<string>>
-// code
-colorScheme: types.maybe(types.string)
-```
-
-#### property: activeNormalization
-
-```js
-// type signature
-string
-// code
-activeNormalization: 'KR'
-```
-
-#### property: mode
-
-```js
-// type signature
-string
-// code
-mode: 'triangular'
-```
-
-#### property: showLegend
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-showLegend: types.maybe(types.boolean)
+useColorPercentile: false
 ```
 
 ### LinearHicDisplay - Getters
 
-#### getter: rendererTypeName
+#### getter: autoResolutionIdx
+
+Index into `availableResolutions` that pure auto-mode would pick at the current
+zoom — largest binsize ≤ 2\*bpPerPx, falling back to the finest binsize (idx 0)
+when nothing qualifies (very zoomed in).
+
+The factor 2 floors at ~0.5 bins/screen-pixel, which keeps bins visible without
+going sub-pixel; users who want finer can step the resolution bias down.
 
 ```js
 // type
-string
+number
+```
+
+#### getter: effectiveResolutionIdx
+
+Index actually used after applying `resolutionBias`, clamped to the valid range
+so a stale bias from a different zoom level can't index out of bounds.
+
+```js
+// type
+number
+```
+
+#### getter: effectiveResolution
+
+The actual binsize to fetch at, after auto-pick + bias.
+
+```js
+// type
+number | undefined
+```
+
+#### getter: renderTransform
+
+Forward transform { scale, viewOffsetX } shared by GPU render, mouse hit-test,
+and SVG export. See `computeRenderTransform` for the math.
+
+```js
+// type
+RenderTransform
 ```
 
 ### LinearHicDisplay - Methods
 
-#### method: renderProps
+#### method: nextResolution
+
+The binsize that `stepResolution(dir)` would land on, or undefined if no valid
+step exists in that direction. Consumed by both the UI (button disabled state)
+and `stepResolution` itself, so there's one source of truth for "what's the next
+resolution".
 
 ```js
 // type signature
-renderProps: () => any
+nextResolution: (dir: 1 | -1) => number | undefined
 ```
 
-#### method: legendItems
+#### method: hitTest
 
-Returns legend items for the Hi-C color scale
+Inverse of the render transform: takes mouse coords (canvas-relative) and
+returns the contact bin under the cursor, or undefined. The forward transform
+lives in `renderTransform`; this is its inverse so hit-testing always matches
+what was drawn.
 
 ```js
 // type signature
-legendItems: () => LegendItem[]
+hitTest: (mouseX: number, mouseY: number) => HicContactItem | undefined
+```
+
+#### method: renderState
+
+Computed per-frame render state for the GPU backend. Read by the autorun
+lifecycle on every change to any tracked observable.
+
+```js
+// type signature
+renderState: { binWidth: number; yScalar: number; canvasWidth: number; canvasHeight: number; colorMaxScore: number; useLogScale: boolean; viewScale: number; viewOffsetX: number; } | undefined
 ```
 
 #### method: svgLegendWidth
 
-Returns the width needed for the SVG legend if showLegend is enabled.
+Width of the SVG legend (consumed by SVGLinearGenomeView). Returns 0 when no
+legend will be drawn so the export framework can omit space.
 
 ```js
 // type signature
@@ -141,7 +151,7 @@ svgLegendWidth: () => number
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => MenuItem[]
 ```
 
 #### method: renderSvg
@@ -153,25 +163,21 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 
 ### LinearHicDisplay - Actions
 
-#### action: setFlatbushData
+#### action: setRpcData
 
 ```js
 // type signature
-setFlatbushData: (flatbush: ArrayBufferLike | undefined, items: HicFlatbushItem[], maxScore: number, yScalar: number) => void
+setRpcData: (data: HicDataResult | null) => void
 ```
 
-#### action: reload
+#### action: startBackend
+
+Called by the React hook (`useGpuBackend`) when the HAL resolves. Wires the
+backend into the mixin-owned autorun pair via `attachBackend`.
 
 ```js
 // type signature
-reload: () => void
-```
-
-#### action: setResolution
-
-```js
-// type signature
-setResolution: (n: number) => void
+startBackend: (backend: HicBackend) => void
 ```
 
 #### action: setUseLogScale
@@ -181,11 +187,18 @@ setResolution: (n: number) => void
 setUseLogScale: (f: boolean) => void
 ```
 
+#### action: setUseColorPercentile
+
+```js
+// type signature
+setUseColorPercentile: (f: boolean) => void
+```
+
 #### action: setColorScheme
 
 ```js
 // type signature
-setColorScheme: (f?: string | undefined) => void
+setColorScheme: (f?: "fall" | "juicebox" | "viridis" | undefined) => void
 ```
 
 #### action: setActiveNormalization
@@ -206,7 +219,7 @@ setAvailableNormalizations: (f: string[]) => void
 
 ```js
 // type signature
-setMode: (arg: string) => void
+setMode: (arg: HicRenderMode) => void
 ```
 
 #### action: setShowLegend
@@ -214,4 +227,49 @@ setMode: (arg: string) => void
 ```js
 // type signature
 setShowLegend: (arg: boolean) => void
+```
+
+#### action: setAvailableResolutions
+
+```js
+// type signature
+setAvailableResolutions: (f: number[]) => void
+```
+
+#### action: stepResolution
+
+dir = -1 → finer (smaller binsize); dir = +1 → coarser. Re-grounds the bias
+against the _current_ effective index so repeated clicks at a clamped boundary
+don't accumulate stale bias the user can't see — the bias always reflects what's
+actually on screen.
+
+```js
+// type signature
+stepResolution: (dir: 1 | -1) => void
+```
+
+#### action: resetResolutionBias
+
+Reset to pure auto-mode: bias 0, binsize follows zoom directly.
+
+```js
+// type signature
+resetResolutionBias: () => void
+```
+
+#### action: performHicFetch
+
+Re-fetches contact matrix for the current viewport. Both the autorun (in
+`afterAttach`) and `reload()` invoke this directly.
+
+```js
+// type signature
+performHicFetch: () => Promise<void>
+```
+
+#### action: reload
+
+```js
+// type signature
+reload: () => void
 ```

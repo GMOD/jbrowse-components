@@ -5,7 +5,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * can read "chromAliases" type files from UCSC or any tab separated file of
  * refName aliases
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri

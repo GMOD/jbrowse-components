@@ -41,11 +41,3 @@ middle: {
         defaultValue: true,
       }
 ```
-
-### LinearSyntenyDisplay - Derives from
-
-this refers to the LinearComparativeDisplay
-
-```js
-baseConfiguration: baseConfigFactory(pluginManager)
-```

@@ -20,14 +20,13 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-Similar to feature display, but provides custom widget on feature click. Does
-not include gene glyph options since variants are not genes. extends
+GPU-accelerated variant display with custom feature widget on click. extends
 
-- [LinearFeatureDisplay](../linearfeaturedisplay)
+- [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 
 ### LinearVariantDisplay - Properties
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -36,38 +35,7 @@ ISimpleType<"LinearVariantDisplay">
 type: types.literal('LinearVariantDisplay')
 ```
 
-#### property: configuration
-
-```js
-// type signature
-ITypeUnion<any, any, any>
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
-#### property: minorAlleleFrequencyFilterSetting
-
-Minor allele frequency filter threshold (0-0.5) When undefined, falls back to
-config value
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-minorAlleleFrequencyFilterSetting: types.maybe(types.number)
-```
-
 ### LinearVariantDisplay - Getters
-
-#### getter: minorAlleleFrequencyFilter
-
-Gets the minor allele frequency filter threshold Falls back to config value if
-setting is not defined
-
-```js
-// type
-any
-```
 
 #### getter: featureWidgetType
 
@@ -77,31 +45,4 @@ any
   type: string
   id: string
 }
-```
-
-### LinearVariantDisplay - Methods
-
-#### method: activeFilters
-
-Override to add MAF filter to active filters
-
-```js
-// type signature
-activeFilters: () => string[]
-```
-
-#### method: filterMenuItems
-
-```js
-// type signature
-filterMenuItems: () => MenuItem[]
-```
-
-### LinearVariantDisplay - Actions
-
-#### action: setMafFilter
-
-```js
-// type signature
-setMafFilter: (value: number) => void
 ```

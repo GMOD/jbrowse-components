@@ -4,7 +4,6 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 /**
  * #config JB2TrackHubConnection
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const JB2TrackHubConnection = ConfigurationSchema(
   'JB2TrackHubConnection',

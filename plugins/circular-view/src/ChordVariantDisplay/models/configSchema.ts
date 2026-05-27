@@ -6,7 +6,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 /**
  * #config ChordVariantDisplay
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(

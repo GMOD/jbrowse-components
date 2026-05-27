@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### DotplotDisplay - Properties
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ ISimpleType<"DotplotDisplay">
 type: types.literal('DotplotDisplay')
 ```
 
-#### property: configuration
+#### propertie: configuration
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: colorBy
+#### propertie: colorBy
 
 color by setting that overrides the config setting
 
@@ -51,29 +51,31 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 colorBy: types.optional(types.string, 'default')
 ```
 
-### DotplotDisplay - Getters
-
-#### getter: rendererTypeName
-
-```js
-// type
-any
-```
-
-### DotplotDisplay - Methods
-
-#### method: renderProps
+#### propertie: alpha
 
 ```js
 // type signature
-renderProps: () => any
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+alpha: types.optional(types.number, 1)
 ```
+
+#### propertie: minAlignmentLength
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+minAlignmentLength: types.optional(types.number, 0)
+```
+
+### DotplotDisplay - Methods
 
 #### method: renderSvg
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions | undefined; }) => Promise<Element | null>
+renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions | undefined; }) => Promise<string | number | bigint | boolean | Iterable<ReactNode> | Element | null | undefined>
 ```
 
 ### DotplotDisplay - Actions
@@ -82,21 +84,14 @@ renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions | undefined; }) => P
 
 ```js
 // type signature
-setLoading: (stopToken?: StopToken | undefined) => void
+setLoading: (stopToken: StopToken) => void
 ```
 
-#### action: setMessage
+#### action: setRpcData
 
 ```js
 // type signature
-setMessage: (messageText: string) => void
-```
-
-#### action: setRendered
-
-```js
-// type signature
-setRendered: (args?: { data: any; reactElement: ReactElement<unknown, string | JSXElementConstructor<any>>; renderingComponent: Component<{}, {}, any>; } | undefined) => void
+setRpcData: (data: DotplotRpcData) => void
 ```
 
 #### action: setError
@@ -124,5 +119,5 @@ setMinAlignmentLength: (value: number) => void
 
 ```js
 // type signature
-setColorBy: (value: string) => void
+setColorBy: (value: SyntenyColorBy) => void
 ```

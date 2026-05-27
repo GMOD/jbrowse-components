@@ -16,7 +16,6 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 /**
  * #config BedTabixAdapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const BedTabixAdapter = ConfigurationSchema(
   'BedTabixAdapter',

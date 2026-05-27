@@ -4,7 +4,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 /**
  * #config ArcRenderer
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const ArcRenderer = ConfigurationSchema(
   'ArcRenderer',

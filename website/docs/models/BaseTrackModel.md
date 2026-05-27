@@ -26,7 +26,7 @@ that multiple displayed tracks could use the same configuration.
 
 ### BaseTrackModel - Properties
 
-#### property: id
+#### propertie: id
 
 ```js
 // type signature
@@ -35,7 +35,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -44,7 +44,7 @@ ISimpleType<string>
 type: types.literal(trackType)
 ```
 
-#### property: configuration
+#### propertie: configuration
 
 ```js
 // type signature
@@ -53,7 +53,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(baseTrackConfig)
 ```
 
-#### property: minimized
+#### propertie: minimized
 
 ```js
 // type signature
@@ -62,7 +62,7 @@ false
 minimized: false
 ```
 
-#### property: pinned
+#### propertie: pinned
 
 ```js
 // type signature
@@ -71,7 +71,7 @@ false
 pinned: false
 ```
 
-#### property: displays
+#### propertie: displays
 
 ```js
 // type signature

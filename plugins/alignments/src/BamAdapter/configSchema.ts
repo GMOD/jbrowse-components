@@ -5,7 +5,6 @@ import { types } from '@jbrowse/mobx-state-tree'
  * #config BamAdapter
  * used to configure BAM adapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri

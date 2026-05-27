@@ -8,7 +8,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * Track type for displaying pre-computed linkage disequilibrium data
  * (e.g., from PLINK --r2 output)
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const configSchema = (pluginManager: PluginManager) =>
   ConfigurationSchema(

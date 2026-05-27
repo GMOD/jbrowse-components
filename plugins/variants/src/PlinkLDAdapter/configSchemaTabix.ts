@@ -13,7 +13,6 @@ import { types } from '@jbrowse/mobx-state-tree'
  * Expected columns: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2
  * Optional columns: DP (D'), MAF_A, MAF_B
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const PlinkLDTabixAdapter = ConfigurationSchema(
   'PlinkLDTabixAdapter',

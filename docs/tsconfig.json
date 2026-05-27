@@ -2,17 +2,15 @@
   "compilerOptions": {
     "target": "esnext",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "outDir": "dist",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "declaration": true,
-    "module": "commonjs",
+    "module": "esnext",
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "moduleResolution": "node"
+    "moduleResolution": "bundler",
+    "types": ["node"]
   },
   "include": ["generateConfigDocs.ts", "generateStateModelDocs.ts", "util.ts"]
 }

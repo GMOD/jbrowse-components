@@ -7,7 +7,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config LinearHicDisplay
  * #category display
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const HicTrackConfigFactory = () => {
   return ConfigurationSchema(

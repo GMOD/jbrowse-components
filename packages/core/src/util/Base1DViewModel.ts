@@ -16,8 +16,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * used in non-lgv view representations of a 1d view e.g. the two axes of the
  * dotplot use this
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 const Base1DView = types
   .model('Base1DView', {
     /**

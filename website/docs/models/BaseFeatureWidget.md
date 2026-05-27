@@ -27,7 +27,7 @@ see: formatDetails-\>feature,formatDetails-\>subfeatures
 
 ### BaseFeatureWidget - Properties
 
-#### property: id
+#### propertie: id
 
 ```js
 // type signature
@@ -36,7 +36,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -45,7 +45,7 @@ ISimpleType<"BaseFeatureWidget">
 type: types.literal('BaseFeatureWidget')
 ```
 
-#### property: featureData
+#### propertie: featureData
 
 ```js
 // type signature
@@ -54,7 +54,7 @@ IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>
 featureData: types.frozen<MaybeSerializedFeat>()
 ```
 
-#### property: formattedFields
+#### propertie: formattedFields
 
 ```js
 // type signature
@@ -63,7 +63,7 @@ IType<any, any, any>
 formattedFields: types.frozen()
 ```
 
-#### property: unformattedFeatureData
+#### propertie: unformattedFeatureData
 
 ```js
 // type signature
@@ -72,7 +72,7 @@ IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>
 unformattedFeatureData: types.frozen<MaybeSerializedFeat>()
 ```
 
-#### property: view
+#### propertie: view
 
 ```js
 // type signature
@@ -83,7 +83,7 @@ view: types.safeReference(
       )
 ```
 
-#### property: track
+#### propertie: track
 
 ```js
 // type signature
@@ -94,7 +94,7 @@ track: types.safeReference(
       )
 ```
 
-#### property: trackId
+#### propertie: trackId
 
 ```js
 // type signature
@@ -103,7 +103,7 @@ IMaybe<ISimpleType<string>>
 trackId: types.maybe(types.string)
 ```
 
-#### property: trackType
+#### propertie: trackType
 
 ```js
 // type signature
@@ -112,7 +112,7 @@ IMaybe<ISimpleType<string>>
 trackType: types.maybe(types.string)
 ```
 
-#### property: maxDepth
+#### propertie: maxDepth
 
 ```js
 // type signature
@@ -121,7 +121,7 @@ IMaybe<ISimpleType<number>>
 maxDepth: types.maybe(types.number)
 ```
 
-#### property: sequenceFeatureDetails
+#### propertie: sequenceFeatureDetails
 
 ```js
 // type signature
@@ -130,7 +130,7 @@ IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number
 sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 ```
 
-#### property: descriptions
+#### propertie: descriptions
 
 ```js
 // type signature

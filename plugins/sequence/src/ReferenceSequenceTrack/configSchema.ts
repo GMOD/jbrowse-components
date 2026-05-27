@@ -11,7 +11,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * #config ReferenceSequenceTrack
  * used to display base level DNA sequence tracks
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
   return ConfigurationSchema(

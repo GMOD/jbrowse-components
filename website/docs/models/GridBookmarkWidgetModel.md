@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### GridBookmarkWidgetModel - Properties
 
-#### property: id
+#### propertie: id
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ ISimpleType<"GridBookmarkWidget">
 type: types.literal('GridBookmarkWidget')
 ```
 
-#### property: bookmarks
+#### propertie: bookmarks
 
 removed by postProcessSnapshot, only loaded from localStorage
 

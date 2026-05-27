@@ -25,7 +25,7 @@ everything will use it.
 
 ### BaseSessionModel - Properties
 
-#### property: id
+#### propertie: id
 
 ```js
 // type signature
@@ -34,7 +34,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: name
+#### propertie: name
 
 ```js
 // type signature
@@ -43,7 +43,7 @@ ISimpleType<string>
 name: types.string
 ```
 
-#### property: margin
+#### propertie: margin
 
 ```js
 // type signature
@@ -52,7 +52,7 @@ number
 margin: 0
 ```
 
-#### property: focusedViewId
+#### propertie: focusedViewId
 
 used to keep track of which view is in focus
 

@@ -8,7 +8,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 /**
  * #config VariantMatrixDisplay
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function configSchemaF(_pluginManager: PluginManager) {
   return ConfigurationSchema(

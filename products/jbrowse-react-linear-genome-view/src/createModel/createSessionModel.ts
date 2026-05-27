@@ -25,7 +25,6 @@ import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-v
  * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
  * - [SnackbarModel](../snackbarmodel)
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types

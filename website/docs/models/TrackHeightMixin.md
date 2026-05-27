@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### TrackHeightMixin - Properties
 
-#### property: heightPreConfig
+#### propertie: heightPreConfig
 
 ```js
 // type signature

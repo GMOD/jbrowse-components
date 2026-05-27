@@ -4,7 +4,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config NcbiSequenceReportAliasAdapter
  * can read "sequence_report.tsv" type files from NCBI
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri

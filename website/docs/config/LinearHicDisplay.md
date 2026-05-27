@@ -20,12 +20,6 @@ reference the markdown files in our repo of the checked out git tag
 
 ### LinearHicDisplay - Slots
 
-#### slot: renderer
-
-```js
-renderer: pluginManager.getRendererType('HicRenderer')!.configSchema
-```
-
 #### slot: height
 
 ```js

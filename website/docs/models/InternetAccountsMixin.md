@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### InternetAccountsMixin - Properties
 
-#### property: internetAccounts
+#### propertie: internetAccounts
 
 ```js
 // type signature

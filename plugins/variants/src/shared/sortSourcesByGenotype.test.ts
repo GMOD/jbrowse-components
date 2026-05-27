@@ -10,22 +10,14 @@ const sample = (
 
 describe('sortSourcesByGenotype', () => {
   test('puts samples with more non-ref alleles first', () => {
-    const sources = [
-      sample('A', 'A'),
-      sample('B', 'B'),
-      sample('C', 'C'),
-    ]
+    const sources = [sample('A', 'A'), sample('B', 'B'), sample('C', 'C')]
     const genotypes = { A: '0/0', B: '1/1', C: '0/1' }
     const result = sortSourcesByGenotype(sources, genotypes)
     expect(result.map(s => s.name)).toEqual(['B', 'C', 'A'])
   })
 
   test('missing genotype falls back to "./.": sorted last', () => {
-    const sources = [
-      sample('A', 'A'),
-      sample('B', 'B'),
-      sample('C', 'C'),
-    ]
+    const sources = [sample('A', 'A'), sample('B', 'B'), sample('C', 'C')]
     const genotypes = { A: '0/1', B: '1/1' } // C missing
     const result = sortSourcesByGenotype(sources, genotypes)
     expect(result.map(s => s.name)).toEqual(['B', 'A', 'C'])

@@ -26,7 +26,7 @@ extends
 
 ### CircularView - Properties
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -35,7 +35,7 @@ ISimpleType<"CircularView">
 type: types.literal('CircularView')
 ```
 
-#### property: offsetRadians
+#### propertie: offsetRadians
 
 similar to offsetPx in linear genome view
 
@@ -46,7 +46,7 @@ number
 offsetRadians: defaultOffsetRadians
 ```
 
-#### property: bpPerPx
+#### propertie: bpPerPx
 
 ```js
 // type signature
@@ -55,7 +55,7 @@ number
 bpPerPx: defaultBpPerPx
 ```
 
-#### property: tracks
+#### propertie: tracks
 
 ```js
 // type signature
@@ -66,7 +66,7 @@ tracks: types.array(
         )
 ```
 
-#### property: hideVerticalResizeHandle
+#### propertie: hideVerticalResizeHandle
 
 ```js
 // type signature
@@ -75,7 +75,7 @@ false
 hideVerticalResizeHandle: false
 ```
 
-#### property: hideTrackSelectorButton
+#### propertie: hideTrackSelectorButton
 
 ```js
 // type signature
@@ -84,7 +84,7 @@ false
 hideTrackSelectorButton: false
 ```
 
-#### property: disableImportForm
+#### propertie: disableImportForm
 
 ```js
 // type signature
@@ -93,7 +93,7 @@ false
 disableImportForm: false
 ```
 
-#### property: height
+#### propertie: height
 
 ```js
 // type signature
@@ -102,7 +102,7 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 height: types.optional(types.number, defaultHeight)
 ```
 
-#### property: minimumRadiusPx
+#### propertie: minimumRadiusPx
 
 ```js
 // type signature
@@ -111,7 +111,7 @@ number
 minimumRadiusPx: defaultMinimumRadiusPx
 ```
 
-#### property: spacingPx
+#### propertie: spacingPx
 
 ```js
 // type signature
@@ -120,7 +120,7 @@ number
 spacingPx: defaultSpacingPx
 ```
 
-#### property: paddingPx
+#### propertie: paddingPx
 
 ```js
 // type signature
@@ -129,7 +129,7 @@ number
 paddingPx: defaultPaddingPx
 ```
 
-#### property: minVisibleWidth
+#### propertie: minVisibleWidth
 
 ```js
 // type signature
@@ -138,7 +138,7 @@ number
 minVisibleWidth: defaultMinVisibleWidth
 ```
 
-#### property: minimumBlockWidth
+#### propertie: minimumBlockWidth
 
 ```js
 // type signature
@@ -147,7 +147,7 @@ number
 minimumBlockWidth: defaultMinimumBlockWidth
 ```
 
-#### property: trackSelectorType
+#### propertie: trackSelectorType
 
 ```js
 // type signature
@@ -156,7 +156,7 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
-#### property: init
+#### propertie: init
 
 used for initializing the view from a session snapshot
 

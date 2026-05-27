@@ -8,7 +8,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
-  SimpleFeature,
   getContainingTrack,
   getContainingView,
   getSession,
@@ -32,6 +31,12 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, observable } from 'mobx'
 
 import {
+  fetchCanvasFeatureDetails,
+  findSubfeatureById,
+  indexById,
+  screenDensity,
+} from './baseModelHelpers.ts'
+import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
@@ -54,7 +59,6 @@ import type {
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -73,82 +77,15 @@ export function getView(self: IAnyStateTreeNode): LGV {
   return getContainingView(self) as LGV
 }
 
-function findSubfeatureById(
-  feature: Feature,
-  targetId: string,
-): Feature | undefined {
-  const subfeatures = feature.get('subfeatures')
-  if (subfeatures) {
-    for (const sub of subfeatures) {
-      if (sub.id() === targetId) {
-        return sub
-      }
-      const found = findSubfeatureById(sub, targetId)
-      if (found) {
-        return found
-      }
-    }
-  }
-  return undefined
-}
-
 export type { Region } from '@jbrowse/core/util'
-
-async function fetchCanvasFeatureDetails(
-  session: {
-    rpcManager: RpcManager
-    notifyError: (msg: string, err?: unknown) => void
-  },
-  sessionId: string,
-  adapterConfig: Record<string, unknown>,
-  featureId: string,
-  region: Region,
-) {
-  try {
-    const result = await session.rpcManager.call(
-      sessionId,
-      'GetCanvasFeatureDetails',
-      { sessionId, adapterConfig, featureId, region },
-    )
-    return result.feature ? new SimpleFeature(result.feature) : undefined
-  } catch (e) {
-    console.error('Failed to fetch feature details:', e)
-    session.notifyError(`${e}`, e)
-    return undefined
-  }
-}
 
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 
 const DESCRIPTION_DENSITY_THRESHOLD = 0.2
 
-// Features-per-pixel for a single region given its raw count, the region's
-// genomic span, and the current bpPerPx. Used by the derived regionTooLarge
-// banner and by force-load to sample observed density.
-function screenDensity(
-  ds: { featureCount: number; regionWidthBp: number },
-  bpPerPx: number,
-) {
-  return (ds.featureCount / ds.regionWidthBp) * bpPerPx
-}
-
-// First-wins index from per-region arrays. Spanning features can appear in
-// multiple regions; we keep the first occurrence so consumers (hover lookup,
-// selection, label resolution) get a single, stable item per featureId.
-function indexById<T extends { featureId: string }>(
-  laidOutDataMap: ReadonlyMap<number, FeatureDataResult>,
-  pick: (data: FeatureDataResult) => readonly T[],
-) {
-  const map = new Map<string, T>()
-  for (const data of laidOutDataMap.values()) {
-    for (const item of pick(data)) {
-      if (!map.has(item.featureId)) {
-        map.set(item.featureId, item)
-      }
-    }
-  }
-  return map
-}
+// rgba string used when outline is toggled on via the menu; schema stores the
+// raw color so users can still set their own via setOverride('outline', '#...').
+const OUTLINE_DEFAULT_RGBA = 'rgba(0,0,0,0.3)'
 
 // Shared GPU-accelerated feature display base for canvas-rendered tracks.
 // Handles fetching, layout, the "Show labels" / "Show descriptions" UI, and
@@ -688,7 +625,7 @@ export default function baseStateModelFactory(
         },
 
         setShowOutline(value: boolean) {
-          self.setOverride('outline', value ? 'rgba(0,0,0,0.3)' : '')
+          self.setOverride('outline', value ? OUTLINE_DEFAULT_RGBA : '')
         },
 
         showContextMenuForFeature(

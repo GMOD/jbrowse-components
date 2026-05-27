@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### JBrowseReactLinearGenomeViewRootModel - Properties
 
-#### property: config
+#### propertie: config
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaTy
 config: createConfigModel(pluginManager, assemblyConfig)
 ```
 
-#### property: session
+#### propertie: session
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimple
 session: Session
 ```
 
-#### property: assemblyManager
+#### propertie: assemblyManager
 
 ```js
 // type signature
@@ -49,7 +49,7 @@ IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: I
 assemblyManager: types.optional(AssemblyManager, {})
 ```
 
-#### property: disableAddTracks
+#### propertie: disableAddTracks
 
 ```js
 // type signature
@@ -58,7 +58,7 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 disableAddTracks: types.optional(types.boolean, false)
 ```
 
-#### property: drawerViewHeight
+#### propertie: drawerViewHeight
 
 ```js
 // type signature
@@ -67,7 +67,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 drawerViewHeight: types.optional(types.string, '100vh')
 ```
 
-#### property: internetAccounts
+#### propertie: internetAccounts
 
 ```js
 // type signature

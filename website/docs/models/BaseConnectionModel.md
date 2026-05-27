@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### BaseConnectionModel - Properties
 
-#### property: name
+#### propertie: name
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ ISimpleType<string>
 name: types.identifier
 ```
 
-#### property: tracks
+#### propertie: tracks
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ IArrayType<IAnyModelType>
 tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
 ```
 
-#### property: configuration
+#### propertie: configuration
 
 ```js
 // type signature

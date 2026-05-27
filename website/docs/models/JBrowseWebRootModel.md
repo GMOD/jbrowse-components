@@ -33,7 +33,7 @@ model (via e.g. getRoot) in plugin code
 
 ### JBrowseWebRootModel - Properties
 
-#### property: configPath
+#### propertie: configPath
 
 ```js
 // type signature

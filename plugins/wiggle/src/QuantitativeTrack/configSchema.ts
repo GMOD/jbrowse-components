@@ -6,7 +6,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 /**
  * #config QuantitativeTrack
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(

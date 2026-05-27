@@ -21,13 +21,3 @@ reference the markdown files in our repo of the checked out git tag
 ### DotplotDisplay - Identifier
 
 #### slot: explicitIdentifier
-
-### DotplotDisplay - Slots
-
-#### slot: renderer
-
-```js
-renderer: types.optional(pm.pluggableConfigSchemaType('renderer'), {
-  type: 'DotplotRenderer',
-})
-```

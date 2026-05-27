@@ -50,7 +50,6 @@ export type HicRenderMode = 'triangular' | 'adjust'
  * - [TrackHeightMixin](../trackheightmixin)
  * - [GlobalDataDisplayMixin](../globaldatadisplaymixin)
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,

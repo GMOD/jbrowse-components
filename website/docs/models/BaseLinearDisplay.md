@@ -31,7 +31,7 @@ extends
 
 ### BaseLinearDisplay - Properties
 
-#### property: blockState
+#### propertie: blockState
 
 updated via autorun
 
@@ -42,7 +42,7 @@ IMapType<IModelType<{ key: ISimpleType<string>; region: IType<Region, Region, Re
 blockState: types.map(BlockState)
 ```
 
-#### property: configuration
+#### propertie: configuration
 
 ```js
 // type signature
@@ -51,7 +51,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: showLegend
+#### propertie: showLegend
 
 ```js
 // type signature
@@ -60,7 +60,7 @@ IMaybe<ISimpleType<boolean>>
 showLegend: types.maybe(types.boolean)
 ```
 
-#### property: showTooltips
+#### propertie: showTooltips
 
 ```js
 // type signature

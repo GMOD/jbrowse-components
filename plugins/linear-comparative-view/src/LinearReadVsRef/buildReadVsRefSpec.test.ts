@@ -2,7 +2,13 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { buildReadVsRefSpec } from './buildReadVsRefSpec.ts'
 
-function makeFeature(data: Record<string, unknown>) {
+function makeFeature(
+  data: Record<string, unknown> & {
+    start: number
+    end: number
+    refName: string
+  },
+) {
   return new SimpleFeature({
     uniqueId: 'test-feat',
     ...data,

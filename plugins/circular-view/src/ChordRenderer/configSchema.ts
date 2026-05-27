@@ -2,7 +2,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config StructuralVariantChordRenderer
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const configSchema = ConfigurationSchema(
   'StructuralVariantChordRenderer',

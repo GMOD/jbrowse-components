@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### JobsListModel - Properties
 
-#### property: id
+#### propertie: id
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ ISimpleType<"JobsListWidget">
 type: types.literal('JobsListWidget')
 ```
 
-#### property: jobs
+#### propertie: jobs
 
 ```js
 // type signature
@@ -49,7 +49,7 @@ IArrayType<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimple
 jobs: types.array(Job)
 ```
 
-#### property: finished
+#### propertie: finished
 
 ```js
 // type signature
@@ -58,7 +58,7 @@ IArrayType<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimple
 finished: types.array(Job)
 ```
 
-#### property: queued
+#### propertie: queued
 
 ```js
 // type signature
@@ -67,7 +67,7 @@ IArrayType<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimple
 queued: types.array(Job)
 ```
 
-#### property: aborted
+#### propertie: aborted
 
 ```js
 // type signature

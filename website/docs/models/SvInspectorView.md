@@ -31,7 +31,7 @@ extends
 
 ### SvInspectorView - Properties
 
-#### property: id
+#### propertie: id
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -49,7 +49,7 @@ ISimpleType<"SvInspectorView">
 type: types.literal('SvInspectorView')
 ```
 
-#### property: height
+#### propertie: height
 
 ```js
 // type signature
@@ -58,7 +58,7 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 height: types.optional(types.number, defaultHeight)
 ```
 
-#### property: onlyDisplayRelevantRegionsInCircularView
+#### propertie: onlyDisplayRelevantRegionsInCircularView
 
 ```js
 // type signature
@@ -67,7 +67,7 @@ false
 onlyDisplayRelevantRegionsInCircularView: false
 ```
 
-#### property: spreadsheetView
+#### propertie: spreadsheetView
 
 ```js
 // type signature
@@ -81,7 +81,7 @@ spreadsheetView: types.optional(SpreadsheetModel, () =>
         )
 ```
 
-#### property: circularView
+#### propertie: circularView
 
 ```js
 // type signature
@@ -97,7 +97,7 @@ circularView: types.optional(CircularModel, () =>
         )
 ```
 
-#### property: init
+#### propertie: init
 
 used for initializing the view from a session snapshot
 

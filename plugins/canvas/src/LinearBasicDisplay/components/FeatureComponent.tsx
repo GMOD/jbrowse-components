@@ -35,9 +35,10 @@ type LGV = LinearGenomeViewModel
 // Hand-rolled structural type, NOT `Instance<typeof stateModelFactory>`. The
 // MST factory references this component via `lazy()`, so importing the real
 // model type back into the component creates a circular type reference that
-// breaks inference across the whole file. Keep this in sync when adding
-// model fields the component reads.
-interface LinearBasicDisplayModel {
+// breaks inference across the whole file. The compile-time check in
+// LinearBasicDisplay/modelContract.ts catches drift: when the real MST model
+// renames or drops a field, the contract file fails to typecheck.
+export interface LinearBasicDisplayModel {
   height: number
   laidOutDataMap: Map<number, FeatureDataResult>
   visibleRegions: VisibleRegion[]

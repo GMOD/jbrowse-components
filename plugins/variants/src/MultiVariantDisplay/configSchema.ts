@@ -8,7 +8,6 @@ import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
  * extends
  * - [SharedVariantDisplay](../sharedvariantdisplay)
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function configSchemaFactory() {
   return ConfigurationSchema(

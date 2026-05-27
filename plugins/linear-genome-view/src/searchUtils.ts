@@ -168,7 +168,12 @@ export async function fetchResults({
         .slice(0, 10),
     ),
   ].map(
-    r => new RefSequenceResult({ label: r, refName: r, matchedAttribute: 'refName' }),
+    r =>
+      new RefSequenceResult({
+        label: r,
+        refName: r,
+        matchedAttribute: 'refName',
+      }),
   )
 
   return dedupe([...refNameResults, ...(textSearchResults ?? [])], elt =>

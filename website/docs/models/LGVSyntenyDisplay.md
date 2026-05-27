@@ -25,11 +25,11 @@ external synteny views
 
 extends
 
-- [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
+- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 
 ### LGVSyntenyDisplay - Properties
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -38,7 +38,7 @@ ISimpleType<"LGVSyntenyDisplay">
 type: types.literal('LGVSyntenyDisplay')
 ```
 
-#### property: configuration
+#### propertie: configuration
 
 ```js
 // type signature
@@ -53,14 +53,14 @@ configuration: ConfigurationReference(schema)
 
 ```js
 // type signature
-contextMenuItems: () => MenuItem[]
+contextMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; } | { label: string; onClick: () => void; icon?: undefined; })[]
 ```
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+trackMenuItems: () => ({ label: string; type: "subMenu"; subMenu: ({ label: "Normal" | "Compact" | "Super-compact"; type: "radio"; checked: boolean; onClick: () => void; } | { label: string; onClick: () => void; })[]; } | { ...; } | { ...; })[]
 ```
 
 ### LGVSyntenyDisplay - Actions

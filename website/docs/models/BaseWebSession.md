@@ -31,7 +31,7 @@ used for "web based" products, including jbrowse-web and react-app composed of
 
 ### BaseWebSession - Properties
 
-#### property: sessionPlugins
+#### propertie: sessionPlugins
 
 ```js
 // type signature

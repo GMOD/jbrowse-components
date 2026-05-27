@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### DrawerWidgetSessionMixin - Properties
 
-#### property: drawerPosition
+#### propertie: drawerPosition
 
 ```js
 // type signature
@@ -34,7 +34,7 @@ drawerPosition: types.optional(
       )
 ```
 
-#### property: drawerWidth
+#### propertie: drawerWidth
 
 ```js
 // type signature
@@ -46,7 +46,7 @@ drawerWidth: types.optional(
       )
 ```
 
-#### property: widgets
+#### propertie: widgets
 
 ```js
 // type signature
@@ -55,7 +55,7 @@ IMapType<IAnyType>
 widgets: types.map(widgetStateModelType)
 ```
 
-#### property: activeWidgets
+#### propertie: activeWidgets
 
 ```js
 // type signature
@@ -64,7 +64,7 @@ IMapType<IMaybe<IReferenceType<IAnyType>>>
 activeWidgets: types.map(types.safeReference(widgetStateModelType))
 ```
 
-#### property: minimized
+#### propertie: minimized
 
 ```js
 // type signature

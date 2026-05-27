@@ -20,10 +20,10 @@ reference the markdown files in our repo of the checked out git tag
 
 extends config
 
-- [LinearPileupDisplay](../linearpileupdisplay)
+- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 
 ### LGVSyntenyDisplay - Derives from
 
 ```js
-baseConfiguration: linearPileupDisplayConfigSchemaFactory(pluginManager)
+baseConfiguration: linearAlignmentsDisplayConfigSchemaFactory(pluginManager)
 ```

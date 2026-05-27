@@ -34,12 +34,10 @@ and
  */
 ```
 
-it is not able to document a single variable, so in some places, a dummy
-function is put below the `#config/#stateModel` comments
-
-```
-function x(){}
-```
+The comment can sit directly above a `const`, `function`, or `export default`
+declaration. The extractor reads JSDoc that's attached to the declaration via
+TypeScript's parser, so make sure there is no blank line between the JSDoc and
+the declaration it documents.
 
 Only one config/statemodel per file can be used currently
 

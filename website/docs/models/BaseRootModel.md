@@ -24,7 +24,7 @@ factory function for the Base-level root model shared by all products
 
 ### BaseRootModel - Properties
 
-#### property: jbrowse
+#### propertie: jbrowse
 
 `jbrowse` is a mapping of the config.json into the in-memory state tree
 
@@ -35,7 +35,7 @@ IAnyType
 jbrowse: jbrowseModelType
 ```
 
-#### property: session
+#### propertie: session
 
 `session` encompasses the currently active state of the app, including views
 open, tracks open in those views, etc.
@@ -47,7 +47,7 @@ IMaybe<IAnyType>
 session: types.maybe(sessionModelType)
 ```
 
-#### property: sessionPath
+#### propertie: sessionPath
 
 ```js
 // type signature
@@ -56,7 +56,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 sessionPath: types.optional(types.string, '')
 ```
 
-#### property: assemblyManager
+#### propertie: assemblyManager
 
 ```js
 // type signature

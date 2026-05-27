@@ -74,7 +74,6 @@ export function detectFileType(
  * #stateModel SpreadsheetImportWizard
  * #category view
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function stateModelFactory() {
   return types

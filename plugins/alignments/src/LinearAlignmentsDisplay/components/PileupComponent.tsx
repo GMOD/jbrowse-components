@@ -232,9 +232,7 @@ const PileupInner = observer(function PileupInner({
             className={classes.resizeHandle}
             style={{ top: coverageHeight - YSCALEBAR_LABEL_OFFSET }}
             onDrag={dy => {
-              model.setCoverageHeight(
-                Math.max(20, model.coverageHeight + dy),
-              )
+              model.setCoverageHeight(Math.max(20, model.coverageHeight + dy))
               return undefined
             }}
             title="Drag to resize coverage track"

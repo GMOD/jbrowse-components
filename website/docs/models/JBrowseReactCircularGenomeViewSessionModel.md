@@ -31,7 +31,7 @@ composed of
 
 ### JBrowseReactCircularGenomeViewSessionModel - Properties
 
-#### property: view
+#### propertie: view
 
 ```js
 // type signature

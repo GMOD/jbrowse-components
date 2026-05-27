@@ -1,6 +1,6 @@
 ---
-id: multilinearvariantdisplay
-title: MultiLinearVariantDisplay
+id: multivariantdisplay
+title: MultiVariantDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our
@@ -12,9 +12,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/MultiLinearVariantDisplay/configSchema.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/MultiVariantDisplay/configSchema.ts)
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/MultiLinearVariantDisplay.md)
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/MultiVariantDisplay.md)
 
 ## Docs
 
@@ -22,7 +22,7 @@ extends
 
 - [SharedVariantDisplay](../sharedvariantdisplay)
 
-### MultiLinearVariantDisplay - Slots
+### MultiVariantDisplay - Slots
 
 #### slot: defaultRendering
 
@@ -34,14 +34,6 @@ defaultRendering: {
       }
 ```
 
-#### slot: renderers
-
-```js
-renderers: ConfigurationSchema('RenderersConfiguration', {
-  MultiVariantRenderer: MultiVariantRendererConfigSchema,
-})
-```
-
 #### slot: height
 
 ```js
@@ -51,7 +43,7 @@ height: {
       }
 ```
 
-### MultiLinearVariantDisplay - Derives from
+### MultiVariantDisplay - Derives from
 
 ```js
 baseConfiguration: sharedVariantConfigFactory()

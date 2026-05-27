@@ -9,7 +9,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * - `LinearBareDisplay` (more stripped down than even the basic display, not
  *   commonly used)
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const baseLinearDisplayConfigSchema = ConfigurationSchema(
   'BaseLinearDisplay',

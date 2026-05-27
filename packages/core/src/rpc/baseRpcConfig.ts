@@ -3,7 +3,6 @@ import { ConfigurationSchema } from '../configuration/index.ts'
 /**
  * #config BaseRpcDriver
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const BaseRpcDriverConfigSchema = ConfigurationSchema(
   'BaseRpcDriver',

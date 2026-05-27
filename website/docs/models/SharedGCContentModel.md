@@ -26,7 +26,7 @@ extends
 
 ### SharedGCContentModel - Properties
 
-#### property: windowSize
+#### propertie: windowSize
 
 ```js
 // type signature
@@ -35,7 +35,7 @@ IMaybe<ISimpleType<number>>
 windowSize: types.maybe(types.number)
 ```
 
-#### property: windowDelta
+#### propertie: windowDelta
 
 ```js
 // type signature
@@ -44,14 +44,19 @@ IMaybe<ISimpleType<number>>
 windowDelta: types.maybe(types.number)
 ```
 
-### SharedGCContentModel - Methods
+### SharedGCContentModel - Getters
 
-#### method: adapterProps
+#### getter: adapterConfig
 
 retrieves the sequence adapter from parent track, and puts it as a subadapter on
 a GCContentAdapter
 
 ```js
-// type signature
-adapterProps: () => any
+// type
+{
+  type: string
+  sequenceAdapter: any
+  windowSize: any
+  windowDelta: any
+}
 ```

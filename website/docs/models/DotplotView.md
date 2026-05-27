@@ -26,7 +26,7 @@ extends
 
 ### DotplotView - Properties
 
-#### property: id
+#### propertie: id
 
 ```js
 // type signature
@@ -35,7 +35,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -44,7 +44,7 @@ ISimpleType<"DotplotView">
 type: types.literal('DotplotView')
 ```
 
-#### property: height
+#### propertie: height
 
 ```js
 // type signature
@@ -53,7 +53,7 @@ number
 height: defaultHeight
 ```
 
-#### property: borderSize
+#### propertie: borderSize
 
 ```js
 // type signature
@@ -62,7 +62,7 @@ number
 borderSize: defaultBorderSize
 ```
 
-#### property: tickSize
+#### propertie: tickSize
 
 ```js
 // type signature
@@ -71,7 +71,7 @@ number
 tickSize: defaultTickSize
 ```
 
-#### property: vtextRotation
+#### propertie: vtextRotation
 
 ```js
 // type signature
@@ -80,7 +80,7 @@ number
 vtextRotation: 0
 ```
 
-#### property: htextRotation
+#### propertie: htextRotation
 
 ```js
 // type signature
@@ -89,7 +89,7 @@ number
 htextRotation: defaultHtextRotation
 ```
 
-#### property: fontSize
+#### propertie: fontSize
 
 ```js
 // type signature
@@ -98,7 +98,7 @@ number
 fontSize: defaultFontSize
 ```
 
-#### property: trackSelectorType
+#### propertie: trackSelectorType
 
 ```js
 // type signature
@@ -107,7 +107,7 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
-#### property: assemblyNames
+#### propertie: assemblyNames
 
 ```js
 // type signature
@@ -116,7 +116,7 @@ IArrayType<ISimpleType<string>>
 assemblyNames: types.array(types.string)
 ```
 
-#### property: drawCigar
+#### propertie: drawCigar
 
 ```js
 // type signature
@@ -125,7 +125,32 @@ true
 drawCigar: true
 ```
 
-#### property: hview
+#### propertie: lockAspectRatio
+
+When true, hview and vview are kept at the same bpPerPx so the dotplot stays
+square. Wheel zoom already preserves the ratio; box-zoom and other independent
+ops trigger an autorun resync.
+
+```js
+// type signature
+false
+// code
+lockAspectRatio: false
+```
+
+#### propertie: lineWidth
+
+Screen-space line width (CSS pixels) applied to every dotplot display in this
+view. View-level because the GPU pass renders all displays with one uniform.
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+lineWidth: types.optional(types.number, defaultLineWidth)
+```
+
+#### propertie: hview
 
 ```js
 // type signature
@@ -134,7 +159,7 @@ IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>
 hview: types.optional(DotplotHView, {})
 ```
 
-#### property: vview
+#### propertie: vview
 
 ```js
 // type signature
@@ -143,7 +168,7 @@ IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>
 vview: types.optional(DotplotVView, {})
 ```
 
-#### property: tracks
+#### propertie: tracks
 
 ```js
 // type signature
@@ -152,7 +177,7 @@ IArrayType<IAnyType>
 tracks: types.array(pm.pluggableMstType('track', 'stateModel'))
 ```
 
-#### property: viewTrackConfigs
+#### propertie: viewTrackConfigs
 
 this represents tracks specific to this view specifically used for read vs ref
 dotplots where this track would not really apply elsewhere
@@ -164,7 +189,7 @@ IArrayType<IAnyModelType>
 viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track'))
 ```
 
-#### property: init
+#### propertie: init
 
 used for initializing the view from a session snapshot
 
@@ -284,6 +309,35 @@ number
 ({ id: string; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>>; bpPerPx: number; offsetPx: number; interRegionPaddingWidth: number; minimumBlockWidth: number; } & ... 11 more ... & IStateTreeNode<...>)[]
 ```
 
+#### getter: dotplotDisplays
+
+DotplotDisplays under each track, indexed to match `tracks`.
+
+```js
+// type
+({ id: string; type: "DotplotDisplay"; rpcDriverName: string | undefined; configuration: any; colorBy: string; alpha: number; minAlignmentLength: number; } & NonEmptyObject & ... 9 more ... & IStateTreeNode<...>)[]
+```
+
+#### getter: geometryByTrackIndex
+
+Per-display GPU geometry keyed by track index. The upload autorun diffs this
+map: new entries upload, vanished entries evict.
+
+```js
+// type
+Map<number, DotplotGeometryData>
+```
+
+#### getter: dotplotRenderState
+
+Aggregated per-frame render state. Built by walking each display that has
+uploaded geometry; returns undefined when none do, which gates the render pass.
+
+```js
+// type
+{ viewBpH: number; viewBpV: number; bpPerPxHInv: number; bpPerPxVInv: number; lineWidth: number; displayKeys: number[]; } | undefined
+```
+
 #### getter: error
 
 ```js
@@ -304,7 +358,7 @@ renderProps: () => any
 
 ```js
 // type signature
-menuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; } | { label: string; onClick: () => Widget; icon: (props: SvgIconProps) => Element; })[]
+menuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; } | { label: string; onClick: () => void; icon: (props: SvgIconProps) => Element; })[]
 ```
 
 ### DotplotView - Actions
@@ -330,20 +384,6 @@ clearImportFormSyntenyTracks: () => void
 setImportFormSyntenyTrack: (arg: number, val: ImportFormSyntenyTrack) => void
 ```
 
-#### action: setShowPanButtons
-
-```js
-// type signature
-setShowPanButtons: (flag: boolean) => void
-```
-
-#### action: setWheelMode
-
-```js
-// type signature
-setWheelMode: (str: string) => void
-```
-
 #### action: setCursorMode
 
 ```js
@@ -356,6 +396,31 @@ setCursorMode: (str: string) => void
 ```js
 // type signature
 setDrawCigar: (flag: boolean) => void
+```
+
+#### action: setLockAspectRatio
+
+```js
+// type signature
+setLockAspectRatio: (flag: boolean) => void
+```
+
+#### action: syncBpPerPx
+
+Equalize hview/vview bpPerPx without recentering. Used by the aspect-lock
+autorun to absorb divergence from box-zoom and similar operations while
+preserving the user's current pan position.
+
+```js
+// type signature
+syncBpPerPx: () => void
+```
+
+#### action: setLineWidth
+
+```js
+// type signature
+setLineWidth: (value: number) => void
 ```
 
 #### action: clearView
@@ -441,7 +506,7 @@ showTrack: (trackId: string, initialSnapshot?: {}) => any
 
 ```js
 // type signature
-hideTrack: (trackId: string) => 0 | 1
+hideTrack: (trackId: string) => 1 | 0
 ```
 
 #### action: toggleTrack
@@ -523,6 +588,13 @@ creates an svg export and save using FileSaver
 ```js
 // type signature
 exportSvg: (opts?: ExportSvgOptions) => Promise<void>
+```
+
+#### action: applySquare
+
+```js
+// type signature
+applySquare: (ratio: number) => void
 ```
 
 #### action: squareView

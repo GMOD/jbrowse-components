@@ -8,7 +8,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * extends
  * - [BaseTrack](../basetrack)
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const configSchema = (pluginManager: PluginManager) =>
   ConfigurationSchema(

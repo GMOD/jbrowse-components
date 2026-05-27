@@ -7,8 +7,6 @@ import { ConfigurationSchema } from '../configuration/index.ts'
 /**
  * #config RpcOptions
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 export default ConfigurationSchema(
   'RpcOptions',
   {

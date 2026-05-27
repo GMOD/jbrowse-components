@@ -17,7 +17,6 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config VcfTabixAdapter
  * used to load bgzip-compressed, tabix-indexed VCF files
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const VcfTabixAdapter = ConfigurationSchema(
   'VcfTabixAdapter',

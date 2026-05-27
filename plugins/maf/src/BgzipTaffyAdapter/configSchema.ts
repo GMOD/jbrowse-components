@@ -4,7 +4,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config BgzipTaffyAdapter
  * used to configure BgzipTaffy adapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const configSchema = ConfigurationSchema(
   'BgzipTaffyAdapter',

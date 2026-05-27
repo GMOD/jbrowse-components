@@ -6,7 +6,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config HTTPBasicInternetAccount
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const HTTPBasicConfigSchema = ConfigurationSchema(
   'HTTPBasicInternetAccount',

@@ -3,7 +3,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config MultiWiggleAdapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const MultiWiggleAdapter = ConfigurationSchema(
   'MultiWiggleAdapter',

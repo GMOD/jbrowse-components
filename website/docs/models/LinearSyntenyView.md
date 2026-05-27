@@ -26,7 +26,7 @@ extends
 
 ### LinearSyntenyView - Properties
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -35,25 +35,19 @@ ISimpleType<"LinearSyntenyView">
 type: types.literal('LinearSyntenyView')
 ```
 
-#### property: /
+#### propertie: cigarMode
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-drawCIGAR: true
+cigarMode: types.optional(
+          types.enumeration(['off', 'matches', 'full']),
+          'full',
+        )
 ```
 
-#### property: /
-
-```js
-// type signature
-false
-// code
-drawCIGARMatchesOnly: false
-```
-
-#### property: drawCurves
+#### propertie: drawCurves
 
 ```js
 // type signature
@@ -62,7 +56,7 @@ false
 drawCurves: false
 ```
 
-#### property: drawLocationMarkers
+#### propertie: drawLocationMarkers
 
 ```js
 // type signature
@@ -71,7 +65,58 @@ false
 drawLocationMarkers: false
 ```
 
-#### property: init
+#### propertie: overdrawPx
+
+pixels beyond the visible viewport edge that synteny lines are still drawn
+
+```js
+// type signature
+number
+// code
+overdrawPx: DEFAULT_OVERDRAW_PX
+```
+
+#### propertie: alpha
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+alpha: types.optional(types.number, 0.2)
+```
+
+#### propertie: minAlignmentLength
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+minAlignmentLength: types.optional(types.number, 0)
+```
+
+#### propertie: colorBy
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+colorBy: types.optional(types.string, 'default')
+```
+
+#### propertie: opacityByIdentity
+
+Fade alignment blocks by per-feature identity (lower identity = more
+transparent). Orthogonal to colorBy — surfaces identity-dropoff zones without
+consuming the color channel.
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+opacityByIdentity: types.optional(types.boolean, false)
+```
+
+#### propertie: init
 
 used for initializing the view from a session snapshot. tracks is 2D — outer
 index is the level (the gap between views[i] and views[i+1]), so a 3-way view
@@ -97,7 +142,28 @@ init: types.frozen<LinearSyntenyViewInit | undefined>()
 
 ### LinearSyntenyView - Getters
 
+#### getter: effectiveAlpha
+
+```js
+// type
+number
+```
+
 #### getter: hasSomethingToShow
+
+```js
+// type
+boolean
+```
+
+#### getter: drawCIGAR
+
+```js
+// type
+boolean
+```
+
+#### getter: drawCIGARMatchesOnly
 
 ```js
 // type
@@ -123,6 +189,13 @@ boolean
 ```
 
 ### LinearSyntenyView - Methods
+
+#### method: showMenuItems
+
+```js
+// type signature
+showMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+```
 
 #### method: headerMenuItems
 
@@ -171,18 +244,11 @@ setImportFormSyntenyTrack: (arg: number, val: ImportFormSyntenyTrack) => void
 setDrawCurves: (arg: boolean) => void
 ```
 
-#### action: setDrawCIGAR
+#### action: setCigarMode
 
 ```js
 // type signature
-setDrawCIGAR: (arg: boolean) => void
-```
-
-#### action: setDrawCIGARMatchesOnly
-
-```js
-// type signature
-setDrawCIGARMatchesOnly: (arg: boolean) => void
+setCigarMode: (arg: "off" | "matches" | "full") => void
 ```
 
 #### action: setDrawLocationMarkers
@@ -190,6 +256,41 @@ setDrawCIGARMatchesOnly: (arg: boolean) => void
 ```js
 // type signature
 setDrawLocationMarkers: (arg: boolean) => void
+```
+
+#### action: setOverdrawPx
+
+```js
+// type signature
+setOverdrawPx: (arg: number) => void
+```
+
+#### action: setAlpha
+
+```js
+// type signature
+setAlpha: (arg: number) => void
+```
+
+#### action: setMinAlignmentLength
+
+```js
+// type signature
+setMinAlignmentLength: (arg: number) => void
+```
+
+#### action: setColorBy
+
+```js
+// type signature
+setColorBy: (arg: SyntenyColorBy) => void
+```
+
+#### action: setOpacityByIdentity
+
+```js
+// type signature
+setOpacityByIdentity: (arg: boolean) => void
 ```
 
 #### action: showAllRegions

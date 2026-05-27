@@ -26,7 +26,7 @@ extends
 
 ### LinearBareDisplay - Properties
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -35,7 +35,7 @@ ISimpleType<"LinearBareDisplay">
 type: types.literal('LinearBareDisplay')
 ```
 
-#### property: configuration
+#### propertie: configuration
 
 ```js
 // type signature

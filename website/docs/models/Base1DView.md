@@ -25,7 +25,7 @@ dotplot use this
 
 ### Base1DView - Properties
 
-#### property: id
+#### propertie: id
 
 ```js
 // type signature
@@ -34,7 +34,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: displayedRegions
+#### propertie: displayedRegions
 
 ```js
 // type signature
@@ -43,7 +43,7 @@ IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
 displayedRegions: types.optional(types.frozen<IRegion[]>(), [])
 ```
 
-#### property: bpPerPx
+#### propertie: bpPerPx
 
 ```js
 // type signature
@@ -52,7 +52,7 @@ number
 bpPerPx: 0
 ```
 
-#### property: offsetPx
+#### propertie: offsetPx
 
 ```js
 // type signature
@@ -61,7 +61,7 @@ number
 offsetPx: 0
 ```
 
-#### property: interRegionPaddingWidth
+#### propertie: interRegionPaddingWidth
 
 ```js
 // type signature
@@ -70,7 +70,7 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 interRegionPaddingWidth: types.optional(types.number, 0)
 ```
 
-#### property: minimumBlockWidth
+#### propertie: minimumBlockWidth
 
 ```js
 // type signature

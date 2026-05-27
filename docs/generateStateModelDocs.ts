@@ -4,174 +4,113 @@ import slugify from 'slugify'
 
 import {
   extractWithComment,
-  filter,
   getAllFiles,
+  parseTaggedComment,
   removeComments,
-  rm,
 } from './util.ts'
 
-interface Action {
-  name: string
-  docs: string
-  code: string
-}
-interface Method {
-  name: string
-  docs: string
-  code: string
-}
-interface Getter {
-  name: string
-  docs: string
-  code: string
-}
-interface Property {
-  name: string
-  docs: string
-  code: string
-}
+import type { ExtractedNode } from './util.ts'
 
-interface Model {
+interface Member {
+  name: string
+  docs: string
+  code: string
+  signature: string
+}
+interface ModelHeader {
   name: string
   id: string
-  category?: string
   docs: string
 }
 interface StateModel {
-  model?: Model
-  getters: Getter[]
-  methods: Method[]
-  properties: Property[]
-  actions: Action[]
+  header?: ModelHeader
+  properties: Member[]
+  getters: Member[]
+  methods: Member[]
+  actions: Member[]
   filename: string
+}
+
+function buildMember(obj: ExtractedNode): Member {
+  const { name, docs } = parseTaggedComment(obj.comment, obj.type, obj.name)
+  return {
+    name,
+    docs,
+    code: removeComments(obj.node),
+    signature: obj.signature,
+  }
 }
 
 function generateStateModelDocs(files: string[]) {
   const cwd = `${process.cwd()}/`
-  const contents = {} as Record<string, StateModel>
+  const byFile: Record<string, StateModel> = {}
   extractWithComment(files, obj => {
     const fn = obj.filename
-    const fn2 = fn.replace(cwd, '')
-    contents[fn] ??= {
-      model: undefined,
-      getters: [],
-      actions: [],
-      methods: [],
+    byFile[fn] ??= {
       properties: [],
-      filename: fn2,
+      getters: [],
+      methods: [],
+      actions: [],
+      filename: fn.replace(cwd, ''),
     }
-    const current = contents[fn]
-    const name = rm(obj.comment, `#${obj.type}`) || obj.name
-    const docs = filter(filter(obj.comment, `#${obj.type}`), '#category')
-    const code = removeComments(obj.node)
-    const id = slugify(name, { lower: true })
-
-    // category currently unused, but can organize sidebar
-    let category = rm(obj.comment, '#category')
-
-    if (!category) {
-      if (name.endsWith('Adapter')) {
-        category = 'adapter'
-      } else if (name.endsWith('Display')) {
-        category = 'display'
-      } else if (name.endsWith('View')) {
-        category = 'view'
-      } else if (name.endsWith('Renderer')) {
-        category = 'renderer'
-      } else if (name.includes('Session')) {
-        category = 'session'
-      } else if (name.includes('Root')) {
-        category = 'root'
-      } else if (name.includes('Assembly')) {
-        category = 'assemblyManagement'
-      } else if (name.includes('InternetAccount')) {
-        category = 'internetAccount'
-      } else if (name.includes('Connection')) {
-        category = 'connection'
-      }
-    }
+    const file = byFile[fn]
+    const member = buildMember(obj)
 
     if (obj.type === 'stateModel') {
-      current.model = { ...obj, name, docs, id }
-    } else if (obj.type === 'getter') {
-      current.getters.push({ ...obj, name, docs, code })
-    } else if (obj.type === 'method') {
-      current.methods.push({ ...obj, name, docs, code })
-    } else if (obj.type === 'action') {
-      current.actions.push({ ...obj, name, docs, code })
+      file.header = {
+        name: member.name,
+        docs: member.docs,
+        id: slugify(member.name, { lower: true }),
+      }
     } else if (obj.type === 'property') {
-      current.properties.push({ ...obj, name, docs, code })
+      file.properties.push(member)
+    } else if (obj.type === 'getter') {
+      file.getters.push(member)
+    } else if (obj.type === 'method') {
+      file.methods.push(member)
+    } else if (obj.type === 'action') {
+      file.actions.push(member)
     }
   })
-  return contents
+  return byFile
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-;(async () => {
-  const contents = generateStateModelDocs(await getAllFiles())
+function renderModel({
+  header,
+  properties,
+  getters,
+  methods,
+  actions,
+  filename,
+}: StateModel): string | undefined {
+  if (!header) {
+    return undefined
+  }
+  const sections = [
+    memberSection(header.name, 'Properties', properties, p =>
+      codeBlock('// type signature', p.signature, '// code', p.code),
+    ),
+    memberSection(header.name, 'Getters', getters, g =>
+      codeBlock('// type', g.signature),
+    ),
+    memberSection(header.name, 'Methods', methods, m =>
+      codeBlock('// type signature', `${m.name}: ${m.signature}`),
+    ),
+    memberSection(header.name, 'Actions', actions, a =>
+      codeBlock('// type signature', `${a.name}: ${a.signature}`),
+    ),
+  ]
+    .filter(Boolean)
+    .join('\n\n')
 
-  Object.values(contents).forEach(
-    ({ model, getters, properties, actions, methods, filename }) => {
-      if (model) {
-        const getterstr = `${getters.length ? `### ${model.name} - Getters` : ''}\n${getters
-
-          .map(({ name, docs, signature }: any) =>
-            join(
-              `#### getter: ${name}`,
-              docs,
-              codeBlock('// type', signature || ''),
-            ),
-          )
-          .join('\n')}`
-
-        const methodstr = `${methods.length ? `### ${model.name} - Methods` : ''}\n${methods
-
-          .map(({ name, docs, signature }: any) =>
-            join(
-              `#### method: ${name}`,
-              docs,
-              codeBlock('// type signature', `${name}: ${signature || ''}`),
-            ),
-          )
-          .join('\n')}`
-
-        const propertiesstr = `${properties.length ? `### ${model.name} - Properties` : ''}\n${properties
-
-          .map(({ name, docs, code, signature }: any) =>
-            join(
-              `#### property: ${name}`,
-              docs,
-              codeBlock('// type signature', signature || '', '// code', code),
-            ),
-          )
-          .join('\n')}`
-
-        const actionstr = `${actions.length ? `### ${model.name} - Actions` : ''}\n${actions
-
-          .map(({ name, docs, signature }: any) =>
-            join(
-              `#### action: ${name}`,
-              docs,
-              codeBlock('// type signature', `${name}: ${signature || ''}`),
-            ),
-          )
-          .join('\n')}`
-
-        const dir = 'website/docs/models'
-        try {
-          fs.mkdirSync(dir)
-        } catch (e) {}
-        fs.writeFileSync(
-          `${dir}/${model.name}.md`,
-          `---
-id: ${model.id}
-title: ${model.name}
+  return `---
+id: ${header.id}
+title: ${header.name}
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree objects in
 our source code. See [Core concepts and intro to pluggable
 elements](/docs/developer_guide/) for more info
-
 
 Also note: this document represents the state model API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -181,36 +120,47 @@ reference the markdown files in our repo of the checked out git tag
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/${filename})
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/${model.name}.md)
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/${header.name}.md)
 
 ## Docs
 
-${model.docs}
+${header.docs}
 
-${propertiesstr}
-
-${getterstr}
-
-${methodstr}
-
-${actionstr}
-
-`,
-        )
-      }
-    },
-  )
-})()
-
-function codeBlock(...lines: string[]) {
-  return `
-
-\`\`\`js
-${lines.join('\n')}
-\`\`\`
+${sections}
 `
 }
 
-function join(...lines: string[]) {
-  return lines.join('\n\n')
+function memberSection(
+  modelName: string,
+  label: string,
+  members: Member[],
+  renderBody: (m: Member) => string,
+) {
+  if (!members.length) {
+    return ''
+  }
+  const kind = label.toLowerCase().replace(/s$/, '')
+  const blocks = members.map(m =>
+    [`#### ${kind}: ${m.name}`, m.docs, renderBody(m)].join('\n\n'),
+  )
+  return [`### ${modelName} - ${label}`, ...blocks].join('\n\n')
 }
+
+function codeBlock(...lines: string[]) {
+  return ['```js', ...lines, '```'].join('\n')
+}
+
+export default async function main() {
+  const dir = 'website/docs/models'
+  fs.mkdirSync(dir, { recursive: true })
+  const models = generateStateModelDocs(await getAllFiles())
+  for (const model of Object.values(models)) {
+    const rendered = renderModel(model)
+    if (rendered && model.header) {
+      fs.writeFileSync(`${dir}/${model.header.name}.md`, rendered)
+    }
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+main()

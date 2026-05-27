@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### AssemblyManager - Properties
 
-#### property: assemblies
+#### propertie: assemblies
 
 this is automatically managed by an autorun which looks in the parent
 session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies

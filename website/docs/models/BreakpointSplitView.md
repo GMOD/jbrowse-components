@@ -26,7 +26,7 @@ extends
 
 ### BreakpointSplitView - Properties
 
-#### property: type
+#### propertie: type
 
 ```js
 // type signature
@@ -35,7 +35,7 @@ ISimpleType<"BreakpointSplitView">
 type: types.literal('BreakpointSplitView')
 ```
 
-#### property: height
+#### propertie: height
 
 ```js
 // type signature
@@ -44,7 +44,7 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 height: types.optional(types.number, defaultHeight)
 ```
 
-#### property: trackSelectorType
+#### propertie: trackSelectorType
 
 ```js
 // type signature
@@ -53,7 +53,7 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
-#### property: showIntraviewLinks
+#### propertie: showIntraviewLinks
 
 ```js
 // type signature
@@ -62,7 +62,7 @@ true
 showIntraviewLinks: true
 ```
 
-#### property: linkViews
+#### propertie: linkViews
 
 ```js
 // type signature
@@ -71,7 +71,7 @@ false
 linkViews: false
 ```
 
-#### property: interactiveOverlay
+#### propertie: interactiveOverlay
 
 ```js
 // type signature
@@ -80,7 +80,7 @@ true
 interactiveOverlay: true
 ```
 
-#### property: showHeader
+#### propertie: showHeader
 
 ```js
 // type signature
@@ -89,7 +89,7 @@ true
 showHeader: true
 ```
 
-#### property: views
+#### propertie: views
 
 ```js
 // type signature
@@ -101,7 +101,7 @@ views: types.array(
         )
 ```
 
-#### property: init
+#### propertie: init
 
 used for initializing the view from a session snapshot
 

@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### SessionTracksManagerSessionMixin - Properties
 
-#### property: sessionTracks
+#### propertie: sessionTracks
 
 ```js
 // type signature

@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### BaseViewModel - Properties
 
-#### property: id
+#### propertie: id
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: displayName
+#### propertie: displayName
 
 displayName is displayed in the header of the view, or assembly names being used
 if none is specified
@@ -43,7 +43,7 @@ IMaybe<ISimpleType<string>>
 displayName: types.maybe(types.string)
 ```
 
-#### property: minimized
+#### propertie: minimized
 
 ```js
 // type signature
