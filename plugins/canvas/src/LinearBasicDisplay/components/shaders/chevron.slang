@@ -14,10 +14,10 @@ import colorPack;
 import lineInstance;
 import canvasUniforms;
 
-static const float CHEVRON_SPACING_PX  = 25.0;
-static const float CHEVRON_W_PX        = 4.5;
-static const float CHEVRON_H_PX        = 4.5;
-static const float CHEVRON_THICKNESS_PX = 1.0;
+static const float CHEVRON_SPACING_PX  = 40.0;
+static const float CHEVRON_W_PX        = 4.0;
+static const float CHEVRON_H_PX        = 4.0;
+static const float CHEVRON_THICKNESS_PX = 0.5;
 
 [[vk::binding(1, 0)]] ConstantBuffer<CanvasUniforms> u;
 
