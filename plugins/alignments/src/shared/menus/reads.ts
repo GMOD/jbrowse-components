@@ -84,7 +84,9 @@ export function getReadsMenuItem(model: ReadsModel) {
         },
       },
       {
-        label: 'Flip long-read strand',
+        label: 'Flip strand of supplementary alignments',
+        subLabel:
+          'long-read chains: color supplementary segments by the primary alignment’s strand',
         type: 'checkbox' as const,
         checked: model.flipStrandLongReadChains,
         onClick: () => {

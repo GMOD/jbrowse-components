@@ -48,6 +48,12 @@ function TagResults({ tag, tagSet }: { tag: string; tagSet: string[] }) {
   )
 }
 
+interface TrackConf {
+  trackId: string
+  name: string
+  [key: string]: unknown
+}
+
 function createTrackId(baseId: string, suffix: string) {
   return `${baseId}-${suffix}-${Date.now()}-sessionTrack`
 }
@@ -59,18 +65,15 @@ function createTagBasedTracks({
   session,
   view,
 }: {
-  trackConf: Record<string, unknown>
+  trackConf: TrackConf
   tag: string
   tagSet: string[]
   session: SessionWithAddTracks
   view: LinearGenomeViewModel
 }) {
-  const values = [...tagSet, undefined] as (string | undefined)[]
+  const values: (string | undefined)[] = [...tagSet, undefined]
   for (const tagValue of values) {
-    const trackId = createTrackId(
-      trackConf.trackId as string,
-      `${tag}:${tagValue}`,
-    )
+    const trackId = createTrackId(trackConf.trackId, `${tag}:${tagValue}`)
     session.addTrackConf({
       ...trackConf,
       trackId,
@@ -98,12 +101,12 @@ function createStrandBasedTracks({
   session,
   view,
 }: {
-  trackConf: Record<string, unknown>
+  trackConf: TrackConf
   session: SessionWithAddTracks
   view: LinearGenomeViewModel
 }) {
-  const negTrackId = createTrackId(trackConf.trackId as string, 'strand:(-)')
-  const posTrackId = createTrackId(trackConf.trackId as string, 'strand:(+)')
+  const negTrackId = createTrackId(trackConf.trackId, 'strand:(-)')
+  const posTrackId = createTrackId(trackConf.trackId, 'strand:(+)')
 
   session.addTrackConf({
     ...trackConf,
@@ -230,11 +233,13 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           autoFocus
           onClick={() => {
             const track = getContainingTrack(model)
-            const trackConf: Record<string, unknown> = isStateTreeNode(
-              track.configuration,
-            )
-              ? structuredClone(getSnapshot(track.configuration))
-              : track.configuration
+            // Track configurations always carry trackId + name (schema
+            // invariant); MST's getSnapshot widens to Record<string, any>.
+            const trackConf = (
+              isStateTreeNode(track.configuration)
+                ? structuredClone(getSnapshot(track.configuration))
+                : track.configuration
+            ) as TrackConf
             const session = getSession(model) as SessionWithAddTracks
             const view = getContainingView(model) as LinearGenomeViewModel
 

@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { TAG_REGEX } from '../util.ts'
+import { TAG_REGEX, defaultFilterFlags } from '../util.ts'
 
 import type { FilterBy } from '../types.ts'
 
@@ -164,6 +164,18 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
         </Paper>
       </DialogContent>
       <DialogActions>
+        <Button
+          color="inherit"
+          onClick={() => {
+            setFlagInclude(defaultFilterFlags.flagInclude)
+            setFlagExclude(defaultFilterFlags.flagExclude)
+            setTag('')
+            setTagValue('')
+            setReadName('')
+          }}
+        >
+          Reset
+        </Button>
         <Button
           variant="contained"
           color="primary"

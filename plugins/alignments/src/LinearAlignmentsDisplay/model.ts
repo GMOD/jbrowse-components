@@ -995,23 +995,34 @@ export default function stateModelFactory(
           setSortedBy(type: string, tag?: string) {
             const view = getContainingView(self) as LGV
             const { centerLineInfo } = view
-            const refName = centerLineInfo?.refName
-            const centerBp = centerLineInfo
-              ? Math.round(centerLineInfo.offset)
-              : -1
-            if (centerLineInfo && refName && centerBp >= 0) {
+            // basePair / insertion / softclip / hardclip / tag use sortPos
+            // to pick which reads to sort first; position / strand ignore
+            // it and produce a sensible layout without a center line.
+            const needsPos = type !== 'position' && type !== 'strand'
+            if (centerLineInfo && centerLineInfo.offset >= 0) {
               self.setOverride('sortedBy', {
                 type,
-                pos: centerBp,
-                refName,
+                pos: Math.round(centerLineInfo.offset),
+                refName: centerLineInfo.refName,
                 assemblyName: centerLineInfo.assemblyName,
                 tag,
               })
-            } else {
+            } else if (needsPos) {
               getSession(self).notify(
                 'Cannot sort: the view center line is not over a valid position. Scroll so the center line is within a region and try again.',
                 'warning',
               )
+            } else {
+              const assemblyName = view.assemblyNames[0]
+              if (assemblyName) {
+                self.setOverride('sortedBy', {
+                  type,
+                  pos: -1,
+                  refName: '',
+                  assemblyName,
+                  tag,
+                })
+              }
             }
           },
 
@@ -1033,7 +1044,7 @@ export default function stateModelFactory(
             }
           },
 
-          clearSelected() {
+          clearSortedBy() {
             self.clearOverride('sortedBy')
           },
 

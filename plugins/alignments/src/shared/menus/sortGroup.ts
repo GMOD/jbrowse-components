@@ -17,11 +17,32 @@ const GroupByDialog = lazy(
 interface SortByModel {
   sortedBy?: SortedBy
   setSortedBy: (type: string) => void
-  clearSelected: () => void
+  clearSortedBy: () => void
+}
+
+const INTERBASE_SORT_TYPES = new Set([
+  'basePair',
+  'insertion',
+  'softclip',
+  'hardclip',
+])
+
+const INTERBASE_SORT_LABEL: Record<string, string> = {
+  basePair: 'Base pair',
+  insertion: 'Insertion',
+  softclip: 'Soft clip',
+  hardclip: 'Hard clip',
 }
 
 export function getSortByMenuItem(model: SortByModel) {
   const sortType = model.sortedBy?.type
+  // When a context-menu action set the sort to insertion/softclip/hardclip,
+  // surface the active type in the radio label so users see what's active
+  // and know how to clear it.
+  const interbaseLabel =
+    sortType && INTERBASE_SORT_TYPES.has(sortType)
+      ? `${INTERBASE_SORT_LABEL[sortType]} at position`
+      : 'Base pair'
   return {
     label: 'Sort by...',
     icon: SwapVertIcon,
@@ -43,9 +64,9 @@ export function getSortByMenuItem(model: SortByModel) {
         },
       },
       {
-        label: 'Base pair',
+        label: interbaseLabel,
         type: 'radio' as const,
-        checked: sortType === 'basePair',
+        checked: !!sortType && INTERBASE_SORT_TYPES.has(sortType),
         subLabel:
           'tip: right-click a base / indel / clip to sort at that position',
         onClick: () => {
@@ -68,7 +89,7 @@ export function getSortByMenuItem(model: SortByModel) {
         label: 'Clear sort',
         disabled: !model.sortedBy,
         onClick: () => {
-          model.clearSelected()
+          model.clearSortedBy()
         },
       },
     ],
