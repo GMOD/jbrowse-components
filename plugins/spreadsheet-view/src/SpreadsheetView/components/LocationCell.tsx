@@ -16,19 +16,24 @@ export default function LocationCell({
 }) {
   const session = getSession(model)
   const spreadsheetViewId = getParent<{ id: string }>(model).id
-  const assemblyName = model.assemblyName!
+  const { assemblyName } = model
   const locString = assembleLocString(feature)
   return (
     <>
-      <FeatureMenu
-        session={session}
-        spreadsheetViewId={spreadsheetViewId}
-        assemblyName={assemblyName}
-        feature={feature}
-      />
+      {assemblyName ? (
+        <FeatureMenu
+          session={session}
+          spreadsheetViewId={spreadsheetViewId}
+          assemblyName={assemblyName}
+          feature={feature}
+        />
+      ) : null}
       <Link
         href="#"
         onClick={async event => {
+          if (!assemblyName) {
+            return
+          }
           try {
             event.preventDefault()
             await locationLinkClick({

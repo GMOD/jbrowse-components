@@ -981,3 +981,72 @@ describe('derived regionTooLarge', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callCountBefore)
   })
 })
+
+// Regression: setFeatureDensityStatsLimit used to set EITHER userByteSizeLimit
+// OR userFeatureDensityLimit but never clear the other one. A stale value left
+// behind silently disables the path that didn't get re-set:
+//   - userByteSizeLimit !== undefined makes maxFeatureDensity return undefined,
+//     which makes the density branch a no-op AND makes densityTooLarge always
+//     return false even when feature counts are huge.
+//   - A leftover userFeatureDensityLimit keeps relaxing density gating after
+//     the user has switched to a byte-driven force-load.
+describe('setFeatureDensityStatsLimit gate toggling', () => {
+  function createLargeDisplay() {
+    const env = createTestEnvironment()
+    const { display, view } = env.createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(62.5)
+    return { display, view, mockRpcCall: env.mockRpcCall }
+  }
+
+  it('byte → density toggle clears stale userByteSizeLimit', async () => {
+    const { display, mockRpcCall } = createLargeDisplay()
+
+    // Seed density stats so the density branch has an observedMax to base on.
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 5000,
+    })
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.densityStatsPerRegion.size).toBe(1)
+    })
+
+    // First: bytes force-load — sets userByteSizeLimit.
+    display.setFeatureDensityStatsLimit({ bytes: 1_000_000 })
+    expect(display.userByteSizeLimit).toBeDefined()
+
+    // Then: density force-load. The pre-fix bug was that userByteSizeLimit
+    // still being set made maxFeatureDensity return undefined, so the density
+    // branch silently no-op'd. After the fix both gates are cleared first,
+    // letting the density branch see the real maxFeatureDensity and set a
+    // fresh userFeatureDensityLimit.
+    display.setFeatureDensityStatsLimit()
+    expect(display.userByteSizeLimit).toBeUndefined()
+    expect(display.userFeatureDensityLimit).toBeDefined()
+  })
+
+  it('density → byte toggle clears stale userFeatureDensityLimit', async () => {
+    const { display, mockRpcCall } = createLargeDisplay()
+
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 5000,
+    })
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.densityStatsPerRegion.size).toBe(1)
+    })
+
+    display.setFeatureDensityStatsLimit()
+    expect(display.userFeatureDensityLimit).toBeDefined()
+
+    display.setFeatureDensityStatsLimit({ bytes: 1_000_000 })
+    expect(display.userFeatureDensityLimit).toBeUndefined()
+    expect(display.userByteSizeLimit).toBeDefined()
+  })
+})

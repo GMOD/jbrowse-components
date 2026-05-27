@@ -50,6 +50,7 @@ export interface ExportSvgOptions {
  * - [BaseViewModel](../baseviewmodel)
  */
 function stateModelFactory(pluginManager: PluginManager) {
+  const twoPi = 2 * Math.PI
   const minHeight = 40
   const minWidth = 100
   const defaultHeight = 400
@@ -182,7 +183,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get radiusPx() {
-        return this.circumferencePx / (2 * Math.PI)
+        return this.circumferencePx / (twoPi)
       },
       /**
        * #getter
@@ -222,7 +223,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get maxBpPerPx() {
-        const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
+        const minCircumferencePx = twoPi * self.minimumRadiusPx
         return this.totalBp / minCircumferencePx
       },
       /**
@@ -230,7 +231,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get minBpPerPx() {
         // min depends on window dimensions, clamp between old min(0.01) and max
-        const maxCircumferencePx = 2 * Math.PI * this.maximumRadiusPx
+        const maxCircumferencePx = twoPi * this.maximumRadiusPx
         return clamp(
           this.totalBp / maxCircumferencePx,
           0.0000000001,
@@ -414,7 +415,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         }
         const r = Math.min(self.width, self.height) / 2 - self.paddingPx
         this.setBpPerPx(
-          self.totalBp / (2 * Math.PI * Math.max(r, self.minimumRadiusPx)),
+          self.totalBp / (twoPi * Math.max(r, self.minimumRadiusPx)),
         )
         self.panX = 0
         self.panY = 0
@@ -558,6 +559,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         const displayConf = configuration.displays.find(
           (d: AnyConfigurationModel) => supportedDisplays.has(d.type),
         )
+        if (!displayConf) {
+          throw new Error(`no supported display found for track type ${type}`)
+        }
         self.tracks.push(
           trackType.stateModel.create({
             ...initialSnapshot,

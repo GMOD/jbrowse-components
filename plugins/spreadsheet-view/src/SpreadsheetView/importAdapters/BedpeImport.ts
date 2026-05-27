@@ -1,6 +1,7 @@
 import { isNumber } from './isNumber.ts'
 import {
   bufferToLines,
+  filterBedHeaderLines,
   parseExtraColNames,
   parseExtraCols,
   parseStrand,
@@ -8,14 +9,7 @@ import {
 
 export function parseBedPEBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)
-  const rest = lines.filter(
-    line =>
-      !(
-        line.startsWith('#') ||
-        line.startsWith('browser') ||
-        line.startsWith('track')
-      ),
-  )
+  const rest = filterBedHeaderLines(lines)
   const lastHeaderLine = lines.findLast(line => line.startsWith('#'))
 
   const coreColumns = [

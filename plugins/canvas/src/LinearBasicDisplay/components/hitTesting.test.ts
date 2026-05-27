@@ -1,6 +1,7 @@
 import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
+  isHitFeature,
   performMultiRegionHitDetection,
 } from './hitTesting.ts'
 
@@ -196,8 +197,10 @@ test('returns correct displayedRegionIndex', () => {
     320,
     10,
   )
-  expect(result.feature).not.toBeNull()
-  expect((result as any).displayedRegionIndex).toBe(7)
+  expect(isHitFeature(result)).toBe(true)
+  if (isHitFeature(result)) {
+    expect(result.displayedRegionIndex).toBe(7)
+  }
 })
 
 test('skips regions where mouseX is outside screen bounds', () => {
@@ -261,12 +264,18 @@ test('multi-region selects correct region', () => {
   ]
 
   const hitR0 = hit(laidOutDataMap, regions, 100, 10)
-  expect(hitR0.feature!.featureId).toBe('geneA')
-  expect((hitR0 as any).displayedRegionIndex).toBe(0)
+  expect(isHitFeature(hitR0)).toBe(true)
+  if (isHitFeature(hitR0)) {
+    expect(hitR0.feature.featureId).toBe('geneA')
+    expect(hitR0.displayedRegionIndex).toBe(0)
+  }
 
   const hitR1 = hit(laidOutDataMap, regions, 500, 10)
-  expect(hitR1.feature!.featureId).toBe('geneB')
-  expect((hitR1 as any).displayedRegionIndex).toBe(1)
+  expect(isHitFeature(hitR1)).toBe(true)
+  if (isHitFeature(hitR1)) {
+    expect(hitR1.feature.featureId).toBe('geneB')
+    expect(hitR1.displayedRegionIndex).toBe(1)
+  }
 })
 
 test('adjacent regions: shared boundary pixel goes to the later region', () => {
@@ -285,8 +294,11 @@ test('adjacent regions: shared boundary pixel goes to the later region', () => {
   ]
 
   const boundary = hit(laidOutDataMap, regions, 400, 10)
-  expect(boundary.feature!.featureId).toBe('geneB')
-  expect((boundary as any).displayedRegionIndex).toBe(1)
+  expect(isHitFeature(boundary)).toBe(true)
+  if (isHitFeature(boundary)) {
+    expect(boundary.feature.featureId).toBe('geneB')
+    expect(boundary.displayedRegionIndex).toBe(1)
+  }
 })
 
 test('multi-region continues to next region when first has no hit', () => {
@@ -304,8 +316,11 @@ test('multi-region continues to next region when first has no hit', () => {
 
   expect(hit(laidOutDataMap, regions, 100, 999).feature).toBeNull()
   const h = hit(laidOutDataMap, regions, 100, 10)
-  expect(h.feature!.featureId).toBe('geneA')
-  expect((h as any).displayedRegionIndex).toBe(0)
+  expect(isHitFeature(h)).toBe(true)
+  if (isHitFeature(h)) {
+    expect(h.feature.featureId).toBe('geneA')
+    expect(h.displayedRegionIndex).toBe(0)
+  }
 })
 
 test('handles reversed region (encoded via end < start, no flag)', () => {

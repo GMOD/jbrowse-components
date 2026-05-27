@@ -13,7 +13,10 @@ function parseSTARFusionBreakpointString(str: string) {
 
 export function parseSTARFusionBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)
-  const columns = lines[0]!.slice(1).split('\t')
+  const columns = lines[0]?.slice(1).split('\t') ?? []
+  if (!columns.length) {
+    return { columns: [], rowSet: { rows: [] } }
+  }
   return {
     columns: columns.map(c => ({ name: c })),
     rowSet: {

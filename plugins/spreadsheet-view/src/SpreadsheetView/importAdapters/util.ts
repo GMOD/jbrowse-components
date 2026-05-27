@@ -44,3 +44,12 @@ export function bufferToLines(buffer: Uint8Array) {
     .map(f => f.trim())
     .filter(f => !!f)
 }
+
+export function filterBedHeaderLines(lines: string[]) {
+  return lines.filter(
+    line =>
+      !line.startsWith('#') &&
+      !line.startsWith('browser') &&
+      !line.startsWith('track'),
+  )
+}

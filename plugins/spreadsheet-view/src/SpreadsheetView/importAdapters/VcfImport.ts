@@ -41,7 +41,6 @@ export function parseVcfBuffer(buffer: Uint8Array) {
           vcfParser.samples.map((s, idx) => [s, rest[idx]]),
         ),
       },
-      // a simplefeatureserializd
       feature: new VcfFeature({
         parser: vcfParser,
         variant: vcfParser.parseLine(line),

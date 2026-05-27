@@ -102,7 +102,7 @@ export function viewportVisibleSection(
     }
     return {
       rho: [0, Math.min(circleRadius, maxRho)] as [number, number],
-      theta: [0, 2 * Math.PI] as [number, number],
+      theta: [0, twoPi] as [number, number],
     }
   }
 
@@ -132,6 +132,9 @@ export function viewportVisibleSection(
     vertices.push([0, viewB])
   }
 
+  // when the viewport is entirely to the right of the circle center (viewL >= 0),
+  // mirror x through the origin so angles stay in [0, π]; we undo this below
+  // by adding π back to thetaMin/thetaMax after the loop
   const reflect = viewL >= 0 ? -1 : 1
   let rhoMin = Number.POSITIVE_INFINITY
   let rhoMax = Number.NEGATIVE_INFINITY
@@ -165,9 +168,9 @@ export function viewportVisibleSection(
     thetaMax += Math.PI
   }
 
-  if (thetaMin > 2 * Math.PI && thetaMax > 2 * Math.PI) {
-    thetaMin -= 2 * Math.PI
-    thetaMax -= 2 * Math.PI
+  if (thetaMin > twoPi && thetaMax > twoPi) {
+    thetaMin -= twoPi
+    thetaMax -= twoPi
   }
 
   return {

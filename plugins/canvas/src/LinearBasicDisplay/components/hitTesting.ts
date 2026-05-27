@@ -41,13 +41,17 @@ export interface FlatbushRegionIndexes {
   subfeature: Flatbush | null
 }
 
-type HitResult =
-  | { feature: null; subfeature: null }
-  | {
-      feature: FlatbushItem
-      subfeature: SubfeatureInfo | null
-      displayedRegionIndex: number
-    }
+export interface HitFeatureResult {
+  feature: FlatbushItem
+  subfeature: SubfeatureInfo | null
+  displayedRegionIndex: number
+}
+
+export type HitResult = HitFeatureResult | { feature: null; subfeature: null }
+
+export function isHitFeature(r: HitResult): r is HitFeatureResult {
+  return r.feature !== null
+}
 
 export function buildFeatureFlatbushIndex(
   items: FlatbushItem[],
