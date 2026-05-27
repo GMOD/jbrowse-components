@@ -189,7 +189,7 @@ export function useDotplotInteraction(
     return () => {
       window.removeEventListener('mouseup', onUp, true)
     }
-  }, [hasDrag])
+  }, [hasDrag, xdistanceRef, ydistanceRef, validSelectRef])
 
   const dragOpen =
     !!mousedown &&
