@@ -167,9 +167,10 @@ async function runGPUCompute(
     device.queue.submit([encoder.finish()])
 
     await readbackBuffer.mapAsync(GPUMapMode.READ)
-    return new Float32Array(readbackBuffer.getMappedRange().slice(0))
+    // Copy out of the mapped range before destroy() (which implicitly unmaps
+    // and detaches the underlying ArrayBuffer).
+    return new Float32Array(readbackBuffer.getMappedRange()).slice()
   } finally {
-    readbackBuffer.unmap()
     genoBuffer.destroy()
     ldBuffer.destroy()
     uniformBuffer.destroy()
