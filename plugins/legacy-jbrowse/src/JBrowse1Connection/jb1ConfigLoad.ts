@@ -67,7 +67,7 @@ export async function fetchJb1(
           `tried to access ${baseConfigLocation}/${conf}, but failed`,
         )
       }
-      newConfig = mergeConfigs(newConfig, fetchedConfig) ?? {}
+      newConfig = mergeConfigs(newConfig, fetchedConfig) ?? newConfig
     }
     if (dataRootLocation) {
       newConfig.dataRoot = dataRootLocation

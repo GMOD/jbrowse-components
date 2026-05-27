@@ -13,39 +13,27 @@ export interface Options {
   split?: (path: string) => string[]
   isValid?: (key: string, target: {}) => boolean // eslint-disable-line
 }
-// @ts-expect-error
-const isObject = v => v !== null && typeof v === 'object'
 
-const join = (segs: string[], joinChar: string, options: unknown): string => {
-  // @ts-expect-error
+const isObject = (v: unknown) => v !== null && typeof v === 'object'
+
+const join = (segs: string[], joinChar: string, options: Options): string => {
   if (typeof options.join === 'function') {
-    // @ts-expect-error
     return options.join(segs)
   }
   return segs[0] + joinChar + segs[1]
 }
 
-const split = (path: string, splitChar: string, options: unknown): string[] => {
-  // @ts-expect-error
+const split = (path: string, splitChar: string, options: Options): string[] => {
   if (typeof options.split === 'function') {
-    // @ts-expect-error
     return options.split(path)
   }
-
   return path.split(splitChar)
 }
 
-const isValid = (
-  key: string,
-  target: unknown = {},
-  options: unknown,
-): boolean => {
-  // @ts-expect-error
-  if (typeof options?.isValid === 'function') {
-    // @ts-expect-error
-    return options.isValid(key, target)
+const isValid = (key: string, target: unknown, options: Options): boolean => {
+  if (typeof options.isValid === 'function') {
+    return options.isValid(key, target as {})
   }
-
   return true
 }
 
@@ -80,14 +68,13 @@ const getValue = (
     return target
   }
 
-  // @ts-expect-error
-  if (target[path] !== undefined) {
-    // @ts-expect-error
-    return isValid(path, target, options) ? target[path] : options.default
+  let t = target as Record<string, unknown>
+
+  if (t[path as string] !== undefined) {
+    return isValid(path as string, t, options) ? t[path as string] : options.default
   }
 
-  // @ts-expect-error
-  const segs = pathIsArray ? path : split(path, splitChar, options)
+  const segs = pathIsArray ? (path as string[]) : split(path as string, splitChar, options)
   const len = segs.length
   let idx = 0
 
@@ -101,30 +88,23 @@ const getValue = (
       prop = join([prop.slice(0, -1), segs[++idx] || ''], joinChar, options)
     }
 
-    // @ts-expect-error
-    if (target[prop] !== undefined) {
-      if (!isValid(prop, target, options)) {
+    if (t[prop] !== undefined) {
+      if (!isValid(prop, t, options)) {
         return options.default
       }
-
-      // @ts-expect-error
-      target = target[prop]
+      t = t[prop] as Record<string, unknown>
     } else {
       let hasProp = false
       let n = idx + 1
 
       while (n < len) {
-        // @ts-expect-error
-        prop = join([prop, segs[n++]], joinChar, options)
+        prop = join([prop, segs[n++]!], joinChar, options)
 
-        // @ts-expect-error
-        if ((hasProp = target[prop] !== undefined)) {
-          if (!isValid(prop, target, options)) {
+        if ((hasProp = t[prop] !== undefined)) {
+          if (!isValid(prop, t, options)) {
             return options.default
           }
-
-          // @ts-expect-error
-          target = target[prop]
+          t = t[prop] as Record<string, unknown>
           idx = n - 1
           break
         }
@@ -134,10 +114,10 @@ const getValue = (
         return options.default
       }
     }
-  } while (++idx < len && isValidObject(target))
+  } while (++idx < len && isValidObject(t))
 
   if (idx === len) {
-    return target
+    return t
   }
 
   return options.default
