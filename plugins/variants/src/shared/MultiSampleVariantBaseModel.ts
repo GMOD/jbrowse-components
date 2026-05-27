@@ -95,7 +95,7 @@ const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
 
-export function encodeGenotype(gt: string) {
+function encodeGenotype(gt: string) {
   const alleles = gt.split(GENOTYPE_SPLITTER)
   let nonRefCount = 0
   let uncalledCount = 0
@@ -407,7 +407,10 @@ export default function MultiSampleVariantBaseModelF(
           // Apply the configured colorBy palette only when the user hasn't
           // already arranged the layout themselves.
           if (self.layout.length === 0) {
-            const colored = maybeApplyColorByPalette(self.configuration, sources)
+            const colored = maybeApplyColorByPalette(
+              self.configuration,
+              sources,
+            )
             if (colored) {
               self.layout = colored
             }
@@ -515,12 +518,18 @@ export default function MultiSampleVariantBaseModelF(
             : 'skip'
         },
 
-        /**
-         * #getter
-         * Original adapter order, no layout reordering. Reads sampleInfo
-         * (cellData-derived) for phased expansion — safe in React components
-         * and user actions, never put in rpcProps (would cause infinite loop).
-         */
+        // Four views on the source list, each with a different consumer:
+        //
+        // - sourcesWithoutLayout: adapter order, phased-expanded, no subtree
+        //   filter. Used by clustering dialogs and sortByGenotype.
+        // - sourcesBase: layout-ordered, subtree-filtered, NOT phased-expanded.
+        //   Used by rpcProps — must not read sampleInfo (which is fetch-result-
+        //   derived; reading it would loop SettingsInvalidate).
+        // - sources: rendering view — sourcesBase + phased expansion (reads
+        //   sampleInfo). Subtree-filtered, so only visible rows show up.
+        // - editableSources: dialog view — like `sources` but without the
+        //   subtree filter, so submit doesn't wipe filtered samples from
+        //   `layout`.
         get sourcesWithoutLayout() {
           return self.sourcesVolatile
             ? getSources({
@@ -530,13 +539,6 @@ export default function MultiSampleVariantBaseModelF(
               })
             : undefined
         },
-        /**
-         * #getter
-         * Layout-ordered, subtree-filtered, never haplotype-expanded.
-         * Does NOT read sampleInfo — safe to use in rpcProps. Three-getter
-         * hierarchy: sourcesBase → sources (adds phased expansion) →
-         * sourcesWithoutLayout (no layout, reads sampleInfo for phased).
-         */
         get sourcesBase() {
           if (!self.sourcesVolatile) {
             return undefined

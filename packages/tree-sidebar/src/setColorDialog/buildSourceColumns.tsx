@@ -7,9 +7,7 @@ import { updateRows } from '../sourcesGridUtils.ts'
 import type { ColorColumn } from './SourceGrid.tsx'
 import type { GridColDef } from '@mui/x-data-grid'
 
-export function buildSourceColumns<
-  S extends { name: string; color?: string },
->({
+export function buildSourceColumns<S extends { name: string; color?: string }>({
   colorColumns,
   extras,
   rows,

@@ -13,16 +13,15 @@ export interface SortState {
 // Clicking a new column starts ascending; clicking the same column flips
 // direction; MUI's third-click "clear" keeps rows sorted and flips direction
 // once more so the user never sees an unsorted intermediate state.
-export function nextSortState(prev: SortState, model: GridSortModel): SortState {
+export function nextSortState(
+  prev: SortState,
+  model: GridSortModel,
+): SortState {
   const requested = model[0]?.field
   const field = requested ?? prev.field
   const isNewField = requested !== undefined && requested !== prev.field
   return {
-    direction: isNewField
-      ? 'asc'
-      : prev.direction === 'asc'
-        ? 'desc'
-        : 'asc',
+    direction: isNewField ? 'asc' : prev.direction === 'asc' ? 'desc' : 'asc',
     field,
   }
 }
@@ -35,9 +34,7 @@ export function sortRows<S>(
   return [...rows].sort((a, b) => {
     const aa = getStr((a as Record<string, unknown>)[field])
     const bb = getStr((b as Record<string, unknown>)[field])
-    return direction === 'asc'
-      ? aa.localeCompare(bb)
-      : bb.localeCompare(aa)
+    return direction === 'asc' ? aa.localeCompare(bb) : bb.localeCompare(aa)
   })
 }
 

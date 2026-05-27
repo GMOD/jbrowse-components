@@ -277,10 +277,6 @@ export default function stateModelFactory(
           )
         },
 
-        setSources(sources: SourceInfo[]) {
-          self.sourcesVolatile = sources
-        },
-
         setShowTree(arg: boolean) {
           self.setOverride('showTree', arg)
         },
