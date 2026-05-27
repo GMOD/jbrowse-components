@@ -53,7 +53,7 @@ function drawInstances(
     let fillStyle = fillStyleCache.get(packed)
     if (isHovered) {
       // SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
-      // syntenyFill.slang's hover branch so the highlight looks identical
+      // the fill shaders' hover branch so the highlight looks identical
       // across all backends.
       const r = ((packed & 0xff) * 0.7) | 0
       const g = (((packed >> 8) & 0xff) * 0.7) | 0
@@ -69,7 +69,7 @@ function drawInstances(
     }
 
     // SYNC: matches origin/main drawRef.ts thin-feature handling and the
-    // minimum-half-width clamp in syntenyFill.slang. Features whose top and
+    // minimum-half-width clamp in the fill shaders. Features whose top and
     // bottom screen widths are both ≤ 1px are drawn as a 1px stroke down
     // the centerline at full alpha; fill alone gives partial-coverage AA
     // that renders sub-pixel ribbons too faintly.

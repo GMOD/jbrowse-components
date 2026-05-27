@@ -30,7 +30,6 @@ function makeInstanceData(count = 1): SyntenyInstanceData {
     padTops: new Float32Array(count).fill(0),
     padBottoms: new Float32Array(count).fill(0),
     instanceCount: count,
-    nonCigarInstanceCount: count,
   }
 }
 

@@ -179,8 +179,8 @@ function buildPickIndex(
       flatbush.add(0, 0, -1, -1)
       continue
     }
-    // SYNC: mirrors LINE_PERP_THRESHOLD in syntenyFill.slang — ribbons whose
-    // both edges are sub-2px wide render as non-pickable lines in the shader.
+    // SYNC: mirrors the halfPerpW≥0.5 clamp in the fill shaders — ribbons
+    // whose both edges are sub-2px wide render as non-pickable lines.
     if (Math.abs(c.sx2 - c.sx1) < 2 && Math.abs(c.sx4 - c.sx3) < 2) {
       flatbush.add(0, 0, -1, -1)
       continue

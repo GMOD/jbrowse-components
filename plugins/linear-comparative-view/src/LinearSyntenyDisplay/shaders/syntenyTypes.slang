@@ -1,10 +1,14 @@
 // Shared per-instance layout + uniform block for fill/edge synteny shaders.
-// Each instance is one parallelogram (or one tessellated curve segment): four
+// Each instance is one parallelogram (or one curved ribbon strip): four
 // corner positions in cumulative-bp space (split hi/lo for hp-math precision)
 // plus the inter-region padding pixels accumulated before the corner's
 // region. Corners 1/2 belong to the top view (view 0), corners 3/4 to the
 // bottom view (view 1).
-//! export-consts: BEZIER_SEGMENTS
+//
+// Curve mode and straight-line mode live in separate shader files
+// (syntenyFill{Curve,Straight}.slang, syntenyEdge{Curve,Straight}.slang) so
+// there are no `isCurve` branches anywhere; `GpuSyntenyRenderer.render`
+// dispatches the appropriate pass per track. This module is mode-agnostic.
 module syntenyTypes;
 
 import hpmath;
@@ -24,10 +28,10 @@ public struct Instance {
   public float padTop            : ATTR11;
   public float padBottom         : ATTR12;
   // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyColors.ts).
-  // Used by syntenyFill's fragment shader to decide whether perpendicular AA
-  // should be smooth (BASE — outer feature silhouette) or hard-cut (CIGAR —
-  // tiles a feature, so smoothstep at shared edges with sibling CIGAR
-  // instances bleeds background through the seam under standard alpha blend).
+  // Used by the fill fragment to decide whether perpendicular AA should be
+  // smooth (BASE — outer feature silhouette) or hard-cut (CIGAR — tiles a
+  // feature, so smoothstep at shared edges with sibling CIGAR instances
+  // bleeds background through the seam under standard alpha blend).
   public float kind              : ATTR13;
 };
 
@@ -53,14 +57,11 @@ public struct Uniforms {
   public float  hoveredFeatureId;
   public float  clickedFeatureId;
   public float  yTop;
-  public float  isCurve;
 };
 
 public struct Corners {
   public float x1, x2, x3, x4;
 };
-
-// hpCornerScreenX is now in hpmath.slang (imported above).
 
 public Corners computeCorners(Instance inst, Uniforms u) {
   Corners c;
@@ -85,73 +86,6 @@ public bool isCulled(Corners c, float queryTotalLength, Uniforms u) {
       || max(c.x3, c.x4) < -mOff || min(c.x3, c.x4) > rW + mOff;
 }
 
+// Tessellation count for the curve-mode edge pass. Fill-curve hard-codes 8
+// segments inline.
 public static const uint BEZIER_SEGMENTS = 16u;
-
-// (edge0, edge1, y) at parameter t along the parallelogram. When isCurve is
-// on, uses a cubic Hermite ease-in-out so synteny ribbons don't kink at the
-// endpoints.
-public float3 hermiteEdges(Corners c, float t, Uniforms u) {
-  float edge0, edge1, y;
-  if (u.isCurve > 0.5) {
-    float s = t * t * (3.0 - 2.0 * t);
-    edge0 = lerp(c.x1, c.x4, s);
-    edge1 = lerp(c.x2, c.x3, s);
-    y = u.yTop + u.height * (1.5 * t * (1.0 - t) + t * t * t);
-  } else {
-    edge0 = lerp(c.x1, c.x4, t);
-    edge1 = lerp(c.x2, c.x3, t);
-    y = u.yTop + t * u.height;
-  }
-  return float3(edge0, edge1, y);
-}
-
-// Tangent vector at t for an edge whose raw corner-to-corner horizontal delta
-// is `dx`. In curve mode sPrime scales dx; dy comes from the y-curve derivative.
-public float2 edgeTangent(float dx, float t, Uniforms u) {
-  if (u.isCurve > 0.5) {
-    float sPrime = 6.0 * t * (1.0 - t);
-    float dy = u.height * 1.5 * (1.0 - 2.0 * t * (1.0 - t));
-    return float2(sPrime * dx, dy);
-  } else {
-    return float2(dx, u.height);
-  }
-}
-
-// Two-triangle fan tessellation of one parallelogram: vid maps to (segment,
-// vertex-in-segment), which decides the parameter t and which edge (side).
-// When top/bottom diffs have opposite signs the parallelogram crosses itself
-// (inversion pinch), so we bias tessellation density toward the crossing.
-public void computeFillSegmentT(uint vid, Corners c, out float t, out float side) {
-  uint seg = vid / 6u;
-  uint vertInSeg = vid % 6u;
-  float topDiff = c.x1 - c.x2;
-  float botDiff = c.x4 - c.x3;
-
-  float t0, t1;
-  if (topDiff * botDiff < 0.0) {
-    float tCross = clamp(topDiff / (topDiff - botDiff), 0.01, 0.99);
-    uint nUpper = clamp(uint(round(float(BEZIER_SEGMENTS) * tCross)), 1u, BEZIER_SEGMENTS - 1u);
-    if (seg < nUpper) {
-      t0 = float(seg) / float(nUpper) * tCross;
-      t1 = float(seg + 1u) / float(nUpper) * tCross;
-    } else {
-      uint lSeg = seg - nUpper;
-      uint nLower = BEZIER_SEGMENTS - nUpper;
-      t0 = tCross + float(lSeg) / float(nLower) * (1.0 - tCross);
-      t1 = tCross + float(lSeg + 1u) / float(nLower) * (1.0 - tCross);
-    }
-  } else {
-    t0 = float(seg) / float(BEZIER_SEGMENTS);
-    t1 = float(seg + 1u) / float(BEZIER_SEGMENTS);
-  }
-
-  switch (vertInSeg) {
-    case 0u: { t = t0; side = 0.0; break; }
-    case 1u: { t = t0; side = 1.0; break; }
-    case 2u: { t = t1; side = 0.0; break; }
-    case 3u: { t = t1; side = 0.0; break; }
-    case 4u: { t = t0; side = 1.0; break; }
-    case 5u: { t = t1; side = 1.0; break; }
-    default: { t = 0.0; side = 0.0; break; }
-  }
-}

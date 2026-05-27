@@ -43,7 +43,6 @@ export interface SyntenyGeometry {
   padTops: Float32Array
   padBottoms: Float32Array
   instanceCount: number
-  nonCigarInstanceCount: number
 }
 
 export type SyntenyInstanceData = SyntenyGeometry & { colors: Uint32Array }
@@ -287,8 +286,6 @@ export function buildSyntenyGeometry({
     emitNonCigarFeature(i)
   }
 
-  const nonCigarInstanceCount = idx
-
   // Second loop: CIGAR instances (using cached parsed CIGARs). The visitor
   // merges sub-pixel ops, so features with no >= 1 px indels collapse to a
   // single KIND_CIGAR_MATCH quad — no separate fast path needed.
@@ -395,6 +392,5 @@ export function buildSyntenyGeometry({
     padTops: padTopsArr.subarray(0, instanceCount),
     padBottoms: padBottomsArr.subarray(0, instanceCount),
     instanceCount,
-    nonCigarInstanceCount,
   }
 }

@@ -2,8 +2,10 @@ import { splitPositionWithFrac } from '@jbrowse/core/gpu/blockClipUtils'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import { interleaveInstances } from './instanceInterleave.ts'
-import * as syntenyEdgeShader from './shaders/syntenyEdge.generated.ts'
-import * as syntenyFillShader from './shaders/syntenyFill.generated.ts'
+import * as syntenyEdgeCurveShader from './shaders/syntenyEdgeCurve.generated.ts'
+import * as syntenyEdgeStraightShader from './shaders/syntenyEdgeStraight.generated.ts'
+import * as syntenyFillCurveShader from './shaders/syntenyFillCurve.generated.ts'
+import * as syntenyFillStraightShader from './shaders/syntenyFillStraight.generated.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 
@@ -15,20 +17,33 @@ import type {
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
-const PASS_FILL = 'fill'
-const PASS_EDGE = 'edge'
+const PASS_FILL_STRAIGHT = 'fillStraight'
+const PASS_FILL_CURVE = 'fillCurve'
+const PASS_EDGE_STRAIGHT = 'edgeStraight'
+const PASS_EDGE_CURVE = 'edgeCurve'
 
-const UNIFORMS_SIZE_BYTES = syntenyFillShader.UNIFORMS_SIZE_BYTES
-const U = syntenyFillShader.UNIFORM_OFFSET_F32
+// All four shaders share the same Uniforms layout (defined in
+// syntenyTypes.slang) and the same Instance layout, so any shader's
+// generated module is a valid source of these constants.
+const UNIFORMS_SIZE_BYTES = syntenyFillStraightShader.UNIFORMS_SIZE_BYTES
+const U = syntenyFillStraightShader.UNIFORM_OFFSET_F32
 
 export const SYNTENY_PASSES: PassDescriptor[] = [
+  slangPass({ id: PASS_FILL_STRAIGHT, mod: syntenyFillStraightShader }),
+  slangPass({ id: PASS_FILL_CURVE, mod: syntenyFillCurveShader }),
+  // Edge passes read the fill pass's instance buffer (uploaded under that
+  // pass id) — same Instance layout in both, so attribute layout matches.
   slangPass({
-    id: PASS_FILL,
-    mod: syntenyFillShader,
+    id: PASS_EDGE_STRAIGHT,
+    mod: syntenyEdgeStraightShader,
+    bufferStride: syntenyFillStraightShader.INSTANCE_STRIDE_BYTES,
+    bufferAttributes: syntenyFillStraightShader.GL_ATTRIBUTES,
   }),
   slangPass({
-    id: PASS_EDGE,
-    mod: syntenyEdgeShader,
+    id: PASS_EDGE_CURVE,
+    mod: syntenyEdgeCurveShader,
+    bufferStride: syntenyFillCurveShader.INSTANCE_STRIDE_BYTES,
+    bufferAttributes: syntenyFillCurveShader.GL_ATTRIBUTES,
   }),
 ]
 
@@ -55,6 +70,11 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
   private uniformF32 = new Float32Array(this.uniformData)
 
   private cache = new SyntenyGeometryCache()
+  // Which fill pass each region's GPU buffer is currently uploaded against.
+  // Only one of {STRAIGHT, CURVE} lives on the GPU per region at a time;
+  // flipping `drawCurves` re-interleaves and re-uploads on the next render.
+  // Trades a one-frame upload stall on toggle for ~½ steady-state GPU memory.
+  private uploadedPass = new Map<number, string>()
   private pickCtx: CanvasRenderingContext2D | undefined
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
@@ -68,18 +88,18 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
 
   uploadGeometry(key: number, data: SyntenyInstanceData) {
     this.cache.set(key, data)
-    const interleaved = interleaveInstances(data)
-    this.hal.uploadBuffer(key, PASS_FILL, interleaved, data.instanceCount)
-    this.hal.uploadBuffer(
-      key,
-      PASS_EDGE,
-      interleaved,
-      data.nonCigarInstanceCount,
-    )
+    // Defer the GPU upload to render() — at that point we know which mode
+    // (straight vs curve) the track is in and upload only to that pass.
+    const prev = this.uploadedPass.get(key)
+    if (prev !== undefined) {
+      this.hal.deleteBuffer(key, prev)
+      this.uploadedPass.delete(key)
+    }
   }
 
   deleteGeometry(key: number) {
     this.cache.delete(key)
+    this.uploadedPass.delete(key)
     this.hal.deleteRegion(key)
   }
 
@@ -93,14 +113,38 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
       if (!data || data.instanceCount === 0) {
         continue
       }
+      const fillPass = params.drawCurves ? PASS_FILL_CURVE : PASS_FILL_STRAIGHT
+      this.ensureUploaded(key, fillPass, data)
       this.writeUniforms(params, state.overdrawPx)
-      this.hal.drawPass(PASS_FILL, key)
+      this.hal.drawPass(fillPass, key)
       if (params.clickedFeatureId > 0) {
-        this.hal.drawPass(PASS_EDGE, key)
+        // Edge pass only outlines the clicked feature's BASE silhouette
+        // (CIGAR tiles are culled in-shader via the `kind >= 3.0` check);
+        // it reads the active fill pass's instance buffer.
+        const edgePass = params.drawCurves
+          ? PASS_EDGE_CURVE
+          : PASS_EDGE_STRAIGHT
+        this.hal.drawPass(edgePass, key, fillPass)
       }
     }
     this.hal.endFrame()
     return true
+  }
+
+  private ensureUploaded(
+    key: number,
+    passId: string,
+    data: SyntenyInstanceData,
+  ) {
+    const prev = this.uploadedPass.get(key)
+    if (prev === passId) {
+      return
+    }
+    if (prev !== undefined) {
+      this.hal.deleteBuffer(key, prev)
+    }
+    this.hal.uploadBuffer(key, passId, interleaveInstances(data), data.instanceCount)
+    this.uploadedPass.set(key, passId)
   }
 
   pick(x: number, y: number, state: SyntenyRenderState) {
@@ -151,7 +195,6 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     u[U.hoveredFeatureId] = p.hoveredFeatureId
     u[U.clickedFeatureId] = p.clickedFeatureId
     u[U.yTop] = p.yTop
-    u[U.isCurve] = p.drawCurves ? 1 : 0
     this.hal.writeUniforms(this.uniformData)
   }
 }

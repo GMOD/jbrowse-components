@@ -3,8 +3,10 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { WGSL_SOURCE as edgeVertexShader } from './LinearSyntenyDisplay/shaders/syntenyEdge.generated.ts'
-import { WGSL_SOURCE as fillVertexShader } from './LinearSyntenyDisplay/shaders/syntenyFill.generated.ts'
+import { WGSL_SOURCE as edgeCurveShader } from './LinearSyntenyDisplay/shaders/syntenyEdgeCurve.generated.ts'
+import { WGSL_SOURCE as edgeStraightShader } from './LinearSyntenyDisplay/shaders/syntenyEdgeStraight.generated.ts'
+import { WGSL_SOURCE as fillCurveShader } from './LinearSyntenyDisplay/shaders/syntenyFillCurve.generated.ts'
+import { WGSL_SOURCE as fillStraightShader } from './LinearSyntenyDisplay/shaders/syntenyFillStraight.generated.ts'
 
 let tmpDir: string
 
@@ -28,8 +30,10 @@ function validateWgsl(name: string, code: string) {
 }
 
 const wgslShaders: [string, string][] = [
-  ['syntenyFill', fillVertexShader],
-  ['syntenyEdge', edgeVertexShader],
+  ['syntenyFillStraight', fillStraightShader],
+  ['syntenyFillCurve', fillCurveShader],
+  ['syntenyEdgeStraight', edgeStraightShader],
+  ['syntenyEdgeCurve', edgeCurveShader],
 ]
 
 const skipIfNoNaga = hasNaga() ? describe : describe.skip
