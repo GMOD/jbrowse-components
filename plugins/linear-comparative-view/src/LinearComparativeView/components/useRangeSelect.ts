@@ -1,9 +1,8 @@
 import type React from 'react'
 import { useCallback, useEffect, useState } from 'react'
 
+import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { transaction } from 'mobx'
-
-import { getRelativeX } from './util.ts'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 

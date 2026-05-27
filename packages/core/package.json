@@ -74,7 +74,6 @@
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
     "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
     "./rpc/coreRpcMethods": "./src/rpc/coreRpcMethods.ts",
-    "./rpc/methods/util": "./src/rpc/methods/util.ts",
     "./ui": "./src/ui/index.ts",
     "./ui/AppLogo": "./src/ui/AppLogo.tsx",
     "./ui/BaseTooltip": "./src/ui/BaseTooltip.tsx",
@@ -95,6 +94,7 @@
     "./ui/PopoverPicker": "./src/ui/PopoverPicker.tsx",
     "./ui/ResizeHandle": "./src/ui/ResizeHandle.tsx",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
+    "./ui/RubberbandTooltip": "./src/ui/RubberbandTooltip.tsx",
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
@@ -123,6 +123,7 @@
     "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
     "./util/flatbush": "./src/util/flatbush/index.ts",
     "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
+    "./util/getRelativeX": "./src/util/getRelativeX.ts",
     "./util/io": "./src/util/io/index.ts",
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
     "./util/jexlStrings": "./src/util/jexlStrings.ts",
@@ -146,6 +147,7 @@
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
     "./util/useGpuBackend": "./src/util/useGpuBackend.ts",
+    "./util/useLatestRef": "./src/util/useLatestRef.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts"
   },
   "files": [
@@ -422,10 +424,6 @@
         "types": "./esm/rpc/coreRpcMethods.d.ts",
         "import": "./esm/rpc/coreRpcMethods.js"
       },
-      "./rpc/methods/util": {
-        "types": "./esm/rpc/methods/util.d.ts",
-        "import": "./esm/rpc/methods/util.js"
-      },
       "./ui": {
         "types": "./esm/ui/index.d.ts",
         "import": "./esm/ui/index.js"
@@ -505,6 +503,10 @@
       "./ui/ReturnToImportFormDialog": {
         "types": "./esm/ui/ReturnToImportFormDialog.d.ts",
         "import": "./esm/ui/ReturnToImportFormDialog.js"
+      },
+      "./ui/RubberbandTooltip": {
+        "types": "./esm/ui/RubberbandTooltip.d.ts",
+        "import": "./esm/ui/RubberbandTooltip.js"
       },
       "./ui/SanitizedHTML": {
         "types": "./esm/ui/SanitizedHTML.d.ts",
@@ -618,6 +620,10 @@
         "types": "./esm/util/formatFastaStrings.d.ts",
         "import": "./esm/util/formatFastaStrings.js"
       },
+      "./util/getRelativeX": {
+        "types": "./esm/util/getRelativeX.d.ts",
+        "import": "./esm/util/getRelativeX.js"
+      },
       "./util/io": {
         "types": "./esm/util/io/index.d.ts",
         "import": "./esm/util/io/index.js"
@@ -709,6 +715,10 @@
       "./util/useGpuBackend": {
         "types": "./esm/util/useGpuBackend.d.ts",
         "import": "./esm/util/useGpuBackend.js"
+      },
+      "./util/useLatestRef": {
+        "types": "./esm/util/useLatestRef.d.ts",
+        "import": "./esm/util/useLatestRef.js"
       },
       "./util/useMeasure": {
         "types": "./esm/util/useMeasure.d.ts",
@@ -879,9 +889,6 @@
         "rpc/coreRpcMethods": [
           "esm/rpc/coreRpcMethods.d.ts"
         ],
-        "rpc/methods/util": [
-          "esm/rpc/methods/util.d.ts"
-        ],
         "ui": [
           "esm/ui/index.d.ts"
         ],
@@ -941,6 +948,9 @@
         ],
         "ui/ReturnToImportFormDialog": [
           "esm/ui/ReturnToImportFormDialog.d.ts"
+        ],
+        "ui/RubberbandTooltip": [
+          "esm/ui/RubberbandTooltip.d.ts"
         ],
         "ui/SanitizedHTML": [
           "esm/ui/SanitizedHTML.d.ts"
@@ -1026,6 +1036,9 @@
         "util/formatFastaStrings": [
           "esm/util/formatFastaStrings.d.ts"
         ],
+        "util/getRelativeX": [
+          "esm/util/getRelativeX.d.ts"
+        ],
         "util/io": [
           "esm/util/io/index.d.ts"
         ],
@@ -1094,6 +1107,9 @@
         ],
         "util/useGpuBackend": [
           "esm/util/useGpuBackend.d.ts"
+        ],
+        "util/useLatestRef": [
+          "esm/util/useLatestRef.d.ts"
         ],
         "util/useMeasure": [
           "esm/util/useMeasure.d.ts"

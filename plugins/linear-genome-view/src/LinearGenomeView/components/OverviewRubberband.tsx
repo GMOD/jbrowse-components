@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
+import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
+import useLatestRef from '@jbrowse/core/util/useLatestRef'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import OverviewRubberbandHoverTooltip from './OverviewRubberbandHoverTooltip.tsx'
 import RubberbandSpan from './RubberbandSpan.tsx'
-import { getRelativeX } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -42,12 +43,8 @@ const OverviewRubberband = observer(function OverviewRubberband({
   const { classes } = useStyles()
   const mouseDragging = startX !== undefined
 
-  // refs let globalMouseUp read the latest values without forcing the effect
-  // below to re-register listeners on every drag movement
-  const startXRef = useRef(startX)
-  const currentXRef = useRef(currentX)
-  startXRef.current = startX
-  currentXRef.current = currentX
+  const startXRef = useLatestRef(startX)
+  const currentXRef = useLatestRef(currentX)
 
   useEffect(() => {
     if (!mouseDragging) {

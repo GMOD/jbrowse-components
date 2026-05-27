@@ -1,12 +1,5 @@
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
-export function getRelativeX(
-  event: { clientX: number; target: EventTarget | null },
-  element: HTMLElement | null,
-) {
-  return event.clientX - (element?.getBoundingClientRect().left ?? 0)
-}
-
 export function getCytobands(assembly: Assembly | undefined, refName: string) {
   return (
     assembly?.cytobands

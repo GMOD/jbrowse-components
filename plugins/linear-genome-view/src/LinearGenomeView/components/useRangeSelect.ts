@@ -1,7 +1,8 @@
 import type React from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { getRelativeX } from './util.ts'
+import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
+import useLatestRef from '@jbrowse/core/util/useLatestRef'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -26,10 +27,7 @@ export function useRangeSelect(
   const [guideX, setGuideX] = useState<number>()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
-  // ref lets globalMouseUp read the latest startX without forcing the effect
-  // below to re-register listeners on every drag movement
-  const startXRef = useRef(startX)
-  startXRef.current = startX
+  const startXRef = useLatestRef(startX)
 
   const handleClose = useCallback(() => {
     setAnchorPosition(undefined)
