@@ -142,6 +142,7 @@ export async function executeDotplotFeaturesAndPositions({
     const p21 = bpToCumBpAndPad(vIndex, mateRefName, mate.start)
     const p22 = bpToCumBpAndPad(vIndex, mateRefName, mate.end)
     if (!p11 || !p12 || !p21 || !p22) {
+      skippedFeatureCount++
       continue
     }
 

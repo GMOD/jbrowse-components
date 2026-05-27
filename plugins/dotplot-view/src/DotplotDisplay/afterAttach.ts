@@ -76,9 +76,9 @@ export function doAfterAttach(
           if (result.skippedFeatureCount > 0) {
             self.setWarnings([
               {
-                message: `${result.skippedFeatureCount} of ${result.totalFeatureCount} features were outside the displayed regions`,
+                message: `${result.skippedFeatureCount} of ${result.totalFeatureCount} features could not be mapped to the configured assemblies`,
                 effect:
-                  'Check that the query and target assemblies are configured correctly.',
+                  'This usually means chromosome names in the file do not match the assembly. Check assembly aliases or that the correct assemblies are selected.',
               },
             ])
           } else {
