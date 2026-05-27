@@ -1,13 +1,14 @@
 import { useEffect } from 'react'
 
 import { getSession, notEmpty } from '@jbrowse/core/util'
+import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../../model.ts'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 type LGV = IExtendedLGV
 
@@ -24,7 +25,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
   overview,
 }: {
   model: LGV
-  overview: Base1DViewModel
+  overview: ViewLayout
 }) {
   const { cytobandOffset } = model
   const session = getSession(model) as SessionWithWidgets
@@ -49,8 +50,14 @@ const OverviewHighlight = observer(function OverviewHighlight({
           const asm = assemblyManager.get(r.assemblyName)
           const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
           const rev = r.reversed
-          const s = overview.bpToPx({ refName, coord: rev ? r.end : r.start })
-          const e = overview.bpToPx({ refName, coord: rev ? r.start : r.end })
+          const s = layoutBpToPx(overview, {
+            refName,
+            coord: rev ? r.end : r.start,
+          })
+          const e = layoutBpToPx(overview, {
+            refName,
+            coord: rev ? r.start : r.end,
+          })
           return s !== undefined && e !== undefined
             ? {
                 width: Math.abs(e - s),

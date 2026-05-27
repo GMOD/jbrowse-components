@@ -1,11 +1,12 @@
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
+import { getContentBlocksPxSpan } from '@jbrowse/core/util/Base1DUtils'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   model,
@@ -13,36 +14,22 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   useOffset = true,
 }: {
   model: LinearGenomeViewModel
-  overview: Base1DViewModel
+  overview: ViewLayout
   useOffset?: boolean
 }) {
   const theme = useTheme()
   const polygonColor = theme.palette.tertiary.light
-  const multiplier = Number(useOffset)
-
   const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
     model
   const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
-
-  if (!contentBlocks.length) {
+  const span = getContentBlocksPxSpan(overview, contentBlocks)
+  if (!span) {
     return null
   }
 
-  const first = contentBlocks.at(0)!
-  const last = contentBlocks.at(-1)!
-  const topLeft =
-    (overview.bpToPx({
-      refName: first.refName,
-      coord: first.reversed ? first.end : first.start,
-    }) ?? 0) +
-    cytobandOffset * multiplier
-  const topRight =
-    (overview.bpToPx({
-      refName: last.refName,
-      coord: last.reversed ? last.start : last.end,
-    }) ?? 0) +
-    cytobandOffset * multiplier
-
+  const offset = useOffset ? cytobandOffset : 0
+  const topLeft = span.leftPx + offset
+  const topRight = span.rightPx + offset
   const startPx = Math.max(0, -offsetPx)
   const endPx =
     startPx +

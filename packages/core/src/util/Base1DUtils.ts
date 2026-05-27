@@ -1,3 +1,7 @@
+import { sum } from './index.ts'
+
+import type { ContentBlock } from './blockTypes.ts'
+
 export interface BpOffset {
   refName?: string
   index: number
@@ -22,7 +26,10 @@ interface MoveSnap {
   interRegionPaddingWidth: number
 }
 
-interface ViewLayout {
+// Plain-object form of a Base1DView — what `bpToPx`/`pxToBp` need to do their
+// work. Use this when you want a stateless projection of displayed regions to
+// pixels without instantiating an MST model (e.g. the LGV "overview" header).
+export interface ViewLayout {
   displayedRegions: RegionSnap[]
   bpPerPx: number
   offsetPx: number
@@ -272,4 +279,63 @@ export function bpToPx({
     }
   }
   return undefined
+}
+
+// Convenience wrapper around bpToPx that matches the shape used by
+// Base1DView's .bpToPx() view method — returns just the offsetPx.
+export function layoutBpToPx(
+  layout: ViewLayout,
+  args: { refName: string; coord: number; displayedRegionIndex?: number },
+) {
+  return bpToPx({ ...args, self: layout })?.offsetPx
+}
+
+// Plain-object overview projection (the "show all displayed regions in `width`
+// pixels" layout). Replaces the pattern of creating a temporary Base1DView
+// MST model just to call bpToPx/pxToBp/calculateDynamicBlocks on it.
+export function createOverviewLayout({
+  displayedRegions,
+  width,
+  minimumBlockWidth = 0,
+  interRegionPaddingWidth = 0,
+}: {
+  displayedRegions: RegionSnap[]
+  width: number
+  minimumBlockWidth?: number
+  interRegionPaddingWidth?: number
+}): ViewLayout {
+  const totalBp = sum(displayedRegions.map(r => r.end - r.start))
+  return {
+    displayedRegions,
+    width,
+    minimumBlockWidth,
+    interRegionPaddingWidth,
+    bpPerPx: width > 0 ? totalBp / width : 0,
+    offsetPx: 0,
+  }
+}
+
+// Leading and trailing pixel positions of the visible content blocks projected
+// onto `layout` — used to render the overview's "you are here" rectangle and
+// polygon.
+export function getContentBlocksPxSpan(
+  layout: ViewLayout,
+  contentBlocks: ContentBlock[],
+) {
+  const first = contentBlocks.at(0)
+  const last = contentBlocks.at(-1)
+  if (!first || !last) {
+    return undefined
+  }
+  const leftPx =
+    layoutBpToPx(layout, {
+      refName: first.refName,
+      coord: first.reversed ? first.end : first.start,
+    }) ?? 0
+  const rightPx =
+    layoutBpToPx(layout, {
+      refName: last.refName,
+      coord: last.reversed ? last.start : last.end,
+    }) ?? 0
+  return { leftPx, rightPx }
 }

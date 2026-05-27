@@ -7,7 +7,7 @@ import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 import { chooseGridPitch } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 const useStyles = makeStyles()({
@@ -31,7 +31,7 @@ const OverviewScalebarTickLabels = observer(
     model: LinearGenomeViewModel
     scale: number
     block: ContentBlock
-    overview: Base1DViewModel
+    overview: ViewLayout
   }) {
     const { classes } = useStyles()
     const { start, end, reversed, refName, assemblyName } = block

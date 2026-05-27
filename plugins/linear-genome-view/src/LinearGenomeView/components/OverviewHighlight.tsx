@@ -1,11 +1,12 @@
 import { getSession, notEmpty } from '@jbrowse/core/util'
+import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { colord } from '@jbrowse/core/util/colord'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 type LGV = LinearGenomeViewModel
 
@@ -25,7 +26,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
   overview,
 }: {
   model: LGV
-  overview: Base1DViewModel
+  overview: ViewLayout
 }) {
   const { classes } = useStyles()
   const { highlight, cytobandOffset } = model
@@ -38,16 +39,8 @@ const OverviewHighlight = observer(function OverviewHighlight({
         ? assemblyManager.get(r.assemblyName)
         : undefined
       const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
-      const s = overview.bpToPx({
-        ...r,
-        refName,
-        coord: r.start,
-      })
-      const e = overview.bpToPx({
-        ...r,
-        refName,
-        coord: r.end,
-      })
+      const s = layoutBpToPx(overview, { refName, coord: r.start })
+      const e = layoutBpToPx(overview, { refName, coord: r.end })
       return s !== undefined && e !== undefined
         ? {
             width: Math.abs(e - s),

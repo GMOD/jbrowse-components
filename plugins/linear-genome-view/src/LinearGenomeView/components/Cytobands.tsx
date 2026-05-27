@@ -1,4 +1,5 @@
 import { getFillProps } from '@jbrowse/core/util'
+import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { observer } from 'mobx-react'
 
 // core
@@ -6,7 +7,7 @@ import { getCytobands } from './util.ts'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 // rounded rect from https://stackoverflow.com/a/45889603/2129219
@@ -64,7 +65,7 @@ const Cytobands = observer(function Cytobands({
   block,
   assembly,
 }: {
-  overview: Base1DViewModel
+  overview: ViewLayout
   assembly?: Assembly
   block: ContentBlock
 }) {
@@ -81,8 +82,8 @@ const Cytobands = observer(function Cytobands({
   let naIdx = 0
   const bands = cytobands.map(args => {
     const { refName, name, type, start, end } = args
-    const s = overview.bpToPx({ refName, coord: start }) ?? 0
-    const e = overview.bpToPx({ refName, coord: end }) ?? 0
+    const s = layoutBpToPx(overview, { refName, coord: start }) ?? 0
+    const e = layoutBpToPx(overview, { refName, coord: end }) ?? 0
     if (type === 'n/a') {
       const [, naDigits, naLetter] = name?.match(/^(\d+)([A-Za-z])/) ?? []
       const key = naDigits && naLetter ? naDigits + naLetter : ''

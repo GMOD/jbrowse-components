@@ -2,7 +2,11 @@ import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 
 import { getEnv, getSession } from '@jbrowse/core/util'
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import {
+  createOverviewLayout,
+  getContentBlocksPxSpan,
+} from '@jbrowse/core/util/Base1DUtils'
+import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -16,7 +20,7 @@ import { getCytobands } from './util.ts'
 import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 declare module '@jbrowse/core/PluginManager' {
@@ -24,7 +28,7 @@ declare module '@jbrowse/core/PluginManager' {
     'LinearGenomeView-OverviewScalebarComponent': {
       args: ReactNode[]
       result: ReactNode[]
-      props: { model: LinearGenomeViewModel; overview: Base1DViewModel }
+      props: { model: LinearGenomeViewModel; overview: ViewLayout }
     }
   }
 }
@@ -105,7 +109,7 @@ const OverviewBox = observer(function OverviewBox({
   scale: number
   model: LGV
   block: ContentBlock
-  overview: Base1DViewModel
+  overview: ViewLayout
 }) {
   const { classes } = useStyles()
   const theme = useTheme()
@@ -182,42 +186,25 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
   className,
 }: {
   model: LGV
-  overview: Base1DViewModel
+  overview: ViewLayout
   className: string
 }) {
   const theme = useTheme()
-  const scalebarColor = theme.palette.tertiary.light
-
   const { dynamicBlocks, showCytobands, cytobandOffset } = model
-  const visibleRegions = dynamicBlocks.contentBlocks
-
-  if (!visibleRegions.length) {
+  const span = getContentBlocksPxSpan(overview, dynamicBlocks.contentBlocks)
+  if (!span) {
     return null
   }
 
-  const first = visibleRegions.at(0)!
-  const last = visibleRegions.at(-1)!
-  const firstOverviewPx =
-    overview.bpToPx({
-      refName: first.refName,
-      coord: first.reversed ? first.end : first.start,
-    }) ?? 0
-  const lastOverviewPx =
-    overview.bpToPx({
-      refName: last.refName,
-      coord: last.reversed ? last.start : last.end,
-    }) ?? 0
-
-  const color = showCytobands ? '#f00' : scalebarColor
+  const color = showCytobands ? '#f00' : theme.palette.tertiary.light
   const transparency = showCytobands ? 0.1 : 0.3
-  const left = firstOverviewPx + cytobandOffset
 
   return (
     <div
       className={className}
       style={{
-        width: lastOverviewPx - firstOverviewPx,
-        transform: `translateX(${left}px)`,
+        width: span.rightPx - span.leftPx,
+        transform: `translateX(${span.leftPx + cytobandOffset}px)`,
         background: alpha(color, transparency),
         borderColor: color,
       }}
@@ -231,12 +218,12 @@ const Scalebar = observer(function Scalebar({
   overview,
 }: {
   model: LGV
-  overview: Base1DViewModel
+  overview: ViewLayout
   scale: number
 }) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
-  const overviewVisibleRegions = overview.dynamicBlocks.blocks
+  const overviewVisibleRegions = calculateDynamicBlocks(overview).blocks
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-OverviewScalebarComponent',
@@ -294,22 +281,19 @@ const OverviewScalebar = observer(function OverviewScalebar({
     displayedRegions,
   } = model
 
-  const modWidth = width - cytobandOffset
-  // displayedRegions is types.frozen — its reference is stable across renders
-  const overview = useMemo(() => {
-    const overview = Base1DView.create({
-      displayedRegions,
-      interRegionPaddingWidth: 0,
-      minimumBlockWidth,
-    })
-
-    overview.setVolatileWidth(modWidth)
-    overview.showAllRegions()
-    return overview
-  }, [displayedRegions, minimumBlockWidth, modWidth])
+  const overviewWidth = width - cytobandOffset
+  const overview = useMemo(
+    () =>
+      createOverviewLayout({
+        displayedRegions,
+        width: overviewWidth,
+        minimumBlockWidth,
+      }),
+    [displayedRegions, minimumBlockWidth, overviewWidth],
+  )
 
   const scale =
-    totalBp / (modWidth - (displayedRegions.length - 1) * wholeSeqSpacer)
+    totalBp / (overviewWidth - (displayedRegions.length - 1) * wholeSeqSpacer)
 
   return (
     <div>
