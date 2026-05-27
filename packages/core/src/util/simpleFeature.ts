@@ -77,7 +77,7 @@ export interface SimpleFeatureSerialized extends SimpleFeatureSerializedNoId {
 function isSimpleFeatureSerialized(
   args: SimpleFeatureSerialized | SimpleFeatureArgs,
 ): args is SimpleFeatureSerialized {
-  return 'uniqueId' in args && typeof args.data !== 'object'
+  return 'uniqueId' in args
 }
 
 /**

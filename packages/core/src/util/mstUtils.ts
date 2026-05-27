@@ -42,8 +42,7 @@ export function findParentThat(
   }
   let currentNode = getParent(node)
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  while (currentNode && isAlive(currentNode)) {
+  while (isAlive(currentNode)) {
     if (predicate(currentNode)) {
       return currentNode
     }

@@ -41,7 +41,10 @@ function isSharedArrayBuffer(value: unknown): value is SharedArrayBuffer {
   }
 }
 
-const useSharedArrayBuffer = (() => {
+// Browser support for SharedArrayBuffer requires cross-origin isolation
+// headers (COOP/COEP). Exported so diagnostic surfaces (about widget,
+// error stack trace) can show whether the page actually got the fast path.
+export const hasSharedArrayBuffer = (() => {
   try {
     return isSharedArrayBuffer(new SharedArrayBuffer(4))
   } catch {
@@ -49,19 +52,12 @@ const useSharedArrayBuffer = (() => {
   }
 })()
 
-if (useSharedArrayBuffer) {
-  // eslint-disable-next-line no-console
-  console.log(
-    '[stopToken] SharedArrayBuffer available, using fast atomic abort',
-  )
-}
-
 // ---------------------------------------------------------------------------
 // Create / stop
 // ---------------------------------------------------------------------------
 
 export function createStopToken(): StopToken {
-  if (useSharedArrayBuffer) {
+  if (hasSharedArrayBuffer) {
     const buffer = new SharedArrayBuffer(4)
     new Int32Array(buffer)[0] = ABORT_FLAG_CLEAR
     return buffer

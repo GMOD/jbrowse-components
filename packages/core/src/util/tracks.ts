@@ -51,7 +51,9 @@ export function getConfAssemblyNames(conf: AnyConfigurationModel) {
     | undefined
   if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
-    const parent = getParent<any>(conf)
+    const parent = getParent<AnyConfigurationModel & { sequence?: unknown }>(
+      conf,
+    )
     if ('sequence' in parent) {
       return [readConfObject(parent, 'name') as string]
     } else {

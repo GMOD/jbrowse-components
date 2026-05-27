@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { ExternalLink } from '@jbrowse/core/ui'
 import {
   availableRenderers,
@@ -5,6 +6,7 @@ import {
 } from '@jbrowse/core/ui/getGraphicsCapabilities'
 import { useGraphicsCapabilities } from '@jbrowse/core/ui/useGraphicsCapabilities'
 import { getSession } from '@jbrowse/core/util'
+import { hasSharedArrayBuffer } from '@jbrowse/core/util/stopToken'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -41,10 +43,15 @@ const AboutWidget = observer(function AboutWidget({
   model: IAnyStateTreeNode
 }) {
   const { classes } = useStyles()
-  const { version } = getSession(model)
+  const session = getSession(model)
+  const { version } = session
   const { pluginManager } = getEnv(model)
   const { plugins } = pluginManager as PluginManager
   const graphicsCapabilities = useGraphicsCapabilities()
+  const defaultRpcDriver = readConfObject(
+    session.rpcManager.mainConfiguration,
+    'defaultDriver',
+  ) as string
   const corePlugins = new Set(
     plugins
       .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)
@@ -89,6 +96,31 @@ const AboutWidget = observer(function AboutWidget({
             </AccordionDetails>
           </Accordion>
         ) : null}
+
+        <Accordion defaultExpanded>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon className={classes.icon} />}
+          >
+            <Typography>
+              RPC: <strong>{defaultRpcDriver}</strong>
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <ul>
+              <li>
+                {defaultRpcDriver === 'WebWorkerRpcDriver'
+                  ? 'Rendering runs off the main thread in a web worker.'
+                  : 'Rendering runs on the main thread — UI blocks during heavy work.'}
+              </li>
+              <li>
+                Worker abort:{' '}
+                {hasSharedArrayBuffer
+                  ? 'SharedArrayBuffer (fast atomic abort)'
+                  : 'XHR fallback (cross-origin isolation headers missing — synchronous worker abort is slow)'}
+              </li>
+            </ul>
+          </AccordionDetails>
+        </Accordion>
 
         <Accordion defaultExpanded>
           <AccordionSummary
