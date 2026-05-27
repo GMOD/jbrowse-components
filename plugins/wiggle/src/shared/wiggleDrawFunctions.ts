@@ -220,7 +220,7 @@ export function drawScatter(
       reversed,
     )
     const scoreY = scoreToY(scores[i]!) + rowTop
-    const w = Math.max(WIGGLE_MIN_PX, x2 - x1)
+    const w = Math.max(WIGGLE_MIN_PX, x2 - x1 + WIGGLE_FUDGE_FACTOR)
     ctx.fillRect(x1, scoreY - 1, w, 2)
   }
 }

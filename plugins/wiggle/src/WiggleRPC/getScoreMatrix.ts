@@ -33,7 +33,7 @@ export async function getScoreMatrix({
   )
 
   const groups = groupBy(feats, f => f.get('source'))
-  const rows: Record<string, number[]> = {}
+  const rows: Record<string, Float32Array> = {}
 
   // pre-compute values used in inner loop
   const r0Start = r0.start
@@ -43,26 +43,20 @@ export async function getScoreMatrix({
     const { name } = source
     const features = groups[name] ?? []
 
-    // use Float32Array for better performance with numeric data
     const arr = new Float32Array(w)
     for (const feat of features) {
-      // extract feature properties once to avoid repeated get() calls
       const fstart = feat.get('start')
       const fend = feat.get('end')
       const score = feat.get('score')
 
-      // calculate loop bounds once, avoid repeated bounds checks
       const startX = Math.max(0, ((fstart - r0Start) * invBpPerPx) | 0)
       const endX = Math.min(w, ((fend - r0Start) * invBpPerPx) | 0)
 
       for (let x = startX; x < endX; x++) {
-        if (arr[x] === 0) {
-          arr[x] = score
-        }
+        arr[x] = score
       }
     }
-    // convert to regular array for JSON serialization
-    rows[name] = Array.from(arr)
+    rows[name] = arr
     checkStopToken2(stopTokenCheck)
   }
 
