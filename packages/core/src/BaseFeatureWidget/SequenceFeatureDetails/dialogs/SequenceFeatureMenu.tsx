@@ -72,7 +72,7 @@ const SequenceFeatureMenu = observer(
                 const r = ref?.current
                 if (r) {
                   saveAs(
-                    new Blob([r.outerHTML || ''], {
+                    new Blob([r.outerHTML], {
                       type: 'text/html;charset=utf-8',
                     }),
                     'sequence.html',

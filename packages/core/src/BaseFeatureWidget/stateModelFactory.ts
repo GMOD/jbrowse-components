@@ -148,11 +148,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   const feature = structuredClone(unformattedFeatureData)
 
                   const combine = (
-                    arg2: string,
+                    scope: string,
                     feature: Record<string, unknown>,
                   ) => ({
-                    ...getConf(session, ['formatDetails', arg2], { feature }),
-                    ...getConf(track, ['formatDetails', arg2], { feature }),
+                    ...getConf(session, ['formatDetails', scope], { feature }),
+                    ...getConf(track, ['formatDetails', scope], { feature }),
                   })
 
                   if (track) {

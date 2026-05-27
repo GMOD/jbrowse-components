@@ -92,9 +92,7 @@ export default function Attributes(props: {
             <Attributes
               key={key}
               {...rest}
-              formatter={formatter}
               attributes={value}
-              descriptions={descriptions}
               prefix={[...prefix, key]}
             />
           )

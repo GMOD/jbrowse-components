@@ -26,7 +26,14 @@ const coreDetails = [
 
 interface PanelDescriptor {
   name: string
-  Component: React.FC<any>
+  Component: React.ComponentType<{
+    model: IAnyStateTreeNode
+    feature: SimpleFeatureSerialized
+    depth?: number
+    omit?: string[]
+    descriptions?: Descriptors
+    formatter?: (val: unknown, key: string) => React.ReactNode
+  }>
 }
 
 export default function FeatureDetails(props: {

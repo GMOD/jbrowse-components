@@ -113,27 +113,10 @@ export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
 
   const firstCds = cds.at(0)!
   const lastCds = cds.at(-1)!
-  const fivePrimeUTRs = [
-    {
-      start: parentFeat.start,
-      end: firstCds.start,
-    },
-  ].map(elt => ({
-    ...elt,
-    type: 'five_prime_UTR',
-  }))
-
-  const threePrimeUTRs = [
-    {
-      start: lastCds.end,
-      end: parentFeat.end,
-    },
-  ].map(elt => ({
-    ...elt,
-    type: 'three_prime_UTR',
-  }))
-
-  return [...fivePrimeUTRs, ...threePrimeUTRs]
+  return [
+    { start: parentFeat.start, end: firstCds.start, type: 'five_prime_UTR' },
+    { start: lastCds.end, end: parentFeat.end, type: 'three_prime_UTR' },
+  ]
 }
 
 export function ellipses(slug: string) {

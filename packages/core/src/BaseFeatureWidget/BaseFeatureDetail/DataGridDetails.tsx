@@ -42,10 +42,10 @@ export default function DataGridDetails({
   const firstRowKeyCount = Object.keys(value[0]!).length
 
   // avoids key 'id' from being used in row data
-  const rows = Object.entries(value).map(([k, val]) => {
+  const rows = value.map((val, k) => {
     const { id, ...rest } = val
     return {
-      id: k, // used by material UI
+      id: String(k), // used by material UI
       identifier: id, // renamed from id to identifier
       ...rest,
     } as Entry
@@ -97,7 +97,7 @@ export default function DataGridDetails({
                   width: widths[index],
                   renderCell: ({ value }) => (
                     <div className={classes.cell}>
-                      <SanitizedHTML html={getStr(value || '')} />
+                      <SanitizedHTML html={getStr(value ?? '')} />
                     </div>
                   ),
                 }) satisfies GridColDef<(typeof rows)[0]>,

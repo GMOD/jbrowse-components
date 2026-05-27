@@ -31,7 +31,7 @@ function NoWordWrap({ children }: { children: React.ReactNode }) {
         color: 'black',
         fontSize: 11,
         maxWidth: 600,
-        whiteSpace: 'wrap',
+        whiteSpace: 'normal',
         wordBreak: 'break-all',
       }}
     >
