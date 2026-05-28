@@ -33,9 +33,7 @@ export const WithLaunchLinearGenomeView = () => {
                 refNameAliases: {
                   adapter: {
                     type: 'RefNameAliasAdapter',
-                    location: {
-                      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-                    },
+                    uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
                   },
                 },
               },

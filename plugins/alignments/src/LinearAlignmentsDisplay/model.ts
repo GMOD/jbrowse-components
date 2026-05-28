@@ -29,9 +29,9 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { observable } from 'mobx'
 
-import { ColorScheme } from './constants.ts'
 import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
 import { buildLaidOutChainMap } from './computeChainLayout.ts'
+import { ColorScheme } from './constants.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import { buildLaidOutPileupMap } from '../RenderPileupDataRPC/sortLayout.ts'
@@ -933,7 +933,10 @@ export default function stateModelFactory(
           },
 
           updateColorTagMap(uniqueTag: string[]) {
-            const { map, added } = updateColorTagMapPure(self.colorTagMap, uniqueTag)
+            const { map, added } = updateColorTagMapPure(
+              self.colorTagMap,
+              uniqueTag,
+            )
             self.colorTagMap = map
             return added
           },

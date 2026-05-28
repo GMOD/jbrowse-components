@@ -1,13 +1,3 @@
-/**
- * Initialization with Real Genome Data
- *
- * Shows how to configure the view at startup using the init field:
- * - Specific location (loc)
- * - Assembly name
- * - Tracks to display
- * Uses human GRCh38 genome with real RefSeq gene track.
- */
-
 import { useState } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
@@ -38,31 +28,19 @@ export const WithInit = () => {
       trackId: 'P6R5xbRqRr',
       adapter: {
         type: 'BgzipFastaAdapter',
-        fastaLocation: {
-          uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-        },
-        faiLocation: {
-          uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
-        },
-        gziLocation: {
-          uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
-        },
+        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
       },
     },
     refNameAliases: {
       adapter: {
         type: 'RefNameAliasAdapter',
-        location: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-        },
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
     },
     cytobands: {
       adapter: {
         type: 'CytobandAdapter',
-        cytobandLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt',
-        },
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt',
       },
     },
   }
@@ -70,21 +48,13 @@ export const WithInit = () => {
   const tracks = [
     {
       type: 'FeatureTrack',
-      trackId:
-        'GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff',
+      trackId: 'ncbi-refseq-genes',
       name: 'NCBI RefSeq Genes',
       category: ['Genes'],
       assemblyNames: ['hg38'],
       adapter: {
         type: 'Gff3TabixAdapter',
-        gffGzLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
-        },
-        index: {
-          location: {
-            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi',
-          },
-        },
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
       },
     },
   ]
@@ -97,15 +67,10 @@ export const WithInit = () => {
         name: 'Hello',
         view: {
           type: 'LinearGenomeView',
-          showCytobandsSetting: true,
-          showGridlines: false,
-          colorByCDS: true,
           init: {
             loc: 'chr1:11,106,077-11,261,675',
             assembly: 'hg38',
-            tracks: [
-              'GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff',
-            ],
+            tracks: ['ncbi-refseq-genes'],
           },
         },
       },

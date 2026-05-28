@@ -61,7 +61,9 @@ export async function loadSessionSpec(
       ...new Set(
         views
           .map(view => view.type)
-          .filter(type => !pluginManager.extensionPoints.has(`LaunchView-${type}`)),
+          .filter(
+            type => !pluginManager.extensionPoints.has(`LaunchView-${type}`),
+          ),
       ),
     ]
     if (unknownViewTypes.length) {

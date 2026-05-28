@@ -5,9 +5,7 @@ import type { LinearSyntenyViewInit } from '../types.ts'
 // level 0", while string[][] is one entry per level (the gap between views[i]
 // and views[i+1]). The type guard lets us branch without `as` casts on the
 // union-of-arrays.
-function isFlatTrackList(
-  tracks: string[] | string[][],
-): tracks is string[] {
+function isFlatTrackList(tracks: string[] | string[][]): tracks is string[] {
   return typeof tracks[0] === 'string'
 }
 

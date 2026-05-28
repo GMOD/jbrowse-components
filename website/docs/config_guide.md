@@ -38,7 +38,7 @@ session.
 
 - [Avoiding stale config](/docs/config_guides/avoiding_stale_config) - Cache-busting strategies for servers that aggressively cache config.json
 - [Default session](/docs/config_guides/default_session) - Setting an initial session state loaded for all users
-- [Disabling analytics](/docs/config_guides/disable_analytics) - Opt out of Google Analytics usage tracking
+- [Disabling analytics](/docs/config_guides/disable_analytics) - Opt out of usage analytics
 - [Text searching](/docs/config_guides/text_searching) - Per-track and aggregate full-text search indexes
 - [Coloring/theming](/docs/config_guides/theme) - Customizing the application color theme
 - [Hierarchical track selector](/docs/config_guides/track_selector) - Track grouping and display options for the hierarchical selector

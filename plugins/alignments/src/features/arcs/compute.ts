@@ -63,7 +63,9 @@ const ARC_VS_BEZIER_THRESHOLD = 10_000
 const VERTICAL_LINE_THRESHOLD = 100_000
 const LONG_RANGE_STDDEV_THRESHOLD = 3
 
-// pairOrientationToNum encodes: 0=unknown, 1=LR(normal), 2=RL, 3=RR/FF, 4=LL/RR
+// pairOrientationToNum (see shared/buildBaseFeatureData.ts) encodes:
+//   0=unknown, 1=LR/normal (F1R2,F2R1), 2=RL (R1F2,R2F1),
+//   3=RR (R1R2,R2R1), 4=FF (F1F2,F2F1).
 function getOrientationColorIndex(pairOrientationNum: number) {
   switch (pairOrientationNum) {
     case 2:
@@ -264,7 +266,7 @@ function parseSATag(sa: string): SAAlignment[] {
     }
     const parts = aln.split(',')
     // Spec: rname,pos,strand,CIGAR,mapQ,NM — skip anything truncated or with
-    // an unparseable position / placeholder CIGAR rather than emitting a
+    // an unparsable position / placeholder CIGAR rather than emitting a
     // junk arc at NaN.
     if (parts.length < 4) {
       continue
@@ -483,12 +485,21 @@ export function computeArcsFromPileupData(
       for (let j = 0; j < filtered.length - 1; j++) {
         const e1 = filtered[j]!
         const e2 = filtered[j + 1]!
+        const f1 = e1.data.readFlags[e1.readIdx]!
+        const f2 = e2.data.readFlags[e2.readIdx]!
         const s1 = e1.data.readStrands[e1.readIdx]!
         const s2 = e2.data.readStrands[e2.readIdx]!
         const start1 = e1.data.readPositions[e1.readIdx * 2]!
         const end1 = e1.data.readPositions[e1.readIdx * 2 + 1]!
         const start2 = e2.data.readPositions[e2.readIdx * 2]!
         const end2 = e2.data.readPositions[e2.readIdx * 2 + 1]!
+        // A supplementary alignment sharing this read name is a split-read
+        // junction, not a mate pair: it carries no template_length or pair
+        // orientation. Mark it so samplot renders a dashed line at the gap
+        // span — leaving tlen here would feed |0| into the samplot Y and
+        // collapse the line to the baseline. Matches the single-entry SA-tag
+        // path (which passes tlen/orientation undefined for the same reason).
+        const isSplit = !!((f1 | f2) & SAM_FLAG_SUPPLEMENTARY)
         // Unpaired: end1→start2 = genomic gap, giving narrow inversion bp arcs.
         const p1 = hasPaired ? (s1 === -1 ? start1 : end1) : end1
         const p2 = hasPaired ? (s2 === -1 ? start2 : end2) : start2
@@ -499,9 +510,11 @@ export function computeArcsFromPileupData(
           p2Ref: e2.refName,
           p2Bp: p2,
           p2Strand: s2,
-          pairOrientationNum: e1.data.readPairOrientations[e1.readIdx],
-          tlen: e1.data.readInsertSizes[e1.readIdx],
-          isSplit: false,
+          pairOrientationNum: isSplit
+            ? undefined
+            : e1.data.readPairOrientations[e1.readIdx],
+          tlen: isSplit ? undefined : e1.data.readInsertSizes[e1.readIdx],
+          isSplit,
         })
       }
     }

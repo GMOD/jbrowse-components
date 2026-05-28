@@ -1,10 +1,3 @@
-/**
- * Custom Theme
- *
- * Demonstrates theming by customizing colors for UI elements and DNA bases.
- * Shows Material-UI palette configuration for primary, secondary, and base colors.
- */
-
 import { useState } from 'react'
 
 import { getVolvoxConfig } from './util.ts'

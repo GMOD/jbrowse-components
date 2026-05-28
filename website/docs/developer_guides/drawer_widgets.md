@@ -1,6 +1,8 @@
 ---
 id: drawer_widgets
 title: Drawer Widgets in Embedded Components
+description: Extensible system for launching sidebar or popup widgets
+guide_category: Creating pluggable elements
 ---
 
 ## Overview

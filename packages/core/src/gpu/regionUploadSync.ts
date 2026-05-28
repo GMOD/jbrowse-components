@@ -27,10 +27,7 @@ interface RegionUploadTarget<T> {
  * Hold one instance per backend lifecycle (call from `startBackend`); the
  * closure keeps the last-uploaded references.
  */
-export function createRegionUploadSync<
-  T,
-  B extends RegionUploadTarget<T>,
->() {
+export function createRegionUploadSync<T, B extends RegionUploadTarget<T>>() {
   const uploaded = new Map<number, T>()
   let lastBackend: B | undefined
 

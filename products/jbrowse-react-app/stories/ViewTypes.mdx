@@ -61,8 +61,8 @@ two assemblies; `tracks` lists the synteny tracks. (Self-vs-self is allowed.)
 ## Spreadsheet
 
 `SpreadsheetView` opens a tabular file (e.g. a VCF) as a sortable, filterable
-spreadsheet. `init` takes the `assembly` and a `uri` to the file — note `uri`
-is on `init`, not a track config.
+spreadsheet. `init` takes the `assembly` and a `uri` to the file — note `uri` is
+on `init`, not a track config.
 
 ```js
 {
@@ -99,8 +99,8 @@ spreadsheet view.
 ## Breakpoint split view
 
 `BreakpointSplitView` stacks two (or more) linear genome views and draws curves
-between the breakpoints of split/translocated reads. `init.views` is an array
-of `{ loc, assembly, tracks }` — one per stacked panel.
+between the breakpoints of split/translocated reads. `init.views` is an array of
+`{ loc, assembly, tracks }` — one per stacked panel.
 
 ```js
 {

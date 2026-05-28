@@ -14,18 +14,9 @@ export const WithAggregateTextSearching = () => {
         {
           type: 'TrixTextSearchAdapter',
           textSearchAdapterId: 'volvox-index',
-          ixFilePath: {
-            uri: 'storybook_data/volvox.ix',
-            locationType: 'UriLocation',
-          },
-          ixxFilePath: {
-            uri: 'storybook_data/volvox.ixx',
-            locationType: 'UriLocation',
-          },
-          metaFilePath: {
-            uri: 'storybook_data/volvox_meta.json',
-            locationType: 'UriLocation',
-          },
+          ixFilePath: { uri: 'storybook_data/volvox.ix' },
+          ixxFilePath: { uri: 'storybook_data/volvox.ixx' },
+          metaFilePath: { uri: 'storybook_data/volvox_meta.json' },
           assemblyNames: ['volvox'],
         },
       ],
@@ -38,16 +29,7 @@ export const WithAggregateTextSearching = () => {
           category: ['Miscellaneous'],
           adapter: {
             type: 'Gff3TabixAdapter',
-            gffGzLocation: {
-              uri: 'volvox.sort.gff3.gz',
-              locationType: 'UriLocation',
-            },
-            index: {
-              location: {
-                uri: 'volvox.sort.gff3.gz.tbi',
-                locationType: 'UriLocation',
-              },
-            },
+            uri: 'volvox.sort.gff3.gz',
           },
         },
         {
@@ -58,16 +40,7 @@ export const WithAggregateTextSearching = () => {
           assemblyNames: ['volvox'],
           adapter: {
             type: 'Gff3TabixAdapter',
-            gffGzLocation: {
-              uri: 'single_exon_gene.sorted.gff.gz',
-              locationType: 'UriLocation',
-            },
-            index: {
-              location: {
-                uri: 'single_exon_gene.sorted.gff.gz.tbi',
-                locationType: 'UriLocation',
-              },
-            },
+            uri: 'single_exon_gene.sorted.gff.gz',
           },
         },
         {
@@ -78,17 +51,7 @@ export const WithAggregateTextSearching = () => {
           assemblyNames: ['volvox'],
           adapter: {
             type: 'VcfTabixAdapter',
-            vcfGzLocation: {
-              uri: 'volvox.inv.vcf.gz',
-              locationType: 'UriLocation',
-            },
-            index: {
-              location: {
-                uri: 'volvox.inv.vcf.gz.tbi',
-                locationType: 'UriLocation',
-              },
-              indexType: 'TBI',
-            },
+            uri: 'volvox.inv.vcf.gz',
           },
         },
       ],

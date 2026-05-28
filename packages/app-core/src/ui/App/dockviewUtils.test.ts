@@ -34,9 +34,15 @@ interface FakePanelConfig {
 
 // Minimal stand-in for DockviewApi covering only what these helpers touch.
 function createFakeApi({ width = 1000, height = 800 } = {}) {
-  const panels = new Map<string, { id: string; group: FakeGroup; config: FakePanelConfig }>()
+  const panels = new Map<
+    string,
+    { id: string; group: FakeGroup; config: FakePanelConfig }
+  >()
   const addPanelCalls: FakePanelConfig[] = []
-  const setSizeCalls: { group: FakeGroup; arg: { width?: number; height?: number } }[] = []
+  const setSizeCalls: {
+    group: FakeGroup
+    arg: { width?: number; height?: number }
+  }[] = []
 
   const api = {
     width,
@@ -68,7 +74,12 @@ function createFakeApi({ width = 1000, height = 800 } = {}) {
     },
   }
 
-  return { api: api as unknown as DockviewApi, addPanelCalls, setSizeCalls, panels }
+  return {
+    api: api as unknown as DockviewApi,
+    addPanelCalls,
+    setSizeCalls,
+    panels,
+  }
 }
 
 describe('getPanelPosition', () => {
@@ -97,8 +108,14 @@ describe('cleanLayoutForStorage', () => {
       grid: { root: {}, width: 100, height: 100, orientation: 'HORIZONTAL' },
       activeGroup: 'g1',
       panels: {
-        'panel-1': { id: 'panel-1', params: { panelId: 'panel-1', session: {} } },
-        'panel-2': { id: 'panel-2', params: { panelId: 'panel-2', session: {} } },
+        'panel-1': {
+          id: 'panel-1',
+          params: { panelId: 'panel-1', session: {} },
+        },
+        'panel-2': {
+          id: 'panel-2',
+          params: { panelId: 'panel-2', session: {} },
+        },
       },
     } as unknown as ReturnType<DockviewApi['toJSON']>
 
@@ -113,12 +130,10 @@ describe('cleanLayoutForStorage', () => {
 
 describe('applyInitLayout', () => {
   beforeEach(() => {
-    jest
-      .spyOn(globalThis, 'requestAnimationFrame')
-      .mockImplementation(cb => {
-        cb(0)
-        return 0
-      })
+    jest.spyOn(globalThis, 'requestAnimationFrame').mockImplementation(cb => {
+      cb(0)
+      return 0
+    })
   })
   afterEach(() => {
     jest.restoreAllMocks()
@@ -162,7 +177,10 @@ describe('applyInitLayout', () => {
 
     expect(addPanelCalls).toHaveLength(2)
     expect([...tracked].sort()).toEqual(['v1', 'v2'])
-    expect(setSizeCalls.map(c => c.arg)).toEqual([{ width: 300 }, { width: 700 }])
+    expect(setSizeCalls.map(c => c.arg)).toEqual([
+      { width: 300 },
+      { width: 700 },
+    ])
   })
 
   it('distributes height for a vertical layout', () => {
@@ -182,7 +200,10 @@ describe('applyInitLayout', () => {
       new Set(),
     )
 
-    expect(setSizeCalls.map(c => c.arg)).toEqual([{ height: 200 }, { height: 600 }])
+    expect(setSizeCalls.map(c => c.arg)).toEqual([
+      { height: 200 },
+      { height: 600 },
+    ])
   })
 
   it('skips size distribution when a child lacks a size', () => {

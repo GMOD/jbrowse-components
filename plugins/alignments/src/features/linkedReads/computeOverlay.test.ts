@@ -1,4 +1,7 @@
-import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/alignments-core'
+import {
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/alignments-core'
 
 import { computePileupBezierArcs } from './computeOverlay.ts'
 
@@ -49,7 +52,14 @@ function controlPoints(d: string) {
   )
   const m = re.exec(d)!
   const [, sx1, sy1, cp1x, , cp2x, , sx2, sy2] = m.map(Number)
-  return { sx1: sx1!, sy1: sy1!, cp1x: cp1x!, cp2x: cp2x!, sx2: sx2!, sy2: sy2! }
+  return {
+    sx1: sx1!,
+    sy1: sy1!,
+    cp1x: cp1x!,
+    cp2x: cp2x!,
+    sx2: sx2!,
+    sy2: sy2!,
+  }
 }
 
 describe('computePileupBezierArcs — split-read tangent direction', () => {

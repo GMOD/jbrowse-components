@@ -367,24 +367,14 @@ const assembly = {
     trackId: 'GRCh38-ReferenceSequenceTrack',
     adapter: {
       type: 'BgzipFastaAdapter',
-      fastaLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-      },
-      faiLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
-      },
-      gziLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
     },
   },
   aliases: ['hg38'],
   refNameAliases: {
     adapter: {
       type: 'RefNameAliasAdapter',
-      location: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
     },
   },
 }
@@ -392,21 +382,13 @@ const assembly = {
 const tracks = [
   {
     type: 'FeatureTrack',
-    trackId:
-      'GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff',
+    trackId: 'ncbi-refseq-genes',
     name: 'NCBI RefSeq Genes',
     category: ['Genes'],
     assemblyNames: ['GRCh38'],
     adapter: {
       type: 'Gff3TabixAdapter',
-      gffGzLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
-      },
-      index: {
-        location: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi',
-        },
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
     },
   },
   {
@@ -417,28 +399,10 @@ const tracks = [
     assemblyNames: ['GRCh38'],
     adapter: {
       type: 'CramAdapter',
-      cramLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-        locationType: 'UriLocation',
-      },
-      craiLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram.crai',
-        locationType: 'UriLocation',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
       sequenceAdapter: {
         type: 'BgzipFastaAdapter',
-        fastaLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-          locationType: 'UriLocation',
-        },
-        faiLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
-          locationType: 'UriLocation',
-        },
-        gziLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
-          locationType: 'UriLocation',
-        },
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
       },
     },
   },
@@ -478,7 +442,7 @@ export const WithMultipleDisplayedRegionsFlipped = () => {
             loc,
             assembly: 'GRCh38',
             tracks: [
-              'GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff',
+              'ncbi-refseq-genes',
               'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
             ],
           },

@@ -5,3 +5,10 @@ export interface ConnectingLinesUploadData {
   connectingLinePositions: Uint32Array
   connectingLineYs: Uint16Array
 }
+
+export function emptyConnectingLinesUploadData(): ConnectingLinesUploadData {
+  return {
+    connectingLinePositions: new Uint32Array(0),
+    connectingLineYs: new Uint16Array(0),
+  }
+}

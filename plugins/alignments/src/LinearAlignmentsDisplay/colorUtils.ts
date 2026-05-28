@@ -102,7 +102,10 @@ export function getReadColor(
     colorScheme === ColorScheme.pairOrientation ||
     colorScheme === ColorScheme.insertSizeAndOrientation ||
     colorScheme === ColorScheme.insertSizeGradient
-  if (mateUnmapped && (isOrientationScheme || (colorScheme === ColorScheme.normal && isChain))) {
+  if (
+    mateUnmapped &&
+    (isOrientationScheme || (colorScheme === ColorScheme.normal && isChain))
+  ) {
     return rgb255(palette.colorUnmappedMate)
   }
 
@@ -170,10 +173,18 @@ export function getReadColor(
       const span = stats ? stats.upper - stats.lower : 0
       if (stats && span > 0) {
         if (insertSize > stats.upper) {
-          return lerpRgb255(palette.colorPairLR, palette.colorLongInsert, Math.min((insertSize - stats.upper) / span, 1))
+          return lerpRgb255(
+            palette.colorPairLR,
+            palette.colorLongInsert,
+            Math.min((insertSize - stats.upper) / span, 1),
+          )
         }
         if (insertSize < stats.lower) {
-          return lerpRgb255(palette.colorPairLR, palette.colorShortInsert, Math.min((stats.lower - insertSize) / span, 1))
+          return lerpRgb255(
+            palette.colorPairLR,
+            palette.colorShortInsert,
+            Math.min((stats.lower - insertSize) / span, 1),
+          )
         }
       }
       return rgb255(palette.colorPairLR)

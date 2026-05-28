@@ -6,25 +6,33 @@ shared clip / canvas / hp-math utilities.
 
 **The conceptual reference is `agent-docs/ARCHITECTURE.md` → "GPU Rendering
 Architecture"** (life of a frame, the three upload patterns, hp-math precision,
-SVG export pipeline). This file documents only what bites when editing code *in
-this directory*.
+SVG export pipeline). This file documents only what bites when editing code _in
+this directory_.
 
 ## File map
 
-- `hal/types.ts` — the `GpuHal` interface every backend implements + `PassDescriptor`.
+- `hal/types.ts` — the `GpuHal` interface every backend implements +
+  `PassDescriptor`.
 - `hal/webgl2Hal.ts`, `hal/webgpuHal.ts` — the two real HALs. They must stay
   behaviorally identical; `hal/mockHal.ts` mirrors the same interface for tests.
 - `hal/regionRegistry.ts` — the per-`(region, pass)` buffer map both HALs own.
   Centralizes delete/prune/get-or-create so the two implementations can't drift.
 - `hal/createHal.ts` — WebGPU → WebGL2 → null ladder (`?renderer=` pins it).
-- `gpuDevice.ts` — module-level WebGPU `GPUDevice` singleton + device-lost recovery.
-- `createBackend.ts` — `createGpuHal` returns a HAL → GPU backend, else Canvas2D backend.
+- `gpuDevice.ts` — module-level WebGPU `GPUDevice` singleton + device-lost
+  recovery.
+- `createBackend.ts` — `createGpuHal` returns a HAL → GPU backend, else Canvas2D
+  backend.
 - `GpuLifecycleMixin.ts` — the upload + render autorun pair (`attachBackend`).
-- `installPerRegionLifecycle.ts` — per-key autoruns for per-region streamed displays (O(N), not O(N²)).
-- `perRegionBackend.ts`, `monolithicBackend.ts` — backend base classes (GPU + Canvas2D).
-- `slangPass.ts` — turns a `.generated.ts` shader module into a `PassDescriptor`.
-- `blockClipUtils.ts` — GPU clip math + CPU hp-math split (`splitPositionWithFrac`).
-- `canvas2dUtils.ts` — Canvas2D clip / dpr / color-ramp helpers + `clampBlockScissor`.
+- `installPerRegionLifecycle.ts` — per-key autoruns for per-region streamed
+  displays (O(N), not O(N²)).
+- `perRegionBackend.ts`, `monolithicBackend.ts` — backend base classes (GPU +
+  Canvas2D).
+- `slangPass.ts` — turns a `.generated.ts` shader module into a
+  `PassDescriptor`.
+- `blockClipUtils.ts` — GPU clip math + CPU hp-math split
+  (`splitPositionWithFrac`).
+- `canvas2dUtils.ts` — Canvas2D clip / dpr / color-ramp helpers +
+  `clampBlockScissor`.
 
 ## Local invariants
 
@@ -34,11 +42,12 @@ this directory*.
 - **Scissor/viewport are physical pixels, top-left origin.** WebGL flips Y
   internally (`canvas.height - y - h`); WebGPU stores the rect and applies it
   per `drawPass`. Both GPU and Canvas2D clamp the visible span through
-  `clampBlockScissor` (CSS px) so they clip the *same* columns — don't reinline
+  `clampBlockScissor` (CSS px) so they clip the _same_ columns — don't reinline
   the floor/ceil rounding.
 - **Two canvas-sizing helpers, on purpose.** `syncCanvasSize` sets the backing
   store **and** CSS (the HAL owns its canvas). `prepareCanvas` sets only the
-  backing store — React/layout owns the CSS size. Don't add CSS to `prepareCanvas`.
+  backing store — React/layout owns the CSS size. Don't add CSS to
+  `prepareCanvas`.
 - **WebGPU uniform ring buffer.** `writeUniforms` post-increments the slot;
   `drawPass` reads slot `n-1`. Always pair one `writeUniforms` with the
   `drawPass`(es) that consume it; the per-frame cap is `MAX_UNIFORM_SLOTS`.

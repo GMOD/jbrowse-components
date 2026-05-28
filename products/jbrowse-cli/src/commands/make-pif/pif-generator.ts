@@ -5,7 +5,6 @@ import { Transform } from 'stream'
 import { pipeline } from 'stream/promises'
 import { createGunzip } from 'zlib'
 
-
 import { flipCigar, parseCigar, swapIndelCigar } from './cigar-utils.ts'
 import { splitCigarOnLargeGaps } from './structural-summary.ts'
 
@@ -19,7 +18,7 @@ function processLine(
   const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
   // rest[0]=num_matches, rest[1]=block_len, rest[2]=mapq, rest[3+]=optional tags
 
-  const tRow = `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t')  }\n`
+  const tRow = `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t')}\n`
 
   const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
   const CIGAR = rest[cigarIdx]
@@ -30,7 +29,7 @@ function processLine(
         : swapIndelCigar(CIGAR.slice(5))
     }`
   }
-  const qRow = `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')  }\n`
+  const qRow = `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')}\n`
 
   if (!emitCoarse) {
     return tRow + qRow
@@ -50,18 +49,36 @@ function processLine(
   for (const seg of segments) {
     const de =
       seg.blockLen > 0 ? (1 - seg.numMatches / seg.blockLen).toFixed(6) : '0'
-    coarseRows +=
-      `${[
-        `T${c2}`, l2, seg.tstart, seg.tend, strand,
-        c1, l1, seg.qstart, seg.qend,
-        seg.numMatches, seg.blockLen, mapq, `de:f:${de}`,
-      ].join('\t')  }\n`
-    coarseRows +=
-      `${[
-        `Q${c1}`, l1, seg.qstart, seg.qend, strand,
-        c2, l2, seg.tstart, seg.tend,
-        seg.numMatches, seg.blockLen, mapq, `de:f:${de}`,
-      ].join('\t')  }\n`
+    coarseRows += `${[
+      `T${c2}`,
+      l2,
+      seg.tstart,
+      seg.tend,
+      strand,
+      c1,
+      l1,
+      seg.qstart,
+      seg.qend,
+      seg.numMatches,
+      seg.blockLen,
+      mapq,
+      `de:f:${de}`,
+    ].join('\t')}\n`
+    coarseRows += `${[
+      `Q${c1}`,
+      l1,
+      seg.qstart,
+      seg.qend,
+      strand,
+      c2,
+      l2,
+      seg.tstart,
+      seg.tend,
+      seg.numMatches,
+      seg.blockLen,
+      mapq,
+      `de:f:${de}`,
+    ].join('\t')}\n`
   }
   return tRow + qRow + coarseRows
 }
@@ -103,7 +120,9 @@ export async function createPIF(
   const transform = makePifTransform(coarseSplitGap)
   if (filename) {
     const source = createReadStream(filename)
-    await (/.b?gz$/.exec(filename) ? pipeline(source, createGunzip(), transform, stream) : pipeline(source, transform, stream))
+    await (/.b?gz$/.exec(filename)
+      ? pipeline(source, createGunzip(), transform, stream)
+      : pipeline(source, transform, stream))
   } else {
     await pipeline(process.stdin, transform, stream)
   }

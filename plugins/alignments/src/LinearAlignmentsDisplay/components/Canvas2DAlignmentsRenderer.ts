@@ -19,6 +19,7 @@ import {
 import { drawArcs } from '../../features/arcs/drawCanvas.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { drawConnectingLines } from '../../features/connectingLines/drawCanvas.ts'
+import { emptyConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
 import {
   buildCoverageFields,
   emptyCoverageFields,
@@ -29,6 +30,7 @@ import { drawIndicatorCanvas } from '../../features/indicator/drawCanvas.ts'
 import { drawInsertions } from '../../features/insertion/drawCanvas.ts'
 import { drawInterbaseCanvas } from '../../features/interbase/drawCanvas.ts'
 import { drawLinkedReadLines } from '../../features/linkedReads/drawCanvas.ts'
+import { emptyLinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
 import { drawMismatches } from '../../features/mismatch/drawCanvas.ts'
 import { drawModCoverageCanvas } from '../../features/modCoverage/drawCanvas.ts'
 import { drawModifications } from '../../features/modification/drawCanvas.ts'
@@ -146,12 +148,8 @@ const EMPTY_PILEUP_FIELDS: Canvas2DRegionData = {
   interbaseMaxCount: 0,
   indicatorPackedBuffer: new ArrayBuffer(0),
   ...emptyArcsUploadData(),
-  connectingLinePositions: new Uint32Array(0),
-  connectingLineYs: new Uint16Array(0),
-  linkedReadLinePositions: new Uint32Array(0),
-  linkedReadLineYs: new Uint16Array(0),
-  linkedReadLineColorTypes: new Uint8Array(0),
-  numLinkedReadLines: 0,
+  ...emptyConnectingLinesUploadData(),
+  ...emptyLinkedReadLinesUploadData(),
 }
 
 function buildPileupRegion(

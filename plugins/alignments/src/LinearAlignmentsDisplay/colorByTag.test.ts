@@ -31,13 +31,16 @@ describe('updateColorTagMap', () => {
   it('assigns colors from TAG_COLOR_PALETTE by insertion order', () => {
     const tags = ['A', 'B', 'C']
     const { map } = updateColorTagMap({}, tags)
-    expect(map['A']).toBe(TAG_COLOR_PALETTE[0])
-    expect(map['B']).toBe(TAG_COLOR_PALETTE[1])
-    expect(map['C']).toBe(TAG_COLOR_PALETTE[2])
+    expect(map.A).toBe(TAG_COLOR_PALETTE[0])
+    expect(map.B).toBe(TAG_COLOR_PALETTE[1])
+    expect(map.C).toBe(TAG_COLOR_PALETTE[2])
   })
 
   it('wraps palette when more tags than palette entries', () => {
-    const tags = Array.from({ length: TAG_COLOR_PALETTE.length + 1 }, (_, i) => `tag:${i}`)
+    const tags = Array.from(
+      { length: TAG_COLOR_PALETTE.length + 1 },
+      (_, i) => `tag:${i}`,
+    )
     const { map } = updateColorTagMap({}, tags)
     expect(map[`tag:${TAG_COLOR_PALETTE.length}`]).toBe(TAG_COLOR_PALETTE[0])
   })

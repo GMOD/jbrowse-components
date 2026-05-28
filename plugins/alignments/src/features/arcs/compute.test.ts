@@ -1,9 +1,11 @@
 import {
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
+  SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
 import {
+  ARC_SHAPE_FLAT_SPLIT,
   arcsToRegionResult,
   computeArcsFromPileupData,
   groupArcsByRef,
@@ -553,6 +555,55 @@ describe('computeArcsFromPileupData', () => {
       computeArcsFromPileupData(new Map([[0, mkSplit(1, '-')]]), regions, opts)
         .arcs[0]!.colorType,
     ).toBe(2)
+  })
+
+  test('samplot in-view split read (primary + supplementary entries) is dashed at the gap span', () => {
+    // The default flag filter does not exclude SUPPLEMENTARY (2048), so an
+    // in-view split read arrives as two entries sharing a name — the
+    // multi-entry path, not the single-entry SA-tag path. It must render
+    // identically: dashed, at the gap span, never collapsed to the baseline
+    // by the supplementary's tlen=0.
+    const mkInViewSplit = (s1: number, s2: number) =>
+      makePileupData({
+        regionStart: 1000,
+        readPositions: new Uint32Array([1000, 1500, 3001, 3201]),
+        readFlags: new Uint16Array([0, SAM_FLAG_SUPPLEMENTARY]),
+        readStrands: new Int8Array([s1, s2]),
+        readInsertSizes: new Float32Array([0, 0]),
+        readPairOrientations: new Uint8Array([0, 0]),
+        readNames: ['readA', 'readA'],
+      })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
+    ]
+    const opts = {
+      colorByType: 'insertSizeAndOrientation' as const,
+      samplot: true,
+      drawInter: false,
+      drawLongRange: true,
+    }
+
+    const inv = computeArcsFromPileupData(
+      new Map([[0, mkInViewSplit(1, -1)]]),
+      regions,
+      opts,
+    ).arcs
+    expect(inv).toHaveLength(1)
+    // dashed split shape, not solid ARC_SHAPE_FLAT
+    expect(inv[0]!.shapeType).toBe(ARC_SHAPE_FLAT_SPLIT)
+    // Y is the gap-span radius (|3001-1500|/2 ≈ 750), not collapsed to 0
+    expect(inv[0]!.yBp).toBeGreaterThan(500)
+    // opposite strands → INV
+    expect(inv[0]!.colorType).toBe(2)
+
+    // same strands → DEL/normal, still dashed split
+    const del = computeArcsFromPileupData(
+      new Map([[0, mkInViewSplit(1, 1)]]),
+      regions,
+      opts,
+    ).arcs
+    expect(del[0]!.shapeType).toBe(ARC_SHAPE_FLAT_SPLIT)
+    expect(del[0]!.colorType).toBe(0)
   })
 })
 

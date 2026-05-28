@@ -1,10 +1,3 @@
-/**
- * Show Specific Track
- *
- * Demonstrates how to programmatically show a track after the view initializes.
- * Uses the showTrack() method to display a specific track by trackId.
- */
-
 import { useState } from 'react'
 
 import { getVolvoxConfig } from './util.ts'

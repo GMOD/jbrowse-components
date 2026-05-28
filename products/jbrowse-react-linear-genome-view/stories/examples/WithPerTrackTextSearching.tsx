@@ -19,33 +19,15 @@ export const WithPerTrackTextSearching = () => {
           category: ['Miscellaneous'],
           adapter: {
             type: 'Gff3TabixAdapter',
-            gffGzLocation: {
-              uri: 'volvox.sort.gff3.gz',
-              locationType: 'UriLocation',
-            },
-            index: {
-              location: {
-                uri: 'volvox.sort.gff3.gz.tbi',
-                locationType: 'UriLocation',
-              },
-            },
+            uri: 'volvox.sort.gff3.gz',
           },
           textSearching: {
             textSearchAdapter: {
               type: 'TrixTextSearchAdapter',
               textSearchAdapterId: 'gff3tabix_genes-index',
-              ixFilePath: {
-                uri: 'storybook_data/gff3tabix_genes.ix',
-                locationType: 'UriLocation',
-              },
-              ixxFilePath: {
-                uri: 'storybook_data/gff3tabix_genes.ixx',
-                locationType: 'UriLocation',
-              },
-              metaFilePath: {
-                uri: 'storybook_data/gff3tabix_genes_meta.json',
-                locationType: 'UriLocation',
-              },
+              ixFilePath: { uri: 'storybook_data/gff3tabix_genes.ix' },
+              ixxFilePath: { uri: 'storybook_data/gff3tabix_genes.ixx' },
+              metaFilePath: { uri: 'storybook_data/gff3tabix_genes_meta.json' },
               assemblyNames: ['volvox'],
             },
           },

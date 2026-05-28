@@ -424,7 +424,9 @@ describe('computeLinkedReadLinesByRegion', () => {
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLinkedReadLines).toBe(1)
-    expect(lines.linkedReadLineColorTypes[0]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
+    expect(lines.linkedReadLineColorTypes[0]).toBe(
+      LINKED_READ_COLOR_SPLIT_NORMAL,
+    )
     expect(lines.linkedReadLinePositions[0]).toBe(200) // right edge of left alignment
     expect(lines.linkedReadLinePositions[1]).toBe(300) // left edge of right alignment
     expect(lines.linkedReadLineYs[0]).toBe(0)
@@ -447,7 +449,9 @@ describe('computeLinkedReadLinesByRegion', () => {
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLinkedReadLines).toBe(1)
-    expect(lines.linkedReadLineColorTypes[0]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
+    expect(lines.linkedReadLineColorTypes[0]).toBe(
+      LINKED_READ_COLOR_SPLIT_NORMAL,
+    )
     expect(lines.linkedReadLinePositions[0]).toBe(200)
     expect(lines.linkedReadLinePositions[1]).toBe(300)
   })
@@ -577,6 +581,8 @@ describe('computeLinkedReadLinesByRegion', () => {
     // Both pairs emit lines: the LR paired reads and the FR split reads
     expect(lines.numLinkedReadLines).toBe(2)
     expect(lines.linkedReadLineColorTypes[0]).toBe(LINKED_READ_COLOR_PAIR_LR)
-    expect(lines.linkedReadLineColorTypes[1]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
+    expect(lines.linkedReadLineColorTypes[1]).toBe(
+      LINKED_READ_COLOR_SPLIT_NORMAL,
+    )
   })
 })

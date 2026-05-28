@@ -78,7 +78,11 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       .map(r => r.toJSON())
       .map(r => ({
         refName: r.ucsc,
-        aliases: [r.ncbi, r.refseq, r.genbank],
+        // chromAlias.bb columns are sparse: a chrom may lack an ncbi/refseq/
+        // genbank name, returned as empty strings that are not valid refNames
+        aliases: [r.ncbi, r.refseq, r.genbank].filter(
+          (alias): alias is string => !!alias,
+        ),
         override: true,
       }))
   }

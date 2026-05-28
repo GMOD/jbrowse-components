@@ -11,7 +11,7 @@ title: User guide
 
 ## Track types
 
-- [Alignments track](/docs/user_guides/alignments_track) - BAM/CRAM pileup and coverage displays
+- [Alignments track](/docs/user_guides/alignments_track) - Learn how to show BAM and CRAM files
 - [Feature sequence panel](/docs/user_guides/feature_sequence) - Sequence extraction for selected features
 - [Hi-C track](/docs/user_guides/hic_track) - Contact matrix display
 - [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track) - Multiple signal tracks displayed together
@@ -23,7 +23,7 @@ title: User guide
 ## Views
 
 - [Dotplot view](/docs/user_guides/dotplot_view) - Whole-genome synteny dotplot
-- [Linear synteny view](/docs/user_guides/linear_synteny_view) - Linear alignment of two genomes
+- [Linear synteny view](/docs/user_guides/linear_synteny_view) - Side-by-side alignment of two genomes
 - [SV inspector view](/docs/user_guides/sv_inspector_view) - Structural variant spreadsheet and circular view
 - [Structural variant visualization](/docs/user_guides/sv_visualization) - Interpreting SV signals across display types
 
@@ -34,8 +34,8 @@ title: User guide
 
 ## Tutorials
 
-- [Analyzing a phased trio](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
-- [Visualizing DNA methylation](/docs/tutorials/methylation) - Per-read and aggregate methylation from ONT and modkit
-- [Multi-sample SV visualization w/ 1kG](/docs/tutorials/sv_multisamples) - Inspect population-level SVs, explore a family trio, and characterize a large chromosomal inversion
-- [Cancer Genome in a Bottle (SVs)](/docs/tutorials/sv_visualization_cgiab) - Load and inspect structural variants from real cancer sequencing data
+- [Phased trio analysis](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
+- [DNA methylation](/docs/tutorials/methylation) - Per-read and aggregate methylation from ONT and modkit
+- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) - Inspect population-level SVs, explore a family trio, and characterize a large chromosomal inversion
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - Load and inspect structural variants from real cancer sequencing data
 - [Synteny visualization and genome alignment](/docs/tutorials/synteny_visualization) - Compare genome assemblies using dotplot and linear synteny views

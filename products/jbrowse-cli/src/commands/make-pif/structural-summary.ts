@@ -29,7 +29,9 @@ export function splitCigarOnLargeGaps({
   splitGap: number | undefined
 }): CigarSegment[] {
   if (!cigar) {
-    return [{ tstart, tend, qstart, qend, numMatches: 0, blockLen: tend - tstart }]
+    return [
+      { tstart, tend, qstart, qend, numMatches: 0, blockLen: tend - tstart },
+    ]
   }
 
   const splitThreshold = splitGap !== undefined && splitGap > 0 ? splitGap : 0
@@ -59,7 +61,11 @@ export function splitCigarOnLargeGaps({
   let i = 0
   while (i < cigar.length) {
     let len = 0
-    while (i < cigar.length && cigar.charCodeAt(i) >= 48 && cigar.charCodeAt(i) <= 57) {
+    while (
+      i < cigar.length &&
+      cigar.charCodeAt(i) >= 48 &&
+      cigar.charCodeAt(i) <= 57
+    ) {
       len = len * 10 + cigar.charCodeAt(i++) - 48
     }
     const op = cigar[i++]!

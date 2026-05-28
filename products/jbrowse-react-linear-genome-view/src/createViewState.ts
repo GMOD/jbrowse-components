@@ -100,7 +100,8 @@ export default function createViewState(opts: ViewStateOptions) {
     // while the assembly loads
     stateTree.session.view.setInit({
       assembly: assembly.name,
-      loc: typeof location === 'string' ? location : assembleLocString(location),
+      loc:
+        typeof location === 'string' ? location : assembleLocString(location),
       highlight,
     })
   }

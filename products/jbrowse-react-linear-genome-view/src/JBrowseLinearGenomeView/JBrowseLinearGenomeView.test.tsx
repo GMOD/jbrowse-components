@@ -96,13 +96,19 @@ test('top-level location + highlight navigate via init', async () => {
   )
   const getInputValue = () =>
     (getByPlaceholderText('Search for location') as HTMLInputElement).value
-  await waitFor(() => {
-    expect(getInputValue()).toBe('ctgA:1..40')
-  }, { timeout })
+  await waitFor(
+    () => {
+      expect(getInputValue()).toBe('ctgA:1..40')
+    },
+    { timeout },
+  )
   // init consumes highlight and backfills assemblyName, then clears itself
-  await waitFor(() => {
-    expect(state.session.view.init).toBeUndefined()
-  }, { timeout })
+  await waitFor(
+    () => {
+      expect(state.session.view.init).toBeUndefined()
+    },
+    { timeout },
+  )
   expect(state.session.view.highlight).toEqual([
     expect.objectContaining({
       refName: 'ctgA',

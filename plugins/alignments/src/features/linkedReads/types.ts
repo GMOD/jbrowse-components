@@ -9,3 +9,12 @@ export interface LinkedReadLinesUploadData {
   linkedReadLineColorTypes: Uint8Array
   numLinkedReadLines: number
 }
+
+export function emptyLinkedReadLinesUploadData(): LinkedReadLinesUploadData {
+  return {
+    linkedReadLinePositions: new Uint32Array(0),
+    linkedReadLineYs: new Uint16Array(0),
+    linkedReadLineColorTypes: new Uint8Array(0),
+    numLinkedReadLines: 0,
+  }
+}

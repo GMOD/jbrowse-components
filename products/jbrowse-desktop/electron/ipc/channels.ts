@@ -21,7 +21,10 @@ export interface IpcChannels {
     return: string
   }
   promptOpenFile: { args: []; return: string | undefined }
-  promptOpenLocalFile: { args: [defaultDir?: string]; return: string | undefined }
+  promptOpenLocalFile: {
+    args: [defaultDir?: string]
+    return: string | undefined
+  }
   promptSessionSaveAs: { args: []; return: string | undefined }
   listSessions: { args: [showAutosaves: boolean]; return: RecentSession[] }
   loadSession: { args: [sessionPath: string]; return: SessionSnap }
@@ -40,11 +43,13 @@ export interface IpcChannels {
   deleteQuickstart: { args: [name: string]; return: void }
   renameQuickstart: { args: [oldName: string, newName: string]; return: void }
   openAuthWindow: {
-    args: [params: {
-      internetAccountId: string
-      data: { redirect_uri: string }
-      url: string
-    }]
+    args: [
+      params: {
+        internetAccountId: string
+        data: { redirect_uri: string }
+        url: string
+      },
+    ]
     return: unknown
   }
 }

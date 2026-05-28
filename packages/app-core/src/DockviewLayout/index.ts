@@ -81,106 +81,106 @@ export function DockviewLayoutMixin() {
         self.dockviewLayout = layout
       },
 
-        /**
-         * #action
-         * Set the active panel ID
-         */
-        setActivePanelId(panelId: string | undefined) {
-          self.activePanelId = panelId
-        },
+      /**
+       * #action
+       * Set the active panel ID
+       */
+      setActivePanelId(panelId: string | undefined) {
+        self.activePanelId = panelId
+      },
 
-        /**
-         * #action
-         * Set the initial layout configuration (from URL params)
-         */
-        setInit(init: DockviewLayoutNode | undefined) {
-          self.init = init
-        },
+      /**
+       * #action
+       * Set the initial layout configuration (from URL params)
+       */
+      setInit(init: DockviewLayoutNode | undefined) {
+        self.init = init
+      },
 
-        /**
-         * #action
-         * Assign a view to a panel (adds to the panel's view stack)
-         */
-        assignViewToPanel(panelId: string, viewId: string) {
-          const existing = self.panelViewAssignments.get(panelId)
-          if (existing) {
-            if (!existing.includes(viewId)) {
-              existing.push(viewId)
-            }
-          } else {
-            self.panelViewAssignments.set(panelId, [viewId])
+      /**
+       * #action
+       * Assign a view to a panel (adds to the panel's view stack)
+       */
+      assignViewToPanel(panelId: string, viewId: string) {
+        const existing = self.panelViewAssignments.get(panelId)
+        if (existing) {
+          if (!existing.includes(viewId)) {
+            existing.push(viewId)
           }
-        },
+        } else {
+          self.panelViewAssignments.set(panelId, [viewId])
+        }
+      },
 
-        /**
-         * #action
-         * Remove a view from its panel
-         */
-        removeViewFromPanel(viewId: string) {
-          const loc = self.getPanelContainingView(viewId)
-          if (loc) {
-            loc.viewIds.splice(loc.idx, 1)
-            if (loc.viewIds.length === 0) {
-              self.panelViewAssignments.delete(loc.panelId)
-            }
+      /**
+       * #action
+       * Remove a view from its panel
+       */
+      removeViewFromPanel(viewId: string) {
+        const loc = self.getPanelContainingView(viewId)
+        if (loc) {
+          loc.viewIds.splice(loc.idx, 1)
+          if (loc.viewIds.length === 0) {
+            self.panelViewAssignments.delete(loc.panelId)
           }
-        },
+        }
+      },
 
-        /**
-         * #action
-         * Remove a panel and all its view assignments
-         */
-        removePanel(panelId: string) {
-          self.panelViewAssignments.delete(panelId)
-        },
+      /**
+       * #action
+       * Remove a panel and all its view assignments
+       */
+      removePanel(panelId: string) {
+        self.panelViewAssignments.delete(panelId)
+      },
 
-        /**
-         * #action
-         * Move a view up within its panel's view stack
-         */
-        moveViewUpInPanel(viewId: string) {
-          const loc = self.getPanelContainingView(viewId)
-          if (loc && loc.idx > 0) {
-            const { viewIds, idx } = loc
-            viewIds.splice(idx - 1, 2, viewIds[idx]!, viewIds[idx - 1]!)
-          }
-        },
+      /**
+       * #action
+       * Move a view up within its panel's view stack
+       */
+      moveViewUpInPanel(viewId: string) {
+        const loc = self.getPanelContainingView(viewId)
+        if (loc && loc.idx > 0) {
+          const { viewIds, idx } = loc
+          viewIds.splice(idx - 1, 2, viewIds[idx]!, viewIds[idx - 1]!)
+        }
+      },
 
-        /**
-         * #action
-         * Move a view down within its panel's view stack
-         */
-        moveViewDownInPanel(viewId: string) {
-          const loc = self.getPanelContainingView(viewId)
-          if (loc && loc.idx < loc.viewIds.length - 1) {
-            const { viewIds, idx } = loc
-            viewIds.splice(idx, 2, viewIds[idx + 1]!, viewIds[idx]!)
-          }
-        },
+      /**
+       * #action
+       * Move a view down within its panel's view stack
+       */
+      moveViewDownInPanel(viewId: string) {
+        const loc = self.getPanelContainingView(viewId)
+        if (loc && loc.idx < loc.viewIds.length - 1) {
+          const { viewIds, idx } = loc
+          viewIds.splice(idx, 2, viewIds[idx + 1]!, viewIds[idx]!)
+        }
+      },
 
-        /**
-         * #action
-         * Move a view to the top of its panel's view stack
-         */
-        moveViewToTopInPanel(viewId: string) {
-          const loc = self.getPanelContainingView(viewId)
-          if (loc && loc.idx > 0) {
-            loc.viewIds.splice(loc.idx, 1)
-            loc.viewIds.unshift(viewId)
-          }
-        },
+      /**
+       * #action
+       * Move a view to the top of its panel's view stack
+       */
+      moveViewToTopInPanel(viewId: string) {
+        const loc = self.getPanelContainingView(viewId)
+        if (loc && loc.idx > 0) {
+          loc.viewIds.splice(loc.idx, 1)
+          loc.viewIds.unshift(viewId)
+        }
+      },
 
-        /**
-         * #action
-         * Move a view to the bottom of its panel's view stack
-         */
-        moveViewToBottomInPanel(viewId: string) {
-          const loc = self.getPanelContainingView(viewId)
-          if (loc && loc.idx < loc.viewIds.length - 1) {
-            loc.viewIds.splice(loc.idx, 1)
-            loc.viewIds.push(viewId)
-          }
-        },
+      /**
+       * #action
+       * Move a view to the bottom of its panel's view stack
+       */
+      moveViewToBottomInPanel(viewId: string) {
+        const loc = self.getPanelContainingView(viewId)
+        if (loc && loc.idx < loc.viewIds.length - 1) {
+          loc.viewIds.splice(loc.idx, 1)
+          loc.viewIds.push(viewId)
+        }
+      },
     }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

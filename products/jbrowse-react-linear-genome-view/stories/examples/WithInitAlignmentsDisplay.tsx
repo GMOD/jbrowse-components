@@ -1,17 +1,3 @@
-/**
- * Declarative alignments display config
- *
- * Opens a CRAM alignments track via `init` with a `displaySnapshot` that
- * configures the display declaratively at first paint:
- * - `colorBySetting` to color reads by pair orientation
- * - `showSoftClipping` to reveal soft-clipped bases
- * - `height` to give the track more vertical room
- *
- * This is the alignments-track analogue of the session-spec advanced track
- * configuration in the JBrowse Web URL params docs, expressed through the
- * embedded component's `defaultSession.view.init`.
- */
-
 import { useState } from 'react'
 
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
@@ -26,23 +12,13 @@ const assembly = {
     trackId: 'GRCh38-ReferenceSequenceTrack',
     adapter: {
       type: 'BgzipFastaAdapter',
-      fastaLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-      },
-      faiLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
-      },
-      gziLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
     },
   },
   refNameAliases: {
     adapter: {
       type: 'RefNameAliasAdapter',
-      location: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
     },
   },
 }
@@ -56,25 +32,12 @@ const tracks = [
     assemblyNames: ['GRCh38'],
     adapter: {
       type: 'CramAdapter',
-      cramLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-      },
-      craiLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram.crai',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
       // CRAM decoding requires a copy of the assembly's sequence adapter so
       // the worker can reconstruct read bases against the reference
       sequenceAdapter: {
         type: 'BgzipFastaAdapter',
-        fastaLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-        },
-        faiLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
-        },
-        gziLocation: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
-        },
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
       },
     },
   },
