@@ -5,89 +5,37 @@ import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Help from '@mui/icons-material/Help'
 import MoreVert from '@mui/icons-material/MoreVert'
-import { Button, Checkbox, IconButton } from '@mui/material'
-import { alpha, darken, lighten } from '@mui/material/styles'
+import { Button, IconButton } from '@mui/material'
 
 import CategorySelector from './CategorySelector.tsx'
+import GenomesTable from './GenomesTable.tsx'
 import MoreInfoDialog from './MoreInfoDialog.tsx'
 import SearchField from './SearchField.tsx'
 import SkeletonLoader from './SkeletonLoader.tsx'
 import TablePagination from './TablePagination.tsx'
 import { getColumnDefinitions } from './getColumnDefinitions.tsx'
+import { getTableMenuItems } from './getTableMenuItems.ts'
+import useCategories from './useCategories.ts'
 import { useGenomesData } from './useGenomesData.ts'
 import { useSearchHighlight } from './useSearchHighlight.ts'
-import defaultFavs from '../defaultFavs.ts'
-import useCategories from './useCategories.ts'
 
 import type { Entry, GenomeColumn } from './getColumnDefinitions.tsx'
 import type { Fav, LaunchCallback } from '../types.ts'
 import type { FilterOption } from './useGenomesData.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
 
-const useStyles = makeStyles()(theme => {
-  const borderColor =
-    theme.palette.mode === 'light'
-      ? lighten(alpha(theme.palette.divider, 1), 0.88)
-      : darken(alpha(theme.palette.divider, 1), 0.68)
-  const border = `1px solid ${borderColor}`
-  return {
-    span: {
-      gap: 10,
-      display: 'flex',
-      marginBottom: 20,
-      marginTop: 20,
-    },
-    panel: {
-      minWidth: 1000,
-      minHeight: 500,
-      position: 'relative',
-    },
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse',
-      '& th, & td': {
-        textAlign: 'left',
-        padding: '2px 4px',
-        borderBottom: border,
-        fontSize: theme.typography.body2.fontSize,
-      },
-      '& th': {
-        backgroundColor: theme.palette.background.paper,
-        fontWeight: theme.typography.fontWeightMedium,
-        cursor: 'pointer',
-        '&:hover': {
-          backgroundColor: theme.palette.action.hover,
-        },
-      },
-      '& tr:hover': {
-        backgroundColor: theme.palette.action.hover,
-      },
-    },
-    selectedRow: {
-      backgroundColor: alpha(
-        theme.palette.primary.main,
-        theme.palette.action.selectedOpacity,
-      ),
-      '&:hover': {
-        backgroundColor: alpha(
-          theme.palette.primary.main,
-          theme.palette.action.selectedOpacity +
-            theme.palette.action.hoverOpacity,
-        ),
-      },
-    },
-    checkboxCell: {
-      padding: 0,
-      textAlign: 'center',
-      verticalAlign: 'middle',
-    },
-  }
+const useStyles = makeStyles()({
+  span: {
+    gap: 10,
+    display: 'flex',
+    marginBottom: 20,
+    marginTop: 20,
+  },
+  panel: {
+    minWidth: 1000,
+    minHeight: 500,
+    position: 'relative',
+  },
 })
-
-const checkboxSx = {
-  padding: 0,
-  '& .MuiSvgIcon-root': { fontSize: '1.15rem' },
-}
 
 function defaultSort(a: Entry, b: Entry, col: GenomeColumn) {
   const aVal = `${a[col.id] ?? ''}`
@@ -143,6 +91,7 @@ export default function GenomesDataTable({
   }
   const setTypeOptionAndReset = (t: string) => {
     setTypeOption(t)
+    setFilterOption('all')
     setPageIndex(0)
   }
   const tableRef = useRef<HTMLDivElement>(null)
@@ -167,7 +116,6 @@ export default function GenomesDataTable({
   const { data, error } = useGenomesData({
     searchQuery,
     filterOption,
-    typeOption,
     showOnlyFavs,
     favorites,
     url,
@@ -206,12 +154,6 @@ export default function GenomesDataTable({
     }
   }
 
-  const allSelected =
-    pageRows.length > 0 && pageRows.every(row => selected.has(row.id))
-
-  const someSelected =
-    !allSelected && pageRows.some(row => selected.has(row.id))
-
   return (
     <div className={classes.panel}>
       <div className={classes.span}>
@@ -249,82 +191,22 @@ export default function GenomesDataTable({
           onChange={setTypeOptionAndReset}
         />
         <CascadingMenuButton
-          menuItems={() => [
-            {
-              label: 'Enable multiple selection',
-              checked: multipleSelection,
-              type: 'checkbox',
-              onClick: () => {
-                setMultipleSelection(!multipleSelection)
-                setSelected(new Set())
-              },
-            },
-            {
-              label: 'Show favorites only?',
-              checked: showOnlyFavs,
-              type: 'checkbox',
-              onClick: () => {
-                setShowOnlyFavs(!showOnlyFavs)
-                setPageIndex(0)
-              },
-            },
-            ...(typeOption !== 'ucsc'
-              ? ([
-                  {
-                    label: 'Show all columns',
-                    type: 'checkbox',
-                    checked: showAllColumns,
-                    onClick: () => {
-                      setShowAllColumns(!showAllColumns)
-                    },
-                  },
-                  {
-                    label: 'Filter by NCBI status',
-                    type: 'subMenu',
-                    subMenu: [
-                      {
-                        label: 'All',
-                        type: 'radio',
-                        checked: filterOption === 'all',
-                        onClick: () => {
-                          setFilterOptionAndReset('all')
-                        },
-                      },
-                      {
-                        label: 'RefSeq only',
-                        type: 'radio',
-                        checked: filterOption === 'refseq',
-                        onClick: () => {
-                          setFilterOptionAndReset('refseq')
-                        },
-                      },
-                      {
-                        label: 'GenBank only',
-                        type: 'radio',
-                        checked: filterOption === 'genbank',
-                        onClick: () => {
-                          setFilterOptionAndReset('genbank')
-                        },
-                      },
-                      {
-                        label: 'Designated reference genome only',
-                        type: 'radio',
-                        checked: filterOption === 'designatedReference',
-                        onClick: () => {
-                          setFilterOptionAndReset('designatedReference')
-                        },
-                      },
-                    ],
-                  },
-                ] satisfies MenuItem[])
-              : []),
-            {
-              label: 'Reset favorites list to defaults',
-              onClick: () => {
-                setFavorites(defaultFavs)
-              },
-            },
-          ]}
+          menuItems={() =>
+            getTableMenuItems({
+              typeOption,
+              multipleSelection,
+              showOnlyFavs,
+              showAllColumns,
+              filterOption,
+              setMultipleSelection,
+              setSelected,
+              setShowOnlyFavs,
+              setShowAllColumns,
+              setPageIndex,
+              setFilterOptionAndReset,
+              setFavorites,
+            })
+          }
         >
           <MoreVert />
         </CascadingMenuButton>
@@ -346,75 +228,15 @@ export default function GenomesDataTable({
         <SkeletonLoader />
       ) : (
         <div ref={tableRef}>
-          <table className={classes.table}>
-            <thead>
-              <tr>
-                {multipleSelection ? (
-                  <th className={classes.checkboxCell}>
-                    <Checkbox
-                      size="small"
-                      checked={allSelected}
-                      indeterminate={someSelected}
-                      onChange={() => {
-                        if (allSelected) {
-                          setSelected(new Set())
-                        } else {
-                          setSelected(new Set(pageRows.map(r => r.id)))
-                        }
-                      }}
-                      sx={checkboxSx}
-                    />
-                  </th>
-                ) : null}
-                {columns.map(col => (
-                  <th
-                    key={col.id}
-                    onClick={() => {
-                      toggleSort(col.id)
-                    }}
-                  >
-                    {col.header}
-                    {sorting?.id === col.id ? (sorting.desc ? ' ↓' : ' ↑') : ''}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {pageRows.map(row => {
-                const isSelected = selected.has(row.id)
-                return (
-                  <tr
-                    key={row.id}
-                    className={isSelected ? classes.selectedRow : undefined}
-                  >
-                    {multipleSelection ? (
-                      <td className={classes.checkboxCell}>
-                        <Checkbox
-                          size="small"
-                          checked={isSelected}
-                          onChange={() => {
-                            const next = new Set(selected)
-                            if (next.has(row.id)) {
-                              next.delete(row.id)
-                            } else {
-                              next.add(row.id)
-                            }
-                            setSelected(next)
-                          }}
-                          sx={checkboxSx}
-                        />
-                      </td>
-                    ) : null}
-                    {columns.map(col => (
-                      <td key={col.id}>
-                        {col.cell ? col.cell(row) : `${row[col.id] ?? ''}`}
-                      </td>
-                    ))}
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          <GenomesTable
+            columns={columns}
+            rows={pageRows}
+            multipleSelection={multipleSelection}
+            selected={selected}
+            setSelected={setSelected}
+            sorting={sorting}
+            toggleSort={toggleSort}
+          />
 
           <TablePagination
             pageIndex={pageIndex}

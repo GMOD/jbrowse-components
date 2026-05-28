@@ -5,6 +5,8 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
+import StarIcon from '@mui/icons-material/Star'
+import StarBorderIcon from '@mui/icons-material/StarBorder'
 import TextFieldsIcon from '@mui/icons-material/TextFields'
 import {
   Card,
@@ -44,16 +46,20 @@ const useStyles = makeStyles()({
 
 function RecentSessionCard({
   sessionData,
+  isFavorite,
   onClick,
   onDelete,
   onRename,
   onAddToQuickstartList,
+  onToggleFavorite,
 }: {
   sessionData: RecentSessionData
+  isFavorite: boolean
   onClick: () => void
   onDelete: (arg: RecentSessionData) => void
   onRename: (arg: RecentSessionData) => void
   onAddToQuickstartList: (arg: RecentSessionData) => Promise<void>
+  onToggleFavorite: () => void
 }) {
   const { classes } = useStyles()
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
@@ -85,14 +91,29 @@ function RecentSessionCard({
         ) : null}
         <CardHeader
           action={
-            <IconButton
-              onClick={event => {
-                event.stopPropagation()
-                setMenuAnchorEl(event.currentTarget)
-              }}
-            >
-              <MoreVertIcon />
-            </IconButton>
+            <>
+              <Tooltip
+                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                <IconButton
+                  onClick={event => {
+                    event.stopPropagation()
+                    onToggleFavorite()
+                  }}
+                  style={{ color: isFavorite ? 'darkorange' : undefined }}
+                >
+                  {isFavorite ? <StarIcon /> : <StarBorderIcon />}
+                </IconButton>
+              </Tooltip>
+              <IconButton
+                onClick={event => {
+                  event.stopPropagation()
+                  setMenuAnchorEl(event.currentTarget)
+                }}
+              >
+                <MoreVertIcon />
+              </IconButton>
+            </>
           }
           disableTypography
           title={
@@ -125,6 +146,19 @@ function RecentSessionCard({
           setMenuAnchorEl(null)
         }}
       >
+        <MenuItem
+          onClick={() => {
+            setMenuAnchorEl(null)
+            onToggleFavorite()
+          }}
+        >
+          <ListItemIcon>
+            {isFavorite ? <StarIcon /> : <StarBorderIcon />}
+          </ListItemIcon>
+          <Typography variant="inherit">
+            {isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          </Typography>
+        </MenuItem>
         <MenuItem
           onClick={() => {
             setMenuAnchorEl(null)

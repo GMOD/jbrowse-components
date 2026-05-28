@@ -34,37 +34,28 @@ function byOrderKey(a: RawEntry, b: RawEntry) {
 }
 
 export type FilterOption = 'all' | 'refseq' | 'genbank' | 'designatedReference'
-type TypeOption = string
 
-function applyFilter(
-  rows: RawEntry[],
-  filterOption: FilterOption,
-  typeOption: TypeOption,
-): RawEntry[] {
-  let filtered = rows
-  if (typeOption !== 'mainGenomes') {
-    if (filterOption === 'refseq') {
-      filtered = rows.filter(r => r.ncbiName.startsWith('GCF_'))
-    } else if (filterOption === 'genbank') {
-      filtered = rows.filter(r => r.ncbiName.startsWith('GCA_'))
-    } else if (filterOption === 'designatedReference') {
-      filtered = rows.filter(r => r.ncbiRefSeqCategory === 'reference genome')
-    }
+function applyFilter(rows: RawEntry[], filterOption: FilterOption): RawEntry[] {
+  if (filterOption === 'refseq') {
+    return rows.filter(r => r.ncbiName.startsWith('GCF_'))
+  } else if (filterOption === 'genbank') {
+    return rows.filter(r => r.ncbiName.startsWith('GCA_'))
+  } else if (filterOption === 'designatedReference') {
+    return rows.filter(r => r.ncbiRefSeqCategory === 'reference genome')
+  } else {
+    return rows
   }
-  return filtered
 }
 
 export function useGenomesData({
   searchQuery,
   filterOption,
-  typeOption,
   showOnlyFavs,
   favorites,
   url,
 }: {
   searchQuery: string
   filterOption: FilterOption
-  typeOption: TypeOption
   showOnlyFavs: boolean
   favorites: Fav[]
   url?: string
@@ -74,9 +65,7 @@ export function useGenomesData({
   )
 
   const rows = data
-    ? applyFilter(normalizeEntries(data), filterOption, typeOption).sort(
-        byOrderKey,
-      )
+    ? applyFilter(normalizeEntries(data), filterOption).sort(byOrderKey)
     : undefined
 
   const query = searchQuery.toLowerCase().trim()

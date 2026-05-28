@@ -19,7 +19,7 @@ import {
 } from '@mui/material'
 
 import RecentSessionsCards from './RecentSessionsCards.tsx'
-import RecentSessionsList from './RecentSessionsDataGrid.tsx'
+import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
 import { loadPluginManager } from '../util.tsx'
@@ -149,6 +149,13 @@ export default function RecentSessionPanel({
   }
 
   const favs = new Set(favorites)
+  const toggleFavorite = (sessionPath: string) => {
+    if (favs.has(sessionPath)) {
+      setFavorites(favorites.filter(path => path !== sessionPath))
+    } else {
+      setFavorites([...favorites, sessionPath])
+    }
+  }
   const sortedSessions = sessions.toSorted(
     (a, b) => (b.updated ?? 0) - (a.updated ?? 0),
   )
@@ -182,7 +189,9 @@ export default function RecentSessionPanel({
             exclusive
             value={displayMode}
             onChange={(_, newVal) => {
-              setDisplayMode(newVal)
+              if (newVal) {
+                setDisplayMode(newVal)
+              }
             }}
           >
             <ToggleButtonWithTooltip value="grid" title="Grid view">
@@ -267,21 +276,17 @@ export default function RecentSessionPanel({
           sessions={filteredSessions}
           setSessionsToDelete={setSessionsToDelete}
           setSessionToRename={setSessionToRename}
+          favorites={favorites}
+          toggleFavorite={toggleFavorite}
         />
       ) : (
-        <RecentSessionsList
+        <RecentSessionsDataGrid
           launch={launch}
           setSelectedSessions={setSelectedSessions}
           setSessionToRename={setSessionToRename}
           sessions={filteredSessions}
           favorites={favorites}
-          toggleFavorite={sessionPath => {
-            if (favs.has(sessionPath)) {
-              setFavorites(favorites.filter(path => path !== sessionPath))
-            } else {
-              setFavorites([...favorites, sessionPath])
-            }
-          }}
+          toggleFavorite={toggleFavorite}
           addToQuickstartList={entry => addToQuickstartList([entry])}
         />
       )}

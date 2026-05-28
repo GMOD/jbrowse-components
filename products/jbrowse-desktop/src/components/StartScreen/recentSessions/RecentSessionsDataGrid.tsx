@@ -27,7 +27,7 @@ const useStyles = makeStyles()({
 
 const oneDayMs = 24 * 60 * 60 * 1000
 
-function RecentSessionsList({
+function RecentSessionsDataGrid({
   launch,
   sessions,
   setSelectedSessions,
@@ -131,4 +131,4 @@ function RecentSessionsList({
   )
 }
 
-export default RecentSessionsList
+export default RecentSessionsDataGrid

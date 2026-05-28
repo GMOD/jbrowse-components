@@ -10,19 +10,25 @@ export default function RecentSessionsCards({
   setSessionToRename,
   launch,
   addToQuickstartList,
+  favorites,
+  toggleFavorite,
 }: {
   setSessionsToDelete: (e: RecentSessionData[]) => void
   setSessionToRename: (arg: RecentSessionData) => void
   launch: (path: string) => Promise<void>
   sessions: RecentSessionData[]
   addToQuickstartList: (arg: RecentSessionData) => Promise<void>
+  favorites: string[]
+  toggleFavorite: (sessionPath: string) => void
 }) {
+  const favs = new Set(favorites)
   return (
     <Grid container spacing={4}>
       {sessions.map(session => (
         <SessionCard
           key={session.path}
           sessionData={session}
+          isFavorite={favs.has(session.path)}
           onClick={async () => {
             await launch(session.path)
           }}
@@ -31,6 +37,9 @@ export default function RecentSessionsCards({
           }}
           onRename={setSessionToRename}
           onAddToQuickstartList={addToQuickstartList}
+          onToggleFavorite={() => {
+            toggleFavorite(session.path)
+          }}
         />
       ))}
     </Grid>
