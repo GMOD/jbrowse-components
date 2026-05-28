@@ -1,13 +1,14 @@
-import { parseBreakend } from '@gmod/vcf'
+import { parseSvAlt } from '@jbrowse/sv-core'
 import { assembleLocString } from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util'
 
+const SV_SYMBOLIC_ALLELES = ['<TRA', '<DEL', '<INV', '<INS', '<DUP', '<CNV']
+
 export function makeFeaturePair(feature: Feature, alt?: string) {
-  const bnd = alt ? parseBreakend(alt) : undefined
-  const start = feature.get('start')
-  let end = feature.get('end')
-  const strand = feature.get('strand')
+  const start = feature.get('start') as number
+  let end = feature.get('end') as number
+  const strand = feature.get('strand') as number
   const mate = feature.get('mate') as
     | {
         refName: string
@@ -16,35 +17,26 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
         mateDirection?: number
       }
     | undefined
-  const refName = feature.get('refName')
+  const refName = feature.get('refName') as string
 
   let mateRefName: string | undefined
   let mateEnd = 0
   let mateStart = 0
-  let joinDirection = 0
   let mateDirection = 0
+  let joinDirection = 0
 
-  // one sided bracket used, because there could be <INS:ME> and we just check
-  // startswith below
-  const symbolicAlleles = ['<TRA', '<DEL', '<INV', '<INS', '<DUP', '<CNV']
-  if (symbolicAlleles.some(a => alt?.startsWith(a))) {
-    // END is defined to be a single value, not an array. CHR2 not defined in
-    // VCF spec, but should be similar
-    const info = feature.get('INFO')
-    const e = info?.END?.[0] ?? end
-    mateRefName = info?.CHR2?.[0] ?? refName
-    mateEnd = e
-    mateStart = e - 1
-    // re-adjust the arc to be from start to end of feature by re-assigning end
-    // to the 'mate'
-    end = start + 1
-  } else if (bnd?.MatePosition) {
-    const matePosition = bnd.MatePosition.split(':')
-    mateDirection = bnd.MateDirection === 'left' ? 1 : -1
-    joinDirection = bnd.Join === 'left' ? -1 : 1
-    mateEnd = +matePosition[1]!
-    mateStart = +matePosition[1]! - 1
-    mateRefName = matePosition[0]
+  const parsed = parseSvAlt(feature, alt)
+  if (parsed) {
+    mateRefName = parsed.mateRefName
+    mateEnd = parsed.matePos
+    mateStart = parsed.matePos - 1
+    mateDirection = parsed.mateDirection ?? 0
+    joinDirection = parsed.joinDirection ?? 0
+    if (alt && SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))) {
+      // re-adjust the arc to be from start to end of feature by re-assigning
+      // end to the 'mate'
+      end = start + 1
+    }
   }
 
   return {
@@ -56,7 +48,7 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
       mateDirection,
     },
     k2: mate ?? {
-      refName: mateRefName || 'unknown',
+      refName: mateRefName ?? 'unknown',
       end: mateEnd,
       start: mateStart,
       mateDirection: joinDirection,

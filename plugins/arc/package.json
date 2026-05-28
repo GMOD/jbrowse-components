@@ -34,6 +34,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.9.3",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/sv-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
     "mobx": "^6.15.4",

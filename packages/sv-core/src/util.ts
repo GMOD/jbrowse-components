@@ -6,6 +6,51 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+const SV_SYMBOLIC_ALLELES = ['<TRA', '<DEL', '<INV', '<INS', '<DUP', '<CNV']
+
+/**
+ * Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.
+ * Returns undefined when no mate coordinate info is found.
+ */
+export function parseSvAlt(
+  feature: Feature,
+  alt?: string,
+): {
+  mateRefName: string
+  matePos: number // VCF 1-based coordinate
+  mateDirection?: number // for BND arrow rendering: 1=left, -1=right
+  joinDirection?: number // for BND arrow rendering: -1=left, 1=right
+} | undefined {
+  const bnd = alt ? parseBreakend(alt) : undefined
+  const refName = feature.get('refName') as string
+
+  if (alt && SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))) {
+    const info = feature.get('INFO') as
+      | Record<string, (string | number)[]>
+      | undefined
+    const matePos = info?.END?.[0] as number | undefined
+    if (matePos === undefined) {
+      return undefined
+    }
+    return {
+      mateRefName: (info?.CHR2?.[0] as string | undefined) ?? refName,
+      matePos,
+    }
+  } else if (bnd?.MatePosition) {
+    const [mateRefName, matePosStr] = bnd.MatePosition.split(':')
+    if (!mateRefName || !matePosStr) {
+      return undefined
+    }
+    return {
+      mateRefName,
+      matePos: +matePosStr,
+      mateDirection: bnd.MateDirection === 'left' ? 1 : -1,
+      joinDirection: bnd.Join === 'left' ? -1 : 1,
+    }
+  }
+  return undefined
+}
+
 export function getBreakendCoveringRegions({
   feature,
   assembly,
@@ -13,39 +58,26 @@ export function getBreakendCoveringRegions({
   feature: Feature
   assembly: Assembly
 }) {
-  const alt = feature.get('ALT')?.[0]
-  const bnd = alt ? parseBreakend(alt) : undefined
-  const startPos = feature.get('start')
-  const refName = feature.get('refName')
+  const startPos = feature.get('start') as number
+  const refName = feature.get('refName') as string
+  const alt = feature.get('ALT')?.[0] as string | undefined
   const f = (ref: string) => assembly.getCanonicalRefName(ref) || ref
 
-  if (alt === '<TRA>') {
-    const INFO = feature.get('INFO')
+  const parsed = parseSvAlt(feature, alt)
+  if (parsed) {
     return {
       pos: startPos,
       refName: f(refName),
-      mateRefName: f(INFO.CHR2[0]),
-      matePos: INFO.END[0] - 1,
-    }
-  } else if (bnd?.MatePosition) {
-    const [mateRefNameRaw, matePosRaw] = bnd.MatePosition.split(':')
-    if (!mateRefNameRaw || !matePosRaw) {
-      throw new Error(`Invalid MatePosition format: ${bnd.MatePosition}`)
-    }
-    return {
-      pos: startPos,
-      refName: f(refName),
-      mateRefName: f(mateRefNameRaw),
-      matePos: +matePosRaw - 1,
+      mateRefName: f(parsed.mateRefName),
+      matePos: parsed.matePos - 1, // convert to 0-based
     }
   } else if (feature.get('mate')) {
     const mate = feature.get('mate')
-    const strand = feature.get('strand')
+    const strand = feature.get('strand') as number
     const mateStrand = mate.strand
-    // Use the correct "side" of the feature based on strand:
     // Forward strand (1): use end position (right side)
     // Reverse strand (-1): use start position (left side)
-    const pos = strand === 1 ? feature.get('end') : startPos
+    const pos = strand === 1 ? (feature.get('end') as number) : startPos
     const matePos = mateStrand === 1 ? mate.start : (mate.end ?? mate.start)
     return {
       pos,
@@ -58,7 +90,7 @@ export function getBreakendCoveringRegions({
       pos: startPos,
       refName: f(refName),
       mateRefName: f(refName),
-      matePos: feature.get('end'),
+      matePos: feature.get('end') as number,
     }
   }
 }

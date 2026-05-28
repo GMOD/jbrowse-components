@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -39,26 +39,14 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        displayMode: types.maybe(types.string),
       }),
     )
     .volatile(() => ({
-      lastDrawnOffsetPx: 0,
       features: undefined as Feature[] | undefined,
       loading: false,
-      drawn: true,
     }))
 
     .views(self => ({
-      /**
-       * #getter
-       */
-      get displayModeSetting() {
-        return self.displayMode ?? getConf(self, ['renderer', 'displayMode'])
-      },
       get featureWidgetType() {
         return {
           type: 'VariantFeatureWidget',
@@ -87,12 +75,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setFeatures(f: Feature[]) {
         self.features = f
-      },
-      /**
-       * #action
-       */
-      setDisplayMode(flag: string) {
-        self.displayMode = flag
       },
     }))
 

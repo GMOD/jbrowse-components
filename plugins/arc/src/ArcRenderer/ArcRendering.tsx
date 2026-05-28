@@ -31,17 +31,7 @@ function getSemicirclePath(centerX: number, radius: number) {
   }
 }
 
-function getBezierPath(
-  left: number,
-  right: number,
-  config: AnyConfigurationModel,
-  feature: Feature,
-  displayHeight: number,
-) {
-  const height = Math.min(
-    readConfObject(config, 'height', { feature }) || 100,
-    displayHeight,
-  )
+function getBezierPath(left: number, right: number, height: number) {
   return {
     d: `M ${left} 0 C ${left} ${height}, ${right} ${height}, ${right} 0`,
     textYCoord: 0.75 * height,
@@ -81,13 +71,17 @@ function ArcFeature({
   const textStroke = selected ? 'red' : 'black'
   const label = readConfObject(config, 'label', { feature })
   const caption = readConfObject(config, 'caption', { feature })
-  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 2
+  const strokeWidth = readConfObject(config, 'thickness', { feature }) ?? 2
 
   const centerX = left + (right - left) / 2
   const radius = (right - left) / 2
+  const arcHeight = Math.min(
+    readConfObject(config, 'height', { feature }) ?? 100,
+    displayHeight,
+  )
   const { d, textYCoord } = semicircle
     ? getSemicirclePath(centerX, radius)
-    : getBezierPath(left, right, config, feature, displayHeight)
+    : getBezierPath(left, right, arcHeight)
 
   return (
     <g>
@@ -148,7 +142,7 @@ const ArcRendering = observer(function ArcRendering({
   const width = (region.end - region.start) / bpPerPx
   const semicircle =
     (displayMode ?? readConfObject(config, 'displayMode')) === 'semicircles'
-  const { selectedFeatureId } = displayModel ?? {}
+  const selectedFeatureId = displayModel?.selectedFeatureId
 
   const children = [...features.values()].map(f => (
     <ArcFeature

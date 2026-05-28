@@ -106,7 +106,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   onClick: () => {
                     self.setDisplayMode('arcs')
                   },
-                  checked: self.displayMode === 'arcs',
+                  checked: self.displayModeSetting === 'arcs',
                 },
                 {
                   type: 'radio',
@@ -114,7 +114,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   onClick: () => {
                     self.setDisplayMode('semicircles')
                   },
-                  checked: self.displayMode === 'semicircles',
+                  checked: self.displayModeSetting === 'semicircles',
                 },
               ],
             },
