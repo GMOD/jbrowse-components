@@ -4,8 +4,8 @@ import {
   createPIF,
   getOutputFilename,
   spawnSortProcess,
-  waitForProcessClose,
 } from './pif-generator.ts'
+import { waitForProcessClose } from '../process-utils.ts'
 import { printHelp } from '../../utils.ts'
 import {
   validateFileArgument,
@@ -72,7 +72,11 @@ export async function run(args?: string[]) {
   }
 
   const child = spawnSortProcess(outputFile, csi)
-  await createPIF(file, child.stdin, coarseSplitGap)
-  child.stdin.end()
-  await waitForProcessClose(child)
+  const stdin = child.stdin!
+  await createPIF(file, stdin, coarseSplitGap)
+  stdin.end()
+  const exitCode = await waitForProcessClose(child)
+  if (exitCode !== 0) {
+    throw new Error(`PIF sort/index pipeline exited with code ${exitCode}`)
+  }
 }

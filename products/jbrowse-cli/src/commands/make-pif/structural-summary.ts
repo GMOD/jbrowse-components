@@ -1,5 +1,3 @@
-import { parseCigar } from './cigar-utils.ts'
-
 export interface CigarSegment {
   tstart: number
   tend: number
@@ -9,14 +7,10 @@ export interface CigarSegment {
   blockLen: number
 }
 
-// Walk a CIGAR and split the alignment whenever an insertion or deletion is
-// at least `splitGap` bp. Returns one segment per contiguous run between
-// such gaps. When `splitGap` is unset or 0, or the alignment has no
-// qualifying gap, returns a single segment covering the whole row.
-//
-// Coords assume PAF semantics: qstart < qend on the forward strand of the
-// query for both '+' and '-' strands. For '-' strand the CIGAR walks query
-// from qend down to qstart as target advances from tstart to tend.
+// Walk a CIGAR and split the alignment whenever an insertion or deletion
+// is at least `splitGap` bp. Returns one segment per contiguous run. When
+// splitGap is 0 or undefined, returns a single segment with full stats.
+// PAF semantics: qstart < qend always; '-' strand CIGAR walks query backward.
 export function splitCigarOnLargeGaps({
   cigar,
   strand,
@@ -35,22 +29,11 @@ export function splitCigarOnLargeGaps({
   splitGap: number | undefined
 }): CigarSegment[] {
   if (!cigar) {
-    return [
-      {
-        tstart,
-        tend,
-        qstart,
-        qend,
-        numMatches: 0,
-        blockLen: tend - tstart,
-      },
-    ]
+    return [{ tstart, tend, qstart, qend, numMatches: 0, blockLen: tend - tstart }]
   }
 
-  const ops = parseCigar(cigar)
+  const splitThreshold = splitGap !== undefined && splitGap > 0 ? splitGap : 0
   const qStep = strand === '-' ? -1 : 1
-  const canSplit =
-    splitGap !== undefined && Number.isFinite(splitGap) && splitGap > 0
   let tCursor = tstart
   let qCursor = strand === '-' ? qend : qstart
   let segTStart = tCursor
@@ -72,10 +55,14 @@ export function splitCigarOnLargeGaps({
     }
   }
 
-  // parseCigar returns ['10', 'M', '4', 'I', ...]
-  for (let i = 0; i < ops.length; i += 2) {
-    const len = +ops[i]!
-    const op = ops[i + 1]!
+  // Parse CIGAR directly to avoid intermediate array + string-to-number conversions
+  let i = 0
+  while (i < cigar.length) {
+    let len = 0
+    while (i < cigar.length && cigar.charCodeAt(i) >= 48 && cigar.charCodeAt(i) <= 57) {
+      len = len * 10 + cigar.charCodeAt(i++) - 48
+    }
+    const op = cigar[i++]!
     if (op === 'M' || op === '=' || op === 'X') {
       tCursor += len
       qCursor += len * qStep
@@ -84,7 +71,7 @@ export function splitCigarOnLargeGaps({
         segMatches += len
       }
     } else if (op === 'D' || op === 'I' || op === 'N') {
-      const isLarge = canSplit && len >= splitGap
+      const isLarge = splitThreshold > 0 && len >= splitThreshold
       if (isLarge) {
         emit()
       }
@@ -102,8 +89,7 @@ export function splitCigarOnLargeGaps({
         segBlockLen += len
       }
     }
-    // S, H, P are clipping / padding ops — they don't consume target or
-    // forward-strand query coords in PAF and never appear as split points.
+    // S/H/P (clipping/padding) don't consume target or forward-strand query in PAF
   }
   emit()
   return out

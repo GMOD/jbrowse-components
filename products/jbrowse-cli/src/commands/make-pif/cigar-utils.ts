@@ -1,6 +1,6 @@
-const cigarRegex = new RegExp(/([MIDNSHPX=])/)
+const cigarRegex = /([MIDNSHPX=])/
 
-export function parseCigar(cigar = ''): string[] {
+export function parseCigar(cigar: string): string[] {
   return cigar.split(cigarRegex).slice(0, -1)
 }
 
