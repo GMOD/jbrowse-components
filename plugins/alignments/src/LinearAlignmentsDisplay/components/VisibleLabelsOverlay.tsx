@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 
+import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -32,12 +33,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
     if (!ctx) {
       return
     }
-    const dpr = window.devicePixelRatio
-    const w = width ?? 0
-    canvas.width = w * dpr
-    canvas.height = height * dpr
-    ctx.scale(dpr, dpr)
-    ctx.clearRect(0, 0, w, height)
+    prepareCanvas(canvas, ctx, width ?? 0, height)
     drawAlignmentLabels(ctx, labels, contrastMap, theme)
   }, [labels, width, height, contrastMap, theme])
 
