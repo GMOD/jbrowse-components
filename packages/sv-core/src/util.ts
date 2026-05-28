@@ -15,14 +15,16 @@ const SV_SYMBOLIC_ALLELES = ['<TRA', '<DEL', '<INV', '<INS', '<DUP', '<CNV']
 export function parseSvAlt(
   feature: Feature,
   alt?: string,
-): {
-  mateRefName: string
-  matePos: number // VCF 1-based coordinate
-  mateDirection?: number // for BND arrow rendering: 1=left, -1=right
-  joinDirection?: number // for BND arrow rendering: -1=left, 1=right
-} | undefined {
+):
+  | {
+      mateRefName: string
+      matePos: number // VCF 1-based coordinate
+      mateDirection?: number // for BND arrow rendering: 1=left, -1=right
+      joinDirection?: number // for BND arrow rendering: -1=left, 1=right
+    }
+  | undefined {
   const bnd = alt ? parseBreakend(alt) : undefined
-  const refName = feature.get('refName') as string
+  const refName = feature.get('refName')
 
   if (alt && SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))) {
     const info = feature.get('INFO') as
@@ -58,8 +60,8 @@ export function getBreakendCoveringRegions({
   feature: Feature
   assembly: Assembly
 }) {
-  const startPos = feature.get('start') as number
-  const refName = feature.get('refName') as string
+  const startPos = feature.get('start')
+  const refName = feature.get('refName')
   const alt = feature.get('ALT')?.[0] as string | undefined
   const f = (ref: string) => assembly.getCanonicalRefName(ref) || ref
 
@@ -73,11 +75,11 @@ export function getBreakendCoveringRegions({
     }
   } else if (feature.get('mate')) {
     const mate = feature.get('mate')
-    const strand = feature.get('strand') as number
+    const strand = feature.get('strand')!
     const mateStrand = mate.strand
     // Forward strand (1): use end position (right side)
     // Reverse strand (-1): use start position (left side)
-    const pos = strand === 1 ? (feature.get('end') as number) : startPos
+    const pos = strand === 1 ? feature.get('end') : startPos
     const matePos = mateStrand === 1 ? mate.start : (mate.end ?? mate.start)
     return {
       pos,
@@ -90,7 +92,7 @@ export function getBreakendCoveringRegions({
       pos: startPos,
       refName: f(refName),
       mateRefName: f(refName),
-      matePos: feature.get('end') as number,
+      matePos: feature.get('end'),
     }
   }
 }

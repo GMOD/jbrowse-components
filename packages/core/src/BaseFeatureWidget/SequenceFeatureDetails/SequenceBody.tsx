@@ -1,10 +1,12 @@
+import type { RefObject } from 'react'
+
 import { Button, Typography } from '@mui/material'
+
 import SequencePanel from './SequencePanel.tsx'
 import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts'
 
-import type { RefObject } from 'react'
-import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { SequenceFeatureDetailsModel } from './model.ts'
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { ErrorState, SeqState } from '../util.tsx'
 
 export default function SequenceBody({

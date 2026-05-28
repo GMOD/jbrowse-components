@@ -36,12 +36,7 @@ export async function renderBaseLinearDisplaySvg(
   const { height, id } = self
   const { overrideHeight } = opts
   const view = getContainingView(self) as LinearGenomeViewModel
-  const {
-    offsetPx: viewOffsetPx,
-    roundedDynamicBlocks,
-    width,
-    bpPerPx,
-  } = view
+  const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width, bpPerPx } = view
 
   if (self.error) {
     return <SVGErrorBox error={self.error} width={width} height={height} />
@@ -66,7 +61,13 @@ export async function renderBaseLinearDisplaySvg(
           {
             reactElement: (
               <>
-                <rect x={0} y={0} width={block.widthPx} height={20} fill="#aaa" />
+                <rect
+                  x={0}
+                  y={0}
+                  width={block.widthPx}
+                  height={20}
+                  fill="#aaa"
+                />
                 <text x={0} y={15}>
                   {cannotBeRenderedReason}
                 </text>

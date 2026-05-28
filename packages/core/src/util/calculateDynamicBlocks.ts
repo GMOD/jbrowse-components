@@ -18,13 +18,8 @@ export default function calculateDynamicBlocks(
   padding = true,
   elision = true,
 ) {
-  const {
-    offsetPx,
-    displayedRegions,
-    bpPerPx,
-    width,
-    minimumBlockWidth,
-  } = model
+  const { offsetPx, displayedRegions, bpPerPx, width, minimumBlockWidth } =
+    model
 
   if (!width) {
     throw new Error('view has no width, cannot calculate displayed blocks')

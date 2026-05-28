@@ -79,7 +79,9 @@ function computeScrollPos(
   bpPerPx: number,
   extraBp: number,
 ) {
-  return Math.round((cumulativeBp(self, start.index, start.offset) - extraBp) / bpPerPx)
+  return Math.round(
+    (cumulativeBp(self, start.index, start.offset) - extraBp) / bpPerPx,
+  )
 }
 
 export function moveTo(

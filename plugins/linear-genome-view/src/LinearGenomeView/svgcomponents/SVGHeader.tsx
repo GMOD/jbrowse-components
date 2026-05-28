@@ -53,7 +53,13 @@ export default function SVGHeader({
   return (
     <g id="header">
       {assemblyName ? (
-        <text x={0} y={0} dominantBaseline="hanging" fontSize={fontSize} fill={c}>
+        <text
+          x={0}
+          y={0}
+          dominantBaseline="hanging"
+          fontSize={fontSize}
+          fill={c}
+        >
           {assemblyName}
         </text>
       ) : null}

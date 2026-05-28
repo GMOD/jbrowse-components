@@ -66,7 +66,7 @@ export function bpToPx({
   }
   const found = displayedRegions[i]
   if (found) {
-    return { offsetPx: bpSoFar / bpPerPx }
+    return { offsetPx: bpSoFar / bpPerPx, paddingPx: 0 }
   }
   return undefined
 }

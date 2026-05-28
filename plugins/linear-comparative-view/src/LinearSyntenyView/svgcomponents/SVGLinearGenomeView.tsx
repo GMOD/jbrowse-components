@@ -9,7 +9,10 @@ import {
 import { useTheme } from '@mui/material'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { LinearGenomeViewModel, TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LinearGenomeViewModel,
+  TrackLabelMode,
+} from '@jbrowse/plugin-linear-genome-view'
 
 export interface ViewDisplayResults {
   view: LinearGenomeViewModel

@@ -146,8 +146,7 @@ export function BaseWebSession({
     .views(self => ({
       canEditTrack(trackId: string): boolean {
         return (
-          self.adminMode ||
-          self.sessionTracks.some(t => t.trackId === trackId)
+          self.adminMode || self.sessionTracks.some(t => t.trackId === trackId)
         )
       },
 

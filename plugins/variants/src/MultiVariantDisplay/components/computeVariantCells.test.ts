@@ -48,9 +48,9 @@ describe('computeVariantCells phased raw callGenotype path', () => {
       genotypesCache: new Map(),
     })
 
-    const genotypes = result.featureGenotypeMap['f1']!.genotypes
-    expect(genotypes['S1']).toBe('1|0')
-    expect(genotypes['S2']).toBe('1|1')
+    const genotypes = result.featureGenotypeMap.f1!.genotypes
+    expect(genotypes.S1).toBe('1|0')
+    expect(genotypes.S2).toBe('1|1')
     expect(genotypes['S1 HP0']).toBeUndefined()
     expect(genotypes['S1 HP1']).toBeUndefined()
     expect(genotypes['S2 HP0']).toBeUndefined()

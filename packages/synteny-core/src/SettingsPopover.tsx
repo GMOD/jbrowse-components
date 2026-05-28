@@ -1,9 +1,8 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 
 import TuneIcon from '@mui/icons-material/Tune'
 import { IconButton, Popover } from '@mui/material'
-
-import type { ReactNode } from 'react'
 
 export default function SettingsPopover({
   title = 'Display settings',

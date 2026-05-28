@@ -754,12 +754,10 @@ export default function stateModelFactory(pm: PluginManager) {
             const d1 = Dotplot1DView.create({
               ...getSnapshot(self.hview),
               minimumBlockWidth: 0,
-              interRegionPaddingWidth: 0,
             })
             const d2 = Dotplot1DView.create({
               ...getSnapshot(self.vview),
               minimumBlockWidth: 0,
-              interRegionPaddingWidth: 0,
             })
             d1.setVolatileWidth(self.hview.width)
             d2.setVolatileWidth(self.vview.width)

@@ -1,7 +1,7 @@
+import type { ReactNode } from 'react'
+
 import HelpIcon from '@mui/icons-material/Help'
 import { Tooltip, Typography } from '@mui/material'
-
-import type { ReactNode } from 'react'
 
 // Label-on-left row used inside synteny/dotplot settings popovers. Optional
 // help tooltip renders an inline help icon next to the label.

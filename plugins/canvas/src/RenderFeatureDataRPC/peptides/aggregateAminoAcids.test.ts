@@ -85,11 +85,19 @@ describe('aggregateAminos', () => {
   it('undefined g2p position closes current group rather than spanning the gap', () => {
     // Positions 100-101 → aa0 (M), 102 missing, 103-105 → aa1 (K)
     const g2p = makeForwardG2p(100, 106)
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete (g2p as Record<number, number>)[102]
+
+    delete g2p[102]
     const result = aggregateAminos('MK', g2p, 100, 106, 1)
     // aa0 must end at 102, not 103 — no rect should span the unmapped position
-    expect(result[0]).toMatchObject({ aminoAcid: 'M', startBp: 100, endBp: 102 })
-    expect(result[1]).toMatchObject({ aminoAcid: 'K', startBp: 103, endBp: 106 })
+    expect(result[0]).toMatchObject({
+      aminoAcid: 'M',
+      startBp: 100,
+      endBp: 102,
+    })
+    expect(result[1]).toMatchObject({
+      aminoAcid: 'K',
+      startBp: 103,
+      endBp: 106,
+    })
   })
 })

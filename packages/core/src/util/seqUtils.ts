@@ -182,6 +182,6 @@ export function revlist<T extends { start: number; end: number }>(
   seqlen: number,
 ): T[] {
   return list
-    .map(sub => ({ ...sub, start: seqlen - sub.end, end: seqlen - sub.start }) as T)
+    .map(sub => ({ ...sub, start: seqlen - sub.end, end: seqlen - sub.start }))
     .sort((a, b) => a.start - b.start)
 }

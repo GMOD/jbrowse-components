@@ -7,12 +7,12 @@ import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { elidedBlockStyles, getCytobands } from './util.ts'
 import Cytobands from './Cytobands.tsx'
 import OverviewHighlight from './OverviewHighlight.tsx'
 import OverviewRubberband from './OverviewRubberband.tsx'
 import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
 import OverviewScalebarTickLabels from './OverviewScalebarTickLabels.tsx'
+import { elidedBlockStyles, getCytobands } from './util.ts'
 import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -172,7 +172,10 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
 }) {
   const theme = useTheme()
   const { dynamicBlocks, showCytobands, cytobandOffset, overviewLayout } = model
-  const span = getContentBlocksPxSpan(overviewLayout, dynamicBlocks.contentBlocks)
+  const span = getContentBlocksPxSpan(
+    overviewLayout,
+    dynamicBlocks.contentBlocks,
+  )
   if (!span) {
     return null
   }
@@ -194,7 +197,11 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
   )
 })
 
-const OverviewScalebarContent = observer(function OverviewScalebarContent({ model }: { model: LGV }) {
+const OverviewScalebarContent = observer(function OverviewScalebarContent({
+  model,
+}: {
+  model: LGV
+}) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const overview = model.overviewLayout
@@ -208,7 +215,10 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({ mode
 
   return (
     <div className={classes.scalebar}>
-      <VisibleRegionBox model={model} className={classes.scalebarVisibleRegion} />
+      <VisibleRegionBox
+        model={model}
+        className={classes.scalebarVisibleRegion}
+      />
       {overviewVisibleRegions.map((block, idx) =>
         block.type !== 'ContentBlock' ? (
           <div

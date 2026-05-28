@@ -1,6 +1,7 @@
+import { Fragment } from 'react'
+
 import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
-import { Fragment } from 'react'
 
 import {
   type FeatureLabelData,
@@ -50,29 +51,43 @@ function FloatingLabel({
   )
 }
 
-export function SvgFloatingLabels({ featureLabels, offsetPx, viewWidth }: Props) {
+export function SvgFloatingLabels({
+  featureLabels,
+  offsetPx,
+  viewWidth,
+}: Props) {
   return (
     <>
       {[...featureLabels.entries()].map(
-        ([key, { leftPx, topPx, totalFeatureHeight, floatingLabels, featureWidth }]) => {
+        ([
+          key,
+          { leftPx, topPx, totalFeatureHeight, floatingLabels, featureWidth },
+        ]) => {
           const featureVisualBottom = topPx + totalFeatureHeight
           const featureRightPx = leftPx + featureWidth
           return (
             <Fragment key={key}>
-              {floatingLabels.map(({ text, relativeY, color, textWidth, isOverlay }, i) => {
-                const x = calculateFloatingLabelPosition(leftPx, featureRightPx, textWidth, offsetPx)
-                return x >= 0 && x <= viewWidth ? (
-                  <FloatingLabel
-                    key={i}
-                    x={x}
-                    y={featureVisualBottom + relativeY}
-                    text={text}
-                    color={color}
-                    textWidth={textWidth}
-                    isOverlay={isOverlay}
-                  />
-                ) : null
-              })}
+              {floatingLabels.map(
+                ({ text, relativeY, color, textWidth, isOverlay }, i) => {
+                  const x = calculateFloatingLabelPosition(
+                    leftPx,
+                    featureRightPx,
+                    textWidth,
+                    offsetPx,
+                  )
+                  return x >= 0 && x <= viewWidth ? (
+                    <FloatingLabel
+                      key={i}
+                      x={x}
+                      y={featureVisualBottom + relativeY}
+                      text={text}
+                      color={color}
+                      textWidth={textWidth}
+                      isOverlay={isOverlay}
+                    />
+                  ) : null
+                },
+              )}
             </Fragment>
           )
         },

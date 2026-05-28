@@ -57,7 +57,10 @@ function InterRegionPaddingBlock({
 }) {
   const { classes, cx } = useStyles()
   return (
-    <div style={{ width }} className={cx(classes.boundaryPaddingBlock, className)} />
+    <div
+      style={{ width }}
+      className={cx(classes.boundaryPaddingBlock, className)}
+    />
   )
 }
 

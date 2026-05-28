@@ -53,7 +53,13 @@ function Ruler({
               const label = getTickDisplayStr(base + 1, bpPerPx)
               const labelWidth = measureText(label, 11) + 4
               return x - 3 >= 0 && x - 3 + labelWidth <= widthPx ? (
-                <text key={`label-${base}`} x={x - 3} y={7 + 11} fontSize={11} fill={c}>
+                <text
+                  key={`label-${base}`}
+                  x={x - 3}
+                  y={7 + 11}
+                  fontSize={11}
+                  fill={c}
+                >
                   {label}
                 </text>
               ) : null

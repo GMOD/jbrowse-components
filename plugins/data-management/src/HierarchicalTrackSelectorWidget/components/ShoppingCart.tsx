@@ -35,8 +35,7 @@ const ShoppingCart = observer(function ShoppingCart({
   const canDeleteAll =
     isSessionWithDeleteTrackConf(session) &&
     definedSelection.every(
-      elt =>
-        canEdit(elt.trackId) && elt.type !== 'ReferenceSequenceTrack',
+      elt => canEdit(elt.trackId) && elt.type !== 'ReferenceSequenceTrack',
     )
 
   return selection.length ? (

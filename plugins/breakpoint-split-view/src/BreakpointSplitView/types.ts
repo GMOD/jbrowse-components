@@ -1,8 +1,6 @@
 import type { Feature } from '@jbrowse/core/util'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
-
-
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   format?: 'svg' | 'png'
@@ -43,4 +41,4 @@ export interface OverlayMatch {
   hasPairedReads?: boolean
 }
 
-export {type TrackLabelMode} from '@jbrowse/plugin-linear-genome-view'
+export { type TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'

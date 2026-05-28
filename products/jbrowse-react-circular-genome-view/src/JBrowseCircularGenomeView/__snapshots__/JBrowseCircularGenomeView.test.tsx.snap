@@ -84,11 +84,13 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             style="width: 808px; height: 400px;"
           >
             <div
-              style="transform: translate(0px,0px); position: absolute; left: 0px; top: 0px;"
+              class="css-1ggxnpa"
+              style="transform: translate(0px,0px);"
             >
               <svg
+                class="css-1cibtmu css-dg9xgn"
                 height="406.3661977236758"
-                style="transform: rotate(-1.5707963267948966rad); transition: transform 0.5s; transform-origin: 203.1830988618379px 203.1830988618379px; position: absolute; left: 0px; top: 0px; cursor: grab; user-select: none;"
+                style="transform: rotate(-1.5707963267948966rad); transform-origin: 203.1830988618379px 203.1830988618379px;"
                 width="406.3661977236758"
               >
                 <g
@@ -266,9 +268,8 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               </button>
             </div>
             <div
-              class="css-11aj0h"
+              class="css-hac20e css-11aj0h"
               data-resizer="true"
-              style="height: 3px; position: absolute; bottom: 0px; left: 0px; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid rgb(250, 250, 250);"
             />
           </div>
         </div>

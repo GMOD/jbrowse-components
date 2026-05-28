@@ -50,7 +50,9 @@ const RenderedBlocks = observer(function RenderedBlocks({
         return <ElidedBlockComponent key={key} width={block.widthPx} />
       }
       case 'InterRegionPaddingBlock': {
-        return <InterRegionPaddingBlockComponent key={key} width={block.widthPx} />
+        return (
+          <InterRegionPaddingBlockComponent key={key} width={block.widthPx} />
+        )
       }
       default:
         throw new Error(`invalid block type ${JSON.stringify(block)}`)

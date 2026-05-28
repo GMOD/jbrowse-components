@@ -1273,7 +1273,6 @@ test('showAllRegions with single region has no padding adjustment', () => {
   expect(model.offsetPx).toBe(-45)
 })
 
-
 describe('TrackInit with display configuration', () => {
   function initializeWithTracks() {
     console.warn = jest.fn()

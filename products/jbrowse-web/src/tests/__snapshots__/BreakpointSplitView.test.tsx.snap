@@ -6,7 +6,7 @@ exports[`breakpoint split view 1`] = `
   fill="none"
 >
   <path
-    d="M 410.99312656000257 72.5 C 610.9931265600026 72.5 203.41868021525443 80.5 403.4186802152544 80.5"
+    d="M 408.99312656000257 72.5 C 608.9931265600026 72.5 203.41868021525443 80.5 403.4186802152544 80.5"
     data-testid="r1"
     pointer-events="auto"
     stroke="#000000"
@@ -14,7 +14,7 @@ exports[`breakpoint split view 1`] = `
     stroke-width="1"
   />
   <path
-    d="M 660.4186802152544 80.5 C 860.4186802152544 80.5 208.99312656000257 48.5 408.99312656000257 48.5"
+    d="M 658.4186802152544 80.5 C 858.4186802152544 80.5 208.99312656000257 48.5 408.99312656000257 48.5"
     data-testid="r1"
     pointer-events="auto"
     stroke="#000000"
@@ -28,7 +28,7 @@ exports[`breakpoint split view 2`] = `
 <g
   data-testid="pacbio_vcf-loaded"
   fill="none"
-  stroke="green"
+  stroke="#2e7d32"
   stroke-width="5"
 >
   <path

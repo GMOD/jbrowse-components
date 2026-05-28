@@ -39,11 +39,9 @@ function makeViewSnap(
       assemblyName: 'test',
       ...r,
     })),
-    interRegionPaddingWidth: 2,
     minimumBlockWidth: 3,
     width: 800,
-    staticBlocks: { contentBlocks: [], blocks: [] },
-  } as Parameters<typeof bpToPx>[0]['self']
+  }
 }
 
 describe('synteny bpToPx', () => {
@@ -58,7 +56,7 @@ describe('synteny bpToPx', () => {
     expect(result!.paddingPx).toBe(0)
   })
 
-  it('includes padding for non-elided regions before the target', () => {
+  it('accumulates bp for non-elided regions before the target', () => {
     const self = makeViewSnap([
       { refName: 'chr1', start: 0, end: 1000 },
       { refName: 'chr2', start: 0, end: 1000 },
@@ -66,11 +64,11 @@ describe('synteny bpToPx', () => {
     ])
     const result = bpToPx({ self, refName: 'chr3', coord: 0 })
     expect(result).toBeDefined()
-    expect(result!.offsetPx).toBe(2000 + 2 * 2)
-    expect(result!.paddingPx).toBe(2 * 2)
+    expect(result!.offsetPx).toBe(2000)
+    expect(result!.paddingPx).toBe(0)
   })
 
-  it('does not add padding for elided regions', () => {
+  it('accumulates bp for small (elided) regions', () => {
     const self = makeViewSnap([
       { refName: 'chr1', start: 0, end: 1000 },
       { refName: 'chr2', start: 0, end: 1 },
@@ -78,8 +76,8 @@ describe('synteny bpToPx', () => {
     ])
     const result = bpToPx({ self, refName: 'chr3', coord: 0 })
     expect(result).toBeDefined()
-    expect(result!.offsetPx).toBe(1001 + 2)
-    expect(result!.paddingPx).toBe(2)
+    expect(result!.offsetPx).toBe(1001)
+    expect(result!.paddingPx).toBe(0)
   })
 
   it('does not add padding after the last region', () => {
@@ -114,7 +112,6 @@ describe('synteny bpToPx', () => {
       offsetPx: result!.offsetPx,
       displayedRegions: regions.map(r => ({ assemblyName: 'test', ...r })),
       minimumBlockWidth: 3,
-      interRegionPaddingWidth: 2,
     })
     const chr5Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr5')
     expect(chr5Blocks.length).toBeGreaterThan(0)
@@ -131,8 +128,8 @@ describe('synteny bpToPx', () => {
 
     const result = bpToPx({ self, refName: 'chr20', coord: 0 })
     expect(result).toBeDefined()
-    expect(result!.offsetPx).toBe(19 * 1000 + 19 * 2)
-    expect(result!.paddingPx).toBe(19 * 2)
+    expect(result!.offsetPx).toBe(19 * 1000)
+    expect(result!.paddingPx).toBe(0)
   })
 })
 
@@ -238,7 +235,6 @@ describe('bpToPxFromIndex matches bpToPx', () => {
       offsetPx: result!.offsetPx,
       displayedRegions: regions.map(r => ({ assemblyName: 'test', ...r })),
       minimumBlockWidth: 3,
-      interRegionPaddingWidth: 2,
     })
     const chr5Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr5')
     expect(chr5Blocks.length).toBeGreaterThan(0)
@@ -322,11 +318,9 @@ describe('viewport culling', () => {
         assemblyName: 'test',
         ...r,
       })),
-      interRegionPaddingWidth: 2,
       minimumBlockWidth: 3,
       width: 800,
-      staticBlocks: { contentBlocks: [], blocks: [] },
-    } as Parameters<typeof bpToPx>[0]['self']
+    }
   }
 
   it('culls features entirely left of both viewports', () => {

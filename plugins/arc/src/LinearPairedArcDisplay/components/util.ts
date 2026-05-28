@@ -1,14 +1,14 @@
-import { parseSvAlt } from '@jbrowse/sv-core'
 import { assembleLocString } from '@jbrowse/core/util'
+import { parseSvAlt } from '@jbrowse/sv-core'
 
 import type { Feature } from '@jbrowse/core/util'
 
 const SV_SYMBOLIC_ALLELES = ['<TRA', '<DEL', '<INV', '<INS', '<DUP', '<CNV']
 
 export function makeFeaturePair(feature: Feature, alt?: string) {
-  const start = feature.get('start') as number
-  let end = feature.get('end') as number
-  const strand = feature.get('strand') as number
+  const start = feature.get('start')
+  let end = feature.get('end')
+  const strand = feature.get('strand')!
   const mate = feature.get('mate') as
     | {
         refName: string
@@ -17,7 +17,7 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
         mateDirection?: number
       }
     | undefined
-  const refName = feature.get('refName') as string
+  const refName = feature.get('refName')
 
   let mateRefName: string | undefined
   let mateEnd = 0

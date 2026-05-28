@@ -23,7 +23,17 @@ function arcPath(
   radiusPx: number,
   largeArc: '0' | '1',
 ) {
-  return ['M', ...startXY, 'A', radiusPx, radiusPx, '0', largeArc, '1', ...endXY].join(' ')
+  return [
+    'M',
+    ...startXY,
+    'A',
+    radiusPx,
+    radiusPx,
+    '0',
+    largeArc,
+    '1',
+    ...endXY,
+  ].join(' ')
 }
 
 function sliceArcPath(

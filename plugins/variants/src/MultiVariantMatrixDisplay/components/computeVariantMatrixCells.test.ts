@@ -47,8 +47,8 @@ describe('computeVariantMatrixCells phased raw callGenotype path', () => {
     })
 
     const genotypes = result.featureData[0]!.genotypes
-    expect(genotypes['S1']).toBe('1|0')
-    expect(genotypes['S2']).toBe('1|1')
+    expect(genotypes.S1).toBe('1|0')
+    expect(genotypes.S2).toBe('1|1')
     expect(genotypes['S1 HP0']).toBeUndefined()
     expect(genotypes['S1 HP1']).toBeUndefined()
     expect(genotypes['S2 HP0']).toBeUndefined()

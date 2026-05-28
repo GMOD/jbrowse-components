@@ -241,10 +241,14 @@ function RefNameMenu({
     model.setDisplayedRegions(regions)
   }
 
-  const canManageRegions =
-    displayedRegionIndex !== undefined && numRegions > 1
+  const canManageRegions = displayedRegionIndex !== undefined && numRegions > 1
   const actionItems = canManageRegions
-    ? buildActionItems(displayedRegionIndex, numRegions, moveRegion, removeRegion)
+    ? buildActionItems(
+        displayedRegionIndex,
+        numRegions,
+        moveRegion,
+        removeRegion,
+      )
     : []
 
   return (

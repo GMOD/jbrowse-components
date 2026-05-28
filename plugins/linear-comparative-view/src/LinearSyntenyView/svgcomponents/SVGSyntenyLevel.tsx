@@ -4,7 +4,10 @@ import type { ReactNode } from 'react'
 import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
 
 import type { ViewDisplayResults } from './SVGLinearGenomeView.tsx'
-import type { LinearGenomeViewModel, TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LinearGenomeViewModel,
+  TrackLabelMode,
+} from '@jbrowse/plugin-linear-genome-view'
 
 export default function SVGSyntenyLevel({
   clipId,

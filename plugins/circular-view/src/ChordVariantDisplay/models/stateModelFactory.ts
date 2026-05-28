@@ -15,11 +15,11 @@ import {
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import type { Block } from '../../ChordRenderer/types.ts'
 import type {
   CircularViewModel,
   ExportSvgOptions,
 } from '../../CircularView/model.ts'
-import type { Block } from '../../ChordRenderer/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
