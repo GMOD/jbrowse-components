@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { AssemblySelector, ErrorBanner } from '@jbrowse/core/ui'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getSyntenyTracks } from '@jbrowse/synteny-core'
 import { Button, Container, Grid, Paper, Typography } from '@mui/material'
 import { toJS, transaction } from 'mobx'
 import { observer } from 'mobx-react'
@@ -18,35 +19,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function doSubmit({
-  model,
-  assembly1,
-  assembly2,
-}: {
-  assembly1: string
-  assembly2: string
-  model: DotplotViewModel
-}) {
-  const session = getSession(model)
-  const { importFormSyntenyTrackSelections } = model
-
-  model.setError(undefined)
-  transaction(() => {
-    if (isSessionWithAddTracks(session)) {
-      for (const f of toJS(importFormSyntenyTrackSelections)) {
-        if (f.type === 'userOpened' && f.value !== undefined) {
-          session.addTrackConf(f.value)
-          model.toggleTrack(f.value.trackId)
-        } else if (f.type === 'preConfigured') {
-          model.showTrack(f.value)
-        }
-      }
-    }
-
-    model.setAssemblyNames(assembly2, assembly1)
-  })
-}
-
 const DotplotImportForm = observer(function DotplotImportForm({
   model,
 }: {
@@ -55,11 +27,44 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
-  const [assembly2, setAssembly2] = useState(assemblyNames[0] ?? '')
-  const [assembly1, setAssembly1] = useState(assemblyNames[0] ?? '')
+  const [assemblyX, setAssemblyX] = useState(assemblyNames[0] ?? '')
+  const [assemblyY, setAssemblyY] = useState(assemblyNames[0] ?? '')
   const [error, setError] = useState<unknown>()
+  const [choice, setChoice] = useState('tracklist')
+  const [preConfiguredTrackId, setPreConfiguredTrackId] = useState('')
 
+  const syntenyTracks = getSyntenyTracks(session.tracks, [assemblyX, assemblyY])
   const displayError = error ?? model.error
+
+  function handleLaunch() {
+    setError(undefined)
+    model.setError(undefined)
+    transaction(() => {
+      if (isSessionWithAddTracks(session)) {
+        if (choice === 'tracklist') {
+          // built-in picker default falls out of render: explicit pick, else
+          // first matching track
+          const trackId = preConfiguredTrackId || syntenyTracks[0]?.trackId
+          if (trackId) {
+            model.showTrack(trackId)
+          }
+        } else {
+          // custom-upload and extension-point components report their
+          // selection through the model
+          for (const f of toJS(model.importFormSyntenyTrackSelections)) {
+            if (f.type === 'userOpened' && f.value !== undefined) {
+              session.addTrackConf(f.value)
+              model.toggleTrack(f.value.trackId)
+            } else if (f.type === 'preConfigured') {
+              model.showTrack(f.value)
+            }
+          }
+        }
+      }
+      model.setAssemblyNames(assemblyX, assemblyY)
+    })
+  }
+
   return (
     <Container className={classes.importFormContainer}>
       {displayError ? <ErrorBanner error={displayError} /> : null}
@@ -75,21 +80,26 @@ const DotplotImportForm = observer(function DotplotImportForm({
         >
           <AssemblySelector
             helperText="x-axis assembly"
-            selected={assembly2}
+            selected={assemblyX}
             session={session}
-            onChange={setAssembly2}
+            onChange={asm => {
+              setAssemblyX(asm)
+              setPreConfiguredTrackId('')
+            }}
           />
           <AssemblySelector
             helperText="y-axis assembly"
-            selected={assembly1}
+            selected={assemblyY}
             session={session}
-            onChange={setAssembly1}
+            onChange={asm => {
+              setAssemblyY(asm)
+              setPreConfiguredTrackId('')
+            }}
           />
           <Button
             onClick={() => {
               try {
-                setError(undefined)
-                doSubmit({ assembly1, assembly2, model })
+                handleLaunch()
               } catch (e) {
                 console.error(e)
                 setError(e)
@@ -102,9 +112,14 @@ const DotplotImportForm = observer(function DotplotImportForm({
           </Button>
         </Grid>
         <TrackSelector
-          assembly2={assembly2}
-          assembly1={assembly1}
           model={model}
+          assemblyX={assemblyX}
+          assemblyY={assemblyY}
+          syntenyTracks={syntenyTracks}
+          choice={choice}
+          setChoice={setChoice}
+          preConfiguredTrackId={preConfiguredTrackId}
+          setPreConfiguredTrackId={setPreConfiguredTrackId}
         />
       </Paper>
     </Container>

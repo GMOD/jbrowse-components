@@ -1,39 +1,30 @@
-import { useEffect, useState } from 'react'
-
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getSyntenyTracks } from '@jbrowse/synteny-core'
 import { MenuItem, Paper, Select, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../../model.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const ImportSyntenyTrackSelector = observer(
   function ImportSyntenyTrackSelector({
     model,
-    assembly1,
-    assembly2,
+    assemblyX,
+    assemblyY,
+    syntenyTracks,
+    value,
+    setValue,
   }: {
     model: DotplotViewModel
-    assembly1: string
-    assembly2: string
+    assemblyX: string
+    assemblyY: string
+    syntenyTracks: AnyConfigurationModel[]
+    value: string
+    setValue: (arg: string) => void
   }) {
     const session = getSession(model)
-    const filteredTracks = getSyntenyTracks(session.tracks, [
-      assembly1,
-      assembly2,
-    ])
-    const resetTrack = filteredTracks[0]?.trackId ?? ''
-    const [value, setValue] = useState(resetTrack)
-    useEffect(() => {
-      model.setImportFormSyntenyTrack(0, {
-        type: 'preConfigured',
-        value: resetTrack,
-      })
-    }, [resetTrack, model])
-
     return (
       <Paper style={{ padding: 12 }}>
         <Typography>
@@ -43,19 +34,14 @@ const ImportSyntenyTrackSelector = observer(
           one can be displayed at once). Look for the track selector icon{' '}
           <TrackSelectorIcon />
         </Typography>
-        {filteredTracks.length ? (
+        {syntenyTracks.length ? (
           <Select
-            value={value}
+            value={value || syntenyTracks[0]!.trackId}
             onChange={event => {
-              const v = event.target.value
-              setValue(v)
-              model.setImportFormSyntenyTrack(0, {
-                type: 'preConfigured',
-                value: v,
-              })
+              setValue(event.target.value)
             }}
           >
-            {filteredTracks.map(track => (
+            {syntenyTracks.map(track => (
               <MenuItem key={track.trackId} value={track.trackId}>
                 {getTrackName(track, session)}
               </MenuItem>
@@ -63,7 +49,7 @@ const ImportSyntenyTrackSelector = observer(
           </Select>
         ) : (
           <ErrorBanner
-            error={`No synteny tracks found for ${assembly1},${assembly2}`}
+            error={`No synteny tracks found for ${assemblyX},${assemblyY}`}
           />
         )}
       </Paper>

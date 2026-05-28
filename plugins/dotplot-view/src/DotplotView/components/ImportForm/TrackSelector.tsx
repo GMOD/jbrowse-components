@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import { getEnv } from '@jbrowse/core/util'
 import {
   FormControl,
@@ -14,6 +12,7 @@ import ImportSyntenyOpenCustomTrack from './ImportSyntenyOpenCustomTrack.tsx'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector.tsx'
 
 import type { DotplotViewModel } from '../../model.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export interface DotplotImportFormSyntenyOption {
   value: string
@@ -36,17 +35,30 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 const TrackSelector = observer(function TrackSelector({
-  assembly1,
-  assembly2,
   model,
+  assemblyX,
+  assemblyY,
+  syntenyTracks,
+  choice,
+  setChoice,
+  preConfiguredTrackId,
+  setPreConfiguredTrackId,
 }: {
   model: DotplotViewModel
-  assembly1: string
-  assembly2: string
+  assemblyX: string
+  assemblyY: string
+  syntenyTracks: AnyConfigurationModel[]
+  choice: string
+  setChoice: (arg: string) => void
+  preConfiguredTrackId: string
+  setPreConfiguredTrackId: (arg: string) => void
 }) {
   const { pluginManager } = getEnv(model)
-  const [choice, setChoice] = useState('tracklist')
 
+  // extension-point and core components use the public assembly1/assembly2
+  // (y-axis/x-axis) prop names
+  const assembly1 = assemblyY
+  const assembly2 = assemblyX
   const customOptions = pluginManager.evaluateExtensionPoint(
     'DotplotView-ImportFormSyntenyOptions',
     [],
@@ -104,10 +116,12 @@ const TrackSelector = observer(function TrackSelector({
       ) : null}
       {choice === 'tracklist' ? (
         <ImportSyntenyTrackSelector
-          key={`${assembly1}-${assembly2}`}
           model={model}
-          assembly1={assembly1}
-          assembly2={assembly2}
+          assemblyX={assemblyX}
+          assemblyY={assemblyY}
+          syntenyTracks={syntenyTracks}
+          value={preConfiguredTrackId}
+          setValue={setPreConfiguredTrackId}
         />
       ) : null}
       {selectedCustomOption ? (
