@@ -35,6 +35,7 @@ export function getSOTermAndDescription(
   ref: string,
   alt: string[] | undefined,
   parser: VCF,
+  info?: Record<string, unknown>,
 ): [string, string] {
   if (!alt || alt.length === 0) {
     return ['remark', 'no alternative alleles']
@@ -42,7 +43,7 @@ export function getSOTermAndDescription(
 
   const soTerms = alt.map(a => getSOTerm(a, ref, parser))
   const uniqueSoTerms = [...new Set(soTerms)]
-  const description = formatGroupDescription(ref, alt)
+  const description = formatGroupDescription(ref, alt, info)
 
   return [uniqueSoTerms.join(','), description]
 }
@@ -70,9 +71,25 @@ function getSOTerm(alt: string, ref: string, parser: VCF): string {
   }
 }
 
-function formatGroupDescription(ref: string, alts: string[]): string {
+function formatGroupDescription(
+  ref: string,
+  alts: string[],
+  info?: Record<string, unknown>,
+): string {
   if (alts.every(isSymbolic)) {
-    return alts.map(a => altTypeToSO[a] ?? a).join(',')
+    const descriptions = alts.map(a => {
+      if (a === '<TRA>' && info?.CHR2 && info.END) {
+        const chr2 = Array.isArray(info.CHR2)
+          ? info.CHR2[0]
+          : info.CHR2
+        const end = Array.isArray(info.END)
+          ? info.END[0]
+          : info.END
+        return `translocation ${chr2}:${end}`
+      }
+      return altTypeToSO[a] ?? a
+    })
+    return descriptions.join(',')
   }
 
   const lenRef = ref.length

@@ -47,6 +47,24 @@ test('DEL feature with END info field', () => {
   expect(f.get('description')).toEqual('deletion')
 })
 
+test('TRA feature with CHR2 and END info', () => {
+  const f = createFeature(
+    'chr1\t100\trs123\tR\t<TRA>\t29\tPASS\tCHR2=chr8;END=45000;SVTYPE=TRA',
+  )
+
+  expect(f.get('start')).toEqual(99)
+  expect(f.get('description')).toEqual('translocation chr8:45000')
+  expect(f.get('type')).toEqual('translocation')
+})
+
+test('TRA feature without CHR2/END info', () => {
+  const f = createFeature('chr1\t100\trs123\tR\t<TRA>\t29\tPASS\tSVTYPE=TRA')
+
+  expect(f.get('start')).toEqual(99)
+  expect(f.get('description')).toEqual('translocation')
+  expect(f.get('type')).toEqual('translocation')
+})
+
 test('DEL feature with SVLEN when END not available', () => {
   const f = createFeature(
     'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tSVLEN=500;SVTYPE=DEL',
