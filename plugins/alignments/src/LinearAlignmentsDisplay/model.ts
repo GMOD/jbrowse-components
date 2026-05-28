@@ -307,6 +307,36 @@ export default function stateModelFactory(
           return self.linkedReads === 'normal'
         },
       }))
+      // Canonical ScoreScaleModel shape (shared with wiggle/manhattan) so the
+      // coverage band reuses wiggle-core's score menu + SetMinMaxDialog with no
+      // adapter shim. minScore/maxScore are raw (sentinels intact) for the
+      // dialog; *Config strip the sentinels for domain bounds. Kept in its own
+      // block so later getters reference them via `self`.
+      .views(self => ({
+        get scaleType() {
+          return self.getConfWithOverride<string>('scaleType')
+        },
+        get autoscaleType() {
+          return self.getConfWithOverride<string>('autoscale')
+        },
+        get minScore() {
+          return self.getConfWithOverride<number>('minScore')
+        },
+        get maxScore() {
+          return self.getConfWithOverride<number>('maxScore')
+        },
+        get minScoreConfig() {
+          const v = self.getConfWithOverride<number>('minScore')
+          return v !== Number.MIN_VALUE ? v : undefined
+        },
+        get maxScoreConfig() {
+          const v = self.getConfWithOverride<number>('maxScore')
+          return v !== Number.MAX_VALUE ? v : undefined
+        },
+        get numStdDev() {
+          return self.getConfWithOverride<number>('numStdDev')
+        },
+      }))
       .views(self => ({
         get featureWidgetType() {
           return {
@@ -391,30 +421,8 @@ export default function stateModelFactory(
           return self.getOverride<SortedBy>('sortedBy')
         },
 
-        get coverageScaleType() {
-          return self.getConfWithOverride<string>('scaleType')
-        },
-
-        get coverageAutoscaleType() {
-          return self.getConfWithOverride<string>('autoscale')
-        },
-
-        get coverageMinScore() {
-          const v = self.getConfWithOverride<number>('minScore')
-          return v !== Number.MIN_VALUE ? v : undefined
-        },
-
-        get coverageMaxScore() {
-          const v = self.getConfWithOverride<number>('maxScore')
-          return v !== Number.MAX_VALUE ? v : undefined
-        },
-
-        get coverageNumStdDev() {
-          return self.getConfWithOverride<number>('numStdDev')
-        },
-
         get coverageIsLog() {
-          return this.coverageScaleType === 'log'
+          return self.scaleType === 'log'
         },
 
         get coverageStats() {
@@ -436,11 +444,11 @@ export default function stateModelFactory(
             ? getNiceDomain({
                 domain: domainFromStats(
                   this.coverageStats,
-                  this.coverageAutoscaleType,
-                  this.coverageNumStdDev,
+                  self.autoscaleType,
+                  self.numStdDev,
                 ),
-                bounds: [this.coverageMinScore, this.coverageMaxScore],
-                scaleType: this.coverageScaleType,
+                bounds: [self.minScoreConfig, self.maxScoreConfig],
+                scaleType: self.scaleType,
               })
             : undefined
         },
@@ -450,7 +458,7 @@ export default function stateModelFactory(
             ? computeCoverageTicks(
                 this.coverageDomain[1],
                 self.coverageHeight,
-                this.coverageScaleType,
+                self.scaleType,
               )
             : undefined
         },
@@ -1020,19 +1028,19 @@ export default function stateModelFactory(
             self.setOverride('maxHeight', n)
           },
 
-          setCoverageScaleType(val: string) {
+          setScaleType(val: string) {
             self.setOverride('scaleType', val)
           },
 
-          setCoverageAutoscaleType(val: string) {
+          setAutoscale(val?: string) {
             self.setOverride('autoscale', val)
           },
 
-          setCoverageMinScore(val?: number) {
+          setMinScore(val?: number) {
             self.setOverride('minScore', val)
           },
 
-          setCoverageMaxScore(val?: number) {
+          setMaxScore(val?: number) {
             self.setOverride('maxScore', val)
           },
 

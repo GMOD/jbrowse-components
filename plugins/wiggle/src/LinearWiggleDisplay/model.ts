@@ -10,7 +10,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { computeYTicks, makeScaleTypeSubMenu } from '@jbrowse/wiggle-core'
+import { computeYTicks } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
@@ -259,10 +259,9 @@ export default function stateModelFactory(
             })),
           },
           ...makeResolutionAndSummarySubMenus(self),
-          // Inject the wiggle-only scale type into the shared Score submenu.
-          ...rendererMenuItems(self, {
-            extraScoreItems: [makeScaleTypeSubMenu(self)],
-          }),
+          // scaleType: true injects the wiggle-only scale-type submenu into the
+          // shared Score submenu (manhattan, linear-only, leaves it off).
+          ...rendererMenuItems(self, { scaleType: true }),
           {
             label: 'Color',
             icon: PaletteIcon,

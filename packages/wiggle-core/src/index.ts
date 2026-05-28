@@ -28,8 +28,12 @@ export { default as SetMinMaxDialog } from './SetMinMaxDialog.tsx'
 export {
   DEFAULT_AUTOSCALE_OPTIONS,
   makeAutoscaleTypeSubMenu,
+  makeCrossHatchItem,
   makeScaleTypeSubMenu,
+  makeScoreSubMenu,
+  makeSetMinMaxScoreItem,
 } from './scoreMenuItems.ts'
+export type { ScoreScaleModel } from './scoreMenuItems.ts'
 export { default as YScaleBar } from './YScaleBar.tsx'
 export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
 

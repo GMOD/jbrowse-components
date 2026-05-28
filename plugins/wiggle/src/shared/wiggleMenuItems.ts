@@ -1,3 +1,5 @@
+import type { MenuItem } from '@jbrowse/core/ui'
+
 interface WithResolution {
   hasResolution: boolean
   resolution: number
@@ -6,7 +8,9 @@ interface WithResolution {
   setSummaryScoreMode: (v: string) => void
 }
 
-export function makeResolutionAndSummarySubMenus(self: WithResolution) {
+export function makeResolutionAndSummarySubMenus(
+  self: WithResolution,
+): MenuItem[] {
   if (!self.hasResolution) {
     return []
   }

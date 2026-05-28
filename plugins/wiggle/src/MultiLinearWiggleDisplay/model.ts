@@ -19,12 +19,7 @@ import {
   buildSpatialIndex,
   clusterLayout,
 } from '@jbrowse/tree-sidebar'
-import {
-  computeYTicks,
-  makeAutoscaleTypeSubMenu,
-  makeScaleTypeSubMenu,
-} from '@jbrowse/wiggle-core'
-import EqualizerIcon from '@mui/icons-material/Equalizer'
+import { computeYTicks, makeScoreSubMenu } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
@@ -54,9 +49,6 @@ type LGV = LinearGenomeViewModel
 
 const MultiWiggleComponent = lazy(
   () => import('./components/MultiWiggleComponent.tsx'),
-)
-const SetMinMaxDialog = lazy(() =>
-  import('@jbrowse/wiggle-core').then(m => ({ default: m.SetMinMaxDialog })),
 )
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(
@@ -410,27 +402,10 @@ export default function stateModelFactory(
                 : []),
             ],
           },
-          {
-            label: 'Score',
-            icon: EqualizerIcon,
-            subMenu: [
-              ...makeResolutionAndSummarySubMenus(self),
-              makeScaleTypeSubMenu(self),
-              makeAutoscaleTypeSubMenu(self),
-              {
-                label: 'Set min/max score',
-                onClick: () => {
-                  getSession(self).queueDialog(handleClose => [
-                    SetMinMaxDialog,
-                    {
-                      model: self,
-                      handleClose,
-                    },
-                  ])
-                },
-              },
-            ],
-          },
+          makeScoreSubMenu(self, {
+            scaleType: true,
+            leadingItems: makeResolutionAndSummarySubMenus(self),
+          }),
           {
             label: 'Rendering type',
             subMenu: (
