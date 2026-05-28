@@ -39,12 +39,13 @@ export default function SVGTracks({
   const session = getSession(model)
   const textOffset = trackLabels === 'offset' ? textHeight : 0
   const x = Math.max(-model.offsetPx, 0)
-  let total = 0
-  const offsets = displayResults.map(({ track }) => {
-    const offset = total
-    total += track.displays[0]!.height + textOffset + trackSpacing
-    return offset
-  })
+  const { offsets } = displayResults.reduce<{ offsets: number[]; total: number }>(
+    ({ offsets, total }, { track }) => ({
+      offsets: [...offsets, total],
+      total: total + track.displays[0]!.height + textOffset + trackSpacing,
+    }),
+    { offsets: [], total: 0 },
+  )
   return (
     <>
       {displayResults.map(({ track, result }, i) => {
