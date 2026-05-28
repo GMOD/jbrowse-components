@@ -6,6 +6,7 @@ import { app, dialog, ipcMain } from 'electron'
 
 import { getFileStream } from '../generateFastaIndex.ts'
 import { getFaiPath } from '../paths.ts'
+import { ipcHandle } from './channels.ts'
 
 import type { AppPaths } from '../paths.ts'
 
@@ -49,7 +50,7 @@ export function registerFileHandlers(paths: AppPaths) {
     return choice.filePaths[0]
   })
 
-  ipcMain.handle('promptOpenLocalFile', async (_, defaultDir?: string) => {
+  ipcHandle('promptOpenLocalFile', async (_, defaultDir) => {
     const choice = await dialog.showOpenDialog({
       defaultPath: defaultDir ?? app.getPath('home'),
       filters: [{ name: 'All Files', extensions: ['*'] }],

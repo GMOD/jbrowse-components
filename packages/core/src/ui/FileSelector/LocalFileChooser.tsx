@@ -1,5 +1,6 @@
 import { Box, Button, FormControl, Typography } from '@mui/material'
 
+import { dirFromPath } from './util.ts'
 import { isFileSystemAccessSupported } from '../../util/fileHandleStore.ts'
 import { isElectron } from '../../util/index.ts'
 import {
@@ -38,9 +39,9 @@ function getLastLocalFileDir() {
 
 function setLastLocalFileDir(filePath: string) {
   try {
-    const idx = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'))
-    if (idx > 0) {
-      localStorage.setItem(LAST_LOCAL_FILE_DIR_KEY, filePath.slice(0, idx))
+    const dir = dirFromPath(filePath)
+    if (dir) {
+      localStorage.setItem(LAST_LOCAL_FILE_DIR_KEY, dir)
     }
   } catch {
     // storage unavailable (e.g. private browsing)

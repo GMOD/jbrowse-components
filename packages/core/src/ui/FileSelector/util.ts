@@ -39,6 +39,11 @@ export function getInitialSourceType(location?: FileLocation) {
   return !location || isUriLocation(location) ? 'url' : 'file'
 }
 
+export function dirFromPath(filePath: string) {
+  const idx = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'))
+  return idx > 0 ? filePath.slice(0, idx) : undefined
+}
+
 export function addAccountToLocation(
   location: FileLocation,
   account?: BaseInternetAccountModel,

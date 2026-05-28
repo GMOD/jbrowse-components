@@ -7,23 +7,13 @@ import parseJson from 'json-parse-even-better-errors'
 import { getThumbnailPath, stringify } from '../paths.ts'
 
 import type { AppPaths } from '../paths.ts'
+import type { RecentSession, SessionSnap } from './channels.ts'
+
+export type { RecentSession, SessionSnap }
 
 const { unlink, readFile, writeFile } = fs.promises
 const ENCODING = 'utf8'
 const THUMBNAIL_WIDTH = 500
-
-export interface RecentSession {
-  path: string
-  updated: number
-  name?: string
-}
-
-export interface SessionSnap {
-  defaultSession?: {
-    name: string
-  }
-  [key: string]: unknown
-}
 
 async function readRecentSessions(
   recentSessionsPath: string,

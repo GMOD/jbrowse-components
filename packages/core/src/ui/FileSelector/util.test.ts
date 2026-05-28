@@ -1,6 +1,7 @@
 import {
   MAX_LABEL_LENGTH,
   addAccountToLocation,
+  dirFromPath,
   getAccountLabel,
   getInitialSourceType,
   shorten,
@@ -118,6 +119,26 @@ describe('getInitialSourceType', () => {
       localPath: '/path/to/file.bam',
     }
     expect(getInitialSourceType(location)).toBe('file')
+  })
+})
+
+describe('dirFromPath', () => {
+  test('unix path', () => {
+    expect(dirFromPath('/home/user/data/file.bam')).toBe('/home/user/data')
+  })
+
+  test('windows path', () => {
+    expect(dirFromPath(String.raw`C:\Users\user\data\file.bam`)).toBe(
+      String.raw`C:\Users\user\data`,
+    )
+  })
+
+  test('filename only returns undefined', () => {
+    expect(dirFromPath('file.bam')).toBeUndefined()
+  })
+
+  test('file at root returns undefined', () => {
+    expect(dirFromPath('/file.bam')).toBeUndefined()
   })
 })
 
