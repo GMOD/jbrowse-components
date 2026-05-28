@@ -18,7 +18,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
   return types
     .model({})
     .volatile(() => ({
-      sessionThemeName: localStorageGetItem('themeName') || 'default',
+      sessionThemeName: localStorageGetItem('themeName') ?? 'default',
     }))
     .views(s => ({
       /**

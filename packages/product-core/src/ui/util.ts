@@ -52,9 +52,9 @@ export function generateDisplayableConfig({
   pluginManager: PluginManager
 }) {
   const conf = isStateTreeNode(config) ? readConfObject(config) : config
-  const formatAboutConfig = readConf(config, ['formatAbout', 'config']) || {}
+  const formatAboutConfig = readConf(config, ['formatAbout', 'config']) ?? {}
   const sessionFormatAbout =
-    getConf(session, ['formatAbout', 'config'], { config: conf }) || {}
+    getConf(session, ['formatAbout', 'config'], { config: conf }) ?? {}
   return pluginManager.evaluateExtensionPoint(
     'Core-customizeAbout',
     {

@@ -38,7 +38,7 @@ const ViewLauncher = observer(function ViewLauncher({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(session)
   const viewTypes = pluginManager.getViewElements()
-  const [value, setValue] = useState(viewTypes[0]?.name || '')
+  const [value, setValue] = useState(viewTypes[0]?.name ?? '')
   return (
     <Paper className={classes.selectPaper}>
       <Typography>Select a view to launch</Typography>

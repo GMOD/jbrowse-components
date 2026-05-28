@@ -11,6 +11,8 @@ import {
 import {
   addDisposer,
   cast,
+  castFlowReturn,
+  flow,
   getParent,
   getSnapshot,
   isStateTreeNode,
@@ -102,7 +104,7 @@ export function BaseWebSession({
       /**
        * #volatile
        */
-      sessionThemeName: localStorageGetItem('themeName') || 'default',
+      sessionThemeName: localStorageGetItem('themeName') ?? 'default',
       /**
        * #volatile
        */
@@ -142,6 +144,13 @@ export function BaseWebSession({
     }))
 
     .views(self => ({
+      canEditTrack(trackId: string): boolean {
+        return (
+          self.adminMode ||
+          self.sessionTracks.some(t => t.trackId === trackId)
+        )
+      },
+
       /**
        * #getter
        * list of sessionAssemblies and jbrowse config assemblies, does not
@@ -290,10 +299,7 @@ export function BaseWebSession({
       editTrackConfiguration(
         configuration: AnyConfigurationModel | { trackId: string },
       ) {
-        const { adminMode, sessionTracks } = self
-        const trackId = configuration.trackId
-        const isSessionTrack = sessionTracks.some(t => t.trackId === trackId)
-        if (!adminMode && !isSessionTrack) {
+        if (!self.canEditTrack(configuration.trackId)) {
           throw new Error("Can't edit the configuration of a non-session track")
         }
         self.editConfiguration(configuration)
@@ -308,14 +314,13 @@ export function BaseWebSession({
         config: BaseTrackConfig,
         view?: { showTrack: (id: string) => void },
       ): MenuItem[] {
-        const { adminMode, sessionTracks } = self
-        const canEdit =
-          adminMode || sessionTracks.some(t => t.trackId === config.trackId)
+        const canEdit = self.canEditTrack(config.trackId)
         const isRefSeq = config.type === 'ReferenceSequenceTrack'
+        const base = structuredClone(
+          isStateTreeNode(config) ? getSnapshot(config) : config,
+        ) as { [key: string]: unknown; displays?: Display[] }
         const makeSnap = () => {
-          const snap = structuredClone(
-            isStateTreeNode(config) ? getSnapshot(config) : config,
-          ) as { [key: string]: unknown; displays?: Display[] }
+          const snap = structuredClone(base)
           const now = Date.now()
           snap.trackId += `-${now}`
           if (snap.displays) {
@@ -473,15 +478,15 @@ export function BaseWebSession({
             console.error('Error restoring file handles:', err)
           })
       },
-      async restorePendingFileHandles() {
-        const results = await restoreFileHandles(
-          self.pendingFileHandleIds,
-          true,
-        )
+      restorePendingFileHandles: flow(function* restorePendingFileHandles() {
+        const results: Awaited<ReturnType<typeof restoreFileHandles>> =
+          yield castFlowReturn(
+            restoreFileHandles(self.pendingFileHandleIds, true),
+          )
         self.setPendingFileHandleIds(
           results.filter(r => !r.success).map(r => r.handleId),
         )
-      },
+      }),
     }))
 
   const extendedSessionModel = pluginManager.evaluateExtensionPoint(

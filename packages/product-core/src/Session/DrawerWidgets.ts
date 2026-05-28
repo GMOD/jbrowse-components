@@ -34,7 +34,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        */
       drawerPosition: types.optional(
         types.string,
-        () => localStorageGetItem('drawerPosition') || 'right',
+        () => localStorageGetItem('drawerPosition') ?? 'right',
       ),
       /**
        * #property
@@ -119,7 +119,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
           ...initialState,
           id,
           type: typeName,
-          configuration: conf || { type: typeName },
+          configuration: conf ?? { type: typeName },
         }
         self.widgets.set(id, data)
         return self.widgets.get(id)
