@@ -17,6 +17,12 @@ export function makeHaplotypeSources(
   return results
 }
 
+// Single source of truth for the "<sampleName> HP<n>" haplotype-row convention.
+// Shared by the worker (cell computation), the model `sources` getter (sidebar
+// rows / row count), and the cluster dialog — keeping the naming + ploidy rules
+// in one place so the three sites can't drift. Sources that already carry an HP
+// index (e.g. from haplotype clustering) pass through unchanged; the rest expand
+// into maxPloidy rows, keyed by sampleName, defaulting to diploid.
 export function expandSourcesToHaplotypes({
   sources,
   sampleInfo,
@@ -25,8 +31,11 @@ export function expandSourcesToHaplotypes({
   sampleInfo: Record<string, SampleInfo>
 }): ProcessedSource[] {
   return sources.flatMap(source => {
-    const ploidy = sampleInfo[source.name]?.maxPloidy ?? 2
-    return makeHaplotypeSources(source, ploidy)
+    const sampleName = source.sampleName ?? source.name
+    if (source.HP !== undefined) {
+      return [{ ...source, sampleName }]
+    }
+    return makeHaplotypeSources(source, sampleInfo[sampleName]?.maxPloidy ?? 2)
   })
 }
 

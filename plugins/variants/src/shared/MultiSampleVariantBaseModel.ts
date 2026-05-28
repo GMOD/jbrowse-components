@@ -41,7 +41,7 @@ import {
   UNPHASED_COLOR,
   getAltColorForDosage,
 } from './constants.ts'
-import { getSources, makeHaplotypeSources } from './getSources.ts'
+import { expandSourcesToHaplotypes, getSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
 
 import type { ProcessedSource, Source } from './types.ts'
@@ -199,6 +199,13 @@ export default function MultiSampleVariantBaseModelF(
   return (
     types
       .compose(
+        // Abstract base shared by both MultiLinearVariantDisplay and
+        // LinearVariantMatrixDisplay. The name + `type` literal below are
+        // borrowed from the matrix subclass for historical reasons; both are
+        // always overridden by the concrete subclass that composes this
+        // (MultiLinearVariantDisplay overrides `type` to its own literal). The
+        // base is never registered or instantiated directly. Don't rename the
+        // subclass `type` literals — they appear in stored session snapshots.
         'LinearVariantMatrixDisplay',
         BaseDisplay,
         TrackHeightMixin(),
@@ -574,14 +581,7 @@ export default function MultiSampleVariantBaseModelF(
           if (!sampleInfo) {
             return base
           }
-          return base.flatMap(s =>
-            s.HP !== undefined
-              ? [s]
-              : makeHaplotypeSources(
-                  s,
-                  sampleInfo[s.sampleName]?.maxPloidy ?? 2,
-                ),
-          )
+          return expandSourcesToHaplotypes({ sources: base, sampleInfo })
         },
         /**
          * #getter

@@ -52,6 +52,23 @@ describe('expandSourcesToHaplotypes', () => {
     ])
   })
 
+  // Sources from haplotype clustering already carry HP; they must pass through
+  // unchanged rather than being re-expanded. This branch is shared by the worker
+  // and the model `sources` getter, which previously hand-rolled it.
+  test('passes through sources that already have an HP index', () => {
+    const sources = [
+      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
+      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
+    ]
+    const sampleInfo = {
+      HG001: { isPhased: true, maxPloidy: 2 },
+    }
+
+    const result = expandSourcesToHaplotypes({ sources, sampleInfo })
+
+    expect(result).toEqual(sources)
+  })
+
   test('preserves other source properties', () => {
     const sources = [{ name: 'HG001', color: 'red', group: 'family1' }]
     const sampleInfo = {

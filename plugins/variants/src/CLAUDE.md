@@ -59,3 +59,45 @@ Concretely:
   `sourceMap` before indexing into `genotypes`.
 - `sortSourcesByGenotype` → already uses `a.sampleName` as the lookup key; don't
   change it to `a.name`.
+
+## Settings live in four stores — classify by invalidation tier
+
+A user-tweakable setting on the multi-sample displays can be held in any of:
+
+- **config slot** (`SharedVariantConfigSchema.ts`) — the saved default
+- **`configOverrides`** map (`ConfigOverrideMixin`) — per-display runtime override
+  of a slot, read via `getConfWithOverride` / written via `setOverride`
+- **bespoke MST property** (`rowHeightMode`, `lengthCutoffFilter`, `jexlFilters`,
+  `lineZoneHeight`) — persisted, with hand-rolled snapshot pruning in
+  `postProcessSnapshot`
+- **volatile** (`showLegend`, `cellData`, `sourcesVolatile`) — session-only
+
+There is no single rule for which store a setting belongs in, and the two display
+families disagree (e.g. `showLegend` is a volatile here but a `configOverride` in
+`LDDisplay/shared.ts`). When adding a setting, the question that actually matters
+is **which tier of work its change invalidates**:
+
+| Tier             | Change triggers                  | Where it's wired                                          |
+| ---------------- | -------------------------------- | -------------------------------------------------------- |
+| **Fetch input**  | worker recomputes cells (refetch) | listed in `rpcProps()` — watched by `SettingsInvalidate` |
+| **Layout input** | rows reorder/relabel, no refetch  | read by `sourcesBase` / `sources` / `hierarchy`          |
+| **Render input** | repaint only                      | read by the subclass `renderState` getter                |
+
+`rpcProps()` is the **only** structural marker of a fetch input. Put a render-only
+setting in it and every toggle forces a needless refetch; the inverse silently
+serves stale cells. A few settings span tiers — `renderingMode` is all three
+(it refetches via `rpcProps`, wipes `layout`/`clusterTree` in `setPhasedMode`,
+and changes coloring), which is why its setter is special-cased.
+
+Critical invariant: **`rpcProps()` must not read fetch-derived state**
+(`sampleInfo`, `cellData`, or `sources`, which expands using `sampleInfo`). Doing
+so loops `SettingsInvalidate` → fetch → `setCellData` → invalidate. This is why
+`rpcProps` reads `sourcesBase` (pre-expansion) rather than `sources`.
+
+## Phased haplotype expansion has one home
+
+The `"<sampleName> HP<n>"` row convention and ploidy defaulting live solely in
+`expandSourcesToHaplotypes` (`shared/getSources.ts`). The worker
+(`executeVariantCellData.ts`), the model `sources` getter, and the cluster dialog
+all call it — don't re-inline the `flatMap(... makeHaplotypeSources ...)` pattern,
+or the sidebar row labels and the rendered rows can drift apart.

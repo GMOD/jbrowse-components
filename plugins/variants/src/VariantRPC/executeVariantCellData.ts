@@ -5,7 +5,7 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { computeVariantCells } from '../MultiVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../MultiVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
-import { makeHaplotypeSources } from '../shared/getSources.ts'
+import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 
 import type { GetCellDataArgs } from './types.ts'
@@ -234,18 +234,14 @@ export async function executeVariantCellData({
     () => computeSampleInfo(mafs, genotypesCache),
   )
 
-  // For phased mode: expand sources that don't yet have HP set (i.e., not
-  // from haplotype clustering). The client sends layout-ordered sources without
-  // HP to avoid a circular sampleInfo dependency; we expand here using the
-  // sampleInfo we just computed. Sources from clustering already have HP.
-  let effectiveSources = sources
-  if (renderingMode === 'phased' && sources.some(s => s.HP === undefined)) {
-    effectiveSources = sources.flatMap(s =>
-      s.HP !== undefined
-        ? [s]
-        : makeHaplotypeSources(s, sampleInfo[s.sampleName]?.maxPloidy ?? 2),
-    )
-  }
+  // For phased mode: expand sources into per-haplotype rows. The client sends
+  // layout-ordered sources without HP to avoid a circular sampleInfo dependency;
+  // we expand here using the sampleInfo we just computed. Sources from clustering
+  // already carry HP and pass through unchanged (see expandSourcesToHaplotypes).
+  const effectiveSources =
+    renderingMode === 'phased'
+      ? expandSourcesToHaplotypes({ sources, sampleInfo })
+      : sources
 
   if (mode === 'regular') {
     const perRegionCellData = await updateStatus(
