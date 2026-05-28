@@ -67,7 +67,7 @@ export function useWheelScroll(
   useEffect(() => {
     const curr = ref.current
     if (!curr) {
-      return () => {}
+      return
     }
 
     const s = state.current

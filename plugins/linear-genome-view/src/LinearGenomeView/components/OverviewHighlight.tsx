@@ -19,6 +19,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
   const theme = useTheme()
   const { highlight, cytobandOffset, overviewLayout: overview } = model
   const { assemblyManager } = getSession(model) as SessionWithWidgets
+  const themed = colord(theme.palette.highlight.main)
 
   return highlight
     .map(r => {
@@ -31,7 +32,6 @@ const OverviewHighlight = observer(function OverviewHighlight({
     })
     .filter(notEmpty)
     .map(({ coords, highlight: r }, idx) => {
-      const themed = colord(theme.palette.highlight.main)
       const bandColor = r.color ? colord(r.color) : themed.alpha(0.35)
       return (
         <OverviewHighlightBand
