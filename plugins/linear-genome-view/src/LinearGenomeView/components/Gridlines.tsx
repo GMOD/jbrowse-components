@@ -1,6 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { elidedBlockStyles } from './util.ts'
 import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -43,13 +44,11 @@ const useStyles = makeStyles()(theme => ({
   boundaryBlock: {
     background: theme.palette.action.disabledBackground,
   },
-  textDisabledBlock: {
+  regionSeparator: {
     background: theme.palette.text.disabled,
   },
   elided: {
-    backgroundColor: '#999',
-    backgroundImage:
-      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+    ...elidedBlockStyles,
   },
 }))
 
@@ -89,14 +88,21 @@ const GridlinesContent = observer(function GridlinesContent({
       <div className={classes.absoluteFill}>
         {blocks.map(block => {
           if (block.type === 'ContentBlock') {
-            return null
+            return block.isRightEndOfDisplayedRegion ? (
+              <div
+                key={`${block.key}-sep`}
+                className={cx(classes.block, classes.regionSeparator)}
+                style={{
+                  transform: `translateX(${block.offsetPx - firstBlockOffset + block.widthPx}px)`,
+                  width: 1,
+                }}
+              />
+            ) : null
           }
           const bgClass =
             block.type === 'ElidedBlock'
               ? classes.elided
-              : block.variant === 'boundary'
-                ? classes.boundaryBlock
-                : classes.textDisabledBlock
+              : classes.boundaryBlock
           return (
             <div
               key={block.key}

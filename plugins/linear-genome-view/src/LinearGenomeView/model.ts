@@ -20,6 +20,7 @@ import {
 import {
   bpToPx,
   computeMoveToLayout,
+  createOverviewLayout,
   getLayoutHighlightCoords,
   moveTo,
   offsetBpToPx,
@@ -45,7 +46,6 @@ import MiniControls from './components/MiniControls.tsx'
 import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
-  INTER_REGION_PADDING_WIDTH,
   MINIMIZED_TRACK_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
@@ -76,6 +76,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -380,13 +381,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get interRegionPaddingWidth() {
-        return INTER_REGION_PADDING_WIDTH
-      },
-
-      /**
-       * #getter
-       */
       get assemblyNames() {
         return [...new Set(self.displayedRegions.map(r => r.assemblyName))]
       },
@@ -625,52 +619,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * #method
-       * Count regions that are large enough to not be elided at a given bpPerPx.
-       * A region is elided if its width in pixels < minimumBlockWidth.
-       */
-      getNonElidedRegionCount(bpPerPx: number) {
-        if (bpPerPx <= 0) {
-          return self.displayedRegions.length
-        }
-        return self.displayedRegions.filter(
-          r => (r.end - r.start) / bpPerPx >= self.minimumBlockWidth,
-        ).length
-      },
-
-      /**
-       * #method
-       * Calculate total inter-region padding pixels at a given bpPerPx.
-       * Only non-elided regions contribute to padding.
-       */
-      getInterRegionPaddingPx(bpPerPx: number) {
-        const nonElidedCount = this.getNonElidedRegionCount(bpPerPx)
-        const numPaddings = Math.max(0, nonElidedCount - 1)
-        return numPaddings * self.interRegionPaddingWidth
-      },
-
-      /**
        * #getter
        */
       get maxBpPerPx() {
         if (this.totalBp === 0 || self.width === 0) {
           return 1
         }
-        // Start with naive calculation (ignoring padding)
-        const naiveBpPerPx = this.totalBp / (self.width * 0.9)
-
-        // Calculate padding at this zoom level
-        const totalPaddingPx = this.getInterRegionPaddingPx(naiveBpPerPx)
-
-        // Calculate bpPerPx accounting for padding
-        const targetWidth = self.width * 0.9
-        const availableForBp = targetWidth - totalPaddingPx
-
-        if (availableForBp <= 0) {
-          // Padding exceeds available space - use naive value
-          return naiveBpPerPx
-        }
-        return this.totalBp / availableForBp
+        return this.totalBp / (self.width * 0.9)
       },
 
       /**
@@ -729,11 +684,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get displayedRegionsTotalPx() {
-        if (self.bpPerPx === 0) {
-          return 0
-        }
-        const totalPaddingPx = this.getInterRegionPaddingPx(self.bpPerPx)
-        return this.totalBp / self.bpPerPx + totalPaddingPx
+        return self.bpPerPx === 0 ? 0 : this.totalBp / self.bpPerPx
       },
 
       /**
@@ -1171,7 +1122,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const snapWithLayout = {
           ...snap,
           width: self.width,
-          interRegionPaddingWidth: self.interRegionPaddingWidth,
           minimumBlockWidth: self.minimumBlockWidth,
         }
         const { bpPerPx, offsetPx: rawOffsetPx } = computeMoveToLayout(
@@ -1184,7 +1134,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const offsetPx = clamp(
           rawOffsetPx,
           self.minOffset,
-          self.totalBp / bpPerPx + self.getInterRegionPaddingPx(bpPerPx) - 10,
+          self.totalBp / bpPerPx - 10,
         )
         return calculateDynamicBlocks({
           ...snapWithLayout,
@@ -1396,6 +1346,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       menuItems(): MenuItem[] {
         return buildMenuItems(self as LinearGenomeViewModel)
+      },
+      /**
+       * #getter
+       * geometry of the overview scalebar — derived from displayedRegions,
+       * width, and cytobandOffset so it stays cached by MobX
+       */
+      get overviewLayout(): ViewLayout {
+        return createOverviewLayout({
+          displayedRegions: self.displayedRegions,
+          width: self.width - self.cytobandOffset,
+          minimumBlockWidth: self.minimumBlockWidth,
+        })
+      },
+      /**
+       * #getter
+       * bp-per-px scale used by overview tick labels
+       */
+      get overviewScale() {
+        return self.totalBp / (self.width - self.cytobandOffset)
       },
     }))
     .views(self => {

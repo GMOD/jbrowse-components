@@ -1,5 +1,13 @@
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
+// Shared style for elided (collapsed) blocks — striped grey pattern used
+// consistently across OverviewScalebar, ScalebarCoordinateLabels, and Gridlines
+export const elidedBlockStyles = {
+  backgroundColor: '#999',
+  backgroundImage:
+    'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+} as const
+
 export function getCytobands(assembly: Assembly | undefined, refName: string) {
   return (
     assembly?.cytobands

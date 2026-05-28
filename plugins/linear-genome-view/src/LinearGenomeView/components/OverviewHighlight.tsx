@@ -8,19 +8,16 @@ import OverviewHighlightBand from './OverviewHighlightBand.tsx'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 type LGV = LinearGenomeViewModel
 
 const OverviewHighlight = observer(function OverviewHighlight({
   model,
-  overview,
 }: {
   model: LGV
-  overview: ViewLayout
 }) {
   const theme = useTheme()
-  const { highlight, cytobandOffset } = model
+  const { highlight, cytobandOffset, overviewLayout: overview } = model
   const { assemblyManager } = getSession(model) as SessionWithWidgets
 
   return highlight

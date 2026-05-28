@@ -1,22 +1,18 @@
-import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 
 import { getEnv, getSession } from '@jbrowse/core/util'
-import {
-  createOverviewLayout,
-  getContentBlocksPxSpan,
-} from '@jbrowse/core/util/Base1DUtils'
+import { getContentBlocksPxSpan } from '@jbrowse/core/util/Base1DUtils'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { elidedBlockStyles, getCytobands } from './util.ts'
 import Cytobands from './Cytobands.tsx'
 import OverviewHighlight from './OverviewHighlight.tsx'
 import OverviewRubberband from './OverviewRubberband.tsx'
 import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
 import OverviewScalebarTickLabels from './OverviewScalebarTickLabels.tsx'
-import { getCytobands } from './util.ts'
 import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -32,8 +28,6 @@ declare module '@jbrowse/core/PluginManager' {
     }
   }
 }
-
-const wholeSeqSpacer = 2
 
 const useStyles = makeStyles()(theme => ({
   scalebar: {
@@ -89,9 +83,7 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
   },
   elidedOverviewBlock: {
-    backgroundColor: '#999',
-    backgroundImage:
-      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+    ...elidedBlockStyles,
   },
   cytoSvg: {
     width: '100%',
@@ -101,19 +93,15 @@ const useStyles = makeStyles()(theme => ({
 type LGV = LinearGenomeViewModel
 
 const OverviewBox = observer(function OverviewBox({
-  scale,
   model,
   block,
-  overview,
 }: {
-  scale: number
   model: LGV
   block: ContentBlock
-  overview: ViewLayout
 }) {
   const { classes } = useStyles()
   const theme = useTheme()
-  const { cytobandOffset, showCytobands } = model
+  const { cytobandOffset, showCytobands, overviewLayout: overview } = model
   const { reversed, refName, assemblyName } = block
   const { assemblyManager } = getSession(model)
   const assembly = assemblyManager.get(assemblyName)
@@ -170,34 +158,28 @@ const OverviewBox = observer(function OverviewBox({
       >
         {refName}
       </Typography>
-      <OverviewScalebarTickLabels
-        model={model}
-        overview={overview}
-        scale={scale}
-        block={block}
-      />
+      <OverviewScalebarTickLabels model={model} block={block} />
     </div>
   )
 })
 
 const VisibleRegionBox = observer(function VisibleRegionBox({
   model,
-  overview,
   className,
 }: {
   model: LGV
-  overview: ViewLayout
   className: string
 }) {
   const theme = useTheme()
-  const { dynamicBlocks, showCytobands, cytobandOffset } = model
-  const span = getContentBlocksPxSpan(overview, dynamicBlocks.contentBlocks)
+  const { dynamicBlocks, showCytobands, cytobandOffset, overviewLayout } = model
+  const span = getContentBlocksPxSpan(overviewLayout, dynamicBlocks.contentBlocks)
   if (!span) {
     return null
   }
 
-  const color = showCytobands ? '#f00' : theme.palette.tertiary.light
-  const transparency = showCytobands ? 0.1 : 0.3
+  const { color, opacity } = showCytobands
+    ? { color: '#f00', opacity: 0.1 }
+    : { color: theme.palette.tertiary.light, opacity: 0.3 }
 
   return (
     <div
@@ -205,24 +187,17 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
       style={{
         width: span.rightPx - span.leftPx,
         transform: `translateX(${span.leftPx + cytobandOffset}px)`,
-        background: alpha(color, transparency),
+        background: alpha(color, opacity),
         borderColor: color,
       }}
     />
   )
 })
 
-const Scalebar = observer(function Scalebar({
-  model,
-  scale,
-  overview,
-}: {
-  model: LGV
-  overview: ViewLayout
-  scale: number
-}) {
+const Scalebar = observer(function Scalebar({ model }: { model: LGV }) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
+  const overview = model.overviewLayout
   const overviewVisibleRegions = calculateDynamicBlocks(overview).blocks
 
   const additional = pluginManager.evaluateExtensionPoint(
@@ -233,14 +208,9 @@ const Scalebar = observer(function Scalebar({
 
   return (
     <div className={classes.scalebar}>
-      <VisibleRegionBox
-        model={model}
-        overview={overview}
-        className={classes.scalebarVisibleRegion}
-      />
-      {/* this is the entire scale bar */}
-      {overviewVisibleRegions.map((block, idx) => {
-        return block.type !== 'ContentBlock' ? (
+      <VisibleRegionBox model={model} className={classes.scalebarVisibleRegion} />
+      {overviewVisibleRegions.map((block, idx) =>
+        block.type !== 'ContentBlock' ? (
           <div
             key={`${block.offsetPx}-${idx}`}
             className={cx(classes.scalebarContig, classes.elidedOverviewBlock)}
@@ -251,15 +221,13 @@ const Scalebar = observer(function Scalebar({
           />
         ) : (
           <OverviewBox
-            scale={scale}
             block={block}
             model={model}
-            overview={overview}
             key={`${block.refName}-${block.offsetPx}`}
           />
-        )
-      })}
-      <OverviewHighlight model={model} overview={overview} />
+        ),
+      )}
+      <OverviewHighlight model={model} />
       {additional}
     </div>
   )
@@ -270,39 +238,17 @@ const OverviewScalebar = observer(function OverviewScalebar({
   children,
 }: {
   model: LGV
-  children: React.ReactNode
+  children: ReactNode
 }) {
   const { classes } = useStyles()
-  const {
-    minimumBlockWidth,
-    totalBp,
-    width,
-    cytobandOffset,
-    displayedRegions,
-  } = model
-
-  const overviewWidth = width - cytobandOffset
-  const overview = useMemo(
-    () =>
-      createOverviewLayout({
-        displayedRegions,
-        width: overviewWidth,
-        minimumBlockWidth,
-      }),
-    [displayedRegions, minimumBlockWidth, overviewWidth],
-  )
-
-  const scale =
-    totalBp / (overviewWidth - (displayedRegions.length - 1) * wholeSeqSpacer)
+  const overview = model.overviewLayout
 
   return (
     <div>
       <OverviewRubberband
         model={model}
         overview={overview}
-        ControlComponent={
-          <Scalebar model={model} overview={overview} scale={scale} />
-        }
+        ControlComponent={<Scalebar model={model} />}
       />
       <div className={classes.overview}>
         <svg height={HEADER_BAR_HEIGHT} className={classes.overviewSvg}>

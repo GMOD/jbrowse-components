@@ -2,6 +2,7 @@ import { getTickDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { elidedBlockStyles } from './util.ts'
 import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -24,9 +25,7 @@ const useStyles = makeStyles()(theme => ({
     height: 13,
   },
   elided: {
-    backgroundColor: '#999',
-    backgroundImage:
-      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+    ...elidedBlockStyles,
   },
   tick: {
     position: 'absolute',
