@@ -26,7 +26,6 @@ const EMPTY_CIGAR = new Uint32Array(0)
 
 export interface SyntenyViewSnap {
   bpPerPx: number
-  interRegionPaddingWidth: number
   minimumBlockWidth: number
   width: number
   offsetPx: number
@@ -49,18 +48,11 @@ export function bpToPx({
   displayedRegionIndex?: number
 }) {
   let bpSoFar = 0
-  const {
-    interRegionPaddingWidth,
-    bpPerPx,
-    displayedRegions,
-    minimumBlockWidth,
-  } = self
-  let paddingPx = 0
+  const { bpPerPx, displayedRegions } = self
 
   let i = 0
   for (let l = displayedRegions.length; i < l; i++) {
     const r = displayedRegions[i]!
-    const len = r.end - r.start
     if (
       refName === r.refName &&
       coord >= r.start &&
@@ -70,18 +62,11 @@ export function bpToPx({
       bpSoFar += r.reversed ? r.end - coord : coord - r.start
       break
     }
-    bpSoFar += len
-    const regionWidthPx = len / bpPerPx
-    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
-      paddingPx += interRegionPaddingWidth
-    }
+    bpSoFar += r.end - r.start
   }
   const found = displayedRegions[i]
   if (found) {
-    return {
-      offsetPx: bpSoFar / bpPerPx + paddingPx,
-      paddingPx,
-    }
+    return { offsetPx: bpSoFar / bpPerPx }
   }
   return undefined
 }

@@ -24,7 +24,6 @@ export default function calculateDynamicBlocks(
     bpPerPx,
     width,
     minimumBlockWidth,
-    interRegionPaddingWidth,
   } = model
 
   if (!width) {
@@ -113,43 +112,21 @@ export default function calculateDynamicBlocks(
           : makeContentBlock(data),
       )
 
-      if (padding) {
-        if (
-          regionWidthPx >= minimumBlockWidth &&
-          isRightEndOfDisplayedRegion &&
-          displayedRegionIndex < displayedRegions.length - 1
-        ) {
-          blocks.push(
-            makeInterRegionPaddingBlock({
-              key: `${key}-rightpad`,
-              widthPx: interRegionPaddingWidth,
-              offsetPx: blockOffsetPx + widthPx,
-            }),
-          )
-        }
-
-        if (
-          displayedRegionIndex === displayedRegions.length - 1 &&
-          isRightEndOfDisplayedRegion
-        ) {
-          const afterOffsetPx = blockOffsetPx + widthPx
-          blocks.push(
-            makeInterRegionPaddingBlock({
-              key: `${key}-afterLastRegion`,
-              widthPx: width - afterOffsetPx + offsetPx,
-              offsetPx: afterOffsetPx,
-              variant: 'boundary',
-            }),
-          )
-        }
+      if (
+        padding &&
+        displayedRegionIndex === displayedRegions.length - 1 &&
+        isRightEndOfDisplayedRegion
+      ) {
+        const afterOffsetPx = blockOffsetPx + widthPx
+        blocks.push(
+          makeInterRegionPaddingBlock({
+            key: `${key}-afterLastRegion`,
+            widthPx: width - afterOffsetPx + offsetPx,
+            offsetPx: afterOffsetPx,
+            variant: 'boundary',
+          }),
+        )
       }
-    }
-    if (
-      padding &&
-      regionWidthPx >= minimumBlockWidth &&
-      displayedRegionIndex < displayedRegions.length - 1
-    ) {
-      displayedRegionLeftPx += interRegionPaddingWidth
     }
     displayedRegionLeftPx += regionWidthPx
   }

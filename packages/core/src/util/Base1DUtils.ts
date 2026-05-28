@@ -23,7 +23,6 @@ interface MoveSnap {
   bpPerPx: number
   width: number
   minimumBlockWidth: number
-  interRegionPaddingWidth: number
 }
 
 // Plain-object form of a Base1DView — what `bpToPx`/`pxToBp` need to do their
@@ -35,27 +34,18 @@ export interface ViewLayout {
   offsetPx: number
   width: number
   minimumBlockWidth: number
-  interRegionPaddingWidth: number
 }
 
-// total bp from the start of displayedRegions through regionIndex + regionOffset,
-// counting inter-region padding as bp
+// total bp from the start of displayedRegions through regionIndex + regionOffset
 function cumulativeBp(
   self: MoveSnap,
   regionIndex: number,
   regionOffset: number,
-  bpPerPx: number,
 ) {
-  const { displayedRegions, minimumBlockWidth, interRegionPaddingWidth } = self
-  const paddingBp = interRegionPaddingWidth * bpPerPx
+  const { displayedRegions } = self
   let bpSoFar = regionOffset
   for (let i = 0; i < regionIndex; i++) {
-    const r = displayedRegions[i]!
-    const len = r.end - r.start
-    bpSoFar += len
-    if (len / bpPerPx >= minimumBlockWidth && i < displayedRegions.length - 1) {
-      bpSoFar += paddingBp
-    }
+    bpSoFar += displayedRegions[i]!.end - displayedRegions[i]!.start
   }
   return bpSoFar
 }
@@ -80,22 +70,7 @@ function lengthBetween(
 }
 
 function computeTargetBpPerPx(self: MoveSnap, start: BpOffset, end: BpOffset) {
-  const {
-    width,
-    interRegionPaddingWidth,
-    displayedRegions,
-    bpPerPx,
-    minimumBlockWidth,
-  } = self
-  const len = lengthBetween(displayedRegions, start, end)
-  let numBlocksWideEnough = 0
-  for (let i = start.index; i < end.index; i++) {
-    const r = displayedRegions[i]!
-    if ((r.end - r.start) / bpPerPx >= minimumBlockWidth) {
-      numBlocksWideEnough++
-    }
-  }
-  return len / (width - interRegionPaddingWidth * numBlocksWideEnough)
+  return lengthBetween(self.displayedRegions, start, end) / self.width
 }
 
 function computeScrollPos(
@@ -104,10 +79,7 @@ function computeScrollPos(
   bpPerPx: number,
   extraBp: number,
 ) {
-  return Math.round(
-    (cumulativeBp(self, start.index, start.offset, bpPerPx) - extraBp) /
-      bpPerPx,
-  )
+  return Math.round((cumulativeBp(self, start.index, start.offset) - extraBp) / bpPerPx)
 }
 
 export function moveTo(
@@ -169,20 +141,13 @@ export function pxToBp(
   end: number
   reversed?: boolean
 } {
-  const {
-    bpPerPx,
-    offsetPx,
-    displayedRegions,
-    interRegionPaddingWidth,
-    minimumBlockWidth,
-  } = self
+  const { bpPerPx, offsetPx, displayedRegions } = self
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
     const r = displayedRegions[0]!
     return { ...r, oob: true, coord: regionCoord(r, bp), offset: bp, index: 0 }
   }
 
-  const paddingBp = interRegionPaddingWidth * bpPerPx
   let bpSoFar = 0
 
   for (let i = 0, l = displayedRegions.length; i < l; i++) {
@@ -198,22 +163,7 @@ export function pxToBp(
         index: i,
       }
     }
-    if (len / bpPerPx >= minimumBlockWidth && i < l - 1) {
-      const paddingStart = bpSoFar + len
-      if (bp >= paddingStart && bp < paddingStart + paddingBp) {
-        const nextR = displayedRegions[i + 1]!
-        return {
-          ...nextR,
-          oob: false,
-          offset: 0,
-          coord: regionCoord(nextR, 0),
-          index: i + 1,
-        }
-      }
-      bpSoFar += len + paddingBp
-    } else {
-      bpSoFar += len
-    }
+    bpSoFar += len
   }
 
   const r = displayedRegions.at(-1)
@@ -240,9 +190,7 @@ export function offsetBpToPx(
   regionIndex: number,
   regionOffsetBp: number,
 ): number {
-  return (
-    cumulativeBp(self, regionIndex, regionOffsetBp, self.bpPerPx) / self.bpPerPx
-  )
+  return cumulativeBp(self, regionIndex, regionOffsetBp) / self.bpPerPx
 }
 
 // Accepts a 0-based genomic coord (BED-style feature.start/end). NOT a proper
@@ -272,9 +220,7 @@ export function bpToPx({
       const regionOffset = r.reversed ? r.end - coord : coord - r.start
       return {
         index: i,
-        offsetPx: Math.round(
-          cumulativeBp(self, i, regionOffset, bpPerPx) / bpPerPx,
-        ),
+        offsetPx: Math.round(cumulativeBp(self, i, regionOffset) / bpPerPx),
       }
     }
   }
@@ -320,19 +266,16 @@ export function createOverviewLayout({
   displayedRegions,
   width,
   minimumBlockWidth = 0,
-  interRegionPaddingWidth = 0,
 }: {
   displayedRegions: RegionSnap[]
   width: number
   minimumBlockWidth?: number
-  interRegionPaddingWidth?: number
 }): ViewLayout {
   const totalBp = sum(displayedRegions.map(r => r.end - r.start))
   return {
     displayedRegions,
     width,
     minimumBlockWidth,
-    interRegionPaddingWidth,
     bpPerPx: width > 0 ? totalBp / width : 0,
     offsetPx: 0,
   }

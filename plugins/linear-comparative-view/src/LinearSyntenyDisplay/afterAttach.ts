@@ -44,7 +44,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         //     Bucketing on log2 avoids refetching on smooth scroll-zoom
         //     bursts within the same half-decade.
         // Not tracked: raw `bpPerPx`, `offsetPx`, `width`,
-        // `interRegionPaddingWidth`, `minimumBlockWidth`. Scroll moves are
+        // `minimumBlockWidth`. Scroll moves are
         // absorbed by the worker's 50% px buffer.
         for (const v of view.views) {
           void v.displayedRegions
@@ -66,7 +66,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             bpPerPx: v.bpPerPx,
             offsetPx: v.offsetPx,
             displayedRegions: v.displayedRegions,
-            interRegionPaddingWidth: v.interRegionPaddingWidth,
             minimumBlockWidth: v.minimumBlockWidth,
             width: v.width,
           })),

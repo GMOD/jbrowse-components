@@ -33,7 +33,6 @@ test('Able to set bpPerPx, width and calculate widths', () => {
   expect(model.totalBp).toEqual(42400)
   // 40000 + (3000 - 600 = 2400) = 42400 / 1 (bpPerPx) = 42400
   expect(model.displayedRegionsTotalPx).toEqual(42400)
-  expect(model.interRegionPaddingWidth).toEqual(0)
   expect(model.minimumBlockWidth).toEqual(0)
 })
 
@@ -96,14 +95,12 @@ test('Navigate to displayedRegions', () => {
   expect(model.offsetPx).toEqual(0)
 })
 
-test('moveTo counts region exactly at minimumBlockWidth as wide enough for padding', () => {
-  // ctgA is 100bp → at bpPerPx=1 that is exactly 100px = minimumBlockWidth
-  // The >= (not >) comparison means it contributes to numBlocksWideEnough
+test('moveTo fits selection to viewport width', () => {
+  // ctgA is 100bp, selection is ctgA[50]..ctgB[0] = 50bp
   const model = Base1DView.create({
     bpPerPx: 1,
     offsetPx: 0,
     minimumBlockWidth: 100,
-    interRegionPaddingWidth: 10,
   })
   model.setDisplayedRegions([
     { assemblyName: 'test', refName: 'ctgA', start: 0, end: 100 },
@@ -111,25 +108,19 @@ test('moveTo counts region exactly at minimumBlockWidth as wide enough for paddi
   ])
   model.setVolatileWidth(800)
 
-  // moveTo: start=index0,offset=50 → end=index1,offset=0
-  //   len = (100 - 50) + 0 = 50bp
-  //   loop i=0..end.index(1)-1=0: ctgA width = 100/bpPerPx >= 100 → counted
-  //   numBlocksWideEnough = 1
-  //   targetBpPerPx = 50 / (800 - 10*1) = 50/790
-  //   bpToStart = start.offset = 50; paddingPx = 0
-  //   scrollPos = round(50 / (50/790)) = 790
+  // len = 50bp, targetBpPerPx = 50/800
+  // scrollPos = round(50 / (50/800)) = 800
   model.moveTo({ index: 0, offset: 50 }, { index: 1, offset: 0 })
-  expect(model.bpPerPx).toBeCloseTo(50 / 790, 5)
-  expect(model.offsetPx).toBe(790)
+  expect(model.bpPerPx).toBeCloseTo(50 / 800, 5)
+  expect(model.offsetPx).toBe(800)
 })
 
-test('moveTo boundary: region just below minimumBlockWidth does not count for padding', () => {
-  // ctgA is 99bp → 99px at bpPerPx=1, which is < minimumBlockWidth=100 → not counted
+test('moveTo: partial first region + all of second region', () => {
+  // selection is ctgA[49]..ctgB[0] = 50bp
   const model = Base1DView.create({
     bpPerPx: 1,
     offsetPx: 0,
     minimumBlockWidth: 100,
-    interRegionPaddingWidth: 10,
   })
   model.setDisplayedRegions([
     { assemblyName: 'test', refName: 'ctgA', start: 0, end: 99 },
@@ -137,8 +128,7 @@ test('moveTo boundary: region just below minimumBlockWidth does not count for pa
   ])
   model.setVolatileWidth(800)
 
-  // len = (99 - 49) + 0 = 50bp; numBlocksWideEnough = 0
-  // targetBpPerPx = 50 / 800; scrollPos = round(49 / (50/800)) = round(784) = 784
+  // len = 50bp; targetBpPerPx = 50/800; scrollPos = round(49/(50/800)) = 784
   model.moveTo({ index: 0, offset: 49 }, { index: 1, offset: 0 })
   expect(model.bpPerPx).toBeCloseTo(50 / 800, 5)
   expect(model.offsetPx).toBe(784)

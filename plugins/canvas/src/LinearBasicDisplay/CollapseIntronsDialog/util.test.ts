@@ -100,7 +100,7 @@ describe('CollapseIntrons utilities', () => {
       expect(result.bpPerPx).toBeCloseTo(2.469, 2)
     })
 
-    it('accounts for inter-region padding when centering', () => {
+    it('centers content with no inter-region padding', () => {
       const regions = [
         { start: 0, end: 100 },
         { start: 200, end: 300 },
@@ -110,12 +110,11 @@ describe('CollapseIntrons utilities', () => {
 
       const result = calculateInitialViewState(regions, viewWidth)
 
-      // Total BP = 300, 3 regions = 2 paddings = 4 pixels
-      // bpPerPx = 300 / 900 = 0.333...
-      // totalContentPx = 300 / 0.333... + 4 = 900 + 4 = 904
-      // centerPx = 452, offsetPx = 452 - 500 = -48
+      // Total BP = 300, bpPerPx = 300 / 900 = 0.333...
+      // totalContentPx = 300 / 0.333... = 900
+      // centerPx = 450, offsetPx = 450 - 500 = -50
       expect(result.bpPerPx).toBeCloseTo(0.333, 2)
-      expect(result.offsetPx).toBe(-48)
+      expect(result.offsetPx).toBe(-50)
     })
 
     it('handles single region', () => {

@@ -15,7 +15,6 @@ export interface Base1DViewModel {
   displayedRegions: (Region | Instance<typeof RegionModel>)[]
   bpPerPx: number
   minimumBlockWidth: number
-  interRegionPaddingWidth: number
 }
 
 const blockSizeCssPx = 800
@@ -30,7 +29,6 @@ export default function calculateStaticBlocks(
     displayedRegions,
     bpPerPx,
     minimumBlockWidth,
-    interRegionPaddingWidth,
     width: modelWidth,
   } = model
 
@@ -121,41 +119,20 @@ export default function calculateStaticBlocks(
           : makeContentBlock(data),
       )
 
-      if (padding) {
-        if (
-          regionWidthPx >= minimumBlockWidth &&
-          isRightEndOfDisplayedRegion &&
-          displayedRegionIndex < displayedRegions.length - 1
-        ) {
-          blocks.push(
-            makeInterRegionPaddingBlock({
-              key: `${key}-rightpad`,
-              widthPx: interRegionPaddingWidth,
-              offsetPx: blockOffsetPx + widthPx,
-            }),
-          )
-        }
-        if (
-          displayedRegionIndex === displayedRegions.length - 1 &&
-          isRightEndOfDisplayedRegion
-        ) {
-          blocks.push(
-            makeInterRegionPaddingBlock({
-              key: `${key}-afterLastRegion`,
-              widthPx: blockSizeCssPx,
-              offsetPx: blockOffsetPx + widthPx,
-              variant: 'boundary',
-            }),
-          )
-        }
+      if (
+        padding &&
+        displayedRegionIndex === displayedRegions.length - 1 &&
+        isRightEndOfDisplayedRegion
+      ) {
+        blocks.push(
+          makeInterRegionPaddingBlock({
+            key: `${key}-afterLastRegion`,
+            widthPx: blockSizeCssPx,
+            offsetPx: blockOffsetPx + widthPx,
+            variant: 'boundary',
+          }),
+        )
       }
-    }
-    if (
-      padding &&
-      regionWidthPx >= minimumBlockWidth &&
-      displayedRegionIndex < displayedRegions.length - 1
-    ) {
-      regionBpOffset += interRegionPaddingWidth * bpPerPx
     }
     regionBpOffset += regionEnd - regionStart
   }

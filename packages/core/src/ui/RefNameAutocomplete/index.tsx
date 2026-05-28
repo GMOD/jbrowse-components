@@ -41,13 +41,13 @@ function getDeduplicatedResult(results: BaseResult[]): Option[] {
     const key = result.getDisplayString()
     ;(m[key] ??= []).push(result)
   }
-  return Object.entries(m).map(([displayString, results]) =>
-    results.length === 1
-      ? { result: results[0]! }
+  return Object.entries(m).map(([displayString, dupes]) =>
+    dupes.length === 1
+      ? { result: dupes[0]! }
       : {
           result: new BaseResult({
             displayString,
-            results,
+            results: dupes,
             label: displayString,
           }),
         },
@@ -121,6 +121,8 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       }),
     })) ?? []
 
+  const hasSearchResults = !!searchOptions?.length
+
   return (
     <Autocomplete
       data-testid="autocomplete"
@@ -160,10 +162,10 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
           setInputValue(externalValue)
         }
       }}
-      options={searchOptions?.length ? searchOptions : regionOptions}
+      options={hasSearchResults ? searchOptions : regionOptions}
       getOptionDisabled={option => option.group === 'limitOption'}
       filterOptions={opts =>
-        searchOptions?.length ? opts : getFiltered(opts, searchQuery)
+        hasSearchResults ? opts : getFiltered(opts, searchQuery)
       }
       renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
         <TextField

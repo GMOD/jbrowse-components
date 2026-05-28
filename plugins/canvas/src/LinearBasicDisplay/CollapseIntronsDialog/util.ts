@@ -54,20 +54,9 @@ export function calculateInitialViewState(
   viewWidth: number,
 ): ViewState {
   const totalBp = regions.reduce((sum, r) => sum + (r.end - r.start), 0)
-
-  // Zoom to fit all regions in 90% of viewport width
   const bpPerPx = totalBp / (viewWidth * 0.9)
-
-  // Account for inter-region padding when centering
-  const numPaddings = Math.max(0, regions.length - 1)
-  const interRegionPaddingWidth = 2 // INTER_REGION_PADDING_WIDTH constant
-  const totalPaddingPx = numPaddings * interRegionPaddingWidth
-  const totalContentPx = totalBp / bpPerPx + totalPaddingPx
-
-  // Center the content in the viewport
-  const centerPx = totalContentPx / 2
-  const offsetPx = Math.round(centerPx - viewWidth / 2)
-
+  const totalContentPx = totalBp / bpPerPx
+  const offsetPx = Math.round(totalContentPx / 2 - viewWidth / 2)
   return { bpPerPx, offsetPx }
 }
 

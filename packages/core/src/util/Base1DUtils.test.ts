@@ -24,7 +24,6 @@ function makeSnap(
     offsetPx,
     displayedRegions: regions.map(r => ({ assemblyName: 'test', ...r })),
     minimumBlockWidth: 3,
-    interRegionPaddingWidth: 2,
     width: 800,
   }
 }
@@ -37,7 +36,7 @@ describe('bpToPx', () => {
     expect(result!.offsetPx).toBe(500)
   })
 
-  it('includes padding between non-elided regions', () => {
+  it('places adjacent regions consecutively', () => {
     const self = makeSnap([
       { refName: 'chr1', start: 0, end: 1000 },
       { refName: 'chr2', start: 0, end: 1000 },
@@ -45,10 +44,10 @@ describe('bpToPx', () => {
     ])
     const result = bpToPx({ self, refName: 'chr3', coord: 0 })
     expect(result).toBeDefined()
-    expect(result!.offsetPx).toBe(2004)
+    expect(result!.offsetPx).toBe(2000)
   })
 
-  it('does not include padding for elided regions', () => {
+  it('elided regions have no gap', () => {
     const self = makeSnap([
       { refName: 'chr1', start: 0, end: 1000 },
       { refName: 'chr2', start: 0, end: 1 },
@@ -56,7 +55,7 @@ describe('bpToPx', () => {
     ])
     const result = bpToPx({ self, refName: 'chr3', coord: 0 })
     expect(result).toBeDefined()
-    expect(result!.offsetPx).toBe(1003)
+    expect(result!.offsetPx).toBe(1001)
   })
 
   it('gives consistent results regardless of scroll position', () => {
@@ -67,7 +66,7 @@ describe('bpToPx', () => {
     ]
 
     const atStart = makeSnap(regions, { offsetPx: 0 })
-    const scrolled = makeSnap(regions, { offsetPx: 2004 })
+    const scrolled = makeSnap(regions, { offsetPx: 2000 })
 
     const r1 = bpToPx({ self: atStart, refName: 'chr3', coord: 500 })
     const r2 = bpToPx({ self: scrolled, refName: 'chr3', coord: 500 })
@@ -85,7 +84,7 @@ describe('bpToPx', () => {
       { refName: 'chr5', start: 0, end: 1000 },
     ]
 
-    const self = makeSnap(regions, { offsetPx: 4008 })
+    const self = makeSnap(regions, { offsetPx: 4000 })
     const result = bpToPx({ self, refName: 'chr5', coord: 0 })
     expect(result).toBeDefined()
 
@@ -107,36 +106,36 @@ describe('pxToBp', () => {
     expect(result.offset).toBe(500)
   })
 
-  it('accounts for inter-region padding', () => {
+  it('places third region at combined length of first two', () => {
     const self = makeSnap([
       { refName: 'chr1', start: 0, end: 1000 },
       { refName: 'chr2', start: 0, end: 1000 },
       { refName: 'chr3', start: 0, end: 1000 },
     ])
-    const result = pxToBp(self, 2004)
+    const result = pxToBp(self, 2000)
     expect(result.oob).toBe(false)
     expect(result.refName).toBe('chr3')
     expect(result.offset).toBe(0)
   })
 
-  it('returns padding region as next region start', () => {
+  it('pixel at region boundary maps to next region start', () => {
     const self = makeSnap([
       { refName: 'chr1', start: 0, end: 1000 },
       { refName: 'chr2', start: 0, end: 1000 },
     ])
-    const result = pxToBp(self, 1001)
+    const result = pxToBp(self, 1000)
     expect(result.oob).toBe(false)
     expect(result.refName).toBe('chr2')
     expect(result.offset).toBe(0)
   })
 
-  it('skips padding for elided regions', () => {
+  it('elided region contributes its bp width with no gap', () => {
     const self = makeSnap([
       { refName: 'chr1', start: 0, end: 1000 },
       { refName: 'chr2', start: 0, end: 1 },
       { refName: 'chr3', start: 0, end: 1000 },
     ])
-    const atChr3Start = pxToBp(self, 1003)
+    const atChr3Start = pxToBp(self, 1001)
     expect(atChr3Start.oob).toBe(false)
     expect(atChr3Start.refName).toBe('chr3')
     expect(atChr3Start.offset).toBe(0)
@@ -231,8 +230,8 @@ describe('elided region handling', () => {
     const r3 = bpToPx({ self, refName: 'chr3', coord: 0 })
 
     expect(r1!.offsetPx).toBe(1000)
-    expect(r2!.offsetPx).toBe(1002)
-    expect(r3!.offsetPx).toBe(1003)
+    expect(r2!.offsetPx).toBe(1000)
+    expect(r3!.offsetPx).toBe(1001)
   })
 
   it('pxToBp skips padding after elided region', () => {
@@ -241,11 +240,11 @@ describe('elided region handling', () => {
       { refName: 'chr2', start: 0, end: 1 },
       { refName: 'chr3', start: 0, end: 1000 },
     ])
-    const atChr2 = pxToBp(self, 1002)
+    const atChr2 = pxToBp(self, 1000)
     expect(atChr2.refName).toBe('chr2')
     expect(atChr2.offset).toBeCloseTo(0, 5)
 
-    const atChr3 = pxToBp(self, 1003)
+    const atChr3 = pxToBp(self, 1001)
     expect(atChr3.refName).toBe('chr3')
     expect(atChr3.offset).toBeCloseTo(0, 5)
   })
@@ -277,7 +276,7 @@ describe('elided region handling', () => {
     ])
 
     const r5 = bpToPx({ self, refName: 'chr5', coord: 0 })
-    expect(r5!.offsetPx).toBe(1006)
+    expect(r5!.offsetPx).toBe(1004)
   })
 
   it('elided region at start does not get padding', () => {
@@ -325,7 +324,6 @@ describe('computeMoveToLayout', () => {
       bpPerPx: 1,
       width: 800,
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
       offsetPx: 0,
     }
   }
@@ -357,7 +355,7 @@ describe('computeMoveToLayout', () => {
     expect(content[0]!.end).toBeCloseTo(2500, 0)
   })
 
-  it('spans multiple chromosomes and includes inter-region padding', () => {
+  it('spans multiple chromosomes', () => {
     const snap = makeLayout([region('chr1', 1000), region('chr2', 1000)])
     // select all of chr1 (index 0, offset 0) to all of chr2 (index 1, offset 1000)
     const { bpPerPx, offsetPx } = computeMoveToLayout(
@@ -365,8 +363,8 @@ describe('computeMoveToLayout', () => {
       { index: 0, offset: 0 },
       { index: 1, offset: 1000 },
     )
-    // 2000bp total across 800 - 2 padding = 798px
-    expect(bpPerPx).toBeCloseTo(2000 / 798)
+    // 2000bp total across 800px
+    expect(bpPerPx).toBeCloseTo(2000 / 800)
     const blocks = calculateDynamicBlocks({ ...snap, bpPerPx, offsetPx })
     const content = blocks.contentBlocks
     expect(content.length).toBe(2)
@@ -496,7 +494,6 @@ describe('moveTo with clamped bpPerPx (extraBp path)', () => {
       bpPerPx: currentBpPerPx,
       width: 800,
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
       zoomTo(bp: number) {
         currentBpPerPx = Math.max(bp, minBpPerPx)
         return currentBpPerPx

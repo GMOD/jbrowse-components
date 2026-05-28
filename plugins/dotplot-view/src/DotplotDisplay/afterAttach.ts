@@ -24,7 +24,6 @@ function makeViewSnap(view: Dotplot1DViewModel): BpIndexViewSnap {
   return {
     bpPerPx: view.bpPerPx,
     displayedRegions: view.displayedRegions,
-    interRegionPaddingWidth: view.interRegionPaddingWidth,
     minimumBlockWidth: view.minimumBlockWidth,
   }
 }

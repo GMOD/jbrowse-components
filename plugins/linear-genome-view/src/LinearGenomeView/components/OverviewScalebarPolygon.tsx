@@ -19,8 +19,7 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
 }) {
   const theme = useTheme()
   const polygonColor = theme.palette.tertiary.light
-  const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
-    model
+  const { offsetPx, dynamicBlocks, cytobandOffset } = model
   const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
   const span = getContentBlocksPxSpan(overview, contentBlocks)
   if (!span) {
@@ -31,10 +30,7 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   const topLeft = span.leftPx + offset
   const topRight = span.rightPx + offset
   const startPx = Math.max(0, -offsetPx)
-  const endPx =
-    startPx +
-    totalWidthPxWithoutBorders +
-    (contentBlocks.length * interRegionPaddingWidth) / 2
+  const endPx = startPx + totalWidthPxWithoutBorders
 
   const points = [
     [startPx, HEADER_BAR_HEIGHT],

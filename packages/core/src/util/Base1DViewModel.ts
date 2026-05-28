@@ -37,10 +37,6 @@ const Base1DView = types
     /**
      * #property
      */
-    interRegionPaddingWidth: types.optional(types.number, 0),
-    /**
-     * #property
-     */
     minimumBlockWidth: types.optional(types.number, 0),
   })
   .volatile(() => ({

@@ -21,10 +21,6 @@ const useStyles = makeStyles()(theme => ({
     backgroundImage:
       'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
   },
-  interRegionPaddingBlock: {
-    minHeight: '100%',
-    backgroundColor: theme.palette.text.disabled,
-  },
   boundaryPaddingBlock: {
     minHeight: '100%',
     backgroundColor: theme.palette.action.disabledBackground,
@@ -53,25 +49,15 @@ function ElidedBlock({ width }: { width: number }) {
 }
 
 function InterRegionPaddingBlock({
-  boundary,
   width,
   className,
 }: {
-  boundary: boolean
   width: number
   className?: string
 }) {
   const { classes, cx } = useStyles()
   return (
-    <div
-      style={{ width }}
-      className={cx(
-        boundary
-          ? classes.boundaryPaddingBlock
-          : classes.interRegionPaddingBlock,
-        className,
-      )}
-    />
+    <div style={{ width }} className={cx(classes.boundaryPaddingBlock, className)} />
   )
 }
 

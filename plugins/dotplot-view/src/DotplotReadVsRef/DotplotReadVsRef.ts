@@ -77,7 +77,6 @@ export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
         offsetPx: 0,
         bpPerPx: totalLength / 400,
         minimumBlockWidth: 0,
-        interRegionPaddingWidth: 0,
         displayedRegions: [
           {
             assemblyName: readAssembly,

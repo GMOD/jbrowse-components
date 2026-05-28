@@ -11,7 +11,6 @@ test('one', () => {
       displayedRegions: [ctgA],
       bpPerPx: 1,
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     }).blocks,
   ).toMatchSnapshot()
 })
@@ -23,7 +22,6 @@ test('two', () => {
       displayedRegions: [{ ...ctgA, reversed: true }],
       bpPerPx: 1,
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     }).blocks,
   ).toMatchSnapshot()
 })
@@ -35,7 +33,6 @@ test('three', () => {
       displayedRegions: [{ ...ctgA, reversed: true }],
       bpPerPx: 1,
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     }).blocks,
   ).toMatchSnapshot()
 })
@@ -47,7 +44,6 @@ test('four', () => {
       displayedRegions: [ctgA],
       bpPerPx: 1,
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     }).blocks,
   ).toMatchSnapshot()
 })
@@ -59,14 +55,13 @@ test('five', () => {
       displayedRegions: [{ ...ctgA, reversed: false }],
       bpPerPx: 0.05,
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     }).blocks,
   ).toMatchSnapshot()
 })
 
-test('inter-region padding correct when bpPerPx causes float drift on region right-end', () => {
+test('dynamic and static agree when bpPerPx causes float drift on region right-end', () => {
   // bpPerPx = 3400/796 is irrational in float64: regionWidthPx * bpPerPx != regionEnd
-  // exactly, so the old end===regionEnd check would silently drop a padding segment.
+  // exactly, so the old end===regionEnd check would silently drop a block.
   const regions = [
     { assemblyName: 'test', refName: 'ctgA', start: 0, end: 500 },
     { assemblyName: 'test', refName: 'ctgB', start: 0, end: 3000 },
@@ -97,35 +92,33 @@ test('no negative-width boundary block when scrolled to left edge of non-first r
     { assemblyName: 'test', refName: 'chr3', start: 0, end: 1000 },
   ]
   const blockSet = calculateDynamicBlocks({
-    offsetPx: 2004,
+    offsetPx: 2000,
     width: 800,
     displayedRegions: regions,
     bpPerPx: 1,
     minimumBlockWidth: 3,
-    interRegionPaddingWidth: 2,
   })
   for (const b of blockSet.blocks) {
     expect(b.widthPx).toBeGreaterThanOrEqual(0)
   }
 })
 
-test('off-screen regions contribute padding to block positions', () => {
+test('off-screen regions have correct block positions', () => {
   const regions = [
     { assemblyName: 'test', refName: 'chr1', start: 0, end: 1000 },
     { assemblyName: 'test', refName: 'chr2', start: 0, end: 1000 },
     { assemblyName: 'test', refName: 'chr3', start: 0, end: 1000 },
   ]
   const blockSet = calculateDynamicBlocks({
-    offsetPx: 2004,
+    offsetPx: 2000,
     width: 800,
     displayedRegions: regions,
     bpPerPx: 1,
     minimumBlockWidth: 3,
-    interRegionPaddingWidth: 2,
   })
   const chr3Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr3')
   expect(chr3Blocks.length).toBeGreaterThan(0)
-  expect(chr3Blocks[0]!.offsetPx).toBe(2004)
+  expect(chr3Blocks[0]!.offsetPx).toBe(2000)
 })
 
 function makeParams(
@@ -140,7 +133,6 @@ function makeParams(
     width?: number
     bpPerPx?: number
     minimumBlockWidth?: number
-    interRegionPaddingWidth?: number
   } = {},
 ) {
   return {
@@ -149,7 +141,6 @@ function makeParams(
     width: opts.width ?? 800,
     bpPerPx: opts.bpPerPx ?? 1,
     minimumBlockWidth: opts.minimumBlockWidth ?? 3,
-    interRegionPaddingWidth: opts.interRegionPaddingWidth ?? 2,
   }
 }
 
@@ -198,7 +189,7 @@ describe('static and dynamic blocks produce equivalent positions', () => {
 
   it('5 regions scrolled to show last region', () => {
     const regions = makeRegions(5)
-    const offsetPx = 4008
+    const offsetPx = 4000
     const params = makeParams(regions, { offsetPx })
     const staticBlocks = calculateStaticBlocks(params)
     const dynamicBlocks = calculateDynamicBlocks(params)
@@ -217,7 +208,7 @@ describe('static and dynamic blocks produce equivalent positions', () => {
 
   it('10 regions scrolled to middle', () => {
     const regions = makeRegions(10)
-    const offsetPx = 5010
+    const offsetPx = 5000
     const params = makeParams(regions, { offsetPx })
     const staticBlocks = calculateStaticBlocks(params)
     const dynamicBlocks = calculateDynamicBlocks(params)
@@ -236,7 +227,7 @@ describe('static and dynamic blocks produce equivalent positions', () => {
 
   it('20 regions scrolled to the end', () => {
     const regions = makeRegions(20)
-    const totalPx = 20 * 1000 + 19 * 2
+    const totalPx = 20 * 1000
     const offsetPx = totalPx - 800
     const params = makeParams(regions, { offsetPx })
     const staticBlocks = calculateStaticBlocks(params)
@@ -281,30 +272,27 @@ describe('static and dynamic blocks produce equivalent positions', () => {
     }
   })
 
-  it('inter-region padding blocks are at same positions', () => {
+  it('no non-boundary InterRegionPaddingBlocks are emitted', () => {
     const regions = makeRegions(5)
     const params = makeParams(regions, { width: 6000 })
     const staticBlocks = calculateStaticBlocks(params)
     const dynamicBlocks = calculateDynamicBlocks(params)
 
-    const staticPadding = staticBlocks.blocks.filter(
-      b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
-    )
-    const dynamicPadding = dynamicBlocks.blocks.filter(
-      b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
-    )
-
-    expect(staticPadding.length).toBe(dynamicPadding.length)
-    for (const [i, element] of staticPadding.entries()) {
-      expect(
-        Math.abs(element.offsetPx - dynamicPadding[i]!.offsetPx),
-      ).toBeLessThan(0.001)
-    }
+    expect(
+      staticBlocks.blocks.filter(
+        b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
+      ).length,
+    ).toBe(0)
+    expect(
+      dynamicBlocks.blocks.filter(
+        b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
+      ).length,
+    ).toBe(0)
   })
 
   it('region start offsetPx matches across all scroll positions', () => {
     const regions = makeRegions(8)
-    const scrollPositions = [0, 500, 1002, 2004, 4008, 6012, 7014]
+    const scrollPositions = [0, 500, 1000, 2000, 4000, 6000, 7000]
 
     for (const offsetPx of scrollPositions) {
       const params = makeParams(regions, { offsetPx })
@@ -455,8 +443,7 @@ describe('static and dynamic blocks produce equivalent positions', () => {
     ]
     const bpPerPx = 50
     const chr1Px = 100000 / bpPerPx
-    const paddingAfterChr1 = 2
-    const offsetPx = chr1Px + paddingAfterChr1 + 100
+    const offsetPx = chr1Px + 100
     const params = makeParams(regions, { bpPerPx, offsetPx })
     const staticBlocks = calculateStaticBlocks(params)
     const dynamicBlocks = calculateDynamicBlocks(params)
@@ -478,7 +465,7 @@ describe('static and dynamic blocks produce equivalent positions', () => {
 })
 
 describe('elided block handling', () => {
-  it('elided region between two non-elided has no padding after it', () => {
+  it('elided region between two non-elided produces no non-boundary padding blocks', () => {
     const regions = [
       { assemblyName: 'test', refName: 'chr1', start: 0, end: 1000 },
       { assemblyName: 'test', refName: 'chr2', start: 0, end: 1 },
@@ -488,17 +475,16 @@ describe('elided block handling', () => {
     const staticBlocks = calculateStaticBlocks(params)
     const dynamicBlocks = calculateDynamicBlocks(params)
 
-    const staticPadding = staticBlocks.blocks.filter(
-      b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
-    )
-    const dynamicPadding = dynamicBlocks.blocks.filter(
-      b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
-    )
-
-    expect(staticPadding.length).toBe(1)
-    expect(dynamicPadding.length).toBe(1)
-    expect(staticPadding[0]!.offsetPx).toBe(1000)
-    expect(dynamicPadding[0]!.offsetPx).toBe(1000)
+    expect(
+      staticBlocks.blocks.filter(
+        b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
+      ).length,
+    ).toBe(0)
+    expect(
+      dynamicBlocks.blocks.filter(
+        b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
+      ).length,
+    ).toBe(0)
   })
 
   it('elided blocks appear in blocks but not contentBlocks', () => {
@@ -562,7 +548,7 @@ describe('elided block handling', () => {
     expect(dynamicChr3.length).toBeGreaterThan(0)
 
     expect(dynamicChr3[0]!.offsetPx).toBe(staticChr3[0]!.offsetPx)
-    expect(dynamicChr3[0]!.offsetPx).toBe(1003)
+    expect(dynamicChr3[0]!.offsetPx).toBe(1001)
   })
 
   it('consecutive elided regions are merged', () => {
@@ -590,7 +576,7 @@ describe('elided block handling', () => {
     expect((dynamicElided[0] as any).elidedBlockCount).toBe(2)
   })
 
-  it('no padding between consecutive elided regions', () => {
+  it('no non-boundary padding blocks between consecutive elided regions', () => {
     const regions = [
       { assemblyName: 'test', refName: 'chr1', start: 0, end: 1000 },
       { assemblyName: 'test', refName: 'chr2', start: 0, end: 1 },
@@ -601,15 +587,16 @@ describe('elided block handling', () => {
     const staticBlocks = calculateStaticBlocks(params)
     const dynamicBlocks = calculateDynamicBlocks(params)
 
-    const staticPadding = staticBlocks.blocks.filter(
-      b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
-    )
-    const dynamicPadding = dynamicBlocks.blocks.filter(
-      b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
-    )
-
-    expect(staticPadding.length).toBe(1)
-    expect(dynamicPadding.length).toBe(1)
+    expect(
+      staticBlocks.blocks.filter(
+        b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
+      ).length,
+    ).toBe(0)
+    expect(
+      dynamicBlocks.blocks.filter(
+        b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
+      ).length,
+    ).toBe(0)
   })
 
   it('elided region at start has no padding before it', () => {
@@ -641,7 +628,7 @@ describe('elided block handling', () => {
     expect(staticChr2!.offsetPx).toBe(1)
   })
 
-  it('elided region at end has no padding after it', () => {
+  it('elided region at end produces no non-boundary padding blocks', () => {
     const regions = [
       { assemblyName: 'test', refName: 'chr1', start: 0, end: 1000 },
       { assemblyName: 'test', refName: 'chr2', start: 0, end: 1 },
@@ -650,15 +637,16 @@ describe('elided block handling', () => {
     const staticBlocks = calculateStaticBlocks(params)
     const dynamicBlocks = calculateDynamicBlocks(params)
 
-    const staticPadding = staticBlocks.blocks.filter(
-      b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
-    )
-    const dynamicPadding = dynamicBlocks.blocks.filter(
-      b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
-    )
-
-    expect(staticPadding.length).toBe(1)
-    expect(dynamicPadding.length).toBe(1)
+    expect(
+      staticBlocks.blocks.filter(
+        b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
+      ).length,
+    ).toBe(0)
+    expect(
+      dynamicBlocks.blocks.filter(
+        b => b.type === 'InterRegionPaddingBlock' && b.variant !== 'boundary',
+      ).length,
+    ).toBe(0)
   })
 
   it('all regions elided produces no padding', () => {
@@ -692,7 +680,7 @@ describe('elided block handling', () => {
       { assemblyName: 'test', refName: 'chr4', start: 0, end: 1 },
       { assemblyName: 'test', refName: 'chr5', start: 0, end: 1000 },
     ]
-    const params = makeParams(regions, { offsetPx: 1006 })
+    const params = makeParams(regions, { offsetPx: 1004 })
     const staticBlocks = calculateStaticBlocks(params)
     const dynamicBlocks = calculateDynamicBlocks(params)
 
