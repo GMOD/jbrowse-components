@@ -1,5 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 
+import { DASH, SPACE } from '../../util/asciiBytes.ts'
 import {
   CHAR_SIZE_WIDTH,
   HIGH_BP_PER_PX_THRESHOLD,
@@ -15,8 +16,6 @@ import {
 import type { RenderingContext } from './types.ts'
 
 const CHAR_HEIGHT = measureText('M') - 2
-const DASH = 45 // '-'.charCodeAt(0)
-const SPACE = 32 // ' '.charCodeAt(0)
 
 /**
  * Draw insertion markers between bp positions. The position just *before*

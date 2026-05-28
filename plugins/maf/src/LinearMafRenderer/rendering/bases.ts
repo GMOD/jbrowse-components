@@ -1,9 +1,8 @@
+import { DASH } from '../../util/asciiBytes.ts'
 import { resolveCellColor } from '../resolveCellColor.ts'
 import { GAP_STROKE_OFFSET } from './types.ts'
 
 import type { RenderingContext } from './types.ts'
-
-const DASH = 45 // '-'.charCodeAt(0)
 
 export function renderBases(
   context: RenderingContext,

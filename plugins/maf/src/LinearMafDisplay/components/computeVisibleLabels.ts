@@ -1,10 +1,7 @@
 import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
+import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafBackendTypes.ts'
-
-const DASH = 45 // '-'.charCodeAt(0)
-const SPACE = 32 // ' '.charCodeAt(0)
-const LOWER_BIT = 0x20
 
 export interface VisibleLabel {
   x: number

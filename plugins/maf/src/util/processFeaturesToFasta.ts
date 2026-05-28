@@ -1,3 +1,5 @@
+import { DASH, LOWER_BIT, SPACE } from './asciiBytes.ts'
+
 import type { AlignmentRecord, Sample } from '../types.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -6,10 +8,7 @@ interface InsertionInfo {
   sampleIndex: number
 }
 
-const DASH = 45 // '-'.charCodeAt(0)
-const SPACE = 32 // ' '.charCodeAt(0)
 const DOT = 46 // '.'.charCodeAt(0)
-const LOWER_BIT = 0x20
 
 const decoder = new TextDecoder()
 

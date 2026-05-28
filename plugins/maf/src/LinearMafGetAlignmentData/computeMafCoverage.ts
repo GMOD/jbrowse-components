@@ -1,7 +1,8 @@
+import { DASH, SPACE } from '../util/asciiBytes.ts'
+
 import type { MafBlock } from '../LinearMafRenderer/mafBackendTypes.ts'
 import type { InsertionEntry, MismatchEntry } from '@jbrowse/alignments-core'
 
-const DASH = 45
 const N_UPPER = 78
 
 function toUpper(b: number) {
@@ -32,8 +33,19 @@ export function computeMafCoverage(
   const length = Math.max(0, regionEnd - regionStart)
   const depths = new Float32Array(length)
   const mismatches: MismatchEntry[] = []
-  const insertionsSeen = new Map<number, Set<number>>()
   const insertions: InsertionEntry[] = []
+  // Per-row pending insertion length at the current refPos. Flushed into
+  // `insertions` when a non-gap ref column closes the insertion run (or at
+  // block end). Tracks the actual run length so multi-column insertions are
+  // emitted as a single entry, not N entries of length 1.
+  const pendingInsLen = new Map<number, number>()
+
+  const flushPending = (position: number) => {
+    for (const [, len] of pendingInsLen) {
+      insertions.push({ position, length: len })
+    }
+    pendingInsLen.clear()
+  }
 
   for (const block of blocks) {
     const refBytes = block.refSeqBytes
@@ -44,25 +56,21 @@ export function computeMafCoverage(
       if (refByte === DASH) {
         for (const row of block.rows) {
           const sampleByte = row.alignmentBytes[col]!
-          if (sampleByte !== DASH) {
-            let seen = insertionsSeen.get(row.rowIndex)
-            if (!seen) {
-              seen = new Set()
-              insertionsSeen.set(row.rowIndex, seen)
-            }
-            if (!seen.has(refPos)) {
-              seen.add(refPos)
-              insertions.push({ position: refPos, length: 1 })
-            }
+          if (sampleByte !== DASH && sampleByte !== SPACE) {
+            pendingInsLen.set(
+              row.rowIndex,
+              (pendingInsLen.get(row.rowIndex) ?? 0) + 1,
+            )
           }
         }
       } else {
+        flushPending(refPos)
         const depthIdx = refPos - regionStart
         if (depthIdx >= 0 && depthIdx < length) {
           const refUpper = toUpper(refByte)
           for (const row of block.rows) {
             const sampleByte = row.alignmentBytes[col]!
-            if (sampleByte !== DASH) {
+            if (sampleByte !== DASH && sampleByte !== SPACE) {
               depths[depthIdx]! += 1
               const sampleUpper = toUpper(sampleByte)
               if (
@@ -82,6 +90,8 @@ export function computeMafCoverage(
         refPos++
       }
     }
+    // Trailing insertion at block end (ref ends with `-` columns).
+    flushPending(refPos)
   }
 
   let maxDepth = 0

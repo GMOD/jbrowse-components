@@ -16,8 +16,7 @@
 
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-const DASH = '-'.charCodeAt(0)
-const SPACE = ' '.charCodeAt(0)
+import { DASH, LOWER_BIT, SPACE } from '../util/asciiBytes.ts'
 
 /**
  * Per-cell color decisions are resolved against the theme: matches reuse
@@ -55,7 +54,7 @@ export function resolveCellColor(
   if (alnByte === DASH || alnByte === SPACE) {
     return cfg.gapColor
   }
-  const isMatch = (refByte | 0x20) === (alnByte | 0x20)
+  const isMatch = (refByte | LOWER_BIT) === (alnByte | LOWER_BIT)
   if (isMatch && !cfg.showAllLetters) {
     return cfg.matchColor
   }
@@ -65,7 +64,7 @@ export function resolveCellColor(
   if (!isMatch && !cfg.mismatchRendering) {
     return cfg.mismatchOffColor
   }
-  const base = String.fromCharCode(alnByte | 0x20)
+  const base = String.fromCharCode(alnByte | LOWER_BIT)
   return cfg.colorForBase[base] ?? cfg.unknownBaseColor
 }
 
@@ -88,8 +87,6 @@ export interface MafCellPackedConfig {
   showAllLetters: boolean
   mismatchRendering: boolean
 }
-
-const LOWER_BIT = 0x20
 
 export function packMafCellColorConfig(
   cfg: MafCellColorConfig,

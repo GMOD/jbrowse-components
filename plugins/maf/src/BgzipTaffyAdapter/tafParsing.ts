@@ -1,9 +1,8 @@
+import { DASH } from '../util/asciiBytes.ts'
 import { parseAssemblyAndChrSimple } from '../util/parseAssemblyName.ts'
 
 import type { RowInstruction } from './rowInstructions.ts'
 import type { AlignmentRecord } from './types.ts'
-
-const DASH = 45 // '-'.charCodeAt(0)
 
 // Represents a row in the alignment (like Alignment_Row in C)
 export interface RowState {

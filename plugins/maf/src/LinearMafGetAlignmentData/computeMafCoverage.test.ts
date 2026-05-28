@@ -57,6 +57,20 @@ test('case-insensitive base comparison; N never counts as a mismatch', () => {
   expect(r.mismatches).toEqual([])
 })
 
+test('multi-column insertion emits one entry per row with the correct length', () => {
+  // Ref has a 3-column insertion at refPos=51. Row0 has bases in all 3
+  // insertion columns; row1 has a gap in the middle column so its insertion
+  // length is 2; row2 has gaps throughout so it emits nothing.
+  const blocks: MafBlock[] = [
+    block(50, 'A---T', [row(0, 'AGCTT'), row(1, 'AG-TT'), row(2, 'A---T')]),
+  ]
+  const r = computeMafCoverage(blocks, 50, 52)
+  expect(r.insertions).toEqual([
+    { position: 51, length: 3 },
+    { position: 51, length: 2 },
+  ])
+})
+
 test('clamps to region bounds — bases outside [regionStart, regionEnd) are ignored', () => {
   const blocks: MafBlock[] = [block(100, 'ACGTAC', [row(0, 'ACGTAC')])]
   const r = computeMafCoverage(blocks, 102, 105)
