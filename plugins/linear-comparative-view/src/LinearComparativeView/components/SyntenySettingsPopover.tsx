@@ -97,6 +97,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
               }}
               onChangeCommitted={() => {
                 setMinLengthDragValue(null)
+                model.setAutoMinAlignmentLength(false)
                 model.setMinAlignmentLength(
                   Math.round(2 ** (minLengthValue / 100)),
                 )

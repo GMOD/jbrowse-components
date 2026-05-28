@@ -17,6 +17,13 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   // whole-genome views where the default ~100px is too cramped for the
   // ribbon detail to be readable.
   levelHeights?: number[]
+  // Render ribbons as bezier curves rather than straight chords. Reads much
+  // better at whole-genome scale where straight crossings stack into noise.
+  drawCurves?: boolean
+  // Per-feature opacity in [0,1]. The default (0.2) is tuned for dense
+  // unfiltered hairballs; whole-genome views with minAlignmentLength set
+  // can use a higher value (~0.4) for stronger color.
+  alpha?: number
 }
 
 export interface ExportSvgOptions {

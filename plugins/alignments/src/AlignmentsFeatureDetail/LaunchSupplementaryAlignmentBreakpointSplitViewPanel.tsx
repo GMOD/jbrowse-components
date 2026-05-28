@@ -41,14 +41,14 @@ export default function LaunchBreakpointSplitViewPanel({
             {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
             {f2.refName}:{toLocale(f2.strand === 1 ? f2.start : f2.end)}{' '}
             <ActionLink
-              onClick={() =>
-                { launchBreakpointSplitView({
+              onClick={() => {
+                launchBreakpointSplitView({
                   session,
                   view: model.view,
                   assemblyName,
                   feature: new SimpleFeature({ ...f1, mate: f2 }),
-                }) }
-              }
+                })
+              }}
             >
               (breakpoint split view)
             </ActionLink>

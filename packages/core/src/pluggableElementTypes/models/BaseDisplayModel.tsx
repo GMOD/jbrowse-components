@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { getParent, hasParent, types } from '@jbrowse/mobx-state-tree'
+import { getParent, hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration/index.ts'
 import { getEffectiveTrackConfig } from '../../util/getConfigOverrides.ts'
@@ -77,6 +77,11 @@ function stateModelFactory() {
        * #getter
        */
       get parentTrack() {
+        if (!hasParent(self)) {
+          console.trace(
+            `[BaseDisplayModel] parentTrack accessed with no parent: alive=${isAlive(self)} type=${self.type}`,
+          )
+        }
         return getContainingTrack(self)
       },
 

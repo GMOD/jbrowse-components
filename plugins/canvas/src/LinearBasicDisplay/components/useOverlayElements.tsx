@@ -6,7 +6,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { forEachRenderedLabel } from './labelPositioning.ts'
 import { LABEL_FONT_SIZE } from './sharedRendererConstants.ts'
-import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
+import {
+  shouldRenderFloatingLabels,
+  shouldRenderPeptideText,
+} from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 import type {
@@ -17,6 +20,7 @@ import type {
 
 interface OverlayModel {
   showLabels: boolean
+  showLabelsMode: 'auto' | 'on' | 'off'
   effectiveShowDescriptions: boolean
   selectedFeatureId: string | undefined
   selectFeatureById: (
@@ -85,10 +89,30 @@ export function useFloatingLabels(
   // them to re-trigger would couple correctness to transitive recomputation
   // of laidOutDataMap (which happens to depend on the same flags). Mirrors
   // the destructure-before-useMemo pattern in useHighlightOverlays below.
-  const { showLabels, effectiveShowDescriptions } = model
+  const { showLabels, showLabelsMode, effectiveShowDescriptions } = model
   return useMemo(() => {
     if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
       return null
+    }
+
+    // In 'auto' mode, hide labels when feature density across visible regions
+    // exceeds the readability threshold. Dense tracks at zoomed-out views
+    // otherwise create thousands of React elements (~70µs each) and blow the
+    // frame budget. 'on' bypasses the gate; 'off' is handled upstream via
+    // showLabels=false.
+    if (showLabelsMode === 'auto') {
+      let totalFeatures = 0
+      let totalWidthPx = 0
+      for (const vr of visibleRegions) {
+        const data = laidOutDataMap.get(vr.displayedRegionIndex)
+        if (data) {
+          totalFeatures += data.featureCount
+          totalWidthPx += vr.screenEndPx - vr.screenStartPx
+        }
+      }
+      if (!shouldRenderFloatingLabels(totalFeatures, totalWidthPx)) {
+        return null
+      }
     }
 
     const elements: React.ReactElement[] = []
@@ -173,6 +197,7 @@ export function useFloatingLabels(
     bpPerPx,
     visibleRegions,
     showLabels,
+    showLabelsMode,
     effectiveShowDescriptions,
     model,
     openContextMenu,

@@ -38,6 +38,11 @@ export function findParentThat(
   predicate: (thing: IAnyStateTreeNode) => boolean,
 ) {
   if (!hasParent(node)) {
+    const alive = isAlive(node)
+    const nodeType = (node as { type?: unknown }).type
+    console.trace(
+      `[findParentThat] node has no parent: alive=${alive} type=${nodeType}`,
+    )
     throw new Error('node does not have parent')
   }
   let currentNode = getParent(node)

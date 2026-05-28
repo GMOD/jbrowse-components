@@ -34,7 +34,11 @@ export default function SupplementaryAlignmentsLocStrings({
             return (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */
               <li key={`${locString}-${idx}`}>
-                <ActionLink onClick={() => { navToLoc(locString, model) }}>
+                <ActionLink
+                  onClick={() => {
+                    navToLoc(locString, model)
+                  }}
+                >
                   {label}
                 </ActionLink>
               </li>

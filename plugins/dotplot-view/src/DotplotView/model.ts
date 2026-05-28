@@ -1058,6 +1058,38 @@ export default function stateModelFactory(pm: PluginManager) {
                 ])
               },
             },
+            {
+              label: 'LOD (min alignment length)',
+              subMenu: (
+                [
+                  { label: 'No filter', value: 0 },
+                  { label: '100 kb', value: 100_000 },
+                  { label: '1 Mb', value: 1_000_000 },
+                  { label: '10 Mb', value: 10_000_000 },
+                ] as const
+              ).map(({ label, value }) => {
+                // Read from the first display since LOD is per-display but
+                // generally kept in sync across displays of a dotplot view.
+                const display = self.tracks[0]?.displays[0] as
+                  | { minAlignmentLength?: number }
+                  | undefined
+                return {
+                  label,
+                  type: 'radio' as const,
+                  checked: display?.minAlignmentLength === value,
+                  onClick: () => {
+                    for (const track of self.tracks) {
+                      for (const d of track.displays) {
+                        const dd = d as {
+                          setMinAlignmentLength?: (v: number) => void
+                        }
+                        dd.setMinAlignmentLength?.(value)
+                      }
+                    }
+                  },
+                }
+              }),
+            },
             ...(isSessionModelWithWidgets(session)
               ? [
                   {

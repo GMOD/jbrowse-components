@@ -25,7 +25,7 @@ export function migrateBasicSnapshot(
 
   const migrated: Record<string, unknown> = {}
   if (trackShowLabels !== undefined) {
-    migrated.showLabels = trackShowLabels
+    migrated.showLabels = legacyShowLabelsToMode(trackShowLabels)
   }
   if (trackShowDescriptions !== undefined) {
     migrated.showDescriptions = trackShowDescriptions
@@ -45,16 +45,34 @@ export function migrateBasicSnapshot(
 
   const existingOverrides =
     typeof rest.configOverrides === 'object' && rest.configOverrides !== null
-      ? rest.configOverrides
+      ? (rest.configOverrides as Record<string, unknown>)
       : undefined
+
+  // showLabels schema flipped from boolean to enum (auto/on/off). Any
+  // pre-existing override with a boolean value needs converting in place so
+  // it passes schema validation when the snapshot loads.
+  const normalizedOverrides = existingOverrides
+    ? typeof existingOverrides.showLabels === 'boolean'
+      ? {
+          ...existingOverrides,
+          showLabels: legacyShowLabelsToMode(existingOverrides.showLabels),
+        }
+      : existingOverrides
+    : undefined
 
   return {
     ...rest,
     ...(height !== undefined && rest.heightPreConfig === undefined
       ? { heightPreConfig: height }
       : undefined),
-    ...(Object.keys(migrated).length > 0 && {
-      configOverrides: { ...existingOverrides, ...migrated },
+    ...((Object.keys(migrated).length > 0 || normalizedOverrides) && {
+      configOverrides: { ...normalizedOverrides, ...migrated },
     }),
   }
+}
+
+// true → 'auto' (new sensible default; preserves "labels visible at sparse
+// zooms" while gaining density-based hide at zoom-out). false → 'off'.
+function legacyShowLabelsToMode(v: unknown): 'auto' | 'off' {
+  return v === false ? 'off' : 'auto'
 }

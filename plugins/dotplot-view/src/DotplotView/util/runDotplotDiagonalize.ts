@@ -31,17 +31,13 @@ export async function runDotplotDiagonalize(
     return undefined
   }
   const session = getSession(model)
-  const result = await session.rpcManager.call(
-    model.id,
-    'DiagonalizeDotplot',
-    {
-      sessionId: `diagonalize-${Date.now()}`,
-      view: { hview: model.hview, vview: model.vview },
-      adapterConfig: display.adapterConfig,
-      stopToken: opts.stopToken,
-      statusCallback: opts.statusCallback,
-    } satisfies DiagonalizeDotplotArgs,
-  )
+  const result = await session.rpcManager.call(model.id, 'DiagonalizeDotplot', {
+    sessionId: `diagonalize-${Date.now()}`,
+    view: { hview: model.hview, vview: model.vview },
+    adapterConfig: display.adapterConfig,
+    stopToken: opts.stopToken,
+    statusCallback: opts.statusCallback,
+  } satisfies DiagonalizeDotplotArgs)
   if (result.newRegions.length === 0) {
     return undefined
   }

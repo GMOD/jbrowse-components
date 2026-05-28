@@ -111,18 +111,15 @@ export async function executeSyntenyFeaturesAndPositions({
   ).dataAdapter as BaseFeatureDataAdapter
 
   const bpPerPx = viewSnaps[level]!.bpPerPx
-  const allFeatures = await updateStatus(
-    'Loading',
-    statusCallback,
-    () =>
-      firstValueFrom(
-        dataAdapter
-          .getFeaturesInMultipleRegions(viewSnaps[level]!.displayedRegions, {
-            stopToken,
-            bpPerPx,
-          })
-          .pipe(toArray()),
-      ),
+  const allFeatures = await updateStatus('Loading', statusCallback, () =>
+    firstValueFrom(
+      dataAdapter
+        .getFeaturesInMultipleRegions(viewSnaps[level]!.displayedRegions, {
+          stopToken,
+          bpPerPx,
+        })
+        .pipe(toArray()),
+    ),
   )
   const seen = new Set<string>()
   const features = allFeatures.filter(f => {

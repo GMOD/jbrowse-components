@@ -46,3 +46,4 @@ test_data/hprc/*.paf.gz.tbi
 !test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz
 !test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz.tbi
 test_data/volvox/*.og
+.claude

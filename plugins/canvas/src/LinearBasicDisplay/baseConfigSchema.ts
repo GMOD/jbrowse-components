@@ -28,9 +28,11 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'Automatically resize the track height to fit all features',
       },
       showLabels: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Show feature labels',
+        type: 'stringEnum',
+        model: types.enumeration('showLabels', ['auto', 'on', 'off']),
+        defaultValue: 'auto',
+        description:
+          'Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides',
       },
       showDescriptions: {
         type: 'boolean',

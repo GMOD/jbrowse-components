@@ -6,8 +6,8 @@ import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import handler from 'serve-handler'
 import { launch } from 'puppeteer'
+import handler from 'serve-handler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO = path.resolve(__dirname, '..')

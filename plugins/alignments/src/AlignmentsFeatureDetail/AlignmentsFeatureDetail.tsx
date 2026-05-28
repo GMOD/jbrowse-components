@@ -41,7 +41,11 @@ const AlignmentsFeatureDetailsBody = observer(
           feature={feat}
           formatter={(value, key) =>
             key === 'next_segment_position' ? (
-              <ActionLink onClick={() => { navToLoc(value as string, model) }}>
+              <ActionLink
+                onClick={() => {
+                  navToLoc(value as string, model)
+                }}
+              >
                 {value as string}
               </ActionLink>
             ) : (

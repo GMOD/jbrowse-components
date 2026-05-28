@@ -11,6 +11,8 @@ export interface LaunchLinearSyntenyViewArgs extends SyntenyViewSharedInit {
   views: { loc?: string; assembly: string; tracks?: string[] }[]
   tracks?: string[] | string[][]
   levelHeights?: number[]
+  drawCurves?: boolean
+  alpha?: number
 }
 
 declare module '@jbrowse/core/PluginManager' {
@@ -46,6 +48,8 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
         ...(rest.levelHeights !== undefined && {
           levelHeights: rest.levelHeights,
         }),
+        ...(rest.drawCurves !== undefined && { drawCurves: rest.drawCurves }),
+        ...(rest.alpha !== undefined && { alpha: rest.alpha }),
       },
     })
     return args

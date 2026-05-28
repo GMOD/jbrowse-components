@@ -224,6 +224,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setAutoMinAlignmentLength(arg: boolean) {
+        self.autoMinAlignmentLength = arg
+      },
+      /**
+       * #action
+       */
       setColorBy(arg: SyntenyColorBy) {
         self.colorBy = arg
       },
@@ -391,6 +397,37 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               })),
             },
             {
+              label: 'LOD (min alignment length)',
+              subMenu: [
+                {
+                  label: 'Auto (scale with zoom)',
+                  type: 'radio' as const,
+                  checked: self.autoMinAlignmentLength,
+                  onClick: () => {
+                    self.setAutoMinAlignmentLength(true)
+                  },
+                },
+                ...(
+                  [
+                    { label: 'No filter', value: 0 },
+                    { label: '100 kb', value: 100_000 },
+                    { label: '1 Mb', value: 1_000_000 },
+                    { label: '10 Mb', value: 10_000_000 },
+                  ] as const
+                ).map(({ label, value }) => ({
+                  label,
+                  type: 'radio' as const,
+                  checked:
+                    !self.autoMinAlignmentLength &&
+                    self.minAlignmentLength === value,
+                  onClick: () => {
+                    self.setAutoMinAlignmentLength(false)
+                    self.setMinAlignmentLength(value)
+                  },
+                })),
+              ],
+            },
+            {
               label: 'Link views',
               type: 'checkbox',
               checked: self.linkViews,
@@ -528,6 +565,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 if (init.minAlignmentLength !== undefined) {
                   self.setMinAlignmentLength(init.minAlignmentLength)
                 }
+                if (init.drawCurves !== undefined) {
+                  self.setDrawCurves(init.drawCurves)
+                }
+                if (init.alpha !== undefined) {
+                  self.setAlpha(init.alpha)
+                }
 
                 if (init.levelHeights) {
                   for (const [i, h] of init.levelHeights.entries()) {
@@ -544,9 +587,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   // message instead of an undiagonalized hairball flash.
                   self.setAwaitingAutoDiagonalize(true)
                   try {
-                    const { runDiagonalize, displaysReady } = await import(
-                      './util/runDiagonalize.ts'
-                    )
+                    const { runDiagonalize, displaysReady } =
+                      await import('./util/runDiagonalize.ts')
                     const view = self
                     await Promise.race([
                       when(() => displaysReady(view)),

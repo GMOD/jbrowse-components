@@ -164,8 +164,18 @@ export default function baseStateModelFactory(
           return self.getConfWithOverride<boolean>('autoHeight')
         },
 
+        get showLabelsMode() {
+          return self.getConfWithOverride<'auto' | 'on' | 'off'>('showLabels')
+        },
+
+        // Boolean view of showLabels for downstream consumers (worker layout,
+        // hit testing). 'auto' returns true so labels are computed and layout
+        // reserves space; useFloatingLabels gates actual rendering by density.
         get showLabels() {
-          return self.getConfWithOverride<boolean>('showLabels')
+          return (
+            self.getConfWithOverride<'auto' | 'on' | 'off'>('showLabels') !==
+            'off'
+          )
         },
 
         get showDescriptions() {
@@ -617,7 +627,7 @@ export default function baseStateModelFactory(
           getSession(self).clearSelection()
         },
 
-        setShowLabels(value: boolean) {
+        setShowLabels(value: 'auto' | 'on' | 'off') {
           self.setOverride('showLabels', value)
         },
 
@@ -941,11 +951,19 @@ export default function baseStateModelFactory(
           return [
             {
               label: 'Show labels',
-              type: 'checkbox' as const,
-              checked: self.showLabels,
-              onClick: () => {
-                self.setShowLabels(!self.showLabels)
-              },
+              subMenu: (['auto', 'on', 'off'] as const).map(mode => ({
+                label:
+                  mode === 'auto'
+                    ? 'Auto (hide when dense)'
+                    : mode === 'on'
+                      ? 'Always on'
+                      : 'Always off',
+                type: 'radio' as const,
+                checked: self.showLabelsMode === mode,
+                onClick: () => {
+                  self.setShowLabels(mode)
+                },
+              })),
             },
             {
               label: 'Show descriptions',

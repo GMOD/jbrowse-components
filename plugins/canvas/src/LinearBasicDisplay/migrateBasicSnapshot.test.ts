@@ -77,7 +77,7 @@ test('promotes track-prefixed settings into configOverrides', () => {
   expect(result).toEqual({
     type: 'LinearBasicDisplay',
     configOverrides: {
-      showLabels: false,
+      showLabels: 'off',
       showDescriptions: true,
       subfeatureLabels: 'overlay',
       geneGlyphMode: 'longest',
@@ -97,7 +97,7 @@ test('preserves falsy track-prefixed values', () => {
   })
   expect(result).toEqual({
     configOverrides: {
-      showLabels: false,
+      showLabels: 'off',
       displayDirectionalChevrons: false,
     },
   })
@@ -127,7 +127,7 @@ test('merges migrated entries into existing configOverrides', () => {
     configOverrides: {
       autoHeight: true,
       outline: 'rgba(0,0,0,0.5)',
-      showLabels: false,
+      showLabels: 'off',
     },
   })
 })
@@ -138,7 +138,7 @@ test('migrated entry wins over a colliding key in existing configOverrides', () 
     trackShowLabels: false,
   })
   expect(result).toEqual({
-    configOverrides: { showLabels: false },
+    configOverrides: { showLabels: 'off' },
   })
 })
 
@@ -151,7 +151,7 @@ test('ignores non-object configOverrides', () => {
     trackShowLabels: false,
   })
   expect(result).toEqual({
-    configOverrides: { showLabels: false },
+    configOverrides: { showLabels: 'off' },
   })
 })
 
@@ -169,6 +169,26 @@ test('preserves existing configOverrides when no migrated entries exist', () => 
   })
   expect(result).toEqual({
     configOverrides: { autoHeight: true },
+  })
+})
+
+// Schema for showLabels flipped from boolean → enum; saved sessions with
+// boolean values must be normalized in place or they fail schema validation
+// on load.
+test('normalizes boolean showLabels in existing configOverrides to enum', () => {
+  expect(
+    migrateBasicSnapshot({
+      configOverrides: { showLabels: true, autoHeight: true },
+    }),
+  ).toEqual({
+    configOverrides: { showLabels: 'auto', autoHeight: true },
+  })
+  expect(
+    migrateBasicSnapshot({
+      configOverrides: { showLabels: false },
+    }),
+  ).toEqual({
+    configOverrides: { showLabels: 'off' },
   })
 })
 
@@ -195,7 +215,7 @@ test('full legacy snapshot: strips, lifts, and merges', () => {
     heightPreConfig: 180,
     configOverrides: {
       autoHeight: true,
-      showLabels: false,
+      showLabels: 'off',
       subfeatureLabels: 'below',
     },
   })

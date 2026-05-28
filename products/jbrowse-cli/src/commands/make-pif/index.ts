@@ -27,6 +27,11 @@ export async function run(args?: string[]) {
       type: 'boolean',
       description: 'Create a CSI index for the PIF file instead of TBI',
     },
+    mergeGap: {
+      type: 'string',
+      description:
+        'If >0, also emit a no-CIGAR coarse tier of merged alignment blocks (prefix T/Q). Records within this many bp on the target are merged. 0 disables. Default 0.',
+    },
   } as const
   const { values: flags, positionals } = parseArgs({
     args,
@@ -56,11 +61,15 @@ export async function run(args?: string[]) {
   validateFileArgument(file, 'make-pif', 'paf')
   validateRequiredCommands(['sh', 'sort', 'grep', 'tabix', 'bgzip'])
 
-  const { out, csi = false } = flags
+  const { out, csi = false, mergeGap } = flags
   const outputFile = getOutputFilename(file, out)
+  const mergeGapNum = mergeGap === undefined ? 0 : +mergeGap
+  if (!Number.isFinite(mergeGapNum) || mergeGapNum < 0) {
+    throw new Error(`Invalid --mergeGap value: ${mergeGap}`)
+  }
 
   const child = spawnSortProcess(outputFile, csi)
-  await createPIF(file, child.stdin)
+  await createPIF(file, child.stdin, mergeGapNum)
   child.stdin.end()
   await waitForProcessClose(child)
 }

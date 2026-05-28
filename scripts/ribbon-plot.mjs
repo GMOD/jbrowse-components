@@ -14,8 +14,9 @@
 //   6. paint ribbons by target chromosome (chromosome painting)
 
 import { spawn } from 'child_process'
-import readline from 'readline'
 import fs from 'fs'
+import readline from 'readline'
+
 import { createCanvas } from 'canvas'
 
 const CHAIN_FILE = process.argv[2]
@@ -161,10 +162,10 @@ function reorderQueryChroms(chains, tOrder, qChrs, tSizes, tileSize) {
 function makeColorPalette(chrs) {
   const colors = new Map()
   const n = chrs.length
-  chrs.forEach((c, i) => {
+  for (const [i, c] of chrs.entries()) {
     const h = (i * 360) / n
     colors.set(c, `hsl(${h}, 70%, 55%)`)
-  })
+  }
   return colors
 }
 
@@ -234,8 +235,7 @@ function render({
       qs = newS
       qe = newE
     }
-    const netInverted =
-      (c.qStrand === '-') !== Boolean(flip.get(c.qName))
+    const netInverted = (c.qStrand === '-') !== Boolean(flip.get(c.qName))
     const qxLeft = q.x + (qs / q.size) * q.w
     const qxRight = q.x + (qe / q.size) * q.w
     const qx1 = netInverted ? qxRight : qxLeft
@@ -276,11 +276,7 @@ function render({
     const l = bottomLayout.get(c)
     if (l.w > 14) {
       const arrow = flip.get(c) ? ' ←' : ''
-      ctx.fillText(
-        c.replace(/^chr/, '') + arrow,
-        l.x + l.w / 2,
-        yBottom + 22,
-      )
+      ctx.fillText(c.replace(/^chr/, '') + arrow, l.x + l.w / 2, yBottom + 22)
     }
   }
 

@@ -107,7 +107,7 @@ const FeatDefined = observer(function FeatDefined({
   const svlenInfo = INFO?.SVLEN
   const svlen =
     Array.isArray(svlenInfo) && svlenInfo.every(v => typeof v === 'number')
-      ? (svlenInfo)
+      ? svlenInfo
       : undefined
 
   return (

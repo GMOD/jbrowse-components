@@ -22,6 +22,7 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   protected pif: TabixIndexedFile
+  private coarseTierAvailable?: Promise<boolean>
 
   public constructor(
     config: AnyConfigurationModel,
@@ -64,6 +65,8 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter {
 
     const idx = this.getAssemblyNames().indexOf(r1)
     const names = await this.pif.getReferenceSequenceNames(opts)
+    // Only consider the fine tier here so we don't double-report chroms when
+    // the coarse T/Q tier is also present.
     if (idx === 0) {
       return names.filter(n => n.startsWith('q')).map(n => n.slice(1))
     } else if (idx === 1) {
@@ -71,6 +74,17 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter {
     } else {
       return []
     }
+  }
+
+  // Cache whether the file contains an uppercase T/Q coarse tier. Checked
+  // once via the tabix refname list.
+  private async hasCoarseTier(opts?: BaseOptions): Promise<boolean> {
+    if (!this.coarseTierAvailable) {
+      this.coarseTierAvailable = this.pif
+        .getReferenceSequenceNames(opts)
+        .then(names => names.some(n => n.startsWith('T') || n.startsWith('Q')))
+    }
+    return this.coarseTierAvailable
   }
 
   getFeatures(query: Region, opts: PAFOptions = {}) {
@@ -89,7 +103,17 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter {
       // PIF format indexes lines by perspective:
       // - 'q' prefix lines are indexed by query coordinates
       // - 't' prefix lines are indexed by target coordinates
-      const letter = flip ? 'q' : 't'
+      // Uppercase T/Q are the optional coarse no-CIGAR merged-block tier
+      // emitted by `make-pif --mergeGap`. Pick the coarse tier when the
+      // view's bpPerPx exceeds the configured threshold and the tier
+      // actually exists in this file.
+      const threshold = this.getConf('coarseBpPerPxThreshold') as number
+      const useCoarse =
+        opts.bpPerPx !== undefined &&
+        opts.bpPerPx >= threshold &&
+        (await this.hasCoarseTier(opts))
+      const fineLetter = flip ? 'q' : 't'
+      const letter = useCoarse ? fineLetter.toUpperCase() : fineLetter
 
       // The "other" assembly is the mate
       const mateAssemblyName = assemblyNames[flip ? 1 : 0]

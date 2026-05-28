@@ -10,8 +10,8 @@ import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import handler from 'serve-handler'
 import { launch } from 'puppeteer'
+import handler from 'serve-handler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO = path.resolve(__dirname, '..')
@@ -120,13 +120,17 @@ async function main() {
       rowGroups.push([l])
     }
   }
-  rowGroups.forEach((row, i) => {
-    console.log(`row ${i} (y=${row[0].y.toFixed(0)}): ${row.map(r => r.text).join(' ')}`)
-  })
+  for (const [i, row] of rowGroups.entries()) {
+    console.log(
+      `row ${i} (y=${row[0].y.toFixed(0)}): ${row.map(r => r.text).join(' ')}`,
+    )
+  }
 
   // Tail of console output for debugging
   console.log('--- last console lines ---')
-  for (const line of consoleLines.slice(-30)) console.log(line)
+  for (const line of consoleLines.slice(-30)) {
+    console.log(line)
+  }
 
   await browser.close()
   server.close()

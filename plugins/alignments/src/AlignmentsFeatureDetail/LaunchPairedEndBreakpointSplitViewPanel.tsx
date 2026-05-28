@@ -21,8 +21,8 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
     <div>
       <Typography>Launch split view</Typography>
       <ActionLink
-        onClick={() =>
-          { launchBreakpointSplitView({
+        onClick={() => {
+          launchBreakpointSplitView({
             session,
             view: model.view,
             assemblyName,
@@ -40,8 +40,8 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
                 strand,
               },
             }),
-          }) }
-        }
+          })
+        }}
       >
         {refName}:{toLocale(start)} -&gt; {next_ref}:{toLocale(next_pos)}{' '}
         (breakpoint split view)
