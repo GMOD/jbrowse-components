@@ -8,7 +8,7 @@ import { Button, Container, Grid, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import TrackSelector from './TrackSelector.tsx'
-import { doSubmit } from './doSubmit.ts'
+import { doSubmit, resolveImportFormSelection } from './doSubmit.ts'
 
 import type { DotplotViewModel } from '../../model.ts'
 
@@ -76,9 +76,12 @@ const DotplotImportForm = observer(function DotplotImportForm({
                   session,
                   assemblyX,
                   assemblyY,
-                  choice,
-                  preConfiguredTrackId,
-                  syntenyTracks,
+                  selection: resolveImportFormSelection({
+                    choice,
+                    preConfiguredTrackId,
+                    syntenyTracks,
+                    modelSelection: model.importFormSyntenyTrackSelections[0],
+                  }),
                 })
               } catch (e) {
                 console.error(e)
