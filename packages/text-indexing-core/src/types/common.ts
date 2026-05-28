@@ -59,17 +59,7 @@ export async function getLocalOrRemoteStream({
     const nodeStream =
       body instanceof Readable
         ? body
-        : new Readable({
-            async read() {
-              const reader = body.getReader()
-              let result = await reader.read()
-              while (!result.done) {
-                this.push(result.value)
-                result = await reader.read()
-              }
-              this.push(null)
-            },
-          })
+        : Readable.fromWeb(body as import('node:stream/web').ReadableStream)
     nodeStream.on('data', chunk => {
       receivedBytes += chunk.length
       onUpdate(receivedBytes)
