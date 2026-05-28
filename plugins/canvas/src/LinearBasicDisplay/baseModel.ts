@@ -85,7 +85,6 @@ export type { Region } from '@jbrowse/core/util'
 
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 
-const DESCRIPTION_DENSITY_THRESHOLD = 0.2
 
 // rgba string used when outline is toggled on via the menu; schema stores the
 // raw color so users can still set their own via setOverride('outline', '#...').
@@ -196,18 +195,7 @@ export default function baseStateModelFactory(
         },
 
         get effectiveShowDescriptions() {
-          if (!this.showDescriptions) {
-            return false
-          }
-          // In 'auto' mode, ride along with the same density gate as labels
-          // so we never render orphan descriptions next to features whose
-          // names just got auto-hidden. In 'on'/'off' the user has made an
-          // explicit choice about labels, so keep the looser standalone
-          // density safeguard (catches only extreme pixel-dense overlap).
-          if (this.showLabelsMode === 'auto') {
-            return this.showLabels
-          }
-          return self.featureDensityPerPx < DESCRIPTION_DENSITY_THRESHOLD
+          return this.showDescriptions && this.showLabels
         },
 
         get selectedFeatureId() {
@@ -283,11 +271,14 @@ export default function baseStateModelFactory(
         // RPC call site, matching the pattern used by every other display
         // type. Subclasses extend via the super-capture pattern.
         rpcProps() {
+          // showLabels/showDescriptions are display-only — exclude them so
+          // toggling label visibility doesn't invalidate the RPC cache.
+          const { showLabels: _l, showDescriptions: _d, ...rest } = {
+            ...getConfSnapshot(self.configuration),
+            ...self.configOverrides,
+          }
           return {
-            displayConfig: {
-              ...getConfSnapshot(self.configuration),
-              ...self.configOverrides,
-            } as DisplayConfig,
+            displayConfig: rest as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
           }
