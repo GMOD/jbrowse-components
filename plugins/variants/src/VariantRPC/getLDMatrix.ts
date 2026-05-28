@@ -21,7 +21,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type {
+  StopToken,
+  StopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 const SLASH_CODE = 47 // '/'
 const PIPE_CODE = 124 // '|'
 const ZERO_CODE = 48 // '0'
@@ -711,6 +714,117 @@ export interface LDMatrixResult {
   recombination: RecombinationData
 }
 
+function emptyLDResult(metric: LDMetric): LDMatrixResult {
+  return {
+    snps: [],
+    ldValues: new Float32Array(0),
+    metric,
+    filterStats: {
+      totalVariants: 0,
+      passedVariants: 0,
+      filteredByMaf: 0,
+      filteredByLength: 0,
+      filteredByMultiallelic: 0,
+      filteredByHwe: 0,
+      filteredByCallRate: 0,
+    },
+    recombination: {
+      values: new Float32Array(0),
+      positions: [],
+    },
+  }
+}
+
+// Hardy-Weinberg equilibrium χ²(df=1) goodness-of-fit test. Returns false when
+// the variant deviates beyond the critical value (i.e. should be filtered out).
+function passesHweFilter(
+  nHomRef: number,
+  nHet: number,
+  nHomAlt: number,
+  nValid: number,
+  chiSqCritical: number,
+): boolean {
+  const p = (2 * nHomRef + nHet) / (2 * nValid)
+  const q = 1 - p
+  const expectedHomRef = p * p * nValid
+  const expectedHet = 2 * p * q * nValid
+  const expectedHomAlt = q * q * nValid
+  let chiSq = 0
+  if (expectedHomRef > 0) {
+    chiSq += (nHomRef - expectedHomRef) ** 2 / expectedHomRef
+  }
+  if (expectedHet > 0) {
+    chiSq += (nHet - expectedHet) ** 2 / expectedHet
+  }
+  if (expectedHomAlt > 0) {
+    chiSq += (nHomAlt - expectedHomAlt) ** 2 / expectedHomAlt
+  }
+  return chiSq <= chiSqCritical
+}
+
+// CPU fallback for the full pairwise lower-triangular LD matrix, used when the
+// GPU path is unavailable.
+function computeLDMatrixCPU(
+  n: number,
+  ldMetric: LDMetric,
+  signedLD: boolean,
+  dataIsPhased: boolean,
+  packedHaplotypes: PackedHaplotypes[],
+  encodedGenotypes: Int8Array[],
+  stopTokenCheck: StopTokenChecker,
+): Float32Array {
+  const vals = new Float32Array((n * (n - 1)) / 2)
+  let idx = 0
+  for (let i = 1; i < n; i++) {
+    for (let j = 0; j < i; j++) {
+      const stats = dataIsPhased
+        ? calculateLDStatsPhasedBits(
+            packedHaplotypes[i]!,
+            packedHaplotypes[j]!,
+            signedLD,
+          )
+        : calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!, signedLD)
+      vals[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
+      checkStopToken2(stopTokenCheck)
+    }
+  }
+  return vals
+}
+
+// Recombination evidence (1 - r²) between adjacent SNPs. When ldMetric is 'r2'
+// the values already live in ldValues (lower-triangular pair (i+1, i) at index
+// (i+1)*i/2 + i), so they're reused rather than recomputed.
+function computeRecombination(
+  snps: LDSnp[],
+  ldValues: Float32Array,
+  ldMetric: LDMetric,
+  signedLD: boolean,
+  dataIsPhased: boolean,
+  packedHaplotypes: PackedHaplotypes[],
+  encodedGenotypes: Int8Array[],
+): RecombinationData {
+  const n = snps.length
+  const values = new Float32Array(Math.max(0, n - 1))
+  const positions: number[] = []
+  for (let i = 0; i < n - 1; i++) {
+    let r2: number
+    if (ldMetric === 'r2') {
+      const v = ldValues[((i + 1) * i) / 2 + i]!
+      r2 = signedLD ? v * v : v
+    } else if (dataIsPhased) {
+      r2 = calculateLDStatsPhasedBits(
+        packedHaplotypes[i]!,
+        packedHaplotypes[i + 1]!,
+      ).r2
+    } else {
+      r2 = calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[i + 1]!).r2
+    }
+    values[i] = 1 - r2
+    positions.push((snps[i]!.start + snps[i + 1]!.start) / 2)
+  }
+  return { values, positions }
+}
+
 export async function getLDMatrix({
   pluginManager,
   args,
@@ -756,24 +870,7 @@ export async function getLDMatrix({
   const samples = sources.map(s => s.name)
 
   if (samples.length === 0) {
-    return {
-      snps: [],
-      ldValues: new Float32Array(0),
-      metric: ldMetric,
-      filterStats: {
-        totalVariants: 0,
-        passedVariants: 0,
-        filteredByMaf: 0,
-        filteredByLength: 0,
-        filteredByMultiallelic: 0,
-        filteredByHwe: 0,
-        filteredByCallRate: 0,
-      },
-      recombination: {
-        values: new Float32Array(0),
-        positions: [],
-      },
-    }
+    return emptyLDResult(ldMetric)
   }
 
   const splitCache: Record<string, string[]> = {}
@@ -889,26 +986,13 @@ export async function getLDMatrix({
       continue
     }
 
-    if (hweFilterEnabled && nValid > 0) {
-      const p = (2 * nHomRef + nHet) / (2 * nValid)
-      const q = 1 - p
-      const expectedHomRef = p * p * nValid
-      const expectedHet = 2 * p * q * nValid
-      const expectedHomAlt = q * q * nValid
-      let chiSq = 0
-      if (expectedHomRef > 0) {
-        chiSq += (nHomRef - expectedHomRef) ** 2 / expectedHomRef
-      }
-      if (expectedHet > 0) {
-        chiSq += (nHet - expectedHet) ** 2 / expectedHet
-      }
-      if (expectedHomAlt > 0) {
-        chiSq += (nHomAlt - expectedHomAlt) ** 2 / expectedHomAlt
-      }
-      if (chiSq > chiSqCritical) {
-        filteredByHwe++
-        continue
-      }
+    if (
+      hweFilterEnabled &&
+      nValid > 0 &&
+      !passesHweFilter(nHomRef, nHet, nHomAlt, nValid, chiSqCritical)
+    ) {
+      filteredByHwe++
+      continue
     }
 
     snps.push({
@@ -930,8 +1014,6 @@ export async function getLDMatrix({
 
   const n = snps.length
 
-  const ldSize = (n * (n - 1)) / 2
-
   let ldValues: Float32Array | null = null
   try {
     ldValues = await updateStatus('Computing LD values', statusCallback, () =>
@@ -943,28 +1025,17 @@ export async function getLDMatrix({
     console.warn('GPU LD computation failed, falling back to CPU', e)
   }
 
-  ldValues ??= await updateStatus('Computing LD values', statusCallback, () => {
-    const vals = new Float32Array(ldSize)
-    let idx = 0
-    for (let i = 1; i < n; i++) {
-      for (let j = 0; j < i; j++) {
-        const stats = dataIsPhased
-          ? calculateLDStatsPhasedBits(
-              packedHaplotypes[i]!,
-              packedHaplotypes[j]!,
-              signedLD,
-            )
-          : calculateLDStats(
-              encodedGenotypes[i]!,
-              encodedGenotypes[j]!,
-              signedLD,
-            )
-        vals[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
-        checkStopToken2(stopTokenCheck)
-      }
-    }
-    return vals
-  })
+  ldValues ??= await updateStatus('Computing LD values', statusCallback, () =>
+    computeLDMatrixCPU(
+      n,
+      ldMetric,
+      signedLD,
+      dataIsPhased,
+      packedHaplotypes,
+      encodedGenotypes,
+      stopTokenCheck,
+    ),
+  )
 
   const filterStats: FilterStats = {
     totalVariants,
@@ -976,42 +1047,15 @@ export async function getLDMatrix({
     filteredByCallRate,
   }
 
-  // Calculate recombination rate estimates between adjacent SNPs
-  // Using 1 - r² as a proxy for recombination (LD decay)
-  const recombValues = new Float32Array(Math.max(0, n - 1))
-  const recombPositions: number[] = []
-
-  for (let i = 0; i < n - 1; i++) {
-    let r2: number
-
-    // When ldMetric is 'r2', ldValues already holds r² for every pair in
-    // lower-triangular order: index of pair (i+1, i) = (i+1)*i/2 + i.
-    // Reuse those values rather than recomputing.
-    if (ldMetric === 'r2') {
-      const v = ldValues[((i + 1) * i) / 2 + i]!
-      r2 = signedLD ? v * v : v
-    } else if (dataIsPhased) {
-      r2 = calculateLDStatsPhasedBits(
-        packedHaplotypes[i]!,
-        packedHaplotypes[i + 1]!,
-      ).r2
-    } else {
-      r2 = calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[i + 1]!).r2
-    }
-
-    // 1 - r² gives recombination evidence (higher = more recombination)
-    recombValues[i] = 1 - r2
-
-    // Position is midpoint between the two SNPs
-    const pos1 = snps[i]!.start
-    const pos2 = snps[i + 1]!.start
-    recombPositions.push((pos1 + pos2) / 2)
-  }
-
-  const recombination: RecombinationData = {
-    values: recombValues,
-    positions: recombPositions,
-  }
+  const recombination = computeRecombination(
+    snps,
+    ldValues,
+    ldMetric,
+    signedLD,
+    dataIsPhased,
+    packedHaplotypes,
+    encodedGenotypes,
+  )
 
   return { snps, ldValues, metric: ldMetric, filterStats, recombination }
 }
