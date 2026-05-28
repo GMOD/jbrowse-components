@@ -35,7 +35,7 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/x-charts-vendor": "^9.0.0",
-    "generic-filehandle2": "^2.1.9",
+    "generic-filehandle2": "^2.1.10",
     "hic-straw": "^2.1.4",
     "mobx": "^6.15.4",
     "mobx-react": "^9.2.2",
