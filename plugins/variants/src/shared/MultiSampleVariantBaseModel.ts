@@ -22,6 +22,7 @@ import {
 import {
   TreeSidebarMixin,
   applyColorPalette,
+  buildSpatialIndex,
   clusterLayout,
 } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
@@ -552,7 +553,10 @@ export default function MultiSampleVariantBaseModelF(
             return base
           }
           const filterSet = new Set(self.subtreeFilter)
-          return base.filter(s => filterSet.has(s.sampleName))
+          // Use s.name (not s.sampleName): phased clustering stores haplotype
+          // names ("HG001 HP0") as tree leaves and subtreeFilter contains those
+          // names. In alleleCount mode s.name === s.sampleName, so both work.
+          return base.filter(s => filterSet.has(s.name))
         },
       }))
       .views(self => ({
@@ -672,6 +676,11 @@ export default function MultiSampleVariantBaseModelF(
             this.rowHeight * this.nrow,
             self.treeAreaWidth,
           )
+        },
+      }))
+      .views(self => ({
+        get spatialIndex() {
+          return self.hierarchy ? buildSpatialIndex(self.hierarchy) : undefined
         },
       }))
       .views(self => ({

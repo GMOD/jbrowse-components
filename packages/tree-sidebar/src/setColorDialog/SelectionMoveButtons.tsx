@@ -25,7 +25,7 @@ export default function SelectionMoveButtons<T extends { name: string }>({
       <Button
         disabled={disabled}
         onClick={() => {
-          onChange(moveUp([...rows], selected))
+          onChange(moveUp(rows, selected))
         }}
       >
         <KeyboardArrowUpIcon />
@@ -34,7 +34,7 @@ export default function SelectionMoveButtons<T extends { name: string }>({
       <Button
         disabled={disabled}
         onClick={() => {
-          onChange(moveDown([...rows], selected))
+          onChange(moveDown(rows, selected))
         }}
       >
         <KeyboardArrowDownIcon />
@@ -43,7 +43,7 @@ export default function SelectionMoveButtons<T extends { name: string }>({
       <Button
         disabled={disabled}
         onClick={() => {
-          onChange(moveUp([...rows], selected, rows.length))
+          onChange(moveUp(rows, selected, rows.length))
         }}
       >
         <KeyboardDoubleArrowUpIcon />
@@ -52,7 +52,7 @@ export default function SelectionMoveButtons<T extends { name: string }>({
       <Button
         disabled={disabled}
         onClick={() => {
-          onChange(moveDown([...rows], selected, rows.length))
+          onChange(moveDown(rows, selected, rows.length))
         }}
       >
         <KeyboardDoubleArrowDownIcon />

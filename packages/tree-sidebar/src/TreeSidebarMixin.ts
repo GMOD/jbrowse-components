@@ -1,15 +1,8 @@
-import Flatbush from '@jbrowse/core/util/flatbush'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { parseClusterTree } from './clusterUtils.ts'
-import { descendants } from './hierarchy.ts'
 
-import type { ClusterHierarchyNode, HoveredTreeNode } from './types.ts'
-
-interface HierarchySelf {
-  hierarchy: ClusterHierarchyNode | undefined
-  totalHeight?: number
-}
+import type { HoveredTreeNode } from './types.ts'
 
 export function TreeSidebarMixin<
   S extends { name: string } = { name: string },
@@ -33,33 +26,6 @@ export function TreeSidebarMixin<
           return undefined
         }
         return parseClusterTree(clusterTree, self.subtreeFilter)
-      },
-    }))
-    .views(self => ({
-      get spatialIndex() {
-        const extended = self as typeof self & HierarchySelf
-        const h = extended.hierarchy
-        // touch treeAreaWidth and totalHeight so MobX tracks them as dependencies
-        void self.treeAreaWidth
-        void extended.totalHeight
-        if (h) {
-          const nodes = descendants(h).filter(node => node.children?.length)
-          const index = new Flatbush(nodes.length)
-          const hitRadius = 8
-          for (const node of nodes) {
-            const x = node.y
-            const y = node.x
-            index.add(
-              x - hitRadius,
-              y - hitRadius,
-              x + hitRadius,
-              y + hitRadius,
-            )
-          }
-          index.finish()
-          return { index, nodes }
-        }
-        return undefined
       },
     }))
     .actions(self => ({

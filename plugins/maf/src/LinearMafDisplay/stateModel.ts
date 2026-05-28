@@ -16,7 +16,11 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { TreeSidebarMixin, clusterLayout } from '@jbrowse/tree-sidebar'
+import {
+  TreeSidebarMixin,
+  buildSpatialIndex,
+  clusterLayout,
+} from '@jbrowse/tree-sidebar'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import { observable } from 'mobx'
 
@@ -331,6 +335,11 @@ export default function stateModelFactory(
           return undefined
         }
         return clusterLayout(r, self.rowsHeight, self.treeAreaWidth)
+      },
+    }))
+    .views(self => ({
+      get spatialIndex() {
+        return self.hierarchy ? buildSpatialIndex(self.hierarchy) : undefined
       },
     }))
     .views(self => ({

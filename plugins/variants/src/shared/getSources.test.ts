@@ -249,6 +249,34 @@ describe('getSources', () => {
     expect(result.every(r => r.HP === undefined)).toBe(true)
   })
 
+  // Regression: sourcesBase uses alleleCount mode + haplotype layout (from
+  // phased clustering), then applies the subtreeFilter set by clicking a tree
+  // node. Leaf names in the phased tree are HP names ("HG001 HP0"), and base
+  // entries have name="HG001 HP0" / sampleName="HG001". Filtering by s.name
+  // is correct; filtering by s.sampleName would drop everything.
+  test('alleleCount mode with HP layout can be filtered by HP names via s.name', () => {
+    const haplotypeLayout = [
+      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
+      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
+      { name: 'HG002 HP0', sampleName: 'HG002', HP: 0 },
+      { name: 'HG002 HP1', sampleName: 'HG002', HP: 1 },
+    ]
+
+    const base = getSources({
+      sources: baseSources,
+      layout: haplotypeLayout,
+      renderingMode: 'alleleCount',
+    })
+
+    // Simulate the subtreeFilter set when user clicks a phased tree node
+    const subtreeFilter = new Set(['HG001 HP0', 'HG001 HP1'])
+    const filtered = base.filter(s => subtreeFilter.has(s.name))
+
+    expect(filtered).toHaveLength(2)
+    expect(filtered[0]).toMatchObject({ name: 'HG001 HP0', sampleName: 'HG001' })
+    expect(filtered[1]).toMatchObject({ name: 'HG001 HP1', sampleName: 'HG001' })
+  })
+
   test('layout colors are preserved in phased mode with haplotype layout', () => {
     const haplotypeLayout = [
       { name: 'HG002 HP0', sampleName: 'HG002', HP: 0, color: 'green' },

@@ -3,38 +3,40 @@ import type { GridRowId } from '@mui/x-data-grid'
 // Move the selected rows up by `by` slots. Selected rows keep their relative
 // order; the first row clamps at the top.
 export function moveUp<T extends { name: string }>(
-  arr: T[],
+  arr: readonly T[],
   sel: GridRowId[],
   by = 1,
-) {
+): T[] {
+  const result = [...arr]
   const idxs = sel
-    .map(l => arr.findIndex(v => v.name === l))
+    .map(l => result.findIndex(v => v.name === l))
     .sort((a, b) => a - b)
   let lastIdx = 0
   for (const old of idxs) {
     const idx = Math.max(lastIdx, old - by)
-    arr.splice(idx, 0, arr.splice(old, 1)[0]!)
+    result.splice(idx, 0, result.splice(old, 1)[0]!)
     lastIdx = lastIdx + 1
   }
-  return arr
+  return result
 }
 
 // Mirror of moveUp, descending.
 export function moveDown<T extends { name: string }>(
-  arr: T[],
+  arr: readonly T[],
   sel: GridRowId[],
   by = 1,
-) {
+): T[] {
+  const result = [...arr]
   const idxs = sel
-    .map(l => arr.findIndex(v => v.name === l))
+    .map(l => result.findIndex(v => v.name === l))
     .sort((a, b) => b - a)
-  let lastIdx = arr.length - 1
+  let lastIdx = result.length - 1
   for (const old of idxs) {
     const idx = Math.min(lastIdx, old + by)
-    arr.splice(idx, 0, arr.splice(old, 1)[0]!)
+    result.splice(idx, 0, result.splice(old, 1)[0]!)
     lastIdx = lastIdx - 1
   }
-  return arr
+  return result
 }
 
 // Immutable row patch by name. Replaces the in-place `elt.color = c; onChange([...rows])`

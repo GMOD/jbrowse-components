@@ -14,7 +14,11 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { TreeSidebarMixin, clusterLayout } from '@jbrowse/tree-sidebar'
+import {
+  TreeSidebarMixin,
+  buildSpatialIndex,
+  clusterLayout,
+} from '@jbrowse/tree-sidebar'
 import {
   computeYTicks,
   makeAutoscaleTypeSubMenu,
@@ -231,6 +235,11 @@ export default function stateModelFactory(
           return undefined
         }
         return clusterLayout(r, self.height, self.treeAreaWidth)
+      },
+    }))
+    .views(self => ({
+      get spatialIndex() {
+        return self.hierarchy ? buildSpatialIndex(self.hierarchy) : undefined
       },
     }))
     .actions(self => {
