@@ -23,6 +23,7 @@ import {
   YSCALEBAR_LABEL_OFFSET,
   computeYTicks,
   getNiceDomain,
+  resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import { observable } from 'mobx'
 
@@ -136,17 +137,11 @@ export function stateModelFactory(
         const view = getContainingView(self) as LinearGenomeViewModel
         const canvasWidth = view.trackWidthPx
         const canvasHeight = self.height - 2 * YSCALEBAR_LABEL_OFFSET
-        if (self.domain) {
-          return { domainY: self.domain, canvasWidth, canvasHeight }
-        }
-        // No domain ≡ either (a) no fetch has completed — keep undefined so
-        // the loading overlay stays, or (b) fetch completed with zero
-        // features — return a stub state so render runs, the canvas clears,
-        // and canvasDrawn flips. Domain is arbitrary; nothing will draw.
-        if (self.rpcDataMap.size === 0) {
-          return undefined
-        }
-        return { domainY: [0, 1], canvasWidth, canvasHeight }
+        return resolveRenderState(
+          self.domain,
+          self.rpcDataMap.size > 0,
+          domainY => ({ domainY, canvasWidth, canvasHeight }),
+        )
       },
       // displayedRegionIndex → refName lookup. Hit-testing reads this on
       // every mousemove; MobX caches the view so visibleRegions changes

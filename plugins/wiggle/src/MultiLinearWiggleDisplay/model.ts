@@ -19,7 +19,11 @@ import {
   buildSpatialIndex,
   clusterLayout,
 } from '@jbrowse/tree-sidebar'
-import { computeYTicks, makeScoreSubMenu } from '@jbrowse/wiggle-core'
+import {
+  computeYTicks,
+  makeScoreSubMenu,
+  resolveRenderState,
+} from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
@@ -166,28 +170,14 @@ export default function stateModelFactory(
         const view = getContainingView(self) as LGV
         const width = view.trackWidthPx
         const height = self.height
-        const domain = self.domain
-        if (domain) {
-          return makeRenderState(
+        return resolveRenderState(self.domain, self.rpcDataMap.size > 0, domain =>
+          makeRenderState(
             domain,
             self.scaleType,
             self.renderingType,
             width,
             height,
-          )
-        }
-        // No domain → either no fetch yet (keep undefined so loading
-        // overlay stays) or fetch returned zero features (stub state so
-        // renderBlocks clears the canvas and canvasDrawn flips).
-        if (self.rpcDataMap.size === 0) {
-          return undefined
-        }
-        return makeRenderState(
-          [0, 1],
-          self.scaleType,
-          self.renderingType,
-          width,
-          height,
+          ),
         )
       },
 

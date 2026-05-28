@@ -10,7 +10,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { computeYTicks } from '@jbrowse/wiggle-core'
+import { computeYTicks, resolveRenderState } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
@@ -116,30 +116,14 @@ export default function stateModelFactory(
         const view = getContainingView(self) as LGV
         const width = view.trackWidthPx
         const height = self.height - 2 * YSCALEBAR_LABEL_OFFSET
-        const domain = self.domain
-        if (domain) {
-          return makeRenderState(
+        return resolveRenderState(self.domain, self.rpcDataMap.size > 0, domain =>
+          makeRenderState(
             domain,
             self.scaleType,
             self.renderingType,
             width,
             height,
-          )
-        }
-        // No domain means either (a) no fetch has completed yet — keep
-        // undefined so the loading overlay stays, or (b) fetch completed
-        // with zero features — return a stub state so renderBlocks runs,
-        // clears the canvas, and canvasDrawn flips. Domain is arbitrary
-        // since no features will draw.
-        if (self.rpcDataMap.size === 0) {
-          return undefined
-        }
-        return makeRenderState(
-          [0, 1],
-          self.scaleType,
-          self.renderingType,
-          width,
-          height,
+          ),
         )
       },
 
