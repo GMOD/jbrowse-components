@@ -36,7 +36,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
   const {
     sourcesVolatile,
     minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
+    filters,
     adapterConfig,
     renderingMode,
     sampleInfo,
@@ -92,7 +92,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                     regions: view.dynamicBlocks.contentBlocks,
                     sources: sourcesVolatile,
                     minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
-                    lengthCutoffFilter,
+                    filters,
                     sessionId,
                     adapterConfig,
                     stopToken,

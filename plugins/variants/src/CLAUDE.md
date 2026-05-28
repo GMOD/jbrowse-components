@@ -67,9 +67,8 @@ A user-tweakable setting on the multi-sample displays can be held in any of:
 - **config slot** (`SharedVariantConfigSchema.ts`) — the saved default
 - **`configOverrides`** map (`ConfigOverrideMixin`) — per-display runtime override
   of a slot, read via `getConfWithOverride` / written via `setOverride`
-- **bespoke MST property** (`rowHeightMode`, `lengthCutoffFilter`, `jexlFilters`,
-  `lineZoneHeight`) — persisted, with hand-rolled snapshot pruning in
-  `postProcessSnapshot`
+- **bespoke MST property** (`rowHeightMode`, `jexlFilters`, `lineZoneHeight`) —
+  persisted, with hand-rolled snapshot pruning in `postProcessSnapshot`
 - **volatile** (`showLegend`, `cellData`, `sourcesVolatile`) — session-only
 
 There is no single rule for which store a setting belongs in, and the two display
@@ -93,6 +92,51 @@ Critical invariant: **`rpcProps()` must not read fetch-derived state**
 (`sampleInfo`, `cellData`, or `sources`, which expands using `sampleInfo`). Doing
 so loops `SettingsInvalidate` → fetch → `setCellData` → invalidate. This is why
 `rpcProps` reads `sourcesBase` (pre-expansion) rather than `sources`.
+
+## Allele counting: three implementations on purpose, count inline
+
+`shared/alleleCounts.ts` has three allele-count functions that look like
+duplication but are each tuned to their execution context — don't "DRY" them into
+one shared accumulator + per-allele helper:
+
+- `calculateAlleleCountsFast` (VCF hot path) runs inside the `processGenotypes`
+  callback and accumulates into an **object** `b`, because a closure mutating
+  captured primitive `let`s forces a V8 Context allocation/deopt.
+- `calculateAlleleCounts` (genotypes object) and `calculateAlleleCountsFromRaw`
+  (int8 array) are plain `for` loops, so they use **local-variable** counters,
+  which beat object-property increments.
+
+General rule for this file: **count directly while iterating** ("iterate=count").
+A "transform+count" shape (build an intermediate array / object, then tally it)
+or pulling the per-allele classification into a function call regresses the
+per-feature × per-sample loop. Inline classification ladders here are
+intentional, not sloppy.
+
+Length filtering is **not** a built-in here anymore — it's expressed with general
+jexl filters (e.g. `jexl:get(feature,'end')-get(feature,'start')<1000`), same as
+the `maf()` jexl function in `index.ts`. The old `lengthCutoffFilter` slot was
+removed from the multi-sample path (it had no UI and was never set);
+`LDDisplay` keeps its own functional `lengthCutoffFilter`.
+
+## Edit-filters (jexl) wiring for multi-sample displays
+
+The "Edit filters" dialog writes `jexlFilters` on the model. They reach the
+worker via the **standard filter contract**, not a hand-threaded string[]:
+
+- the model exposes a `filters` getter (a `SerializableFilterChain`) and includes
+  it in `rpcProps()` — so editing filters both triggers a refetch
+  (`SettingsInvalidate`) and forwards the filters.
+- `MultiSampleVariantGet{CellData,GenotypeMatrix,ClusterGenotypeMatrix}` all
+  extend `RpcMethodTypeWithFiltersAndRenameRegions`, which serializes the chain to
+  string[] and rebuilds it in the worker **with `pluginManager.jexl`** (so
+  `maf()` and friends resolve). `execute` receives `args.filters` as a ready
+  chain.
+- the worker applies it in `getFeaturesThatPassMinorAlleleFrequencyFilter`
+  (`filterChain` param) alongside the MAF check — one pass, so cell-data and
+  clustering see the same filtered variant set.
+
+Pass `filters` as a `SerializableFilterChain` (not a raw string[]) at every call
+site — `serializeArguments` calls `.toJSON()` on it.
 
 ## Phased haplotype expansion has one home
 

@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { set1 } from '@jbrowse/core/ui/colors'
 import {
   SimpleFeature,
@@ -135,7 +136,7 @@ async function callMultiSampleVariantCellData(args: {
   rpcProps: {
     sources: ProcessedSource[]
     minorAlleleFrequencyFilter: number
-    lengthCutoffFilter: number
+    filters?: SerializableFilterChain
     renderingMode: string
     referenceDrawingMode: string
   }
@@ -216,10 +217,6 @@ export default function MultiSampleVariantBaseModelF(
           type: types.literal('LinearVariantMatrixDisplay'),
           configuration: ConfigurationReference(configSchema),
           rowHeightMode: types.optional(types.number, 0),
-          lengthCutoffFilter: types.optional(
-            types.number,
-            Number.MAX_SAFE_INTEGER,
-          ),
           jexlFilters: types.maybe(types.array(types.string)),
           lineZoneHeight: types.optional(types.number, 0),
         }),
@@ -234,8 +231,11 @@ export default function MultiSampleVariantBaseModelF(
           return snap
         }
 
-        // Strip properties from old BaseLinearDisplay snapshots
-        const { blockState, showLegend, showTooltips, ...cleaned } = snap
+        // Strip properties from old BaseLinearDisplay snapshots, plus
+        // lengthCutoffFilter (removed — length filtering is now done with
+        // general jexl filters, e.g. `jexl:get(feature,'end')-get(feature,'start')<N`).
+        const { blockState, showLegend, showTooltips, lengthCutoffFilter, ...cleaned } =
+          snap
         let next = cleaned
 
         // Rewrite "height" from older snapshots to "heightPreConfig"
@@ -508,6 +508,20 @@ export default function MultiSampleVariantBaseModelF(
           return self.getConfWithOverride<number>('minorAlleleFrequencyFilter')
         },
 
+        /**
+         * #getter
+         * The jexl filter expressions (from the Edit filters dialog) as a
+         * SerializableFilterChain, ready to pass as the RPC `filters` arg.
+         * MultiSampleVariantGet{CellData,GenotypeMatrix,ClusterGenotypeMatrix}
+         * all extend RpcMethodTypeWithFiltersAndRenameRegions, which serializes
+         * this to string[] and rebuilds it in the worker with pluginManager.jexl.
+         */
+        get filters() {
+          return self.jexlFilters?.length
+            ? new SerializableFilterChain({ filters: [...self.jexlFilters] })
+            : undefined
+        },
+
         get showSidebarLabels() {
           return self.getConfWithOverride<boolean>('showSidebarLabels')
         },
@@ -611,7 +625,7 @@ export default function MultiSampleVariantBaseModelF(
           return {
             sources: self.sourcesBase,
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
-            lengthCutoffFilter: self.lengthCutoffFilter,
+            filters: self.filters,
             renderingMode: self.renderingMode,
             referenceDrawingMode: self.referenceDrawingMode,
           }
@@ -931,7 +945,6 @@ export default function MultiSampleVariantBaseModelF(
         getPortableSettings() {
           return {
             configOverrides: self.configOverrides,
-            lengthCutoffFilter: self.lengthCutoffFilter,
             jexlFilters: self.jexlFilters,
             clusterTree: self.clusterTree,
             treeAreaWidth: self.treeAreaWidth,
@@ -1094,7 +1107,6 @@ export default function MultiSampleVariantBaseModelF(
         const {
           layout,
           rowHeightMode,
-          lengthCutoffFilter,
           jexlFilters,
           clusterTree,
           treeAreaWidth,
@@ -1105,9 +1117,6 @@ export default function MultiSampleVariantBaseModelF(
           ...rest,
           ...(layout.length ? { layout } : {}),
           ...(rowHeightMode !== 0 ? { rowHeightMode } : {}),
-          ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER
-            ? { lengthCutoffFilter }
-            : {}),
           ...(jexlFilters?.length ? { jexlFilters } : {}),
           ...(clusterTree !== undefined ? { clusterTree } : {}),
           ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),

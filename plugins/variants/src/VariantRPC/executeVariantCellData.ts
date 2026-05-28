@@ -126,7 +126,7 @@ export async function executeVariantCellData({
     renderingMode,
     referenceDrawingMode,
     minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
+    filters,
     regions,
     adapterConfig,
     sessionId,
@@ -208,7 +208,7 @@ export async function executeVariantCellData({
       const regionMafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
         features,
         minorAlleleFrequencyFilter,
-        lengthCutoffFilter,
+        filterChain: filters,
         genotypesCache,
       })
       perRegionMafs.set(regionNum, regionMafs)
@@ -222,7 +222,7 @@ export async function executeVariantCellData({
       getFeaturesThatPassMinorAlleleFrequencyFilter({
         features: rawFeatures,
         minorAlleleFrequencyFilter,
-        lengthCutoffFilter,
+        filterChain: filters,
         genotypesCache,
       }),
     )

@@ -17,10 +17,8 @@ import VariantTrackF from './VariantTrack/index.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import ExtensionPointsF from './VcfExtensionPoints/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
-import {
-  calculateAlleleCounts,
-  calculateMinorAlleleFrequency,
-} from './shared/minorAlleleFrequencyUtils.ts'
+import { calculateAlleleCounts } from './shared/alleleCounts.ts'
+import { calculateMinorAlleleFrequency } from './shared/minorAlleleFrequencyUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'

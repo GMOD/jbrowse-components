@@ -1,5 +1,7 @@
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+
+import { calculateAlleleCounts } from './alleleCounts.ts'
 import {
-  calculateAlleleCounts,
   calculateMinorAlleleFrequency,
   getFeaturesThatPassMinorAlleleFrequencyFilter,
 } from './minorAlleleFrequencyUtils.ts'
@@ -277,37 +279,26 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
       features,
       minorAlleleFrequencyFilter: 0.2,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(1)
     expect(result[0]!.feature.id()).toBe('snp2')
   })
 
-  it('filters out variants exceeding length cutoff', () => {
+  it('applies a jexl filter chain (e.g. length filtering via jexl)', () => {
     const features = [
-      // Length = 1 (should pass with cutoff 10)
-      createMockFeature('snp1', 100, 101, {
-        s1: '0/1',
-        s2: '0/1',
-        s3: '0/1',
-        s4: '0/1',
-        s5: '0/1',
-      }),
-      // Length = 50 (should be filtered with cutoff 10)
-      createMockFeature('indel1', 200, 250, {
-        s1: '0/1',
-        s2: '0/1',
-        s3: '0/1',
-        s4: '0/1',
-        s5: '0/1',
-      }),
+      // Length 1 — passes the jexl length filter below
+      createMockFeature('snp1', 100, 101, { s1: '0/1', s2: '0/1' }),
+      // Length 50 — filtered out by the jexl length filter
+      createMockFeature('indel1', 200, 250, { s1: '0/1', s2: '0/1' }),
     ]
 
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
       features,
       minorAlleleFrequencyFilter: 0,
-      lengthCutoffFilter: 10,
+      filterChain: new SerializableFilterChain({
+        filters: ["jexl:get(feature,'end')-get(feature,'start')<10"],
+      }),
     })
 
     expect(result).toHaveLength(1)
@@ -328,7 +319,6 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
       features,
       minorAlleleFrequencyFilter: 0,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(1)
@@ -349,7 +339,6 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
       features,
       minorAlleleFrequencyFilter: 0,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(1)
@@ -371,7 +360,6 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
       features,
       minorAlleleFrequencyFilter: 0.01,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(0)
@@ -393,7 +381,6 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
       features: features2,
       minorAlleleFrequencyFilter: 0.2,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(1)
@@ -403,7 +390,6 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
       features: [],
       minorAlleleFrequencyFilter: 0.01,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(0)
@@ -418,7 +404,6 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     getFeaturesThatPassMinorAlleleFrequencyFilter({
       features,
       minorAlleleFrequencyFilter: 0,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
       genotypesCache,
     })
 

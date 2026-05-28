@@ -10,6 +10,7 @@ import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { LastStopTokenCheck, Region } from '@jbrowse/core/util'
 
 export async function getPhasedGenotypeMatrix({
@@ -26,7 +27,7 @@ export async function getPhasedGenotypeMatrix({
     sources: Source[]
     bpPerPx?: number
     minorAlleleFrequencyFilter: number
-    lengthCutoffFilter: number
+    filters?: SerializableFilterChain
     sampleInfo: Record<string, SampleInfo>
     statusCallback?: (arg: string) => void
   }
@@ -34,10 +35,10 @@ export async function getPhasedGenotypeMatrix({
   const {
     sources,
     minorAlleleFrequencyFilter,
+    filters,
     regions,
     adapterConfig,
     sessionId,
-    lengthCutoffFilter,
     stopTokenCheck,
     sampleInfo,
     statusCallback,
@@ -57,7 +58,7 @@ export async function getPhasedGenotypeMatrix({
 
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
+    filterChain: filters,
     stopTokenCheck,
     features: await updateStatus('Loading features', statusCallback, () =>
       firstValueFrom(

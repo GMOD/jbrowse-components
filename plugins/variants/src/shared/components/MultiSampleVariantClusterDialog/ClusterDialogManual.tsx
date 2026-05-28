@@ -60,7 +60,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
       const {
         sourcesWithoutLayout,
         minorAlleleFrequencyFilter,
-        lengthCutoffFilter,
+        filters,
         adapterConfig,
       } = model
       const sessionId = getRpcSessionId(model)
@@ -68,7 +68,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
         regions: view.dynamicBlocks.contentBlocks,
         sources: sourcesWithoutLayout ?? [],
         minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
-        lengthCutoffFilter,
+        filters,
         sessionId,
         adapterConfig,
       })

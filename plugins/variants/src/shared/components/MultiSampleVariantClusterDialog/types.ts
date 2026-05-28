@@ -1,12 +1,13 @@
 import type { SampleInfo, Source } from '../../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
 export interface ReducedModel {
   layout: Source[]
   sourcesWithoutLayout?: Source[]
   sourcesVolatile?: Source[]
   minorAlleleFrequencyFilter?: number
-  lengthCutoffFilter: number
+  filters?: SerializableFilterChain
   adapterConfig: AnyConfigurationModel
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>

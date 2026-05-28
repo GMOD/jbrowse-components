@@ -10,6 +10,7 @@ import { getPhasedGenotypeMatrix } from './getPhasedGenotypeMatrix.ts'
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Region, StopToken } from '@jbrowse/core/util'
 
 export async function executeClusterGenotypeMatrix({
@@ -25,7 +26,7 @@ export async function executeClusterGenotypeMatrix({
     regions: Region[]
     bpPerPx?: number
     minorAlleleFrequencyFilter: number
-    lengthCutoffFilter: number
+    filters?: SerializableFilterChain
     statusCallback: (arg: string) => void
     sources: Source[]
     renderingMode?: string
