@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 
-import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import { getPreparedCanvas2D } from '@jbrowse/core/gpu/canvas2dUtils'
 import { ErrorBar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { Alert, useTheme } from '@mui/material'
@@ -32,33 +32,28 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
 
   useEffect(() => {
     return autorun(function sequenceDrawAutorun() {
-      const canvas = canvasRef.current
-      if (!canvas || model.sequenceData.size === 0) {
-        return
-      }
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        return
-      }
+      if (model.sequenceData.size > 0) {
+        const cssWidth = view.trackWidthPx
+        const cssHeight = model.height
+        const ctx = getPreparedCanvas2D(canvasRef.current, cssWidth, cssHeight)
+        if (ctx) {
+          ctx.fillStyle = '#fff'
+          ctx.fillRect(0, 0, cssWidth, cssHeight)
 
-      const cssWidth = view.trackWidthPx
-      const cssHeight = model.height
-      prepareCanvas(canvas, ctx, cssWidth, cssHeight)
-      ctx.fillStyle = '#fff'
-      ctx.fillRect(0, 0, cssWidth, cssHeight)
-
-      drawSequenceBlocks(ctx, model.sequenceData, model.renderBlocks, {
-        bpPerPx: view.bpPerPx,
-        showForward: model.showForward,
-        showReverse: model.isDna && model.showReverse,
-        showTranslation: model.isDna && model.showTranslation,
-        sequenceType: model.sequenceType,
-        rowHeight: model.rowHeight,
-        palette,
-        textColors,
-        canvasWidth: cssWidth,
-        canvasHeight: cssHeight,
-      })
+          drawSequenceBlocks(ctx, model.sequenceData, model.renderBlocks, {
+            bpPerPx: view.bpPerPx,
+            showForward: model.showForward,
+            showReverse: model.isDna && model.showReverse,
+            showTranslation: model.isDna && model.showTranslation,
+            sequenceType: model.sequenceType,
+            rowHeight: model.rowHeight,
+            palette,
+            textColors,
+            canvasWidth: cssWidth,
+            canvasHeight: cssHeight,
+          })
+        }
+      }
     })
   }, [model, view, palette, textColors])
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 
-import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import { getPreparedCanvas2D } from '@jbrowse/core/gpu/canvas2dUtils'
 import { getContainingView } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
@@ -34,24 +34,17 @@ const MafCoverageCanvas = observer(function MafCoverageCanvas({
   const { showCoverage, coverageHeight } = model
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas) {
-      const ctx = canvas.getContext('2d')
-      return ctx
-        ? autorun(() => {
-            prepareCanvas(canvas, ctx, width, coverageHeight)
-            if (showCoverage) {
-              drawMafCoverage(ctx, model.renderBlocks, model.rpcDataMap, {
-                coverageHeight,
-                canvasWidth: width,
-                domainMax: model.coverageDomain?.[1] ?? 0,
-                theme,
-              })
-            }
-          })
-        : undefined
-    }
-    return undefined
+    return autorun(() => {
+      const ctx = getPreparedCanvas2D(canvasRef.current, width, coverageHeight)
+      if (ctx && showCoverage) {
+        drawMafCoverage(ctx, model.renderBlocks, model.rpcDataMap, {
+          coverageHeight,
+          canvasWidth: width,
+          domainMax: model.coverageDomain?.[1] ?? 0,
+          theme,
+        })
+      }
+    })
   }, [model, width, coverageHeight, showCoverage, theme])
 
   return showCoverage ? (

@@ -58,6 +58,26 @@ export function prepareCanvas(
   ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 }
 
+// Acquire a DPR-prepared 2D context from a (possibly null) canvas ref, or null
+// if the canvas/context isn't available. Bundles the
+// `getContext('2d')` + null-guard + `prepareCanvas` ritual that every
+// standalone 2D overlay otherwise hand-rolls in its draw effect — and the
+// `prepareCanvas` DPR step is easy to omit, which renders blurry on Retina
+// (see agent-docs/ARCHITECTURE.md "Canvas scaling & hi-DPI"). Returning the
+// prepared ctx structurally prevents that omission.
+export function getPreparedCanvas2D(
+  canvas: HTMLCanvasElement | null,
+  width: number,
+  height: number,
+): CanvasRenderingContext2D | null {
+  const ctx = canvas?.getContext('2d')
+  if (canvas && ctx) {
+    prepareCanvas(canvas, ctx, width, height)
+    return ctx
+  }
+  return null
+}
+
 // Integer scissor rect (CSS px) for a block clamped to the canvas. Shared by
 // the GPU (`clipBlock`) and Canvas2D (`clipBlockForCanvas`) clip paths so both
 // backends clip to the exact same pixel columns — the rounding lives in one
