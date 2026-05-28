@@ -594,7 +594,7 @@ importers:
         version: link:../core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.8.7
-        version: 5.8.7(mobx@6.15.3)
+        version: 5.8.7(mobx@6.15.4)
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
@@ -603,7 +603,7 @@ importers:
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       mobx-react:
         specifier: ^9.2.1
-        version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 9.2.1(mobx@6.15.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
 
   packages/text-indexing:
     dependencies:
@@ -701,7 +701,7 @@ importers:
         version: 9.0.0
       mobx-react:
         specifier: ^9.2.1
-        version: 9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 9.2.1(mobx@6.15.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
         specifier: '>=18.0.0'
         version: 19.2.6
@@ -1779,8 +1779,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2
       tmp:
-        specifier: ^0.2.5
-        version: 0.2.5
+        specifier: ^0.2.6
+        version: 0.2.6
 
   products/jbrowse-desktop:
     dependencies:
@@ -1982,7 +1982,7 @@ importers:
         version: 11.14.0(@types/react@19.2.15)(react@19.2.6)
       '@jbrowse/mobx-state-tree':
         specifier: ^5.6.6
-        version: 5.8.7(mobx@6.15.3)
+        version: 5.8.7(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -2005,8 +2005,8 @@ importers:
         specifier: ^19.2.6
         version: 19.2.6(react@19.2.6)
       tmp:
-        specifier: ^0.2.5
-        version: 0.2.5
+        specifier: ^0.2.6
+        version: 0.2.6
       yargs:
         specifier: ^18.0.0
         version: 18.0.0
@@ -8714,6 +8714,9 @@ packages:
   mobx@6.15.3:
     resolution: {integrity: sha512-6+ZSYDs5zgH5CdGfEU2q2Lsa5PztVryL1ys7kAImTU25n2A9LAMj/yneVsQpd03MfwMLDQF+7kakJR9Z+cQxSw==}
 
+  mobx@6.15.4:
+    resolution: {integrity: sha512-do+2UsEKRVT70W/QqP2F2sju2x4p2xZo+5/azXqKjXgTk2jfmzsLjzwW0YI8CBEjy4ZUdU8EunXocXXwJdCrtw==}
+
   mrmime@2.0.1:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
     engines: {node: '>=10'}
@@ -10154,8 +10157,8 @@ packages:
     resolution: {integrity: sha512-WMi/OQ2axVTf/ykqCQgXiIct+mSQDFdH2fkwhPwgEwvJ1kSzZRiinb0zF2Xb8u4+OqPChmyI6MEu4EezNJz+FQ==}
     hasBin: true
 
-  tmp@0.2.5:
-    resolution: {integrity: sha512-voyz6MApa1rQGUxT3E+BK7/ROe8itEx7vD8/HEvt4xwXucvQ5G5oeEiHkmHZJuBO21RpOf+YYm9MOivj709jow==}
+  tmp@0.2.6:
+    resolution: {integrity: sha512-5sJPdPjfI5Kx+qbrDesxkglRBxW//g7hCsqspEjwkewGvBMGIKMOTKzLt1hFVJzyadba3lDUN20O9qhvbQUSTA==}
     engines: {node: '>=14.14'}
 
   tmpl@1.0.5:
@@ -12438,6 +12441,10 @@ snapshots:
   '@jbrowse/mobx-state-tree@5.8.7(mobx@6.15.3)':
     dependencies:
       mobx: 6.15.3
+
+  '@jbrowse/mobx-state-tree@5.8.7(mobx@6.15.4)':
+    dependencies:
+      mobx: 6.15.4
 
   '@jbrowse/quick-lru@7.3.5': {}
 
@@ -18045,6 +18052,14 @@ snapshots:
     optionalDependencies:
       react-dom: 19.2.6(react@19.2.6)
 
+  mobx-react-lite@4.1.1(mobx@6.15.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
+    dependencies:
+      mobx: 6.15.4
+      react: 19.2.6
+      use-sync-external-store: 1.6.0(react@19.2.6)
+    optionalDependencies:
+      react-dom: 19.2.6(react@19.2.6)
+
   mobx-react@9.2.1(mobx@6.15.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
       mobx: 6.15.3
@@ -18053,7 +18068,17 @@ snapshots:
     optionalDependencies:
       react-dom: 19.2.6(react@19.2.6)
 
+  mobx-react@9.2.1(mobx@6.15.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
+    dependencies:
+      mobx: 6.15.4
+      mobx-react-lite: 4.1.1(mobx@6.15.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react: 19.2.6
+    optionalDependencies:
+      react-dom: 19.2.6(react@19.2.6)
+
   mobx@6.15.3: {}
+
+  mobx@6.15.4: {}
 
   mrmime@2.0.1: {}
 
@@ -19165,7 +19190,7 @@ snapshots:
     dependencies:
       '@bazel/runfiles': 6.5.0
       jszip: 3.10.1
-      tmp: 0.2.5
+      tmp: 0.2.6
       ws: 8.21.0
     transitivePeerDependencies:
       - bufferutil
@@ -19825,7 +19850,7 @@ snapshots:
     dependencies:
       tldts-core: 6.1.86
 
-  tmp@0.2.5: {}
+  tmp@0.2.6: {}
 
   tmpl@1.0.5: {}
 
