@@ -1,0 +1,118 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks'
+import {
+  BreakpointSplitExample,
+  CircularExample,
+  DotplotExample,
+  SpreadsheetExample,
+  SvInspectorExample,
+} from './JBrowseReactApp.stories'
+
+<Meta title="View Types" />
+
+# View types via declarative `init`
+
+`react-app2` can hold any view type the bundled plugins provide, and each is
+launched the same declarative way: a `defaultSession.views` entry with a `type`
+and an `init` field. `init` is the same shape JBrowse Web serializes into its
+`?session=spec-…` URL parameter (see the
+[URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/)) — so these
+examples are the programmatic equivalent of those URLs.
+
+`LinearGenomeView` and `LinearSyntenyView` are covered in
+[Multiple Views](?path=/docs/multiple-views--docs); this page collects the
+others.
+
+## Dotplot
+
+`DotplotView` compares two assemblies as a 2D dotplot. `init.views` lists the
+two assemblies; `tracks` lists the synteny tracks. (Self-vs-self is allowed.)
+
+```js
+{
+  id: 'dotplot_view',
+  type: 'DotplotView',
+  init: {
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
+    tracks: ['volvox_fake_synteny'],
+  },
+}
+```
+
+<Story of={DotplotExample} />
+
+## Circular
+
+`CircularView` renders structural variants as arcs around a circular ideogram.
+`init` takes a single `assembly` and the `tracks` to show.
+
+```js
+{
+  id: 'circular_view',
+  type: 'CircularView',
+  init: {
+    assembly: 'volvox',
+    tracks: ['volvox_sv_test'],
+  },
+}
+```
+
+<Story of={CircularExample} />
+
+## Spreadsheet
+
+`SpreadsheetView` opens a tabular file (e.g. a VCF) as a sortable, filterable
+spreadsheet. `init` takes the `assembly` and a `uri` to the file — note `uri`
+is on `init`, not a track config.
+
+```js
+{
+  id: 'spreadsheet_view',
+  type: 'SpreadsheetView',
+  init: {
+    assembly: 'volvox',
+    uri: 'test_data/volvox/volvox.filtered.vcf.gz',
+  },
+}
+```
+
+<Story of={SpreadsheetExample} />
+
+## SV inspector
+
+`SvInspectorView` pairs a spreadsheet of structural variants with a circular
+view, so clicking a row navigates the breakpoints. Same `init` shape as the
+spreadsheet view.
+
+```js
+{
+  id: 'sv_inspector_view',
+  type: 'SvInspectorView',
+  init: {
+    assembly: 'volvox',
+    uri: 'test_data/volvox/volvox.dup.vcf.gz',
+  },
+}
+```
+
+<Story of={SvInspectorExample} />
+
+## Breakpoint split view
+
+`BreakpointSplitView` stacks two (or more) linear genome views and draws curves
+between the breakpoints of split/translocated reads. `init.views` is an array
+of `{ loc, assembly, tracks }` — one per stacked panel.
+
+```js
+{
+  id: 'breakpoint_split_view',
+  type: 'BreakpointSplitView',
+  init: {
+    views: [
+      { loc: 'ctgA:1-5000', assembly: 'volvox', tracks: ['volvox_sv_cram'] },
+      { loc: 'ctgB:1-5000', assembly: 'volvox', tracks: ['volvox_sv_cram'] },
+    ],
+  },
+}
+```
+
+<Story of={BreakpointSplitExample} />

@@ -210,7 +210,10 @@ if it contains special characters or spaces.
 
 ### Linear genome view
 
-We can specify a "session spec" (short for specification) using JSON
+We can specify a "session spec" (short for specification) using JSON. Each view
+object below is the serialized form of a view's declarative `init` field; the
+embedded `@jbrowse/react-linear-genome-view2` component accepts the same shape
+directly via `defaultSession.view.init` (it does not parse URLs itself).
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "LinearGenomeView","tracks":["gff3tabix_genes","volvox_filtered_vcf","volvox_microarray","volvox_cram"]}]}
@@ -323,6 +326,42 @@ Expanded JSON:
           "trackId": "volvox_sv_cram",
           "displaySnapshot": {
             "type": "LinearReadCloudDisplay"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Live example: alignments display settings
+
+`displaySnapshot` is not limited to overriding the display `type` — it can set
+any of the display's own settings. This opens an alignments track colored by
+pair orientation, with soft-clipped bases shown and an enlarged height:
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"colorBySetting":{"type":"pairOrientation"}}}]}]}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"colorBySetting":{"type":"pairOrientation"}}}]}]})
+
+Expanded JSON:
+
+```json
+{
+  "views": [
+    {
+      "assembly": "volvox",
+      "loc": "ctgA:1-10000",
+      "type": "LinearGenomeView",
+      "tracks": [
+        {
+          "trackId": "volvox_sv_cram",
+          "displaySnapshot": {
+            "height": 250,
+            "showSoftClipping": true,
+            "colorBySetting": { "type": "pairOrientation" }
           }
         }
       ]
