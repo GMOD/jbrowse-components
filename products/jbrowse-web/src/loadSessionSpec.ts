@@ -54,6 +54,22 @@ export async function loadSessionSpec(
       rootModel.session.addTrackConf(track)
     }
 
+    // a view type with no registered LaunchView-<type> extension point (a
+    // typo, or a plugin that wasn't loaded) makes evaluateAsyncExtensionPoint
+    // a silent no-op, leaving an empty session with no diagnostic
+    const unknownViewTypes = [
+      ...new Set(
+        views
+          .map(view => view.type)
+          .filter(type => !pluginManager.extensionPoints.has(`LaunchView-${type}`)),
+      ),
+    ]
+    if (unknownViewTypes.length) {
+      rootModel.session?.notifyError(
+        `Unknown view type(s) in session spec: ${unknownViewTypes.join(', ')}. The plugin providing the view may be missing, or the type may be misspelled.`,
+      )
+    }
+
     await Promise.all(
       views.map(view =>
         pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${view.type}`, {

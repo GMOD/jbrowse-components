@@ -62,3 +62,16 @@ test('shows whole genome when no loc is specified', async () => {
     expect((elt as HTMLInputElement).value).toBe('ctgA:1..50,001 ctgB:1..6,079')
   }, delay)
 }, 60000)
+
+test('unknown view type in spec surfaces an error instead of failing silently', async () => {
+  jest.spyOn(console, 'error').mockImplementation()
+  const { findByText } = render(
+    <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"NonexistentView","assembly":"volvox"}]}' />,
+  )
+
+  await findByText(
+    /Unknown view type\(s\) in session spec: NonexistentView/,
+    {},
+    delay,
+  )
+}, 60000)

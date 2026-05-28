@@ -1,15 +1,11 @@
-import type { TrackInit } from '../LinearGenomeView/types.ts'
+import type { InitState } from '../LinearGenomeView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-export interface LaunchLinearGenomeViewArgs {
+// the launch args are the declarative InitState (with assembly relaxed to
+// optional, since it's validated at runtime below) plus the target session
+export type LaunchLinearGenomeViewArgs = Partial<InitState> & {
   session: AbstractSessionModel
-  assembly?: string
-  loc?: string
-  tracks?: TrackInit[]
-  tracklist?: boolean
-  nav?: boolean
-  highlight?: string[]
 }
 
 declare module '@jbrowse/core/PluginManager' {
