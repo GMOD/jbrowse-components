@@ -5,6 +5,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const AboutDialog = lazy(() => import('../ui/AboutDialog.tsx'))
@@ -20,7 +21,7 @@ export function TrackMenuSessionMixin(_pluginManager: PluginManager) {
        * #method
        */
       getTrackActionMenuItems(
-        config: any,
+        config: AnyConfigurationModel,
         extraTrackActions?: MenuItem[],
         effectiveConfig?: Record<string, unknown>,
         _view?: { showTrack: (id: string) => void },
