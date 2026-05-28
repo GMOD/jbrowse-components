@@ -26,13 +26,6 @@ export interface ErrorState {
   error: string
 }
 
-export function stitch(
-  subfeats: { start: number; end: number }[],
-  sequence: string,
-) {
-  return subfeats.map(sub => sequence.slice(sub.start, sub.end)).join('')
-}
-
 // filter items if they have the same "ID" or location
 function getItemId(feat: Feat) {
   return `${feat.start}-${feat.end}`
@@ -43,16 +36,6 @@ export function filterSuccessiveElementsWithSameStartAndEndCoord(list: Feat[]) {
   return list.filter(
     (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]!),
   )
-}
-
-export function revlist(list: Feat[], seqlen: number) {
-  return list
-    .map(sub => ({
-      ...sub,
-      start: seqlen - sub.end,
-      end: seqlen - sub.start,
-    }))
-    .sort((a, b) => a.start - b.start)
 }
 
 export function calculateUTRs(cds: Feat[], exons: Feat[]) {

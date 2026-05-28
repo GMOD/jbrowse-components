@@ -4,8 +4,7 @@ import CDNASequence from './seqtypes/CDNASequence.tsx'
 import CDSSequence from './seqtypes/CDSSequence.tsx'
 import GenomicSequence from './seqtypes/GenomicSequence.tsx'
 import ProteinSequence from './seqtypes/ProteinSequence.tsx'
-import { useSequenceData } from './useSequenceData.ts'
-import { defaultCodonTable, generateCodonTable } from '../../util/index.ts'
+import { getSequenceData } from './useSequenceData.ts'
 
 import type { SequenceFeatureDetailsModel } from './model.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
@@ -62,14 +61,7 @@ function RenderedSequenceComponent({
       )
 
     case 'protein':
-      return (
-        <ProteinSequence
-          model={model}
-          cds={cds}
-          codonTable={generateCodonTable(defaultCodonTable)}
-          sequence={seq}
-        />
-      )
+      return <ProteinSequence model={model} cds={cds} sequence={seq} />
 
     case 'gene':
       return (
@@ -145,7 +137,7 @@ const SequenceContents = observer(function SequenceContents({
   sequence: SeqState
   model: SequenceFeatureDetailsModel
 }) {
-  const sequenceData = useSequenceData({
+  const sequenceData = getSequenceData({
     feature,
     sequence,
   })

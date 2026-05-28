@@ -1,9 +1,8 @@
-import { revcom } from '../../util/index.ts'
+import { revcom, revlist } from '../../util/seqUtils.ts'
 import {
   calculateUTRs2,
   calculateUTRs,
   filterSuccessiveElementsWithSameStartAndEndCoord,
-  revlist,
 } from '../util.tsx'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
@@ -76,8 +75,8 @@ function handleReverseStrand(
   return {
     sequence: {
       seq: revcom(seq),
-      upstream: downstream ? revcom(downstream) : '',
-      downstream: upstream ? revcom(upstream) : '',
+      upstream: revcom(downstream),
+      downstream: revcom(upstream),
     },
     cds: revlist(cds, seq.length),
     exons: revlist(exons, seq.length),
@@ -85,7 +84,7 @@ function handleReverseStrand(
   }
 }
 
-export function useSequenceData({
+export function getSequenceData({
   feature,
   sequence,
 }: {

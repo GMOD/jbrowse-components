@@ -1,11 +1,10 @@
 import { Suspense, lazy, useRef, useState } from 'react'
 
-import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector.tsx'
-import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts'
+import { LoadingEllipses } from '../../ui/index.ts'
 import { getSession } from '../../util/index.ts'
 import { useFeatureSequence } from '../../util/useFeatureSequence.ts'
 
@@ -13,7 +12,7 @@ import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
 
 // lazies
-const SequencePanel = lazy(() => import('./SequencePanel.tsx'))
+const SequenceBody = lazy(() => import('./SequenceBody.tsx'))
 const SequenceDialog = lazy(() => import('./dialogs/SequenceDialog.tsx'))
 
 const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
@@ -70,40 +69,18 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
           />
         </Suspense>
       ) : (
-        <div>
-          {feature.type === 'gene' ? (
-            <Typography>
-              Note: inspect subfeature sequences for protein/CDS computations
-            </Typography>
-          ) : null}
-          {error ? (
-            <ErrorBanner error={error} />
-          ) : !sequence ? (
-            <LoadingEllipses />
-          ) : 'error' in sequence ? (
-            <>
-              <Typography color="error">{sequence.error}</Typography>
-              <Button
-                variant="contained"
-                color="inherit"
-                onClick={() => {
-                  setForceLoad(true)
-                }}
-              >
-                Force load
-              </Button>
-            </>
-          ) : (
-            <Suspense fallback={<LoadingEllipses />}>
-              <SequencePanel
-                ref={seqPanelRef}
-                feature={feature}
-                sequence={sequence}
-                model={sequenceFeatureDetails}
-              />
-            </Suspense>
-          )}
-        </div>
+        <Suspense fallback={<LoadingEllipses />}>
+          <SequenceBody
+            error={error}
+            sequence={sequence}
+            feature={feature}
+            seqPanelRef={seqPanelRef}
+            model={sequenceFeatureDetails}
+            onForceLoad={() => {
+              setForceLoad(true)
+            }}
+          />
+        </Suspense>
       )}
     </>
   )

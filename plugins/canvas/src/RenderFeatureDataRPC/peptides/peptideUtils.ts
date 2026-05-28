@@ -1,9 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import {
-  defaultCodonTable,
-  generateCodonTable,
-  revcom,
-} from '@jbrowse/core/util'
+import { codonTable, revcom, revlist } from '@jbrowse/core/util'
 import { convertCodingSequenceToPeptides } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 import { firstValueFrom, toArray } from 'rxjs'
 
@@ -11,8 +7,6 @@ import type { PeptideData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
-
-const codonTable = generateCodonTable(defaultCodonTable)
 
 export interface PeptideFetchProps {
   sessionId: string
@@ -119,14 +113,7 @@ function processTranscriptFromSeq(
   let processedSeq = seq
   if (strand === -1) {
     processedSeq = revcom(seq)
-    const seqLen = processedSeq.length
-    cds = cds
-      .map(r => ({
-        ...r,
-        start: seqLen - r.end,
-        end: seqLen - r.start,
-      }))
-      .reverse()
+    cds = revlist(cds, processedSeq.length)
   }
 
   try {

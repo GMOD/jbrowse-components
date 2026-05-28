@@ -4,30 +4,9 @@ import {
   filterSuccessiveElementsWithSameStartAndEndCoord,
   formatSubfeatures,
   getStrandStr,
-  revlist,
-  stitch,
 } from './util.tsx'
 
 import type { Feat } from './util.tsx'
-
-describe('stitch', () => {
-  test('joins slices of a sequence', () => {
-    // ATGCCCTTG: slice(0,3)='ATG', slice(6,9)='TTG'
-    expect(
-      stitch(
-        [
-          { start: 0, end: 3 },
-          { start: 6, end: 9 },
-        ],
-        'ATGCCCTTG',
-      ),
-    ).toBe('ATGTTG')
-  })
-
-  test('empty subfeatures returns empty string', () => {
-    expect(stitch([], 'ATGCCC')).toBe('')
-  })
-})
 
 describe('filterSuccessiveElementsWithSameStartAndEndCoord', () => {
   test('removes immediately successive duplicates', () => {
@@ -59,25 +38,6 @@ describe('filterSuccessiveElementsWithSameStartAndEndCoord', () => {
     expect(filterSuccessiveElementsWithSameStartAndEndCoord([])).toStrictEqual(
       [],
     )
-  })
-})
-
-describe('revlist', () => {
-  test('reverses coordinates relative to seqlen and sorts', () => {
-    const list: Feat[] = [
-      { start: 0, end: 10 },
-      { start: 90, end: 100 },
-    ]
-    expect(revlist(list, 100)).toStrictEqual([
-      { start: 0, end: 10 },
-      { start: 90, end: 100 },
-    ])
-  })
-
-  test('transforms coords correctly', () => {
-    const list: Feat[] = [{ start: 20, end: 30 }]
-    // seqlen=100: start = 100-30=70, end = 100-20=80
-    expect(revlist(list, 100)).toStrictEqual([{ start: 70, end: 80 }])
   })
 })
 

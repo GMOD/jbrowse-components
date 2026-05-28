@@ -48,8 +48,6 @@ export function useFeatureSequence({
               error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
             }
           }
-          const b = start - upDownBp
-          const e = end + upDownBp
           const [seq, upstream, downstream] = await Promise.all([
             fetchSeq({
               start,
@@ -58,20 +56,24 @@ export function useFeatureSequence({
               assemblyName: asmName,
               session: s,
             }),
-            fetchSeq({
-              start: Math.max(0, b),
-              end: start,
-              refName,
-              assemblyName: asmName,
-              session: s,
-            }),
-            fetchSeq({
-              start: end,
-              end: e,
-              refName,
-              assemblyName: asmName,
-              session: s,
-            }),
+            upDownBp > 0
+              ? fetchSeq({
+                  start: Math.max(0, start - upDownBp),
+                  end: start,
+                  refName,
+                  assemblyName: asmName,
+                  session: s,
+                })
+              : Promise.resolve(''),
+            upDownBp > 0
+              ? fetchSeq({
+                  start: end,
+                  end: end + upDownBp,
+                  refName,
+                  assemblyName: asmName,
+                  session: s,
+                })
+              : Promise.resolve(''),
           ] as const)
           return { seq, upstream, downstream }
         }

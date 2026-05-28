@@ -169,3 +169,19 @@ export function generateCodonTable(table: Record<string, string>) {
 }
 
 export const codonTable = generateCodonTable(defaultCodonTable)
+
+export function stitch(
+  subfeats: { start: number; end: number }[],
+  sequence: string,
+) {
+  return subfeats.map(sub => sequence.slice(sub.start, sub.end)).join('')
+}
+
+export function revlist<T extends { start: number; end: number }>(
+  list: T[],
+  seqlen: number,
+): T[] {
+  return list
+    .map(sub => ({ ...sub, start: seqlen - sub.end, end: seqlen - sub.start }) as T)
+    .sort((a, b) => a.start - b.start)
+}
