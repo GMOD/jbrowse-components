@@ -26,6 +26,28 @@ const useStyles = makeStyles()(theme => ({
 
 const supportsFileSystemAccess = isFileSystemAccessSupported() && !isElectron
 
+const LAST_LOCAL_FILE_DIR_KEY = 'jbrowse-last-local-file-dir'
+
+function getLastLocalFileDir() {
+  try {
+    return localStorage.getItem(LAST_LOCAL_FILE_DIR_KEY) ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
+function setLastLocalFileDir(filePath: string) {
+  try {
+    // works for both / and \ path separators
+    const idx = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'))
+    if (idx > 0) {
+      localStorage.setItem(LAST_LOCAL_FILE_DIR_KEY, filePath.slice(0, idx))
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
 function getFilename(location?: FileLocation) {
   if (!location) {
     return undefined
@@ -86,6 +108,28 @@ function FilePickerButton({
     )
   }
 
+  if (isElectron) {
+    return (
+      <Button
+        variant="outlined"
+        onClick={async () => {
+          // @ts-ignore - electron injects require onto window, needs to be ignore for now
+          const { ipcRenderer } = window.require('electron')
+          const filePath = (await ipcRenderer.invoke(
+            'promptOpenLocalFile',
+            getLastLocalFileDir(),
+          )) as string | undefined
+          if (filePath) {
+            setLastLocalFileDir(filePath)
+            setLocation({ localPath: filePath, locationType: 'LocalPathLocation' })
+          }
+        }}
+      >
+        Choose File
+      </Button>
+    )
+  }
+
   return (
     <Button variant="outlined" component="label">
       Choose File
@@ -95,18 +139,9 @@ function FilePickerButton({
         onChange={({ target }) => {
           const file = target.files?.[0]
           if (file) {
-            if (isElectron) {
-              // @ts-ignore - electron injects require onto window, needs to be ignore for now
-              const { webUtils } = window.require('electron')
-              setLocation({
-                localPath: webUtils.getPathForFile(file),
-                locationType: 'LocalPathLocation',
-              })
-            } else {
-              const loc = storeBlobLocation({ blob: file })
-              if ('blobId' in loc) {
-                setLocation(loc)
-              }
+            const loc = storeBlobLocation({ blob: file })
+            if ('blobId' in loc) {
+              setLocation(loc)
             }
           }
         }}

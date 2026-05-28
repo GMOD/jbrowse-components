@@ -49,6 +49,15 @@ export function registerFileHandlers(paths: AppPaths) {
     return choice.filePaths[0]
   })
 
+  ipcMain.handle('promptOpenLocalFile', async (_, defaultDir?: string) => {
+    const choice = await dialog.showOpenDialog({
+      defaultPath: defaultDir ?? app.getPath('home'),
+      filters: [{ name: 'All Files', extensions: ['*'] }],
+      properties: ['openFile'],
+    })
+    return choice.filePaths[0]
+  })
+
   ipcMain.handle('promptSessionSaveAs', async _ => {
     const choice = await dialog.showSaveDialog({
       defaultPath: paths.defaultSavePath,
