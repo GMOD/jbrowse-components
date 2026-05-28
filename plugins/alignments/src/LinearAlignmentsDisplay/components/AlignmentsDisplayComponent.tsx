@@ -29,12 +29,10 @@ const AlignmentsDisplayComponent = observer(
   }) {
     const { classes } = useStyles()
     const ref = useRef<HTMLDivElement>(null)
-    const [offsetMouseCoord, setOffsetMouseCoord] = useState<[number, number]>([
-      0, 0,
-    ])
-    const [clientMouseCoord, setClientMouseCoord] = useState<[number, number]>([
-      0, 0,
-    ])
+    const [mouseCoord, setMouseCoord] = useState<{
+      offset: [number, number]
+      client: [number, number]
+    }>({ offset: [0, 0], client: [0, 0] })
     const view = getContainingView(model) as LinearGenomeViewModel
 
     if (!view.initialized) {
@@ -52,12 +50,6 @@ const AlignmentsDisplayComponent = observer(
       contextMenuCoord,
     } = model
     const items = contextMenuCoord ? model.contextMenuItems() : []
-    const clearContextMenu = () => {
-      model.setContextMenuCoord(undefined)
-      model.setContextMenuFeature(undefined)
-      model.setContextMenuCigarHit(undefined)
-      model.setContextMenuIndicatorHit(undefined)
-    }
     return (
       <div
         ref={ref}
@@ -67,10 +59,11 @@ const AlignmentsDisplayComponent = observer(
           if (!ref.current) {
             return
           }
-          const rect = ref.current.getBoundingClientRect()
-          const { left, top } = rect
-          setOffsetMouseCoord([event.clientX - left, event.clientY - top])
-          setClientMouseCoord([event.clientX, event.clientY])
+          const { left, top } = ref.current.getBoundingClientRect()
+          setMouseCoord({
+            offset: [event.clientX - left, event.clientY - top],
+            client: [event.clientX, event.clientY],
+          })
         }}
       >
         <DisplayMessageComponent model={model} />
@@ -79,8 +72,8 @@ const AlignmentsDisplayComponent = observer(
           <TooltipComponent
             model={model}
             height={height}
-            offsetMouseCoord={offsetMouseCoord}
-            clientMouseCoord={clientMouseCoord}
+            offsetMouseCoord={mouseCoord.offset}
+            clientMouseCoord={mouseCoord.client}
           />
         </Suspense>
         {contextMenuCoord && items.length > 0 ? (
@@ -88,11 +81,12 @@ const AlignmentsDisplayComponent = observer(
             open
             onMenuItemClick={(_, callback) => {
               callback()
-              model.setContextMenuCoord(undefined)
             }}
-            onClose={clearContextMenu}
+            onClose={() => {
+              model.clearContextMenu()
+            }}
             slotProps={{
-              transition: { onExit: clearContextMenu },
+              transition: { onExit: () => { model.clearContextMenu() } },
             }}
             anchorReference="anchorPosition"
             anchorPosition={{

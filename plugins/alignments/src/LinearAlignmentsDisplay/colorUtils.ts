@@ -1,22 +1,9 @@
 import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 
+import { ColorScheme } from './constants.ts'
+
 import type { LinkedReadsMode } from './constants.ts'
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
-
-const CS_NORMAL = 0
-const CS_INSERT_SIZE = 3
-const CS_PAIR_ORIENTATION = 5
-const CS_INSERT_SIZE_AND_ORIENTATION = 6
-const CS_INSERT_SIZE_GRADIENT = 10
-
-function isOrientationScheme(cs: number) {
-  return (
-    cs === CS_INSERT_SIZE ||
-    cs === CS_PAIR_ORIENTATION ||
-    cs === CS_INSERT_SIZE_AND_ORIENTATION ||
-    cs === CS_INSERT_SIZE_GRADIENT
-  )
-}
 
 // Re-exports from core — kept for backwards-compat with call sites.
 export const rgb255 = normalizedRgbToCss
@@ -26,30 +13,6 @@ function lerpRgb255(a: RGBColor, b: RGBColor, t: number) {
   const g = Math.round((a[1] + (b[1] - a[1]) * t) * 255)
   const bl = Math.round((a[2] + (b[2] - a[2]) * t) * 255)
   return `rgb(${r},${g},${bl})`
-}
-
-function hslToRgbString(h: number, s: number, l: number) {
-  const c = (1 - Math.abs(2 * l - 1)) * s
-  const hp = h * 6
-  const x = c * (1 - Math.abs((hp % 2) - 1))
-  const m = l - c / 2
-  let r: number
-  let g: number
-  let b: number
-  if (hp < 1) {
-    ;[r, g, b] = [c, x, 0]
-  } else if (hp < 2) {
-    ;[r, g, b] = [x, c, 0]
-  } else if (hp < 3) {
-    ;[r, g, b] = [0, c, x]
-  } else if (hp < 4) {
-    ;[r, g, b] = [0, x, c]
-  } else if (hp < 5) {
-    ;[r, g, b] = [x, 0, c]
-  } else {
-    ;[r, g, b] = [c, 0, x]
-  }
-  return `rgb(${Math.round((r + m) * 255)},${Math.round((g + m) * 255)},${Math.round((b + m) * 255)})`
 }
 
 interface ReadColorData {
@@ -134,47 +97,44 @@ export function getReadColor(
   // unmapped mate (flag 8) — brown for orientation-aware schemes (tlen=0 would
   // miscolor as "short insert" pink), or normal scheme in linked-read mode
   const mateUnmapped = (flags & 8) !== 0
-  if (
-    mateUnmapped &&
-    (isOrientationScheme(colorScheme) || (colorScheme === CS_NORMAL && isChain))
-  ) {
+  const isOrientationScheme =
+    colorScheme === ColorScheme.insertSize ||
+    colorScheme === ColorScheme.pairOrientation ||
+    colorScheme === ColorScheme.insertSizeAndOrientation ||
+    colorScheme === ColorScheme.insertSizeGradient
+  if (mateUnmapped && (isOrientationScheme || (colorScheme === ColorScheme.normal && isChain))) {
     return rgb255(palette.colorUnmappedMate)
   }
 
   switch (colorScheme) {
-    // Normal
-    case 0:
+    case ColorScheme.normal:
       return rgb255(palette.colorPairLR)
 
-    // Strand
-    case 1:
+    case ColorScheme.strand:
       return strandColor(strand, palette)
 
-    // Mapping quality: hsl(mapq/360, 50%, 50%)
-    case 2:
-      return hslToRgbString(data.readMapqs[i]! / 360, 0.5, 0.5)
+    // hue = mapq degrees (0–255), browser native hsl() is fastest
+    case ColorScheme.mappingQuality:
+      return `hsl(${data.readMapqs[i]},50%,50%)`
 
-    // Insert size (threshold)
-    case 3:
+    case ColorScheme.insertSize:
       return insertSizeColor(
         data.readInsertSizes[i]!,
         data.insertSizeStats,
         palette,
       )
 
-    // First-of-pair strand
-    case 4: {
+    case ColorScheme.firstOfPairStrand: {
       const isFirst = (flags & 64) !== 0
       const effectiveStrand = isFirst ? strand : -strand
       return strandColor(effectiveStrand, palette)
     }
 
-    // Pair orientation
-    case 5:
+    case ColorScheme.pairOrientation:
       return pairOrientationColor(data.readPairOrientations[i]!, palette)
 
-    // Insert size + orientation (non-LR orientation wins, then insert size threshold)
-    case 6: {
+    // Non-LR orientation wins; otherwise fall back to insert-size threshold
+    case ColorScheme.insertSizeAndOrientation: {
       const po = data.readPairOrientations[i]!
       if (po === 2 || po === 3 || po === 4) {
         return pairOrientationColor(po, palette)
@@ -186,40 +146,35 @@ export function getReadColor(
       )
     }
 
-    // Modifications: fwd/rev strand tint
-    case 7: {
+    case ColorScheme.modifications: {
       const isReverse = (flags & 16) !== 0
       return rgb255(
         isReverse ? palette.colorModificationRev : palette.colorModificationFwd,
       )
     }
 
-    // Tag-based coloring
-    case 8: {
-      if (data.readTagColors.length > 0) {
-        const packed = data.readTagColors[i]!
-        if (packed !== 0) {
-          return abgrToCssRgba(packed)
-        }
-      }
-      return rgb255(palette.colorPairLR)
+    case ColorScheme.tag: {
+      const packed = data.readTagColors[i]
+      return packed ? abgrToCssRgba(packed) : rgb255(palette.colorPairLR)
     }
 
-    // Base quality: hsl(avgBaseQuality/360, 50%, 50%)
-    case 9:
-      return hslToRgbString(data.readAvgBaseQualities[i]! / 360, 0.5, 0.5)
+    // hue = avgBaseQuality degrees (0–255)
+    case ColorScheme.baseQuality:
+      return `hsl(${data.readAvgBaseQualities[i]},50%,50%)`
 
-    // Insert size (gradient)
-    case 10: {
+    case ColorScheme.insertSizeGradient: {
       const insertSize = data.readInsertSizes[i]!
       const stats = data.insertSizeStats
-      if (stats && insertSize > stats.upper) {
-        const t = Math.min((insertSize - stats.upper) / stats.upper, 1)
-        return lerpRgb255(palette.colorPairLR, palette.colorLongInsert, t)
-      }
-      if (stats && insertSize < stats.lower) {
-        const t = Math.min((stats.lower - insertSize) / stats.lower, 1)
-        return lerpRgb255(palette.colorPairLR, palette.colorShortInsert, t)
+      // Span = 6σ (upper−lower); gradient saturates at ~9σ from mean,
+      // giving meaningful range for outlier severity.
+      const span = stats ? stats.upper - stats.lower : 0
+      if (stats && span > 0) {
+        if (insertSize > stats.upper) {
+          return lerpRgb255(palette.colorPairLR, palette.colorLongInsert, Math.min((insertSize - stats.upper) / span, 1))
+        }
+        if (insertSize < stats.lower) {
+          return lerpRgb255(palette.colorPairLR, palette.colorShortInsert, Math.min((stats.lower - insertSize) / span, 1))
+        }
       }
       return rgb255(palette.colorPairLR)
     }

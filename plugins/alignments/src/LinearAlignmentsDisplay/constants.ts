@@ -14,6 +14,20 @@ export {
 
 export const INSERTION_SERIF_MIN_PX_PER_BP = 3
 
+export const ColorScheme = {
+  normal: 0,
+  strand: 1,
+  mappingQuality: 2,
+  insertSize: 3,
+  firstOfPairStrand: 4,
+  pairOrientation: 5,
+  insertSizeAndOrientation: 6,
+  modifications: 7,
+  tag: 8,
+  baseQuality: 9,
+  insertSizeGradient: 10,
+} as const
+
 export const ALIGNMENTS_FUDGE_FACTOR = 0.8
 
 // Linked-reads rendering mode. 'off' → ordinary pileup; 'normal' → chain

@@ -29,6 +29,8 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { observable } from 'mobx'
 
+import { ColorScheme } from './constants.ts'
+import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
 import { buildLaidOutChainMap } from './computeChainLayout.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
@@ -177,19 +179,7 @@ const AlignmentsTooltip = lazy(
   () => import('./components/AlignmentsTooltip.tsx'),
 )
 
-export const ColorScheme = {
-  normal: 0,
-  strand: 1,
-  mappingQuality: 2,
-  insertSize: 3,
-  firstOfPairStrand: 4,
-  pairOrientation: 5,
-  insertSizeAndOrientation: 6,
-  modifications: 7,
-  tag: 8,
-  baseQuality: 9,
-  insertSizeGradient: 10,
-} as const
+export { ColorScheme } from './constants.ts'
 
 // colorBy.type → shader colorScheme index. Aliases listed explicitly:
 //   stranded → firstOfPairStrand
@@ -216,18 +206,6 @@ const COLOR_BY_TO_SCHEME: Record<string, number> = {
 
 // Material UI 200-tone palette for color-by-tag values. The first value
 // hit gets index 0, the eleventh wraps to index 0 again.
-const TAG_COLOR_PALETTE = [
-  '#90caf9',
-  '#f48fb1',
-  '#a5d6a7',
-  '#fff59d',
-  '#ffab91',
-  '#ce93d8',
-  '#80deea',
-  '#c5e1a5',
-  '#ffe082',
-  '#bcaaa4',
-]
 
 /**
  * State model factory for LinearAlignmentsDisplay
@@ -407,10 +385,6 @@ export default function stateModelFactory(
 
         get showLegend() {
           return self.getOverride<boolean>('showLegend')
-        },
-
-        get regionTooLarge() {
-          return self.regionTooLargeState
         },
 
         get sortedBy() {
@@ -959,16 +933,7 @@ export default function stateModelFactory(
           },
 
           updateColorTagMap(uniqueTag: string[]) {
-            const map = { ...self.colorTagMap }
-            let next = Object.keys(map).length
-            let added = false
-            for (const value of uniqueTag) {
-              if (!map[value]) {
-                map[value] = TAG_COLOR_PALETTE[next % TAG_COLOR_PALETTE.length]!
-                next++
-                added = true
-              }
-            }
+            const { map, added } = updateColorTagMapPure(self.colorTagMap, uniqueTag)
             self.colorTagMap = map
             return added
           },
@@ -1230,6 +1195,13 @@ export default function stateModelFactory(
 
           setContextMenuIndicatorHit(hit?: IndicatorHitResult) {
             self.contextMenuIndicatorHit = hit
+          },
+
+          clearContextMenu() {
+            self.contextMenuCoord = undefined
+            self.contextMenuFeature = undefined
+            self.contextMenuCigarHit = undefined
+            self.contextMenuIndicatorHit = undefined
           },
 
           setContextMenuRefName(refName?: string) {

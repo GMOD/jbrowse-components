@@ -133,7 +133,7 @@ export async function executeRenderChainData({
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const cIdx = featureIdToChainIdx.get(f.id) ?? 0
-    readChainHasSupp[i] = chainSuppTypes[cIdx] ? 1 : 0
+    readChainHasSupp[i] = chainSuppTypes[cIdx]!
     readChainIndices[i] = cIdx
     readNextRefs.push(f.nextRef ?? '')
     if (!chainFirstReadSeen[cIdx]) {

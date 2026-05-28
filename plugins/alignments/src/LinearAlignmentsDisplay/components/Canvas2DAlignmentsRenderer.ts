@@ -112,48 +112,46 @@ function buildCigarFields(data: CigarUploadData) {
   }
 }
 
-function emptyPileupFields(): Canvas2DRegionData {
-  return {
-    ...emptyReadFields(),
-    gapPositions: new Uint32Array(0),
-    gapYs: new Uint16Array(0),
-    gapTypes: new Uint8Array(0),
-    gapFrequencies: new Uint8Array(0),
-    mismatchPositions: new Uint32Array(0),
-    mismatchYs: new Uint16Array(0),
-    mismatchBases: new Uint8Array(0),
-    mismatchFrequencies: new Uint8Array(0),
-    insertionPositions: new Uint32Array(0),
-    insertionYs: new Uint16Array(0),
-    insertionLengths: new Uint16Array(0),
-    insertionFrequencies: new Uint8Array(0),
-    softclipPositions: new Uint32Array(0),
-    softclipYs: new Uint16Array(0),
-    hardclipPositions: new Uint32Array(0),
-    hardclipYs: new Uint16Array(0),
-    softclipBasePositions: new Uint32Array(0),
-    softclipBaseYs: new Uint16Array(0),
-    softclipBaseBases: new Uint8Array(0),
-    modificationPositions: new Uint32Array(0),
-    modificationYs: new Uint16Array(0),
-    modificationColors: new Uint32Array(0),
-    perBaseQualPositions: new Uint32Array(0),
-    perBaseQualYs: new Uint16Array(0),
-    perBaseQualScores: new Uint8Array(0),
-    ...emptyCoverageFields(),
-    snpPackedBuffer: new ArrayBuffer(0),
-    modCovPackedBuffer: new ArrayBuffer(0),
-    interbasePackedBuffer: new ArrayBuffer(0),
-    interbaseMaxCount: 0,
-    indicatorPackedBuffer: new ArrayBuffer(0),
-    ...emptyArcsUploadData(),
-    connectingLinePositions: new Uint32Array(0),
-    connectingLineYs: new Uint16Array(0),
-    linkedReadLinePositions: new Uint32Array(0),
-    linkedReadLineYs: new Uint16Array(0),
-    linkedReadLineColorTypes: new Uint8Array(0),
-    numLinkedReadLines: 0,
-  }
+const EMPTY_PILEUP_FIELDS: Canvas2DRegionData = {
+  ...emptyReadFields(),
+  gapPositions: new Uint32Array(0),
+  gapYs: new Uint16Array(0),
+  gapTypes: new Uint8Array(0),
+  gapFrequencies: new Uint8Array(0),
+  mismatchPositions: new Uint32Array(0),
+  mismatchYs: new Uint16Array(0),
+  mismatchBases: new Uint8Array(0),
+  mismatchFrequencies: new Uint8Array(0),
+  insertionPositions: new Uint32Array(0),
+  insertionYs: new Uint16Array(0),
+  insertionLengths: new Uint16Array(0),
+  insertionFrequencies: new Uint8Array(0),
+  softclipPositions: new Uint32Array(0),
+  softclipYs: new Uint16Array(0),
+  hardclipPositions: new Uint32Array(0),
+  hardclipYs: new Uint16Array(0),
+  softclipBasePositions: new Uint32Array(0),
+  softclipBaseYs: new Uint16Array(0),
+  softclipBaseBases: new Uint8Array(0),
+  modificationPositions: new Uint32Array(0),
+  modificationYs: new Uint16Array(0),
+  modificationColors: new Uint32Array(0),
+  perBaseQualPositions: new Uint32Array(0),
+  perBaseQualYs: new Uint16Array(0),
+  perBaseQualScores: new Uint8Array(0),
+  ...emptyCoverageFields(),
+  snpPackedBuffer: new ArrayBuffer(0),
+  modCovPackedBuffer: new ArrayBuffer(0),
+  interbasePackedBuffer: new ArrayBuffer(0),
+  interbaseMaxCount: 0,
+  indicatorPackedBuffer: new ArrayBuffer(0),
+  ...emptyArcsUploadData(),
+  connectingLinePositions: new Uint32Array(0),
+  connectingLineYs: new Uint16Array(0),
+  linkedReadLinePositions: new Uint32Array(0),
+  linkedReadLineYs: new Uint16Array(0),
+  linkedReadLineColorTypes: new Uint8Array(0),
+  numLinkedReadLines: 0,
 }
 
 function buildPileupRegion(
@@ -201,7 +199,7 @@ export function buildAlignmentsRegionMap(
   }
   for (const [idx, arcs] of arcsRpcDataMap) {
     if (!regions.has(idx)) {
-      regions.set(idx, { ...emptyPileupFields(), ...arcs })
+      regions.set(idx, { ...EMPTY_PILEUP_FIELDS, ...arcs })
     }
   }
   return regions
