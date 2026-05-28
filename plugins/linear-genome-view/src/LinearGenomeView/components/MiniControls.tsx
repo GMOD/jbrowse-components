@@ -67,19 +67,19 @@ const MiniControls = observer(function MiniControls({
           <>
             <IconButton
               data-testid="zoom_out"
+              disabled={effectiveBpPerPx >= maxBpPerPx - 0.0001}
               onClick={() => {
                 model.zoom(bpPerPx * 2)
               }}
-              disabled={effectiveBpPerPx >= maxBpPerPx - 0.0001}
             >
               <ZoomOut fontSize="small" />
             </IconButton>
             <IconButton
               data-testid="zoom_in"
+              disabled={effectiveBpPerPx <= minBpPerPx + 0.0001}
               onClick={() => {
                 model.zoom(bpPerPx / 2)
               }}
-              disabled={effectiveBpPerPx <= minBpPerPx + 0.0001}
             >
               <ZoomIn fontSize="small" />
             </IconButton>

@@ -34,7 +34,10 @@ const ShoppingCart = observer(function ShoppingCart({
   )
   const canDeleteAll =
     isSessionWithDeleteTrackConf(session) &&
-    definedSelection.every(elt => canEdit(elt.trackId))
+    definedSelection.every(
+      elt =>
+        canEdit(elt.trackId) && elt.type !== 'ReferenceSequenceTrack',
+    )
 
   return selection.length ? (
     <CascadingMenuButton
