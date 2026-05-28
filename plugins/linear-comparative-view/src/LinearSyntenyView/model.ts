@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
@@ -107,6 +107,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       importFormSyntenyTrackSelections:
         observable.array<ImportFormSyntenyTrack>(),
+      /**
+       * #volatile
+       * True while the init autorun is waiting for the first synteny RPC so
+       * it can diagonalize. Used to gate the canvas off — otherwise the user
+       * watches an undiagonalized hairball flash before the reorder kicks in.
+       */
+      awaitingAutoDiagonalize: false,
     }))
     .views(self => ({
       /**
@@ -134,7 +141,22 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * Whether to show a loading indicator instead of the import form or view
        */
       get showLoading() {
-        return self.isLoading || (!self.initialized && self.hasSomethingToShow)
+        return (
+          self.isLoading ||
+          self.awaitingAutoDiagonalize ||
+          (!self.initialized && self.hasSomethingToShow)
+        )
+      },
+      /**
+       * #getter
+       * Override the base loadingMessage so the spinner has a helpful label
+       * during the autoDiagonalize wait, instead of just "Loading".
+       */
+      get loadingMessage() {
+        if (self.awaitingAutoDiagonalize) {
+          return 'Reordering chromosomes…'
+        }
+        return this.showLoading ? 'Loading' : undefined
       },
       /**
        * #getter
@@ -224,6 +246,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setInit(init?: LinearSyntenyViewInit) {
         self.init = init
+      },
+      /**
+       * #action
+       */
+      setAwaitingAutoDiagonalize(arg: boolean) {
+        self.awaitingAutoDiagonalize = arg
       },
     }))
     .actions(self => ({
@@ -411,14 +439,22 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     })
     .actions(self => ({
       afterAttach() {
+        // Serialize concurrent firings: dockview mount + React Strict Mode
+        // double-invoke cause width to settle in multiple steps. Each width
+        // change re-fires this autorun, and without the guard a second run's
+        // setViews() detaches the first run's view models — the first's
+        // `when(() => view.initialized)` then throws on the dead node, the
+        // catch clears init, and the import form appears.
+        let running = false
         addDisposer(
           self,
           autorun(
             async function initAutorun() {
               const { init, width } = self
-              if (!width || !init) {
+              if (!width || !init || running) {
                 return
               }
+              running = true
 
               const session = getSession(self)
               const { assemblyManager } = session
@@ -486,11 +522,55 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   self.autoScaleLevelHeights()
                 }
 
+                if (init.colorBy) {
+                  self.setColorBy(init.colorBy)
+                }
+                if (init.minAlignmentLength !== undefined) {
+                  self.setMinAlignmentLength(init.minAlignmentLength)
+                }
+
+                if (init.levelHeights) {
+                  for (const [i, h] of init.levelHeights.entries()) {
+                    self.levels[i]?.setHeight(h)
+                  }
+                }
+
+                if (init.autoDiagonalize) {
+                  // Wait for the first synteny RPC to populate featureData on
+                  // every display, then diagonalize. Race with a 30s ceiling
+                  // so a stuck/minimized display never deadlocks init. The
+                  // awaitingAutoDiagonalize flag flips showLoading on, so the
+                  // user sees a spinner with the "Reordering chromosomes…"
+                  // message instead of an undiagonalized hairball flash.
+                  self.setAwaitingAutoDiagonalize(true)
+                  try {
+                    const { runDiagonalize, displaysReady } = await import(
+                      './util/runDiagonalize.ts'
+                    )
+                    const view = self
+                    await Promise.race([
+                      when(() => displaysReady(view)),
+                      new Promise(resolve => {
+                        setTimeout(resolve, 30_000)
+                      }),
+                    ])
+                    if (displaysReady(view)) {
+                      await runDiagonalize(view)
+                    }
+                  } finally {
+                    if (isAlive(self)) {
+                      self.setAwaitingAutoDiagonalize(false)
+                    }
+                  }
+                }
+
                 self.setInit(undefined)
               } catch (e) {
                 console.error(e)
                 session.notifyError(`${e}`, e)
                 self.setInit(undefined)
+              } finally {
+                running = false
               }
             },
             { name: 'LinearSyntenyViewInit' },

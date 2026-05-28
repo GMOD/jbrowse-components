@@ -54,16 +54,18 @@
           "views": [
             {
               "assembly": "hs1",
-              "loc": "chr1",
               "tracks": ["ncbiRefSeq"]
             },
             {
               "assembly": "mm39",
-              "loc": "chr1",
               "tracks": ["mm39-ncbiRefSeqCurated"]
             }
           ],
-          "tracks": ["hs1ToMm39.over.chain.pif"]
+          "tracks": ["hs1ToMm39.over.chain.pif"],
+          "autoDiagonalize": true,
+          "colorBy": "query",
+          "minAlignmentLength": 1000000,
+          "levelHeights": [500]
         }
       }
     ]

@@ -23,11 +23,12 @@ import {
   cast,
   getParent,
   getSnapshot,
+  isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { autorun, observable } from 'mobx'
+import { autorun, observable, when } from 'mobx'
 
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
 import {
@@ -207,6 +208,14 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         importFormSyntenyTrackSelections:
           observable.array<ImportFormSyntenyTrack>(),
+        /**
+         * #volatile
+         * True while the init autorun is waiting for the first dotplot RPC
+         * so it can run the DiagonalizeDotplot pass. Used to gate showLoading
+         * on so the user sees a spinner with "Reordering chromosomes…"
+         * instead of an undiagonalized plot that immediately re-paints.
+         */
+        awaitingAutoDiagonalize: false,
       }))
       .actions(self => ({
         /**
@@ -304,10 +313,11 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         get showLoading() {
           return (
-            this.hasSomethingToShow &&
-            !this.initialized &&
-            !self.volatileError &&
-            !self.assemblyErrors
+            self.awaitingAutoDiagonalize ||
+            (this.hasSomethingToShow &&
+              !this.initialized &&
+              !self.volatileError &&
+              !self.assemblyErrors)
           )
         },
         /**
@@ -322,6 +332,9 @@ export default function stateModelFactory(pm: PluginManager) {
          * #getter
          */
         get loadingMessage() {
+          if (self.awaitingAutoDiagonalize) {
+            return 'Reordering chromosomes…'
+          }
           return this.showLoading ? 'Loading' : undefined
         },
 
@@ -530,6 +543,12 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setInit(init?: DotplotViewInit) {
           self.init = init
+        },
+        /**
+         * #action
+         */
+        setAwaitingAutoDiagonalize(arg: boolean) {
+          self.awaitingAutoDiagonalize = arg
         },
 
         /**
@@ -822,35 +841,100 @@ export default function stateModelFactory(pm: PluginManager) {
           }
         },
         afterAttach() {
+          let initRunning = false
           addDisposer(
             self,
             autorun(
-              function dotplotInitAutorun() {
+              async function dotplotInitAutorun() {
                 const { init, volatileWidth } = self
-                if (!volatileWidth || !init) {
+                if (!volatileWidth || !init || initRunning) {
                   return
                 }
+                initRunning = true
 
                 const session = getSession(self)
 
-                // Set assembly names from init
-                const assemblyNames = init.views.map(v => v.assembly)
-                self.setAssemblyNames(assemblyNames[0]!, assemblyNames[1]!)
+                try {
+                  // Set assembly names from init
+                  const assemblyNames = init.views.map(v => v.assembly)
+                  self.setAssemblyNames(assemblyNames[0]!, assemblyNames[1]!)
 
-                // Show tracks
-                if (init.tracks) {
-                  for (const trackId of init.tracks) {
-                    try {
-                      self.showTrack(trackId)
-                    } catch (e) {
-                      console.error(e)
-                      session.notifyError(`${e}`, e)
+                  // Show tracks
+                  if (init.tracks) {
+                    for (const trackId of init.tracks) {
+                      try {
+                        self.showTrack(trackId)
+                      } catch (e) {
+                        console.error(e)
+                        session.notifyError(`${e}`, e)
+                      }
                     }
                   }
-                }
 
-                // Clear init state
-                self.setInit(undefined)
+                  // colorBy and minAlignmentLength live on each display, not
+                  // the view — apply to every display the showTrack calls just
+                  // created. Untyped because tracks/displays are pluggable.
+                  if (
+                    init.colorBy !== undefined ||
+                    init.minAlignmentLength !== undefined
+                  ) {
+                    for (const track of self.tracks) {
+                      for (const display of track.displays) {
+                        const d = display as {
+                          setColorBy?: (v: string) => void
+                          setMinAlignmentLength?: (v: number) => void
+                        }
+                        if (init.colorBy && d.setColorBy) {
+                          d.setColorBy(init.colorBy)
+                        }
+                        if (
+                          init.minAlignmentLength !== undefined &&
+                          d.setMinAlignmentLength
+                        ) {
+                          d.setMinAlignmentLength(init.minAlignmentLength)
+                        }
+                      }
+                    }
+                  }
+
+                  if (init.autoDiagonalize) {
+                    // Wait for the first DotplotDisplay RPC to populate rpcData
+                    // so we have a meaningful diagonalize result, then call
+                    // the RPC. Race with a 30s ceiling so a stuck display
+                    // can't deadlock startup. The awaitingAutoDiagonalize
+                    // flag flips showLoading on for the duration so the user
+                    // sees a "Reordering chromosomes…" spinner instead of an
+                    // undiagonalized plot that immediately re-paints.
+                    self.setAwaitingAutoDiagonalize(true)
+                    try {
+                      const { runDotplotDiagonalize, dotplotDisplaysReady } =
+                        await import('./util/runDotplotDiagonalize.ts')
+                      const view = self as DotplotViewModel
+                      await Promise.race([
+                        when(() => dotplotDisplaysReady(view)),
+                        new Promise(resolve => {
+                          setTimeout(resolve, 30_000)
+                        }),
+                      ])
+                      if (dotplotDisplaysReady(view) && isAlive(self)) {
+                        await runDotplotDiagonalize(view)
+                      }
+                    } catch (e) {
+                      console.error(e)
+                    } finally {
+                      if (isAlive(self)) {
+                        self.setAwaitingAutoDiagonalize(false)
+                      }
+                    }
+                  }
+
+                  // Clear init state
+                  if (isAlive(self)) {
+                    self.setInit(undefined)
+                  }
+                } finally {
+                  initRunning = false
+                }
               },
               { name: 'DotplotInit' },
             ),

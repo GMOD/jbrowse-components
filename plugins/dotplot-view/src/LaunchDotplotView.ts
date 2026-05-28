@@ -1,7 +1,8 @@
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
-export interface LaunchDotplotViewArgs {
+export interface LaunchDotplotViewArgs extends SyntenyViewSharedInit {
   session: AbstractSessionModel
   views: { assembly: string }[]
   tracks?: string[]
@@ -18,7 +19,7 @@ declare module '@jbrowse/core/PluginManager' {
 
 export default function LaunchDotplotView(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint('LaunchView-DotplotView', args => {
-    const { session, views, tracks = [] } = args
+    const { session, views, tracks = [], ...rest } = args
     if (views.length < 2) {
       throw new Error('DotplotView requires 2 views to be specified')
     }
@@ -26,6 +27,13 @@ export default function LaunchDotplotView(pluginManager: PluginManager) {
       init: {
         views,
         tracks,
+        ...(rest.autoDiagonalize !== undefined && {
+          autoDiagonalize: rest.autoDiagonalize,
+        }),
+        ...(rest.colorBy !== undefined && { colorBy: rest.colorBy }),
+        ...(rest.minAlignmentLength !== undefined && {
+          minAlignmentLength: rest.minAlignmentLength,
+        }),
       },
     })
     return args

@@ -9,41 +9,11 @@ import {
   LinearProgress,
   Typography,
 } from '@mui/material'
-import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { diagonalizeRegions } from '../util/diagonalize.ts'
+import { runDiagonalize } from '../util/runDiagonalize.ts'
 
-import type { SyntenyFeatureData } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
-import type { AlignmentData } from '../util/diagonalize.ts'
-
-function collectAlignments(
-  level: LinearSyntenyViewModel['levels'][number],
-): AlignmentData[] {
-  const alignments: AlignmentData[] = []
-  for (const track of level.tracks) {
-    for (const display of track.displays) {
-      const featureData = (display as { featureData?: SyntenyFeatureData })
-        .featureData
-      if (!featureData) {
-        continue
-      }
-      for (let i = 0; i < featureData.refNames.length; i++) {
-        alignments.push({
-          refRefName: featureData.refNames[i]!,
-          queryRefName: featureData.mateRefNames[i]!,
-          refStart: featureData.starts[i]!,
-          refEnd: featureData.ends[i]!,
-          queryStart: featureData.mateStarts[i]!,
-          queryEnd: featureData.mateEnds[i]!,
-          strand: featureData.strands[i]!,
-        })
-      }
-    }
-  }
-  return alignments
-}
 
 const DiagonalizationProgressDialog = observer(
   function DiagonalizationProgressDialog({
@@ -73,42 +43,15 @@ const DiagonalizationProgressDialog = observer(
             setTimeout(resolve, 0)
           })
 
-          const perLevel: {
-            queryView: LinearSyntenyViewModel['views'][number]
-            result: Awaited<ReturnType<typeof diagonalizeRegions>>
-          }[] = []
-          for (const [i, level] of model.levels.entries()) {
-            if (cancelled) {
-              return
-            }
-            const alignments = collectAlignments(level)
-            if (alignments.length > 0) {
-              const queryView = model.views[i + 1]!
-              const result = await diagonalizeRegions(
-                alignments,
-                model.views[i]!.displayedRegions,
-                queryView.displayedRegions,
-              )
-              perLevel.push({ queryView, result })
-            }
-          }
-
+          const stats = await runDiagonalize(model)
           if (cancelled) {
             return
           }
 
-          let totalReversed = 0
-          let totalReordered = 0
-          transaction(() => {
-            for (const { queryView, result } of perLevel) {
-              queryView.setDisplayedRegions(result.newRegions)
-              totalReversed += result.stats.regionsReversed
-              totalReordered += result.stats.regionsReordered
-            }
-          })
-
           setMessage(
-            `Done: reordered ${totalReordered} regions, reversed ${totalReversed}`,
+            stats
+              ? `Done: reordered ${stats.totalReordered} regions, reversed ${stats.totalReversed}`
+              : 'No alignments to diagonalize',
           )
           setDone(true)
           setTimeout(() => {

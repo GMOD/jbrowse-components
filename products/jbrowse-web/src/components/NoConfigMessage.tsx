@@ -159,6 +159,21 @@ const sampleConfigs: {
   },
 ]
 
+const hs1Mm39DotplotSpec = encodeURIComponent(
+  JSON.stringify({
+    views: [
+      {
+        type: 'DotplotView',
+        tracks: ['hs1ToMm39.over.chain.pif'],
+        views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
+        autoDiagonalize: true,
+        colorBy: 'query',
+        minAlignmentLength: 1000000,
+      },
+    ],
+  }),
+)
+
 const syntenyConfigs = [
   {
     config: 'test_data/config_synteny_grape_peach.json',
@@ -178,7 +193,11 @@ const syntenyConfigs = [
   },
   {
     config: 'test_data/hs1_vs_mm39/config.json',
-    label: 'hs1 vs mm39',
+    label: 'hs1 vs mm39 synteny',
+  },
+  {
+    href: `?config=test_data/hs1_vs_mm39/config.json&session=spec-${hs1Mm39DotplotSpec}`,
+    label: 'hs1 vs mm39 dotplot',
   },
   {
     config: 'test_data/hg19_vs_hg38/config.json',
