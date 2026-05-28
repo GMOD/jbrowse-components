@@ -103,19 +103,19 @@ describe('isNormalOrientation', () => {
     expect(isNormalOrientation(true, 4, 1, -1)).toBe(false)
   })
 
-  it('split FR (s1=1, p2Strand=-1) → normal', () => {
+  it('split FR (s1=1, classifierS2=-1) → normal', () => {
     expect(isNormalOrientation(false, 0, 1, -1)).toBe(true)
   })
 
-  it('split RF (s1=-1, p2Strand=1) → normal (reverse-strand deletion)', () => {
+  it('split RF (s1=-1, classifierS2=1) → normal (reverse-strand deletion)', () => {
     expect(isNormalOrientation(false, 0, -1, 1)).toBe(true)
   })
 
-  it('split fwd+rev inversion (s1=1, p2Strand=1) → not normal', () => {
+  it('split fwd+rev inversion (s1=1, classifierS2=1) → not normal', () => {
     expect(isNormalOrientation(false, 0, 1, 1)).toBe(false)
   })
 
-  it('split rev+fwd inversion (s1=-1, p2Strand=-1) → not normal', () => {
+  it('split rev+fwd inversion (s1=-1, classifierS2=-1) → not normal', () => {
     expect(isNormalOrientation(false, 0, -1, -1)).toBe(false)
   })
 })
@@ -169,9 +169,9 @@ describe('classifyPair — paired reads', () => {
 })
 
 describe('classifyPair — split long reads', () => {
-  // p2Strand is negated for split reads in classifyPair. So:
-  //   same actual strand (s1===s2): p1Strand === -p2Strand → SPLIT_NORMAL
-  //   different actual strands:     p1Strand === p2Strand  → SPLIT_INV
+  // Internally the classifier flips s2 (-s2) so the same `s1 === -classifierS2`
+  // expression works for paired and split — but classifyPair exposes the real
+  // s2 on the returned record, for downstream geometry.
 
   it('both fwd in BAM → SPLIT_NORMAL, inner junction endpoints, hasPaired=false', () => {
     const data = makeData({
@@ -213,7 +213,7 @@ describe('classifyPair — split long reads', () => {
     expect(c.bp2).toBe(300) // left edge, not 3-prime/end
   })
 
-  it('fwd+rev inversion → SPLIT_INV, not normal', () => {
+  it('fwd+rev inversion → SPLIT_INV, not normal, exposes real s2', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -229,9 +229,13 @@ describe('classifyPair — split long reads', () => {
     expect(c.hasPaired).toBe(false)
     expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_INV)
     expect(c.isNormal).toBe(false)
+    // Geometry consumers (bezier tangents) need the BAM strand, not the
+    // classifier-negated form. Regression guard for the overloaded-field bug.
+    expect(c.s1).toBe(1)
+    expect(c.s2).toBe(-1)
   })
 
-  it('rev+fwd inversion → SPLIT_INV, not normal', () => {
+  it('rev+fwd inversion → SPLIT_INV, not normal, exposes real s2', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -247,6 +251,8 @@ describe('classifyPair — split long reads', () => {
     expect(c.hasPaired).toBe(false)
     expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_INV)
     expect(c.isNormal).toBe(false)
+    expect(c.s1).toBe(-1)
+    expect(c.s2).toBe(1)
   })
 
   it('supp-first ordering (e1=supp at lower pos) still gives inner junction endpoints', () => {

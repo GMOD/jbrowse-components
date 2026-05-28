@@ -263,10 +263,24 @@ function parseSATag(sa: string): SAAlignment[] {
       continue
     }
     const parts = aln.split(',')
-    const ref = parts[0]!
-    const pos = +parts[1]! - 1
-    const strand = parts[2] === '-' ? -1 : 1
-    const cigar = parts[3]!
+    // Spec: rname,pos,strand,CIGAR,mapQ,NM — skip anything truncated or with
+    // an unparseable position / placeholder CIGAR rather than emitting a
+    // junk arc at NaN.
+    if (parts.length < 4) {
+      continue
+    }
+    const ref = parts[0]
+    const posRaw = parts[1]
+    const strandStr = parts[2]
+    const cigar = parts[3]
+    if (!ref || !cigar || cigar === '*') {
+      continue
+    }
+    const pos = Number(posRaw) - 1
+    if (!Number.isFinite(pos) || pos < 0) {
+      continue
+    }
+    const strand = strandStr === '-' ? -1 : 1
     let lengthOnRef = 0
     const re = /(\d+)([MIDNSHP=X])/g
     let m: RegExpExecArray | null
@@ -340,8 +354,7 @@ function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
   const mean = radii.reduce((a, b) => a + b, 0) / radii.length
   const variance = radii.reduce((a, b) => a + (b - mean) ** 2, 0) / radii.length
   const std = Math.sqrt(variance)
-  const threshold = mean + LONG_RANGE_STDDEV_THRESHOLD * std
-  return threshold
+  return mean + LONG_RANGE_STDDEV_THRESHOLD * std
 }
 
 export function computeArcsFromPileupData(

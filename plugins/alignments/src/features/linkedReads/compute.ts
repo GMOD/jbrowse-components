@@ -44,15 +44,15 @@ export function connectionBp(
 
 // Normal LR pairs (orient 0/1) and same-strand split reads get a straight line;
 // aberrant orientations get a bezier curve to stand out visually.
-// For split reads, p2Strand = -s2, so s1 === -p2Strand means both segments
-// are on the same strand (simple deletion whether forward or reverse).
+// Callers pass the classifier-encoded second strand (paired: s2; split: -s2),
+// so `s1 === -classifierS2` collapses to "same-strand pair" for both cases.
 export function isNormalOrientation(
   hasPaired: boolean,
   orientNum: number,
   s1: number,
-  p2Strand: number,
+  classifierS2: number,
 ) {
-  return hasPaired ? orientNum <= 1 : s1 === -p2Strand
+  return hasPaired ? orientNum <= 1 : s1 === -classifierS2
 }
 
 export function pairedColorType(orientNum: number) {
@@ -62,10 +62,10 @@ export function pairedColorType(orientNum: number) {
     : LINKED_READ_COLOR_PAIR_UNKNOWN
 }
 
-// Same actual strand (p1Strand === -p2Strand, since p2Strand = -s2) → simple
+// Same actual strand (s1 === -classifierS2, since classifierS2 = -s2) → simple
 // deletion. Different actual strands → inversion.
-export function splitColorType(p1Strand: number, p2Strand: number) {
-  return p1Strand === -p2Strand
+export function splitColorType(s1: number, classifierS2: number) {
+  return s1 === -classifierS2
     ? LINKED_READ_COLOR_SPLIT_NORMAL
     : LINKED_READ_COLOR_SPLIT_INV
 }
@@ -123,8 +123,10 @@ export function filterEntries(entries: ReadEntry[]) {
 export interface ClassifiedPair {
   bp1: number
   bp2: number
+  // Actual mate / second-segment strand from the BAM (+1 or -1). Use this for
+  // any geometric computation (e.g. bezier tangent direction).
   s1: number
-  p2Strand: number
+  s2: number
   isNormal: boolean
   colorType: number
   hasPaired: boolean
@@ -154,15 +156,16 @@ export function classifyPair(e1: ReadEntry, e2: ReadEntry): ClassifiedPair {
     e2.data.readPositions[e2.readIdx * 2 + 1]!,
     true,
   )
-  // p2Strand is negated for split reads so that s1 === -p2Strand detects
-  // same-strand pairs (simple deletions) in isNormalOrientation.
-  const p2Strand = hasPaired ? s2 : -s2
+  // Negate s2 for split reads so `s1 === -classifierS2` collapses both paired
+  // and split into one "same-strand?" test below. Classifier-internal only —
+  // never expose; geometry uses real s2.
+  const classifierS2 = hasPaired ? s2 : -s2
   const orientNum = e1.data.readPairOrientations[e1.readIdx] ?? 0
-  const isNormal = isNormalOrientation(hasPaired, orientNum, s1, p2Strand)
+  const isNormal = isNormalOrientation(hasPaired, orientNum, s1, classifierS2)
   const colorType = hasPaired
     ? pairedColorType(orientNum)
-    : splitColorType(s1, p2Strand)
-  return { bp1, bp2, s1, p2Strand, isNormal, colorType, hasPaired }
+    : splitColorType(s1, classifierS2)
+  return { bp1, bp2, s1, s2, isNormal, colorType, hasPaired }
 }
 
 export interface LinkedReadLines {

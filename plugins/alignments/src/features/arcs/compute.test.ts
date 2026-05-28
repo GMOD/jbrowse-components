@@ -288,6 +288,41 @@ describe('computeArcsFromPileupData', () => {
     expect(result.arcs[0]!.p2.bp).toBe(3000)
   })
 
+  test('malformed SA tag entries are skipped, not emitted as NaN arcs', () => {
+    // Three semicolon-separated entries: one truncated (3 fields), one with a
+    // placeholder CIGAR, one with a non-numeric position. None should produce
+    // an arc; the unrelated trailing valid entry should be the only one drawn.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1500]),
+      readFlags: new Uint16Array([0]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([0]),
+      readPairOrientations: new Uint8Array([0]),
+      readNames: ['readA'],
+      readSuppAlignments: [
+        'chr1,3001,+;chr1,4001,+,*,60,0;chr1,abc,+,200M,60,0;chr1,5001,+,200M,60,0;',
+      ],
+    })
+
+    const rpcDataMap = new Map([[0, data]])
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
+    ]
+    const result = computeArcsFromPileupData(rpcDataMap, regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    })
+
+    // One arc per consecutive SA-chain pair; the three malformed entries are
+    // skipped, leaving only primary→(chr1:5001..5201) → 1 arc.
+    expect(result.arcs).toHaveLength(1)
+    expect(result.arcs[0]!.p1.bp).toBe(1500)
+    expect(result.arcs[0]!.p2.bp).toBe(5000)
+    expect(Number.isNaN(result.arcs[0]!.p2.bp)).toBe(false)
+  })
+
   test('cross-region reads (same name in two regions) produce arcs', () => {
     const data0 = makePileupData({
       regionStart: 1000,

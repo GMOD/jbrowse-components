@@ -47,18 +47,24 @@ interface BezierOpts {
   sx2: number
   sy2: number
   s1: number
-  p2Strand: number
+  s2: number
   peakH: number
   arcsDown: boolean
 }
 
+// Tangent control points leave each endpoint in the read's 5'→3' direction,
+// so a fwd read's curve heads right and a rev read's curve heads left. Use
+// the *actual* strand here (not the classifier-negated one): for split reads
+// `connectionBp` puts sx1 at read1's right edge and sx2 at read2's left edge,
+// and the tangent direction must still match the strand to produce a
+// symmetric curve over the junction.
 function bezierPath({
   sx1,
   sy1,
   sx2,
   sy2,
   s1,
-  p2Strand,
+  s2,
   peakH,
   arcsDown,
 }: BezierOpts) {
@@ -70,7 +76,7 @@ function bezierPath({
     Math.abs(sx2 - sx1) * TANGENT_FACTOR,
   )
   const cp1x = sx1 + s1 * tangentDx
-  const cp2x = sx2 + p2Strand * tangentDx
+  const cp2x = sx2 + s2 * tangentDx
   return `M ${sx1} ${sy1} C ${cp1x} ${apexY} ${cp2x} ${apexY} ${sx2} ${sy2}`
 }
 
@@ -130,9 +136,6 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       continue
     }
     for (let j = 0; j < filtered.length - 1; j++) {
-      if (result.length >= MAX_BEZIER_ARCS) {
-        return result
-      }
       const e1 = filtered[j]!
       const e2 = filtered[j + 1]!
       const c = classifyPair(e1, e2)
@@ -162,6 +165,13 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
         continue
       }
 
+      // Cap on *visible* arcs only. Putting this before visibility would let
+      // off-screen pairs early in readName-iteration order silently evict
+      // on-screen SV signals further right.
+      if (result.length >= MAX_BEZIER_ARCS) {
+        return result
+      }
+
       const d = c.isNormal
         ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
         : bezierPath({
@@ -170,7 +180,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
             sx2,
             sy2,
             s1: c.s1,
-            p2Strand: c.p2Strand,
+            s2: c.s2,
             peakH,
             arcsDown: pairedArcsDown,
           })
