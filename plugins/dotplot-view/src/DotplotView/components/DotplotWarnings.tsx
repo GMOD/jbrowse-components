@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
 import { Alert, Button } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -16,13 +16,8 @@ const DotplotWarnings = observer(function DotplotWarnings({
     t => t.displays[0]?.warnings?.length,
   )
   const [shown, setShown] = useState(false)
-  const [hide, setHide] = useState(false)
-  useEffect(() => {
-    if (trackWarnings.length > 0) {
-      setHide(false)
-    }
-  }, [trackWarnings.length])
-  return trackWarnings.length && !hide ? (
+  const [dismissedLength, setDismissedLength] = useState(0)
+  return trackWarnings.length > dismissedLength ? (
     <Alert severity="warning">
       Warnings during render{' '}
       <Button
@@ -45,7 +40,7 @@ const DotplotWarnings = observer(function DotplotWarnings({
       <Button
         variant="contained"
         onClick={() => {
-          setHide(true)
+          setDismissedLength(trackWarnings.length)
         }}
       >
         Dismiss

@@ -58,6 +58,10 @@ type Coord = [number, number]
 
 const LS_CURSOR_MODE = 'dotplot-cursorMode'
 
+// Hide axis tick labels when more than this many blocks are visible — the
+// labels would overlap at high chromosome counts.
+const MAX_TICK_BLOCKS = 5
+
 // defaults for postProcessSnapshot filtering
 const defaultHeight = 600
 const defaultBorderSize = 20
@@ -132,6 +136,17 @@ export default function stateModelFactory(pm: PluginManager) {
            * #property
            */
           drawCigar: true,
+          /**
+           * #property
+           * Level-of-detail tier override for PIF adapters. 'auto' uses the
+           * adapter's bpPerPx threshold; 'fine'/'coarse' force a tier. Stored
+           * view-level so all displays render at the same tier and the menu
+           * doesn't need to fan out per display.
+           */
+          lodMode: types.optional(
+            types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+            'auto',
+          ),
           /**
            * #property
            * When true, hview and vview are kept at the same bpPerPx so the
@@ -287,7 +302,7 @@ export default function stateModelFactory(pm: PluginManager) {
         get hticks() {
           const { hview } = self
           const { dynamicBlocks, staticBlocks, bpPerPx } = hview
-          return dynamicBlocks.contentBlocks.length > 5
+          return dynamicBlocks.contentBlocks.length > MAX_TICK_BLOCKS
             ? []
             : makeTicks(staticBlocks.contentBlocks, bpPerPx)
         },
@@ -297,7 +312,7 @@ export default function stateModelFactory(pm: PluginManager) {
         get vticks() {
           const { vview } = self
           const { dynamicBlocks, staticBlocks, bpPerPx } = vview
-          return dynamicBlocks.contentBlocks.length > 5
+          return dynamicBlocks.contentBlocks.length > MAX_TICK_BLOCKS
             ? []
             : makeTicks(staticBlocks.contentBlocks, bpPerPx)
         },
@@ -375,6 +390,16 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         get dotplotDisplays() {
           return self.tracks.map(t => t.displays[0] as DotplotDisplayModel)
+        },
+        /**
+         * #getter
+         * True if any track has an adapter that declares the 'lod'
+         * capability. Used to gate the LOD menu — only PIF supports it.
+         */
+        get hasLodCapableAdapter() {
+          return self.tracks.some(t =>
+            t.adapterType.adapterCapabilities.includes('lod'),
+          )
         },
         /**
          * #getter
@@ -466,6 +491,12 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setDrawCigar(flag: boolean) {
           self.drawCigar = flag
+        },
+        /**
+         * #action
+         */
+        setLodMode(value: 'auto' | 'fine' | 'coarse') {
+          self.lodMode = value
         },
         /**
          * #action
@@ -696,33 +727,26 @@ export default function stateModelFactory(pm: PluginManager) {
          * #action
          */
         showAllRegions() {
-          // When the aspect-ratio lock is engaged, use the larger of the two
-          // maxBpPerPx so both assemblies fit fully — the autorun would
-          // otherwise average to a value that crops the bigger one.
-          const hMax = () =>
+          const { hview, vview } = self
+          // When locked, use the larger maxBpPerPx so both assemblies fit.
+          // Re-evaluated on each call because maxBpPerPx depends on viewWidth
+          // which changes after setBorderX/Y below.
+          const getMax = (v: typeof hview) =>
             self.lockAspectRatio
-              ? Math.max(self.hview.maxBpPerPx, self.vview.maxBpPerPx)
-              : self.hview.maxBpPerPx
-          const vMax = () =>
-            self.lockAspectRatio
-              ? Math.max(self.hview.maxBpPerPx, self.vview.maxBpPerPx)
-              : self.vview.maxBpPerPx
-          // First zoom to max to trigger border recalculation
-          self.hview.zoomTo(hMax())
-          self.vview.zoomTo(vMax())
+              ? Math.max(hview.maxBpPerPx, vview.maxBpPerPx)
+              : v.maxBpPerPx
 
-          // Calculate what borders should be at this zoom level
+          // First pass: zoom so calculateBorders sees the right bpPerPx
+          hview.zoomTo(getMax(hview))
+          vview.zoomTo(getMax(vview))
           const { borderX, borderY } = this.calculateBorders()
-
-          // Apply calculated borders
           self.setBorderX(borderX)
           self.setBorderY(borderY)
-
-          // Now zoom again with updated borders/dimensions and center
-          self.hview.zoomTo(hMax())
-          self.vview.zoomTo(vMax())
-          self.vview.center()
-          self.hview.center()
+          // Second pass: re-zoom with updated dimensions, then center
+          hview.zoomTo(getMax(hview))
+          vview.zoomTo(getMax(vview))
+          vview.center()
+          hview.center()
         },
         /**
          * #action
@@ -952,14 +976,12 @@ export default function stateModelFactory(pm: PluginManager) {
             self,
             autorun(
               function dotplotRegionsAutorun() {
-                // IMPORTANT: Must actually read assemblyNames array (via slice) to
-                // force MobX to track it. Just referencing it without reading won't
-                // make the autorun re-run when assembly names change. This ensures
-                // the autorun fires when setAssemblyNames is called with different
-                // assemblies, which is critical for re-initializing displayed regions
-                void self.assemblyNames.slice()
+                // assemblyNames.length > 0 both tracks the array (so MobX
+                // re-runs when names change) and guards against vacuous truth
+                // from every() on an empty array after clearView().
                 if (
                   self.volatileWidth !== undefined &&
+                  self.assemblyNames.length > 0 &&
                   self.assembliesInitialized
                 ) {
                   self.initializeDisplayedRegions()
@@ -1056,66 +1078,43 @@ export default function stateModelFactory(pm: PluginManager) {
                 ])
               },
             },
-            {
-              label: 'Level of detail',
-              subMenu: (
-                [
-                  { label: 'Auto (scale with zoom)', value: 'auto' },
-                  { label: 'Fine (per-row CIGAR)', value: 'fine' },
-                  { label: 'Coarse (no CIGAR)', value: 'coarse' },
-                ] as const
-              ).map(({ label, value }) => {
-                const display = self.tracks[0]?.displays[0] as
-                  | { lodMode?: string }
-                  | undefined
-                return {
-                  label,
-                  type: 'radio' as const,
-                  checked: display?.lodMode === value,
-                  onClick: () => {
-                    for (const track of self.tracks) {
-                      for (const d of track.displays) {
-                        const dd = d as {
-                          setLodMode?: (v: 'auto' | 'fine' | 'coarse') => void
-                        }
-                        dd.setLodMode?.(value)
-                      }
-                    }
+            ...(self.hasLodCapableAdapter
+              ? [
+                  {
+                    label: 'Level of detail',
+                    subMenu: (
+                      [
+                        {
+                          label: 'Auto',
+                          value: 'auto',
+                          helpText:
+                            'Switch between fine and coarse automatically based on zoom level.',
+                        },
+                        {
+                          label: 'Fine',
+                          value: 'fine',
+                          helpText:
+                            'Always fetch per-row CIGAR detail. Slower at low zoom.',
+                        },
+                        {
+                          label: 'Coarse',
+                          value: 'coarse',
+                          helpText:
+                            'Skip CIGAR detail. Fastest, but no indel/mismatch colors.',
+                        },
+                      ] as const
+                    ).map(({ label, value, helpText }) => ({
+                      helpText,
+                      label,
+                      type: 'radio' as const,
+                      checked: self.lodMode === value,
+                      onClick: () => {
+                        self.setLodMode(value)
+                      },
+                    })),
                   },
-                }
-              }),
-            },
-            {
-              // Post-fetch feature filter — orthogonal to the LOD tier above.
-              label: 'Filter by alignment span',
-              subMenu: (
-                [
-                  { label: 'No filter', value: 0 },
-                  { label: '100 kb', value: 100_000 },
-                  { label: '1 Mb', value: 1_000_000 },
-                  { label: '10 Mb', value: 10_000_000 },
-                ] as const
-              ).map(({ label, value }) => {
-                const display = self.tracks[0]?.displays[0] as
-                  | { minAlignmentLength?: number }
-                  | undefined
-                return {
-                  label,
-                  type: 'radio' as const,
-                  checked: display?.minAlignmentLength === value,
-                  onClick: () => {
-                    for (const track of self.tracks) {
-                      for (const d of track.displays) {
-                        const dd = d as {
-                          setMinAlignmentLength?: (v: number) => void
-                        }
-                        dd.setMinAlignmentLength?.(value)
-                      }
-                    }
-                  },
-                }
-              }),
-            },
+                ]
+              : []),
             ...(isSessionModelWithWidgets(session)
               ? [
                   {
@@ -1133,7 +1132,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * #getter
          */
         get error(): unknown {
-          return self.volatileError || self.assemblyErrors
+          return self.volatileError ?? self.assemblyErrors
         },
       }))
       .postProcessSnapshot(snap => {
@@ -1151,6 +1150,7 @@ export default function stateModelFactory(pm: PluginManager) {
           fontSize,
           trackSelectorType,
           drawCigar,
+          lodMode,
           lockAspectRatio,
           lineWidth,
           assemblyNames,
@@ -1169,6 +1169,7 @@ export default function stateModelFactory(pm: PluginManager) {
             ? { trackSelectorType }
             : {}),
           ...(!drawCigar ? { drawCigar } : {}),
+          ...(lodMode !== 'auto' ? { lodMode } : {}),
           ...(lockAspectRatio ? { lockAspectRatio } : {}),
           ...(lineWidth !== defaultLineWidth ? { lineWidth } : {}),
           ...(assemblyNames.length ? { assemblyNames } : {}),

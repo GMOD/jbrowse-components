@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 
-import useLatestRef from '@jbrowse/core/util/useLatestRef'
 import { transaction } from 'mobx'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -95,53 +94,53 @@ export function useDotplotInteraction(
   const distanceX = useRef(0)
   const distanceY = useRef(0)
   const scheduled = useRef(false)
+  const onWheel = useEffectEvent(function onWheel(event: WheelEvent) {
+    event.preventDefault()
+    distanceX.current += event.deltaX
+    distanceY.current -= event.deltaY
+    if (!scheduled.current) {
+      scheduled.current = true
+      window.requestAnimationFrame(() => {
+        transaction(() => {
+          if (
+            Math.abs(distanceY.current) > Math.abs(distanceX.current) * 2 &&
+            mousecurr
+          ) {
+            const val = distanceY.current < 0 ? 1.07 : 0.935
+            hview.zoomTo(hview.bpPerPx * val, mousecurr[0])
+            vview.zoomTo(vview.bpPerPx * val, rect.height - mousecurr[1])
+          }
+        })
+        scheduled.current = false
+        distanceX.current = 0
+        distanceY.current = 0
+      })
+    }
+  })
   useEffect(() => {
     if (!refEl) {
       return
-    }
-    function onWheel(event: WheelEvent) {
-      event.preventDefault()
-      distanceX.current += event.deltaX
-      distanceY.current -= event.deltaY
-      if (!scheduled.current) {
-        scheduled.current = true
-        window.requestAnimationFrame(() => {
-          transaction(() => {
-            if (
-              Math.abs(distanceY.current) > Math.abs(distanceX.current) * 2 &&
-              mousecurr
-            ) {
-              const val = distanceY.current < 0 ? 1.07 : 0.935
-              hview.zoomTo(hview.bpPerPx * val, mousecurr[0])
-              vview.zoomTo(vview.bpPerPx * val, rect.height - mousecurr[1])
-            }
-          })
-          scheduled.current = false
-          distanceX.current = 0
-          distanceY.current = 0
-        })
-      }
     }
     refEl.addEventListener('wheel', onWheel)
     return () => {
       refEl.removeEventListener('wheel', onWheel)
     }
-  }, [refEl, hview, vview, mousecurr, rect.height])
+  }, [refEl])
 
   // mousemove: pan while dragging without mouseup pinned
-  useEffect(() => {
-    function onMove(event: MouseEvent) {
-      setMouseCurrClient([event.clientX, event.clientY])
-      if (mousecurrClient && mousedownClient && validPan && !mouseupClient) {
-        hview.scroll(-event.clientX + mousecurrClient[0])
-        vview.scroll(event.clientY - mousecurrClient[1])
-      }
+  const onMove = useEffectEvent(function onMove(event: MouseEvent) {
+    setMouseCurrClient([event.clientX, event.clientY])
+    if (mousecurrClient && mousedownClient && validPan && !mouseupClient) {
+      hview.scroll(-event.clientX + mousecurrClient[0])
+      vview.scroll(event.clientY - mousecurrClient[1])
     }
+  })
+  useEffect(() => {
     window.addEventListener('mousemove', onMove)
     return () => {
       window.removeEventListener('mousemove', onMove)
     }
-  }, [validPan, mousecurrClient, mousedownClient, mouseupClient, hview, vview])
+  }, [])
 
   // ctrl/meta-key tracking (mode-switch modifier)
   useEffect(() => {
@@ -164,32 +163,23 @@ export function useDotplotInteraction(
   }, [])
 
   // mouseup: commit selection if drag exceeded threshold, else cancel.
-  // Use refs for the threshold values so the listener isn't re-registered on
-  // every mousemove (xdistance/ydistance change each frame).
-  const xdistanceRef = useLatestRef(xdistance)
-  const ydistanceRef = useLatestRef(ydistance)
-  const validSelectRef = useLatestRef(validSelect)
+  const onUp = useEffectEvent(function onUp(event: MouseEvent) {
+    if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
+      setMouseUpClient([event.clientX, event.clientY])
+    } else {
+      setMouseDownClient(undefined)
+    }
+  })
   const hasDrag = !!mousedownClient && !mouseupClient
   useEffect(() => {
     if (!hasDrag) {
       return
     }
-    function onUp(event: MouseEvent) {
-      if (
-        Math.abs(xdistanceRef.current) > 3 &&
-        Math.abs(ydistanceRef.current) > 3 &&
-        validSelectRef.current
-      ) {
-        setMouseUpClient([event.clientX, event.clientY])
-      } else {
-        setMouseDownClient(undefined)
-      }
-    }
     window.addEventListener('mouseup', onUp, true)
     return () => {
       window.removeEventListener('mouseup', onUp, true)
     }
-  }, [hasDrag, xdistanceRef, ydistanceRef, validSelectRef])
+  }, [hasDrag])
 
   const dragOpen =
     !!mousedown &&
