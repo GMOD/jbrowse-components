@@ -118,7 +118,7 @@ function fillEncodedFromRaw(
   return { nHomRef, nHet, nHomAlt, nValid }
 }
 
-function packHaplotypesFromRaw(
+export function packHaplotypesFromRaw(
   callGenotype: Int8Array,
   callGenotypePhased: Uint8Array | undefined,
   ploidy: number,
@@ -134,87 +134,47 @@ function packHaplotypesFromRaw(
   let nHomAlt = 0
   let nValid = 0
 
-  if (ploidy === 2) {
-    // Diploid fast path: hoist ploidy=2 constant, use s<<1 offset.
-    // A single loop handles both phased and unphased — V8 hoists the
-    // `callGenotypePhased &&` null-check, which is faster than splitting into
-    // two separate loops (benchmark showed the split added overhead).
-    for (let s = 0; s < nSamples; s++) {
-      if (callGenotypePhased && !callGenotypePhased[s]) {
-        continue
-      }
-      const off = s << 1
-      const a0 = callGenotype[off]!
-      const a1 = callGenotype[off + 1]!
-      if (a0 === -2 || a1 === -2) {
-        continue
-      }
-      const w = s >>> 5
-      const bit = 1 << (s & 31)
-      const v0 = a0 !== -1
-      const v1 = a1 !== -1
-      const isAlt0 = a0 !== 0
-      const isAlt1 = a1 !== 0
-      if (v0) {
-        validH1[w] = validH1[w]! | bit
-        if (isAlt0) {
-          altH1[w] = altH1[w]! | bit
-        }
-      }
-      if (v1) {
-        validH2[w] = validH2[w]! | bit
-        if (isAlt1) {
-          altH2[w] = altH2[w]! | bit
-        }
-      }
-      if (v0 && v1) {
-        nValid++
-        if (!isAlt0 && !isAlt1) {
-          nHomRef++
-        } else if (isAlt0 && isAlt1) {
-          nHomAlt++
-        } else {
-          nHet++
-        }
+  // A single loop handles all ploidies and both phased/unphased data. `ploidy`
+  // is loop-invariant so V8 hoists the `ploidy > 1` and `callGenotypePhased &&`
+  // checks; splitting into a diploid fast path / general path duplicated the
+  // whole body for no measurable gain. Haploid (a1 stays -2) is excluded, as
+  // before — LD needs a second allele per sample.
+  for (let s = 0; s < nSamples; s++) {
+    if (callGenotypePhased && !callGenotypePhased[s]) {
+      continue
+    }
+    const off = s * ploidy
+    const a0 = callGenotype[off]!
+    const a1 = ploidy > 1 ? callGenotype[off + 1]! : -2
+    if (a0 === -2 || a1 === -2) {
+      continue
+    }
+    const w = s >>> 5
+    const bit = 1 << (s & 31)
+    const v0 = a0 !== -1
+    const v1 = a1 !== -1
+    const isAlt0 = a0 !== 0
+    const isAlt1 = a1 !== 0
+    if (v0) {
+      validH1[w] = validH1[w]! | bit
+      if (isAlt0) {
+        altH1[w] = altH1[w]! | bit
       }
     }
-  } else {
-    for (let s = 0; s < nSamples; s++) {
-      if (callGenotypePhased && !callGenotypePhased[s]) {
-        continue
+    if (v1) {
+      validH2[w] = validH2[w]! | bit
+      if (isAlt1) {
+        altH2[w] = altH2[w]! | bit
       }
-      const a0 = callGenotype[s * ploidy]!
-      const a1 = ploidy > 1 ? callGenotype[s * ploidy + 1]! : -2
-      if (a0 === -2 || a1 === -2) {
-        continue
-      }
-      const w = s >>> 5
-      const bit = 1 << (s & 31)
-      const v0 = a0 !== -1
-      const v1 = a1 !== -1
-      const isAlt0 = a0 !== 0
-      const isAlt1 = a1 !== 0
-      if (v0) {
-        validH1[w] = validH1[w]! | bit
-        if (isAlt0) {
-          altH1[w] = altH1[w]! | bit
-        }
-      }
-      if (v1) {
-        validH2[w] = validH2[w]! | bit
-        if (isAlt1) {
-          altH2[w] = altH2[w]! | bit
-        }
-      }
-      if (v0 && v1) {
-        nValid++
-        if (!isAlt0 && !isAlt1) {
-          nHomRef++
-        } else if (isAlt0 && isAlt1) {
-          nHomAlt++
-        } else {
-          nHet++
-        }
+    }
+    if (v0 && v1) {
+      nValid++
+      if (!isAlt0 && !isAlt1) {
+        nHomRef++
+      } else if (isAlt0 && isAlt1) {
+        nHomAlt++
+      } else {
+        nHet++
       }
     }
   }
