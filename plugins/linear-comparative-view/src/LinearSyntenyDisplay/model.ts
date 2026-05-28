@@ -348,20 +348,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const v0 = view.views[level]!
         const v1 = view.views[level + 1]!
         const { hoveredFeatureIdx, clickedFeatureIdx } = self
-        // Auto-LOD: scale the cull threshold with bpPerPx so sub-pixel
-        // chains drop out at zoomed-out views and reappear when you zoom
-        // in, without the user having to touch the slider. The 0.1 factor
-        // keeps anything wider than a tenth of a pixel — chosen so the
-        // whole-genome view of hs1↔mm39 (~1.8 Mbp/px) hides the
-        // sub-200kb chain noise but keeps the major synteny blocks.
-        const minAlignmentLength = view.autoMinAlignmentLength
-          ? Math.max(v0.bpPerPx, v1.bpPerPx) * 0.1
-          : view.minAlignmentLength
         return {
           yTop: 0,
           height: this.height,
           alpha: view.alpha,
-          minAlignmentLength,
+          minAlignmentLength: view.minAlignmentLength,
           hoveredFeatureId:
             hoveredFeatureIdx >= 0 && self.instanceData
               ? self.instanceData.instanceFeatureIdx[hoveredFeatureIdx]! + 1

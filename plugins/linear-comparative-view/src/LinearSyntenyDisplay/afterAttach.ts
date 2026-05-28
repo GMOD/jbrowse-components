@@ -49,7 +49,12 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           void v.displayedRegions
         }
         const adapterConfig = self.adapterConfig
-        const { drawCIGAR, drawCIGARMatchesOnly, drawLocationMarkers } = view
+        const {
+          drawCIGAR,
+          drawCIGARMatchesOnly,
+          drawLocationMarkers,
+          lodMode,
+        } = view
         // Untracked reads: values for the worker. Reading these inside
         // `untracked` prevents them from registering as autorun deps, so
         // scroll/zoom changes don't refire the fetch. The worker still
@@ -85,6 +90,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               drawCIGAR,
               drawCIGARMatchesOnly,
               drawLocationMarkers,
+              lodMode,
               statusCallback: (msg: string) => {
                 if (thisStopToken === currentStopToken && isAlive(self)) {
                   self.setStatusMessage(msg)

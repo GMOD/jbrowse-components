@@ -1,6 +1,5 @@
 import { measureText } from '@jbrowse/core/util'
 
-import { DASH, SPACE } from '../../util/asciiBytes.ts'
 import {
   CHAR_SIZE_WIDTH,
   HIGH_BP_PER_PX_THRESHOLD,
@@ -12,6 +11,7 @@ import {
   LARGE_INSERTION_THRESHOLD,
   MIN_ROW_HEIGHT_FOR_BORDERS,
 } from './types.ts'
+import { DASH, SPACE } from '../../util/asciiBytes.ts'
 
 import type { RenderingContext } from './types.ts'
 

@@ -46,12 +46,6 @@
 
 
 
-## jbrowse-img
-
-
-Check --configtracks refseq, we want to be able to render sequence track easily
-
-
 ## Alignments/maf
 
 
@@ -71,65 +65,13 @@ Let me understand the scope of the noncov→interbase rename and the MAF inserti
 
 The rename touches ~30 files including generated shaders. Let me check what the slang source looks like and if I can regenerate.
 
-## auth
+## MAF
 
 
+- Move the defensive Math.min(alignment.length, refSeq.length) to one place — it appears in 5 hot loops. Better: assert the invariant once at the worker boundary in LinearMafGetAlignmentData so downstream code can drop the guards. Skipped because it touches the worker output contract and merits a separate look.
+- Extract caseFoldedEqual(a, b) for the (a | LOWER_BIT) === (b | LOWER_BIT) pattern in resolveCellColor + computeVisibleLabels. Considered, but a one-liner helper for a 2-token expression is more friction than win — left inline.
+- Insertion-glyph extraction to alignments-core — plugins/maf/.../insertions.ts and plugins/alignments/src/features/insertion/drawCanvas.ts share the small-vs-large branch and border drawing pattern. Real refactor opportunity but non-trivial; worth its own PR.
 
-OAuthModel/model.tsx: listener variable can leak
 
-The listener variable is a single slot in a closure. If addMessageChannel is called twice (e.g., a user somehow triggers two auth flows), the first listener reference is overwritten and deleteMessageChannel can no longer remove it — it leaks permanently on window. A simple fix: make addMessageChannel return the remove function, or have deleteMessageChannel track the actual function reference per-call.
-
-DropboxOAuthModel/model.tsx: getFetcher skips validateToken
-
-The base OAuth getFetcher calls validateToken before every fetch:
-const token = loc ? await self.validateToken(await self.getToken(loc), loc) : await self.getToken()
-But Dropbox's override just calls self.getToken(location) directly without validating. This means Dropbox won't attempt the refresh-oss provides. The base validateTokendoes a HEAD request first; Dropbox overrides validateToken with its own API call — but that
-validation is never invoked by getFtent bug where Dropbox requestswon't transparently refresh expired tokens.
-
-OAuthModel/model.tsx: redirectUri variable shadowing
-
-Inside useEndpointForAuthorization, the outer redirectUri const is shadowed by an inner const redirectUri in the Electron branch:
-const redirectUri = isElectron ? 'http://localhost/auth' : ...
-// ...
-if (isElectron) {
-  const redirectUri = await ipcRendouter
-The inner redirectUri is what gets sent to finishOAuthWindow, which is correct. But the outer
-redirectUri was already set to 'httpassed into the ipcRenderer.invokecall as part of data. They're used differently — the outer one is the redirect URI registered with
-the OAuth server, and the inner oneeturned by Electron after auth. Thenaming conflation here makes it easy to mix these up. Worth renaming one of them.
-
-OAuthModel/model.tsx: state() is a method, not a getter
-
-state(): string | undefined {
-  return getConf(self, 'state')
-},
-All the other views are getters (ged(), etc.), but state is a plainmethod. Call sites use self.state() which works, but it's inconsistent with the pattern of the
-surrounding code. Whether this is i overriding with return undefined)or accidental isn't clear from the code, but the inconsistency is worth noting.
-
-GoogleDriveOAuthModel/model.tsx: file ID regex is too greedy
-
-const urlId = /[-\w]{25,}/.exec(str)
-This matches any 25+ character worde file IDs are typically 33characters of [a-zA-Z0-9_-], but this regex would also match long path segments in unrelated URLs. A
- URL like https://drive.google.com/jgmUUqptlbs74OgVE2upms/view wouldcorrectly extract 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms, but a URL with a long hostname or
-path component could match unintentc pattern like/\/d\/([-\w]{25,})/.exec(str) would be safer.
-
-GoogleDriveFilehandle.ts: unhandled statsPromise rejection
-
-The statsPromise is created in the constructor with no error handling:
-this.statsPromise = this.fetch(sourhen(response => response.json())
-If the fetch fails (auth error, network error), this becomes an unhandled rejected promise until
-stat() is called. In Node.js envirohandledPromiseRejectionWarning.Adding .catch(() => {}) to suppress it (letting stat() re-throw when called) or initializing it
-lazily would be cleaner.
-
-The listener leak and Dropbox getFeare the most likely to cause realuser-facing problems. Would you like me to fix any of these?
-
-✻ Crunched for 28s
-
-❯ if it helps you can try to do validate against real remote files. we have some in our
-  test_data/volvox auth examples. youelps. you can also try to convertto 'normal async/await' if it helps code flows and clean do anything else you think is worthwhile
-
-  Searched for 3 patterns, read 4 files, ran 1 shell command
-Loaded products/jbrowse-web/CLAU
-
-Let me look at how getTokenFromUserto understand the callback pattern:
 
 

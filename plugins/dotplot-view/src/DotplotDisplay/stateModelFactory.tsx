@@ -45,6 +45,15 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * #property
            */
           minAlignmentLength: types.optional(types.number, 0),
+          /**
+           * #property
+           * Level-of-detail tier override for PIF adapters. 'auto' uses the
+           * adapter's bpPerPx threshold; 'fine'/'coarse' force a tier.
+           */
+          lodMode: types.optional(
+            types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+            'auto',
+          ),
         })
         .volatile(() => ({
           /**
@@ -126,6 +135,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setColorBy(value: SyntenyColorBy) {
         self.colorBy = value
+      },
+      /**
+       * #action
+       */
+      setLodMode(value: 'auto' | 'fine' | 'coarse') {
+        self.lodMode = value
       },
     }))
     .actions(self => ({

@@ -44,7 +44,7 @@ export function doAfterAttach(
           return
         }
         const regions = view.hview.dynamicBlocks.contentBlocks
-        const { adapterConfig } = self
+        const { adapterConfig, lodMode } = self
         const hViewSnap = makeViewSnap(view.hview)
         const vViewSnap = makeViewSnap(view.vview)
 
@@ -67,6 +67,7 @@ export function doAfterAttach(
               hViewSnap,
               vViewSnap,
               stopToken: thisStopToken,
+              lodMode,
             } satisfies DotplotGetFeaturesAndPositionsArgs,
           )
           if (thisStopToken !== currentStopToken || !isAlive(self)) {

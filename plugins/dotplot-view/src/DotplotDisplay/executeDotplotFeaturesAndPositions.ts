@@ -7,7 +7,10 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
@@ -66,6 +69,7 @@ export async function executeDotplotFeaturesAndPositions({
   hViewSnap,
   vViewSnap,
   stopToken,
+  lodMode,
 }: {
   pluginManager: PluginManager
   sessionId: string
@@ -74,6 +78,7 @@ export async function executeDotplotFeaturesAndPositions({
   hViewSnap: BpIndexViewSnap
   vViewSnap: BpIndexViewSnap
   stopToken?: StopToken
+  lodMode?: BaseOptions['lodMode']
 }) {
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
@@ -83,6 +88,7 @@ export async function executeDotplotFeaturesAndPositions({
       .getFeaturesInMultipleRegions(regions, {
         stopToken,
         bpPerPx: hViewSnap.bpPerPx,
+        lodMode,
       })
       .pipe(toArray()),
   )

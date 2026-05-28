@@ -18,6 +18,34 @@ interface PAFOptions extends BaseOptions {
   config?: AnyConfigurationModel
 }
 
+// PIF format indexes lines by perspective:
+// - 'q' prefix: indexed by query coordinates, drawn when viewing the query
+// - 't' prefix: indexed by target coordinates, drawn when viewing the target
+// Uppercase T/Q are the optional coarse no-CIGAR merged-block tier emitted
+// by `make-pif --mergeGap`. In 'auto' mode the coarse tier is used when
+// bpPerPx >= threshold and the tier actually exists. A manual 'coarse'
+// override still falls back to fine when no coarse tier is present — the
+// alternative would be returning no data.
+export function pickPifPrefix({
+  flip,
+  bpPerPx,
+  threshold,
+  hasCoarseTier,
+  lodMode = 'auto',
+}: {
+  flip: boolean
+  bpPerPx: number | undefined
+  threshold: number
+  hasCoarseTier: boolean
+  lodMode?: BaseOptions['lodMode']
+}) {
+  const fineLetter = flip ? 'q' : 't'
+  const auto = bpPerPx !== undefined && bpPerPx >= threshold && hasCoarseTier
+  const useCoarse =
+    hasCoarseTier && (lodMode === 'coarse' || (lodMode === 'auto' && auto))
+  return useCoarse ? fineLetter.toUpperCase() : fineLetter
+}
+
 export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -100,20 +128,18 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter {
       // flip=false when viewing from target assembly perspective
       const flip = index === 0
 
-      // PIF format indexes lines by perspective:
-      // - 'q' prefix lines are indexed by query coordinates
-      // - 't' prefix lines are indexed by target coordinates
-      // Uppercase T/Q are the optional coarse no-CIGAR merged-block tier
-      // emitted by `make-pif --mergeGap`. Pick the coarse tier when the
-      // view's bpPerPx exceeds the configured threshold and the tier
-      // actually exists in this file.
-      const threshold = this.getConf('coarseBpPerPxThreshold') as number
-      const useCoarse =
-        opts.bpPerPx !== undefined &&
-        opts.bpPerPx >= threshold &&
-        (await this.hasCoarseTier(opts))
-      const fineLetter = flip ? 'q' : 't'
-      const letter = useCoarse ? fineLetter.toUpperCase() : fineLetter
+      const letter = pickPifPrefix({
+        flip,
+        bpPerPx: opts.bpPerPx,
+        threshold: this.getConf('coarseBpPerPxThreshold') as number,
+        hasCoarseTier: await this.hasCoarseTier(opts),
+        lodMode: opts.lodMode,
+      })
+
+      // Surface the resolved tier so the user can see auto-fallback / coarse
+      // degradation in the status bar without needing to inspect network calls.
+      const isCoarse = letter === letter.toUpperCase()
+      statusCallback(`Loading ${isCoarse ? 'coarse' : 'fine'} tier`)
 
       // The "other" assembly is the mate
       const mateAssemblyName = assemblyNames[flip ? 1 : 0]

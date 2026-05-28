@@ -4,6 +4,7 @@ import type {
   SyntenyRpcResult,
   SyntenyViewSnap,
 } from './executeSyntenyFeaturesAndPositions.ts'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface SyntenyGetFeaturesAndPositionsArgs {
@@ -16,6 +17,7 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
+  lodMode?: BaseOptions['lodMode']
   statusCallback?: (msg: string) => void
 }
 

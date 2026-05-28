@@ -72,6 +72,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         minAlignmentLength: types.optional(types.number, 0),
         /**
          * #property
+         * Level-of-detail tier selection for PIF adapters. 'auto' uses the
+         * adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier
+         * (t/q); 'coarse' forces the merged-block tier (T/Q) when present.
+         */
+        lodMode: types.optional(
+          types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+          'auto',
+        ),
+        /**
+         * #property
          */
         colorBy: types.optional(types.string, 'default'),
         /**
@@ -224,8 +234,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setAutoMinAlignmentLength(arg: boolean) {
-        self.autoMinAlignmentLength = arg
+      setLodMode(arg: 'auto' | 'fine' | 'coarse') {
+        self.lodMode = arg
       },
       /**
        * #action
@@ -397,35 +407,40 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               })),
             },
             {
-              label: 'LOD (min alignment length)',
-              subMenu: [
-                {
-                  label: 'Auto (scale with zoom)',
-                  type: 'radio' as const,
-                  checked: self.autoMinAlignmentLength,
-                  onClick: () => {
-                    self.setAutoMinAlignmentLength(true)
-                  },
+              label: 'Level of detail',
+              subMenu: (
+                [
+                  { label: 'Auto (scale with zoom)', value: 'auto' },
+                  { label: 'Fine (per-row CIGAR)', value: 'fine' },
+                  { label: 'Coarse (merged blocks)', value: 'coarse' },
+                ] as const
+              ).map(({ label, value }) => ({
+                label,
+                type: 'radio' as const,
+                checked: self.lodMode === value,
+                onClick: () => {
+                  self.setLodMode(value)
                 },
-                ...(
-                  [
-                    { label: 'No filter', value: 0 },
-                    { label: '100 kb', value: 100_000 },
-                    { label: '1 Mb', value: 1_000_000 },
-                    { label: '10 Mb', value: 10_000_000 },
-                  ] as const
-                ).map(({ label, value }) => ({
-                  label,
-                  type: 'radio' as const,
-                  checked:
-                    !self.autoMinAlignmentLength &&
-                    self.minAlignmentLength === value,
-                  onClick: () => {
-                    self.setAutoMinAlignmentLength(false)
-                    self.setMinAlignmentLength(value)
-                  },
-                })),
-              ],
+              })),
+            },
+            {
+              // Post-fetch feature filter — orthogonal to the LOD tier above.
+              label: 'Filter by alignment span',
+              subMenu: (
+                [
+                  { label: 'No filter', value: 0 },
+                  { label: '100 kb', value: 100_000 },
+                  { label: '1 Mb', value: 1_000_000 },
+                  { label: '10 Mb', value: 10_000_000 },
+                ] as const
+              ).map(({ label, value }) => ({
+                label,
+                type: 'radio' as const,
+                checked: self.minAlignmentLength === value,
+                onClick: () => {
+                  self.setMinAlignmentLength(value)
+                },
+              })),
             },
             {
               label: 'Link views',
@@ -631,6 +646,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawCurves,
         drawLocationMarkers,
         overdrawPx,
+        lodMode,
         ...rest
       } = snap
       return {
@@ -639,6 +655,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(drawCurves ? { drawCurves } : {}),
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
         ...(overdrawPx !== DEFAULT_OVERDRAW_PX ? { overdrawPx } : {}),
+        ...(lodMode !== 'auto' ? { lodMode } : {}),
       } as typeof snap
     })
 }

@@ -15,7 +15,10 @@ import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -93,6 +96,7 @@ export async function executeSyntenyFeaturesAndPositions({
   drawCIGAR = true,
   drawCIGARMatchesOnly = false,
   drawLocationMarkers = false,
+  lodMode,
   statusCallback,
 }: {
   pluginManager: PluginManager
@@ -104,6 +108,7 @@ export async function executeSyntenyFeaturesAndPositions({
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
+  lodMode?: BaseOptions['lodMode']
   statusCallback?: (msg: string) => void
 }) {
   const dataAdapter = (
@@ -117,6 +122,7 @@ export async function executeSyntenyFeaturesAndPositions({
         .getFeaturesInMultipleRegions(viewSnaps[level]!.displayedRegions, {
           stopToken,
           bpPerPx,
+          lodMode,
         })
         .pipe(toArray()),
     ),
@@ -130,6 +136,12 @@ export async function executeSyntenyFeaturesAndPositions({
     seen.add(id)
     return true
   })
+  // Paint-order: emit features small→large so big ribbons land on top of
+  // sub-pixel noise in alpha-over compositing. Matches the standalone
+  // ribbon-plot script and makes the whole-genome view legible.
+  features.sort(
+    (a, b) => a.get('end') - a.get('start') - (b.get('end') - b.get('start')),
+  )
 
   const v1 = viewSnaps[level]!
   const v2 = viewSnaps[level + 1]!

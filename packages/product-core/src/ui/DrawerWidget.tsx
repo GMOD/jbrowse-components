@@ -26,8 +26,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SessionWithDrawerWidgets } from '../Session/DrawerWidgets.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()(theme => ({
   paper: {

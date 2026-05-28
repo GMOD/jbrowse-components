@@ -1059,7 +1059,37 @@ export default function stateModelFactory(pm: PluginManager) {
               },
             },
             {
-              label: 'LOD (min alignment length)',
+              label: 'Level of detail',
+              subMenu: (
+                [
+                  { label: 'Auto (scale with zoom)', value: 'auto' },
+                  { label: 'Fine (per-row CIGAR)', value: 'fine' },
+                  { label: 'Coarse (merged blocks)', value: 'coarse' },
+                ] as const
+              ).map(({ label, value }) => {
+                const display = self.tracks[0]?.displays[0] as
+                  | { lodMode?: string }
+                  | undefined
+                return {
+                  label,
+                  type: 'radio' as const,
+                  checked: display?.lodMode === value,
+                  onClick: () => {
+                    for (const track of self.tracks) {
+                      for (const d of track.displays) {
+                        const dd = d as {
+                          setLodMode?: (v: 'auto' | 'fine' | 'coarse') => void
+                        }
+                        dd.setLodMode?.(value)
+                      }
+                    }
+                  },
+                }
+              }),
+            },
+            {
+              // Post-fetch feature filter — orthogonal to the LOD tier above.
+              label: 'Filter by alignment span',
               subMenu: (
                 [
                   { label: 'No filter', value: 0 },
@@ -1068,8 +1098,6 @@ export default function stateModelFactory(pm: PluginManager) {
                   { label: '10 Mb', value: 10_000_000 },
                 ] as const
               ).map(({ label, value }) => {
-                // Read from the first display since LOD is per-display but
-                // generally kept in sync across displays of a dotplot view.
                 const display = self.tracks[0]?.displays[0] as
                   | { minAlignmentLength?: number }
                   | undefined

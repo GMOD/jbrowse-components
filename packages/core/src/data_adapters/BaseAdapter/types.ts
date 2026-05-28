@@ -16,6 +16,11 @@ export interface BaseOptions {
   // Used by synteny/comparative adapters in getRefNames to pick which side of
   // the pairing to return refnames for. Single-assembly adapters ignore it.
   assemblyName?: string
+  // Used by comparative adapters that expose multiple level-of-detail tiers
+  // (e.g. PIF's per-row CIGAR vs merged-block coarse tier). 'auto' uses the
+  // adapter's bpPerPx threshold; 'fine'/'coarse' force a specific tier.
+  // Adapters without tiering ignore it.
+  lodMode?: 'auto' | 'fine' | 'coarse'
 }
 
 export interface BaseOptionsWithRegions extends BaseOptions {

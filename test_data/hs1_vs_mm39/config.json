@@ -52,7 +52,7 @@
         "id": "hs1-mm39-synteny",
         "init": {
           "views": [{ "assembly": "hs1" }, { "assembly": "mm39" }],
-          "tracks": ["hs1ToMm39.over.chain.split.pif"],
+          "tracks": ["hs1ToMm39.over.chain.pif"],
           "autoDiagonalize": true,
           "colorBy": "query",
           "minAlignmentLength": 100000,

@@ -1,7 +1,7 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './PairwiseIndexedPAFAdapter.ts'
+import Adapter, { pickPifPrefix } from './PairwiseIndexedPAFAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
 
 function makeAdapter(
@@ -197,6 +197,120 @@ describe('PairwiseIndexedPAFAdapter', () => {
         assemblyName: 'volvox',
       })
       expect(refNames).toContain('ctgA')
+    })
+  })
+
+  describe('LOD prefix selection', () => {
+    const cases = [
+      // [name, flip, bpPerPx, threshold, hasCoarseTier, expected]
+      [
+        'fine when bpPerPx below threshold (target)',
+        false,
+        100,
+        10000,
+        true,
+        't',
+      ],
+      [
+        'fine when bpPerPx below threshold (query)',
+        true,
+        100,
+        10000,
+        true,
+        'q',
+      ],
+      [
+        'coarse when bpPerPx >= threshold (target)',
+        false,
+        50000,
+        10000,
+        true,
+        'T',
+      ],
+      [
+        'coarse when bpPerPx >= threshold (query)',
+        true,
+        50000,
+        10000,
+        true,
+        'Q',
+      ],
+      [
+        'fine even at high zoom when no coarse tier',
+        false,
+        1e9,
+        10000,
+        false,
+        't',
+      ],
+      ['fine when bpPerPx is undefined', false, undefined, 10000, true, 't'],
+      ['coarse exactly at the threshold', false, 10000, 10000, true, 'T'],
+    ] as const
+    const overrideCases = [
+      // [name, lodMode, bpPerPx, hasCoarseTier, expected]
+      ['fine override beats auto at high zoom', 'fine', 1e9, true, 't'],
+      ['coarse override beats auto at low zoom', 'coarse', 1, true, 'T'],
+      [
+        'coarse override degrades to fine when no coarse tier',
+        'coarse',
+        1,
+        false,
+        't',
+      ],
+    ] as const
+    for (const [
+      name,
+      flip,
+      bpPerPx,
+      threshold,
+      hasCoarseTier,
+      expected,
+    ] of cases) {
+      it(name, () => {
+        expect(pickPifPrefix({ flip, bpPerPx, threshold, hasCoarseTier })).toBe(
+          expected,
+        )
+      })
+    }
+    for (const [
+      name,
+      lodMode,
+      bpPerPx,
+      hasCoarseTier,
+      expected,
+    ] of overrideCases) {
+      it(name, () => {
+        expect(
+          pickPifPrefix({
+            flip: false,
+            bpPerPx,
+            threshold: 10000,
+            hasCoarseTier,
+            lodMode,
+          }),
+        ).toBe(expected)
+      })
+    }
+
+    it('uses fine tier when fixture has no T/Q tier even at very high bpPerPx', async () => {
+      // Locks in the integration behavior the unit-test asserts: feeding a
+      // huge bpPerPx into an adapter pointed at a fine-only fixture must
+      // still return features, not silently degrade to zero.
+      const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])
+      const features = await firstValueFrom(
+        adapter
+          .getFeatures(
+            {
+              refName: 'ctgA',
+              start: 0,
+              end: 60000,
+              assemblyName: 'volvox',
+            },
+            { bpPerPx: 1e9 },
+          )
+          .pipe(toArray()),
+      )
+      expect(features.length).toBe(1)
     })
   })
 
