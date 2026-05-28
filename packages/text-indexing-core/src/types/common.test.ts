@@ -126,12 +126,13 @@ describe('getLocalOrRemoteStream', () => {
       onUpdate: () => {},
     })
     expect(stream).toBeInstanceOf(Readable)
-    const chunks: Buffer[] = []
+    const chunks: Uint8Array[] = []
     await new Promise<void>((resolve, reject) => {
-      stream.on('data', chunk => chunks.push(chunk as Buffer))
+      stream.on('data', chunk => chunks.push(chunk as Uint8Array))
       stream.on('end', resolve)
       stream.on('error', reject)
     })
-    expect(Buffer.concat(chunks).length).toBeGreaterThan(0)
+    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0)
+    expect(totalLength).toBeGreaterThan(0)
   })
 })

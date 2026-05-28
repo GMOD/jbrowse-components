@@ -5,6 +5,8 @@ import { Readable } from 'stream'
 import { fileURLToPath } from 'url'
 import { createGunzip } from 'zlib'
 
+import type { ReadableStream } from 'node:stream/web'
+
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
 
 export function isURL(fileName: string) {
@@ -57,9 +59,7 @@ export async function getLocalOrRemoteStream({
     }
 
     const nodeStream =
-      body instanceof Readable
-        ? body
-        : Readable.fromWeb(body as import('node:stream/web').ReadableStream)
+      body instanceof Readable ? body : Readable.fromWeb(body as ReadableStream)
     nodeStream.on('data', chunk => {
       receivedBytes += chunk.length
       onUpdate(receivedBytes)
