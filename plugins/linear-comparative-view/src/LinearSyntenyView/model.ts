@@ -337,14 +337,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.showAllRegions,
             },
             {
-              label: 'Show dynamic controls',
-              type: 'checkbox',
-              checked: self.showDynamicControls,
-              onClick: () => {
-                self.setShowDynamicControls(!self.showDynamicControls)
-              },
-            },
-            {
               label: 'Show curved lines',
               type: 'checkbox',
               checked: self.drawCurves,

@@ -59,23 +59,6 @@ const AssemblyRows = observer(function AssemblyRows({
   return selectedAssemblyNames.map((assemblyName, idx) => (
     <div key={`${assemblyName}-${idx}`} className={classes.rel}>
       <span>Row {idx + 1}: </span>
-
-      <IconButton
-        disabled={selectedAssemblyNames.length <= 2}
-        onClick={() => {
-          model.importFormRemoveRow(idx)
-          setSelectedAssemblyNames(
-            selectedAssemblyNames
-              .map((asm, idx2) => (idx2 === idx ? undefined : asm))
-              .filter(notEmpty),
-          )
-          if (selectedRow >= selectedAssemblyNames.length - 2) {
-            setSelectedRow(0)
-          }
-        }}
-      >
-        <CloseIcon />
-      </IconButton>
       <AssemblySelector
         helperText=""
         selected={assemblyName}
@@ -88,6 +71,32 @@ const AssemblyRows = observer(function AssemblyRows({
         }}
         session={session}
       />
+      <Tooltip
+        title={
+          selectedAssemblyNames.length <= 2
+            ? 'Synteny view requires at least 2 rows'
+            : 'Remove this row'
+        }
+      >
+        <span>
+          <IconButton
+            disabled={selectedAssemblyNames.length <= 2}
+            onClick={() => {
+              model.importFormRemoveRow(idx)
+              setSelectedAssemblyNames(
+                selectedAssemblyNames
+                  .map((asm, idx2) => (idx2 === idx ? undefined : asm))
+                  .filter(notEmpty),
+              )
+              if (selectedRow >= selectedAssemblyNames.length - 2) {
+                setSelectedRow(0)
+              }
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </span>
+      </Tooltip>
       {idx !== selectedAssemblyNames.length - 1 ? (
         <Tooltip title="Click to configure synteny track for this row pair">
           <IconButton
@@ -150,8 +159,7 @@ const LeftPanel = observer(function LeftPanel({
       <div>
         <Button
           className={classes.button}
-          variant="contained"
-          color="secondary"
+          variant="outlined"
           onClick={() => {
             setSelectedAssemblyNames([
               ...selectedAssemblyNames,

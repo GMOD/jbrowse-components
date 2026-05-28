@@ -44,7 +44,7 @@ const Header = observer(function Header({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const { views, levels, showDynamicControls } = model
+  const { views, levels } = model
   const [showSearchBoxes, setShowSearchBoxes] = useLocalStorage(
     'lcv-showSearchBoxes',
     views.length <= 3,
@@ -175,7 +175,7 @@ const Header = observer(function Header({
         <ZoomInMapIcon />
       </ToggleButton>
 
-      {hasDisplays && showDynamicControls && syntenyModel ? (
+      {hasDisplays && syntenyModel ? (
         <>
           <ColorBySelector model={syntenyModel} />
           <SyntenySettingsPopover model={syntenyModel} />

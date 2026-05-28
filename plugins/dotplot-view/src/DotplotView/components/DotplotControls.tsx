@@ -1,4 +1,4 @@
-import { lazy, useState } from 'react'
+import { lazy } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -25,7 +25,6 @@ const DotplotControls = observer(function DotplotControls({
 }: {
   model: DotplotViewModel
 }) {
-  const [showDynamicControls, setShowDynamicControls] = useState(true)
   const session = getSession(model)
 
   return (
@@ -62,7 +61,11 @@ const DotplotControls = observer(function DotplotControls({
             model.cursorMode === 'move' ? 'crosshair' : 'move',
           )
         }}
-        title="Toggle click and drag mode"
+        title={
+          model.cursorMode === 'move'
+            ? 'Drag pans (click to switch to region select)'
+            : 'Drag selects region (click to switch to pan)'
+        }
       >
         {model.cursorMode === 'move' ? <CursorMove /> : <CursorMouse />}
       </IconButton>
@@ -116,16 +119,6 @@ const DotplotControls = observer(function DotplotControls({
                   'Zooms out to display all genome assemblies in their entirety. Useful for getting a high-level overview or resetting the view after zooming into specific regions.',
               },
               {
-                label: 'Show dynamic controls',
-                type: 'checkbox',
-                checked: showDynamicControls,
-                onClick: () => {
-                  setShowDynamicControls(!showDynamicControls)
-                },
-                helpText:
-                  'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust dotplot visualization parameters in real-time.',
-              },
-              {
                 type: 'checkbox',
                 label: 'Draw CIGAR insertions/deletions',
                 checked: model.drawCigar,
@@ -151,42 +144,13 @@ const DotplotControls = observer(function DotplotControls({
               },
             ],
           },
-          {
-            label: 'Click and drag mode',
-            helpText:
-              'Configure how clicking and dragging behaves in the dotplot view. Choose between panning and region selection as the default action.',
-            subMenu: [
-              {
-                label: 'Pan by default',
-                icon: CursorMove,
-                type: 'radio',
-                checked: model.cursorMode === 'move',
-                onClick: () => {
-                  model.setCursorMode('move')
-                },
-                helpText:
-                  'Click and drag to pan the view. Hold Ctrl/Cmd while dragging to select a region for zooming or creating a linear synteny view.',
-              },
-              {
-                label: 'Select region by default',
-                icon: CursorMouse,
-                type: 'radio',
-                checked: model.cursorMode === 'crosshair',
-                onClick: () => {
-                  model.setCursorMode('crosshair')
-                },
-                helpText:
-                  'Click and drag to select a region for zooming or creating a linear synteny view. Hold Ctrl/Cmd while dragging to pan the view instead.',
-              },
-            ],
-          },
         ]}
       >
         <MoreVert />
       </CascadingMenuButton>
       <ColorBySelector model={model} />
 
-      {model.dotplotDisplays.length > 0 && showDynamicControls ? (
+      {model.dotplotDisplays.length > 0 ? (
         <DotplotSettingsPopover model={model} />
       ) : null}
     </div>

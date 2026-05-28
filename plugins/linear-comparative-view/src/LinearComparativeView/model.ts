@@ -71,10 +71,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        showDynamicControls: true,
-        /**
-         * #property
-         */
         levels: types.array(LinearSyntenyViewHelper!),
         /**
          * #property
@@ -260,12 +256,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setShowDynamicControls(arg: boolean) {
-        self.showDynamicControls = arg
-      },
-      /**
-       * #action
-       */
       activateTrackSelector(level: number) {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
@@ -446,7 +436,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         linkViews,
         interactiveOverlay,
         scrollZoom,
-        showDynamicControls,
         viewTrackConfigs,
         ...rest
       } = snap
@@ -457,7 +446,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         ...(linkViews ? { linkViews } : {}),
         ...(interactiveOverlay ? { interactiveOverlay } : {}),
         ...(scrollZoom ? { scrollZoom } : {}),
-        ...(!showDynamicControls ? { showDynamicControls } : {}),
         ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
       } as typeof snap
     })
