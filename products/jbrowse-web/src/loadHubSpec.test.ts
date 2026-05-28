@@ -72,4 +72,27 @@ describe('loadHubSpec', () => {
 
     expect(rootModel.session?.name).toBe('My Session')
   })
+
+  it('does nothing when hubURL is empty', async () => {
+    const { pluginManager, rootModel } = setup()
+    await loadHubSpec({ hubURL: [] }, pluginManager)
+    expect(rootModel.session).toBeUndefined()
+  })
+
+  it('creates a connection instance for each hub URL', () => {
+    const { pluginManager, rootModel } = setup()
+    jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
+
+    void loadHubSpec(
+      {
+        hubURL: [
+          'http://example.com/hub1.txt',
+          'http://example.com/hub2.txt',
+        ],
+      },
+      pluginManager,
+    )
+
+    expect(rootModel.session?.connectionInstances).toHaveLength(2)
+  })
 })

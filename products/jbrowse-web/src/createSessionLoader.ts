@@ -50,7 +50,7 @@ export function createSessionLoaderFromUrl(initialTimestamp: number) {
     tracklist: p.tracklist === 'true',
     highlight: p.highlight,
     nav: p.nav !== 'false',
-    hubURL: p.hubURL?.split(','),
+    hubURL: p.hubURL?.split(',').filter(Boolean),
     sessionName: p.sessionName,
     initialTimestamp,
   })

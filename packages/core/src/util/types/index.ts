@@ -395,6 +395,7 @@ export function isTrackViewModel(thing: unknown): thing is TrackViewModel {
 export interface AbstractRootModel {
   jbrowse: IAnyStateTreeNode
   session?: AbstractSessionModel
+  setSession?(arg: { name: string; [key: string]: unknown }): void
   setDefaultSession?(): void
   adminMode?: boolean
   error?: unknown

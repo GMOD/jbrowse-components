@@ -1,5 +1,8 @@
 import { types } from '@jbrowse/mobx-state-tree'
-import { ConnectionManagementSessionMixin } from '@jbrowse/product-core'
+import {
+  ConnectionManagementSessionMixin,
+  isSessionWithConnections,
+} from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -8,6 +11,17 @@ import type {
   BaseSession,
   SessionWithSessionTracks,
 } from '@jbrowse/product-core'
+
+export interface WebSessionWithConnections {
+  sessionConnections: AnyConfigurationModel[]
+  makeConnection(conf: AnyConfigurationModel): void
+}
+
+export function isWebSessionWithConnections(
+  session: unknown,
+): session is WebSessionWithConnections {
+  return isSessionWithConnections(session) && 'sessionConnections' in session
+}
 
 /**
  * #stateModel WebSessionConnectionsMixin

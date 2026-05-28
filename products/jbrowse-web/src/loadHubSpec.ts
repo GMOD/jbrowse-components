@@ -1,3 +1,6 @@
+import { isBaseSession } from '@jbrowse/product-core'
+import { isWebSessionWithConnections } from '@jbrowse/web-core'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // the hub.txt shortLabel line, used as a human-readable session name
@@ -20,15 +23,18 @@ export async function loadHubSpec(
   },
   pluginManager: PluginManager,
 ) {
+  const firstURL = hubURL[0]
+  if (!firstURL) {
+    return
+  }
   const rootModel = pluginManager.rootModel!
 
   // set the session synchronously so rootModel.session is defined before the
   // first render (the shortLabel-refined name is applied after the fetch
   // below). A deferred setSession would leave JBrowse rendering with no
   // session.
-  // @ts-expect-error
-  rootModel.setSession({
-    name: sessionName ?? hubURL[0],
+  rootModel.setSession?.({
+    name: sessionName ?? firstURL,
     sessionConnections: hubURL.map(r => ({
       type: 'UCSCTrackHubConnection',
       connectionId: r,
@@ -40,18 +46,20 @@ export async function loadHubSpec(
     })),
   })
   const { session } = rootModel
-  // @ts-expect-error
-  session.makeConnection(session.sessionConnections[0])
+  if (isWebSessionWithConnections(session)) {
+    for (const conn of session.sessionConnections) {
+      session.makeConnection(conn)
+    }
+  }
 
   try {
-    const res = await fetch(hubURL[0]!)
+    const res = await fetch(firstURL)
     if (!res.ok) {
-      throw new Error(`HTTP ${res.status} fetching ${hubURL[0]}`)
+      throw new Error(`HTTP ${res.status} fetching ${firstURL}`)
     }
     const sessionLabel = parseHubShortLabel(await res.text())
 
-    if (!sessionName && sessionLabel) {
-      // @ts-expect-error
+    if (!sessionName && sessionLabel && isBaseSession(session)) {
       session.setName(sessionLabel)
     }
   } catch (e) {

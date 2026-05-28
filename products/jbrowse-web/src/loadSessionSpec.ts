@@ -1,3 +1,5 @@
+import { isSessionWithAddTracks } from '@jbrowse/core/util'
+
 import type { LayoutNode, ViewSpec } from './types.ts'
 import type { DockviewLayoutNode } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -44,14 +46,15 @@ export async function loadSessionSpec(
   const rootModel = pluginManager.rootModel!
 
   try {
-    // @ts-expect-error
-    rootModel.setSession({
+    rootModel.setSession?.({
       name: sessionName ?? `New session ${new Date().toLocaleString()}`,
     })
 
-    for (const track of sessionTracks) {
-      // @ts-expect-error
-      rootModel.session.addTrackConf(track)
+    const { session } = rootModel
+    if (isSessionWithAddTracks(session)) {
+      for (const track of sessionTracks) {
+        session.addTrackConf(track)
+      }
     }
 
     // a view type with no registered LaunchView-<type> extension point (a
