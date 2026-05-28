@@ -2,10 +2,11 @@ import fs from 'fs'
 import path from 'path'
 
 import { generateFastaIndex } from '@gmod/faidx'
-import { app, dialog, ipcMain } from 'electron'
+import { app, dialog } from 'electron'
 
 import { getFileStream } from '../generateFastaIndex.ts'
 import { getFaiPath } from '../paths.ts'
+import { ipcHandle } from './channels.ts'
 
 import type { AppPaths } from '../paths.ts'
 
@@ -15,41 +16,45 @@ const FILE_FILTERS = [
 ]
 
 export function registerFileHandlers(paths: AppPaths) {
-  ipcMain.handle('quit', () => {
+  ipcHandle('quit', () => {
     app.quit()
   })
 
-  ipcMain.handle('userData', () => {
+  ipcHandle('userData', () => {
     return paths.userData
   })
 
-  ipcMain.handle(
-    'indexFasta',
-    async (_, location: { uri: string } | { localPath: string }) => {
-      const filename =
-        'localPath' in location ? location.localPath : location.uri
-      const faiPath = getFaiPath(
-        paths,
-        `${path.basename(filename)}${Date.now()}.fai`,
-      )
-      const stream = await getFileStream(location)
-      const write = fs.createWriteStream(faiPath)
+  ipcHandle('indexFasta', async (_, location) => {
+    const filename = 'localPath' in location ? location.localPath : location.uri
+    const faiPath = getFaiPath(
+      paths,
+      `${path.basename(filename)}${Date.now()}.fai`,
+    )
+    const stream = await getFileStream(location)
+    const write = fs.createWriteStream(faiPath)
 
-      await generateFastaIndex(write, stream)
-      return faiPath
-    },
-  )
+    await generateFastaIndex(write, stream)
+    return faiPath
+  })
 
-  ipcMain.handle('promptOpenFile', async _ => {
+  ipcHandle('promptOpenFile', async () => {
     const choice = await dialog.showOpenDialog({
       defaultPath: paths.jbrowseDocDir,
       filters: FILE_FILTERS,
     })
-
     return choice.filePaths[0]
   })
 
-  ipcMain.handle('promptSessionSaveAs', async _ => {
+  ipcHandle('promptOpenLocalFile', async (_, defaultDir) => {
+    const choice = await dialog.showOpenDialog({
+      defaultPath: defaultDir ?? app.getPath('home'),
+      filters: [{ name: 'All Files', extensions: ['*'] }],
+      properties: ['openFile'],
+    })
+    return choice.filePaths[0]
+  })
+
+  ipcHandle('promptSessionSaveAs', async () => {
     const choice = await dialog.showSaveDialog({
       defaultPath: paths.defaultSavePath,
       filters: FILE_FILTERS,

@@ -75,11 +75,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       afterCreate() {
         const alignSelf = self as unknown as {
-          colorBySetting: unknown
-          colorBy: { type: string }
+          getOverride<T>(key: string): T | undefined
           setColorScheme(scheme: { type: string }): void
         }
-        if (!alignSelf.colorBySetting && alignSelf.colorBy.type === 'normal') {
+        if (!alignSelf.getOverride('colorBy')) {
           alignSelf.setColorScheme({ type: 'strand' })
         }
       },

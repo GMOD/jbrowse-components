@@ -1,11 +1,8 @@
-import { ipcMain } from 'electron'
-
 import { createAuthWindow } from '../window.ts'
-
-import type { AuthWindowParams } from '../window.ts'
+import { ipcHandle } from './channels.ts'
 
 export function registerAuthHandlers() {
-  ipcMain.handle('openAuthWindow', (_, params: AuthWindowParams) => {
+  ipcHandle('openAuthWindow', (_, params) => {
     return createAuthWindow(params)
   })
 }
