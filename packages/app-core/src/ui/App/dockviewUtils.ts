@@ -1,8 +1,14 @@
+import { createElementId } from '@jbrowse/core/util/types/mst'
+
 import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 
 import type { DockviewSessionType } from './types.ts'
+import type {
+  DockviewLayoutNode,
+  SessionWithDockviewLayout,
+} from '../../DockviewLayout/index.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
-import type { DockviewApi } from 'dockview-react'
+import type { DockviewApi, DockviewGroupPanel } from 'dockview-react'
 
 export function getViewsForPanel(
   panelId: string,
@@ -31,6 +37,12 @@ export function createPanelConfig(
   }
 }
 
+/**
+ * Blank each panel's `params` before persisting. `params.session` is a live MST
+ * node, so leaving it in would make `toJSON()` serialize the whole session into
+ * the layout that is itself stored on that session (a circular snapshot).
+ * `updatePanelParams` re-injects the session on restore.
+ */
 export function cleanLayoutForStorage(
   layout: ReturnType<DockviewApi['toJSON']>,
 ): ReturnType<DockviewApi['toJSON']> {
@@ -52,6 +64,102 @@ export function updatePanelParams(
   for (const panel of api.panels) {
     panel.update({ params: { panelId: panel.id, session } })
   }
+}
+
+export function getPanelPosition(
+  group: DockviewGroupPanel | undefined,
+  direction?: 'right' | 'below',
+) {
+  if (!group) {
+    return undefined
+  }
+  if (direction) {
+    return { referenceGroup: group, direction }
+  }
+  return { referenceGroup: group }
+}
+
+/**
+ * Build dockview panels/groups from a nested init layout (e.g. from URL
+ * params), assigning each node's views to its panel and tracking them. Returns
+ * the first panel's ID so the caller can mark it active.
+ */
+export function applyInitLayout(
+  api: DockviewApi,
+  session: DockviewSessionType & SessionWithDockviewLayout,
+  initLayout: DockviewLayoutNode,
+  trackedViewIds: Set<string>,
+) {
+  let firstPanelId: string | undefined
+  const groupSizes: { group: DockviewGroupPanel; size: number }[] = []
+
+  function processNode(
+    node: DockviewLayoutNode | undefined,
+    referenceGroup: DockviewGroupPanel | undefined,
+    direction: 'right' | 'below' | undefined,
+  ): DockviewGroupPanel | undefined {
+    if (!node) {
+      return undefined
+    }
+    if (node.viewIds !== undefined) {
+      const panelId = `panel-${createElementId()}`
+      if (!firstPanelId) {
+        firstPanelId = panelId
+      }
+      api.addPanel({
+        ...createPanelConfig(panelId, session, 'Tab'),
+        position: getPanelPosition(referenceGroup, direction),
+      })
+      for (const viewId of node.viewIds) {
+        session.assignViewToPanel(panelId, viewId)
+        trackedViewIds.add(viewId)
+      }
+      const group = api.getPanel(panelId)?.group
+      if (group && node.size !== undefined) {
+        groupSizes.push({ group, size: node.size })
+      }
+      return group
+    }
+    if (node.children && node.children.length > 0) {
+      const dockviewDirection =
+        node.direction === 'horizontal' ? 'right' : 'below'
+      let currentGroup = referenceGroup
+      for (let i = 0; i < node.children.length; i++) {
+        const childDirection = i === 0 ? direction : dockviewDirection
+        const childRef = i === 0 ? referenceGroup : currentGroup
+        const newGroup = processNode(node.children[i], childRef, childDirection)
+        if (newGroup) {
+          currentGroup = newGroup
+        }
+      }
+      return currentGroup
+    }
+    return undefined
+  }
+
+  processNode(initLayout, undefined, undefined)
+
+  if (
+    groupSizes.length >= 2 &&
+    initLayout.direction &&
+    groupSizes.length === initLayout.children?.length
+  ) {
+    const dimension = initLayout.direction === 'horizontal' ? 'width' : 'height'
+    requestAnimationFrame(() => {
+      const totalSize = groupSizes.reduce((sum, g) => sum + g.size, 0)
+      const containerSize = dimension === 'width' ? api.width : api.height
+      if (totalSize > 0 && containerSize > 0) {
+        for (const { group, size } of groupSizes) {
+          const px = Math.round(containerSize * (size / totalSize))
+          group.api.setSize(
+            dimension === 'width' ? { width: px } : { height: px },
+          )
+        }
+      }
+    })
+  }
+
+  return firstPanelId
 }
 
 export function rearrangePanelsWithDirection(

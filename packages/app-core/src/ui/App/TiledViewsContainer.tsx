@@ -17,8 +17,10 @@ import DockviewRightHeaderActions from './DockviewRightHeaderActions.tsx'
 import JBrowseViewPanel from './JBrowseViewPanel.tsx'
 import JBrowseViewTab from './JBrowseViewTab.tsx'
 import {
+  applyInitLayout,
   cleanLayoutForStorage,
   createPanelConfig,
+  getPanelPosition,
   updatePanelParams,
 } from './dockviewUtils.ts'
 import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
@@ -40,19 +42,6 @@ const useStyles = makeStyles()(() => ({
 
 interface Props {
   session: DockviewSessionType
-}
-
-function getPanelPosition(
-  group: DockviewGroupPanel | undefined,
-  direction?: 'right' | 'below',
-) {
-  if (!group) {
-    return undefined
-  }
-  if (direction) {
-    return { referenceGroup: group, direction }
-  }
-  return { referenceGroup: group }
 }
 
 const components = {
@@ -150,96 +139,13 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       : undefined
 
     if (initLayout && isSessionWithDockviewLayout(session)) {
-      const dockSession = session
       trackedViewIdsRef.current.clear()
-      let firstPanelId: string | undefined
-
-      const groupSizes: { group: DockviewGroupPanel; size: number }[] = []
-
-      function processNode(
-        node: typeof initLayout,
-        referenceGroup: DockviewGroupPanel | undefined,
-        direction: 'right' | 'below' | undefined,
-      ): DockviewGroupPanel | undefined {
-        if (!node) {
-          return undefined
-        }
-        if (node.viewIds !== undefined) {
-          const panelId = `panel-${createElementId()}`
-          if (!firstPanelId) {
-            firstPanelId = panelId
-          }
-          const position =
-            referenceGroup && direction
-              ? { referenceGroup, direction }
-              : referenceGroup
-                ? { referenceGroup }
-                : undefined
-          dockviewApi.addPanel({
-            ...createPanelConfig(panelId, session, 'Tab'),
-            position,
-          })
-          for (const viewId of node.viewIds) {
-            dockSession.assignViewToPanel(panelId, viewId)
-            trackedViewIdsRef.current.add(viewId)
-          }
-          const group = dockviewApi.getPanel(panelId)?.group
-          if (group && node.size !== undefined) {
-            groupSizes.push({ group, size: node.size })
-          }
-          return group
-        }
-        if (node.children && node.children.length > 0) {
-          const dockviewDirection =
-            node.direction === 'horizontal' ? 'right' : 'below'
-          let currentGroup = referenceGroup
-          for (let i = 0; i < node.children.length; i++) {
-            const child = node.children[i]!
-            const childDirection = i === 0 ? direction : dockviewDirection
-            const childRef = i === 0 ? referenceGroup : currentGroup
-            const newGroup = processNode(child, childRef, childDirection)
-            if (newGroup) {
-              currentGroup = newGroup
-            }
-          }
-          return currentGroup
-        }
-        return undefined
-      }
-
-      processNode(initLayout, undefined, undefined)
-
-      if (
-        groupSizes.length >= 2 &&
-        initLayout.direction &&
-        groupSizes.length === initLayout.children?.length
-      ) {
-        const direction = initLayout.direction
-        requestAnimationFrame(() => {
-          const totalSize = groupSizes.reduce((sum, g) => sum + g.size, 0)
-          if (totalSize > 0) {
-            if (direction === 'horizontal') {
-              const containerWidth = dockviewApi.width
-              if (containerWidth > 0) {
-                for (const { group, size } of groupSizes) {
-                  const width = Math.round(containerWidth * (size / totalSize))
-                  group.api.setSize({ width })
-                }
-              }
-            } else {
-              const containerHeight = dockviewApi.height
-              if (containerHeight > 0) {
-                for (const { group, size } of groupSizes) {
-                  const height = Math.round(
-                    containerHeight * (size / totalSize),
-                  )
-                  group.api.setSize({ height })
-                }
-              }
-            }
-          }
-        })
-      }
+      const firstPanelId = applyInitLayout(
+        dockviewApi,
+        session,
+        initLayout,
+        trackedViewIdsRef.current,
+      )
 
       session.setInit(undefined)
       if (firstPanelId) {

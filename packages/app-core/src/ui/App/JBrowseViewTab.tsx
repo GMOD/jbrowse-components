@@ -87,10 +87,10 @@ const JBrowseViewTab = observer(function JBrowseViewTab({
   }
 
   const views = getViewsForPanel(panelId, session)
-  const displayValue = getTabDisplayName(views, session)
+  const title = api.title || getTabDisplayName(views, session)
 
   const handleStartEdit = () => {
-    setEditValue(api.title || displayValue)
+    setEditValue(title)
     setIsEditing(true)
   }
 
@@ -142,7 +142,7 @@ const JBrowseViewTab = observer(function JBrowseViewTab({
               variant="body2"
               onDoubleClick={handleStartEdit}
             >
-              {api.title || displayValue}
+              {title}
             </Typography>
             <JBrowseTabMenu
               isHovered={isHovered}

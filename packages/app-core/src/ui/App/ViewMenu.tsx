@@ -24,18 +24,6 @@ import type { SvgIconProps } from '@mui/material'
 
 type ViewMenuSession = SessionWithMultipleViews & SessionWithDockviewLayout
 
-function getPanelViewCount(session: unknown, viewId: string) {
-  if (!isSessionWithDockviewLayout(session)) {
-    return 0
-  }
-  for (const viewIds of session.panelViewAssignments.values()) {
-    if (viewIds.includes(viewId)) {
-      return viewIds.length
-    }
-  }
-  return 0
-}
-
 const ViewMenu = observer(function ViewMenu({
   model,
   IconProps,
@@ -48,7 +36,7 @@ const ViewMenu = observer(function ViewMenu({
   const { moveViewToNewTab, moveViewToSplitRight } = useDockview()
   const usePanel = session.useWorkspaces && isSessionWithDockviewLayout(session)
   const viewCount = usePanel
-    ? getPanelViewCount(session, model.id)
+    ? (session.getPanelContainingView(model.id)?.viewIds.length ?? 0)
     : session.views.length
 
   const moveView = (

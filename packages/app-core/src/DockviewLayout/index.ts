@@ -57,6 +57,20 @@ export function DockviewLayoutMixin() {
       getViewIdsForPanel(panelId: string) {
         return self.panelViewAssignments.get(panelId) ?? []
       },
+      /**
+       * #getter
+       * Find the panel containing a view, returning the panel ID, that panel's
+       * view-ID list, and the view's index within it (or undefined if unassigned)
+       */
+      getPanelContainingView(viewId: string) {
+        for (const [panelId, viewIds] of self.panelViewAssignments.entries()) {
+          const idx = viewIds.indexOf(viewId)
+          if (idx !== -1) {
+            return { panelId, viewIds, idx }
+          }
+        }
+        return undefined
+      },
     }))
     .actions(self => ({
       /**
@@ -67,119 +81,106 @@ export function DockviewLayoutMixin() {
         self.dockviewLayout = layout
       },
 
-      /**
-       * #action
-       * Set the active panel ID
-       */
-      setActivePanelId(panelId: string | undefined) {
-        self.activePanelId = panelId
-      },
+        /**
+         * #action
+         * Set the active panel ID
+         */
+        setActivePanelId(panelId: string | undefined) {
+          self.activePanelId = panelId
+        },
 
-      /**
-       * #action
-       * Set the initial layout configuration (from URL params)
-       */
-      setInit(init: DockviewLayoutNode | undefined) {
-        self.init = init
-      },
+        /**
+         * #action
+         * Set the initial layout configuration (from URL params)
+         */
+        setInit(init: DockviewLayoutNode | undefined) {
+          self.init = init
+        },
 
-      /**
-       * #action
-       * Assign a view to a panel (adds to the panel's view stack)
-       */
-      assignViewToPanel(panelId: string, viewId: string) {
-        const existing = self.panelViewAssignments.get(panelId)
-        if (existing) {
-          if (!existing.includes(viewId)) {
-            existing.push(viewId)
-          }
-        } else {
-          self.panelViewAssignments.set(panelId, [viewId])
-        }
-      },
-
-      /**
-       * #action
-       * Remove a view from its panel
-       */
-      removeViewFromPanel(viewId: string) {
-        for (const [panelId, viewIds] of self.panelViewAssignments.entries()) {
-          const idx = viewIds.indexOf(viewId)
-          if (idx !== -1) {
-            viewIds.splice(idx, 1)
-            if (viewIds.length === 0) {
-              self.panelViewAssignments.delete(panelId)
+        /**
+         * #action
+         * Assign a view to a panel (adds to the panel's view stack)
+         */
+        assignViewToPanel(panelId: string, viewId: string) {
+          const existing = self.panelViewAssignments.get(panelId)
+          if (existing) {
+            if (!existing.includes(viewId)) {
+              existing.push(viewId)
             }
-            break
+          } else {
+            self.panelViewAssignments.set(panelId, [viewId])
           }
-        }
-      },
+        },
 
-      /**
-       * #action
-       * Remove a panel and all its view assignments
-       */
-      removePanel(panelId: string) {
-        self.panelViewAssignments.delete(panelId)
-      },
+        /**
+         * #action
+         * Remove a view from its panel
+         */
+        removeViewFromPanel(viewId: string) {
+          const loc = self.getPanelContainingView(viewId)
+          if (loc) {
+            loc.viewIds.splice(loc.idx, 1)
+            if (loc.viewIds.length === 0) {
+              self.panelViewAssignments.delete(loc.panelId)
+            }
+          }
+        },
 
-      /**
-       * #action
-       * Move a view up within its panel's view stack
-       */
-      moveViewUpInPanel(viewId: string) {
-        for (const viewIds of self.panelViewAssignments.values()) {
-          const idx = viewIds.indexOf(viewId)
-          if (idx > 0) {
+        /**
+         * #action
+         * Remove a panel and all its view assignments
+         */
+        removePanel(panelId: string) {
+          self.panelViewAssignments.delete(panelId)
+        },
+
+        /**
+         * #action
+         * Move a view up within its panel's view stack
+         */
+        moveViewUpInPanel(viewId: string) {
+          const loc = self.getPanelContainingView(viewId)
+          if (loc && loc.idx > 0) {
+            const { viewIds, idx } = loc
             viewIds.splice(idx - 1, 2, viewIds[idx]!, viewIds[idx - 1]!)
-            break
           }
-        }
-      },
+        },
 
-      /**
-       * #action
-       * Move a view down within its panel's view stack
-       */
-      moveViewDownInPanel(viewId: string) {
-        for (const viewIds of self.panelViewAssignments.values()) {
-          const idx = viewIds.indexOf(viewId)
-          if (idx !== -1 && idx < viewIds.length - 1) {
+        /**
+         * #action
+         * Move a view down within its panel's view stack
+         */
+        moveViewDownInPanel(viewId: string) {
+          const loc = self.getPanelContainingView(viewId)
+          if (loc && loc.idx < loc.viewIds.length - 1) {
+            const { viewIds, idx } = loc
             viewIds.splice(idx, 2, viewIds[idx + 1]!, viewIds[idx]!)
-            break
           }
-        }
-      },
+        },
 
-      /**
-       * #action
-       * Move a view to the top of its panel's view stack
-       */
-      moveViewToTopInPanel(viewId: string) {
-        for (const viewIds of self.panelViewAssignments.values()) {
-          const idx = viewIds.indexOf(viewId)
-          if (idx > 0) {
-            viewIds.splice(idx, 1)
-            viewIds.unshift(viewId)
-            break
+        /**
+         * #action
+         * Move a view to the top of its panel's view stack
+         */
+        moveViewToTopInPanel(viewId: string) {
+          const loc = self.getPanelContainingView(viewId)
+          if (loc && loc.idx > 0) {
+            loc.viewIds.splice(loc.idx, 1)
+            loc.viewIds.unshift(viewId)
           }
-        }
-      },
+        },
 
-      /**
-       * #action
-       * Move a view to the bottom of its panel's view stack
-       */
-      moveViewToBottomInPanel(viewId: string) {
-        for (const viewIds of self.panelViewAssignments.values()) {
-          const idx = viewIds.indexOf(viewId)
-          if (idx !== -1 && idx < viewIds.length - 1) {
-            viewIds.splice(idx, 1)
-            viewIds.push(viewId)
-            break
+        /**
+         * #action
+         * Move a view to the bottom of its panel's view stack
+         */
+        moveViewToBottomInPanel(viewId: string) {
+          const loc = self.getPanelContainingView(viewId)
+          if (loc && loc.idx < loc.viewIds.length - 1) {
+            loc.viewIds.splice(loc.idx, 1)
+            loc.viewIds.push(viewId)
           }
-        }
-      },
+        },
     }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
