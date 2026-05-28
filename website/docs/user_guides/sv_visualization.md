@@ -11,8 +11,8 @@ JBrowse's views. A typical workflow starts in the
 and whole-genome circular overview — to triage candidates, then drills into the
 alignments at each breakpoint to examine read-level evidence.
 
-SV calls load as [variant tracks](/docs/user_guides/variant_track) (VCF/BCF),
-reads as [alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM). The
+SV calls load as [variant tracks](/docs/user_guides/variant_track) (VCF), reads
+as [alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM). The
 [alignments track guide](/docs/user_guides/alignments_track) covers the general
 features; this page focuses on what to look for when interpreting SVs.
 
@@ -35,9 +35,10 @@ requiring any extra steps:
 
 <Figure caption="Soft-clipped reads at a breakpoint edge (right side, ~position 2,700). The dense cluster of colored nucleotide bases marks where many reads terminate at a common breakpoint; those colored bases are the overhanging sequence that could not be aligned to the reference." src="/img/alignments_soft_clipped.png" />
 
-- **Insertion/clipping indicators** — a purple triangle marks positions where
-  more than 30% of reads carry an insertion; blue/red triangles mark clipping;
-  larger purple rectangles appear for insertions >10 bp
+- **Insertion/clipping indicators** — a purple triangle marks positions where a
+  depth-dependent fraction of reads (roughly 30% at high coverage) carry an
+  insertion; blue/red triangles mark clipping; larger purple rectangles appear
+  for insertions >10 bp
 
 <Figure caption="Clipping and insertion indicators visible as colored vertical marks above the coverage track. The tall vertical colored lines (blue = left-clip, red = right-clip, purple = insertion) flag positions where many reads carry an SV signal, even without zooming into the pileup." src="/img/alignment_clipping_indicators.png" />
 
@@ -113,8 +114,9 @@ is a useful companion reference.
   **pink** (smaller insert on reference) suggest an insertion between them
 - For insertions larger than the sequenced fragment size, mates may become
   unmapped; long reads are needed to fully span the event
-- A purple insertion indicator triangle suggests an insertion when >30% of reads
-  carry one at that position
+- A purple insertion indicator triangle suggests an insertion when a
+  depth-dependent fraction of reads (roughly 30% at high coverage) carry one at
+  that position
 
 <Figure caption="An insertion (nssv15767046 INS, labeled in the variant track at top) visible as a dense column of purple insertion rectangles at ~position 55,705,920 in nanopore (top track), PacBio (middle track), and Illumina (bottom track) reads. Long reads show tall purple bars spanning the inserted bases; Illumina reads show only soft-clip artifacts at the same site because the insert exceeds the fragment size." src="/img/insertion.png" />
 

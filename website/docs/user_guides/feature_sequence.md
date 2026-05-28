@@ -10,21 +10,22 @@ guide_category: Track types
 For gene or transcript features, the feature detail sidebar stitches the
 sequence together for you. Options:
 
-- **CDS** — coding sequences, spliced
+- **CDS** — the stitched-together coding sequences
 - **Protein** — protein translation of the CDS using the standard genetic code
   (NCBI table 1). Alternative codon tables (mitochondrial, certain organisms)
   are not currently supported
-- **cDNA** — CDS plus UTRs (or all exons for a non-coding gene)
-- **Gene with introns** — the entire gene region including introns
-- **Gene with 10bp of introns** — spliced gene sequence with 10bp around each
+- **cDNA** — the "copy DNA" of the transcript, formed from the exon sequences
+- **Genomic w/ full introns** — the entire gene region including introns, with
+  UTR and CDS highlighted
+- **Genomic w/ full introns +/- Nbp up+down stream** — the above plus N bases
+  upstream and downstream (shown in light red)
+- **Genomic w/ Nbp intron** — spliced gene sequence keeping N bases around each
   splice site
-- **Gene with 500bp up+down stream** — the gene region plus 500bp upstream and
-  500bp downstream (shown in light red)
-- **Gene with 500bp up+down stream + 10bp of introns** — combines the
+- **Genomic w/ Nbp intron +/- Nbp up+down stream** — combines the
   upstream/downstream extension with the splice-site flanks
 
-The 500bp and 10bp values are defaults — [let us know](/contact/) if you want
-them configurable.
+The up/downstream extension defaults to 100bp and the intron flank to 10bp; both
+are configurable from the gear icon.
 
 <Figure caption="Sequence panel showing upstream, exonic, intronic, and downstream sequence for a selected feature." src="/img/feature_detail_sequence.png" />
 

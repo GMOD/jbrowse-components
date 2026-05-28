@@ -370,6 +370,9 @@ const SessionLoader = types
       // ?config=none skips loading; useful for ?hubURL which may not need a
       // config (but can still be combined with one if e.g. config has plugins)
       if (configPath === 'none') {
+        // still mark plugins as loaded (empty set) so `ready` can flip true;
+        // otherwise runtimePlugins stays undefined and the app loads forever
+        await this.fetchPlugins({})
         self.setConfigSnapshot({})
       } else {
         const { config, configUri } = await fetchRemoteConfig(configPath)

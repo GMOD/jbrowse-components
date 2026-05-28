@@ -66,8 +66,8 @@ class MyAdapter extends BaseFeatureDataAdapter {
 }
 ```
 
-Implement `getRefNames` (optional), `getFeatures` (returns an rxjs observable
-stream of features), and `freeResources` (optional).
+Implement `getRefNames` (used for refName renaming) and `getFeatures` (returns
+an rxjs observable stream of features); `freeResources` is optional.
 
 ### Example feature adapter
 
@@ -98,7 +98,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
           features.forEach(feature => {
             observer.next(
               new SimpleFeature({
-                uniqueID: `${feature.refName}-${feature.start}-${feature.end}`,
+                uniqueId: `${feature.refName}-${feature.start}-${feature.end}`,
                 refName: feature.refName,
                 start: feature.start,
                 end: feature.end,

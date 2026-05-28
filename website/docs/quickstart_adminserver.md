@@ -59,8 +59,7 @@ This will then generate a link that you can visit in your web browser:
 ## Adding a genome assembly
 
 A key first step in configuring a genome browser is adding an assembly to view.
-In order to do this, use the navigation bar to open up the Assembly Manager
-(`Admin > Open Assembly Manager`).
+To do this, open the Assembly manager from the menu bar.
 
 This opens up a table which can be used to create, edit, and delete assemblies
 in your application:
@@ -113,7 +112,6 @@ The following file formats are supported in core JBrowse 2:
 
 - CRAM
 - BAM
-- htsget
 - VCF (Tabix-indexed)
 - GFF3 (Tabix-indexed)
 - BED (Tabix-indexed)

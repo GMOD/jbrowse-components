@@ -46,7 +46,7 @@ Replace `index.html` with the following — a complete working linear genome vie
     <title>JBrowse Linear Genome View</title>
 
     <script
-      src="https://unpkg.com/@jbrowse/react-linear-genome-view2@3.5.0/dist/react-linear-genome-view.umd.production.min.js"
+      src="https://unpkg.com/@jbrowse/react-linear-genome-view2@4.3.0/dist/react-linear-genome-view.umd.production.min.js"
       crossorigin
     ></script>
   </head>
@@ -58,7 +58,7 @@ Replace `index.html` with the following — a complete working linear genome vie
       const { React, createRoot, createViewState, JBrowseLinearGenomeView } =
         JBrowseReactLinearGenomeView
 
-      const state = new createViewState({
+      const state = createViewState({
         assembly: {
           name: 'hg38',
           sequence: {
@@ -124,10 +124,9 @@ Replace `index.html` with the following — a complete working linear genome vie
 You can see a couple of notable things in the above script:
 
 - We import the JBrowse script in the `<head>` of the page. This creates a
-  global variable `JBrowseReactLinearGenomeView` that we use in our script. In
-  this code snippet
+  global variable `JBrowseReactLinearGenomeView` that we use in our script
 - We point directly at a CDN (the unpkg URL) but you can also download this file
-  for later use. You can also remove the @3.5.0 part of the URL to point to the
+  for later use. You can also remove the @4.3.0 part of the URL to point to the
   latest version always, but to avoid any potential breaking changes, pinning
   the version can help
 - We provide an assembly, the hg38 genome assembly, as a bgzip indexed FASTA
@@ -166,10 +165,11 @@ like this:
 jbrowse text-index --file file1.gff.gz --fileId ncbi_genes
 ```
 
-This will produce a ".ix" and ".ixx" file (and a meta.json file, which is
-unused)
+This produces `.ix` and `.ixx` files plus a `_meta.json` file (all three are
+used by the text-search adapter).
 
-You can add these to a "per-track text search adapter", which is seen below
+You can add these to a "per-track text search adapter", as shown in the more
+elaborate example below.
 
 ## A more elaborate example
 
@@ -183,7 +183,7 @@ code snippet that includes some more track types, including
 - CRAM
 
 ```typescript
-const state = new createViewState({
+const state = createViewState({
   assembly: {
     name: 'hg38',
     sequence: {

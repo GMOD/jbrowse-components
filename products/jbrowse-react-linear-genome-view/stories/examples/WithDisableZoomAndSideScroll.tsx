@@ -7,17 +7,20 @@ import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
+import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 class MyPlugin extends Plugin {
   name = 'MyPlugin'
   install(pluginManager: PluginManager) {
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<PluggableElementType>(
       'Core-extendPluggableElement',
-      (pluggableElement: { name: string; stateModel: any }) => {
+      pluggableElement => {
         if (pluggableElement.name === 'LinearGenomeView') {
-          pluggableElement.stateModel = types.compose(
-            pluggableElement.stateModel,
-            types.model().actions(_self => ({
+          const view = pluggableElement as ViewType
+          view.stateModel = types.compose(
+            view.stateModel,
+            types.model().actions(() => ({
               zoomTo: () => {},
               scrollTo: () => {},
             })),

@@ -105,8 +105,9 @@ The SNPCoverage options in the track menu can turn them off.
 ### Insertion and clipping indicators
 
 The coverage row shows an upside-down histogram of insertions and soft/hard
-clips at each position, with a colored triangle when an event exceeds 30% of the
-reads at that base.
+clips at each position, with a colored triangle when an event exceeds a
+depth-dependent fraction of the reads at that base (roughly 30% at high
+coverage, rising toward 80% at low coverage).
 
 <Figure caption="Indicators above the coverage track: purple = insertion, blue = soft clip, red = hard clip." src="/img/alignment_clipping_indicators.png" />
 
@@ -121,12 +122,13 @@ options in the track menu.
 #### How the indicator threshold works
 
 A triangle indicator is drawn when an event (insertion, soft clip, or hard clip)
-occurs in more than 30% of reads at that position. The depth used for this
-calculation is `max(coverageDepth[pos - 1], coverageDepth[pos])` — the larger of
-the two bases flanking the interbase position. This correctly handles cliffs
-where reads pile up on one side and then stop, such as when many reads end with
-soft clipping at the same boundary. The tooltip percentage uses the same local
-depth.
+exceeds a depth-dependent threshold: about 80% at low coverage (depth below 10),
+interpolating down to about 30% at high coverage (depth 30 and above). This
+avoids spurious indicators when only a few reads are present. The depth used is
+`max(coverageDepth[pos - 1], coverageDepth[pos])` — the larger of the two bases
+flanking the interbase position. This correctly handles cliffs where reads pile
+up on one side and then stop, such as when many reads end with soft clipping at
+the same boundary. The tooltip percentage uses the same local depth.
 
 ### Arc display
 
@@ -146,7 +148,7 @@ Long-range interactions outside the current view are drawn as vertical lines (to
 other chromosomes, for example) or large semicircular arcs (for off-screen
 partners). The track menu has toggles to hide these if they're distracting.
 
-https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL
+[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
 
 <Figure caption="The arc display showing a deletion with Illumina paired-end reads and Nanopore ultra-long reads on HG002. Also shows the menu-items for hiding inter-region lines." src="/img/alignments/arc_selector.png" />
 

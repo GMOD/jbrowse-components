@@ -1,52 +1,38 @@
 ---
 id: renderer_architecture
 title: Renderer architecture
-description: How canvas-based track rendering runs in a web worker via RPC
+description: GPU main-thread rendering and the legacy worker-renderer path
 guide_category: Core concepts
 ---
 
-:::caution
-
-This architecture is under active revision. The renderer system is being
-reworked to use WebGL/WebGPU. The concepts below reflect the current
-canvas/RPC-based system and will change.
-
-:::
-
 ## Overview
 
-JBrowse 2 renderers run in a web worker to keep the main thread responsive.
-Render arguments are serialized from the client, sent to the worker, and results
-are transferred back.
+JBrowse 2 is transitioning from worker-rendered image tiles to GPU-based
+rendering. Two paths coexist:
 
-## Renderer class hierarchy
+- **GPU/main-thread rendering (current direction).** The worker fetches feature
+  data via RPC and returns it as compact typed arrays (absolute genomic uint32
+  coordinates). The main thread then draws with WebGPU, falling back to WebGL,
+  then Canvas2D. This covers the high-volume track types — alignments, wiggle,
+  features, variants. See `plugins/canvas` and `packages/core/src/gpu`.
+- **Worker-renderer (legacy).** A few specialized renderers still run the older
+  pattern, where the worker produces the rendered output and transfers it back.
+  These extend `ServerSideRendererType` and are now limited to renderers like
+  `ArcRenderer` and `StructuralVariantChordRenderer`.
+
+## Worker-renderer class hierarchy
+
+The remaining worker-renderer base classes (in
+`packages/core/src/pluggableElementTypes/renderers`):
 
 ```
 RendererType (base)
 └── ServerSideRendererType (RPC bridge)
     ├── FeatureRendererType (feature fetching + serialization)
-    │   ├── CircularChordRendererType
-    │   ├── ArcRenderer
-    │   ├── DivSequenceRenderer
-    │   ├── WiggleBaseRenderer (canvas)
-    │   ├── MultiVariantBaseRenderer (canvas)
+    │   ├── CircularChordRendererType   // e.g. StructuralVariantChordRenderer
     │   └── BoxRendererType (layout management)
-    │       ├── SvgFeatureRenderer
-    │       ├── PileupRenderer (canvas)
-    │       └── CanvasFeatureRenderer (canvas)
-    ├── HicRenderer
-    └── DotplotRenderer (canvas)
 ```
 
-## Two rendering patterns
-
-**React-based renderers** (e.g. `SvgFeatureRenderer`) return React/SVG elements.
-Features are serialized as JSON for transport and reconstructed on the client,
-where the React component renders them.
-
-**Canvas-based renderers** (e.g. `PileupRenderer`, `WiggleBaseRenderer`) draw to
-an `OffscreenCanvas` and transfer the resulting `ImageBitmap` back to the
-client. Features are consumed during rendering and not returned.
-
-For creating a renderer, see
-[creating renderers](/docs/developer_guides/creating_renderer).
+For creating a renderer in the legacy worker pattern, see
+[creating renderers](/docs/developer_guides/creating_renderer). For GPU
+rendering, see the source under `plugins/canvas` and `packages/core/src/gpu`.

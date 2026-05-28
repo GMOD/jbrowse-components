@@ -6,6 +6,7 @@ import { getVolvoxConfig } from './util.ts'
 import { JBrowseLinearGenomeView, useCreateViewState } from '../../src/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 // in your code
@@ -16,13 +17,12 @@ class HighlightRegionPlugin extends Plugin {
   name = 'HighlightRegionPlugin'
 
   install(pluginManager: PluginManager) {
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<PluggableElementType>(
       'Core-extendPluggableElement',
-
-      (pluggableElement: any) => {
+      pluggableElement => {
         if (pluggableElement.name === 'LinearGenomeView') {
-          const { stateModel } = pluggableElement as ViewType
-          const newStateModel = stateModel.extend(self => {
+          const view = pluggableElement as ViewType
+          const newStateModel = view.stateModel.extend(self => {
             const superRubberBandMenuItems = self.rubberBandMenuItems
             return {
               views: {
@@ -48,7 +48,7 @@ class HighlightRegionPlugin extends Plugin {
             }
           })
 
-          pluggableElement.stateModel = newStateModel
+          view.stateModel = newStateModel
         }
         return pluggableElement
       },

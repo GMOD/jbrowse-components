@@ -63,8 +63,10 @@ const ShadowComponent = () => {
               },
               MuiTooltip: {
                 defaultProps: {
-                  popperprops: {
-                    container: () => nodeForPin.current,
+                  slotProps: {
+                    popper: {
+                      container: () => nodeForPin.current,
+                    },
                   },
                 },
               },

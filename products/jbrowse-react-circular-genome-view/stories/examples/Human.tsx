@@ -1,4 +1,6 @@
 // replace with from '@jbrowse/react-circular-genome-view2' in your code
+import { useState } from 'react'
+
 import { JBrowseCircularGenomeView, createViewState } from '../../src/index.ts'
 
 const hg19Assembly = {
@@ -9,27 +11,13 @@ const hg19Assembly = {
     trackId: 'Pd8Wh30ei9R',
     adapter: {
       type: 'BgzipFastaAdapter',
-      fastaLocation: {
-        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
-        locationType: 'UriLocation',
-      },
-      faiLocation: {
-        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
-        locationType: 'UriLocation',
-      },
-      gziLocation: {
-        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
-        locationType: 'UriLocation',
-      },
+      uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
     },
   },
   refNameAliases: {
     adapter: {
       type: 'RefNameAliasAdapter',
-      location: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
-        locationType: 'UriLocation',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
     },
   },
 }
@@ -43,49 +31,29 @@ const hg19Tracks = [
     category: ['GIAB'],
     adapter: {
       type: 'VcfTabixAdapter',
-      vcfGzLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz',
-        locationType: 'UriLocation',
-      },
-      index: {
-        location: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz',
     },
   },
 ]
 
-const hg19DefaultSession = {
-  name: 'this session',
-  view: {
-    id: 'circularView',
-    type: 'CircularView',
-    bpPerPx: 5000000,
-    tracks: [
-      {
-        id: 'uPdLKHik1',
-        type: 'VariantTrack',
-        configuration: 'pacbio_sv_vcf',
-        displays: [
-          {
-            id: 'v9QVAR3oaB',
-            type: 'ChordVariantDisplay',
-            configuration: 'pacbio_sv_vcf-ChordVariantDisplay',
-          },
-        ],
-      },
-    ],
-  },
-}
-
 export const Human = () => {
-  const state = createViewState({
-    assembly: hg19Assembly,
-    tracks: hg19Tracks,
-    defaultSession: hg19DefaultSession,
-  })
+  const [state] = useState(() =>
+    createViewState({
+      assembly: hg19Assembly,
+      tracks: hg19Tracks,
+      defaultSession: {
+        name: 'this session',
+        view: {
+          id: 'circularView',
+          type: 'CircularView',
+          init: {
+            assembly: 'hg19',
+            tracks: ['pacbio_sv_vcf'],
+          },
+        },
+      },
+    }),
+  )
   return (
     <div>
       <JBrowseCircularGenomeView viewState={state} />

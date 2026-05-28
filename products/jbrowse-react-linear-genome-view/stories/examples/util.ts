@@ -2,7 +2,7 @@
 import config from '../../public/test_data/volvox/config.json' with { type: 'json' }
 
 export function addRelativeUris(config: any, baseUri: string) {
-  if (typeof config === 'object') {
+  if (typeof config === 'object' && config !== null) {
     for (const key of Object.keys(config)) {
       if (typeof config[key] === 'object') {
         addRelativeUris(config[key], baseUri)

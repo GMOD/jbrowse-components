@@ -115,12 +115,13 @@ see your running JBrowse instance!
 
 :::info
 
-At this point, you _must_ be running your plugin on port `9000` to see a running
-JBrowse instance, otherwise you will meet a screen asking you to configure your
-instance.
+Two servers must be running at once: JBrowse itself on port `8999` (what you
+navigate to) and your plugin's build server on port `9000` (which JBrowse loads
+the plugin from). If the plugin server on `9000` is not running, you will meet a
+screen asking you to configure your instance.
 
-If you'd like to change this port, you can edit the "port" fields under "config"
-in the `package.json` file.
+If you'd like to change these ports, you can edit the "port" fields under
+"config" in the `package.json` file.
 
 :::
 

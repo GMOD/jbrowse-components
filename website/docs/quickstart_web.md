@@ -9,10 +9,10 @@ toplevel: true
 - Install Node.js 18+, samtools, tabix
 - `npm install -g @jbrowse/cli`
 - `jbrowse create jbrowse2 && cd jbrowse2 && npx serve -S .`
-- `samtools faidx genome.fa && jbrowse add-assembly genome.fa --load copy --out /var/www/html/jbrowse/`
-- `samtools index file.bam && jbrowse add-track file.bam --load copy --out /var/www/html/jbrowse`
-- `bgzip file.vcf && tabix file.vcf.gz && jbrowse add-track file.vcf.gz --load copy --out /var/www/html/jbrowse`
-- `jbrowse text-index --out /var/www/html/jbrowse`
+- `samtools faidx genome.fa && jbrowse add-assembly genome.fa --load copy`
+- `samtools index file.bam && jbrowse add-track file.bam --load copy`
+- `bgzip file.vcf && tabix file.vcf.gz && jbrowse add-track file.vcf.gz --load copy`
+- `jbrowse text-index`
 
 ## Prerequisites
 

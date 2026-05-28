@@ -7,8 +7,8 @@ toplevel: true
 
 JBrowse 2 is a pluggable, open-source genome browser. It runs as a web app, a
 desktop app, and as embeddable React components, and supports linear, circular,
-dotplot, synteny, spreadsheet, and Hi-C views alongside the standard track
-types.
+dotplot, synteny, and spreadsheet views, plus track types for alignments,
+variants, quantitative/coverage, and Hi-C data.
 
 ## Quick start guides
 

@@ -574,7 +574,7 @@ $ jbrowse remove-track trackId
 ```
 Set a default session with views and tracks
 
-Usage: jbrowse add-track <track> [options]
+Usage: jbrowse set-default-session [options]
 
 Options:
   -s, --session              set path to a file containing session in json

@@ -1,11 +1,13 @@
 ---
 id: disable_analytics
 title: Disabling analytics
-description: Opt out of Google Analytics usage tracking
+description: Opt out of usage analytics
 guide_category: Other features
 ---
 
-jbrowse-web and jbrowse-desktop use Google Analytics for usage data. To disable:
+jbrowse-web and jbrowse-desktop collect anonymous usage data, sent to Google
+Analytics and a JBrowse analytics endpoint. Setting `disableAnalytics: true`
+turns off both:
 
 ```json
 {

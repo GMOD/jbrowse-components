@@ -15,7 +15,7 @@ that produced the calls:
 Clicking a variant opens a widget with a per-sample genotype table. Multi-sample
 VCFs (like 1000 Genomes) can contain thousands of samples.
 
-<Figure caption="Feature details panel for an SNV (C→T). The SAMPLES section lists every sample with its genotype (GT) and other per-sample fields. The 'Filter sample (regex)' field at the top of the SAMPLES section accepts a regex; typing '1' keeps only samples with the alt allele (1|0 or 0|1), hiding the many homozygous-reference rows." src="/img/variant_panel.png" />
+<Figure caption="Feature details panel for an SNV (C→T). The SAMPLES section lists every sample with its genotype (GT) and other per-sample fields. Each column has its own filter box accepting plain text or a regex — e.g. in the genotype filter, typing '1' keeps only samples carrying the first alternate allele (0|1 or 1|1), hiding the many homozygous-reference rows." src="/img/variant_panel.png" />
 
 [Live demo — example showing a deletion in a trio](https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-tzYolAQWOK&password=HGZA4)
 
@@ -24,9 +24,11 @@ the REF allele; any non-zero value is an ALT allele).
 
 ## Multi-sample variant matrix display
 
-The matrix display shows multi-sample VCFs as a dense heatmap where each row is
-a sample and each column is a variant position. This makes genotype patterns —
-shared variants, population structure, runs of homozygosity — visible at a
-glance in ways that a per-position track cannot.
+For multi-sample VCFs, the matrix display renders genotypes as a dense heatmap —
+each row a sample, each column a variant — making shared variants, population
+structure, and runs of homozygosity visible at a glance.
 
 <Figure caption="Example screenshot of looking at a deletion structural variant, with alignment evidence from a mom, dad, and child (trio). The first two samples (mother, child) have complete (homozygous) deletion in this region, while the father has a heterozygous deletion. The blue markers show 'soft clipping' at the boundaries of the deletion. The right panel shows all the samples, sorted by their genotype" src="/img/multi-sv-trio.png" />
+
+See [Multi-variant tracks](/docs/user_guides/multivariant_track) for the full
+walkthrough of the regular and matrix multi-sample displays.

@@ -229,18 +229,17 @@ following steps:
 
 ### Adding color callbacks via the command line
 
-Adding color callbacks via the CLI is a bit tricky because the coloration
-property lives inside the renderer.
-
-In brief, to add a configuration callback to a track using the CLI, your
-`add-track` is going to look something like this:
+The color callback (`color1`) is a display-level setting, so you supply a
+`displays` entry via `--config`. To add one to a track using the CLI, your
+`add-track` looks something like this:
 
 ```bash
-jbrowse add-track somevariants.vcf --load copy --config '{"displays": [{"displayId": "my_BasicDisplay", "type": "LinearBasicDisplay", "renderer": {"color1": "jexl:get(feature, '\''strand'\'') == -1 ? '\''red'\'' : '\''blue'\''" }}]}'
+jbrowse add-track somevariants.vcf --load copy --config '{"displays": [{"displayId": "somevariants-LinearVariantDisplay", "type": "LinearVariantDisplay", "color1": "jexl:get(feature, '\''strand'\'') == -1 ? '\''red'\'' : '\''blue'\''"}]}'
 ```
 
-The `--config` option adds extra configuration — here, a renderer on the
-display. A .vcf file uses `LinearBasicDisplay`.
+The `--config` option adds extra configuration — here, a color callback on the
+display. A `.vcf` file uses `LinearVariantDisplay`; a feature track (BED/GFF)
+uses `LinearBasicDisplay`.
 
 ### How do I get (more) categories to filter on in the faceted track selector?
 
@@ -497,6 +496,8 @@ DynamoDB entry and decodes it using the key embedded in the URL.
 The DynamoDB contents cannot be decrypted even by JBrowse administrators.
 
 ## Troubleshooting
+
+### Why does my saved session fail to load?
 
 Changing track IDs or deleting tracks can cause saved sessions to fail to load,
 since any inconsistency causes the entire session to fail. Make these changes

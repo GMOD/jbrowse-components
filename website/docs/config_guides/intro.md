@@ -39,18 +39,19 @@ file extension.
 
 :::info
 
-Embedded components (e.g. `@jbrowse/react-linear-genome-view`) take a config
+Embedded components (e.g. `@jbrowse/react-linear-genome-view2`) take a config
 object at runtime rather than a config file. To fetch one on the fly:
 
 ```typescript
-const response = await fetch('config.json')
+const url = 'config.json'
+const response = await fetch(url)
 if (!response.ok) {
   throw new Error(`HTTP status ${response.status} fetching ${url}`)
 }
 const config = await response.json()
 createViewState({
   ...config,
-  assembly: config.assemblies[0], // only one assembly used in embedded currently)
+  assembly: config.assemblies[0], // only one assembly used in embedded currently
 })
 ```
 

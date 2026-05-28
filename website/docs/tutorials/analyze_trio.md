@@ -36,7 +36,7 @@ The matrix display has a "phased" rendering mode, available when the genotypes
 use the `0|1` (phased) separator instead of `0/1` (unphased).
 
 The ideal is that your variants will be "completely phased". This sometimes
-requires specialized programs like SHAPEIT
+requires specialized programs like SHAPEIT.
 
 <Figure caption="Screenshot showing the phased rendering mode along with the menu item used to select it 'Rendering mode'->'Phased'" src="/img/trio-matrix-phased.png"/>
 
@@ -74,7 +74,8 @@ chromosome are matches
 
 ```bash
 #!/bin/bash
-# create a bed file from hap-ibd output with columns "chr, start, end, sample_name1 hap1 sample_name2 hap2"
+# hap-ibd .ibd columns are: sample1, hap1, sample2, hap2, chr, start, end
+# we rearrange them into a BED file with columns: chr, start, end, sample1, hap1, sample2, hap2
 # add this config to jbrowse: get(feature,'sample1')+':HP'+get(feature,'hap1')+'     '+get(feature,'sample2')+':HP'+get(feature,'hap2')
 zcat result.ibd.gz | cut -f 5,6,7 > coords.bed
 zcat result.ibd.gz | cut -f 1,2,3,4 > samples.txt
@@ -84,7 +85,7 @@ paste coords.bed samples.txt >> out.bed
 
 After this conversion, we can load this simple BED file into JBrowse via the GUI
 or the CLI. It is probably small enough that it doesn't even need tabix
-conversion
+conversion.
 
 ## Background: relationship between phased blocks, and the biology of recombination
 

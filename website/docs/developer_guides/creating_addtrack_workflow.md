@@ -12,12 +12,11 @@ example of this, it produces a textbox where you can paste a list of files.
 A simple addition to the add track workflow:
 
 ```js
-// plugins/wiggle/MultiWiggleAddTrackWidget/index.jsx
+// plugins/wiggle/src/MultiWiggleAddTrackWorkflow/index.ts
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
-
 
 import MultiWiggleWidget from './AddTrackWorkflow'
 
@@ -38,9 +37,9 @@ export default (pm: PluginManager) => {
 ...and ensure you install this component into your larger plugin:
 
 ```js
-// plugins/wiggle/index.jsx
+// plugins/wiggle/src/index.ts
 
-import MultiWiggleAddTrackWidgetF from './MultiWiggleAddTrackWidget'
+import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow'
 
 // ...
 
@@ -49,7 +48,7 @@ export default class WigglePlugin extends Plugin {
 
   install(pm: PluginManager) {
     // ...
-    MultiWiggleAddTrackWidgetF(pm)
+    MultiWiggleAddTrackWorkflowF(pm)
     // ...
   }
 }

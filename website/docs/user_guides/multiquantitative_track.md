@@ -6,21 +6,19 @@ guide_category: Track types
 ---
 
 A multi-quantitative track combines several quantitative signals (BigWig files,
-typically) into one track with a shared Y axis. Five rendering modes are
-available, switchable from the track menu:
+typically) into one track with a shared Y axis. Rendering modes are switchable
+from the track menu, in two families:
 
-- **xyplot** — overlapping bar charts
-- **multirowxyplot** — one bar chart per subtrack, stacked
-- **multiline** — overlapping line plots
-- **multirowline** — one line plot per subtrack, stacked
-- **multidensity** — heatmap-style density rows
+- **Multi-row** (`Multi-row XY plot`, `Multi-row density`, `Multi-row line`,
+  `Multi-row scatter`) — one plot per subtrack, stacked
+- **Overlapping** (`Overlapping XY plot`, `Overlapping lines`,
+  `Overlapping scatter`) — all subtracks drawn together
 
 <Figure caption="The track menu lists the available renderer types." src="/img/multiwig/multi_renderer_types.png" />
 
-In the multi-row modes (`multirowxyplot`, `multirowline`, `multidensity`) the
-subtracks keep their configured colors. In the overlapping modes (`xyplot`,
-`multiline`) the subtracks are auto-assigned colors from the palette. You can
-edit colors and ordering from the track menu.
+In the multi-row modes the subtracks keep their configured colors. In the
+overlapping modes the subtracks are auto-assigned colors from the palette. You
+can edit colors and ordering from the track menu.
 
 <Figure caption="The color/arrangement editor lets you change subtrack colors and reorder them in the row-based layouts." src="/img/multiwig/multi_colorselect.png" />
 

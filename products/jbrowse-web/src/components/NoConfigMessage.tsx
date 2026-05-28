@@ -260,6 +260,10 @@ const demoSessions = [
     label: 'Tetraploid potato multi-sample VCF',
   },
   {
+    href: '?hubURL=https://hgdownload.soe.ucsc.edu/hubs/GCF/019/202/715/GCF_019202715.1/hub.txt&config=none',
+    label: 'UCSC GenArk hub (GCF_019202715.1)',
+  },
+  {
     href: '?config=test_data/config_demo.json&session=share-vQBatl-Of9&password=Mhl6F',
     label: 'Human trio phased VCF rendering',
   },

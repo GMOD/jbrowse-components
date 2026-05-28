@@ -97,10 +97,10 @@ Tracks can include a `displays` array to configure display-level settings such
 as height, color callbacks, or which display type is active by default. Each
 entry targets a specific display type via its `displayId`.
 
-The `displayId` convention is `{trackId}-{displayType}`, for example
-`my_bam_track-LinearAlignmentsDisplay`. JBrowse uses this convention internally
-— if you omit the `displays` array the defaults are used, but if you provide a
-`displays` entry without the correct `displayId` it will be silently ignored.
+Displays are matched by their `type`. The `displayId` is optional — if you omit
+it, JBrowse fills in the convention `{trackId}-{displayType}`, for example
+`my_bam_track-LinearAlignmentsDisplay`. Settings like `color1`, `height`, and
+`labels` go directly on the display entry.
 
 ```json
 {
@@ -117,10 +117,7 @@ The `displayId` convention is `{trackId}-{displayType}`, for example
       "type": "LinearBasicDisplay",
       "displayId": "repeats_hg19-LinearBasicDisplay",
       "height": 200,
-      "renderer": {
-        "type": "SvgFeatureRenderer",
-        "color1": "jexl:get(feature,'strand')==1?'blue':'red'"
-      }
+      "color1": "jexl:get(feature,'strand')==1?'blue':'red'"
     }
   ]
 }

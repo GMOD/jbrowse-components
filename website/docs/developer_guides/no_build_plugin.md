@@ -229,7 +229,7 @@ which defines a specific global variable rather than exporting a class.
 
 ## Note: Plugins in embedded React components
 
-This no-build guide targets jbrowse-web, which loads plugins via `plugins.json`.
+This no-build guide targets jbrowse-web, which loads plugins via `config.json`.
 If you are using an embedded component (`@jbrowse/react-app2` or
 `@jbrowse/react-linear-genome-view2`) the approach is different: define your
 plugin as a class and pass it in the `plugins` array to `createViewState`:

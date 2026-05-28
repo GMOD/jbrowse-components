@@ -34,6 +34,9 @@ file reads. If ?config= is not specified, it looks for a file named config.json
 e.g. http://host/jbrowse2/config.json, which is what the @jbrowse/cli tool sets
 up by default
 
+The special value `?config=none` skips loading a config file entirely. This is
+useful with `&hubURL=` (below), which supplies its own assemblies and tracks.
+
 ### &assembly=
 
 Example
@@ -205,6 +208,23 @@ session types including:
 This is useful for giving meaningful names to sessions launched via URL, rather
 than using auto-generated names with timestamps. The value should be URL-encoded
 if it contains special characters or spaces.
+
+### &hubURL=
+
+Example
+
+`&hubURL=https://example.com/hub.txt&config=none`
+
+Intended to load one or more UCSC track hubs as a session (multiple hubs as a
+comma-separated list), typically combined with `?config=none` since the hub
+supplies its own assemblies and tracks.
+
+:::note
+
+This parameter is experimental and may not be fully functional — verify it works
+for your use case before relying on it.
+
+:::
 
 ## Session spec
 

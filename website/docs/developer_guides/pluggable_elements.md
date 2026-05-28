@@ -122,16 +122,19 @@ which has two display methods
 
 ### Renderers
 
-Renderers run in a web worker and draw features (e.g. to an OffscreenCanvas).
-See [creating renderers](/docs/developer_guides/creating_renderer/).
+A renderer draws features for a display. High-volume track types (alignments,
+wiggle, features, variants) now render on the main thread with GPU/Canvas2D from
+worker-fetched data; a few specialized renderers still use the legacy
+worker-renderer pattern. See
+[renderer architecture](/docs/developer_guides/renderer_architecture/) and
+[creating renderers](/docs/developer_guides/creating_renderer/).
 
-For example, the `@jbrowse/plugin-alignments` exports several renderer types:
+Examples of the legacy worker-renderer type:
 
-- `PileupRenderer` - a renderer type that renders Pileup type display of
-  alignments fetched from the `BamAdapter`/`CramAdapter`
-- `SNPCoverageRenderer` - a renderer that draws the coverage. Note that this
-  renderer derives from the wiggle renderer, but does the additional step of
-  drawing the mismatches over the coverage track
+- `ArcRenderer` (`@jbrowse/plugin-arc`) - draws arcs connecting features, used
+  by the paired/arc displays
+- `StructuralVariantChordRenderer` (`@jbrowse/plugin-circular-view`) - draws
+  breakends and structural variants as chords in the circular view
 
 :::info
 

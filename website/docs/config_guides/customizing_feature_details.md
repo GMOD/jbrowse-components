@@ -42,7 +42,7 @@ The schema for `formatDetails` is:
 
 - `feature` - customizes the top-level feature
 - `subfeatures` - customizes the subfeatures, recursively up to `depth`
-- `depth` - depth to customize the subfeatures to, default 1
+- `depth` - depth to customize the subfeatures to, default 2
 
 Use a jexl callback for `feature`, `subfeatures`, or both. The callback returns
 an object with the fields to replace.

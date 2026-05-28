@@ -28,9 +28,10 @@ The following formats are supported:
 
 ### Sources of data for SV inspector
 
-Best for long-range SV records — VCF entries with `SVTYPE=BND` (breakends) or
-`SVTYPE=TRA` (translocations). Single-locus deletions and duplications load fine
-but don't show up usefully in the circular overview.
+Best for long-range SV records — VCF entries with `SVTYPE=BND` (breakends; the
+VCF-spec way to encode translocations) or the caller-specific `SVTYPE=TRA` used
+by some tools. Single-locus deletions and duplications load fine but don't show
+up usefully in the circular overview.
 
 Compatible variant callers:
 

@@ -35,7 +35,7 @@ A view registration looks roughly like:
 ```ts
 import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { stateModelFactory, ReactComponent } from './MyView'
 
 export default function (pluginManager: PluginManager) {

@@ -32,22 +32,22 @@ Here is a mostly comprehensive list of config types:
   editor in the GUI where you can add or delete things
 - `stringArrayMap` - allows entering a list of key-value entries
 
-Let's examine the `PileupRenderer` configuration as an example.
+Let's examine the `LinearCanvasBaseDisplay` configuration as an example.
 
 ### Example config with multiple slot types
 
-This `PileupRenderer` config contains an example of several different slot
-types:
+This `LinearCanvasBaseDisplay` config (abbreviated) contains an example of
+several different slot types:
 
 ```js
-// plugins/alignments/src/PileupRenderer/configSchema.ts
+// plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts
 
 import { types } from '@jbrowse/mobx-state-tree'
-export default ConfigurationSchema('PileupRenderer', {
-  color: {
+export default ConfigurationSchema('LinearCanvasBaseDisplay', {
+  color1: {
     type: 'color',
-    description: 'the color of each feature in a pileup alignment',
-    defaultValue: `jexl:get(feature,'strand') == - 1 ? '#8F8FD8' : '#EC8B8B'`,
+    description: 'the main color of each feature',
+    defaultValue: 'goldenrod',
     contextVariable: ['feature'],
   },
   displayMode: {
@@ -56,17 +56,15 @@ export default ConfigurationSchema('PileupRenderer', {
     description: 'Alternative display modes',
     defaultValue: 'normal',
   },
-  minSubfeatureWidth: {
+  featureHeight: {
     type: 'number',
-    description: `the minimum width in px for a pileup mismatch feature. use for
-        increasing mismatch marker widths when zoomed out to e.g. 1px or
-        0.5px`,
-    defaultValue: 0,
+    description: 'height in pixels of the main body of each feature',
+    defaultValue: 10,
   },
-  maxHeight: {
-    type: 'integer',
-    description: 'the maximum height to be used in a pileup rendering',
-    defaultValue: 600,
+  showDescriptions: {
+    type: 'boolean',
+    description: 'show feature descriptions',
+    defaultValue: true,
   },
 })
 ```
@@ -82,13 +80,13 @@ readConfObject(config, 'displayMode')
 You might also see in the code like this:
 
 ```js
-getConf(track, 'maxHeight')
+getConf(track, 'featureHeight')
 ```
 
 Which would be equivalent to calling,
 
 ```js
-readConfObject(track.configuration, 'maxHeight')
+readConfObject(track.configuration, 'featureHeight')
 ```
 
 ### Using config callbacks
@@ -136,10 +134,7 @@ callback for color, it might look like this:
     {
       "type": "LinearVariantDisplay",
       "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
-      "renderer": {
-        "type": "SvgFeatureRenderer",
-        "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
-      }
+      "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
     }
   ]
 }
@@ -155,8 +150,9 @@ call it in the same way in the configuration.
 :::info
 
 Custom jexl functions can be used as default slot values in your pluggable
-elements — see the `color` slot in the
-[example above](#example-config-with-multiple-slot-types).
+elements — any slot with a `contextVariable` (such as the `color1` slot in the
+[example above](#example-config-with-multiple-slot-types)) can take a jexl
+callback as its default.
 
 :::
 

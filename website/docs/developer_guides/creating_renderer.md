@@ -5,6 +5,16 @@ description: Write canvas- or SVG-based feature rendering in a web worker
 guide_category: Creating pluggable elements
 ---
 
+:::caution
+
+The "renderer" concept described here — web-worker rendering of static region
+image tiles — is being phased out in favor of GPU-based rendering (see
+`plugins/canvas` and `packages/core/src/gpu`). The core track types now render
+on the main thread from worker-fetched data. This guide still applies to custom
+renderers but the built-in ones increasingly do not use it.
+
+:::
+
 ### What is a renderer
 
 In JBrowse 1, a track type would directly call the data parser and do its own
@@ -27,14 +37,14 @@ A renderer is a class that implements a `render` function. It returns a React
 component (the "rendering") along with any image data.
 
 ```js
-class MyRenderer implements ServerSideRendererType {
-  render(props) {
+class MyRenderer extends ServerSideRendererType {
+  async render(props) {
     const { width, height, regions, features } = props
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
     ctx.fillStyle = 'red'
     ctx.fillRect(0, 0, 100, 100)
-    const imageData = createImageBitmap(canvas)
+    const imageData = await createImageBitmap(canvas)
     return {
       reactElement: React.createElement(this.ReactComponent, { ...props }),
       imageData,

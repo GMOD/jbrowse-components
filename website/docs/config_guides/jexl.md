@@ -163,10 +163,7 @@ use the custom `jexl` function in your config callbacks as follows:
         {
           "type": "LinearBasicDisplay",
           "displayId": "mytrack-LinearBasicDisplay",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "color1": "jexl:colorFeature(feature)"
-          }
+          "color1": "jexl:colorFeature(feature)"
         }
       ]
     }

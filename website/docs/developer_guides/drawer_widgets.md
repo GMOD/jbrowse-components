@@ -6,7 +6,7 @@ title: Drawer Widgets in Embedded Components
 ## Overview
 
 Drawer widgets provide a flexible UI pattern for displaying supplementary panels
-in the embedded `@jbrowse/react-linear-genome-view` component. Instead of modal
+in the embedded `@jbrowse/react-linear-genome-view2` component. Instead of modal
 dialogs, widgets can be displayed as resizable side panels (drawers) that
 integrate seamlessly with the genome view.
 
@@ -102,28 +102,27 @@ interface InitState {
 
 ### Drawer Positioning
 
-Control drawer appearance through session properties:
+Control drawer appearance through session actions:
 
 ```javascript
-// Drawer width (CSS pixels, default: 384)
-state.session.drawerWidth = 500
+// Drawer width (CSS pixels, default: 384, clamped to a min/max)
+state.session.updateDrawerWidth(500)
 
 // Drawer position (default: 'right')
 state.session.setDrawerPosition('left') // or 'right'
 
 // Drawer visibility
-state.session.minimized = false // Show drawer
-state.session.minimized = true // Hide drawer
+state.session.showWidgetDrawer()
+state.session.minimizeWidgetDrawer()
 ```
 
 ## Session Storage
 
-Drawer position is automatically persisted to localStorage:
+The drawer position is automatically persisted to localStorage and restored on
+the next page load:
 
 ```javascript
-// These values are saved and restored across page reloads
-state.session.drawerPosition // Persisted
-state.session.drawerWidth // Restored on next load
+state.session.drawerPosition // Persisted across reloads
 ```
 
 ## Responsive Behavior

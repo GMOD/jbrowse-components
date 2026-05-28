@@ -52,21 +52,19 @@ value for the autoscale bar:
 
 #### QuantitativeTrack drawing options
 
-- `inverted` - draws upside down
-- `defaultRendering` - can be density, xyplot, or line
-- `summaryScoreMode` - options: min, max, whiskers
+- `defaultRendering` - options: xyplot, density, line, scatter. Default: xyplot
+- `summaryScoreMode` - options: max, min, avg, whiskers. Default: whiskers
 
-#### QuantitativeTrack renderer options
+#### QuantitativeTrack color options
 
-- `filled` - fills in the XYPlot histogram
-- `bicolorPivot` - options: numeric, mean, none. default: numeric
-- `bicolorPivotValue` - number at which the color switches from posColor to
-  negColor. default: 0
-- `color` - color or color callback for drawing the values. overrides
-  posColor/negColor. default: none
-- `posColor` - color to draw "positive" values. default: red
-- `negColor` - color to draw "negative" values. default: blue
-- `clipColor` - color to draw "clip" indicator. default: red
+- `color` - color or color callback for drawing the values. Overrides
+  posColor/negColor. Default: `#f0f` (magenta)
+- `bicolorPivot` - score at which the color switches from posColor to negColor.
+  Default: 0
+- `posColor` - color to draw "positive" values (above the pivot). Default:
+  `#0068d1` (blue)
+- `negColor` - color to draw "negative" values (below the pivot). Default:
+  `#f0636b` (red)
 
 #### BigWigAdapter options
 
