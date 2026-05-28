@@ -21,8 +21,6 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-type LGV = LinearGenomeViewModel
-
 const LaunchSyntenyViewDialog = lazy(
   () => import('./components/LaunchSyntenyViewDialog.tsx'),
 )
@@ -104,7 +102,14 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   getSession(self).queueDialog(handleClose => [
                     LaunchSyntenyViewDialog,
                     {
-                      view: getContainingView(self) as LGV,
+                      visibleRegion: (
+                        getContainingView(self) as LinearGenomeViewModel
+                      ).dynamicBlocks.contentBlocks.find(
+                        b =>
+                          b.refName === feature.get('refName') &&
+                          b.start <= feature.get('end') &&
+                          b.end >= feature.get('start'),
+                      ),
                       trackId: getConf(getContainingTrack(self), 'trackId'),
                       handleClose,
                       session: getSession(self),

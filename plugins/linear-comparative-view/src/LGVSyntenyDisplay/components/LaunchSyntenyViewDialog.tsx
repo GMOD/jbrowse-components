@@ -13,7 +13,6 @@ import {
 import { navToSynteny } from './util.ts'
 
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
   padding: {
@@ -24,13 +23,13 @@ const useStyles = makeStyles()({
 
 export default function LaunchSyntenyViewDialog({
   session,
-  view,
+  visibleRegion,
   feature,
   trackId,
   handleClose,
 }: {
   session: AbstractSessionModel
-  view?: LinearGenomeViewModel
+  visibleRegion?: { refName: string; start: number; end: number }
   feature: Feature
   trackId: string
   handleClose: () => void
@@ -50,7 +49,7 @@ export default function LaunchSyntenyViewDialog({
       }}
     >
       <DialogContent>
-        {view && hasCIGAR ? (
+        {visibleRegion && hasCIGAR ? (
           <FormControlLabel
             className={classes.padding}
             control={
@@ -98,9 +97,7 @@ export default function LaunchSyntenyViewDialog({
                 horizontallyFlip,
                 trackId,
                 session,
-                region: useRegionOfInterest
-                  ? view?.dynamicBlocks.contentBlocks[0]
-                  : undefined,
+                region: useRegionOfInterest ? visibleRegion : undefined,
               })
               handleClose()
             }
