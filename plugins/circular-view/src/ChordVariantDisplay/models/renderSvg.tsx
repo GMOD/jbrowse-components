@@ -10,7 +10,7 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 type RenderSvgModel = IAnyStateTreeNode & {
   features: Feature[] | undefined
-  blockDefinitions: Block[]
+  blocksForRefs: Record<string, Block>
   bezierRadiusRatio: number
   // MST's index signature hides subfields, so configuration is typed as unknown
   configuration: unknown
@@ -25,7 +25,7 @@ export function renderSvg(self: RenderSvgModel) {
   return self.features ? (
     <SVChordsReactComponent
       features={self.features}
-      blockDefinitions={self.blockDefinitions}
+      blocksForRefs={self.blocksForRefs}
       radius={radius}
       bezierRadius={radius * self.bezierRadiusRatio}
       config={

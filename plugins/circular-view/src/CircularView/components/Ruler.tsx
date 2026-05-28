@@ -17,6 +17,15 @@ import type {
   SliceNonElidedRegion,
 } from '../slices.ts'
 
+function arcPath(
+  startXY: [number, number],
+  endXY: [number, number],
+  radiusPx: number,
+  largeArc: '0' | '1',
+) {
+  return ['M', ...startXY, 'A', radiusPx, radiusPx, '0', largeArc, '1', ...endXY].join(' ')
+}
+
 function sliceArcPath(
   slice: Slice,
   radiusPx: number,
@@ -27,17 +36,7 @@ function sliceArcPath(
   const endXY = slice.bpToXY(endBase, radiusPx)
   const largeArc =
     Math.abs(endBase - startBase) / slice.bpPerRadian > Math.PI ? '1' : '0'
-  return [
-    'M',
-    ...startXY,
-    'A',
-    radiusPx,
-    radiusPx,
-    '0',
-    largeArc,
-    '1',
-    ...endXY,
-  ].join(' ')
+  return arcPath(startXY, endXY, radiusPx, largeArc)
 }
 
 const ElisionRulerArc = observer(function ElisionRulerArc({
@@ -50,11 +49,8 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
   region: SliceElidedRegion
 }) {
   const theme = useTheme()
-  const { radiusPx: modelRadiusPx } = model
-  const radiusPx = modelRadiusPx + 1
+  const radiusPx = model.radiusPx + 1
   const { endRadians, startRadians } = slice
-  const startXY = polarToCartesian(radiusPx, startRadians)
-  const endXY = polarToCartesian(radiusPx, endRadians)
   const widthPx = (endRadians - startRadians) * radiusPx
   const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
   const centerRadians = (endRadians + startRadians) / 2
@@ -71,17 +67,12 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
         color={theme.palette.text.primary}
       />
       <path
-        d={[
-          'M',
-          ...startXY,
-          'A',
+        d={arcPath(
+          polarToCartesian(radiusPx, startRadians),
+          polarToCartesian(radiusPx, endRadians),
           radiusPx,
-          radiusPx,
-          '0',
           largeArc,
-          '1',
-          ...endXY,
-        ].join(' ')}
+        )}
         {...getStrokeProps(theme.palette.text.secondary)}
         strokeWidth={2}
         strokeDasharray="2,2"

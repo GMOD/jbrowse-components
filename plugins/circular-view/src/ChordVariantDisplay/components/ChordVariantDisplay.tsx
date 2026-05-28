@@ -15,6 +15,7 @@ interface DisplayModel {
   error: unknown
   features: Feature[] | undefined
   blockDefinitions: Block[]
+  blocksForRefs: Record<string, Block>
   selectedFeatureId: string | undefined
   configuration: { renderer: AnyConfigurationModel }
   bezierRadiusRatio: number
@@ -32,15 +33,14 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
   if (display.error) {
     return <DisplayError model={display} radius={radius} />
   }
-  const blockDefs = display.blockDefinitions
-  if (!display.features || !blockDefs.length) {
+  if (!display.features || !display.blockDefinitions.length) {
     return <Loading radius={radius} />
   }
 
   return (
     <SVChordsReactComponent
       features={display.features}
-      blockDefinitions={blockDefs}
+      blocksForRefs={display.blocksForRefs}
       radius={radius}
       bezierRadius={radius * display.bezierRadiusRatio}
       config={display.configuration.renderer}

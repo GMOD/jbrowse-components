@@ -15,5 +15,6 @@ export type AnyRegion = Region | ElidedRegion
 export interface Block {
   bpPerRadian: number
   startRadians: number
+  endRadians: number
   region: AnyRegion
 }

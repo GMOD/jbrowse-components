@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import { observer } from 'mobx-react'
 
 const DisplayError = observer(function DisplayError({
@@ -7,12 +9,15 @@ const DisplayError = observer(function DisplayError({
   model: { error: unknown }
   radius: number
 }) {
+  const uid = useId()
+  // useId returns ':r0:' format; strip colons for valid SVG/CSS fragment identifiers
+  const patternId = `hatch${uid.replace(/:/g, '')}`
   const { error } = model
   return (
     <g>
       <defs>
         <pattern
-          id="diagonalHatch"
+          id={patternId}
           width="10"
           height="10"
           patternTransform="rotate(45 0 0)"
@@ -28,7 +33,7 @@ const DisplayError = observer(function DisplayError({
         </pattern>
       </defs>
       <circle cx="0" cy="0" r={radius} fill="#ffb4b4" />
-      <circle cx="0" cy="0" r={radius} fill="url(#diagonalHatch)" />
+      <circle cx="0" cy="0" r={radius} fill={`url(#${patternId})`} />
       <text
         x="0"
         y="0"

@@ -10,8 +10,9 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
 function bpToRadians(block: Block, pos: number) {
-  const blockStart = block.region.elided ? 0 : block.region.start
-  return (pos - blockStart) / block.bpPerRadian + block.startRadians
+  return block.region.elided
+    ? (block.startRadians + block.endRadians) / 2
+    : (pos - block.region.start) / block.bpPerRadian + block.startRadians
 }
 
 function getEndpoint(

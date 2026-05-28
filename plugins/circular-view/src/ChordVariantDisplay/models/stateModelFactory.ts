@@ -19,6 +19,7 @@ import type {
   CircularViewModel,
   ExportSvgOptions,
 } from '../../CircularView/model.ts'
+import type { Block } from '../../ChordRenderer/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -91,6 +92,22 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
           }
         }
         return slices
+      },
+
+      /**
+       * #getter
+       */
+      get blocksForRefs(): Record<string, Block> {
+        const result: Record<string, Block> = {}
+        for (const block of this.blockDefinitions) {
+          const regions = block.region.elided
+            ? block.region.regions
+            : [block.region]
+          for (const region of regions) {
+            result[region.refName] = block
+          }
+        }
+        return result
       },
 
       /**
