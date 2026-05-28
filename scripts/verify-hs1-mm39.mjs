@@ -4,8 +4,6 @@
 // skill to confirm autoDiagonalize / colorBy=query / minAlignmentLength wiring
 // is hit on first load.
 
-import { spawn } from 'child_process'
-import fs from 'fs'
 import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'

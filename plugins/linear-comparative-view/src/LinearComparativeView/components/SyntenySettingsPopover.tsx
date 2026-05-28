@@ -6,7 +6,14 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { SliderTooltip } from '@jbrowse/synteny-core'
 import HelpIcon from '@mui/icons-material/Help'
 import TuneIcon from '@mui/icons-material/Tune'
-import { IconButton, Popover, Tooltip, Typography } from '@mui/material'
+import {
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  Popover,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
@@ -38,7 +45,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
-  const { alpha, minAlignmentLength } = model
+  const { alpha, minAlignmentLength, opacityByIdentity } = model
 
   const sliderValue = Math.cbrt(alpha)
 
@@ -133,6 +140,28 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
               slots={{ valueLabel: SliderTooltip }}
             />
           </div>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={opacityByIdentity}
+                onChange={() => {
+                  model.setOpacityByIdentity(!opacityByIdentity)
+                }}
+                size="small"
+              />
+            }
+            label={
+              <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Typography variant="body2">Fade by identity</Typography>
+                <Tooltip
+                  title="Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel."
+                  arrow
+                >
+                  <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
+                </Tooltip>
+              </span>
+            }
+          />
         </div>
       </Popover>
     </>

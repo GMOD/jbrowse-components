@@ -54,11 +54,6 @@ const DiagonalizationProgressDialog = observer(
               : 'No alignments to diagonalize',
           )
           setDone(true)
-          setTimeout(() => {
-            if (!cancelled) {
-              handleClose()
-            }
-          }, 1500)
         } catch (err) {
           if (cancelled) {
             return
@@ -102,7 +97,7 @@ const DiagonalizationProgressDialog = observer(
             color="primary"
             disabled={!done}
           >
-            {done ? 'Done' : 'Processing...'}
+            Close
           </Button>
         </DialogActions>
       </Dialog>

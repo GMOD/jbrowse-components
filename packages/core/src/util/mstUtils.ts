@@ -40,7 +40,7 @@ export function findParentThat(
   if (!hasParent(node)) {
     const alive = isAlive(node)
     const nodeType = (node as { type?: unknown }).type
-    console.trace(
+    console.warn(
       `[findParentThat] node has no parent: alive=${alive} type=${nodeType}`,
     )
     throw new Error('node does not have parent')

@@ -434,9 +434,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     label: 'CIGAR display mode',
                     subMenu: (
                       [
-                        { label: 'Colorize indels', mode: 'full' },
-                        { label: "Don't colorize indels", mode: 'matches' },
-                        { label: "Don't draw CIGAR", mode: 'off' },
+                        { label: 'Colored indels', mode: 'full' },
+                        { label: 'Transparent indels', mode: 'matches' },
+                        { label: 'None', mode: 'off' },
                       ] as const
                     ).map(({ label, mode }) => ({
                       label,
@@ -455,11 +455,27 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     label: 'Level of detail',
                     subMenu: (
                       [
-                        { label: 'Auto (scale with zoom)', value: 'auto' },
-                        { label: 'Fine (per-row CIGAR)', value: 'fine' },
-                        { label: 'Coarse (no CIGAR)', value: 'coarse' },
+                        {
+                          label: 'Auto',
+                          value: 'auto',
+                          helpText:
+                            'Switch between fine and coarse automatically based on zoom level.',
+                        },
+                        {
+                          label: 'Fine',
+                          value: 'fine',
+                          helpText:
+                            'Always fetch per-row CIGAR detail. Slower at low zoom.',
+                        },
+                        {
+                          label: 'Coarse',
+                          value: 'coarse',
+                          helpText:
+                            'Skip CIGAR detail. Fastest, but no indel/mismatch colors.',
+                        },
                       ] as const
-                    ).map(({ label, value }) => ({
+                    ).map(({ label, value, helpText }) => ({
+                      helpText,
                       label,
                       type: 'radio' as const,
                       checked: self.lodMode === value,

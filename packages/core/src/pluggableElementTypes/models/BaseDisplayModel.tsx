@@ -78,7 +78,7 @@ function stateModelFactory() {
        */
       get parentTrack() {
         if (!hasParent(self)) {
-          console.trace(
+          console.warn(
             `[BaseDisplayModel] parentTrack accessed with no parent: alive=${isAlive(self)} type=${self.type}`,
           )
         }

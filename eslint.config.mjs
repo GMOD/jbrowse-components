@@ -50,6 +50,10 @@ export default defineConfig(
       // Scripts
       'scripts/analyze_cpuprof.ts',
       'scripts/getSuggestions.js',
+      'scripts/ribbon-plot-pif.mjs',
+      'scripts/ribbon-plot.mjs',
+      'scripts/verify-hs1-mm39-dotplot.mjs',
+      'scripts/verify-hs1-mm39.mjs',
       'packages/core/scripts/generateExports.mjs',
       'plugins/data-management/scripts',
       'products/jbrowse-desktop/scripts',
@@ -305,7 +309,9 @@ export default defineConfig(
       'no-restricted-globals': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'off',
       'no-console': 'off',
+      'no-undef': 'off',
     },
   },
   {

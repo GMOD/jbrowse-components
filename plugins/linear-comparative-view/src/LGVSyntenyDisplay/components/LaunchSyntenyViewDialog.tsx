@@ -61,7 +61,7 @@ export default function LaunchSyntenyViewDialog({
                 }}
               />
             }
-            label="Use CIGAR string to navigate the current visible to the target"
+            label="Use CIGAR to map the current visible region to the target"
           />
         ) : null}
         {inverted ? (
@@ -75,9 +75,7 @@ export default function LaunchSyntenyViewDialog({
                 }}
               />
             }
-            label="Note: The feature is inverted in orientation on the target
-            sequence. This will result in the lower panel having genomic
-            coordinates decreasing left to right. Horizontally flip?"
+            label="Horizontally flip target (feature is inverted on the target — without flipping, the lower panel's coordinates will decrease left to right)"
           />
         ) : null}
         <NumberTextField

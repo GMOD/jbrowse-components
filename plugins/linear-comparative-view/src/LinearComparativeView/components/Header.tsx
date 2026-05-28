@@ -69,29 +69,45 @@ const Header = observer(function Header({
   return (
     <FormGroup row className={classes.header}>
       <CascadingMenuButton
-        menuItems={[
-          {
-            label: 'Synteny track selectors',
-            type: 'subMenu',
-            subMenu: views.slice(0, -1).map((_, idx) => ({
-              label: `Row ${idx + 1}->${idx + 2} (${views[idx]!.assemblyNames.join(',')}->${views[idx + 1]!.assemblyNames.join(',')})`,
-              onClick: () => {
-                model.activateTrackSelector(idx)
-              },
-            })),
-          },
-
-          {
-            label: 'Row track selectors',
-            type: 'subMenu',
-            subMenu: views.map((view, idx) => ({
-              label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
-              onClick: () => {
-                view.activateTrackSelector()
-              },
-            })),
-          },
-        ]}
+        menuItems={
+          views.length === 2
+            ? [
+                {
+                  label: `Synteny track selector (${views[0]!.assemblyNames.join(',')} → ${views[1]!.assemblyNames.join(',')})`,
+                  onClick: () => {
+                    model.activateTrackSelector(0)
+                  },
+                },
+                ...views.map((view, idx) => ({
+                  label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
+                  onClick: () => {
+                    view.activateTrackSelector()
+                  },
+                })),
+              ]
+            : [
+                {
+                  label: 'Synteny track selectors',
+                  type: 'subMenu',
+                  subMenu: views.slice(0, -1).map((_, idx) => ({
+                    label: `Row ${idx + 1} → ${idx + 2} (${views[idx]!.assemblyNames.join(',')} → ${views[idx + 1]!.assemblyNames.join(',')})`,
+                    onClick: () => {
+                      model.activateTrackSelector(idx)
+                    },
+                  })),
+                },
+                {
+                  label: 'Row track selectors',
+                  type: 'subMenu',
+                  subMenu: views.map((view, idx) => ({
+                    label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
+                    onClick: () => {
+                      view.activateTrackSelector()
+                    },
+                  })),
+                },
+              ]
+        }
       >
         <TrackSelectorIcon />
       </CascadingMenuButton>
