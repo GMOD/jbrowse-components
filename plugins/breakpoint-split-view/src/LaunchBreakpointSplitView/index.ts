@@ -1,13 +1,10 @@
+import type { BreakpointSplitViewInitView } from '../BreakpointSplitView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export interface LaunchBreakpointSplitViewArgs {
   session: AbstractSessionModel
-  views: {
-    loc?: string
-    assembly: string
-    tracks?: string[]
-  }[]
+  views: BreakpointSplitViewInitView[]
 }
 
 declare module '@jbrowse/core/PluginManager' {

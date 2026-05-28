@@ -17,12 +17,14 @@ export interface ExportSvgOptions {
   showGridlines?: boolean
 }
 
+export interface BreakpointSplitViewInitView {
+  loc?: string
+  assembly: string
+  tracks?: string[]
+}
+
 export interface BreakpointSplitViewInit {
-  views: {
-    loc?: string
-    assembly: string
-    tracks?: string[]
-  }[]
+  views: BreakpointSplitViewInitView[]
 }
 
 export type LayoutRecord = [number, number, number, number]

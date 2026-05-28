@@ -5,13 +5,13 @@ import { getBreakendCoveringRegions, makeTitle, stripIds } from './util.ts'
 import type { BreakpointSplitView, Track } from './types.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
-function getAssemblyRegions(
+async function getAssemblyRegions(
   feature: Feature,
   session: AbstractSessionModel,
   assemblyName: string,
 ) {
   const { assemblyManager } = session
-  const assembly = assemblyManager.get(assemblyName)
+  const assembly = await assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
     throw new Error(`assembly ${assemblyName} not found`)
   }
@@ -30,7 +30,7 @@ function getAssemblyRegions(
   return { coverage, topRegion, bottomRegion }
 }
 
-export function singleLevelFocusedSnapshotFromBreakendFeature({
+export async function singleLevelFocusedSnapshotFromBreakendFeature({
   feature,
   session,
   assemblyName,
@@ -41,7 +41,7 @@ export function singleLevelFocusedSnapshotFromBreakendFeature({
   assemblyName: string
   windowSize?: number
 }) {
-  const { coverage, topRegion, bottomRegion } = getAssemblyRegions(
+  const { coverage, topRegion, bottomRegion } = await getAssemblyRegions(
     feature,
     session,
     assemblyName,
@@ -56,12 +56,12 @@ export function singleLevelFocusedSnapshotFromBreakendFeature({
           displayedRegions: gatherOverlaps([
             {
               ...topRegion,
-              end: coverage.pos + 1 + windowSize,
+              end: Math.min(topRegion.end, coverage.pos + 1 + windowSize),
               assemblyName,
             },
             {
               ...bottomRegion,
-              start: coverage.matePos - windowSize,
+              start: Math.max(0, coverage.matePos - windowSize),
               assemblyName,
             },
           ]),
@@ -72,7 +72,7 @@ export function singleLevelFocusedSnapshotFromBreakendFeature({
   }
 }
 
-export function singleLevelEncompassingSnapshotFromBreakendFeature({
+export async function singleLevelEncompassingSnapshotFromBreakendFeature({
   feature,
   session,
   assemblyName,
@@ -81,7 +81,7 @@ export function singleLevelEncompassingSnapshotFromBreakendFeature({
   session: AbstractSessionModel
   assemblyName: string
 }) {
-  const { coverage, topRegion, bottomRegion } = getAssemblyRegions(
+  const { coverage, topRegion, bottomRegion } = await getAssemblyRegions(
     feature,
     session,
     assemblyName,
@@ -121,7 +121,7 @@ export async function navToSingleLevelBreak({
   tracks?: Track[]
   focusOnBreakends?: boolean
 }) {
-  const { snap, coverage } = focusOnBreakends
+  const { snap, coverage } = await (focusOnBreakends
     ? singleLevelFocusedSnapshotFromBreakendFeature({
         feature,
         assemblyName,
@@ -132,7 +132,7 @@ export async function navToSingleLevelBreak({
         feature,
         assemblyName,
         session,
-      })
+      }))
   const { refName, pos: startPos, mateRefName, matePos: endPos } = coverage
   let view = session.views.find(f => f.id === stableViewId) as
     | BreakpointSplitView
@@ -155,8 +155,10 @@ export async function navToSingleLevelBreak({
   await when(() => lgv.initialized)
 
   if (focusOnBreakends) {
-    // zoom to show the breakpoints with windowSize padding, centered between them
-    lgv.zoomTo(10)
+    // zoom to show the breakpoints with windowSize padding, centered between
+    // them (matches navToMultiLevelBreak: windowSize bp on each side across the
+    // view width)
+    lgv.zoomTo(windowSize > 0 ? (windowSize * 2) / lgv.width : 10)
 
     // find midpoint between the two breakpoints in the displayed regions
     const l0 = lgv.bpToPx({ coord: startPos, refName })

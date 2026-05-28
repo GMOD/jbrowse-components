@@ -36,6 +36,7 @@ import {
 
 import type {
   BreakpointSplitViewInit,
+  BreakpointSplitViewInitView,
   ExportSvgOptions,
   LayoutRecord,
   OverlayMatch,
@@ -436,13 +437,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setViews(
-        viewInits: {
-          loc?: string
-          assembly: string
-          tracks?: string[]
-        }[],
-      ) {
+      setViews(viewInits: BreakpointSplitViewInitView[]) {
         self.views = cast(
           viewInits.map(viewInit => ({
             type: 'LinearGenomeView' as const,
