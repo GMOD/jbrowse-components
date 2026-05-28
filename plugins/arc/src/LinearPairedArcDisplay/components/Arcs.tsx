@@ -102,27 +102,6 @@ const Arc = observer(function Arc({
   return null
 })
 
-const Wrapper = observer(function Wrapper({
-  model,
-  exportSVG,
-  children,
-}: {
-  model: LinearArcDisplayModel
-  exportSVG?: boolean
-  children: React.ReactNode
-}) {
-  const { height } = model
-  const view = getContainingView(model) as LGV
-  const width = view.totalWidthPx
-  return exportSVG ? (
-    children
-  ) : (
-    <svg width={width} height={height}>
-      {children}
-    </svg>
-  )
-})
-
 const Arcs = observer(function Arcs({
   model,
   exportSVG,
@@ -131,38 +110,45 @@ const Arcs = observer(function Arcs({
   exportSVG?: boolean
 }) {
   const view = getContainingView(model) as LGV
-  const session = getSession(model)
-  const { assemblyManager } = session
-  const { features } = model
+  const { assemblyManager } = getSession(model)
+  const { features, height } = model
   const assembly = assemblyManager.get(view.assemblyNames[0]!)
 
-  return assembly ? (
-    <Wrapper model={model} exportSVG={exportSVG}>
-      {features?.map(f => {
-        const alts = f.get('ALT') as string[] | undefined
-        return (
-          alts?.map(a => (
-            <Arc
-              key={`${f.id()}-${a}`}
-              feature={f}
-              alt={a}
-              view={view}
-              model={model}
-              assembly={assembly}
-            />
-          )) ?? (
-            <Arc
-              key={f.id()}
-              feature={f}
-              view={view}
-              model={model}
-              assembly={assembly}
-            />
-          )
-        )
-      })}
-    </Wrapper>
-  ) : null
+  if (!assembly) {
+    return null
+  }
+
+  const arcs = features?.map(f => {
+    const alts = f.get('ALT') as string[] | undefined
+    return (
+      alts?.map(a => (
+        <Arc
+          key={`${f.id()}-${a}`}
+          feature={f}
+          alt={a}
+          view={view}
+          model={model}
+          assembly={assembly}
+        />
+      )) ?? (
+        <Arc
+          key={f.id()}
+          feature={f}
+          view={view}
+          model={model}
+          assembly={assembly}
+        />
+      )
+    )
+  })
+
+  return exportSVG ? (
+    <>{arcs}</>
+  ) : (
+    <svg width={view.totalWidthPx} height={height}>
+      {arcs}
+    </svg>
+  )
 })
 
 export default Arcs
