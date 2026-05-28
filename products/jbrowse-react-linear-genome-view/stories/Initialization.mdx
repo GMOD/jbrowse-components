@@ -3,6 +3,8 @@ import {
   HumanExomeExample,
   UsingLocObject,
   WithInit,
+  WithInitAdvanced,
+  WithInitAlignmentsDisplay,
   WithShowTrack,
 } from './JBrowseLinearGenomeView.stories'
 
@@ -24,11 +26,68 @@ init: {
 }
 ```
 
+This is the same `init` shape that JBrowse Web serializes into its `?session=spec-…`
+URL parameter — see the
+[URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/), which
+documents the wire form of these same fields. The embedded component makes no
+assumptions about URLs, so you pass `init` directly.
+
 Sibling fields on `defaultSession.view` configure the view itself —
 `showCytobandsSetting`, `showGridlines`, `colorByCDS`, etc. A complete example
 using cytobands, ref-name aliases, and a tabix-indexed RefSeq gene track:
 
 <Story of={WithInit} />
+
+## Advanced `init` (per-track snapshots, tracklist, nav, highlight)
+
+`init` accepts more than trackId strings. Each `tracks` entry can be an object
+carrying a `displaySnapshot` (initial display state — type, height, score
+range, color scheme) or a `trackSnapshot` (e.g. `pinned: true`), and the view
+itself can be configured declaratively with `tracklist`, `nav`, and
+`highlight`. This is the embedded equivalent of the session-spec "advanced track
+configuration" used in JBrowse Web URL params.
+
+```js
+init: {
+  assembly: 'hg38',
+  loc: 'chr1:11,106,077-11,261,675',
+  tracklist: true,                 // open the track selector on load
+  nav: true,                       // keep the navigation bar visible
+  highlight: ['chr1:11,170,000-11,190,000'],
+  tracks: [
+    { trackId: 'my-gene-track-id', displaySnapshot: { height: 200 } },
+  ],
+}
+```
+
+<Story of={WithInitAdvanced} />
+
+### Alignments track example
+
+`displaySnapshot` is most useful on alignments tracks, where the display has a
+large configuration surface. This opens a CRAM track colored by pair
+orientation, with soft-clipping revealed and an enlarged height — all
+declaratively, without any post-mount imperative calls:
+
+```js
+init: {
+  assembly: 'GRCh38',
+  loc: '1:100,987,200..100,987,450',
+  tracks: [
+    {
+      trackId: 'my-cram-track-id',
+      displaySnapshot: {
+        type: 'LinearAlignmentsDisplay',
+        height: 250,
+        showSoftClipping: true,
+        colorBySetting: { type: 'pairOrientation' },
+      },
+    },
+  ],
+}
+```
+
+<Story of={WithInitAlignmentsDisplay} />
 
 ## Top-level `location` (no `defaultSession`)
 

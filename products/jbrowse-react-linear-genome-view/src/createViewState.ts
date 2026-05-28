@@ -1,4 +1,4 @@
-import { assembleLocString, parseLocString } from '@jbrowse/core/util'
+import { assembleLocString } from '@jbrowse/core/util'
 import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import createModel from './createModel/index.ts'
@@ -93,38 +93,16 @@ export default function createViewState(opts: ViewStateOptions) {
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      const { session } = stateTree
-      const { isValidRefName } = session.assemblyManager
-
-      try {
-        await session.view.navToLocString(
-          typeof location === 'string' ? location : assembleLocString(location),
-          assembly.name,
-        )
-        if (highlight) {
-          for (const h of highlight) {
-            if (h) {
-              const p = parseLocString(h, refName =>
-                isValidRefName(refName, assembly.name),
-              )
-              const { start, end } = p
-              if (start !== undefined && end !== undefined) {
-                session.view.addToHighlights({
-                  ...p,
-                  start,
-                  end,
-                  assemblyName: assembly.name,
-                })
-              }
-            }
-          }
-        }
-      } catch (e) {
-        session.notifyError(`${e}`, e)
-      }
-    })()
+    // route through the declarative `init` field so the navigation + highlight
+    // flow goes through the same path as URL/session-spec launches, instead of
+    // reimplementing navToLocString/addToHighlights here. init also drives the
+    // loading-state machine, so the view shows a spinner (not the import form)
+    // while the assembly loads
+    stateTree.session.view.setInit({
+      assembly: assembly.name,
+      loc: typeof location === 'string' ? location : assembleLocString(location),
+      highlight,
+    })
   }
   if (onChange) {
     onPatch(stateTree, onChange)

@@ -8,6 +8,15 @@ import { autorun, when } from 'mobx'
 
 import type { LinearGenomeViewModel } from './model.ts'
 
+const knownInitKeys = new Set([
+  'loc',
+  'assembly',
+  'tracks',
+  'tracklist',
+  'nav',
+  'highlight',
+])
+
 function tryParseJson(s: string): Record<string, unknown> | undefined {
   try {
     const v: unknown = JSON.parse(s)
@@ -35,6 +44,18 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
         if (init) {
           const session = getSession(self)
           const { assemblyManager } = session
+
+          // a declarative init is easy to typo (e.g. `tracksList`,
+          // `highlights`); MST stores it as a frozen blob so a mistyped key
+          // would otherwise be silently dropped with no diagnostic
+          const unknownKeys = Object.keys(init).filter(
+            k => !knownInitKeys.has(k),
+          )
+          if (unknownKeys.length) {
+            console.warn(
+              `LinearGenomeView init ignored unknown key(s): ${unknownKeys.join(', ')}`,
+            )
+          }
 
           // Workaround: activate tracklist first so the drawer opens before we
           // navigate. This ensures volatileWidth accounts for the drawer width.

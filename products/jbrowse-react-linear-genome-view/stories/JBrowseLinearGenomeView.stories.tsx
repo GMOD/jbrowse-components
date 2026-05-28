@@ -20,6 +20,8 @@ export {
   WithErrorHandler,
   WithExternalPlugin,
   WithInit,
+  WithInitAdvanced,
+  WithInitAlignmentsDisplay,
   WithInlinePlugins,
   WithInternetAccounts,
   WithMultipleDisplayedRegionsFlipped,
