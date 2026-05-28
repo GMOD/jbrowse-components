@@ -1,4 +1,8 @@
-import { LAYOUT_Y_PADDING, computeLaidOutData } from './layout.ts'
+import {
+  LAYOUT_Y_PADDING,
+  computeLaidOutData,
+  createIncrementalLayout,
+} from './layout.ts'
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -423,6 +427,136 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
   const rLeft = rev.get(0)!.flatbushItems[0]!
   const rLabel = rev.get(0)!.flatbushItems[1]!
   expect(rLeft.topPx).not.toBe(rLabel.topPx)
+})
+
+function incInputs(
+  regionKeys: Map<number, string>,
+  bpPerPx = 1,
+  reversedRegions = new Set<number>(),
+) {
+  return {
+    bpPerPx,
+    regionKeys,
+    showLabels: true,
+    showDescriptions: true,
+    reversedRegions,
+  }
+}
+
+test('incremental memo matches the pure layout values', () => {
+  const a = makeFeatureData({
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
+      { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
+    ],
+  })
+  const b = makeFeatureData({
+    features: [{ featureId: 'f3', startBp: 100, endBp: 500, height: 20 }],
+  })
+  const raw = new Map([
+    [0, a],
+    [1, b],
+  ])
+  const keys = new Map([
+    [0, 'v:ctgA'],
+    [1, 'v:ctgB'],
+  ])
+  const pure = computeLaidOutData(raw, incInputs(keys))
+  const inc = createIncrementalLayout()(raw, incInputs(keys))
+
+  for (const idx of [0, 1]) {
+    expect(inc.get(idx)!.flatbushItems.map(f => f.topPx)).toEqual(
+      pure.get(idx)!.flatbushItems.map(f => f.topPx),
+    )
+  }
+})
+
+test('incremental memo: a new chromosome leaves existing groups reference-stable', () => {
+  const memo = createIncrementalLayout()
+  const a = makeFeatureData({
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
+      { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
+    ],
+  })
+  const keys = new Map([[0, 'v:ctgA']])
+  const first = memo(new Map([[0, a]]), incInputs(keys))
+  const aOut = first.get(0)
+
+  const b = makeFeatureData({
+    features: [{ featureId: 'f3', startBp: 100, endBp: 500, height: 20 }],
+  })
+  keys.set(1, 'v:ctgB')
+  const second = memo(
+    new Map([
+      [0, a],
+      [1, b],
+    ]),
+    incInputs(keys),
+  )
+
+  // ctgA's data did not change → its output object is reused by reference, so
+  // the GPU upload autorun can skip re-uploading it.
+  expect(second.get(0)).toBe(aOut)
+  expect(second.get(1)).toBeDefined()
+})
+
+test('incremental memo: changing a region recomputes its group', () => {
+  const memo = createIncrementalLayout()
+  const mk = () =>
+    makeFeatureData({
+      features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
+    })
+  const keys = new Map([[0, 'v:ctgA']])
+  const first = memo(new Map([[0, mk()]]), incInputs(keys))
+  const second = memo(new Map([[0, mk()]]), incInputs(keys))
+  expect(second.get(0)).not.toBe(first.get(0))
+})
+
+test('incremental memo: bpPerPx change recomputes every group', () => {
+  const memo = createIncrementalLayout()
+  const a = makeFeatureData({
+    features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
+  })
+  const keys = new Map([[0, 'v:ctgA']])
+  const first = memo(new Map([[0, a]]), incInputs(keys, 1))
+  const second = memo(new Map([[0, a]]), incInputs(keys, 2))
+  expect(second.get(0)).not.toBe(first.get(0))
+})
+
+test('incremental memo: a region added to an existing ref-group recomputes that group', () => {
+  const memo = createIncrementalLayout()
+  const a = makeFeatureData({
+    features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
+  })
+  const keys = new Map([[0, 'v:ctgA']])
+  const first = memo(new Map([[0, a]]), incInputs(keys))
+
+  const b = makeFeatureData({
+    features: [{ featureId: 'f2', startBp: 600, endBp: 900, height: 20 }],
+  })
+  // same key → same ref-group; a spanning feature could shift rows, so the
+  // whole group must relay out (its references change).
+  keys.set(1, 'v:ctgA')
+  const second = memo(
+    new Map([
+      [0, a],
+      [1, b],
+    ]),
+    incInputs(keys),
+  )
+  expect(second.get(0)).not.toBe(first.get(0))
+})
+
+test('incremental memo: flipping a region reversed recomputes its group', () => {
+  const memo = createIncrementalLayout()
+  const a = makeFeatureData({
+    features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
+  })
+  const keys = new Map([[0, 'v:ctgA']])
+  const first = memo(new Map([[0, a]]), incInputs(keys, 1, new Set()))
+  const second = memo(new Map([[0, a]]), incInputs(keys, 1, new Set([0])))
+  expect(second.get(0)).not.toBe(first.get(0))
 })
 
 test('incremental: adding a new region does not move features in existing regions', () => {

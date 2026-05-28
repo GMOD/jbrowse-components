@@ -1,3 +1,5 @@
+import { clampBlockScissor } from './canvas2dUtils.ts'
+
 // hp-math split: factor a bp position into a (hi, lo) pair safe to feed
 // shaders as float32 (cumulative-bp coordinates can exceed 2^31, so a plain
 // `intValue & 0xfff` would wrap). Float64 modulo handles the full 2^53
@@ -67,12 +69,15 @@ export function clipBlock(
   canvasHeight: number,
   dpr: number,
 ): BlockClipResult | null {
-  const scissorX = Math.max(0, Math.floor(block.screenStartPx))
-  const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
-  const scissorW = scissorEnd - scissorX
-  if (scissorW <= 0) {
+  const clamp = clampBlockScissor(
+    block.screenStartPx,
+    block.screenEndPx,
+    canvasWidth,
+  )
+  if (!clamp) {
     return null
   }
+  const { scissorX, scissorEnd, scissorW } = clamp
 
   const pxX = Math.round(scissorX * dpr)
   const pxW = Math.round(scissorW * dpr)

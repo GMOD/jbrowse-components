@@ -51,6 +51,7 @@
     "./gpu/installPerRegionLifecycle": "./src/gpu/installPerRegionLifecycle.ts",
     "./gpu/monolithicBackend": "./src/gpu/monolithicBackend.ts",
     "./gpu/perRegionBackend": "./src/gpu/perRegionBackend.ts",
+    "./gpu/regionUploadSync": "./src/gpu/regionUploadSync.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
     "./gpu/slangPass": "./src/gpu/slangPass.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
@@ -331,6 +332,10 @@
       "./gpu/perRegionBackend": {
         "types": "./esm/gpu/perRegionBackend.d.ts",
         "import": "./esm/gpu/perRegionBackend.js"
+      },
+      "./gpu/regionUploadSync": {
+        "types": "./esm/gpu/regionUploadSync.d.ts",
+        "import": "./esm/gpu/regionUploadSync.js"
       },
       "./gpu/renderBlock": {
         "types": "./esm/gpu/renderBlock.d.ts",
@@ -819,6 +824,9 @@
         ],
         "gpu/perRegionBackend": [
           "esm/gpu/perRegionBackend.d.ts"
+        ],
+        "gpu/regionUploadSync": [
+          "esm/gpu/regionUploadSync.d.ts"
         ],
         "gpu/renderBlock": [
           "esm/gpu/renderBlock.d.ts"

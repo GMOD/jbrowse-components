@@ -6,6 +6,7 @@ import {
   getConfSnapshot,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { createRegionUploadSync } from '@jbrowse/core/gpu/regionUploadSync'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
@@ -40,7 +41,7 @@ import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
-import { computeLaidOutData } from './layout.ts'
+import { createIncrementalLayout } from './layout.ts'
 import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
 import {
   MAX_LABEL_FEATURE_DENSITY,
@@ -134,6 +135,12 @@ export default function baseStateModelFactory(
         userFeatureDensityLimit: undefined as number | undefined,
         featureDensityPerPx: 0,
         heightBeforeExpand: undefined as number | undefined,
+        // Per-instance memo backing `laidOutDataMap`. Stateful (holds the
+        // previous per-ref-group layout) so unchanged chromosomes keep stable
+        // object references — turns whole-genome layout/upload from O(N²) to
+        // O(N). The volatile holds a stable reference; mutating its internal
+        // cache is invisible to MobX, so reading it in the computed is safe.
+        incrementalLayout: createIncrementalLayout(),
       }))
       .views(self => ({
         get renderState() {
@@ -353,7 +360,7 @@ export default function baseStateModelFactory(
           if (!view.initialized || self.rpcDataMap.size === 0) {
             return new Map()
           }
-          return computeLaidOutData(self.rpcDataMap, {
+          return self.incrementalLayout(self.rpcDataMap, {
             bpPerPx: view.coarseBpPerPx,
             regionKeys: self.regionKeys,
             showLabels: self.showLabels,
@@ -533,14 +540,19 @@ export default function baseStateModelFactory(
         },
 
         startBackend(backend: CanvasFeatureBackend) {
+          // Upload only regions whose laid-out data reference changed, so a
+          // new chromosome streaming in doesn't re-upload the ones already on
+          // the GPU. `laidOutDataMap` keeps stable references for unchanged
+          // ref-groups (see createIncrementalLayout), making the diff
+          // meaningful; createRegionUploadSync owns the pruning + the
+          // context-loss reset.
+          const syncRegions = createRegionUploadSync<
+            FeatureDataResult,
+            CanvasFeatureBackend
+          >()
           self.attachBackend<CanvasFeatureBackend>(backend, {
             upload: b => {
-              const active: number[] = []
-              for (const [displayedRegionIndex, data] of self.laidOutDataMap) {
-                b.uploadRegion(displayedRegionIndex, data)
-                active.push(displayedRegionIndex)
-              }
-              b.pruneRegions(active)
+              syncRegions(b, self.laidOutDataMap)
             },
             render: b => {
               if (self.laidOutDataMap.size === 0) {

@@ -58,23 +58,39 @@ export function prepareCanvas(
   ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 }
 
+// Integer scissor rect (CSS px) for a block clamped to the canvas. Shared by
+// the GPU (`clipBlock`) and Canvas2D (`clipBlockForCanvas`) clip paths so both
+// backends clip to the exact same pixel columns — the rounding lives in one
+// place rather than being copied. Returns null when the block is fully
+// off-screen.
+export function clampBlockScissor(
+  screenStartPx: number,
+  screenEndPx: number,
+  canvasWidth: number,
+) {
+  const scissorX = Math.max(0, Math.floor(screenStartPx))
+  const scissorEnd = Math.min(canvasWidth, Math.ceil(screenEndPx))
+  const scissorW = scissorEnd - scissorX
+  return scissorW <= 0 ? null : { scissorX, scissorEnd, scissorW }
+}
+
 export function clipBlockForCanvas(
   block: Canvas2DRenderBlock,
   canvasWidth: number,
 ): BlockClip | null {
-  const scissorX = Math.max(0, Math.floor(block.screenStartPx))
-  const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
-  const scissorW = scissorEnd - scissorX
-  if (scissorW <= 0) {
-    return null
-  }
-
-  return {
-    scissorX,
-    scissorW,
-    fullBlockWidth: block.screenEndPx - block.screenStartPx,
-    bpLength: block.end - block.start,
-  }
+  const clamp = clampBlockScissor(
+    block.screenStartPx,
+    block.screenEndPx,
+    canvasWidth,
+  )
+  return clamp
+    ? {
+        scissorX: clamp.scissorX,
+        scissorW: clamp.scissorW,
+        fullBlockWidth: block.screenEndPx - block.screenStartPx,
+        bpLength: block.end - block.start,
+      }
+    : null
 }
 
 export function lookupColorRamp(ramp: Uint8Array, t: number) {

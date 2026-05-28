@@ -17,7 +17,7 @@ export const LAYOUT_Y_PADDING = 5
 // instead of stacking them at y=0. Float32 handles this magnitude losslessly.
 const OFFSCREEN_Y = -1e6
 
-interface LayoutInputs {
+export interface LayoutInputs {
   bpPerPx: number
   regionKeys: Map<number, string>
   showLabels: boolean
@@ -81,6 +81,109 @@ export function computeLaidOutData(
   }
 
   return out
+}
+
+interface GroupCache {
+  bpPerPx: number
+  showLabels: boolean
+  showDescriptions: boolean
+  // idx -> raw fetch object, by reference. A new fetch swaps the reference.
+  members: Map<number, FeatureDataResult>
+  // members currently rendered reversed (affects label-overhang packing)
+  reversed: Set<number>
+  // idx -> laid-out result, reused verbatim when the group is unchanged
+  output: Map<number, FeatureDataResult>
+}
+
+function groupUnchanged(
+  prev: GroupCache,
+  members: Map<number, FeatureDataResult>,
+  inputs: LayoutInputs,
+) {
+  const { bpPerPx, showLabels, showDescriptions, reversedRegions } = inputs
+  const paramsSame =
+    prev.bpPerPx === bpPerPx &&
+    prev.showLabels === showLabels &&
+    prev.showDescriptions === showDescriptions &&
+    prev.members.size === members.size
+  return (
+    paramsSame &&
+    [...members].every(
+      ([idx, raw]) =>
+        prev.members.get(idx) === raw &&
+        prev.reversed.has(idx) === reversedRegions.has(idx),
+    )
+  )
+}
+
+// Incremental wrapper over `computeLaidOutData`. Layout is independent per
+// ref-group (`assembly:refName`) — regions on different chromosomes never
+// affect each other's Y rows — so when one chromosome's data arrives only its
+// group needs relaying out. This memoizes per group: a group whose member
+// references and layout params are all unchanged reuses its previous output
+// objects *by reference*, so the GPU upload autorun can skip re-uploading it.
+//
+// Without this, the single `laidOutDataMap` computed reclones every region on
+// any change, so N chromosomes arriving sequentially cost O(N²) GPU uploads;
+// per-group reuse makes it O(N). Hold one instance per display (the cache is
+// stateful) and call it from the `laidOutDataMap` getter.
+export function createIncrementalLayout() {
+  let cache = new Map<string, GroupCache>()
+
+  return function computeLaidOutDataIncremental(
+    rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+    inputs: LayoutInputs,
+  ): Map<number, FeatureDataResult> {
+    const { regionKeys, reversedRegions } = inputs
+
+    const groups = new Map<string, Map<number, FeatureDataResult>>()
+    for (const [idx, raw] of rpcDataMap) {
+      const key = regionKeys.get(idx) ?? ''
+      let group = groups.get(key)
+      if (!group) {
+        group = new Map()
+        groups.set(key, group)
+      }
+      group.set(idx, raw)
+    }
+
+    const out = new Map<number, FeatureDataResult>()
+    const nextCache = new Map<string, GroupCache>()
+    for (const [key, members] of groups) {
+      const prev = cache.get(key)
+      if (prev && groupUnchanged(prev, members, inputs)) {
+        for (const [idx, result] of prev.output) {
+          out.set(idx, result)
+        }
+        nextCache.set(key, prev)
+      } else {
+        // `members` all share one key, so the pure pass lays out exactly this
+        // group; passing the full `regionKeys`/`reversedRegions` is fine since
+        // it only reads the keys of regions present in `members`.
+        const output = computeLaidOutData(members, inputs)
+        const reversed = new Set<number>()
+        for (const idx of members.keys()) {
+          if (reversedRegions.has(idx)) {
+            reversed.add(idx)
+          }
+        }
+        for (const [idx, result] of output) {
+          out.set(idx, result)
+        }
+        nextCache.set(key, {
+          bpPerPx: inputs.bpPerPx,
+          showLabels: inputs.showLabels,
+          showDescriptions: inputs.showDescriptions,
+          members: new Map(members),
+          reversed,
+          output,
+        })
+      }
+    }
+    // Dropping `cache` for `nextCache` evicts groups no longer present.
+    cache = nextCache
+    return out
+  }
 }
 
 function cloneMutableFields(raw: FeatureDataResult) {

@@ -422,25 +422,38 @@ the layout step runs on the main thread instead of inside the worker: row
 assignment needs the union of all visible regions' features, which only
 the main thread sees.
 
-**Canvas and alignments have the same O(N²) structure** — both route through a
-whole-map MobX computed (`laidOutDataMap` / `laidOutPileupMap`) that invalidates
-whenever any `rpcDataMap` entry changes, causing the upload autorun to re-fire
-and re-upload all N entries. Per-key autoruns cannot help here: reading
+**Canvas and alignments both route through a whole-map MobX computed**
+(`laidOutDataMap` / `laidOutPileupMap`) that invalidates whenever any
+`rpcDataMap` entry changes, causing the upload autorun to re-fire and iterate
+all N entries. Per-key autoruns cannot help here: reading
 `laidOutDataMap.get(key)` or `laidOutPileupMap.get(key)` in a per-key autorun
 still tracks the whole-map computed as a dependency, so all per-key autoruns
 re-fire on every new arrival.
 
-The practical difference is N:
-
 - **Canvas** is commonly shown as a whole-genome gene track with N=24
-  chromosomes (or many more in collapsed-intron views) → N² grows fast.
-  Fix would be making `computeLaidOutData` incremental — return stable
-  references for entries whose input data didn't change, so per-key
-  autoruns can detect no-ops.
-- **Alignments/synteny** are never shown at whole-genome scale (data density
-  forces gene-level zoom, or synteny is pairwise). N is typically 4–8 buffered
-  regions in normal views, more in collapsed-intron. Same fix would apply if
-  the perceived cost grew.
+  chromosomes (or many more in collapsed-intron views), so the naive form is
+  O(N²). This is fixed: `createIncrementalLayout` (in
+  `plugins/canvas/src/LinearBasicDisplay/layout.ts`) memoizes the pure
+  `computeLaidOutData` **per ref-group** (`assembly:refName`). Layout is
+  independent across chromosomes, so when one chromosome's data arrives only
+  its group relays out; unchanged groups return their previous output objects
+  *by reference*. The upload autorun then compares each region's reference
+  against a per-region `uploaded` map and re-uploads only the ones that
+  changed (still pruning against the full active set, and resetting on backend
+  swap so context-loss recovery re-uploads everything). Net: O(N) layout +
+  GPU uploads as N chromosomes stream in. The memo is a per-instance volatile;
+  mutating its internal cache is invisible to MobX, so reading it inside the
+  `laidOutDataMap` computed stays pure. Stability unit is the ref-group, not
+  the region, because collapsed-intron views split one chromosome into many
+  displayed regions and a spanning feature must hold the same Y row in each —
+  so adding a region to an existing group relays out that whole group.
+- **Alignments/synteny** keep the whole-map form. They are never shown at
+  whole-genome scale (data density forces gene-level zoom, or synteny is
+  pairwise), so N is typically 4–8 buffered regions (more in collapsed-intron).
+  The same per-group memo would apply if the perceived cost grew; the extra
+  wrinkle there is `laidOutPileupMap`'s cross-region chain-mode coupling
+  (connecting lines / Flatbush), which would need to participate in the
+  group-signature.
 
 ---
 
