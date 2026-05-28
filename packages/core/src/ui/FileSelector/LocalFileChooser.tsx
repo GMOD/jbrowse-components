@@ -1,5 +1,6 @@
 import { Box, Button, FormControl, Typography } from '@mui/material'
 
+import { dirFromPath } from './util.ts'
 import { isFileSystemAccessSupported } from '../../util/fileHandleStore.ts'
 import { isElectron } from '../../util/index.ts'
 import {
@@ -25,6 +26,27 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const supportsFileSystemAccess = isFileSystemAccessSupported() && !isElectron
+
+const LAST_LOCAL_FILE_DIR_KEY = 'jbrowse-last-local-file-dir'
+
+function getLastLocalFileDir() {
+  try {
+    return localStorage.getItem(LAST_LOCAL_FILE_DIR_KEY) ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
+function setLastLocalFileDir(filePath: string) {
+  try {
+    const dir = dirFromPath(filePath)
+    if (dir) {
+      localStorage.setItem(LAST_LOCAL_FILE_DIR_KEY, dir)
+    }
+  } catch {
+    // storage unavailable (e.g. private browsing)
+  }
+}
 
 function getFilename(location?: FileLocation) {
   if (!location) {
@@ -86,6 +108,29 @@ function FilePickerButton({
     )
   }
 
+  if (isElectron) {
+    return (
+      <Button
+        variant="outlined"
+        onClick={async () => {
+          // @ts-ignore - electron injects require onto window, needs to be ignore for now
+          const { ipcRenderer } = window.require('electron')
+          const result: unknown = await ipcRenderer.invoke(
+            'promptOpenLocalFile',
+            getLastLocalFileDir(),
+          )
+          const filePath = typeof result === 'string' ? result : undefined
+          if (filePath) {
+            setLastLocalFileDir(filePath)
+            setLocation({ localPath: filePath, locationType: 'LocalPathLocation' })
+          }
+        }}
+      >
+        Choose File
+      </Button>
+    )
+  }
+
   return (
     <Button variant="outlined" component="label">
       Choose File
@@ -95,18 +140,9 @@ function FilePickerButton({
         onChange={({ target }) => {
           const file = target.files?.[0]
           if (file) {
-            if (isElectron) {
-              // @ts-ignore - electron injects require onto window, needs to be ignore for now
-              const { webUtils } = window.require('electron')
-              setLocation({
-                localPath: webUtils.getPathForFile(file),
-                locationType: 'LocalPathLocation',
-              })
-            } else {
-              const loc = storeBlobLocation({ blob: file })
-              if ('blobId' in loc) {
-                setLocation(loc)
-              }
+            const loc = storeBlobLocation({ blob: file })
+            if ('blobId' in loc) {
+              setLocation(loc)
             }
           }
         }}
