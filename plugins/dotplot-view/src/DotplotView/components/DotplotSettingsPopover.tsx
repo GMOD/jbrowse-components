@@ -1,145 +1,72 @@
-import { useEffect, useState } from 'react'
-
 import { SingleSlider } from '@jbrowse/core/ui'
-import { toLocale } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { SliderTooltip } from '@jbrowse/synteny-core'
-import TuneIcon from '@mui/icons-material/Tune'
-import { IconButton, Popover, Typography } from '@mui/material'
+import {
+  MinLengthSlider,
+  OpacitySlider,
+  SettingRow,
+  SettingsPopover,
+  SliderTooltip,
+} from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
-
-const useStyles = makeStyles()(theme => ({
-  content: {
-    padding: theme.spacing(2),
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(1),
-    width: 250,
-  },
-  row: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  label: {
-    whiteSpace: 'nowrap',
-    minWidth: 80,
-  },
-}))
 
 const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
   model,
 }: {
   model: DotplotViewModel
 }) {
-  const { classes } = useStyles()
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-
   const { dotplotDisplays, lineWidth } = model
   const firstDisplay = dotplotDisplays[0]
   const alpha = firstDisplay?.alpha ?? 1
   const minAlignmentLength = firstDisplay?.minAlignmentLength ?? 0
 
-  // Opacity: cubic scaling for more granularity near 0
-  const exponent = 3
-  const alphaToSlider = (a: number) => Math.pow(a, 1 / exponent)
-  const sliderToAlpha = (s: number) => Math.pow(s, exponent)
-  const sliderValue = alphaToSlider(alpha)
-
-  // Min length: log2 scaling
-  const [minLengthValue, setMinLengthValue] = useState(
-    Math.log2(Math.max(1, minAlignmentLength)) * 100,
-  )
-
-  useEffect(() => {
-    setMinLengthValue(Math.log2(Math.max(1, minAlignmentLength)) * 100)
-  }, [minAlignmentLength])
-
   return (
-    <>
-      <IconButton
-        onClick={e => {
-          setAnchorEl(e.currentTarget)
+    <SettingsPopover title="Dotplot display settings">
+      <div
+        style={{
+          padding: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          width: 250,
         }}
-        title="Dotplot display settings"
       >
-        <TuneIcon />
-      </IconButton>
-      <Popover
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={() => {
-          setAnchorEl(null)
-        }}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      >
-        <div className={classes.content}>
-          <div className={classes.row}>
-            <Typography variant="body2" className={classes.label}>
-              Opacity:
-            </Typography>
-            <SingleSlider
-              value={sliderValue}
-              onChange={v => {
-                const newAlpha = sliderToAlpha(v)
-                for (const d of dotplotDisplays) {
-                  d.setAlpha(newAlpha)
-                }
-              }}
-              min={0}
-              max={1}
-              step={0.01}
-              valueLabelDisplay="auto"
-              size="small"
-              slots={{ valueLabel: SliderTooltip }}
-              valueLabelFormat={(v: number) => sliderToAlpha(v).toFixed(3)}
-            />
-          </div>
-          <div className={classes.row}>
-            <Typography variant="body2" className={classes.label}>
-              Line width:
-            </Typography>
-            <SingleSlider
-              value={lineWidth}
-              onChange={v => {
-                model.setLineWidth(v)
-              }}
-              min={0.5}
-              max={10}
-              step={0.5}
-              valueLabelDisplay="auto"
-              size="small"
-              slots={{ valueLabel: SliderTooltip }}
-            />
-          </div>
-          <div className={classes.row}>
-            <Typography variant="body2" className={classes.label}>
-              Min length:
-            </Typography>
-            <SingleSlider
-              value={minLengthValue}
-              onChange={v => {
-                setMinLengthValue(v)
-              }}
-              onChangeCommitted={v => {
-                const newMinLength = Math.round(2 ** (v / 100))
-                for (const d of dotplotDisplays) {
-                  d.setMinAlignmentLength(newMinLength)
-                }
-              }}
-              min={0}
-              max={Math.log2(1000000) * 100}
-              valueLabelDisplay="auto"
-              valueLabelFormat={val => toLocale(Math.round(2 ** (val / 100)))}
-              size="small"
-              slots={{ valueLabel: SliderTooltip }}
-            />
-          </div>
-        </div>
-      </Popover>
-    </>
+        <SettingRow label="Opacity:">
+          <OpacitySlider
+            value={alpha}
+            onChange={v => {
+              for (const d of dotplotDisplays) {
+                d.setAlpha(v)
+              }
+            }}
+          />
+        </SettingRow>
+        <SettingRow label="Line width:">
+          <SingleSlider
+            value={lineWidth}
+            onChange={v => {
+              model.setLineWidth(v)
+            }}
+            min={0.5}
+            max={10}
+            step={0.5}
+            valueLabelDisplay="auto"
+            size="small"
+            slots={{ valueLabel: SliderTooltip }}
+          />
+        </SettingRow>
+        <SettingRow label="Min length:">
+          <MinLengthSlider
+            value={minAlignmentLength}
+            onCommit={bp => {
+              for (const d of dotplotDisplays) {
+                d.setMinAlignmentLength(bp)
+              }
+            }}
+          />
+        </SettingRow>
+      </div>
+    </SettingsPopover>
   )
 })
 

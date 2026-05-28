@@ -1,170 +1,92 @@
-import { useState } from 'react'
-
 import { SingleSlider } from '@jbrowse/core/ui'
-import { toLocale } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { SliderTooltip } from '@jbrowse/synteny-core'
-import HelpIcon from '@mui/icons-material/Help'
-import TuneIcon from '@mui/icons-material/Tune'
 import {
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-  Popover,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+  MinLengthSlider,
+  OpacitySlider,
+  SettingRow,
+  SettingsPopover,
+  SliderTooltip,
+} from '@jbrowse/synteny-core'
+import HelpIcon from '@mui/icons-material/Help'
+import { Checkbox, FormControlLabel, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
-
-const useStyles = makeStyles()(theme => ({
-  content: {
-    padding: theme.spacing(2),
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(1),
-    width: 250,
-  },
-  row: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  label: {
-    whiteSpace: 'nowrap',
-    minWidth: 80,
-  },
-}))
 
 const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
   model,
 }: {
   model: LinearSyntenyViewModel
 }) {
-  const { classes } = useStyles()
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-
-  const { alpha, minAlignmentLength, opacityByIdentity } = model
-
-  const sliderValue = Math.cbrt(alpha)
-
-  // Min length: log2 scaling. null = not dragging, derive from model.
-  const [minLengthDragValue, setMinLengthDragValue] = useState<number | null>(
-    null,
-  )
-  const minLengthValue =
-    minLengthDragValue ?? Math.log2(Math.max(1, minAlignmentLength)) * 100
-
+  const { alpha, minAlignmentLength, opacityByIdentity, overdrawPx } = model
   return (
-    <>
-      <IconButton
-        onClick={e => {
-          setAnchorEl(e.currentTarget)
+    <SettingsPopover title="Synteny display settings">
+      <div
+        style={{
+          padding: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          width: 250,
         }}
-        title="Synteny display settings"
       >
-        <TuneIcon />
-      </IconButton>
-      <Popover
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={() => {
-          setAnchorEl(null)
-        }}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      >
-        <div className={classes.content}>
-          <div className={classes.row}>
-            <Typography variant="body2" className={classes.label}>
-              Opacity:
-            </Typography>
-            <SingleSlider
-              value={sliderValue}
-              onChange={v => {
-                model.setAlpha(v ** 3)
+        <SettingRow label="Opacity:">
+          <OpacitySlider
+            value={alpha}
+            onChange={v => {
+              model.setAlpha(v)
+            }}
+          />
+        </SettingRow>
+        <SettingRow label="Min length:">
+          <MinLengthSlider
+            value={minAlignmentLength}
+            onCommit={bp => {
+              model.setMinAlignmentLength(bp)
+            }}
+          />
+        </SettingRow>
+        <SettingRow
+          label="Overdraw:"
+          help="Extra pixels drawn beyond the visible area. Higher values keep off-screen synteny lines visible when scrolling, but may reduce performance."
+        >
+          <SingleSlider
+            value={overdrawPx}
+            onChange={val => {
+              model.setOverdrawPx(val)
+            }}
+            min={0}
+            max={10000}
+            step={100}
+            valueLabelDisplay="auto"
+            size="small"
+            valueLabelFormat={(val: number) => `${val}px`}
+            slots={{ valueLabel: SliderTooltip }}
+          />
+        </SettingRow>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={opacityByIdentity}
+              onChange={() => {
+                model.setOpacityByIdentity(!opacityByIdentity)
               }}
-              min={0}
-              max={1}
-              step={0.01}
-              valueLabelDisplay="auto"
               size="small"
-              slots={{ valueLabel: SliderTooltip }}
-              valueLabelFormat={(v: number) => (v ** 3).toFixed(3)}
             />
-          </div>
-          <div className={classes.row}>
-            <Typography variant="body2" className={classes.label}>
-              Min length:
-            </Typography>
-            <SingleSlider
-              value={minLengthValue}
-              onChange={val => {
-                setMinLengthDragValue(val)
-              }}
-              onChangeCommitted={() => {
-                setMinLengthDragValue(null)
-                model.setMinAlignmentLength(
-                  Math.round(2 ** (minLengthValue / 100)),
-                )
-              }}
-              min={0}
-              max={Math.log2(1000000) * 100}
-              valueLabelDisplay="auto"
-              valueLabelFormat={val => toLocale(Math.round(2 ** (val / 100)))}
-              size="small"
-              slots={{ valueLabel: SliderTooltip }}
-            />
-          </div>
-          <div className={classes.row}>
-            <Typography variant="body2" className={classes.label}>
-              Overdraw:
+          }
+          label={
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+              <Typography variant="body2">Fade by identity</Typography>
               <Tooltip
-                title="Extra pixels drawn beyond the visible area. Higher values keep off-screen synteny lines visible when scrolling, but may reduce performance."
+                title="Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel."
                 arrow
               >
                 <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
               </Tooltip>
-            </Typography>
-            <SingleSlider
-              value={model.overdrawPx}
-              onChange={val => {
-                model.setOverdrawPx(val)
-              }}
-              min={0}
-              max={10000}
-              step={100}
-              valueLabelDisplay="auto"
-              size="small"
-              valueLabelFormat={(val: number) => `${val}px`}
-              slots={{ valueLabel: SliderTooltip }}
-            />
-          </div>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={opacityByIdentity}
-                onChange={() => {
-                  model.setOpacityByIdentity(!opacityByIdentity)
-                }}
-                size="small"
-              />
-            }
-            label={
-              <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Typography variant="body2">Fade by identity</Typography>
-                <Tooltip
-                  title="Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel."
-                  arrow
-                >
-                  <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
-                </Tooltip>
-              </span>
-            }
-          />
-        </div>
-      </Popover>
-    </>
+            </span>
+          }
+        />
+      </div>
+    </SettingsPopover>
   )
 })
 

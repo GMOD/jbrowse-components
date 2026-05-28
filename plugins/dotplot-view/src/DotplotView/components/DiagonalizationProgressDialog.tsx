@@ -45,11 +45,6 @@ const DiagonalizationProgressDialog = observer(
             ? `Diagonalization complete! Reordered ${result.totalReordered} regions, reversed ${result.totalReversed}`
             : 'No regions to reorder',
         )
-
-        // Auto-close after success
-        setTimeout(() => {
-          handleClose()
-        }, 2000)
       } catch (err) {
         console.error(err)
         setError(err)
@@ -76,7 +71,7 @@ const DiagonalizationProgressDialog = observer(
     return (
       <Dialog
         open
-        title="Diagonalize Dotplot"
+        title="Re-order chromosomes"
         onClose={handleDialogClose}
         maxWidth="lg"
       >
