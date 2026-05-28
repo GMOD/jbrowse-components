@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useMemo } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
@@ -39,9 +39,8 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   const { view } = session
   const { pluginManager } = getEnv(session)
   const { ReactComponent } = pluginManager.getViewType(view.type)!
-  const theme = createJBrowseTheme(
-    readConfObject(viewState.config.configuration, 'theme'),
-  )
+  const themeConfig = readConfObject(viewState.config.configuration, 'theme')
+  const theme = useMemo(() => createJBrowseTheme(themeConfig), [themeConfig])
   const { classes } = useStyles()
 
   const drawerSession = session as SessionWithDrawerWidgets
@@ -54,15 +53,15 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   const viewCol = '1fr'
   const gridColumns =
     drawerPosition === 'left'
-      ? [drawerCol, viewCol].filter(Boolean).join(' ')
-      : [viewCol, drawerCol].filter(Boolean).join(' ')
+      ? [drawerCol, viewCol].filter((c): c is string => c !== undefined).join(' ')
+      : [viewCol, drawerCol].filter((c): c is string => c !== undefined).join(' ')
 
   return (
     <ThemeProvider theme={theme}>
       <div
         className={classes.root}
         style={
-          visibleWidget
+          drawerVisible
             ? { gridTemplateColumns: gridColumns, height: drawerViewHeight }
             : { gridTemplateColumns: gridColumns }
         }

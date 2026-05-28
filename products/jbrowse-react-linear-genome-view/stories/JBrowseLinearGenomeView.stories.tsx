@@ -22,6 +22,7 @@ export {
   WithInit,
   WithInitAdvanced,
   WithInitAlignmentsDisplay,
+  WithInitWiggleDisplay,
   WithInlinePlugins,
   WithInternetAccounts,
   WithMultipleDisplayedRegionsFlipped,

@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { getVolvoxConfig } from './util.ts'
+import { getVolvoxConfig } from './util.tsx'
 import { JBrowseLinearGenomeView, useCreateViewState } from '../../src/index.ts'
 
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -26,21 +27,24 @@ const VisibleFeatures = observer(function VisibleFeatures({
   // "coarseDynamicBlocks" is the currently visible regions, with a little
   // debounce so that it doesn't update too fast
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
+    return autorun(() => {
       if (!view.initialized) {
         return
       }
       const track = view.tracks[0]
       const adapterConfig = getConf(track, 'adapter')
       const sessionId = getRpcSessionId(track)
-      const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
-        adapterConfig,
-        regions: view.coarseDynamicBlocks,
-      })
-      setFeatures(feats)
-    })()
-  }, [rpcManager, view.initialized, view.coarseDynamicBlocks, view.tracks])
+      const { coarseDynamicBlocks } = view
+      void rpcManager
+        .call(sessionId, 'CoreGetFeatures', {
+          adapterConfig,
+          regions: coarseDynamicBlocks,
+        })
+        .then(feats => {
+          setFeatures(feats)
+        })
+    })
+  }, [rpcManager, view])
   return (
     <div>
       {!features ? (

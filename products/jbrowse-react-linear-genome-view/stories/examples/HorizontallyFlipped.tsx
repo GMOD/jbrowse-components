@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
 
-import { getVolvoxConfig } from './util.ts'
+import { getVolvoxConfig } from './util.tsx'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 type ViewState = ReturnType<typeof createViewState>

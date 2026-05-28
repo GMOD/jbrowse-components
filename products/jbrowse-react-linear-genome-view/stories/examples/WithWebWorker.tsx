@@ -2,7 +2,7 @@
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
 import { useState } from 'react'
 
-import { getVolvoxConfig } from './util.ts'
+import { getVolvoxConfig } from './util.tsx'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 // in your code
 // import {makeWorkerInstance} from '@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance'

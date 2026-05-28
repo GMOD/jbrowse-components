@@ -2,7 +2,7 @@
 // import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 import { useState } from 'react'
 
-import { getVolvoxConfig } from './util.ts'
+import { getVolvoxConfig } from './util.tsx'
 import { JBrowseLinearGenomeView, useCreateViewState } from '../../src/index.ts'
 
 // This component renders the genome view. Because it uses useCreateViewState,

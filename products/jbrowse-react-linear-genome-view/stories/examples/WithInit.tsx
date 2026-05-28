@@ -1,23 +1,7 @@
 import { useState } from 'react'
 
-import { ErrorBanner } from '@jbrowse/core/ui'
-import { observer } from 'mobx-react'
-
-import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
-
-import type { ViewModel } from '../../src/index.ts'
-
-const ViewWithErrorHandling = observer(function ViewWithErrorHandling({
-  state,
-}: {
-  state: ViewModel
-}) {
-  const error = state.session.view.error
-  if (error) {
-    return <ErrorBanner error={error} />
-  }
-  return <JBrowseLinearGenomeView viewState={state} />
-})
+import { ViewWithErrorHandling } from './util.tsx'
+import { createViewState } from '../../src/index.ts'
 
 export const WithInit = () => {
   const assembly = {

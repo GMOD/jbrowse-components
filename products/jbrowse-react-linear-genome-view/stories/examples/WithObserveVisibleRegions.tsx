@@ -2,7 +2,7 @@ import { observer } from 'mobx-react'
 
 // in your code
 // import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
-import { getVolvoxConfig } from './util.ts'
+import { getVolvoxConfig } from './util.tsx'
 import { JBrowseLinearGenomeView, useCreateViewState } from '../../src/index.ts'
 
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'

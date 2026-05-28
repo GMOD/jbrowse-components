@@ -2,7 +2,7 @@
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
 import { useState } from 'react'
 
-import { addRelativeUris, getVolvoxConfig } from './util.ts'
+import { addRelativeUris, getVolvoxConfig } from './util.tsx'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 export const WithPerTrackTextSearching = () => {

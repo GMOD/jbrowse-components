@@ -24,7 +24,7 @@ interface Location {
   assemblyName?: string
 }
 
-interface ViewStateOptions {
+export interface ViewStateOptions {
   assembly: Assembly
   tracks: Tracks
   internetAccounts?: InternetAccounts
