@@ -106,7 +106,7 @@ const HighlightGroup = observer(function HighlightGroup({
     <Suspense fallback={null}>
       {model.highlight.map((highlight, idx) => (
         <Highlight
-          key={`${JSON.stringify(highlight)}-${idx}`}
+          key={`${highlight.assemblyName}-${highlight.refName}:${highlight.start}-${highlight.end}-${idx}`}
           model={model}
           highlight={highlight}
         />

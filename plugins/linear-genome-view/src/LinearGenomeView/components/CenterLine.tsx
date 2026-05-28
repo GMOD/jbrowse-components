@@ -1,5 +1,3 @@
-import { useRef } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -30,7 +28,6 @@ const useStyles = makeStyles()(theme => ({
 
 const CenterLine = observer(function CenterLine({ model }: { model: LGV }) {
   const { bpPerPx, centerLineInfo, trackHeights, tracks, width } = model
-  const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
   const startingPosition = width / 2
 
@@ -39,7 +36,6 @@ const CenterLine = observer(function CenterLine({ model }: { model: LGV }) {
       data-testid="centerline_container"
       className={classes.centerLineContainer}
       role="presentation"
-      ref={ref}
       style={{
         transform: `translateX(${startingPosition}px)`,
         width: Math.max(1 / bpPerPx, 1),

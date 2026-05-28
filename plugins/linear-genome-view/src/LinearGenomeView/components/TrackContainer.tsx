@@ -6,7 +6,7 @@ import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Gridlines from './Gridlines.tsx'
-import TrackLabelContainer from './TrackLabelContainer.tsx'
+import TrackLabel from './TrackLabel.tsx'
 import TrackRenderingContainer from './TrackRenderingContainer.tsx'
 import { shouldSwapTracks } from './util.ts'
 
@@ -28,6 +28,16 @@ const useStyles = makeStyles()({
     boxSizing: 'border-box',
     position: 'relative',
   },
+  trackLabel: {
+    zIndex: 2,
+  },
+  trackLabelOffset: {
+    position: 'relative',
+    display: 'inline-block',
+  },
+  trackLabelOverlap: {
+    position: 'absolute',
+  },
 })
 
 type LGV = LinearGenomeViewModel
@@ -42,6 +52,11 @@ const TrackContainer = observer(function TrackContainer({
   const { classes } = useStyles()
   const display = track.displays[0]
   const { draggingTrackId, showTrackOutlines } = model
+  const trackLabelStyle =
+    model.trackLabelsSetting !== 'overlapping' || display.prefersOffset
+      ? classes.trackLabelOffset
+      : classes.trackLabelOverlap
+
   return (
     <Paper
       className={cx(classes.root, track.pinned ? null : classes.unpinnedTrack)}
@@ -69,7 +84,12 @@ const TrackContainer = observer(function TrackContainer({
     >
       {/* offset 1px since for left track border */}
       {track.pinned ? <Gridlines model={model} offset={1} /> : null}
-      <TrackLabelContainer track={track} view={model} />
+      {model.trackLabelsSetting !== 'hidden' ? (
+        <TrackLabel
+          track={track}
+          className={cx(classes.trackLabel, trackLabelStyle)}
+        />
+      ) : null}
       <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
         <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>

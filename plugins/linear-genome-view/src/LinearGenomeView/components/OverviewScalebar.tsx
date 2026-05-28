@@ -194,7 +194,7 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
   )
 })
 
-const Scalebar = observer(function Scalebar({ model }: { model: LGV }) {
+const OverviewScalebarContent = observer(function OverviewScalebarContent({ model }: { model: LGV }) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const overview = model.overviewLayout
@@ -248,7 +248,7 @@ const OverviewScalebar = observer(function OverviewScalebar({
       <OverviewRubberband
         model={model}
         overview={overview}
-        ControlComponent={<Scalebar model={model} />}
+        ControlComponent={<OverviewScalebarContent model={model} />}
       />
       <div className={classes.overview}>
         <svg height={HEADER_BAR_HEIGHT} className={classes.overviewSvg}>
