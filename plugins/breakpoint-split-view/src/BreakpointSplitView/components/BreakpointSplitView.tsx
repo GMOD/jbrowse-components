@@ -1,3 +1,6 @@
+import { lazy } from 'react'
+
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -7,6 +10,10 @@ import Header from './Header.tsx'
 import Rubberband from './Rubberband.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
+
+const BreakpointSplitViewImportForm = lazy(
+  () => import('./BreakpointSplitViewImportForm.tsx'),
+)
 
 const useStyles = makeStyles()(theme => ({
   viewDivider: {
@@ -76,11 +83,14 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
   model: BreakpointViewModel
 }) {
   const { classes } = useStyles()
+  if (model.showImportForm) {
+    return <BreakpointSplitViewImportForm model={model} />
+  }
   return (
     <div className={classes.rubberbandContainer}>
-      {model.showHeader && model.initialized ? <Header model={model} /> : null}
       {model.initialized ? (
         <>
+          {model.showHeader ? <Header model={model} /> : null}
           <Rubberband
             model={model}
             ControlComponent={<div className={classes.rubberbandDiv} />}
@@ -90,7 +100,9 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
             <BreakpointSplitViewOverlay model={model} />
           </div>
         </>
-      ) : null}
+      ) : (
+        <LoadingEllipses variant="h6" />
+      )}
     </div>
   )
 })

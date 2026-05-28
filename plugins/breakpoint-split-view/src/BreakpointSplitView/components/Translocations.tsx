@@ -8,13 +8,14 @@ import {
   strandToSign,
   tickX,
 } from './overlayUtils.tsx'
+import { findFeatureViewLevel } from '../util.ts'
 
 import type { OverlayProps, PathSpec } from './overlayUtils.tsx'
 import type { LayoutRecord } from '../types.ts'
 
-// We hardcode the TRA to go to the "other view"; if there is none, return
-// nothing. Properly resolving would mean walking INFO.CHR2/END to find which
-// view contains the mate.
+// Resolve the TRA mate to whichever view (row) actually contains its
+// INFO.CHR2/END position, so connections draw correctly across any number of
+// rows. If no view contains the mate, draw nothing.
 export default function Translocations(props: OverlayProps) {
   return (
     <VariantOverlay
@@ -26,12 +27,15 @@ export default function Translocations(props: OverlayProps) {
         return match.layoutMatches.flatMap(chunk =>
           chunk.flatMap<PathSpec>(
             ({ layout: c1, feature: f1, level: level1 }) => {
-              const level2 = level1 === 0 ? 1 : 0
-              if (isLevelPairMinimized(tracks, level1, level2)) {
-                return []
-              }
               const mate = readTranslocationMate(f1.get('INFO'))
               if (!mate) {
+                return []
+              }
+              const level2 = findFeatureViewLevel(views, mate.chr, mate.pos)
+              if (
+                level2 === undefined ||
+                isLevelPairMinimized(tracks, level1, level2)
+              ) {
                 return []
               }
               const x2 = getX(level2, mate.chr, mate.pos)
