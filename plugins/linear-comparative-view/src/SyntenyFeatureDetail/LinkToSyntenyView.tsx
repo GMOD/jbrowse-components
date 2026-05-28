@@ -1,11 +1,11 @@
 import { lazy } from 'react'
 
+import { ActionLink } from '@jbrowse/core/ui'
 import {
   SimpleFeature,
   assembleLocString,
   getSession,
 } from '@jbrowse/core/util'
-import { Link } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
@@ -29,10 +29,8 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
     <ul>
       {view.type === 'LinearSyntenyView' ? (
         <li>
-          <Link
-            href="#"
-            onClick={event => {
-              event.preventDefault()
+          <ActionLink
+            onClick={() => {
               const { views } = view as LinearSyntenyViewModel
               if (level !== undefined) {
                 // level is "pre-known", and stored in the SyntenyFeatureWidget
@@ -74,14 +72,12 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
             }}
           >
             Center view on this feature
-          </Link>
+          </ActionLink>
         </li>
       ) : null}
       <li>
-        <Link
-          href="#"
-          onClick={event => {
-            event.preventDefault()
+        <ActionLink
+          onClick={() => {
             const feature = new SimpleFeature(feat)
             const session = getSession(model)
             session.queueDialog(handleClose => [
@@ -96,7 +92,7 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
           }}
         >
           Launch new linear synteny view on this feature
-        </Link>
+        </ActionLink>
       </li>
     </ul>
   )

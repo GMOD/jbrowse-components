@@ -1,3 +1,4 @@
+import { ActionLink } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { measureGridWidth, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -9,7 +10,6 @@ import {
   Checkbox,
   FormControlLabel,
   IconButton,
-  Link,
   Tooltip,
 } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
@@ -76,15 +76,9 @@ const SessionManager = observer(function SessionManager({
       width: measureGridWidth((rows ?? []).map(r => r.name)),
       renderCell: ({ row }: { row: { id: string; name: string } }) => (
         <>
-          <Link
-            href="#"
-            onClick={event => {
-              event.preventDefault()
-              session.activateSession(row.id)
-            }}
-          >
+          <ActionLink onClick={() => session.activateSession(row.id)}>
             {row.name}
-          </Link>
+          </ActionLink>
           {session.id === row.id ? ' (current)' : ''}
         </>
       ),

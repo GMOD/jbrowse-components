@@ -1,6 +1,6 @@
+import { ActionLink } from '@jbrowse/core/ui'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { getParent } from '@jbrowse/mobx-state-tree'
-import { Link } from '@mui/material'
 
 import { locationLinkClick } from '../util.ts'
 import FeatureMenu from './FeatureMenu.tsx'
@@ -28,28 +28,27 @@ export default function LocationCell({
           feature={feature}
         />
       ) : null}
-      <Link
-        href="#"
-        onClick={async event => {
-          if (!assemblyName) {
-            return
-          }
-          try {
-            event.preventDefault()
-            await locationLinkClick({
-              spreadsheetViewId,
-              session,
-              locString,
-              assemblyName,
-            })
-          } catch (e) {
-            console.error(e)
-            session.notifyError(`${e}`, e)
-          }
-        }}
-      >
-        {locString}
-      </Link>
+      {assemblyName ? (
+        <ActionLink
+          onClick={async () => {
+            try {
+              await locationLinkClick({
+                spreadsheetViewId,
+                session,
+                locString,
+                assemblyName,
+              })
+            } catch (e) {
+              console.error(e)
+              session.notifyError(`${e}`, e)
+            }
+          }}
+        >
+          {locString}
+        </ActionLink>
+      ) : (
+        locString
+      )}
     </>
   )
 }

@@ -1,3 +1,4 @@
+import { ActionLink } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import {
@@ -7,7 +8,6 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Link } from '@mui/material'
 import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
@@ -93,17 +93,15 @@ const BookmarkGrid = observer(function BookmarkGrid({
             headerName: 'Bookmark link',
             width: widths[1],
             renderCell: ({ value, row }) => (
-              <Link
+              <ActionLink
                 className={classes.cell}
-                href="#"
-                onClick={async event => {
-                  event.preventDefault()
+                onClick={async () => {
                   const { views } = session
                   await navToBookmark(value, row.assemblyName, views, model)
                 }}
               >
                 {value}
-              </Link>
+              </ActionLink>
             ),
           },
           {

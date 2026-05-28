@@ -4,13 +4,16 @@ import { Link } from '@mui/material'
 export default function ActionLink({
   onClick,
   children,
+  className,
 }: {
   onClick: () => void
   children: React.ReactNode
+  className?: string
 }) {
   return (
     <Link
       href="#"
+      className={className}
       onClick={(e: React.MouseEvent) => {
         e.preventDefault()
         onClick()

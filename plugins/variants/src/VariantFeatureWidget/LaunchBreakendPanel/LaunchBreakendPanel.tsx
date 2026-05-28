@@ -1,4 +1,5 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { ActionLink } from '@jbrowse/core/ui'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import {
   getAssemblyName,
@@ -6,7 +7,7 @@ import {
   launchBreakpointSplitView,
   navToLoc,
 } from '@jbrowse/sv-core'
-import { Link, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { VariantFeatureWidgetModel } from '../stateModelFactory.ts'
@@ -27,15 +28,9 @@ const LocStringList = observer(function LocStringList({
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
           <li key={`${locString}-${index}`}>
             {locString}{' '}
-            <Link
-              href="#"
-              onClick={event => {
-                event.preventDefault()
-                navToLoc(locString, model)
-              }}
-            >
+            <ActionLink onClick={() => navToLoc(locString, model)}>
               (LGV)
-            </Link>
+            </ActionLink>
           </li>
         ))}
       </ul>
@@ -63,10 +58,8 @@ const LaunchBreakpointSplitViewPanel = observer(
           {locStrings.map(locString => (
             <li key={locString}>
               {`${feature.refName}:${feature.start} // ${locString}`}{' '}
-              <Link
-                href="#"
-                onClick={event => {
-                  event.preventDefault()
+              <ActionLink
+                onClick={() =>
                   launchBreakpointSplitView({
                     session,
                     view: model.view,
@@ -74,10 +67,10 @@ const LaunchBreakpointSplitViewPanel = observer(
                     feature: simpleFeature,
                     stableViewId: `${model.id}_${assemblyName}_breakpointsplitview`,
                   })
-                }}
+                }
               >
                 (breakpoint split view)
-              </Link>
+              </ActionLink>
             </li>
           ))}
         </ul>

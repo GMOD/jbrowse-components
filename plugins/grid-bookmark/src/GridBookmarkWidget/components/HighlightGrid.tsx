@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { ActionLink } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import {
@@ -10,7 +11,7 @@ import {
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Delete from '@mui/icons-material/Delete'
-import { IconButton, Link, Tooltip, useTheme } from '@mui/material'
+import { IconButton, Tooltip, useTheme } from '@mui/material'
 import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
@@ -101,11 +102,9 @@ const HighlightGrid = observer(function HighlightGrid({
               rows.map(r => r.locString),
             ),
             renderCell: ({ value, row }) => (
-              <Link
+              <ActionLink
                 className={classes.cell}
-                href="#"
-                onClick={event => {
-                  event.preventDefault()
+                onClick={() =>
                   row.view.navTo(
                     {
                       refName: row.highlight.refName,
@@ -117,10 +116,10 @@ const HighlightGrid = observer(function HighlightGrid({
                     // context on either side
                     0.2,
                   )
-                }}
+                }
               >
                 {value}
-              </Link>
+              </ActionLink>
             ),
           },
           {
