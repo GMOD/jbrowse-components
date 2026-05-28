@@ -64,13 +64,23 @@ export function forEachRenderedLabel(
   visibility: LabelVisibility,
   emit: (featureId: string, labels: ResolvedLabel[]) => void,
 ) {
-  const toScreen = makeBpMapper(vr)
-  for (const [featureId, labelData] of Object.entries(
-    data.floatingLabelsData,
-  )) {
+  const { showLabels, showDescriptions } = visibility
+  let toScreen: ((bp: number) => number) | undefined
+  for (const featureId in data.floatingLabelsData) {
+    const labelData = data.floatingLabelsData[featureId]!
     if (labelData.maxX < vr.start || labelData.minX > vr.end) {
       continue
     }
+    const wantName = showLabels && !!labelData.nameLabel
+    const wantDesc = showDescriptions && !!labelData.descriptionLabel
+    const wantSub = !!labelData.subfeatureLabel
+    if (!wantName && !wantDesc && !wantSub) {
+      continue
+    }
+    // Lazy: only build the bp→px mapper once we know we'll emit something.
+    // Skips the closure allocation entirely when 'auto' density hides labels
+    // and the feature has no subfeature label (the common dense case).
+    toScreen ??= makeBpMapper(vr)
     const px1 = toScreen(labelData.minX)
     const px2 = toScreen(labelData.maxX)
     const featureLeftPx = Math.min(px1, px2)
@@ -83,36 +93,33 @@ export function forEachRenderedLabel(
       screenStartPx: vr.screenStartPx,
     }
     const out: ResolvedLabel[] = []
-    if (labelData.nameLabel && visibility.showLabels) {
+    if (wantName) {
       out.push({
-        label: labelData.nameLabel,
-        ...computeLabelPosition(labelData.nameLabel, 2, bounds),
+        label: labelData.nameLabel!,
+        ...computeLabelPosition(labelData.nameLabel!, 2, bounds),
         kind: 'name',
       })
     }
-    if (labelData.descriptionLabel && visibility.showDescriptions) {
+    if (wantDesc) {
       // descriptionLabel.relativeY is baked at RPC time assuming the name
       // label is rendered; when showLabels is off, collapse description up to
       // fill the vacated name row.
-      const nameRendered = !!labelData.nameLabel && visibility.showLabels
-      const desc = nameRendered
-        ? labelData.descriptionLabel
-        : { ...labelData.descriptionLabel, relativeY: 0 }
+      const desc = wantName
+        ? labelData.descriptionLabel!
+        : { ...labelData.descriptionLabel!, relativeY: 0 }
       out.push({
         label: desc,
         ...computeLabelPosition(desc, 2, bounds),
         kind: 'desc',
       })
     }
-    if (labelData.subfeatureLabel) {
+    if (wantSub) {
       out.push({
-        label: labelData.subfeatureLabel,
-        ...computeLabelPosition(labelData.subfeatureLabel, 0, bounds),
+        label: labelData.subfeatureLabel!,
+        ...computeLabelPosition(labelData.subfeatureLabel!, 0, bounds),
         kind: 'sub',
       })
     }
-    if (out.length > 0) {
-      emit(featureId, out)
-    }
+    emit(featureId, out)
   }
 }

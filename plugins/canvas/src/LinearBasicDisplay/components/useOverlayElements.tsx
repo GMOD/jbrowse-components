@@ -6,10 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { forEachRenderedLabel } from './labelPositioning.ts'
 import { LABEL_FONT_SIZE } from './sharedRendererConstants.ts'
-import {
-  shouldRenderFloatingLabels,
-  shouldRenderPeptideText,
-} from '../../RenderFeatureDataRPC/zoomThresholds.ts'
+import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 import type {
@@ -20,7 +17,6 @@ import type {
 
 interface OverlayModel {
   showLabels: boolean
-  showLabelsMode: 'auto' | 'on' | 'off'
   effectiveShowDescriptions: boolean
   selectedFeatureId: string | undefined
   selectFeatureById: (
@@ -89,30 +85,31 @@ export function useFloatingLabels(
   // them to re-trigger would couple correctness to transitive recomputation
   // of laidOutDataMap (which happens to depend on the same flags). Mirrors
   // the destructure-before-useMemo pattern in useHighlightOverlays below.
-  const { showLabels, showLabelsMode, effectiveShowDescriptions } = model
+  // `showLabels` already encodes the 'auto' density gate (see baseModel).
+  const { showLabels, effectiveShowDescriptions, selectFeatureById } = model
+  // Pre-build the four (clickable × isOverlay) className combinations once
+  // per style/cx identity; per-label rendering then just picks the right
+  // string instead of calling cx() in the hot loop.
+  const labelClasses = useMemo(
+    () => ({
+      clickable: cx(classes.floatingLabel, classes.floatingLabelClickable),
+      clickableOverlay: cx(
+        classes.floatingLabel,
+        classes.floatingLabelClickable,
+        classes.floatingLabelOverlay,
+      ),
+      static: cx(classes.floatingLabel, classes.floatingLabelStatic),
+      staticOverlay: cx(
+        classes.floatingLabel,
+        classes.floatingLabelStatic,
+        classes.floatingLabelOverlay,
+      ),
+    }),
+    [classes, cx],
+  )
   return useMemo(() => {
     if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
       return null
-    }
-
-    // In 'auto' mode, hide labels when feature density across visible regions
-    // exceeds the readability threshold. Dense tracks at zoomed-out views
-    // otherwise create thousands of React elements (~70µs each) and blow the
-    // frame budget. 'on' bypasses the gate; 'off' is handled upstream via
-    // showLabels=false.
-    if (showLabelsMode === 'auto') {
-      let totalFeatures = 0
-      let totalWidthPx = 0
-      for (const vr of visibleRegions) {
-        const data = laidOutDataMap.get(vr.displayedRegionIndex)
-        if (data) {
-          totalFeatures += data.featureCount
-          totalWidthPx += vr.screenEndPx - vr.screenStartPx
-        }
-      }
-      if (!shouldRenderFloatingLabels(totalFeatures, totalWidthPx)) {
-        return null
-      }
     }
 
     const elements: React.ReactElement[] = []
@@ -128,6 +125,7 @@ export function useFloatingLabels(
         continue
       }
 
+      const displayedRegionIndex = vr.displayedRegionIndex
       forEachRenderedLabel(data, vr, visibility, (featureId, labels) => {
         if (renderedLabels.has(featureId)) {
           return
@@ -136,43 +134,42 @@ export function useFloatingLabels(
 
         const entry = featureItemMap.get(featureId)
         const item = entry?.kind === 'feature' ? entry.item : undefined
+        // Allocate handler closures once per feature (not per-label); skip
+        // entirely when there's no clickable item.
         const handleLabelClick = item
           ? () => {
-              model.selectFeatureById(item, undefined, vr.displayedRegionIndex)
+              selectFeatureById(item, undefined, displayedRegionIndex)
             }
           : undefined
         const handleLabelContextMenu = item
           ? (e: React.MouseEvent) => {
               e.preventDefault()
-              openContextMenu(
-                item,
-                vr.displayedRegionIndex,
-                e.clientX,
-                e.clientY,
-              )
+              openContextMenu(item, displayedRegionIndex, e.clientX, e.clientY)
             }
           : undefined
-        const handleLabelMouseMove = item
-          ? (e: React.MouseEvent) => {
-              onLabelMouseOver?.(item, e)
-            }
-          : undefined
+        const handleLabelMouseMove =
+          item && onLabelMouseOver
+            ? (e: React.MouseEvent) => {
+                onLabelMouseOver(item, e)
+              }
+            : undefined
 
         for (const { label, labelX, labelY, kind } of labels) {
           const clickable = kind !== 'desc'
+          const className = clickable
+            ? label.isOverlay
+              ? labelClasses.clickableOverlay
+              : labelClasses.clickable
+            : label.isOverlay
+              ? labelClasses.staticOverlay
+              : labelClasses.static
           elements.push(
             <div
-              key={`${vr.displayedRegionIndex}-${featureId}-${kind}`}
+              key={`${displayedRegionIndex}-${featureId}-${kind}`}
               data-testid={
                 clickable ? `feature-${kind}-${label.text}` : undefined
               }
-              className={cx(
-                classes.floatingLabel,
-                clickable
-                  ? classes.floatingLabelClickable
-                  : classes.floatingLabelStatic,
-                label.isOverlay && classes.floatingLabelOverlay,
-              )}
+              className={className}
               onClick={clickable ? handleLabelClick : undefined}
               onContextMenu={clickable ? handleLabelContextMenu : undefined}
               onMouseMove={clickable ? handleLabelMouseMove : undefined}
@@ -197,13 +194,11 @@ export function useFloatingLabels(
     bpPerPx,
     visibleRegions,
     showLabels,
-    showLabelsMode,
     effectiveShowDescriptions,
-    model,
+    selectFeatureById,
     openContextMenu,
     onLabelMouseOver,
-    classes,
-    cx,
+    labelClasses,
   ])
 }
 

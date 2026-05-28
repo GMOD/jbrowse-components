@@ -64,6 +64,20 @@ test('does not add heightPreConfig when neither field is present', () => {
   expect(result).not.toHaveProperty('heightPreConfig')
 })
 
+// Legacy trackShowLabels: true used to mean "always show labels". The enum
+// has no equivalent — 'on' would be the literal translation, but defaulting
+// users to 'auto' preserves the visible-at-sparse-zooms behavior they had
+// while gaining the density-based hide at zoom-out. This test pins that
+// intent in case someone "fixes" the mapping to 'on'.
+test('migrates legacy trackShowLabels=true to "auto"', () => {
+  const result = migrateBasicSnapshot({
+    trackShowLabels: true,
+  })
+  expect(result).toEqual({
+    configOverrides: { showLabels: 'auto' },
+  })
+})
+
 test('promotes track-prefixed settings into configOverrides', () => {
   const result = migrateBasicSnapshot({
     type: 'LinearBasicDisplay',

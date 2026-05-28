@@ -42,7 +42,10 @@ import {
 } from './components/hitTesting.ts'
 import { computeLaidOutData } from './layout.ts'
 import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
-import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
+import {
+  MAX_LABEL_FEATURE_DENSITY,
+  shouldRenderPeptideBackground,
+} from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { RegionDensityStats } from './baseModelHelpers.ts'
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -168,14 +171,20 @@ export default function baseStateModelFactory(
           return self.getConfWithOverride<'auto' | 'on' | 'off'>('showLabels')
         },
 
-        // Boolean view of showLabels for downstream consumers (worker layout,
-        // hit testing). 'auto' returns true so labels are computed and layout
-        // reserves space; useFloatingLabels gates actual rendering by density.
+        // Effective boolean visibility used by layout, hit testing, the DOM
+        // overlay, and SVG export. 'auto' switches to false once feature
+        // density crosses the readability threshold so layout-reserved label
+        // space, the rendered DOM elements, and the hit-test geometry all
+        // agree — otherwise rows reserve label height that never gets used.
         get showLabels() {
-          return (
-            self.getConfWithOverride<'auto' | 'on' | 'off'>('showLabels') !==
-            'off'
-          )
+          const mode = this.showLabelsMode
+          if (mode === 'off') {
+            return false
+          }
+          if (mode === 'on') {
+            return true
+          }
+          return self.featureDensityPerPx <= MAX_LABEL_FEATURE_DENSITY
         },
 
         get showDescriptions() {
@@ -187,10 +196,18 @@ export default function baseStateModelFactory(
         },
 
         get effectiveShowDescriptions() {
-          return (
-            this.showDescriptions &&
-            self.featureDensityPerPx < DESCRIPTION_DENSITY_THRESHOLD
-          )
+          if (!this.showDescriptions) {
+            return false
+          }
+          // In 'auto' mode, ride along with the same density gate as labels
+          // so we never render orphan descriptions next to features whose
+          // names just got auto-hidden. In 'on'/'off' the user has made an
+          // explicit choice about labels, so keep the looser standalone
+          // density safeguard (catches only extreme pixel-dense overlap).
+          if (this.showLabelsMode === 'auto') {
+            return this.showLabels
+          }
+          return self.featureDensityPerPx < DESCRIPTION_DENSITY_THRESHOLD
         },
 
         get selectedFeatureId() {
