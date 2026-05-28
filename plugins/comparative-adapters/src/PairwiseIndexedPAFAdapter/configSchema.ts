@@ -65,8 +65,8 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
     /**
      * #slot
      * bpPerPx threshold at which the reader switches from the per-row
-     * CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR merged
-     * tier (uppercase T/Q prefix), when make-pif was run with --mergeGap.
+     * CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier
+     * (uppercase T/Q prefix), when make-pif was run with --coarse.
      * No coarse tier present in the file = always uses fine tier.
      */
     coarseBpPerPxThreshold: {

@@ -74,7 +74,7 @@ function makeInstanceData(
     colors: new Uint32Array(count).fill(0x80808080),
     kinds: new Uint8Array(count),
     instanceFeatureIdx: new Uint32Array(count),
-    queryTotalLengths: new Float32Array(count).fill(10000),
+    alignmentLengths: new Float32Array(count).fill(10000),
     padTops: new Float32Array(count).fill(0),
     padBottoms: new Float32Array(count).fill(0),
     instanceCount: count,
@@ -169,7 +169,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 100)
     renderer.uploadGeometry(
       0,
-      makeInstanceData(1, { queryTotalLengths: new Float32Array([100]) }),
+      makeInstanceData(1, { alignmentLengths: new Float32Array([100]) }),
     )
     renderer.render(makeState([[0, makeParams({ minAlignmentLength: 500 })]]))
 
@@ -342,7 +342,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 100)
     renderer.uploadGeometry(
       0,
-      makeInstanceData(1, { queryTotalLengths: new Float32Array([100]) }),
+      makeInstanceData(1, { alignmentLengths: new Float32Array([100]) }),
     )
     const state = makeState([[0, makeParams({ minAlignmentLength: 500 })]])
     expect(renderer.pick(50, 50, state)).toBeUndefined()

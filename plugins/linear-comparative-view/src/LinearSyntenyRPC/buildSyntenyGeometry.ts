@@ -39,7 +39,7 @@ export interface SyntenyGeometry {
   // `instanceFeatureIdx[i] + 1` at interleave time (0 reserved for "no hit").
   kinds: Uint8Array
   instanceFeatureIdx: Uint32Array
-  queryTotalLengths: Float32Array
+  alignmentLengths: Float32Array
   padTops: Float32Array
   padBottoms: Float32Array
   instanceCount: number
@@ -55,7 +55,6 @@ export function buildSyntenyGeometry({
   padTop: padTopArr,
   padBottom: padBottomArr,
   strands,
-  names,
   parsedCigars,
   starts,
   ends,
@@ -75,7 +74,6 @@ export function buildSyntenyGeometry({
   padTop: Float32Array
   padBottom: Float32Array
   strands: Int8Array
-  names: string[]
   parsedCigars: ArrayLike<number>[]
   starts: Uint32Array
   ends: Uint32Array
@@ -90,18 +88,6 @@ export function buildSyntenyGeometry({
 }): SyntenyGeometry {
   const featureCount = p11_cumBp.length
 
-  // Per-feature total-length-across-same-query-name. Features without a
-  // query name don't aggregate — they contribute only their own length.
-  const queryTotalLengths = new Map<string, number>()
-  for (let i = 0; i < featureCount; i++) {
-    const name = names[i]!
-    if (name !== '') {
-      const alignmentLength = Math.abs(ends[i]! - starts[i]!)
-      const current = queryTotalLengths.get(name) ?? 0
-      queryTotalLengths.set(name, current + alignmentLength)
-    }
-  }
-
   const panBufferPx = 2000
   const emitLeft = -panBufferPx
   const emitRight = viewWidth + panBufferPx
@@ -109,14 +95,14 @@ export function buildSyntenyGeometry({
   const bpPerPxInv1 = 1 / bpPerPx1
   const minCigarPxWidth = 4
 
-  const qtls = new Float32Array(featureCount)
+  const alignmentLengths = new Float32Array(featureCount)
   // Per-feature: did we decide to draw CIGAR detail? When true, pass 1 emits
   // KIND_BASE_HIDDEN (alpha-zero fill, but edge pass still draws the outline)
   // and pass 2 runs the visitor. When false, pass 1 emits KIND_BASE and pass
   // 2 skips the feature.
   const willDrawCigarArr = new Uint8Array(featureCount)
 
-  // Single pre-pass: fill qtls, willDrawCigar, and accumulate the exact
+  // Single pre-pass: fill alignmentLengths, willDrawCigar, and accumulate the exact
   // upper-bound capacity. visitCigarRenderedSegments emits a segment only
   // when bp1 OR bp2 has advanced > 1 px from the segment start, so
   // per-feature visitor emissions are bounded by widthPx0 + widthPx1
@@ -126,11 +112,16 @@ export function buildSyntenyGeometry({
   // a single allocation matches actual usage — no growable buffers.
   let capacity = 0
   for (let i = 0; i < featureCount; i++) {
-    const name = names[i]!
-    qtls[i] =
-      name !== ''
-        ? queryTotalLengths.get(name)!
-        : Math.abs(ends[i]! - starts[i]!)
+    // Per-feature alignment length, used solely for the minAlignmentLength
+    // cull (shader isCulled + pick engine). Each block is filtered by its own
+    // span — what the "Min length" control means to users. This is enforced
+    // structurally: geometry never receives feature names, so it cannot sum
+    // spans across blocks that share one. That matters because names DO
+    // legitimately repeat (e.g. a BAM read's QNAME is shared across its split/
+    // supplementary alignments) — and summing those would keep a read whose
+    // pieces are each tiny, or hide a substantial single block, neither of
+    // which is what a per-length filter should do.
+    alignmentLengths[i] = Math.abs(ends[i]! - starts[i]!)
 
     const cigar = parsedCigars[i]!
     const widthPx0 = Math.abs(p12_cumBp[i]! - p11_cumBp[i]!) * bpPerPxInv0
@@ -164,7 +155,7 @@ export function buildSyntenyGeometry({
   const bp4LoArr = new Float32Array(capacity)
   const kindsArr = new Uint8Array(capacity)
   const featIdxArr = new Uint32Array(capacity)
-  const queryTotalLengthArr = new Float32Array(capacity)
+  const instanceAlignmentLengths = new Float32Array(capacity)
   const padTopsArr = new Float32Array(capacity)
   const padBottomsArr = new Float32Array(capacity)
 
@@ -180,7 +171,7 @@ export function buildSyntenyGeometry({
     cumBp4: number,
     kind: number,
     featureIdx: number,
-    qtl: number,
+    alignmentLength: number,
     padTop: number,
     padBottom: number,
   ) {
@@ -190,7 +181,7 @@ export function buildSyntenyGeometry({
     writeHiLo(cumBp4, bp4HiArr, bp4LoArr, idx)
     kindsArr[idx] = kind
     featIdxArr[idx] = featureIdx
-    queryTotalLengthArr[idx] = qtl
+    instanceAlignmentLengths[idx] = alignmentLength
     padTopsArr[idx] = padTop
     padBottomsArr[idx] = padBottom
     idx++
@@ -203,7 +194,7 @@ export function buildSyntenyGeometry({
     bp2End: number,
     bp2Start: number,
     featureIdx: number,
-    qtl: number,
+    alignmentLength: number,
     padTop: number,
     padBottom: number,
   ) {
@@ -242,7 +233,7 @@ export function buildSyntenyGeometry({
         markerBp2,
         KIND_MARKER,
         featureIdx,
-        qtl,
+        alignmentLength,
         padTop,
         padBottom,
       )
@@ -264,7 +255,7 @@ export function buildSyntenyGeometry({
       x21,
       willDrawCigar ? KIND_BASE_HIDDEN : KIND_BASE,
       i,
-      qtls[i]!,
+      alignmentLengths[i]!,
       padTopArr[i]!,
       padBottomArr[i]!,
     )
@@ -275,7 +266,7 @@ export function buildSyntenyGeometry({
         x22,
         x21,
         i,
-        qtls[i]!,
+        alignmentLengths[i]!,
         padTopArr[i]!,
         padBottomArr[i]!,
       )
@@ -299,7 +290,7 @@ export function buildSyntenyGeometry({
     const x21 = p21_cumBp[i]!
     const x22 = p22_cumBp[i]!
     const strand = strands[i]!
-    const qtl = qtls[i]!
+    const alignmentLength = alignmentLengths[i]!
     const padTop = padTopArr[i]!
     const padBottom = padBottomArr[i]!
 
@@ -353,7 +344,7 @@ export function buildSyntenyGeometry({
             segBp2Start,
             kind,
             i,
-            qtl,
+            alignmentLength,
             padTop,
             padBottom,
           )
@@ -365,7 +356,7 @@ export function buildSyntenyGeometry({
               segBp2End,
               segBp2Start,
               i,
-              qtl,
+              alignmentLength,
               padTop,
               padBottom,
             )
@@ -388,7 +379,7 @@ export function buildSyntenyGeometry({
     bp4Lo: bp4LoArr.subarray(0, instanceCount),
     kinds: kindsArr.subarray(0, instanceCount),
     instanceFeatureIdx: featIdxArr.subarray(0, instanceCount),
-    queryTotalLengths: queryTotalLengthArr.subarray(0, instanceCount),
+    alignmentLengths: instanceAlignmentLengths.subarray(0, instanceCount),
     padTops: padTopsArr.subarray(0, instanceCount),
     padBottoms: padBottomsArr.subarray(0, instanceCount),
     instanceCount,

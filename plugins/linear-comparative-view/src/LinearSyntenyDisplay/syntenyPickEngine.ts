@@ -246,7 +246,7 @@ export function pickFeatureAtPoint(
       .toSorted((a, b) => b - a)
     for (let ci = 0, l = candidates.length; ci < l; ci++) {
       const i = candidates[ci]!
-      if (data.queryTotalLengths[i]! < minAlignmentLength) {
+      if (data.alignmentLengths[i]! < minAlignmentLength) {
         continue
       }
       if (((data.colors[i]! >>> 24) & 0xff) / 255 < 0.01) {

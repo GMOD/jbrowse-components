@@ -32,7 +32,7 @@ function drawInstances(
   fillStyleCache: Map<number, string>,
 ) {
   for (let i = 0; i < data.instanceCount; i++) {
-    if (data.queryTotalLengths[i]! < minAlignmentLength) {
+    if (data.alignmentLengths[i]! < minAlignmentLength) {
       continue
     }
     const packed = data.colors[i]!

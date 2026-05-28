@@ -31,7 +31,6 @@ function buildOne(opts: {
     padTop: new Float32Array([padTop]),
     padBottom: new Float32Array([padBottom]),
     strands: new Int8Array([1]),
-    names: [''],
     parsedCigars: [[]],
     starts: new Uint32Array([0]),
     ends: new Uint32Array([100]),
@@ -67,6 +66,33 @@ test('re-fetched geometry at different bpPerPx produces identical cum-bp', () =>
   const b = buildOne({ topPx: 10_000, botPx: 8e8, bpPerPx0: 1, bpPerPx1: 1 })
   expect(reconstruct(a.bp4Hi[0]!, a.bp4Lo[0]!)).toBe(8e8)
   expect(reconstruct(b.bp4Hi[0]!, b.bp4Lo[0]!)).toBe(8e8)
+})
+
+test('alignmentLength is each feature own block span, not aggregated', () => {
+  // Two features: spans 100 and 5000. The min-length cull must see each
+  // block's own length — it must NOT sum lengths across features (an earlier
+  // implementation aggregated by query name, which mis-filtered).
+  const g = buildSyntenyGeometry({
+    p11_cumBp: new Float64Array([0, 10_000]),
+    p12_cumBp: new Float64Array([100, 15_000]),
+    p21_cumBp: new Float64Array([0, 10_000]),
+    p22_cumBp: new Float64Array([100, 15_000]),
+    padTop: new Float32Array([0, 0]),
+    padBottom: new Float32Array([0, 0]),
+    strands: new Int8Array([1, 1]),
+    parsedCigars: [[], []],
+    starts: new Uint32Array([0, 10_000]),
+    ends: new Uint32Array([100, 15_000]),
+    drawCIGAR: false,
+    drawCIGARMatchesOnly: false,
+    drawLocationMarkers: false,
+    bpPerPx0: 1,
+    bpPerPx1: 1,
+    viewOff0: 0,
+    viewOff1: 0,
+    viewWidth: 20_000,
+  })
+  expect([...g.alignmentLengths]).toEqual([100, 5000])
 })
 
 test('padding survives as a small Float32 separately from the cum-bp', () => {

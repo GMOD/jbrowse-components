@@ -24,7 +24,7 @@ public struct Instance {
   public float bp4Lo : ATTR7;
   public uint  color             : ATTR8;
   public float featureId         : ATTR9;
-  public float queryTotalLength  : ATTR10;
+  public float alignmentLength   : ATTR10;
   public float padTop            : ATTR11;
   public float padBottom         : ATTR12;
   // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyColors.ts).
@@ -76,8 +76,8 @@ public Corners computeCorners(Instance inst, Uniforms u) {
   return c;
 }
 
-public bool isCulled(Corners c, float queryTotalLength, Uniforms u) {
-  if (u.minAlignmentLength > 0.0 && queryTotalLength < u.minAlignmentLength) {
+public bool isCulled(Corners c, float alignmentLength, Uniforms u) {
+  if (u.minAlignmentLength > 0.0 && alignmentLength < u.minAlignmentLength) {
     return true;
   }
   float mOff = u.overdrawPx;

@@ -3,11 +3,28 @@ import { parseCigar2 } from '@jbrowse/cigar-utils'
 import { findPosInCigar } from './findPosInCigar.ts'
 
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface SimpleRegion {
   refName: string
   start: number
   end: number
+}
+
+// The visible content block overlapping the clicked feature, used to clip the
+// launched synteny view to the region of interest. Picking the block the
+// feature actually falls in (not contentBlocks[0]) keeps this correct when the
+// view shows multiple regions.
+export function findVisibleBlockForFeature(
+  view: LinearGenomeViewModel,
+  feature: Feature,
+) {
+  const refName = feature.get('refName')
+  const start = feature.get('start')
+  const end = feature.get('end')
+  return view.dynamicBlocks.contentBlocks.find(
+    b => b.refName === refName && b.start <= end && b.end >= start,
+  )
 }
 
 interface MateAnchor {

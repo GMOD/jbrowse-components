@@ -37,7 +37,10 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
             }}
           />
         </SettingRow>
-        <SettingRow label="Min length:">
+        <SettingRow
+          label="Min length:"
+          help="Hides alignments shorter than this many bp. Cuts whole-genome hairball noise from short/spurious chains."
+        >
           <MinLengthSlider
             value={minAlignmentLength}
             onCommit={bp => {

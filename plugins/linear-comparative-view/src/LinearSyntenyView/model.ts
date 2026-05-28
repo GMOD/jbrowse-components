@@ -11,6 +11,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle'
 import { autorun, observable, when } from 'mobx'
 
 import baseModel from '../LinearComparativeView/model.ts'
+import { applyInitSettings, normalizeTrackLevels } from './util/initHelpers.ts'
 
 import type {
   ExportSvgOptions,
@@ -610,12 +611,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 )
 
                 if (init.tracks) {
-                  // string[] is shorthand for level-0 tracks; string[][] is per-level
-                  const trackLevels: string[][] =
-                    typeof init.tracks[0] === 'string'
-                      ? [init.tracks as string[]]
-                      : (init.tracks as string[][])
-                  for (const [i, ids] of trackLevels.entries()) {
+                  for (const [i, ids] of normalizeTrackLevels(
+                    init.tracks,
+                  ).entries()) {
                     for (const trackId of ids) {
                       self.showTrack(trackId, i)
                     }
@@ -626,24 +624,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   self.autoScaleLevelHeights()
                 }
 
-                if (init.colorBy) {
-                  self.setColorBy(init.colorBy)
-                }
-                if (init.minAlignmentLength !== undefined) {
-                  self.setMinAlignmentLength(init.minAlignmentLength)
-                }
-                if (init.drawCurves !== undefined) {
-                  self.setDrawCurves(init.drawCurves)
-                }
-                if (init.alpha !== undefined) {
-                  self.setAlpha(init.alpha)
-                }
-
-                if (init.levelHeights) {
-                  for (const [i, h] of init.levelHeights.entries()) {
-                    self.levels[i]?.setHeight(h)
-                  }
-                }
+                applyInitSettings(self, init)
 
                 if (init.autoDiagonalize) {
                   // Wait for the first synteny RPC to populate featureData on

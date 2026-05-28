@@ -33,7 +33,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   }
 
   Corners c = computeCorners(inst, u);
-  if (isCulled(c, inst.queryTotalLength, u)) {
+  if (isCulled(c, inst.alignmentLength, u)) {
     o.position = float4(0.0);
     return o;
   }

@@ -17,6 +17,8 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
+import { findVisibleBlockForFeature } from './components/util.ts'
+
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -102,13 +104,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   getSession(self).queueDialog(handleClose => [
                     LaunchSyntenyViewDialog,
                     {
-                      visibleRegion: (
-                        getContainingView(self) as LinearGenomeViewModel
-                      ).dynamicBlocks.contentBlocks.find(
-                        b =>
-                          b.refName === feature.get('refName') &&
-                          b.start <= feature.get('end') &&
-                          b.end >= feature.get('start'),
+                      visibleRegion: findVisibleBlockForFeature(
+                        getContainingView(self) as LinearGenomeViewModel,
+                        feature,
                       ),
                       trackId: getConf(getContainingTrack(self), 'trackId'),
                       handleClose,

@@ -322,7 +322,6 @@ export async function executeSyntenyFeaturesAndPositions({
         padTop,
         padBottom,
         strands: featureData.strands,
-        names,
         parsedCigars,
         starts: featureData.starts,
         ends: featureData.ends,
@@ -356,7 +355,7 @@ export async function executeSyntenyFeaturesAndPositions({
     instanceData.bp4Lo.buffer,
     instanceData.kinds.buffer,
     instanceData.instanceFeatureIdx.buffer,
-    instanceData.queryTotalLengths.buffer,
+    instanceData.alignmentLengths.buffer,
     instanceData.padTops.buffer,
     instanceData.padBottoms.buffer,
   ] as ArrayBuffer[])

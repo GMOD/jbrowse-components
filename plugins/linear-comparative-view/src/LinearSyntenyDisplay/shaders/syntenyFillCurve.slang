@@ -68,7 +68,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.isCigar = inst.kind >= 3.0 ? 1.0 : 0.0;
 
   Corners c = computeCorners(inst, u);
-  if (isCulled(c, inst.queryTotalLength, u)) {
+  if (isCulled(c, inst.alignmentLength, u)) {
     o.position = float4(0.0);
     return o;
   }
