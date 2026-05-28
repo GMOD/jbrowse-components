@@ -329,15 +329,14 @@ test('can instantiate a model that has multiple displayed regions', () => {
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
   ])
-  // 2 regions = 1 padding (2px), maxBpPerPx accounts for this
-  expect(model.maxBpPerPx).toBeCloseTo(27.855)
+  expect(model.maxBpPerPx).toBeCloseTo(27.778)
   model.setNewView(0.02, 0)
 
   expect(model.offsetPx).toEqual(0)
   model.moveTo({ index: 0, offset: 100 }, { index: 0, offset: 200 })
   expect(model.offsetPx).toEqual(800)
   model.moveTo({ index: 0, offset: 9950 }, { index: 1, offset: 50 })
-  expect(model.offsetPx).toEqual(79401)
+  expect(model.offsetPx).toEqual(79600)
 })
 
 test('can instantiate a model that tests navTo/moveTo', async () => {
@@ -358,8 +357,7 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
   ])
-  // 2 regions = 1 padding (2px), maxBpPerPx accounts for this
-  expect(model.maxBpPerPx).toBeCloseTo(27.855)
+  expect(model.maxBpPerPx).toBeCloseTo(27.778)
 
   model.navTo({ refName: 'ctgA', start: 0, end: 100 })
   expect(model.offsetPx).toBe(0)
@@ -427,23 +425,23 @@ test('can navToMultiple', () => {
     { refName: 'ctgA', start: 5000, end: 10000 },
     { refName: 'ctgB', start: 0, end: 5000 },
   ])
-  expect(model.offsetPx).toBe(399)
-  expect(model.bpPerPx).toBeCloseTo(12.531)
+  expect(model.offsetPx).toBe(400)
+  expect(model.bpPerPx).toBeCloseTo(12.5)
 
   model.navToMultiple([
     { refName: 'ctgA', start: 5000, end: 10000 },
     { refName: 'ctgB', start: 0, end: 10000 },
     { refName: 'ctgC', start: 0, end: 5000 },
   ])
-  expect(model.offsetPx).toBe(199)
-  expect(model.bpPerPx).toBeCloseTo(25.125)
+  expect(model.offsetPx).toBe(200)
+  expect(model.bpPerPx).toBeCloseTo(25)
 
   model.navToMultiple([
     { refName: 'ctgA', start: 5000, end: 10000 },
     { refName: 'ctgC', start: 0, end: 5000 },
   ])
-  expect(model.offsetPx).toBe(199)
-  expect(model.bpPerPx).toBeCloseTo(25.12562)
+  expect(model.offsetPx).toBe(200)
+  expect(model.bpPerPx).toBeCloseTo(25)
 })
 
 describe('Zoom to selected displayed regions', () => {
@@ -495,7 +493,7 @@ describe('Zoom to selected displayed regions', () => {
     )
 
     expect(model.offsetPx).toEqual(0)
-    expect(model.bpPerPx).toBeCloseTo(31.408)
+    expect(model.bpPerPx).toBeCloseTo(31.251)
   })
 
   it('can select over one refSeq', () => {
@@ -551,9 +549,7 @@ describe('Zoom to selected displayed regions', () => {
   it('can select over two regions in the same reference sequence', () => {
     model.setWidth(800)
     model.showAllRegions()
-    // 3 regions = 2 paddings (4px), maxBpPerPx accounts for this
-    expect(model.bpPerPx).toBeCloseTo(39.106)
-    // totalBp = 28000 / 1000 = 28 as maxBpPerPx
+    expect(model.bpPerPx).toBeCloseTo(38.889)
     model.moveTo(
       {
         start: 5000,
@@ -570,10 +566,8 @@ describe('Zoom to selected displayed regions', () => {
         refName: 'ctgB',
       },
     )
-    // 22000 / 792 (width - interRegionPadding) = 27.78
-    expect(model.bpPerPx).toBeCloseTo(27.78, 0)
-    // offset 5000 / bpPerPx (because that is the starting) = 180.5
-    expect(model.offsetPx).toBe(181)
+    expect(model.bpPerPx).toBeCloseTo(27.5)
+    expect(model.offsetPx).toBe(182)
   })
 
   it('can navigate to overlapping regions with a region between', () => {
@@ -585,8 +579,7 @@ describe('Zoom to selected displayed regions', () => {
     model.setWidth(800)
     model.showAllRegions()
     // totalBp 15000 + 3000 + 35000 = 53000
-    // 3 regions = 2 paddings (4px), maxBpPerPx accounts for this
-    expect(model.bpPerPx).toBeCloseTo(74.022)
+    expect(model.bpPerPx).toBeCloseTo(73.611)
     model.moveTo(
       {
         start: 5000,
@@ -605,9 +598,8 @@ describe('Zoom to selected displayed regions', () => {
         refName: 'ctgA',
       },
     )
-    expect(model.offsetPx).toBe(346)
-    // 5000 + 3000 + 15000 / 792
-    expect(model.bpPerPx).toBeCloseTo(29.04, 0)
+    expect(model.offsetPx).toBe(348)
+    expect(model.bpPerPx).toBeCloseTo(28.75)
     expect(model.bpPerPx).toBeLessThan(53)
   })
 })
@@ -652,13 +644,8 @@ test('can instantiate a model that >2 regions', () => {
     { refName: 'ctgB', index: 1, offset: 0, start: 0, end: 10000 },
     { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
   )
-  expect(model.offsetPx).toEqual(
-    10000 / model.bpPerPx + model.interRegionPaddingWidth,
-  )
-  // 3 regions = 2 paddings, displayedRegionsTotalPx includes padding
-  expect(model.displayedRegionsTotalPx).toBeCloseTo(
-    30000 / model.bpPerPx + 2 * model.interRegionPaddingWidth,
-  )
+  expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
+  expect(model.displayedRegionsTotalPx).toBeCloseTo(30000 / model.bpPerPx)
   model.showAllRegions()
   expect(model.offsetPx).toEqual(-40)
 
@@ -669,7 +656,7 @@ test('can instantiate a model that >2 regions', () => {
 
   expect(model.bpToPx({ refName: 'ctgB', coord: 100 })).toEqual({
     index: 1,
-    offsetPx: Math.round(10100 / model.bpPerPx) + model.interRegionPaddingWidth,
+    offsetPx: Math.round(10100 / model.bpPerPx),
   })
 })
 
@@ -744,7 +731,7 @@ test('can perform pxToBp on human genome things with elided blocks (zoomed in)',
   model.setNewView(6359.273152497633, 503862)
   expect(model.pxToBp(0).refName).toBe('Y')
   expect(model.pxToBp(400).refName).toBe('Y')
-  expect(model.pxToBp(800).refName).toBe('Y')
+  expect(model.pxToBp(800).refName).toBe('Y_KI270740v1_random')
 })
 
 // determined objectively from looking at http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-TUJdqKI2c9&password=01tan
@@ -770,15 +757,13 @@ test('can perform pxToBp on human genome things with elided blocks (zoomed out)'
   // chr1 to the left
   expect(model.pxToBp(0).refName).toBe('1')
   expect(model.pxToBp(0).oob).toBeTruthy()
-  // chr10 in the middle, tests a specific coord but should just be probably
-  // somewhat around here
-  expect(model.pxToBp(800).coord).toBe(111057351)
-  expect(model.pxToBp(800).refName).toBe('10')
+  // chr11 in the middle
+  expect(model.pxToBp(800).coord).toBe(35027079)
+  expect(model.pxToBp(800).refName).toBe('11')
 
-  // chrX after an elided block, this tests a specific coord but should just be
-  // probably somewhat around here (padding changes shift coordinates)
-  expect(model.pxToBp(1228).coord).toBe(80093439)
-  expect(model.pxToBp(1228).refName).toBe('X')
+  // past end of genome without inter-region padding
+  expect(model.pxToBp(1228).refName).toBe('Y_KI270740v1_random')
+  expect(model.pxToBp(1228).oob).toBeTruthy()
 
   // chrY_random at the end
   expect(model.pxToBp(1500).refName).toBe('Y_KI270740v1_random')
@@ -980,12 +965,12 @@ describe('get sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(overlapping.length).toEqual(3)
-    expect(overlapping[0]!.start).toEqual(200)
+    expect(overlapping[0]!.start).toEqual(199)
     expect(overlapping[0]!.end).toEqual(500)
     expect(overlapping[1]!.start).toEqual(0)
     expect(overlapping[1]!.end).toEqual(3000)
     expect(overlapping[2]!.start).toEqual(0)
-    expect(overlapping[2]!.end).toEqual(101)
+    expect(overlapping[2]!.end).toEqual(100)
   })
 
   it('can select over two regions in diff reference sequence', () => {
@@ -1241,7 +1226,7 @@ test('showLoading is true when init is set and becomes false after initializatio
   expect(console.error).not.toHaveBeenCalled()
 })
 
-test('showAllRegions accounts for inter-region padding when centering', () => {
+test('showAllRegions centers correctly with multiple regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({ configuration: {} })
   const model = session.setView(
@@ -1258,13 +1243,9 @@ test('showAllRegions accounts for inter-region padding when centering', () => {
   model.setWidth(900)
   model.showAllRegions()
 
-  // Total BP = 3000
-  // With 3 regions, there are 2 inter-region paddings = 4px
-  // bpPerPx = 3000 / (900 * 0.9 - 4) = 3000 / 806 = 3.722
-  // totalContentPx = 3000 / 3.722 + 4 = 806 + 4 = 810
-  // centerPx = 405, offsetPx = 405 - 450 = -45
-
-  expect(model.bpPerPx).toBeCloseTo(3.722, 2)
+  // Total BP = 3000, bpPerPx = 3000 / (900 * 0.9) = 3000 / 810 = 3.704
+  // totalContentPx = 3000 / 3.704 = 810, centerPx = 405, offsetPx = 405 - 450 = -45
+  expect(model.bpPerPx).toBeCloseTo(3.704, 2)
   expect(model.offsetPx).toBe(-45)
 })
 
@@ -1292,119 +1273,6 @@ test('showAllRegions with single region has no padding adjustment', () => {
   expect(model.offsetPx).toBe(-45)
 })
 
-describe('getNonElidedRegionCount and getInterRegionPaddingPx', () => {
-  test('counts all regions as non-elided when they are large enough', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
-          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 2000 },
-          { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 3000 },
-        ],
-      }),
-    )
-    model.setWidth(800)
-
-    // At bpPerPx = 1, all regions are >= minimumBlockWidth (3px)
-    expect(model.getNonElidedRegionCount(1)).toBe(3)
-    expect(model.getInterRegionPaddingPx(1)).toBe(4) // 2 paddings * 2px
-  })
-
-  test('excludes small regions that would be elided', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
-          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 5 }, // tiny
-          { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 1000 },
-        ],
-      }),
-    )
-    model.setWidth(800)
-
-    // At bpPerPx = 10, ctgB (5bp) = 0.5px < minimumBlockWidth (3px), so elided
-    expect(model.getNonElidedRegionCount(10)).toBe(2)
-    expect(model.getInterRegionPaddingPx(10)).toBe(2) // 1 padding * 2px
-  })
-
-  test('returns 0 padding when all regions are elided', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10 },
-          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10 },
-        ],
-      }),
-    )
-    model.setWidth(800)
-
-    // At bpPerPx = 100, both 10bp regions = 0.1px < minimumBlockWidth (3px)
-    expect(model.getNonElidedRegionCount(100)).toBe(0)
-    expect(model.getInterRegionPaddingPx(100)).toBe(0)
-  })
-
-  test('handles edge case of bpPerPx = 0', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
-          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 2000 },
-        ],
-      }),
-    )
-    model.setWidth(800)
-
-    // bpPerPx = 0 should return all regions (avoid division by zero)
-    expect(model.getNonElidedRegionCount(0)).toBe(2)
-  })
-})
-
-describe('maxBpPerPx accounts for elided regions', () => {
-  test('maxBpPerPx does not over-account for padding with many small regions', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-
-    // Create many small regions that will be elided at max zoom out
-    const regions = []
-    for (let i = 0; i < 100; i++) {
-      regions.push({
-        assemblyName: 'volvox',
-        refName: `ctg${i}`,
-        start: 0,
-        end: 100, // 100bp each
-      })
-    }
-
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: regions,
-      }),
-    )
-    model.setWidth(800)
-
-    // Total BP = 10000
-    // At naive maxBpPerPx = 10000 / (800 * 0.9) = 13.89
-    // Each 100bp region = 100 / 13.89 = 7.2px > minimumBlockWidth (3px)
-    // So all 100 regions are non-elided, 99 paddings = 198px
-    // Adjusted maxBpPerPx = 10000 / (720 - 198) = 10000 / 522 = 19.16
-
-    expect(model.maxBpPerPx).toBeGreaterThan(13.89) // Should be higher due to padding
-    expect(model.maxBpPerPx).toBeLessThan(100) // But not unreasonably high
-  })
-})
 
 describe('TrackInit with display configuration', () => {
   function initializeWithTracks() {

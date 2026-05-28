@@ -14,7 +14,6 @@ function makeViewSnap(
   return {
     bpPerPx,
     displayedRegions: regions.map(r => ({ assemblyName: 'test', ...r })),
-    interRegionPaddingWidth: 2,
     minimumBlockWidth: 3,
   }
 }
@@ -43,7 +42,7 @@ describe('buildBpRegionIndex / bpToCumBpAndPad (via adapter)', () => {
     expect(bpToPxFromIndex(idx, 'chr1', 500)).toBe(500)
   })
 
-  it('includes inter-region padding for regions before the target', () => {
+  it('returns correct pixel offset for region after two preceding regions', () => {
     const idx = buildBpToPxIndex(
       makeViewSnap([
         { refName: 'chr1', start: 0, end: 1000 },
@@ -51,20 +50,18 @@ describe('buildBpRegionIndex / bpToCumBpAndPad (via adapter)', () => {
         { refName: 'chr3', start: 0, end: 1000 },
       ]),
     )
-    // 2000bp + 2 padding regions × 2px padding = 2004
-    expect(bpToPxFromIndex(idx, 'chr3', 0)).toBe(2000 + 2 * 2)
+    expect(bpToPxFromIndex(idx, 'chr3', 0)).toBe(2000)
   })
 
-  it('does not add padding for elided (sub-minimumBlockWidth) regions', () => {
+  it('small region still contributes its bp width', () => {
     const idx = buildBpToPxIndex(
       makeViewSnap([
         { refName: 'chr1', start: 0, end: 1000 },
-        { refName: 'chr2', start: 0, end: 1 }, // 1bp < minimumBlockWidth=3 → elided
+        { refName: 'chr2', start: 0, end: 1 },
         { refName: 'chr3', start: 0, end: 1000 },
       ]),
     )
-    // chr2 is elided so only 1 padding gap before chr3
-    expect(bpToPxFromIndex(idx, 'chr3', 0)).toBe(1001 + 2)
+    expect(bpToPxFromIndex(idx, 'chr3', 0)).toBe(1001)
   })
 
   it('returns undefined for unknown refName', () => {
@@ -91,8 +88,8 @@ describe('buildBpRegionIndex / bpToCumBpAndPad (via adapter)', () => {
         10,
       ),
     )
-    // chr2: 10000bp / 10 = 1000px offset, + 2px padding, + 5000bp / 10 = 500px
-    expect(bpToPxFromIndex(idx, 'chr2', 5000)).toBe(1000 + 2 + 500)
+    // chr2: 10000bp / 10 = 1000px offset + 5000bp / 10 = 500px
+    expect(bpToPxFromIndex(idx, 'chr2', 5000)).toBe(1000 + 500)
   })
 
   it('accumulates padding across many regions', () => {
@@ -102,7 +99,7 @@ describe('buildBpRegionIndex / bpToCumBpAndPad (via adapter)', () => {
       end: 1000,
     }))
     const idx = buildBpToPxIndex(makeViewSnap(regions))
-    expect(bpToPxFromIndex(idx, 'chr20', 0)).toBe(19 * 1000 + 19 * 2)
+    expect(bpToPxFromIndex(idx, 'chr20', 0)).toBe(19 * 1000)
   })
 
   it('reversed region: start coord maps to far end', () => {
@@ -130,9 +127,9 @@ describe('buildBpRegionIndex / bpToCumBpAndPad (via adapter)', () => {
         { refName: 'chr2', start: 0, end: 1000, reversed: true },
       ]),
     )
-    // chr2 end (coord=0 reversed → px = 1000bp offset) + 1000bp chr1 + 2px padding
-    expect(bpToPxFromIndex(idx, 'chr2', 0)).toBe(1000 + 2 + 1000)
-    expect(bpToPxFromIndex(idx, 'chr2', 1000)).toBe(1000 + 2 + 0)
+    // chr2 reversed: coord=0 → far end (offset 1000bp into chr2); chr1 contributes 1000bp
+    expect(bpToPxFromIndex(idx, 'chr2', 0)).toBe(1000 + 1000)
+    expect(bpToPxFromIndex(idx, 'chr2', 1000)).toBe(1000 + 0)
   })
 })
 
