@@ -33,12 +33,12 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.9.2",
+    "@jbrowse/mobx-state-tree": "^5.9.3",
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "dockview-core": "^6.6.0",
-    "dockview-react": "^6.6.0",
+    "dockview-core": "^6.6.1",
+    "dockview-react": "^6.6.1",
     "mobx": "^6.15.4",
     "mobx-react": "^9.2.2"
   },

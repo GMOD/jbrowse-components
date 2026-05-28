@@ -36,8 +36,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.4.0)
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -180,8 +180,8 @@ importers:
         specifier: ^7.1.4
         version: 7.1.4(webpack@5.107.2)
       electron:
-        specifier: ^42.2.0
-        version: 42.2.0
+        specifier: ^42.3.0
+        version: 42.3.0
       eslint:
         specifier: ^10.4.0
         version: 10.4.0
@@ -342,8 +342,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
@@ -354,11 +354,11 @@ importers:
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       dockview-core:
-        specifier: ^6.6.0
-        version: 6.6.0
+        specifier: ^6.6.1
+        version: 6.6.1
       dockview-react:
-        specifier: ^6.6.0
-        version: 6.6.0(react@19.2.6)
+        specifier: ^6.6.1
+        version: 6.6.1(react@19.2.6)
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
@@ -401,8 +401,8 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/quick-lru':
         specifier: ^7.3.5
         version: 7.3.5
@@ -491,8 +491,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
@@ -527,8 +527,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
@@ -563,8 +563,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -596,8 +596,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
@@ -634,8 +634,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -670,8 +670,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
@@ -682,8 +682,8 @@ importers:
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       dockview-core:
-        specifier: ^6.6.0
-        version: 6.6.0
+        specifier: ^6.6.1
+        version: 6.6.1
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
@@ -733,8 +733,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/modifications-utils':
         specifier: workspace:^
         version: link:../../packages/modifications-utils
@@ -793,8 +793,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -830,8 +830,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -866,8 +866,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
@@ -884,8 +884,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -920,8 +920,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -959,8 +959,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
@@ -992,8 +992,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
@@ -1025,8 +1025,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
@@ -1061,8 +1061,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-config':
         specifier: workspace:^
         version: link:../config
@@ -1107,8 +1107,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
@@ -1149,8 +1149,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1191,8 +1191,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       gff-nostream:
         specifier: ^3.0.9
         version: 3.0.9
@@ -1209,8 +1209,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1260,8 +1260,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1290,8 +1290,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1323,8 +1323,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1359,8 +1359,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
@@ -1386,8 +1386,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       generic-filehandle2:
         specifier: ^2.1.9
         version: 2.1.9
@@ -1416,8 +1416,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
@@ -1473,8 +1473,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core
@@ -1512,8 +1512,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-data-management':
         specifier: workspace:^
         version: link:../data-management
@@ -1554,8 +1554,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
@@ -1590,8 +1590,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
@@ -1617,8 +1617,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1647,8 +1647,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1686,8 +1686,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../circular-view
@@ -1758,8 +1758,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-canvas':
         specifier: workspace:^
         version: link:../canvas
@@ -1830,8 +1830,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-data-management':
         specifier: workspace:^
         version: link:../data-management
@@ -1932,8 +1932,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2046,11 +2046,11 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1
       dockview:
-        specifier: ^6.6.0
-        version: 6.6.0(react@19.2.6)
+        specifier: ^6.6.1
+        version: 6.6.1(react@19.2.6)
       dockview-react:
-        specifier: ^6.6.0
-        version: 6.6.0(react@19.2.6)
+        specifier: ^6.6.1
+        version: 6.6.1(react@19.2.6)
       electron-context-menu:
         specifier: ^4.1.2
         version: 4.1.2
@@ -2098,8 +2098,8 @@ importers:
         specifier: 42.2.0
         version: 42.2.0
       electron-chromedriver:
-        specifier: ^42.2.0
-        version: 42.2.0
+        specifier: ^42.3.0
+        version: 42.3.0
       esbuild:
         specifier: ^0.28.0
         version: 0.28.0
@@ -2116,8 +2116,8 @@ importers:
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.15)(react@19.2.6)
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -2167,8 +2167,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2272,11 +2272,11 @@ importers:
         specifier: ^1.5.1
         version: 1.5.1
       dockview-core:
-        specifier: ^6.6.0
-        version: 6.6.0
+        specifier: ^6.6.1
+        version: 6.6.1
       dockview-react:
-        specifier: ^6.6.0
-        version: 6.6.0(react@19.2.6)
+        specifier: ^6.6.1
+        version: 6.6.1(react@19.2.6)
       file-saver-es:
         specifier: ^2.0.5
         version: 2.0.5
@@ -2311,8 +2311,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/embedded-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-authentication':
         specifier: workspace:^
         version: link:../../plugins/authentication
@@ -2374,8 +2374,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/embedded-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2458,8 +2458,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^5.9.2
-        version: 5.9.2(mobx@6.15.4)
+        specifier: ^5.9.3
+        version: 5.9.3(mobx@6.15.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2584,11 +2584,11 @@ importers:
         specifier: ^4.3.0
         version: 4.3.0
       dockview-core:
-        specifier: ^6.6.0
-        version: 6.6.0
+        specifier: ^6.6.1
+        version: 6.6.1
       dockview-react:
-        specifier: ^6.6.0
-        version: 6.6.0(react@19.2.6)
+        specifier: ^6.6.1
+        version: 6.6.1(react@19.2.6)
       file-saver-es:
         specifier: ^2.0.5
         version: 2.0.5
@@ -4231,8 +4231,8 @@ packages:
   '@jbrowse/jexl@3.0.2':
     resolution: {integrity: sha512-9Q1elTlSW0Pn9dHpqYvdx2FqcUvd8CPNqx5KvNjEjJLARcRtC2sebATHtl4S1njz6Rm6F2JC2ngKAlODq0LjCA==}
 
-  '@jbrowse/mobx-state-tree@5.9.2':
-    resolution: {integrity: sha512-Pz/8QdfcIOSrk0rzo3nbHzlYI1b19+9y2jla5oL/Azjk6SwhuiftHy55y3Aar0OgrCKLmbiLYoAJZ6ea1zRvVg==}
+  '@jbrowse/mobx-state-tree@5.9.3':
+    resolution: {integrity: sha512-TxOLmoJD+7KwpQCse4X2knMuhZlt5qtPA56405qRjLBkzU9RPoo7tRNXXPPR+tSGFOYU6PyCVbfbVgF4jdOobQ==}
     peerDependencies:
       mobx: ^6.3.0
 
@@ -6902,14 +6902,14 @@ packages:
     resolution: {integrity: sha512-l4gcSouhcgIKRvyy99RNVOgxXiicE+2jZoNmaNmZ6JXiGajBOJAesk1OBlJuM5k2c+eudGdLxDqXuPCKIj6kpw==}
     engines: {node: '>=6'}
 
-  dockview-core@6.6.0:
-    resolution: {integrity: sha512-A5rerzyFDvIzU0E2eXfzPokFqyCJnVSGfX3M/0UAqnIGSmlC9FZT36fcoUpWAGsdSvqouj/v8HgQs07iZHQI9g==}
+  dockview-core@6.6.1:
+    resolution: {integrity: sha512-WuNoO2wl3rGI8MaTuvmfgViek4WafHLD9Kf//Hw69g8TgAHSpAWr6RW15kU6U9vwtQxIi/YBxQNcIA5RzQ46Fw==}
 
-  dockview-react@6.6.0:
-    resolution: {integrity: sha512-FaeQw4yuojxo1kx6sLh/L8+lc3taTCFgC+OJfBvnnL3Bf5NlJ3S8bkn/xpwIiWu0MBclhbakchw6dUljX0i2Zw==}
+  dockview-react@6.6.1:
+    resolution: {integrity: sha512-zF/CQzAxjA2mlSTnDt2rbBe49uG33mvg1DPitNCPrIhhDulyiiBG1A1pRyjVx4MJbVh1xx5gAYbNRwu+mCR7CQ==}
 
-  dockview@6.6.0:
-    resolution: {integrity: sha512-FH1W/lc+WnZ3OxVGJ7M8RHv5HjWpSumf1cXJ+Bgo940IjU8jMuNi5ick0C+PPozuJgAjRDmnC1eT+AHvwg3Ggg==}
+  dockview@6.6.1:
+    resolution: {integrity: sha512-vBnxWVk0f665z1Zyx598l/BMUjHD3SK5V4XorxpYGjaSREM8lLc8O6ylgKTtw+ZnCOMYOhcwov9x0ubfFazvMw==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -6976,8 +6976,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-chromedriver@42.2.0:
-    resolution: {integrity: sha512-OM3a8vH+TlRzFNfkwLtf6VK5wmKSFIey76uoe4wpUxNbDEgQkvWO1rx9+5cIhVPPreNyDEbnCpnzM0iS2QasVA==}
+  electron-chromedriver@42.3.0:
+    resolution: {integrity: sha512-Ldqu4YnI7eh43drYODH+WSeqIODJf+fWTAinupWWg+cQ7a15IuFs0E1mT55NpBYmolYDDvLe5EXiUKisEw1TOQ==}
     engines: {node: '>=10.12.0'}
     hasBin: true
 
@@ -7003,14 +7003,19 @@ packages:
   electron-localshortcut@3.2.1:
     resolution: {integrity: sha512-DWvhKv36GsdXKnaFFhEiK8kZZA+24/yFLgtTwJJHc7AFgDjNRIBJZ/jq62Y/dWv9E4ypYwrVWN2bVrCYw1uv7Q==}
 
-  electron-to-chromium@1.5.361:
-    resolution: {integrity: sha512-Q6Hts7N9FnJc5LeGRINFvLhCI9xZmNtTDe5ZbcVezQz7cU4a8Aua3GH1b8J2XY8Al9PF+OCwYqhgsOOheMdvkA==}
+  electron-to-chromium@1.5.362:
+    resolution: {integrity: sha512-PUY2DrLvkjkUuWqq+KPL2iWshrJsZOcIojzRQ7eXFacc9dWga7MGMJAa15VbiejSZB1PAXaRLAiKgruHP8LB1w==}
 
   electron-updater@6.8.3:
     resolution: {integrity: sha512-Z6sgw3jgbikWKXei1ENdqFOxBP0WlXg3TtKfz0rgw2vIZFJUyI4pD7ZN7jrkm7EoMK+tcm/qTnPUdqfZukBlBQ==}
 
   electron@42.2.0:
     resolution: {integrity: sha512-b2Tc7sIKiZEl0tBVwFM5GJ+FT5KYhmy9QJHjx8BGVZPVW2SctXWEvrE959ElB56qw7H05dBkhlikDA1DmpaAMw==}
+    engines: {node: '>= 22.12.0'}
+    hasBin: true
+
+  electron@42.3.0:
+    resolution: {integrity: sha512-9ZiLdRXk+WDxW1OgIUz8J2rIQ5TYU9o629gCOjU48Q3dQiOmym7osWsH5Ubs/Jh4uuFLn6m6SBD2rmRXLAPz9g==}
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
@@ -12680,7 +12685,7 @@ snapshots:
 
   '@jbrowse/jexl@3.0.2': {}
 
-  '@jbrowse/mobx-state-tree@5.9.2(mobx@6.15.4)':
+  '@jbrowse/mobx-state-tree@5.9.3(mobx@6.15.4)':
     dependencies:
       mobx: 6.15.4
 
@@ -14976,7 +14981,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.10.32
       caniuse-lite: 1.0.30001793
-      electron-to-chromium: 1.5.361
+      electron-to-chromium: 1.5.362
       node-releases: 2.0.46
       update-browserslist-db: 1.2.3(browserslist@4.28.2)
 
@@ -15604,17 +15609,17 @@ snapshots:
     dependencies:
       '@leichtgewicht/ip-codec': 2.0.5
 
-  dockview-core@6.6.0: {}
+  dockview-core@6.6.1: {}
 
-  dockview-react@6.6.0(react@19.2.6):
+  dockview-react@6.6.1(react@19.2.6):
     dependencies:
-      dockview: 6.6.0(react@19.2.6)
+      dockview: 6.6.1(react@19.2.6)
     transitivePeerDependencies:
       - react
 
-  dockview@6.6.0(react@19.2.6):
+  dockview@6.6.1(react@19.2.6):
     dependencies:
-      dockview-core: 6.6.0
+      dockview-core: 6.6.1
       react: 19.2.6
 
   doctrine@2.1.0:
@@ -15693,7 +15698,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-chromedriver@42.2.0:
+  electron-chromedriver@42.3.0:
     dependencies:
       '@electron/get': 2.0.3
       extract-zip: 2.0.1
@@ -15732,7 +15737,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron-to-chromium@1.5.361: {}
+  electron-to-chromium@1.5.362: {}
 
   electron-updater@6.8.3:
     dependencies:
@@ -15748,6 +15753,14 @@ snapshots:
       - supports-color
 
   electron@42.2.0:
+    dependencies:
+      '@electron/get': 5.0.0
+      '@types/node': 24.12.4
+      extract-zip: 2.0.1
+    transitivePeerDependencies:
+      - supports-color
+
+  electron@42.3.0:
     dependencies:
       '@electron/get': 5.0.0
       '@types/node': 24.12.4

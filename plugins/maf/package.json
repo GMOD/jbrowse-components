@@ -33,7 +33,7 @@
     "@gmod/bgzf-filehandle": "^6.0.27",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.9.2",
+    "@jbrowse/mobx-state-tree": "^5.9.3",
     "@jbrowse/plugin-data-management": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/tree-sidebar": "workspace:^",
