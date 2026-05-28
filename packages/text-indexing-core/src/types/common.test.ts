@@ -1,9 +1,31 @@
+/**
+ * @jest-environment node
+ */
+
+import fs from 'fs'
+import http from 'http'
+import path from 'path'
+import { Readable } from 'stream'
+
 import {
+  getLocalOrRemoteStream,
   guessAdapterFromFileName,
   isURL,
   makeLocation,
   sanitizeForFilename,
 } from './common.ts'
+
+const testDataDir = path.join(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  '..',
+  'products',
+  'jbrowse-cli',
+  'test',
+  'data',
+)
 
 const supportedIndexingAdapters = new Set([
   'Gff3TabixAdapter',
@@ -66,5 +88,51 @@ describe('utils for text indexing', () => {
     expect(() => {
       guessAdapterFromFileName(unsupported)
     }).toThrow(`Unsupported file type ${unsupported}`)
+  })
+})
+
+describe('getLocalOrRemoteStream', () => {
+  let server: http.Server
+  let serverPort: number
+
+  beforeAll(done => {
+    server = http.createServer((req, res) => {
+      const filePath = path.join(testDataDir, 'volvox.sort.gff3.gz')
+      const stat = fs.statSync(filePath)
+      res.writeHead(200, {
+        'Content-Type': 'application/gzip',
+        'Content-Length': stat.size,
+      })
+      fs.createReadStream(filePath).pipe(res)
+    })
+    server.listen(0, () => {
+      const addr = server.address()
+      if (addr && typeof addr === 'object') {
+        serverPort = addr.port
+      }
+      done()
+    })
+  })
+
+  afterAll(done => {
+    server.close(done)
+  })
+
+  it('returns a readable node stream from a web ReadableStream (webstream regression)', async () => {
+    const stream = await getLocalOrRemoteStream({
+      file: `http://localhost:${serverPort}/volvox.sort.gff3.gz`,
+      out: testDataDir,
+      onStart: () => {},
+      onUpdate: () => {},
+    })
+    expect(stream).toBeInstanceOf(Readable)
+    const chunks: Uint8Array[] = []
+    await new Promise<void>((resolve, reject) => {
+      stream.on('data', chunk => chunks.push(chunk as Uint8Array))
+      stream.on('end', resolve)
+      stream.on('error', reject)
+    })
+    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0)
+    expect(totalLength).toBeGreaterThan(0)
   })
 })
