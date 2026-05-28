@@ -1,7 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-import { makeFeatures } from '../FromConfigAdapter/FromConfigAdapter.ts'
+import {
+  makeFeatures,
+  mergeFeaturesToRegions,
+} from '../FromConfigAdapter/FromConfigAdapter.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -37,39 +40,8 @@ export default class FromConfigRegionsAdapter
    * Get refName, start, and end for all features after collapsing any overlaps
    */
   async getRegions() {
-    const regions = []
-
-    // recall: features are stored in this object sorted by start coordinate
-    for (const [refName, features] of this.features) {
-      let currentRegion:
-        | { refName: string; start: number; end: number }
-        | undefined
-      for (const feature of features) {
-        if (
-          currentRegion &&
-          currentRegion.end >= feature.get('start') &&
-          currentRegion.start <= feature.get('end')
-        ) {
-          currentRegion.end = feature.get('end')
-        } else {
-          if (currentRegion) {
-            regions.push(currentRegion)
-          }
-          currentRegion = {
-            refName,
-            start: feature.get('start'),
-            end: feature.get('end'),
-          }
-        }
-      }
-      if (currentRegion) {
-        regions.push(currentRegion)
-      }
-    }
-
-    // sort the regions by refName
+    const regions = mergeFeaturesToRegions(this.features)
     regions.sort((a, b) => a.refName.localeCompare(b.refName))
-
     return regions
   }
 }

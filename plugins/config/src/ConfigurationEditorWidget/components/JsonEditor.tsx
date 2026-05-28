@@ -4,11 +4,9 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { InputLabel, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// fontSize and fontFamily have to match between Editor and SyntaxHighlighter
+import { monospaceFontFamily as fontFamily } from './useSlotEditorStyles.ts'
+
 const fontSize = '12px'
-// Optimize by using system default fonts: https://css-tricks.com/snippets/css/font-stacks/
-const fontFamily =
-  'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
 
 const useStyles = makeStyles()(theme => ({
   error: {

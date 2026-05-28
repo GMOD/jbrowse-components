@@ -7,8 +7,7 @@ import HelpIcon from '@mui/icons-material/Help'
 import { IconButton, TextField, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const fontFamily =
-  'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
+import { monospaceFontFamily as fontFamily } from './useSlotEditorStyles.ts'
 
 const useStyles = makeStyles()(theme => ({
   callbackEditor: {
@@ -109,14 +108,11 @@ const CallbackEditor = observer(function CallbackEditor({
           <IconButton
             color="primary"
             onClick={() => {
-              const newWindow = window.open(
+              window.open(
                 'https://github.com/TomFrost/Jexl',
                 '_blank',
                 'noopener,noreferrer',
               )
-              if (newWindow) {
-                newWindow.opener = null
-              }
             }}
           >
             <HelpIcon />

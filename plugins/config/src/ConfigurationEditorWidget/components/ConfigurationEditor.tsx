@@ -22,7 +22,6 @@ import SlotEditor from './SlotEditor.tsx'
 import TypeSelector from './TypeSelector.tsx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
@@ -133,7 +132,6 @@ const ConfigurationEditor = observer(function ConfigurationEditor({
   model: {
     target?: AnyConfigurationModel
   }
-  session?: AbstractSessionModel
 }) {
   const { classes } = useStyles()
   // key forces a re-render, otherwise the same field can end up being used for

@@ -3,7 +3,9 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import FromConfigAdapter from '../FromConfigAdapter/FromConfigAdapter.ts'
+import FromConfigAdapter, {
+  mergeFeaturesToRegions,
+} from '../FromConfigAdapter/FromConfigAdapter.ts'
 
 import type { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -23,7 +25,11 @@ export default class FromConfigSequenceAdapter
       const feats = await firstValueFrom(
         super.getFeatures(region).pipe(toArray()),
       )
-      const feat = feats[0]!
+      const feat = feats[0]
+      if (!feat) {
+        observer.complete()
+        return
+      }
       observer.next(
         new SimpleFeature({
           ...feat.toJSON(),
@@ -43,46 +49,7 @@ export default class FromConfigSequenceAdapter
     })
   }
 
-  /**
-   * Get refName, start, and end for all features after collapsing any overlaps
-   */
   async getRegions() {
-    const regions = []
-
-    // recall: features are stored in this object sorted by start coordinate
-    for (const [refName, features] of this.features) {
-      let currentRegion:
-        | { start: number; end: number; refName: string }
-        | undefined
-      for (const feature of features) {
-        if (
-          currentRegion &&
-          currentRegion.end >= feature.get('start') &&
-          currentRegion.start <= feature.get('end')
-        ) {
-          currentRegion.end = feature.get('end')
-        } else {
-          if (currentRegion) {
-            regions.push(currentRegion)
-          }
-          currentRegion = {
-            refName,
-            start: feature.get('start'),
-            end: feature.get('end'),
-          }
-        }
-      }
-      if (currentRegion) {
-        regions.push(currentRegion)
-      }
-    }
-
-    return regions
+    return mergeFeaturesToRegions(this.features)
   }
-
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the foreseeable future and can be purged
-   * from caches, etc
-   */
 }

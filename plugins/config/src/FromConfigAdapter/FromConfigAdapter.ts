@@ -12,6 +12,35 @@ import type {
 } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
+export function mergeFeaturesToRegions(features: Map<string, Feature[]>) {
+  const regions: { refName: string; start: number; end: number }[] = []
+  for (const [refName, feats] of features) {
+    let currentRegion: { refName: string; start: number; end: number } | undefined
+    for (const feature of feats) {
+      if (
+        currentRegion &&
+        currentRegion.end >= feature.get('start') &&
+        currentRegion.start <= feature.get('end')
+      ) {
+        currentRegion.end = feature.get('end')
+      } else {
+        if (currentRegion) {
+          regions.push(currentRegion)
+        }
+        currentRegion = {
+          refName,
+          start: feature.get('start'),
+          end: feature.get('end'),
+        }
+      }
+    }
+    if (currentRegion) {
+      regions.push(currentRegion)
+    }
+  }
+  return regions
+}
+
 export function makeFeatures(fdata: SimpleFeatureSerialized[]) {
   const features = new Map<string, Feature[]>()
   for (const entry of fdata) {

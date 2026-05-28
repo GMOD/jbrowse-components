@@ -31,13 +31,12 @@ export default class RefNameAliasAdapter
         : refColumn
     return lines
       .filter(f => !f.startsWith('#'))
-      .map(row => {
+      .flatMap(row => {
         const aliases = row.split('\t')
         const refName = aliases[headerCol]
-        return {
-          refName: refName!,
-          aliases: aliases.filter(f => !!f.trim()),
-        }
+        return refName !== undefined
+          ? [{ refName, aliases: aliases.filter(f => !!f.trim()) }]
+          : []
       })
   }
 }
