@@ -1,25 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { getSyntenyTracks } from '@jbrowse/synteny-core'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-/**
- * Synteny tracks in the session whose `assemblyNames` include every one of the
- * given assemblies. The shared primitive behind both the import form's
- * per-level track selector and the "add assembly row" dialog.
- */
-export function getSyntenyTracks(
-  tracks: AnyConfigurationModel[],
-  assemblies: string[],
-) {
-  return tracks.filter(track => {
-    const assemblyNames = readConfObject(track, 'assemblyNames') as string[]
-    return (
-      track.type.includes('Synteny') &&
-      assemblies.every(name => assemblyNames.includes(name))
-    )
-  })
-}
 
 export interface AddRowOption {
   trackId: string

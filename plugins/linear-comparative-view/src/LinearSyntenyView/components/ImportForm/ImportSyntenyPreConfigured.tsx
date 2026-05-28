@@ -3,10 +3,9 @@ import { useEffect, useState } from 'react'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { getSyntenyTracks } from '@jbrowse/synteny-core'
 import { MenuItem, Paper, Select, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import { getSyntenyTracks } from '../../util/syntenyTracks.ts'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 

@@ -236,18 +236,6 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        importFormRemoveRow(idx: number) {
-          self.importFormSyntenyTrackSelections.splice(idx, 1)
-        },
-        /**
-         * #action
-         */
-        clearImportFormSyntenyTracks() {
-          self.importFormSyntenyTrackSelections.clear()
-        },
-        /**
-         * #action
-         */
         setImportFormSyntenyTrack(arg: number, val: ImportFormSyntenyTrack) {
           self.importFormSyntenyTrackSelections[arg] = val
         },

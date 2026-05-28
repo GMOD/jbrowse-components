@@ -1,28 +1,14 @@
 import { useEffect, useState } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { getSyntenyTracks } from '@jbrowse/synteny-core'
 import { MenuItem, Paper, Select, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../../model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-function isRelevantTrack(
-  track: AnyConfigurationModel,
-  assembly1: string,
-  assembly2: string,
-) {
-  const assemblyNames = readConfObject(track, 'assemblyNames')
-  return (
-    assemblyNames.includes(assembly1) &&
-    assemblyNames.includes(assembly2) &&
-    track.type.includes('Synteny')
-  )
-}
 
 const ImportSyntenyTrackSelector = observer(
   function ImportSyntenyTrackSelector({
@@ -35,18 +21,18 @@ const ImportSyntenyTrackSelector = observer(
     assembly2: string
   }) {
     const session = getSession(model)
-    const filteredTracks = session.tracks.filter(t =>
-      isRelevantTrack(t, assembly2, assembly1),
-    )
-    const resetTrack = filteredTracks[0]?.trackId || ''
+    const filteredTracks = getSyntenyTracks(session.tracks, [
+      assembly1,
+      assembly2,
+    ])
+    const resetTrack = filteredTracks[0]?.trackId ?? ''
     const [value, setValue] = useState(resetTrack)
     useEffect(() => {
       model.setImportFormSyntenyTrack(0, {
         type: 'preConfigured',
         value: resetTrack,
       })
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [resetTrack, model])
 
     return (
       <Paper style={{ padding: 12 }}>
