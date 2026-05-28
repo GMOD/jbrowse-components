@@ -1,3 +1,5 @@
+import { parseCigar } from './cigar-utils.ts'
+
 export interface AlignmentRecord {
   qname: string
   qlen: string
@@ -8,11 +10,10 @@ export interface AlignmentRecord {
   tlen: string
   tstart: number
   tend: number
-  numMatches: number
-  blockLen: number
+  cigar: string | undefined
 }
 
-export interface MergedBlock {
+export interface CoarseRecord {
   qname: string
   qlen: string
   qstart: number
@@ -26,83 +27,108 @@ export interface MergedBlock {
   blockLen: number
 }
 
-// Gap-merge alignment records grouped by (tname, qname, strand). Within a
-// group, sort by tstart and collapse consecutive records whose tstart gap
-// is <= mergeGap into a single block. numMatches / blockLen are summed so
-// the consumer can recompute identity as numMatches / blockLen.
-export function mergeIntoBlocks(
-  records: AlignmentRecord[],
-  mergeGap: number,
-): MergedBlock[] {
-  if (records.length === 0) {
-    return []
+// Walk a CIGAR and split the alignment whenever an insertion or deletion is
+// at least `splitGap` bp. Returns one CoarseRecord per contiguous run between
+// such gaps. When `splitGap <= 0` (or the alignment has no qualifying gap),
+// returns a single record covering the whole row. Each returned record has
+// accurate qstart/qend/tstart/tend for its slice plus the CIGAR-derived
+// numMatches / blockLen (so identity = numMatches / blockLen stays correct).
+//
+// Coords assume PAF semantics: qstart < qend on the forward strand of the
+// query for both '+' and '-' strands. For '-' strand the CIGAR walks query
+// from qend down to qstart as target advances from tstart to tend.
+export function splitCigarOnLargeGaps(
+  rec: AlignmentRecord,
+  splitGap: number | undefined,
+): CoarseRecord[] {
+  const baseFields = {
+    qname: rec.qname,
+    qlen: rec.qlen,
+    strand: rec.strand,
+    tname: rec.tname,
+    tlen: rec.tlen,
   }
-  const groups = new Map<string, AlignmentRecord[]>()
-  for (const rec of records) {
-    const key = `${rec.tname}\t${rec.qname}\t${rec.strand}`
-    let group = groups.get(key)
-    if (!group) {
-      group = []
-      groups.set(key, group)
+  if (!rec.cigar) {
+    return [
+      {
+        ...baseFields,
+        qstart: rec.qstart,
+        qend: rec.qend,
+        tstart: rec.tstart,
+        tend: rec.tend,
+        numMatches: 0,
+        blockLen: rec.tend - rec.tstart,
+      },
+    ]
+  }
+
+  const ops = parseCigar(rec.cigar)
+  const qStep = rec.strand === '-' ? -1 : 1
+  let tCursor = rec.tstart
+  let qCursor = rec.strand === '-' ? rec.qend : rec.qstart
+  let segTStart = tCursor
+  let segQAnchor = qCursor
+  let segMatches = 0
+  let segBlockLen = 0
+  const out: CoarseRecord[] = []
+
+  const flushSegment = () => {
+    const tEnd = tCursor
+    const qOther = qCursor
+    if (tEnd > segTStart || qOther !== segQAnchor) {
+      out.push({
+        ...baseFields,
+        tstart: segTStart,
+        tend: tEnd,
+        qstart: Math.min(segQAnchor, qOther),
+        qend: Math.max(segQAnchor, qOther),
+        numMatches: segMatches,
+        blockLen: segBlockLen,
+      })
     }
-    group.push(rec)
+    segTStart = tCursor
+    segQAnchor = qCursor
+    segMatches = 0
+    segBlockLen = 0
   }
 
-  const blocks: MergedBlock[] = []
-  for (const group of groups.values()) {
-    group.sort((a, b) => a.tstart - b.tstart)
-    let current = group[0]!
-    let blockTStart = current.tstart
-    let blockTEnd = current.tend
-    let blockQStart = current.qstart
-    let blockQEnd = current.qend
-    let totalMatches = current.numMatches
-    let totalBlockLen = current.blockLen
-
-    for (let i = 1; i < group.length; i++) {
-      const next = group[i]!
-      if (next.tstart - blockTEnd <= mergeGap) {
-        blockTEnd = Math.max(blockTEnd, next.tend)
-        blockQStart = Math.min(blockQStart, next.qstart)
-        blockQEnd = Math.max(blockQEnd, next.qend)
-        totalMatches += next.numMatches
-        totalBlockLen += next.blockLen
+  const canSplit =
+    splitGap !== undefined && Number.isFinite(splitGap) && splitGap > 0
+  // parseCigar returns ['10', 'M', '4', 'I', ...]
+  for (let i = 0; i < ops.length; i += 2) {
+    const len = +ops[i]!
+    const op = ops[i + 1]!
+    if (op === 'M' || op === '=' || op === 'X') {
+      tCursor += len
+      qCursor += len * qStep
+      segBlockLen += len
+      if (op !== 'X') {
+        segMatches += len
+      }
+    } else if (op === 'D' || op === 'N') {
+      if (canSplit && len >= splitGap) {
+        flushSegment()
+        tCursor += len
+        segTStart = tCursor
+        segQAnchor = qCursor
       } else {
-        blocks.push({
-          qname: current.qname,
-          qlen: current.qlen,
-          qstart: blockQStart,
-          qend: blockQEnd,
-          strand: current.strand,
-          tname: current.tname,
-          tlen: current.tlen,
-          tstart: blockTStart,
-          tend: blockTEnd,
-          numMatches: totalMatches,
-          blockLen: totalBlockLen,
-        })
-        current = next
-        blockTStart = current.tstart
-        blockTEnd = current.tend
-        blockQStart = current.qstart
-        blockQEnd = current.qend
-        totalMatches = current.numMatches
-        totalBlockLen = current.blockLen
+        tCursor += len
+        segBlockLen += len
+      }
+    } else if (op === 'I') {
+      if (canSplit && len >= splitGap) {
+        flushSegment()
+        qCursor += len * qStep
+        segQAnchor = qCursor
+        segTStart = tCursor
+      } else {
+        qCursor += len * qStep
+        segBlockLen += len
       }
     }
-    blocks.push({
-      qname: current.qname,
-      qlen: current.qlen,
-      qstart: blockQStart,
-      qend: blockQEnd,
-      strand: current.strand,
-      tname: current.tname,
-      tlen: current.tlen,
-      tstart: blockTStart,
-      tend: blockTEnd,
-      numMatches: totalMatches,
-      blockLen: totalBlockLen,
-    })
+    // S, H, P are clipping / padding ops — they don't consume target or
+    // forward-strand query coords in PAF and never appear as split points.
   }
-  return blocks
+  flushSegment()
+  return out
 }

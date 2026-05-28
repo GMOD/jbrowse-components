@@ -1064,7 +1064,7 @@ export default function stateModelFactory(pm: PluginManager) {
                 [
                   { label: 'Auto (scale with zoom)', value: 'auto' },
                   { label: 'Fine (per-row CIGAR)', value: 'fine' },
-                  { label: 'Coarse (merged blocks)', value: 'coarse' },
+                  { label: 'Coarse (no CIGAR)', value: 'coarse' },
                 ] as const
               ).map(({ label, value }) => {
                 const display = self.tracks[0]?.displays[0] as

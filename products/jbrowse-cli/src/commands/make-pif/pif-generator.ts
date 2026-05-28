@@ -7,19 +7,56 @@ import {
   getReadline,
   getStdReadline,
 } from './file-utils.ts'
-import { mergeIntoBlocks } from './structural-summary.ts'
+import { splitCigarOnLargeGaps } from './structural-summary.ts'
 
 import type { WritableStream } from './file-utils.ts'
-import type { AlignmentRecord } from './structural-summary.ts'
+import type { AlignmentRecord, CoarseRecord } from './structural-summary.ts'
+
+async function emitCoarseTier(
+  seg: CoarseRecord,
+  write: (line: string) => Promise<void>,
+) {
+  const de = seg.blockLen > 0 ? 1 - seg.numMatches / seg.blockLen : 0
+  const fields = [
+    seg.tlen,
+    seg.tstart,
+    seg.tend,
+    seg.strand,
+    seg.qname,
+    seg.qlen,
+    seg.qstart,
+    seg.qend,
+    seg.numMatches,
+    seg.blockLen,
+    '60',
+    `de:f:${de.toFixed(6)}`,
+  ]
+  await write(`${[`T${seg.tname}`, ...fields].join('\t')}\n`)
+  const qFields = [
+    seg.qlen,
+    seg.qstart,
+    seg.qend,
+    seg.strand,
+    seg.tname,
+    seg.tlen,
+    seg.tstart,
+    seg.tend,
+    seg.numMatches,
+    seg.blockLen,
+    '60',
+    `de:f:${de.toFixed(6)}`,
+  ]
+  await write(`${[`Q${seg.qname}`, ...qFields].join('\t')}\n`)
+}
 
 export async function createPIF(
   filename: string | undefined,
   stream: WritableStream,
-  mergeGap = 0,
+  coarseSplitGap?: number  ,
 ): Promise<void> {
   const rl1 = filename ? getReadline(filename) : getStdReadline()
   const writeWithBackpressure = createWriteWithBackpressure(stream)
-  const records: AlignmentRecord[] = []
+  const emitCoarse = coarseSplitGap !== undefined
 
   try {
     for await (const line of rl1) {
@@ -43,8 +80,8 @@ export async function createPIF(
         `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')}\n`,
       )
 
-      if (mergeGap > 0) {
-        records.push({
+      if (emitCoarse) {
+        const record: AlignmentRecord = {
           qname: c1!,
           qlen: l1!,
           qstart: +s1!,
@@ -54,9 +91,12 @@ export async function createPIF(
           tlen: l2!,
           tstart: +s2!,
           tend: +e2!,
-          numMatches: +(rest[0] ?? 0),
-          blockLen: +(rest[1] ?? 1),
-        })
+          cigar: CIGAR ? CIGAR.slice(5) : undefined,
+        }
+        const segments = splitCigarOnLargeGaps(record, coarseSplitGap)
+        for (const seg of segments) {
+          await emitCoarseTier(seg, writeWithBackpressure)
+        }
       }
     }
   } catch (error) {
@@ -64,21 +104,6 @@ export async function createPIF(
     throw error
   } finally {
     rl1.close()
-  }
-
-  if (mergeGap > 0 && records.length > 0) {
-    const blocks = mergeIntoBlocks(records, mergeGap)
-    for (const b of blocks) {
-      const mq = '60'
-      const de = b.blockLen > 0 ? 1 - b.numMatches / b.blockLen : 0
-      const deTag = `de:f:${de.toFixed(6)}`
-      await writeWithBackpressure(
-        `${[`T${b.tname}`, b.tlen, b.tstart, b.tend, b.strand, b.qname, b.qlen, b.qstart, b.qend, b.numMatches, b.blockLen, mq, deTag].join('\t')}\n`,
-      )
-      await writeWithBackpressure(
-        `${[`Q${b.qname}`, b.qlen, b.qstart, b.qend, b.strand, b.tname, b.tlen, b.tstart, b.tend, b.numMatches, b.blockLen, mq, deTag].join('\t')}\n`,
-      )
-    }
   }
 }
 

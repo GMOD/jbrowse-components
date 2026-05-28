@@ -116,21 +116,10 @@
     {
       "type": "SyntenyTrack",
       "trackId": "hs1ToMm39.over.chain.pif",
-      "name": "hs1ToMm39.over.chain.pif (LOD)",
+      "name": "hs1ToMm39.over.chain.pif",
       "adapter": {
         "type": "PairwiseIndexedPAFAdapter",
         "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1ToMm39.over.chain.pif.gz",
-        "assemblyNames": ["mm39", "hs1"]
-      },
-      "assemblyNames": ["mm39", "hs1"]
-    },
-    {
-      "type": "SyntenyTrack",
-      "trackId": "hs1ToMm39.over.chain.split.pif",
-      "name": "hs1ToMm39.over.chain.split.pif",
-      "adapter": {
-        "type": "PairwiseIndexedPAFAdapter",
-        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1ToMm39.over.chain.split.pif.gz",
         "assemblyNames": ["mm39", "hs1"]
       },
       "assemblyNames": ["mm39", "hs1"]

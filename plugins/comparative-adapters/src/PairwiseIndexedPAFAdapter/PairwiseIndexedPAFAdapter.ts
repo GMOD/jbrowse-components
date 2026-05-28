@@ -21,11 +21,14 @@ interface PAFOptions extends BaseOptions {
 // PIF format indexes lines by perspective:
 // - 'q' prefix: indexed by query coordinates, drawn when viewing the query
 // - 't' prefix: indexed by target coordinates, drawn when viewing the target
-// Uppercase T/Q are the optional coarse no-CIGAR merged-block tier emitted
-// by `make-pif --mergeGap`. In 'auto' mode the coarse tier is used when
-// bpPerPx >= threshold and the tier actually exists. A manual 'coarse'
-// override still falls back to fine when no coarse tier is present — the
-// alternative would be returning no data.
+// Uppercase T/Q are the optional coarse no-CIGAR tier emitted by `make-pif
+// --coarse`. Coarse rows carry the same start/end coords as the matching
+// fine row(s) (the CLI may also split a single fine row into multiple
+// coarse rows at large CIGAR I/D gaps so each coarse row's bbox stays
+// tight). In 'auto' mode the coarse tier is used when bpPerPx >= threshold
+// and the tier actually exists. A manual 'coarse' override still falls
+// back to fine when no coarse tier is present — the alternative would be
+// returning no data.
 export function pickPifPrefix({
   flip,
   bpPerPx,

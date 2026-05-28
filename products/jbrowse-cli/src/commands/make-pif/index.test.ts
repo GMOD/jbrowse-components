@@ -22,26 +22,37 @@ test('make-pif', async () => {
   })
 })
 
-test('make-pif with --mergeGap emits T/Q coarse tier', async () => {
+test('make-pif with --coarse emits T/Q coarse tier with CIGAR stripped', async () => {
   await runInTmpDir(async () => {
     const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
-    await runCommand([
-      'make-pif',
-      simplePaf,
-      '--out',
-      fn,
-      '--mergeGap',
-      '50000',
-    ])
+    await runCommand(['make-pif', simplePaf, '--out', fn, '--coarse', '50000'])
     const content = gunzipSync(fs.readFileSync(fn)).toString()
     const lines = content.split('\n').filter(Boolean)
-    expect(lines.some(l => l.startsWith('T'))).toBe(true)
-    expect(lines.some(l => l.startsWith('Q'))).toBe(true)
-    expect(lines.some(l => l.startsWith('t'))).toBe(true)
-    expect(lines.some(l => l.startsWith('q'))).toBe(true)
-    const coarseLine = lines.find(l => l.startsWith('T'))!
-    expect(coarseLine).not.toMatch(/cg:Z:/)
-    expect(coarseLine).toMatch(/de:f:/)
+    const fineT = lines.filter(l => l.startsWith('t'))
+    const fineQ = lines.filter(l => l.startsWith('q'))
+    const coarseT = lines.filter(l => l.startsWith('T'))
+    const coarseQ = lines.filter(l => l.startsWith('Q'))
+    expect(coarseT.length).toBeGreaterThan(0)
+    expect(coarseQ.length).toBeGreaterThan(0)
+    // strip-only mode (no row had a >=50kb indel): coarse row count matches
+    // fine. Any split would only inflate coarse counts.
+    expect(coarseT.length).toBeGreaterThanOrEqual(fineT.length)
+    expect(coarseQ.length).toBeGreaterThanOrEqual(fineQ.length)
+    for (const l of coarseT) {
+      expect(l).not.toMatch(/cg:Z:/)
+      expect(l).toMatch(/de:f:/)
+    }
+  })
+})
+
+test('make-pif without --coarse omits T/Q coarse tier', async () => {
+  await runInTmpDir(async () => {
+    const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
+    await runCommand(['make-pif', simplePaf, '--out', fn])
+    const content = gunzipSync(fs.readFileSync(fn)).toString()
+    const lines = content.split('\n').filter(Boolean)
+    expect(lines.some(l => l.startsWith('T'))).toBe(false)
+    expect(lines.some(l => l.startsWith('Q'))).toBe(false)
   })
 })
 
