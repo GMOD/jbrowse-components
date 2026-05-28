@@ -103,6 +103,29 @@ ConfigurationSchema('MyDisplay', {
 `baseTrackConfig.ts` `preProcessSnapshot` promotes old renderer → display-level
 properties. Old configs work without migration.
 
+## Runtime overrides (`ConfigOverrideMixin`)
+
+`ConfigOverrideMixin` (`plugins/linear-genome-view/src/BaseLinearDisplay/
+models/`) lets a display shadow config at runtime via one `configOverrides`
+frozen map (persisted unless empty; old `xxxSetting` keys migrate in via
+`migrateOldSettingSnapshots`):
+
+- `getConfWithOverride<T>(key)` — override else config-schema value
+- `getOverride<T>(key)` — override only (`undefined` if unset)
+- `setOverride(key, v)` / `clearOverride(key)`
+
+**New-setting storage:** prefer `configOverrides` for any *display option* —
+`getConfWithOverride` when it has a config-schema default, `getOverride` when it
+doesn't (yet). The win is future-proofing: adding a config default later is a
+one-line schema change with no consumer edits. Plain MST fields are the older
+mechanism still used by many display toggles; the line is fuzzy, so match
+neighbouring settings rather than enforcing a hard rule.
+
+The wholesale `displayConfig: { ...getConfSnapshot, ...configOverrides }` form
+above ships every slot to the worker (canvas/wiggle); alignments instead curates
+a narrow `rpcProps()` so visual overrides don't refetch (its CLAUDE.md
+§"Settings: storage + invalidation tiers").
+
 ## Key functions
 
 | Function                                | Location                                                  | Purpose                                                   |

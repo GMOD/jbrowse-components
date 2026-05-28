@@ -221,6 +221,12 @@ export default function stateModelFactory(
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
         ConfigOverrideMixin(),
+        // Settings split two ways (see CLAUDE.md §"Settings: storage +
+        // invalidation tiers"): "display options" (colorBy, filterBy, sortedBy,
+        // showOutline, …) live in `configOverrides` so a config default can be
+        // added later with no code change; the plain MST fields below are the
+        // remaining toggles. Each setting also has a refetch/relayout/render
+        // blast radius documented there.
         types.model({
           type: types.literal('LinearAlignmentsDisplay'),
           configuration: ConfigurationReference(configSchema),
@@ -267,7 +273,6 @@ export default function stateModelFactory(
           sashimiArcsHeight: 40,
           arcsHeight: 40,
           showSoftClipping: false,
-          jexlFilters: types.optional(types.array(types.string), []),
         }),
       )
       .preProcessSnapshot(
@@ -465,7 +470,7 @@ export default function stateModelFactory(
 
         get legendItems() {
           return getReadDisplayLegendItems(
-            self.getOverride<ColorBy>('colorBy'),
+            this.colorBy,
             undefined,
             self.pairedArcs === 'samplot',
           )
@@ -1275,29 +1280,8 @@ export default function stateModelFactory(
         }
       })
       .actions(self => {
-        async function fetchAlignmentData(
-          adapterConfig: Record<string, unknown>,
-          sequenceAdapter: Record<string, unknown> | undefined,
-          region: Region,
-          stopToken: StopToken,
-          method: 'RenderPileupData' | 'RenderChainData',
-        ) {
-          const sessionId = getRpcSessionId(self)
-          return getSession(self).rpcManager.call(sessionId, method, {
-            sessionId,
-            adapterConfig,
-            sequenceAdapter,
-            regions: [region],
-            ...self.rpcProps(),
-            stopToken,
-            statusCallback: (msg: string) => {
-              if (isAlive(self)) {
-                self.setStatusMessage(msg)
-              }
-            },
-          })
-        }
-
+        // One RPC for both pileup and chain modes; the worker branches on
+        // `linkedReads` (passed via rpcProps).
         async function fetchFeaturesForRegion(
           adapterConfig: Record<string, unknown>,
           region: Region,
@@ -1306,13 +1290,23 @@ export default function stateModelFactory(
         ) {
           const session = getSession(self)
           const sequenceAdapter = getSequenceAdapter(session, region)
-
-          const result = await fetchAlignmentData(
-            adapterConfig,
-            sequenceAdapter,
-            region,
-            stopToken,
-            self.linkedReads !== 'off' ? 'RenderChainData' : 'RenderPileupData',
+          const sessionId = getRpcSessionId(self)
+          const result = await session.rpcManager.call(
+            sessionId,
+            'RenderAlignmentData',
+            {
+              sessionId,
+              adapterConfig,
+              sequenceAdapter,
+              regions: [region],
+              ...self.rpcProps(),
+              stopToken,
+              statusCallback: (msg: string) => {
+                if (isAlive(self)) {
+                  self.setStatusMessage(msg)
+                }
+              },
+            },
           )
 
           return { displayedRegionIndex, result }

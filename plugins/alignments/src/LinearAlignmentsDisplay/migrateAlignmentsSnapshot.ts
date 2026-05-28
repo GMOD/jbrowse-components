@@ -101,7 +101,10 @@ export function migrateAlignmentsSnapshot(
       showInterbaseIndicators,
       colorBySetting,
       filterBySetting,
-      jexlFilters,
+      // jexlFilters: dropped — the alignments display has no jexl-filter
+      // path (FilterBy is flag/tag/readName only), so the old SNPCoverage
+      // field had no effect and is discarded on migration.
+      jexlFilters: _jexlFilters,
       ...rest
     } = result
 
@@ -115,7 +118,6 @@ export function migrateAlignmentsSnapshot(
       showMismatches: true,
       colorBySetting,
       filterBySetting,
-      jexlFilters: jexlFilters ?? [],
     }
   }
 

@@ -12,7 +12,12 @@ import type { Region } from '@jbrowse/core/util'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-export interface RenderPileupDataArgs {
+// Args for the single RenderAlignmentData RPC. `linkedReads` selects the
+// pileup (`'off'`) vs chain (`'normal'`/`'bezier'`) path inside the worker —
+// the same flag the client already tracks, so no separate `mode` is needed.
+// `sortTag`/`showSoftClipping` are pileup-only; `drawSingletons`/
+// `drawProperPairs` are chain-only (the unused side is ignored per mode).
+export interface RenderAlignmentDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
@@ -29,6 +34,9 @@ export interface RenderPileupDataArgs {
   // invalidate the fetched data — main-thread layout re-runs instead.
   sortTag?: string
   showSoftClipping?: boolean
+  linkedReads?: 'off' | 'normal' | 'bezier'
+  drawSingletons?: boolean
+  drawProperPairs?: boolean
   statusCallback?: (status: string) => void
   stopToken?: StopToken
 }

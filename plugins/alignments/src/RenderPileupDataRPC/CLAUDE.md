@@ -1,5 +1,14 @@
 # RenderPileupDataRPC
 
+## One RPC for pileup + chain
+
+`RenderAlignmentData` (`executeRenderAlignmentData.ts`) serves both displays,
+branching on `args.linkedReads` (`'off'` → pileup, else chain). Shared spine
+(fetch → arrays → coverage → assembly); only pre-processing differs — chain:
+dedupe + singleton/proper-pair filter + chain metadata; pileup: ref-sequence
+fetch + sort-tag values. Chain-only result fields are optional on
+`PileupDataResult`.
+
 ## Known limitation: `computeMultiRegionLayout`
 
 `computeMultiRegionLayout` (in `sortLayout.ts`) currently ignores both

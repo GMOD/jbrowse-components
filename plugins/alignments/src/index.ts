@@ -7,7 +7,6 @@ import CramAdapterF from './CramAdapter/index.ts'
 import GuessAlignmentsTypesF from './GuessAlignmentsTypes/index.ts'
 import HtsgetBamAdapterF from './HtsgetBamAdapter/index.ts'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay/index.ts'
-import ChainDataRPCMethodsF from './RenderChainDataRPC/index.ts'
 import PileupDataRPCMethodsF from './RenderPileupDataRPC/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -22,7 +21,6 @@ export default class AlignmentsPlugin extends Plugin {
       AlignmentsTrackF,
       HtsgetBamAdapterF,
       PileupDataRPCMethodsF,
-      ChainDataRPCMethodsF,
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
       GuessAlignmentsTypesF,

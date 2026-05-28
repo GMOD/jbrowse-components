@@ -168,7 +168,7 @@ describe('migrateAlignmentsSnapshot', () => {
     const overrides = result.configOverrides as Record<string, unknown>
     expect(overrides.colorBy).toEqual({ type: 'strand' })
     expect(overrides.filterBy).toEqual({ flagInclude: 0 })
-    expect(result.jexlFilters).toEqual(['filter1'])
+    expect(result).not.toHaveProperty('jexlFilters')
     expect(result).not.toHaveProperty('minArcScore')
     expect(result).not.toHaveProperty('showInterbaseCounts')
   })

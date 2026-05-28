@@ -258,10 +258,13 @@ export default function stateModelFactory(
               },
             })),
           },
-          ...makeResolutionAndSummarySubMenus(self),
           // scaleType: true injects the wiggle-only scale-type submenu into the
-          // shared Score submenu (manhattan, linear-only, leaves it off).
-          ...rendererMenuItems(self, { scaleType: true }),
+          // shared Score submenu (manhattan, linear-only, leaves it off);
+          // resolution/summary lead the submenu, matching multi-wiggle.
+          ...rendererMenuItems(self, {
+            scaleType: true,
+            leadingItems: makeResolutionAndSummarySubMenus(self),
+          }),
           {
             label: 'Color',
             icon: PaletteIcon,

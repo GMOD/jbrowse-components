@@ -277,7 +277,7 @@ describe('FetchVisibleRegions autorun', () => {
     await waitFor(() => {
       expect(mockRpcCall).toHaveBeenCalledWith(
         expect.any(String),
-        'RenderPileupData',
+        'RenderAlignmentData',
         expect.objectContaining({
           regions: expect.arrayContaining([
             expect.objectContaining({ refName: 'ctgA' }),
