@@ -46,7 +46,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       loading: false,
     }))
 
-    .views(self => ({
+    .views(() => ({
       get featureWidgetType() {
         return {
           type: 'VariantFeatureWidget',

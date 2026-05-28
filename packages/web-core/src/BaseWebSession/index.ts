@@ -11,7 +11,6 @@ import {
 import {
   addDisposer,
   cast,
-  castFlowReturn,
   flow,
   getParent,
   getSnapshot,
@@ -479,9 +478,7 @@ export function BaseWebSession({
       },
       restorePendingFileHandles: flow(function* restorePendingFileHandles() {
         const results: Awaited<ReturnType<typeof restoreFileHandles>> =
-          yield castFlowReturn(
-            restoreFileHandles(self.pendingFileHandleIds, true),
-          )
+          yield restoreFileHandles(self.pendingFileHandleIds, true)
         self.setPendingFileHandleIds(
           results.filter(r => !r.success).map(r => r.handleId),
         )
