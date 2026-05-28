@@ -49,22 +49,14 @@ function Ruler({
       {!hideText
         ? ticks
             .filter(({ type }) => type === 'major')
-            .flatMap(({ base, x }) => {
+            .map(({ base, x }) => {
               const label = getTickDisplayStr(base + 1, bpPerPx)
               const labelWidth = measureText(label, 11) + 4
-              return x - 3 >= 0 && x - 3 + labelWidth <= widthPx
-                ? [
-                    <text
-                      key={`label-${base}`}
-                      x={x - 3}
-                      y={7 + 11}
-                      fontSize={11}
-                      fill={c}
-                    >
-                      {label}
-                    </text>,
-                  ]
-                : []
+              return x - 3 >= 0 && x - 3 + labelWidth <= widthPx ? (
+                <text key={`label-${base}`} x={x - 3} y={7 + 11} fontSize={11} fill={c}>
+                  {label}
+                </text>
+              ) : null
             })
         : null}
     </>
@@ -92,16 +84,16 @@ export default function SVGRuler({
       {contentBlocks.map(block => {
         const { start, end, key, reversed, offsetPx, refName, widthPx } = block
         const offset = offsetPx - viewOffsetPx
-        const clipid = `clip-${key}`
+        const clipId = `clip-${key}`
         return (
           <g key={key}>
             <defs>
-              <clipPath id={clipid}>
+              <clipPath id={clipId}>
                 <rect x={0} y={0} width={widthPx} height={100} />
               </clipPath>
             </defs>
             <g transform={`translate(${offset} 0)`}>
-              <g clipPath={`url(#${clipid})`}>
+              <g clipPath={`url(#${clipId})`}>
                 <text x={4} y={fontSize} fontSize={fontSize} fill={c}>
                   {refName}
                 </text>

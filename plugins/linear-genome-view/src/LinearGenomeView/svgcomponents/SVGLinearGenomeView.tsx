@@ -22,7 +22,6 @@ import type { ExportSvgOptions } from '../types.ts'
 
 type LGV = LinearGenomeViewModel
 
-// render LGV to SVG
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
   const {
@@ -51,7 +50,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
   const height = tracksHeight + offset + 100
 
-  // Calculate maximum legend width across all displays
   const legendWidth = max(
     visibleTracks.map(track => {
       const display = track.displays[0]

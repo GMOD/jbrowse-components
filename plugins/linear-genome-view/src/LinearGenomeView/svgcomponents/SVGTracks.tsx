@@ -19,7 +19,6 @@ interface DisplayResult {
   result: React.ReactNode
 }
 
-// SVG component, tracks
 export default function SVGTracks({
   displayResults,
   model,
