@@ -200,13 +200,7 @@ function attachLinkedReadLines(
       out.set(idx, data)
       continue
     }
-    out.set(idx, {
-      ...data,
-      linkedReadLinePositions: lines.positions,
-      linkedReadLineYs: lines.ys,
-      linkedReadLineColorTypes: lines.colorTypes,
-      numLinkedReadLines: lines.numLines,
-    })
+    out.set(idx, { ...data, ...lines })
   }
   return out
 }

@@ -42,7 +42,7 @@ export const arcLineColorPalette: RGBColor[] = [
   rgb(fillColor.color_longinsert),
 ]
 
-// Indices match LINKED_READ_COLOR_* in computeLinkedReadLines.ts. Used by the
+// Indices match LINKED_READ_COLOR_* in features/linkedReads/compute.ts. Used by the
 // GPU palette UBO, the Canvas2D draw, and the SVG export so the three paths
 // stay in lockstep.
 export const linkedReadColorPalette: RGBColor[] = [

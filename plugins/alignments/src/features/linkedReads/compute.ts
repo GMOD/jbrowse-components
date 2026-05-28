@@ -5,6 +5,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
+import type { LinkedReadLinesUploadData } from './types.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 // Color type indices for linked-read connecting lines + bezier curves.
@@ -168,26 +169,47 @@ export function classifyPair(e1: ReadEntry, e2: ReadEntry): ClassifiedPair {
   return { bp1, bp2, s1, s2, isNormal, colorType, hasPaired }
 }
 
-export interface LinkedReadLines {
-  positions: Uint32Array
-  ys: Uint16Array
-  colorTypes: Uint8Array
-  numLines: number
+export interface LinkedPair {
+  e1: ReadEntry
+  e2: ReadEntry
+  c: ClassifiedPair
+}
+
+// Enumerate consecutive read pairs across all displayed regions: group reads by
+// name, drop secondary/supplementary/unmapped-mate entries, then classify each
+// adjacent pair. Both the straight-line emitter (computeLinkedReadLinesByRegion)
+// and the bezier-curve emitter (computePileupBezierArcs) iterate this, so the
+// grouping/filtering/pairing rules that define "a linked pair" live here only.
+export function* iterLinkedPairs(
+  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
+): Generator<LinkedPair> {
+  for (const [, entries] of groupReadsByName(laidOutPileupMap)) {
+    if (entries.length >= 2) {
+      const filtered = filterEntries(entries)
+      if (filtered.length >= 2) {
+        for (let j = 0; j < filtered.length - 1; j++) {
+          const e1 = filtered[j]!
+          const e2 = filtered[j + 1]!
+          yield { e1, e2, c: classifyPair(e1, e2) }
+        }
+      }
+    }
+  }
 }
 
 // Build per-region straight-line records for normal-orientation pairs whose
 // mates are wholly contained in a single displayedRegion. Returns one map
-// entry per region that has at least one line. Cross-region pairs are
-// excluded — those keep flowing through the SVG bezier overlay's straight
-// fallback path.
+// entry per region that has at least one line, in the same
+// `LinkedReadLinesUploadData` shape the GPU/Canvas2D renderers consume so the
+// chain-layout post-pass can spread it straight onto `PileupDataResult` with no
+// field renaming. Cross-region pairs are excluded — those keep flowing through
+// the SVG bezier overlay's straight fallback path.
 //
 // Output positions are absolute genomic uint32 (worker contract); per-endpoint
 // Y is needed because mates can sit on different rows when sorting is on.
 export function computeLinkedReadLinesByRegion(
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
-): Map<number, LinkedReadLines> {
-  const readsByName = groupReadsByName(laidOutPileupMap)
-
+): Map<number, LinkedReadLinesUploadData> {
   // Collect raw records first by region, then materialize typed arrays.
   const acc = new Map<
     number,
@@ -198,24 +220,9 @@ export function computeLinkedReadLinesByRegion(
     }
   >()
 
-  for (const [, entries] of readsByName) {
-    if (entries.length < 2) {
-      continue
-    }
-    const filtered = filterEntries(entries)
-    if (filtered.length < 2) {
-      continue
-    }
-    for (let j = 0; j < filtered.length - 1; j++) {
-      const e1 = filtered[j]!
-      const e2 = filtered[j + 1]!
-      if (e1.displayedRegionIndex !== e2.displayedRegionIndex) {
-        continue
-      }
-      const c = classifyPair(e1, e2)
-      if (!c.isNormal) {
-        continue
-      }
+  for (const { e1, e2, c } of iterLinkedPairs(laidOutPileupMap)) {
+    const sameRegion = e1.displayedRegionIndex === e2.displayedRegionIndex
+    if (sameRegion && c.isNormal) {
       const idx = e1.displayedRegionIndex
       let bucket = acc.get(idx)
       if (!bucket) {
@@ -228,14 +235,13 @@ export function computeLinkedReadLinesByRegion(
     }
   }
 
-  const out = new Map<number, LinkedReadLines>()
+  const out = new Map<number, LinkedReadLinesUploadData>()
   for (const [idx, bucket] of acc) {
-    const numLines = bucket.colorTypes.length
     out.set(idx, {
-      positions: Uint32Array.from(bucket.positions),
-      ys: Uint16Array.from(bucket.ys),
-      colorTypes: Uint8Array.from(bucket.colorTypes),
-      numLines,
+      linkedReadLinePositions: Uint32Array.from(bucket.positions),
+      linkedReadLineYs: Uint16Array.from(bucket.ys),
+      linkedReadLineColorTypes: Uint8Array.from(bucket.colorTypes),
+      numLinkedReadLines: bucket.colorTypes.length,
     })
   }
   return out

@@ -3,8 +3,7 @@ import { useState } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { makeBpToScreenX } from './alignmentComponentUtils.ts'
-import { computePileupBezierArcs } from '../../features/arcs/computeOverlay.ts'
+import { computePileupBezierArcsFromModel } from './pileupBezierArcs.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -33,34 +32,14 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
 }) {
   const [selectedArcId, setSelectedArcId] = useState<string | null>(null)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const {
-    linkedReads,
-    pairedArcs,
-    laidOutPileupMap,
-    featureHeightSetting: featureHeight,
-    featureSpacing,
-    coverageDisplayHeight: pileupTopOffset,
-    currentRangeY: rangeY,
-    pileupViewportHeight: viewportH,
-    height,
-  } = model
-  const { initialized, displayedRegions, width } = view
+  const { linkedReads, currentRangeY, height } = model
+  const { initialized, width } = view
 
   if (linkedReads !== 'bezier' || !initialized) {
     return null
   }
 
-  const arcs = computePileupBezierArcs({
-    laidOutPileupMap,
-    displayedRegions,
-    bpToScreenX: makeBpToScreenX(view),
-    featureHeight,
-    featureSpacing,
-    pileupTopOffset,
-    rangeY,
-    viewportH,
-    pairedArcsDown: pairedArcs === 'down',
-  })
+  const arcs = computePileupBezierArcsFromModel(model, view, currentRangeY)
 
   if (!arcs.length) {
     return null

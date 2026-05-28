@@ -1,17 +1,9 @@
+import { iterLinkedPairs } from './compute.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { linkedReadColorPalette } from '../../shaders/palettes.ts'
-import {
-  classifyPair,
-  filterEntries,
-  groupReadsByName,
-} from '../linkedReads/compute.ts'
 
+import type { ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
-import type { ReadEntry } from '../linkedReads/compute.ts'
-
-// Curve count is bounded by SV count; normal-pair lines moved to the GPU
-// straight-line pass so this cap only protects against pathological data.
-const MAX_BEZIER_ARCS = 500
 
 // Minimum horizontal bezier handle in screen pixels so the direction is visible
 // even for very tightly-spaced pairs.
@@ -124,75 +116,53 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
   const readScreenY = (e: ReadEntry) =>
     e.data.readYs[e.readIdx]! * rowH + pileupTopOffset - rangeY0 + readCenterDy
 
-  const readsByName = groupReadsByName(laidOutPileupMap)
   const result: PileupArc[] = []
 
-  for (const [, entries] of readsByName) {
-    if (entries.length < 2) {
+  for (const { e1, e2, c } of iterLinkedPairs(laidOutPileupMap)) {
+    const sameRegion = e1.displayedRegionIndex === e2.displayedRegionIndex
+    // GPU + Canvas2D pipelines own normal-orientation within-region lines.
+    if (c.isNormal && sameRegion) {
       continue
     }
-    const filtered = filterEntries(entries)
-    if (filtered.length < 2) {
+
+    const r1 = displayedRegions[e1.displayedRegionIndex]
+    const r2 = displayedRegions[e2.displayedRegionIndex]
+    if (!r1 || !r2) {
       continue
     }
-    for (let j = 0; j < filtered.length - 1; j++) {
-      const e1 = filtered[j]!
-      const e2 = filtered[j + 1]!
-      const c = classifyPair(e1, e2)
-      const sameRegion = e1.displayedRegionIndex === e2.displayedRegionIndex
-      // GPU + Canvas2D pipelines own normal-orientation within-region lines.
-      if (c.isNormal && sameRegion) {
-        continue
-      }
-
-      const r1 = displayedRegions[e1.displayedRegionIndex]
-      const r2 = displayedRegions[e2.displayedRegionIndex]
-      if (!r1 || !r2) {
-        continue
-      }
-      const sx1 = bpToScreenX(r1.refName, c.bp1)
-      const sx2 = bpToScreenX(r2.refName, c.bp2)
-      if (sx1 === undefined || sx2 === undefined) {
-        continue
-      }
-
-      const sy1 = readScreenY(e1)
-      const sy2 = readScreenY(e2)
-
-      if (
-        !arcIsVisible(sy1, sy2, peakH, c.isNormal, pairedArcsDown, viewportH)
-      ) {
-        continue
-      }
-
-      // Cap on *visible* arcs only. Putting this before visibility would let
-      // off-screen pairs early in readName-iteration order silently evict
-      // on-screen SV signals further right.
-      if (result.length >= MAX_BEZIER_ARCS) {
-        return result
-      }
-
-      const d = c.isNormal
-        ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
-        : bezierPath({
-            sx1,
-            sy1,
-            sx2,
-            sy2,
-            s1: c.s1,
-            s2: c.s2,
-            peakH,
-            arcsDown: pairedArcsDown,
-          })
-      const stroke = rgb255(linkedReadColorPalette[c.colorType % paletteLen]!)
-
-      result.push({
-        d,
-        stroke,
-        id1: e1.data.readIds[e1.readIdx]!,
-        id2: e2.data.readIds[e2.readIdx]!,
-      })
+    const sx1 = bpToScreenX(r1.refName, c.bp1)
+    const sx2 = bpToScreenX(r2.refName, c.bp2)
+    if (sx1 === undefined || sx2 === undefined) {
+      continue
     }
+
+    const sy1 = readScreenY(e1)
+    const sy2 = readScreenY(e2)
+
+    if (!arcIsVisible(sy1, sy2, peakH, c.isNormal, pairedArcsDown, viewportH)) {
+      continue
+    }
+
+    const d = c.isNormal
+      ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
+      : bezierPath({
+          sx1,
+          sy1,
+          sx2,
+          sy2,
+          s1: c.s1,
+          s2: c.s2,
+          peakH,
+          arcsDown: pairedArcsDown,
+        })
+    const stroke = rgb255(linkedReadColorPalette[c.colorType % paletteLen]!)
+
+    result.push({
+      d,
+      stroke,
+      id1: e1.data.readIds[e1.readIdx]!,
+      id2: e2.data.readIds[e2.readIdx]!,
+    })
   }
 
   return result

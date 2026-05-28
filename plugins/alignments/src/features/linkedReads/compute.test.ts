@@ -386,10 +386,10 @@ describe('computeLinkedReadLinesByRegion', () => {
     const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
     expect(result.size).toBe(1)
     const lines = result.get(0)!
-    expect(lines.numLines).toBe(1)
-    expect(lines.colorTypes[0]).toBe(LINKED_READ_COLOR_PAIR_LR)
-    expect(lines.positions[0]).toBe(200) // fwd 3-prime
-    expect(lines.positions[1]).toBe(300) // rev 3-prime
+    expect(lines.numLinkedReadLines).toBe(1)
+    expect(lines.linkedReadLineColorTypes[0]).toBe(LINKED_READ_COLOR_PAIR_LR)
+    expect(lines.linkedReadLinePositions[0]).toBe(200) // fwd 3-prime
+    expect(lines.linkedReadLinePositions[1]).toBe(300) // rev 3-prime
   })
 
   it('excludes aberrant (RR) paired reads — bezier overlay handles them', () => {
@@ -423,12 +423,12 @@ describe('computeLinkedReadLinesByRegion', () => {
     const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
     expect(result.size).toBe(1)
     const lines = result.get(0)!
-    expect(lines.numLines).toBe(1)
-    expect(lines.colorTypes[0]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
-    expect(lines.positions[0]).toBe(200) // right edge of left alignment
-    expect(lines.positions[1]).toBe(300) // left edge of right alignment
-    expect(lines.ys[0]).toBe(0)
-    expect(lines.ys[1]).toBe(1)
+    expect(lines.numLinkedReadLines).toBe(1)
+    expect(lines.linkedReadLineColorTypes[0]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
+    expect(lines.linkedReadLinePositions[0]).toBe(200) // right edge of left alignment
+    expect(lines.linkedReadLinePositions[1]).toBe(300) // left edge of right alignment
+    expect(lines.linkedReadLineYs[0]).toBe(0)
+    expect(lines.linkedReadLineYs[1]).toBe(1)
   })
 
   it('emits a line for a split-RF pair (both rev), inner junction endpoints', () => {
@@ -446,10 +446,10 @@ describe('computeLinkedReadLinesByRegion', () => {
     const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
     expect(result.size).toBe(1)
     const lines = result.get(0)!
-    expect(lines.numLines).toBe(1)
-    expect(lines.colorTypes[0]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
-    expect(lines.positions[0]).toBe(200)
-    expect(lines.positions[1]).toBe(300)
+    expect(lines.numLinkedReadLines).toBe(1)
+    expect(lines.linkedReadLineColorTypes[0]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
+    expect(lines.linkedReadLinePositions[0]).toBe(200)
+    expect(lines.linkedReadLinePositions[1]).toBe(300)
   })
 
   it('supp-first ordering produces correct inner junction endpoints', () => {
@@ -466,9 +466,9 @@ describe('computeLinkedReadLinesByRegion', () => {
     })
     const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
     const lines = result.get(0)!
-    expect(lines.numLines).toBe(1)
-    expect(lines.positions[0]).toBe(200)
-    expect(lines.positions[1]).toBe(300)
+    expect(lines.numLinkedReadLines).toBe(1)
+    expect(lines.linkedReadLinePositions[0]).toBe(200)
+    expect(lines.linkedReadLinePositions[1]).toBe(300)
   })
 
   it('excludes split inversions (SPLIT_INV) — bezier overlay handles them', () => {
@@ -547,7 +547,7 @@ describe('computeLinkedReadLinesByRegion', () => {
     })
     const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
     const lines = result.get(0)!
-    expect(lines.numLines).toBe(2)
+    expect(lines.numLinkedReadLines).toBe(2)
   })
 
   it('mixed dataset: paired and split reads classified independently', () => {
@@ -575,8 +575,8 @@ describe('computeLinkedReadLinesByRegion', () => {
     const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
     const lines = result.get(0)!
     // Both pairs emit lines: the LR paired reads and the FR split reads
-    expect(lines.numLines).toBe(2)
-    expect(lines.colorTypes[0]).toBe(LINKED_READ_COLOR_PAIR_LR)
-    expect(lines.colorTypes[1]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
+    expect(lines.numLinkedReadLines).toBe(2)
+    expect(lines.linkedReadLineColorTypes[0]).toBe(LINKED_READ_COLOR_PAIR_LR)
+    expect(lines.linkedReadLineColorTypes[1]).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
   })
 })

@@ -14,7 +14,7 @@ import TlenAxisLabel from './components/TlenAxisLabel.tsx'
 import { makeBpToScreenX } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
-import { computePileupBezierArcs } from '../features/arcs/computeOverlay.ts'
+import { computePileupBezierArcsFromModel } from './components/pileupBezierArcs.ts'
 import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 import { getContrastBaseMap } from '../shared/util.ts'
 
@@ -178,20 +178,10 @@ function renderPileupBezierArcs(
   view: LinearGenomeViewModel,
   rangeY: [number, number],
 ): React.ReactNode {
-  if (model.linkedReads !== 'bezier') {
+  const arcs = computePileupBezierArcsFromModel(model, view, rangeY)
+  if (!arcs.length) {
     return null
   }
-  const arcs = computePileupBezierArcs({
-    laidOutPileupMap: model.laidOutPileupMap,
-    displayedRegions: view.displayedRegions,
-    bpToScreenX: makeBpToScreenX(view),
-    featureHeight: model.featureHeightSetting,
-    featureSpacing: model.featureSpacing,
-    pileupTopOffset: model.coverageDisplayHeight,
-    rangeY,
-    viewportH: model.pileupViewportHeight,
-    pairedArcsDown: model.pairedArcs === 'down',
-  })
   return (
     <g style={{ pointerEvents: 'none' }}>
       {arcs.map(arc => (
