@@ -46,6 +46,18 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       loading: false,
     }))
 
+    .views(self => ({
+      get fetchSettled() {
+        return (
+          !self.loading &&
+          (self.features !== undefined ||
+            self.regionTooLarge ||
+            !self.featureDensityStatsReadyAndRegionNotTooLarge ||
+            !!self.error)
+        )
+      },
+    }))
+
     .actions(self => ({
       /**
        * #action
