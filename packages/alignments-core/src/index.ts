@@ -58,10 +58,8 @@ export {
   packModCovSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from './coverageGpuPacking.ts'
-export {
-  computeInterbaseCoverage,
-} from './interbaseCoverage.ts'
-export type { InsertionEntry, ClipEntry } from './interbaseCoverage.ts'
+export { computeInterbaseCoverage } from './interbaseCoverage.ts'
+export type { ClipEntry, InsertionEntry } from './interbaseCoverage.ts'
 export { computeCoverage } from './coverageCompute.ts'
 export type { CoverageGap } from './coverageCompute.ts'
 export {

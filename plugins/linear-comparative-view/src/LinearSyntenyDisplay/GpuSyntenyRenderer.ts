@@ -143,7 +143,12 @@ export class GpuSyntenyRenderer implements SyntenyBackend {
     if (prev !== undefined) {
       this.hal.deleteBuffer(key, prev)
     }
-    this.hal.uploadBuffer(key, passId, interleaveInstances(data), data.instanceCount)
+    this.hal.uploadBuffer(
+      key,
+      passId,
+      interleaveInstances(data),
+      data.instanceCount,
+    )
     this.uploadedPass.set(key, passId)
   }
 

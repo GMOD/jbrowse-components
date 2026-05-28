@@ -54,11 +54,11 @@ function getInitialSession(): Promise<string | undefined> {
 }
 
 function loadSession(win: BrowserWindow, sessionPath: string) {
-  win.loadURL(buildAppUrl(DEV_SERVER_URL, sessionPath).href).catch(
-    (e: unknown) => {
+  win
+    .loadURL(buildAppUrl(DEV_SERVER_URL, sessionPath).href)
+    .catch((e: unknown) => {
       console.error(e)
-    },
-  )
+    })
 }
 
 // Tracks the single main window. Concurrent ensureWindow calls during creation

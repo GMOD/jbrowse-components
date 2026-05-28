@@ -1,6 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import BlastTabularAdapter from './BlastTabularAdapter/index.ts'
+import BlastTabularAdapterF from './BlastTabularAdapter/index.ts'
 import ChainAdapterF from './ChainAdapter/index.ts'
 import ComparativeAddTrackComponentF from './ComparativeAddTrackComponent/index.tsx'
 import DeltaAdapterF from './DeltaAdapter/index.ts'
@@ -25,7 +25,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     MCScanAnchorsAdapterF(pluginManager)
     MCScanSimpleAnchorsAdapterF(pluginManager)
     MashMapAdapterF(pluginManager)
-    BlastTabularAdapter(pluginManager)
+    BlastTabularAdapterF(pluginManager)
     ComparativeAddTrackComponentF(pluginManager)
     MCScanAddTrackComponentF(pluginManager)
     GuessAdapterF(pluginManager)

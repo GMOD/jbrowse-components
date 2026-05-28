@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { AssemblySelector, FileSelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -7,23 +7,21 @@ import { observer } from 'mobx-react'
 
 import type { FileLocation } from '@jbrowse/core/util'
 
+interface TrackModel {
+  setMixinData: (data: Record<string, unknown>) => void
+}
+
 const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
   model,
-}: any) {
+}: {
+  model: TrackModel
+}) {
   const session = getSession(model)
-  const [r0, setR0] = useState(session.assemblies[0]?.name)
-  const [r1, setR1] = useState(session.assemblies[0]?.name)
+  const defaultAsm = session.assemblies[0]?.name
+  const [r0, setR0] = useState(defaultAsm)
+  const [r1, setR1] = useState(defaultAsm)
   const [bed1Location, setBed1Location] = useState<FileLocation>()
   const [bed2Location, setBed2Location] = useState<FileLocation>()
-  useEffect(() => {
-    model.setMixinData({
-      adapter: {
-        assemblyNames: [r0, r1],
-        bed1Location,
-        bed2Location,
-      },
-    })
-  }, [model, bed1Location, bed2Location, r0, r1])
   return (
     <div style={{ marginTop: 20 }}>
       <Typography>
@@ -37,6 +35,13 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
         selected={r0}
         onChange={asm => {
           setR0(asm)
+          model.setMixinData({
+            adapter: {
+              assemblyNames: [asm, r1],
+              bed1Location,
+              bed2Location,
+            },
+          })
         }}
         fullWidth
       />
@@ -47,6 +52,13 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
         selected={r1}
         onChange={asm => {
           setR1(asm)
+          model.setMixinData({
+            adapter: {
+              assemblyNames: [r0, asm],
+              bed1Location,
+              bed2Location,
+            },
+          })
         }}
         fullWidth
       />
@@ -57,6 +69,13 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
         location={bed1Location}
         setLocation={loc => {
           setBed1Location(loc)
+          model.setMixinData({
+            adapter: {
+              assemblyNames: [r0, r1],
+              bed1Location: loc,
+              bed2Location,
+            },
+          })
         }}
       />
       <FileSelector
@@ -66,6 +85,13 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
         location={bed2Location}
         setLocation={loc => {
           setBed2Location(loc)
+          model.setMixinData({
+            adapter: {
+              assemblyNames: [r0, r1],
+              bed1Location,
+              bed2Location: loc,
+            },
+          })
         }}
       />
     </div>

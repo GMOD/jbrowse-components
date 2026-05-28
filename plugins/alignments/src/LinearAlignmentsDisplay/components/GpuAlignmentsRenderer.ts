@@ -39,6 +39,11 @@ import {
 } from '../../features/insertion/packGpu.ts'
 import { uploadInsertions } from '../../features/insertion/uploadGpu.ts'
 import {
+  INTERBASE_PASS,
+  PASS_INTERBASE,
+} from '../../features/interbase/packGpu.ts'
+import { uploadInterbase } from '../../features/interbase/uploadGpu.ts'
+import {
   LINKED_READ_LINE_PASS,
   PASS_LINKED_READ_LINE,
 } from '../../features/linkedReads/packGpu.ts'
@@ -58,8 +63,6 @@ import {
   PASS_MOD,
 } from '../../features/modification/packGpu.ts'
 import { uploadModifications } from '../../features/modification/uploadGpu.ts'
-import { INTERBASE_PASS, PASS_INTERBASE } from '../../features/interbase/packGpu.ts'
-import { uploadInterbase } from '../../features/interbase/uploadGpu.ts'
 import { PASS_READ, READ_PASS } from '../../features/read/packGpu.ts'
 import { uploadReads as uploadReadSegments } from '../../features/read/uploadGpu.ts'
 import {
@@ -142,7 +145,9 @@ function fillFrameUniforms(
   i[U.coverageScaleType] = state.coverageIsLog ? 1 : 0
   f[U.binSize] = region.binSize
   f[U.interbaseHeight] =
-    region.interbaseMaxCount > 0 ? Math.min(region.interbaseMaxCount * 2, 20) : 0
+    region.interbaseMaxCount > 0
+      ? Math.min(region.interbaseMaxCount * 2, 20)
+      : 0
   f[U.insertUpper] = region.insertSizeStats?.upper ?? 999999
   f[U.insertLower] = region.insertSizeStats?.lower ?? 0
   i[U.colorScheme] = state.colorScheme

@@ -18,5 +18,5 @@ export function setupEnv() {
   })
   global.window = dom.window as unknown as Window & typeof globalThis
   global.document = dom.window.document
-  global.localStorage = dom.window.localStorage as unknown as Storage
+  global.localStorage = dom.window.localStorage
 }

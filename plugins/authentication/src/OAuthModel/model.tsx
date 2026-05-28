@@ -10,8 +10,8 @@ import {
   waitForOAuthMessage,
 } from './util.ts'
 
-import type { OAuthWindowParams } from './util.ts'
 import type { OAuthInternetAccountConfigModel } from './configSchema.ts'
+import type { OAuthWindowParams } from './util.ts'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -255,7 +255,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const { ipcRenderer } = window.require('electron')
           const electronRedirectUri = await ipcRenderer.invoke(
             'openAuthWindow',
-            { internetAccountId: self.internetAccountId, data, url: url.toString() },
+            {
+              internetAccountId: self.internetAccountId,
+              data,
+              url: url.toString(),
+            },
           )
           const event = new MessageEvent('message', {
             data: { name: eventName, redirectUri: electronRedirectUri },

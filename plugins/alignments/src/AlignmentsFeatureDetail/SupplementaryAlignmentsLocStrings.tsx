@@ -1,6 +1,6 @@
 import { getLengthOnRef } from '@jbrowse/alignments-core'
-import { toLocale } from '@jbrowse/core/util'
 import { ActionLink } from '@jbrowse/core/ui'
+import { toLocale } from '@jbrowse/core/util'
 import { navToLoc } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 
@@ -34,7 +34,7 @@ export default function SupplementaryAlignmentsLocStrings({
             return (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */
               <li key={`${locString}-${idx}`}>
-                <ActionLink onClick={() => navToLoc(locString, model)}>
+                <ActionLink onClick={() => { navToLoc(locString, model) }}>
                   {label}
                 </ActionLink>
               </li>

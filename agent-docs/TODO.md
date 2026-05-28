@@ -44,35 +44,6 @@
   2. The README's instructions for the dummy-function workaround were rewritten to describe the actual
    JSDoc-adjacency rule.
 
-## Canvas
-
-### Skipped intentionally (decisions worth remembering)
-
-- **Hoist `fetchFeaturesForRegion` / `applyFetchResults` out of the
-  `.actions(self =>)` closure.** Would require typing `self` either as
-  `Instance<typeof stateModelFactory>` (circular type ref) or as a structural
-  type — reintroducing exactly the drift risk that `modelContract.ts` exists
-  to prevent. Negative-value refactor.
-- **Merge the three chained `.views(self =>)` blocks around
-  `regionTooLarge`.** Would force sibling refs through `this.X`, violating
-  the `self-over-this in views` memory.
-- **`assemblyNames[0]!` non-null assertion** at `baseModel.ts:222` and
-  `model.ts:238`. Config schema requires assemblyNames to be a non-empty
-  array, so the `!` documents a real invariant.
-
-### Anti-recommendations (do not do)
-
-- Don't merge `interleaveRects/interleaveLines/interleaveArrows` in
-  `interleaveBuffers.ts` into a parametric function — field-by-field
-  correspondence with shader-generated offsets is the point
-  (`feedback_complexity_not_loc.md`).
-- Don't merge the three `if numXxx > 0` blocks in
-  `GpuCanvasFeatureRenderer.uploadRegion`. Same reason.
-- Don't split `packRenderArrays` into a parametric primitive packer. Same
-  reason — the explicit per-primitive column list documents the GPU
-  contract.
-- Don't extract `getFeatureName` / `getFeatureDescription` further; they're
-  already in `labelUtils.ts`.
 
 
 ## jbrowse-img
@@ -161,56 +132,4 @@ Loaded products/jbrowse-web/CLAU
 
 Let me look at how getTokenFromUserto understand the callback pattern:
 
-## desktop
-Now inline the setXAndReset helpers in GenomesDataTable:
 
-● Update(products/jbrowse-desktop/src/components/StartScreen/availableGenomes/GenomesDataTable.tsx)
-Removed 13 lines
-  )
-  const [showAllColumns, setShowAllColumns] = useState(false)
-
-  // Reset to first page whenever the result set changes so we don't land on an empt
-y page
-  const setSearchQueryAndReset = (q: string) => {
-    setSearchQuery(q)
-    setPageIndex(0)
-  }
-  const setFilterOptionAndReset = (f: FilterOption) => {
-    setFilterOption(f)
-    setPageIndex(0)
-  }
-  const setTypeOptionAndReset = (t: string) => {
-    setTypeOption(t)
-    setPageIndex(0)
-  }
-  const tableRef = useRef<HTMLDivElement>(null)
-  useSearchHighlight(tableRef, searchQuery)
-  const { classes } = useStyles()
-
-Now update the three call sites to inline the reset:
-
-● Update(products/jbrowse-desktop/src/components/StartScreen/availableGenomes/GenomesDataTable.tsx)
-Added 8 lines, removed 2 lines
-
-        <SearchField
-          searchQuery={searchQuery}
-          onChange={setSearchQueryAndReset}
-          onChange={q => {
-            setSearchQuery(q)
-            setPageIndex(0)
-          }}
-        />
-
-        <CategorySelector
-
-          typeOption={type
-          categoriesLoading={categoriesLoading}
-          categoriesError=
-          onChange={setTypeOptionAndReset}
-          onChange={t => {
-            setTypeOption(t)
-            setPageIndex(0
-          }}
-        />
-        <CascadingMenuButton
-          menuItems={() =>

@@ -55,8 +55,8 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
         const [name1, name2, score] = line.split('\t')
-        const r1 = bed1Map.get(name1)
-        const r2 = bed2Map.get(name2)
+        const r1 = bed1Map.get(name1!)
+        const r2 = bed2Map.get(name2!)
         if (!r1 || !r2) {
           throw new Error(`feature not found, ${name1} ${name2} ${r1} ${r2}`)
         }

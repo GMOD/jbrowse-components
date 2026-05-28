@@ -21,6 +21,8 @@ function regionData(refSeq: string, alignment: string): MafRegionData {
       mismatchBases: new Uint8Array(0),
       coveragePackedBuffer: new ArrayBuffer(0),
       snpPackedBuffer: new ArrayBuffer(0),
+      interbasePackedBuffer: new ArrayBuffer(0),
+      interbaseMaxCount: 0,
     },
   }
 }

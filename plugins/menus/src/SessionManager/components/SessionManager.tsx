@@ -76,7 +76,7 @@ const SessionManager = observer(function SessionManager({
       width: measureGridWidth((rows ?? []).map(r => r.name)),
       renderCell: ({ row }: { row: { id: string; name: string } }) => (
         <>
-          <ActionLink onClick={() => session.activateSession(row.id)}>
+          <ActionLink onClick={() => { session.activateSession(row.id) }}>
             {row.name}
           </ActionLink>
           {session.id === row.id ? ' (current)' : ''}

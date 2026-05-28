@@ -28,7 +28,7 @@ const LocStringList = observer(function LocStringList({
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
           <li key={`${locString}-${index}`}>
             {locString}{' '}
-            <ActionLink onClick={() => navToLoc(locString, model)}>
+            <ActionLink onClick={() => { navToLoc(locString, model) }}>
               (LGV)
             </ActionLink>
           </li>
@@ -60,13 +60,13 @@ const LaunchBreakpointSplitViewPanel = observer(
               {`${feature.refName}:${feature.start} // ${locString}`}{' '}
               <ActionLink
                 onClick={() =>
-                  launchBreakpointSplitView({
+                  { launchBreakpointSplitView({
                     session,
                     view: model.view,
                     assemblyName,
                     feature: simpleFeature,
                     stableViewId: `${model.id}_${assemblyName}_breakpointsplitview`,
-                  })
+                  }) }
                 }
               >
                 (breakpoint split view)

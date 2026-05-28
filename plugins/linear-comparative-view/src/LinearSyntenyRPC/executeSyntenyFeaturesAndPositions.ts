@@ -112,7 +112,7 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const bpPerPx = viewSnaps[level]!.bpPerPx
   const allFeatures = await updateStatus(
-    'Fetching synteny features',
+    'Loading',
     statusCallback,
     () =>
       firstValueFrom(

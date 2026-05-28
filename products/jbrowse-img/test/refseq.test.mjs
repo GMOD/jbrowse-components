@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert'
+import path from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import path from 'node:path'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const volvoxFasta = path.join(__dirname, '../data/volvox/volvox.fa')

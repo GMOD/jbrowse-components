@@ -5,7 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { pafIdentity, parsePAFLine } from '../util.ts'
+import { getAssemblyNamesFromConf, pafIdentity, parsePAFLine } from '../util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -18,7 +18,7 @@ interface PAFOptions extends BaseOptions {
   config?: AnyConfigurationModel
 }
 
-export default class PAFAdapter extends BaseFeatureDataAdapter {
+export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   protected pif: TabixIndexedFile
@@ -49,13 +49,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   getAssemblyNames(): string[] {
-    const assemblyNames = this.getConf('assemblyNames') as string[]
-    return assemblyNames.length === 0
-      ? [
-          this.getConf('queryAssembly') as string,
-          this.getConf('targetAssembly') as string,
-        ]
-      : assemblyNames
+    return getAssemblyNamesFromConf(this)
   }
 
   public async hasDataForRefName() {

@@ -60,8 +60,8 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
   const featureIdToChainIdx = new Map<string, number>()
   for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
     const chain = chains[chainIdx]!
-    let minStart = Number.MAX_VALUE
-    let maxEnd = Number.MIN_VALUE
+    let minStart = Number.POSITIVE_INFINITY
+    let maxEnd = Number.NEGATIVE_INFINITY
     let hasSupp = false
     let primaryStrand = 1
     for (const f of chain) {

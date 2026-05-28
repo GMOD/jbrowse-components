@@ -1,7 +1,10 @@
 export interface OAuthWindowParams {
   internetAccountId: string
   expectedState: string | undefined
-  exchangeAuthorizationCode: (code: string, redirectUri: string) => Promise<string>
+  exchangeAuthorizationCode: (
+    code: string,
+    redirectUri: string,
+  ) => Promise<string>
   storeToken: (token: string) => void
 }
 

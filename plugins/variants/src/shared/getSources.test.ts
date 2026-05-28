@@ -273,8 +273,14 @@ describe('getSources', () => {
     const filtered = base.filter(s => subtreeFilter.has(s.name))
 
     expect(filtered).toHaveLength(2)
-    expect(filtered[0]).toMatchObject({ name: 'HG001 HP0', sampleName: 'HG001' })
-    expect(filtered[1]).toMatchObject({ name: 'HG001 HP1', sampleName: 'HG001' })
+    expect(filtered[0]).toMatchObject({
+      name: 'HG001 HP0',
+      sampleName: 'HG001',
+    })
+    expect(filtered[1]).toMatchObject({
+      name: 'HG001 HP1',
+      sampleName: 'HG001',
+    })
   })
 
   test('layout colors are preserved in phased mode with haplotype layout', () => {

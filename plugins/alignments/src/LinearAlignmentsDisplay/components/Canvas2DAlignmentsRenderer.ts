@@ -27,11 +27,11 @@ import { drawCoverageBars } from '../../features/coverage/drawCanvas.ts'
 import { drawGaps } from '../../features/gap/drawCanvas.ts'
 import { drawIndicatorCanvas } from '../../features/indicator/drawCanvas.ts'
 import { drawInsertions } from '../../features/insertion/drawCanvas.ts'
+import { drawInterbaseCanvas } from '../../features/interbase/drawCanvas.ts'
 import { drawLinkedReadLines } from '../../features/linkedReads/drawCanvas.ts'
 import { drawMismatches } from '../../features/mismatch/drawCanvas.ts'
 import { drawModCoverageCanvas } from '../../features/modCoverage/drawCanvas.ts'
 import { drawModifications } from '../../features/modification/drawCanvas.ts'
-import { drawInterbaseCanvas } from '../../features/interbase/drawCanvas.ts'
 import { drawPerBaseQuality } from '../../features/perBaseQuality/drawCanvas.ts'
 import {
   buildReadFields,

@@ -8,6 +8,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import {
   flipCigar,
+  getAssemblyNamesFromConf,
   pafIdentity,
   parsePAFLine,
   swapIndelCigar,
@@ -61,13 +62,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   getAssemblyNames() {
-    const assemblyNames = this.getConf('assemblyNames') as string[]
-    if (assemblyNames.length === 0) {
-      const query = this.getConf('queryAssembly') as string
-      const target = this.getConf('targetAssembly') as string
-      return [query, target]
-    }
-    return assemblyNames
+    return getAssemblyNamesFromConf(this)
   }
 
   async getRefNames(opts: BaseOptions = {}) {

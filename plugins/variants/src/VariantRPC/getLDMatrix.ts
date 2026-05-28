@@ -268,7 +268,7 @@ function normalInverseCDF(p: number): number {
   const a1 = -3.969683028665376e1
   const a2 = 2.209460984245205e2
   const a3 = -2.759285104469687e2
-  const a4 = 1.383577518672690e2
+  const a4 = 1.38357751867269e2
   const a5 = -3.066479806614716e1
   const a6 = 2.506628277459239
   const b1 = -5.447609879822406e1

@@ -17,13 +17,13 @@ import {
   INSTANCE_STRIDE_F32 as INDICATOR_STRIDE,
 } from './indicatorLayout.generated.ts'
 import {
-  FIELD_OFFSET_F32 as MOD_COV_FIELD,
-  INSTANCE_STRIDE_F32 as MOD_COV_STRIDE,
-} from './modCoverageLayout.generated.ts'
-import {
   FIELD_OFFSET_F32 as INTERBASE_FIELD,
   INSTANCE_STRIDE_F32 as INTERBASE_STRIDE,
 } from './interbaseHistogramLayout.generated.ts'
+import {
+  FIELD_OFFSET_F32 as MOD_COV_FIELD,
+  INSTANCE_STRIDE_F32 as MOD_COV_STRIDE,
+} from './modCoverageLayout.generated.ts'
 import {
   FIELD_OFFSET_F32 as SNP_FIELD,
   INSTANCE_STRIDE_F32 as SNP_STRIDE,

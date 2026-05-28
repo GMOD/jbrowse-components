@@ -21,17 +21,26 @@ function makeEvent(redirectUri: string) {
 describe('finishOAuthWindow', () => {
   it('returns undefined when event name does not match', async () => {
     const event = new MessageEvent('message', {
-      data: { name: 'JBrowseAuthWindow-otherAccount', redirectUri: 'http://x/?code=abc' },
+      data: {
+        name: 'JBrowseAuthWindow-otherAccount',
+        redirectUri: 'http://x/?code=abc',
+      },
     })
     expect(await finishOAuthWindow(event, makeParams())).toBeUndefined()
   })
 
   it('returns access_token from implicit flow (hash fragment)', async () => {
     const stored: string[] = []
-    const event = makeEvent('http://localhost/auth#access_token=my-token&token_type=bearer')
+    const event = makeEvent(
+      'http://localhost/auth#access_token=my-token&token_type=bearer',
+    )
     const token = await finishOAuthWindow(
       event,
-      makeParams({ storeToken: t => { stored.push(t) } }),
+      makeParams({
+        storeToken: t => {
+          stored.push(t)
+        },
+      }),
     )
     expect(token).toBe('my-token')
     expect(stored).toEqual(['my-token'])
@@ -40,14 +49,19 @@ describe('finishOAuthWindow', () => {
   it('exchanges code and returns token from authorization code flow', async () => {
     const stored: string[] = []
     const event = makeEvent('http://localhost/auth?code=auth-code')
-    const token = await finishOAuthWindow(event, makeParams({
-      exchangeAuthorizationCode: async (code, redirectUri) => {
-        expect(code).toBe('auth-code')
-        expect(redirectUri).toBe('http://localhost/auth')
-        return 'code-exchanged-token'
-      },
-      storeToken: t => { stored.push(t) },
-    }))
+    const token = await finishOAuthWindow(
+      event,
+      makeParams({
+        exchangeAuthorizationCode: async (code, redirectUri) => {
+          expect(code).toBe('auth-code')
+          expect(redirectUri).toBe('http://localhost/auth')
+          return 'code-exchanged-token'
+        },
+        storeToken: t => {
+          stored.push(t)
+        },
+      }),
+    )
     expect(token).toBe('code-exchanged-token')
     expect(stored).toEqual(['code-exchanged-token'])
   })

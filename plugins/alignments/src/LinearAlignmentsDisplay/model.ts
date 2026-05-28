@@ -1169,7 +1169,6 @@ export default function stateModelFactory(
               if (mode === 'off') {
                 self.setOverride('colorBy', { type: 'normal' })
               } else {
-                self.clearOverride('showOutline')
                 self.setOverride('colorBy', {
                   type: 'insertSizeAndOrientation',
                 })

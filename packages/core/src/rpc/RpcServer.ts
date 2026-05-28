@@ -7,7 +7,8 @@ interface WorkerSelf {
   addEventListener(type: string, listener: (e: MessageEvent) => void): void
 }
 
-const workerSelf = self as unknown as WorkerSelf
+const workerSelf =
+  typeof self !== 'undefined' ? (self as unknown as WorkerSelf) : null
 
 export interface RpcResult {
   __rpcResult: true
@@ -37,7 +38,7 @@ export default class RpcServer {
 
   constructor(methods: Record<string, Procedure>) {
     this.methods = methods
-    workerSelf.addEventListener('message', (e: MessageEvent) => {
+    workerSelf!.addEventListener('message', (e: MessageEvent) => {
       this.handler(e)
     })
   }
@@ -67,12 +68,12 @@ export default class RpcServer {
     try {
       if (isRpcResult(response)) {
         const { value, transferables } = response
-        workerSelf.postMessage(
+        workerSelf!.postMessage(
           { uid, method, data: value, libRpc: true },
           transferables,
         )
       } else {
-        workerSelf.postMessage(
+        workerSelf!.postMessage(
           { uid, method, data: response, libRpc: true },
           [],
         )
@@ -83,11 +84,11 @@ export default class RpcServer {
   }
 
   protected throw(uid: string, error: ErrorObject | string) {
-    workerSelf.postMessage({ uid, error, libRpc: true })
+    workerSelf!.postMessage({ uid, error, libRpc: true })
   }
 
   emit(eventName: string, data: unknown, transferables?: Transferable[]) {
-    workerSelf.postMessage(
+    workerSelf!.postMessage(
       { eventName, data, libRpc: true },
       transferables ?? [],
     )

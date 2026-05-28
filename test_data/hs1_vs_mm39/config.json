@@ -45,7 +45,28 @@
   "configuration": {},
   "connections": [],
   "defaultSession": {
-    "name": "New Session"
+    "name": "hs1 vs mm39",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "id": "hs1-mm39-synteny",
+        "init": {
+          "views": [
+            {
+              "assembly": "hs1",
+              "loc": "chr1",
+              "tracks": ["ncbiRefSeq"]
+            },
+            {
+              "assembly": "mm39",
+              "loc": "chr1",
+              "tracks": ["mm39-ncbiRefSeqCurated"]
+            }
+          ],
+          "tracks": ["hs1ToMm39.over.chain.pif"]
+        }
+      }
+    ]
   },
   "tracks": [
     {

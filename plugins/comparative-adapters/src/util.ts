@@ -1,28 +1,50 @@
 import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
+export function getAssemblyNamesFromConf(adapter: BaseFeatureDataAdapter) {
+  const assemblyNames = adapter.getConf('assemblyNames') as string[]
+  if (assemblyNames.length === 0) {
+    return [
+      adapter.getConf('queryAssembly') as string,
+      adapter.getConf('targetAssembly') as string,
+    ]
+  }
+  return assemblyNames
+}
+
 export function parseBed(text: string) {
-  return new Map(
-    text
-      .split(/\n|\r\n|\r/)
-      .filter(f => !!f && !f.startsWith('#'))
-      .map(line => {
-        const [refName, start, end, name, score, strand] = line.split('\t')
-        return [
+  const result = new Map<
+    string,
+    {
+      refName: string
+      start: number
+      end: number
+      score: number
+      name: string
+      strand: number
+    }
+  >()
+  for (const line of text.split(/\n|\r\n|\r/)) {
+    if (line && !line.startsWith('#')) {
+      const [refName, start, end, name, score, strand] = line.split('\t')
+      if (refName && start && end && name) {
+        result.set(name, {
+          refName,
+          start: +start,
+          end: +end,
+          score: +(score ?? 0),
           name,
-          {
-            refName,
-            start: +start!,
-            end: +end!,
-            score: +score!,
-            name,
-            strand: strand === '-' ? -1 : 1,
-          },
-        ]
-      }),
-  )
+          strand: strand === '-' ? -1 : 1,
+        })
+      }
+    }
+  }
+  return result
 }
 
 export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
